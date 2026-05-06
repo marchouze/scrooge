@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obligations register — 2026-05-06</title>
+<link rel="stylesheet" href="../Owner Inbox/_styles.css">
+<style>
+  /* Register-specific tweaks */
+  body { font-size: 14px; }
+  .register-controls {
+    max-width: 1380px;
+    margin: 16px auto 0 auto;
+    padding: 14px 24px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .register-controls input[type="search"] {
+    flex: 1;
+    min-width: 240px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    font: inherit;
+    font-size: 13px;
+  }
+  .register-controls input[type="search"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+  .register-controls .filter-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+  }
+  .register-controls label {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .register-controls select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    font: inherit;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .register-controls .stat-inline {
+    margin-left: auto;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .register-controls .stat-inline strong { color: var(--primary); font-feature-settings: "tnum"; }
+
+  .register-wrap {
+    max-width: 1380px;
+    margin: 12px auto 60px auto;
+    padding: 0 24px;
+  }
+  .register-wrap h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--primary);
+    margin: 28px 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .register-wrap h2 .domain-id {
+    background: var(--primary);
+    color: var(--accent-soft);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .register-wrap h2 .count {
+    margin-left: auto;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  .register-wrap table {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 12.5px;
+  }
+  .register-wrap th { font-size: 11.5px; padding: 7px 9px; }
+  .register-wrap td { padding: 7px 9px; vertical-align: top; }
+  .register-wrap th.id, .register-wrap td.id  { width: 110px; }
+  .register-wrap th.cit, .register-wrap td.cit { width: 22%; }
+  .register-wrap th.req, .register-wrap td.req { width: 30%; }
+  .register-wrap th.ful, .register-wrap td.ful { width: 22%; }
+  .register-wrap th.own, .register-wrap td.own { width: 13%; }
+  .register-wrap th.st, .register-wrap td.st  { width: 90px; text-align: center; }
+
+  td.id   { font-family: var(--mono); font-size: 11px; color: var(--accent-deep); }
+  td.cit  { color: var(--text); }
+  td.cit code { background: transparent; padding: 0; color: inherit; }
+
+  .pill {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .pill-IN-FORCE { background: #e0efe2; color: #2f6b3a; }
+  .pill-PARTIAL  { background: #fbf3e3; color: #a06a14; }
+  .pill-PLANNED  { background: #f1f3f6; color: #5a6478; }
+  .pill-DRAFTING { background: #fdf8ec; color: #6b4f1d; }
+  .pill-N-A      { background: #f7eef0; color: #8a4156; }
+
+  tr.row[hidden] { display: none; }
+
+  .register-summary {
+    max-width: 1380px;
+    margin: 16px auto;
+    padding: 14px 18px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--accent-deep);
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">The Bank · Regulatory library · Office of the CCO</div>
+    <div class="meta">
+      <strong>Obligations register</strong><br>
+      Mira (curator) · Zara (governance) · 2026-05-06<br>
+      <a href="../Owner Inbox/2026-05-06_policy-register.html">Policy register ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="title-block">
+  <div class="eyebrow">/Regulations/_obligations-register.html · ~178 obligations · 12 domains · ~64 instruments</div>
+  <h1>Obligations register</h1>
+  <p class="lede">A consolidated, filterable register of every obligation the bank carries under applicable regulation, mapped to where it is fulfilled in the bank's policy stack. The operational expression of Principle 2.</p>
+</div>
+
+<div class="register-summary">
+  <strong>How to use:</strong> filter by domain, status, or fulfilment owner; or search by text (citation, requirement, policy, owner). Click an obligation row's source citation to read the underlying analysis (where the instrument file is populated). The register is a projection over the per-instrument analyses; reproducible at any as-of date (P1).
+</div>
+
+<div class="register-controls">
+  <input type="search" id="search" placeholder="Search citation, requirement, policy, owner…">
+  <div class="filter-group"><label>Domain</label><select id="filter-domain"><option value="">All</option></select></div>
+  <div class="filter-group"><label>Status</label><select id="filter-status"><option value="">All</option></select></div>
+  <div class="filter-group"><label>Owner</label><select id="filter-owner"><option value="">All</option></select></div>
+  <span class="stat-inline"><strong id="stat-visible">0</strong> of <strong id="stat-total">0</strong> obligations visible</span>
+</div>
+
+<div class="register-wrap" id="reg-root">
+
+  <!-- Domain A — Prudential -->
+  <h2><span class="domain-id">A</span> Prudential — capital, liquidity, large exposures, leverage <span class="count" id="count-A">0 of 22</span></h2>
+  <table data-domain="A">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-PR-01</td><td class="cit">Banks Act 94/1990 + Regs Relating to Banks</td><td class="req">Maintain capital adequacy at not less than the regulatory minimum (CET1, AT1, T2).</td><td class="ful">Capital Management Policy; ICAAP</td><td class="own">Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-PR-02</td><td class="cit">Banks Act + BCBS Basel III/IV</td><td class="req">Apply Pillar 2A add-ons as set by PA.</td><td class="ful">Capital Management Policy</td><td class="own">Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-PR-03</td><td class="cit">Banks Act + BCBS</td><td class="req">Hold capital conservation buffer + countercyclical buffer where required.</td><td class="ful">Capital Management Policy</td><td class="own">Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Camille"><td class="id">ORG-PR-04</td><td class="cit">RAS / RAF B2</td><td class="req">Maintain CET1 management buffer ≥ +1.5pp above all PA minima + Pillar 2A + capital conservation buffer.</td><td class="ful">Capital Management Policy; RAS</td><td class="own">Camille (Helena)</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-PR-05</td><td class="cit">Banks Act + BCBS leverage ratio</td><td class="req">Maintain leverage ratio ≥ regulatory minimum.</td><td class="ful">Capital Management Policy</td><td class="own">Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena + Eitan"><td class="id">ORG-PR-06</td><td class="cit">BCBS D295 / BA 325</td><td class="req">Maintain LCR ≥ 100% (PA min); buffer to internal floor.</td><td class="ful">Liquidity Risk Management Policy</td><td class="own">Helena + Eitan</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena + Eitan"><td class="id">ORG-PR-07</td><td class="cit">BCBS D335 / BA 326</td><td class="req">Maintain NSFR ≥ 100% (PA min); buffer to internal floor.</td><td class="ful">Liquidity Risk Management Policy</td><td class="own">Helena + Eitan</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Eitan"><td class="id">ORG-PR-08</td><td class="cit">BCBS 248</td><td class="req">Monitor intraday liquidity per BCBS metrics; report to PA.</td><td class="ful">Liquidity Risk Management Policy; Funding Strategy Policy</td><td class="own">Eitan</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-PR-09</td><td class="cit">BCBS Large Exposures / BA 330</td><td class="req">Single-name large exposure capped at the regulatory ceiling.</td><td class="ful">Credit Risk Policy</td><td class="own">Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-PR-10</td><td class="cit">RAS B8</td><td class="req">Sector concentration ≤ 25% of exposure without explicit BRC approval.</td><td class="ful">Credit Risk Policy</td><td class="own">Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena + Eitan"><td class="id">ORG-PR-11</td><td class="cit">BCBS D368 (IRRBB)</td><td class="req">Measure and manage IRRBB through EVE and NII metrics.</td><td class="ful">IRRBB Policy (within Risk Management Framework)</td><td class="own">Helena + Eitan</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-PR-12</td><td class="cit">Banks Act + PA stress-testing guidance</td><td class="req">Conduct integrated stress testing; reverse stress tests on key vulnerabilities.</td><td class="ful">Stress Testing Policy</td><td class="own">Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille + Helena"><td class="id">ORG-PR-13</td><td class="cit">Banks Act + PA</td><td class="req">Submit annual ICAAP to PA.</td><td class="ful">Capital Management Policy; ICAAP</td><td class="own">Camille + Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Eitan + Helena"><td class="id">ORG-PR-14</td><td class="cit">Banks Act + PA</td><td class="req">Submit annual ILAAP to PA.</td><td class="ful">Liquidity Risk Management Policy; ILAAP</td><td class="own">Eitan + Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Eitan"><td class="id">ORG-PR-15</td><td class="cit">BCBS 144</td><td class="req">Maintain Contingency Funding Plan; rehearsed annually.</td><td class="ful">Liquidity Risk Management Policy; Funding Strategy Policy</td><td class="own">Eitan</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena + Saskia"><td class="id">ORG-PR-16</td><td class="cit">BCBS Large Exposures + Banks Act</td><td class="req">Counterparty-credit exposure managed; netting under enforceable ISDA / GMRA.</td><td class="ful">Counterparty Credit Risk Policy; Collateral Management Policy</td><td class="own">Helena + Saskia</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena + Devon"><td class="id">ORG-PR-17</td><td class="cit">BCBS Operational Risk (rev. 2021)</td><td class="req">Operational-risk identification, measurement, control framework.</td><td class="ful">Operational Risk Policy</td><td class="own">Helena + Devon</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Devon"><td class="id">ORG-PR-18</td><td class="cit">BCBS Operational Resilience (2021)</td><td class="req">Identify Important Business Services; set impact tolerances; test scenarios.</td><td class="ful">Operational Resilience Policy</td><td class="own">Devon (Helena)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-PR-19</td><td class="cit">BCBS Market Risk (FRTB)</td><td class="req">Measure trading-book market risk per FRTB.</td><td class="ful">Market Risk Policy</td><td class="own">Helena (Rohan)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Saskia + Helena"><td class="id">ORG-PR-20</td><td class="cit">RAS / Trading Mandate B5</td><td class="req">No proprietary risk-taking outside warehoused franchise hedge positions.</td><td class="ful">Trading Mandate (in refinement); Market Risk Policy</td><td class="own">Saskia + Helena</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-PR-21</td><td class="cit">RAS B7 / SR 11-7</td><td class="req">Three-tier model risk classification; independent validation pre-deployment for Tier 1+2.</td><td class="ful">Model Risk Policy</td><td class="own">Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-PR-22</td><td class="cit">PA Guidance Note 1 of 2024</td><td class="req">Climate-related risk integrated; scenario analysis; disclosures.</td><td class="ful">Climate-Related Risk Policy (within RMF); Op Resilience</td><td class="own">Helena (S&amp;E)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Domain B — Financial Crime -->
+  <h2><span class="domain-id">B</span> Financial crime, AML / CFT, sanctions <span class="count" id="count-B">0 of 22</span></h2>
+  <table data-domain="B">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-01</td><td class="cit">FIC Act 38/2001 s.42</td><td class="req">Adopt and maintain a Risk Management and Compliance Programme (RMCP).</td><td class="ful">RMCP</td><td class="own">Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-02</td><td class="cit">FIC Act ss.21–21H + FATF Rec. 10</td><td class="req">Conduct CDD on all clients; identification &amp; verification before establishing relationship.</td><td class="ful">KYC / CDD / EDD Policy; client master design</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-03</td><td class="cit">FIC Act s.21A + GN 7</td><td class="req">Apply EDD to high-risk relationships (PEPs, foreign correspondents, complex structures).</td><td class="ful">KYC / CDD / EDD Policy; PEP Policy</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-04</td><td class="cit">FIC Act s.21B + FATF Rec. 10 + Companies Act + TPCA</td><td class="req">Verify beneficial ownership; recursive resolution to natural persons.</td><td class="ful">KYC / CDD / EDD Policy; client master design</td><td class="own">Zara (Mira+Imani)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Zara"><td class="id">ORG-FC-05</td><td class="cit">FIC Act s.22</td><td class="req">Retain prescribed records for 5 years after the relationship ends.</td><td class="ful">Records Management Policy; KYC Policy</td><td class="own">Owen + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-06</td><td class="cit">FIC GN 7 + FATF Rec. 1</td><td class="req">Risk-based approach: dispatch CDD intensity on customer risk-rating typology.</td><td class="ful">KYC Policy; AML/CFT Policy</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-07</td><td class="cit">FIC Act s.28</td><td class="req">File Cash Threshold Reports for cash transactions ≥ R 24,999.99.</td><td class="ful">RMCP; AML/CFT Policy</td><td class="own">Zara (MLRO)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-08</td><td class="cit">FIC Act s.28A</td><td class="req">File Property Association Reports on association with sanctioned property.</td><td class="ful">RMCP; Sanctions Policy</td><td class="own">Zara (MLRO)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-09</td><td class="cit">FIC Act s.29</td><td class="req">File STRs / SARs on suspicion within 15 days.</td><td class="ful">RMCP; AML/CFT Policy</td><td class="own">Zara (MLRO)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-10</td><td class="cit">FIC Act s.29(3)</td><td class="req">Tipping-off prohibited — disclosing STR existence is a criminal offence.</td><td class="ful">RMCP; cryptographic enforcement</td><td class="own">Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-11</td><td class="cit">FIC Act + FATF</td><td class="req">Designate AML compliance officer + MLRO.</td><td class="ful">Governance Framework; Fit-and-Proper Policy</td><td class="own">Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara + Sade"><td class="id">ORG-FC-12</td><td class="cit">FIC Act s.43</td><td class="req">Train staff on AML / CFT obligations.</td><td class="ful">AML/CFT Policy; HR Training</td><td class="own">Zara + Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-13</td><td class="cit">UN/OFAC/EU/UK HMT/POCDATARA + RAS B4</td><td class="req">Block all true-positive sanctions matches pre-execution; override = signed MLRO event.</td><td class="ful">Sanctions Policy; AML/CFT Policy</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-14</td><td class="cit">POCDATARA + FIC Act</td><td class="req">Targeted Financial Sanctions screening per DTI list.</td><td class="ful">Sanctions Policy</td><td class="own">Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-FC-15</td><td class="cit">FATCA IGA + Tax Admin Act</td><td class="req">Identify US-reportable accounts; submit FATCA XML to SARS annually.</td><td class="ful">FATCA / CRS Policy; Tax Policy</td><td class="own">Yael (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-FC-16</td><td class="cit">CRS + Tax Admin Act</td><td class="req">Identify CRS-reportable accounts; submit CRS XML annually.</td><td class="ful">FATCA / CRS Policy; Tax Policy</td><td class="own">Yael (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-17</td><td class="cit">FATF Rec. 16</td><td class="req">Wire-transfer regulation: originator and beneficiary information accompanies cross-border transfers.</td><td class="ful">AML/CFT Policy; KYC Policy</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-18</td><td class="cit">RAS B3</td><td class="req">Continuous-KYC two-tier restriction default (immediate / on-review).</td><td class="ful">KYC Policy; client master design</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-FC-19</td><td class="cit">FIC GN 7</td><td class="req">Recurring KYC: high → annual; medium → 24m; low → 36m.</td><td class="ful">KYC Policy</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Zara"><td class="id">ORG-FC-20</td><td class="cit">PRECCA 12/2004</td><td class="req">Prevent and combat bribery and corruption; report knowledge of such conduct.</td><td class="ful">Anti-Bribery &amp; Corruption Policy; Whistleblowing Policy</td><td class="own">Owen + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Zara"><td class="id">ORG-FC-21</td><td class="cit">FATF SA Mutual Evaluation Reports</td><td class="req">Address SA mutual-evaluation findings (grey-listing remediation).</td><td class="ful">RMCP; AML/CFT Policy</td><td class="own">Zara</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Zara"><td class="id">ORG-FC-22</td><td class="cit">UK Bribery Act 2010</td><td class="req">UK extra-territorial reach where bank has UK touch-points.</td><td class="ful">Anti-Bribery &amp; Corruption Policy</td><td class="own">Owen + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Domain C — Conduct -->
+  <h2><span class="domain-id">C</span> Conduct, FAIS, TCF <span class="count" id="count-C">0 of 10</span></h2>
+  <table data-domain="C">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara + Niko"><td class="id">ORG-CD-01</td><td class="cit">FAIS Act + FSCA conduct standards</td><td class="req">Treating Customers Fairly: six outcomes operationalised.</td><td class="ful">Conduct of Business / TCF Policy; Customer Treatment Policy</td><td class="own">Zara + Niko</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="N/A-yet" data-owner="Zara"><td class="id">ORG-CD-02</td><td class="cit">FAIS Act</td><td class="req">FSP licence required to give advice / render intermediary services.</td><td class="ful">FAIS Policy (planned)</td><td class="own">Zara</td><td class="st"><span class="pill pill-N-A">N/A-yet</span></td></tr>
+      <tr class="row" data-status="N/A-yet" data-owner="Zara"><td class="id">ORG-CD-03</td><td class="cit">FAIS Act</td><td class="req">Designate Key Individual(s) and Representatives where FSP-licensed.</td><td class="ful">Fit-and-Proper Policy; FAIS Policy</td><td class="own">Zara (Saskia/Niko)</td><td class="st"><span class="pill pill-N-A">N/A-yet</span></td></tr>
+      <tr class="row" data-status="N/A-yet" data-owner="Zara + Niko"><td class="id">ORG-CD-04</td><td class="cit">FAIS General Code of Conduct</td><td class="req">Maintain advice records demonstrating suitability.</td><td class="ful">FAIS Policy; TCF Policy</td><td class="own">Zara + Niko</td><td class="st"><span class="pill pill-N-A">N/A-yet</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-CD-05</td><td class="cit">FAIS Conflict of Interest Code</td><td class="req">Manage conflicts; disclose; avoid where unmanageable.</td><td class="ful">Conflicts of Interest Policy</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Niko + Zara"><td class="id">ORG-CD-06</td><td class="cit">FAIS + FSCA conduct standards</td><td class="req">Fee disclosure to customers; transparency on charges.</td><td class="ful">Pricing Policy; TCF Policy; Customer Treatment Policy</td><td class="own">Niko + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara + Niko"><td class="id">ORG-CD-07</td><td class="cit">FAIS + FSCA</td><td class="req">Complaints handling per FSCA standards.</td><td class="ful">Complaints Handling Policy</td><td class="own">Zara + Niko</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Zara"><td class="id">ORG-CD-08</td><td class="cit">FSR Act 9/2017</td><td class="req">Twin Peaks: PA prudential, FSCA conduct; cooperate with both.</td><td class="ful">Governance Framework; RMCP; Regulatory Engagement Policy</td><td class="own">Owen + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Zara"><td class="id">ORG-CD-09</td><td class="cit">COFI Bill</td><td class="req">Forward-compatibility with COFI activity-based licensing.</td><td class="ful">Regulatory Change Management Policy</td><td class="own">Zara (Mira)</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="N/A-yet" data-owner="Zara + Niko"><td class="id">ORG-CD-10</td><td class="cit">NCA</td><td class="req">National Credit Act compliance for credit products.</td><td class="ful">(planned)</td><td class="own">Zara + Niko</td><td class="st"><span class="pill pill-N-A">N/A-yet</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Domain D — Privacy -->
+  <h2><span class="domain-id">D</span> Privacy and data protection <span class="count" id="count-D">0 of 17</span></h2>
+  <table data-domain="D">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-01</td><td class="cit">POPIA s.11</td><td class="req">Process personal information only with a lawful basis.</td><td class="ful">POPIA / Privacy Policy</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-02</td><td class="cit">POPIA s.13</td><td class="req">Process for a specific, explicit, lawful purpose.</td><td class="ful">POPIA / Privacy Policy; Lawful-Processing Register</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris + Owen"><td class="id">ORG-PR(IV)-03</td><td class="cit">POPIA s.14</td><td class="req">Retain personal information only as long as necessary.</td><td class="ful">Data Retention Policy; Records Management Policy</td><td class="own">Iris + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-04</td><td class="cit">POPIA s.15</td><td class="req">Further processing compatible with original purpose.</td><td class="ful">POPIA / Privacy Policy</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris + Niko"><td class="id">ORG-PR(IV)-05</td><td class="cit">POPIA s.18</td><td class="req">Notice to data subjects when collecting personal information.</td><td class="ful">POPIA / Privacy Policy; Consent &amp; Notice Policy</td><td class="own">Iris + Niko</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris + Senna"><td class="id">ORG-PR(IV)-06</td><td class="cit">POPIA ss.19–22</td><td class="req">Security safeguards for personal information.</td><td class="ful">Information Security Policy; POPIA / Privacy Policy</td><td class="own">Iris + Senna</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-07</td><td class="cit">POPIA s.22</td><td class="req">Notify Information Regulator and data subjects of compromise.</td><td class="ful">Incident Response Policy; POPIA / Privacy Policy</td><td class="own">Iris (Senna)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-08</td><td class="cit">POPIA s.23</td><td class="req">Data-subject right of access.</td><td class="ful">POPIA / Privacy Policy; Data Subject Rights workflow</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-09</td><td class="cit">POPIA s.24</td><td class="req">Data-subject right of correction / deletion.</td><td class="ful">POPIA / Privacy Policy; DSR workflow</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-10</td><td class="cit">POPIA s.71</td><td class="req">Limit automated decision-making; right to challenge.</td><td class="ful">POPIA / Privacy Policy; Model Risk Policy</td><td class="own">Iris (Helena)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-11</td><td class="cit">POPIA s.34</td><td class="req">Lawful processing of special personal information.</td><td class="ful">POPIA / Privacy Policy</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-12</td><td class="cit">POPIA s.35</td><td class="req">Lawful processing of children's information.</td><td class="ful">POPIA / Privacy Policy</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Iris"><td class="id">ORG-PR(IV)-13</td><td class="cit">POPIA ss.55–56 + Reg. 4</td><td class="req">Designate Information Officer; lodge with Information Regulator.</td><td class="ful">POPIA / Privacy Policy; Governance Framework</td><td class="own">Iris</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-14</td><td class="cit">POPIA s.57</td><td class="req">Prior authorisation for certain processing types.</td><td class="ful">POPIA / Privacy Policy</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris + Devon"><td class="id">ORG-PR(IV)-15</td><td class="cit">POPIA s.72</td><td class="req">Cross-border transfer of personal information limited to lawful conditions.</td><td class="ful">Cross-Border Transfer Policy</td><td class="own">Iris (Devon)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris + Owen"><td class="id">ORG-PR(IV)-16</td><td class="cit">PAIA 2/2000 s.51</td><td class="req">Maintain and lodge PAIA Manual.</td><td class="ful">PAIA Manual</td><td class="own">Iris + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Iris"><td class="id">ORG-PR(IV)-17</td><td class="cit">PAIA</td><td class="req">Respond to PAIA requests within statutory timeframes.</td><td class="ful">PAIA Manual</td><td class="own">Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Domain E — Cyber & Resilience -->
+  <h2><span class="domain-id">E</span> Cyber and operational resilience <span class="count" id="count-E">0 of 11</span></h2>
+  <table data-domain="E">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Devon"><td class="id">ORG-CY-01</td><td class="cit">Joint Standard 1 of 2024</td><td class="req">Maintain cybersecurity and cyber-resilience framework with named accountability.</td><td class="ful">Cyber Resilience Policy; Information Security Policy</td><td class="own">Devon (Senna; Helena)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Devon"><td class="id">ORG-CY-02</td><td class="cit">Joint Standard 1 of 2024</td><td class="req">Designate accountable executive for cyber.</td><td class="ful">Governance Framework; Fit-and-Proper Policy</td><td class="own">Devon (interim)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna"><td class="id">ORG-CY-03</td><td class="cit">Joint Standard 1 of 2024</td><td class="req">Threat modelling, risk assessment, controls catalogue.</td><td class="ful">Information Security Policy; Cyber Resilience Policy</td><td class="own">Senna</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna + Iris"><td class="id">ORG-CY-04</td><td class="cit">Joint Standard 1 of 2024</td><td class="req">Incident reporting to PA / FSCA per timelines.</td><td class="ful">Incident Response Policy; Cyber Resilience Policy</td><td class="own">Senna + Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna + Devon"><td class="id">ORG-CY-05</td><td class="cit">Joint Standard 1 of 2024 + BCBS Op Resilience</td><td class="req">Tested cyber-incident response with rehearsed runbooks.</td><td class="ful">Incident Response Policy; Operational Resilience Policy</td><td class="own">Senna + Devon</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Devon"><td class="id">ORG-CY-06</td><td class="cit">SARB Directive 3 of 2018</td><td class="req">Cloud computing &amp; offshoring assessed and registered; material outsourcing Board-reserved.</td><td class="ful">Outsourcing Policy; Cloud Computing Policy</td><td class="own">Devon (Senna+Iris)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Devon"><td class="id">ORG-CY-07</td><td class="cit">SARB Directive 3 of 2018</td><td class="req">Notify PA in advance of material outsourcing.</td><td class="ful">Outsourcing Policy</td><td class="own">Devon</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Devon"><td class="id">ORG-CY-08</td><td class="cit">BCBS Op Resilience</td><td class="req">Identify Important Business Services; impact tolerances; severe-but-plausible scenario testing.</td><td class="ful">Operational Resilience Policy; BCP / DR Policy</td><td class="own">Devon (Helena)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna"><td class="id">ORG-CY-09</td><td class="cit">ISO/IEC 27001:2022</td><td class="req">ISMS aligned to ISO 27001.</td><td class="ful">Information Security Policy</td><td class="own">Senna</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna"><td class="id">ORG-CY-10</td><td class="cit">NIST CSF 2.0</td><td class="req">Cybersecurity controls aligned to NIST CSF.</td><td class="ful">Cyber Resilience Policy</td><td class="own">Senna</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna + Iris"><td class="id">ORG-CY-11</td><td class="cit">RAS B6</td><td class="req">Cyber severity tier model T1–T4 with Regulator-notification thresholds.</td><td class="ful">Cyber Resilience Policy; Incident Response Policy</td><td class="own">Senna + Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Domain F — Governance -->
+  <h2><span class="domain-id">F</span> Governance, board, corporate <span class="count" id="count-F">0 of 20</span></h2>
+  <table data-domain="F">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-01</td><td class="cit">Companies Act ss.86–89</td><td class="req">Public company maintains a Company Secretary.</td><td class="ful">Governance Framework</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-02</td><td class="cit">Companies Act ss.75–77</td><td class="req">Director duties; declare conflicts.</td><td class="ful">Code of Conduct; Conflicts of Interest Policy</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-GV-03</td><td class="cit">Companies Act + Banks Act</td><td class="req">Designate Public Officer.</td><td class="ful">Governance Framework</td><td class="own">Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-04</td><td class="cit">Companies Reg. 43</td><td class="req">Establish Social and Ethics Committee.</td><td class="ful">Governance Framework — S&amp;E Committee</td><td class="own">Owen + future CHRO</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Owen"><td class="id">ORG-GV-05</td><td class="cit">Banks Act + BCBS + King IV</td><td class="req">Establish Board with majority independent NEDs and an independent chair.</td><td class="ful">Governance Framework</td><td class="own">Owen</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-GV-06</td><td class="cit">Banks Act + BCBS</td><td class="req">Establish Board Risk Committee.</td><td class="ful">Governance Framework — BRC</td><td class="own">Helena (Owen secretariat)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-07</td><td class="cit">Companies Act + King IV</td><td class="req">Establish Audit Committee.</td><td class="ful">Governance Framework — AC</td><td class="own">Owen (future CAE)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PLANNED" data-owner="Sade + Helena"><td class="id">ORG-GV-08</td><td class="cit">King IV</td><td class="req">Establish Remuneration Committee.</td><td class="ful">Governance Framework — RemCo</td><td class="own">Sade + Helena</td><td class="st"><span class="pill pill-PLANNED">Planned</span></td></tr>
+      <tr class="row" data-status="PLANNED" data-owner="Owen"><td class="id">ORG-GV-09</td><td class="cit">King IV</td><td class="req">Establish Nominations Committee.</td><td class="ful">Governance Framework — NomCo</td><td class="own">Owen (future CHRO)</td><td class="st"><span class="pill pill-PLANNED">Planned</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena"><td class="id">ORG-GV-10</td><td class="cit">BCBS Corporate Governance Principles</td><td class="req">Designate CRO with direct access to BRC.</td><td class="ful">Governance Framework; Fit-and-Proper Policy</td><td class="own">Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade + Owen + Helena"><td class="id">ORG-GV-11</td><td class="cit">Banks Act + BCBS</td><td class="req">Designate fit-and-proper officers.</td><td class="ful">Fit-and-Proper Policy</td><td class="own">Sade + Owen + Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Camille"><td class="id">ORG-GV-12</td><td class="cit">Companies Act + IAS 24</td><td class="req">Disclose related-party transactions.</td><td class="ful">Conflicts; Related-Party Policy; IFRS Accounting</td><td class="own">Owen + Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-13</td><td class="cit">Protected Disclosures Act 26/2000</td><td class="req">Whistleblowing channel with statutory protections.</td><td class="ful">Whistleblowing Policy</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-14</td><td class="cit">King IV</td><td class="req">Apply-and-explain corporate governance.</td><td class="ful">Governance Framework</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Owen"><td class="id">ORG-GV-15</td><td class="cit">King IV + Banks Act</td><td class="req">Director induction, evaluation, succession.</td><td class="ful">Governance Framework</td><td class="own">Owen</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille + Owen"><td class="id">ORG-GV-16</td><td class="cit">Companies Act + JSE LR (if listed)</td><td class="req">Annual financial statements signed and filed.</td><td class="ful">Accounting Policies (IFRS); Governance Framework</td><td class="own">Camille + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-GV-17</td><td class="cit">Banks Act + Joint Standard 1 of 2024</td><td class="req">Board approves RAS, RMF, ICAAP, ILAAP, material policies.</td><td class="ful">Governance Framework — Reserved Matters</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Helena + Vera"><td class="id">ORG-GV-18</td><td class="cit">BCBS Corporate Governance</td><td class="req">Three lines of defence formally operating.</td><td class="ful">Governance Framework — 3LoD</td><td class="own">Owen + Helena + Vera</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Zara"><td class="id">ORG-GV-19</td><td class="cit">BCBS Compliance Function (2005)</td><td class="req">Compliance function independent, resourced, with direct access to BRC.</td><td class="ful">Governance Framework; RMCP</td><td class="own">Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="future CAE"><td class="id">ORG-GV-20</td><td class="cit">BCBS 223</td><td class="req">Internal Audit Function operates per IIA IPPF.</td><td class="ful">Governance Framework — AC; Internal Audit Charter (planned)</td><td class="own">future CAE (Vera)</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Remaining domains (G, H, I, J, K, L) — abbreviated table view -->
+  <h2><span class="domain-id">G</span> Accounting and financial reporting <span class="count" id="count-G">0 of 16</span></h2>
+  <table data-domain="G">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-01</td><td class="cit">IFRS 9</td><td class="req">Classify financial instruments at recognition.</td><td class="ful">Accounting Policies (IFRS)</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Helena + Bea"><td class="id">ORG-AC-02</td><td class="cit">IFRS 9</td><td class="req">Recognise expected credit losses (ECL).</td><td class="ful">Provisioning / IFRS 9 ECL Policy</td><td class="own">Helena + Bea</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Eitan + Camille"><td class="id">ORG-AC-03</td><td class="cit">IFRS 9 (CEO election F1)</td><td class="req">Apply IFRS 9 hedge accounting (IAS 39 carryover not used).</td><td class="ful">Hedge Accounting Policy</td><td class="own">Eitan + Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-04</td><td class="cit">IFRS 7</td><td class="req">Disclose risks arising from financial instruments.</td><td class="ful">Accounting Policies (IFRS); Financial Reporting</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-05</td><td class="cit">IFRS 13</td><td class="req">Apply fair-value measurement framework.</td><td class="ful">Accounting Policies (IFRS)</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-06</td><td class="cit">IFRS 15</td><td class="req">Recognise revenue per five-step model.</td><td class="ful">Accounting Policies (IFRS)</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-07</td><td class="cit">IFRS 16</td><td class="req">Recognise leases on the balance sheet.</td><td class="ful">Accounting Policies (IFRS)</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-08</td><td class="cit">IAS 1</td><td class="req">Present financial statements per IAS 1 structure.</td><td class="ful">Accounting Policies (IFRS)</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille + Yael"><td class="id">ORG-AC-09</td><td class="cit">IAS 12</td><td class="req">Recognise current and deferred income taxes.</td><td class="ful">Accounting Policies (IFRS); Tax Policy</td><td class="own">Camille + Yael</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-10</td><td class="cit">IAS 21</td><td class="req">Apply functional / presentation currency framework.</td><td class="ful">Accounting Policies (IFRS)</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille + Owen"><td class="id">ORG-AC-11</td><td class="cit">IAS 24</td><td class="req">Disclose related-party transactions.</td><td class="ful">Accounting Policies (IFRS); Related-Party Policy</td><td class="own">Camille + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael + Camille"><td class="id">ORG-AC-12</td><td class="cit">IFRIC 23</td><td class="req">Disclose uncertain tax positions.</td><td class="ful">Tax Policy; Accounting Policies (IFRS)</td><td class="own">Yael + Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-13</td><td class="cit">Banks Act + Regs Relating to Banks</td><td class="req">Submit BA returns to PA on prescribed cadence.</td><td class="ful">Financial Reporting; Capital; Liquidity policies</td><td class="own">Camille (Bea)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-AC-14</td><td class="cit">Companies Act + Banks Act</td><td class="req">Annual financial statements audited.</td><td class="ful">External Audit Engagement Policy; Accounting Policies</td><td class="own">Camille (AC + future CAE)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Anya"><td class="id">ORG-AC-15</td><td class="cit">BCBS 239</td><td class="req">Risk-data aggregation and risk-reporting principles.</td><td class="ful">Accounting Policies (IFRS); Risk Management Framework</td><td class="own">Anya (Helena+Camille)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille + Owen"><td class="id">ORG-AC-16</td><td class="cit">IRBA + Companies Act</td><td class="req">External auditor independence and rotation.</td><td class="ful">External Audit Engagement Policy</td><td class="own">Camille + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="domain-id">H</span> Tax <span class="count" id="count-H">0 of 9</span></h2>
+  <table data-domain="H">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-01</td><td class="cit">Income Tax Act 58/1962</td><td class="req">Pay corporate income tax.</td><td class="ful">Tax Policy</td><td class="own">Yael</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-02</td><td class="cit">Income Tax Act + OECD TP</td><td class="req">Transfer pricing per arm's-length principle.</td><td class="ful">Transfer Pricing Policy; Tax Policy</td><td class="own">Yael</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-03</td><td class="cit">VAT Act 89/1991</td><td class="req">Apply FS VAT apportionment per approved method.</td><td class="ful">Tax Policy</td><td class="own">Yael</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael + Owen"><td class="id">ORG-TX-04</td><td class="cit">Tax Administration Act 28/2011</td><td class="req">Maintain tax records.</td><td class="ful">Records Management Policy; Tax Policy</td><td class="own">Yael + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-05</td><td class="cit">Income Tax Act</td><td class="req">Withholding tax on cross-border payments.</td><td class="ful">Tax Policy</td><td class="own">Yael</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-06</td><td class="cit">FATCA IGA + Tax Admin Act</td><td class="req">FATCA classification + reporting.</td><td class="ful">FATCA / CRS Policy; Tax Policy</td><td class="own">Yael (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-07</td><td class="cit">CRS + Tax Admin Act</td><td class="req">CRS classification + reporting.</td><td class="ful">FATCA / CRS Policy; Tax Policy</td><td class="own">Yael (Mira)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Camille"><td class="id">ORG-TX-08</td><td class="cit">Companies Act + Tax Admin Act</td><td class="req">Designate Public Officer.</td><td class="ful">Governance Framework</td><td class="own">Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Yael"><td class="id">ORG-TX-09</td><td class="cit">Income Tax Act</td><td class="req">Voluntary Disclosure Programme used where material discovery occurs.</td><td class="ful">Tax Policy</td><td class="own">Yael (Camille)</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="domain-id">I</span> Labour and HR <span class="count" id="count-I">0 of 11</span></h2>
+  <table data-domain="I">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-01</td><td class="cit">LRA 66/1995</td><td class="req">Fair labour practices; due-process disciplinary.</td><td class="ful">Disciplinary Policy; Grievance Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-02</td><td class="cit">LRA + Codes</td><td class="req">Substantive and procedural fairness in dismissals.</td><td class="ful">Disciplinary Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-03</td><td class="cit">BCEA 75/1997</td><td class="req">Working hours, leave, overtime.</td><td class="ful">Leave Policy; HR baseline</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-04</td><td class="cit">EE Act 55/1998</td><td class="req">Eliminate unfair discrimination; AA plan; EE report.</td><td class="ful">Employment Equity Policy; Harassment Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade + Helena"><td class="id">ORG-HR-05</td><td class="cit">EE Act + Codes</td><td class="req">Equal pay for work of equal value.</td><td class="ful">Remuneration Policy; EE Policy</td><td class="own">Sade + Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-06</td><td class="cit">EE Act</td><td class="req">Sexual / other harassment prevention.</td><td class="ful">Harassment &amp; Discrimination Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-07</td><td class="cit">Skills Development Act</td><td class="req">SDL contributions; WSP; ATR.</td><td class="ful">Skills Development Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-08</td><td class="cit">B-BBEE Act + FSC</td><td class="req">B-BBEE compliance and reporting.</td><td class="ful">B-BBEE Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade"><td class="id">ORG-HR-09</td><td class="cit">OHSA 85/1993</td><td class="req">OHS programme; H&amp;S officer; risk assessments.</td><td class="ful">Health &amp; Safety Policy</td><td class="own">Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade + Helena"><td class="id">ORG-HR-10</td><td class="cit">Banks Act + BCBS Compensation</td><td class="req">Risk-aligned remuneration with deferral, malus, clawback.</td><td class="ful">Remuneration Policy</td><td class="own">Sade + Helena</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Sade + Owen"><td class="id">ORG-HR-11</td><td class="cit">Banks Act + PA fit-and-proper</td><td class="req">Designated officers fit-and-proper continuously.</td><td class="ful">Fit-and-Proper Policy</td><td class="own">Sade + Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="domain-id">J</span> Markets, trading, market conduct <span class="count" id="count-J">0 of 8</span></h2>
+  <table data-domain="J">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="PARTIAL" data-owner="Saskia + Zara"><td class="id">ORG-MK-01</td><td class="cit">FMA 19/2012 Ch. X</td><td class="req">Market abuse prohibitions: insider trading, manipulation, false reporting.</td><td class="ful">Market Abuse / Surveillance Policy (planned); Insider Trading Policy</td><td class="own">Saskia + Zara + Owen</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="PLANNED" data-owner="Saskia"><td class="id">ORG-MK-02</td><td class="cit">FMA + FSCA conduct</td><td class="req">Best execution where required.</td><td class="ful">Best Execution Policy (planned)</td><td class="own">Saskia</td><td class="st"><span class="pill pill-PLANNED">Planned</span></td></tr>
+      <tr class="row" data-status="PLANNED" data-owner="Saskia"><td class="id">ORG-MK-03</td><td class="cit">FMA + JSE rules</td><td class="req">Voice / e-comms recording for trading personnel.</td><td class="ful">Voice &amp; Communications Recording Policy (planned)</td><td class="own">Saskia + Senna+Iris+Sade</td><td class="st"><span class="pill pill-PLANNED">Planned</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Saskia + Helena"><td class="id">ORG-MK-04</td><td class="cit">RAS B5</td><td class="req">Trading mandate: client-driven and franchise; no proprietary risk-taking outside hedges.</td><td class="ful">Trading Mandate (in refinement)</td><td class="own">Saskia + Helena + Camille</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Zara"><td class="id">ORG-MK-05</td><td class="cit">FMA Ch. X + JSE LR (if listed)</td><td class="req">Insider information handled per insider-trading provisions.</td><td class="ful">Insider Trading / PA Dealing Policy</td><td class="own">Owen + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Saskia + Imani"><td class="id">ORG-MK-06</td><td class="cit">ISDA / GMRA / GMSLA</td><td class="req">Master agreements with enforceable netting.</td><td class="ful">Counterparty Onboarding Policy (planned); Collateral Management Policy</td><td class="own">Saskia + Imani + Eitan</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Eitan + Camille"><td class="id">ORG-MK-07</td><td class="cit">ZARONIA MPG</td><td class="req">Adopt ZARONIA conventions; JIBAR fall-back.</td><td class="ful">Funding Strategy Policy; Hedge Accounting; Pricing Policy</td><td class="own">Eitan + Camille</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="PARTIAL" data-owner="Eitan + Zara"><td class="id">ORG-MK-08</td><td class="cit">Currency &amp; Exchanges Manual</td><td class="req">FX / cross-border per Authorised Dealer rules.</td><td class="ful">Excon Compliance Policy (planned); Funding Strategy Policy</td><td class="own">Eitan + Zara</td><td class="st"><span class="pill pill-PARTIAL">Partial</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="domain-id">K</span> ECTA, electronic transactions, document execution <span class="count" id="count-K">0 of 3</span></h2>
+  <table data-domain="K">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Imani"><td class="id">ORG-EL-01</td><td class="cit">ECTA 25/2002</td><td class="req">Recognise electronic communications and signatures.</td><td class="ful">Document Execution Policy (planned); Contracting Policy</td><td class="own">Imani</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Imani"><td class="id">ORG-EL-02</td><td class="cit">ECTA Schedule 1</td><td class="req">Reserve wet signatures for excluded categories.</td><td class="ful">Document Execution Policy</td><td class="own">Imani</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Senna + Iris"><td class="id">ORG-EL-03</td><td class="cit">POPIA + ECTA</td><td class="req">Electronic-record integrity and authenticity.</td><td class="ful">Information Security Policy; POPIA Policy</td><td class="own">Senna + Iris</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="domain-id">L</span> Whistleblowing, ethics, anti-bribery (cross-cutting) <span class="count" id="count-L">0 of 4</span></h2>
+  <table data-domain="L">
+    <thead><tr><th class="id">ID</th><th class="cit">Citation</th><th class="req">Requirement</th><th class="ful">Fulfilment policy</th><th class="own">Owner</th><th class="st">Status</th></tr></thead>
+    <tbody>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-WB-01</td><td class="cit">Protected Disclosures Act 26/2000</td><td class="req">Provide statutory protections for whistleblowers.</td><td class="ful">Whistleblowing Policy</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Zara"><td class="id">ORG-WB-02</td><td class="cit">PRECCA + UK Bribery Act + FCPA</td><td class="req">Zero-tolerance ABC programme; pre-approval of gifts; ABC due diligence on third parties.</td><td class="ful">ABC Policy; Gifts Policy</td><td class="own">Owen + Zara</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen + Sade"><td class="id">ORG-WB-03</td><td class="cit">King IV + Companies Act</td><td class="req">Code of Conduct, code of ethics.</td><td class="ful">Code of Conduct</td><td class="own">Owen + Sade</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+      <tr class="row" data-status="IN FORCE" data-owner="Owen"><td class="id">ORG-WB-04</td><td class="cit">Companies Act + King IV</td><td class="req">Conflicts of interest declared and managed.</td><td class="ful">Conflicts of Interest Policy</td><td class="own">Owen</td><td class="st"><span class="pill pill-IN-FORCE">In Force</span></td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<div class="footer-bar">
+  <span>Mira (curator) · Zara (governance) · 2026-05-06 · ~178 obligations across 12 domains</span>
+  <span>Generated under Principle 6</span>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const root = document.getElementById('reg-root');
+  const rows = Array.from(root.querySelectorAll('tr.row'));
+  const total = rows.length;
+  document.getElementById('stat-total').textContent = total;
+
+  // Build filter options
+  const domains = new Set();
+  const statuses = new Set();
+  const owners = new Set();
+  rows.forEach(r => {
+    const tbl = r.closest('table');
+    domains.add(tbl.dataset.domain);
+    statuses.add(r.dataset.status);
+    owners.add(r.dataset.owner);
+  });
+  const fillSelect = (id, set) => {
+    const sel = document.getElementById(id);
+    [...set].sort().forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  };
+  fillSelect('filter-domain', domains);
+  fillSelect('filter-status', statuses);
+  fillSelect('filter-owner', owners);
+
+  const search = document.getElementById('search');
+  const filterDomain = document.getElementById('filter-domain');
+  const filterStatus = document.getElementById('filter-status');
+  const filterOwner  = document.getElementById('filter-owner');
+
+  function applyFilters() {
+    const q = search.value.trim().toLowerCase();
+    const d = filterDomain.value;
+    const s = filterStatus.value;
+    const o = filterOwner.value;
+    let visible = 0;
+    const counts = {};
+    rows.forEach(r => {
+      const tbl = r.closest('table');
+      const dom = tbl.dataset.domain;
+      counts[dom] = counts[dom] || { v: 0, t: 0 };
+      counts[dom].t++;
+      const text = r.innerText.toLowerCase();
+      const passQ = !q || text.includes(q);
+      const passD = !d || d === dom;
+      const passS = !s || r.dataset.status === s;
+      const passO = !o || r.dataset.owner === o;
+      const ok = passQ && passD && passS && passO;
+      r.hidden = !ok;
+      if (ok) { visible++; counts[dom].v++; }
+    });
+    document.getElementById('stat-visible').textContent = visible;
+    Object.keys(counts).forEach(k => {
+      const el = document.getElementById('count-' + k);
+      if (el) el.textContent = counts[k].v + ' of ' + counts[k].t + ' visible';
+    });
+    // Hide empty domain headers
+    document.querySelectorAll('.register-wrap h2').forEach(h => {
+      const id = h.querySelector('.count').id.replace('count-', '');
+      h.style.display = (counts[id] && counts[id].v > 0) ? '' : 'none';
+      const tbl = h.nextElementSibling;
+      if (tbl && tbl.tagName === 'TABLE') {
+        tbl.style.display = (counts[id] && counts[id].v > 0) ? '' : 'none';
+      }
+    });
+  }
+  search.addEventListener('input', applyFilters);
+  filterDomain.addEventListener('change', applyFilters);
+  filterStatus.addEventListener('change', applyFilters);
+  filterOwner.addEventListener('change', applyFilters);
+  applyFilters();
+})();
+</script>
+
+</body>
+</html>

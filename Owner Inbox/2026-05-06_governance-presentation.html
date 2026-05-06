@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Governance of the bank — current state</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 14mm 14mm 14mm;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: #1a2332;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9.2pt;
+    line-height: 1.42;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    page-break-after: always;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ===== Header / cover band ===== */
+  .masthead {
+    border-bottom: 2px solid #0d2847;
+    padding-bottom: 8pt;
+    margin-bottom: 12pt;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .masthead .brand {
+    font-family: "Iowan Old Style", "Palatino", Georgia, serif;
+    font-size: 8.5pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #0d2847;
+    font-weight: 600;
+  }
+  .masthead .meta {
+    font-size: 7.8pt;
+    color: #5a6478;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .masthead .meta strong { color: #0d2847; }
+
+  h1.title {
+    font-family: "Iowan Old Style", "Palatino", Georgia, serif;
+    font-size: 22pt;
+    font-weight: 600;
+    line-height: 1.12;
+    margin: 0 0 4pt 0;
+    color: #0d2847;
+    letter-spacing: -0.005em;
+  }
+  .subtitle {
+    font-size: 10pt;
+    color: #5a6478;
+    margin: 0 0 14pt 0;
+    font-style: italic;
+  }
+
+  /* ===== Principle 6 banner ===== */
+  .p6-banner {
+    background: #f4ede0;
+    border-left: 3px solid #b08d57;
+    padding: 7pt 10pt;
+    margin: 0 0 14pt 0;
+    font-size: 8.4pt;
+    color: #4a3f2a;
+    line-height: 1.45;
+  }
+  .p6-banner strong { color: #6b4f1d; }
+
+  /* ===== Section headings ===== */
+  h2 {
+    font-family: "Iowan Old Style", "Palatino", Georgia, serif;
+    font-size: 13pt;
+    font-weight: 600;
+    color: #0d2847;
+    margin: 14pt 0 6pt 0;
+    padding-bottom: 3pt;
+    border-bottom: 1px solid #cbd0db;
+    letter-spacing: -0.005em;
+  }
+  h3 {
+    font-size: 9.4pt;
+    font-weight: 700;
+    color: #0d2847;
+    margin: 10pt 0 4pt 0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .source-note {
+    font-size: 7.6pt;
+    color: #7a8294;
+    font-style: italic;
+    margin: -3pt 0 6pt 0;
+  }
+  p { margin: 0 0 6pt 0; }
+  ul { margin: 4pt 0 8pt 0; padding-left: 14pt; }
+  ul li { margin-bottom: 2.5pt; }
+
+  /* ===== Tables ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4pt 0 10pt 0;
+    font-size: 8.6pt;
+  }
+  th {
+    text-align: left;
+    background: #0d2847;
+    color: #fafaf7;
+    font-weight: 600;
+    padding: 5pt 7pt;
+    font-size: 8.2pt;
+    letter-spacing: 0.03em;
+  }
+  td {
+    padding: 4.5pt 7pt;
+    border-bottom: 1px solid #e4e7ee;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  td.seat-name { font-weight: 600; color: #0d2847; }
+  td.seat-type {
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5a6478;
+  }
+  td.seat-type.gov { color: #6b4f1d; }
+  td.seat-type.func { color: #5a6478; }
+
+  /* ===== Three lines of defence pills ===== */
+  .lod-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 7pt;
+    margin: 4pt 0 10pt 0;
+  }
+  .lod {
+    border: 1px solid #cbd0db;
+    border-top: 3px solid #0d2847;
+    padding: 7pt 9pt;
+    background: #fafbfc;
+  }
+  .lod.second { border-top-color: #b08d57; }
+  .lod.third { border-top-color: #5a6478; }
+  .lod .lod-title {
+    font-size: 7.4pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: #0d2847;
+    margin-bottom: 3pt;
+  }
+  .lod.second .lod-title { color: #6b4f1d; }
+  .lod.third .lod-title { color: #2d3445; }
+  .lod-body { font-size: 8pt; line-height: 1.4; color: #1a2332; }
+
+  /* ===== Principles list ===== */
+  .principles { counter-reset: prin; padding: 0; list-style: none; margin: 4pt 0 10pt 0; }
+  .principles li {
+    counter-increment: prin;
+    position: relative;
+    padding: 5pt 0 5pt 30pt;
+    border-bottom: 1px solid #eef0f5;
+    font-size: 8.6pt;
+    line-height: 1.42;
+  }
+  .principles li:last-child { border-bottom: none; }
+  .principles li::before {
+    content: "P" counter(prin);
+    position: absolute;
+    left: 0; top: 5pt;
+    font-family: "Iowan Old Style", "Palatino", Georgia, serif;
+    font-size: 11pt;
+    font-weight: 600;
+    color: #b08d57;
+    width: 24pt;
+  }
+  .principles li strong { color: #0d2847; }
+
+  /* ===== Open seats / callout cards ===== */
+  .seat-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 6pt;
+    margin: 4pt 0 8pt 0;
+  }
+  .seat-card {
+    background: #fafbfc;
+    border: 1px dashed #b08d57;
+    padding: 6pt 7pt;
+    font-size: 7.8pt;
+    line-height: 1.35;
+  }
+  .seat-card .scab { color: #6b4f1d; font-weight: 700; font-size: 8.4pt; display: block; margin-bottom: 1pt; }
+  .seat-card .scunder { color: #5a6478; font-size: 7.2pt; }
+
+  /* ===== Footer ===== */
+  .footer {
+    position: absolute;
+    bottom: -8mm;
+    left: 0; right: 0;
+    border-top: 1px solid #cbd0db;
+    padding-top: 4pt;
+    font-size: 7pt;
+    color: #7a8294;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ===== Tight rows for milestone tables on page 2 ===== */
+  table.compact td, table.compact th { padding: 3.5pt 7pt; font-size: 8.2pt; }
+
+  /* Helpers */
+  .accent { color: #b08d57; }
+  .muted { color: #5a6478; }
+  code, .mono {
+    font-family: "SF Mono", "Menlo", Consolas, monospace;
+    font-size: 8pt;
+    background: #f4ede0;
+    padding: 0.5pt 3pt;
+    border-radius: 2pt;
+    color: #4a3f2a;
+  }
+</style>
+</head>
+<body>
+
+<!-- =============== PAGE 1 =============== -->
+<section class="page">
+  <div class="masthead">
+    <div class="brand">The Bank · Office of the Company Secretary</div>
+    <div class="meta">
+      <strong>Governance briefing</strong><br>
+      Author: Owen (CoSec) &nbsp;·&nbsp; Date: 2026-05-06<br>
+      For: Marc (CEO)
+    </div>
+  </div>
+
+  <h1 class="title">Governance of the bank — current state</h1>
+  <p class="subtitle">A two-page summary of where governance stands today, and the framework being drafted next.</p>
+
+  <div class="p6-banner">
+    <strong>Note on derivation (Principle 6).</strong> This presentation is a summarised derivation of internal documents.
+    Every statement cites its source — <code>CLAUDE.md</code>, the briefs in <code>Team Inbox/</code>, or the persona files in <code>/Team/</code>.
+    No new substance is authored at the presentation layer.
+  </div>
+
+  <h2>Top-of-house structure</h2>
+  <p class="source-note">Source: <code>CLAUDE.md</code> · <em>Team structure</em> and <em>Top-of-house reporting</em>.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:21%">Seat</th>
+        <th style="width:13%">Holder</th>
+        <th style="width:14%">Type</th>
+        <th>Principal accountability</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="seat-name">Chief Executive Officer</td><td>Marc</td><td class="seat-type gov">Governance</td><td>Ultimate executive accountability; named under the Banks Act</td></tr>
+      <tr><td class="seat-name">Chief of Staff</td><td>Scrooge</td><td class="seat-type func">Functional</td><td>Orchestration of the team; never carries out work directly</td></tr>
+      <tr><td class="seat-name">Chief Risk Officer</td><td>Helena</td><td class="seat-type gov">Governance</td><td>All risk; RAS / RAF; ICAAP / ILAAP; Board Risk Committee</td></tr>
+      <tr><td class="seat-name">Chief Operating Officer</td><td>Devon</td><td class="seat-type gov">Governance</td><td>Operations and engineering; operational resilience</td></tr>
+      <tr><td class="seat-name">Chief Financial Officer</td><td>Camille</td><td class="seat-type gov">Governance</td><td>Financial reporting; capital; treasury / ALM; accounting; tax</td></tr>
+      <tr><td class="seat-name">Company Secretary</td><td>Owen</td><td class="seat-type gov">Governance</td><td>Governance machinery; statutory officer under Companies Act</td></tr>
+      <tr><td class="seat-name">Chief Compliance Officer</td><td>Zara</td><td class="seat-type gov">Governance</td><td>RMCP under FIC; named MLRO; FAIS conduct; sanctions policy</td></tr>
+      <tr><td class="seat-name">Information Officer</td><td>Iris</td><td class="seat-type gov">Governance</td><td>POPIA s.56; lawful-processing register; breach notification</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Three lines of defence</h2>
+  <p class="source-note">Source: <code>CLAUDE.md</code> &nbsp;·&nbsp; <code>Team Inbox/2026-05-06_brief_governance-framework.md</code>.</p>
+
+  <div class="lod-grid">
+    <div class="lod">
+      <div class="lod-title">First line — risk taking & operating</div>
+      <div class="lod-body">
+        Atlas, Bea, Kai, Tomas, Imani, Sade, Niko, Yael, Ravi, Anya, Senna (build & run capacity).
+        Builds and operates within appetite.
+      </div>
+    </div>
+    <div class="lod second">
+      <div class="lod-title">Second line — independent oversight</div>
+      <div class="lod-body">
+        Helena (CRO) · Zara (CCO) · Iris (IO).
+        Mira reports to Zara. Rohan reports to Helena.
+      </div>
+    </div>
+    <div class="lod third">
+      <div class="lod-title">Third line — independent assurance</div>
+      <div class="lod-body">
+        Vera (internal audit). Functionally independent;
+        admin line via CEO with dotted line to Owen and a future Chief Audit Executive.
+      </div>
+    </div>
+  </div>
+
+  <h2>Open governance seats — flagged, not yet hired</h2>
+  <p class="source-note">Source: <code>CLAUDE.md</code> &nbsp;·&nbsp; <code>Team Inbox/2026-05-06_role-brief_chief-risk-officer.md §11</code>.</p>
+
+  <div class="seat-cards">
+    <div class="seat-card"><span class="scab">CISO</span><span class="scunder">Above Senna · cyber resilience under Joint Standard 1 of 2024</span></div>
+    <div class="seat-card"><span class="scab">General Counsel</span><span class="scunder">Above Imani · legal risk; contractual governance</span></div>
+    <div class="seat-card"><span class="scab">Chief Audit Executive</span><span class="scunder">Above Vera · third-line independence; Audit Committee functional reporting</span></div>
+    <div class="seat-card"><span class="scab">CHRO</span><span class="scunder">Above Sade · people governance; remuneration; fit-and-proper</span></div>
+  </div>
+
+  <h2>Engineering vs governance — a structural commitment</h2>
+  <p>
+    Engineers <strong>build</strong> coded controls, projections, and platform components.
+    Governance seats hold <strong>named regulatory accountability</strong> and oversee the engineers' outputs.
+    The two are distinct seats; conflating them collapses the lines of defence and weakens regulator-facing accountability.
+    The CRO is the first explicit case (CEO directive, 2026-05-06).
+  </p>
+
+  <h2>Interim governance — pending board formation</h2>
+  <p>
+    The bank does not yet have a Board, sub-committees, or external NEDs. Helena has been asked to design defensible interim
+    governance until the board is constituted — the CEO cannot mark his own homework. This is one of three deferred questions
+    held over for her framework draft.
+  </p>
+
+  <div class="footer">
+    <span>Owen · Office of the Company Secretary</span>
+    <span>Page 1 of 2 · Generated under Principle 6</span>
+  </div>
+</section>
+
+<!-- =============== PAGE 2 =============== -->
+<section class="page">
+  <div class="masthead">
+    <div class="brand">The Bank · Office of the Company Secretary</div>
+    <div class="meta">
+      <strong>Governance briefing — continued</strong><br>
+      Date: 2026-05-06 &nbsp;·&nbsp; Page 2 of 2
+    </div>
+  </div>
+
+  <h2 style="margin-top:0;">The six architectural principles</h2>
+  <p class="source-note">Source: <code>CLAUDE.md</code> · <em>Architectural principles</em>. These bind every team member and every deliverable.</p>
+
+  <ol class="principles">
+    <li><strong>Events are the only source of truth.</strong> Balances, capital, liquidity ratios, regulatory cells — all queries over the event log. As-of replay is first-class.</li>
+    <li><strong>Every action traces to a source.</strong> A versioned obligations register holds typed citations to regulator instruments and internal policy. No control without citation.</li>
+    <li><strong>Cloud-native; nothing manual or physical except where essential.</strong> Infrastructure, workflows, customer interaction, and documents are coded by default.</li>
+    <li><strong>Security designed in from the start.</strong> Threat modelling per design, zero trust, HSM-backed keys, secure SDLC, immutable audit, rehearsed incident response.</li>
+    <li><strong>Multi-currency, multi-entity, multi-country from day one.</strong> Adding the second of any of these is a configuration change, not a project.</li>
+    <li><strong>Single source of truth; presentations derive from data.</strong> <code>Data → Process → Standard → Policy → Presentation</code>. External artefacts are summarised derivations — never independent authorship.</li>
+  </ol>
+
+  <h2>Governance framework — in flight</h2>
+  <p class="source-note">Source: <code>Team Inbox/2026-05-06_brief_governance-framework.md</code>. Helena leads; Owen co-authors the machinery.</p>
+
+  <ul>
+    <li>Board composition, reserved matters, charter; conflicts and related-party governance.</li>
+    <li>Sub-committee charters — Risk, Audit, Remuneration, Social &amp; Ethics (Companies Act reg. 43), Nominations, Credit, ALCO.</li>
+    <li>Executive structure and named regulatory designations (Banks Act, FIC Act, FAIS, POPIA, Joint Standard 1 of 2024).</li>
+    <li>Three lines of defence formalised; policy taxonomy and policy governance.</li>
+    <li>Delegation of authority — coded into the platform as event-level authorisation.</li>
+    <li>Information flows and meeting machinery — board packs as queries (Principle 6).</li>
+    <li>Interim governance until the board is constituted; climate &amp; ESG governance (PA Guidance Note 1 of 2024); outsourcing &amp; third-party governance (SARB Directive 3 of 2018).</li>
+  </ul>
+
+  <h2>Governance work currently in flight</h2>
+  <p class="source-note">Source: <code>Team Inbox/</code>.</p>
+
+  <table class="compact">
+    <thead>
+      <tr>
+        <th style="width:32%">Deliverable</th>
+        <th style="width:24%">Lead</th>
+        <th style="width:14%">Target</th>
+        <th>Brief</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="seat-name">Governance framework</td><td>Helena</td><td>2 weeks</td><td><code>2026-05-06_brief_governance-framework.md</code></td></tr>
+      <tr><td class="seat-name">Risk Appetite Statement &amp; Framework</td><td>Helena</td><td>2 weeks</td><td><code>2026-05-06_brief_risk-appetite-statement-and-framework.md</code></td></tr>
+      <tr><td class="seat-name">Org structure (HCM)</td><td>Sade</td><td>3 working days</td><td><code>2026-05-06_brief_org-structure.md</code></td></tr>
+      <tr><td class="seat-name">Client master + continuous KYC</td><td>Mira (lead), Anya, Imani</td><td>1 week</td><td><code>2026-05-06_brief_client-master-and-continuous-kyc.md</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>CEO decisions recorded today</h2>
+  <p class="source-note">Source: brief annotations dated 2026-05-06.</p>
+
+  <ul>
+    <li>Customer base perimeter — primarily South African; multi-jurisdiction work principally for clients with foreign exposure.</li>
+    <li>Continuous-KYC signal sources — non-paid first; pipeline source-pluggable for later paid integrations.</li>
+    <li>Continuous-KYC restriction default — deferred to the CRO and the RAS / RAF.</li>
+    <li>Governance roles — distinct from engineering roles; the CRO is the first explicit case.</li>
+    <li>Information Officer (POPIA) — separately hired; designation to be lodged with the Information Regulator under POPIA Regulation 4.</li>
+    <li>Chief Compliance Officer — separately hired; named MLRO and FIC Compliance Officer; Mira reports up to Zara.</li>
+    <li>COO and CFO — both report to the CEO; COO governs operations and platform engineering; CFO governs finance.</li>
+    <li>Principle 6 — codified into <code>CLAUDE.md</code>.</li>
+  </ul>
+
+  <h2>The next governance milestone</h2>
+  <p>
+    Helena delivers the governance framework and the RAS / RAF.
+    Sade delivers the org structure. Mira, Anya and Imani deliver the client master and continuous KYC design.
+    From those four artefacts the bank's <strong>second-cut governance presentation</strong> will itself be a generated summary —
+    by Principle 6.
+  </p>
+
+  <div class="footer">
+    <span>Owen · Office of the Company Secretary</span>
+    <span>Page 2 of 2 · Generated under Principle 6</span>
+  </div>
+</section>
+
+</body>
+</html>

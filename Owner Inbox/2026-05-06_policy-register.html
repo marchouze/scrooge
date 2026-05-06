@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy register — required policies for the bank</title>
+<link rel="stylesheet" href="_styles.css">
+<style>
+  /* tighter table for this dense register */
+  .article table { font-size: 12.8px; }
+  .article th, .article td { padding: 6px 8px; }
+  .article td { vertical-align: top; }
+  td.status { white-space: nowrap; font-family: var(--mono); font-size: 11px; }
+  .status-EXISTS    { color: var(--success); font-weight: 700; }
+  .status-DRAFTING  { color: var(--warning); font-weight: 700; }
+  .status-PLANNED   { color: var(--neutral); }
+  .status-BOARDRES  { color: var(--accent-deep); font-weight: 700; }
+  td.star { color: var(--accent); font-weight: 700; text-align: center; }
+  .legend-row {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--text-muted);
+    margin: 8px 0 14px 0;
+  }
+  .legend-row .l-item { display: inline-flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">The Bank · Office of the Company Secretary</div>
+    <div class="meta">
+      <strong>Policy register</strong><br>
+      Owen · 2026-05-06<br>
+      <a href="2026-05-06_ceo-decision-pack.html">← Back to decision pack</a>
+    </div>
+  </div>
+</header>
+
+<div class="back-link">
+  <a href="2026-05-06_governance-framework.html">← Governance framework</a>
+  &nbsp;·&nbsp; <a href="2026-05-06_risk-appetite-statement-and-framework.html">RAS / RAF</a>
+  &nbsp;·&nbsp; <a href="2026-05-06_ceo-decision-pack.html">Decision pack</a>
+</div>
+
+<div class="title-block">
+  <div class="eyebrow">Owner Inbox · CoSec deliverable · ~75 policies</div>
+  <h1>Policy register</h1>
+  <p class="lede">A consolidated taxonomy of every policy the bank is required to maintain — for SARB licence application, day-one operations, and ongoing regulatory compliance. Each policy is named, owned, citation-bound, and status-tracked.</p>
+</div>
+
+<div class="doc-grid">
+  <aside class="toc">
+    <h2>Domains</h2>
+    <ol>
+      <li><a href="#section-1">Foundation &amp; meta</a></li>
+      <li><a href="#section-2">Risk policies</a></li>
+      <li><a href="#section-3">Compliance &amp; financial crime</a></li>
+      <li><a href="#section-4">Privacy &amp; data protection</a></li>
+      <li><a href="#section-5">Information security &amp; cyber</a></li>
+      <li><a href="#section-6">Operations &amp; technology</a></li>
+      <li><a href="#section-7">Finance, accounting, tax</a></li>
+      <li><a href="#section-8">Treasury</a></li>
+      <li><a href="#section-9">Markets</a></li>
+      <li><a href="#section-10">Customer &amp; sales</a></li>
+      <li><a href="#section-11">People &amp; HR</a></li>
+      <li><a href="#section-12">Conduct &amp; ethics</a></li>
+      <li><a href="#section-13">Legal</a></li>
+      <li><a href="#section-14">Audit &amp; assurance</a></li>
+      <li><a href="#summary">Summary &amp; sequence</a></li>
+    </ol>
+  </aside>
+
+  <article class="article">
+    <div class="derivation">
+      <strong>Derivation note (Principle 6).</strong> This register is itself a policy-layer artefact — a meta-policy listing every policy the bank requires. Curated by the CoSec, with the CCO and CRO as primary contributors and Mira engineering the citation links into the obligations register.
+    </div>
+
+    <div class="legend-row">
+      <span class="l-item"><span class="star">★</span> Minimum-viable for SARB licence application</span>
+      <span class="l-item"><span class="status status-EXISTS">EXISTS</span> drafted today</span>
+      <span class="l-item"><span class="status status-DRAFTING">DRAFTING</span> in progress</span>
+      <span class="l-item"><span class="status status-PLANNED">PLANNED</span> queue</span>
+    </div>
+
+    <h2 id="section-1">1. Foundation &amp; meta-policies</h2>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Risk Appetite Statement (RAS)</td><td>Helena</td><td>Board</td><td>Banks Act; BCBS Corporate Governance Principles</td><td class="status status-EXISTS">EXISTS</td></tr>
+        <tr><td class="star">★</td><td>Governance Framework (constitutional / meta)</td><td>Helena + Owen</td><td>Board</td><td>Banks Act; King IV; Companies Act 71/2008</td><td class="status status-EXISTS">EXISTS</td></tr>
+        <tr><td></td><td>Risk Management Framework</td><td>Helena</td><td>Board</td><td>BCBS; Banks Act</td><td class="status status-DRAFTING">DRAFTING</td></tr>
+        <tr><td></td><td>Combined Assurance Policy</td><td>Owen + future CAE</td><td>AC</td><td>King IV; IIA IPPF</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Delegation of Authority (DoA)</td><td>Owen + Devon</td><td>Board</td><td>Companies Act; King IV</td><td class="status status-DRAFTING">DRAFTING</td></tr>
+        <tr><td></td><td>Policy on Policies (this register)</td><td>Owen</td><td>Board</td><td>King IV</td><td class="status status-EXISTS">EXISTS</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-2">2. Risk policies</h2>
+    <p class="muted" style="font-size:13px;">Helena lead, Rohan engineering.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Credit Risk Policy</td><td>Helena</td><td>BRC</td><td>Banks Act; BCBS large-exposures</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Market Risk Policy</td><td>Helena</td><td>BRC</td><td>BCBS Market Risk (FRTB / D352, D457)</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Liquidity Risk Management Policy</td><td>Helena + Eitan</td><td>BRC</td><td>BCBS D295 / D335 / 144</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>IRRBB Policy</td><td>Helena + Eitan</td><td>BRC</td><td>BCBS D368</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Counterparty Credit Risk Policy</td><td>Helena + Saskia</td><td>BRC</td><td>BCBS large-exposures</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Operational Risk Policy</td><td>Helena + Devon</td><td>BRC</td><td>BCBS Operational Risk (rev. 2021)</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Operational Resilience Policy</td><td>Devon + Helena</td><td>BRC</td><td>BCBS Operational Resilience (2021)</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Model Risk Policy</td><td>Helena</td><td>BRC</td><td>SR 11-7 / SS 1/23 idiom</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Stress Testing Policy</td><td>Helena</td><td>BRC</td><td>Banks Act / PA; BCBS</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>ICAAP</td><td>Helena + Camille</td><td>Board</td><td>Banks Act / PA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>ILAAP</td><td>Helena + Eitan</td><td>Board</td><td>Banks Act / PA; BCBS</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Climate-Related Risk Policy</td><td>Helena + S&amp;E</td><td>BRC + S&amp;E</td><td>PA Guidance Note 1 of 2024; TCFD</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Reputational Risk Policy</td><td>Helena</td><td>BRC</td><td>King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Strategic Risk Policy</td><td>Helena + CEO</td><td>Board</td><td>King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-3">3. Compliance &amp; financial-crime policies</h2>
+    <p class="muted" style="font-size:13px;">Zara lead, Mira engineering.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Risk Management &amp; Compliance Programme (RMCP)</td><td>Zara</td><td>BRC + Board</td><td>FIC Act s.42</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>AML / CFT Policy</td><td>Zara</td><td>BRC</td><td>FIC Act 38/2001; FATF Recs</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Sanctions Policy</td><td>Zara</td><td>BRC</td><td>UN; OFAC; EU; UK HMT; POCDATARA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>PEP Policy</td><td>Zara</td><td>BRC</td><td>FIC GN 7; FATF Rec. 12</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>KYC / CDD / EDD Policy</td><td>Zara + Mira</td><td>BRC</td><td>FIC Act ss.21–21H</td><td class="status status-DRAFTING">DRAFTING</td></tr>
+        <tr><td></td><td>Transaction Monitoring Policy</td><td>Zara + Mira</td><td>BRC</td><td>FIC Act ss.28–29; FATF</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>STR / CTR / TPR Policy</td><td>Zara</td><td>BRC</td><td>FIC Act ss.28 / 28A / 29</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>FATCA / CRS Policy</td><td>Zara + Yael</td><td>BRC</td><td>FATCA IGA; CRS; SARS BRS</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Tipping-Off Prevention Policy</td><td>Zara</td><td>BRC</td><td>FIC Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Conduct of Business / TCF Policy</td><td>Zara</td><td>BRC</td><td>FSCA conduct standards; TCF outcomes</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>FAIS Policy (when FSP licensed)</td><td>Zara + Saskia / Niko</td><td>BRC</td><td>FAIS Act 37/2002</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Market Abuse / Surveillance Policy</td><td>Zara + Saskia</td><td>BRC</td><td>FMA 19/2012, Ch. X</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Complaints Handling Policy</td><td>Zara + Niko</td><td>BRC</td><td>FAIS; FSCA; NCA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Excon Compliance Policy</td><td>Zara + Eitan</td><td>BRC</td><td>Currency &amp; Exchanges Manual</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Regulatory Change Management Policy</td><td>Zara + Mira</td><td>BRC</td><td>Internal — implements P2</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Regulatory Engagement Policy</td><td>Zara + Owen</td><td>Board</td><td>King IV; Banks Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-4">4. Privacy &amp; data-protection policies</h2>
+    <p class="muted" style="font-size:13px;">Iris lead.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>POPIA / Privacy Policy</td><td>Iris</td><td>BRC + S&amp;E</td><td>POPIA 4/2013</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Data Retention &amp; Disposal Policy</td><td>Iris + Owen</td><td>BRC</td><td>POPIA s.14; legal-records retention</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Cross-Border Transfer Policy</td><td>Iris</td><td>BRC</td><td>POPIA s.72; SARB Directive 3 of 2018</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>PAIA Manual</td><td>Iris + Owen</td><td>IO signs</td><td>PAIA Act 2/2000</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Privacy Impact Assessment Policy</td><td>Iris</td><td>BRC</td><td>POPIA s.55 IO duties</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Consent &amp; Notice Policy</td><td>Iris + Niko</td><td>BRC</td><td>POPIA ss.13, 18</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-5">5. Information security &amp; cyber policies</h2>
+    <p class="muted" style="font-size:13px;">Senna engineer; future CISO governance.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Information Security Policy</td><td>Senna (interim CISO: Devon)</td><td>BRC</td><td>POPIA ss.19–22; ISO 27001</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Cyber Resilience Policy</td><td>Senna (interim CISO: Devon)</td><td>BRC</td><td>Joint Standard 1 of 2024</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Access Control Policy</td><td>Senna</td><td>BRC</td><td>POPIA s.19; ISO 27001</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Cryptographic Key Management Policy</td><td>Senna</td><td>BRC</td><td>FIPS 140-2/3; ISO 27001</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Incident Response Policy</td><td>Senna + Iris + Zara</td><td>BRC</td><td>Joint Standard 1 of 2024; POPIA s.22</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Secure SDLC Policy</td><td>Senna</td><td>BRC</td><td>NIST SSDF; SLSA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Data Classification &amp; Handling Policy</td><td>Senna + Iris</td><td>BRC</td><td>POPIA; ISO 27001</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Acceptable Use Policy</td><td>Senna + Sade</td><td>BRC</td><td>ISO 27001</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Vulnerability Management Policy</td><td>Senna</td><td>BRC</td><td>ISO 27001; NIST</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Fraud Risk Management Policy</td><td>Zara + Senna</td><td>BRC</td><td>FIC Act; King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-6">6. Operations &amp; technology policies</h2>
+    <p class="muted" style="font-size:13px;">Devon lead.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Outsourcing &amp; Third-Party Risk Policy</td><td>Devon</td><td>Board</td><td>SARB Directive 3 of 2018</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Cloud Computing Policy</td><td>Devon + Senna + Iris</td><td>Board</td><td>SARB Directive 3 of 2018; POPIA s.72</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Business Continuity &amp; DR Policy</td><td>Devon</td><td>BRC</td><td>BCBS Operational Resilience; King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Change Management Policy</td><td>Devon + Atlas</td><td>BRC</td><td>ITIL; BCBS Operational Risk</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Records Management Policy</td><td>Owen + Devon</td><td>Board</td><td>Companies Act; FIC Act s.22; POPIA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>IT General Controls Policy</td><td>Devon + Atlas + Senna</td><td>BRC</td><td>COBIT; ISO 27001</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Vendor Management Policy</td><td>Devon</td><td>BRC</td><td>SARB Directive 3 of 2018</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-7">7. Finance, accounting, tax policies</h2>
+    <p class="muted" style="font-size:13px;">Camille lead, Bea + Yael engineering.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Capital Management Policy</td><td>Camille</td><td>Board (via BRC)</td><td>Banks Act; BCBS Basel III/IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Capital Plan</td><td>Camille</td><td>Board</td><td>Banks Act; PA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Accounting Policies (IFRS)</td><td>Camille + Bea</td><td>AC + Board</td><td>IFRS 9 / 7 / 13 / 15 / 16; IAS 1 / 12 / 21</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Financial Reporting &amp; Disclosure Policy</td><td>Camille + Bea</td><td>AC + Board</td><td>Banks Act; IFRS; JSE LR if listed</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Tax Policy</td><td>Yael (under Camille)</td><td>AC</td><td>Income Tax Act; VAT Act; Tax Admin Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Transfer Pricing Policy</td><td>Yael</td><td>AC</td><td>Income Tax Act; OECD TP Guidelines</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>External Audit Engagement Policy</td><td>Camille + Owen</td><td>AC + Board</td><td>Companies Act; Banks Act; IRBA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Provisioning / IFRS 9 ECL Policy</td><td>Helena + Bea</td><td>BRC + AC</td><td>IFRS 9</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-8">8. Treasury policies</h2>
+    <p class="muted" style="font-size:13px;">Eitan lead, Ravi engineering.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td></td><td>Funding Strategy Policy</td><td>Eitan</td><td>ALCO + BRC</td><td>Banks Act; BCBS 144</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Hedge Accounting Policy</td><td>Eitan + Camille</td><td>AC</td><td>IFRS 9 / IAS 39 carryover</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>FTP Methodology Policy</td><td>Eitan + Camille + Helena</td><td>ALCO</td><td>Internal — implements RAS</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Collateral Management Policy</td><td>Eitan + Saskia</td><td>ALCO + BRC</td><td>BCBS; ISDA / GMRA market practice</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Capital Instrument Issuance Policy</td><td>Eitan + Camille</td><td>Board</td><td>Banks Act; BCBS Basel III/IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Intraday Liquidity Policy</td><td>Eitan</td><td>ALCO + BRC</td><td>BCBS 248</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-9">9. Markets policies</h2>
+    <p class="muted" style="font-size:13px;">Saskia lead, Kai engineering.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Trading Mandate</td><td>Saskia + Helena</td><td>Board</td><td>Banks Act; FMA; BCBS market risk</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Best Execution Policy</td><td>Saskia</td><td>BRC</td><td>FAIS; FMA; FSCA conduct standards</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Voice &amp; Communications Recording Policy</td><td>Saskia + Senna + Iris + Sade</td><td>BRC</td><td>FMA Ch. X; POPIA; FAIS</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Counterparty Onboarding Policy (markets)</td><td>Saskia + Zara + Imani</td><td>BRC</td><td>FIC Act; FATCA; ISDA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>New Product Approval Policy</td><td>Saskia + Helena + Camille + Zara</td><td>BRC</td><td>BCBS; FSCA conduct standards</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-10">10. Customer / sales policies</h2>
+    <p class="muted" style="font-size:13px;">Niko lead.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Customer Acceptance Policy</td><td>Niko + Zara</td><td>BRC</td><td>FIC Act; FAIS; TCF</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Customer Treatment Policy (TCF)</td><td>Niko + Zara</td><td>BRC</td><td>FSCA TCF outcomes</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Marketing &amp; Advertising Policy</td><td>Niko + Zara</td><td>BRC</td><td>FAIS; FSCA conduct standards; NCA where relevant</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Pricing Policy</td><td>Niko + Helena + Eitan + Camille</td><td>BRC</td><td>FAIS fee disclosure; TCF</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Channel Conduct Policy</td><td>Niko</td><td>BRC</td><td>FSCA conduct standards</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-11">11. People &amp; HR policies</h2>
+    <p class="muted" style="font-size:13px;">Sade interim, future CHRO.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Remuneration Policy</td><td>Sade / future CHRO + Helena</td><td>RemCo + Board</td><td>King IV; Banks Act; BCBS Compensation principles</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Fit-and-Proper Policy</td><td>Sade + Owen + Helena</td><td>NomCo</td><td>PA / FSCA fit-and-proper standards</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Recruitment &amp; Selection Policy</td><td>Sade</td><td>RemCo</td><td>Employment Equity Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Disciplinary Policy</td><td>Sade</td><td>RemCo</td><td>Labour Relations Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Grievance Policy</td><td>Sade</td><td>RemCo</td><td>Labour Relations Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Harassment &amp; Discrimination Policy</td><td>Sade</td><td>RemCo + S&amp;E</td><td>Employment Equity Act; Codes of Good Practice</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Health &amp; Safety Policy</td><td>Sade</td><td>S&amp;E</td><td>Occupational Health &amp; Safety Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Leave Policy</td><td>Sade</td><td>RemCo</td><td>BCEA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Performance Management Policy</td><td>Sade</td><td>RemCo</td><td>Internal</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Employment Equity Policy</td><td>Sade</td><td>S&amp;E</td><td>Employment Equity Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>B-BBEE Policy</td><td>Sade</td><td>S&amp;E</td><td>B-BBEE Act + Codes; FSC</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Skills Development Policy</td><td>Sade</td><td>RemCo</td><td>Skills Development Act; SDL</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-12">12. Conduct &amp; ethics policies</h2>
+    <p class="muted" style="font-size:13px;">Owen lead, Sade + Zara contributing.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Code of Conduct</td><td>Owen + Sade</td><td>Board</td><td>King IV; Companies Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Code of Ethics</td><td>Owen</td><td>Board</td><td>King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Conflicts of Interest Policy</td><td>Owen</td><td>Board</td><td>Companies Act; King IV; FAIS</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Related-Party Transactions Policy</td><td>Owen</td><td>Board</td><td>Companies Act; IAS 24; JSE LR if listed</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Gifts, Hospitality &amp; Entertainment Policy</td><td>Owen</td><td>AC + S&amp;E</td><td>PRECCA; King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Anti-Bribery &amp; Corruption Policy</td><td>Owen + Zara</td><td>Board</td><td>PRECCA; UK Bribery Act extra-territorial; FCPA where relevant</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td class="star">★</td><td>Whistleblowing Policy</td><td>Owen</td><td>AC + S&amp;E</td><td>Protected Disclosures Act; King IV</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Insider Trading / PA Dealing Policy</td><td>Owen + Zara</td><td>BRC</td><td>FMA Ch. X; JSE LR if listed</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Information Disclosure / Insider-Information Policy</td><td>Owen + Zara</td><td>Board</td><td>FMA; JSE LR if listed</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Social &amp; Ethics Policy</td><td>Owen + future CHRO</td><td>S&amp;E</td><td>Companies Act Reg. 43</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-13">13. Legal policies</h2>
+    <p class="muted" style="font-size:13px;">Imani engineer, future GC.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td></td><td>Contracting Policy</td><td>Imani</td><td>BRC</td><td>Companies Act; ECTA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Litigation Policy</td><td>Imani + Owen</td><td>BRC</td><td>Internal</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Intellectual Property Policy</td><td>Imani</td><td>BRC</td><td>IP statutes</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Document Execution Policy (ECTA)</td><td>Imani</td><td>BRC</td><td>ECTA 25/2002</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-14">14. Audit &amp; assurance policies</h2>
+    <p class="muted" style="font-size:13px;">Vera engineer, future CAE.</p>
+    <table>
+      <thead><tr><th></th><th>Policy</th><th>Owner</th><th>Approval</th><th>Citation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="star">★</td><td>Internal Audit Charter</td><td>Future CAE + Vera</td><td>AC + Board</td><td>IIA IPPF; BCBS 223</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>Combined Assurance Policy</td><td>Future CAE + Owen</td><td>AC</td><td>King IV; IIA</td><td class="status status-PLANNED">PLANNED</td></tr>
+        <tr><td></td><td>External Audit Independence Policy</td><td>Camille + future CAE</td><td>AC + Board</td><td>IRBA; Companies Act</td><td class="status status-PLANNED">PLANNED</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="summary">Summary &amp; recommended drafting sequence</h2>
+
+    <ul>
+      <li><strong>Total policies:</strong> ~75 across 14 domains.</li>
+      <li><strong>★ Minimum-viable for SARB licence application:</strong> ~30. Of those, <strong>RAS + Governance Framework</strong> are drafted; <strong>KYC / CDD / EDD</strong> is drafted in part; <strong>DoA + Risk Management Framework</strong> are drafting; the rest are <code>PLANNED</code>.</li>
+      <li><strong>Two B-route items deferred</strong> (B2 capital/liquidity buffers, B5 trading mandate) feed directly into the Capital Management Policy and Trading Mandate respectively.</li>
+    </ul>
+
+    <h3>Recommended drafting sequence</h3>
+    <ol>
+      <li>Constitutional layer (now in force): RAS, governance framework. ✓</li>
+      <li>Compliance core (next 2 weeks): RMCP, AML/CFT, Sanctions, KYC/CDD/EDD, FATCA/CRS, POPIA / Privacy, PAIA Manual.</li>
+      <li>Risk core (parallel, 2–3 weeks): Credit, Market, Liquidity, IRRBB, Operational, Operational Resilience, Model Risk, Climate.</li>
+      <li>Finance core (parallel, 2–3 weeks): Capital Management (incorporating B2 refinement), Accounting Policies, Tax, ICAAP, ILAAP.</li>
+      <li>Operations &amp; security (parallel, 3–4 weeks): Outsourcing, BCP/DR, Information Security, Cyber Resilience, Incident Response, Records Management.</li>
+      <li>Conduct &amp; ethics (4 weeks): Code of Conduct, Conflicts of Interest, Anti-Bribery, Whistleblowing, Gifts.</li>
+      <li>HR (4–6 weeks): Remuneration, Fit-and-Proper, plus the labour-law mandatory set.</li>
+      <li>Markets, customer, treasury (parallel with above, owned by respective seats).</li>
+      <li>Audit (when CAE is hired): Internal Audit Charter, Combined Assurance.</li>
+    </ol>
+
+    <h3>Co-dependencies</h3>
+    <ul>
+      <li><a href="2026-05-06_governance-framework.html">Governance framework</a> — the constitutional policy this register sits under.</li>
+      <li><a href="2026-05-06_risk-appetite-statement-and-framework.html">RAS / RAF</a> — drives §2 (Risk policies).</li>
+      <li><a href="2026-05-06_client-master-and-continuous-kyc.html">Client master &amp; continuous KYC</a> — operational substrate for §3.</li>
+      <li>Mira's obligations register — citation graph from each policy back to its regulator instrument.</li>
+    </ul>
+  </article>
+</div>
+
+<div class="footer-bar">
+  <span>Owen · Office of the Company Secretary</span>
+  <span>Generated under Principle 6</span>
+</div>
+
+</body>
+</html>

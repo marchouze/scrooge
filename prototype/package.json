@@ -1,0 +1,25 @@
+{
+  "name": "bank-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "bunx tsc --noEmit",
+    "ci": "bun run typecheck && bun run lint && bun test && bun run citation-gate && bun run recon",
+    "scenario:hello": "bun run scenarios/01-hello-bank.ts",
+    "citation-gate": "bun run platform/citation/gate.ts",
+    "recon": "bun run platform/recon/harness.ts",
+    "reset": "rm -rf .local && mkdir -p .local"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@types/bun": "latest",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "pino": "^9.5.0",
+    "zod": "^3.23.8"
+  }
+}

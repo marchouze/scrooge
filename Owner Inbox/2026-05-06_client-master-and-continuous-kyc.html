@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client master &amp; continuous KYC — design</title>
+<link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">The Bank · Compliance · Data · Legal</div>
+    <div class="meta">
+      <strong>Client master &amp; continuous KYC — design</strong><br>
+      Mira (lead) · Anya · Imani · 2026-05-06<br>
+      <a href="2026-05-06_ceo-decision-pack.html">← Back to decision pack</a>
+    </div>
+  </div>
+</header>
+
+<div class="back-link">
+  <a href="2026-05-06_ceo-decision-pack.html">← Back to CEO decision pack</a>
+  &nbsp;·&nbsp; This document is the source for decisions <strong>D1</strong> and <strong>D2</strong>.
+</div>
+
+<div class="title-block">
+  <div class="eyebrow">Owner Inbox · Compliance + Data + Legal</div>
+  <h1>Client master and continuous KYC</h1>
+  <p class="lede">A single client master that sits behind every customer-facing relationship, integrated with KYC at the gate, supporting hierarchies, beneficial-ownership graphs, all legal-entity types, and multi-jurisdictional clients by construction.</p>
+</div>
+
+<div class="doc-grid">
+  <aside class="toc">
+    <h2>Sections</h2>
+    <ol>
+      <li><a href="#section-1">Event types</a></li>
+      <li><a href="#section-2">Projection schema</a></li>
+      <li><a href="#section-3">Legal-entity-type taxonomy</a></li>
+      <li><a href="#section-4">Multi-jurisdiction model</a></li>
+      <li><a href="#section-5">KYC pipeline — three modes</a></li>
+      <li><a href="#section-6">Obligations register</a></li>
+      <li><a href="#section-7">Threat model &amp; access</a></li>
+      <li><a href="#section-8">Reconciliation &amp; replay</a></li>
+      <li><a href="#section-9">Implementation sequencing</a></li>
+      <li><a href="#section-10">Open items requiring CEO action</a></li>
+      <li><a href="#section-11">Co-dependencies</a></li>
+    </ol>
+  </aside>
+
+  <article class="article">
+    <div class="derivation">
+      <strong>Derivation note (Principle 6).</strong> The client master is a <strong>projection</strong> over events, not an authoritative table. Continuous-KYC outcomes are events that update the projection. This design document is the <em>standard</em> layer; policies (CDD, EDD, sanctions, RMCP) sit above it; live client records and KYC outcomes are <em>data</em>; future external presentations summarise from here.
+    </div>
+
+    <h2 id="section-1">1. Event types underpinning the client master</h2>
+    <p>Atlas-defined; Mira and Anya co-curated.</p>
+
+    <h3>Identity events</h3>
+<pre><code>ClientCandidateRegistered { candidate_id, source, jurisdiction_tags, intent }
+ClientIdentityClaimed { candidate_id, identity_type, identity_value, evidence_ref, citation }
+ClientIdentityVerified { candidate_id, method, score, verified_by, citation }
+ClientAccepted { client_id, entity, accepted_at, citation }
+ClientRejected { candidate_id, reason_code, citation }
+ClientExited { client_id, reason_code, citation, exited_at }</code></pre>
+
+    <h3>Hierarchy and beneficial-ownership events</h3>
+<pre><code>HierarchyEdgeAsserted { parent_id, child_id, type, percentage, source, asserted_at, citation }
+HierarchyEdgeRetired { edge_id, retired_at, reason, citation }
+BeneficialOwnerAsserted { client_id, ubo_id, ownership_pct, control_basis, source, citation }
+BeneficialOwnerRetired { client_id, ubo_id, retired_at, reason, citation }
+ControllingPartyDeclared { client_id, person_or_entity_id, basis, citation }</code></pre>
+
+    <h3>Jurisdiction and tax events</h3>
+<pre><code>JurisdictionTagAsserted { client_id, role, country, source, citation }
+JurisdictionTagRetired  { client_id, role, country, retired_at, citation }
+TaxClassificationAsserted { client_id, regime (FATCA|CRS|Other), classification, citation }</code></pre>
+
+    <h3>Risk-rating and KYC events</h3>
+<pre><code>KYCStateChanged { client_id, from, to, mode (upfront|recurring|continuous), trigger, citation }
+RiskRatingAssigned { client_id, rating, basis (typology|signal|EDD), assigned_by, citation }
+KYCSignalIngested { client_id, signal_source, signal_type, payload_ref, ingested_at }
+KYCRuleEvaluated { client_id, rule_id, outcome, evidence_refs, citation }
+RestrictionApplied { client_id, restriction_type, basis, applied_by, citation }
+RestrictionLifted  { client_id, restriction_type, lifted_by, citation }
+STREscalated { client_id, mlro: zara, reasoning_ref, escalated_at }</code></pre>
+
+    <h3>Document and consent events</h3>
+<pre><code>DocumentLodged { client_id, document_type, evidence_ref, expires_at, citation }
+DocumentExpired { client_id, document_id, expired_at }
+ConsentGranted { client_id, purpose, lawful_basis, granted_at, citation }
+ConsentWithdrawn { client_id, purpose, withdrawn_at }   // propagates through Anya's projections; Iris-governed under POPIA</code></pre>
+    <p>All events carry: <code>event_id</code>, <code>as_of</code>, <code>source</code>, <code>actor</code> (typed), <code>entity</code>, <code>cryptographic_attestation</code>. P1, P2, P4 by construction.</p>
+
+    <h2 id="section-2">2. Client-master projection schema</h2>
+    <p>Anya-owned; consumed by every domain that asks "what is the client record at as-of date T?"</p>
+<pre><code>ClientRecord {
+  client_id,
+  entity,                        // legal entity of the bank holding the relationship
+  status,                        // candidate | active | restricted | exited
+  legal_entity_type,             // see §3 taxonomy
+  jurisdictions: {
+    registration: [country],
+    operating:    [country, country, ...],
+    tax_residence:[country, country, ...],
+    com:           country,
+    regulatory:   [country, country, ...]
+  },
+  hierarchy_edges: [             // graph projection
+    { parent_id, child_id, type, percentage, source, as_of }
+  ],
+  beneficial_owners: [           // graph projection
+    { ubo_id, ownership_pct, control_basis, as_of }
+  ],
+  controlling_parties: [...],
+  risk_rating: { value, basis, as_of },
+  kyc_state: { upfront, recurring, continuous, last_review, next_review },
+  documents: [{ type, status, expires_at }],
+  restrictions: [{ type, basis, as_of }],
+  consents: [{ purpose, lawful_basis, as_of }],
+  tax_classifications: [{ regime, classification, as_of }],
+  citations: [obligations_register_id],
+  derived_from: [event_ids]      // P2 — full lineage
+}</code></pre>
+    <p>The record is <strong>derived</strong> — never authored. Every field traces to events. As-of-date queries are first-class; replay is reproducible. Hierarchies and beneficial ownership are <strong>graph projections</strong>, not flat tables — UBO chains crossing borders and entity types are first-class.</p>
+
+    <h2 id="section-3">3. Legal-entity-type taxonomy v1</h2>
+    <p>Imani-curated; extensible via register entries (P5 — new types added as register changes, not code branches).</p>
+    <table>
+      <thead><tr><th>Code</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>NP</td><td>Natural person</td><td>Customer-protection regime applies</td></tr>
+        <tr><td>ZA-PTY</td><td>Private Company (Pty Ltd) under Companies Act</td><td>CIPC registration</td></tr>
+        <tr><td>ZA-PUB</td><td>Public Company under Companies Act</td><td>CIPC registration; possibly listed</td></tr>
+        <tr><td>ZA-CC</td><td>Close Corporation</td><td>Legacy; CIPC</td></tr>
+        <tr><td>ZA-NPC</td><td>Non-Profit Company</td><td>Companies Act NPC</td></tr>
+        <tr><td>ZA-PBO</td><td>Public Benefit Organisation</td><td>SARS PBO designation</td></tr>
+        <tr><td>ZA-TRUST</td><td>Trust under Trust Property Control Act</td><td>Master of the High Court</td></tr>
+        <tr><td>ZA-PTSHIP</td><td>Partnership</td><td>Common-law</td></tr>
+        <tr><td>ZA-SP</td><td>Sole Proprietor</td><td>NP-equivalent for some purposes</td></tr>
+        <tr><td>ZA-COOP</td><td>Co-operative</td><td>Co-operatives Act</td></tr>
+        <tr><td>FOR-CORP</td><td>Foreign corporate</td><td>Country-specific subtype lookup</td></tr>
+        <tr><td>FOR-TRUST</td><td>Foreign trust</td><td>Country-specific</td></tr>
+        <tr><td>FOR-OTHER</td><td>Other foreign entity</td><td>Tagged for follow-up; register entry triggers full subtype</td></tr>
+        <tr><td>GOV</td><td>Government / public-sector entity</td><td>Sovereign, sub-sovereign, parastatal</td></tr>
+        <tr><td>FI</td><td>Financial institution</td><td>Bank, insurer, FSP — special CDD treatment</td></tr>
+        <tr><td>INTL-ORG</td><td>International organisation</td><td>Multilateral / treaty-based</td></tr>
+        <tr><td>OTHER-FLAGGED</td><td>Unrecognised type</td><td>Forces register-entry creation before acceptance</td></tr>
+      </tbody>
+    </table>
+    <p>Each type has, in the register, the prescribed CDD documentation set, the prescribed UBO-resolution rules, and the prescribed risk-rating typology baseline.</p>
+
+    <h2 id="section-4">4. Multi-jurisdiction model</h2>
+    <p>Per Principle 5: every client carries multiple jurisdiction roles simultaneously. These are independent fields, not a single "country" property.</p>
+    <table>
+      <thead><tr><th>Role</th><th>Definition</th><th>Source-of-truth signal</th></tr></thead>
+      <tbody>
+        <tr><td><code>registration</code></td><td>Where the entity is constituted</td><td>Constitutional document; CIPC / foreign registry</td></tr>
+        <tr><td><code>operating</code></td><td>Where the entity actually does business (can be plural)</td><td>Customer self-declaration + signal validation</td></tr>
+        <tr><td><code>tax_residence</code></td><td>Where the entity is tax-resident</td><td>Self-certification + tax-authority registration</td></tr>
+        <tr><td><code>com</code></td><td>Centre of main interests (insolvency-relevant)</td><td>Self-declaration + operational evidence</td></tr>
+        <tr><td><code>regulatory</code></td><td>Regulator(s) of the entity itself or its activities</td><td>Look-up by entity-type and licence</td></tr>
+      </tbody>
+    </table>
+    <p>KYC requirements <strong>dispatch</strong> on jurisdiction roles. A client registered in BVI but operating in SA carries SA operating + BVI registration tags; KYC rules from both regimes apply (intersection, with SA prevailing where conflict on SA-residence-required). The canonical case "registered in country A, operating in country B" is the default, not an edge case.</p>
+
+    <h2 id="section-5">5. KYC pipeline — three modes</h2>
+    <p>Mira-owned. Operates as <strong>three parallel modes</strong>, each producing <code>KYCStateChanged</code> events. The client-master projection consumes all three.</p>
+
+    <h3>5.1 Upfront KYC (gate before client-master entry)</h3>
+    <ol>
+      <li><code>ClientCandidateRegistered</code> — entry point.</li>
+      <li>Identity collection → <code>ClientIdentityClaimed</code> events for each identity element.</li>
+      <li>Identity verification (ID document, biometrics, registry lookup) → <code>ClientIdentityVerified</code> events.</li>
+      <li>Sanctions / PEP / adverse-media screening on candidate, controlling parties, UBOs → <code>KYCRuleEvaluated</code> events.</li>
+      <li>Beneficial-ownership resolution per legal-entity-type → <code>BeneficialOwnerAsserted</code> events; recursive on corporate UBOs until natural persons or terminal opaque structures.</li>
+      <li>Risk rating assigned → <code>RiskRatingAssigned</code>.</li>
+      <li>EDD branch if high-risk → additional documents and approvals; <code>DocumentLodged</code>, <code>KYCRuleEvaluated</code>.</li>
+      <li>Final accept / reject decision → <code>ClientAccepted</code> or <code>ClientRejected</code>.</li>
+      <li><strong>Only on <code>ClientAccepted</code> does the client appear in the master projection.</strong></li>
+    </ol>
+    <p>Acceptance gate is the regulatory line: no client enters the master without satisfying applicable upfront KYC under FIC Act, FATF Recs, FAIS where relevant, and regulatory-by-jurisdiction.</p>
+
+    <h3>5.2 Recurring KYC (legal periodicity)</h3>
+    <ul>
+      <li>Risk-band-driven cadence per FIC Guidance Note 7 (RBA): high-risk → annual review; medium → 24 months; low → 36 months.</li>
+      <li>Each due date is a scheduled event; absence of action triggers escalation.</li>
+      <li>On each cycle, refresh: identity validity, document expiry, jurisdiction tags, ownership structure, risk rating.</li>
+      <li>Outcome: <code>KYCStateChanged { mode: recurring, ... }</code> plus updated rating.</li>
+    </ul>
+
+    <h3>5.3 Continuous KYC (signal-driven, ongoing)</h3>
+    <p>The bank operates a continuous-KYC pipeline that consumes signals and re-evaluates clients as signals arrive.</p>
+    <p>Signal sources (per CEO directive 2026-05-06: <strong>non-paid first</strong>, source-pluggable for later paid sources):</p>
+    <ul>
+      <li>Sanctions-list deltas: UN, OFAC, EU, UK HMT, DTI Targeted Financial Sanctions list (POCDATARA).</li>
+      <li>PEP / adverse-media via open sources (initially; ComplyAdvantage / World-Check / Sayari <strong>deferred</strong>).</li>
+      <li>Beneficial-ownership / registry updates: CIPC, equivalent foreign open registries.</li>
+      <li>Document expiry: internal events.</li>
+      <li>Jurisdictional-status changes: country-risk re-rating; sanctions geopolitics.</li>
+      <li>Behavioural anomalies: from Mira's transaction-monitoring pipeline (separate but feeds here).</li>
+      <li>Court / insolvency / regulator-action filings where openly available.</li>
+      <li>Watchlist updates curated internally.</li>
+    </ul>
+    <p>Pipeline flow (event-driven):</p>
+    <ol>
+      <li><code>KYCSignalIngested</code> from any source.</li>
+      <li>Rules engine evaluates relevance against the affected client(s) → <code>KYCRuleEvaluated</code> events.</li>
+      <li><strong>Restriction default per RAS / RAF §B5:</strong>
+        <ul>
+          <li><strong>High-confidence triggers</strong> (sanctions hit, court order, beneficial-ownership change crossing a control threshold) → <code>RestrictionApplied { type: immediate }</code>.</li>
+          <li><strong>Medium-confidence triggers</strong> (adverse media, behavioural anomaly, registry change) → <code>RestrictionApplied { type: on-review-pending }</code> plus case-management workflow.</li>
+        </ul>
+      </li>
+      <li>Risk rating may be uplifted → <code>RiskRatingAssigned</code>.</li>
+      <li>KYC state event recorded → <code>KYCStateChanged { mode: continuous, trigger: ... }</code>.</li>
+      <li>STR consideration if typology fits → <code>STREscalated</code>; Zara as MLRO judges and files with FIC.</li>
+    </ol>
+    <p>Continuous-KYC re-evaluation against historical state is replayable — a retrospective rule change re-evaluates history and emits as-of-replay events for review.</p>
+
+    <h2 id="section-6">6. Obligations-register entries (P2)</h2>
+    <p>Mira-curated; partial list:</p>
+    <ul>
+      <li>FIC Act 38 of 2001, ss.21–21H (CDD), s.42 (RMCP), ss.28 / 28A / 29 (reporting) — every CDD step, every monitoring rule, every reporting trigger cites these.</li>
+      <li>FATF Recommendations 10 (CDD), 11 (record-keeping), 12 (PEPs), 13 (correspondent banking), 16 (wire transfers), 22 (DNFBPs).</li>
+      <li>FIC Guidance Note 7 — RBA periodicity for recurring KYC.</li>
+      <li>POPIA ss.13 (purpose), 14 (retention), 15 (further processing), 19–22 (security and breach), 72 (cross-border) — Iris-governed.</li>
+      <li>FATCA Inter-Governmental Agreement; CRS — tax-classification dispatch.</li>
+      <li>Sanctions: UN consolidated; OFAC SDN; EU consolidated; UK HMT; DTI POCDATARA list.</li>
+      <li>Banks Act 94 of 1990 — to the extent the client master serves regulator-facing reporting.</li>
+      <li>Companies Act 71 of 2008 + Companies Regulations 2011 — beneficial-ownership filing requirements (CIPC).</li>
+      <li>Trust Property Control Act — for ZA-TRUST UBO resolution.</li>
+    </ul>
+    <p>Each entry is versioned; rule changes propagate forward, with as-of-replay maintaining historical evaluation against historical rules unless replay is explicitly run with new rules (a Mira-judged operation).</p>
+
+    <h2 id="section-7">7. Threat model and access-control design (Senna)</h2>
+    <ul>
+      <li>Client-master fields are classified: PII (high), financial (high), KYC outcome (high), risk-rating (medium-high). All field-level encrypted with envelope encryption rooted in HSM.</li>
+      <li>Read events on PII are themselves audited as events (<code>PIIRead { reader, purpose, client_id, fields, timestamp }</code>); aggregations are projections of these audit events.</li>
+      <li>Access is purpose-bound — every reader binds to a documented lawful purpose at the time of read; readers without bound purpose are refused.</li>
+      <li>Continuous-KYC ingestion sources are signed; integrity of list-version, rule-version, and decision is cryptographically attested per evaluation.</li>
+      <li>Tipping-off prevention: STR existence and content are restricted to the MLRO (Zara) plus the named investigation set; the projection enforces this.</li>
+      <li>Threat model passes Senna's gate before any new ingestion source is added; new sources enter as register entries with a documented threat model.</li>
+    </ul>
+
+    <h2 id="section-8">8. Reconciliation and as-of-replay design</h2>
+    <ul>
+      <li>The client-master projection is <strong>idempotent and deterministic</strong> over the event stream: replaying produces the same record.</li>
+      <li>A <strong>CI reconciliation harness</strong> runs on every change to the projection runtime: a synthetic event stream is replayed; the resulting projection must match a checked-in golden state. Drift fails the CI gate.</li>
+      <li>Retrospective rule changes (e.g., a sanctions list adds a person whose past transactions need re-screening) are run as <strong>replay-with-new-rules</strong> operations: this produces a new event stream of <code>KYCRuleEvaluated</code> events tagged with the as-of-rule-version; the projection's history reflects what was known when, <em>and</em> what would have been known under the new rule.</li>
+      <li>This is the operational expression of P1's as-of-replay guarantee.</li>
+    </ul>
+
+    <h2 id="section-9">9. Implementation sequencing</h2>
+    <table>
+      <thead><tr><th>Phase</th><th>Scope</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td>1 (now)</td><td>Event types specified; projection schema specified; this document approved</td><td>Mira / Anya / Imani</td></tr>
+        <tr><td>2</td><td>Prototype implementation in <code>prototype/</code>: event log, projection runtime, sample CDD</td><td>Atlas + Anya</td></tr>
+        <tr><td>3</td><td>KYC upfront pipeline (rules engine, screening, EDD branch)</td><td>Mira</td></tr>
+        <tr><td>4</td><td>Continuous-KYC signal ingestion (sanctions deltas, document expiry, behavioural feed)</td><td>Mira + Anya</td></tr>
+        <tr><td>5</td><td>Recurring-KYC scheduler</td><td>Mira</td></tr>
+        <tr><td>6</td><td>Senna's threat-model gate enforced; access-audit projection live</td><td>Senna</td></tr>
+        <tr><td>7</td><td>Iris's POPIA approval; lawful-processing register entries lodged</td><td>Iris</td></tr>
+        <tr><td>8</td><td>First end-to-end onboarding through the prototype</td><td>All</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="section-10">10. Open items requiring CEO action / awareness</h2>
+    <ol>
+      <li><strong>Approval of the two-tier continuous-KYC restriction default</strong> as recorded in RAS / RAF §B5 — this design implements that default; restate if appetite changes. <em>(See decision <a href="2026-05-06_ceo-decision-pack.html#theme-B">B3</a>.)</em></li>
+      <li><strong>Confirmation that paid-data integrations remain deferred</strong> (current design uses non-paid sources; pipeline is source-pluggable for later addition). <em>(See decision <a href="2026-05-06_ceo-decision-pack.html#theme-D">D2</a>.)</em></li>
+      <li><strong>Iris's POPIA Information Officer designation</strong> — must be lodged with the Information Regulator before continuous-KYC ingestion of personal-information sources from third parties begins in production. (Out-of-system action; CEO signature.) <em>(See decision <a href="2026-05-06_ceo-decision-pack.html#theme-E">E1</a>.)</em></li>
+      <li><strong>Initial geographic perimeter</strong> confirmed primarily SA; design is plural by construction so day-one perimeter does not constrain forward expansion.</li>
+    </ol>
+
+    <h2 id="section-11">11. Co-dependencies with other deliverables</h2>
+    <ul>
+      <li><a href="2026-05-06_governance-framework.html">Governance framework</a> — defines the MLRO and CCO accountabilities (Zara) that this design relies on.</li>
+      <li><a href="2026-05-06_risk-appetite-statement-and-framework.html">RAS / RAF</a> — sets the two-tier continuous-KYC restriction default that this design implements.</li>
+      <li><a href="2026-05-06_org-structure.html">Org structure</a> — confirms the seats (Mira → Zara, Anya → Devon, Imani interim → Devon) that this design depends on.</li>
+    </ul>
+  </article>
+</div>
+
+<div class="footer-bar">
+  <span>Mira · Anya · Imani</span>
+  <span>Generated under Principle 6</span>
+</div>
+
+</body>
+</html>
