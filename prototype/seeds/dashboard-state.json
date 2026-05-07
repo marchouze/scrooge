@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T13:28:45.899Z",
+  "asOf": "2026-05-07T13:35:22.621Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -28,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 32,
+      "ceoDecisionsActioned": 30,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -137,7 +137,41 @@
       "summary": "The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own."
     }
   ],
-  "decisionsOpen": [],
+  "decisionsOpen": [
+    {
+      "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+      "title": "Markets franchise design — proposal",
+      "category": "near-term",
+      "owner": "Saskia (with Helena, Camille, Eitan)",
+      "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+      "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+      ]
+    },
+    {
+      "id": "D-BANK-NAME-SELECTION",
+      "title": "Inaugural brand package — name longlist, logo concepts, palette, typography, voice",
+      "category": "near-term",
+      "owner": "Linnea",
+      "trigger": "First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.",
+      "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md"
+      ],
+      "note": "Recommendation: My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback."
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-FOLLOW-ON-ROUTER-TEST:agent:nolan:author-persona-spec",
+      "title": "Follow-on route `agent:nolan:author-persona-spec` for D-FOLLOW-ON-ROUTER-TEST has no registered runtime handler. No r...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:nolan:author-persona-spec` for D-FOLLOW-ON-ROUTER-TEST has no registered runtime handler. No runtime handler registered for nolan:author-persona-spec. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    }
+  ],
   "decisionsResolved": [
     {
       "id": "D-FOLLOW-ON-ROUTER-TEST",
@@ -149,16 +183,6 @@
       "actionedBy": "marc@tgv.co.za"
     },
     {
-      "id": "D-BANK-NAME-SELECTION",
-      "title": "Bank name — selection from Linnea inaugural shortlist",
-      "actionedAt": "2026-05-07T13:01:31.092Z",
-      "outcome": "Cadens (default-pick from Linnea's recommendation; Marc to override if he wants Ortus or Perigee). Imani opens naming pre-clearance as the gate before adoption.",
-      "sourceDoc": "(unsourced)",
-      "action": "approve",
-      "actionedBy": "marc@tgv.co.za",
-      "comment": "Default pick per CEO non-override pattern; revisable until Imani naming pre-clearance lands."
-    },
-    {
       "id": "D-BRAND-DESIGN-HIRE",
       "title": "PAX role brief — Brand & design lead",
       "actionedAt": "2026-05-07T13:00:31.814Z",
@@ -166,16 +190,6 @@
       "sourceDoc": "(unsourced)",
       "action": "approve",
       "actionedBy": "marc@tgv.co.za"
-    },
-    {
-      "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-      "title": "Markets franchise design — proposal",
-      "actionedAt": "2026-05-07T12:18:36.142Z",
-      "outcome": "Revision requested — see comment.",
-      "sourceDoc": "(unsourced)",
-      "action": "request-revision",
-      "actionedBy": "marc@tgv.co.za",
-      "comment": "add FX"
     },
     {
       "id": "D-OI-PAX-BRAND-DESIGN-ROLE-BRIEF",
@@ -516,6 +530,54 @@
       "active": true,
       "startedAt": "2026-05-07",
       "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-1",
+      "what": "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite ",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-2",
+      "what": "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistere",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-3",
+      "what": "Runtime trigger kinds: scheduled, event-driven, and on-request are all first-cla",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-4",
+      "what": "Claude API integration for agent-narrative output: ROLLED OUT",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-5",
+      "what": "Projection-cache persistence: now closed by `anya:projection-refresh`, an event-",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-6",
+      "what": "Citation gate: now wrapped as `mira:citation-gate` (on-request)",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
     }
   ],
   "agents": [
@@ -529,7 +591,18 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "escalation:scrooge:unresolved-route:D-FOLLOW-ON-ROUTER-TEST:agent:nolan:author-persona-spec",
+          "title": "Follow-on route `agent:nolan:author-persona-spec` for D-FOLLOW-ON-ROUTER-TEST has no registered runtime handler. No r...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:nolan:author-persona-spec` for D-FOLLOW-ON-ROUTER-TEST has no registered runtime handler. No runtime handler registered for nolan:author-persona-spec. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -628,7 +701,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 11
     },
     {
@@ -651,7 +724,19 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -691,7 +776,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 4
     },
     {
@@ -733,6 +818,54 @@
               "active": true,
               "startedAt": "2026-05-07",
               "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-1",
+              "what": "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite ",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-2",
+              "what": "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistere",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-3",
+              "what": "Runtime trigger kinds: scheduled, event-driven, and on-request are all first-cla",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-4",
+              "what": "Claude API integration for agent-narrative output: ROLLED OUT",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-5",
+              "what": "Projection-cache persistence: now closed by `anya:projection-refresh`, an event-",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-6",
+              "what": "Citation gate: now wrapped as `mira:citation-gate` (on-request)",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
             }
           ],
           "recentlyCompletedWorkstreams": [],
@@ -880,7 +1013,7 @@
           "lastActivityAt": "2026-05-06"
         }
       ],
-      "totalActive": 2,
+      "totalActive": 8,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
       "totalRecentDeliverables": 17
@@ -895,7 +1028,19 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -941,7 +1086,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 3
     },
     {
@@ -954,7 +1099,19 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -984,7 +1141,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 2
     },
     {
@@ -1010,7 +1167,19 @@
           "outcomeNote": "First-run output of the Saskia standing-agent. Build-only posture incorporated. Eight §8 questions surfaced for CEO judgement."
         }
       ],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1060,7 +1229,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 6
     },
     {
@@ -1431,7 +1600,7 @@
       "decisionCategory": "near-term",
       "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
       "decisionOwner": "Saskia (with Helena, Camille, Eitan)",
-      "decisionStatus": "resolved"
+      "decisionStatus": "open"
     },
     {
       "filename": "2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
@@ -1570,7 +1739,7 @@
       "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
       "decisionRecommendation": "My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback.",
       "decisionOwner": "Linnea",
-      "decisionStatus": "resolved"
+      "decisionStatus": "open"
     }
   ],
   "prototype": {
@@ -1627,5 +1796,128 @@
     "Single point of failure on Saskia + Kai for the markets franchise.",
     "Single point of failure on Owen (CoSec, governance framework, conflicts, whistleblowing, PAIA).",
     "Personas reshaped under reframe: Sade → AgentOps for build; Niko paused; Yael / Imani build-phase scopes trimmed. Reshape work pending in /Team/."
+  ],
+  "findings": [
+    {
+      "id": "b7eea61c-dc19-470f-bba1-3ec5c2508346",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T12:07:07.743Z"
+    },
+    {
+      "id": "f7042819-c3ff-4924-bbc9-3518364dde30",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "115104bb-ec4f-4bf7-a68e-0839fd57b32d",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "1437bf50-d028-400f-a470-62ee22b983c8",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "8a166c83-d0a6-4bd3-b6ca-912dff45cb36",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "d6518a28-0afa-42c8-8fc0-7e21a4527d78",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    }
+  ],
+  "runtimeHandlers": [
+    {
+      "agent": "Vera",
+      "trigger": "overnight-recon",
+      "kind": "scheduled",
+      "cadenceHours": 24
+    },
+    {
+      "agent": "Atlas",
+      "trigger": "substrate-state",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
+      "agent": "Anya",
+      "trigger": "projection-drift",
+      "kind": "scheduled",
+      "cadenceHours": 24
+    },
+    {
+      "agent": "Anya",
+      "trigger": "projection-refresh",
+      "kind": "event-driven",
+      "subscribesTo": [
+        "SubstrateStateSnapshot",
+        "WorkstreamRegistered",
+        "WorkstreamCompleted",
+        "CeoDecision"
+      ]
+    },
+    {
+      "agent": "Scrooge",
+      "trigger": "inbox-hygiene",
+      "kind": "scheduled",
+      "cadenceHours": 24
+    },
+    {
+      "agent": "Scrooge",
+      "trigger": "ceo-decision-record",
+      "kind": "on-request"
+    },
+    {
+      "agent": "Scrooge",
+      "trigger": "follow-on-router",
+      "kind": "event-driven",
+      "subscribesTo": [
+        "CeoDecision"
+      ]
+    },
+    {
+      "agent": "Owen",
+      "trigger": "governance-cycle-prep",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
+      "agent": "Mira",
+      "trigger": "obligations-snapshot",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
+      "agent": "Mira",
+      "trigger": "citation-gate",
+      "kind": "on-request"
+    },
+    {
+      "agent": "Senna",
+      "trigger": "security-substrate-state",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    }
   ]
 }

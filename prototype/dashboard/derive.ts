@@ -550,7 +550,17 @@ function reduceCeoDecisions(
   }
 
   const resolvedFromEvents: ResolvedDecision[] = [];
+  // Decision IDs whose latest CeoDecision is `request-revision` are
+  // explicitly NOT resolved — the action communicates "send back / I'm
+  // not ready / Scrooge defaulted in error". The decision returns to
+  // open in the dashboard. The corresponding CeoDecision event still
+  // lives in the audit log.
+  const reopenedIds = new Set<string>();
   for (const e of latest.values()) {
+    if (e.action === "request-revision") {
+      reopenedIds.add(e.decisionId);
+      continue;
+    }
     const original = open.find((d) => d.id === e.decisionId);
     const sourceDoc = original?.sourceDocs[0] ?? "(unsourced)";
     resolvedFromEvents.push({
@@ -569,7 +579,7 @@ function reduceCeoDecisions(
   resolvedFromEvents.sort((a, b) => (a.actionedAt < b.actionedAt ? 1 : -1));
 
   const eventIds = new Set(resolvedFromEvents.map((r) => r.id));
-  const seedKept = seed.filter((s) => !eventIds.has(s.id));
+  const seedKept = seed.filter((s) => !eventIds.has(s.id) && !reopenedIds.has(s.id));
   const resolved = [...resolvedFromEvents, ...seedKept];
 
   const resolvedIds = new Set(resolved.map((r) => r.id));
