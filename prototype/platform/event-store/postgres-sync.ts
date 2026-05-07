@@ -117,8 +117,7 @@ function rowToEvent(row: SqliteRow): Event {
 }
 
 function pgRowToEvent(row: PgRow): Event {
-  const asOf =
-    row.as_of instanceof Date ? row.as_of.toISOString() : String(row.as_of);
+  const asOf = row.as_of instanceof Date ? row.as_of.toISOString() : String(row.as_of);
   return eventSchema.parse({
     event_id: row.event_id,
     type: row.type,
@@ -178,9 +177,11 @@ export async function runSync(opts: {
   // --- postgres side ---------------------------------------------------
   // Bun.sql is a built-in Postgres client (no external dep). Connection
   // string format: postgresql://user:password@host:port/database?sslmode=require
-  const pg = new (Bun as unknown as {
-    SQL: new (url: string) => { unsafe: <T>(s: string) => Promise<T>; end: () => Promise<void> };
-  }).SQL(opts.postgresUrl);
+  const pg = new (
+    Bun as unknown as {
+      SQL: new (url: string) => { unsafe: <T>(s: string) => Promise<T>; end: () => Promise<void> };
+    }
+  ).SQL(opts.postgresUrl);
 
   // Capture role (the Postgres user) for the run log without logging the
   // password. Connection-string format documented; if it doesn't parse

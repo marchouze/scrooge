@@ -1755,10 +1755,18 @@ main {
   background: var(--border-strong);
   flex: 0 0 auto;
 }
-.health-light-green { background: var(--good); }
-.health-light-amber { background: var(--warn); }
-.health-light-red { background: var(--danger); }
-.health-light-spec-only { background: var(--text-muted); }
+.health-light-green {
+  background: var(--good);
+}
+.health-light-amber {
+  background: var(--warn);
+}
+.health-light-red {
+  background: var(--danger);
+}
+.health-light-spec-only {
+  background: var(--text-muted);
+}
 .health-name {
   font-family: var(--serif);
   font-weight: 600;
@@ -1880,4 +1888,64 @@ main {
   font-size: 13px;
   color: var(--text);
   line-height: 1.5;
+}
+
+/* ---------- Findings panel ---------- */
+.findings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.findings-list li.finding {
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--card-bg, #1a1a1a);
+}
+.finding-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.finding-sev {
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #ddd;
+}
+.finding-sev-critical {
+  background: #6e1f1f;
+  color: #fff;
+}
+.finding-sev-high {
+  background: #7a3a1a;
+  color: #fff;
+}
+.finding-sev-medium {
+  background: #5a4f1a;
+  color: #f5e8b8;
+}
+.finding-sev-low {
+  background: #2a3a5a;
+  color: #cde0ff;
+}
+.finding-principle {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", monospace;
+  font-size: 0.78em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #232733;
+  color: #cdd6f4;
+}
+.finding-body {
+  font-size: 0.95em;
+  line-height: 1.45;
 }

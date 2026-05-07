@@ -20,13 +20,9 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { defaultSourcePaths, deriveState, eventSourceFromStore } from "../../dashboard/derive";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import {
-  defaultSourcePaths,
-  deriveState,
-  eventSourceFromStore,
-} from "../../dashboard/derive";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];

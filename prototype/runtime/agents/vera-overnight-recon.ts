@@ -41,12 +41,19 @@ const PIPELINES: PipelineEntry[] = [
   { key: "mandate-ownership", title: "Mandate ownership", run: runMandateOwnership },
   { key: "decision-event", title: "Decision-event reconciliation", run: runDecisionEvent },
   { key: "dashboard-derivation", title: "Dashboard derivation", run: runDashboardDerivation },
-  { key: "prose-duplication", title: "Prose duplication / canonical-source registry", run: runProseDuplication },
+  {
+    key: "prose-duplication",
+    title: "Prose duplication / canonical-source registry",
+    run: runProseDuplication,
+  },
 ];
 
 const EVENT_CITATIONS = ["IIA-IPPF", "BCBS-223", "GOV-FRAMEWORK-CEO-RESERVED"];
 
-function severityCount(violations: readonly ReconViolation[], severity: "info" | "warn" | "fail"): number {
+function severityCount(
+  violations: readonly ReconViolation[],
+  severity: "info" | "warn" | "fail",
+): number {
   return violations.filter((v) => v.severity === severity).length;
 }
 
@@ -102,10 +109,7 @@ function fmtDateUTC(iso: string): string {
 
 // Per-run input for Vera's narrative call. Goes AFTER the cache breakpoint
 // — byte changes here don't invalidate the cached system prompt.
-function buildNarrativeInput(
-  ctx: AgentRunContext,
-  results: readonly ReconResult[],
-): string {
+function buildNarrativeInput(ctx: AgentRunContext, results: readonly ReconResult[]): string {
   const lines: string[] = [];
   lines.push(`Run as-of: ${ctx.asOf}`);
   lines.push(`Trigger: ${ctx.trigger.id}`);

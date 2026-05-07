@@ -36,26 +36,44 @@ function fmtDate(iso) {
 
 // Cadence map mirrors .github/workflows/agent-runtime-*.yml schedules.
 // Keys are agent name (case-insensitive). Values are the expected
-// cadence in hours; thresholds: green ≤ 1.0× · amber 1.5× · red ≥ 2×.
-const CADENCE_HOURS = {
-  vera: 24,
-  anya: 24,
-  scrooge: 24,
-  atlas: 24 * 7,
-  owen: 24 * 7,
-  mira: 24 * 7,
-  senna: 24 * 7,
-};
+// Cadence in hours; thresholds: green ≤ 1.0× · amber 1.5× · red ≥ 2×.
+//
+// Cadence info is now derived from `state.runtimeHandlers` (canonical
+// source: dashboard/derive.ts RUNTIME_HANDLERS). The functions below
+// build a per-agent cadence + on-runtime view from that array on every
+// render so the page can never drift from the registry.
 
-// Agents with registered runtime handlers — kept in sync with
-// runtime/run.ts HANDLERS map. Used to separate "fleet" agents from
-// "spec-only" personas on the health page.
-const RUNTIME_AGENTS = new Set(["vera", "anya", "scrooge", "atlas", "owen", "mira", "senna"]);
+function buildRuntimeView(state) {
+  // For each agent, take the *fastest* scheduled cadence. Event-driven
+  // and on-request handlers don't have a cadence — they fire on demand,
+  // so they don't impose a staleness threshold but they do mark the
+  // agent as on-runtime.
+  const cadenceByAgent = new Map();
+  const runtimeAgents = new Set();
+  for (const h of state.runtimeHandlers ?? []) {
+    const k = h.agent.toLowerCase();
+    runtimeAgents.add(k);
+    if (typeof h.cadenceHours === "number") {
+      const prev = cadenceByAgent.get(k);
+      if (prev === undefined || h.cadenceHours < prev) cadenceByAgent.set(k, h.cadenceHours);
+    }
+  }
+  return { cadenceByAgent, runtimeAgents };
+}
 
-function statusFor(agentName, lastActivityAt, asOf, latestRun) {
+function statusFor(agentName, lastActivityAt, asOf, latestRun, runtimeView) {
   const key = agentName.toLowerCase();
-  const cadenceH = CADENCE_HOURS[key];
-  if (cadenceH === undefined) return { tag: "spec-only", label: "spec only" };
+  const cadenceH = runtimeView.cadenceByAgent.get(key);
+  const onRuntime = runtimeView.runtimeAgents.has(key);
+  if (!onRuntime) return { tag: "spec-only", label: "spec only" };
+  if (cadenceH === undefined) {
+    // On-runtime but no scheduled cadence (event-driven / on-request
+    // only). Status is "ready" — fires when triggered, can't be stale.
+    if (latestRun && latestRun.status === "completed" && latestRun.conclusion === "failure") {
+      return { tag: "red", label: `last run failed (${latestRun.createdAt.slice(0, 10)})` };
+    }
+    return { tag: "green", label: "on-demand · ready" };
+  }
 
   // Run conclusion (from /api/agent-runs) is the strongest signal.
   // A failed most-recent run is red regardless of deliverable age, because
@@ -77,7 +95,8 @@ function statusFor(agentName, lastActivityAt, asOf, latestRun) {
   if (!lastActivityAt) return { tag: "red", label: "no run on record" };
   const ageMs = new Date(asOf).getTime() - new Date(lastActivityAt).getTime();
   const ageH = ageMs / 1000 / 60 / 60;
-  if (ageH < 0) return { tag: "green", label: `ran ${Math.round(-ageH)}h in the future (clock skew)` };
+  if (ageH < 0)
+    return { tag: "green", label: `ran ${Math.round(-ageH)}h in the future (clock skew)` };
   if (ageH <= cadenceH) return { tag: "green", label: `ran ${Math.round(ageH)}h ago` };
   if (ageH <= cadenceH * 1.5)
     return { tag: "amber", label: `${Math.round(ageH)}h since last run (cadence ${cadenceH}h)` };
@@ -127,13 +146,22 @@ function renderAggregateStats(state) {
   const root = $("aggregateStats");
   root.innerHTML = "";
   const personas = flattenAllPersonas(state);
+  const runtimeView = buildRuntimeView(state);
   const specReady = personas.filter((p) => p.hasOperatingSpec).length;
-  const onRuntime = personas.filter((p) => RUNTIME_AGENTS.has(p.name.toLowerCase())).length;
+  const onRuntime = personas.filter((p) =>
+    runtimeView.runtimeAgents.has(p.name.toLowerCase()),
+  ).length;
   const counts = {
     runtime: { green: 0, amber: 0, red: 0 },
   };
   for (const p of personas) {
-    const s = statusFor(p.name, p.lastActivityAt, state.asOf, latestRunByAgent[p.name.toLowerCase()]);
+    const s = statusFor(
+      p.name,
+      p.lastActivityAt,
+      state.asOf,
+      latestRunByAgent[p.name.toLowerCase()],
+      runtimeView,
+    );
     if (s.tag === "green" || s.tag === "amber" || s.tag === "red") counts.runtime[s.tag]++;
   }
   const stats = [
@@ -155,8 +183,14 @@ function renderAggregateStats(state) {
   }
 }
 
-function renderHealthCard(persona, state) {
-  const status = statusFor(persona.name, persona.lastActivityAt, state.asOf, latestRunByAgent[persona.name.toLowerCase()]);
+function renderHealthCard(persona, state, runtimeView) {
+  const status = statusFor(
+    persona.name,
+    persona.lastActivityAt,
+    state.asOf,
+    latestRunByAgent[persona.name.toLowerCase()],
+    runtimeView,
+  );
   const card = el("article", { class: `health-card health-${status.tag}` });
   const head = el("header", { class: "health-head" }, [
     el("span", { class: `health-light health-light-${status.tag}` }),
@@ -166,7 +200,9 @@ function renderHealthCard(persona, state) {
   card.appendChild(head);
   card.appendChild(el("p", { class: "health-status" }, status.label));
   if (persona.lastActivityAt) {
-    card.appendChild(el("p", { class: "muted small" }, `Last activity: ${fmtDate(persona.lastActivityAt)}`));
+    card.appendChild(
+      el("p", { class: "muted small" }, `Last activity: ${fmtDate(persona.lastActivityAt)}`),
+    );
   }
   return card;
 }
@@ -174,22 +210,39 @@ function renderHealthCard(persona, state) {
 function renderRuntimeAgents(state) {
   const root = $("runtimeAgents");
   root.innerHTML = "";
+  const runtimeView = buildRuntimeView(state);
   const personas = flattenAllPersonas(state);
-  const onRuntime = personas.filter((p) => RUNTIME_AGENTS.has(p.name.toLowerCase()));
+  const onRuntime = personas.filter((p) => runtimeView.runtimeAgents.has(p.name.toLowerCase()));
   // Sort by status severity: red first, then amber, then green.
   const order = { red: 0, amber: 1, green: 2 };
   onRuntime.sort((a, b) => {
-    const sa = statusFor(a.name, a.lastActivityAt, state.asOf, latestRunByAgent[a.name.toLowerCase()]).tag;
-    const sb = statusFor(b.name, b.lastActivityAt, state.asOf, latestRunByAgent[b.name.toLowerCase()]).tag;
+    const sa = statusFor(
+      a.name,
+      a.lastActivityAt,
+      state.asOf,
+      latestRunByAgent[a.name.toLowerCase()],
+      runtimeView,
+    ).tag;
+    const sb = statusFor(
+      b.name,
+      b.lastActivityAt,
+      state.asOf,
+      latestRunByAgent[b.name.toLowerCase()],
+      runtimeView,
+    ).tag;
     return (order[sa] ?? 99) - (order[sb] ?? 99);
   });
-  for (const p of onRuntime) root.appendChild(renderHealthCard(p, state));
-  $("runtimeSub").textContent = `${onRuntime.length} agent${onRuntime.length === 1 ? "" : "s"}`;
+  for (const p of onRuntime) root.appendChild(renderHealthCard(p, state, runtimeView));
+  // Show registered handler count, not just persona count, so multi-trigger agents read accurately.
+  const handlerCount = (state.runtimeHandlers ?? []).length;
+  $("runtimeSub").textContent =
+    `${onRuntime.length} agent${onRuntime.length === 1 ? "" : "s"} · ${handlerCount} handler${handlerCount === 1 ? "" : "s"}`;
 }
 
 function renderSpecOnlyPersonas(state) {
   const root = $("specOnlyPersonas");
   root.innerHTML = "";
+  const runtimeView = buildRuntimeView(state);
   const personas = flattenAllPersonas(state);
   // Deduplicate by name (subordinates may also appear as direct-report engineers).
   const seen = new Set();
@@ -197,7 +250,7 @@ function renderSpecOnlyPersonas(state) {
   for (const p of personas) {
     if (seen.has(p.name)) continue;
     seen.add(p.name);
-    if (RUNTIME_AGENTS.has(p.name.toLowerCase())) continue;
+    if (runtimeView.runtimeAgents.has(p.name.toLowerCase())) continue;
     if (!p.hasOperatingSpec) continue;
     specOnly.push(p);
   }
@@ -216,7 +269,8 @@ function renderSpecOnlyPersonas(state) {
     );
     root.appendChild(card);
   }
-  $("specOnlySub").textContent = `${specOnly.length} persona${specOnly.length === 1 ? "" : "s"} (substrate gap)`;
+  $("specOnlySub").textContent =
+    `${specOnly.length} persona${specOnly.length === 1 ? "" : "s"} (substrate gap)`;
 }
 
 // Latest run per agent name (lower-case keyed). Refreshed alongside /api/state.
@@ -235,7 +289,11 @@ function renderSubstrateGaps(view) {
       );
     } else {
       list.appendChild(
-        el("li", { class: "muted" }, "No Atlas substrate-state deliverable found yet — run Atlas to populate."),
+        el(
+          "li",
+          { class: "muted" },
+          "No Atlas substrate-state deliverable found yet — run Atlas to populate.",
+        ),
       );
     }
   } else {

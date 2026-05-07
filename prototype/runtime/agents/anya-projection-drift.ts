@@ -187,8 +187,16 @@ function buildNarrativeInput(
   lines.push("cross-check (canonical vs cached):");
   for (const d of drift) {
     const driftDisplay =
-      d.drift === undefined ? "n/a" : d.drift === 0 ? "0" : d.drift > 0 ? `+${d.drift}` : `${d.drift}`;
-    lines.push(`  - ${d.metric}: canonical=${d.canonical}, cached=${d.cached ?? "—"}, drift=${driftDisplay}`);
+      d.drift === undefined
+        ? "n/a"
+        : d.drift === 0
+          ? "0"
+          : d.drift > 0
+            ? `+${d.drift}`
+            : `${d.drift}`;
+    lines.push(
+      `  - ${d.metric}: canonical=${d.canonical}, cached=${d.cached ?? "—"}, drift=${driftDisplay}`,
+    );
   }
   lines.push("");
   lines.push(
@@ -248,16 +256,18 @@ function buildReportMarkdown(
     lines.push("|---|---|---|---|");
     for (const d of drift) {
       const driftDisplay =
-        d.drift === undefined ? "n/a" : d.drift === 0 ? "0" : d.drift > 0 ? `+${d.drift}` : `${d.drift}`;
-      lines.push(
-        `| \`${d.metric}\` | ${d.canonical} | ${d.cached ?? "—"} | ${driftDisplay} |`,
-      );
+        d.drift === undefined
+          ? "n/a"
+          : d.drift === 0
+            ? "0"
+            : d.drift > 0
+              ? `+${d.drift}`
+              : `${d.drift}`;
+      lines.push(`| \`${d.metric}\` | ${d.canonical} | ${d.cached ?? "—"} | ${driftDisplay} |`);
     }
     lines.push("");
     if (driftCount === 0) {
-      lines.push(
-        "No drift. Dashboard cache reconciles to canonical-source counts at run-time.",
-      );
+      lines.push("No drift. Dashboard cache reconciles to canonical-source counts at run-time.");
     } else {
       lines.push(
         `${driftCount} metric${driftCount === 1 ? "" : "s"} drift. Either the cache is stale (dashboard server hasn't refreshed) or the canonical source has changed since the last derive. Vera's dashboard-derivation recon is the formal check; this is the lightweight daily heartbeat.`,

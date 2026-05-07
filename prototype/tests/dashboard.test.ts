@@ -61,6 +61,8 @@ function mk(opens: OpenDecision[] = [sampleOpen], inFlight: InFlightItem[] = [])
     ownerInboxFeed: [],
     prototype: { ciStatus: "green", tests: 0, modules: [], next: [] },
     risks: [],
+    findings: [],
+    runtimeHandlers: [],
   };
 }
 

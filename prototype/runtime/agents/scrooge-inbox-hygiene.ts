@@ -121,7 +121,11 @@ interface MoveDecision {
 // Anything else is reported but not moved. Conservative on purpose:
 // Marc's hygiene rule says "verify the deliverable actually exists
 // before moving" (memory: feedback_team_inbox_hygiene.md).
-function shouldMove(item: InboxItem, ownerIndex: OwnerInboxIndex, teamDir: string): MoveDecision | null {
+function shouldMove(
+  item: InboxItem,
+  ownerIndex: OwnerInboxIndex,
+  teamDir: string,
+): MoveDecision | null {
   if (!item.category) return null;
 
   if (item.category === "role-brief") {
@@ -226,7 +230,9 @@ function buildReportMarkdown(
   }
 
   if (summary.movedThisRun.length === 0 && summary.reportOnly.length === 0) {
-    lines.push("Team Inbox is empty. No action taken; no in-flight items pending Marc-or-agent action.");
+    lines.push(
+      "Team Inbox is empty. No action taken; no in-flight items pending Marc-or-agent action.",
+    );
     lines.push("");
   }
 
@@ -273,16 +279,25 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
           mkdirSync(teamInboxActionedDir, { recursive: true });
         }
         try {
-          renameSync(resolve(teamInboxDir, item.filename), resolve(teamInboxActionedDir, item.filename));
+          renameSync(
+            resolve(teamInboxDir, item.filename),
+            resolve(teamInboxActionedDir, item.filename),
+          );
         } catch (e) {
-          logger.warn({ err: (e as Error).message, item: item.filename }, "scrooge:inbox-hygiene — move failed; reporting instead");
+          logger.warn(
+            { err: (e as Error).message, item: item.filename },
+            "scrooge:inbox-hygiene — move failed; reporting instead",
+          );
           reportOnly.push({ item: item.filename, reason: `move failed: ${(e as Error).message}` });
           continue;
         }
       }
       movedThisRun.push({ from, to, reason: decision.reason });
     } else {
-      reportOnly.push({ item: item.filename, reason: "no unambiguous match in Owner Inbox; left in place" });
+      reportOnly.push({
+        item: item.filename,
+        reason: "no unambiguous match in Owner Inbox; left in place",
+      });
     }
   }
 

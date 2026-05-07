@@ -221,6 +221,9 @@ function makeFixture(): Fixture {
         ceoDecisions: () => ceo,
         workstreamStarts: () => ws,
         workstreamCompletions: () => cmp,
+        workstreamRegistrations: () => [],
+        agentEscalations: () => [],
+        auditFindings: () => [],
       };
     },
   };

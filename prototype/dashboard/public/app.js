@@ -67,8 +67,62 @@ function render(state) {
   renderPrinciples(state.principles);
   renderPrototype(state.prototype);
   renderRisks(state.risks);
+  renderFindings(state.findings ?? []);
   $("#decisionsSub").textContent =
     `${state.decisionsOpen.length} open · ${state.decisionsResolved.length} resolved`;
+}
+
+function renderFindings(findings) {
+  const root = $("#findings");
+  if (!root) return;
+  root.innerHTML = "";
+  const sub = $("#findingsSub");
+  if (sub) sub.textContent = `${findings.length} open`;
+  if (findings.length === 0) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "No open findings.";
+    root.appendChild(li);
+    return;
+  }
+  // Sort: critical → high → medium → low; then most-recent first.
+  const sevOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  const sorted = [...findings].sort((a, b) => {
+    const sa = sevOrder[a.severity] ?? 9;
+    const sb = sevOrder[b.severity] ?? 9;
+    if (sa !== sb) return sa - sb;
+    return a.asOf < b.asOf ? 1 : -1;
+  });
+  for (const f of sorted) {
+    const li = document.createElement("li");
+    li.className = `finding finding-${f.severity}`;
+    const head = document.createElement("div");
+    head.className = "finding-head";
+    const sevTag = document.createElement("span");
+    sevTag.className = `finding-sev finding-sev-${f.severity}`;
+    sevTag.textContent = f.severity.toUpperCase();
+    head.appendChild(sevTag);
+    if (f.principle) {
+      const pTag = document.createElement("span");
+      pTag.className = "finding-principle";
+      pTag.textContent = f.principle;
+      head.appendChild(pTag);
+    }
+    const dateTag = document.createElement("span");
+    dateTag.className = "muted small";
+    dateTag.textContent = f.asOf.slice(0, 10);
+    head.appendChild(dateTag);
+    li.appendChild(head);
+    const body = document.createElement("div");
+    body.className = "finding-body";
+    body.textContent = f.description;
+    li.appendChild(body);
+    const meta = document.createElement("div");
+    meta.className = "muted small";
+    meta.textContent = `Source: ${f.source}`;
+    li.appendChild(meta);
+    root.appendChild(li);
+  }
 }
 
 function renderHero(state) {

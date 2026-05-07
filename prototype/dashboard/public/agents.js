@@ -401,11 +401,9 @@ function renderRunBadge(run) {
           : run.conclusion === "cancelled"
             ? "cancelled"
             : "neutral";
-  const label =
-    run.status !== "completed"
-      ? run.status
-      : (run.conclusion ?? "unknown");
-  const triggerSrc = run.event === "schedule" ? "cron" : run.event === "workflow_dispatch" ? "manual" : run.event;
+  const label = run.status !== "completed" ? run.status : (run.conclusion ?? "unknown");
+  const triggerSrc =
+    run.event === "schedule" ? "cron" : run.event === "workflow_dispatch" ? "manual" : run.event;
   const tip = `${run.workflowName} · ${run.createdAt.slice(0, 16).replace("T", " ")} UTC · ${fmtDuration(run.durationMs)} · ${triggerSrc} · ${label}`;
   const a = el(
     "a",
@@ -463,8 +461,7 @@ async function load() {
     ]);
     if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
     const state = await stateR.json();
-    agentRunsByAgent =
-      runsR && runsR.ok ? ((await runsR.json()).byAgent ?? {}) : {};
+    agentRunsByAgent = runsR && runsR.ok ? ((await runsR.json()).byAgent ?? {}) : {};
     const agents = state.agents ?? [];
     renderStrategyBanner(state);
     renderSummary(agents);

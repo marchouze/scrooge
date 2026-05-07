@@ -100,7 +100,9 @@ function countSecurityArtefacts(repoRoot: string): SecurityArtefactCounts {
   const tmDir = resolve(repoRoot, "security", "threat-models");
   const sbomDir = resolve(repoRoot, "security", "sbom");
   return {
-    threatModels: existsSync(tmDir) ? readdirSync(tmDir).filter((f) => !f.startsWith(".")).length : 0,
+    threatModels: existsSync(tmDir)
+      ? readdirSync(tmDir).filter((f) => !f.startsWith(".")).length
+      : 0,
     sboms: existsSync(sbomDir) ? readdirSync(sbomDir).filter((f) => !f.startsWith(".")).length : 0,
   };
 }

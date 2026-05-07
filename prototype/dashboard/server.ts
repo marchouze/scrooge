@@ -37,8 +37,8 @@ import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
-import { getSubstrateGapsView } from "./substrate-gaps";
 import { saveState } from "./registry";
+import { getSubstrateGapsView } from "./substrate-gaps";
 import type {
   CompleteWorkstreamRequestBody,
   DashboardState,

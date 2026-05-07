@@ -197,7 +197,9 @@ function buildReportMarkdown(
   lines.push("## Recent CEO decisions (last 7 days)");
   lines.push("");
   if (recent.length === 0) {
-    lines.push("_No CeoDecision events in the last 7 days. (Note: event store is host-local; runner sees only events emitted on this host.)_");
+    lines.push(
+      "_No CeoDecision events in the last 7 days. (Note: event store is host-local; runner sees only events emitted on this host.)_",
+    );
   } else {
     lines.push("| When | ID | Action | Title |");
     lines.push("|---|---|---|---|");
@@ -310,7 +312,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   logger.debug(
-    { decisionsOpen: dash.decisionsOpen.length, openSeats: dash.openSeats.length, recent7d: recent.length },
+    {
+      decisionsOpen: dash.decisionsOpen.length,
+      openSeats: dash.openSeats.length,
+      recent7d: recent.length,
+    },
     "owen:governance-cycle-prep — digest built",
   );
 

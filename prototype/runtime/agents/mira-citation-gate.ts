@@ -142,11 +142,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       mkdirSync(ctx.ownerInboxDir, { recursive: true });
     }
     const filename = `${fmtDateUTC(ctx.asOf)}_mira_citation-gate.md`;
-    writeFileSync(
-      resolve(ctx.ownerInboxDir, filename),
-      buildReportMarkdown(ctx, gate),
-      "utf8",
-    );
+    writeFileSync(resolve(ctx.ownerInboxDir, filename), buildReportMarkdown(ctx, gate), "utf8");
     deliverable = `Owner Inbox/${filename}`;
   }
 

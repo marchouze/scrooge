@@ -1,3 +1,15 @@
+---
+title: Markets franchise design — proposal
+author: Saskia
+date: 2026-05-07
+summary: First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.
+decision-required: true
+decision-id: D-MARKETS-CAPITAL-TIME-SHAPE
+decision-category: near-term
+decision-owner: Saskia (with Helena, Camille, Eitan)
+decision-for-ceo: Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.
+---
+
 # Markets franchise design — proposal
 
 **From:** Saskia (Head of Global Markets) — *first-run output of the Saskia standing-agent*

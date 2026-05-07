@@ -11,7 +11,13 @@ export function fmtDateUTC(iso: string): string {
 }
 
 export function frontmatter(agent: string, trigger: string, asOf: string): string {
-  return ["---", `agent: ${agent}`, `trigger: ${trigger}`, `asOf: ${asOf}`, "decision-required: false", "---", ""].join(
-    "\n",
-  );
+  return [
+    "---",
+    `agent: ${agent}`,
+    `trigger: ${trigger}`,
+    `asOf: ${asOf}`,
+    "decision-required: false",
+    "---",
+    "",
+  ].join("\n");
 }

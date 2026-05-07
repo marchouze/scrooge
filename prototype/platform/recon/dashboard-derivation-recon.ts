@@ -122,6 +122,9 @@ export function run(opts: RunOpts = {}): ReconResult {
         ceoDecisions: () => [],
         workstreamStarts: () => [],
         workstreamCompletions: () => [],
+        workstreamRegistrations: () => [],
+        agentEscalations: () => [],
+        auditFindings: () => [],
       };
     }
     const store = new EventStore(dbPath);

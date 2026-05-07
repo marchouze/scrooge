@@ -127,9 +127,7 @@ export interface NarrativeResponse {
  * The system prompt is split into stable + breakpoint; downstream byte
  * changes in `userInput` do not invalidate the cache.
  */
-export async function generateNarrative(
-  req: NarrativeRequest,
-): Promise<NarrativeResponse> {
+export async function generateNarrative(req: NarrativeRequest): Promise<NarrativeResponse> {
   const client = getClient();
   const maxTokens = req.maxTokens ?? DEFAULT_MAX_TOKENS_STREAMING;
   const effort = req.effort ?? "high";
@@ -152,9 +150,7 @@ export async function generateNarrative(
   });
 
   const final = await stream.finalMessage();
-  const textBlock = final.content.find(
-    (b): b is Anthropic.TextBlock => b.type === "text",
-  );
+  const textBlock = final.content.find((b): b is Anthropic.TextBlock => b.type === "text");
   const text = textBlock?.text ?? "";
 
   const usage = {
@@ -190,8 +186,7 @@ export async function generateNarrative(
 export async function tryGenerateNarrative(
   req: NarrativeRequest,
 ): Promise<
-  | { ok: true; result: NarrativeResponse }
-  | { ok: false; error: string; retryable: boolean }
+  { ok: true; result: NarrativeResponse } | { ok: false; error: string; retryable: boolean }
 > {
   try {
     const result = await generateNarrative(req);

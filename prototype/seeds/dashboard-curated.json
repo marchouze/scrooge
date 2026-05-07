@@ -5,16 +5,8 @@
     "cloudTarget": "Microsoft Azure (M8 cloud lift)",
     "strategicFoundation": {
       "type": "Institutional global-markets trading bank",
-      "products": [
-        "JSE-listed bonds",
-        "JSE-listed equities",
-        "OTC interest-rate derivatives"
-      ],
-      "clients": [
-        "Large SA corporates",
-        "Banks",
-        "Non-bank financial institutions"
-      ],
+      "products": ["JSE-listed bonds", "JSE-listed equities", "OTC interest-rate derivatives"],
+      "clients": ["Large SA corporates", "Banks", "Non-bank financial institutions"],
       "geography": "South Africa \u00b7 single branch",
       "capital": "R300m (committed shareholder capital)",
       "licence": "Application deferred"
@@ -28,9 +20,7 @@
       "owner": "Owen",
       "trigger": "Owen drafts; agent's next governance-cycle run",
       "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_governance-framework.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-06_governance-framework.md"],
       "brief": {
         "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
         "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
@@ -135,9 +125,7 @@
       "owner": "Imani",
       "trigger": "Imani recommends 2\u20133 firms with strengths-and-weaknesses notes",
       "decisionForCEO": "Engage / when / which firm.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
       "brief": {
         "summary": "Major-firm external counsel is conventionally engaged 6\u20139 months ahead of SARB licence application. Imani recommends 2\u20133 firms with strengths-and-weaknesses notes.",
         "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6\u20139 months ahead of lodgment. Indicative licence lodgment from today is 12\u201318 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
@@ -232,9 +220,7 @@
       "owner": "Marc",
       "trigger": "Marc sets directly; Camille tracks against actuals",
       "decisionForCEO": "Set the monthly Anthropic API + Azure cloud cost cap for the build phase, and the trigger for revisiting it.",
-      "sourceDocs": [
-        "memory/project_ai_driven_bank.md"
-      ],
+      "sourceDocs": ["memory/project_ai_driven_bank.md"],
       "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). The real cost is API + cloud + Marc's attention; this decision sets the dollar cap.",
       "brief": {
         "summary": "Under the AI-driven-bank reframe, the bank's real costs during build are Anthropic API spend and (when M8 cloud lift happens) Azure infrastructure. Marc sets the monthly cap; Camille tracks actuals against it.",
@@ -419,9 +405,7 @@
       "owner": "Atlas + Anya",
       "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
       "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
       "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
       "brief": {
         "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",

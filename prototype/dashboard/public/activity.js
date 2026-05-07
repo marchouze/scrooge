@@ -77,13 +77,9 @@ function renderStrategyBanner(state) {
   banner.innerHTML = "";
   banner.appendChild(el("span", { class: "banner-phase" }, `Phase: ${phase}`));
   banner.appendChild(el("span", { class: "banner-sep" }, " · "));
-  banner.appendChild(
-    el("span", {}, `${openCount} CEO decision${openCount === 1 ? "" : "s"} open`),
-  );
+  banner.appendChild(el("span", {}, `${openCount} CEO decision${openCount === 1 ? "" : "s"} open`));
   banner.appendChild(el("span", { class: "banner-sep" }, " · "));
-  banner.appendChild(
-    el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`),
-  );
+  banner.appendChild(el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`));
 }
 
 function renderTimeline(feed) {
@@ -119,7 +115,9 @@ function renderTimeline(feed) {
 
       const header = el("div", { class: "timeline-head" });
       if (agent) {
-        header.appendChild(el("span", { class: `timeline-agent agent-${agent.toLowerCase()}` }, agent));
+        header.appendChild(
+          el("span", { class: `timeline-agent agent-${agent.toLowerCase()}` }, agent),
+        );
       } else {
         header.appendChild(el("span", { class: "timeline-agent agent-human" }, "human"));
       }
@@ -143,7 +141,8 @@ function renderTimeline(feed) {
     root.appendChild(day);
   }
 
-  $("activitySub").textContent = `${feed.length} item${feed.length === 1 ? "" : "s"} across ${dates.length} day${dates.length === 1 ? "" : "s"}`;
+  $("activitySub").textContent =
+    `${feed.length} item${feed.length === 1 ? "" : "s"} across ${dates.length} day${dates.length === 1 ? "" : "s"}`;
 }
 
 async function load() {

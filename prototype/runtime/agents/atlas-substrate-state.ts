@@ -18,7 +18,7 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { makeRiskRaised } from "../../platform/event-store/event-types";
+import { makeRiskRaised, makeWorkstreamRegistered } from "../../platform/event-store/event-types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -221,7 +221,9 @@ function buildNarrativeInput(ctx: AgentRunContext, s: SubstrateState): string {
     lines.push("");
     lines.push("event-type breakdown:");
     for (const t of s.eventTypes) {
-      lines.push(`  - ${t.type}: count=${t.count}, earliest=${t.earliestAsOf?.slice(0, 10) ?? "—"}, latest=${t.latestAsOf?.slice(0, 10) ?? "—"}`);
+      lines.push(
+        `  - ${t.type}: count=${t.count}, earliest=${t.earliestAsOf?.slice(0, 10) ?? "—"}, latest=${t.latestAsOf?.slice(0, 10) ?? "—"}`,
+      );
     }
   }
   lines.push("");
@@ -378,34 +380,58 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     });
     eventsEmitted = 1;
 
-    // Emit one RiskRaised per substrate gap. Each gap is a forward risk
-    // (control not yet substrate-complete) — the natural place to record
-    // it as a typed risk in the event stream rather than only in prose.
+    // Emit one RiskRaised + one WorkstreamRegistered per substrate gap.
+    // Each gap is simultaneously (a) a forward risk — a control not yet
+    // substrate-complete — and (b) a body of engineering work the bank
+    // is committed to. The two events feed two different dashboard
+    // surfaces: RiskRaised → risks; WorkstreamRegistered → inFlight.
     // Severity heuristic: gaps containing "load-bearing" / "blocking" /
     // "Vera pipelines" → high; others → medium. The classification is
     // conservative; Helena's risk-cycle reconciliation refines later.
-    const riskActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
+    const atlasActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
     for (let i = 0; i < state.knownSubstrateGaps.length; i++) {
       const gap = state.knownSubstrateGaps[i];
       if (!gap) continue;
       const high = /load-bearing|blocking|Vera pipelines|gate/i.test(gap);
+      const closed =
+        /ROLLED OUT|rolled out|first-class|DEFINED|defined in|now closed|now built/i.test(gap);
+      const truncated = gap.length > 240 ? `${gap.slice(0, 237)}...` : gap;
       eventStore.append(
         makeRiskRaised({
           asOf: ctx.asOf,
           entity: "BANK-ZA-001",
-          actor: riskActor,
+          actor: atlasActor,
           citations: EVENT_CITATIONS,
           payload: {
             riskId: `risk:atlas:substrate-gap-${i + 1}`,
             raisedBy: "Atlas",
-            description: gap.length > 240 ? `${gap.slice(0, 237)}...` : gap,
+            description: truncated,
             category: "operational/substrate",
             severity: high ? "high" : "medium",
             likelihood: "almost-certain",
-            mitigation: /APPROVED|approved|ROLLED OUT|rolled out/i.test(gap)
-              ? "partial"
-              : "none",
+            mitigation: closed || /APPROVED|approved/i.test(gap) ? "partial" : "none",
             relatedTo: "Atlas substrate-gap inventory",
+          },
+        }),
+      );
+      eventsEmitted++;
+
+      // WorkstreamRegistered event — surfaces the gap on the inFlight
+      // panel of the dashboard. Status: closed gaps register as
+      // "in-flight" with mitigation in place; open gaps as "planned".
+      eventStore.append(
+        makeWorkstreamRegistered({
+          asOf: ctx.asOf,
+          entity: "BANK-ZA-001",
+          actor: atlasActor,
+          citations: EVENT_CITATIONS,
+          payload: {
+            workstreamId: `workstream:atlas:substrate-gap-${i + 1}`,
+            title: truncated.split(".")[0]?.slice(0, 80) ?? `Substrate gap ${i + 1}`,
+            owner: "Atlas",
+            status: closed ? "in-flight" : "planned",
+            summary: truncated,
+            scopedBy: "Owner Inbox/2026-05-07_atlas_substrate-state.md",
           },
         }),
       );

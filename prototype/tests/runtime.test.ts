@@ -80,7 +80,11 @@ describe("runtime — Atlas substrate-state handler", () => {
       expect(result.ok).toBe(true);
       expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_atlas_substrate-state\.md$/);
       expect(existsSync(join(ctx.ownerInboxDir, "2026-05-07_atlas_substrate-state.md"))).toBe(true);
-      expect(result.eventsEmitted).toBe(1);
+      // 1 SubstrateStateSnapshot + 2 events per substrate gap (RiskRaised
+      // + WorkstreamRegistered). Gap inventory evolves; assert the shape
+      // (≥ 1 baseline + even gap-pair count) rather than a fixed number.
+      expect(result.eventsEmitted).toBeGreaterThanOrEqual(1);
+      expect((result.eventsEmitted - 1) % 2).toBe(0);
     } finally {
       rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
     }
@@ -148,7 +152,9 @@ describe("runtime — Owen governance-cycle-prep handler", () => {
     try {
       const result = await owenGovernanceCyclePrep(ctx);
       expect(result.ok).toBe(true);
-      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_owen_governance-cycle-prep\.md$/);
+      expect(result.deliverable).toMatch(
+        /^Owner Inbox\/2026-05-07_owen_governance-cycle-prep\.md$/,
+      );
       expect(result.eventsEmitted).toBe(1);
     } finally {
       rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
@@ -192,7 +198,9 @@ describe("runtime — Senna security-substrate-state handler", () => {
     try {
       const result = await sennaSecuritySubstrateState(ctx);
       expect(result.ok).toBe(true);
-      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_senna_security-substrate-state\.md$/);
+      expect(result.deliverable).toMatch(
+        /^Owner Inbox\/2026-05-07_senna_security-substrate-state\.md$/,
+      );
       expect(result.eventsEmitted).toBe(1);
     } finally {
       rmSync(ctx.ownerInboxDir, { recursive: true, force: true });

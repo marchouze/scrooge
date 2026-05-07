@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T06:34:21.771Z",
+  "asOf": "2026-05-07T12:12:45.644Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -23,12 +23,12 @@
     "metrics": {
       "principles": 7,
       "policies": 112,
-      "obligations": 156,
+      "obligations": 181,
       "instruments": 83,
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 17,
+      "ceoDecisionsActioned": 28,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -139,206 +139,130 @@
   ],
   "decisionsOpen": [
     {
-      "id": "S4",
-      "title": "Talent retention scheme through the build",
-      "category": "second-order",
-      "owner": "Sade",
-      "trigger": "Sade drafts an LTI / equity scheme for the build period",
-      "decisionForCEO": "Approve scheme shape + dilution / cost envelope.",
+      "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+      "title": "Markets franchise design — proposal",
+      "category": "near-term",
+      "owner": "Saskia (with Helena, Camille, Eitan)",
+      "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+      "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
       "sourceDocs": [
-        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
+        "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+      ]
+    },
+    {
+      "id": "D-BRAND-DESIGN-HIRE",
+      "title": "Role brief — Brand & design lead",
+      "category": "near-term",
+      "owner": "PAX",
+      "trigger": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
+      "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md"
       ],
-      "brief": {
-        "summary": "19 employees + planned hires through 18–30 months of paper-only work need compensation + LTI / equity / mission framing. Sade drafts; you approve scheme shape and dilution / cost envelope.",
-        "background": "Compensation alone is unlikely to retain talent through a no-revenue build of this length. Equity / long-term-incentive / mission alignment become first-order considerations. Sade (HR systems engineer, on interim under Devon until a CHRO is hired) drafts the framework. The cost envelope is gated on S1 (burn-rate plan). The scheme typically combines: (a) an equity pool with phased vesting tied to milestones (M2-M3 reporting build, M4+, M8 cloud lift, licence application, licence grant, first profitable month); (b) a fixed-comp benchmark against SA-banking levels; (c) a clear narrative on bank ownership, governance, exit / liquidity that makes the equity meaningful.",
-        "options": [
-          {
-            "label": "Approve scheme + dilution envelope as drafted",
-            "description": "Accept Sade's proposal.",
-            "consequence": "Scheme rolls out; offer letters re-issued with the scheme attached."
-          },
-          {
-            "label": "Approve with modified dilution",
-            "description": "Adjust the equity pool size or vesting milestones.",
-            "consequence": "Sade revises; one cycle."
-          },
-          {
-            "label": "Defer to capital-plan resolution (S1)",
-            "description": "Wait for S1 to land; size scheme against the burn target.",
-            "consequence": "Coherent sequencing; talent retention not addressed in the meantime — risk of attrition."
-          },
-          {
-            "label": "Request revision",
-            "description": "Substantive disagreement on shape.",
-            "consequence": "~3-week additional cycle."
-          }
-        ],
-        "recommendation": {
-          "stance": "TBD; expect ~5–10% equity pool with milestone vesting.",
-          "reasoning": "Industry-typical for a regulated financial-services build; tighter than SaaS-style 15–20% (regulated entities have less ambiguity in the exit narrative). Phased vesting tied to milestones aligns retention with the build's actual progress."
-        },
-        "dependencies": {
-          "gatedOn": [
-            {
-              "ref": "S1",
-              "title": "Burn-rate / capital runway plan",
-              "status": "open"
-            }
-          ],
-          "gates": [
-            {
-              "ref": "talent-retention",
-              "title": "Talent retention through licence-grant",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Sade",
-            "role": "HR systems engineer (interim under Devon)",
-            "position": "Drafter."
-          },
-          {
-            "name": "Future CHRO",
-            "role": "When hired",
-            "position": "Inherits the scheme; should be consulted on shape if hired before scheme finalised."
-          },
-          {
-            "name": "Camille",
-            "role": "CFO",
-            "position": "Cost envelope."
-          },
-          {
-            "name": "Marc",
-            "role": "CEO + shareholder representative",
-            "position": "Dilution decision."
-          },
-          {
-            "name": "Owen",
-            "role": "CoSec",
-            "position": "Companies Act / share-scheme governance."
-          }
-        ],
-        "timeline": "TBD; expected in concert with S1.",
-        "supportingDocs": [
-          {
-            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-            "title": "Next-decisions proposal §9 (S4)",
-            "summary": "The framing of the talent-retention question."
-          },
-          {
-            "path": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md",
-            "title": "Build-only decision",
-            "summary": "Tradeoffs CEO accepted — including talent retention as a first-order concern."
-          },
-          {
-            "path": "Owner Inbox/2026-05-06_core-policies-conduct-hr.md",
-            "title": "Conduct, ethics & HR policy bundle",
-            "summary": "Remuneration Policy in particular — the policy the scheme operates within."
-          }
-        ]
-      }
+      "note": "Recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere."
+    }
+  ],
+  "decisionsResolved": [
+    {
+      "id": "D-OI-PAX-BRAND-DESIGN-ROLE-BRIEF",
+      "title": "PAX — role brief: Brand & design lead",
+      "actionedAt": "2026-05-07T11:25:30.249Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-SAMOS-NON-CLEARING",
+      "title": "ZAR settlement — bank is not a SAMOS clearing participant",
+      "actionedAt": "2026-05-07T11:00:30.766Z",
+      "outcome": "Approved. The bank does not become a direct SAMOS settlement participant. ZAR clearing flows via a SAMOS-sponsor bank (indirect participant model). Same operating posture as the FX correspondent decision (D-FX-CLS-MEMBERSHIP corrected): capital-light, ops-light, sponsor-routed access to critical market-infrastructures. Touches the licence-type question — Mira + Imani + Saskia must confirm whether the intended licence supports indirect SAMOS participation, or whether the licence type itself shifts away from a full SARB Section 16 banking licence toward a specialised / wholesale arrangement that does not require direct SAMOS membership. Devon owns the third-party-risk governance for the SAMOS sponsor; Tomas owns the operational connectivity; Eitan re-scopes intraday liquidity / HQLA management to operate without a direct SARB account.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-FX-CLS-MEMBERSHIP",
+      "title": "FX settlement path — correspondent routing (corrects earlier bilateral-settlement record)",
+      "actionedAt": "2026-05-07T10:57:16.755Z",
+      "outcome": "Approved (correction). The bank does not join CLS directly (neither Settlement Member nor Third-Party-Customer). FX settles via correspondent routing — a CLS-member correspondent bank handles the actual settlement; the bank instructs via SWIFT MT202 / pacs.009. Earlier same-day record of this decision read No as bilateral settlement; that interpretation is corrected. Herstatt risk is concentrated on the correspondent (highly-rated, intraday-only) rather than every FX counterparty bilaterally; outsourcing & third-party-risk treatment applies (PA Directive 3 of 2018 on outsourcing of material functions). Devon owns the third-party-risk surface; Imani contracts the correspondent agreement; Senna conducts cyber due diligence; Mira covers sanctions / FIC dimension on the correspondent.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "Correction issued same day as the original record. The original event remains in the log for audit; the projection latest-wins logic in derive.ts shows this corrected outcome on the dashboard."
+    },
+    {
+      "id": "D-FX-BOOK-BOUNDARY",
+      "title": "FX markets-vs-treasury book boundary — explicit tag at execution",
+      "actionedAt": "2026-05-07T10:53:33.069Z",
+      "outcome": "Approved as recommended. bookType discriminator on the Identification primitive set at TradeExecuted time; reclassification only via explicit TradeAmended event with audit trail. No post-hoc reclassification. Saskia + Eitan own jointly; Helena governs the framework; Bea applies IFRS dispatch.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-FX-AD-STATUS",
+      "title": "FX Authorised-Dealer status — full SARB Authorised Dealer",
+      "actionedAt": "2026-05-07T10:53:33.067Z",
+      "outcome": "Approved. The bank pursues full SARB Authorised-Dealer status, not ADLA and not correspondent-routing. Decision touches the licence application; Saskia + Mira + Imani own the AD application track.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-MARKETS-SCHEMA-FOUNDATION",
+      "title": "Global markets trading system — schema foundation, building blocks, build sequence",
+      "actionedAt": "2026-05-07T10:36:09.662Z",
+      "outcome": "Approved. ISDA CDM adopted as the canonical schema foundation for the global-markets trading system; M1–M5 build sequence authorised; M6/M7 deferred to franchise-pull; M8 (cloud lift) deferred to post-licence.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S6",
+      "title": "API + cloud cost budget for the build phase",
+      "actionedAt": "2026-05-07T07:19:16.456Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "memory/project_ai_driven_bank.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S7",
+      "title": "Substrate-completeness budget — sessions / agent runs to substrate-complete",
+      "actionedAt": "2026-05-07T07:18:39.581Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "memory/project_ai_driven_bank.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S8",
+      "title": "Agent-runtime-substrate brief — approve scope",
+      "actionedAt": "2026-05-07T07:18:07.137Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
     },
     {
       "id": "S5",
       "title": "External legal counsel for SARB licence application",
-      "category": "second-order",
-      "owner": "Imani",
-      "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
-      "decisionForCEO": "Engage / when / which firm.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-      ],
-      "brief": {
-        "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
-        "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.",
-        "options": [
-          {
-            "label": "Engage now",
-            "description": "Engage a partner firm immediately.",
-            "consequence": "Earliest start; some retainer cost during pre-application phase; firm becomes a deep partner ahead of application."
-          },
-          {
-            "label": "Engage 6 months pre-lodgment",
-            "description": "Standard timing.",
-            "consequence": "Conventional engagement; firm has time to draft and run regulator meetings; matches Imani's likely recommendation."
-          },
-          {
-            "label": "Engage 9 months pre-lodgment",
-            "description": "Conservative timing; firm has full window.",
-            "consequence": "Slightly more cost; full preparation runway."
-          },
-          {
-            "label": "No external counsel",
-            "description": "Run application via internal Imani only.",
-            "consequence": "Significantly higher application risk; not market-standard for SA banking licences."
-          }
-        ],
-        "recommendation": {
-          "stance": "Engage 6–9 months ahead of lodgment; let Imani's recommendation paper land first.",
-          "reasoning": "External counsel is essentially required for a credible SARB application. Timing 6–9 months ahead is conventional and well-justified. Decision can wait ~6 months; Imani's recommendation paper can land in the meantime."
-        },
-        "dependencies": {
-          "gatedOn": [
-            {
-              "ref": "licence-application-timing",
-              "title": "SARB licence-application sequencing (long-horizon)",
-              "status": "open"
-            }
-          ],
-          "gates": [
-            {
-              "ref": "licence-application-prep",
-              "title": "Formal licence-application preparation",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Imani",
-            "role": "Legal-as-code engineer",
-            "position": "Drafter; runs the recommendation paper."
-          },
-          {
-            "name": "Marc",
-            "role": "CEO",
-            "position": "Engagement decision."
-          },
-          {
-            "name": "Owen",
-            "role": "CoSec",
-            "position": "Governance interface; engagement letter signing pathway."
-          },
-          {
-            "name": "Camille",
-            "role": "CFO",
-            "position": "Cost envelope."
-          }
-        ],
-        "timeline": "Imani drafts when ready; not urgent.",
-        "supportingDocs": [
-          {
-            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-            "title": "Next-decisions proposal §9 (S5)",
-            "summary": "Framing of the external-counsel question."
-          },
-          {
-            "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
-            "title": "Strategic foundation",
-            "summary": "Licence deferred; ~12–18 month indicative lodgment timeline informs the engagement decision."
-          },
-          {
-            "path": "Team/Imani.md",
-            "title": "Imani persona",
-            "summary": "Mandate boundaries — internal legal-as-code; external partner-firm relationship is Marc's call with her recommendation."
-          }
-        ]
-      }
-    }
-  ],
-  "decisionsResolved": [
+      "actionedAt": "2026-05-07T06:34:51.715Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S4",
+      "title": "Talent retention scheme through the build",
+      "actionedAt": "2026-05-07T06:34:27.780Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
     {
       "id": "S3",
       "title": "Board / NED search timing",
@@ -353,7 +277,7 @@
       "title": "Burn-rate / capital runway plan against R300m",
       "actionedAt": "2026-05-07T06:33:42.344Z",
       "outcome": "Approved as drafted.",
-      "sourceDoc": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+      "sourceDoc": "(unsourced)",
       "action": "approve",
       "actionedBy": "marc@tgv.co.za"
     },
@@ -497,9 +421,9 @@
     },
     {
       "id": "WS-RAS-RECALIBRATION",
-      "what": "RAS recalibration to wholesale-markets profile",
+      "what": "RAS for AI-driven bank — substrate / coherence / supply-chain risks",
       "owner": "Helena",
-      "due": "~2–3 weeks",
+      "due": "Next governance-cycle run",
       "active": true,
       "startedAt": "2026-05-06",
       "briefDoc": "Team Inbox/2026-05-06_brief_risk-appetite-statement-and-framework.md"
@@ -528,17 +452,10 @@
       "outcomeNote": "Rashida selected from the shortlist; in seat from 2026-05-06. Senna and Iris handover briefs actioned 2026-05-07."
     },
     {
-      "id": "WS-B2-CAPITAL-LIQUIDITY",
-      "what": "B2 capital / liquidity calibration",
-      "owner": "Helena + Camille + Eitan",
-      "due": "~3–4 weeks",
-      "active": false
-    },
-    {
       "id": "WS-E1-IO-OPTIONS",
-      "what": "E1 POPIA IO designation options paper",
+      "what": "POPIA IO designation — Marc interim; real human at licence-day",
       "owner": "Iris",
-      "due": "~1 week",
+      "due": "Substrate-deferred; activates at licence-day",
       "active": false
     },
     {
@@ -562,6 +479,29 @@
       "due": "Continuous",
       "active": true,
       "startedAt": "2026-05-06"
+    },
+    {
+      "id": "WS-API-CLOUD-BUDGET",
+      "what": "API + cloud cost budget (S6)",
+      "owner": "Marc + Camille",
+      "due": "Decision at next session",
+      "active": false
+    },
+    {
+      "id": "WS-SUBSTRATE-BUDGET",
+      "what": "Substrate-completeness budget (S7)",
+      "owner": "Atlas + Anya",
+      "due": "Drafted against substrate spec",
+      "active": false
+    },
+    {
+      "id": "WS-AGENT-RUNTIME-SUBSTRATE",
+      "what": "Agent-runtime substrate (S8) — scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
+      "owner": "Atlas + Anya",
+      "due": "Drafted; approval pending",
+      "active": true,
+      "startedAt": "2026-05-07",
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
     }
   ],
   "agents": [
@@ -580,28 +520,28 @@
       "recentDeliverables": [
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_ceo-decisions_fx-sub-decisions.md",
+          "title": "ceo decisions · fx sub decisions"
+        },
+        {
+          "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_ceo-decision_samos-non-clearing.md",
+          "title": "ceo decision · samos non clearing"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
           "title": "procedure audit actor and citation"
         },
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_scrooge_inbox-hygiene.md",
+          "title": "scrooge · inbox hygiene"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_persona-agent-spec-rollout.md",
           "title": "persona agent spec rollout"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md",
-          "title": "ceo decision · interim operating posture"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_ceo-decision_reporting-capability-build-authorisation.md",
-          "title": "ceo decision · reporting capability build authorisation"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-          "title": "next decisions proposal"
         }
       ],
       "lastActivityAt": "2026-05-07",
@@ -612,19 +552,37 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
+          "openDecisionsOwned": [
+            {
+              "id": "D-BRAND-DESIGN-HIRE",
+              "title": "Role brief — Brand & design lead",
+              "category": "near-term",
+              "owner": "PAX",
+              "trigger": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
+              "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md"
+              ],
+              "note": "Recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere."
+            }
+          ],
           "recentDeliverables": [
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md",
+              "title": "pax · brand design role brief"
+            },
             {
               "date": "2026-05-05",
               "path": "Owner Inbox/2026-05-05_obligations-register-schema.md",
               "title": "obligations register schema"
             }
           ],
-          "lastActivityAt": "2026-05-05"
+          "lastActivityAt": "2026-05-07"
         },
         {
           "name": "Nolan",
-          "role": "Recruiter / Team builder",
+          "role": "Recruiter / Team builder; author of agent operating specs",
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [
@@ -669,8 +627,8 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 10
+      "totalOpenDecisions": 1,
+      "totalRecentDeliverables": 11
     },
     {
       "name": "Helena",
@@ -683,16 +641,28 @@
       "activeWorkstreams": [
         {
           "id": "WS-RAS-RECALIBRATION",
-          "what": "RAS recalibration to wholesale-markets profile",
+          "what": "RAS for AI-driven bank — substrate / coherence / supply-chain risks",
           "owner": "Helena",
-          "due": "~2–3 weeks",
+          "due": "Next governance-cycle run",
           "active": true,
           "startedAt": "2026-05-06",
           "briefDoc": "Team Inbox/2026-05-06_brief_risk-appetite-statement-and-framework.md"
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -732,7 +702,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 4
     },
     {
@@ -765,10 +735,30 @@
           "name": "Atlas",
           "role": "Core banking platform architect",
           "hasOperatingSpec": true,
-          "activeWorkstreams": [],
+          "activeWorkstreams": [
+            {
+              "id": "WS-AGENT-RUNTIME-SUBSTRATE",
+              "what": "Agent-runtime substrate (S8) — scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
+              "owner": "Atlas + Anya",
+              "due": "Drafted; approval pending",
+              "active": true,
+              "startedAt": "2026-05-07",
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+            }
+          ],
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md",
+              "title": "atlas kai · a0 event schema freeze"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_atlas_substrate-state.md",
+              "title": "atlas · substrate state"
+            },
             {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
@@ -783,16 +773,6 @@
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_core-policies-infosec-ops.md",
               "title": "core policies infosec ops"
-            },
-            {
-              "date": "2026-05-05",
-              "path": "Owner Inbox/2026-05-05_obligations-register-schema-resolutions.md",
-              "title": "obligations register schema resolutions"
-            },
-            {
-              "date": "2026-05-05",
-              "path": "Owner Inbox/2026-05-05_core-platform-architecture.md",
-              "title": "core platform architecture"
             }
           ],
           "lastActivityAt": "2026-05-07"
@@ -826,10 +806,25 @@
           "name": "Anya",
           "role": "Data / analytics engineer; owner of projections, master data, and the semantic layer",
           "hasOperatingSpec": true,
-          "activeWorkstreams": [],
+          "activeWorkstreams": [
+            {
+              "id": "WS-AGENT-RUNTIME-SUBSTRATE",
+              "what": "Agent-runtime substrate (S8) — scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
+              "owner": "Atlas + Anya",
+              "due": "Drafted; approval pending",
+              "active": true,
+              "startedAt": "2026-05-07",
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+            }
+          ],
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_anya_projection-drift.md",
+              "title": "anya · projection drift"
+            },
             {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md",
@@ -841,7 +836,7 @@
               "title": "reporting capability spec"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-07"
         },
         {
           "name": "Imani",
@@ -849,105 +844,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "S5",
-              "title": "External legal counsel for SARB licence application",
-              "category": "second-order",
-              "owner": "Imani",
-              "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
-              "decisionForCEO": "Engage / when / which firm.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-              ],
-              "brief": {
-                "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
-                "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.",
-                "options": [
-                  {
-                    "label": "Engage now",
-                    "description": "Engage a partner firm immediately.",
-                    "consequence": "Earliest start; some retainer cost during pre-application phase; firm becomes a deep partner ahead of application."
-                  },
-                  {
-                    "label": "Engage 6 months pre-lodgment",
-                    "description": "Standard timing.",
-                    "consequence": "Conventional engagement; firm has time to draft and run regulator meetings; matches Imani's likely recommendation."
-                  },
-                  {
-                    "label": "Engage 9 months pre-lodgment",
-                    "description": "Conservative timing; firm has full window.",
-                    "consequence": "Slightly more cost; full preparation runway."
-                  },
-                  {
-                    "label": "No external counsel",
-                    "description": "Run application via internal Imani only.",
-                    "consequence": "Significantly higher application risk; not market-standard for SA banking licences."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "Engage 6–9 months ahead of lodgment; let Imani's recommendation paper land first.",
-                  "reasoning": "External counsel is essentially required for a credible SARB application. Timing 6–9 months ahead is conventional and well-justified. Decision can wait ~6 months; Imani's recommendation paper can land in the meantime."
-                },
-                "dependencies": {
-                  "gatedOn": [
-                    {
-                      "ref": "licence-application-timing",
-                      "title": "SARB licence-application sequencing (long-horizon)",
-                      "status": "open"
-                    }
-                  ],
-                  "gates": [
-                    {
-                      "ref": "licence-application-prep",
-                      "title": "Formal licence-application preparation",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Imani",
-                    "role": "Legal-as-code engineer",
-                    "position": "Drafter; runs the recommendation paper."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO",
-                    "position": "Engagement decision."
-                  },
-                  {
-                    "name": "Owen",
-                    "role": "CoSec",
-                    "position": "Governance interface; engagement letter signing pathway."
-                  },
-                  {
-                    "name": "Camille",
-                    "role": "CFO",
-                    "position": "Cost envelope."
-                  }
-                ],
-                "timeline": "Imani drafts when ready; not urgent.",
-                "supportingDocs": [
-                  {
-                    "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-                    "title": "Next-decisions proposal §9 (S5)",
-                    "summary": "Framing of the external-counsel question."
-                  },
-                  {
-                    "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
-                    "title": "Strategic foundation",
-                    "summary": "Licence deferred; ~12–18 month indicative lodgment timeline informs the engagement decision."
-                  },
-                  {
-                    "path": "Team/Imani.md",
-                    "title": "Imani persona",
-                    "summary": "Mandate boundaries — internal legal-as-code; external partner-firm relationship is Marc's call with her recommendation."
-                  }
-                ]
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-06",
@@ -959,114 +856,11 @@
         },
         {
           "name": "Sade",
-          "role": "HR systems engineer",
+          "role": "AgentOps engineer during build phase; HR engineer for the human layer once it exists at licence-day",
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "S4",
-              "title": "Talent retention scheme through the build",
-              "category": "second-order",
-              "owner": "Sade",
-              "trigger": "Sade drafts an LTI / equity scheme for the build period",
-              "decisionForCEO": "Approve scheme shape + dilution / cost envelope.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-              ],
-              "brief": {
-                "summary": "19 employees + planned hires through 18–30 months of paper-only work need compensation + LTI / equity / mission framing. Sade drafts; you approve scheme shape and dilution / cost envelope.",
-                "background": "Compensation alone is unlikely to retain talent through a no-revenue build of this length. Equity / long-term-incentive / mission alignment become first-order considerations. Sade (HR systems engineer, on interim under Devon until a CHRO is hired) drafts the framework. The cost envelope is gated on S1 (burn-rate plan). The scheme typically combines: (a) an equity pool with phased vesting tied to milestones (M2-M3 reporting build, M4+, M8 cloud lift, licence application, licence grant, first profitable month); (b) a fixed-comp benchmark against SA-banking levels; (c) a clear narrative on bank ownership, governance, exit / liquidity that makes the equity meaningful.",
-                "options": [
-                  {
-                    "label": "Approve scheme + dilution envelope as drafted",
-                    "description": "Accept Sade's proposal.",
-                    "consequence": "Scheme rolls out; offer letters re-issued with the scheme attached."
-                  },
-                  {
-                    "label": "Approve with modified dilution",
-                    "description": "Adjust the equity pool size or vesting milestones.",
-                    "consequence": "Sade revises; one cycle."
-                  },
-                  {
-                    "label": "Defer to capital-plan resolution (S1)",
-                    "description": "Wait for S1 to land; size scheme against the burn target.",
-                    "consequence": "Coherent sequencing; talent retention not addressed in the meantime — risk of attrition."
-                  },
-                  {
-                    "label": "Request revision",
-                    "description": "Substantive disagreement on shape.",
-                    "consequence": "~3-week additional cycle."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "TBD; expect ~5–10% equity pool with milestone vesting.",
-                  "reasoning": "Industry-typical for a regulated financial-services build; tighter than SaaS-style 15–20% (regulated entities have less ambiguity in the exit narrative). Phased vesting tied to milestones aligns retention with the build's actual progress."
-                },
-                "dependencies": {
-                  "gatedOn": [
-                    {
-                      "ref": "S1",
-                      "title": "Burn-rate / capital runway plan",
-                      "status": "open"
-                    }
-                  ],
-                  "gates": [
-                    {
-                      "ref": "talent-retention",
-                      "title": "Talent retention through licence-grant",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Sade",
-                    "role": "HR systems engineer (interim under Devon)",
-                    "position": "Drafter."
-                  },
-                  {
-                    "name": "Future CHRO",
-                    "role": "When hired",
-                    "position": "Inherits the scheme; should be consulted on shape if hired before scheme finalised."
-                  },
-                  {
-                    "name": "Camille",
-                    "role": "CFO",
-                    "position": "Cost envelope."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO + shareholder representative",
-                    "position": "Dilution decision."
-                  },
-                  {
-                    "name": "Owen",
-                    "role": "CoSec",
-                    "position": "Companies Act / share-scheme governance."
-                  }
-                ],
-                "timeline": "TBD; expected in concert with S1.",
-                "supportingDocs": [
-                  {
-                    "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-                    "title": "Next-decisions proposal §9 (S4)",
-                    "summary": "The framing of the talent-retention question."
-                  },
-                  {
-                    "path": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md",
-                    "title": "Build-only decision",
-                    "summary": "Tradeoffs CEO accepted — including talent retention as a first-order concern."
-                  },
-                  {
-                    "path": "Owner Inbox/2026-05-06_core-policies-conduct-hr.md",
-                    "title": "Conduct, ethics & HR policy bundle",
-                    "summary": "Remuneration Policy in particular — the policy the scheme operates within."
-                  }
-                ]
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-06",
@@ -1082,10 +876,10 @@
           "lastActivityAt": "2026-05-06"
         }
       ],
-      "totalActive": 0,
+      "totalActive": 2,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
-      "totalRecentDeliverables": 13
+      "totalOpenDecisions": 0,
+      "totalRecentDeliverables": 14
     },
     {
       "name": "Camille",
@@ -1097,18 +891,20 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
-      "recentlyResolvedDecisions": [
+      "openDecisionsOwned": [
         {
-          "id": "S1",
-          "title": "Burn-rate / capital runway plan against R300m",
-          "actionedAt": "2026-05-07T06:33:42.344Z",
-          "outcome": "Approved as drafted.",
-          "sourceDoc": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-          "action": "approve",
-          "actionedBy": "marc@tgv.co.za"
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
         }
       ],
+      "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
           "date": "2026-05-06",
@@ -1153,7 +949,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 3
     },
     {
@@ -1162,11 +958,23 @@
       "type": "Governance",
       "isDirectReport": true,
       "personaPath": "Team/Eitan.md",
-      "mandate": "Eitan owns funding strategy, intraday liquidity and SAMOS funding, LCR / NSFR programme management, IRRBB management, FX position, FTP, capital actions (operational), collateral and repo, the HQLA portfolio, and the ALCO chair. Direct report: Ravi (treasury / ALM engineer). The role brief is `Team Inbox/2026-05-06_role-brief_treasurer.md`.",
+      "mandate": "Eitan owns funding strategy, intraday liquidity and SAMOS funding, LCR / NSFR programme management, IRRBB management, FX position, FTP, capital actions (operational), collateral and repo, the HQLA portfolio, and the ALCO chair. The engineering bench reporting through Eitan is enumerated canonically in `CLAUDE.md` (Engineering vs governance) and is reflected in the agents dashboard rollup; persona files do not duplicate the org chart in prose. The role brief is `Team Inbox/2026-05-06_role-brief_treasurer.md`.",
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1196,7 +1004,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 2
     },
     {
@@ -1205,7 +1013,7 @@
       "type": "Governance",
       "isDirectReport": true,
       "personaPath": "Team/Saskia.md",
-      "mandate": "Saskia owns the sales-and-trading franchise: market-making and risk-taking, institutional sales coverage, execution for internal clients (notably the Treasurer's HQLA turnover), market-abuse and conduct posture on the floor, the booking model and STP, and counterparty-credit coordination with the CRO. Direct report: Kai (trading systems engineer). An institutional-markets-sales engineering counterpart is currently a gap, flagged for PAX / Nolan when the franchise's needs concretise. The role brief is `Team Inbox/2026-05-06_role-brief_head-of-global-markets.md`.",
+      "mandate": "Saskia owns the sales-and-trading franchise: market-making and risk-taking, institutional sales coverage, execution for internal clients (notably the Treasurer's HQLA turnover), market-abuse and conduct posture on the floor, the booking model and STP, and counterparty-credit coordination with the CRO. The engineering bench reporting through Saskia is enumerated canonically in `CLAUDE.md` (Engineering vs governance) and is reflected in the agents dashboard rollup; persona files do not duplicate the org chart in prose. An institutional-markets-sales engineering counterpart is currently a gap, flagged for PAX / Nolan when the franchise's needs concretise. Saskia is also co-owner of the **pre-licence go-live readiness gate** with Rashida and Devon. The role brief is `Team Inbox/2026-05-06_role-brief_head-of-global-markets.md`.",
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [
@@ -1222,13 +1030,35 @@
           "outcomeNote": "First-run output of the Saskia standing-agent. Build-only posture incorporated. Eight §8 questions surfaced for CEO judgement."
         }
       ],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
+          "title": "Markets franchise design — proposal",
+          "category": "near-term",
+          "owner": "Saskia (with Helena, Camille, Eitan)",
+          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
+          ]
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
+          "title": "saskia kai · fx product family"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md",
           "title": "saskia · markets franchise design proposal"
+        },
+        {
+          "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
+          "title": "saskia kai · global markets trading system architecture"
         }
       ],
       "lastActivityAt": "2026-05-07",
@@ -1240,13 +1070,30 @@
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
-          "recentDeliverables": []
+          "recentDeliverables": [
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md",
+              "title": "atlas kai · a0 event schema freeze"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
+              "title": "saskia kai · fx product family"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
+              "title": "saskia kai · global markets trading system architecture"
+            }
+          ],
+          "lastActivityAt": "2026-05-07"
         }
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 1
+      "totalOpenDecisions": 1,
+      "totalRecentDeliverables": 6
     },
     {
       "name": "Owen",
@@ -1254,7 +1101,7 @@
       "type": "Governance",
       "isDirectReport": true,
       "personaPath": "Team/Owen.md",
-      "mandate": "Owen owns the bank's governance machinery: board and committee secretariat (agendas, packs, minutes, resolutions, action tracking), the operating life of the governance framework Helena drafts (charters, ToRs, delegation of authority, registers), director duties and induction, corporate-law compliance and CIPC interactions, conflicts and related-party governance, the whistleblowing programme, and subsidiary governance as the legal-entity tree grows. The role brief is `Team Inbox/2026-05-06_role-brief_company-secretary.md`.",
+      "mandate": "Owen owns the bank's governance machinery: board and committee secretariat (agendas, packs, minutes, resolutions, action tracking), the operating life of the governance framework Helena drafts (charters, ToRs, delegation of authority, registers), director duties and induction, corporate-law compliance and CIPC interactions, conflicts and related-party governance, the whistleblowing programme, and subsidiary governance as the legal-entity tree grows. Owen also chairs the **Interim Audit Forum** until a Board Audit Committee is constituted, and curates the **canonical-source registry** (`2026-05-07_owen_canonical-source-registry.md`). The role brief is `Team Inbox/2026-05-06_role-brief_company-secretary.md`.",
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
@@ -1273,28 +1120,28 @@
       "recentDeliverables": [
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_owen_substrate-exception-register.md",
+          "title": "owen · substrate exception register"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
           "title": "procedure audit actor and citation"
+        },
+        {
+          "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_owen_canonical-source-registry.md",
+          "title": "owen · canonical source registry"
+        },
+        {
+          "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_owen_governance-cycle-prep.md",
+          "title": "owen · governance cycle prep"
         },
         {
           "date": "2026-05-06",
           "path": "Owner Inbox/2026-05-06_policy-register.md",
           "title": "policy register"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_governance-presentation.md",
-          "title": "governance presentation"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_core-policies-conduct-hr.md",
-          "title": "core policies conduct hr"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_ceo-status-summary.md",
-          "title": "ceo status summary"
         }
       ],
       "lastActivityAt": "2026-05-07",
@@ -1323,7 +1170,7 @@
           "title": "core policies compliance privacy"
         }
       ],
-      "lastActivityAt": "2026-05-06",
+      "lastActivityAt": "2026-05-07",
       "subordinates": [
         {
           "name": "Mira",
@@ -1343,6 +1190,21 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_mira_citation-gate.md",
+              "title": "mira · citation gate"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md",
+              "title": "mira · fsca odp compliance preparation"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_mira_obligations-snapshot.md",
+              "title": "mira · obligations snapshot"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md",
               "title": "client master and continuous kyc"
@@ -1351,25 +1213,15 @@
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_core-policies-compliance-privacy.md",
               "title": "core policies compliance privacy"
-            },
-            {
-              "date": "2026-05-05",
-              "path": "Owner Inbox/2026-05-05_obligations-register-seed.md",
-              "title": "obligations register seed"
-            },
-            {
-              "date": "2026-05-05",
-              "path": "Owner Inbox/2026-05-05_obligations-register-schema-resolutions.md",
-              "title": "obligations register schema resolutions"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-07"
         }
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 5
+      "totalRecentDeliverables": 6
     },
     {
       "name": "Iris",
@@ -1408,7 +1260,7 @@
       "type": "Governance",
       "isDirectReport": true,
       "personaPath": "Team/Thandiwe.md",
-      "mandate": "Thandiwe owns the third line of defence: the internal audit charter, the risk-based audit plan, the continuous-controls assurance programme that Vera engineers, the Audit-Committee secretariat support (alongside Owen) on third-line matters, the External-Auditor relationship (when appointed), independent investigations of escalated whistleblowing or financial-crime matters, the combined-assurance map (coordinating with Helena, Zara, Iris, Senna), and the Quality Assurance and Improvement Programme (QAIP) per IIA IPPF. The role brief is `Team Inbox/2026-05-06_role-brief_chief-audit-executive.md`.",
+      "mandate": "Thandiwe owns the third line of defence: the internal audit charter, the risk-based audit plan, the continuous-controls assurance programme that Vera engineers, the Audit-Committee secretariat support (alongside Owen) on third-line matters, the External-Auditor relationship (when appointed), independent investigations of escalated whistleblowing or financial-crime matters, the combined-assurance map (coordinating with Helena, Zara, Iris, Rashida), and the Quality Assurance and Improvement Programme (QAIP) per IIA IPPF. The role brief is `Team Inbox/2026-05-06_role-brief_chief-audit-executive.md`.",
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [
@@ -1444,6 +1296,11 @@
             },
             {
               "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_vera_overnight-recon.md",
+              "title": "vera · overnight recon"
+            },
+            {
+              "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
               "title": "procedure audit actor and citation"
             },
@@ -1459,7 +1316,7 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 3
+      "totalRecentDeliverables": 4
     },
     {
       "name": "Rashida",
@@ -1478,7 +1335,7 @@
       "subordinates": [
         {
           "name": "Senna",
-          "role": "Security engineer; named owner of the bank's cyber-resilience posture under PA / FSCA Joint Standard 1 of 2024",
+          "role": "Security engineer; engineering owner of the bank's cyber-resilience substrate under PA / FSCA Joint Standard 1 of 2024",
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
@@ -1486,8 +1343,18 @@
           "recentDeliverables": [
             {
               "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_senna_security-substrate-state.md",
+              "title": "senna · security substrate state"
+            },
+            {
+              "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_senna_state-of-platform-note-to-rashida.md",
               "title": "senna · state of platform note to rashida"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_senna_neon-event-store-threat-model.md",
+              "title": "senna · neon event store threat model"
             },
             {
               "date": "2026-05-06",
@@ -1501,10 +1368,18 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 2
+      "totalRecentDeliverables": 4
     }
   ],
   "ownerInboxFeed": [
+    {
+      "filename": "2026-05-07_vera_overnight-recon.md",
+      "path": "Owner Inbox/2026-05-07_vera_overnight-recon.md",
+      "date": "2026-05-07",
+      "title": "Vera — overnight recon, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
+    },
     {
       "filename": "2026-05-07_vera_agent-discipline-assurance-extension.md",
       "path": "Owner Inbox/2026-05-07_vera_agent-discipline-assurance-extension.md",
@@ -1522,11 +1397,65 @@
       "decisionRequired": false
     },
     {
+      "filename": "2026-05-07_senna_security-substrate-state.md",
+      "path": "Owner Inbox/2026-05-07_senna_security-substrate-state.md",
+      "date": "2026-05-07",
+      "title": "Senna — security substrate state, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Senna's weekly security-substrate-state inventory per `Team/Senna.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop."
+    },
+    {
+      "filename": "2026-05-07_senna_neon-event-store-threat-model.md",
+      "path": "Owner Inbox/2026-05-07_senna_neon-event-store-threat-model.md",
+      "date": "2026-05-07",
+      "title": "Senna — threat model: Neon event-store substrate",
+      "decisionRequired": false
+    },
+    {
+      "filename": "2026-05-07_scrooge_inbox-hygiene.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_inbox-hygiene.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — inbox hygiene, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
+    },
+    {
       "filename": "2026-05-07_saskia_markets-franchise-design-proposal.md",
       "path": "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md",
       "date": "2026-05-07",
       "title": "Markets franchise design — proposal",
-      "decisionRequired": false
+      "decisionRequired": true,
+      "author": "Saskia",
+      "summary": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
+      "decisionId": "D-MARKETS-CAPITAL-TIME-SHAPE",
+      "decisionCategory": "near-term",
+      "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
+      "decisionOwner": "Saskia (with Helena, Camille, Eitan)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
+      "path": "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
+      "date": "2026-05-07",
+      "title": "Global markets trading system — schema foundation, building blocks, build sequence",
+      "decisionRequired": true,
+      "author": "Saskia · Kai",
+      "summary": "ISDA CDM (Common Domain Model) as the canonical schema for every tradeable / holdable instrument. Composable primitives (cashflow, schedule, index, optionality, settlement, collateral) compose into simple cash products and complex structured trades. M1–M5 build sequence proposed.",
+      "decisionId": "D-MARKETS-SCHEMA-FOUNDATION",
+      "decisionCategory": "near-term",
+      "decisionForCEO": "Approve ISDA CDM as the canonical schema foundation for the trading system, sequenced M1 (listed cash) → M3 (OTC IRS) → M5 (FRTB-ready, structured products).",
+      "decisionRecommendation": "Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD).",
+      "decisionOwner": "Saskia (governance) · Kai (engineering)",
+      "decisionStatus": "resolved"
+    },
+    {
+      "filename": "2026-05-07_saskia-kai_fx-product-family.md",
+      "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
+      "date": "2026-05-07",
+      "title": "FX product family — variants, compositions, build placement",
+      "decisionRequired": false,
+      "author": "Saskia · Kai",
+      "summary": "FX added to the canonical product taxonomy. Spot, forward, swap, NDF, vanilla and exotic options, cross-currency swap. Zero new schema primitives, zero new lifecycle event types — every variant is a composition of the ten CDM primitives over the existing 24 markets events. M3–M5 phase placement; SA FinSurv compliance front-and-centre. Markets-vs-treasury book boundary preserved."
     },
     {
       "filename": "2026-05-07_procedure-audit-actor-and-citation.md",
@@ -1547,11 +1476,110 @@
       "summary": "Agent-spec template authored; vanguard four personas (Vera, Atlas, Mira, Helena) upgraded; remaining 22 sequenced into four tranches. Reports-to corrections made for Atlas and Mira."
     },
     {
+      "filename": "2026-05-07_pax_brand-design-role-brief.md",
+      "path": "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md",
+      "date": "2026-05-07",
+      "title": "Role brief — Brand & design lead",
+      "decisionRequired": true,
+      "author": "PAX",
+      "summary": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
+      "decisionId": "D-BRAND-DESIGN-HIRE",
+      "decisionCategory": "near-term",
+      "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
+      "decisionRecommendation": "Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere.",
+      "decisionOwner": "PAX",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-07_owen_substrate-exception-register.md",
+      "path": "Owner Inbox/2026-05-07_owen_substrate-exception-register.md",
+      "date": "2026-05-07",
+      "title": "Substrate exception register — Owen",
+      "decisionRequired": false,
+      "author": "Owen",
+      "summary": "Canonical register of substrate components running under named exceptions. Each entry records the threat-model gate, conditions for exit, expiry, and approver. Vera consumes this register as continuous-controls evidence."
+    },
+    {
+      "filename": "2026-05-07_owen_governance-cycle-prep.md",
+      "path": "Owner Inbox/2026-05-07_owen_governance-cycle-prep.md",
+      "date": "2026-05-07",
+      "title": "Owen — governance-cycle prep, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Owen's weekly governance-cycle prep per `Team/Owen.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Output is the input to the Interim Risk Forum / Interim Audit Forum agenda (until a Board…"
+    },
+    {
+      "filename": "2026-05-07_owen_canonical-source-registry.md",
+      "path": "Owner Inbox/2026-05-07_owen_canonical-source-registry.md",
+      "date": "2026-05-07",
+      "title": "Canonical-source registry — doctrine and enforcement",
+      "decisionRequired": false,
+      "author": "Owen",
+      "summary": "Every named fact-type in the bank has exactly one canonical authoring location. Cross-references are typed citations, not prose copies. Vera enforces via the no-prose-duplication pipeline."
+    },
+    {
+      "filename": "2026-05-07_mira_obligations-snapshot.md",
+      "path": "Owner Inbox/2026-05-07_mira_obligations-snapshot.md",
+      "date": "2026-05-07",
+      "title": "Mira — obligations register snapshot, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Mira's weekly obligations-register snapshot per `Team/Mira.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Feeds Mira's RMCP-monitoring cycle and Owen's combined-assurance map."
+    },
+    {
+      "filename": "2026-05-07_mira_fsca-odp-compliance-preparation.md",
+      "path": "Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md",
+      "date": "2026-05-07",
+      "title": "Mira — FSCA OTC Derivative Provider compliance preparation",
+      "decisionRequired": false
+    },
+    {
+      "filename": "2026-05-07_mira_citation-gate.md",
+      "path": "Owner Inbox/2026-05-07_mira_citation-gate.md",
+      "date": "2026-05-07",
+      "title": "Mira — citation gate, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous (or on-request) run of Mira's citation-gate per CLAUDE.md Principle 2 (every action traces to a source). Verifies that every event in the store carries at least one citation — the append path enforces it via Zod, so a violatio…"
+    },
+    {
       "filename": "2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
       "path": "Owner Inbox/2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
       "date": "2026-05-07",
       "title": "POPIA s.19–22 walkthrough — for the CISO",
       "decisionRequired": false
+    },
+    {
+      "filename": "2026-05-07_ceo-decisions_fx-sub-decisions.md",
+      "path": "Owner Inbox/2026-05-07_ceo-decisions_fx-sub-decisions.md",
+      "date": "2026-05-07",
+      "title": "CEO decisions — FX sub-decisions (AD status; CLS membership; book boundary)",
+      "decisionRequired": false,
+      "author": "Marc · Scrooge (record)",
+      "summary": "Three sub-decisions surfaced in the FX product-family deliverable, resolved together. Full SARB Authorised-Dealer pursued. FX settlement via correspondent routing (no direct CLS membership). Markets-vs-treasury book boundary set at execution time, no post-hoc reclassification."
+    },
+    {
+      "filename": "2026-05-07_ceo-decision_samos-non-clearing.md",
+      "path": "Owner Inbox/2026-05-07_ceo-decision_samos-non-clearing.md",
+      "date": "2026-05-07",
+      "title": "CEO decision — D-SAMOS-NON-CLEARING (bank is not a SAMOS clearing participant)",
+      "decisionRequired": false,
+      "author": "Marc · Scrooge (record)",
+      "summary": "The bank does not become a direct SAMOS settlement participant. ZAR clearing flows via a SAMOS-sponsor bank under the indirect participant model. Same operating posture as the FX correspondent decision — capital-light, ops-light, sponsor-routed access to critical market-infrastructures. Touches the licence-type question and routes through Mira / Imani / Saskia for confirmation."
+    },
+    {
+      "filename": "2026-05-07_ceo-decision_markets-schema-foundation.md",
+      "path": "Owner Inbox/2026-05-07_ceo-decision_markets-schema-foundation.md",
+      "date": "2026-05-07",
+      "title": "CEO decision — D-MARKETS-SCHEMA-FOUNDATION (approved)",
+      "decisionRequired": false,
+      "author": "Marc · Scrooge (record)",
+      "summary": "ISDA CDM adopted as the canonical schema foundation for the global-markets trading system. M1–M5 build sequence authorised. M6/M7 deferred to franchise-pull; M8 cloud lift deferred to post-licence."
+    },
+    {
+      "filename": "2026-05-07_atlas_substrate-state.md",
+      "path": "Owner Inbox/2026-05-07_atlas_substrate-state.md",
+      "date": "2026-05-07",
+      "title": "Atlas — substrate state, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop."
     },
     {
       "filename": "2026-05-07_atlas_agent-runtime-substrate-spec.md",
@@ -1569,148 +1597,13 @@
       "decisionStatus": "resolved"
     },
     {
-      "filename": "2026-05-06_strategic-foundation.md",
-      "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
-      "date": "2026-05-06",
-      "title": "Strategic foundation",
+      "filename": "2026-05-07_atlas-kai_a0-event-schema-freeze.md",
+      "path": "Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md",
+      "date": "2026-05-07",
+      "title": "A0 event-schema freeze — agent-runtime + markets lifecycle event types",
       "decisionRequired": false,
-      "author": "Scrooge"
-    },
-    {
-      "filename": "2026-05-06_risk-appetite-statement-and-framework.md",
-      "path": "Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md",
-      "date": "2026-05-06",
-      "title": "Risk Appetite Statement and Framework",
-      "decisionRequired": false,
-      "author": "Helena"
-    },
-    {
-      "filename": "2026-05-06_reporting-capability-spec.md",
-      "path": "Owner Inbox/2026-05-06_reporting-capability-spec.md",
-      "date": "2026-05-06",
-      "title": "Reporting & analysis capability — specification",
-      "decisionRequired": false,
-      "author": "Anya"
-    },
-    {
-      "filename": "2026-05-06_principles-consolidation-proposal.md",
-      "path": "Owner Inbox/2026-05-06_principles-consolidation-proposal.md",
-      "date": "2026-05-06",
-      "title": "Proposal — consolidate Principles 2, 6 and 7 into a single Traceability principle",
-      "decisionRequired": false,
-      "author": "Scrooge"
-    },
-    {
-      "filename": "2026-05-06_policy-register.md",
-      "path": "Owner Inbox/2026-05-06_policy-register.md",
-      "date": "2026-05-06",
-      "title": "Policy register — required policies for the bank",
-      "decisionRequired": false,
-      "author": "Owen"
-    },
-    {
-      "filename": "2026-05-06_org-structure.md",
-      "path": "Owner Inbox/2026-05-06_org-structure.md",
-      "date": "2026-05-06",
-      "title": "Organisational structure — current state",
-      "decisionRequired": false,
-      "author": "Sade"
-    },
-    {
-      "filename": "2026-05-06_next-decisions-proposal.md",
-      "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-      "date": "2026-05-06",
-      "title": "Proposal — next decisions for the CEO",
-      "decisionRequired": false,
-      "author": "Scrooge"
-    },
-    {
-      "filename": "2026-05-06_local-base-infrastructure-spec.md",
-      "path": "Owner Inbox/2026-05-06_local-base-infrastructure-spec.md",
-      "date": "2026-05-06",
-      "title": "Local base infrastructure — specification",
-      "decisionRequired": false,
-      "author": "Atlas"
-    },
-    {
-      "filename": "2026-05-06_institutional-client-lifecycle-proposal.md",
-      "path": "Owner Inbox/2026-05-06_institutional-client-lifecycle-proposal.md",
-      "date": "2026-05-06",
-      "title": "Institutional client lifecycle — design proposal",
-      "decisionRequired": false,
-      "author": "Niko"
-    },
-    {
-      "filename": "2026-05-06_governance-presentation.md",
-      "path": "Owner Inbox/2026-05-06_governance-presentation.md",
-      "date": "2026-05-06",
-      "title": "Governance of the bank — current state",
-      "decisionRequired": false,
-      "author": "Owen"
-    },
-    {
-      "filename": "2026-05-06_governance-framework.md",
-      "path": "Owner Inbox/2026-05-06_governance-framework.md",
-      "date": "2026-05-06",
-      "title": "Governance framework",
-      "decisionRequired": false,
-      "author": "Helena"
-    },
-    {
-      "filename": "2026-05-06_dashboard-continuous-derivation.md",
-      "path": "Owner Inbox/2026-05-06_dashboard-continuous-derivation.md",
-      "date": "2026-05-06",
-      "title": "Dashboard — continuous derivation now live",
-      "decisionRequired": false,
-      "summary": "The bank operations dashboard at `http://localhost:3010` no longer reads a hand-curated registry. Every metric, list, and reduction is now derived on demand from canonical sources, refreshed continuously, and reconciled against the persi…"
-    },
-    {
-      "filename": "2026-05-06_core-policies-risk.md",
-      "path": "Owner Inbox/2026-05-06_core-policies-risk.md",
-      "date": "2026-05-06",
-      "title": "Core policies — Risk",
-      "decisionRequired": false,
-      "author": "Helena (CRO — lead) · Rohan"
-    },
-    {
-      "filename": "2026-05-06_core-policies-infosec-ops.md",
-      "path": "Owner Inbox/2026-05-06_core-policies-infosec-ops.md",
-      "date": "2026-05-06",
-      "title": "Core policies — Information security, cyber, operations",
-      "decisionRequired": false,
-      "author": "Senna (interim CISO function, with Devon as accountable executive); Devon (COO — operations lead); Atlas"
-    },
-    {
-      "filename": "2026-05-06_core-policies-finance.md",
-      "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
-      "date": "2026-05-06",
-      "title": "Core policies — Finance, accounting, tax, treasury",
-      "decisionRequired": false,
-      "author": "Camille (CFO — lead, finance); Eitan (Treasurer — lead, treasury); Bea, Yael, Ravi"
-    },
-    {
-      "filename": "2026-05-06_core-policies-conduct-hr.md",
-      "path": "Owner Inbox/2026-05-06_core-policies-conduct-hr.md",
-      "date": "2026-05-06",
-      "title": "Core policies — Conduct, ethics, HR",
-      "decisionRequired": false,
-      "author": "Owen (CoSec — lead, conduct & ethics); Sade"
-    },
-    {
-      "filename": "2026-05-06_core-policies-compliance-privacy.md",
-      "path": "Owner Inbox/2026-05-06_core-policies-compliance-privacy.md",
-      "date": "2026-05-06",
-      "title": "Core policies — Compliance, financial crime, and privacy",
-      "decisionRequired": false,
-      "author": "Zara (CCO — lead, compliance); Iris (IO — lead, privacy); Mira"
-    },
-    {
-      "filename": "2026-05-06_continuous-controls-programme.md",
-      "path": "Owner Inbox/2026-05-06_continuous-controls-programme.md",
-      "date": "2026-05-06",
-      "title": "Continuous-controls assurance programme — design + first wave",
-      "decisionRequired": false,
-      "author": "Vera"
+      "author": "Atlas · Kai",
+      "summary": "Joint genesis register for every typed event the substrate emits or receives. Common envelope, P2 citation slots, P5 multi-X fields, issuer/subscriber matrix, replay semantics, version policy. Unblocks A1 runtime registry and M1 markets equity ship."
     }
   ],
   "prototype": {
@@ -1759,12 +1652,13 @@
     ]
   },
   "risks": [
-    "Strategic foundation is set; franchise design is the next centre of gravity until Saskia delivers (~2 weeks).",
-    "R300m must last the 18–30 month build + licensing road. Burn-rate plan (S1) is now the gating financial decision.",
-    "Live-revenue risk: build-only means no warm pipeline at licence-grant unless the soft-franchise track (S2) is taken seriously.",
+    "AI-driven bank operating model set 2026-05-07 — bank is real, not simulation; build phase ends at pre-licence go-live readiness gate.",
+    "Substrate is the binding constraint: agent-runtime substrate (scheduler, event types, projection persistence) gates every persona's autonomous operation. Owner: Atlas + Anya. (S8)",
+    "Marc currently covers CEO + interim Chair + interim IO + interim MLRO — fit-and-proper concentration risk for SARB licence-application.",
+    "Persona-coherence drift across sessions is the real continuity risk for agents (replaces the simulated employee-attrition risk).",
+    "Anthropic API token spend is the real recurring cost during build; Azure spend lands at M8. (S6)",
     "Single point of failure on Saskia + Kai for the markets franchise.",
     "Single point of failure on Owen (CoSec, governance framework, conflicts, whistleblowing, PAIA).",
-    "Interim governance is interim — Board formation timing (S3) becomes more pressing as commercial activity approaches.",
-    "POPIA IO designation lodgment unsigned (E1)."
+    "Personas reshaped under reframe: Sade → AgentOps for build; Niko paused; Yael / Imani build-phase scopes trimmed. Reshape work pending in /Team/."
   ]
 }

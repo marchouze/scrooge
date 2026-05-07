@@ -15,7 +15,7 @@
 //
 // Author: Atlas
 
-(function () {
+(() => {
   let lastFetchAt = 0;
   let cached = null;
 

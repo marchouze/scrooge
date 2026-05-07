@@ -77,9 +77,15 @@ const WORKFLOW_MAP: Record<string, { agent: string; trigger: string }> = {
   "agent-runtime-atlas-substrate-state.yml": { agent: "Atlas", trigger: "substrate-state" },
   "agent-runtime-anya-projection-drift.yml": { agent: "Anya", trigger: "projection-drift" },
   "agent-runtime-scrooge-inbox-hygiene.yml": { agent: "Scrooge", trigger: "inbox-hygiene" },
-  "agent-runtime-owen-governance-cycle-prep.yml": { agent: "Owen", trigger: "governance-cycle-prep" },
+  "agent-runtime-owen-governance-cycle-prep.yml": {
+    agent: "Owen",
+    trigger: "governance-cycle-prep",
+  },
   "agent-runtime-mira-obligations-snapshot.yml": { agent: "Mira", trigger: "obligations-snapshot" },
-  "agent-runtime-senna-security-substrate-state.yml": { agent: "Senna", trigger: "security-substrate-state" },
+  "agent-runtime-senna-security-substrate-state.yml": {
+    agent: "Senna",
+    trigger: "security-substrate-state",
+  },
 };
 
 // Reverse map: workflow display name → file. gh run list --json doesn't

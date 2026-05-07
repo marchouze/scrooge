@@ -221,6 +221,23 @@ export interface AgentMiniDashboard {
   totalRecentDeliverables: number;
 }
 
+export interface FindingSummary {
+  id: string;
+  source: string; // raising agent / pipeline (e.g. "agent:vera:overnight-recon")
+  severity: string; // "low" | "medium" | "high" | "critical"
+  principle?: string; // optional citation to the principle that's violated
+  description: string;
+  asOf: string; // ISO 8601 — when raised
+}
+
+export interface RuntimeHandlerInfo {
+  agent: string; // matches /Team/<Name>.md
+  trigger: string; // trigger id (e.g. "overnight-recon")
+  kind: "scheduled" | "event-driven" | "on-request";
+  cadenceHours?: number; // expected cadence in hours; undefined for event-driven / on-request
+  subscribesTo?: readonly string[]; // event types for event-driven handlers
+}
+
 export interface DashboardState {
   asOf: string;
   bank: BankSummary;
@@ -234,6 +251,8 @@ export interface DashboardState {
   ownerInboxFeed: readonly OwnerInboxItem[];
   prototype: PrototypeStatus;
   risks: readonly string[];
+  findings: readonly FindingSummary[];
+  runtimeHandlers: readonly RuntimeHandlerInfo[];
 }
 
 export interface DecisionRequestBody {

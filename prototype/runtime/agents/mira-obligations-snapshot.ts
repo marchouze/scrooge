@@ -270,7 +270,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       payload: {
         obligationsCount: obligations.length,
         regulatorInstrumentsCount: regulations.length,
-        regulatorInstrumentsPopulated: regulations.filter((r) => /POPULATED/i.test(r.status)).length,
+        regulatorInstrumentsPopulated: regulations.filter((r) => /POPULATED/i.test(r.status))
+          .length,
         runTrigger: ctx.trigger.id,
       },
     });

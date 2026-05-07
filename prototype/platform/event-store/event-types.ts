@@ -26,8 +26,8 @@
 
 import { z } from "zod";
 
-import { type Event, type Actor, eventSchema } from "./types";
 import { newEventId } from "../core/types";
+import { type Actor, type Event, eventSchema } from "./types";
 
 // ---------------------------------------------------------------------------
 // AgentEscalation

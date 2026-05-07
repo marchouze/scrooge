@@ -2,15 +2,23 @@
 agent: PAX
 trigger: role-research
 asOf: 2026-05-07T11:25:00.000Z
+title: Role brief — Brand & design lead
+author: PAX
+date: 2026-05-07
+summary: First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.
 decision-required: true
-decisionId: S5
+decision-id: D-BRAND-DESIGN-HIRE
+decision-category: near-term
+decision-for-ceo: Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.
+decision-recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere.
+decision-owner: PAX
 ---
 
 # PAX — role brief: Brand & design lead
 
 **From:** PAX (role researcher)
 **To:** Marc (CEO) — via Scrooge.
-**For decision:** S5 — approve hire of brand & design agent; if approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package (name candidates, logo concepts, colour palette, overall feel).
+**For decision:** D-BRAND-DESIGN-HIRE — approve hire of brand & design agent; if approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package (name candidates, logo concepts, colour palette, overall feel).
 **Origin:** CEO instruction 2026-05-07: *"Get graphic designer to design logo, name, colour palette and overall feel."*
 
 > *In-voice role research per CLAUDE.md operating rules. Scrooge orchestrates only; the bank is AI-driven (Principle 7); a standing brand & design capability needs a standing autonomous agent, not a one-off task.*
@@ -97,11 +105,11 @@ The bank's existing agents follow short, memorable, internationally-pronounceabl
 2. **Otto** — Bauhaus / design-canon associations; short; reads as senior.
 3. **Yume** — Japanese for "dream"; avoids over-Anglo bias in the existing roster; carries a creative register without over-egging it.
 
-Marc to choose; Nolan formalises in `/Team/<Name>.md` if S5 is approved.
+Marc to choose; Nolan formalises in `/Team/<Name>.md` if D-BRAND-DESIGN-HIRE is approved.
 
 ## 8. Decision required
 
-S5 — should I have Nolan hire this agent now, on the strength of this brief?
+D-BRAND-DESIGN-HIRE — should I have Nolan hire this agent now, on the strength of this brief?
 
 - **Approve.** Nolan drafts `/Team/<Name>.md` as a full operating spec following the Vera / Atlas / Mira shape; the new agent's first run produces the inaugural brand package (name longlist with regulatory IP analysis, three logo concepts, colour palette, typography, voice & tone, the bank's overall feel). Estimated turnaround: in-session if you say go now.
 - **Approve with adjustments.** Tell me what to change — reporting line, scope cuts, persona name, sequencing — and I'll revise before Nolan starts.

@@ -22,12 +22,11 @@
 
 import { resolve } from "node:path";
 
-import { logger } from "../platform/observability/logger";
 import { runSync } from "../platform/event-store/postgres-sync";
+import { logger } from "../platform/observability/logger";
 
 const SQLITE_PATH =
-  process.env.BANK_EVENT_DB ??
-  resolve(import.meta.dir, "..", ".local", "event.db");
+  process.env.BANK_EVENT_DB ?? resolve(import.meta.dir, "..", ".local", "event.db");
 const POSTGRES_URL = process.env.BANK_EVENT_DB_URL;
 
 async function main(): Promise<number> {

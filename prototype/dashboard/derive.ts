@@ -35,6 +35,7 @@ import type {
   DashboardState,
   DecisionAction,
   DecisionCategory,
+  FindingSummary,
   InFlightItem,
   OpenDecision,
   OpenSeat,
@@ -43,6 +44,7 @@ import type {
   Principle,
   PrototypeStatus,
   ResolvedDecision,
+  RuntimeHandlerInfo,
   StrategicFoundation,
   SubordinateMini,
 } from "./types";
@@ -87,10 +89,44 @@ export interface WorkstreamCompletedEventSummary {
   readonly outcomeNote?: string;
 }
 
+export interface WorkstreamRegisteredEventSummary {
+  readonly workstreamId: string;
+  readonly title: string;
+  readonly owner: string;
+  readonly status: "planned" | "in-flight" | "blocked";
+  readonly summary: string;
+  readonly scopedBy?: string;
+  readonly asOf: string;
+}
+
+export interface AgentEscalationEventSummary {
+  readonly escalationId: string;
+  readonly raisedBy: string;
+  readonly question: string;
+  readonly options: readonly string[];
+  readonly blockedBy: string;
+  readonly severity: "low" | "medium" | "high" | "blocking";
+  readonly routedTo: string;
+  readonly deadline?: string;
+  readonly asOf: string;
+}
+
+export interface AuditFindingEventSummary {
+  readonly findingId: string;
+  readonly source: string;
+  readonly severity: string; // "low" | "medium" | "high" | "critical" — string for forward-compat
+  readonly principle?: string;
+  readonly description: string;
+  readonly asOf: string;
+}
+
 export interface EventSource {
   ceoDecisions(): CeoDecisionEventSummary[];
   workstreamStarts(): WorkstreamStartedEventSummary[];
   workstreamCompletions(): WorkstreamCompletedEventSummary[];
+  workstreamRegistrations(): WorkstreamRegisteredEventSummary[];
+  agentEscalations(): AgentEscalationEventSummary[];
+  auditFindings(): AuditFindingEventSummary[];
 }
 
 export interface DeriveOpts {
@@ -151,6 +187,83 @@ export function eventSourceFromStore(store: EventStore): EventSource {
           asOf: e.as_of,
           ...(typeof p.outcomeDoc === "string" ? { outcomeDoc: p.outcomeDoc } : {}),
           ...(typeof p.outcomeNote === "string" ? { outcomeNote: p.outcomeNote } : {}),
+        });
+      }
+      return out;
+    },
+    workstreamRegistrations(): WorkstreamRegisteredEventSummary[] {
+      const out: WorkstreamRegisteredEventSummary[] = [];
+      for (const e of store.replay({ type: "WorkstreamRegistered" })) {
+        const p = e.payload as Record<string, unknown>;
+        const status = String(p.status ?? "planned");
+        const safeStatus: WorkstreamRegisteredEventSummary["status"] =
+          status === "in-flight" || status === "blocked" ? status : "planned";
+        out.push({
+          workstreamId: String(p.workstreamId ?? ""),
+          title: String(p.title ?? ""),
+          owner: String(p.owner ?? ""),
+          status: safeStatus,
+          summary: String(p.summary ?? ""),
+          asOf: e.as_of,
+          ...(typeof p.scopedBy === "string" ? { scopedBy: p.scopedBy } : {}),
+        });
+      }
+      return out;
+    },
+    agentEscalations(): AgentEscalationEventSummary[] {
+      const out: AgentEscalationEventSummary[] = [];
+      for (const e of store.replay({ type: "AgentEscalation" })) {
+        const p = e.payload as Record<string, unknown>;
+        const sev = String(p.severity ?? "medium");
+        const safeSev: AgentEscalationEventSummary["severity"] =
+          sev === "low" || sev === "medium" || sev === "high" || sev === "blocking"
+            ? sev
+            : "medium";
+        out.push({
+          escalationId: String(p.escalationId ?? ""),
+          raisedBy: String(p.raisedBy ?? ""),
+          question: String(p.question ?? ""),
+          options: Array.isArray(p.options) ? (p.options as string[]) : [],
+          blockedBy: String(p.blockedBy ?? ""),
+          severity: safeSev,
+          routedTo: String(p.routedTo ?? ""),
+          asOf: e.as_of,
+          ...(typeof p.deadline === "string" ? { deadline: p.deadline } : {}),
+        });
+      }
+      return out;
+    },
+    auditFindings(): AuditFindingEventSummary[] {
+      // Accept two payload shapes:
+      // (a) Mira/citation-gate shape: { findingId, source, severity, principle, description }
+      // (b) Vera/recon shape:         { pipeline, subject, message, severity (info|warn|fail) }
+      // Map (b)'s severity onto the canonical scale.
+      const sevMap: Record<string, string> = {
+        fail: "high",
+        warn: "medium",
+        info: "low",
+      };
+      const out: AuditFindingEventSummary[] = [];
+      for (const e of store.replay({ type: "AuditFinding" })) {
+        const p = e.payload as Record<string, unknown>;
+        const rawSev = String(p.severity ?? "medium");
+        const severity = sevMap[rawSev] ?? rawSev;
+        const description =
+          (typeof p.description === "string" && p.description) ||
+          (typeof p.message === "string" && p.message) ||
+          "";
+        const principle =
+          (typeof p.principle === "string" && p.principle) ||
+          (typeof p.subject === "string" && p.subject) ||
+          (typeof p.pipeline === "string" && `pipeline: ${p.pipeline}`) ||
+          undefined;
+        out.push({
+          findingId: String(p.findingId ?? e.event_id),
+          source: String(p.source ?? e.actor.id),
+          severity,
+          description: description || "(no description)",
+          asOf: e.as_of,
+          ...(principle ? { principle } : {}),
         });
       }
       return out;
@@ -467,6 +580,7 @@ function reduceInFlight(
   base: readonly InFlightItem[],
   starts: readonly WorkstreamStartedEventSummary[],
   completions: readonly WorkstreamCompletedEventSummary[],
+  registrations: readonly WorkstreamRegisteredEventSummary[] = [],
 ): InFlightItem[] {
   const startMap = new Map<string, string>();
   for (const s of starts) {
@@ -481,8 +595,31 @@ function reduceInFlight(
     const prev = completionMap.get(c.workstreamId);
     if (!prev || prev.asOf <= c.asOf) completionMap.set(c.workstreamId, c);
   }
-  return base.map((item) => {
+  // Index registrations by workstreamId — also feeds workstreams that are
+  // not in the curated base into inFlight for the first time.
+  const registrationMap = new Map<string, WorkstreamRegisteredEventSummary>();
+  for (const r of registrations) {
+    const prev = registrationMap.get(r.workstreamId);
+    if (!prev || prev.asOf <= r.asOf) registrationMap.set(r.workstreamId, r);
+  }
+
+  const baseIds = new Set(base.map((b) => b.id));
+
+  const folded = base.map((item) => {
     let next: InFlightItem = item;
+    const reg = registrationMap.get(item.id);
+    if (reg) {
+      // Registered status overlays the base description; the curated seed
+      // is the human-readable carry-forward, the event payload is the
+      // authoritative latest.
+      next = {
+        ...next,
+        what: reg.title || next.what,
+        owner: reg.owner || next.owner,
+        active: reg.status !== "blocked",
+        ...(reg.scopedBy ? { briefDoc: reg.scopedBy } : {}),
+      };
+    }
     const eventStart = startMap.get(item.id);
     if (eventStart) {
       next = { ...next, active: true, startedAt: eventStart.slice(0, 10) };
@@ -499,6 +636,30 @@ function reduceInFlight(
     }
     return next;
   });
+
+  // Registrations that aren't in the curated base appear here as new
+  // inFlight items. Started/completed events for them apply normally.
+  const newFromRegistrations: InFlightItem[] = [];
+  for (const [id, reg] of registrationMap) {
+    if (baseIds.has(id)) continue;
+    const eventStart = startMap.get(id);
+    const completion = completionMap.get(id);
+    const item: InFlightItem = {
+      id,
+      what: reg.title || reg.summary || id,
+      owner: reg.owner || "—",
+      due: "",
+      active: completion ? false : reg.status !== "blocked",
+      ...(eventStart ? { startedAt: eventStart.slice(0, 10) } : {}),
+      ...(completion ? { completedAt: completion.asOf.slice(0, 10) } : {}),
+      ...(completion?.outcomeDoc ? { outcomeDoc: completion.outcomeDoc } : {}),
+      ...(completion?.outcomeNote ? { outcomeNote: completion.outcomeNote } : {}),
+      ...(reg.scopedBy ? { briefDoc: reg.scopedBy } : {}),
+    };
+    newFromRegistrations.push(item);
+  }
+
+  return [...folded, ...newFromRegistrations];
 }
 
 // ---------------------------------------------------------------------------
@@ -1196,13 +1357,16 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const ceoEvents = opts.events.ceoDecisions();
   const wsStarts = opts.events.workstreamStarts();
   const wsCompletions = opts.events.workstreamCompletions();
+  const wsRegistrations = opts.events.workstreamRegistrations();
+  const escalations = opts.events.agentEscalations();
+  const findings = opts.events.auditFindings();
 
   const { resolved, remainingOpen } = reduceCeoDecisions(
     ceoEvents,
     curated.decisionsOpen,
     curated.decisionsResolvedSeed,
   );
-  const inFlight = reduceInFlight(curated.inFlight, wsStarts, wsCompletions);
+  const inFlight = reduceInFlight(curated.inFlight, wsStarts, wsCompletions, wsRegistrations);
 
   // Owner Inbox feed (Marc, 2026-05-07): every deliverable in /Owner Inbox/
   // surfaces in the dashboard, and `decision-required: true` items are lifted
@@ -1216,7 +1380,42 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       : item,
   );
   const ownerInboxOpenDecisions = ownerInboxToOpenDecisions(ownerInboxFeed, resolvedIds);
-  const decisionsOpenAll = [...remainingOpen, ...ownerInboxOpenDecisions];
+
+  // Lift AgentEscalation events into open decisions (Atlas substrate-gap
+  // closure 2026-05-07). An escalation is "resolved" when a CeoDecision
+  // event with the same decisionId as the escalationId exists. Latest
+  // escalation per escalationId wins to allow correction / superseding.
+  const latestEscalations = new Map<string, AgentEscalationEventSummary>();
+  for (const e of escalations) {
+    const prev = latestEscalations.get(e.escalationId);
+    if (!prev || prev.asOf <= e.asOf) latestEscalations.set(e.escalationId, e);
+  }
+  const escalationOpenDecisions: OpenDecision[] = [];
+  for (const e of latestEscalations.values()) {
+    if (resolvedIds.has(e.escalationId)) continue;
+    const sevToCategory: Record<typeof e.severity, DecisionCategory> = {
+      blocking: "near-term",
+      high: "near-term",
+      medium: "near-term",
+      low: "second-order",
+    };
+    escalationOpenDecisions.push({
+      id: e.escalationId,
+      title: e.question.length > 120 ? `${e.question.slice(0, 117)}...` : e.question,
+      category: sevToCategory[e.severity],
+      owner: e.raisedBy,
+      trigger: `AgentEscalation event (severity: ${e.severity})`,
+      decisionForCEO: e.question,
+      sourceDocs: [],
+      ...(e.blockedBy ? { note: `Blocked by: ${e.blockedBy}` } : {}),
+    });
+  }
+
+  const decisionsOpenAll = [
+    ...remainingOpen,
+    ...ownerInboxOpenDecisions,
+    ...escalationOpenDecisions,
+  ];
 
   const ownerById = ownerByDecisionId(curated.decisionsOpen, ownerInboxOpenDecisions);
 
@@ -1230,6 +1429,24 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     claudeMd: opts.sources.claudeMd,
     ownerByDecisionId: ownerById,
   });
+
+  // Recent open findings — Vera's overnight recon and Mira's citation gate
+  // emit AuditFinding events. Roll the latest 50 by asOf into the dashboard
+  // so the CEO sees them at a glance rather than only inside Vera's
+  // deliverable.
+  const findingsSorted: FindingSummary[] = findings
+    .map(
+      (f): FindingSummary => ({
+        id: f.findingId,
+        source: f.source,
+        severity: f.severity,
+        ...(f.principle ? { principle: f.principle } : {}),
+        description: f.description,
+        asOf: f.asOf,
+      }),
+    )
+    .sort((a, b) => (a.asOf < b.asOf ? 1 : -1))
+    .slice(0, 50);
 
   return {
     asOf: now(),
@@ -1261,8 +1478,42 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     ownerInboxFeed,
     prototype: curated.prototype,
     risks: curated.risks,
+    findings: findingsSorted,
+    runtimeHandlers: RUNTIME_HANDLERS,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Runtime handler registry — single source of truth shared between
+// runtime/run.ts and the dashboard. Mirrored statically here to avoid the
+// dashboard depending on the runtime module graph (the runtime imports the
+// real EventStore + agent handlers; the dashboard derives from a
+// lightweight EventSource bridge). When a new handler lands in
+// runtime/run.ts, add a row here too. Vera Wave-4 #11 (planned) will
+// assert these stay in sync via a recon pipeline.
+// ---------------------------------------------------------------------------
+
+const RUNTIME_HANDLERS: readonly RuntimeHandlerInfo[] = [
+  { agent: "Vera", trigger: "overnight-recon", kind: "scheduled", cadenceHours: 24 },
+  { agent: "Atlas", trigger: "substrate-state", kind: "scheduled", cadenceHours: 24 * 7 },
+  { agent: "Anya", trigger: "projection-drift", kind: "scheduled", cadenceHours: 24 },
+  {
+    agent: "Anya",
+    trigger: "projection-refresh",
+    kind: "event-driven",
+    subscribesTo: [
+      "SubstrateStateSnapshot",
+      "WorkstreamRegistered",
+      "WorkstreamCompleted",
+      "CeoDecision",
+    ],
+  },
+  { agent: "Scrooge", trigger: "inbox-hygiene", kind: "scheduled", cadenceHours: 24 },
+  { agent: "Owen", trigger: "governance-cycle-prep", kind: "scheduled", cadenceHours: 24 * 7 },
+  { agent: "Mira", trigger: "obligations-snapshot", kind: "scheduled", cadenceHours: 24 * 7 },
+  { agent: "Mira", trigger: "citation-gate", kind: "on-request" },
+  { agent: "Senna", trigger: "security-substrate-state", kind: "scheduled", cadenceHours: 24 * 7 },
+];
 
 // ---------------------------------------------------------------------------
 // Watch-target paths — the set of canonical inputs the server should fs.watch.
