@@ -224,7 +224,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   return {
     eventsEmitted,
-    deliverable,
+    ...(deliverable ? { deliverable } : {}),
     summary: ok
       ? `${results.length} pipelines pass; 0 findings.`
       : `${results.length} pipelines run; ${totalFails} fail violations across ${results.filter((r) => !r.ok).length} pipelines.`,

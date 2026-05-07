@@ -19,6 +19,7 @@
     "dashboard": "bun run dashboard/server.ts",
     "agent:run": "bun run runtime/run.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
+    "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

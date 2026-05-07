@@ -17,12 +17,14 @@
 import { resolve } from "node:path";
 
 import { logger } from "../platform/observability/logger";
+import atlasSubstrateState from "./agents/atlas-substrate-state";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
 import type { AgentRunContext, AgentRunHandler, AgentRunOutput, TriggerKind } from "./types";
 
 // Static handler registry. Keyed by `<lowercased-agent>:<trigger-id>`.
 const HANDLERS: Record<string, { kind: TriggerKind; handler: AgentRunHandler }> = {
   "vera:overnight-recon": { kind: "scheduled", handler: veraOvernightRecon },
+  "atlas:substrate-state": { kind: "scheduled", handler: atlasSubstrateState },
 };
 
 interface CliArgs {
