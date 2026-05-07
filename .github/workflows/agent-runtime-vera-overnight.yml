@@ -26,6 +26,12 @@ on:
 permissions:
   contents: write
 
+# Serialise auto-commit pushes across all agent workflows so two agents
+# running concurrently don't race for the same fast-forward push.
+concurrency:
+  group: agent-autocommit
+  cancel-in-progress: false
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -58,6 +64,7 @@ jobs:
         run: |
           git config user.name "vera-agent[bot]"
           git config user.email "agent-vera@scrooge.local"
+          git pull --rebase origin main
           git add "Owner Inbox/" || true
           if git diff --cached --quiet; then
             echo "No changes to commit; Vera's overnight run produced no deliverable diff."

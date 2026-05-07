@@ -17,7 +17,12 @@
 import { resolve } from "node:path";
 
 import { logger } from "../platform/observability/logger";
+import anyaProjectionDrift from "./agents/anya-projection-drift";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
+import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
+import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
+import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
+import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
 import type { AgentRunContext, AgentRunHandler, AgentRunOutput, TriggerKind } from "./types";
 
@@ -25,6 +30,11 @@ import type { AgentRunContext, AgentRunHandler, AgentRunOutput, TriggerKind } fr
 const HANDLERS: Record<string, { kind: TriggerKind; handler: AgentRunHandler }> = {
   "vera:overnight-recon": { kind: "scheduled", handler: veraOvernightRecon },
   "atlas:substrate-state": { kind: "scheduled", handler: atlasSubstrateState },
+  "anya:projection-drift": { kind: "scheduled", handler: anyaProjectionDrift },
+  "scrooge:inbox-hygiene": { kind: "scheduled", handler: scroogeInboxHygiene },
+  "owen:governance-cycle-prep": { kind: "scheduled", handler: owenGovernanceCyclePrep },
+  "mira:obligations-snapshot": { kind: "scheduled", handler: miraObligationsSnapshot },
+  "senna:security-substrate-state": { kind: "scheduled", handler: sennaSecuritySubstrateState },
 };
 
 interface CliArgs {

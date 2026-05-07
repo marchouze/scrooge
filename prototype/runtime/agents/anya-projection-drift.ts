@@ -1,0 +1,278 @@
+// runtime/agents/anya-projection-drift.ts
+//
+// Anya's daily projection-drift sweep. Snapshots the canonical-source
+// counts that the bank's projections reduce over (CLAUDE.md principles,
+// /Team/ persona files, /Procedures/ files, /Regulations/ instruments,
+// the obligations register, /Owner Inbox/ deliverables) and compares
+// them against the dashboard cache to detect drift.
+//
+// Per Anya's spec § 6: hourly projection-health sweep + daily drift
+// check. The MVP runs daily on cron; hourly is V2 once event-triggered
+// runs land.
+//
+// Different shape from Vera (recon assertions) and Atlas (substrate
+// state): Anya snapshots the *data layer* — the counts that every
+// projection ultimately rolls up to. Drift is a Vera-style finding when
+// it occurs, but the snapshot itself is the deliverable.
+//
+// Author: Anya (handler) · Atlas (runtime substrate).
+
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { eventStore, logger } from "../../platform/composition";
+import { newEventId } from "../../platform/core/types";
+import type { AgentRunContext, AgentRunOutput } from "../types";
+import { fmtDateUTC, frontmatter } from "./_shared";
+
+const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
+
+const PRINCIPLE_HEADING = /^### Principle (\d+) — /;
+const ORG_OBLIGATION_ID = /^\|\s*ORG-/i;
+const REG_INDEX_POPULATED = /\*\*POPULATED\*\*/;
+
+interface CanonicalSourceCounts {
+  principlesInClaudeMd: number;
+  personaFiles: number; // /Team/*.md (excluding _-prefixed)
+  procedureFiles: number; // /Procedures/by-policy/*.md
+  obligationsRegisterRows: number; // ORG-* rows in obligations register
+  regulationsTotal: number; // rows in Regulations/_index.md
+  regulationsPopulated: number; // POPULATED-flagged rows
+  ownerInboxFiles: number;
+  teamInboxOpen: number;
+  teamInboxActioned: number;
+}
+
+function countMatches(content: string, re: RegExp): number {
+  let n = 0;
+  for (const line of content.split(/\r?\n/)) if (re.test(line)) n++;
+  return n;
+}
+
+function listMdFiles(dir: string): string[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter(
+    (f) => f.endsWith(".md") && !f.startsWith("_") && !f.startsWith("."),
+  );
+}
+
+function snapshotCounts(repoRoot: string): CanonicalSourceCounts {
+  const claudeMdPath = resolve(repoRoot, "CLAUDE.md");
+  const claudeMd = existsSync(claudeMdPath) ? readFileSync(claudeMdPath, "utf8") : "";
+  const obligationsPath = resolve(repoRoot, "Regulations", "_obligations-register.md");
+  const obligations = existsSync(obligationsPath) ? readFileSync(obligationsPath, "utf8") : "";
+  const regIndexPath = resolve(repoRoot, "Regulations", "_index.md");
+  const regIndex = existsSync(regIndexPath) ? readFileSync(regIndexPath, "utf8") : "";
+
+  const teamDir = resolve(repoRoot, "Team");
+  const proceduresDir = resolve(repoRoot, "Procedures", "by-policy");
+  const ownerInboxDir = resolve(repoRoot, "Owner Inbox");
+  const teamInboxDir = resolve(repoRoot, "Team Inbox");
+  const teamInboxActionedDir = resolve(teamInboxDir, "actioned");
+
+  return {
+    principlesInClaudeMd: countMatches(claudeMd, PRINCIPLE_HEADING),
+    personaFiles: listMdFiles(teamDir).length,
+    procedureFiles: listMdFiles(proceduresDir).length,
+    obligationsRegisterRows: countMatches(obligations, ORG_OBLIGATION_ID),
+    regulationsTotal: countMatches(regIndex, /^\|\s*[A-Z]/), // rough; counts table-ish rows
+    regulationsPopulated: countMatches(regIndex, REG_INDEX_POPULATED),
+    ownerInboxFiles: listMdFiles(ownerInboxDir).length,
+    teamInboxOpen: existsSync(teamInboxDir)
+      ? readdirSync(teamInboxDir).filter((f) => f.endsWith(".md")).length
+      : 0,
+    teamInboxActioned: existsSync(teamInboxActionedDir)
+      ? readdirSync(teamInboxActionedDir).filter((f) => f.endsWith(".md")).length
+      : 0,
+  };
+}
+
+interface DashboardSnapshot {
+  reachable: boolean;
+  metrics: Record<string, number> | undefined;
+  asOf: string | undefined;
+}
+
+function readDashboardCache(repoRoot: string): DashboardSnapshot {
+  const path = resolve(repoRoot, "prototype", "seeds", "dashboard-state.json");
+  if (!existsSync(path)) return { reachable: false, metrics: undefined, asOf: undefined };
+  try {
+    const raw = JSON.parse(readFileSync(path, "utf8")) as {
+      asOf?: string;
+      bank?: { metrics?: Record<string, number> };
+    };
+    return {
+      reachable: true,
+      asOf: raw.asOf,
+      metrics: raw.bank?.metrics,
+    };
+  } catch {
+    return { reachable: false, metrics: undefined, asOf: undefined };
+  }
+}
+
+interface DriftRow {
+  metric: string;
+  canonical: number;
+  cached: number | undefined;
+  drift: number | undefined; // canonical - cached; undefined if not in cache
+}
+
+function computeDrift(counts: CanonicalSourceCounts, snapshot: DashboardSnapshot): DriftRow[] {
+  const m = snapshot.metrics ?? {};
+  const map: Record<string, number> = {
+    principles: counts.principlesInClaudeMd,
+    obligations: counts.obligationsRegisterRows,
+    instruments: counts.regulationsTotal,
+    instrumentsAnalysed: counts.regulationsPopulated,
+    proceduresPopulated: counts.procedureFiles,
+  };
+  const out: DriftRow[] = [];
+  for (const [metric, canonical] of Object.entries(map)) {
+    const cached = m[metric];
+    out.push({
+      metric,
+      canonical,
+      cached,
+      drift: cached === undefined ? undefined : canonical - cached,
+    });
+  }
+  return out;
+}
+
+function buildReportMarkdown(
+  ctx: AgentRunContext,
+  counts: CanonicalSourceCounts,
+  snapshot: DashboardSnapshot,
+  drift: DriftRow[],
+): string {
+  const date = fmtDateUTC(ctx.asOf);
+  const lines: string[] = [];
+  lines.push(frontmatter("Anya", "projection-drift", ctx.asOf));
+  lines.push(`# Anya — projection drift, ${date}`);
+  lines.push("");
+  lines.push(
+    "Autonomous run of Anya's daily projection-drift sweep per `Team/Anya.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop.",
+  );
+  lines.push("");
+  const driftCount = drift.filter((d) => (d.drift ?? 0) !== 0).length;
+  lines.push(
+    `**Headline:** ${snapshot.reachable ? "dashboard cache reachable" : "dashboard cache unreachable on this runner"}; ${driftCount} of ${drift.length} cross-checked metrics show drift between canonical sources and the cache.`,
+  );
+  lines.push("");
+
+  lines.push("## Canonical-source snapshot");
+  lines.push("");
+  lines.push("| Source | Count |");
+  lines.push("|---|---|");
+  lines.push(`| Principles in CLAUDE.md | ${counts.principlesInClaudeMd} |`);
+  lines.push(`| Persona files (/Team/*.md) | ${counts.personaFiles} |`);
+  lines.push(`| Procedure files (/Procedures/by-policy/*.md) | ${counts.procedureFiles} |`);
+  lines.push(`| Obligations register rows (ORG-*) | ${counts.obligationsRegisterRows} |`);
+  lines.push(`| Regulations index — total | ${counts.regulationsTotal} |`);
+  lines.push(`| Regulations index — POPULATED | ${counts.regulationsPopulated} |`);
+  lines.push(`| Owner Inbox deliverables | ${counts.ownerInboxFiles} |`);
+  lines.push(`| Team Inbox — open | ${counts.teamInboxOpen} |`);
+  lines.push(`| Team Inbox — actioned | ${counts.teamInboxActioned} |`);
+  lines.push("");
+
+  lines.push("## Cross-check vs dashboard cache");
+  lines.push("");
+  if (!snapshot.reachable) {
+    lines.push(
+      "_Dashboard cache (`prototype/seeds/dashboard-state.json`) not reachable from this runner. Cross-check skipped — expected on a fresh GitHub Actions runner if the dashboard server has not refreshed it. The canonical-source counts above stand on their own._",
+    );
+  } else {
+    lines.push(`Cache asOf: \`${snapshot.asOf ?? "—"}\``);
+    lines.push("");
+    lines.push("| Metric | Canonical | Cached | Drift |");
+    lines.push("|---|---|---|---|");
+    for (const d of drift) {
+      const driftDisplay =
+        d.drift === undefined ? "n/a" : d.drift === 0 ? "0" : d.drift > 0 ? `+${d.drift}` : `${d.drift}`;
+      lines.push(
+        `| \`${d.metric}\` | ${d.canonical} | ${d.cached ?? "—"} | ${driftDisplay} |`,
+      );
+    }
+    lines.push("");
+    if (driftCount === 0) {
+      lines.push(
+        "No drift. Dashboard cache reconciles to canonical-source counts at run-time.",
+      );
+    } else {
+      lines.push(
+        `${driftCount} metric${driftCount === 1 ? "" : "s"} drift. Either the cache is stale (dashboard server hasn't refreshed) or the canonical source has changed since the last derive. Vera's dashboard-derivation recon is the formal check; this is the lightweight daily heartbeat.`,
+      );
+    }
+  }
+  lines.push("");
+  lines.push("## Provenance");
+  lines.push("");
+  lines.push(
+    "Counts read directly from canonical files: CLAUDE.md, /Team/*.md, /Procedures/by-policy/*.md, /Regulations/_obligations-register.md, /Regulations/_index.md, /Owner Inbox/*, /Team Inbox/*. Dashboard cache read from `prototype/seeds/dashboard-state.json`.",
+  );
+  lines.push("");
+  return lines.join("\n");
+}
+
+const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
+  const counts = snapshotCounts(ctx.repoRoot);
+  const snapshot = readDashboardCache(ctx.repoRoot);
+  const drift = computeDrift(counts, snapshot);
+
+  let eventsEmitted = 0;
+  if (!ctx.dryRun) {
+    eventStore.append({
+      event_id: newEventId(),
+      type: "DataProjectionSnapshot",
+      as_of: ctx.asOf,
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:anya:projection-drift" },
+      citations: EVENT_CITATIONS,
+      payload: {
+        counts,
+        cacheReachable: snapshot.reachable,
+        cacheAsOf: snapshot.asOf,
+        driftCount: drift.filter((d) => (d.drift ?? 0) !== 0).length,
+        runTrigger: ctx.trigger.id,
+      },
+    });
+    eventsEmitted = 1;
+  }
+
+  let deliverable: string | undefined;
+  if (!ctx.dryRun) {
+    if (!existsSync(ctx.ownerInboxDir)) {
+      mkdirSync(ctx.ownerInboxDir, { recursive: true });
+    }
+    const filename = `${fmtDateUTC(ctx.asOf)}_anya_projection-drift.md`;
+    writeFileSync(
+      resolve(ctx.ownerInboxDir, filename),
+      buildReportMarkdown(ctx, counts, snapshot, drift),
+      "utf8",
+    );
+    deliverable = `Owner Inbox/${filename}`;
+  }
+
+  const driftCount = drift.filter((d) => (d.drift ?? 0) !== 0).length;
+  logger.debug(
+    { ...counts, driftCount, cacheReachable: snapshot.reachable },
+    "anya:projection-drift — snapshot built",
+  );
+
+  return {
+    eventsEmitted,
+    ...(deliverable ? { deliverable } : {}),
+    summary: snapshot.reachable
+      ? `${counts.personaFiles} personas / ${counts.obligationsRegisterRows} obligations / ${counts.ownerInboxFiles} deliverables; ${driftCount} drift.`
+      : `${counts.personaFiles} personas / ${counts.obligationsRegisterRows} obligations / ${counts.ownerInboxFiles} deliverables; cache unreachable.`,
+    ok: true,
+  };
+};
+
+export default handler;
+
+// Internal exports for tests.
+// Run statSync at module load only when needed; keeps the surface minimal.
+export { snapshotCounts as _snapshotCountsForTest };
+void statSync; // keep node:fs import minimal — statSync may be useful for V2.

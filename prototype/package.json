@@ -20,6 +20,11 @@
     "agent:run": "bun run runtime/run.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
+    "agent:anya-projection-drift": "bun run runtime/run.ts --agent Anya --trigger projection-drift",
+    "agent:scrooge-inbox-hygiene": "bun run runtime/run.ts --agent Scrooge --trigger inbox-hygiene",
+    "agent:owen-governance-cycle-prep": "bun run runtime/run.ts --agent Owen --trigger governance-cycle-prep",
+    "agent:mira-obligations-snapshot": "bun run runtime/run.ts --agent Mira --trigger obligations-snapshot",
+    "agent:senna-security-substrate-state": "bun run runtime/run.ts --agent Senna --trigger security-substrate-state",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

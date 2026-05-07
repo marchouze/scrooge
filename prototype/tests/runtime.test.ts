@@ -12,7 +12,12 @@ import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import anyaProjectionDrift from "../runtime/agents/anya-projection-drift";
 import atlasSubstrateState from "../runtime/agents/atlas-substrate-state";
+import miraObligationsSnapshot from "../runtime/agents/mira-obligations-snapshot";
+import owenGovernanceCyclePrep from "../runtime/agents/owen-governance-cycle-prep";
+import scroogeInboxHygiene from "../runtime/agents/scrooge-inbox-hygiene";
+import sennaSecuritySubstrateState from "../runtime/agents/senna-security-substrate-state";
 import veraOvernightRecon from "../runtime/agents/vera-overnight-recon";
 import type { AgentRunContext } from "../runtime/types";
 
@@ -75,6 +80,119 @@ describe("runtime — Atlas substrate-state handler", () => {
       expect(result.ok).toBe(true);
       expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_atlas_substrate-state\.md$/);
       expect(existsSync(join(ctx.ownerInboxDir, "2026-05-07_atlas_substrate-state.md"))).toBe(true);
+      expect(result.eventsEmitted).toBe(1);
+    } finally {
+      rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("runtime — Anya projection-drift handler", () => {
+  it("snapshots canonical-source counts in dry-run", async () => {
+    const ctx = makeContext({ dryRun: true });
+    const result = await anyaProjectionDrift(ctx);
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(0);
+    expect(result.deliverable).toBeUndefined();
+  });
+
+  it("writes a deliverable + emits a DataProjectionSnapshot event when live", async () => {
+    const ctx = makeContext({ dryRun: false });
+    try {
+      const result = await anyaProjectionDrift(ctx);
+      expect(result.ok).toBe(true);
+      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_anya_projection-drift\.md$/);
+      expect(existsSync(join(ctx.ownerInboxDir, "2026-05-07_anya_projection-drift.md"))).toBe(true);
+      expect(result.eventsEmitted).toBe(1);
+    } finally {
+      rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("runtime — Scrooge inbox-hygiene handler", () => {
+  it("reports inbox state without moving anything in dry-run", async () => {
+    const ctx = makeContext({ dryRun: true });
+    const result = await scroogeInboxHygiene(ctx);
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(0);
+    expect(result.deliverable).toBeUndefined();
+    expect(result.summary).toMatch(/Team Inbox open/);
+  });
+
+  it("writes a deliverable + emits an InboxHygieneSweep event when live", async () => {
+    const ctx = makeContext({ dryRun: false });
+    try {
+      const result = await scroogeInboxHygiene(ctx);
+      expect(result.ok).toBe(true);
+      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_scrooge_inbox-hygiene\.md$/);
+      expect(result.eventsEmitted).toBe(1);
+    } finally {
+      rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("runtime — Owen governance-cycle-prep handler", () => {
+  it("digests open decisions + open seats + recent CEO actions in dry-run", async () => {
+    const ctx = makeContext({ dryRun: true });
+    const result = await owenGovernanceCyclePrep(ctx);
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(0);
+    expect(result.deliverable).toBeUndefined();
+    expect(result.summary).toMatch(/decisions/);
+  });
+
+  it("writes a deliverable + emits a GovernanceCyclePrep event when live", async () => {
+    const ctx = makeContext({ dryRun: false });
+    try {
+      const result = await owenGovernanceCyclePrep(ctx);
+      expect(result.ok).toBe(true);
+      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_owen_governance-cycle-prep\.md$/);
+      expect(result.eventsEmitted).toBe(1);
+    } finally {
+      rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("runtime — Mira obligations-snapshot handler", () => {
+  it("counts obligations + regulator instruments in dry-run", async () => {
+    const ctx = makeContext({ dryRun: true });
+    const result = await miraObligationsSnapshot(ctx);
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(0);
+    expect(result.summary).toMatch(/obligations.*regulator instruments/);
+  });
+
+  it("writes a deliverable + emits an ObligationsRegisterSnapshot event when live", async () => {
+    const ctx = makeContext({ dryRun: false });
+    try {
+      const result = await miraObligationsSnapshot(ctx);
+      expect(result.ok).toBe(true);
+      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_mira_obligations-snapshot\.md$/);
+      expect(result.eventsEmitted).toBe(1);
+    } finally {
+      rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("runtime — Senna security-substrate-state handler", () => {
+  it("inventories CI gates + recon pipelines + security artefacts in dry-run", async () => {
+    const ctx = makeContext({ dryRun: true });
+    const result = await sennaSecuritySubstrateState(ctx);
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(0);
+    expect(result.summary).toMatch(/CI gates.*recon pipelines/);
+  });
+
+  it("writes a deliverable + emits a SecuritySubstrateSnapshot event when live", async () => {
+    const ctx = makeContext({ dryRun: false });
+    try {
+      const result = await sennaSecuritySubstrateState(ctx);
+      expect(result.ok).toBe(true);
+      expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_senna_security-substrate-state\.md$/);
       expect(result.eventsEmitted).toBe(1);
     } finally {
       rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
