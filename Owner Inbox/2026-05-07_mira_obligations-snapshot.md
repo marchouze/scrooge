@@ -1,7 +1,7 @@
 ---
 agent: Mira
 trigger: obligations-snapshot
-asOf: 2026-05-07T08:23:57.321Z
+asOf: 2026-05-07T11:03:59.202Z
 decision-required: false
 ---
 
@@ -9,15 +9,17 @@ decision-required: false
 
 Autonomous run of Mira's weekly obligations-register snapshot per `Team/Mira.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Feeds Mira's RMCP-monitoring cycle and Owen's combined-assurance map.
 
-**Headline:** 156 obligations registered · 83 regulator instruments indexed (4 populated).
+**Headline:** 181 obligations registered · 83 regulator instruments indexed (4 populated).
 
 ## Obligations by status
 
 | Status | Count |
 |---|---|
 | **IN FORCE** | 115 |
+| DRAFTING | 14 |
 | **IN FORCE** (annual cycle) | 6 |
 | PARTIAL | 3 |
+| IN FLIGHT | 3 |
 | PARTIAL (B5 deferred) | 2 |
 | N/A-yet | 2 |
 | **IN FORCE** (reference-aligned) | 2 |
@@ -45,35 +47,45 @@ Autonomous run of Mira's weekly obligations-register snapshot per `Team/Mira.md`
 | **IN FORCE** (cycle) | 1 |
 | PARTIAL (policy planned in markets bundle) | 1 |
 | **IN FORCE** (within governance framework P3) | 1 |
+| PRE-LICENCE | 1 |
+| **IN FORCE** (boundary policed) | 1 |
+| **IN FORCE** (Banks-Act-prudential-covered) | 1 |
+| PARTIAL (thin-human-layer at licence-day) | 1 |
+| IN FLIGHT (RAS recalibration) | 1 |
+| **IN FORCE** (general); ODP-specific extension PLANNED | 1 |
+| **IN FORCE** (P1 over-delivers) | 1 |
+| PHASED (tracking BCBS-IOSCO phase-in) | 1 |
 
 ## Obligations by owner
 
 | Owner | Count |
 |---|---|
-| Owen | 10 |
+| Owen | 12 |
 | Camille (Bea) | 9 |
 | Zara (Mira) | 8 |
 | Iris | 8 |
+| Helena | 7 |
+| Zara | 7 |
 | Sade | 7 |
-| Zara | 6 |
+| Camille | 6 |
 | Owen + Zara | 6 |
-| Camille | 5 |
-| Helena | 5 |
 | Yael (Mira) | 4 |
 | Zara + Niko | 4 |
 | Yael | 4 |
 | Helena + Eitan | 3 |
+| Eitan | 3 |
 | Zara (MLRO) | 3 |
 | Senna | 3 |
 | Camille + Owen | 3 |
-| Eitan | 2 |
+| Imani | 3 |
 | Devon (with Helena) | 2 |
 | Iris + Owen | 2 |
+| Devon | 2 |
 | Senna + Iris | 2 |
 | Sade + Owen + Helena | 2 |
 | Eitan + Camille | 2 |
 | Sade + Helena | 2 |
-| Imani | 2 |
+| Owen + Sade | 2 |
 | Camille (with Helena) | 1 |
 | Camille + Helena | 1 |
 | Eitan + Helena | 1 |
@@ -99,7 +111,6 @@ Autonomous run of Mira's weekly obligations-register snapshot per `Team/Mira.md`
 | Senna + Iris (regulator-facing) | 1 |
 | Senna + Devon | 1 |
 | Devon (with Senna + Iris) | 1 |
-| Devon | 1 |
 | Senna (engineering) + Rashida (governance) | 1 |
 | Senna + Atlas | 1 |
 | Senna + Rashida | 1 |
@@ -125,7 +136,21 @@ Autonomous run of Mira's weekly obligations-register snapshot per `Team/Mira.md`
 | Saskia + Helena + Camille | 1 |
 | Saskia + Imani + Eitan | 1 |
 | Eitan + Zara | 1 |
-| Owen + Sade | 1 |
+| Camille + Saskia + Owen | 1 |
+| Mira + Anya + Tomas | 1 |
+| Anya + Mira | 1 |
+| Imani + Saskia | 1 |
+| Kai (Saskia) | 1 |
+| Tomas (Saskia) | 1 |
+| Imani + Zara | 1 |
+| Zara (Niko substrate) | 1 |
+| Rohan (with Bea) | 1 |
+| Atlas (Owen) | 1 |
+| Ravi (Eitan) | 1 |
+| Ravi (Rohan) | 1 |
+| Ravi | 1 |
+| Tomas + Anya | 1 |
+| Eitan (Mira) | 1 |
 
 ## Regulator instruments by status
 
@@ -136,6 +161,10 @@ Autonomous run of Mira's weekly obligations-register snapshot per `Team/Mira.md`
 | n/a | 1 |
 | STUB (in Parliament — track) | 1 |
 | STUB (if listed) | 1 |
+
+## Mira's narrative
+
+_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Snapshot above stands on its own._
 
 ## Provenance
 
