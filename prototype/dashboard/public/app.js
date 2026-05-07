@@ -52,7 +52,7 @@ function renderStrategyBanner(state) {
   const phase = state.bank?.operatingPosture ?? "—";
   const openCount = (state.decisionsOpen ?? []).length;
   const agentCount = (state.agents ?? []).length;
-  banner.innerHTML = `<span class="banner-phase">Phase: ${escapeHtml(phase)}</span><span class="banner-sep"> · </span><span>${openCount} CEO decision${openCount === 1 ? "" : "s"} open</span><span class="banner-sep"> · </span><span>${agentCount} agent${agentCount === 1 ? "" : "s"} reporting</span>`;
+  banner.innerHTML = `<span class="banner-phase">Phase: ${esc(phase)}</span><span class="banner-sep"> · </span><span>${openCount} CEO decision${openCount === 1 ? "" : "s"} open</span><span class="banner-sep"> · </span><span>${agentCount} agent${agentCount === 1 ? "" : "s"} reporting</span>`;
 }
 
 function render(state) {
