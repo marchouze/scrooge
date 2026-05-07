@@ -1,7 +1,7 @@
 ---
 agent: Senna
 trigger: security-substrate-state
-asOf: 2026-05-07T08:12:46.677Z
+asOf: 2026-05-07T11:04:10.439Z
 decision-required: false
 ---
 
@@ -48,6 +48,10 @@ _Threat-model and SBOM directories not yet established. Substrate gap — drafte
 | `ThreatModelGateDecision` | 0 |
 
 _Note: under build-only posture and the AI-driven-bank reframe, security-event production runs against synthetic flows. Live event types are exercised when the substrate hardens._
+
+## Senna's narrative
+
+_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Inventory above stands on its own._
 
 ## Provenance
 
