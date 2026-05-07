@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T12:25:45.683Z",
+  "asOf": "2026-05-07T12:52:54.056Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -137,7 +137,20 @@
       "summary": "The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own."
     }
   ],
-  "decisionsOpen": [],
+  "decisionsOpen": [
+    {
+      "id": "D-BANK-NAME-SELECTION",
+      "title": "Inaugural brand package — name longlist, logo concepts, palette, typography, voice",
+      "category": "near-term",
+      "owner": "Linnea",
+      "trigger": "First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.",
+      "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md"
+      ],
+      "note": "Recommendation: My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback."
+    }
+  ],
   "decisionsResolved": [
     {
       "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
@@ -765,12 +778,22 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_niko_top-30-outreach-packet.md",
+              "title": "niko · top 30 outreach packet"
+            },
+            {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_niko_top-100-sa-institutional-targets.md",
+              "title": "niko · top 100 sa institutional targets"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_institutional-client-lifecycle-proposal.md",
               "title": "institutional client lifecycle proposal"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-07"
         },
         {
           "name": "Anya",
@@ -817,12 +840,17 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-07",
+              "path": "Owner Inbox/2026-05-07_imani_isda-readiness-deep-dive-priority-a.md",
+              "title": "imani · isda readiness deep dive priority a"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md",
               "title": "client master and continuous kyc"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-07"
         },
         {
           "name": "Sade",
@@ -849,7 +877,7 @@
       "totalActive": 2,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 14
+      "totalRecentDeliverables": 17
     },
     {
       "name": "Camille",
@@ -1451,6 +1479,24 @@
       "summary": "Every named fact-type in the bank has exactly one canonical authoring location. Cross-references are typed citations, not prose copies. Vera enforces via the no-prose-duplication pipeline."
     },
     {
+      "filename": "2026-05-07_niko_top-30-outreach-packet.md",
+      "path": "Owner Inbox/2026-05-07_niko_top-30-outreach-packet.md",
+      "date": "2026-05-07",
+      "title": "Top-30 outreach packet — soft-franchise materials for Saskia's first-tier door-opens",
+      "decisionRequired": false,
+      "author": "Niko",
+      "summary": "Materials kit for soft-franchise institutional outreach. Institutional one-pager (positioning, product menu, capital, licence track, indirect-participant posture). Per-counterparty engagement notes for each Priority-A target. Door-open script. Reciprocal-relationship framing. Pre-licence-day soft touch only — no commercial offer."
+    },
+    {
+      "filename": "2026-05-07_niko_top-100-sa-institutional-targets.md",
+      "path": "Owner Inbox/2026-05-07_niko_top-100-sa-institutional-targets.md",
+      "date": "2026-05-07",
+      "title": "Top-100 SA institutional client targets — soft-franchise pipeline",
+      "decisionRequired": false,
+      "author": "Niko",
+      "summary": "Initial target list of 100 SA institutional counterparties for the bank's institutional global-markets franchise (JSE listed bonds + equities + OTC IRD + FX). Categorised by segment, ranked by fit + reachability + product overlap. Build-phase soft-franchise output; not customer-onboarding (paused until licence-day per CLAUDE.md)."
+    },
+    {
       "filename": "2026-05-07_mira_obligations-snapshot.md",
       "path": "Owner Inbox/2026-05-07_mira_obligations-snapshot.md",
       "date": "2026-05-07",
@@ -1474,11 +1520,35 @@
       "summary": "Autonomous (or on-request) run of Mira's citation-gate per CLAUDE.md Principle 2 (every action traces to a source). Verifies that every event in the store carries at least one citation — the append path enforces it via Zod, so a violatio…"
     },
     {
+      "filename": "2026-05-07_linnea_inaugural-brand-package.md",
+      "path": "Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md",
+      "date": "2026-05-07",
+      "title": "Inaugural brand package — name longlist, logo concepts, palette, typography, voice",
+      "decisionRequired": true,
+      "author": "Linnea",
+      "summary": "First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.",
+      "decisionId": "D-BANK-NAME-SELECTION",
+      "decisionCategory": "near-term",
+      "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
+      "decisionRecommendation": "My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback.",
+      "decisionOwner": "Linnea",
+      "decisionStatus": "open"
+    },
+    {
       "filename": "2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
       "path": "Owner Inbox/2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
       "date": "2026-05-07",
       "title": "POPIA s.19–22 walkthrough — for the CISO",
       "decisionRequired": false
+    },
+    {
+      "filename": "2026-05-07_imani_isda-readiness-deep-dive-priority-a.md",
+      "path": "Owner Inbox/2026-05-07_imani_isda-readiness-deep-dive-priority-a.md",
+      "date": "2026-05-07",
+      "title": "ISDA-readiness deep-dive — Priority-A subset (Y-marked)",
+      "decisionRequired": false,
+      "author": "Imani",
+      "summary": "Deep-dive on the 17 Y-marked Priority-A counterparties from Niko's top-100 list. Per-counterparty ISDA-Master version signal, last-amendment public signal, SA-bespoke clause exposures, CSA-readiness signal, GMRA / GMSLA exposure where bond-repo / sec-lend is in scope, and the bilateral-template work each counterparty surfaces. Build-phase legal output; no commercial commitments, no privileged communications."
     },
     {
       "filename": "2026-05-07_ceo-decisions_fx-sub-decisions.md",
@@ -1497,47 +1567,6 @@
       "decisionRequired": false,
       "author": "Marc · Scrooge (record)",
       "summary": "The bank does not become a direct SAMOS settlement participant. ZAR clearing flows via a SAMOS-sponsor bank under the indirect participant model. Same operating posture as the FX correspondent decision — capital-light, ops-light, sponsor-routed access to critical market-infrastructures. Touches the licence-type question and routes through Mira / Imani / Saskia for confirmation."
-    },
-    {
-      "filename": "2026-05-07_ceo-decision_markets-schema-foundation.md",
-      "path": "Owner Inbox/2026-05-07_ceo-decision_markets-schema-foundation.md",
-      "date": "2026-05-07",
-      "title": "CEO decision — D-MARKETS-SCHEMA-FOUNDATION (approved)",
-      "decisionRequired": false,
-      "author": "Marc · Scrooge (record)",
-      "summary": "ISDA CDM adopted as the canonical schema foundation for the global-markets trading system. M1–M5 build sequence authorised. M6/M7 deferred to franchise-pull; M8 cloud lift deferred to post-licence."
-    },
-    {
-      "filename": "2026-05-07_atlas_substrate-state.md",
-      "path": "Owner Inbox/2026-05-07_atlas_substrate-state.md",
-      "date": "2026-05-07",
-      "title": "Atlas — substrate state, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop."
-    },
-    {
-      "filename": "2026-05-07_atlas_agent-runtime-substrate-spec.md",
-      "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-      "date": "2026-05-07",
-      "title": "Agent-runtime substrate — specification",
-      "decisionRequired": true,
-      "author": "Atlas",
-      "summary": "Substrate hosting the autonomous-agent fleet (Principle 7) — identity, scheduler, event-trigger bus, run lifecycle, escalation channel, oversight UI. Local-first; Azure-lift-compatible. A0–A5 build phases specified.",
-      "decisionId": "D-AGENT-RUNTIME-AUTHORIZE",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Authorise build of the agent-runtime substrate (phases A0–A3) so the autonomous-agent doctrine becomes operational rather than session-simulated.",
-      "decisionRecommendation": "Approve A0 schema-freeze immediately; sequence A1–A3 over ~5 weeks. Defer M8 cloud-lift sign-off until post-licence.",
-      "decisionOwner": "Atlas (build) · Devon (governance)",
-      "decisionStatus": "resolved"
-    },
-    {
-      "filename": "2026-05-07_atlas-kai_a0-event-schema-freeze.md",
-      "path": "Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md",
-      "date": "2026-05-07",
-      "title": "A0 event-schema freeze — agent-runtime + markets lifecycle event types",
-      "decisionRequired": false,
-      "author": "Atlas · Kai",
-      "summary": "Joint genesis register for every typed event the substrate emits or receives. Common envelope, P2 citation slots, P5 multi-X fields, issuer/subscriber matrix, replay semantics, version policy. Unblocks A1 runtime registry and M1 markets equity ship."
     }
   ],
   "prototype": {

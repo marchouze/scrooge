@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-07T12:10:22.817Z
+asOf: 2026-05-07T12:49:53.450Z
 decision-required: false
 ---
 
@@ -9,26 +9,26 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 290 events across 20 types; 27/27 personas have operating specs; 9 runtime handlers registered; 58 files in /Owner Inbox/; 6 substrate gaps tracked.
+**Headline:** 375 events across 20 types; 28/28 personas have operating specs; 9 runtime handlers registered; 61 files in /Owner Inbox/; 6 substrate gaps tracked.
 
 ## Event store
 
-Path: `.local/event.db` · Total events: 290
+Path: `.local/event.db` · Total events: 375
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `ReconResult` | 72 | 2026-05-07 | 2026-05-07 |
-| `RiskRaised` | 48 | 2026-05-07 | 2026-05-07 |
-| `WorkstreamRegistered` | 36 | 2026-05-07 | 2026-05-07 |
-| `CeoDecision` | 26 | 2026-05-06 | 2026-05-07 |
-| `SubstrateStateSnapshot` | 20 | 2026-05-07 | 2026-05-07 |
-| `DataProjectionSnapshot` | 13 | 2026-05-07 | 2026-05-07 |
-| `InboxHygieneSweep` | 13 | 2026-05-07 | 2026-05-07 |
-| `GovernanceCyclePrep` | 13 | 2026-05-07 | 2026-05-07 |
-| `ObligationsRegisterSnapshot` | 13 | 2026-05-07 | 2026-05-07 |
-| `SecuritySubstrateSnapshot` | 13 | 2026-05-07 | 2026-05-07 |
-| `DashboardProjectionRefreshed` | 8 | 2026-05-07 | 2026-05-07 |
-| `AuditFinding` | 4 | 2026-05-07 | 2026-05-07 |
+| `ReconResult` | 84 | 2026-05-07 | 2026-05-07 |
+| `RiskRaised` | 72 | 2026-05-07 | 2026-05-07 |
+| `WorkstreamRegistered` | 60 | 2026-05-07 | 2026-05-07 |
+| `CeoDecision` | 28 | 2026-05-06 | 2026-05-07 |
+| `SubstrateStateSnapshot` | 24 | 2026-05-07 | 2026-05-07 |
+| `DataProjectionSnapshot` | 16 | 2026-05-07 | 2026-05-07 |
+| `InboxHygieneSweep` | 16 | 2026-05-07 | 2026-05-07 |
+| `GovernanceCyclePrep` | 16 | 2026-05-07 | 2026-05-07 |
+| `ObligationsRegisterSnapshot` | 16 | 2026-05-07 | 2026-05-07 |
+| `SecuritySubstrateSnapshot` | 16 | 2026-05-07 | 2026-05-07 |
+| `DashboardProjectionRefreshed` | 10 | 2026-05-07 | 2026-05-07 |
+| `AuditFinding` | 6 | 2026-05-07 | 2026-05-07 |
 | `WorkstreamCompleted` | 3 | 2026-05-07 | 2026-05-07 |
 | `WorkstreamStarted` | 2 | 2026-05-06 | 2026-05-07 |
 | `ClientCandidateRegistered` | 1 | 2026-05-06 | 2026-05-06 |
@@ -40,7 +40,7 @@ Path: `.local/event.db` · Total events: 290
 
 ## Personas — operating-spec coverage
 
-27 of 27 persona files declare an operating-spec section (Triggers / Cadence / Decisions in scope / etc.).
+28 of 28 persona files declare an operating-spec section (Triggers / Cadence / Decisions in scope / etc.).
 
 ## Runtime handlers
 
