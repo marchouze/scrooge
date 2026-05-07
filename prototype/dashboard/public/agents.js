@@ -352,6 +352,20 @@ function renderAgents(agents) {
   $("agentsSub").textContent = `${agents.length} agents`;
 }
 
+function renderStrategyBanner(state) {
+  const banner = $("strategyBanner");
+  if (!banner) return;
+  const phase = state.bank?.operatingPosture ?? "—";
+  const openCount = (state.decisionsOpen ?? []).length;
+  const agentCount = (state.agents ?? []).length;
+  banner.innerHTML = "";
+  banner.appendChild(el("span", { class: "banner-phase" }, `Phase: ${phase}`));
+  banner.appendChild(el("span", { class: "banner-sep" }, " · "));
+  banner.appendChild(el("span", {}, `${openCount} CEO decision${openCount === 1 ? "" : "s"} open`));
+  banner.appendChild(el("span", { class: "banner-sep" }, " · "));
+  banner.appendChild(el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`));
+}
+
 async function load() {
   const live = $("liveDot");
   const stamp = $("lastUpdated");
@@ -360,6 +374,7 @@ async function load() {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const state = await r.json();
     const agents = state.agents ?? [];
+    renderStrategyBanner(state);
     renderSummary(agents);
     renderAgents(agents);
     live.classList.add("ok");

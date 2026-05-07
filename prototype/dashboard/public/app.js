@@ -46,7 +46,17 @@ function setLive(ok) {
   last.textContent = `as of ${ts.toLocaleString("en-ZA", { hour12: false })} · live`;
 }
 
+function renderStrategyBanner(state) {
+  const banner = $("#strategyBanner");
+  if (!banner) return;
+  const phase = state.bank?.operatingPosture ?? "—";
+  const openCount = (state.decisionsOpen ?? []).length;
+  const agentCount = (state.agents ?? []).length;
+  banner.innerHTML = `<span class="banner-phase">Phase: ${escapeHtml(phase)}</span><span class="banner-sep"> · </span><span>${openCount} CEO decision${openCount === 1 ? "" : "s"} open</span><span class="banner-sep"> · </span><span>${agentCount} agent${agentCount === 1 ? "" : "s"} reporting</span>`;
+}
+
 function render(state) {
+  renderStrategyBanner(state);
   renderHero(state);
   renderDecisionsOpen(state.decisionsOpen);
   renderOwnerInbox(state.ownerInboxFeed ?? []);
