@@ -17,6 +17,8 @@
     "recon:dashboard": "bun run platform/recon/dashboard-derivation-recon.ts",
     "recon:prose-duplication": "bun run platform/recon/prose-duplication.ts",
     "dashboard": "bun run dashboard/server.ts",
+    "agent:run": "bun run runtime/run.ts",
+    "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
