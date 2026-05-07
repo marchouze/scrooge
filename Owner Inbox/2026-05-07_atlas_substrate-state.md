@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-07T07:55:28.311Z
+asOf: 2026-05-07T07:57:25.520Z
 decision-required: false
 ---
 
@@ -9,24 +9,13 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 42 events across 10 types; 27/27 personas have operating specs; 2 runtime handlers registered; 42 files in /Owner Inbox/; 6 substrate gaps tracked.
+**Headline:** 0 events across 0 types; 27/27 personas have operating specs; 2 runtime handlers registered; 42 files in /Owner Inbox/; 6 substrate gaps tracked.
 
 ## Event store
 
-Path: `.local/event.db` · Total events: 42
+Path: `.local/event.db` · Total events: 0
 
-| Event type | Count | Earliest | Latest |
-|---|---|---|---|
-| `CeoDecision` | 18 | 2026-05-06 | 2026-05-07 |
-| `ReconResult` | 12 | 2026-05-07 | 2026-05-07 |
-| `WorkstreamCompleted` | 3 | 2026-05-07 | 2026-05-07 |
-| `WorkstreamStarted` | 2 | 2026-05-06 | 2026-05-07 |
-| `SubstrateStateSnapshot` | 2 | 2026-05-07 | 2026-05-07 |
-| `ClientCandidateRegistered` | 1 | 2026-05-06 | 2026-05-06 |
-| `ClientIdentityVerified` | 1 | 2026-05-06 | 2026-05-06 |
-| `KYCRuleEvaluated` | 1 | 2026-05-06 | 2026-05-06 |
-| `RiskRatingAssigned` | 1 | 2026-05-06 | 2026-05-06 |
-| `ClientAccepted` | 1 | 2026-05-06 | 2026-05-06 |
+_No events in the store. This is expected on a fresh GitHub Actions runner (the event store is host-local until M8 cloud lift)._
 
 ## Personas — operating-spec coverage
 
