@@ -29,6 +29,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
+import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
 import type {
   AgentDeliverable,
   AgentMiniDashboard,
@@ -1484,36 +1485,21 @@ export function deriveState(opts: DeriveOpts): DashboardState {
 }
 
 // ---------------------------------------------------------------------------
-// Runtime handler registry — single source of truth shared between
-// runtime/run.ts and the dashboard. Mirrored statically here to avoid the
-// dashboard depending on the runtime module graph (the runtime imports the
-// real EventStore + agent handlers; the dashboard derives from a
-// lightweight EventSource bridge). When a new handler lands in
-// runtime/run.ts, add a row here too. Vera Wave-4 #11 (planned) will
-// assert these stay in sync via a recon pipeline.
+// Runtime handler registry — derived from the canonical
+// `runtime/handlers-metadata.ts` (A1 consolidation, 2026-05-07). The
+// dashboard imports only the metadata array (no runtime side-effects /
+// no EventStore dependency); the handler callables stay in
+// `runtime/run.ts`. Adding a new handler: edit handlers-metadata.ts +
+// run.ts; this view recomputes automatically.
 // ---------------------------------------------------------------------------
 
-const RUNTIME_HANDLERS: readonly RuntimeHandlerInfo[] = [
-  { agent: "Vera", trigger: "overnight-recon", kind: "scheduled", cadenceHours: 24 },
-  { agent: "Atlas", trigger: "substrate-state", kind: "scheduled", cadenceHours: 24 * 7 },
-  { agent: "Anya", trigger: "projection-drift", kind: "scheduled", cadenceHours: 24 },
-  {
-    agent: "Anya",
-    trigger: "projection-refresh",
-    kind: "event-driven",
-    subscribesTo: [
-      "SubstrateStateSnapshot",
-      "WorkstreamRegistered",
-      "WorkstreamCompleted",
-      "CeoDecision",
-    ],
-  },
-  { agent: "Scrooge", trigger: "inbox-hygiene", kind: "scheduled", cadenceHours: 24 },
-  { agent: "Owen", trigger: "governance-cycle-prep", kind: "scheduled", cadenceHours: 24 * 7 },
-  { agent: "Mira", trigger: "obligations-snapshot", kind: "scheduled", cadenceHours: 24 * 7 },
-  { agent: "Mira", trigger: "citation-gate", kind: "on-request" },
-  { agent: "Senna", trigger: "security-substrate-state", kind: "scheduled", cadenceHours: 24 * 7 },
-];
+const RUNTIME_HANDLERS: readonly RuntimeHandlerInfo[] = HANDLERS_METADATA.map((h): RuntimeHandlerInfo => ({
+  agent: h.agent,
+  trigger: h.trigger,
+  kind: h.kind,
+  ...(h.cadenceHours !== undefined ? { cadenceHours: h.cadenceHours } : {}),
+  ...(h.subscribesTo !== undefined ? { subscribesTo: h.subscribesTo } : {}),
+}));
 
 // ---------------------------------------------------------------------------
 // Watch-target paths — the set of canonical inputs the server should fs.watch.

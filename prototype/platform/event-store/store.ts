@@ -18,6 +18,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { Database } from "bun:sqlite";
+import { validatePayload } from "./registry";
 import { type Event, eventSchema } from "./types";
 
 const DDL = `
@@ -59,9 +60,13 @@ export class EventStore {
     this.db.exec(DDL);
   }
 
-  /** Append a single event. P2 enforced via the schema (citations ≥ 1). */
+  /** Append a single event. P2 enforced via the schema (citations ≥ 1).
+   * Per-type payload validation dispatched through the A1 event-type
+   * registry — types with a registered Zod schema fail-closed; types
+   * without one (or unregistered types) flow through envelope-only. */
   append(raw: Event): void {
     const e = eventSchema.parse(raw);
+    validatePayload(e.type, e.payload);
     this.db
       .prepare(
         `INSERT INTO events

@@ -20,6 +20,7 @@ import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeRiskRaised, makeWorkstreamRegistered } from "../../platform/event-store/event-types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
+import { HANDLERS_METADATA } from "../handlers-metadata";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
@@ -145,21 +146,12 @@ function snapshotEventStore(): { totalEvents: number; eventTypes: EventTypeStat[
   };
 }
 
-// Best-effort enumeration of registered runtime handlers — mirrors the
-// static registry in runtime/run.ts. Hard-coded for now; V2 will read the
-// registry from a single source of truth.
+// Registered runtime handlers — derived from the canonical metadata
+// registry at `runtime/handlers-metadata.ts` (A1 consolidation,
+// 2026-05-07). No more drift between Atlas's snapshot, the dashboard
+// view, and the runtime registry.
 function knownRuntimeHandlers(): RuntimeHandlerStat[] {
-  return [
-    { agent: "Vera", trigger: "overnight-recon" },
-    { agent: "Atlas", trigger: "substrate-state" },
-    { agent: "Anya", trigger: "projection-drift" },
-    { agent: "Anya", trigger: "projection-refresh" },
-    { agent: "Scrooge", trigger: "inbox-hygiene" },
-    { agent: "Owen", trigger: "governance-cycle-prep" },
-    { agent: "Mira", trigger: "obligations-snapshot" },
-    { agent: "Mira", trigger: "citation-gate" },
-    { agent: "Senna", trigger: "security-substrate-state" },
-  ];
+  return HANDLERS_METADATA.map((h) => ({ agent: h.agent, trigger: h.trigger }));
 }
 
 function recentDeliverablesCount(ownerInboxDir: string): number {

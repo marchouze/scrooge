@@ -27,51 +27,60 @@ import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
-import type { AgentRunContext, AgentRunHandler, AgentRunOutput, TriggerKind } from "./types";
+import { HANDLERS_METADATA, type HandlerMetadata } from "./handlers-metadata";
+import type { AgentRunContext, AgentRunHandler, AgentRunOutput } from "./types";
+
+// Map from composite key to the handler callable. The metadata
+// (kind / cadenceHours / subscribesTo) lives in handlers-metadata.ts —
+// this map is just the function-pointer half. Adding a new handler:
+// add a row to HANDLERS_METADATA AND a row here under the same key.
+// Vera's planned Wave-4 #11 recon pipeline asserts the two stay in sync.
+const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
+  "vera:overnight-recon": veraOvernightRecon,
+  "atlas:substrate-state": atlasSubstrateState,
+  "anya:projection-drift": anyaProjectionDrift,
+  "anya:projection-refresh": anyaProjectionRefresh,
+  "scrooge:inbox-hygiene": scroogeInboxHygiene,
+  "owen:governance-cycle-prep": owenGovernanceCyclePrep,
+  "mira:obligations-snapshot": miraObligationsSnapshot,
+  "mira:citation-gate": miraCitationGate,
+  "senna:security-substrate-state": sennaSecuritySubstrateState,
+};
 
 interface HandlerEntry {
-  /** Trigger classification. */
-  readonly kind: TriggerKind;
-  /** The handler itself. */
+  readonly metadata: HandlerMetadata;
   readonly handler: AgentRunHandler;
-  /**
-   * For event-driven entries: the event types this handler subscribes to.
-   * Empty for scheduled / on-request entries. After a parent run, the
-   * runtime fans out to any event-driven handler whose subscribesTo
-   * intersects the set of types appended during the parent run.
-   */
-  readonly subscribesTo?: readonly string[];
 }
 
-// Static handler registry. Keyed by `<lowercased-agent>:<trigger-id>`.
-const HANDLERS: Record<string, HandlerEntry> = {
-  "vera:overnight-recon": { kind: "scheduled", handler: veraOvernightRecon },
-  "atlas:substrate-state": { kind: "scheduled", handler: atlasSubstrateState },
-  "anya:projection-drift": { kind: "scheduled", handler: anyaProjectionDrift },
-  "scrooge:inbox-hygiene": { kind: "scheduled", handler: scroogeInboxHygiene },
-  "owen:governance-cycle-prep": { kind: "scheduled", handler: owenGovernanceCyclePrep },
-  "mira:obligations-snapshot": { kind: "scheduled", handler: miraObligationsSnapshot },
-  "senna:security-substrate-state": { kind: "scheduled", handler: sennaSecuritySubstrateState },
-  // On-request: invoked ad-hoc, not on a schedule. The CI gate runs as
-  // part of `bun run ci`; the agent shape is the on-demand surface for the
-  // same machinery (Marc, an automation, or a workflow_dispatch can fire
-  // it without waiting for the next cron tick).
-  "mira:citation-gate": { kind: "on-request", handler: miraCitationGate },
-  // Event-driven: fires when any of the named event types is appended
-  // within a parent agent run. Refreshes the dashboard projection cache
-  // whenever substrate state changes. Demonstrative subscription set;
-  // expand as more event types come online.
-  "anya:projection-refresh": {
-    kind: "event-driven",
-    handler: anyaProjectionRefresh,
-    subscribesTo: [
-      "SubstrateStateSnapshot",
-      "WorkstreamRegistered",
-      "WorkstreamCompleted",
-      "CeoDecision",
-    ],
-  },
-};
+/**
+ * Compose metadata + callables on module load. Throws if either side
+ * has a key the other lacks — fail-loud is correct here; the build
+ * shouldn't ship with a half-registered handler.
+ */
+function buildHandlerMap(): Readonly<Record<string, HandlerEntry>> {
+  const out: Record<string, HandlerEntry> = {};
+  const metadataKeys = new Set<string>();
+  for (const m of HANDLERS_METADATA) {
+    metadataKeys.add(m.key);
+    const handler = HANDLER_CALLABLES[m.key];
+    if (!handler) {
+      throw new Error(
+        `runtime/handlers-metadata.ts declares ${m.key} but runtime/run.ts has no callable. Add it to HANDLER_CALLABLES.`,
+      );
+    }
+    out[m.key] = { metadata: m, handler };
+  }
+  for (const k of Object.keys(HANDLER_CALLABLES)) {
+    if (!metadataKeys.has(k)) {
+      throw new Error(
+        `runtime/run.ts has callable for ${k} but runtime/handlers-metadata.ts has no metadata. Add a row to HANDLERS_METADATA.`,
+      );
+    }
+  }
+  return out;
+}
+
+const HANDLERS: Readonly<Record<string, HandlerEntry>> = buildHandlerMap();
 
 interface CliArgs {
   agent: string;
@@ -115,7 +124,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   const repoRoot = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
   const ctx: AgentRunContext = {
     agent: opts.agent,
-    trigger: { kind: entry.kind, id: opts.trigger },
+    trigger: { kind: entry.metadata.kind, id: opts.trigger },
     asOf: new Date().toISOString(),
     repoRoot,
     ownerInboxDir: resolve(repoRoot, "Owner Inbox"),
@@ -149,7 +158,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   // dispatch any event-driven handlers whose `subscribesTo` intersects
   // the set of event types appended during this run. We do NOT recurse
   // into event-driven handlers themselves — that would risk loops.
-  if (entry.kind !== "event-driven" && !ctx.dryRun) {
+  if (entry.metadata.kind !== "event-driven" && !ctx.dryRun) {
     const newEventTypes = new Set<string>();
     for (const e of eventStore.replay({ fromSequence: seqBefore + 1 })) {
       newEventTypes.add(e.type);
@@ -157,8 +166,8 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     if (newEventTypes.size > 0) {
       const triggered: string[] = [];
       for (const [k, e] of Object.entries(HANDLERS)) {
-        if (e.kind !== "event-driven") continue;
-        const subs = e.subscribesTo ?? [];
+        if (e.metadata.kind !== "event-driven") continue;
+        const subs = e.metadata.subscribesTo ?? [];
         if (subs.some((t) => newEventTypes.has(t))) triggered.push(k);
       }
       for (const tk of triggered) {
@@ -179,7 +188,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
             parent: `${ctx.agent}:${ctx.trigger.id}`,
             triggered: tk,
             triggerEventTypes: [...newEventTypes].filter((t) =>
-              (tEntry.subscribesTo ?? []).includes(t),
+              (tEntry.metadata.subscribesTo ?? []).includes(t),
             ),
           },
           "event-driven dispatch",

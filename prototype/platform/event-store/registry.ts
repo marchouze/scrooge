@@ -275,6 +275,30 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// Markets lifecycle event types from A0 §5. Today only TradeExecuted
+// is registered; the remaining 23 land as Kai's M4 / M5 work and the
+// other product families (M1 listed equity, M2 SAGB, M3 corporate
+// bonds, M5 IRS) build out.
+//
+// Per-product variants of these payloads live under
+// `platform/markets/cdm/events/` (e.g. TradeExecuted-FxSpot.ts).
+// `payloadSchema` here is left undefined because the registry holds
+// one schema per type and these events are polymorphic on the
+// embedded `contract` shape — the per-product variant validates at
+// the factory, and Vera's planned cross-validator (Wave-4) will
+// reconcile the registry view to the per-variant schemas.
+const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "TradeExecuted",
+    class: "markets",
+    issuer: "any-agent",
+    subscribers: ["Position", "Bea", "Rohan", "Mira", "Tomas"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5", "ORG-FC-13"],
+    source: "A0 freeze §5 #2; per-product variants in platform/markets/cdm/events/",
+  },
+];
+
 // Governance / audit / observation event types currently in flight.
 // These predate A0 (already emitted by handlers); registered here for
 // completeness so the registry covers what the event store actually
@@ -418,6 +442,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
  */
 export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...RUNTIME_EVENT_TYPES,
+  ...MARKETS_EVENT_TYPES,
   ...GOVERNANCE_EVENT_TYPES,
   ...AUDIT_EVENT_TYPES,
 ];
