@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T13:51:16.834Z",
+  "asOf": "2026-05-07T13:53:44.612Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -162,6 +162,16 @@
   ],
   "decisionsResolved": [
     {
+      "id": "D-MARKETS-SCHEMA-FOUNDATION",
+      "title": "Global markets — ISDA CDM canonical schema foundation + M1–M5 build sequence",
+      "actionedAt": "2026-05-07T13:53:44.555Z",
+      "outcome": "Approved as drafted. ISDA CDM adopted as the canonical schema foundation for the trading system. Build sequence M1 (CDM core + JSE-listed equities) → M2 (JSE-listed bonds + corporate-action lifecycle) → M3 (OTC IRS + ISDA/CSA documentation) → M4 (collateral + variation-margin + IM substrate) → M5 (FRTB-ready risk + structured-product composition). M6/M7 deferred to franchise-pull; M8 deferred to post-licence.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "Approval authorises Kai + Atlas + Anya to begin M1. Cross-persona dependencies in §11 (Bea IFRS classification, Imani clause library, Mira regulator URNs, Senna+Rashida threat model at M1 design freeze) are in-scope for the M1 envelope."
+    },
+    {
       "id": "D-FOLLOW-ON-ROUTER-TEST",
       "title": "Substrate verification — follow-on-router smoke test",
       "actionedAt": "2026-05-07T13:25:27.339Z",
@@ -221,15 +231,6 @@
       "title": "FX Authorised-Dealer status — full SARB Authorised Dealer",
       "actionedAt": "2026-05-07T10:53:33.067Z",
       "outcome": "Approved. The bank pursues full SARB Authorised-Dealer status, not ADLA and not correspondent-routing. Decision touches the licence application; Saskia + Mira + Imani own the AD application track.",
-      "sourceDoc": "(unsourced)",
-      "action": "approve",
-      "actionedBy": "marc@tgv.co.za"
-    },
-    {
-      "id": "D-MARKETS-SCHEMA-FOUNDATION",
-      "title": "Global markets trading system — schema foundation, building blocks, build sequence",
-      "actionedAt": "2026-05-07T10:36:09.662Z",
-      "outcome": "Approved. ISDA CDM adopted as the canonical schema foundation for the global-markets trading system; M1–M5 build sequence authorised; M6/M7 deferred to franchise-pull; M8 (cloud lift) deferred to post-licence.",
       "sourceDoc": "(unsourced)",
       "action": "approve",
       "actionedBy": "marc@tgv.co.za"
@@ -1553,6 +1554,14 @@
       "summary": "Audit record of follow-on routes dispatched after CEO decision approvals. Each decision below names the routes declared in its CeoDecision payload and the dispatch outcome."
     },
     {
+      "filename": "2026-05-07_scrooge_ceo-decision-record_d-markets-schema-foundation.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-schema-foundation.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — CEO decision record: D-MARKETS-SCHEMA-FOUNDATION, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
       "filename": "2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
       "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
       "date": "2026-05-07",
@@ -1713,14 +1722,6 @@
       "date": "2026-05-07",
       "title": "Mira — FSCA OTC Derivative Provider compliance preparation",
       "decisionRequired": false
-    },
-    {
-      "filename": "2026-05-07_mira_citation-gate.md",
-      "path": "Owner Inbox/2026-05-07_mira_citation-gate.md",
-      "date": "2026-05-07",
-      "title": "Mira — citation gate, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Autonomous (or on-request) run of Mira's citation-gate per CLAUDE.md Principle 2 (every action traces to a source). Verifies that every event in the store carries at least one citation — the append path enforces it via Zod, so a violatio…"
     }
   ],
   "prototype": {
