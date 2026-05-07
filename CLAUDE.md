@@ -228,7 +228,7 @@ This principle is the structural extension of the team structure: the team is no
 
 ## Team structure
 
-All team member profiles live in `/Team/`. Each file is named `<name>.md` and defines the person's name, persona, identity, and areas of expertise.
+All team member profiles live in `/Team/`. Each file is the **operating spec for a standing autonomous agent** (Principle 7). The canonical structure has 17 sections — sections 1–5 carry the legacy character data (Identity, Persona, Mandate, Areas of expertise, Working style); sections 6–17 are the operating spec proper (Cadence, Triggers, Inputs, Decisions in scope, Decisions that escalate, Outputs, System capabilities called, Procedures owned, Data contracts, Independence/conflicts, Substrate gaps, Change log). The template at `Team/_agent-spec-template.md` is the canonical authoring location; new personas use it from the start, and existing character-sheet personas are upgraded as they are touched. Persona files that lack sections 6–17 are findings until upgraded (Vera Wave-4 #10 agent-spec-integrity recon pipeline, planned).
 
 | Name | Role | Expertise |
 |---|---|---|
