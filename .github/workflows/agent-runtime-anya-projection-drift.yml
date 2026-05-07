@@ -50,4 +50,12 @@ jobs:
           Per CLAUDE.md Principle 7 (Autonomous by default).
 
           Co-Authored-By: Anya (agent) <agent-anya@scrooge.local>"
-          git push
+          for i in 1 2 3 4 5; do
+
+            if git push; then break; fi
+
+            echo "push rejected (attempt $i); rebasing and retrying"
+
+            git pull --rebase origin main
+
+          done
