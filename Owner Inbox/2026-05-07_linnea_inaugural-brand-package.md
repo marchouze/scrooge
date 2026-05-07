@@ -17,7 +17,7 @@ decision-owner: Linnea
 **To:** Marc (CEO) — via Scrooge.
 **For decision:** D-BANK-NAME-SELECTION — pick the bank's name from the shortlist in §1.7, or send back with feedback.
 
-> *In-voice. The bank's brand starts here. I have written this as I would write a first design memo: opinionated where I have a view, candid where I do not, restrained throughout. The most consequential section is §1 (the name); everything else lands inside the design system the name anchors. Substantive content of any external artefact comes from canonical authoring locations per Principle 6 — I render, I do not author.*
+> *In-voice. First design memo: opinionated where I have a view, candid where I do not, restrained throughout. The most consequential section is §1 (the name); everything else anchors to it. Substance comes from canonical authoring locations per Principle 6 — I render, not author.*
 
 ---
 
@@ -31,16 +31,16 @@ Banks Act s.22 restricts use of "bank" / "banking" in a trade name unless the en
 
 | # | Name | Type | Positioning | s.22 (as Bank-suffix) | CIPC + TM signal | .za domain signal | SA 11-lang check | Mkt-fit | Sounds-when-said |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | **Cadens** | Invented (Latin *cadens*, "falling, settling") | Settled judgement; the bank that settles trades and settles questions. | Y | Likely clear (no SA mark I am aware of) | Likely available | Clear; no adverse readings I am aware of | Strong — institutional, low-noise | Crisp, two-syllable, KAY-denz; survives a noisy line |
-| 2 | **Numera** | Invented (Latin *numerus*, "number / measure") | Disciplined measurement; the bank that counts, in every sense. | Y | Unknown — possible TM conflict in software / accounting space; needs Imani | Likely contested | Clear | Strong — institutional, numerate, slightly cool | Three-syllable, noo-MEH-rah; slight ambiguity over noisy line |
-| 3 | **Argent** | Abstract noun (French / heraldic for "silver") | Quiet wealth, heraldic register, restraint. | with conditions — "Argent Bank" works; standalone "Argent" may collide with existing fintechs in EU/US | Contested — multiple "Argent" marks globally; needs Imani | Likely contested (.com taken; .co.za unknown) | Clear; "argent" reads as French silver, not adverse in SA languages I am aware of | Strong — institutional register | Two-syllable, AR-jent; clean over a phone line |
-| 4 | **Perigee** | Abstract noun (astronomical: closest approach) | The bank that gets close — to counterparties, to risk, to the right price. | Y | Likely clear in SA financial-services context | Likely available .co.za | Clear | Strong — distinctive, slight engineering / aerospace texture | Three-syllable, PEH-ri-jee; carries well |
-| 5 | **Veritas** | Abstract noun (Latin "truth") | Truth as institutional posture; auditable by name. | with conditions — "Veritas Bank" might survive but "Veritas" alone is heavily used in audit / consulting (e.g. Veritas Capital, Veritas Technologies) | Contested — many global TMs; needs Imani | .co.za likely contested | Clear | Strong but crowded — the name does what it says, but it is not distinctive | Three-syllable, VEH-ri-tahs; clean over a phone line |
-| 6 | **Ortus** | Invented (Latin *ortus*, "rising, origin") | A new institutional rising; origin-of-things. | Y | Likely clear in SA financial-services | Likely available .co.za | Clear; "ortus" reads as Latin, not adverse in SA languages I am aware of | Strong — distinctive, slightly poetic without losing institutional register | Two-syllable, OR-tuhs; clean |
-| 7 | **Eldred** | Invented / archaic (Old English "old counsel") | Wisdom, considered counsel; the bank that thinks before it acts. | Y | Likely clear (rare in financial services) | Likely available .co.za | Clear; reads as Anglo-archaic, no adverse SA-language readings I am aware of | Fit — distinctive but slightly retrospective; reads more "private bank" than "global markets" | Two-syllable, EL-dred; clean |
-| 8 | **Stadia** | Compound (Greek-rooted, plural of stadion; also "stages, phases") | Phased, structured progress; the bank that builds in stages. | Y | Unknown — possible TM conflicts in stadium-tech / sports-betting; needs Imani | .co.za likely contested | Clear; "stadia" reads as English, not adverse in SA languages I am aware of | Fit — institutional but with a slightly sport-tech echo from Google Stadia (defunct, but lingers) | Three-syllable, STAY-dee-ah; carries well |
-| 9 | **Hesse** | Place-reference (German region; also Hermann Hesse) | European-institutional restraint with literary undertone. | Y | Likely clear in SA financial-services; possible international TM (Hesse-state banks in Germany) | Likely available .co.za | Clear; reads as European place-name, no adverse SA-language readings I am aware of | Fit — institutional, restrained, but the place-reference may read as foreign in a SA-rooted bank | One-syllable, HES (rhymes with "less"); very clean over a phone line |
-| 10 | **Lumen** | Abstract noun (Latin "light"; SI unit of luminous flux) | Clarity; the bank that lights the path through markets. | with conditions — "Lumen" is the Lumen Technologies (formerly CenturyLink) trade name in US telecoms; "Lumen Bank" may survive but is in shadow | Contested — Lumen Technologies is a major global mark | .co.za likely contested | Clear | Strong as a metaphor; weakened by the Lumen Technologies overlap | Two-syllable, LOO-men; clean |
+| 1 | **Cadens** | Invented (Latin *cadens*, "settling") | The bank that settles trades and settles questions. | Y | Likely clear | Likely avail | Clear | Strong | KAY-denz; survives a noisy line |
+| 2 | **Numera** | Invented (Latin *numerus*) | Disciplined measurement; the bank that counts. | Y | Unknown — possible software/accounting TM | Likely contested | Clear | Strong | noo-MEH-rah; slight ambiguity on phone |
+| 3 | **Argent** | Abstract (heraldic "silver") | Quiet wealth, heraldic restraint. | with conditions | Contested — multiple global marks | Contested | Clear | Strong | AR-jent; clean |
+| 4 | **Perigee** | Abstract (astronomical: closest approach) | The bank that gets close — to counterparties, to the price. | Y | Likely clear | Likely avail | Clear | Strong; engineering texture | PEH-ri-jee; carries well |
+| 5 | **Veritas** | Abstract (Latin "truth") | Truth as institutional posture. | with conditions | Contested — many global TMs | Contested | Clear | Strong but crowded | VEH-ri-tahs; clean |
+| 6 | **Ortus** | Invented (Latin *ortus*, "rising") | A new institutional rising. | Y | Likely clear | Likely avail | Clear | Strong; slightly poetic | OR-tuhs; clean |
+| 7 | **Eldred** | Archaic (Old English "old counsel") | Considered counsel. | Y | Likely clear | Likely avail | Clear | Fit; reads "private bank" | EL-dred; clean |
+| 8 | **Stadia** | Compound (Greek; "stages") | Phased, structured progress. | Y | Unknown — sport/stadium TM risk | Contested | Clear | Fit; sport-tech echo (Google Stadia) | STAY-dee-ah; carries |
+| 9 | **Hesse** | Place-reference (German region) | European-institutional restraint, literary undertone. | Y | Likely clear in SA; intl TM risk (German Hesse-banks) | Likely avail | Clear | Fit; place-reference may read foreign | HES; very clean |
+| 10 | **Lumen** | Abstract (Latin "light"; SI unit) | Clarity. | with conditions | Contested — Lumen Technologies | Contested | Clear | Strong metaphor; overlap weakens | LOO-men; clean |
 
 ### 1.2 Constraints applied, candidates dropped
 
@@ -60,9 +60,9 @@ My recommended shortlist for the CEO to choose from, in preference order:
 
 ### 1.8 My single recommendation
 
-**Cadens.** It is the candidate I am most confident clears IP, holds up across regulator and counterparty surfaces, and ages well. I have thought about whether to recommend Ortus instead — it is slightly warmer — but I keep returning to Cadens for the precision of the meaning ("settling" is exactly what a bank does in the institutional global-markets lane) and for the auditory clarity. If you pick Ortus or Perigee instead I would be content; the rest of this brand package works against any of the three.
+**Cadens.** Most confident on IP-clearance; holds up across regulator and counterparty surfaces; ages well. The meaning ("settling") is precisely what a bank does in the institutional global-markets lane. If you pick Ortus or Perigee I would be content — the rest of this package works against any of the three.
 
-The full bank trade name at licence-grant becomes **Cadens Bank Limited**, with **Cadens** as the standalone brand mark in the build phase. CIPC and TM pre-clearance go to Imani as the next gate.
+Full trade name at licence-grant: **Cadens Bank Limited**, with **Cadens** as the standalone build-phase mark. CIPC and TM pre-clearance go to Imani as the next gate.
 
 ---
 

@@ -24,6 +24,7 @@ import atlasSubstrateState from "./agents/atlas-substrate-state";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
+import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
@@ -41,6 +42,7 @@ const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "anya:projection-drift": anyaProjectionDrift,
   "anya:projection-refresh": anyaProjectionRefresh,
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
+  "scrooge:ceo-decision-record": scroogeCeoDecisionRecord,
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,

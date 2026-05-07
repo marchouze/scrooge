@@ -23,6 +23,7 @@
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "agent:anya-projection-drift": "bun run runtime/run.ts --agent Anya --trigger projection-drift",
     "agent:scrooge-inbox-hygiene": "bun run runtime/run.ts --agent Scrooge --trigger inbox-hygiene",
+    "agent:scrooge-ceo-decision-record": "bun run runtime/run.ts --agent Scrooge --trigger ceo-decision-record",
     "agent:owen-governance-cycle-prep": "bun run runtime/run.ts --agent Owen --trigger governance-cycle-prep",
     "agent:mira-obligations-snapshot": "bun run runtime/run.ts --agent Mira --trigger obligations-snapshot",
     "agent:senna-security-substrate-state": "bun run runtime/run.ts --agent Senna --trigger security-substrate-state",

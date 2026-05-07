@@ -90,6 +90,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     ],
   }),
   entry("Scrooge", "inbox-hygiene", "scheduled", { cadenceHours: 24 }),
+  entry("Scrooge", "ceo-decision-record", "on-request"),
   entry("Owen", "governance-cycle-prep", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Mira", "obligations-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Mira", "citation-gate", "on-request"),

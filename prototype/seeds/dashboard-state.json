@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T12:52:54.056Z",
+  "asOf": "2026-05-07T13:02:45.808Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -28,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 30,
+      "ceoDecisionsActioned": 31,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -137,21 +137,27 @@
       "summary": "The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own."
     }
   ],
-  "decisionsOpen": [
+  "decisionsOpen": [],
+  "decisionsResolved": [
     {
       "id": "D-BANK-NAME-SELECTION",
-      "title": "Inaugural brand package — name longlist, logo concepts, palette, typography, voice",
-      "category": "near-term",
-      "owner": "Linnea",
-      "trigger": "First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.",
-      "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md"
-      ],
-      "note": "Recommendation: My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback."
-    }
-  ],
-  "decisionsResolved": [
+      "title": "Bank name — selection from Linnea inaugural shortlist",
+      "actionedAt": "2026-05-07T13:01:31.092Z",
+      "outcome": "Cadens (default-pick from Linnea's recommendation; Marc to override if he wants Ortus or Perigee). Imani opens naming pre-clearance as the gate before adoption.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "Default pick per CEO non-override pattern; revisable until Imani naming pre-clearance lands."
+    },
+    {
+      "id": "D-BRAND-DESIGN-HIRE",
+      "title": "PAX role brief — Brand & design lead",
+      "actionedAt": "2026-05-07T13:00:31.814Z",
+      "outcome": "Approved as drafted. Linnea selected as the persona name from the CEO-approved candidate set; new agent ships inaugural brand package this session.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
     {
       "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
       "title": "Markets franchise design — proposal",
@@ -161,15 +167,6 @@
       "action": "request-revision",
       "actionedBy": "marc@tgv.co.za",
       "comment": "add FX"
-    },
-    {
-      "id": "D-BRAND-DESIGN-HIRE",
-      "title": "Role brief — Brand & design lead",
-      "actionedAt": "2026-05-07T12:15:20.851Z",
-      "outcome": "Approved as drafted.",
-      "sourceDoc": "(unsourced)",
-      "action": "approve",
-      "actionedBy": "marc@tgv.co.za"
     },
     {
       "id": "D-OI-PAX-BRAND-DESIGN-ROLE-BRIEF",
@@ -538,18 +535,18 @@
         },
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
+          "title": "scrooge · ceo decision record · d brand design hire"
+        },
+        {
+          "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
+          "title": "scrooge · ceo decision record · d bank name selection"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
           "title": "procedure audit actor and citation"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_scrooge_inbox-hygiene.md",
-          "title": "scrooge · inbox hygiene"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_persona-agent-spec-rollout.md",
-          "title": "persona agent spec rollout"
         }
       ],
       "lastActivityAt": "2026-05-07",
@@ -1382,6 +1379,22 @@
       "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
     },
     {
+      "filename": "2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — CEO decision record: D-BRAND-DESIGN-HIRE, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — CEO decision record: D-BANK-NAME-SELECTION, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
       "filename": "2026-05-07_saskia_markets-franchise-design-proposal.md",
       "path": "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md",
       "date": "2026-05-07",
@@ -1532,7 +1545,7 @@
       "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
       "decisionRecommendation": "My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback.",
       "decisionOwner": "Linnea",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
@@ -1549,24 +1562,6 @@
       "decisionRequired": false,
       "author": "Imani",
       "summary": "Deep-dive on the 17 Y-marked Priority-A counterparties from Niko's top-100 list. Per-counterparty ISDA-Master version signal, last-amendment public signal, SA-bespoke clause exposures, CSA-readiness signal, GMRA / GMSLA exposure where bond-repo / sec-lend is in scope, and the bilateral-template work each counterparty surfaces. Build-phase legal output; no commercial commitments, no privileged communications."
-    },
-    {
-      "filename": "2026-05-07_ceo-decisions_fx-sub-decisions.md",
-      "path": "Owner Inbox/2026-05-07_ceo-decisions_fx-sub-decisions.md",
-      "date": "2026-05-07",
-      "title": "CEO decisions — FX sub-decisions (AD status; CLS membership; book boundary)",
-      "decisionRequired": false,
-      "author": "Marc · Scrooge (record)",
-      "summary": "Three sub-decisions surfaced in the FX product-family deliverable, resolved together. Full SARB Authorised-Dealer pursued. FX settlement via correspondent routing (no direct CLS membership). Markets-vs-treasury book boundary set at execution time, no post-hoc reclassification."
-    },
-    {
-      "filename": "2026-05-07_ceo-decision_samos-non-clearing.md",
-      "path": "Owner Inbox/2026-05-07_ceo-decision_samos-non-clearing.md",
-      "date": "2026-05-07",
-      "title": "CEO decision — D-SAMOS-NON-CLEARING (bank is not a SAMOS clearing participant)",
-      "decisionRequired": false,
-      "author": "Marc · Scrooge (record)",
-      "summary": "The bank does not become a direct SAMOS settlement participant. ZAR clearing flows via a SAMOS-sponsor bank under the indirect participant model. Same operating posture as the FX correspondent decision — capital-light, ops-light, sponsor-routed access to critical market-infrastructures. Touches the licence-type question and routes through Mira / Imani / Saskia for confirmation."
     }
   ],
   "prototype": {
