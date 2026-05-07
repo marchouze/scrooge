@@ -26,6 +26,8 @@
     "agent:owen-governance-cycle-prep": "bun run runtime/run.ts --agent Owen --trigger governance-cycle-prep",
     "agent:mira-obligations-snapshot": "bun run runtime/run.ts --agent Mira --trigger obligations-snapshot",
     "agent:senna-security-substrate-state": "bun run runtime/run.ts --agent Senna --trigger security-substrate-state",
+    "agent:mira-citation-gate": "bun run runtime/run.ts --agent Mira --trigger citation-gate",
+    "agent:anya-projection-refresh": "bun run runtime/run.ts --agent Anya --trigger projection-refresh",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

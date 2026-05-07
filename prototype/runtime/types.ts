@@ -6,10 +6,18 @@
 // and discharges its mandate; this is the substrate that turns the spec
 // into actual runs.
 //
-// MVP scope: scheduled triggers only (cron-style). Event triggers and
-// on-request triggers land in V2 (gated on AgentEscalation /
-// WorkstreamRegistered event types existing — see Vera's spec, pipelines
-// #14, #15).
+// All three trigger kinds are now first-class:
+//   - "scheduled":    fired by cron via .github/workflows/agent-runtime-*.yml
+//   - "event-driven": fired in-process when an event of a subscribed type
+//                     is appended during another agent's run. Today this
+//                     is fan-out within a single process (the runtime
+//                     dispatches downstream handlers after a parent run);
+//                     the cross-process / cross-workflow shape is event-bus
+//                     work for the Azure cloud lift (M8).
+//   - "on-request":   fired via `bun run agent:<slug>` from the CLI or a
+//                     workflow_dispatch with no cron entry. Distinct from
+//                     scheduled because there's no recurring cadence; it
+//                     runs when something asks it to.
 //
 // Author: Atlas (runtime plumbing) · Anya (event integration)
 

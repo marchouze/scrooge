@@ -16,9 +16,12 @@
 
 import { resolve } from "node:path";
 
+import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import anyaProjectionDrift from "./agents/anya-projection-drift";
+import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
+import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
@@ -26,8 +29,22 @@ import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state
 import veraOvernightRecon from "./agents/vera-overnight-recon";
 import type { AgentRunContext, AgentRunHandler, AgentRunOutput, TriggerKind } from "./types";
 
+interface HandlerEntry {
+  /** Trigger classification. */
+  readonly kind: TriggerKind;
+  /** The handler itself. */
+  readonly handler: AgentRunHandler;
+  /**
+   * For event-driven entries: the event types this handler subscribes to.
+   * Empty for scheduled / on-request entries. After a parent run, the
+   * runtime fans out to any event-driven handler whose subscribesTo
+   * intersects the set of types appended during the parent run.
+   */
+  readonly subscribesTo?: readonly string[];
+}
+
 // Static handler registry. Keyed by `<lowercased-agent>:<trigger-id>`.
-const HANDLERS: Record<string, { kind: TriggerKind; handler: AgentRunHandler }> = {
+const HANDLERS: Record<string, HandlerEntry> = {
   "vera:overnight-recon": { kind: "scheduled", handler: veraOvernightRecon },
   "atlas:substrate-state": { kind: "scheduled", handler: atlasSubstrateState },
   "anya:projection-drift": { kind: "scheduled", handler: anyaProjectionDrift },
@@ -35,6 +52,25 @@ const HANDLERS: Record<string, { kind: TriggerKind; handler: AgentRunHandler }> 
   "owen:governance-cycle-prep": { kind: "scheduled", handler: owenGovernanceCyclePrep },
   "mira:obligations-snapshot": { kind: "scheduled", handler: miraObligationsSnapshot },
   "senna:security-substrate-state": { kind: "scheduled", handler: sennaSecuritySubstrateState },
+  // On-request: invoked ad-hoc, not on a schedule. The CI gate runs as
+  // part of `bun run ci`; the agent shape is the on-demand surface for the
+  // same machinery (Marc, an automation, or a workflow_dispatch can fire
+  // it without waiting for the next cron tick).
+  "mira:citation-gate": { kind: "on-request", handler: miraCitationGate },
+  // Event-driven: fires when any of the named event types is appended
+  // within a parent agent run. Refreshes the dashboard projection cache
+  // whenever substrate state changes. Demonstrative subscription set;
+  // expand as more event types come online.
+  "anya:projection-refresh": {
+    kind: "event-driven",
+    handler: anyaProjectionRefresh,
+    subscribesTo: [
+      "SubstrateStateSnapshot",
+      "WorkstreamRegistered",
+      "WorkstreamCompleted",
+      "CeoDecision",
+    ],
+  },
 };
 
 interface CliArgs {
@@ -91,6 +127,10 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     "agent run started",
   );
   const t0 = Date.now();
+  // Capture the event-store sequence pointer before the run so we can
+  // observe what new event types this run appended (for event-driven
+  // fan-out below).
+  const seqBefore = eventStore.count();
   const result = await entry.handler(ctx);
   const ms = Date.now() - t0;
   logger.info(
@@ -104,7 +144,75 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     },
     `agent run finished: ${result.summary}`,
   );
+
+  // Event-driven fan-out: if this parent run was scheduled or on-request,
+  // dispatch any event-driven handlers whose `subscribesTo` intersects
+  // the set of event types appended during this run. We do NOT recurse
+  // into event-driven handlers themselves — that would risk loops.
+  if (entry.kind !== "event-driven" && !ctx.dryRun) {
+    const newEventTypes = new Set<string>();
+    for (const e of eventStore.replay({ fromSequence: seqBefore + 1 })) {
+      newEventTypes.add(e.type);
+    }
+    if (newEventTypes.size > 0) {
+      const triggered: string[] = [];
+      for (const [k, e] of Object.entries(HANDLERS)) {
+        if (e.kind !== "event-driven") continue;
+        const subs = e.subscribesTo ?? [];
+        if (subs.some((t) => newEventTypes.has(t))) triggered.push(k);
+      }
+      for (const tk of triggered) {
+        const tEntry = HANDLERS[tk];
+        if (!tEntry) continue;
+        const [tAgent, tTrigger] = tk.split(":");
+        if (!tAgent || !tTrigger) continue;
+        const tCtx: AgentRunContext = {
+          agent: capitalise(tAgent),
+          trigger: { kind: "event-driven", id: tTrigger },
+          asOf: new Date().toISOString(),
+          repoRoot,
+          ownerInboxDir: resolve(repoRoot, "Owner Inbox"),
+          dryRun: ctx.dryRun,
+        };
+        logger.info(
+          {
+            parent: `${ctx.agent}:${ctx.trigger.id}`,
+            triggered: tk,
+            triggerEventTypes: [...newEventTypes].filter((t) =>
+              (tEntry.subscribesTo ?? []).includes(t),
+            ),
+          },
+          "event-driven dispatch",
+        );
+        try {
+          const tResult = await tEntry.handler(tCtx);
+          logger.info(
+            {
+              triggered: tk,
+              ok: tResult.ok,
+              eventsEmitted: tResult.eventsEmitted,
+              deliverable: tResult.deliverable,
+            },
+            `event-driven handler finished: ${tResult.summary}`,
+          );
+        } catch (e) {
+          // Event-driven failures are non-fatal to the parent run — the
+          // parent's deliverable + events are already valuable. Log and
+          // continue; surface as a substrate-gap if it recurs.
+          logger.error(
+            { triggered: tk, err: (e as Error).message },
+            "event-driven handler failed (non-fatal to parent)",
+          );
+        }
+      }
+    }
+  }
+
   return result;
+}
+
+function capitalise(s: string): string {
+  return s.length === 0 ? s : (s[0]?.toUpperCase() ?? "") + s.slice(1);
 }
 
 // CLI entry — only when invoked directly.

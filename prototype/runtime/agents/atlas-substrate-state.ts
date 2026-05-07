@@ -18,6 +18,7 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { makeRiskRaised } from "../../platform/event-store/event-types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -151,6 +152,13 @@ function knownRuntimeHandlers(): RuntimeHandlerStat[] {
   return [
     { agent: "Vera", trigger: "overnight-recon" },
     { agent: "Atlas", trigger: "substrate-state" },
+    { agent: "Anya", trigger: "projection-drift" },
+    { agent: "Anya", trigger: "projection-refresh" },
+    { agent: "Scrooge", trigger: "inbox-hygiene" },
+    { agent: "Owen", trigger: "governance-cycle-prep" },
+    { agent: "Mira", trigger: "obligations-snapshot" },
+    { agent: "Mira", trigger: "citation-gate" },
+    { agent: "Senna", trigger: "security-substrate-state" },
   ];
 }
 
@@ -173,12 +181,12 @@ function recentDeliverablesCount(ownerInboxDir: string): number {
 // Curated rather than derived; V2 reads them from a substrate-gap register
 // once one exists (per Vera spec § 16, planned recon pipeline #13).
 const KNOWN_SUBSTRATE_GAPS: readonly string[] = [
-  "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite remains canonical-shape on every host. Bidirectional sync runs before/after every agent workflow via `bun run event-store:sync`. Senna threat model approved-with-conditions for build-phase use only — see `Owner Inbox/2026-05-07_senna_neon-event-store-threat-model.md` §5 for the hardening list (drop role to SELECT+INSERT, IP allowlist, rotation cadence) required before any sensitive-data event flows here. M8 cloud lift swaps Neon for Neon-on-Azure or Azure Postgres without code change.",
-  "AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised event types not yet defined. Vera pipelines #14/#15 and the dashboard's curated-seed retirement are gated on these.",
-  "Event-driven and on-request triggers not yet implemented in the runtime — only scheduled. V2 of the runtime work.",
+  "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite remains canonical-shape on every host. Bidirectional sync runs before/after every agent workflow via `bun run event-store:sync`. Senna threat model APPROVED for build-phase use under exception `TM-NEON-EVENT-STORE-001` (Owen's substrate-exception register). Hardening conditions §5.1 (role downgrade to SELECT+INSERT) and §5.2 (IP allowlist) deferred while events remain non-sensitive; required before any sensitive-data event flows. M8 cloud lift swaps Neon for Neon-on-Azure or Azure Postgres without code change.",
+  "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised — DEFINED in `platform/event-store/event-types.ts` with Zod payload schemas and typed `make<Type>` factories. Atlas now emits one RiskRaised per substrate gap on his weekly run, exercising the schema. The remaining three types are available for handlers to adopt as their decision / escalation / workstream paths are wired; Vera's audit pipelines #14/#15 and the dashboard's curated-seed retirement now have substrate to consume.",
+  "Runtime trigger kinds: scheduled, event-driven, and on-request are all first-class in `runtime/run.ts`. Event-driven dispatch fans out in-process from a parent run when the parent appended an event type a downstream handler subscribes to; cross-process / cross-workflow event-bus is M8 cloud-lift work. On-request handlers are dispatched via `bun run agent:<slug>` or workflow_dispatch with no schedule (first example: `mira:citation-gate`).",
   "Claude API integration for agent-narrative output: ROLLED OUT. All seven runtime handlers (Vera, Atlas, Mira, Owen, Senna, Anya, Scrooge) call `tryGenerateNarrative` after their mechanical pass. Each has a stable persona-grounded system prompt cached as the prefix; per-run state is the volatile suffix. Requires ANTHROPIC_API_KEY in the host env or GitHub Actions secret; runs degrade gracefully when unset.",
-  "Projection-cache persistence is partial; Anya's daily projection-drift sweep is not yet a runtime handler.",
-  "Citation gate runs as a separate script (bun run citation-gate) outside the runtime; not yet wrapped as an agent run.",
+  "Projection-cache persistence: now closed by `anya:projection-refresh`, an event-driven handler subscribed to SubstrateStateSnapshot / WorkstreamRegistered / WorkstreamCompleted / CeoDecision. Re-derives `prototype/seeds/dashboard-state.json` from canonical sources + the live event store and writes it to disk. Fans out from any parent run whose appended events match the subscription set; emits `DashboardProjectionRefreshed` for audit.",
+  "Citation gate: now wrapped as `mira:citation-gate` (on-request). Walks the event store, emits `CitationGatePassed` / `CitationGateFailed` and one `AuditFinding` per missing-citation event. Workflow at `.github/workflows/agent-runtime-mira-citation-gate.yml` (workflow_dispatch only — the gate is also still part of the `ci` script for synchronous CI verification).",
 ];
 
 function buildState(ctx: AgentRunContext): SubstrateState {
@@ -369,6 +377,40 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       },
     });
     eventsEmitted = 1;
+
+    // Emit one RiskRaised per substrate gap. Each gap is a forward risk
+    // (control not yet substrate-complete) — the natural place to record
+    // it as a typed risk in the event stream rather than only in prose.
+    // Severity heuristic: gaps containing "load-bearing" / "blocking" /
+    // "Vera pipelines" → high; others → medium. The classification is
+    // conservative; Helena's risk-cycle reconciliation refines later.
+    const riskActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
+    for (let i = 0; i < state.knownSubstrateGaps.length; i++) {
+      const gap = state.knownSubstrateGaps[i];
+      if (!gap) continue;
+      const high = /load-bearing|blocking|Vera pipelines|gate/i.test(gap);
+      eventStore.append(
+        makeRiskRaised({
+          asOf: ctx.asOf,
+          entity: "BANK-ZA-001",
+          actor: riskActor,
+          citations: EVENT_CITATIONS,
+          payload: {
+            riskId: `risk:atlas:substrate-gap-${i + 1}`,
+            raisedBy: "Atlas",
+            description: gap.length > 240 ? `${gap.slice(0, 237)}...` : gap,
+            category: "operational/substrate",
+            severity: high ? "high" : "medium",
+            likelihood: "almost-certain",
+            mitigation: /APPROVED|approved|ROLLED OUT|rolled out/i.test(gap)
+              ? "partial"
+              : "none",
+            relatedTo: "Atlas substrate-gap inventory",
+          },
+        }),
+      );
+      eventsEmitted++;
+    }
   }
 
   // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
