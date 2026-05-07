@@ -52,16 +52,35 @@ const CADENCE_HOURS = {
 // "spec-only" personas on the health page.
 const RUNTIME_AGENTS = new Set(["vera", "anya", "scrooge", "atlas", "owen", "mira", "senna"]);
 
-function statusFor(agentName, lastActivityAt, asOf) {
+function statusFor(agentName, lastActivityAt, asOf, latestRun) {
   const key = agentName.toLowerCase();
   const cadenceH = CADENCE_HOURS[key];
   if (cadenceH === undefined) return { tag: "spec-only", label: "spec only" };
+
+  // Run conclusion (from /api/agent-runs) is the strongest signal.
+  // A failed most-recent run is red regardless of deliverable age, because
+  // it means the agent ran but produced no deliverable — the
+  // deliverable-age signal alone would silently miss this.
+  if (latestRun && latestRun.status === "completed") {
+    if (latestRun.conclusion === "failure") {
+      return { tag: "red", label: `last run failed (${latestRun.createdAt.slice(0, 10)})` };
+    }
+    if (latestRun.conclusion === "cancelled") {
+      return { tag: "amber", label: `last run cancelled (${latestRun.createdAt.slice(0, 10)})` };
+    }
+  }
+  if (latestRun && latestRun.status === "in_progress") {
+    return { tag: "green", label: "in progress" };
+  }
+
+  // Fall back to deliverable-age signal.
   if (!lastActivityAt) return { tag: "red", label: "no run on record" };
   const ageMs = new Date(asOf).getTime() - new Date(lastActivityAt).getTime();
   const ageH = ageMs / 1000 / 60 / 60;
   if (ageH < 0) return { tag: "green", label: `ran ${Math.round(-ageH)}h in the future (clock skew)` };
   if (ageH <= cadenceH) return { tag: "green", label: `ran ${Math.round(ageH)}h ago` };
-  if (ageH <= cadenceH * 1.5) return { tag: "amber", label: `${Math.round(ageH)}h since last run (cadence ${cadenceH}h)` };
+  if (ageH <= cadenceH * 1.5)
+    return { tag: "amber", label: `${Math.round(ageH)}h since last run (cadence ${cadenceH}h)` };
   return { tag: "red", label: `${Math.round(ageH)}h since last run (cadence ${cadenceH}h)` };
 }
 
@@ -114,7 +133,7 @@ function renderAggregateStats(state) {
     runtime: { green: 0, amber: 0, red: 0 },
   };
   for (const p of personas) {
-    const s = statusFor(p.name, p.lastActivityAt, state.asOf);
+    const s = statusFor(p.name, p.lastActivityAt, state.asOf, latestRunByAgent[p.name.toLowerCase()]);
     if (s.tag === "green" || s.tag === "amber" || s.tag === "red") counts.runtime[s.tag]++;
   }
   const stats = [
@@ -137,7 +156,7 @@ function renderAggregateStats(state) {
 }
 
 function renderHealthCard(persona, state) {
-  const status = statusFor(persona.name, persona.lastActivityAt, state.asOf);
+  const status = statusFor(persona.name, persona.lastActivityAt, state.asOf, latestRunByAgent[persona.name.toLowerCase()]);
   const card = el("article", { class: `health-card health-${status.tag}` });
   const head = el("header", { class: "health-head" }, [
     el("span", { class: `health-light health-light-${status.tag}` }),
@@ -160,8 +179,8 @@ function renderRuntimeAgents(state) {
   // Sort by status severity: red first, then amber, then green.
   const order = { red: 0, amber: 1, green: 2 };
   onRuntime.sort((a, b) => {
-    const sa = statusFor(a.name, a.lastActivityAt, state.asOf).tag;
-    const sb = statusFor(b.name, b.lastActivityAt, state.asOf).tag;
+    const sa = statusFor(a.name, a.lastActivityAt, state.asOf, latestRunByAgent[a.name.toLowerCase()]).tag;
+    const sb = statusFor(b.name, b.lastActivityAt, state.asOf, latestRunByAgent[b.name.toLowerCase()]).tag;
     return (order[sa] ?? 99) - (order[sb] ?? 99);
   });
   for (const p of onRuntime) root.appendChild(renderHealthCard(p, state));
@@ -200,13 +219,26 @@ function renderSpecOnlyPersonas(state) {
   $("specOnlySub").textContent = `${specOnly.length} persona${specOnly.length === 1 ? "" : "s"} (substrate gap)`;
 }
 
+// Latest run per agent name (lower-case keyed). Refreshed alongside /api/state.
+let latestRunByAgent = {};
+
 async function load() {
   const live = $("liveDot");
   const stamp = $("lastUpdated");
   try {
-    const r = await fetch("/api/state", { cache: "no-store" });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const state = await r.json();
+    const [stateR, runsR] = await Promise.all([
+      fetch("/api/state", { cache: "no-store" }),
+      fetch("/api/agent-runs", { cache: "no-store" }).catch(() => null),
+    ]);
+    if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
+    const state = await stateR.json();
+    latestRunByAgent = {};
+    if (runsR && runsR.ok) {
+      const data = await runsR.json();
+      for (const [agent, runs] of Object.entries(data.byAgent ?? {})) {
+        if (runs.length > 0) latestRunByAgent[agent.toLowerCase()] = runs[0];
+      }
+    }
     renderStrategyBanner(state);
     renderAggregateStats(state);
     renderRuntimeAgents(state);

@@ -1770,3 +1770,64 @@ main {
   font-size: 12.5px;
   color: var(--text);
 }
+
+/* ---------- Recent autonomous runs (per-agent strip) ---------- */
+.runs-section {
+  /* slightly tighter than other sections */
+}
+.run-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.run-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 10.5px;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-soft);
+  color: var(--text);
+  line-height: 1.2;
+  min-width: 70px;
+}
+.run-badge:hover {
+  filter: brightness(0.97);
+}
+.run-badge .run-time {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.run-badge .run-conclusion {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+.run-badge.run-good {
+  background: var(--good-soft);
+  border-color: var(--good);
+  color: var(--good);
+}
+.run-badge.run-bad {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.run-badge.run-cancelled {
+  background: var(--warn-soft);
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.run-badge.run-in-progress {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-deep);
+}
+.run-badge.run-neutral {
+  /* default neutral */
+}

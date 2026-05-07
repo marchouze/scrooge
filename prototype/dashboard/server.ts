@@ -35,6 +35,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
+import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { saveState } from "./registry";
 import type {
@@ -317,6 +318,19 @@ const server = Bun.serve({
     const url = new URL(req.url);
     if (url.pathname === "/api/state" && req.method === "GET") {
       return jsonResponse(cachedState);
+    }
+    if (url.pathname === "/api/agent-runs" && req.method === "GET") {
+      // GitHub Actions run history per agent — for the per-agent "Recent
+      // runs" enrichment on /agents.html and the conclusion-aware
+      // traffic-light on /health.html. 5-minute server-side cache.
+      const result = await getAgentRuns();
+      return jsonResponse({
+        fetchedAt: new Date(result.fetchedAt).toISOString(),
+        cacheAgeMs: result.cacheAgeMs,
+        ...(result.error ? { error: result.error } : {}),
+        byAgent: groupByAgent(result.runs, 5),
+        all: result.runs,
+      });
     }
     if (url.pathname === "/api/refresh" && req.method === "POST") {
       refresh("api-refresh");

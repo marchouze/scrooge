@@ -269,6 +269,11 @@ function renderAgentCard(a) {
     card.appendChild(subBlock);
   }
 
+  // Recent autonomous-run history (from /api/agent-runs). Only renders for
+  // runtime-registered agents — others get no section.
+  const runsBlock = renderRecentRunsSection(a.name);
+  if (runsBlock) card.appendChild(runsBlock);
+
   // Own workstreams (active first, then recently completed).
   // Heading is qualified to disambiguate from subordinate rollup above.
   const wsCount = a.activeWorkstreams.length + a.recentlyCompletedWorkstreams.length;
@@ -366,13 +371,100 @@ function renderStrategyBanner(state) {
   banner.appendChild(el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`));
 }
 
+// Mapping of agent name → recent runs from /api/agent-runs. Refreshed
+// alongside /api/state on each load tick.
+let agentRunsByAgent = {};
+
+function fmtDuration(ms) {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rs = s - m * 60;
+  return `${m}m ${rs}s`;
+}
+
+function fmtTime(iso) {
+  if (!iso) return "—";
+  return iso.slice(11, 16); // HH:MM
+}
+
+function renderRunBadge(run) {
+  const cls =
+    run.status !== "completed"
+      ? "in-progress"
+      : run.conclusion === "success"
+        ? "good"
+        : run.conclusion === "failure"
+          ? "bad"
+          : run.conclusion === "cancelled"
+            ? "cancelled"
+            : "neutral";
+  const label =
+    run.status !== "completed"
+      ? run.status
+      : (run.conclusion ?? "unknown");
+  const triggerSrc = run.event === "schedule" ? "cron" : run.event === "workflow_dispatch" ? "manual" : run.event;
+  const tip = `${run.workflowName} · ${run.createdAt.slice(0, 16).replace("T", " ")} UTC · ${fmtDuration(run.durationMs)} · ${triggerSrc} · ${label}`;
+  const a = el(
+    "a",
+    {
+      href: run.url,
+      target: "_blank",
+      rel: "noopener",
+      class: `run-badge run-${cls}`,
+      title: tip,
+    },
+    [
+      el("span", { class: "run-time" }, fmtTime(run.createdAt)),
+      el("span", { class: "run-conclusion" }, label),
+    ],
+  );
+  return a;
+}
+
+function renderRecentRunsSection(agentName) {
+  const runs = agentRunsByAgent[agentName] ?? [];
+  if (runs.length === 0) return null;
+  const block = el("section", { class: "agent-section runs-section" }, [
+    el("h4", {}, [
+      "Recent autonomous runs ",
+      el("span", { class: "muted small" }, `(last ${runs.length})`),
+    ]),
+  ]);
+  const strip = el("div", { class: "run-strip" });
+  for (const run of runs) strip.appendChild(renderRunBadge(run));
+  block.appendChild(strip);
+  return block;
+}
+
+function renderStrategyBanner(state) {
+  const banner = $("strategyBanner");
+  if (!banner) return;
+  const phase = state.bank?.operatingPosture ?? "—";
+  const openCount = (state.decisionsOpen ?? []).length;
+  const agentCount = (state.agents ?? []).length;
+  banner.innerHTML = "";
+  banner.appendChild(el("span", { class: "banner-phase" }, `Phase: ${phase}`));
+  banner.appendChild(el("span", { class: "banner-sep" }, " · "));
+  banner.appendChild(el("span", {}, `${openCount} CEO decision${openCount === 1 ? "" : "s"} open`));
+  banner.appendChild(el("span", { class: "banner-sep" }, " · "));
+  banner.appendChild(el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`));
+}
+
 async function load() {
   const live = $("liveDot");
   const stamp = $("lastUpdated");
   try {
-    const r = await fetch("/api/state", { cache: "no-store" });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const state = await r.json();
+    const [stateR, runsR] = await Promise.all([
+      fetch("/api/state", { cache: "no-store" }),
+      fetch("/api/agent-runs", { cache: "no-store" }).catch(() => null),
+    ]);
+    if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
+    const state = await stateR.json();
+    agentRunsByAgent =
+      runsR && runsR.ok ? ((await runsR.json()).byAgent ?? {}) : {};
     const agents = state.agents ?? [];
     renderStrategyBanner(state);
     renderSummary(agents);
