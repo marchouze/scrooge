@@ -35,7 +35,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
-import { recordCeoDecision } from "../runtime/decisions/record";
+import { recordCeoDecision, recordDecisionComment } from "../runtime/decisions/record";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { saveState } from "./registry";
@@ -196,6 +196,47 @@ async function handleDecide(req: Request): Promise<Response> {
     "CEO decision recorded via dashboard",
   );
   return jsonResponse({ ok: true, resolved, eventId: result.eventId });
+}
+
+async function handleComment(req: Request): Promise<Response> {
+  let body: { decisionId?: string; body?: string; inReplyToEventId?: string };
+  try {
+    body = (await req.json()) as { decisionId?: string; body?: string; inReplyToEventId?: string };
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (!body.decisionId || !body.body) {
+    return jsonResponse({ error: "decisionId and body are required" }, 400);
+  }
+
+  // Single-user-local actor binding — mirrors handleDecide. Real
+  // identity seam is deferred substrate work.
+  const actorId = "marc@tgv.co.za";
+  const author = "Marc";
+
+  let result;
+  try {
+    result = recordDecisionComment(
+      {
+        decisionId: body.decisionId,
+        author,
+        actorType: "human",
+        actorId,
+        body: body.body,
+        ...(typeof body.inReplyToEventId === "string" ? { inReplyToEventId: body.inReplyToEventId } : {}),
+      },
+      nowUtc(),
+    );
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+
+  refresh("comment");
+  logger.info(
+    { decisionId: body.decisionId, eventId: result.eventId },
+    "decision comment recorded via dashboard",
+  );
+  return jsonResponse({ ok: true, eventId: result.eventId });
 }
 
 async function handleStartWorkstream(req: Request): Promise<Response> {
@@ -362,6 +403,9 @@ const server = Bun.serve({
     }
     if (url.pathname === "/api/decide" && req.method === "POST") {
       return handleDecide(req);
+    }
+    if (url.pathname === "/api/decisions/comment" && req.method === "POST") {
+      return handleComment(req);
     }
     if (url.pathname === "/api/inflight/start" && req.method === "POST") {
       return handleStartWorkstream(req);

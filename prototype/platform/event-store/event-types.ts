@@ -256,6 +256,51 @@ export function makeRiskRaised(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DecisionComment
+//
+// Append-only thread of comments / notes on a decisionId. Used for the
+// dashboard's per-decision discussion surface. Author can be a human
+// (`human:<email>`) or an agent (`agent:<name>`); the actor field on
+// the event envelope carries the strong identity, the payload carries
+// the human-readable display name and threading metadata.
+//
+// No edit / delete in V1 — append-only audit. Corrections land as a
+// new comment that references the original via inReplyToEventId.
+// ---------------------------------------------------------------------------
+
+export const decisionCommentPayloadSchema = z.object({
+  /** The decision being commented on. Must match an existing decisionId. */
+  decisionId: z.string().min(1),
+  /** Display name of the author (e.g. "Marc", "Atlas", "Vera"). The actor envelope is the strong identity. */
+  author: z.string().min(1),
+  /** Comment body. Markdown allowed. */
+  body: z.string().min(1),
+  /** Optional event_id of a parent comment, for threaded replies. */
+  inReplyToEventId: z.string().optional(),
+});
+
+export type DecisionCommentPayload = z.infer<typeof decisionCommentPayloadSchema>;
+
+export function makeDecisionComment(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: DecisionCommentPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "DecisionComment",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: decisionCommentPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
 // ---------------------------------------------------------------------------
@@ -265,6 +310,7 @@ export const TYPED_EVENT_TYPES = [
   "AgentDecision",
   "WorkstreamRegistered",
   "RiskRaised",
+  "DecisionComment",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

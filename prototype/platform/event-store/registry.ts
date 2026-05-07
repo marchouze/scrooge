@@ -38,6 +38,7 @@ import type { z } from "zod";
 import {
   agentDecisionPayloadSchema,
   agentEscalationPayloadSchema,
+  decisionCommentPayloadSchema,
   riskRaisedPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
@@ -396,6 +397,16 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     source: "runtime/agents/anya-projection-drift.ts",
+  },
+  {
+    type: "DecisionComment",
+    class: "governance",
+    payloadSchema: decisionCommentPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    source: "dashboard decision-comments thread (Phase 1 slice 2)",
   },
   {
     type: "GovernanceCyclePrep",

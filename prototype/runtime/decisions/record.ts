@@ -16,6 +16,7 @@
 
 import { eventStore } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { makeDecisionComment } from "../../platform/event-store/event-types";
 import type { Event } from "../../platform/event-store/types";
 
 /** Valid CEO actions. Mirrors `dashboard/types.ts` DecisionAction. */
@@ -100,6 +101,58 @@ export function recordCeoDecision(
       recordedVia: input.recordedVia ?? "unknown",
     },
   };
+
+  eventStore.append(event);
+
+  return { event, eventId: event.event_id };
+}
+
+// ---------------------------------------------------------------------------
+// Decision comments — append-only thread on a decisionId.
+// ---------------------------------------------------------------------------
+
+export interface RecordDecisionCommentInput {
+  readonly decisionId: string;
+  readonly author: string; // display name, e.g. "Marc", "Atlas"
+  readonly actorType: "human" | "service" | "system";
+  readonly actorId: string; // strong identity, e.g. "marc@tgv.co.za", "agent:atlas"
+  readonly body: string;
+  readonly inReplyToEventId?: string;
+}
+
+export interface RecordDecisionCommentResult {
+  readonly event: Event;
+  readonly eventId: string;
+}
+
+/**
+ * Append a DecisionComment event. Append-only audit — comments don't
+ * edit / delete; corrections land as a new comment that quotes the
+ * original.
+ */
+export function recordDecisionComment(
+  input: RecordDecisionCommentInput,
+  asOf: string,
+): RecordDecisionCommentResult {
+  if (!input.decisionId) throw new Error("decisionId is required");
+  if (!input.author) throw new Error("author is required");
+  if (!input.actorId) throw new Error("actorId is required");
+  if (!input.body || input.body.trim().length === 0) {
+    throw new Error("body is required and must be non-empty");
+  }
+
+  const event = makeDecisionComment({
+    asOf,
+    entity: "BANK-ZA-001",
+    actor: { type: input.actorType, id: input.actorId },
+    citations: EVENT_CITATIONS,
+    payload: {
+      decisionId: input.decisionId,
+      author: input.author,
+      body: input.body,
+      ...(input.inReplyToEventId ? { inReplyToEventId: input.inReplyToEventId } : {}),
+    },
+  });
 
   eventStore.append(event);
 

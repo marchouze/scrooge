@@ -224,6 +224,7 @@ function makeFixture(): Fixture {
         workstreamRegistrations: () => [],
         agentEscalations: () => [],
         auditFindings: () => [],
+        decisionComments: () => [],
       };
     },
   };

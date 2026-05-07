@@ -230,6 +230,17 @@ export interface FindingSummary {
   asOf: string; // ISO 8601 — when raised
 }
 
+export interface DecisionCommentSummary {
+  eventId: string;
+  decisionId: string;
+  author: string; // display name
+  actorType: "human" | "service" | "system";
+  actorId: string; // strong identity
+  body: string;
+  inReplyToEventId?: string;
+  asOf: string;
+}
+
 export interface RuntimeHandlerInfo {
   agent: string; // matches /Team/<Name>.md
   trigger: string; // trigger id (e.g. "overnight-recon")
@@ -253,6 +264,8 @@ export interface DashboardState {
   risks: readonly string[];
   findings: readonly FindingSummary[];
   runtimeHandlers: readonly RuntimeHandlerInfo[];
+  /** Comments per decisionId — append-only thread, oldest first. */
+  decisionComments: Readonly<Record<string, readonly DecisionCommentSummary[]>>;
 }
 
 export interface DecisionRequestBody {

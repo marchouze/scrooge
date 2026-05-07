@@ -125,6 +125,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         workstreamRegistrations: () => [],
         agentEscalations: () => [],
         auditFindings: () => [],
+        decisionComments: () => [],
       };
     }
     const store = new EventStore(dbPath);

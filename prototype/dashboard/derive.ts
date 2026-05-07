@@ -36,6 +36,7 @@ import type {
   DashboardState,
   DecisionAction,
   DecisionCategory,
+  DecisionCommentSummary,
   FindingSummary,
   InFlightItem,
   OpenDecision,
@@ -121,6 +122,17 @@ export interface AuditFindingEventSummary {
   readonly asOf: string;
 }
 
+export interface DecisionCommentEventSummary {
+  readonly eventId: string;
+  readonly decisionId: string;
+  readonly author: string;
+  readonly actorType: "human" | "service" | "system";
+  readonly actorId: string;
+  readonly body: string;
+  readonly inReplyToEventId?: string;
+  readonly asOf: string;
+}
+
 export interface EventSource {
   ceoDecisions(): CeoDecisionEventSummary[];
   workstreamStarts(): WorkstreamStartedEventSummary[];
@@ -128,6 +140,7 @@ export interface EventSource {
   workstreamRegistrations(): WorkstreamRegisteredEventSummary[];
   agentEscalations(): AgentEscalationEventSummary[];
   auditFindings(): AuditFindingEventSummary[];
+  decisionComments(): DecisionCommentEventSummary[];
 }
 
 export interface DeriveOpts {
@@ -230,6 +243,26 @@ export function eventSourceFromStore(store: EventStore): EventSource {
           routedTo: String(p.routedTo ?? ""),
           asOf: e.as_of,
           ...(typeof p.deadline === "string" ? { deadline: p.deadline } : {}),
+        });
+      }
+      return out;
+    },
+    decisionComments(): DecisionCommentEventSummary[] {
+      const out: DecisionCommentEventSummary[] = [];
+      for (const e of store.replay({ type: "DecisionComment" })) {
+        const p = e.payload as Record<string, unknown>;
+        const at = e.actor.type;
+        const safeActorType: DecisionCommentEventSummary["actorType"] =
+          at === "human" || at === "service" || at === "system" ? at : "service";
+        out.push({
+          eventId: e.event_id,
+          decisionId: String(p.decisionId ?? ""),
+          author: String(p.author ?? ""),
+          actorType: safeActorType,
+          actorId: e.actor.id,
+          body: String(p.body ?? ""),
+          asOf: e.as_of,
+          ...(typeof p.inReplyToEventId === "string" ? { inReplyToEventId: p.inReplyToEventId } : {}),
         });
       }
       return out;
@@ -1371,6 +1404,28 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const wsRegistrations = opts.events.workstreamRegistrations();
   const escalations = opts.events.agentEscalations();
   const findings = opts.events.auditFindings();
+  const decisionCommentEvents = opts.events.decisionComments();
+
+  // Group comments by decisionId, sorted oldest-first per thread.
+  const commentsByDecisionId: Record<string, DecisionCommentSummary[]> = {};
+  for (const c of decisionCommentEvents) {
+    const arr = commentsByDecisionId[c.decisionId] ?? [];
+    arr.push({
+      eventId: c.eventId,
+      decisionId: c.decisionId,
+      author: c.author,
+      actorType: c.actorType,
+      actorId: c.actorId,
+      body: c.body,
+      asOf: c.asOf,
+      ...(c.inReplyToEventId ? { inReplyToEventId: c.inReplyToEventId } : {}),
+    });
+    commentsByDecisionId[c.decisionId] = arr;
+  }
+  for (const k of Object.keys(commentsByDecisionId)) {
+    const arr = commentsByDecisionId[k];
+    if (arr) arr.sort((a, b) => (a.asOf < b.asOf ? -1 : 1));
+  }
 
   const { resolved, remainingOpen } = reduceCeoDecisions(
     ceoEvents,
@@ -1491,6 +1546,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     risks: curated.risks,
     findings: findingsSorted,
     runtimeHandlers: RUNTIME_HANDLERS,
+    decisionComments: commentsByDecisionId,
   };
 }
 

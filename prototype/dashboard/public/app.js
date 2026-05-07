@@ -167,9 +167,12 @@ function renderDecisionsOpen(decisions) {
       `<div class="muted" style="grid-column: 1 / -1; padding: 12px;">No open decisions.</div>`;
     return;
   }
+  const commentsByDecision = lastState?.decisionComments ?? {};
   $("#decisionsOpen").innerHTML = decisions
     .map(
-      (d) => `
+      (d) => {
+        const ccount = (commentsByDecision[d.id] ?? []).length;
+        return `
     <div class="dcard cat-${esc(d.category)}">
       <div class="head">
         <span class="id">${esc(d.id)}</span>
@@ -182,12 +185,14 @@ function renderDecisionsOpen(decisions) {
         <div class="row"><b>Timeline</b>${esc(d.brief?.timeline ?? d.trigger)}</div>
         <div class="row"><b>For CEO</b>${esc(d.decisionForCEO)}</div>
         ${d.note ? `<div class="note">${esc(d.note)}</div>` : ""}
+        ${ccount > 0 ? `<div class="comment-badge">💬 ${ccount} comment${ccount === 1 ? "" : "s"}</div>` : ""}
       </div>
       <div class="review-btn">
         <button class="btn-primary" data-brief-open="${esc(d.id)}">Review brief →</button>
       </div>
     </div>
-  `,
+  `;
+      },
     )
     .join("");
 
@@ -438,7 +443,83 @@ function renderBrief(d) {
   const total = (lastState?.decisionsOpen ?? []).length;
   $("#briefPosition").textContent = `${briefIndex + 1} / ${total}`;
 
-  $("#briefBody").innerHTML = renderBriefBody(d);
+  $("#briefBody").innerHTML = renderBriefBody(d) + renderCommentsSection(d.id);
+  // Wire the comment-post button (re-bound on every render).
+  const postBtn = document.getElementById(`commentPost-${d.id}`);
+  if (postBtn) postBtn.addEventListener("click", () => postComment(d.id));
+}
+
+function renderCommentsSection(decisionId) {
+  const comments = (lastState?.decisionComments ?? {})[decisionId] ?? [];
+  const items = comments
+    .map((c) => {
+      const dt = c.asOf.slice(0, 16).replace("T", " ");
+      const actorBadge = c.actorType === "human" ? "human" : c.actorType === "service" ? "agent" : "system";
+      return `
+        <li class="comment comment-${actorBadge}">
+          <div class="comment-head">
+            <span class="comment-author">${esc(c.author)}</span>
+            <span class="comment-actor">${esc(c.actorId)}</span>
+            <span class="comment-time muted small">${esc(dt)}</span>
+          </div>
+          <div class="comment-body">${esc(c.body)}</div>
+        </li>`;
+    })
+    .join("");
+
+  return `
+    <div class="brief-section comments-section">
+      <h3>Comments <span class="muted small">(${comments.length})</span></h3>
+      <ul class="comments-list">
+        ${items || '<li class="muted small">No comments yet.</li>'}
+      </ul>
+      <div class="comment-compose">
+        <textarea id="commentInput-${decisionId}" rows="2" placeholder="Add a comment — Markdown OK. Append-only audit; no edit/delete."></textarea>
+        <button class="btn-primary" id="commentPost-${decisionId}">Post</button>
+        <div class="muted small comment-error" id="commentError-${decisionId}" hidden></div>
+      </div>
+    </div>
+  `;
+}
+
+async function postComment(decisionId) {
+  const ta = document.getElementById(`commentInput-${decisionId}`);
+  const err = document.getElementById(`commentError-${decisionId}`);
+  const btn = document.getElementById(`commentPost-${decisionId}`);
+  if (!ta) return;
+  const body = ta.value.trim();
+  if (!body) {
+    if (err) {
+      err.textContent = "Comment body is required.";
+      err.hidden = false;
+    }
+    return;
+  }
+  if (err) err.hidden = true;
+  if (btn) btn.disabled = true;
+  try {
+    const r = await fetch("/api/decisions/comment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ decisionId, body }),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) {
+      throw new Error(data.error ?? `HTTP ${r.status}`);
+    }
+    ta.value = "";
+    await fetchState();
+    // Re-render the modal in place (the brief is still open).
+    const d = lastState?.decisionsOpen.find((x) => x.id === decisionId);
+    if (d) renderBrief(d);
+  } catch (e) {
+    if (err) {
+      err.textContent = e.message ?? "Failed to post comment.";
+      err.hidden = false;
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 function renderBriefBody(d) {

@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T13:53:44.612Z",
+  "asOf": "2026-05-07T13:59:43.580Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -156,6 +156,76 @@
       "owner": "Scrooge",
       "trigger": "AgentEscalation event (severity: medium)",
       "decisionForCEO": "Follow-on route `agent:nolan:author-persona-spec` for D-FOLLOW-ON-ROUTER-TEST has no registered runtime handler. No runtime handler registered for nolan:author-persona-spec. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:atlas:m1-substrate-sequencing",
+      "title": "Follow-on route `agent:atlas:m1-substrate-sequencing` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handl...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:atlas:m1-substrate-sequencing` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for atlas:m1-substrate-sequencing. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:kai:m1-cdm-typescript-bindings",
+      "title": "Follow-on route `agent:kai:m1-cdm-typescript-bindings` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime hand...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:kai:m1-cdm-typescript-bindings` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for kai:m1-cdm-typescript-bindings. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:anya:m1-projection-runtime-mapping",
+      "title": "Follow-on route `agent:anya:m1-projection-runtime-mapping` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime ...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:anya:m1-projection-runtime-mapping` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for anya:m1-projection-runtime-mapping. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:imani:m3-isda-csa-clause-library",
+      "title": "Follow-on route `agent:imani:m3-isda-csa-clause-library` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime ha...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:imani:m3-isda-csa-clause-library` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for imani:m3-isda-csa-clause-library. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:bea:m1-ifrs-classification-rules",
+      "title": "Follow-on route `agent:bea:m1-ifrs-classification-rules` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime ha...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:bea:m1-ifrs-classification-rules` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for bea:m1-ifrs-classification-rules. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:mira:m1-regulator-citation-urns",
+      "title": "Follow-on route `agent:mira:m1-regulator-citation-urns` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime han...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:mira:m1-regulator-citation-urns` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for mira:m1-regulator-citation-urns. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+      "sourceDocs": [],
+      "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+    },
+    {
+      "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:senna:m1-trading-stack-threat-model",
+      "title": "Follow-on route `agent:senna:m1-trading-stack-threat-model` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime...",
+      "category": "near-term",
+      "owner": "Scrooge",
+      "trigger": "AgentEscalation event (severity: medium)",
+      "decisionForCEO": "Follow-on route `agent:senna:m1-trading-stack-threat-model` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for senna:m1-trading-stack-threat-model. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
       "sourceDocs": [],
       "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
     }
@@ -590,6 +660,76 @@
           "decisionForCEO": "Follow-on route `agent:nolan:author-persona-spec` for D-FOLLOW-ON-ROUTER-TEST has no registered runtime handler. No runtime handler registered for nolan:author-persona-spec. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
           "sourceDocs": [],
           "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:atlas:m1-substrate-sequencing",
+          "title": "Follow-on route `agent:atlas:m1-substrate-sequencing` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handl...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:atlas:m1-substrate-sequencing` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for atlas:m1-substrate-sequencing. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:kai:m1-cdm-typescript-bindings",
+          "title": "Follow-on route `agent:kai:m1-cdm-typescript-bindings` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime hand...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:kai:m1-cdm-typescript-bindings` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for kai:m1-cdm-typescript-bindings. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:anya:m1-projection-runtime-mapping",
+          "title": "Follow-on route `agent:anya:m1-projection-runtime-mapping` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime ...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:anya:m1-projection-runtime-mapping` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for anya:m1-projection-runtime-mapping. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:imani:m3-isda-csa-clause-library",
+          "title": "Follow-on route `agent:imani:m3-isda-csa-clause-library` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime ha...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:imani:m3-isda-csa-clause-library` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for imani:m3-isda-csa-clause-library. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:bea:m1-ifrs-classification-rules",
+          "title": "Follow-on route `agent:bea:m1-ifrs-classification-rules` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime ha...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:bea:m1-ifrs-classification-rules` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for bea:m1-ifrs-classification-rules. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:mira:m1-regulator-citation-urns",
+          "title": "Follow-on route `agent:mira:m1-regulator-citation-urns` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime han...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:mira:m1-regulator-citation-urns` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for mira:m1-regulator-citation-urns. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
+        },
+        {
+          "id": "escalation:scrooge:unresolved-route:D-MARKETS-SCHEMA-FOUNDATION:agent:senna:m1-trading-stack-threat-model",
+          "title": "Follow-on route `agent:senna:m1-trading-stack-threat-model` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime...",
+          "category": "near-term",
+          "owner": "Scrooge",
+          "trigger": "AgentEscalation event (severity: medium)",
+          "decisionForCEO": "Follow-on route `agent:senna:m1-trading-stack-threat-model` for D-MARKETS-SCHEMA-FOUNDATION has no registered runtime handler. No runtime handler registered for senna:m1-trading-stack-threat-model. Substrate gap: target needs to become a registered handler before auto-fire. Should this route be (a) made into a real handler, (b) re-targeted to an existing handler, or (c) struck from the deliverable's followOnRoutes?",
+          "sourceDocs": [],
+          "note": "Blocked by: Target handler not registered in runtime/handlers-metadata.ts"
         }
       ],
       "recentlyResolvedDecisions": [],
@@ -690,7 +830,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 8,
       "totalRecentDeliverables": 11
     },
     {
@@ -2029,5 +2169,18 @@
       "kind": "scheduled",
       "cadenceHours": 168
     }
-  ]
+  ],
+  "decisionComments": {
+    "D-MARKETS-CAPITAL-TIME-SHAPE": [
+      {
+        "eventId": "8309397f-bf48-4016-8286-333548db555a",
+        "decisionId": "D-MARKETS-CAPITAL-TIME-SHAPE",
+        "author": "Marc",
+        "actorType": "human",
+        "actorId": "marc@tgv.co.za",
+        "body": "Smoke test comment from end-to-end test. Comments work — append-only, surfaces on the dashboard. Ready for CEO use once polish is reviewed.",
+        "asOf": "2026-05-07T13:59:43.533Z"
+      }
+    ]
+  }
 }
