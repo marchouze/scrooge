@@ -109,16 +109,16 @@ Today: heredoc'd into env var per session. Acceptable for setup. Recommendation:
 - Vera's recon now sees the same canonical event history regardless of which host is running. The false-positive condition that motivated this work — runners reporting "registry resolved decisions but no events in store" — closes on the next workflow run that pulls from Neon.
 - §5 hardening is required before the substrate carries anything sensitive. Tracked as a substrate-gap item; Atlas surfaces it on his next weekly snapshot.
 
-## 7. Sign-off requested
+## 7. Sign-off
 
-Rashida (CISO): I'd like your standard sign-off on this substrate at the next threat-model-gate cycle. The exception register entry is:
+**Approved 2026-05-07 by Marc (CEO acting as interim CISO; substantive CISO appointment pending pre-licence-day).**
 
-- **ID:** `TM-NEON-EVENT-STORE-001`
-- **Subject:** Cloud event store on Neon Postgres
-- **Status:** APPROVED FOR BUILD-PHASE USE
-- **Conditions:** §5.1 (role downgrade), §5.2 (IP allowlist), §5.3 (rotation cadence) before any sensitive-data event flows to this store.
-- **Auto-expiry:** at licence-grant. New gate cycle for live operation.
+Canonical entry: `TM-NEON-EVENT-STORE-001` in `Owner Inbox/2026-05-07_owen_substrate-exception-register.md`. That register is the single source of truth for the entry's status, conditions, expiry, and approver — this section does not restate them in prose (per Principle 6 single-graph discipline).
 
-Until your sign-off lands, I treat this as IN-USE-UNDER-SUBSTRATE-EXCEPTION and surface it on every weekly state-of-platform note to Rashida.
+CEO disposition recorded with this approval:
+- §5.1 (role downgrade), §5.2 (IP allowlist), and the §6 immediate Neon-password rotation are **deferred** while events remain non-sensitive. Acceptable while the store carries only substrate snapshots, recon results, agent run records, decision events, and workstream lifecycle. Re-gated before any sensitive-data event flows.
+- §5.3 (quarterly rotation cadence) and §5.4 (PII gate at licence-day) remain in force as standing conditions.
+
+Until the substantive CISO is appointed, "weekly state-of-platform note to Rashida" routes to Marc via Scrooge.
 
 —Senna
