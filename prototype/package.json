@@ -7,7 +7,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "typecheck": "bunx tsc --noEmit",
-    "ci": "bun run typecheck && bun run lint && bun test && bun run citation-gate && bun run recon && bun run recon:dashboard",
+    "ci": "bun run typecheck && bun run lint && bun test && bun run citation-gate && bun run recon && bun run recon:dashboard && bun run recon:prose-duplication",
     "scenario:hello": "bun run scenarios/01-hello-bank.ts",
     "scenario:onboard": "bun run scenarios/02-onboard-counterparty.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
@@ -15,6 +15,7 @@
     "recon:mandate": "bun run platform/recon/mandate-ownership.ts",
     "recon:decisions": "bun run platform/recon/decision-event-recon.ts",
     "recon:dashboard": "bun run platform/recon/dashboard-derivation-recon.ts",
+    "recon:prose-duplication": "bun run platform/recon/prose-duplication.ts",
     "dashboard": "bun run dashboard/server.ts",
     "reset": "rm -rf .local && mkdir -p .local"
   },

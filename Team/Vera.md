@@ -96,6 +96,7 @@ Vera does **not** run controls; Vera tests them. Independence is preserved in co
 - `@platform/recon/substrate-gap.ts` — substrate-gap inventory (#13, planned).
 - `@platform/recon/escalation-channel.ts` — escalation-channel discipline (#14, planned, gated on runtime).
 - `@platform/recon/agent-scope.ts` — out-of-scope agent decisions (#15, planned, gated on runtime).
+- `@platform/recon/prose-duplication.ts` — no prose duplication of canonical facts (#16, **live 2026-05-07**); enforces Owen's canonical-source registry doctrine.
 - `@platform/event-store` — read-only access to all streams.
 - `@platform/obligations-register` — read-only.
 

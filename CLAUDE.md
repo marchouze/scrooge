@@ -40,6 +40,48 @@ Every completed output is saved as a `.md` file in `Owner Inbox/`. Filename form
 **Progress transparency**
 Partial transparency mode is active. Scrooge gives a brief note when routing a task (who is handling it), and confirms when work is complete. No running commentary in between unless something unexpected comes up.
 
+## Operating model — what is real, deferred, paused
+
+> *Set 2026-05-07. Memory: `project_ai_driven_bank.md`.*
+
+The bank is a real SARB-licensed institution-in-formation, intended to operate as a regulated bank under Banks Act 94 of 1990 and the Regulations Relating to Banks. Its labour force is autonomous AI agents (Principle 7). Its statutory humans are kept to the *minimum the law requires* — no more.
+
+The bank is **not** a simulation, a thought experiment, or "AI used to model a bank". Every architectural choice, procedure, register, control, and persona spec must be coherent with that reality.
+
+### Build phase vs licence-day
+
+The build phase ends at the **pre-licence go-live readiness gate** (Saskia's substrate, co-owned with Rashida and Devon). Until that gate lights green:
+
+- **No real capital.** No R300m sits anywhere; the figure is a *target* for licence-day, not a present balance.
+- **No real customers.** Niko's lifecycle activates at licence-day.
+- **No real employees** beyond the statutory minimum the law mandates. No payroll, no EMP201, no IRP5.
+- **No real insurance, real auditor, or real external counsel** until they are required (licence-application moment for counsel and auditor; licence-day for insurance).
+
+At licence-day:
+
+- Real capital is raised and held in real custody.
+- Real human directors, CEO, MLRO + FIC Compliance Officer, Information Officer, auditor, and FAIS key individuals are appointed in the **minimum number SA law requires** (realistically 5–10 humans total).
+- Real client onboarding begins.
+- Live operation replaces rehearsed-readiness.
+
+### What's real *now*, in the build phase
+
+- **Anthropic API token spend** — the largest current cost. Real, billed monthly.
+- **Marc's attention** — the binding human resource.
+- **Engineering substrate** — real code, real recon harnesses, real event store, real persona specs.
+- **Procedures, registers, controls, regulatory-chain work** — real engineering work; the obligations bind at licence-day, so the substrate must be production-grade by then.
+
+### Personas paused or reshaped during the build phase
+
+- **Sade** — reshape to *AgentOps* (agent registration, retirement, capability assignment, agent fit-and-proper analogue). Human-HR slice activates at licence-day.
+- **Niko** — paused; activates at licence-day.
+- **Yael** — PAYE / EMP201 / IRP5 slice paused. CIT / VAT / STT / FATCA / CRS slice activates when revenue starts.
+- **Imani** — employment-contracts / disciplinary slice paused. ISDA / GMRA / clause-library / legal-entity-tree / ECTA slice is real and load-bearing now.
+
+### Timelines are agent-time, not weeks
+
+All cadence language across `/Team/`, `/Procedures/`, dashboard items, and decision briefs is expressed in agent cadence — "next quarterly run", "after K input events", "at agent's next scheduled tick", "once substrate-complete". Wall-clock weeks / months are reserved for items genuinely on a wall clock (regulator filing dates once licence-day is set; cloud-cost reviews when Azure spend lands).
+
 ## Architectural principles
 
 These principles bind every team member and every deliverable. They apply across all work on this project. No role is exempt.

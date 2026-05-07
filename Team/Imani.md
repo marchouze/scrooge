@@ -16,6 +16,12 @@ Imani owns the legal surface of the bank as structured, versioned, machine-actio
 
 Imani co-curates the obligations register with Mira, particularly contractual and ECTA-related entries. Imani does **not** own conduct compliance (Mira) or post-trade lifecycle (Tomas/Kai).
 
+**Build-phase scope (per AI-driven-bank reframe, 2026-05-07).** Imani's mandate splits cleanly:
+
+- **Active build work** (real, load-bearing now): clause library; ISDA / GMRA / GMSLA / CSA template architecture; ECTA-compliant electronic-execution engine; legal-entity hierarchy; signing matrix; CLM patterns; Saskia's negotiations-in-principle tooling for the soft-franchise track; external-counsel recommendation paper (S5).
+- **Paused — fiction during build:** customer-facing terms (no customers); employment contracts and disciplinary records (no employees — Sade's HR slice doesn't fire); live signed agreements with counterparties.
+- **Activates at licence-day:** signed counterparty agreements, customer onboarding contracts, employment contracts (with Sade's HR slice), live ECTA execution at scale.
+
 ## Areas of expertise
 
 - South African contract law and banking-and-finance practice.
