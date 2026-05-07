@@ -18,9 +18,30 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
+
+// Stable system prompt — KEEP BYTE-STABLE. See `shared/prompt-caching.md`.
+const ATLAS_NARRATIVE_SYSTEM = `You are Atlas, the bank's core banking platform architect — owner of the event-sourced substrate, identity, IaC, observability, and projections runtime. Your operating spec is at \`Team/Atlas.md\`. You report through Devon (COO) at the governance level.
+
+You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly substrate-state snapshot — a structured observation of the engineering substrate's own state: event types in the store, persona-spec coverage, registered runtime handlers, the Owner Inbox count, and the substrate-gap inventory you maintain.
+
+Your voice is precise, unsentimental, engineering-led. You do not editorialise. You name the substrate's actual state — what is built, what is partial, what is not yet substrate at all — and you call gaps gaps. You do not pretend a simulated piece of the runtime is operational; the bank is AI-driven (per CLAUDE.md memory:project_ai_driven_bank.md), and dishonesty about substrate completeness defeats the operating model.
+
+Your task is to write a written narrative — one to three short paragraphs — that:
+
+- Names the headline state of the substrate at the top: how complete it is at a glance, what is closing, what is blocking.
+- Picks out the 1–3 most consequential changes since the prior week's run (when there is one) — a new event type, a new runtime handler, a closed substrate gap. If this is a fresh runner with no event history visible, say so plainly and characterise the substrate from the snapshot alone.
+- Names the substrate gaps that are *load-bearing* on something downstream — Vera's audit pipelines #14/#15 gated on \`AgentEscalation\` events, the dashboard's curated-seed retirement gated on \`WorkstreamRegistered\`, or any other dependency the snapshot makes visible. Do not list every gap; rank by impact.
+- Closes with one line on what the substrate needs next.
+
+Cite event types by their type literal (\`SubstrateStateSnapshot\`, \`AgentEscalation\`, \`WorkstreamCompleted\`) and agents by name. The host event store is gitignored and host-local until M8 (Azure cloud lift); a fresh GitHub Actions runner sees zero events. That is expected; characterise it explicitly when you see the snapshot show 0 events / 0 types.
+
+Do not include a markdown header for your section — the calling pipeline wraps your output under "## Atlas's narrative". Just produce the prose.
+
+If the input is empty or malformed, say so and decline to opine.`;
 
 // Headings that indicate a persona file declares an operating spec —
 // matches the detector in dashboard/derive.ts so the two views agree.
@@ -179,7 +200,52 @@ function fmtDateUTC(iso: string): string {
   return iso.slice(0, 10);
 }
 
-function buildReportMarkdown(ctx: AgentRunContext, s: SubstrateState): string {
+function buildNarrativeInput(ctx: AgentRunContext, s: SubstrateState): string {
+  const lines: string[] = [];
+  lines.push(`Run as-of: ${ctx.asOf}`);
+  lines.push(`Trigger: ${ctx.trigger.id}`);
+  lines.push("");
+  lines.push("Snapshot:");
+  lines.push(`- event store path: ${s.eventStorePath}`);
+  lines.push(`- total events: ${s.totalEvents}`);
+  lines.push(`- event types in store: ${s.eventTypes.length}`);
+  if (s.eventTypes.length > 0) {
+    lines.push("");
+    lines.push("event-type breakdown:");
+    for (const t of s.eventTypes) {
+      lines.push(`  - ${t.type}: count=${t.count}, earliest=${t.earliestAsOf?.slice(0, 10) ?? "—"}, latest=${t.latestAsOf?.slice(0, 10) ?? "—"}`);
+    }
+  }
+  lines.push("");
+  lines.push(`personas: ${s.personas.withOperatingSpec}/${s.personas.total} have operating specs`);
+  if (s.personas.withoutOperatingSpec.length > 0) {
+    lines.push(`  without spec: ${s.personas.withoutOperatingSpec.join(", ")}`);
+  }
+  lines.push("");
+  lines.push(`runtime handlers registered: ${s.runtimeHandlers.length}`);
+  for (const h of s.runtimeHandlers) {
+    lines.push(`  - ${h.agent}:${h.trigger}`);
+  }
+  lines.push("");
+  lines.push(`/Owner Inbox/ deliverable count: ${s.recentDeliverablesCount}`);
+  lines.push("");
+  lines.push("Substrate gaps tracked:");
+  for (const g of s.knownSubstrateGaps) {
+    lines.push(`- ${g}`);
+  }
+  lines.push("");
+  lines.push(
+    "Now write your narrative per the system instructions. Headline first; rank gaps by downstream impact; close with what the substrate needs next.",
+  );
+  return lines.join("\n");
+}
+
+function buildReportMarkdown(
+  ctx: AgentRunContext,
+  s: SubstrateState,
+  narrative: string | null,
+  narrativeNote: string | null,
+): string {
   const date = fmtDateUTC(ctx.asOf);
   const lines: string[] = [];
   lines.push("---");
@@ -256,6 +322,18 @@ function buildReportMarkdown(ctx: AgentRunContext, s: SubstrateState): string {
   }
   lines.push("");
 
+  if (narrative) {
+    lines.push("## Atlas's narrative");
+    lines.push("");
+    lines.push(narrative);
+    lines.push("");
+  } else if (narrativeNote) {
+    lines.push("## Atlas's narrative");
+    lines.push("");
+    lines.push(`_${narrativeNote}_`);
+    lines.push("");
+  }
+
   lines.push("## Provenance");
   lines.push("");
   lines.push(
@@ -293,6 +371,38 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted = 1;
   }
 
+  // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
+  let narrative: string | null = null;
+  let narrativeNote: string | null = null;
+  if (!ctx.dryRun) {
+    if (!claudeAvailable()) {
+      narrativeNote =
+        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Substrate snapshot above stands on its own.";
+    } else {
+      const r = await tryGenerateNarrative({
+        stableSystem: ATLAS_NARRATIVE_SYSTEM,
+        userInput: buildNarrativeInput(ctx, state),
+        maxTokens: 6_000,
+        effort: "high",
+      });
+      if (r.ok) {
+        narrative = r.result.text.trim();
+        logger.info(
+          {
+            inputTokens: r.result.usage.inputTokens,
+            cacheReadInputTokens: r.result.usage.cacheReadInputTokens,
+            outputTokens: r.result.usage.outputTokens,
+            model: r.result.model,
+          },
+          "atlas:substrate-state — narrative generated",
+        );
+      } else {
+        narrativeNote = `Narrative generation failed (${r.error})${r.retryable ? " — retryable" : ""}.`;
+        logger.warn({ error: r.error, retryable: r.retryable }, "atlas narrative failed");
+      }
+    }
+  }
+
   let deliverable: string | undefined;
   if (!ctx.dryRun) {
     if (!existsSync(ctx.ownerInboxDir)) {
@@ -300,7 +410,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
     const filename = `${fmtDateUTC(ctx.asOf)}_atlas_substrate-state.md`;
     const path = resolve(ctx.ownerInboxDir, filename);
-    writeFileSync(path, buildReportMarkdown(ctx, state), "utf8");
+    writeFileSync(path, buildReportMarkdown(ctx, state, narrative, narrativeNote), "utf8");
     deliverable = `Owner Inbox/${filename}`;
   }
 
