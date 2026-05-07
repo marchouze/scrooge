@@ -23,10 +23,30 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
+
+// Stable system prompt — KEEP BYTE-STABLE for prompt cache.
+const SCROOGE_NARRATIVE_SYSTEM = `You are Scrooge, the bank's Chief of Staff and orchestrator. Your operating spec is at \`Team/Scrooge.md\`. You report directly to the CEO. You never carry out work yourself; you coordinate the agents who do.
+
+You are operating in your own daily inbox-hygiene sweep — the one piece of work that *is* yours to perform directly, because it concerns the routing substrate itself. The mechanical part has run: Team Inbox items whose deliverables shipped to /Owner Inbox/ have been auto-moved to /Team Inbox/actioned/, and items without an unambiguous match are left in place and reported.
+
+Your voice is the calm, organised chief-of-staff register from CLAUDE.md. You speak in first person ("I'll have Mira pick that up" — not "Mira will pick that up"), but in this narrative you're addressing Marc about the inbox state itself, not delegating new work. The hygiene rule is real: Team Inbox shows only in-progress / to-do items; everything completed lives in actioned/. Drift from that means the rule is failing or an item slipped through the auto-match.
+
+Your task is to write a written narrative — one to three short paragraphs — that:
+
+- Names the headline at the top: how clean the Team Inbox is, what moved this run, what's still open and why.
+- Picks the 1–3 most consequential observations: an item that's been pending long enough to need a direct routing decision, an item the auto-match couldn't resolve and which agent should pick it up, a pattern in what's open (e.g. multiple briefs to the same agent) that suggests a substrate bottleneck.
+- Names the next coordination move. Be concrete: which item I'm routing to which agent, or which item I'm flagging to Marc for a CEO call.
+
+Cite Team Inbox filenames when calling out specifics. Do not editorialise about completed items; the actioned/ folder is the canonical record.
+
+Do not include a markdown header for your section — the calling pipeline wraps your output under "## Scrooge's narrative". Just produce the prose.
+
+If both Team Inbox is empty and nothing moved (the clean state), say so plainly in one short paragraph and decline to fill space.`;
 
 interface InboxItem {
   filename: string;
@@ -142,7 +162,37 @@ interface HygieneSummary {
   reportOnly: { item: string; reason: string }[];
 }
 
-function buildReportMarkdown(ctx: AgentRunContext, summary: HygieneSummary): string {
+function buildNarrativeInput(ctx: AgentRunContext, summary: HygieneSummary): string {
+  const lines: string[] = [];
+  lines.push(`Run as-of: ${ctx.asOf}`);
+  lines.push(`Trigger: ${ctx.trigger.id}`);
+  lines.push("");
+  lines.push(`Team Inbox open (after run): ${summary.openCount}`);
+  lines.push(`Team Inbox actioned: ${summary.actionedCount}`);
+  lines.push(`Owner Inbox files: ${summary.ownerInboxCount}`);
+  lines.push("");
+  lines.push(`Moved this run: ${summary.movedThisRun.length}`);
+  for (const m of summary.movedThisRun) {
+    lines.push(`  - ${m.from} → ${m.to} (${m.reason})`);
+  }
+  lines.push("");
+  lines.push(`Still open (report-only): ${summary.reportOnly.length}`);
+  for (const r of summary.reportOnly) {
+    lines.push(`  - ${r.item} — ${r.reason}`);
+  }
+  lines.push("");
+  lines.push(
+    "Now write your narrative per the system instructions. Headline first; then any items needing a routing call; close with the next coordination move.",
+  );
+  return lines.join("\n");
+}
+
+function buildReportMarkdown(
+  ctx: AgentRunContext,
+  summary: HygieneSummary,
+  narrative: string | null,
+  narrativeNote: string | null,
+): string {
   const date = fmtDateUTC(ctx.asOf);
   const lines: string[] = [];
   lines.push(frontmatter("Scrooge", "inbox-hygiene", ctx.asOf));
@@ -177,6 +227,18 @@ function buildReportMarkdown(ctx: AgentRunContext, summary: HygieneSummary): str
 
   if (summary.movedThisRun.length === 0 && summary.reportOnly.length === 0) {
     lines.push("Team Inbox is empty. No action taken; no in-flight items pending Marc-or-agent action.");
+    lines.push("");
+  }
+
+  if (narrative) {
+    lines.push("## Scrooge's narrative");
+    lines.push("");
+    lines.push(narrative);
+    lines.push("");
+  } else if (narrativeNote) {
+    lines.push("## Scrooge's narrative");
+    lines.push("");
+    lines.push(`_${narrativeNote}_`);
     lines.push("");
   }
 
@@ -262,11 +324,47 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted = 1;
   }
 
+  // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
+  let narrative: string | null = null;
+  let narrativeNote: string | null = null;
+  if (!ctx.dryRun) {
+    if (!claudeAvailable()) {
+      narrativeNote =
+        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Hygiene digest above stands on its own.";
+    } else {
+      const r = await tryGenerateNarrative({
+        stableSystem: SCROOGE_NARRATIVE_SYSTEM,
+        userInput: buildNarrativeInput(ctx, summary),
+        maxTokens: 6_000,
+        effort: "high",
+      });
+      if (r.ok) {
+        narrative = r.result.text.trim();
+        logger.info(
+          {
+            inputTokens: r.result.usage.inputTokens,
+            cacheReadInputTokens: r.result.usage.cacheReadInputTokens,
+            outputTokens: r.result.usage.outputTokens,
+            model: r.result.model,
+          },
+          "scrooge:inbox-hygiene — narrative generated",
+        );
+      } else {
+        narrativeNote = `Narrative generation failed (${r.error})${r.retryable ? " — retryable" : ""}.`;
+        logger.warn({ error: r.error, retryable: r.retryable }, "scrooge narrative failed");
+      }
+    }
+  }
+
   let deliverable: string | undefined;
   if (!ctx.dryRun) {
     if (!existsSync(ownerInboxDir)) mkdirSync(ownerInboxDir, { recursive: true });
     const filename = `${fmtDateUTC(ctx.asOf)}_scrooge_inbox-hygiene.md`;
-    writeFileSync(resolve(ownerInboxDir, filename), buildReportMarkdown(ctx, summary), "utf8");
+    writeFileSync(
+      resolve(ownerInboxDir, filename),
+      buildReportMarkdown(ctx, summary, narrative, narrativeNote),
+      "utf8",
+    );
     deliverable = `Owner Inbox/${filename}`;
   }
 

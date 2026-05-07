@@ -37,6 +37,9 @@ jobs:
           BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
         run: bun run event-store:sync
       - working-directory: prototype
+        env:
+          # Optional. Anya narrative; graceful no-op if unset.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: bun run agent:anya-projection-drift
       - working-directory: prototype
         env:

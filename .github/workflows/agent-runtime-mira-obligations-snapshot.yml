@@ -36,6 +36,12 @@ jobs:
           BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
         run: bun run event-store:sync
       - working-directory: prototype
+        env:
+          # Optional. When present, Mira generates a narrative summary on
+          # top of the mechanical snapshot. When absent the run still
+          # succeeds and the deliverable simply notes the narrative was
+          # skipped. Set under Settings → Secrets and variables → Actions.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: bun run agent:mira-obligations-snapshot
       - working-directory: prototype
         env:

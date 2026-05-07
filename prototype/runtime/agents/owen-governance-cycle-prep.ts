@@ -19,10 +19,30 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
 const EVENT_CITATIONS = ["COMPANIES-ACT-71-2008", "GOV-FRAMEWORK-CEO-RESERVED"];
+
+// Stable system prompt — KEEP BYTE-STABLE for prompt cache.
+const OWEN_NARRATIVE_SYSTEM = `You are Owen, the bank's Company Secretary — custodian of the governance framework, board and committee secretariat, conflicts and related-party registers, whistleblowing intake, and the procedures index. Your operating spec is at \`Team/Owen.md\`. You report directly to the CEO.
+
+You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly governance-cycle prep — a forum-prep digest of open CEO decisions, unfilled governance seats, recent CEO-decision events, and Owner Inbox items flagged decision-required.
+
+Your voice is precise, procedurally-grounded, and unsentimental. You speak in the register of a company secretary preparing a forum agenda: what is decided, what awaits decision, what is escalating to which forum, and where the procedural chain (regulator → policy → procedure → system capability, per Principle 6 upward) has a missing link. The bank's CEO-vs-Board approval routing matters: every decision is either a CEO call or a Board call (Marc currently wears both hats interim) — name which one when it matters.
+
+Your task is to write a written narrative — one to three short paragraphs — that:
+
+- Names the headline at the top: how many decisions are open, how many seats are unfilled, what cleared in the last 7 days.
+- Picks the 1–3 most consequential procedural observations: a decision blocking a downstream procedure, a seat whose vacancy gates a procedure owner-mandate, a recent decision that opens or closes a band of substrate work.
+- Names the next forum agenda item that follows from the digest. Be concrete: which forum (Interim Risk Forum chaired by Helena, Interim Audit Forum chaired by you, or a CEO 1:1), which item, and why now.
+
+Cite decision IDs (\`S1\`, \`S3\`, etc.) and seat names (\`CISO\`, \`CHRO\`) when calling out specifics. The dashboard registry and the event store are the canonical sources; your narrative is interpretation, not new substance.
+
+Do not include a markdown header for your section — the calling pipeline wraps your output under "## Owen's narrative". Just produce the prose.
+
+If the input is empty or malformed (e.g. the dashboard cache was unreachable on the runner), say so and characterise the digest from what is visible.`;
 
 interface DashboardSlice {
   reachable: boolean;
@@ -85,10 +105,49 @@ function isoDaysAgo(asOf: string, days: number): string {
   return d.toISOString();
 }
 
+function buildNarrativeInput(
+  ctx: AgentRunContext,
+  d: DashboardSlice,
+  recent: readonly RecentDecision[],
+): string {
+  const lines: string[] = [];
+  lines.push(`Run as-of: ${ctx.asOf}`);
+  lines.push(`Trigger: ${ctx.trigger.id}`);
+  lines.push("");
+  lines.push(`dashboard cache reachable: ${d.reachable}`);
+  if (d.asOf) lines.push(`dashboard asOf: ${d.asOf}`);
+  lines.push("");
+  lines.push(`open CEO decisions: ${d.decisionsOpen.length}`);
+  if (d.decisionsOpen.length > 0) {
+    for (const x of d.decisionsOpen) {
+      lines.push(
+        `  - ${x.id} (owner=${x.owner}): ${x.title}${x.decisionForCEO ? ` — wanted: ${x.decisionForCEO}` : ""}`,
+      );
+    }
+  }
+  lines.push("");
+  lines.push(`open governance seats: ${d.openSeats.length}`);
+  if (d.openSeats.length > 0) {
+    for (const s of d.openSeats) lines.push(`  - ${s.role} (${s.status})`);
+  }
+  lines.push("");
+  lines.push(`recent CEO decisions (last 7 days): ${recent.length}`);
+  for (const r of recent) {
+    lines.push(`  - ${r.asOf.slice(0, 10)} ${r.decisionId} ${r.action}: ${r.title}`);
+  }
+  lines.push("");
+  lines.push(
+    "Now write your narrative per the system instructions. Headline first; rank by procedural consequence; close with the next forum agenda item.",
+  );
+  return lines.join("\n");
+}
+
 function buildReportMarkdown(
   ctx: AgentRunContext,
   d: DashboardSlice,
   recent: readonly RecentDecision[],
+  narrative: string | null,
+  narrativeNote: string | null,
 ): string {
   const date = fmtDateUTC(ctx.asOf);
   const lines: string[] = [];
@@ -161,6 +220,18 @@ function buildReportMarkdown(
   );
   lines.push("");
 
+  if (narrative) {
+    lines.push("## Owen's narrative");
+    lines.push("");
+    lines.push(narrative);
+    lines.push("");
+  } else if (narrativeNote) {
+    lines.push("## Owen's narrative");
+    lines.push("");
+    lines.push(`_${narrativeNote}_`);
+    lines.push("");
+  }
+
   lines.push("## Provenance");
   lines.push("");
   lines.push(
@@ -194,13 +265,45 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted = 1;
   }
 
+  // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
+  let narrative: string | null = null;
+  let narrativeNote: string | null = null;
+  if (!ctx.dryRun) {
+    if (!claudeAvailable()) {
+      narrativeNote =
+        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Digest above stands on its own.";
+    } else {
+      const r = await tryGenerateNarrative({
+        stableSystem: OWEN_NARRATIVE_SYSTEM,
+        userInput: buildNarrativeInput(ctx, dash, recent),
+        maxTokens: 6_000,
+        effort: "high",
+      });
+      if (r.ok) {
+        narrative = r.result.text.trim();
+        logger.info(
+          {
+            inputTokens: r.result.usage.inputTokens,
+            cacheReadInputTokens: r.result.usage.cacheReadInputTokens,
+            outputTokens: r.result.usage.outputTokens,
+            model: r.result.model,
+          },
+          "owen:governance-cycle-prep — narrative generated",
+        );
+      } else {
+        narrativeNote = `Narrative generation failed (${r.error})${r.retryable ? " — retryable" : ""}.`;
+        logger.warn({ error: r.error, retryable: r.retryable }, "owen narrative failed");
+      }
+    }
+  }
+
   let deliverable: string | undefined;
   if (!ctx.dryRun) {
     if (!existsSync(ctx.ownerInboxDir)) mkdirSync(ctx.ownerInboxDir, { recursive: true });
     const filename = `${fmtDateUTC(ctx.asOf)}_owen_governance-cycle-prep.md`;
     writeFileSync(
       resolve(ctx.ownerInboxDir, filename),
-      buildReportMarkdown(ctx, dash, recent),
+      buildReportMarkdown(ctx, dash, recent, narrative, narrativeNote),
       "utf8",
     );
     deliverable = `Owner Inbox/${filename}`;

@@ -22,10 +22,30 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
+
+// Stable system prompt — KEEP BYTE-STABLE for prompt cache.
+const ANYA_NARRATIVE_SYSTEM = `You are Anya, the bank's data / analytics engineer — owner of the projection runtime, master data, semantic layer, regulatory and MI marts, data contracts, and the ML platform. Your operating spec is at \`Team/Anya.md\`. You report through Devon (COO) at the governance level.
+
+You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your daily projection-drift sweep — a snapshot of canonical-source counts (CLAUDE.md principles, /Team/ persona files, /Procedures/ files, /Regulations/ instruments and obligations, /Owner Inbox/ deliverables, /Team Inbox/ items) and a cross-check against the dashboard cache to detect drift.
+
+Your voice is precise, projection-grounded, and unsentimental. You distinguish *canonical* (the file system / event store, authoritative) from *cached* (the dashboard projection, derived). Drift is not pathological by itself — it can mean the cache is stale (dashboard server hasn't refreshed) or the canonical source has changed since the last derive. You name which.
+
+Your task is to write a written narrative — one to three short paragraphs — that:
+
+- Names the headline at the top: how the canonical-source counts moved versus the cache, whether the dashboard reaches this run, and whether there's drift to call out.
+- Picks the 1–3 most consequential observations: a metric whose drift signals a stale cache, a metric where canonical has grown but the cache hasn't, an unreachable dashboard cache that should be diagnosed.
+- Names what to do: refresh the dashboard projection, raise a Vera dashboard-derivation finding, or note that drift is expected (e.g. fresh runner without the cache present).
+
+Cite metric names by their JSON keys (\`principles\`, \`obligations\`, \`instruments\`, \`instrumentsAnalysed\`, \`proceduresPopulated\`). The canonical files are the canonical authoring location; your narrative is interpretation, not new substance.
+
+Do not include a markdown header for your section — the calling pipeline wraps your output under "## Anya's narrative". Just produce the prose.
+
+If the dashboard cache is unreachable on the runner (the common case on a fresh GitHub Actions runner), say so plainly and characterise the canonical-source counts on their own.`;
 
 const PRINCIPLE_HEADING = /^### Principle (\d+) — /;
 const ORG_OBLIGATION_ID = /^\|\s*ORG-/i;
@@ -140,11 +160,50 @@ function computeDrift(counts: CanonicalSourceCounts, snapshot: DashboardSnapshot
   return out;
 }
 
+function buildNarrativeInput(
+  ctx: AgentRunContext,
+  counts: CanonicalSourceCounts,
+  snapshot: DashboardSnapshot,
+  drift: DriftRow[],
+): string {
+  const lines: string[] = [];
+  lines.push(`Run as-of: ${ctx.asOf}`);
+  lines.push(`Trigger: ${ctx.trigger.id}`);
+  lines.push("");
+  lines.push(`dashboard cache reachable: ${snapshot.reachable}`);
+  if (snapshot.asOf) lines.push(`dashboard asOf: ${snapshot.asOf}`);
+  lines.push("");
+  lines.push("canonical-source counts:");
+  lines.push(`  - principlesInClaudeMd: ${counts.principlesInClaudeMd}`);
+  lines.push(`  - personaFiles: ${counts.personaFiles}`);
+  lines.push(`  - procedureFiles: ${counts.procedureFiles}`);
+  lines.push(`  - obligationsRegisterRows: ${counts.obligationsRegisterRows}`);
+  lines.push(`  - regulationsTotal: ${counts.regulationsTotal}`);
+  lines.push(`  - regulationsPopulated: ${counts.regulationsPopulated}`);
+  lines.push(`  - ownerInboxFiles: ${counts.ownerInboxFiles}`);
+  lines.push(`  - teamInboxOpen: ${counts.teamInboxOpen}`);
+  lines.push(`  - teamInboxActioned: ${counts.teamInboxActioned}`);
+  lines.push("");
+  lines.push("cross-check (canonical vs cached):");
+  for (const d of drift) {
+    const driftDisplay =
+      d.drift === undefined ? "n/a" : d.drift === 0 ? "0" : d.drift > 0 ? `+${d.drift}` : `${d.drift}`;
+    lines.push(`  - ${d.metric}: canonical=${d.canonical}, cached=${d.cached ?? "—"}, drift=${driftDisplay}`);
+  }
+  lines.push("");
+  lines.push(
+    "Now write your narrative per the system instructions. Headline first; rank by which drift is most likely load-bearing; close with a concrete next action.",
+  );
+  return lines.join("\n");
+}
+
 function buildReportMarkdown(
   ctx: AgentRunContext,
   counts: CanonicalSourceCounts,
   snapshot: DashboardSnapshot,
   drift: DriftRow[],
+  narrative: string | null,
+  narrativeNote: string | null,
 ): string {
   const date = fmtDateUTC(ctx.asOf);
   const lines: string[] = [];
@@ -206,6 +265,18 @@ function buildReportMarkdown(
     }
   }
   lines.push("");
+  if (narrative) {
+    lines.push("## Anya's narrative");
+    lines.push("");
+    lines.push(narrative);
+    lines.push("");
+  } else if (narrativeNote) {
+    lines.push("## Anya's narrative");
+    lines.push("");
+    lines.push(`_${narrativeNote}_`);
+    lines.push("");
+  }
+
   lines.push("## Provenance");
   lines.push("");
   lines.push(
@@ -240,6 +311,38 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted = 1;
   }
 
+  // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
+  let narrative: string | null = null;
+  let narrativeNote: string | null = null;
+  if (!ctx.dryRun) {
+    if (!claudeAvailable()) {
+      narrativeNote =
+        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Snapshot above stands on its own.";
+    } else {
+      const r = await tryGenerateNarrative({
+        stableSystem: ANYA_NARRATIVE_SYSTEM,
+        userInput: buildNarrativeInput(ctx, counts, snapshot, drift),
+        maxTokens: 6_000,
+        effort: "high",
+      });
+      if (r.ok) {
+        narrative = r.result.text.trim();
+        logger.info(
+          {
+            inputTokens: r.result.usage.inputTokens,
+            cacheReadInputTokens: r.result.usage.cacheReadInputTokens,
+            outputTokens: r.result.usage.outputTokens,
+            model: r.result.model,
+          },
+          "anya:projection-drift — narrative generated",
+        );
+      } else {
+        narrativeNote = `Narrative generation failed (${r.error})${r.retryable ? " — retryable" : ""}.`;
+        logger.warn({ error: r.error, retryable: r.retryable }, "anya narrative failed");
+      }
+    }
+  }
+
   let deliverable: string | undefined;
   if (!ctx.dryRun) {
     if (!existsSync(ctx.ownerInboxDir)) {
@@ -248,7 +351,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     const filename = `${fmtDateUTC(ctx.asOf)}_anya_projection-drift.md`;
     writeFileSync(
       resolve(ctx.ownerInboxDir, filename),
-      buildReportMarkdown(ctx, counts, snapshot, drift),
+      buildReportMarkdown(ctx, counts, snapshot, drift, narrative, narrativeNote),
       "utf8",
     );
     deliverable = `Owner Inbox/${filename}`;

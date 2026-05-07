@@ -21,10 +21,30 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
 const EVENT_CITATIONS = ["JOINT-STANDARD-1-2024", "POPIA-S19-22"];
+
+// Stable system prompt — KEEP BYTE-STABLE for prompt cache.
+const SENNA_NARRATIVE_SYSTEM = `You are Senna, the bank's security engineer — owner of threat modelling, zero-trust posture, HSM-bound key custody, secure SDLC, incident response, and the POPIA s.19–22 / Joint Standard 1 of 2024 operational programme. Your operating spec is at \`Team/Senna.md\`. You report through Rashida (CISO) at the governance level.
+
+You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly security-substrate-state inventory — CI gates declared in package.json, recon pipelines registered under platform/recon, threat-model and SBOM artefact counts, and recent SecurityIncidentRaised / KeyRotationPerformed / ThreatModelGateDecision events.
+
+Your voice is precise, threat-grounded, and unsentimental. You distinguish substrate that is *built* (CI gate live, recon pipeline registered, threat-model file present) from substrate that is *posture-only* (named in spec but not yet running). You do not editorialise about hypothetical attackers; you name what the inventory shows is *load-bearing on a control* and what is missing.
+
+Your task is to write a written narrative — one to three short paragraphs — that:
+
+- Names the headline at the top: how complete the security substrate is, and which class of artefact (gates, pipelines, threat-models, SBOMs) is the bottleneck.
+- Picks the 1–3 most consequential observations: a CI gate that's live but not yet recon-backed, a threat-model artefact directory that doesn't yet exist (substrate gap), an event-type the inventory expects to see but doesn't (e.g. zero \`KeyRotationPerformed\` events when rotation policy says quarterly).
+- Names the next hardening step. Be concrete: a specific gate to add, a specific threat model to author, a specific exception register entry to revisit (e.g. \`TM-NEON-EVENT-STORE-001\` if relevant).
+
+Cite Joint Standard 1 of 2024 cross-references where they bind, and POPIA sections where personal-data security applies. The inventory is the canonical authoring location; your narrative is interpretation, not new substance.
+
+Do not include a markdown header for your section — the calling pipeline wraps your output under "## Senna's narrative". Just produce the prose.
+
+If the input shows zero artefacts and zero events (e.g. on a fresh runner), say so plainly and characterise the substrate from the inventory alone.`;
 
 interface CiGate {
   name: string;
@@ -111,12 +131,45 @@ function isoDaysAgo(asOf: string, days: number): string {
   return d.toISOString();
 }
 
+function buildNarrativeInput(
+  ctx: AgentRunContext,
+  ci: readonly CiGate[],
+  pipelines: readonly ReconPipeline[],
+  artefacts: SecurityArtefactCounts,
+  recent: RecentSecurityEvents,
+): string {
+  const lines: string[] = [];
+  lines.push(`Run as-of: ${ctx.asOf}`);
+  lines.push(`Trigger: ${ctx.trigger.id}`);
+  lines.push("");
+  lines.push(`CI gates: ${ci.length}`);
+  for (const g of ci) lines.push(`  - ${g.name}`);
+  lines.push("");
+  lines.push(`recon pipelines registered: ${pipelines.length}`);
+  for (const p of pipelines) lines.push(`  - ${p.filename}`);
+  lines.push("");
+  lines.push(`threat-model artefacts: ${artefacts.threatModels} (security/threat-models/)`);
+  lines.push(`SBOM artefacts: ${artefacts.sboms} (security/sbom/)`);
+  lines.push("");
+  lines.push("security events (last 7 days):");
+  lines.push(`  - SecurityIncidentRaised: ${recent.incidentsLast7d}`);
+  lines.push(`  - KeyRotationPerformed: ${recent.keyRotationsLast7d}`);
+  lines.push(`  - ThreatModelGateDecision: ${recent.threatModelDecisionsLast7d}`);
+  lines.push("");
+  lines.push(
+    "Now write your narrative per the system instructions. Headline first; rank by what's load-bearing on a control; close with the next hardening step.",
+  );
+  return lines.join("\n");
+}
+
 function buildReportMarkdown(
   ctx: AgentRunContext,
   ci: readonly CiGate[],
   pipelines: readonly ReconPipeline[],
   artefacts: SecurityArtefactCounts,
   recent: RecentSecurityEvents,
+  narrative: string | null,
+  narrativeNote: string | null,
 ): string {
   const date = fmtDateUTC(ctx.asOf);
   const lines: string[] = [];
@@ -179,6 +232,18 @@ function buildReportMarkdown(
   );
   lines.push("");
 
+  if (narrative) {
+    lines.push("## Senna's narrative");
+    lines.push("");
+    lines.push(narrative);
+    lines.push("");
+  } else if (narrativeNote) {
+    lines.push("## Senna's narrative");
+    lines.push("");
+    lines.push(`_${narrativeNote}_`);
+    lines.push("");
+  }
+
   lines.push("## Provenance");
   lines.push("");
   lines.push(
@@ -216,13 +281,45 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted = 1;
   }
 
+  // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
+  let narrative: string | null = null;
+  let narrativeNote: string | null = null;
+  if (!ctx.dryRun) {
+    if (!claudeAvailable()) {
+      narrativeNote =
+        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Inventory above stands on its own.";
+    } else {
+      const r = await tryGenerateNarrative({
+        stableSystem: SENNA_NARRATIVE_SYSTEM,
+        userInput: buildNarrativeInput(ctx, ci, pipelines, artefacts, recent),
+        maxTokens: 6_000,
+        effort: "high",
+      });
+      if (r.ok) {
+        narrative = r.result.text.trim();
+        logger.info(
+          {
+            inputTokens: r.result.usage.inputTokens,
+            cacheReadInputTokens: r.result.usage.cacheReadInputTokens,
+            outputTokens: r.result.usage.outputTokens,
+            model: r.result.model,
+          },
+          "senna:security-substrate-state — narrative generated",
+        );
+      } else {
+        narrativeNote = `Narrative generation failed (${r.error})${r.retryable ? " — retryable" : ""}.`;
+        logger.warn({ error: r.error, retryable: r.retryable }, "senna narrative failed");
+      }
+    }
+  }
+
   let deliverable: string | undefined;
   if (!ctx.dryRun) {
     if (!existsSync(ctx.ownerInboxDir)) mkdirSync(ctx.ownerInboxDir, { recursive: true });
     const filename = `${fmtDateUTC(ctx.asOf)}_senna_security-substrate-state.md`;
     writeFileSync(
       resolve(ctx.ownerInboxDir, filename),
-      buildReportMarkdown(ctx, ci, pipelines, artefacts, recent),
+      buildReportMarkdown(ctx, ci, pipelines, artefacts, recent, narrative, narrativeNote),
       "utf8",
     );
     deliverable = `Owner Inbox/${filename}`;
