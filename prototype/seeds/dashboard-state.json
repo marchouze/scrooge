@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T13:35:22.621Z",
+  "asOf": "2026-05-07T13:51:16.834Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -148,18 +148,6 @@
       "sourceDocs": [
         "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
       ]
-    },
-    {
-      "id": "D-BANK-NAME-SELECTION",
-      "title": "Inaugural brand package — name longlist, logo concepts, palette, typography, voice",
-      "category": "near-term",
-      "owner": "Linnea",
-      "trigger": "First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.",
-      "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md"
-      ],
-      "note": "Recommendation: My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback."
     },
     {
       "id": "escalation:scrooge:unresolved-route:D-FOLLOW-ON-ROUTER-TEST:agent:nolan:author-persona-spec",
@@ -607,6 +595,11 @@
       "recentDeliverables": [
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
+          "title": "scrooge · ceo decision record · d markets capital time shape"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_ceo-decisions_fx-sub-decisions.md",
           "title": "ceo decisions · fx sub decisions"
         },
@@ -624,11 +617,6 @@
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
           "title": "scrooge · ceo decision record · d brand design hire"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
-          "title": "scrooge · ceo decision record · d bank name selection"
         }
       ],
       "lastActivityAt": "2026-05-07",
@@ -1565,6 +1553,14 @@
       "summary": "Audit record of follow-on routes dispatched after CEO decision approvals. Each decision below names the routes declared in its CeoDecision payload and the dispatch outcome."
     },
     {
+      "filename": "2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — CEO decision record: D-MARKETS-CAPITAL-TIME-SHAPE, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
       "filename": "2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
       "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
       "date": "2026-05-07",
@@ -1725,21 +1721,6 @@
       "title": "Mira — citation gate, 2026-05-07",
       "decisionRequired": false,
       "summary": "Autonomous (or on-request) run of Mira's citation-gate per CLAUDE.md Principle 2 (every action traces to a source). Verifies that every event in the store carries at least one citation — the append path enforces it via Zod, so a violatio…"
-    },
-    {
-      "filename": "2026-05-07_linnea_inaugural-brand-package.md",
-      "path": "Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md",
-      "date": "2026-05-07",
-      "title": "Inaugural brand package — name longlist, logo concepts, palette, typography, voice",
-      "decisionRequired": true,
-      "author": "Linnea",
-      "summary": "First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.",
-      "decisionId": "D-BANK-NAME-SELECTION",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).",
-      "decisionRecommendation": "My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback.",
-      "decisionOwner": "Linnea",
-      "decisionStatus": "open"
     }
   ],
   "prototype": {
@@ -1799,12 +1780,140 @@
   ],
   "findings": [
     {
+      "id": "42ff08a2-65af-4aac-8e6c-4a812548155b",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T13:49:05.546Z"
+    },
+    {
+      "id": "d51dc3b9-15aa-445e-9510-1afd6b4baea0",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsOpen",
+      "description": "Drift between persisted registry and derivation at decisionsOpen",
+      "asOf": "2026-05-07T13:49:05.546Z"
+    },
+    {
+      "id": "35d0ba64-022f-416a-9dd1-3b4237c067db",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsResolved",
+      "description": "Drift between persisted registry and derivation at decisionsResolved",
+      "asOf": "2026-05-07T13:49:05.546Z"
+    },
+    {
+      "id": "2853d0d2-e33e-4061-8f9a-82afb61cc2e9",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "bank.metrics.ceoDecisionsActioned",
+      "description": "Drift between persisted registry and derivation at bank.metrics.ceoDecisionsActioned",
+      "asOf": "2026-05-07T13:49:05.546Z"
+    },
+    {
       "id": "b7eea61c-dc19-470f-bba1-3ec5c2508346",
       "source": "agent:vera:overnight-recon",
       "severity": "high",
       "principle": "inFlight",
       "description": "Drift between persisted registry and derivation at inFlight",
       "asOf": "2026-05-07T12:07:07.743Z"
+    },
+    {
+      "id": "f605c011-ea20-4553-ac8d-5c4d1243ed1d",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "D-BANK-NAME-SELECTION",
+      "description": "Event store has CeoDecision D-BANK-NAME-SELECTION but no entry in registry decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "01b15183-0151-4f7c-b239-b64a37ce691c",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "D-MARKETS-CAPITAL-TIME-SHAPE",
+      "description": "Event store has CeoDecision D-MARKETS-CAPITAL-TIME-SHAPE but no entry in registry decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "9a35689c-ae55-4290-84c1-1bd75b746a12",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "88ee556b-0daf-4c15-bc9b-efd4615a26d8",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsOpen",
+      "description": "Drift between persisted registry and derivation at decisionsOpen",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "5ad71ddf-e916-4589-99c2-91df3c6ca9af",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsResolved",
+      "description": "Drift between persisted registry and derivation at decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "c411dbfa-bbdb-4aca-a6c7-05071864f997",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "bank.metrics.ceoDecisionsActioned",
+      "description": "Drift between persisted registry and derivation at bank.metrics.ceoDecisionsActioned",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "83a6b4ba-4c93-4e6f-aa18-ee4d36760baf",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "D-BANK-NAME-SELECTION",
+      "description": "Event store has CeoDecision D-BANK-NAME-SELECTION but no entry in registry decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "48740cdd-018a-47ba-97df-82238fe0d01d",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "D-MARKETS-CAPITAL-TIME-SHAPE",
+      "description": "Event store has CeoDecision D-MARKETS-CAPITAL-TIME-SHAPE but no entry in registry decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "c71610b7-8ae1-4117-8c82-570d98053994",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "aafc9fde-1e08-4904-bd25-47eb203ac9a4",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsOpen",
+      "description": "Drift between persisted registry and derivation at decisionsOpen",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "61c411a4-8cf9-457e-b2f8-57445f062bbd",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsResolved",
+      "description": "Drift between persisted registry and derivation at decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "29aaca71-46d7-403e-ad1d-810a21e12333",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "bank.metrics.ceoDecisionsActioned",
+      "description": "Drift between persisted registry and derivation at bank.metrics.ceoDecisionsActioned",
+      "asOf": "2026-05-07T02:00:00.000Z"
     },
     {
       "id": "f7042819-c3ff-4924-bbc9-3518364dde30",

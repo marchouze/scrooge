@@ -35,6 +35,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
+import { recordCeoDecision } from "../runtime/decisions/record";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { saveState } from "./registry";
@@ -134,9 +135,9 @@ function isValidAction(action: string): action is DecisionAction {
 }
 
 async function handleDecide(req: Request): Promise<Response> {
-  let body: DecisionRequestBody;
+  let body: DecisionRequestBody & { followOnRoutes?: string[] };
   try {
-    body = (await req.json()) as DecisionRequestBody;
+    body = (await req.json()) as DecisionRequestBody & { followOnRoutes?: string[] };
   } catch {
     return jsonResponse({ error: "invalid JSON body" }, 400);
   }
@@ -154,30 +155,47 @@ async function handleDecide(req: Request): Promise<Response> {
   }
 
   const actor = "marc@tgv.co.za"; // single-user local; identity seam at M+
-  const event: Event = {
-    event_id: newEventId(),
-    type: "CeoDecision",
-    as_of: nowUtc(),
-    entity: "BANK-ZA-001",
-    actor: { type: "human", id: actor },
-    citations: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
-    payload: {
-      decisionId: body.decisionId,
-      title: open.title,
-      action: body.action,
-      outcome: body.outcome,
-      ...(body.comment ? { comment: body.comment } : {}),
-    },
-  };
-  eventStore.append(event);
+
+  // Route through the canonical CEO-decision recorder. This is the same
+  // function the runtime handler `agent:scrooge:ceo-decision-record`
+  // calls — single source of truth for CeoDecision emission, no
+  // parallel paths.
+  const followOnRoutes = Array.isArray(body.followOnRoutes)
+    ? body.followOnRoutes.filter((s) => typeof s === "string" && s.trim().length > 0).map((s) => s.trim())
+    : [];
+
+  let result;
+  try {
+    result = recordCeoDecision(
+      {
+        decisionId: body.decisionId,
+        action: body.action,
+        title: open.title,
+        outcome: body.outcome,
+        actor,
+        ...(body.comment ? { comment: body.comment } : {}),
+        ...(followOnRoutes.length > 0 ? { followOnRoutes } : {}),
+        recordedVia: "dashboard:/api/decide",
+      },
+      nowUtc(),
+    );
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+
   refresh("decide");
   const resolved = cachedState.decisionsResolved.find((r) => r.id === body.decisionId);
 
   logger.info(
-    { decisionId: body.decisionId, action: body.action, eventId: event.event_id },
-    "CEO decision recorded",
+    {
+      decisionId: body.decisionId,
+      action: body.action,
+      eventId: result.eventId,
+      followOnRoutes: followOnRoutes.length,
+    },
+    "CEO decision recorded via dashboard",
   );
-  return jsonResponse({ ok: true, resolved, eventId: event.event_id });
+  return jsonResponse({ ok: true, resolved, eventId: result.eventId });
 }
 
 async function handleStartWorkstream(req: Request): Promise<Response> {

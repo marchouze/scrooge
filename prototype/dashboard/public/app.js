@@ -580,6 +580,7 @@ function openModal(decisionId, presetAction) {
   $("#modalAction").value = presetAction ?? "approve";
   $("#modalOutcome").value = defaultOutcome(d, presetAction);
   $("#modalComment").value = "";
+  if ($("#modalFollowOnRoutes")) $("#modalFollowOnRoutes").value = "";
   $("#modalError").hidden = true;
   $("#modal").hidden = false;
   $("#modalOutcome").focus();
@@ -603,6 +604,18 @@ async function submitModal() {
   const action = $("#modalAction").value;
   const outcome = $("#modalOutcome").value.trim();
   const comment = $("#modalComment").value.trim();
+  const followOnRaw = ($("#modalFollowOnRoutes")?.value ?? "").trim();
+  const followOnRoutes = followOnRaw
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  // Validate route format — must match agent:<name>:<trigger>.
+  const routePattern = /^agent:[a-z][a-z0-9-]*:[a-z][a-z0-9-]*$/i;
+  const badRoutes = followOnRoutes.filter((r) => !routePattern.test(r));
+  if (badRoutes.length > 0) {
+    showModalError(`Invalid follow-on route(s): ${badRoutes.join(", ")} — must match agent:<name>:<trigger>.`);
+    return;
+  }
   if (!outcome) {
     showModalError("Outcome is required.");
     return;
@@ -617,6 +630,7 @@ async function submitModal() {
         action,
         outcome,
         ...(comment ? { comment } : {}),
+        ...(followOnRoutes.length > 0 ? { followOnRoutes } : {}),
       }),
     });
     const body = await r.json();

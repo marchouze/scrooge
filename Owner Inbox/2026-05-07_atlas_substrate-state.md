@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-07T12:49:53.450Z
+asOf: 2026-05-07T13:48:50.638Z
 decision-required: false
 ---
 
@@ -9,34 +9,35 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 375 events across 20 types; 28/28 personas have operating specs; 9 runtime handlers registered; 61 files in /Owner Inbox/; 6 substrate gaps tracked.
+**Headline:** 450 events across 21 types; 28/28 personas have operating specs; 11 runtime handlers registered; 67 files in /Owner Inbox/; 6 substrate gaps tracked.
 
 ## Event store
 
-Path: `.local/event.db` · Total events: 375
+Path: `.local/event.db` · Total events: 450
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `ReconResult` | 84 | 2026-05-07 | 2026-05-07 |
-| `RiskRaised` | 72 | 2026-05-07 | 2026-05-07 |
-| `WorkstreamRegistered` | 60 | 2026-05-07 | 2026-05-07 |
-| `CeoDecision` | 28 | 2026-05-06 | 2026-05-07 |
-| `SubstrateStateSnapshot` | 24 | 2026-05-07 | 2026-05-07 |
-| `DataProjectionSnapshot` | 16 | 2026-05-07 | 2026-05-07 |
-| `InboxHygieneSweep` | 16 | 2026-05-07 | 2026-05-07 |
-| `GovernanceCyclePrep` | 16 | 2026-05-07 | 2026-05-07 |
-| `ObligationsRegisterSnapshot` | 16 | 2026-05-07 | 2026-05-07 |
-| `SecuritySubstrateSnapshot` | 16 | 2026-05-07 | 2026-05-07 |
-| `DashboardProjectionRefreshed` | 10 | 2026-05-07 | 2026-05-07 |
-| `AuditFinding` | 6 | 2026-05-07 | 2026-05-07 |
+| `ReconResult` | 92 | 2026-05-07 | 2026-05-07 |
+| `RiskRaised` | 90 | 2026-05-07 | 2026-05-07 |
+| `WorkstreamRegistered` | 78 | 2026-05-07 | 2026-05-07 |
+| `CeoDecision` | 33 | 2026-05-06 | 2026-05-07 |
+| `SubstrateStateSnapshot` | 27 | 2026-05-07 | 2026-05-07 |
+| `DataProjectionSnapshot` | 18 | 2026-05-07 | 2026-05-07 |
+| `InboxHygieneSweep` | 18 | 2026-05-07 | 2026-05-07 |
+| `GovernanceCyclePrep` | 18 | 2026-05-07 | 2026-05-07 |
+| `ObligationsRegisterSnapshot` | 18 | 2026-05-07 | 2026-05-07 |
+| `SecuritySubstrateSnapshot` | 18 | 2026-05-07 | 2026-05-07 |
+| `DashboardProjectionRefreshed` | 17 | 2026-05-07 | 2026-05-07 |
+| `AuditFinding` | 10 | 2026-05-07 | 2026-05-07 |
 | `WorkstreamCompleted` | 3 | 2026-05-07 | 2026-05-07 |
 | `WorkstreamStarted` | 2 | 2026-05-06 | 2026-05-07 |
+| `CitationGatePassed` | 2 | 2026-05-07 | 2026-05-07 |
 | `ClientCandidateRegistered` | 1 | 2026-05-06 | 2026-05-06 |
 | `ClientIdentityVerified` | 1 | 2026-05-06 | 2026-05-06 |
 | `KYCRuleEvaluated` | 1 | 2026-05-06 | 2026-05-06 |
 | `RiskRatingAssigned` | 1 | 2026-05-06 | 2026-05-06 |
 | `ClientAccepted` | 1 | 2026-05-06 | 2026-05-06 |
-| `CitationGatePassed` | 1 | 2026-05-07 | 2026-05-07 |
+| `AgentEscalation` | 1 | 2026-05-07 | 2026-05-07 |
 
 ## Personas — operating-spec coverage
 
@@ -44,7 +45,7 @@ Path: `.local/event.db` · Total events: 375
 
 ## Runtime handlers
 
-9 agent run handlers registered in `runtime/run.ts`. Each can be invoked locally via `bun run agent:<slug>` and on cron via `.github/workflows/agent-runtime-*.yml`.
+11 agent run handlers registered in `runtime/run.ts`. Each can be invoked locally via `bun run agent:<slug>` and on cron via `.github/workflows/agent-runtime-*.yml`.
 
 | Agent | Trigger |
 |---|---|
@@ -53,6 +54,8 @@ Path: `.local/event.db` · Total events: 375
 | Anya | `projection-drift` |
 | Anya | `projection-refresh` |
 | Scrooge | `inbox-hygiene` |
+| Scrooge | `ceo-decision-record` |
+| Scrooge | `follow-on-router` |
 | Owen | `governance-cycle-prep` |
 | Mira | `obligations-snapshot` |
 | Mira | `citation-gate` |

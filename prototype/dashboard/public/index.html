@@ -156,6 +156,11 @@
         <span>Comment (optional)</span>
         <textarea id="modalComment" rows="3" placeholder="Any rationale or routing note for the team"></textarea>
       </label>
+      <label class="field">
+        <span>Follow-on routes (optional, one per line — fires on approve)</span>
+        <textarea id="modalFollowOnRoutes" rows="3" placeholder="agent:imani:naming-pre-clearance&#10;agent:nolan:author-persona-spec"></textarea>
+        <small class="muted">Format: <code>agent:&lt;name&gt;:&lt;trigger&gt;</code>. Resolved routes auto-fire after the decision lands; unresolved routes surface as substrate-gap escalations on the dashboard.</small>
+      </label>
       <div id="modalError" class="error" hidden></div>
     </div>
     <div class="modal-foot">

@@ -48,20 +48,10 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
+import { logger } from "../../platform/composition";
+import { recordCeoDecision, type DecisionAction, isValidDecisionAction, VALID_DECISION_ACTIONS } from "../decisions/record";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
-
-const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
-
-type DecisionAction = "approve" | "defer" | "modify" | "request-revision";
-const VALID_ACTIONS: readonly DecisionAction[] = [
-  "approve",
-  "defer",
-  "modify",
-  "request-revision",
-];
 
 interface DecisionRecordInput {
   readonly decisionId: string;
@@ -98,9 +88,9 @@ function readInput(): DecisionRecordInput {
   }
   const obj = parsed as Record<string, unknown>;
   const action = String(obj.action ?? "");
-  if (!VALID_ACTIONS.includes(action as DecisionAction)) {
+  if (!isValidDecisionAction(action)) {
     throw new Error(
-      `Invalid action "${action}" — must be one of ${VALID_ACTIONS.join(" | ")}`,
+      `Invalid action "${action}" — must be one of ${VALID_DECISION_ACTIONS.join(" | ")}`,
     );
   }
   const decisionId = String(obj.decisionId ?? "");
@@ -110,7 +100,7 @@ function readInput(): DecisionRecordInput {
   const actor = String(obj.actor ?? "marc@tgv.co.za");
   return {
     decisionId,
-    action: action as DecisionAction,
+    action,
     title,
     outcome,
     actor,
@@ -157,25 +147,20 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "CeoDecision",
-      as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
-      actor: { type: "human", id: input.actor },
-      citations: EVENT_CITATIONS,
-      payload: {
+    recordCeoDecision(
+      {
         decisionId: input.decisionId,
-        title: input.title,
         action: input.action,
+        title: input.title,
         outcome: input.outcome,
+        actor: input.actor,
         ...(input.comment ? { comment: input.comment } : {}),
         ...(input.sourceDoc ? { sourceDoc: input.sourceDoc } : {}),
         ...(input.followOnRoutes ? { followOnRoutes: input.followOnRoutes } : {}),
-        recordedVia: "agent:scrooge:ceo-decision-record",
-        runTrigger: ctx.trigger.id,
+        recordedVia: `agent:scrooge:ceo-decision-record (${ctx.trigger.id})`,
       },
-    });
+      ctx.asOf,
+    );
     eventsEmitted = 1;
   }
 
