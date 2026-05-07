@@ -222,13 +222,46 @@ function renderSpecOnlyPersonas(state) {
 // Latest run per agent name (lower-case keyed). Refreshed alongside /api/state.
 let latestRunByAgent = {};
 
+function renderSubstrateGaps(view) {
+  const list = $("substrateGapsList");
+  const sub = $("substrateGapsSub");
+  if (!list) return;
+  list.innerHTML = "";
+  const gaps = view?.gaps ?? [];
+  if (gaps.length === 0) {
+    if (view?.sourceFile) {
+      list.appendChild(
+        el("li", { class: "muted" }, "Atlas's most-recent run reports no substrate gaps."),
+      );
+    } else {
+      list.appendChild(
+        el("li", { class: "muted" }, "No Atlas substrate-state deliverable found yet — run Atlas to populate."),
+      );
+    }
+  } else {
+    for (const g of gaps) {
+      list.appendChild(el("li", { class: "substrate-gap" }, g));
+    }
+  }
+  if (sub) {
+    if (view?.sourceFile && view.asOf) {
+      sub.textContent = `${gaps.length} tracked · source: ${view.sourceFile} (${view.asOf.slice(0, 10)})`;
+    } else if (view?.sourceFile) {
+      sub.textContent = `${gaps.length} tracked · source: ${view.sourceFile}`;
+    } else {
+      sub.textContent = `${gaps.length} tracked`;
+    }
+  }
+}
+
 async function load() {
   const live = $("liveDot");
   const stamp = $("lastUpdated");
   try {
-    const [stateR, runsR] = await Promise.all([
+    const [stateR, runsR, gapsR] = await Promise.all([
       fetch("/api/state", { cache: "no-store" }),
       fetch("/api/agent-runs", { cache: "no-store" }).catch(() => null),
+      fetch("/api/substrate-gaps", { cache: "no-store" }).catch(() => null),
     ]);
     if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
     const state = await stateR.json();
@@ -239,9 +272,11 @@ async function load() {
         if (runs.length > 0) latestRunByAgent[agent.toLowerCase()] = runs[0];
       }
     }
+    const gapsView = gapsR && gapsR.ok ? await gapsR.json() : null;
     renderStrategyBanner(state);
     renderAggregateStats(state);
     renderRuntimeAgents(state);
+    renderSubstrateGaps(gapsView);
     renderSpecOnlyPersonas(state);
     live.classList.add("ok");
     stamp.textContent = `Updated ${fmtDate(state.asOf)}`;

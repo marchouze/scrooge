@@ -37,6 +37,7 @@ import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { getSubstrateGapsView } from "./substrate-gaps";
 import { saveState } from "./registry";
 import type {
   CompleteWorkstreamRequestBody,
@@ -318,6 +319,11 @@ const server = Bun.serve({
     const url = new URL(req.url);
     if (url.pathname === "/api/state" && req.method === "GET") {
       return jsonResponse(cachedState);
+    }
+    if (url.pathname === "/api/substrate-gaps" && req.method === "GET") {
+      // Substrate-gap inventory parsed from Atlas's most-recent
+      // substrate-state deliverable. 5-min server-side cache.
+      return jsonResponse(getSubstrateGapsView(REPO_ROOT));
     }
     if (url.pathname === "/api/agent-runs" && req.method === "GET") {
       // GitHub Actions run history per agent — for the per-agent "Recent

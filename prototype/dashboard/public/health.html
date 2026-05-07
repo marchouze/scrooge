@@ -25,6 +25,7 @@
   </div>
 </header>
 
+<div id="failureBanner" class="failure-banner" hidden></div>
 <div id="strategyBanner" class="strategy-banner muted"></div>
 
 <main id="app">
@@ -50,6 +51,18 @@
 
   <section class="band">
     <div class="band-head">
+      <h2>Substrate gaps</h2>
+      <span class="band-sub" id="substrateGapsSub"></span>
+    </div>
+    <p class="muted">
+      Engineering items that block agents from running fully autonomously.
+      Source: Atlas's most-recent substrate-state deliverable. Each closes when the corresponding substrate work lands.
+    </p>
+    <ul id="substrateGapsList" class="substrate-gaps-list"></ul>
+  </section>
+
+  <section class="band">
+    <div class="band-head">
       <h2>Personas without a runtime handler</h2>
       <span class="band-sub" id="specOnlySub"></span>
     </div>
@@ -62,6 +75,7 @@
 
 </main>
 
+<script src="/_failure-banner.js"></script>
 <script src="/health.js"></script>
 </body>
 </html>
