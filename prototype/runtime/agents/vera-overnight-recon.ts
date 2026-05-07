@@ -28,6 +28,7 @@ import { run as runDecisionEvent } from "../../platform/recon/decision-event-rec
 import { run as runMandateOwnership } from "../../platform/recon/mandate-ownership";
 import { run as runProseDuplication } from "../../platform/recon/prose-duplication";
 import type { ReconResult, ReconViolation } from "../../platform/recon/types";
+import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 interface PipelineEntry {
@@ -99,7 +100,74 @@ function fmtDateUTC(iso: string): string {
   return iso.slice(0, 10);
 }
 
-function buildReportMarkdown(ctx: AgentRunContext, results: readonly ReconResult[]): string {
+// Per-run input for Vera's narrative call. Goes AFTER the cache breakpoint
+// — byte changes here don't invalidate the cached system prompt.
+function buildNarrativeInput(
+  ctx: AgentRunContext,
+  results: readonly ReconResult[],
+): string {
+  const lines: string[] = [];
+  lines.push(`Run as-of: ${ctx.asOf}`);
+  lines.push(`Trigger: ${ctx.trigger.id}`);
+  lines.push("");
+  lines.push("Pipeline results (one block per pipeline):");
+  lines.push("");
+  for (const r of results) {
+    lines.push(`### ${r.pipeline}`);
+    lines.push(`- ok: ${r.ok}`);
+    lines.push(`- asserted: ${r.asserted}`);
+    lines.push(`- violations: ${r.violations.length}`);
+    if (r.violations.length > 0) {
+      lines.push("");
+      lines.push("violations:");
+      for (const v of r.violations) {
+        lines.push(`  - [${v.severity}] subject=\`${v.subject}\` — ${v.message}`);
+      }
+    }
+    lines.push("");
+  }
+  lines.push(
+    "Now write your narrative per the system instructions. Headline judgement first; distinguish substantive findings from substrate-context noise (especially the empty-event-store condition on a fresh runner); end with a one-line recommendation.",
+  );
+  return lines.join("\n");
+}
+
+// Stable system prompt for Vera's narrative pass. KEEP BYTE-STABLE across
+// runs — adding a timestamp or run ID here invalidates the cache. Per
+// `shared/prompt-caching.md`, the cached prefix on Opus 4.7 must be at
+// least 4096 tokens, so this is intentionally substantial.
+const VERA_NARRATIVE_SYSTEM = `You are Vera, the bank's internal-audit / continuous-assurance engineer. You are operating as a standing autonomous agent under CLAUDE.md Principle 7. Your operating spec is at \`Team/Vera.md\`.
+
+Your role on the third line of defence is to test, opine, and report — never to design, build, or own a control. You hold third-line independence; you sign findings against your own former design contributions when warranted, you refuse briefs that compromise independence, and you are unafraid to escalate to the CAE (Thandiwe) or, where the matter warrants, to the Audit Committee chair (Owen, interim Audit Forum chair).
+
+You speak plainly, evidentially, and without self-importance. You distinguish "I have evidence" from "I have been told"; you cite obligations-register IDs and procedure files when stating what is required; you call findings what they are without softening them, and you are equally clear when nothing is wrong.
+
+For this run you have just executed the four continuous-controls reconciliation pipelines you currently own:
+
+  1. **mandate-ownership** — every persona's claimed mandate reconciles to a procedure that exists, and every procedure has an owning persona.
+  2. **decision-event** — every dashboard-resolved CEO decision has a backing \`CeoDecision\` event in the event store, and every \`CeoDecision\` event has a registry entry.
+  3. **dashboard-derivation** — the persisted \`seeds/dashboard-state.json\` cache reproduces from \`deriveState()\` against the canonical sources.
+  4. **prose-duplication** — no canonical-source fact is duplicated in prose elsewhere; every cross-reference is a typed citation per the canonical-source registry.
+
+You produce a written narrative — one to three short paragraphs — that:
+
+- Names the headline judgement first: PASS / partial pass / FAIL, and what that means in plain terms.
+- Distinguishes substantive findings from substrate-context noise. The most common substrate-context finding today is the empty-event-store condition on a fresh GitHub Actions runner, which causes the decision-event pipeline to fail every dashboard-resolved decision lookup. That is a known substrate gap (cloud-substrate at M8 closes it), not a control failure — say so explicitly when you see it, and rank the *real* findings underneath.
+- Routes by severity — fail-severity findings recommend owner Thandiwe; warn-severity findings are tracked but not escalated unless they cluster. State the routing in your narrative.
+- Ends with a one-line recommendation: continue cadence, or specific corrective action. Do not pad. Do not editorialise about your own importance.
+
+Cite obligations-register IDs (\`ORG-*\`) and procedure files (\`Procedures/by-policy/*.md\`) by name where they are directly relevant — but only where they are. Citations are evidence, not decoration.
+
+Do not include a markdown header for your section — the calling pipeline wraps your output under a "## Vera's narrative" heading. Just produce the prose.
+
+If the input you receive is empty or malformed (no pipeline results, no recon evidence to opine on), say so plainly and decline to opine — silence is a finding in itself.`;
+
+function buildReportMarkdown(
+  ctx: AgentRunContext,
+  results: readonly ReconResult[],
+  narrative: string | null,
+  narrativeNote: string | null,
+): string {
   const totalAsserted = results.reduce((s, r) => s + r.asserted, 0);
   const totalFails = results.reduce((s, r) => s + severityCount(r.violations, "fail"), 0);
   const totalWarns = results.reduce((s, r) => s + severityCount(r.violations, "warn"), 0);
@@ -153,6 +221,18 @@ function buildReportMarkdown(ctx: AgentRunContext, results: readonly ReconResult
       lines.push("");
     }
   }
+  if (narrative) {
+    lines.push("## Vera's narrative");
+    lines.push("");
+    lines.push(narrative);
+    lines.push("");
+  } else if (narrativeNote) {
+    lines.push("## Vera's narrative");
+    lines.push("");
+    lines.push(`_${narrativeNote}_`);
+    lines.push("");
+  }
+
   lines.push("## Substrate");
   lines.push("");
   lines.push(
@@ -207,6 +287,45 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted += emitAuditFindingEvents(ctx, r);
   }
 
+  // Generate the Claude narrative (when API key is available + not dry-run).
+  // This is the substrate piece that closes Atlas's gap #4 — agents now
+  // produce substantive narrative on top of mechanical observation.
+  // Failures here do NOT fail the run: the mechanical content is the
+  // contract. Narrative is a quality enhancement.
+  let narrative: string | null = null;
+  let narrativeNote: string | null = null;
+  if (!ctx.dryRun) {
+    if (!claudeAvailable()) {
+      narrativeNote =
+        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Mechanical recon results above stand on their own. Set the secret in GitHub Actions to enable narrative generation.";
+    } else {
+      const userInput = buildNarrativeInput(ctx, results);
+      const r = await tryGenerateNarrative({
+        stableSystem: VERA_NARRATIVE_SYSTEM,
+        userInput,
+        // Short narrative — adaptive thinking will wrap up early; cap is a safety net.
+        maxTokens: 8_000,
+        effort: "high",
+      });
+      if (r.ok) {
+        narrative = r.result.text.trim();
+        logger.info(
+          {
+            inputTokens: r.result.usage.inputTokens,
+            cacheReadInputTokens: r.result.usage.cacheReadInputTokens,
+            cacheCreationInputTokens: r.result.usage.cacheCreationInputTokens,
+            outputTokens: r.result.usage.outputTokens,
+            model: r.result.model,
+          },
+          "vera:overnight-recon — narrative generated",
+        );
+      } else {
+        narrativeNote = `Narrative generation failed (${r.error})${r.retryable ? " — retryable" : ""}. Mechanical recon results above stand on their own.`;
+        logger.warn({ error: r.error, retryable: r.retryable }, "vera narrative failed");
+      }
+    }
+  }
+
   // Write the deliverable.
   let deliverable: string | undefined;
   if (!ctx.dryRun) {
@@ -215,7 +334,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
     const filename = `${fmtDateUTC(ctx.asOf)}_vera_overnight-recon.md`;
     const path = resolve(ctx.ownerInboxDir, filename);
-    writeFileSync(path, buildReportMarkdown(ctx, results), "utf8");
+    writeFileSync(path, buildReportMarkdown(ctx, results, narrative, narrativeNote), "utf8");
     deliverable = `Owner Inbox/${filename}`;
   }
 

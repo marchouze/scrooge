@@ -155,7 +155,7 @@ const KNOWN_SUBSTRATE_GAPS: readonly string[] = [
   "Event store is host-local (.local/event.db, gitignored). GitHub Actions runners see a fresh empty store; recon shows registry-only resolved decisions as missing-event findings. Cloud-substrate at M8 (Azure) closes this.",
   "AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised event types not yet defined. Vera pipelines #14/#15 and the dashboard's curated-seed retirement are gated on these.",
   "Event-driven and on-request triggers not yet implemented in the runtime — only scheduled. V2 of the runtime work.",
-  "Claude API integration for agent-narrative output not yet wired. Vera + Atlas reports today are mechanical; V2 wraps the recon/snapshot output with a Claude-generated narrative.",
+  "Claude API integration for agent-narrative output: PARTIAL. Wired into Vera's overnight handler (`runtime/claude.ts` + `tryGenerateNarrative` call in vera-overnight-recon.ts). Other handlers still mechanical; rolling out per agent. Requires ANTHROPIC_API_KEY in the host env or GitHub Actions secret; runs degrade gracefully when unset.",
   "Projection-cache persistence is partial; Anya's daily projection-drift sweep is not yet a runtime handler.",
   "Citation gate runs as a separate script (bun run citation-gate) outside the runtime; not yet wrapped as an agent run.",
 ];

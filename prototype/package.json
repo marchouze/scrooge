@@ -33,6 +33,7 @@
     "typescript": "^5.6.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.0",
     "pino": "^9.5.0",
     "zod": "^3.23.8"
   }
