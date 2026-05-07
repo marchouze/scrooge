@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T12:12:45.644Z",
+  "asOf": "2026-05-07T12:25:45.683Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -28,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 28,
+      "ceoDecisionsActioned": 30,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -137,32 +137,27 @@
       "summary": "The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own."
     }
   ],
-  "decisionsOpen": [
+  "decisionsOpen": [],
+  "decisionsResolved": [
     {
       "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
       "title": "Markets franchise design — proposal",
-      "category": "near-term",
-      "owner": "Saskia (with Helena, Camille, Eitan)",
-      "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-      "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-      ]
+      "actionedAt": "2026-05-07T12:18:36.142Z",
+      "outcome": "Revision requested — see comment.",
+      "sourceDoc": "(unsourced)",
+      "action": "request-revision",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "add FX"
     },
     {
       "id": "D-BRAND-DESIGN-HIRE",
       "title": "Role brief — Brand & design lead",
-      "category": "near-term",
-      "owner": "PAX",
-      "trigger": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
-      "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md"
-      ],
-      "note": "Recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere."
-    }
-  ],
-  "decisionsResolved": [
+      "actionedAt": "2026-05-07T12:15:20.851Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
     {
       "id": "D-OI-PAX-BRAND-DESIGN-ROLE-BRIEF",
       "title": "PAX — role brief: Brand & design lead",
@@ -552,20 +547,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-BRAND-DESIGN-HIRE",
-              "title": "Role brief — Brand & design lead",
-              "category": "near-term",
-              "owner": "PAX",
-              "trigger": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
-              "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md"
-              ],
-              "note": "Recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere."
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-07",
@@ -627,7 +609,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 11
     },
     {
@@ -650,19 +632,7 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -702,7 +672,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 4
     },
     {
@@ -891,19 +861,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -949,7 +907,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 3
     },
     {
@@ -962,19 +920,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1004,7 +950,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 2
     },
     {
@@ -1030,19 +976,7 @@
           "outcomeNote": "First-run output of the Saskia standing-agent. Build-only posture incorporated. Eight §8 questions surfaced for CEO judgement."
         }
       ],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1092,7 +1026,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 1,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 6
     },
     {
@@ -1431,7 +1365,7 @@
       "decisionCategory": "near-term",
       "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
       "decisionOwner": "Saskia (with Helena, Camille, Eitan)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
@@ -1488,7 +1422,7 @@
       "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
       "decisionRecommendation": "Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere.",
       "decisionOwner": "PAX",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-07_owen_substrate-exception-register.md",
