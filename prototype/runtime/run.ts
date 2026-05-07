@@ -96,12 +96,24 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
 }
 
 // CLI entry — only when invoked directly.
+//
+// Exit-code semantics (deliberate):
+//   0 — agent run completed. Findings, if any, live in the deliverable +
+//       events; they are NOT a workflow failure. An autonomous agent
+//       observing and reporting is doing its job.
+//   1 — runtime / substrate failure. The agent could not run to completion
+//       (handler threw, capability resolution failed, etc.). This is a
+//       genuine workflow failure that requires substrate attention.
+//
+// Caller workflows that want to react to findings (post a comment, raise
+// an issue, escalate) should parse the deliverable / event stream — not
+// the exit code.
 if (import.meta.main) {
   const opts = parseArgs(process.argv);
   runAgent(opts)
-    .then((r) => process.exit(r.ok ? 0 : 1))
+    .then(() => process.exit(0))
     .catch((e) => {
       logger.error({ err: (e as Error).message }, "agent run failed");
-      process.exit(2);
+      process.exit(1);
     });
 }
