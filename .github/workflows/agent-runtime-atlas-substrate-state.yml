@@ -22,7 +22,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: agent-autocommit
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:

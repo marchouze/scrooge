@@ -29,7 +29,7 @@ permissions:
 # Serialise auto-commit pushes across all agent workflows so two agents
 # running concurrently don't race for the same fast-forward push.
 concurrency:
-  group: agent-autocommit
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
