@@ -34,7 +34,15 @@ jobs:
       - working-directory: prototype
         run: bun install --frozen-lockfile
       - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
+      - working-directory: prototype
         run: bun run agent:scrooge-inbox-hygiene
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
       - run: |
           git config user.name "scrooge-agent[bot]"
           git config user.email "agent-scrooge@scrooge.local"

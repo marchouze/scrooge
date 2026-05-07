@@ -173,7 +173,7 @@ function recentDeliverablesCount(ownerInboxDir: string): number {
 // Curated rather than derived; V2 reads them from a substrate-gap register
 // once one exists (per Vera spec § 16, planned recon pipeline #13).
 const KNOWN_SUBSTRATE_GAPS: readonly string[] = [
-  "Event store is host-local (.local/event.db, gitignored). GitHub Actions runners see a fresh empty store; recon shows registry-only resolved decisions as missing-event findings. Cloud-substrate at M8 (Azure) closes this.",
+  "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite remains canonical-shape on every host. Bidirectional sync runs before/after every agent workflow via `bun run event-store:sync`. Senna threat model approved-with-conditions for build-phase use only — see `Owner Inbox/2026-05-07_senna_neon-event-store-threat-model.md` §5 for the hardening list (drop role to SELECT+INSERT, IP allowlist, rotation cadence) required before any sensitive-data event flows here. M8 cloud lift swaps Neon for Neon-on-Azure or Azure Postgres without code change.",
   "AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised event types not yet defined. Vera pipelines #14/#15 and the dashboard's curated-seed retirement are gated on these.",
   "Event-driven and on-request triggers not yet implemented in the runtime — only scheduled. V2 of the runtime work.",
   "Claude API integration for agent-narrative output: PARTIAL. Wired into Vera's overnight handler (`runtime/claude.ts` + `tryGenerateNarrative` call in vera-overnight-recon.ts). Other handlers still mechanical; rolling out per agent. Requires ANTHROPIC_API_KEY in the host env or GitHub Actions secret; runs degrade gracefully when unset.",
