@@ -108,6 +108,22 @@
 | Counterparty Onboarding (markets) | `counterparty-onboarding-markets.md` | Saskia + Imani + Eitan | PLANNED |
 | New Product Approval | `npa-gate.md` | Saskia + Helena + Camille + Zara | PLANNED |
 
+## Markets — OTC Derivative Provider (FMA / FSCA)
+
+> *Added 2026-05-07 by Mira from `Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md`. All STUB; substrate work tracked under the markets bundle.*
+
+| Policy | Procedure | Owner | Status |
+|---|---|---|---|
+| ODP Authorisation Policy | [`odp-authorisation-application.md`](by-policy/odp-authorisation-application.md) | Owen + Camille + Imani + Saskia | STUB |
+| Trade Reporting Policy | [`trade-reporting-strate.md`](by-policy/trade-reporting-strate.md) | Mira + Tomas + Anya + Kai | STUB |
+| Margin Policy (RMF sub-policy) | [`margin-vm.md`](by-policy/margin-vm.md) | Ravi + Eitan + Imani + Bea | STUB |
+| Margin Policy / IM Methodology Policy | [`margin-im.md`](by-policy/margin-im.md) | Ravi + Rohan + Eitan + Imani | STUB |
+| OTC Trading Policy | [`portfolio-reconciliation.md`](by-policy/portfolio-reconciliation.md) | Tomas + Anya + Rohan | STUB |
+| OTC Trading Policy | [`otc-confirmation.md`](by-policy/otc-confirmation.md) | Kai + Tomas + Imani | STUB |
+| OTC Trading Policy / ISDA dispute | [`otc-dispute-resolution.md`](by-policy/otc-dispute-resolution.md) | Imani + Saskia + Zara | STUB |
+| Client Categorisation Policy | [`client-categorisation.md`](by-policy/client-categorisation.md) | Zara + Niko (paused build-phase) | STUB |
+| Excon Compliance Policy | [`excon-otc-derivatives.md`](by-policy/excon-otc-derivatives.md) | Eitan + Mira + Ravi | STUB |
+
 ## Customer / sales
 
 | Policy | Procedure | Owner | Status |

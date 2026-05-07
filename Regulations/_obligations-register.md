@@ -1,6 +1,8 @@
 # Obligations register
 
-**Curator:** Mira (compliance / RegTech engineer) · **Governance:** Zara (CCO) · **Date:** 2026-05-06 · **Version:** 1.0
+**Curator:** Mira (compliance / RegTech engineer) · **Governance:** Zara (CCO) · **Date:** 2026-05-07 · **Version:** 1.1
+
+> v1.1 — added Domain M (OTC Derivative Provider): 25 new obligations under FMA, FSCA Conduct Standards 1–3 of 2018, Joint Standard 2 of 2020 (as amended 9 June 2023), Joint Notice 2 of 2024, Currency & Exchanges Manual. Source: `Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md`.
 
 > **Purpose.** A consolidated register of every obligation the bank carries under applicable regulation, mapped to where it is fulfilled in the bank's policy stack. The operational expression of Principle 2 (every action traces to a source). Entries are projections over the underlying instrument analyses in this library; reproducible at any as-of date.
 
@@ -223,6 +225,38 @@ Where multiple regulators converge on the same obligation, it is listed once wit
 | ORG-EL-01 | ECTA 25/2002 | Recognise electronic communications and signatures (excluding ECTA Schedule 1 cases). | Document Execution Policy (planned); Contracting Policy | Imani | **IN FORCE** (within governance framework P3) |
 | ORG-EL-02 | ECTA Schedule 1 | Reserve wet signatures for excluded categories (wills, alienation of land, certain bills of exchange, long-term leases where statute requires writing). | Document Execution Policy | Imani | **IN FORCE** |
 | ORG-EL-03 | POPIA + ECTA | Electronic-record integrity and authenticity. | Information Security Policy; POPIA / Privacy Policy | Senna + Iris | **IN FORCE** |
+
+## Domain M — OTC Derivative Provider (FMA / FSCA / Joint Standards)
+
+> *Added 2026-05-07 by Mira on the back of `Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md`. Status assumes the bank's strategic foundation: institutional bank seeking SARB licence + ODP authorisation via Application Index 1 (banks-track), live operation post-licence-day per the AI-driven-bank reframe.*
+
+| ID | Citation | Requirement | Fulfilment policy | Owner | Status |
+|---|---|---|---|---|---|
+| ORG-FMA-001 | Financial Markets Act 19/2012 s.6A | Be authorised by the FSCA before conducting ODP business; authorisation precedes any live OTC derivative principal-side activity. | ODP Authorisation Policy (planned, markets bundle) | Camille + Saskia + Owen | PRE-LICENCE |
+| ORG-FMA-002 | FMA s.109 | Penalty: up to R10m fine and/or 5 years imprisonment for unauthorised ODP activity or holding-out. | Governance Framework; Operating-Model Boundary | Owen | **IN FORCE** (boundary policed) |
+| ORG-FMA-003 | FMA Regulations (GN R.98/2018) reg 3 | Report OTC derivative transactions to a licensed Trade Repository (Strate, designated Dec 2024); 169 data elements per transaction; live by 1 March 2027. | Trade Reporting Policy (planned); Anya data contracts | Mira + Anya + Tomas | DRAFTING |
+| ORG-CS1-001 | Conduct Standard 1/2018 §3 | Demonstrate operational capital sufficient for the ODP business. | Capital Management Policy; ICAAP | Camille | **IN FORCE** (Banks-Act-prudential-covered) |
+| ORG-CS1-002 | CS 1/2018 §4 | Fit-and-proper: senior management, controlling body, key individuals. | Fit-and-Proper Policy | Owen + Sade | PARTIAL (thin-human-layer at licence-day) |
+| ORG-CS1-003 | CS 1/2018 §5 | Risk-management framework — board-approved policies + procedures, written. | Risk Management Framework | Helena | IN FLIGHT (RAS recalibration) |
+| ORG-CS1-004 | CS 1/2018 §6 | IT and operational capacity demonstration. | Operational Resilience Policy; ODP Authorisation Policy | Devon | IN FLIGHT |
+| ORG-CS2-001 | CS 2/2018 + Strate TR | Trade reporting per the 169-element schema; aligned with EMIR / EMIR Refit. | Trade Reporting Policy; Anya schema-registry | Anya + Mira | DRAFTING |
+| ORG-CS3-001 | Conduct Standard 3/2018 §3 | Written trading-relationship agreement before any OTC derivative transaction (ISDA Master + ZA Schedule + CSA). | Counterparty Onboarding Policy; Imani clause library | Imani + Saskia | IN FLIGHT |
+| ORG-CS3-002 | CS 3/2018 §4 | Timely confirmation of all material terms post-execution (industry T+1 / T+5). | Confirmation Procedure (Kai); OTC Trading Policy (planned) | Kai (Saskia) | DRAFTING |
+| ORG-CS3-003 | CS 3/2018 §5 | Portfolio reconciliation at specified intervals; identifies discrepancies in material terms + valuation. | Portfolio Reconciliation Procedure (Tomas) | Tomas (Saskia) | DRAFTING |
+| ORG-CS3-004 | CS 3/2018 §6 | Dispute-resolution procedures in place before transaction commencement. | OTC Dispute Resolution Procedure (Imani + Zara) | Imani + Zara | DRAFTING |
+| ORG-CS3-005 | CS 3/2018 §7 | Client / counterparty categorisation policy + due diligence pre-trade. | Client Categorisation Policy (planned) | Zara (Niko substrate) | DRAFTING |
+| ORG-CS3-006 | CS 3/2018 §8 | Daily valuation; agreed methodology with counterparty. | Valuation Procedure (Rohan); Hedge Accounting Policy | Rohan (with Bea) | DRAFTING |
+| ORG-CS3-007 | CS 3/2018 §9 | Conflicts-of-interest management on OTC derivative dealing. | Conflicts of Interest Policy | Owen | **IN FORCE** (general); ODP-specific extension PLANNED |
+| ORG-CS3-008 | CS 3/2018 §10 | Complaints handling. | TCF / Complaints Policy | Zara | DRAFTING |
+| ORG-CS3-009 | CS 3/2018 §12 | Record-keeping ≥ 5 years; tamper-evident. | Records Management Policy; Event-store Substrate (Atlas) | Atlas (Owen) | **IN FORCE** (P1 over-delivers) |
+| ORG-JS2-001 | Joint Standard 2/2020 (as amd. 9 June 2023) §4 | Calculate + exchange Variation Margin daily, per-counterparty, against MTM. | Margin Policy; VM Procedure (Ravi) | Ravi (Eitan) | DRAFTING |
+| ORG-JS2-002 | JS 2/2020 §5 | Calculate + exchange Initial Margin (phased by group notional; final-phase Sept 2025: > ZAR 100bn average notional). | Margin Policy; IM Procedure (Ravi + Rohan); SIMM methodology | Ravi (Rohan) | PHASED (tracking BCBS-IOSCO phase-in) |
+| ORG-JS2-003 | JS 2/2020 §6 (as amended) | Eligible collateral: cash, gold, SAGB (+ 2022 expansion to certain SA central-government bonds). | Collateral Management Policy | Eitan | DRAFTING |
+| ORG-JS2-004 | JS 2/2020 §7 | Minimum transfer amount aggregate (IM + VM) ≤ R5m. | Margin Policy; encoded in margin-event constructor | Ravi | DRAFTING |
+| ORG-JS2-005 | JS 2/2020 §3 | Board-approved policies + procedures sufficient for relevant transactions. | Risk Management Framework; Margin Policy | Helena | IN FLIGHT |
+| ORG-JS2-006 | JS 2/2020 §8 | Margin-specific dispute-resolution procedures pre-transaction. | Margin Dispute Procedure (Imani) | Imani | DRAFTING |
+| ORG-JN2-2024 | Joint Notice 2/2024 + JS 2/2020 | Margin information reporting to PA via Umoja portal from 1 April 2025. | Trade Reporting Policy (Umoja sub-pipeline); Margin Policy | Tomas + Anya | DRAFTING |
+| ORG-EXCON-ODP-001 | Currency and Exchanges Manual + SARB FinSurv | Non-resident counterparty OTC derivative transactions: Authorised Dealer compliance + FinSurv reporting + approvals where required. | Excon Compliance Policy; OTC Trading Policy | Eitan (Mira) | DRAFTING |
 
 ## Domain L — Whistleblowing, ethics, anti-bribery (cross-cutting)
 
