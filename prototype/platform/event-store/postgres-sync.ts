@@ -41,6 +41,9 @@
 // Author: Atlas (substrate plumbing) · Senna (threat model gate at next
 // cycle).
 
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+
 import { Database } from "bun:sqlite";
 
 import type { Event } from "./types";
@@ -138,6 +141,11 @@ export async function runSync(opts: {
   const startedAt = new Date().toISOString();
 
   // --- sqlite side -----------------------------------------------------
+  // On a fresh GitHub Actions runner the parent directory (e.g. `.local/`)
+  // doesn't exist yet, and `bun:sqlite` will refuse to open the database
+  // ("unable to open database file"). Create the parent eagerly so the
+  // first sync on a clean host succeeds.
+  mkdirSync(dirname(opts.sqlitePath), { recursive: true });
   const sqlite = new Database(opts.sqlitePath);
   // The local store may not have been initialised yet on a fresh runner.
   // Re-running the EventStore DDL here is idempotent.

@@ -14,6 +14,9 @@
 //
 // Author: Atlas
 
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+
 import { Database } from "bun:sqlite";
 import { type Event, eventSchema } from "./types";
 
@@ -46,6 +49,12 @@ export class EventStore {
   private readonly db: Database;
 
   constructor(path = ":memory:") {
+    // Ensure parent directory exists for file-backed stores. On a fresh
+    // GitHub Actions runner the `.local/` directory doesn't exist yet, and
+    // `bun:sqlite` will refuse to create the database file otherwise.
+    if (path !== ":memory:") {
+      mkdirSync(dirname(path), { recursive: true });
+    }
     this.db = new Database(path);
     this.db.exec(DDL);
   }
