@@ -63,7 +63,7 @@ jobs:
         run: |
           git config user.name "atlas-agent[bot]"
           git config user.email "agent-atlas@scrooge.local"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git add "Owner Inbox/" || true
           if git diff --cached --quiet; then
             echo "No changes to commit; Atlas's substrate-state run produced no deliverable diff."
@@ -82,6 +82,6 @@ jobs:
 
             echo "push rejected (attempt $i); rebasing and retrying"
 
-            git pull --rebase origin main
+            git pull --rebase --autostash origin main
 
           done
