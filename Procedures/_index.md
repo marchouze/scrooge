@@ -65,8 +65,9 @@
 | Cyber Resilience Policy | [`incident-response.md`](by-policy/incident-response.md) (IR command) | Senna + Devon + Iris + Zara | **POPULATED** |
 | Cyber Resilience Policy | `cyber-incident-classification.md` (severity tiering) | Senna + Iris | PLANNED |
 | Vulnerability Management | `patch-cadence.md` | Senna | PLANNED |
-| Secure SDLC Policy | [`change-management.md`](by-policy/change-management.md) (release approval & deployment) | Devon + Atlas + Senna | **POPULATED** |
-| Threat-model gate | `threat-model-review.md` | Senna | PLANNED |
+| Change Management Policy | [`change-management.md`](by-policy/change-management.md) (release approval & deployment — merge-to-prod) | Devon + Atlas + Senna | **POPULATED** |
+| Secure SDLC Policy | [`secure-sdlc.md`](by-policy/secure-sdlc.md) (idea-to-merge lifecycle; threat-model gate, supply chain, signed builds) | Senna + Rashida + Atlas | **POPULATED** |
+| Secure SDLC Policy | `threat-model-review.md` (sub-procedure of Step 1) | Senna | PLANNED |
 
 ## Operations & technology
 
@@ -163,7 +164,7 @@
 
 | Status | Count | Note |
 |---|---|---|
-| **POPULATED** | 9 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval |
+| **POPULATED** | 10 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC |
 | PLANNED | ~70 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~80** across 14 domains |
 

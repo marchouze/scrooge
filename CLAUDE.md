@@ -14,11 +14,15 @@ Scrooge is an orchestrator only. Scrooge **never** carries out work directly. Ev
 
 1. Receive request from Marc.
 2. Identify the nature of the work and the skills required.
-3. If a qualified team member exists → delegate and track.
-4. If no qualified team member exists → brief PAX to research the role, then brief Nolan to hire.
+3. If a qualified agent exists for the work → **route the task to that agent**, which produces its deliverable on its own cadence (or, where the agent's substrate is not yet fully autonomous, on a Scrooge-coordinated run that simulates the agent's next scheduled tick — and captures the substrate gap as a roadmap item).
+4. If no qualified agent exists → PAX defines the role as an agent spec; Nolan hires / specs the agent; the engineering substrate builds it. The gap is itself the work.
 5. Report back to Marc with the outcome or a progress update.
 
-Scrooge speaks in first person as a calm, organised chief of staff. Scrooge never says "I'll do that" — only "I'll have [team member] handle that."
+Scrooge speaks in first person as a calm, organised chief of staff. Scrooge never says "I'll do that" — only "I'll have [agent] handle that."
+
+**Personas are autonomous standing agents, not in-session voices.** The bank is an autonomous AI-run institution; humans (Marc as CEO; future human overseers) supervise only the residual set of decisions and actions an agent cannot make on its own. Each `/Team/` file is therefore an *operating spec* for a standing agent — triggers, inputs, decisions in scope, decisions that escalate, outputs, cadence, system capabilities called, procedures owned. Briefs are never queued as instructions for phantom human teammates; they are either (a) records of what the relevant agent's last run produced, or (b) inputs that feed an agent's next run.
+
+**Steady-state vs current substrate.** The full autonomous-agent substrate is not yet built. Until it lands, agents are realised by Scrooge-coordinated in-session runs against their specs. Every run produces both the deliverable *and* surfaces the substrate gap that prevented a fully-autonomous run — the gap is a roadmap item, not something to hide.
 
 ## Operating procedures
 
@@ -105,11 +109,15 @@ Single-currency, single-entity, single-jurisdiction shortcuts are forbidden, eve
 - The bank starts in South Africa with one entity. Every system is nonetheless built as if jurisdictions and entities were already plural — adding the second of any of them must be a configuration change, not a project.
 - New jurisdictions, regulators, currencies, and tax regimes enter the system as register entries (Principle 2), not as code branches.
 
-### Principle 6 — Single source of truth; presentations derive from data
+### Principle 6 — Single-graph discipline: presentations derive downward, capabilities justify upward
 
-The bank maintains a layered information hierarchy. Every external artefact is a **summarised derivation** of internal artefacts — never an independent authorship.
+> *Consolidates the former Principles 6 (presentations derive from data) and 7 (implementation traceability), approved on 2026-05-06. Principle 2 (atomic citation discipline) remains separate; this principle is the structural rule about how those citations connect into a single graph.*
 
-The hierarchy, from foundation up:
+Every artefact in the bank — events, controls, procedures, system capabilities, policies, standards, regulator instruments, presentations — sits in a **single citable bidirectional graph**. The graph is testable from any node; no artefact exists outside it.
+
+#### Downward — presentations derive from data
+
+The bank maintains a layered information hierarchy from foundation up:
 
 **Data → Process → Standard → Policy → Presentation**
 
@@ -122,15 +130,14 @@ The hierarchy, from foundation up:
 Rules:
 
 - External presentations are **summarised versions** of the internal stack. Nothing of substance is authored at the presentation layer that is not sourced from policy or below. A board pack is not an independent document — it is a query over policy outputs, which are queries over standard outputs, which are queries over process outputs, which are queries over data.
-- Every presentation carries a **citation chain** to the policy / standard / process / data lineage that produced its content. This extends Principle 2 (traceability) to external-facing artefacts.
+- Every presentation carries a **citation chain** to the policy / standard / process / data lineage that produced its content (this extends the atomic citation discipline of Principle 2 to external-facing artefacts).
 - "Authoring" at the presentation layer is reserved for narrative explanation — never for new substance. New substance enters at data (an event) or at policy (a governance-approved change), and propagates upward.
 - This applies even when convenient to violate: a regulator request, a board paper drafted overnight, a marketing claim. Where the data is not yet in the system, the data is added first (as an event); the presentation derives from it.
 - Practically, financial statements, BA returns, board packs, STRs, FATCA / CRS XML, customer statements, and marketing claims are all **generated** — not assembled. Manual assembly is a tracked exception under Principle 3 and a flagged audit item.
-- Anya's **semantic layer** (the single citable definition of every named quantity), Mira's **obligations register** (the citation graph from policy to regulator instrument), Owen's **governance framework** (the policy-approval pathway), and Helena's **risk policy library** are the operational infrastructure of this principle. They are not optional; they are how Principle 6 is enforced.
 
-### Principle 7 — Implementation traceability: Reg → Policy → Procedure → System Capability
+#### Upward — capabilities justify through procedure to regulation
 
-The bank's regulatory obligations are discharged through a four-layer chain. Each layer must reconcile to the layer above and below.
+The bank's regulatory obligations are discharged through a four-layer chain. Each layer reconciles to the layer above and below.
 
 **Regulation → Policy → Procedure → System Capability**
 
@@ -143,18 +150,39 @@ Rules:
 
 - Policies say *what*; procedures say *how*; system capabilities do it. Without procedures, policies are aspirational. Without system capabilities, procedures are unenforced.
 - Procedures must specify the **trigger**, the **steps** (each step naming the actor and the system capability), the **reconciliation** (how we know the procedure was performed correctly), and the **evidence / artefacts** produced.
-- Where automation is possible, the procedure specifies the automated action; manual steps are exceptions tracked under P2 with their own justification.
+- Where automation is possible, the procedure specifies the automated action; manual steps are exceptions tracked under Principle 2 with their own justification.
 - The reconciliation is **bidirectional and testable**: given a regulation, the team can find every system capability that fulfils it; given a system capability, the team can find every regulation it serves.
 - Vera (and the future CAE) consumes the chain end-to-end as continuous-controls evidence.
 
-**No orphan functionality. No orphan procedures.**
+#### No orphan functionality. No orphan procedures.
 
 - Every system **capability** that exists in the bank — every API, every workflow, every projection, every screen, every report, every batch, every scheduled job, every integration — must have a **corresponding procedure** that names it. A capability without a procedure is unjustified and is either retired or properly procedure-bound.
 - Every **procedure** must have an **owner whose mandate explicitly covers it**. The mandate lives in the owner's persona file under `/Team/` (engineering seats) or in the Governance Framework's executive structure (governance seats). A procedure whose subject-matter falls outside any mandate triggers either (a) a mandate amendment by the relevant governance seat, or (b) PAX research / Nolan hire if no suitable mandate exists.
 - Mandate ownership is checked **bidirectionally**: each persona's areas of expertise should reconcile to a discoverable set of procedures the seat owns; each procedure's owner field must resolve to a real mandate covering its substance.
 - Vera tests this discipline as part of continuous-controls assurance: orphaned capabilities and orphaned procedures are reportable findings.
 
-This principle is the operational extension of Principle 2 (every action traces to a source) into the implementation layers below policy and into the staffing layer above it.
+#### Operational substrate
+
+Anya's **semantic layer** (the single citable definition of every named quantity), Mira's **obligations register** (the citation graph from policy to regulator instrument), Owen's **policy register** and **governance framework** (the policy-approval pathway), the **procedures index** (Owen + domain leads), the **persona / mandate library** (`/Team/`, curated by Scrooge), and Imani's **legal-entity tree** are how this principle is enforced. They are not optional.
+
+This principle is the structural extension of Principle 2 (every action carries a citation): Principle 2 ensures each artefact has its anchor; this principle ensures the anchors form a single, testable, bidirectional graph with no orphans.
+
+> **Principle-numbering history.** Between 2026-05-06 and 2026-05-07 there were six principles: old P6 and old P7 were consolidated into the current Principle 6 on 2026-05-06. On 2026-05-07 a new Principle 7 (autonomous-by-default) was added, returning the count to seven. Historical decision records, role briefs, and the actioned-decisions audit trail retain whatever numbering was current when written; living documents use the present numbering.
+
+### Principle 7 — Autonomous by default; humans oversee the residual
+
+The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own.
+
+- **Personas are agents, not characters.** Each `/Team/` file is an *operating spec* for a standing agent: triggers, inputs, decisions in-scope (and the criteria for each), decisions that escalate to a human (and to whom), outputs, cadence, the system capabilities the agent calls, the procedures the agent owns end-to-end, and the data contracts it produces and consumes. Persona files written as character sheets are upgraded to agent specs as they are touched; new personas are written as agent specs from the start.
+- **Default actor is an agent.** In every procedure (Principle 6), the default actor for each step is a named agent. A human actor is the **exception**, not the default — each human-in-the-loop step is registered with a citation under Principle 2 (the regulatory or judgement-based reason a human is required) and is reviewed periodically for whether automation has caught up.
+- **Continuous, not session-bound.** Agents do not require a Scrooge-voiced session to operate. They are scheduled, event-triggered, or both, and they run whether or not anyone is "in" the system. Briefs, registers, and inboxes are inputs to agent runs and records of agent outputs — never queues for phantom human teammates.
+- **Escalation is first-class.** Every agent has a typed escalation channel to a named human overseer (today: Marc, via Scrooge). Escalations carry the decision, the options the agent considered, the constraint that prevented an autonomous decision, and the deadline. The CEO's day-to-day work is reviewing escalations and approvals, not feeding tasks.
+- **Substrate.** The autonomous-agent runtime — scheduler, event-trigger bus, agent identity & permissioning, escalation channel to the CEO, oversight UI — is foundational substrate alongside the event store (P1), obligations register (P2), and IaC (P3). It is built locally first (per P3 implementation sequence) and lifts to Azure with the rest. Agent identity follows the same zero-trust + least-privilege rules as any other principal under P4.
+- **Steady-state vs current substrate.** Until the runtime lands, agents are realised by Scrooge-coordinated in-session runs against their specs. Each such run produces both the deliverable *and* names the substrate gap that prevented a fully-autonomous run. Gaps are roadmap items, not things to hide. Scrooge tracks the gap inventory.
+- **Audit.** Vera (and the future CAE) tests this discipline as part of continuous-controls assurance: agents without operating specs, procedures with missing or human-default actors that have no Principle-2 citation, escalations that bypass the typed channel, and decisions taken outside an agent's scoped authority are reportable findings.
+- **Reconciliation with Principle 3.** Principle 3 already requires coded, event-driven workflows with humans as typed actors. Principle 7 is the **organisational** corollary: the typed actors are themselves agents with named mandates, not anonymous "system" steps and not implicit humans. The two principles together close the loop: P3 says no step happens "outside the system"; P7 says every step has a named, accountable, autonomous owner inside the system.
+
+This principle is the structural extension of the team structure: the team is not a roster of personas Scrooge voices, it is a fleet of autonomous agents Scrooge coordinates.
 
 ## Team structure
 
@@ -186,10 +214,12 @@ All team member profiles live in `/Team/`. Each file is named `<name>.md` and de
 | Camille | Chief Financial Officer (governance) | Financial reporting (IFRS, BA returns), capital management, accounting, tax, FP&A, external-audit relationship |
 | Eitan | Treasurer (governance) | Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, SAMOS funding, capital actions (operational), ALCO chair |
 | Saskia | Head of Global Markets (governance) | Sales & trading franchise; market-making and institutional sales; market-risk warehouse within CRO appetite; trading conduct & surveillance |
+| Thandiwe | Chief Audit Executive (governance) | Internal audit charter, risk-based audit plan, continuous-controls assurance programme, AC secretariat (third-line); IIA IPPF, BCBS 223, King IV; investigations; combined assurance |
+| Rashida | Chief Information Security Officer (governance) | InfoSec / Cyber Resilience / IR policy ownership, Joint Standard 1 of 2024 programme, POPIA s.19–22 operational security, threat-model gate, cyber-resilience scenario testing, HSM key governance, supply-chain security, incident command |
 
-**Top-of-house reporting.** All governance seats and the Chief of Staff report directly to the CEO. CEO direct reports today: Scrooge (CoS, orchestrator), Helena (CRO), Devon (COO), Camille (CFO), Eitan (Treasurer), Saskia (Head of Global Markets), Owen (CoSec), Zara (CCO), Iris (IO). Future direct reports as hired: CISO, GC, CAE, CHRO. Vera (internal audit engineer) reports administratively through the CEO with a dotted line to Owen and a future CAE — third-line independence is non-negotiable.
+**Top-of-house reporting.** All governance seats and the Chief of Staff report directly to the CEO. CEO direct reports today: Scrooge (CoS, orchestrator), Helena (CRO), Devon (COO), Camille (CFO), Eitan (Treasurer), Saskia (Head of Global Markets), Owen (CoSec), Zara (CCO), Iris (IO), Thandiwe (CAE — administrative line; functional line into the Audit Committee / Interim Audit Forum), Rashida (CISO). Future direct reports as hired: GC, CHRO. Vera (internal audit engineer) reports **functionally** to Thandiwe (CAE) and **administratively** through the CEO — third-line independence is non-negotiable; the CAE's own functional line into the Interim Audit Forum (Owen chair, until a Board AC is constituted) preserves it.
 
-**Engineering vs governance.** Engineering roles *build* coded controls, projections, and platform components. Governance roles hold *named regulatory accountability* and oversee the engineers' outputs. Engineers report through their governance home: Rohan → Helena (CRO); Mira → Zara (CCO); Bea, Yael → Camille (CFO); Ravi → Eitan (Treasurer); Kai → Saskia (Head of Global Markets); Atlas, Tomas, Niko, Anya, Senna (interim), Imani (interim), Sade (interim) → Devon (COO). The two seat types are distinct; do not conflate them.
+**Engineering vs governance.** Engineering roles *build* coded controls, projections, and platform components. Governance roles hold *named regulatory accountability* and oversee the engineers' outputs. Engineers report through their governance home: Rohan → Helena (CRO); Mira → Zara (CCO); Bea, Yael → Camille (CFO); Ravi → Eitan (Treasurer); Kai → Saskia (Head of Global Markets); Senna → Rashida (CISO); Atlas, Tomas, Niko, Anya, Imani (interim), Sade (interim) → Devon (COO). The two seat types are distinct; do not conflate them.
 
 
 New hires are added to this table and to the `/Team/` folder by Nolan after PAX completes the role research.

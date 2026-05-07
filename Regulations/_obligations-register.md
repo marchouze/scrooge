@@ -123,6 +123,9 @@ Where multiple regulators converge on the same obligation, it is listed once wit
 | ORG-CY-09 | ISO/IEC 27001:2022 (used as reference) | Information-security management system aligned to ISO 27001. | Information Security Policy | Senna | **IN FORCE** (designed-to; certification optional) |
 | ORG-CY-10 | NIST CSF 2.0 (used as reference) | Cybersecurity controls aligned to NIST CSF Identify / Protect / Detect / Respond / Recover. | Cyber Resilience Policy | Senna | **IN FORCE** (reference-aligned) |
 | ORG-CY-11 | RAS B6 (CEO approved) | Cyber severity tier model T1–T4 with Regulator-notification thresholds at T3 / T4. | Cyber Resilience Policy; Incident Response Policy | Senna + Iris | **IN FORCE** |
+| ORG-CY-12 | NIST SP 800-218 (SSDF v1.1) (used as reference) | Secure software development lifecycle aligned to SSDF practice groups (Prepare the Organisation, Protect the Software, Produce Well-Secured Software, Respond to Vulnerabilities). | Secure SDLC Policy | Senna (engineering) + Rashida (governance) | **IN FORCE** (designed-to; reference-aligned) |
+| ORG-CY-13 | SLSA v1.0 (used as reference) | Build-provenance attestation, signed artefacts, hermetic / non-falsifiable builds; target SLSA Build Level 3. | Secure SDLC Policy | Senna + Atlas | **IN FORCE** (designed-to; Build Level 3 target) |
+| ORG-CY-14 | ISO/IEC 27001:2022 Annex A.8.25–A.8.34 (used as reference) | Secure development lifecycle controls — secure coding, threat modelling, separation of environments, outsourced development governance, system acceptance testing. | Secure SDLC Policy; Information Security Policy | Senna + Rashida | **IN FORCE** (reference-aligned) |
 
 ## Domain F — Governance, board, corporate
 

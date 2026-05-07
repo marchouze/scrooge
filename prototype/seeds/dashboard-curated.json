@@ -1,0 +1,603 @@
+{
+  "bank": {
+    "name": "The Bank",
+    "operatingPosture": "Build-only (no live trading until SARB licence)",
+    "cloudTarget": "Microsoft Azure (M8 cloud lift)",
+    "strategicFoundation": {
+      "type": "Institutional global-markets trading bank",
+      "products": ["JSE-listed bonds", "JSE-listed equities", "OTC interest-rate derivatives"],
+      "clients": ["Large SA corporates", "Banks", "Non-bank financial institutions"],
+      "geography": "South Africa · single branch",
+      "capital": "R300m (committed shareholder capital)",
+      "licence": "Application deferred"
+    }
+  },
+  "decisionsOpen": [
+    {
+      "id": "S1",
+      "title": "Burn-rate / capital runway plan against R300m",
+      "category": "second-order",
+      "owner": "Camille",
+      "trigger": "Camille drafts ~3 weeks",
+      "decisionForCEO": "Approve burn target and capital-top-up trigger thresholds.",
+      "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
+      "note": "R300m must last 18–30 months through build + licensing road.",
+      "brief": {
+        "summary": "R300m must last the build phase plus the SARB licence-application road — indicative 18–30 months. Camille drafts a burn-rate plan with capital-top-up trigger thresholds.",
+        "background": "Build-only posture (D1) means no live revenue for 18–30 months. R300m is the binding capital constraint. Burn-rate discipline matters more than initially expected. Camille drafts an indicative organisation cost plan against the design organisation: current 19 employees + planned hires (CISO, GC, CHRO, possibly Saskia's deputy / IMS-engineer) + Atlas's M-phase build cost + tooling / cloud cost + external counsel (S5) + insurance / D&O. The plan answers: at what monthly burn does R300m run dry; what is the operating runway; what triggers a capital top-up conversation with the shareholder; what scope-cuts are pre-agreed if burn drifts.",
+        "options": [
+          {
+            "label": "Approve conservative burn",
+            "description": "Preserve runway through licence-application + 6 months post-licence operation.",
+            "consequence": "Implies aggressive ratio of fixed compensation to equity / LTI (S4); tight scope on optional spend."
+          },
+          {
+            "label": "Approve moderate burn",
+            "description": "Runway through licence-application; tighter post-licence cushion.",
+            "consequence": "More headroom on hiring / tooling now; less margin if licence timing slips."
+          },
+          {
+            "label": "Approve aggressive burn",
+            "description": "Hire and build at full rate; assume capital top-up before runway-end.",
+            "consequence": "Faster build; depends on shareholder willingness to commit additional capital."
+          },
+          {
+            "label": "Modify / defer",
+            "description": "Adjust thresholds or hold pending capital-tranching clarification.",
+            "consequence": "Camille revises; one cycle."
+          }
+        ],
+        "recommendation": {
+          "stance": "Conservative burn.",
+          "reasoning": "Build-only's biggest risk is licensing-timeline drift. A conservative burn preserves optionality. Aggressive burn presumes a capital top-up the shareholder may or may not want to make on the bank's preferred timeline."
+        },
+        "dependencies": {
+          "gatedOn": [
+            {
+              "ref": "strategic-foundation",
+              "title": "Strategic foundation",
+              "status": "resolved"
+            },
+            {
+              "ref": "D1",
+              "title": "Build-only operating posture",
+              "status": "resolved"
+            }
+          ],
+          "gates": [
+            {
+              "ref": "S4",
+              "title": "Talent retention scheme (cost envelope)",
+              "status": "open"
+            },
+            {
+              "ref": "capital-tranching",
+              "title": "Capital tranching decision",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Drafter."
+          },
+          {
+            "name": "Eitan",
+            "role": "Treasurer",
+            "position": "Treasury side; rolling cash projection."
+          },
+          {
+            "name": "Sade",
+            "role": "HR systems engineer",
+            "position": "Compensation cost envelope."
+          },
+          {
+            "name": "Atlas",
+            "role": "Platform architect",
+            "position": "Engineering / tooling / cloud cost."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Capital top-up conversation."
+          }
+        ],
+        "timeline": "~3 weeks.",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
+            "title": "Strategic foundation",
+            "summary": "R300m envelope and licence-deferred context."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md",
+            "title": "Build-only decision",
+            "summary": "18–30 month no-revenue road; tradeoffs the CEO has accepted."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+            "title": "Next-decisions proposal §9 (S1)",
+            "summary": "The framing of the S1 question."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
+            "title": "Finance & Treasury policy bundle",
+            "summary": "Capital Management Policy in particular."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S3",
+      "title": "Board / NED search timing",
+      "category": "second-order",
+      "owner": "Owen",
+      "trigger": "Owen drafts a Board-formation roadmap",
+      "decisionForCEO": "When to start the NED hunt; whether to appoint an Interim Board Chair ahead of full constitution.",
+      "sourceDocs": ["Owner Inbox/2026-05-06_governance-framework.md"],
+      "brief": {
+        "summary": "NED hunts have long lead times. The latest reasonable start of the NED search is sooner than instinct suggests. Owen drafts a Board-formation roadmap.",
+        "background": "Interim governance is interim. Board-reserved decisions currently route through CEO + CRO + CFO concurrence — defensible for now, not a permanent posture. Board formation is typically 12+ months out from licence; NED searches typically take 6–12 months given fit-and-proper, conflict-of-interest, and committee-composition considerations. With indicative SARB licensing 18–30 months out, an intentional Board-formation cadence starts now or in the next ~6 months. Owen drafts a Board-formation roadmap that addresses: NED-chair search; AC-chair / RC-chair searches; full Board composition; sequencing relative to the licence timeline.",
+        "options": [
+          {
+            "label": "Start NED Chair search now",
+            "description": "12+ month lead; chair leads composition of the rest of the Board.",
+            "consequence": "Earliest credible Board readiness; signals seriousness to regulators and counterparties (soft-franchise positive)."
+          },
+          {
+            "label": "Start full NED search in 6 months",
+            "description": "Matches likely licence-application preparation.",
+            "consequence": "Board lands at licence application; tight."
+          },
+          {
+            "label": "Start in 12 months",
+            "description": "Matches licence grant.",
+            "consequence": "Board scrambles to land before licence; risky."
+          },
+          {
+            "label": "Appoint Interim Board Chair now, full Board later",
+            "description": "Hybrid: get a chair on board to lead the rest of the search.",
+            "consequence": "Pragmatic; the chair becomes a working partner to Marc on Board composition."
+          }
+        ],
+        "recommendation": {
+          "stance": "Start NED Chair search now; full Board search at 6 months.",
+          "reasoning": "Lead times reward starting early. A NED Chair brought in at the 12+ month horizon can lead the rest of the Board composition with you, which is materially better than a CEO doing it alone. Soft-franchise positive — SA corporates and FIs will engage more readily with a bank that has visible Board composition forming."
+        },
+        "dependencies": {
+          "gatedOn": [],
+          "gates": [
+            {
+              "ref": "ac-chair-search",
+              "title": "AC-chair search",
+              "status": "open"
+            },
+            {
+              "ref": "rc-chair-search",
+              "title": "RC-chair search",
+              "status": "open"
+            },
+            {
+              "ref": "board-formation",
+              "title": "Full Board formation",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Owen",
+            "role": "CoSec",
+            "position": "Drafter; runs the Board secretariat."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Decides timing and chairs the search."
+          },
+          {
+            "name": "Helena",
+            "role": "CRO",
+            "position": "Will be material in RC composition."
+          },
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Will be material in AC composition."
+          },
+          {
+            "name": "Thandiwe",
+            "role": "CAE",
+            "position": "AC-chair will be Thandiwe's functional reporting line once a Board AC is constituted."
+          }
+        ],
+        "timeline": "Owen drafts roadmap (~3 weeks).",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-06_governance-framework.md",
+            "title": "Governance Framework — interim Board arrangement",
+            "summary": "Reserved matters; sub-committee charters; Interim Risk Forum + Interim Audit Forum running until Board exists."
+          },
+          {
+            "path": "Team/Owen.md",
+            "title": "Owen persona",
+            "summary": "Mandate; Companies Act fluency; Board-pathway custodianship."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
+            "title": "Strategic foundation",
+            "summary": "Licence deferral context; build-phase length implications for Board formation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S4",
+      "title": "Talent retention scheme through the build",
+      "category": "second-order",
+      "owner": "Sade",
+      "trigger": "Sade drafts an LTI / equity scheme for the build period",
+      "decisionForCEO": "Approve scheme shape + dilution / cost envelope.",
+      "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
+      "brief": {
+        "summary": "19 employees + planned hires through 18–30 months of paper-only work need compensation + LTI / equity / mission framing. Sade drafts; you approve scheme shape and dilution / cost envelope.",
+        "background": "Compensation alone is unlikely to retain talent through a no-revenue build of this length. Equity / long-term-incentive / mission alignment become first-order considerations. Sade (HR systems engineer, on interim under Devon until a CHRO is hired) drafts the framework. The cost envelope is gated on S1 (burn-rate plan). The scheme typically combines: (a) an equity pool with phased vesting tied to milestones (M2-M3 reporting build, M4+, M8 cloud lift, licence application, licence grant, first profitable month); (b) a fixed-comp benchmark against SA-banking levels; (c) a clear narrative on bank ownership, governance, exit / liquidity that makes the equity meaningful.",
+        "options": [
+          {
+            "label": "Approve scheme + dilution envelope as drafted",
+            "description": "Accept Sade's proposal.",
+            "consequence": "Scheme rolls out; offer letters re-issued with the scheme attached."
+          },
+          {
+            "label": "Approve with modified dilution",
+            "description": "Adjust the equity pool size or vesting milestones.",
+            "consequence": "Sade revises; one cycle."
+          },
+          {
+            "label": "Defer to capital-plan resolution (S1)",
+            "description": "Wait for S1 to land; size scheme against the burn target.",
+            "consequence": "Coherent sequencing; talent retention not addressed in the meantime — risk of attrition."
+          },
+          {
+            "label": "Request revision",
+            "description": "Substantive disagreement on shape.",
+            "consequence": "~3-week additional cycle."
+          }
+        ],
+        "recommendation": {
+          "stance": "TBD; expect ~5–10% equity pool with milestone vesting.",
+          "reasoning": "Industry-typical for a regulated financial-services build; tighter than SaaS-style 15–20% (regulated entities have less ambiguity in the exit narrative). Phased vesting tied to milestones aligns retention with the build's actual progress."
+        },
+        "dependencies": {
+          "gatedOn": [
+            {
+              "ref": "S1",
+              "title": "Burn-rate / capital runway plan",
+              "status": "open"
+            }
+          ],
+          "gates": [
+            {
+              "ref": "talent-retention",
+              "title": "Talent retention through licence-grant",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Sade",
+            "role": "HR systems engineer (interim under Devon)",
+            "position": "Drafter."
+          },
+          {
+            "name": "Future CHRO",
+            "role": "When hired",
+            "position": "Inherits the scheme; should be consulted on shape if hired before scheme finalised."
+          },
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Cost envelope."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO + shareholder representative",
+            "position": "Dilution decision."
+          },
+          {
+            "name": "Owen",
+            "role": "CoSec",
+            "position": "Companies Act / share-scheme governance."
+          }
+        ],
+        "timeline": "TBD; expected in concert with S1.",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+            "title": "Next-decisions proposal §9 (S4)",
+            "summary": "The framing of the talent-retention question."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md",
+            "title": "Build-only decision",
+            "summary": "Tradeoffs CEO accepted — including talent retention as a first-order concern."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_core-policies-conduct-hr.md",
+            "title": "Conduct, ethics & HR policy bundle",
+            "summary": "Remuneration Policy in particular — the policy the scheme operates within."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S5",
+      "title": "External legal counsel for SARB licence application",
+      "category": "second-order",
+      "owner": "Imani",
+      "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
+      "decisionForCEO": "Engage / when / which firm.",
+      "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
+      "brief": {
+        "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
+        "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.",
+        "options": [
+          {
+            "label": "Engage now",
+            "description": "Engage a partner firm immediately.",
+            "consequence": "Earliest start; some retainer cost during pre-application phase; firm becomes a deep partner ahead of application."
+          },
+          {
+            "label": "Engage 6 months pre-lodgment",
+            "description": "Standard timing.",
+            "consequence": "Conventional engagement; firm has time to draft and run regulator meetings; matches Imani's likely recommendation."
+          },
+          {
+            "label": "Engage 9 months pre-lodgment",
+            "description": "Conservative timing; firm has full window.",
+            "consequence": "Slightly more cost; full preparation runway."
+          },
+          {
+            "label": "No external counsel",
+            "description": "Run application via internal Imani only.",
+            "consequence": "Significantly higher application risk; not market-standard for SA banking licences."
+          }
+        ],
+        "recommendation": {
+          "stance": "Engage 6–9 months ahead of lodgment; let Imani's recommendation paper land first.",
+          "reasoning": "External counsel is essentially required for a credible SARB application. Timing 6–9 months ahead is conventional and well-justified. Decision can wait ~6 months; Imani's recommendation paper can land in the meantime."
+        },
+        "dependencies": {
+          "gatedOn": [
+            {
+              "ref": "licence-application-timing",
+              "title": "SARB licence-application sequencing (long-horizon)",
+              "status": "open"
+            }
+          ],
+          "gates": [
+            {
+              "ref": "licence-application-prep",
+              "title": "Formal licence-application preparation",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Imani",
+            "role": "Legal-as-code engineer",
+            "position": "Drafter; runs the recommendation paper."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Engagement decision."
+          },
+          {
+            "name": "Owen",
+            "role": "CoSec",
+            "position": "Governance interface; engagement letter signing pathway."
+          },
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Cost envelope."
+          }
+        ],
+        "timeline": "Imani drafts when ready; not urgent.",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+            "title": "Next-decisions proposal §9 (S5)",
+            "summary": "Framing of the external-counsel question."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
+            "title": "Strategic foundation",
+            "summary": "Licence deferred; ~12–18 month indicative lodgment timeline informs the engagement decision."
+          },
+          {
+            "path": "Team/Imani.md",
+            "title": "Imani persona",
+            "summary": "Mandate boundaries — internal legal-as-code; external partner-firm relationship is Marc's call with her recommendation."
+          }
+        ]
+      }
+    }
+  ],
+  "decisionsResolvedSeed": [
+    {
+      "id": "D1",
+      "title": "Interim operating posture — build-only",
+      "actionedAt": "2026-05-06",
+      "outcome": "Build-only, no live trading until SARB licence",
+      "sourceDoc": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md"
+    },
+    {
+      "id": "D2",
+      "title": "Reporting-capability build authorisation",
+      "actionedAt": "2026-05-06",
+      "outcome": "Authorised; M2–M3 staged commit",
+      "sourceDoc": "Owner Inbox/2026-05-06_ceo-decision_reporting-capability-build-authorisation.md"
+    },
+    {
+      "id": "D3",
+      "title": "CISO hire kickoff",
+      "actionedAt": "2026-05-06",
+      "outcome": "PAX brief authored; Nolan to recruit",
+      "sourceDoc": "Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md"
+    },
+    {
+      "id": "R3a",
+      "title": "Strategic foundation set",
+      "actionedAt": "2026-05-06",
+      "outcome": "Institutional global-markets trading bank; JSE bonds + equities + OTC IRD; institutional-only; SA single-branch; ~R300m; licence deferred",
+      "sourceDoc": "Owner Inbox/2026-05-06_strategic-foundation.md"
+    },
+    {
+      "id": "R3b",
+      "title": "Principles consolidation (Option B)",
+      "actionedAt": "2026-05-06",
+      "outcome": "Old P6 + P7 → new P6 (single-graph); P2 retained separately; six principles total",
+      "sourceDoc": "Owner Inbox/2026-05-06_principles-consolidation-proposal.md"
+    },
+    {
+      "id": "R3c",
+      "title": "CAE hire — Thandiwe Mokoena",
+      "actionedAt": "2026-05-06",
+      "outcome": "In seat; Vera reports functionally to Thandiwe; CAE removed from open seats",
+      "sourceDoc": "Owner Inbox/2026-05-06_cae-hire-confirmation.md"
+    }
+  ],
+  "inFlight": [
+    {
+      "id": "WS-MARKETS-FRANCHISE",
+      "what": "Markets franchise design",
+      "owner": "Saskia",
+      "due": "~2 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_brief_markets-franchise-design.md"
+    },
+    {
+      "id": "WS-RAS-RECALIBRATION",
+      "what": "RAS recalibration to wholesale-markets profile",
+      "owner": "Helena",
+      "due": "~2–3 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_brief_risk-appetite-statement-and-framework.md"
+    },
+    {
+      "id": "WS-IA-CHARTER",
+      "what": "Internal Audit Charter + first audit plan",
+      "owner": "Thandiwe",
+      "due": "~2 + ~4 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_brief_cae-onboarding-vera-owen.md"
+    },
+    {
+      "id": "WS-CISO-RECRUITMENT",
+      "what": "CISO recruitment",
+      "owner": "Nolan",
+      "due": "Shortlist ~3 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md"
+    },
+    {
+      "id": "WS-B2-CAPITAL-LIQUIDITY",
+      "what": "B2 capital / liquidity calibration",
+      "owner": "Helena + Camille + Eitan",
+      "due": "~3–4 weeks",
+      "active": false
+    },
+    {
+      "id": "WS-E1-IO-OPTIONS",
+      "what": "E1 POPIA IO designation options paper",
+      "owner": "Iris",
+      "due": "~1 week",
+      "active": false
+    },
+    {
+      "id": "WS-REPORTING-M2-M3",
+      "what": "Reporting-capability M2–M3 build",
+      "owner": "Atlas + Anya + Bea",
+      "due": "~6–8 weeks",
+      "active": false
+    },
+    {
+      "id": "WS-PROCEDURES-DRAFTING",
+      "what": "~70 procedures drafting (markets-bank-tilted)",
+      "owner": "Domain leads",
+      "due": "Continuous",
+      "active": false
+    },
+    {
+      "id": "WS-INSTRUMENT-ANALYSES",
+      "what": "~60 regulator instrument analyses",
+      "owner": "Mira",
+      "due": "Continuous",
+      "active": false
+    }
+  ],
+  "prototype": {
+    "ciStatus": "green",
+    "tests": 23,
+    "modules": [
+      {
+        "name": "@platform/core",
+        "status": "live"
+      },
+      {
+        "name": "@platform/event-store",
+        "status": "live"
+      },
+      {
+        "name": "@platform/citation",
+        "status": "live"
+      },
+      {
+        "name": "@platform/recon",
+        "status": "live"
+      },
+      {
+        "name": "@platform/observability",
+        "status": "live"
+      },
+      {
+        "name": "@platform/projections",
+        "status": "live (added 2026-05-06)"
+      },
+      {
+        "name": "@platform/identity",
+        "status": "live (added 2026-05-06)"
+      },
+      {
+        "name": "@platform/dashboard",
+        "status": "live (added 2026-05-06)"
+      }
+    ],
+    "next": [
+      "crypto/Signer",
+      "secrets",
+      "HTTP server seam (formal)",
+      "scheduler",
+      "projection-cache persistence"
+    ]
+  },
+  "risks": [
+    "Strategic foundation is set; franchise design is the next centre of gravity until Saskia delivers (~2 weeks).",
+    "R300m must last the 18–30 month build + licensing road. Burn-rate plan (S1) is now the gating financial decision.",
+    "Live-revenue risk: build-only means no warm pipeline at licence-grant unless the soft-franchise track (S2) is taken seriously.",
+    "Single point of failure on Saskia + Kai for the markets franchise.",
+    "Single point of failure on Owen (CoSec, governance framework, conflicts, whistleblowing, PAIA).",
+    "Interim governance is interim — Board formation timing (S3) becomes more pressing as commercial activity approaches.",
+    "POPIA IO designation lodgment unsigned (E1)."
+  ]
+}

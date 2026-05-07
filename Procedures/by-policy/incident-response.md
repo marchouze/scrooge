@@ -1,7 +1,7 @@
 # Procedure — Incident response (IR command)
 
 **Procedure ID:** PROC-CY-01
-**Owner:** Senna (interim CISO function: Devon) · Iris (privacy interface) · Zara (compliance interface)
+**Owner:** Senna (security engineer) · Rashida (CISO — governance) · Iris (privacy interface) · Zara (compliance interface)
 **Approval:** BRC
 **Cadence:** On-trigger (continuous readiness)
 **Version:** v1.0 — 2026-05-06
@@ -110,6 +110,7 @@ Each manual step is a tracked exception under P2, justified by the operational n
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v1.0 | 2026-05-06 | Senna + Devon (interim CISO function) + Iris + Zara | Initial draft, pre-board reviewed under IR Policy and Cyber Resilience Policy. |
+| v1.1 | 2026-05-07 | Scrooge (custodial edit) | Owner field updated to reflect Rashida's CISO hire (2026-05-06). The interim "CISO function: Devon" reference replaced with Rashida (CISO governance); Senna remains the engineering owner. No substantive changes to procedure steps, reconciliation, or escalation. |
 
 ## 12. Audit / assurance
 

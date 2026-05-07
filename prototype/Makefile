@@ -6,7 +6,7 @@
 SHELL := /bin/bash
 BUN   := $(HOME)/.bun/bin/bun
 
-.PHONY: help install up down reset seed test typecheck lint format ci scenario citation-gate recon
+.PHONY: help install up down reset seed test typecheck lint format ci scenario citation-gate recon dashboard
 
 help:
 	@echo "make install        Install dependencies"
@@ -20,6 +20,7 @@ help:
 	@echo "make format         Biome format --write"
 	@echo "make citation-gate  P2 gate over the local event store"
 	@echo "make recon          Reconciliation harness (P1)"
+	@echo "make dashboard      Live bank operations dashboard on http://localhost:3010"
 	@echo "make ci             Full local CI loop"
 
 install:
@@ -55,6 +56,9 @@ citation-gate:
 
 recon:
 	@$(BUN) run recon
+
+dashboard:
+	@$(BUN) run dashboard
 
 ci: typecheck lint test
 	@$(MAKE) reset
