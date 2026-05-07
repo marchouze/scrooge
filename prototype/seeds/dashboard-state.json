@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-07T13:02:45.808Z",
+  "asOf": "2026-05-07T13:28:45.899Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -28,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 31,
+      "ceoDecisionsActioned": 32,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -139,6 +139,15 @@
   ],
   "decisionsOpen": [],
   "decisionsResolved": [
+    {
+      "id": "D-FOLLOW-ON-ROUTER-TEST",
+      "title": "Substrate verification — follow-on-router smoke test",
+      "actionedAt": "2026-05-07T13:25:27.339Z",
+      "outcome": "Test decision to verify the follow-on-router dispatches resolved routes and surfaces unresolved ones as escalations.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
     {
       "id": "D-BANK-NAME-SELECTION",
       "title": "Bank name — selection from Linnea inaugural shortlist",
@@ -535,6 +544,11 @@
         },
         {
           "date": "2026-05-07",
+          "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
+          "title": "scrooge · ceo decision record · d follow on router test"
+        },
+        {
+          "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
           "title": "scrooge · ceo decision record · d brand design hire"
         },
@@ -542,11 +556,6 @@
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
           "title": "scrooge · ceo decision record · d bank name selection"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
-          "title": "procedure audit actor and citation"
         }
       ],
       "lastActivityAt": "2026-05-07",
@@ -1379,6 +1388,22 @@
       "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
     },
     {
+      "filename": "2026-05-07_scrooge_follow-on-routing.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_follow-on-routing.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — follow-on routing, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Audit record of follow-on routes dispatched after CEO decision approvals. Each decision below names the routes declared in its CeoDecision payload and the dispatch outcome."
+    },
+    {
+      "filename": "2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
+      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
+      "date": "2026-05-07",
+      "title": "Scrooge — CEO decision record: D-FOLLOW-ON-ROUTER-TEST, 2026-05-07",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
       "filename": "2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
       "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
       "date": "2026-05-07",
@@ -1546,22 +1571,6 @@
       "decisionRecommendation": "My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback.",
       "decisionOwner": "Linnea",
       "decisionStatus": "resolved"
-    },
-    {
-      "filename": "2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
-      "path": "Owner Inbox/2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
-      "date": "2026-05-07",
-      "title": "POPIA s.19–22 walkthrough — for the CISO",
-      "decisionRequired": false
-    },
-    {
-      "filename": "2026-05-07_imani_isda-readiness-deep-dive-priority-a.md",
-      "path": "Owner Inbox/2026-05-07_imani_isda-readiness-deep-dive-priority-a.md",
-      "date": "2026-05-07",
-      "title": "ISDA-readiness deep-dive — Priority-A subset (Y-marked)",
-      "decisionRequired": false,
-      "author": "Imani",
-      "summary": "Deep-dive on the 17 Y-marked Priority-A counterparties from Niko's top-100 list. Per-counterparty ISDA-Master version signal, last-amendment public signal, SA-bespoke clause exposures, CSA-readiness signal, GMRA / GMSLA exposure where bond-repo / sec-lend is in scope, and the bilateral-template work each counterparty surfaces. Build-phase legal output; no commercial commitments, no privileged communications."
     }
   ],
   "prototype": {

@@ -18,36 +18,9 @@ import { resolve } from "node:path";
 
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
-import anyaProjectionDrift from "./agents/anya-projection-drift";
-import anyaProjectionRefresh from "./agents/anya-projection-refresh";
-import atlasSubstrateState from "./agents/atlas-substrate-state";
-import miraCitationGate from "./agents/mira-citation-gate";
-import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
-import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
-import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
-import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
-import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
-import veraOvernightRecon from "./agents/vera-overnight-recon";
+import { HANDLER_CALLABLES } from "./handler-callables";
 import { HANDLERS_METADATA, type HandlerMetadata } from "./handlers-metadata";
 import type { AgentRunContext, AgentRunHandler, AgentRunOutput } from "./types";
-
-// Map from composite key to the handler callable. The metadata
-// (kind / cadenceHours / subscribesTo) lives in handlers-metadata.ts —
-// this map is just the function-pointer half. Adding a new handler:
-// add a row to HANDLERS_METADATA AND a row here under the same key.
-// Vera's planned Wave-4 #11 recon pipeline asserts the two stay in sync.
-const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
-  "vera:overnight-recon": veraOvernightRecon,
-  "atlas:substrate-state": atlasSubstrateState,
-  "anya:projection-drift": anyaProjectionDrift,
-  "anya:projection-refresh": anyaProjectionRefresh,
-  "scrooge:inbox-hygiene": scroogeInboxHygiene,
-  "scrooge:ceo-decision-record": scroogeCeoDecisionRecord,
-  "owen:governance-cycle-prep": owenGovernanceCyclePrep,
-  "mira:obligations-snapshot": miraObligationsSnapshot,
-  "mira:citation-gate": miraCitationGate,
-  "senna:security-substrate-state": sennaSecuritySubstrateState,
-};
 
 interface HandlerEntry {
   readonly metadata: HandlerMetadata;
@@ -161,10 +134,10 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   // the set of event types appended during this run. We do NOT recurse
   // into event-driven handlers themselves — that would risk loops.
   if (entry.metadata.kind !== "event-driven" && !ctx.dryRun) {
-    const newEventTypes = new Set<string>();
-    for (const e of eventStore.replay({ fromSequence: seqBefore + 1 })) {
-      newEventTypes.add(e.type);
-    }
+    // Collect new events with full payloads (not just types) so we can
+    // pass triggeringEvents to each event-driven handler.
+    const newEvents = [...eventStore.replay({ fromSequence: seqBefore + 1 })];
+    const newEventTypes = new Set<string>(newEvents.map((e) => e.type));
     if (newEventTypes.size > 0) {
       const triggered: string[] = [];
       for (const [k, e] of Object.entries(HANDLERS)) {
@@ -177,9 +150,15 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
         if (!tEntry) continue;
         const [tAgent, tTrigger] = tk.split(":");
         if (!tAgent || !tTrigger) continue;
+        const subscribed = new Set(tEntry.metadata.subscribesTo ?? []);
+        const matchedEvents = newEvents.filter((e) => subscribed.has(e.type));
         const tCtx: AgentRunContext = {
           agent: capitalise(tAgent),
-          trigger: { kind: "event-driven", id: tTrigger },
+          trigger: {
+            kind: "event-driven",
+            id: tTrigger,
+            triggeringEvents: matchedEvents,
+          },
           asOf: new Date().toISOString(),
           repoRoot,
           ownerInboxDir: resolve(repoRoot, "Owner Inbox"),

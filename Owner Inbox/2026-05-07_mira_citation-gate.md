@@ -1,7 +1,7 @@
 ---
 agent: Mira
 trigger: citation-gate
-asOf: 2026-05-07T11:21:17.585Z
+asOf: 2026-05-07T13:25:27.391Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous (or on-request) run of Mira's citation-gate per CLAUDE.md Principle 2 (every action traces to a source). Verifies that every event in the store carries at least one citation — the append path enforces it via Zod, so a violation here would indicate corruption or an out-of-band write.
 
-**Headline:** 171 events scanned · 0 P2 violations.
+**Headline:** 418 events scanned · 0 P2 violations.
 
 ## Result
 

@@ -23,6 +23,8 @@
 
 export type TriggerKind = "scheduled" | "event-driven" | "on-request";
 
+import type { Event } from "../platform/event-store/types";
+
 export interface AgentRunContext {
   /** Persona name as it appears in /Team/<Name>.md */
   readonly agent: string;
@@ -31,6 +33,12 @@ export interface AgentRunContext {
     readonly kind: TriggerKind;
     /** Identifier of the trigger fired (e.g. "overnight-recon", "weekly-pipeline-state"). */
     readonly id: string;
+    /**
+     * For event-driven runs only: the events that fired this dispatch.
+     * Populated by the runtime's event-driven fan-out. Empty / undefined
+     * for scheduled and on-request runs.
+     */
+    readonly triggeringEvents?: readonly Event[];
   };
   /** ISO-8601 UTC. Stamped at run start; used as `as_of` for all events emitted in this run. */
   readonly asOf: string;
