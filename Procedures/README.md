@@ -6,7 +6,7 @@
 
 ## Purpose
 
-The procedures library is the **operational expression of Principle 7** — the implementation chain `Reg → Policy → Procedure → System Capability`. Procedures sit between policy (WHAT) and system capability (HOW it actually runs).
+The procedures library is the **operational expression of Principle 6 (upward chain)** — the implementation chain `Reg → Policy → Procedure → System Capability`. Procedures sit between policy (WHAT) and system capability (HOW it actually runs).
 
 A **procedure** specifies:
 
@@ -15,7 +15,7 @@ A **procedure** specifies:
 - **Reconciliation** — how we know the procedure was performed correctly (events produced, rec checks, evidence).
 - **Evidence / artefacts** — what gets persisted, where, and for how long.
 
-Procedures are preferentially **automated** — manual steps are tracked exceptions, justified under P2.
+Procedures are preferentially **automated** — manual steps are tracked exceptions, justified under Principle 2.
 
 ## Layout
 
@@ -44,7 +44,7 @@ Procedures are preferentially **automated** — manual steps are tracked excepti
     ...
 ```
 
-## Reconciliation chain (P7)
+## Reconciliation chain (Principle 6 — upward chain)
 
 Each procedure file carries:
 

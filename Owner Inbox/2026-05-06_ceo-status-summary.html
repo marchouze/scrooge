@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CEO status summary — 2026-05-06</title>
+<title>CEO status summary — 2026-05-06 (end-of-day)</title>
 <link rel="stylesheet" href="_styles.css">
 <style>
   /* Status-summary specific */
@@ -133,6 +133,7 @@
   .pill-route.approve { background: #e0efe2; color: #2f6b3a; }
   .pill-route.defer { background: #f1f3f6; color: var(--text-muted); }
   .pill-route.modify { background: #fbf3e3; color: var(--warning); }
+  .pill-route.set { background: #e7eef8; color: #2a4a78; }
 
   .timeline {
     background: var(--accent-soft);
@@ -145,6 +146,89 @@
     border-radius: 2px;
   }
 
+  .event-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-deep);
+    border-radius: 3px;
+    padding: 14px 18px;
+  }
+  .event-card .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    padding: 1px 8px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+  .event-card h3 {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0 0 6px 0;
+  }
+  .event-card p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin: 0 0 4px 0;
+    color: var(--text);
+  }
+  .event-card .ref {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: block;
+  }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .events-grid { grid-template-columns: 1fr; } }
+
+  .needs-list {
+    counter-reset: needs;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .needs-list li {
+    counter-increment: needs;
+    position: relative;
+    padding: 10px 0 10px 44px;
+    border-bottom: 1px solid var(--border);
+  }
+  .needs-list li:last-child { border-bottom: none; }
+  .needs-list li::before {
+    content: counter(needs);
+    position: absolute;
+    left: 0; top: 10px;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    width: 28px;
+    text-align: center;
+  }
+  .needs-list .urgent {
+    color: #b94a3a;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    margin-left: 6px;
+  }
+
   .footer-bar { max-width: 1180px; }
 </style>
 </head>
@@ -155,64 +239,104 @@
     <div class="brand">The Bank · Office of the Chief of Staff</div>
     <div class="meta">
       <strong>CEO status summary</strong><br>
-      Scrooge · Owen · 2026-05-06<br>
+      Scrooge · Owen · 2026-05-06 (end-of-day)<br>
       For: Marc (CEO)
     </div>
   </div>
 </header>
 
 <div class="title-block">
-  <div class="eyebrow">Two-day build cycle · 2026-05-05 → 2026-05-06</div>
+  <div class="eyebrow">Two-day build cycle · 2026-05-05 → 2026-05-06 · End-of-day regeneration</div>
   <h1>CEO status summary</h1>
-  <p class="lede">Where the bank stands today: 18 employees, 7 architectural principles, 41 policies in force, 178 obligations registered, 25 decisions logged across two rounds. Generated under Principle 6 from the underlying artefacts.</p>
+  <p class="lede">End-of-day picture: <strong>strategic foundation set</strong> (institutional global-markets trading bank), <strong>CAE hired</strong> (Thandiwe Mokoena), architectural principles consolidated to six, prototype foundation infra extended (projection runtime + identity authenticator; CI green). Generated under Principle 6 from the underlying artefacts.</p>
 </div>
 
 <!-- At a glance -->
 <div class="at-a-glance">
-  <div class="glance-tile"><span class="num">18</span><span class="lbl">Virtual employees</span><span class="sub">+ CEO; 9 governance, 14 engineers, 2 functional</span></div>
-  <div class="glance-tile"><span class="num">7</span><span class="lbl">Architectural principles</span><span class="sub">All seven binding every deliverable</span></div>
-  <div class="glance-tile"><span class="num">41</span><span class="lbl">Core policies in force</span><span class="sub">Across 5 bundles · Round 2 approved 2026-05-06</span></div>
-  <div class="glance-tile"><span class="num">25</span><span class="lbl">Decisions logged</span><span class="sub">2 rounds · 20 approve · 3 defer · 2 modify</span></div>
-  <div class="glance-tile"><span class="num">178</span><span class="lbl">Obligations registered</span><span class="sub">Across 12 domains · 64 instruments tracked</span></div>
-  <div class="glance-tile"><span class="num">9</span><span class="lbl">Procedures populated</span><span class="sub">Of ~80 identified · queue under domain leads</span></div>
-  <div class="glance-tile"><span class="num">4</span><span class="lbl">Open governance seats</span><span class="sub">CAE → CISO → GC → CHRO</span></div>
-  <div class="glance-tile"><span class="num">Azure</span><span class="lbl">Cloud target</span><span class="sub">Local dev built lift-compatible</span></div>
+  <div class="glance-tile"><span class="num">Set</span><span class="lbl">Strategic foundation</span><span class="sub">Institutional global-markets trading bank · JSE bonds + equities + OTC IRD</span></div>
+  <div class="glance-tile"><span class="num">R300m</span><span class="lbl">Capital envelope</span><span class="sub">Single shareholder injection · binding constraint</span></div>
+  <div class="glance-tile"><span class="num">6</span><span class="lbl">Architectural principles</span><span class="sub">Consolidated 2026-05-06 (was 7; old P6 + P7 → new P6)</span></div>
+  <div class="glance-tile"><span class="num">26</span><span class="lbl">CEO decisions actioned</span><span class="sub">3 rounds · 22 approve · 3 defer · 2 modify (1 reverted)</span></div>
+  <div class="glance-tile"><span class="num">41</span><span class="lbl">Core policies in force</span><span class="sub">Across 5 bundles</span></div>
+  <div class="glance-tile"><span class="num">178</span><span class="lbl">Obligations registered</span><span class="sub">64 instruments tracked · 4 exemplar analyses</span></div>
+  <div class="glance-tile"><span class="num">17</span><span class="lbl">Prototype tests passing</span><span class="sub">Typecheck · lint · citation gate · recon · all green</span></div>
+  <div class="glance-tile"><span class="num">Azure</span><span class="lbl">Cloud target</span><span class="sub">Local-first build · single-phase M8 lift</span></div>
+</div>
+
+<!-- Today's defining events -->
+<div class="section-band">
+  <h2>Today's defining events</h2>
+  <p class="lede">Four CEO-level decisions and a substantive prototype extension landed in the back half of the day.</p>
+</div>
+<div class="section-content">
+  <div class="events-grid">
+    <div class="event-card">
+      <span class="tag">Strategic foundation</span>
+      <h3>Institutional global-markets trading bank</h3>
+      <p>JSE-listed bond trading · JSE-listed equity trading · OTC interest-rate derivatives. Clients: large SA corporates, banks, non-bank FIs (institutional-only). Geography: SA, single branch. Capital: ~R300m. Banking licence application <strong>deferred</strong>.</p>
+      <p>Per-seat implications written across 8 governance + 14 engineering roles; B2 (capital / liquidity buffers) and B5 (trading mandate) reactivated against the new scope.</p>
+      <span class="ref">Owner Inbox/2026-05-06_strategic-foundation.md</span>
+    </div>
+    <div class="event-card">
+      <span class="tag">CAE hired</span>
+      <h3>Thandiwe Mokoena in seat as Chief Audit Executive</h3>
+      <p>CEO selected the recommended lead from the shortlist. CA(SA), CIA, CISA; deputy CAE at a top-five SA bank with three years acting CAE during a transition; built a continuous-controls programme from manual to engineered evidence — the seam Vera needs.</p>
+      <p>Reporting lines: functional to the Audit Committee (Interim Audit Forum chaired by Owen until a Board AC is constituted); administrative to CEO. <strong>Vera now reports functionally to Thandiwe.</strong> First-90-days plan running per role brief §9 (charter → audit plan → continuous-controls programme → combined-assurance map → external-auditor scoping → QAIP → AC rhythm).</p>
+      <span class="ref">Owner Inbox/2026-05-06_cae-hire-confirmation.md · /Team/Thandiwe.md</span>
+    </div>
+    <div class="event-card">
+      <span class="tag">Principles consolidated</span>
+      <h3>Seven principles → six (Option B)</h3>
+      <p>Old P6 (presentations derive from data) + old P7 (implementation traceability) merged into a new <strong>Principle 6 — Single-graph discipline</strong>, with explicit downward and upward sub-rules. Principle 2 (atomic citation discipline) retained separately.</p>
+      <p>CLAUDE.md updated; ~12 living docs swept; historical decision records and actioned-decisions audit trail preserved as written; CLAUDE.md history note bridges the mapping.</p>
+      <span class="ref">Owner Inbox/2026-05-06_principles-consolidation-proposal.md</span>
+    </div>
+    <div class="event-card">
+      <span class="tag">Prototype foundation</span>
+      <h3>Projection runtime + identity authenticator</h3>
+      <p><code>@platform/projections</code>: Projector / Reducer / Projection types; <code>LocalProjector</code> with as-of replay, type narrowing, deterministic fold. <code>@platform/identity</code>: Authenticator interface; <code>LocalAuthenticator</code> with HMAC-SHA256, persisted key under <code>.local/keys/</code>, <code>LOCAL_ONLY</code> env label, tamper / expiry / malformed-token tests.</p>
+      <p>Wired at composition root. CI: typecheck clean · lint clean · <strong>17 tests pass</strong> · citation gate 5/5 · recon 100/100.</p>
+      <span class="ref">prototype/platform/{projections,identity}/ · prototype/tests/{projections,identity}.test.ts</span>
+    </div>
+  </div>
 </div>
 
 <!-- State of the bank -->
 <div class="section-band">
   <h2>State of the bank</h2>
-  <p class="lede">Two days in, from empty repository to complete governance scaffolding + policy stack + nascent prototype.</p>
+  <p class="lede">Two days in, from empty repository to a complete governance scaffolding, a fixed strategic foundation, and a foundation-infra prototype that domain capabilities can now build on.</p>
 </div>
 <div class="section-content">
   <div class="twocol">
     <div class="panel">
       <h3>What's in place</h3>
       <ul>
-        <li>Full top-of-house structure with 9 CEO direct reports, 14 engineers, 2 functional</li>
-        <li>7 architectural principles binding every deliverable</li>
-        <li>RAS + Governance Framework (interim) approved</li>
+        <li><strong>Strategic foundation set</strong> — institutional global-markets dealer; product, client, geographic and capital scope all defined</li>
+        <li>Full top-of-house: 9 CEO direct reports, 14 engineers, 2 functional</li>
+        <li>6 architectural principles (post-consolidation) binding every deliverable</li>
+        <li>RAS + Governance Framework (interim) approved; Markets Committee a near-term agenda item</li>
         <li>41 core policies in force across 5 bundles</li>
-        <li>Regulatory library with 64 instruments tracked, 178 obligations registered</li>
-        <li>Procedures library with 9 populated procedures + index for ~70 more</li>
-        <li>Prototype walking skeleton (typed core, money, event-store)</li>
-        <li>Reporting capability specification (no build yet)</li>
-        <li>Auto-pickup decisions workflow established</li>
-        <li>Two-track approval routing (CEO / Board on-behalf-interim-NEDs)</li>
+        <li>Regulatory library: 64 instruments tracked, 178 obligations registered</li>
+        <li>Procedures library: 9 populated procedures + index for ~70 more</li>
+        <li>Prototype foundation infra: event store, citations, projections, identity, recon, observability — all green</li>
+        <li>Reporting capability specification (no build authorisation yet)</li>
+        <li>Auto-pickup decisions workflow + two-track approval routing</li>
       </ul>
     </div>
     <div class="panel">
       <h3>What's missing</h3>
       <ul>
-        <li><strong>A business plan.</strong> No customer segments, no products, no commercial proposition.</li>
-        <li><strong>SARB licence application.</strong> Forthcoming; obligations are designed-against today.</li>
-        <li><strong>A Board.</strong> Operating under interim governance until constituted.</li>
-        <li><strong>External Auditor.</strong> Selection process pending (post-licence).</li>
-        <li><strong>4 governance seats:</strong> CAE, CISO, GC, CHRO.</li>
-        <li><strong>~70 procedures</strong> in drafting queue under domain leads.</li>
-        <li><strong>~60 regulatory instrument analyses</strong> in stub state.</li>
-        <li><strong>Prototype build:</strong> walking skeleton only; M1–M8 phases ahead.</li>
-        <li><strong>Iris's POPIA designation lodgment</strong> (deferred; options paper in flight).</li>
+        <li><strong>Interim operating posture</strong> during licence deferral — pacing constraint on franchise design</li>
+        <li><strong>SARB licence application</strong> — deferred; obligations are designed-against today</li>
+        <li><strong>A Board.</strong> Operating under interim governance until constituted</li>
+        <li><strong>External Auditor.</strong> Selection process pending (post-licence)</li>
+        <li><strong>3 governance seats:</strong> CISO, GC, CHRO <em>(CAE filled — Thandiwe Mokoena)</em></li>
+        <li><strong>Markets franchise design</strong> — Saskia drafting (~2 weeks)</li>
+        <li><strong>RAS recalibration</strong> to wholesale-markets profile (Helena, follow-up)</li>
+        <li><strong>~70 procedures</strong> in drafting queue (now markets-bank-tilted)</li>
+        <li><strong>~60 regulatory instrument analyses</strong> in stub state</li>
+        <li><strong>Prototype build authorisation</strong> for reporting capability M-phase</li>
+        <li><strong>Iris's POPIA designation lodgment</strong> (deferred; options paper in flight)</li>
       </ul>
     </div>
   </div>
@@ -233,10 +357,11 @@
       <tr><td><strong>Chief Operating Officer</strong></td><td>Devon</td><td>Governance</td><td>Operations and engineering; operational resilience; interim CISO function</td></tr>
       <tr><td><strong>Chief Financial Officer</strong></td><td>Camille</td><td>Governance</td><td>Financial reporting (IFRS, BA returns); capital; accounting; tax; AC</td></tr>
       <tr><td><strong>Treasurer</strong></td><td>Eitan</td><td>Governance</td><td>Funding, liquidity, IRRBB, FX, FTP, SAMOS funding; ALCO chair</td></tr>
-      <tr><td><strong>Head of Global Markets</strong></td><td>Saskia</td><td>Governance</td><td>Sales &amp; trading franchise; market-making within CRO appetite</td></tr>
+      <tr><td><strong>Head of Global Markets</strong></td><td>Saskia</td><td>Governance</td><td>Sales &amp; trading franchise; central seat post strategic foundation</td></tr>
       <tr><td><strong>Company Secretary</strong></td><td>Owen</td><td>Governance</td><td>Statutory officer (Companies Act); governance machinery custodian</td></tr>
       <tr><td><strong>Chief Compliance Officer</strong></td><td>Zara</td><td>Governance</td><td>RMCP under FIC; named MLRO and FIC Compliance Officer; FAIS conduct</td></tr>
       <tr><td><strong>Information Officer</strong></td><td>Iris</td><td>Governance</td><td>POPIA s.56; lawful-processing register; breach notification; PAIA Manual</td></tr>
+      <tr><td><strong>Chief Audit Executive</strong></td><td>Thandiwe</td><td>Governance</td><td>Third line of defence; IA charter / plan / continuous-controls; AC functional line</td></tr>
     </tbody>
   </table>
   <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">
@@ -246,18 +371,17 @@
 
 <!-- Architectural principles -->
 <div class="section-band">
-  <h2>The seven architectural principles</h2>
-  <p class="lede">From <code>CLAUDE.md</code>. These bind every team member and every deliverable.</p>
+  <h2>The six architectural principles (post-consolidation)</h2>
+  <p class="lede">From <code>CLAUDE.md</code>. These bind every team member and every deliverable. Old P6 + P7 consolidated into the new P6 on 2026-05-06; Principle 2 (atomic citation) retained separately.</p>
 </div>
 <div class="section-content">
   <ol class="principles-list">
     <li><strong>Events are the only source of truth.</strong> Balances, capital, ratios, regulatory cells — all queries over the event log; as-of replay first-class.</li>
-    <li><strong>Every action traces to a source.</strong> No control or process without a register-linked citation.</li>
+    <li><strong>Every action traces to a source</strong> <em>(atomic citation discipline)</em>. No control or process without a register-linked citation.</li>
     <li><strong>Cloud-native; nothing manual or physical except where essential.</strong> Infrastructure as code; coded workflows; structured documents; ECTA wet-signatures only where statute requires.</li>
     <li><strong>Security designed in from the start.</strong> Threat modelling per design, zero trust, HSM-backed keys, secure SDLC, immutable audit; aligned with Joint Standard 1 of 2024.</li>
     <li><strong>Multi-currency, multi-entity, multi-country from day one.</strong> Single-currency / single-entity / single-jurisdiction shortcuts forbidden; new entities and currencies are configuration, not project work.</li>
-    <li><strong>Single source of truth; presentations derive from data.</strong> <code>Data → Process → Standard → Policy → Presentation</code>. External artefacts are summarised derivations; never independent authorship.</li>
-    <li><strong>Implementation traceability.</strong> <code>Reg → Policy → Procedure → System Capability</code>. No orphan functionality, no orphan procedures, every procedure mandate-owned.</li>
+    <li><strong>Single-graph discipline.</strong> <em>Downward:</em> presentations derive from data — <code>Data → Process → Standard → Policy → Presentation</code>; generated, not authored. <em>Upward:</em> capabilities justify through procedure to regulation — <code>Reg → Policy → Procedure → System Capability</code>; no orphan functionality, no orphan procedures, every procedure mandate-owned. <em>(Consolidated 2026-05-06 from old P6 + P7.)</em></li>
   </ol>
 </div>
 
@@ -269,7 +393,7 @@
 <div class="section-content">
   <div class="twocol">
     <div class="panel">
-      <h3>Round 1 — 18 decisions</h3>
+      <h3>Round 1 — 18 decisions (morning)</h3>
       <ul>
         <li><span class="pill-route approve">APPROVE × 13</span> Governance framework · Hire-order · Interim governance · RAS · Continuous-KYC two-tier · Sanctions zero-appetite · Cyber severity tiers · Model-risk three-tier · Sector concentration · Climate appetite · Niko placement · Top-of-house · Client master + KYC · Paid-data deferred</li>
         <li><span class="pill-route defer">DEFER × 3</span> B2 capital / liquidity buffers · B5 trading mandate · E1 POPIA IO lodgment</li>
@@ -277,7 +401,7 @@
       </ul>
     </div>
     <div class="panel">
-      <h3>Round 2 — 7 decisions, 7/7 approved</h3>
+      <h3>Round 2 — 7 decisions (afternoon), 7/7 approved</h3>
       <ul>
         <li><span class="pill-route approve">APPROVE</span> Risk policy bundle (8 policies)</li>
         <li><span class="pill-route approve">APPROVE</span> Compliance &amp; Privacy bundle (8)</li>
@@ -289,38 +413,52 @@
       </ul>
     </div>
   </div>
+  <div class="panel" style="margin-top:14px;">
+    <h3>Round 3 — same-day (end-of-day)</h3>
+    <ul>
+      <li><span class="pill-route set">SET</span> <strong>Strategic foundation</strong> — institutional global-markets trading bank; JSE bonds + equities + OTC IRD; institutional-only; SA single-branch; ~R300m capital; banking licence deferred. <em>Reactivates B2 (capital / liquidity buffer calibration) and B5 (trading mandate) against the new scope.</em></li>
+      <li><span class="pill-route approve">APPROVE</span> <strong>Principles consolidation, Option B</strong> — old P6 + P7 merged into new P6 (single-graph discipline, downward + upward); P2 retained separately as atomic-citation discipline; six principles total.</li>
+      <li><span class="pill-route set">HIRE</span> <strong>CAE — Thandiwe Mokoena</strong> selected from shortlist; in seat from 2026-05-06; persona at <code>/Team/Thandiwe.md</code>; Vera now reports functionally to Thandiwe; CISO → GC → CHRO remain the open governance hires.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- In flight -->
 <div class="section-band">
   <h2>What is in flight</h2>
-  <p class="lede">Carry-forward refinements + active drafting.</p>
+  <p class="lede">Carry-forward refinements, active hires, and active drafting — re-prioritised by the strategic foundation.</p>
 </div>
 <div class="section-content">
   <div class="twocol">
     <div class="panel">
-      <h3>Carry-forward refinements</h3>
+      <h3>Carry-forward refinements (now activated)</h3>
       <ul>
-        <li><strong>B2 — Capital / liquidity buffer calibration</strong> · Helena + Camille + Eitan · ICAAP / ILAAP cycle</li>
-        <li><strong>B5 — Trading mandate</strong> · Saskia + Helena + Camille · ~2 weeks</li>
+        <li><strong>B2 — Capital / liquidity buffer calibration</strong> · Helena + Camille + Eitan · scoped against R300m and a trading-bank profile · ICAAP / ILAAP cycle</li>
+        <li><strong>B5 — Trading mandate / markets franchise design</strong> · <strong>Saskia leads</strong> · ~2 weeks · brief routed</li>
         <li><strong>E1 — POPIA IO designation lodgment</strong> · Iris options paper · ~1 week</li>
       </ul>
-      <h3 style="margin-top:14px;">Hires in flight</h3>
+      <h3 style="margin-top:14px;">Hires</h3>
       <ul>
-        <li><strong>CAE</strong> — PAX brief authored; Nolan to hire</li>
+        <li><strong>CAE — Thandiwe Mokoena, hired 2026-05-06</strong>; first-90-days plan running</li>
+        <li><strong>CISO</strong> — next governance hire; PAX brief to be authored when scheduled</li>
+        <li><strong>GC, CHRO</strong> — sequenced behind CISO per Helena's recommended order</li>
       </ul>
     </div>
     <div class="panel">
       <h3>Active drafting (queues)</h3>
       <ul>
-        <li>~70 procedures (under domain leads, coordinated by Owen)</li>
+        <li><strong>Markets franchise design</strong> (Saskia, ~2 weeks)</li>
+        <li>~70 procedures (under domain leads, coordinated by Owen) — backlog re-tilted to markets-bank profile</li>
         <li>~60 regulator instrument analyses (Mira's regulatory-change-management cadence)</li>
         <li>Tier-2 policies (markets, customer, legal, audit-on-CAE-hire, HR labour-law set)</li>
+        <li><strong>RAS recalibration</strong> to wholesale-markets profile (Helena, follow-up)</li>
       </ul>
       <h3 style="margin-top:14px;">Prototype</h3>
       <ul>
-        <li>Walking skeleton built today: <code>@platform/core</code>, <code>@platform/event-store</code></li>
-        <li>Halted at coherent stopping point; resumes on authorisation (M1–M8 plan in reporting-capability spec)</li>
+        <li>Foundation: <code>@platform/core</code>, <code>@platform/event-store</code>, <code>@platform/citation</code>, <code>@platform/recon</code>, <code>@platform/observability</code></li>
+        <li><strong>Added today:</strong> <code>@platform/projections</code>, <code>@platform/identity</code></li>
+        <li>CI green: typecheck · lint · 17 tests · citation gate · recon all passing</li>
+        <li>Next foundation: crypto/Signer, secrets, HTTP server seam, scheduler, projection-cache persistence</li>
       </ul>
     </div>
   </div>
@@ -329,16 +467,16 @@
 <!-- What needs CEO -->
 <div class="section-band">
   <h2>What needs CEO next</h2>
-  <p class="lede">The bank is not currently blocked on you. Items that will surface as decisions in future packs:</p>
+  <p class="lede">The bank is not currently blocked on you operationally. Items below are listed in order of urgency.</p>
 </div>
 <div class="section-content">
   <div class="panel">
-    <ol style="font-size:14px; line-height:1.6; padding-left:22px; margin:0;">
-      <li><strong>Strategic foundation.</strong> What kind of bank is this? Customer segments, products, geographic / channel strategy, capital plan, SARB licence-application sequencing. The infrastructure is ready to hold a bank; the bank itself is the next conversation.</li>
+    <ol class="needs-list">
+      <li><strong>Decide the interim operating posture</strong> <span class="urgent">pacing</span> — banking licence deferred. Three viable modes: <strong>(a)</strong> build-only, no live trading until SARB licence; <strong>(b)</strong> FSP-licensed dealer in interim under FAIS Cat I/II + JSE membership; <strong>(c)</strong> sponsored-access dealer routing through an existing JSE member / bank. This is the pacing constraint on Saskia's franchise design and Imani's documentation programme.</li>
+      <li><strong>Authorise (or defer) the reporting-capability build</strong> per the M-phase plan in <code>2026-05-06_reporting-capability-spec.md</code>.</li>
+      <li><strong>Subsequent strategic-foundation refinements</strong> within Saskia's proposal: product priority within scope (all three at once vs sequenced); capital tranching; counterparty-set ambition; JSE membership form (direct vs sponsored).</li>
       <li><strong>B2 / B5 / E1 refined drafts</strong> when they arrive (B5 ~2 weeks; E1 ~1 week; B2 with the ICAAP / ILAAP cycle).</li>
-      <li><strong>Authorisation to build the reporting capability</strong> per the M-phase plan in the spec (<code>2026-05-06_reporting-capability-spec.md</code>).</li>
-      <li><strong>CAE hire</strong> when Nolan presents candidates (post-A2 approval).</li>
-      <li><strong>Subsequent governance hires</strong> (CISO → GC → CHRO) sequenced behind CAE.</li>
+      <li><strong>Subsequent governance hires</strong> (CISO → GC → CHRO) sequenced behind the now-filled CAE seat.</li>
       <li><strong>Cloud-lift sequencing</strong> when Atlas presents the M8 plan.</li>
     </ol>
   </div>
@@ -351,20 +489,21 @@
 <div class="section-content">
   <div class="panel">
     <ol style="font-size:13.5px; line-height:1.55; padding-left:22px; margin:0;">
-      <li><strong>Scaffolding is mature; substance is thin.</strong> 7 principles, 41 policies, 178 mapped obligations — but no business plan, no products, no licence application. The next major work-stream is strategic, not architectural.</li>
-      <li><strong>Prototype is early.</strong> Walking skeleton runs locally (when Bun is installed); the system-capability layer that procedures reference is mostly <code>PLANNED</code>. Build authorisation is a pending decision.</li>
-      <li><strong>Regulatory library has 60 instrument stubs.</strong> Exemplar pattern is set; the rest is Mira's continuous-change-management cadence — substantive, not urgent.</li>
-      <li><strong>Interim governance is interim.</strong> Board-reserved decisions currently route through CEO + CRO + CFO concurrence. Defensible for now; not a permanent posture. Board formation is forward-looking.</li>
+      <li><strong>Strategic foundation is set; franchise design is the next centre of gravity.</strong> Until Saskia's proposal lands and you decide the interim operating posture, the bank's pace is constrained by <em>governance velocity</em>, not engineering velocity.</li>
+      <li><strong>Single point of failure on Saskia.</strong> The franchise sits squarely on her desk and Kai is the single critical-path engineer for go-live. Saskia's deputy / institutional-markets-sales engineer is something to consider as the franchise design crystallises.</li>
+      <li><strong>R300m capital is tight against three product lines simultaneously.</strong> Standardised market-risk RWA + SA-CCR for IRD CCR will eat into the envelope quickly. Camille's capital plan against this number is a near-term blocker — not blocking now, but blocking before live trading.</li>
+      <li><strong>Interim governance is interim.</strong> Board-reserved decisions still route through CEO + CRO + CFO concurrence. Defensible for now; Board formation becomes more pressing as commercial activity approaches.</li>
       <li><strong>Single point of failure on Owen.</strong> CoSec, governance framework, board pathway, conflicts register, whistleblowing, PAIA — Owen carries a lot. Succession / deputy is a question for when the bank scales.</li>
-      <li><strong>POPIA IO designation unsigned.</strong> Iris is operationally in seat but the lodgment with the Information Regulator is deferred. Pending E1 resolution.</li>
+      <li><strong>POPIA IO designation unsigned.</strong> Iris is operationally in seat but lodgment with the Information Regulator is deferred. Pending E1 resolution.</li>
+      <li><strong>Prototype is a foundation, not a bank yet.</strong> Substrate is mature enough that domain capabilities can now build on it; the system-capability layer that procedures reference is mostly <code>PLANNED</code>. Build authorisation pending.</li>
     </ol>
   </div>
 </div>
 
 <!-- Architectural integrity -->
 <div class="section-band">
-  <h2>Architectural integrity check (Principle 7)</h2>
-  <p class="lede">The chain <code>Reg → Policy → Procedure → System Capability</code> is wired bidirectionally:</p>
+  <h2>Architectural integrity check (Principle 6 — upward chain)</h2>
+  <p class="lede">The chain <code>Reg → Policy → Procedure → System Capability</code> remains wired bidirectionally:</p>
 </div>
 <div class="section-content">
   <div class="twocol">
@@ -373,7 +512,7 @@
       <ul>
         <li><strong>Reg → Policy:</strong> obligations register maps 178 obligations</li>
         <li><strong>Policy → Procedure:</strong> procedures index links every approved policy</li>
-        <li><strong>Procedure → Capability:</strong> each populated procedure names its <code>@platform/...</code> components</li>
+        <li><strong>Procedure → Capability:</strong> each populated procedure names its <code>@platform/...</code> components; today's additions (projections, identity) now available</li>
         <li><strong>Mandate ownership:</strong> every procedure has an owner whose persona file covers the substance</li>
       </ul>
     </div>
@@ -394,8 +533,8 @@
 </div>
 
 <div class="footer-bar">
-  <span>Scrooge · Office of the Chief of Staff · 2026-05-06</span>
-  <span>Generated under Principle 6 — derives from <code>CLAUDE.md</code>, <code>Owner Inbox/2026-05-06_*</code>, <code>Procedures/</code>, <code>Regulations/</code>, <code>/Team/</code></span>
+  <span>Scrooge · Office of the Chief of Staff · 2026-05-06 · end-of-day</span>
+  <span>Generated under Principle 6 (downward) — derives from <code>CLAUDE.md</code>, <code>Owner Inbox/2026-05-06_*</code>, <code>Procedures/</code>, <code>Regulations/</code>, <code>/Team/</code>, <code>prototype/</code></span>
 </div>
 
 </body>

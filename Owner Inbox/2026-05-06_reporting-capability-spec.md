@@ -6,7 +6,7 @@
 **For:** Marc (CEO)
 **Status:** **Specification only — no build at this stage.** Build follows under domain leads, sequenced per §7 phasing.
 
-> **Derivation note (Principle 6).** Every artefact this capability produces is a **summarised derivation** of the event log. Nothing is independently authored; nothing is assembled from spreadsheets. Specifications, generators, and outputs trace through the chain `Reg → Policy → Procedure → System Capability` (Principle 7). This document is itself a specification at the policy/standard layer; the build is the system-capability layer.
+> **Derivation note (Principle 6).** Every artefact this capability produces is a **summarised derivation** of the event log (Principle 6, downward chain). Nothing is independently authored; nothing is assembled from spreadsheets. Specifications, generators, and outputs trace through the chain `Reg → Policy → Procedure → System Capability` (Principle 6, upward chain). This document is itself a specification at the policy/standard layer; the build is the system-capability layer.
 
 ---
 
@@ -287,7 +287,7 @@ The events are themselves the audit trail.
 | FATCA / CRS | Annual | Yael (Mira) |
 | Tax returns | Per SARS cadence | Yael |
 
-## 5. Reconciliation chain (P7)
+## 5. Reconciliation chain (Principle 6 — upward chain)
 
 Every report carries:
 

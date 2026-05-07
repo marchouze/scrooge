@@ -83,8 +83,8 @@ Equivalent `bun run <script>` commands are in `package.json`.
 - **P3** — no manual steps in the bring-up; `make up` is one command.
 - **P4** — software-backed signing today; HSM-shaped at M8. Synthetic data only; clearly labelled.
 - **P5** — branded types for `Currency`, `LegalEntity`, `Jurisdiction`, `Calendar`. Cross-currency arithmetic rejected at runtime.
-- **P6** — every output (e.g. citation gate report, recon harness output) is generated, not assembled.
-- **P7** — capability code imports only platform interfaces; the seam is the composition root.
+- **P6 (downward)** — every output (e.g. citation gate report, recon harness output) is generated, not assembled.
+- **P6 (upward / substrate seam)** — capability code imports only platform interfaces; the seam is the composition root. Domain capabilities trace up to procedures, policies and regulator instruments — no orphans.
 
 ## Next milestones
 

@@ -85,16 +85,16 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 | Privacy Impact Assessment Policy | Iris | BRC | Annual | POPIA s.55 IO duties | `PLANNED` |
 | Consent & Notice Policy | Iris (with Niko) | BRC | Annual | POPIA ss.13, 18 | `PLANNED` |
 
-## 5. Information security & cyber policies (Senna; future CISO)
+## 5. Information security & cyber policies (Senna engineering; Rashida CISO governance from 2026-05-06)
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Information Security Policy | Senna (interim CISO: Devon) | BRC | Annual | POPIA ss.19–22; ISO 27001 | `PLANNED` |
-| ★ Cyber Resilience Policy | Senna (interim CISO: Devon) | BRC | Annual | Joint Standard 1 of 2024 | `PLANNED` |
-| Access Control Policy | Senna | BRC | Annual | POPIA ss.19; ISO 27001 | `PLANNED` |
-| Cryptographic Key Management Policy | Senna | BRC | Annual | FIPS 140-2/3; ISO 27001 | `PLANNED` |
-| Incident Response Policy | Senna (with Iris, Zara) | BRC | Annual | Joint Standard 1 of 2024; POPIA s.22 | `PLANNED` (B6 approved) |
-| Secure SDLC Policy | Senna | BRC | Annual | NIST SSDF; SLSA | `PLANNED` |
+| ★ Information Security Policy | Senna + Rashida (CISO from 2026-05-06) | BRC | Annual | POPIA ss.19–22; ISO 27001 | `IN FORCE` (Round 2 bundle §1) |
+| ★ Cyber Resilience Policy | Senna + Rashida (CISO from 2026-05-06) | BRC | Annual | Joint Standard 1 of 2024 | `IN FORCE` (Round 2 bundle §2; B6 approved) |
+| Access Control Policy | Senna + Rashida | BRC | Annual | POPIA ss.19; ISO 27001 | `PLANNED` |
+| Cryptographic Key Management Policy | Senna + Rashida | BRC | Annual | FIPS 140-2/3; ISO 27001 | `PLANNED` |
+| Incident Response Policy | Senna + Rashida (with Iris, Zara) | BRC | Annual | Joint Standard 1 of 2024; POPIA s.22 | `IN FORCE` (Round 2 bundle §3) |
+| Secure SDLC Policy | Senna + Rashida | BRC | Annual | NIST SSDF; SLSA; ISO/IEC 27001:2022 A.8.25–A.8.34; Joint Standard 1 of 2024 | **`IN FORCE`** (added 2026-05-06 end-of-day; bundle §9; procedure `secure-sdlc.md` populated) |
 | Data Classification & Handling Policy | Senna (with Iris) | BRC | Annual | POPIA; ISO 27001 | `PLANNED` |
 | Acceptable Use Policy | Senna (with Sade) | BRC | Annual | ISO 27001 | `PLANNED` |
 | Vulnerability Management Policy | Senna | BRC | Annual | ISO 27001; NIST | `PLANNED` |

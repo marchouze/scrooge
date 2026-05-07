@@ -1,0 +1,701 @@
+{
+  "bank": {
+    "name": "The Bank",
+    "operatingPosture": "Build-only (no live trading until SARB licence)",
+    "cloudTarget": "Microsoft Azure (M8 cloud lift)",
+    "strategicFoundation": {
+      "type": "Institutional global-markets trading bank",
+      "products": [
+        "JSE-listed bonds",
+        "JSE-listed equities",
+        "OTC interest-rate derivatives"
+      ],
+      "clients": [
+        "Large SA corporates",
+        "Banks",
+        "Non-bank financial institutions"
+      ],
+      "geography": "South Africa \u00b7 single branch",
+      "capital": "R300m (committed shareholder capital)",
+      "licence": "Application deferred"
+    }
+  },
+  "decisionsOpen": [
+    {
+      "id": "S3",
+      "title": "Thin human layer at licence-day \u2014 composition and timing",
+      "category": "second-order",
+      "owner": "Owen",
+      "trigger": "Owen drafts; agent's next governance-cycle run",
+      "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-06_governance-framework.md"
+      ],
+      "brief": {
+        "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
+        "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
+        "options": [
+          {
+            "label": "Marc covers maximum seats (interim)",
+            "description": "Marc serves as CEO + Chair + IO + MLRO + FIC CO + interim director. NEDs + Auditor are the only additional humans.",
+            "consequence": "Lowest human-headcount; concentrates fit-and-proper risk on Marc; SARB may push back on IO + MLRO concentration."
+          },
+          {
+            "label": "Marc + minimum independent layer",
+            "description": "Marc covers CEO. NEDs (2-3) cover Chair + AC chair + RC chair. Separate IO, separate MLRO + FIC CO, separate Auditor.",
+            "consequence": "5-7 additional humans. SARB-credible; cleaner fit-and-proper distribution."
+          },
+          {
+            "label": "Standard SARB-licensed bank composition",
+            "description": "Full Board (Chair + 3-4 NEDs + 1-2 EDs), separate CEO, CRO, CFO, CISO, IO, MLRO, FIC CO, Auditor, FAIS KIs.",
+            "consequence": "10-15 humans. Highest cost; safest licence-application posture; closest to a conventional bank."
+          },
+          {
+            "label": "Defer until SARB engagement",
+            "description": "Hold the decision until external counsel (S5) advises on minimum composition.",
+            "consequence": "Owen drafts alternatives; decision reopens after counsel engagement."
+          }
+        ],
+        "recommendation": {
+          "stance": "Marc + minimum independent layer.",
+          "reasoning": "SARB licence-application credibility requires independent IO and independent MLRO; Marc covering all four roles (CEO + IO + MLRO + Chair) concentrates fit-and-proper exposure and weakens the application. NEDs are required by Banks Act regardless. Going beyond the minimum independent layer is premature before counsel engages."
+        },
+        "dependencies": {
+          "gatedOn": [],
+          "gates": [
+            {
+              "ref": "ac-chair-search",
+              "title": "AC-chair search",
+              "status": "open"
+            },
+            {
+              "ref": "rc-chair-search",
+              "title": "RC-chair search",
+              "status": "open"
+            },
+            {
+              "ref": "board-formation",
+              "title": "Full Board formation",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Owen",
+            "role": "CoSec",
+            "position": "Drafter; runs the Board secretariat."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Decides timing and chairs the search."
+          },
+          {
+            "name": "Helena",
+            "role": "CRO",
+            "position": "Will be material in RC composition."
+          },
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Will be material in AC composition."
+          },
+          {
+            "name": "Thandiwe",
+            "role": "CAE",
+            "position": "AC-chair will be Thandiwe's functional reporting line once a Board AC is constituted."
+          }
+        ],
+        "timeline": "Owen drafts roadmap (~3 weeks).",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-06_governance-framework.md",
+            "title": "Governance Framework \u2014 interim Board arrangement",
+            "summary": "Reserved matters; sub-committee charters; Interim Risk Forum + Interim Audit Forum running until Board exists."
+          },
+          {
+            "path": "Team/Owen.md",
+            "title": "Owen persona",
+            "summary": "Mandate; Companies Act fluency; Board-pathway custodianship."
+          },
+          {
+            "path": "Team/Iris.md",
+            "title": "Iris persona",
+            "summary": "POPIA s.56 IO substrate; designation requires natural person."
+          }
+        ]
+      },
+      "note": "AI-driven bank reframe (2026-05-07): statutory humans appear at licence-day in the minimum number SA law requires. Marc's interim coverage of multiple seats (CEO + Chair + IO + MLRO) is the default until SARB / Companies Act forces otherwise."
+    },
+    {
+      "id": "S5",
+      "title": "External legal counsel for SARB licence application",
+      "category": "second-order",
+      "owner": "Imani",
+      "trigger": "Imani recommends 2\u20133 firms with strengths-and-weaknesses notes",
+      "decisionForCEO": "Engage / when / which firm.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
+      ],
+      "brief": {
+        "summary": "Major-firm external counsel is conventionally engaged 6\u20139 months ahead of SARB licence application. Imani recommends 2\u20133 firms with strengths-and-weaknesses notes.",
+        "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6\u20139 months ahead of lodgment. Indicative licence lodgment from today is 12\u201318 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
+        "options": [
+          {
+            "label": "Engage now",
+            "description": "Engage a partner firm immediately.",
+            "consequence": "Earliest start; some retainer cost during pre-application phase; firm becomes a deep partner ahead of application."
+          },
+          {
+            "label": "Engage 6 months pre-lodgment",
+            "description": "Standard timing.",
+            "consequence": "Conventional engagement; firm has time to draft and run regulator meetings; matches Imani's likely recommendation."
+          },
+          {
+            "label": "Engage 9 months pre-lodgment",
+            "description": "Conservative timing; firm has full window.",
+            "consequence": "Slightly more cost; full preparation runway."
+          },
+          {
+            "label": "No external counsel",
+            "description": "Run application via internal Imani only.",
+            "consequence": "Significantly higher application risk; not market-standard for SA banking licences."
+          }
+        ],
+        "recommendation": {
+          "stance": "Engage 6\u20139 months ahead of lodgment; let Imani's recommendation paper land first.",
+          "reasoning": "External counsel is essentially required for a credible SARB application. Timing 6\u20139 months ahead is conventional and well-justified. Decision can wait ~6 months; Imani's recommendation paper can land in the meantime."
+        },
+        "dependencies": {
+          "gatedOn": [
+            {
+              "ref": "licence-application-timing",
+              "title": "SARB licence-application sequencing (long-horizon)",
+              "status": "open"
+            }
+          ],
+          "gates": [
+            {
+              "ref": "licence-application-prep",
+              "title": "Formal licence-application preparation",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Imani",
+            "role": "Legal-as-code engineer",
+            "position": "Drafter; runs the recommendation paper."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Engagement decision."
+          },
+          {
+            "name": "Owen",
+            "role": "CoSec",
+            "position": "Governance interface; engagement letter signing pathway."
+          },
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Cost envelope."
+          }
+        ],
+        "timeline": "Imani drafts when ready; not urgent.",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+            "title": "Next-decisions proposal \u00a79 (S5)",
+            "summary": "Framing of the external-counsel question."
+          },
+          {
+            "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
+            "title": "Strategic foundation",
+            "summary": "Licence deferred; ~12\u201318 month indicative lodgment timeline informs the engagement decision."
+          },
+          {
+            "path": "Team/Imani.md",
+            "title": "Imani persona",
+            "summary": "Mandate boundaries \u2014 internal legal-as-code; external partner-firm relationship is Marc's call with her recommendation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S6",
+      "title": "API + cloud cost budget for the build phase",
+      "category": "near-term",
+      "owner": "Marc",
+      "trigger": "Marc sets directly; Camille tracks against actuals",
+      "decisionForCEO": "Set the monthly Anthropic API + Azure cloud cost cap for the build phase, and the trigger for revisiting it.",
+      "sourceDocs": [
+        "memory/project_ai_driven_bank.md"
+      ],
+      "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). The real cost is API + cloud + Marc's attention; this decision sets the dollar cap.",
+      "brief": {
+        "summary": "Under the AI-driven-bank reframe, the bank's real costs during build are Anthropic API spend and (when M8 cloud lift happens) Azure infrastructure. Marc sets the monthly cap; Camille tracks actuals against it.",
+        "background": "Real cost lines for the build phase: (1) Anthropic API tokens \u2014 billed monthly to Marc's Anthropic account; scales with agent activity, prompt-cache hit rate, and session count; (2) Azure cloud infrastructure \u2014 zero today (local Bun + sqlite); real after M8 lift; order-of-magnitude $X00s-$X,000s/month at the substrate scope. No payroll, no insurance, no rent, no professional fees during the build. The decision sets the monthly cap and the trigger for revisiting (e.g. cap hit two months in a row, or Atlas / Anya request budget for a specific build sub-phase).",
+        "options": [
+          {
+            "label": "Tight cap with monthly review",
+            "description": "Low monthly cap; review every month; expand as needed.",
+            "consequence": "Forces explicit decision each cycle; keeps budget conscious; may slow build."
+          },
+          {
+            "label": "Generous cap with quarterly review",
+            "description": "Higher monthly cap; review quarterly.",
+            "consequence": "Less friction; higher absolute spend; lower decision overhead."
+          },
+          {
+            "label": "Cap by sub-phase (M-phase aligned)",
+            "description": "Cap derived from Atlas's M-phase cost estimates; reset per M-phase.",
+            "consequence": "Aligns budget to engineering sequence; requires Atlas estimates to land first."
+          },
+          {
+            "label": "No formal cap; review on signal",
+            "description": "No pre-agreed cap; review when monthly bill triggers attention.",
+            "consequence": "Lowest overhead; weakest discipline; only suitable while spend is small."
+          }
+        ],
+        "recommendation": {
+          "stance": "Tight cap with monthly review during early build; transition to cap-by-sub-phase as Atlas's M-phase cost estimates land.",
+          "reasoning": "API spend is genuinely small today; monthly review creates the discipline of revisiting cost intentionally rather than letting it drift. As substrate work scopes up, M-phase-aligned caps give engineering predictability."
+        },
+        "dependencies": {
+          "gatedOn": [
+            {
+              "ref": "ai-driven-reframe",
+              "title": "AI-driven bank operating model",
+              "status": "resolved"
+            }
+          ],
+          "gates": [
+            {
+              "ref": "S7",
+              "title": "Substrate-completeness budget",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Marc",
+            "role": "CEO + sole shareholder of compute",
+            "position": "Decides cap."
+          },
+          {
+            "name": "Camille",
+            "role": "CFO",
+            "position": "Tracks actuals; surfaces breaches."
+          },
+          {
+            "name": "Atlas",
+            "role": "Platform architect",
+            "position": "Estimates substrate-build cost; proposes M-phase-aligned caps."
+          }
+        ],
+        "timeline": "Marc decides at next session; cap effective immediately.",
+        "supportingDocs": [
+          {
+            "path": "memory/project_ai_driven_bank.md",
+            "title": "Bank is AI-driven, not a simulation",
+            "summary": "Authoritative reframe (2026-05-07)."
+          },
+          {
+            "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
+            "title": "Atlas \u2014 agent-runtime-substrate spec",
+            "summary": "Engineering substrate scope; informs cost estimates."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S7",
+      "title": "Substrate-completeness budget \u2014 sessions / agent runs to substrate-complete",
+      "category": "near-term",
+      "owner": "Atlas + Anya",
+      "trigger": "Atlas + Anya draft against the agent-runtime-substrate spec",
+      "decisionForCEO": "Approve the substrate-completeness target measured in agent runs / sessions, and the scope/quality tradeoff.",
+      "sourceDocs": [
+        "memory/project_ai_driven_bank.md",
+        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+      ],
+      "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). Defines the build-phase end condition in agent-time units.",
+      "brief": {
+        "summary": "Build phase ends at the pre-licence go-live readiness gate (substrate-complete). Atlas + Anya draft a substrate-completeness budget: how many agent runs / sessions of focused engineering work are needed to reach the gate, broken down by domain.",
+        "background": "Under Principle 7 + the AI-driven-bank reframe, build-phase duration is measured in agent runs and Marc's session cadence, not weeks. Atlas + Anya's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md` is the input. The decision approves a scope-vs-quality tradeoff: e.g. minimum-viable substrate (event runtime + scheduler + recon harnesses) is X sessions; production-grade substrate (with full Vera audit-pipeline coverage and projection persistence) is X+Y sessions.",
+        "options": [
+          {
+            "label": "Minimum-viable substrate",
+            "description": "Smallest substrate that can run agents autonomously between sessions; defer projection persistence, ML platform, advanced detection.",
+            "consequence": "Earlier licence-application; more substrate gaps to close at licence-day."
+          },
+          {
+            "label": "Production-grade substrate",
+            "description": "Full substrate including projection persistence, ML platform, advanced detection, full Vera audit pipelines.",
+            "consequence": "Longer build phase; cleaner licence-application posture."
+          },
+          {
+            "label": "Phase-gated (minimum then production)",
+            "description": "Hit minimum-viable first; reassess at that gate before extending to production-grade.",
+            "consequence": "Optionality preserved; mid-phase decision required."
+          }
+        ],
+        "recommendation": {
+          "stance": "Phase-gated (minimum then production).",
+          "reasoning": "Reaching minimum-viable proves the model works; the reassessment gate is the right place to decide whether to extend or push to licence-application directly. Avoids upfront over-commitment."
+        },
+        "dependencies": {
+          "gatedOn": [
+            {
+              "ref": "S6",
+              "title": "API + cloud cost budget",
+              "status": "open"
+            },
+            {
+              "ref": "S8",
+              "title": "Agent-runtime-substrate brief approval",
+              "status": "open"
+            }
+          ],
+          "gates": [
+            {
+              "ref": "pre-licence-readiness",
+              "title": "Pre-licence go-live readiness gate",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Atlas",
+            "role": "Platform architect",
+            "position": "Substrate scope; effort estimate."
+          },
+          {
+            "name": "Anya",
+            "role": "Data engineer",
+            "position": "Projection / data-substrate scope."
+          },
+          {
+            "name": "Vera",
+            "role": "Internal audit engineer",
+            "position": "Audit-pipeline coverage requirements."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Approves scope-vs-quality tradeoff."
+          }
+        ],
+        "timeline": "Atlas + Anya draft against the substrate spec; Marc approves at next governance session.",
+        "supportingDocs": [
+          {
+            "path": "memory/project_ai_driven_bank.md",
+            "title": "Bank is AI-driven, not a simulation",
+            "summary": "Authoritative reframe."
+          },
+          {
+            "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
+            "title": "Atlas \u2014 agent-runtime-substrate spec",
+            "summary": "The substrate scope that this budget sizes."
+          },
+          {
+            "path": "Team/Vera.md",
+            "title": "Vera persona",
+            "summary": "Substrate-gap inventory pipelines (#10-#15) gated on the runtime."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S8",
+      "title": "Agent-runtime-substrate brief \u2014 approve scope",
+      "category": "near-term",
+      "owner": "Atlas + Anya",
+      "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
+      "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+      ],
+      "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
+      "brief": {
+        "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
+        "background": "Per Principle 7, every persona is a standing autonomous agent that runs on its own cadence. Today the substrate is partial \u2014 agents are realised by Scrooge-coordinated in-session runs. The substrate that closes the gap: event-driven scheduler, AgentEscalation / AgentDecision / WorkstreamRegistered / RiskRaised event types, event-sourced workstream lifecycle (so dashboard-curated.json's inFlight + risks fields can be retired), and projection persistence. Atlas's spec at the linked path defines the scope; this decision approves it.",
+        "options": [
+          {
+            "label": "Approve as drafted",
+            "description": "Atlas's full scope.",
+            "consequence": "Maximum substrate coverage; longest build."
+          },
+          {
+            "label": "Approve with named cuts",
+            "description": "Approve scope minus specific items (e.g. defer ML platform).",
+            "consequence": "Faster substrate landing; named gaps to close later."
+          },
+          {
+            "label": "Request revision",
+            "description": "Substantive scope disagreement.",
+            "consequence": "Atlas re-drafts; one cycle."
+          },
+          {
+            "label": "Defer",
+            "description": "Hold pending S6 / S7 outcomes.",
+            "consequence": "Substrate work blocked until then."
+          }
+        ],
+        "recommendation": {
+          "stance": "Approve with named cuts: defer ML platform; defer advanced detection (deception, UBA); land minimum-viable runtime first.",
+          "reasoning": "Minimum-viable runtime is the binding constraint on every persona; the deferred items are not (Senna can keep operating against synthetic flows). Phase-gated approach is consistent with S7's recommended stance."
+        },
+        "dependencies": {
+          "gatedOn": [],
+          "gates": [
+            {
+              "ref": "agent-fleet-autonomous",
+              "title": "Agents run autonomously between sessions",
+              "status": "open"
+            }
+          ]
+        },
+        "stakeholders": [
+          {
+            "name": "Atlas",
+            "role": "Platform architect",
+            "position": "Drafter; lead engineer."
+          },
+          {
+            "name": "Anya",
+            "role": "Data engineer",
+            "position": "Co-owner of event-substrate seam."
+          },
+          {
+            "name": "Vera",
+            "role": "Internal audit engineer",
+            "position": "Pipelines #10-#15 gated on substrate."
+          },
+          {
+            "name": "Senna",
+            "role": "Security engineer",
+            "position": "Threat model on the substrate."
+          },
+          {
+            "name": "Marc",
+            "role": "CEO",
+            "position": "Approves scope."
+          }
+        ],
+        "timeline": "Marc decides at next session.",
+        "supportingDocs": [
+          {
+            "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
+            "title": "Atlas \u2014 agent-runtime-substrate spec",
+            "summary": "The drafted scope."
+          },
+          {
+            "path": "Team/Vera.md",
+            "title": "Vera persona",
+            "summary": "Pipelines #10-#15 (agent-spec integrity, mandate-agent reconciliation, substrate-gap inventory, escalation-channel discipline, agent-scope) \u2014 all substrate-gated."
+          },
+          {
+            "path": "memory/project_principle_7_autonomous.md",
+            "title": "Principle 7",
+            "summary": "Why the substrate is foundational."
+          }
+        ]
+      }
+    }
+  ],
+  "decisionsResolvedSeed": [
+    {
+      "id": "D1",
+      "title": "Interim operating posture \u2014 build-only",
+      "actionedAt": "2026-05-06",
+      "outcome": "Build-only, no live trading until SARB licence",
+      "sourceDoc": "Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md"
+    },
+    {
+      "id": "D2",
+      "title": "Reporting-capability build authorisation",
+      "actionedAt": "2026-05-06",
+      "outcome": "Authorised; M2\u2013M3 staged commit",
+      "sourceDoc": "Owner Inbox/2026-05-06_ceo-decision_reporting-capability-build-authorisation.md"
+    },
+    {
+      "id": "D3",
+      "title": "CISO hire kickoff",
+      "actionedAt": "2026-05-06",
+      "outcome": "PAX brief authored; Nolan to recruit",
+      "sourceDoc": "Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md"
+    },
+    {
+      "id": "R3a",
+      "title": "Strategic foundation set",
+      "actionedAt": "2026-05-06",
+      "outcome": "Institutional global-markets trading bank; JSE bonds + equities + OTC IRD; institutional-only; SA single-branch; ~R300m; licence deferred",
+      "sourceDoc": "Owner Inbox/2026-05-06_strategic-foundation.md"
+    },
+    {
+      "id": "R3b",
+      "title": "Principles consolidation (Option B)",
+      "actionedAt": "2026-05-06",
+      "outcome": "Old P6 + P7 \u2192 new P6 (single-graph); P2 retained separately; six principles total",
+      "sourceDoc": "Owner Inbox/2026-05-06_principles-consolidation-proposal.md"
+    },
+    {
+      "id": "R3c",
+      "title": "CAE hire \u2014 Thandiwe Mokoena",
+      "actionedAt": "2026-05-06",
+      "outcome": "In seat; Vera reports functionally to Thandiwe; CAE removed from open seats",
+      "sourceDoc": "Owner Inbox/2026-05-06_cae-hire-confirmation.md"
+    }
+  ],
+  "inFlight": [
+    {
+      "id": "WS-MARKETS-FRANCHISE",
+      "what": "Markets franchise design",
+      "owner": "Saskia",
+      "due": "~2 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_brief_markets-franchise-design.md"
+    },
+    {
+      "id": "WS-RAS-RECALIBRATION",
+      "what": "RAS for AI-driven bank \u2014 substrate / coherence / supply-chain risks",
+      "owner": "Helena",
+      "due": "Next governance-cycle run",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_brief_risk-appetite-statement-and-framework.md"
+    },
+    {
+      "id": "WS-IA-CHARTER",
+      "what": "Internal Audit Charter + first audit plan",
+      "owner": "Thandiwe",
+      "due": "~2 + ~4 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_brief_cae-onboarding-vera-owen.md"
+    },
+    {
+      "id": "WS-CISO-RECRUITMENT",
+      "what": "CISO recruitment",
+      "owner": "Nolan",
+      "due": "Shortlist ~3 weeks",
+      "active": true,
+      "startedAt": "2026-05-06",
+      "briefDoc": "Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md"
+    },
+    {
+      "id": "WS-E1-IO-OPTIONS",
+      "what": "POPIA IO designation \u2014 Marc interim; real human at licence-day",
+      "owner": "Iris",
+      "due": "Substrate-deferred; activates at licence-day",
+      "active": false
+    },
+    {
+      "id": "WS-REPORTING-M2-M3",
+      "what": "Reporting-capability M2\u2013M3 build",
+      "owner": "Atlas + Anya + Bea",
+      "due": "~6\u20138 weeks",
+      "active": false
+    },
+    {
+      "id": "WS-PROCEDURES-DRAFTING",
+      "what": "~70 procedures drafting (markets-bank-tilted)",
+      "owner": "Domain leads",
+      "due": "Continuous",
+      "active": false
+    },
+    {
+      "id": "WS-INSTRUMENT-ANALYSES",
+      "what": "~60 regulator instrument analyses",
+      "owner": "Mira",
+      "due": "Continuous",
+      "active": false
+    },
+    {
+      "id": "WS-API-CLOUD-BUDGET",
+      "what": "API + cloud cost budget (S6)",
+      "owner": "Marc + Camille",
+      "due": "Decision at next session",
+      "active": false
+    },
+    {
+      "id": "WS-SUBSTRATE-BUDGET",
+      "what": "Substrate-completeness budget (S7)",
+      "owner": "Atlas + Anya",
+      "due": "Drafted against substrate spec",
+      "active": false
+    },
+    {
+      "id": "WS-AGENT-RUNTIME-SUBSTRATE",
+      "what": "Agent-runtime substrate (S8) \u2014 scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
+      "owner": "Atlas + Anya",
+      "due": "Drafted; approval pending",
+      "active": true,
+      "startedAt": "2026-05-07",
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+    }
+  ],
+  "prototype": {
+    "ciStatus": "green",
+    "tests": 23,
+    "modules": [
+      {
+        "name": "@platform/core",
+        "status": "live"
+      },
+      {
+        "name": "@platform/event-store",
+        "status": "live"
+      },
+      {
+        "name": "@platform/citation",
+        "status": "live"
+      },
+      {
+        "name": "@platform/recon",
+        "status": "live"
+      },
+      {
+        "name": "@platform/observability",
+        "status": "live"
+      },
+      {
+        "name": "@platform/projections",
+        "status": "live (added 2026-05-06)"
+      },
+      {
+        "name": "@platform/identity",
+        "status": "live (added 2026-05-06)"
+      },
+      {
+        "name": "@platform/dashboard",
+        "status": "live (added 2026-05-06)"
+      }
+    ],
+    "next": [
+      "crypto/Signer",
+      "secrets",
+      "HTTP server seam (formal)",
+      "scheduler",
+      "projection-cache persistence"
+    ]
+  },
+  "risks": [
+    "AI-driven bank operating model set 2026-05-07 \u2014 bank is real, not simulation; build phase ends at pre-licence go-live readiness gate.",
+    "Substrate is the binding constraint: agent-runtime substrate (scheduler, event types, projection persistence) gates every persona's autonomous operation. Owner: Atlas + Anya. (S8)",
+    "Marc currently covers CEO + interim Chair + interim IO + interim MLRO \u2014 fit-and-proper concentration risk for SARB licence-application.",
+    "Persona-coherence drift across sessions is the real continuity risk for agents (replaces the simulated employee-attrition risk).",
+    "Anthropic API token spend is the real recurring cost during build; Azure spend lands at M8. (S6)",
+    "Single point of failure on Saskia + Kai for the markets franchise.",
+    "Single point of failure on Owen (CoSec, governance framework, conflicts, whistleblowing, PAIA).",
+    "Personas reshaped under reframe: Sade \u2192 AgentOps for build; Niko paused; Yael / Imani build-phase scopes trimmed. Reshape work pending in /Team/."
+  ]
+}

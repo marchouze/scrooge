@@ -21,7 +21,7 @@ Specify the foundational local environment on which every system capability M1�
 - **Mirror production discipline architecturally** — typed, signed, audited, reconcilable — so M8 cloud lift is configuration, not rewrite.
 - **Be reproducible** across team members through devcontainer + version-pinned tooling.
 - **Carry no real customer data**, no real money, no real network calls to live regulators or markets. Synthetic data is clearly labelled `SIMULATED`.
-- **Honour every architectural principle (P1–P7)** locally — no shortcuts that defer to "cloud will solve that".
+- **Honour every architectural principle (P1–P6)** locally — no shortcuts that defer to "cloud will solve that".
 
 ## 2. Sequencing principle
 

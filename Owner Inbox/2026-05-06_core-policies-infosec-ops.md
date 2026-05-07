@@ -236,6 +236,45 @@ Unapproved change or change without rollback path is a registered event escalate
 
 ---
 
+## 9. Secure SDLC Policy
+
+**Owner:** Senna (engineering) · Rashida (CISO — governance, from 2026-05-06) · **Approval:** BRC · **Cadence:** Annual · **Citation:** NIST SP 800-218 *Secure Software Development Framework* (SSDF) v1.1; SLSA v1.0 (Supply-chain Levels for Software Artifacts); ISO/IEC 27001:2022 Annex A.8.25–A.8.34 (secure development); Joint Standard 1 of 2024 (controls catalogue, threat modelling).
+
+### Purpose
+The bank's software is the bank. Every line of production code is built under a secure development lifecycle that produces, by construction, signed artefacts with attested provenance and a complete supply-chain inventory. The lifecycle is **continuous and CI-enforced** — pre-merge gates apply on every change; merge to a deployable branch is itself a typed event with attached attestations.
+
+This policy governs the **idea-to-merge** lifecycle. The **merge-to-production** lifecycle is governed by the Change Management Policy (§8); together they form the chain that the platform must run.
+
+### Principles
+- **Threat modelling is the gate**, not a document. New event types, APIs, integrations, and material changes do not enter development without an approved threat model. STRIDE / LINDDUN where applicable; Senna runs the gate; Rashida sets the standard and reviews exceptions.
+- **Branch protection is non-negotiable.** No merges to deployable branches without: required reviewers, required CI checks green, signed commits, no secrets, no high-severity SAST findings without registered exception.
+- **Supply chain is inventoried.** Every build produces a signed SBOM and a SLSA build-provenance attestation (target: SLSA Build Level 3); every dependency change is reviewed against the bank's allowlist; license posture is enforced.
+- **Secrets never enter source.** Pre-commit, push-time, and continuous repository-wide scanning. A secret in source is a Critical event triggering rotation and a registered IR.
+- **Static and dynamic analysis are CI-enforced.** SAST on every push; DAST against staging on every promotion candidate; high-severity findings block.
+- **Tests are gates, not aspirations.** Coverage thresholds per component class; mutation-testing on critical paths (event handlers, citation gate, recon); citation-gate tests cannot regress.
+- **Builds are reproducible and signed.** Hermetic builds where the platform supports it; build provenance signed with HSM-backed keys (sigstore-aligned); artefacts stored only in attested registries.
+- **Code review is mandatory.** At least one reviewer for normal-risk changes; security-reviewer (Senna's pool) for high-risk paths (auth, key handling, payments, settlement, regulator-reporting code, citation-gate, recon-harness). Self-merge is a tracked exception.
+- **Dependencies are kept current.** Dependency-update bot proposes PRs continuously; high-severity vulnerabilities have hard SLAs.
+- **Every event in the SDLC is a typed event** — `ThreatModelApproved`, `CommitSigned`, `SASTPassed`, `SBOMGenerated`, `BuildSigned`, `CodeReviewed`, `MergeApproved`. The lifecycle is reconcilable end-to-end (P1).
+- **Build-only context.** Under the build-only operating posture, the SDLC is fully live — pre-merge gates run on every commit even though the bank has no live customers. This is the substrate Rashida's pre-licence security-readiness gate (per her first-90-days §7) verifies before switch-to-live.
+
+### Roles
+Senna engineers the pipeline (CI gates, scanners, signers, attestation pipeline); Rashida (CISO) governs the standard and signs the threat-model gate; Atlas owns the CI platform and the artefact registry; Anya owns the data contracts the SDLC enforces between services; Vera audits the lifecycle's evidence on a continuous basis (continuous-controls programme); Thandiwe (CAE) consumes Vera's evidence for the third-line opinion.
+
+### Breach
+- A merge to a deployable branch without the full event chain (`ThreatModelApproved` where required, `SASTPassed`, `SBOMGenerated`, `BuildSigned`, `CodeReviewed`) is a **Critical** event triggering IR.
+- A secret committed to source is a **Critical** event — rotation, audit, IR.
+- Bypass of branch protection is a **Critical** event regardless of whether harm resulted.
+- A registered SDLC exception not closed within its SLA is a tracked finding to Vera.
+
+#### Pre-board review
+- **Proposer:** Senna (engineering) and Rashida (CISO).
+- **Challenged by:** Atlas (CI-platform feasibility); Devon (operational-resilience seam with change-management); Vera (continuous-controls evidence design); Thandiwe (third-line independence on the gate); Iris (POPIA s.19–22 alignment of secret-scanning and access controls); Helena (operational-risk posture).
+- **Iteration:** minor — clarified the threat-model gate's scope (new event types, APIs, integrations, material changes) and the SLSA Build Level 3 target.
+- **Status:** Ready ✓
+
+---
+
 ## Bundle status
 
 | # | Policy | Status |
@@ -248,5 +287,6 @@ Unapproved change or change without rollback path is a registered event escalate
 | 6 | Business Continuity & DR Policy | **Ready ✓** |
 | 7 | Records Management Policy | **Ready ✓** |
 | 8 | Change Management Policy | **Ready ✓** |
+| 9 | Secure SDLC Policy | **Ready ✓** (added 2026-05-06 end-of-day) |
 
-All eight pre-board-reviewed and ready for the next decision pack.
+All nine pre-board-reviewed and ready for the next decision pack. Policy 9 (Secure SDLC) was authored end-of-day 2026-05-06 following the CISO hire; Rashida co-owns from arrival.

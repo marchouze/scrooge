@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agents · Bank operations dashboard</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Agents · CEO direct reports</span>
+    </div>
+    <div class="meta">
+      <a class="nav-link" href="/">← Dashboard</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+
+  <section class="agents-intro band">
+    <h1>Standing autonomous agents</h1>
+    <p class="muted">
+      Per the autonomous-agents operating model (CLAUDE.md, Principle 7), every persona reporting to the CEO is a
+      standing agent that runs on its own cadence and discharges its mandate. Today, the agent runtime is partial —
+      cards flagged <span class="op-spec-tag op-spec-no">spec pending</span> still operate as Scrooge-coordinated
+      in-session runs. Cards flagged <span class="op-spec-tag op-spec-yes">spec ready</span> have a published
+      operating spec in <code>/Team/&lt;Name&gt;.md</code>.
+    </p>
+    <div id="agentsSummary" class="agents-summary"></div>
+  </section>
+
+  <section class="band">
+    <div class="band-head">
+      <h2>Mini-dashboards</h2>
+      <span class="band-sub" id="agentsSub"></span>
+    </div>
+    <div class="agents-grid" id="agentsGrid"></div>
+  </section>
+
+  <footer class="foot">
+    <span class="muted">Each card is derived from <code>CLAUDE.md</code> (top-of-house roster), <code>/Team/&lt;Name&gt;.md</code> (mandate, operating spec), the in-flight workstream stream + completion events, and the <code>Owner Inbox/</code> deliverables feed.</span>
+  </footer>
+
+</main>
+
+<script src="/agents.js"></script>
+</body>
+</html>

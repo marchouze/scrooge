@@ -14,12 +14,17 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { EventStore } from "./event-store/store";
+import { LocalAuthenticator } from "./identity";
 import { logger } from "./observability/logger";
+import { LocalProjector } from "./projections";
 
 const dbPath = process.env.BANK_EVENT_DB ?? ".local/event.db";
+const idpKeyPath = process.env.BANK_IDP_KEY ?? ".local/keys/idp.key";
 mkdirSync(dirname(dbPath), { recursive: true });
 
 export const eventStore = new EventStore(dbPath);
+export const projector = new LocalProjector(eventStore);
+export const authenticator = new LocalAuthenticator({ keyPath: idpKeyPath });
 export { logger };
 
-logger.debug({ dbPath }, "composition root wired");
+logger.debug({ dbPath, idpKeyPath }, "composition root wired");
