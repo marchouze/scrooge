@@ -946,6 +946,86 @@ export function makeBusDispatched(args: {
 }
 
 // ---------------------------------------------------------------------------
+// LegacyFanoutShadowed
+//
+// Emitted by the legacy in-process fan-out in `runtime/run.ts` once the
+// A2.2 cutover (D-A22-RETIRE-LEGACY Phase 1) puts the legacy path in
+// shadow mode. Phase 1 topology: the LocalEventTriggerBus is the canonical
+// dispatcher; the legacy fan-out is preserved but does NOT invoke its
+// computed handlers — instead it records, per (parent run, triggered
+// handler key) row, what it *would* have dispatched. The shadow event is
+// the substrate's own evidence that the legacy path *would* have fired,
+// recorded for divergence assertion against `BusDispatched`.
+//
+// Vera's Wave-4 #13b parallel-dispatch-divergence pipeline reconciles
+// this stream against `BusDispatched` and asserts the two paths agree
+// on the same (eventId, handlerKey) set. When the gating window passes
+// green, Phase 2 deletes both the legacy fan-out and this event type.
+//
+// Authority:
+//   - D-A22-RETIRE-LEGACY Phase 1 (CeoDecision, 2026-05-08)
+//   - D-AGENT-RUNTIME-AUTHORIZE (resolved 2026-05-07)
+//   - Principle 1 (events as truth — shadow dispatch is recorded)
+//
+// Replay-fold: append-only-audit. Short-lived — disappears at Phase 2.
+// ---------------------------------------------------------------------------
+
+export const legacyFanoutShadowedPayloadSchema = z.object({
+  /**
+   * Composite key of the parent run that emitted the trigger event.
+   * Convention: `<lowercased-agent>:<trigger>` (e.g. `atlas:substrate-state`).
+   */
+  parentAgent: z.string().min(1),
+  /** Parent's trigger id — second half of the parent's handler key. */
+  parentTrigger: z.string().min(1),
+  /**
+   * The handler the legacy fan-out *would* have dispatched. Convention:
+   * `<lowercased-agent>:<trigger>` matching `runtime/handlers-metadata.ts`.
+   */
+  triggeredHandlerKey: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9-]+:[a-z0-9-]+$/, {
+      message:
+        "triggeredHandlerKey must match `<lowercased-agent>:<trigger>` (a-z, 0-9, -)",
+    }),
+  /**
+   * The event types the parent run appended that the triggered handler
+   * subscribes to (intersection of `subscribesTo` and `newEventTypes`).
+   * Recorded so divergence-recon can compare against the bus's
+   * `eventType` column on `BusDispatched`.
+   */
+  triggeringEventTypes: z.array(z.string().min(1)).min(1),
+  /**
+   * Event-store sequence number captured *before* the parent run started.
+   * The fan-out walks `[suppressedAtSequence + 1 ..]` to find new events.
+   * Recorded so divergence-recon can correlate windows precisely.
+   */
+  suppressedAtSequence: z.number().int().nonnegative(),
+});
+
+export type LegacyFanoutShadowedPayload = z.infer<typeof legacyFanoutShadowedPayloadSchema>;
+
+export function makeLegacyFanoutShadowed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: LegacyFanoutShadowedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "LegacyFanoutShadowed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: legacyFanoutShadowedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // ModelSubmitted
 //
 // Emitted by Rohan (the model builder, first line) when a new model
@@ -1265,6 +1345,7 @@ export const TYPED_EVENT_TYPES = [
   "IdentityKeyRotated",
   "PermissionPolicyPublished",
   "BusDispatched",
+  "LegacyFanoutShadowed",
   "ModelSubmitted",
   "ModelTierClassified",
   "ModelValidationApproved",
