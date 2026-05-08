@@ -29,6 +29,7 @@ import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import rohanRiskRun from "./agents/rohan-risk-run";
+import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
@@ -68,4 +69,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "tomas:payments-readiness": tomasPaymentsReadiness,
   "imani:legal-readiness": imaniLegalReadiness,
   "ravi:alm-readiness": raviAlmReadiness,
+  "sade:agentops-readiness": sadeAgentopsReadiness,
 };
