@@ -722,8 +722,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
   // M1 markets-projection family — emitted by Anya's
   // m1-projection-runtime-mapping handler. Envelope-only at v0;
-  // typed payload schemas land at M2 alongside the persisted
-  // projection cache.
+  // typed payload schemas land at M2.
   {
     type: "MarketsProjectionRegistered",
     class: "audit",
@@ -742,6 +741,25 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     citationsHint: ["JSE-RULES-EQUITIES", "ORG-AC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
     source: "runtime/agents/anya-m1-projection-runtime-mapping.ts",
+  },
+  // M1 security family — emitted by Senna's m1-trading-stack-threat-model handler.
+  {
+    type: "ThreatModelDimensionRegistered",
+    class: "audit",
+    issuer: "Senna",
+    subscribers: ["Rashida", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-CY-01", "ORG-CY-03", "ORG-CY-05", "ORG-PR(IV)-06"],
+    source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
+  },
+  {
+    type: "SecurityGateRegistered",
+    class: "audit",
+    issuer: "Senna",
+    subscribers: ["Rashida", "Atlas", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-CY-01", "ORG-CY-03", "GOV-FRAMEWORK-CEO-RESERVED"],
+    source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
   },
 ];
 

@@ -126,13 +126,27 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Rohan", "backtest-harness", "event-driven", {
     subscribesTo: ["BacktestRequested"],
   }),
-  // M1 — Anya's projection-runtime-mapping handler. Event-driven on
-  // `CeoDecision` (D-MARKETS-SCHEMA-FOUNDATION) and `CdmBindingsRegenerated`.
-  // Emits `MarketsProjectionRegistered` (idempotent) + `MarketsProjectionRefreshed`.
-  // Authority: D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07).
-  // Brief: Team Inbox/2026-05-07_brief_anya_m1-projection-runtime-mapping.md.
+  // M1 — Anya's projection-runtime-mapping handler.
   entry("Anya", "m1-projection-runtime-mapping", "event-driven", {
     subscribesTo: ["CeoDecision", "CdmBindingsRegenerated"],
+  }),
+  // M1 — Bea IFRS-9 classification rules.
+  entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
+    subscribesTo: [
+      "CeoDecision",
+      "CdmBindingsRegenerated",
+      "EquityTradeBooked",
+      "EquitySettlementInstructed",
+      "EquityCorporateActionApplied",
+    ],
+  }),
+  // M1 — Mira's regulator-citation-URN handler.
+  entry("Mira", "m1-regulator-citation-urns", "event-driven", {
+    subscribesTo: ["CeoDecision"],
+  }),
+  // M1 — Senna's trading-stack threat-model handler.
+  entry("Senna", "m1-trading-stack-threat-model", "event-driven", {
+    subscribesTo: ["CeoDecision"],
   }),
 ];
 
