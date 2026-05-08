@@ -13,6 +13,7 @@
 //
 // Author: Atlas
 
+import anyaM1ProjectionRuntimeMapping from "./agents/anya-m1-projection-runtime-mapping";
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
@@ -81,6 +82,7 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,
   "rohan:backtest-harness": rohanBacktestHarness,
+  "anya:m1-projection-runtime-mapping": anyaM1ProjectionRuntimeMapping,
   "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
   "mira:m1-regulator-citation-urns": miraM1RegulatorCitationUrns,
   "senna:m1-trading-stack-threat-model": sennaM1TradingStackThreatModel,

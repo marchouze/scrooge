@@ -86,7 +86,7 @@ Anya does **not** produce the events (Atlas), write postings (Bea), evaluate KYC
 
 ## 11. Outputs
 
-- **Events emitted:** `ProjectionRegistered`, `MetricRegistered`, `DataContractApproved`, `RegulatoryMartRegistered`, `DashboardProjectionRefreshed`, `MasterDataReconciled`, `AgentEscalation`, `AgentDecision` (where Anya is the issuing agent). Schemas in `prototype/platform/event-store/event-types.ts`.
+- **Events emitted:** `ProjectionRegistered`, `MetricRegistered`, `DataContractApproved`, `RegulatoryMartRegistered`, `DashboardProjectionRefreshed`, `MarketsProjectionRegistered`, `MarketsProjectionRefreshed`, `MasterDataReconciled`, `AgentEscalation`, `AgentDecision` (where Anya is the issuing agent). Schemas in `prototype/platform/event-store/event-types.ts`; envelope-only registry rows for the M1 markets-projection family in `prototype/platform/event-store/registry.ts`.
 - **Registers maintained:** semantic-layer registry (planned); metric store registry (planned); data-contract registry (planned); master-data hierarchy registers (client, legal-entity, instrument, product).
 - **Deliverables:** daily projection-drift sweep (Owner Inbox); weekly master-data reconciliation summary; monthly data-contract audit; ad-hoc mart definitions on request.
 
@@ -136,3 +136,4 @@ Anya pairs with Atlas on the substrate: Atlas owns event-store invariants and sc
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Anya (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Devon (COO) per top-of-house structure. |
+| v1.1 | 2026-05-08 | Anya | M1 projection-runtime-mapping handler landed (`anya:m1-projection-runtime-mapping`). §11 updated for new events emitted (`MarketsProjectionRegistered`, `MarketsProjectionRefreshed`). Authority: D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07). |

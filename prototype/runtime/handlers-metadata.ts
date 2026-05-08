@@ -126,9 +126,11 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Rohan", "backtest-harness", "event-driven", {
     subscribesTo: ["BacktestRequested"],
   }),
-  // M1 — Bea IFRS-9 classification rules per `D-MARKETS-SCHEMA-FOUNDATION`.
-  // Subscribes to lifecycle anchors (CeoDecision, CdmBindingsRegenerated)
-  // and the M1 CDM equity event types.
+  // M1 — Anya's projection-runtime-mapping handler.
+  entry("Anya", "m1-projection-runtime-mapping", "event-driven", {
+    subscribesTo: ["CeoDecision", "CdmBindingsRegenerated"],
+  }),
+  // M1 — Bea IFRS-9 classification rules.
   entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
     subscribesTo: [
       "CeoDecision",
