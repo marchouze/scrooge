@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-08T05:04:44.444Z",
+  "asOf": "2026-05-08T05:19:08.029Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -851,6 +851,22 @@
       "due": "",
       "active": true,
       "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+    },
+    {
+      "id": "workstream:atlas:gh-actions-cron-unreliability",
+      "what": "GitHub Actions cron unreliability — interim staggering, permanent fix is A2.1 scheduler",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
+    },
+    {
+      "id": "workstream:atlas:substrate-gap-7",
+      "what": "GitHub Actions cron unreliability — interim substrate",
+      "owner": "Atlas",
+      "due": "",
+      "active": true,
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
     }
   ],
   "agents": [
@@ -1144,6 +1160,22 @@
             {
               "id": "workstream:atlas:substrate-gap-6",
               "what": "Citation gate: now wrapped as `mira:citation-gate` (on-request)",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
+            },
+            {
+              "id": "workstream:atlas:gh-actions-cron-unreliability",
+              "what": "GitHub Actions cron unreliability — interim staggering, permanent fix is A2.1 scheduler",
+              "owner": "Atlas",
+              "due": "",
+              "active": true,
+              "briefDoc": "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
+            },
+            {
+              "id": "workstream:atlas:substrate-gap-7",
+              "what": "GitHub Actions cron unreliability — interim substrate",
               "owner": "Atlas",
               "due": "",
               "active": true,
@@ -1787,7 +1819,7 @@
           "lastActivityAt": "2026-05-06"
         }
       ],
-      "totalActive": 8,
+      "totalActive": 10,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 5,
       "totalRecentDeliverables": 18
@@ -2304,7 +2336,7 @@
       "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [],
-      "lastActivityAt": "2026-05-07",
+      "lastActivityAt": "2026-05-08",
       "subordinates": [
         {
           "name": "Vera",
@@ -2314,6 +2346,11 @@
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-08",
+              "path": "Owner Inbox/2026-05-08_vera_overnight-recon.md",
+              "title": "vera · overnight recon"
+            },
             {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_vera_agent-discipline-assurance-extension.md",
@@ -2335,13 +2372,13 @@
               "title": "continuous controls programme"
             }
           ],
-          "lastActivityAt": "2026-05-07"
+          "lastActivityAt": "2026-05-08"
         }
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 4
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Rashida",
@@ -2404,6 +2441,14 @@
       "title": "Zara — MLRO supervision attestation, 2026-05-08",
       "decisionRequired": false,
       "summary": "Autonomous run of Zara's weekly MLRO-supervision attestation per `Team/Zara.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Third handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
+    },
+    {
+      "filename": "2026-05-08_vera_overnight-recon.md",
+      "path": "Owner Inbox/2026-05-08_vera_overnight-recon.md",
+      "date": "2026-05-08",
+      "title": "Vera — overnight recon, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
     },
     {
       "filename": "2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
@@ -2617,15 +2662,6 @@
       "decisionRecommendation": "Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere.",
       "decisionOwner": "PAX",
       "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-07_owen_substrate-exception-register.md",
-      "path": "Owner Inbox/2026-05-07_owen_substrate-exception-register.md",
-      "date": "2026-05-07",
-      "title": "Substrate exception register — Owen",
-      "decisionRequired": false,
-      "author": "Owen",
-      "summary": "Canonical register of substrate components running under named exceptions. Each entry records the threat-model gate, conditions for exit, expiry, and approver. Vera consumes this register as continuous-controls evidence."
     }
   ],
   "prototype": {

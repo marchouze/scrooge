@@ -7,7 +7,10 @@ name: Anya projection drift
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    # 03:17 UTC daily — off-the-hour to dodge GH Actions cron drops
+    # observed 2026-05-08 (on-the-hour 03:00 was silently skipped on
+    # consecutive nights). A2.1 scheduler closes the dependency.
+    - cron: "17 3 * * *"
   workflow_dispatch: {}
 
 permissions:
