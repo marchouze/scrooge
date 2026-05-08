@@ -80,6 +80,8 @@ function entry(
 export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Vera", "overnight-recon", "scheduled", { cadenceHours: 24 }),
   entry("Atlas", "substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Helena", "risk-appetite-watch", "scheduled", { cadenceHours: 24 }),
+  entry("Devon", "operational-resilience-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Anya", "projection-drift", "scheduled", { cadenceHours: 24 }),
   entry("Anya", "projection-refresh", "event-driven", {
     subscribesTo: [
@@ -98,6 +100,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Mira", "obligations-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Mira", "citation-gate", "on-request"),
   entry("Senna", "security-substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Zara", "mlro-supervision", "scheduled", { cadenceHours: 24 * 7 }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */

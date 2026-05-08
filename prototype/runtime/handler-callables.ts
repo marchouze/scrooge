@@ -16,6 +16,8 @@
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
+import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
+import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
@@ -24,11 +26,14 @@ import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
+import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
 
 export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "vera:overnight-recon": veraOvernightRecon,
   "atlas:substrate-state": atlasSubstrateState,
+  "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
+  "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
   "anya:projection-drift": anyaProjectionDrift,
   "anya:projection-refresh": anyaProjectionRefresh,
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
@@ -38,4 +43,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
   "senna:security-substrate-state": sennaSecuritySubstrateState,
+  "zara:mlro-supervision": zaraMlroSupervision,
 };
