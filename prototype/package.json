@@ -27,6 +27,7 @@
     "bus:tick": "bun run scripts/bus-tick.ts",
     "identity:issue": "bun run scripts/identity-issue.ts",
     "escalation:enforce": "bun run scripts/escalation-enforce.ts",
+    "model-registry:list": "bun run scripts/model-registry-list.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",

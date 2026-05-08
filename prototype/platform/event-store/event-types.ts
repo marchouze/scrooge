@@ -946,6 +946,305 @@ export function makeBusDispatched(args: {
 }
 
 // ---------------------------------------------------------------------------
+// ModelSubmitted
+//
+// Emitted by Rohan (the model builder, first line) when a new model
+// version is submitted to the registry for validation. Distinct from
+// Rohan's broader `ModelVersionPublished` event — `ModelSubmitted` is
+// the validation-flow trigger that opens a registry entry for Nadia's
+// review; `ModelVersionPublished` records the underlying methodology /
+// version artefact at Rohan's side.
+//
+// Replay-fold: latest-wins-per-key on `modelId` for the latest version;
+// the `methodologyHash` is the idempotency key — re-submitting the
+// identical hash for the same model is a no-op.
+//
+// Co-owner: Rohan (submits) + Nadia (validates). Spec authority:
+// `Team/Nadia.md` §11; `Team/Rohan.md` §11; the model-registry skeleton
+// at `prototype/platform/model-registry/registry.ts`.
+// ---------------------------------------------------------------------------
+
+export const modelSubmittedPayloadSchema = z.object({
+  /** Stable id for the model. Convention: `model:<short-slug>` (e.g. `model:var-historical-99`). */
+  modelId: z.string().min(1),
+  /** Strong identity of the submitter. Convention: `agent:<name>` or `human:<email>`. */
+  submittedBy: z.string().min(1),
+  /** Submitter's version label (e.g. `v1.0`, `2026.05-q2`). */
+  version: z.string().min(1),
+  /**
+   * Tier the submitter is proposing per RAS § B7:
+   *   1 = regulatory-capital / IFRS 9 / AML core (Tier-1, annual revalidation)
+   *   2 = pricing engines / risk sensitivities / behavioural-deposit (Tier-2, 18-month revalidation)
+   *   3 = operational analytics / segmentation / non-decisioning (Tier-3, on material-change)
+   * Nadia may override via `ModelTierClassified`.
+   */
+  tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  /**
+   * SHA-256 of the methodology / spec contents at submission. Idempotency
+   * key — re-submitting the identical hash for the same modelId emits no
+   * new event.
+   */
+  methodologyHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "methodologyHash must be a lowercase hex sha256 (64 chars)",
+    }),
+  /** One-line description of the model's purpose. */
+  description: z.string().min(1),
+});
+
+export type ModelSubmittedPayload = z.infer<typeof modelSubmittedPayloadSchema>;
+
+export function makeModelSubmitted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ModelSubmittedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ModelSubmitted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: modelSubmittedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ModelTierClassified
+//
+// Emitted by Nadia when she classifies (or reclassifies) a model's tier.
+// May agree with the submitter's `tier` or override it; either way, the
+// classified tier is the binding one for validation cadence.
+//
+// Replay-fold: latest-wins-per-key on `modelId` — Nadia's most recent
+// classification supersedes earlier ones.
+// ---------------------------------------------------------------------------
+
+export const modelTierClassifiedPayloadSchema = z.object({
+  modelId: z.string().min(1),
+  /** Strong identity of the classifier. Convention: `agent:nadia` or `human:<email>`. */
+  classifiedBy: z.string().min(1),
+  /** Tier per RAS § B7 (see ModelSubmitted). */
+  tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  /** Why this tier — references RAS § B7 dimensions (regulatory-capital, IFRS 9, etc.). */
+  rationale: z.string().min(1),
+});
+
+export type ModelTierClassifiedPayload = z.infer<typeof modelTierClassifiedPayloadSchema>;
+
+export function makeModelTierClassified(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ModelTierClassifiedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ModelTierClassified",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: modelTierClassifiedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ModelValidationApproved
+//
+// Emitted by Nadia when she approves production use of a specific
+// version. The `expiryDate` aligns with tier-cycle revalidation
+// cadence (Tier-1: ~12 months; Tier-2: ~18 months; Tier-3: open).
+//
+// Approval is rejected (in `LocalModelRegistry.approveValidation`) if
+// the model has any open `severity: blocking` finding — Nadia's
+// independence boundary (Team/Nadia.md §15) is enforced at the registry
+// level, not as a soft signal.
+//
+// Replay-fold: latest-wins-per-key on `modelId` for the production-eligible
+// query; old approvals supersede on a fresh approval. `validationFindingsResolved`
+// is a list of finding ids the approval explicitly closed.
+// ---------------------------------------------------------------------------
+
+export const modelValidationApprovedPayloadSchema = z.object({
+  modelId: z.string().min(1),
+  /** Version being approved — must match a version the registry already holds for this model. */
+  version: z.string().min(1),
+  /** Strong identity of the approver. Convention: `agent:nadia` or `human:<email>`. */
+  approvedBy: z.string().min(1),
+  /** Finding ids resolved as part of this approval. Empty array = no findings to resolve. */
+  validationFindingsResolved: z.array(z.string().min(1)),
+  /**
+   * ISO 8601 date by which the approval lapses (next revalidation due).
+   * Past-expiry models are excluded from `productionEligible()`.
+   */
+  expiryDate: z.string().min(1),
+});
+
+export type ModelValidationApprovedPayload = z.infer<typeof modelValidationApprovedPayloadSchema>;
+
+export function makeModelValidationApproved(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ModelValidationApprovedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ModelValidationApproved",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: modelValidationApprovedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ModelValidationWithheld
+//
+// Emitted by Nadia when she withholds production approval. The model
+// stays in the registry but is not production-eligible; the `findings`
+// list captures the reasoned objections.
+//
+// Replay-fold: latest-wins-per-key on `modelId` — a subsequent approval
+// supersedes; a subsequent withhold updates the latest reason.
+// ---------------------------------------------------------------------------
+
+export const modelValidationWithheldPayloadSchema = z.object({
+  modelId: z.string().min(1),
+  /** Version the withhold applies to. */
+  version: z.string().min(1),
+  /** Strong identity of the withholder. Convention: `agent:nadia` or `human:<email>`. */
+  withheldBy: z.string().min(1),
+  /** One-line summary of why approval is withheld. */
+  reason: z.string().min(1),
+  /** Finding ids that drive the withhold (typically severity high/blocking). */
+  findings: z.array(z.string().min(1)),
+});
+
+export type ModelValidationWithheldPayload = z.infer<typeof modelValidationWithheldPayloadSchema>;
+
+export function makeModelValidationWithheld(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ModelValidationWithheldPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ModelValidationWithheld",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: modelValidationWithheldPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ValidationFindingRaised
+//
+// Emitted by Nadia when she raises a validation finding. Findings are
+// the unit currency of validation: blocking severity prevents production
+// approval; lower severities are tracked but advisory.
+//
+// Replay-fold: cumulative-fold over `findingId`. A `ValidationFindingClosed`
+// for the same id closes the finding.
+// ---------------------------------------------------------------------------
+
+export const validationFindingRaisedPayloadSchema = z.object({
+  /** Stable id for the finding. Convention: `finding:<model>:<short-slug>`. */
+  findingId: z.string().min(1),
+  /** The model the finding pertains to. */
+  modelId: z.string().min(1),
+  /** Strong identity of the raiser. Convention: `agent:nadia` or `human:<email>`. */
+  raisedBy: z.string().min(1),
+  /**
+   * Severity. `blocking` prevents production approval until the finding
+   * closes; `high` / `medium` / `low` are tracked but advisory.
+   */
+  severity: z.enum(["low", "medium", "high", "blocking"]),
+  /** One-line description of the finding. */
+  description: z.string().min(1),
+});
+
+export type ValidationFindingRaisedPayload = z.infer<typeof validationFindingRaisedPayloadSchema>;
+
+export function makeValidationFindingRaised(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ValidationFindingRaisedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ValidationFindingRaised",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: validationFindingRaisedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ValidationFindingClosed
+//
+// Emitted when a finding is closed (remediation evidence verified). Only
+// the original raiser, or another authorised validator, may close. The
+// registry's `closeFinding` enforces that the finding exists and is not
+// already closed; a duplicate close throws.
+//
+// Replay-fold: pair-coupled with `ValidationFindingRaised` on `findingId`.
+// ---------------------------------------------------------------------------
+
+export const validationFindingClosedPayloadSchema = z.object({
+  findingId: z.string().min(1),
+  /** Strong identity of the closer. Convention: `agent:nadia` or `human:<email>`. */
+  closedBy: z.string().min(1),
+  /** One-line description of the resolution. */
+  resolution: z.string().min(1),
+  /** ISO 8601 timestamp at which the finding was closed. */
+  closedAt: z.string().min(1),
+});
+
+export type ValidationFindingClosedPayload = z.infer<typeof validationFindingClosedPayloadSchema>;
+
+export function makeValidationFindingClosed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ValidationFindingClosedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ValidationFindingClosed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: validationFindingClosedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
 // ---------------------------------------------------------------------------
@@ -966,6 +1265,12 @@ export const TYPED_EVENT_TYPES = [
   "IdentityKeyRotated",
   "PermissionPolicyPublished",
   "BusDispatched",
+  "ModelSubmitted",
+  "ModelTierClassified",
+  "ModelValidationApproved",
+  "ModelValidationWithheld",
+  "ValidationFindingRaised",
+  "ValidationFindingClosed",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
