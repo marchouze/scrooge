@@ -35,6 +35,7 @@
     "agent:mira-citation-gate": "bun run runtime/run.ts --agent Mira --trigger citation-gate",
     "agent:anya-projection-refresh": "bun run runtime/run.ts --agent Anya --trigger projection-refresh",
     "agent:zara-mlro-supervision": "bun run runtime/run.ts --agent Zara --trigger mlro-supervision",
+    "agent:thandiwe-audit-committee-prep": "bun run runtime/run.ts --agent Thandiwe --trigger audit-committee-prep",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
