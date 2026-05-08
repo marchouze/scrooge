@@ -109,6 +109,10 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Eitan", "liquidity-snapshot", "scheduled", { cadenceHours: 24 }),
   entry("Saskia", "markets-readiness-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Bea", "accounting-readiness", "scheduled", { cadenceHours: 24 }),
+  entry("Yael", "tax-readiness", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Tomas", "payments-readiness", "scheduled", { cadenceHours: 24 }),
+  entry("Imani", "legal-readiness", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Ravi", "alm-readiness", "scheduled", { cadenceHours: 24 }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */
