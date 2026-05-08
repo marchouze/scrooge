@@ -30,6 +30,7 @@ import { join } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
 import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
+import { parsePolicyRegister } from "./policy-register";
 import type {
   AgentDeliverable,
   AgentMiniDashboard,
@@ -44,6 +45,7 @@ import type {
   OpenSeat,
   OwnerInboxItem,
   Person,
+  Policy,
   Principle,
   PrototypeStatus,
   ResolvedDecision,
@@ -385,32 +387,9 @@ function isHeaderRow(cells: string[], headerKeywords: readonly string[]): boolea
   return headerKeywords.some((k) => first === k.toLowerCase());
 }
 
-// source: Owner Inbox/2026-05-06_policy-register.md — count of policy rows
-//         in the 14 numbered domain sections only. Summary / sequencing /
-//         open-items / co-dependency sections re-list policies and would
-//         double-count.
-function countPolicies(policyRegister: string): number {
-  const lines = readLines(policyRegister);
-  let inDomainSection = false;
-  let n = 0;
-  for (const line of lines) {
-    const heading = line.match(/^## (.+)$/);
-    if (heading) {
-      inDomainSection = /^\d+\./.test(heading[1] ?? "");
-      continue;
-    }
-    if (!inDomainSection) continue;
-    const m = line.match(TABLE_ROW);
-    if (!m) continue;
-    const cells = (m[1] ?? "").split("|").map((c) => c.trim());
-    if (cells.length < 6) continue;
-    if (cells.every((c) => /^-+$|^:?-+:?$/.test(c) || c === "")) continue;
-    if (isHeaderRow(cells, ["Policy", "Topic"])) continue;
-    if (!cells[0]) continue;
-    n++;
-  }
-  return n;
-}
+// Note: policy-row counting / parsing now lives in `dashboard/policy-register.ts`
+// (`parsePolicyRegister`). The count flows from `policies.length` in
+// deriveState — single source of truth.
 
 // source: Regulations/_obligations-register.md — count of register rows.
 function countObligations(obligationsRegister: string): number {
@@ -1408,7 +1387,13 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const curated = readCurated(opts.sources.curated);
 
   const principles = parsePrinciples(opts.sources.claudeMd);
-  const policies = countPolicies(opts.sources.policyRegister);
+  // P1: parse the policy register into typed Policy[] entries on every tick.
+  // The count flows into bank.metrics.policies; the array surfaces as the
+  // top-level `policies` field for the policies-library page.
+  const policies: readonly Policy[] = parsePolicyRegister({
+    path: opts.sources.policyRegister,
+    obligationsRegister: opts.sources.obligationsRegister,
+  });
   const obligations = countObligations(opts.sources.obligationsRegister);
   const regs = regulationStats(opts.sources.regulationsIndex);
   const procs = procedureStats(opts.sources.proceduresIndex);
@@ -1539,7 +1524,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       cloudTarget: curated.bank.cloudTarget,
       metrics: {
         principles: principles.length,
-        policies,
+        policies: policies.length,
         obligations,
         instruments: regs.total,
         instrumentsAnalysed: regs.populated,
@@ -1558,6 +1543,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     inFlight,
     agents,
     ownerInboxFeed,
+    policies,
     prototype: curated.prototype,
     risks: curated.risks,
     findings: findingsSorted,
