@@ -113,6 +113,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Tomas", "payments-readiness", "scheduled", { cadenceHours: 24 }),
   entry("Imani", "legal-readiness", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Ravi", "alm-readiness", "scheduled", { cadenceHours: 24 }),
+  entry("Sade", "agentops-readiness", "scheduled", { cadenceHours: 24 * 7 }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */

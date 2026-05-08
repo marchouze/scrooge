@@ -7,7 +7,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "typecheck": "bunx tsc --noEmit",
-    "ci": "bun run typecheck && bun run lint && bun test && bun run citation-gate && bun run recon && bun run recon:dashboard && bun run recon:prose-duplication",
+    "ci": "bun run typecheck && bun run lint && bun test && bun run citation-gate && bun run recon && bun run recon:dashboard && bun run recon:prose-duplication && bun run recon:runtime-handler-sync && bun run recon:agent-spec",
     "scenario:hello": "bun run scenarios/01-hello-bank.ts",
     "scenario:onboard": "bun run scenarios/02-onboard-counterparty.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
@@ -16,6 +16,8 @@
     "recon:decisions": "bun run platform/recon/decision-event-recon.ts",
     "recon:dashboard": "bun run platform/recon/dashboard-derivation-recon.ts",
     "recon:prose-duplication": "bun run platform/recon/prose-duplication.ts",
+    "recon:runtime-handler-sync": "bun run platform/recon/runtime-handler-sync.ts",
+    "recon:agent-spec": "bun run platform/recon/agent-spec.ts",
     "dashboard": "bun run dashboard/server.ts",
     "agent:run": "bun run runtime/run.ts",
     "event-store:sync": "bun run scripts/event-store-sync.ts",
@@ -24,6 +26,7 @@
     "identity:issue": "bun run scripts/identity-issue.ts",
     "escalation:enforce": "bun run scripts/escalation-enforce.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
+    "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "agent:helena-risk-appetite-watch": "bun run runtime/run.ts --agent Helena --trigger risk-appetite-watch",
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",
@@ -48,6 +51,7 @@
     "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",
     "agent:imani-legal-readiness": "bun run runtime/run.ts --agent Imani --trigger legal-readiness",
     "agent:ravi-alm-readiness": "bun run runtime/run.ts --agent Ravi --trigger alm-readiness",
+    "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-08T07:46:41.192Z",
+  "asOf": "2026-05-08T07:50:05.922Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -1296,6 +1296,11 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-08",
+              "path": "Owner Inbox/2026-05-08_sade_agentops-readiness.md",
+              "title": "sade · agentops readiness"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_org-structure.md",
               "title": "org structure"
@@ -1306,13 +1311,13 @@
               "title": "core policies conduct hr"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-08"
         }
       ],
       "totalActive": 6,
       "totalRecentlyCompleted": 3,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 21
+      "totalRecentDeliverables": 22
     },
     {
       "name": "Camille",
@@ -1948,6 +1953,14 @@
       "summary": "Autonomous run of Saskia's weekly markets-readiness snapshot per `Team/Saskia.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Tenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
     },
     {
+      "filename": "2026-05-08_sade_agentops-readiness.md",
+      "path": "Owner Inbox/2026-05-08_sade_agentops-readiness.md",
+      "date": "2026-05-08",
+      "title": "Sade — AgentOps readiness snapshot, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Sade's weekly AgentOps-readiness snapshot per `Team/Sade.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Handler #15 in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING` — c…"
+    },
+    {
       "filename": "2026-05-08_rohan_risk-run.md",
       "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
       "date": "2026-05-08",
@@ -2074,13 +2087,6 @@
       "decisionRequired": false,
       "author": "Vera",
       "summary": "Wave-4 pipelines #10–#15 specified, extending Vera's CCM programme to test Principle-7 agent-discipline. #10–#13 implementable today; #14–#15 gated on Atlas's runtime substrate."
-    },
-    {
-      "filename": "2026-05-07_senna_state-of-platform-note-to-rashida.md",
-      "path": "Owner Inbox/2026-05-07_senna_state-of-platform-note-to-rashida.md",
-      "date": "2026-05-07",
-      "title": "State of the Security Platform — note to the CISO",
-      "decisionRequired": false
     }
   ],
   "prototype": {
@@ -2661,6 +2667,12 @@
       "trigger": "alm-readiness",
       "kind": "scheduled",
       "cadenceHours": 24
+    },
+    {
+      "agent": "Sade",
+      "trigger": "agentops-readiness",
+      "kind": "scheduled",
+      "cadenceHours": 168
     }
   ],
   "decisionComments": {
