@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/schema/posting-rule/v0.1",
+  "title": "Posting rule entry",
+  "description": "Typed object form of one posting rule in Bea's posting-rule register (per Team/Bea.md §11). A posting rule maps a typed event (postable product event) to one or more double-entry GL postings. Bea + Atlas co-own publication; each rule emits a PostingRulePublished event.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "eventType",
+    "preconditions",
+    "postings",
+    "version",
+    "status",
+    "citations"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^PR-[A-Z0-9]+-[0-9]{3}$",
+      "description": "Stable rule identifier. Convention: PR-<EVENT-MNEMONIC>-<NNN>."
+    },
+    "name": { "type": "string" },
+    "eventType": {
+      "type": "string",
+      "description": "The fully-qualified event type this rule fires on, e.g. 'TradePosted', 'FundingDrawn', 'PaymentSettled', 'AccrualBooked'. Resolves to a typed event schema in @platform/event-store."
+    },
+    "preconditions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Predicates over the event payload that the rule requires before firing. Multi-rule fan-out per event uses preconditions to disambiguate.",
+      "default": []
+    },
+    "postings": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["accountId", "side", "amountExpression", "currencyExpression"],
+        "additionalProperties": false,
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "pattern": "^ACC-[0-9]{4}-[0-9]{3}$",
+            "description": "Chart-of-accounts ID. Must resolve to an in-force account in `_chart-of-accounts.md`."
+          },
+          "side": { "type": "string", "enum": ["debit", "credit"] },
+          "amountExpression": {
+            "type": "string",
+            "description": "Expression over the event payload yielding the posting amount, e.g. 'event.amount.value'. Substrate-grade engine (planned, M2) parses this; today the expression is human-validated."
+          },
+          "currencyExpression": {
+            "type": "string",
+            "description": "Expression over the event payload yielding the ISO 4217 currency, e.g. 'event.amount.ccy'. Per Principle 5, no currency default — the rule fails if the expression returns null."
+          },
+          "entityExpression": {
+            "type": "string",
+            "description": "Expression yielding the legal-entity ID. Defaults to event.entityId.",
+            "default": "event.entityId"
+          },
+          "narration": { "type": "string" }
+        }
+      },
+      "description": "Two or more postings (debit + credit, balanced). Multi-leg postings (e.g., trade with FX leg) are expressed as additional balanced pairs."
+    },
+    "version": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+$" },
+    "status": { "type": "string", "enum": ["draft", "in-force", "deprecated"] },
+    "citations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "required": ["type", "regulationId"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "const": "regulation" },
+              "regulationId": { "type": "string", "pattern": "^ORG-[A-Z0-9]+-[0-9]+$" },
+              "note": { "type": "string" }
+            }
+          },
+          {
+            "required": ["type", "policyRef"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "const": "policy" },
+              "policyRef": { "type": "string" },
+              "section": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          },
+          {
+            "required": ["type", "ifrsRef"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "const": "ifrs" },
+              "ifrsRef": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "approver": {
+          "type": "string",
+          "description": "Bea (within delegation) / Camille (above materiality) / AC (material policy change)."
+        },
+        "approvedOn": { "type": "string", "format": "date" },
+        "decisionRef": { "type": "string" }
+      }
+    }
+  }
+}
