@@ -16,11 +16,13 @@
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
+import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
+import rohanRiskRun from "./agents/rohan-risk-run";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
@@ -34,12 +36,14 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "atlas:substrate-state": atlasSubstrateState,
   "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
+  "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
   "anya:projection-drift": anyaProjectionDrift,
   "anya:projection-refresh": anyaProjectionRefresh,
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
   "scrooge:ceo-decision-record": scroogeCeoDecisionRecord,
   "scrooge:follow-on-router": scroogeFollowOnRouter,
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
+  "rohan:risk-run": rohanRiskRun,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
   "senna:security-substrate-state": sennaSecuritySubstrateState,

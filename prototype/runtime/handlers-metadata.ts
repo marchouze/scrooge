@@ -82,6 +82,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Atlas", "substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Helena", "risk-appetite-watch", "scheduled", { cadenceHours: 24 }),
   entry("Devon", "operational-resilience-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Camille", "financial-position-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Anya", "projection-drift", "scheduled", { cadenceHours: 24 }),
   entry("Anya", "projection-refresh", "event-driven", {
     subscribesTo: [
@@ -97,6 +98,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     subscribesTo: ["CeoDecision"],
   }),
   entry("Owen", "governance-cycle-prep", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Rohan", "risk-run", "scheduled", { cadenceHours: 24 }),
   entry("Mira", "obligations-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Mira", "citation-gate", "on-request"),
   entry("Senna", "security-substrate-state", "scheduled", { cadenceHours: 24 * 7 }),

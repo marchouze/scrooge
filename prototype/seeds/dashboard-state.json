@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-08T05:19:08.029Z",
+  "asOf": "2026-05-08T05:31:01.757Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -648,18 +648,6 @@
         "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md"
       ],
       "note": "Recommendation: Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD)."
-    },
-    {
-      "id": "D-BRAND-DESIGN-HIRE",
-      "title": "Role brief — Brand & design lead",
-      "category": "near-term",
-      "owner": "PAX",
-      "trigger": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
-      "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md"
-      ],
-      "note": "Recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere."
     }
   ],
   "decisionsResolved": [
@@ -885,6 +873,11 @@
       "recentDeliverables": [
         {
           "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_scrooge_inbox-hygiene.md",
+          "title": "scrooge · inbox hygiene"
+        },
+        {
+          "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
           "title": "scrooge · ceo decision record · d fleet rollout sequencing"
         },
@@ -902,11 +895,6 @@
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_ceo-decisions_fx-sub-decisions.md",
           "title": "ceo decisions · fx sub decisions"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_ceo-decision_samos-non-clearing.md",
-          "title": "ceo decision · samos non clearing"
         }
       ],
       "lastActivityAt": "2026-05-08",
@@ -917,20 +905,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-BRAND-DESIGN-HIRE",
-              "title": "Role brief — Brand & design lead",
-              "category": "near-term",
-              "owner": "PAX",
-              "trigger": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
-              "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md"
-              ],
-              "note": "Recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere."
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-07",
@@ -989,7 +964,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 11
     },
     {
@@ -1059,18 +1034,23 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-08",
+              "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
+              "title": "rohan · risk run"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_core-policies-risk.md",
               "title": "core policies risk"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-08"
         }
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 1,
-      "totalRecentDeliverables": 5
+      "totalRecentDeliverables": 6
     },
     {
       "name": "Devon",
@@ -1661,6 +1641,11 @@
           ],
           "recentDeliverables": [
             {
+              "date": "2026-05-08",
+              "path": "Owner Inbox/2026-05-08_anya_projection-drift.md",
+              "title": "anya · projection drift"
+            },
+            {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_anya_projection-drift.md",
               "title": "anya · projection drift"
@@ -1676,7 +1661,7 @@
               "title": "reporting capability spec"
             }
           ],
-          "lastActivityAt": "2026-05-07"
+          "lastActivityAt": "2026-05-08"
         },
         {
           "name": "Imani",
@@ -1822,7 +1807,7 @@
       "totalActive": 10,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 5,
-      "totalRecentDeliverables": 18
+      "totalRecentDeliverables": 19
     },
     {
       "name": "Camille",
@@ -1850,12 +1835,17 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_camille_financial-position-snapshot.md",
+          "title": "camille · financial position snapshot"
+        },
+        {
           "date": "2026-05-06",
           "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
           "title": "core policies finance"
         }
       ],
-      "lastActivityAt": "2026-05-06",
+      "lastActivityAt": "2026-05-08",
       "subordinates": [
         {
           "name": "Bea",
@@ -1893,7 +1883,7 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 1,
-      "totalRecentDeliverables": 3
+      "totalRecentDeliverables": 4
     },
     {
       "name": "Eitan",
@@ -2451,12 +2441,28 @@
       "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
     },
     {
+      "filename": "2026-05-08_scrooge_inbox-hygiene.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_inbox-hygiene.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — inbox hygiene, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
+    },
+    {
       "filename": "2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
       "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
       "date": "2026-05-08",
       "title": "Scrooge — CEO decision record: D-FLEET-ROLLOUT-SEQUENCING, 2026-05-08",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-08_rohan_risk-run.md",
+      "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
+      "date": "2026-05-08",
+      "title": "Rohan — daily risk run, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the enginee…"
     },
     {
       "filename": "2026-05-08_helena_risk-appetite-watch.md",
@@ -2473,6 +2479,14 @@
       "title": "Devon — operational-resilience snapshot, 2026-05-08",
       "decisionRequired": false,
       "summary": "Autonomous run of Devon's weekly operational-resilience snapshot per `Team/Devon.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Second handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUEN…"
+    },
+    {
+      "filename": "2026-05-08_camille_financial-position-snapshot.md",
+      "path": "Owner Inbox/2026-05-08_camille_financial-position-snapshot.md",
+      "date": "2026-05-08",
+      "title": "Camille — financial-position snapshot, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Camille's weekly financial-position-snapshot per `Team/Camille.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fourth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUEN…"
     },
     {
       "filename": "2026-05-08_atlas_substrate-state.md",
@@ -2496,6 +2510,14 @@
       "decisionRecommendation": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
       "decisionOwner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
       "decisionStatus": "resolved"
+    },
+    {
+      "filename": "2026-05-08_anya_projection-drift.md",
+      "path": "Owner Inbox/2026-05-08_anya_projection-drift.md",
+      "date": "2026-05-08",
+      "title": "Anya — projection drift, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Anya's daily projection-drift sweep per `Team/Anya.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop."
     },
     {
       "filename": "2026-05-07_vera_overnight-recon.md",
@@ -2620,48 +2642,6 @@
       "decisionRecommendation": "Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD).",
       "decisionOwner": "Saskia (governance) · Kai (engineering)",
       "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-07_saskia-kai_fx-product-family.md",
-      "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
-      "date": "2026-05-07",
-      "title": "FX product family — variants, compositions, build placement",
-      "decisionRequired": false,
-      "author": "Saskia · Kai",
-      "summary": "FX added to the canonical product taxonomy. Spot, forward, swap, NDF, vanilla and exotic options, cross-currency swap. Zero new schema primitives, zero new lifecycle event types — every variant is a composition of the ten CDM primitives over the existing 24 markets events. M3–M5 phase placement; SA FinSurv compliance front-and-centre. Markets-vs-treasury book boundary preserved."
-    },
-    {
-      "filename": "2026-05-07_procedure-audit-actor-and-citation.md",
-      "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
-      "date": "2026-05-07",
-      "title": "Procedure audit — actor + Principle-2 citation for human-default steps",
-      "decisionRequired": false,
-      "author": "Vera · Scrooge",
-      "summary": "All 11 populated procedures audited under Wave-4 #11/#12. 6 GREEN, 5 AMBER, 0 RED. Five findings (F-1 to F-5) routed to named owners; two GREEN-template procedures named as the P2-conformant idiom for the rest to adopt."
-    },
-    {
-      "filename": "2026-05-07_persona-agent-spec-rollout.md",
-      "path": "Owner Inbox/2026-05-07_persona-agent-spec-rollout.md",
-      "date": "2026-05-07",
-      "title": "Persona-file upgrade pass — agent-spec rollout",
-      "decisionRequired": false,
-      "author": "Scrooge",
-      "summary": "Agent-spec template authored; vanguard four personas (Vera, Atlas, Mira, Helena) upgraded; remaining 22 sequenced into four tranches. Reports-to corrections made for Atlas and Mira."
-    },
-    {
-      "filename": "2026-05-07_pax_brand-design-role-brief.md",
-      "path": "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md",
-      "date": "2026-05-07",
-      "title": "Role brief — Brand & design lead",
-      "decisionRequired": true,
-      "author": "PAX",
-      "summary": "First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.",
-      "decisionId": "D-BRAND-DESIGN-HIRE",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.",
-      "decisionRecommendation": "Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere.",
-      "decisionOwner": "PAX",
-      "decisionStatus": "open"
     }
   ],
   "prototype": {
@@ -2746,6 +2726,12 @@
       "cadenceHours": 168
     },
     {
+      "agent": "Camille",
+      "trigger": "financial-position-snapshot",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
       "agent": "Anya",
       "trigger": "projection-drift",
       "kind": "scheduled",
@@ -2786,6 +2772,12 @@
       "trigger": "governance-cycle-prep",
       "kind": "scheduled",
       "cadenceHours": 168
+    },
+    {
+      "agent": "Rohan",
+      "trigger": "risk-run",
+      "kind": "scheduled",
+      "cadenceHours": 24
     },
     {
       "agent": "Mira",
