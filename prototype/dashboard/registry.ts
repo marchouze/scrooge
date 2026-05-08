@@ -26,8 +26,29 @@ export function loadState(path: string = REGISTRY_PATH): DashboardState {
   return JSON.parse(raw) as DashboardState;
 }
 
+// Run biome's formatter over the persisted cache. JSON.stringify produces
+// expanded multi-line arrays that violate biome's compact-array preference
+// and re-introduce a lint regression every time saveState runs (server boot,
+// fs.watch tick, CEO-decision write). The cache is derived (P1) and CI-green
+// must not require a manual cleanup pass after every dashboard tick (P3 — no
+// manual steps without justification).
+function formatCache(path: string): void {
+  const proc = Bun.spawnSync({
+    cmd: ["bunx", "@biomejs/biome", "format", "--write", path],
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (!proc.success) {
+    // Failing closed: the file is still valid JSON, just not lint-clean.
+    // The next recon:dashboard / lint run will surface the drift.
+    const stderr = new TextDecoder().decode(proc.stderr);
+    console.warn(`[registry] biome format failed for ${path}: ${stderr.trim()}`);
+  }
+}
+
 export function saveState(state: DashboardState, path: string = REGISTRY_PATH): void {
   writeFileSync(path, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+  formatCache(path);
 }
 
 /**
