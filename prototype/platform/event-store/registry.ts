@@ -43,6 +43,7 @@ import {
   agentEscalationOverduePayloadSchema,
   agentEscalationPayloadSchema,
   agentRegisteredPayloadSchema,
+  busDispatchedPayloadSchema,
   decisionCommentPayloadSchema,
   identityKeyRotatedPayloadSchema,
   permissionPolicyPublishedPayloadSchema,
@@ -291,6 +292,16 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     citationsHint: ["ORG-CY-01", "ORG-PR-18"],
     source: "A0 freeze §4 #15; A2.1 scheduler — platform/scheduler/scheduler.ts",
+  },
+  {
+    type: "BusDispatched",
+    class: "runtime",
+    payloadSchema: busDispatchedPayloadSchema,
+    issuer: "substrate",
+    subscribers: ["Atlas", "Vera"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01"],
+    source: "Atlas runtime spec §3.3; A2.2 bus — platform/event-trigger-bus/bus.ts",
   },
 ];
 

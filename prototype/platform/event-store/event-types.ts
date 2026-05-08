@@ -875,6 +875,77 @@ export function makePermissionPolicyPublished(args: {
 }
 
 // ---------------------------------------------------------------------------
+// BusDispatched
+//
+// Emitted by the event-trigger bus (A2.2; Atlas spec §3.3) every time it
+// invokes an event-driven handler in response to an event the handler
+// subscribes to. The pair `(eventId, handlerKey)` is the bus's idempotency
+// key — before invoking a handler, the bus reads the BusDispatched stream
+// and skips any pair already recorded.
+//
+// `handlerKey` is the canonical `<lowercased-agent>:<trigger>` from
+// `runtime/handlers-metadata.ts` so the audit trail joins cleanly to the
+// metadata registry. `eventId` is the source event's `event_id`, not the
+// store-internal sequence — sequence numbers aren't exposed on the Event
+// envelope, but `event_id` is globally unique and stable.
+//
+// Replay-fold: append-only-audit. The pair is the idempotency key; we
+// never overwrite a prior dispatch record. A failed handler invocation
+// still records a BusDispatched (the dispatch happened — outcome is on
+// the AgentRunStarted/Failed lifecycle events the runtime emits).
+// ---------------------------------------------------------------------------
+
+export const busDispatchedPayloadSchema = z.object({
+  /**
+   * The source event's `event_id` (UUID). The bus's dedup key is
+   * `(eventId, handlerKey)`; using event_id rather than sequence means
+   * the dedup key is stable across stores that re-key on import.
+   */
+  eventId: z.string().min(1),
+  /** Source event's `type`. Recorded for audit / dashboard grouping. */
+  eventType: z.string().min(1),
+  /**
+   * The handler that was invoked. Convention: `<lowercased-agent>:<trigger>`
+   * matching `runtime/handlers-metadata.ts`'s composite key.
+   */
+  handlerKey: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9-]+:[a-z0-9-]+$/, {
+      message: "handlerKey must match `<lowercased-agent>:<trigger>` (a-z, 0-9, -)",
+    }),
+  /** ISO 8601 — when the bus invoked the handler. */
+  dispatchedAt: z.string().min(1),
+  /**
+   * Outcome flag. `ok` when the handler returned without throwing;
+   * `failed` when the handler threw (the bus emits a SubstrateAlert
+   * separately; this flag is for downstream audit-counting convenience).
+   */
+  outcome: z.enum(["ok", "failed"]),
+});
+
+export type BusDispatchedPayload = z.infer<typeof busDispatchedPayloadSchema>;
+
+export function makeBusDispatched(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BusDispatchedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BusDispatched",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: busDispatchedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
 // ---------------------------------------------------------------------------
@@ -894,6 +965,7 @@ export const TYPED_EVENT_TYPES = [
   "SubstrateAlert",
   "IdentityKeyRotated",
   "PermissionPolicyPublished",
+  "BusDispatched",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
