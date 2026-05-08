@@ -363,6 +363,66 @@ export interface DecisionDrillDown {
   citations: readonly string[];
 }
 
+/**
+ * Source classification — which kind of upstream authority a policy
+ * implements. Per CLAUDE.md Principle 6: "(Regulation OR Bank Objective)
+ * → Policy → Procedure → System Capability". A policy may carry both
+ * sources (e.g. Capital Management Policy implements Banks Act regulatory
+ * minima AND the bank's own RAS B2 internal buffer).
+ */
+export type PolicySource = "REGULATORY" | "OBJECTIVE";
+
+/**
+ * Bind classification — when a policy's underlying obligation actually
+ * binds the bank. Per `project_rules_bind_at_commencement` (2026-05-07):
+ * banking-specific rules apply from licence-day or commencement-of-trading,
+ * not from the build-phase. The four-bucket taxonomy lets the dashboard
+ * surface "preparing to comply" vs "in force" without conflating them.
+ */
+export type PolicyBind =
+  | "CORPORATE-BIND"
+  | "LICENCE-BIND"
+  | "COMMENCEMENT-BIND"
+  | "CONDITIONAL-BIND";
+
+/**
+ * Normalised policy status — verbatim contents in `statusRaw`. Anything
+ * outside the five canonical values surfaces as "OTHER" so the dashboard
+ * can render a fall-back style without throwing.
+ */
+export type PolicyStatus = "IN FORCE" | "EXISTS" | "DRAFTING" | "PLANNED" | "BOARD-RES" | "OTHER";
+
+/**
+ * A policy entry parsed from `Owner Inbox/2026-05-06_policy-register.md`,
+ * cross-referenced against `Regulations/_obligations-register.md` for
+ * `linkedObligations[]`. Contract surface for the policies-library page.
+ */
+export interface Policy {
+  /** Stable id: `pol-<domainNumber>-<slug>`, e.g. `pol-2-credit-risk-policy`. */
+  id: string;
+  /** Display name with the leading `★` MVP marker stripped. */
+  name: string;
+  /** "N. Domain name" string from the section heading. */
+  domain: string;
+  owner: string;
+  approval: string;
+  cadence: string;
+  /** Verbatim citation cell content. */
+  citation: string;
+  /** Source mix — REGULATORY, OBJECTIVE, both, or empty when neither matches. */
+  sources: readonly PolicySource[];
+  /** Bind state(s) — CORPORATE / LICENCE / COMMENCEMENT / CONDITIONAL. */
+  binds: readonly PolicyBind[];
+  /** Normalised status enum (best-effort match against the canonical five). */
+  status: PolicyStatus;
+  /** Verbatim status cell, including any parenthetical context. */
+  statusRaw: string;
+  /** True if the source register prefixed the policy name with `★`. */
+  mvp: boolean;
+  /** ORG-* obligation IDs whose Fulfilment-policy column names this policy. */
+  linkedObligations: readonly string[];
+}
+
 export interface DashboardState {
   asOf: string;
   bank: BankSummary;
@@ -374,6 +434,13 @@ export interface DashboardState {
   inFlight: readonly InFlightItem[];
   agents: readonly AgentMiniDashboard[];
   ownerInboxFeed: readonly OwnerInboxItem[];
+  /**
+   * Full policy library, parsed from the policy register and cross-
+   * referenced against the obligations register. The frontend's
+   * /policies.html page reads this directly. `bank.metrics.policies`
+   * preserves the count for the bank-overview card.
+   */
+  policies: readonly Policy[];
   prototype: PrototypeStatus;
   risks: readonly string[];
   findings: readonly FindingSummary[];
