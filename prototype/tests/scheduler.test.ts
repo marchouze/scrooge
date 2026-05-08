@@ -1,0 +1,325 @@
+// tests/scheduler.test.ts
+//
+// Unit tests for A2.1 — the scheduler substrate.
+//
+// Asserts:
+//   - The cron parser handles the 16 expressions currently in use across
+//     `.github/workflows/agent-runtime-*.yml`, plus standard edge cases
+//     (literals, wildcards, steps, ranges, lists, textual day-of-week).
+//   - `nextFireAfter` produces sensible next-fire times: end-of-month
+//     wrap, day-of-week filter, hour/minute granularity.
+//   - Inactivity-SLA parser handles the persona §6 free-text shapes.
+//   - SA holiday calendar honours the fixed-date list and the Sunday-
+//     shift rule.
+//   - `LocalScheduler.tick()` is idempotent across re-invocation (no
+//     duplicate ScheduledTrigger events).
+//   - `LocalScheduler.inactivityCheck()` alerts when no events recorded.
+//
+// Author: Atlas (A2.1)
+
+import { describe, expect, it } from "bun:test";
+
+import { EventStore } from "../platform/event-store/store";
+import { isPublicHoliday, shiftPastHolidays } from "../platform/scheduler/calendar";
+import { nextFireAfter, parseCron } from "../platform/scheduler/cron-parse";
+import {
+  LocalScheduler,
+  inMemorySchedulerSource,
+  parseInactivitySlaHours,
+} from "../platform/scheduler/scheduler";
+
+describe("cron-parse — workflow expressions", () => {
+  // Mirror of the 16 cron expressions across .github/workflows/agent-runtime-*.yml
+  // as of 2026-05-08. These MUST parse without exception.
+  const WORKFLOW_CRONS: string[] = [
+    "13 2 * * *", // Vera
+    "17 3 * * *", // Anya
+    "19 6 * * 1", // Atlas (Monday)
+    "23 5 * * MON", // Devon (Monday textual)
+    "27 4 * * *", // Scrooge inbox-hygiene
+    "29 7 * * 3", // Mira obligations
+    "30 4 * * *", // Helena
+    "30 5 * * MON", // Zara
+    "31 7 * * 2", // Owen
+    "37 7 * * 4", // Senna
+    "41 6 * * MON", // Camille
+    "43 3 * * *", // Rohan
+    "47 7 * * 2", // Thandiwe
+    "49 7 * * 4", // Rashida
+    "51 7 * * 3", // Iris
+    "53 6 * * *", // Eitan
+  ];
+
+  it("parses every workflow cron expression", () => {
+    for (const expr of WORKFLOW_CRONS) {
+      const parsed = parseCron(expr);
+      expect(parsed.raw).toBe(expr);
+      // Sanity: the next fire after 'now' is in the future.
+      const next = nextFireAfter(parsed, new Date("2026-05-08T00:00:00Z"));
+      expect(next.getTime()).toBeGreaterThan(Date.parse("2026-05-08T00:00:00Z"));
+    }
+  });
+});
+
+describe("cron-parse — syntax", () => {
+  it("supports literals", () => {
+    const p = parseCron("13 2 * * *");
+    expect(p.minute.values).toEqual([13]);
+    expect(p.hour.values).toEqual([2]);
+    expect(p.dayOfMonthIsWildcard).toBe(true);
+  });
+
+  it("supports wildcards", () => {
+    const p = parseCron("* * * * *");
+    expect(p.minute.values.length).toBe(60);
+    expect(p.dayOfMonthIsWildcard).toBe(true);
+    expect(p.dayOfWeekIsWildcard).toBe(true);
+  });
+
+  it("supports step values", () => {
+    const p = parseCron("*/5 * * * *");
+    expect(p.minute.values).toEqual([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+  });
+
+  it("supports ranges", () => {
+    const p = parseCron("0 9-17 * * *");
+    expect(p.hour.values).toEqual([9, 10, 11, 12, 13, 14, 15, 16, 17]);
+  });
+
+  it("supports lists", () => {
+    const p = parseCron("0 9,12,17 * * *");
+    expect(p.hour.values).toEqual([9, 12, 17]);
+  });
+
+  it("supports textual day-of-week", () => {
+    const p = parseCron("0 0 * * MON");
+    expect(p.dayOfWeek.values).toEqual([1]);
+  });
+
+  it("supports textual month aliases", () => {
+    const p = parseCron("0 0 1 JAN *");
+    expect(p.month.values).toEqual([1]);
+  });
+
+  it("rejects expressions with the wrong field count", () => {
+    expect(() => parseCron("0 0 * *")).toThrow();
+    expect(() => parseCron("0 0 * * * *")).toThrow();
+  });
+
+  it("rejects out-of-range values", () => {
+    expect(() => parseCron("60 0 * * *")).toThrow(); // minute > 59
+    expect(() => parseCron("0 24 * * *")).toThrow(); // hour > 23
+  });
+});
+
+describe("cron-parse — nextFireAfter", () => {
+  it("produces the next minute boundary for daily schedules", () => {
+    const p = parseCron("13 2 * * *");
+    // From 2026-05-08T01:00:00Z, the next is 2026-05-08T02:13:00Z.
+    const next = nextFireAfter(p, new Date("2026-05-08T01:00:00Z"));
+    expect(next.toISOString()).toBe("2026-05-08T02:13:00.000Z");
+  });
+
+  it("rolls to next day when current day's slot has passed", () => {
+    const p = parseCron("13 2 * * *");
+    const next = nextFireAfter(p, new Date("2026-05-08T03:00:00Z"));
+    expect(next.toISOString()).toBe("2026-05-09T02:13:00.000Z");
+  });
+
+  it("respects day-of-week constraints", () => {
+    const p = parseCron("19 6 * * 1"); // Mondays only
+    // 2026-05-08 is a Friday; the next Monday is 2026-05-11.
+    const next = nextFireAfter(p, new Date("2026-05-08T00:00:00Z"));
+    expect(next.getUTCDay()).toBe(1);
+    expect(next.toISOString()).toBe("2026-05-11T06:19:00.000Z");
+  });
+
+  it("respects textual day-of-week (MON)", () => {
+    const p = parseCron("23 5 * * MON");
+    const next = nextFireAfter(p, new Date("2026-05-08T00:00:00Z"));
+    expect(next.toISOString()).toBe("2026-05-11T05:23:00.000Z");
+  });
+
+  it("crosses month boundaries", () => {
+    const p = parseCron("0 0 1 * *");
+    const next = nextFireAfter(p, new Date("2026-05-15T12:00:00Z"));
+    expect(next.toISOString()).toBe("2026-06-01T00:00:00.000Z");
+  });
+
+  it("strictly greater-than: a fire-time exactly equal to from is not returned", () => {
+    const p = parseCron("13 2 * * *");
+    const exact = new Date("2026-05-08T02:13:00Z");
+    const next = nextFireAfter(p, exact);
+    expect(next.getTime()).toBeGreaterThan(exact.getTime());
+  });
+});
+
+describe("calendar — SA holidays", () => {
+  it("identifies fixed-date public holidays", () => {
+    expect(isPublicHoliday(new Date("2026-01-01T00:00:00Z"))).toBe(true); // New Year
+    expect(isPublicHoliday(new Date("2026-04-27T00:00:00Z"))).toBe(true); // Freedom Day
+    expect(isPublicHoliday(new Date("2026-12-25T00:00:00Z"))).toBe(true); // Christmas
+  });
+
+  it("returns false for ordinary weekdays", () => {
+    expect(isPublicHoliday(new Date("2026-05-08T00:00:00Z"))).toBe(false);
+  });
+
+  it("Sunday-shift: Day of Goodwill 2027 falls on Sunday — observed Monday", () => {
+    // Dec 25 2027 is Saturday (Christmas); Dec 26 is Sunday (Day of
+    // Goodwill — falls on Sunday, observed on Monday); Dec 27 is Monday
+    // (the observed-on day).
+    expect(isPublicHoliday(new Date("2027-12-25T00:00:00Z"))).toBe(true); // Christmas
+    expect(isPublicHoliday(new Date("2027-12-27T00:00:00Z"))).toBe(true); // observed shift
+  });
+
+  it("a Sunday-on-holiday itself is not a public holiday", () => {
+    // 2027-12-26 (Sunday) — Day of Goodwill on its statutory date. The
+    // function returns false on the Sunday itself (Sundays aren't
+    // business days; the public-holiday observation moves to Monday).
+    expect(isPublicHoliday(new Date("2027-12-26T00:00:00Z"))).toBe(false);
+  });
+
+  it("shiftPastHolidays moves a holiday-stamped date forward", () => {
+    const shifted = shiftPastHolidays(new Date("2026-12-25T06:00:00Z"));
+    // 2026-12-25 (Friday) is Christmas; 2026-12-26 (Saturday) is Day of Goodwill.
+    // So shift jumps to 2026-12-27 (Sunday). Sunday is not a public-holiday
+    // unless the calendar declares it (we don't skip weekends in the
+    // default skipWeekends=false call), so this lands on Sunday 27.
+    expect(shifted.toISOString()).toBe("2026-12-27T06:00:00.000Z");
+  });
+});
+
+describe("inactivity-SLA parser", () => {
+  it("parses 'every 24h'", () => {
+    expect(parseInactivitySlaHours("Daily run; quiet > 24h is a substrate alert.")).toBe(24);
+  });
+
+  it("parses 'every 7 days'", () => {
+    expect(
+      parseInactivitySlaHours("Weekly attestation; quiet > 7 days is a substrate alert."),
+    ).toBe(168);
+  });
+
+  it("parses 'every 8 days' as the larger of two values", () => {
+    // Persona text often has both "every 7 days" and "quiet > 8 days";
+    // we take the larger.
+    expect(
+      parseInactivitySlaHours(
+        "Weekly snapshot must produce event every 7 days; quiet > 8 days is a substrate alert.",
+      ),
+    ).toBe(192);
+  });
+
+  it("parses 'every 30 minutes'", () => {
+    expect(parseInactivitySlaHours("Checkpoint every 30 minutes during trading hours.")).toBe(0.5);
+  });
+
+  it("returns undefined when no parseable token", () => {
+    expect(
+      parseInactivitySlaHours("No hard inactivity SLA — legitimately silent."),
+    ).toBeUndefined();
+  });
+});
+
+describe("LocalScheduler — tick", () => {
+  function newStore(): EventStore {
+    return new EventStore(":memory:");
+  }
+
+  it("emits ScheduledTrigger events for due fire-times", () => {
+    const store = newStore();
+    const source = inMemorySchedulerSource({
+      cronMap: { "vera:overnight-recon": "13 2 * * *" },
+      handlers: [{ agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 }],
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    // Tick at 03:00Z. The scheduler look-back window is 7 days, so on
+    // first invocation it catches up on the 7 daily fire-times that
+    // pre-date the tick. That's the expected catch-up behaviour after
+    // a substrate gap; in steady-state the tick runs frequently and
+    // this lands on 0–1 firings per tick.
+    const result = sched.tick(new Date("2026-05-08T03:00:00Z"));
+    expect(result.firings.length).toBe(7);
+    // Most recent firing is today's 02:13Z slot.
+    const today = result.firings.find((f) => f.scheduledFor === "2026-05-08T02:13:00.000Z");
+    expect(today).toBeDefined();
+    expect(today?.agentUrn).toBe("agent:vera");
+    expect(today?.delayMs).toBeGreaterThan(0);
+  });
+
+  it("subsequent tick (no new fire-times) emits zero firings — steady-state idempotent", () => {
+    const store = newStore();
+    const source = inMemorySchedulerSource({
+      cronMap: { "vera:overnight-recon": "13 2 * * *" },
+      handlers: [{ agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 }],
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    const at = new Date("2026-05-08T03:00:00Z");
+    const first = sched.tick(at);
+    expect(first.firings.length).toBe(7);
+    const second = sched.tick(at);
+    expect(second.firings.length).toBe(0);
+    // No duplicate ScheduledTriggers were appended.
+    let count = 0;
+    for (const _e of store.replay({ type: "ScheduledTrigger" })) count++;
+    expect(count).toBe(7);
+  });
+
+  it("skips public holidays — emits with holidayShiftedFrom", () => {
+    const store = newStore();
+    // Daily 06:00Z. New Year's Day 2027 is a Friday.
+    const source = inMemorySchedulerSource({
+      cronMap: { "atlas:test-trigger": "0 6 * * *" },
+      handlers: [{ agent: "Atlas", trigger: "test-trigger", cadenceHours: 24 }],
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2027-01-01T00:00:00Z"));
+    // Tick well into Jan 2 (so any shifted fire from Jan 1 would have
+    // landed already).
+    const result = sched.tick(new Date("2027-01-02T12:00:00Z"));
+    // The Jan 1 fire should have shifted to Jan 2.
+    const shifted = result.firings.find((f) => f.holidayShiftedFrom !== undefined);
+    expect(shifted).toBeDefined();
+    expect(shifted?.holidayShiftedFrom).toBe("2027-01-01T06:00:00.000Z");
+  });
+});
+
+describe("LocalScheduler — inactivityCheck", () => {
+  it("emits SubstrateAlert when no events for an agent past SLA", () => {
+    const store = new EventStore(":memory:");
+    const source = inMemorySchedulerSource({
+      cronMap: { "vera:overnight-recon": "13 2 * * *" },
+      handlers: [{ agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 }],
+      slaForAgent: (a) => (a === "vera" ? 24 : undefined),
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    const result = sched.inactivityCheck(new Date("2026-05-08T12:00:00Z"));
+    expect(result.findings.length).toBe(1);
+    expect(result.findings[0]?.agentUrn).toBe("agent:vera");
+    // Verify SubstrateAlert recorded.
+    let count = 0;
+    for (const _e of store.replay({ type: "SubstrateAlert" })) count++;
+    expect(count).toBe(1);
+  });
+
+  it("is idempotent — does not double-emit alert with same alertId", () => {
+    const store = new EventStore(":memory:");
+    const source = inMemorySchedulerSource({
+      cronMap: { "vera:overnight-recon": "13 2 * * *" },
+      handlers: [{ agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 }],
+      slaForAgent: (a) => (a === "vera" ? 24 : undefined),
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    const at = new Date("2026-05-08T12:00:00Z");
+    sched.inactivityCheck(at);
+    sched.inactivityCheck(at);
+    let count = 0;
+    for (const _e of store.replay({ type: "SubstrateAlert" })) count++;
+    expect(count).toBe(1);
+  });
+});
