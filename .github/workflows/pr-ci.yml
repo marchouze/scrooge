@@ -1,0 +1,72 @@
+# PR CI gate — runs `bun run ci` on every pull request to main.
+#
+# Why this exists:
+#   Until 2026-05-08, PR-level CI was enforced only by local `bun run ci`.
+#   That broke down twice in one session:
+#     - rescue commits 61f45c8 / d672fa9 / fb21d69 / 9b69c5d / c441e40
+#       landed with typecheck + lint failures on main;
+#     - PR #14 ("restore CI green on main") missed biome formatting errors
+#       in prototype/platform/event-store/event-types.ts and
+#       prototype/tests/legacy-fanout-shadowed.test.ts that came in via
+#       PRs #11 and #12 and only surfaced on the PR #10 rebase.
+#
+# Citations:
+#   - CLAUDE.md Principle 3 (cloud-native; nothing manual without
+#     justification — local-only `bun run ci` is a manual step that has
+#     now failed twice in one session).
+#   - CLAUDE.md Principle 4 (security designed in from the start; secure
+#     SDLC explicitly includes an automated CI gate before merge).
+#
+# Branch protection:
+#   This workflow registers a check named "ci". To make it a *required*
+#   check on `main`, the repo admin must enable it under
+#     Settings → Branches → main → Branch protection rule
+#       → Require status checks to pass before merging
+#       → add "ci" (job id) to the list.
+#   Branch protection rules are not modifiable from a workflow file, so
+#   this step is manual-by-necessity (registered as an exception under
+#   Principle 3).
+#
+# Concurrency:
+#   Per-workflow, per-ref group with cancel-in-progress = true. New pushes
+#   to the same PR branch cancel the earlier in-flight run; different PRs
+#   stay independent. This follows the memory note
+#   `feedback_github_actions_concurrency.md`: never use a shared group
+#   (effective queue depth 1, cancels queued runs).
+
+name: PR CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: prototype
+        run: bun install --frozen-lockfile
+
+      - name: Run CI (typecheck, lint, tests, recon)
+        working-directory: prototype
+        run: bun run ci
