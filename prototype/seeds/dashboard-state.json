@@ -1,12 +1,20 @@
 {
-  "asOf": "2026-05-08T12:48:19.355Z",
+  "asOf": "2026-05-08T14:27:43.096Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
     "strategicFoundation": {
       "type": "Institutional global-markets trading bank",
-      "products": ["JSE-listed bonds", "JSE-listed equities", "OTC interest-rate derivatives"],
-      "clients": ["Large SA corporates", "Banks", "Non-bank financial institutions"],
+      "products": [
+        "JSE-listed bonds",
+        "JSE-listed equities",
+        "OTC interest-rate derivatives"
+      ],
+      "clients": [
+        "Large SA corporates",
+        "Banks",
+        "Non-bank financial institutions"
+      ],
       "geography": "South Africa · single branch",
       "capital": "R300m (committed shareholder capital)",
       "licence": "Application deferred"
@@ -20,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 18,
       "proceduresPlanned": 81,
-      "ceoDecisionsActioned": 14,
+      "ceoDecisionsActioned": 16,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -204,6 +212,24 @@
       "sourceDoc": "(unsourced)",
       "action": "approve",
       "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-MARKETS-SCHEMA-FOUNDATION",
+      "title": "D-MARKETS-SCHEMA-FOUNDATION",
+      "actionedAt": "2026-05-07T11:00:00.000Z",
+      "outcome": "",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "agent:scrooge:ceo-decision-record"
+    },
+    {
+      "id": "D-SOME-OTHER-DECISION",
+      "title": "D-SOME-OTHER-DECISION",
+      "actionedAt": "2026-05-07T10:00:00.000Z",
+      "outcome": "",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "agent:scrooge:ceo-decision-record"
     },
     {
       "id": "D1",
@@ -1455,6 +1481,11 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-08",
+              "path": "Owner Inbox/2026-05-08_senna_m1-trading-stack-threat-model_completion.md",
+              "title": "senna · m1 trading stack threat model · completion"
+            },
+            {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_senna_security-substrate-state.md",
               "title": "senna · security substrate state"
@@ -1475,13 +1506,13 @@
               "title": "core policies infosec ops"
             }
           ],
-          "lastActivityAt": "2026-05-07"
+          "lastActivityAt": "2026-05-08"
         }
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 5
+      "totalRecentDeliverables": 6
     }
   ],
   "ownerInboxFeed": [
@@ -1642,6 +1673,14 @@
       "summary": "Autonomous run of Thandiwe's weekly Audit-Committee prep per `Team/Thandiwe.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Feeds the Interim Audit Forum (Owen chair) until a Board AC is constituted."
     },
     {
+      "filename": "2026-05-08_senna_m1-trading-stack-threat-model_completion.md",
+      "path": "Owner Inbox/2026-05-08_senna_m1-trading-stack-threat-model_completion.md",
+      "date": "2026-05-08",
+      "title": "Senna — M1 trading-stack threat-model, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Senna's M1 trading-stack threat-model handler per `Team Inbox/2026-05-07_brief_senna_m1-trading-stack-threat-model.md`. Triggered event-driven on `CeoDecision` for `D-MARKETS-SCHEMA-FOUNDATION`."
+    },
+    {
       "filename": "2026-05-08_scrooge_inbox-hygiene.md",
       "path": "Owner Inbox/2026-05-08_scrooge_inbox-hygiene.md",
       "date": "2026-05-08",
@@ -1704,14 +1743,6 @@
       "title": "Scrooge — CEO decision record: D-S7-TARGETED-3-5-OPEN-QUESTIONS, 2026-05-08",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
-      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
-      "date": "2026-05-08",
-      "title": "Scrooge — CEO decision record: D-FLEET-ROLLOUT-SEQUENCING, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     }
   ],
   "prototype": {
@@ -1769,7 +1800,40 @@
     "Single point of failure on Owen (CoSec, governance framework, conflicts, whistleblowing, PAIA).",
     "Personas reshaped under reframe: Sade → AgentOps for build; Niko paused; Yael / Imani build-phase scopes trimmed. Reshape work pending in /Team/."
   ],
-  "findings": [],
+  "findings": [
+    {
+      "id": "8bc3c75f-9ab6-4dc3-823a-166e3533b07f",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsResolved",
+      "description": "Drift between persisted registry and derivation at decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "9e086e40-5942-4870-b2d4-5be3bd0935a6",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "bank.metrics.ceoDecisionsActioned",
+      "description": "Drift between persisted registry and derivation at bank.metrics.ceoDecisionsActioned",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "d2b62c88-cff5-4825-a684-af8770388d2c",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "D-MARKETS-SCHEMA-FOUNDATION",
+      "description": "Event store has CeoDecision D-MARKETS-SCHEMA-FOUNDATION but no entry in registry decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
+    {
+      "id": "10b36695-4174-4723-97fd-86b79c15475c",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "D-SOME-OTHER-DECISION",
+      "description": "Event store has CeoDecision D-SOME-OTHER-DECISION but no entry in registry decisionsResolved",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    }
+  ],
   "runtimeHandlers": [
     {
       "agent": "Vera",
@@ -1833,7 +1897,9 @@
       "agent": "Scrooge",
       "trigger": "follow-on-router",
       "kind": "event-driven",
-      "subscribesTo": ["CeoDecision"]
+      "subscribesTo": [
+        "CeoDecision"
+      ]
     },
     {
       "agent": "Owen",

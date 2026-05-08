@@ -91,9 +91,8 @@ export interface SemanticLayerEntry {
 // Each carries the citation chain CDM-primitive → projection-rule →
 // presentation-field. ORG-AC-01 (IFRS 9) gates classification; ORG-AC-05
 // (IFRS 13) gates fair-value measurement; JSE-RULES-EQUITIES + FMA-S5
-// anchor the listed-equity domain. The mark-to-market entry routes
-// price-feed provenance to Mira (no PRICE-FEED-PROVENANCE register
-// entry yet).
+// anchor the listed-equity domain. The mark-to-market entry cites
+// BCBS-239-2013 for price-feed provenance / lineage discipline.
 // ---------------------------------------------------------------------------
 
 export const SEMANTIC_LAYER_ENTRIES: readonly SemanticLayerEntry[] = [
@@ -130,7 +129,7 @@ export const SEMANTIC_LAYER_ENTRIES: readonly SemanticLayerEntry[] = [
     projectionRule:
       "markets.position — quantity × latest-EquityTradeBooked-price-by-instrument. M2 swaps in a market-data feed; reducer signature is stable.",
     presentationField: "Markets ▸ Position ▸ Mark-to-market",
-    citations: ["ORG-AC-05", "[citation: route to Mira] PRICE-FEED-PROVENANCE"],
+    citations: ["ORG-AC-05", "BCBS-239-2013"],
     unit: "currency",
   },
   {

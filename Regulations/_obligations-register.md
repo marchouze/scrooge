@@ -1,6 +1,8 @@
 # Obligations register
 
-**Curator:** Mira (compliance / RegTech engineer) · **Governance:** Zara (CCO) · **Date:** 2026-05-08 · **Version:** 1.2
+**Curator:** Mira (compliance / RegTech engineer) · **Governance:** Zara (CCO) · **Date:** 2026-05-08 · **Version:** 1.3
+
+> v1.3 — added `BCBS-239-2013` to Domain N (data-governance tranche). Closes Anya's `PRICE-FEED-PROVENANCE` placeholder flagged on equity-position-mark-to-market in `prototype/platform/projections/markets/types.ts:133`. Source: M1 follow-on from Anya brief.
 
 > v1.2 — added Domain N (M1 markets-foundation citation URNs): the regulator-citation URN tranche populated by the `mira:m1-regulator-citation-urns` handler under CEO decision `D-MARKETS-SCHEMA-FOUNDATION` (approved 2026-05-07). 24 typed URNs across 7 tranches (market-infrastructure / OTC anchors / accounting / prudential / operational+cyber / AML+privacy / reporting). Source: brief `Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md` + proposal `Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md` §8.
 
@@ -290,6 +292,7 @@ Where multiple regulators converge on the same obligation, it is listed once wit
 | `FATCA-IGA-ANNEX-II-SA` | reporting | FATCA IGA between South Africa and the United States | Annex II — exempt and deemed-compliant FFIs; reportable accounts | M4 | verified | ORG-FC-15 |
 | `CRS-OECD-2014` | reporting | Common Reporting Standard (Standard for Automatic Exchange) | Sections I–IX + SA implementation under Tax Admin Act | M4 | verified | ORG-FC-16 |
 | `FSCA-CONDUCT-REPORTING-TEMPLATES` | reporting | FSCA conduct reporting templates (per Conduct Standards 1–3 of 2018) | Reporting templates referenced by Conduct Standards 1–3 of 2018 | M3 | draft | ORG-CS2-001 |
+| `BCBS-239-2013` | data-governance | BCBS 239 — Principles for effective risk data aggregation and risk reporting | Principles 1–14 (governance · architecture · accuracy · completeness · timeliness · adaptability · provenance / lineage incl. price-source identification) | M1 | verified | ORG-PR-17, ORG-AC-01 — closes Anya's `PRICE-FEED-PROVENANCE` placeholder on equity-position-mark-to-market |
 
 ## Domain L — Whistleblowing, ethics, anti-bribery (cross-cutting)
 
