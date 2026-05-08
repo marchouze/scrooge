@@ -1,7 +1,7 @@
 ---
 agent: Scrooge
 trigger: inbox-hygiene
-asOf: 2026-05-08T12:16:15.685Z
+asOf: 2026-05-08T14:27:00.186Z
 decision-required: false
 ---
 
@@ -9,18 +9,13 @@ decision-required: false
 
 Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`.
 
-**Headline:** Team Inbox open: 4 (after run); actioned: 41; Owner Inbox: 122 files. 1 item auto-moved this run.
-
-## Moved this run
-
-- `Team Inbox/2026-05-07_brief_kai_m1-cdm-typescript-bindings.md` → `Team Inbox/actioned/2026-05-07_brief_kai_m1-cdm-typescript-bindings.md` — Owner Inbox deliverable found (2026-05-07_kai_m1-cdm-typescript-bindings.md); brief is closed
+**Headline:** Team Inbox open: 3 (after run); actioned: 42; Owner Inbox: 126 files. 0 items auto-moved this run.
 
 ## In Team Inbox (still open)
 
 - `2026-05-07_brief_bea_m1-ifrs-classification-rules.md` — no unambiguous match in Owner Inbox; left in place
 - `2026-05-07_brief_senna_m1-trading-stack-threat-model.md` — no unambiguous match in Owner Inbox; left in place
 - `2026-05-07_brief_mira_m1-regulator-citation-urns.md` — no unambiguous match in Owner Inbox; left in place
-- `2026-05-07_brief_anya_m1-projection-runtime-mapping.md` — no unambiguous match in Owner Inbox; left in place
 
 ## Scrooge's narrative
 
