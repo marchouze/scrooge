@@ -272,13 +272,7 @@ export function buildDecisionDrillDown(
     for (const status of ["open", "acknowledged", "delegated", "decided"] as const) {
       for (const v of channel.list({ status })) {
         if (v.escalationId === decisionId) {
-          all.push(
-            toView(
-              v,
-              new Set(state.decisionsResolved.map((r) => r.id)),
-              store,
-            ),
-          );
+          all.push(toView(v, new Set(state.decisionsResolved.map((r) => r.id)), store));
         }
       }
     }

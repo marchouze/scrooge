@@ -89,7 +89,8 @@ for (const id of FIXTURES) {
       decisionId: id,
       action: "approve",
       title: "Test fixture struck — synthetic router escalation",
-      outcome: `Struck. This escalation was emitted by an ad-hoc router test run with a synthetic decisionId, not a real CEO follow-on. The substrate fix in \`prototype/runtime/agents/scrooge-follow-on-router.ts\` (TEST_FIXTURE_DECISION_RE / TEST_FIXTURE_ROUTE_RE guard, 2026-05-07) prevents future test-fixture decisions from polluting the production event log even when run with \`dryRun: false\`. No work to follow up.`,
+      outcome:
+        "Struck. This escalation was emitted by an ad-hoc router test run with a synthetic decisionId, not a real CEO follow-on. The substrate fix in `prototype/runtime/agents/scrooge-follow-on-router.ts` (TEST_FIXTURE_DECISION_RE / TEST_FIXTURE_ROUTE_RE guard, 2026-05-07) prevents future test-fixture decisions from polluting the production event log even when run with `dryRun: false`. No work to follow up.",
       actor: ACTOR,
       sourceDoc: "(synthetic test fixture)",
       recordedVia: RECORDED_VIA,

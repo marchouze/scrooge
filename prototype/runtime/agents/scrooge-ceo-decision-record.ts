@@ -49,7 +49,12 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { logger } from "../../platform/composition";
-import { recordCeoDecision, type DecisionAction, isValidDecisionAction, VALID_DECISION_ACTIONS } from "../decisions/record";
+import {
+  type DecisionAction,
+  VALID_DECISION_ACTIONS,
+  isValidDecisionAction,
+  recordCeoDecision,
+} from "../decisions/record";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -130,13 +135,15 @@ function buildAuditMarkdown(ctx: AgentRunContext, input: DecisionRecordInput): s
   if (input.comment) lines.push(`- **Comment:** ${input.comment}`);
   if (input.sourceDoc) lines.push(`- **Source proposal:** \`${input.sourceDoc}\``);
   if (input.followOnRoutes && input.followOnRoutes.length > 0) {
-    lines.push(`- **Follow-on routes recorded:** ${input.followOnRoutes.map((r) => `\`${r}\``).join(", ")}`);
+    lines.push(
+      `- **Follow-on routes recorded:** ${input.followOnRoutes.map((r) => `\`${r}\``).join(", ")}`,
+    );
   }
   lines.push("");
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Emitted via `agent:scrooge-ceo-decision-record` runtime handler. The CeoDecision event is the canonical record; the dashboard's resolution mechanism reads this event-stream — `decisionStatus = \"resolved\"` follows automatically. Future follow-on-router handler reads the `followOnRoutes` payload and chains the substantive work via event-driven fan-out.",
+    'Emitted via `agent:scrooge-ceo-decision-record` runtime handler. The CeoDecision event is the canonical record; the dashboard\'s resolution mechanism reads this event-stream — `decisionStatus = "resolved"` follows automatically. Future follow-on-router handler reads the `followOnRoutes` payload and chains the substantive work via event-driven fan-out.',
   );
   lines.push("");
   return lines.join("\n");
@@ -173,11 +180,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // day don't collide.
     const safeId = input.decisionId.toLowerCase().replace(/[^a-z0-9-]/g, "-");
     const filename = `${fmtDateUTC(ctx.asOf)}_scrooge_ceo-decision-record_${safeId}.md`;
-    writeFileSync(
-      resolve(ctx.ownerInboxDir, filename),
-      buildAuditMarkdown(ctx, input),
-      "utf8",
-    );
+    writeFileSync(resolve(ctx.ownerInboxDir, filename), buildAuditMarkdown(ctx, input), "utf8");
     deliverable = `Owner Inbox/${filename}`;
   }
 

@@ -104,8 +104,7 @@ interface PaxQueueSnapshot {
   readonly pendingHireBriefs: readonly PendingHireBrief[];
 }
 
-const HIRE_BRIEF_DECISION_ID_PATTERN =
-  /(HIRE|RECRUIT|ROLE|BRAND-DESIGN|INDEPENDENT-VALIDATION)/i;
+const HIRE_BRIEF_DECISION_ID_PATTERN = /(HIRE|RECRUIT|ROLE|BRAND-DESIGN|INDEPENDENT-VALIDATION)/i;
 const HIRE_BRIEF_TITLE_PATTERN = /\b(role brief|hire|recruit)\b/i;
 
 function parseFrontmatter(content: string): Record<string, string> {

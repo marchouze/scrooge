@@ -335,10 +335,10 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: SaskiaSnapshot): string
     `  D-MARKETS-SCHEMA-FOUNDATION decision recorded: ${snap.m1.schemaFoundationDecisionPresent}`,
   );
   lines.push(`  franchise-design proposal present: ${snap.m1.franchiseDesignProposalPresent}`);
-  lines.push(`  Kai M1 CDM-bindings deliverable present: ${snap.m1.kaiCdmBindingsDeliverablePresent}`);
   lines.push(
-    `  @platform/markets/cdm module scaffolded: ${snap.m1.cdmModuleScaffolded}`,
+    `  Kai M1 CDM-bindings deliverable present: ${snap.m1.kaiCdmBindingsDeliverablePresent}`,
   );
+  lines.push(`  @platform/markets/cdm module scaffolded: ${snap.m1.cdmModuleScaffolded}`);
   lines.push(
     `  last M1 / CDM workstream-registered event: ${snap.m1.lastWorkstreamRegistered ?? "never"}`,
   );

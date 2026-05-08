@@ -79,7 +79,6 @@ function bindBadges(binds) {
 // ---------------------------------------------------------------------------
 
 let allPolicies = [];
-let allObligations = []; // computed from policies' linkedObligations + the obligation register-derived data we have
 let obligationDetailById = {}; // populated via /api/state's obligations metadata, see hydrateObligations
 
 function applyFilters() {
@@ -180,8 +179,8 @@ function populateDomainFilter(policies) {
   const sel = $("filterDomain");
   const domains = Array.from(new Set(policies.map((p) => p.domain))).sort((a, b) => {
     // Sort by leading number where present.
-    const an = parseInt(a, 10);
-    const bn = parseInt(b, 10);
+    const an = Number.parseInt(a, 10);
+    const bn = Number.parseInt(b, 10);
     if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
     return a.localeCompare(b);
   });
@@ -196,7 +195,7 @@ function renderTable(policies) {
   const sub = $("policiesListSub");
   if (!policies.length) {
     body.innerHTML = `<tr><td colspan="8" class="muted" style="padding:18px;text-align:center;">No policies match the current filter.</td></tr>`;
-    sub.textContent = "0 of " + allPolicies.length;
+    sub.textContent = `0 of ${allPolicies.length}`;
     return;
   }
   sub.textContent = `${policies.length} of ${allPolicies.length}`;
@@ -256,7 +255,8 @@ function openDrill(policyId) {
   for (const o of obligationsDetail) {
     const m = o.id.match(/^ORG-([A-Z]+(?:\([A-Z]+\))?)-/);
     const prefix = m ? `ORG-${m[1]}-*` : "Other";
-    (byDomain[prefix] ??= []).push(o);
+    byDomain[prefix] ??= [];
+    byDomain[prefix].push(o);
   }
 
   body.innerHTML = `

@@ -47,7 +47,6 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
 import { HANDLER_CALLABLES } from "../handler-callables";
 import { lookupHandler } from "../handlers-metadata";
@@ -74,7 +73,11 @@ async function dispatchOne(
   // the canonical handler key.
   const m = route.match(/^agent:([a-z][a-z0-9-]*):([a-z][a-z0-9-]*)$/i);
   if (!m) {
-    return { route, status: "unresolved", reason: `Route format invalid (expected agent:<name>:<trigger>): ${route}` };
+    return {
+      route,
+      status: "unresolved",
+      reason: `Route format invalid (expected agent:<name>:<trigger>): ${route}`,
+    };
   }
   const key = `${m[1]?.toLowerCase()}:${m[2]?.toLowerCase()}`;
   const meta = lookupHandler(key);
@@ -187,11 +190,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     if (action !== "approve") {
       outcomes.push({
         decisionId,
-        routes: followOnRoutes.map((r): RouteOutcome => ({
-          route: r,
-          status: "skipped",
-          reason: `parent decision action was "${action}" — follow-ons fire only on "approve"`,
-        })),
+        routes: followOnRoutes.map(
+          (r): RouteOutcome => ({
+            route: r,
+            status: "skipped",
+            reason: `parent decision action was "${action}" — follow-ons fire only on "approve"`,
+          }),
+        ),
       });
       continue;
     }
@@ -243,18 +248,18 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       mkdirSync(ctx.ownerInboxDir, { recursive: true });
     }
     const filename = `${fmtDateUTC(ctx.asOf)}_scrooge_follow-on-routing.md`;
-    writeFileSync(
-      resolve(ctx.ownerInboxDir, filename),
-      buildAuditMarkdown(ctx, outcomes),
-      "utf8",
-    );
+    writeFileSync(resolve(ctx.ownerInboxDir, filename), buildAuditMarkdown(ctx, outcomes), "utf8");
     deliverable = `Owner Inbox/${filename}`;
   }
 
   // Total summary line.
   const totalRoutes = outcomes.reduce((s, o) => s + o.routes.length, 0);
-  const dispatched = outcomes.flatMap((o) => o.routes).filter((r) => r.status === "dispatched").length;
-  const unresolved = outcomes.flatMap((o) => o.routes).filter((r) => r.status === "unresolved").length;
+  const dispatched = outcomes
+    .flatMap((o) => o.routes)
+    .filter((r) => r.status === "dispatched").length;
+  const unresolved = outcomes
+    .flatMap((o) => o.routes)
+    .filter((r) => r.status === "unresolved").length;
   const failed = outcomes.flatMap((o) => o.routes).filter((r) => r.status === "failed").length;
 
   logger.info(

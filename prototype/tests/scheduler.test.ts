@@ -253,9 +253,10 @@ describe("calendar — SA holidays", () => {
     expect(names).toContain("Workers' Day");
     // List is chronologically ordered.
     for (let i = 1; i < list.length; i++) {
-      const prev = list[i - 1]!.date.getTime();
-      const cur = list[i]!.date.getTime();
-      expect(cur >= prev).toBe(true);
+      const prevItem = list[i - 1];
+      const curItem = list[i];
+      if (!prevItem || !curItem) throw new Error("unreachable: loop indices in-bounds");
+      expect(curItem.date.getTime() >= prevItem.date.getTime()).toBe(true);
     }
     // 2022 list contains the observed Workers' Day (Mon 2022-05-02), not the Sunday.
     const list22 = resolveHolidaysForYear(2022);

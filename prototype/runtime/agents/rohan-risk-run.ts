@@ -123,19 +123,110 @@ function readLatestHelenaSnapshot(): {
 // when that register exists.
 function helenaAppetiteShadow(): readonly AppetiteLineState[] {
   return [
-    { id: "appetite:liquidity:lcr", label: "LCR buffer", category: "liquidity", tier: "tier-1", status: "unmeasured", note: "Substrate: Ravi (eng) → Eitan (Treasurer)." },
-    { id: "appetite:liquidity:nsfr", label: "NSFR buffer", category: "liquidity", tier: "tier-1", status: "unmeasured", note: "Substrate: Ravi (eng) → Eitan (Treasurer)." },
-    { id: "appetite:capital:cet1-buffer", label: "CET1 buffer over PA min", category: "capital", tier: "tier-1", status: "unmeasured", note: "Substrate: Bea (eng) joint with Helena." },
-    { id: "appetite:credit:single-name-concentration", label: "Single-name credit concentration", category: "credit", tier: "tier-2", status: "n/a-build-phase", note: "Activates at commencement of trading." },
-    { id: "appetite:credit:sector-concentration", label: "Sector concentration", category: "credit", tier: "tier-2", status: "n/a-build-phase", note: "Activates at commencement of trading." },
-    { id: "appetite:market:trading-var", label: "Trading-book 1-day 99% VaR", category: "market", tier: "tier-2", status: "n/a-build-phase", note: "Activates at commencement of trading." },
-    { id: "appetite:market:counterparty-concentration", label: "Counterparty concentration (markets)", category: "market", tier: "tier-2", status: "n/a-build-phase", note: "Activates at commencement of trading." },
-    { id: "appetite:financial-crime:sanctions-match", label: "Sanctions matches blocked", category: "financial-crime", tier: "zero-appetite", status: "green", note: "Mira's gate enforces." },
-    { id: "appetite:financial-crime:str-filing-judgement", label: "STR-filing judgement", category: "financial-crime", tier: "zero-appetite", status: "green", note: "Mira's gate enforces." },
-    { id: "appetite:operational:cyber-severity-tiers", label: "Cyber severity tiers", category: "operational", tier: "tier-2", status: "unmeasured", note: "Substrate: Senna (eng) → Rashida (CISO)." },
-    { id: "appetite:model:tier-discipline", label: "Model-risk tier discipline", category: "model", tier: "tier-2", status: "unmeasured", note: "Independent Validation function not yet staffed." },
-    { id: "appetite:climate:guidance-note-1-2024", label: "Climate-risk governance", category: "climate", tier: "tier-2", status: "unmeasured", note: "PA GN 1 of 2024 substrate not yet specified." },
-    { id: "appetite:conduct:tcf", label: "TCF — zero unfair treatment", category: "conduct", tier: "zero-appetite", status: "green", note: "Mira's gate enforces; Niko paused." },
+    {
+      id: "appetite:liquidity:lcr",
+      label: "LCR buffer",
+      category: "liquidity",
+      tier: "tier-1",
+      status: "unmeasured",
+      note: "Substrate: Ravi (eng) → Eitan (Treasurer).",
+    },
+    {
+      id: "appetite:liquidity:nsfr",
+      label: "NSFR buffer",
+      category: "liquidity",
+      tier: "tier-1",
+      status: "unmeasured",
+      note: "Substrate: Ravi (eng) → Eitan (Treasurer).",
+    },
+    {
+      id: "appetite:capital:cet1-buffer",
+      label: "CET1 buffer over PA min",
+      category: "capital",
+      tier: "tier-1",
+      status: "unmeasured",
+      note: "Substrate: Bea (eng) joint with Helena.",
+    },
+    {
+      id: "appetite:credit:single-name-concentration",
+      label: "Single-name credit concentration",
+      category: "credit",
+      tier: "tier-2",
+      status: "n/a-build-phase",
+      note: "Activates at commencement of trading.",
+    },
+    {
+      id: "appetite:credit:sector-concentration",
+      label: "Sector concentration",
+      category: "credit",
+      tier: "tier-2",
+      status: "n/a-build-phase",
+      note: "Activates at commencement of trading.",
+    },
+    {
+      id: "appetite:market:trading-var",
+      label: "Trading-book 1-day 99% VaR",
+      category: "market",
+      tier: "tier-2",
+      status: "n/a-build-phase",
+      note: "Activates at commencement of trading.",
+    },
+    {
+      id: "appetite:market:counterparty-concentration",
+      label: "Counterparty concentration (markets)",
+      category: "market",
+      tier: "tier-2",
+      status: "n/a-build-phase",
+      note: "Activates at commencement of trading.",
+    },
+    {
+      id: "appetite:financial-crime:sanctions-match",
+      label: "Sanctions matches blocked",
+      category: "financial-crime",
+      tier: "zero-appetite",
+      status: "green",
+      note: "Mira's gate enforces.",
+    },
+    {
+      id: "appetite:financial-crime:str-filing-judgement",
+      label: "STR-filing judgement",
+      category: "financial-crime",
+      tier: "zero-appetite",
+      status: "green",
+      note: "Mira's gate enforces.",
+    },
+    {
+      id: "appetite:operational:cyber-severity-tiers",
+      label: "Cyber severity tiers",
+      category: "operational",
+      tier: "tier-2",
+      status: "unmeasured",
+      note: "Substrate: Senna (eng) → Rashida (CISO).",
+    },
+    {
+      id: "appetite:model:tier-discipline",
+      label: "Model-risk tier discipline",
+      category: "model",
+      tier: "tier-2",
+      status: "unmeasured",
+      note: "Independent Validation function not yet staffed.",
+    },
+    {
+      id: "appetite:climate:guidance-note-1-2024",
+      label: "Climate-risk governance",
+      category: "climate",
+      tier: "tier-2",
+      status: "unmeasured",
+      note: "PA GN 1 of 2024 substrate not yet specified.",
+    },
+    {
+      id: "appetite:conduct:tcf",
+      label: "TCF — zero unfair treatment",
+      category: "conduct",
+      tier: "zero-appetite",
+      status: "green",
+      note: "Mira's gate enforces; Niko paused.",
+    },
   ];
 }
 
@@ -151,79 +242,101 @@ function buildReadinessMap(): readonly MeasurementReadiness[] {
     {
       appetiteLineId: "appetite:liquidity:lcr",
       engineerSideState: "specified",
-      substrateRequired: "Liquidity coverage ratio projection — HQLA inventory + 30-day net cash outflow model. Owner: Ravi (treasury eng).",
-      nextEngineeringStep: "Specify HQLA classification rules per Banks Act Reg 26; build first-cut projection against synthetic balance.",
+      substrateRequired:
+        "Liquidity coverage ratio projection — HQLA inventory + 30-day net cash outflow model. Owner: Ravi (treasury eng).",
+      nextEngineeringStep:
+        "Specify HQLA classification rules per Banks Act Reg 26; build first-cut projection against synthetic balance.",
     },
     {
       appetiteLineId: "appetite:liquidity:nsfr",
       engineerSideState: "specified",
-      substrateRequired: "Net stable funding ratio projection — available stable funding vs required stable funding model. Owner: Ravi.",
-      nextEngineeringStep: "Specify ASF / RSF factor table per BCBS NSFR (2014); same projection-runtime as LCR.",
+      substrateRequired:
+        "Net stable funding ratio projection — available stable funding vs required stable funding model. Owner: Ravi.",
+      nextEngineeringStep:
+        "Specify ASF / RSF factor table per BCBS NSFR (2014); same projection-runtime as LCR.",
     },
     {
       appetiteLineId: "appetite:capital:cet1-buffer",
       engineerSideState: "specified",
-      substrateRequired: "Capital-base projection — CET1 numerator + RWA denominator + Pillar 2A + buffers. Owner: Bea (acc eng) joint with Rohan.",
-      nextEngineeringStep: "Specify capital-base derivation per Banks Act Reg 38; build against the synthetic capital line in seeds.",
+      substrateRequired:
+        "Capital-base projection — CET1 numerator + RWA denominator + Pillar 2A + buffers. Owner: Bea (acc eng) joint with Rohan.",
+      nextEngineeringStep:
+        "Specify capital-base derivation per Banks Act Reg 38; build against the synthetic capital line in seeds.",
     },
     {
       appetiteLineId: "appetite:credit:single-name-concentration",
       engineerSideState: "not-yet-specified",
-      substrateRequired: "Single-name exposure projection — credit RWA with obligor aggregation. Owner: Rohan.",
-      nextEngineeringStep: "Defer to first-portfolio activation; specify cascade alongside Saskia's first counterparty.",
+      substrateRequired:
+        "Single-name exposure projection — credit RWA with obligor aggregation. Owner: Rohan.",
+      nextEngineeringStep:
+        "Defer to first-portfolio activation; specify cascade alongside Saskia's first counterparty.",
     },
     {
       appetiteLineId: "appetite:credit:sector-concentration",
       engineerSideState: "not-yet-specified",
-      substrateRequired: "Sector concentration projection — credit RWA aggregated by sector code. Owner: Rohan.",
+      substrateRequired:
+        "Sector concentration projection — credit RWA aggregated by sector code. Owner: Rohan.",
       nextEngineeringStep: "Defer; first portfolio defines the sector taxonomy.",
     },
     {
       appetiteLineId: "appetite:market:trading-var",
       engineerSideState: "specified",
-      substrateRequired: "Trading-book 1-day 99% VaR engine — historical-simulation v0 against CDM positions. Owner: Rohan.",
-      nextEngineeringStep: "Wait for Kai's M1 CDM TypeScript bindings (in flight under D-MARKETS-SCHEMA-FOUNDATION); first VaR fires when first CDM contract booked.",
+      substrateRequired:
+        "Trading-book 1-day 99% VaR engine — historical-simulation v0 against CDM positions. Owner: Rohan.",
+      nextEngineeringStep:
+        "Wait for Kai's M1 CDM TypeScript bindings (in flight under D-MARKETS-SCHEMA-FOUNDATION); first VaR fires when first CDM contract booked.",
     },
     {
       appetiteLineId: "appetite:market:counterparty-concentration",
       engineerSideState: "specified",
-      substrateRequired: "Counterparty PFE projection — SA-CCR per BCBS d317. Owner: Rohan joint with Kai.",
-      nextEngineeringStep: "Specify SA-CCR table at first counterparty onboarding (Niko activation).",
+      substrateRequired:
+        "Counterparty PFE projection — SA-CCR per BCBS d317. Owner: Rohan joint with Kai.",
+      nextEngineeringStep:
+        "Specify SA-CCR table at first counterparty onboarding (Niko activation).",
     },
     {
       appetiteLineId: "appetite:financial-crime:sanctions-match",
       engineerSideState: "drafting",
-      substrateRequired: "Mira's screening pipeline — gate enforces; no Rohan substrate required. Measurement is pass/fail event count.",
+      substrateRequired:
+        "Mira's screening pipeline — gate enforces; no Rohan substrate required. Measurement is pass/fail event count.",
       nextEngineeringStep: "Out of Rohan's scope; Mira owns.",
     },
     {
       appetiteLineId: "appetite:financial-crime:str-filing-judgement",
       engineerSideState: "drafting",
-      substrateRequired: "Mira's transaction-monitoring pipeline + Zara's MLRO judgement. No Rohan substrate.",
+      substrateRequired:
+        "Mira's transaction-monitoring pipeline + Zara's MLRO judgement. No Rohan substrate.",
       nextEngineeringStep: "Out of Rohan's scope.",
     },
     {
       appetiteLineId: "appetite:operational:cyber-severity-tiers",
       engineerSideState: "specified",
-      substrateRequired: "Senna's incident-severity classification + RAS § B6 tier mapping. Operational-risk projection consumes downstream.",
-      nextEngineeringStep: "Out of Rohan's primary scope; co-consumer of Senna's outputs for op-risk taxonomy.",
+      substrateRequired:
+        "Senna's incident-severity classification + RAS § B6 tier mapping. Operational-risk projection consumes downstream.",
+      nextEngineeringStep:
+        "Out of Rohan's primary scope; co-consumer of Senna's outputs for op-risk taxonomy.",
     },
     {
       appetiteLineId: "appetite:model:tier-discipline",
       engineerSideState: "specified",
-      substrateRequired: "Model registry + independent-validation function. Owner: Rohan (registry); independent-validation team (Nolan hire).",
-      nextEngineeringStep: "Build model registry (no models in build phase, but registry is substrate); flag Independent Validation hire to Nolan.",
+      substrateRequired:
+        "Model registry + independent-validation function. Owner: Rohan (registry); independent-validation team (Nolan hire).",
+      nextEngineeringStep:
+        "Build model registry (no models in build phase, but registry is substrate); flag Independent Validation hire to Nolan.",
     },
     {
       appetiteLineId: "appetite:climate:guidance-note-1-2024",
       engineerSideState: "not-yet-specified",
-      substrateRequired: "Climate-scenario substrate — transition-risk taxonomy + physical-risk geocoding + scenario engine. Owner: Helena (governance) joint with Rohan (eng).",
-      nextEngineeringStep: "Specify per PA GN 1 of 2024; multi-quarter build; defer until 2026 H2 unless PA cadence forces earlier.",
+      substrateRequired:
+        "Climate-scenario substrate — transition-risk taxonomy + physical-risk geocoding + scenario engine. Owner: Helena (governance) joint with Rohan (eng).",
+      nextEngineeringStep:
+        "Specify per PA GN 1 of 2024; multi-quarter build; defer until 2026 H2 unless PA cadence forces earlier.",
     },
     {
       appetiteLineId: "appetite:conduct:tcf",
       engineerSideState: "drafting",
-      substrateRequired: "Niko's advice-record pipeline + Mira's conduct-monitoring + Zara's FAIS supervision. No Rohan substrate.",
+      substrateRequired:
+        "Niko's advice-record pipeline + Mira's conduct-monitoring + Zara's FAIS supervision. No Rohan substrate.",
       nextEngineeringStep: "Out of Rohan's scope; activates with Niko at commencement of trading.",
     },
   ];
@@ -291,7 +404,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: RohanSnapshot): string 
     lines.push(`      next: ${r.nextEngineeringStep}`);
   }
   lines.push("");
-  lines.push(`position events (last 7d): ${snap.positionEventsLast7d} (TradeBooked + PositionAdjusted + CollateralUpdated)`);
+  lines.push(
+    `position events (last 7d): ${snap.positionEventsLast7d} (TradeBooked + PositionAdjusted + CollateralUpdated)`,
+  );
   lines.push(`risks raised (last 7d): ${snap.riskRaisedEventsLast7d}`);
   for (const [sev, n] of Object.entries(snap.riskRaisedSeverityCounts)) {
     lines.push(`  - ${sev}: ${n}`);
@@ -321,7 +436,9 @@ function buildReportMarkdown(
   const readyN = snap.readiness.filter((r) => r.engineerSideState === "ready").length;
   const draftingN = snap.readiness.filter((r) => r.engineerSideState === "drafting").length;
   const specifiedN = snap.readiness.filter((r) => r.engineerSideState === "specified").length;
-  const unspecifiedN = snap.readiness.filter((r) => r.engineerSideState === "not-yet-specified").length;
+  const unspecifiedN = snap.readiness.filter(
+    (r) => r.engineerSideState === "not-yet-specified",
+  ).length;
   lines.push(
     `**Headline:** ${snap.appetiteLines.length} appetite lines tracked · measurement readiness ${readyN} ready / ${draftingN} drafting / ${specifiedN} specified / ${unspecifiedN} not-yet-specified · ${snap.positionEventsLast7d} position event${snap.positionEventsLast7d === 1 ? "" : "s"} (last 7d) · ${snap.riskRaisedEventsLast7d} RiskRaised event${snap.riskRaisedEventsLast7d === 1 ? "" : "s"}.`,
   );
@@ -336,13 +453,17 @@ function buildReportMarkdown(
   } else {
     lines.push(`Latest \`RiskAppetiteSnapshot\` event: ${snap.latestHelenaRun}`);
     lines.push("");
-    lines.push("Rohan's daily run pairs with Helena's daily run: Helena reports the appetite side; Rohan reports the engineer side. Together they close the read-side ↔ build-side loop on the RAS measurement substrate.");
+    lines.push(
+      "Rohan's daily run pairs with Helena's daily run: Helena reports the appetite side; Rohan reports the engineer side. Together they close the read-side ↔ build-side loop on the RAS measurement substrate.",
+    );
   }
   lines.push("");
 
   lines.push("## Measurement readiness by appetite line");
   lines.push("");
-  lines.push("| Appetite line | Engineer-side state | Substrate required | Next engineering step |");
+  lines.push(
+    "| Appetite line | Engineer-side state | Substrate required | Next engineering step |",
+  );
   lines.push("|---|---|---|---|");
   for (const r of snap.readiness) {
     lines.push(
@@ -355,7 +476,9 @@ function buildReportMarkdown(
   lines.push("");
   lines.push("| Event class | Count |");
   lines.push("|---|---|");
-  lines.push(`| \`TradeBooked\` + \`PositionAdjusted\` + \`CollateralUpdated\` | ${snap.positionEventsLast7d} |`);
+  lines.push(
+    `| \`TradeBooked\` + \`PositionAdjusted\` + \`CollateralUpdated\` | ${snap.positionEventsLast7d} |`,
+  );
   lines.push("");
   if (snap.positionEventsLast7d === 0) {
     lines.push(
@@ -371,7 +494,9 @@ function buildReportMarkdown(
   } else {
     lines.push("| Severity | Count |");
     lines.push("|---|---|");
-    for (const [sev, n] of Object.entries(snap.riskRaisedSeverityCounts).sort((a, b) => b[1] - a[1])) {
+    for (const [sev, n] of Object.entries(snap.riskRaisedSeverityCounts).sort(
+      (a, b) => b[1] - a[1],
+    )) {
       lines.push(`| ${sev} | ${n} |`);
     }
   }
@@ -417,7 +542,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Helena's latest `RiskAppetiteSnapshot` via `eventStore.replay({type:\"RiskAppetiteSnapshot\"})` (max as_of); appetite-line shadow mirrored from `runtime/agents/helena-risk-appetite-watch.ts`; readiness map curated by Rohan; position-event count via `eventStore.replay({type:\"TradeBooked|PositionAdjusted|CollateralUpdated\"})`; RiskRaised counts via `eventStore.replay({type:\"RiskRaised\"})` filtered to last 7 days.",
+    'Helena\'s latest `RiskAppetiteSnapshot` via `eventStore.replay({type:"RiskAppetiteSnapshot"})` (max as_of); appetite-line shadow mirrored from `runtime/agents/helena-risk-appetite-watch.ts`; readiness map curated by Rohan; position-event count via `eventStore.replay({type:"TradeBooked|PositionAdjusted|CollateralUpdated"})`; RiskRaised counts via `eventStore.replay({type:"RiskRaised"})` filtered to last 7 days.',
   );
   lines.push("");
   return lines.join("\n");
@@ -439,8 +564,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         appetiteLineCount: snap.appetiteLines.length,
         readinessReady: snap.readiness.filter((r) => r.engineerSideState === "ready").length,
         readinessDrafting: snap.readiness.filter((r) => r.engineerSideState === "drafting").length,
-        readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified").length,
-        readinessUnspecified: snap.readiness.filter((r) => r.engineerSideState === "not-yet-specified").length,
+        readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified")
+          .length,
+        readinessUnspecified: snap.readiness.filter(
+          (r) => r.engineerSideState === "not-yet-specified",
+        ).length,
         positionEventsLast7d: snap.positionEventsLast7d,
         riskRaisedEventsLast7d: snap.riskRaisedEventsLast7d,
         latestHelenaRun: snap.latestHelenaRun,
@@ -506,7 +634,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const readyN = snap.readiness.filter((r) => r.engineerSideState === "ready").length;
   const draftingN = snap.readiness.filter((r) => r.engineerSideState === "drafting").length;
   const specifiedN = snap.readiness.filter((r) => r.engineerSideState === "specified").length;
-  const unspecifiedN = snap.readiness.filter((r) => r.engineerSideState === "not-yet-specified").length;
+  const unspecifiedN = snap.readiness.filter(
+    (r) => r.engineerSideState === "not-yet-specified",
+  ).length;
   return {
     eventsEmitted,
     ...(deliverable ? { deliverable } : {}),

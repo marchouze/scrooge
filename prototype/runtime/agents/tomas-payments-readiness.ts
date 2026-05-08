@@ -521,7 +521,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Devon's latest `OperationalResilienceSnapshot` via `eventStore.replay({type:\"OperationalResilienceSnapshot\"})` (max as_of); obligation shadow curated from `Team/Tomas.md` cross-referenced to NPS Act 78 of 1998, scheme rulebooks, SWIFT CSP 2024, ISO 20022, and PASA standards; capability-readiness map curated by Tomas; payments-domain event counts via `eventStore.replay({type:...})` filtered to last 7 days (`PaymentInitiated`, `PaymentSettled`, `ReconciliationCompleted`, `CutoffMissed`, `SAMOSWindowEntered`, `SWIFTMessageProcessed`).",
+    'Devon\'s latest `OperationalResilienceSnapshot` via `eventStore.replay({type:"OperationalResilienceSnapshot"})` (max as_of); obligation shadow curated from `Team/Tomas.md` cross-referenced to NPS Act 78 of 1998, scheme rulebooks, SWIFT CSP 2024, ISO 20022, and PASA standards; capability-readiness map curated by Tomas; payments-domain event counts via `eventStore.replay({type:...})` filtered to last 7 days (`PaymentInitiated`, `PaymentSettled`, `ReconciliationCompleted`, `CutoffMissed`, `SAMOSWindowEntered`, `SWIFTMessageProcessed`).',
   );
   lines.push("");
   return lines.join("\n");
