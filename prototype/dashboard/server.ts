@@ -38,6 +38,13 @@ import type { Event } from "../platform/event-store/types";
 import { recordCeoDecision, recordDecisionComment } from "../runtime/decisions/record";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import {
+  POPIA_S71_NOTICE,
+  buildDecisionDrillDown,
+  buildFleetStatus,
+  enrichBlockedBy,
+  listEscalations,
+} from "./oversight";
 import { saveState } from "./registry";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import type {
@@ -412,6 +419,44 @@ const server = Bun.serve({
     }
     if (url.pathname === "/api/inflight/complete" && req.method === "POST") {
       return handleCompleteWorkstream(req);
+    }
+    // ---------- A3.2 Oversight UI projections (read-only) ----------
+    if (url.pathname === "/api/escalations" && req.method === "GET") {
+      const resolvedIds = new Set(cachedState.decisionsResolved.map((r) => r.id));
+      const views = enrichBlockedBy(listEscalations(eventStore, resolvedIds), eventStore);
+      return jsonResponse({ asOf: cachedState.asOf, escalations: views });
+    }
+    if (url.pathname === "/api/fleet" && req.method === "GET") {
+      const resolvedIds = new Set(cachedState.decisionsResolved.map((r) => r.id));
+      const escalations = enrichBlockedBy(listEscalations(eventStore, resolvedIds), eventStore);
+      const fleet = buildFleetStatus(cachedState, escalations);
+      return jsonResponse({ asOf: cachedState.asOf, fleet });
+    }
+    {
+      const decisionMatch = url.pathname.match(/^\/api\/decisions\/(.+)$/);
+      if (decisionMatch && decisionMatch[1] && req.method === "GET") {
+        const decisionId = decodeURIComponent(decisionMatch[1]);
+        const view = buildDecisionDrillDown(eventStore, cachedState, decisionId);
+        if (!view) {
+          return jsonResponse({ error: `Decision not found: ${decisionId}` }, 404);
+        }
+        return jsonResponse({
+          asOf: cachedState.asOf,
+          ...view,
+          ...(view.popiaS71 ? { popiaNotice: POPIA_S71_NOTICE } : {}),
+        });
+      }
+    }
+    // Pretty-URL routes for drill-down — Bun serves the static HTML and the
+    // page reads the decisionId from `window.location.pathname`.
+    if (req.method === "GET" && url.pathname.startsWith("/decisions/")) {
+      return serveStatic("/decision.html");
+    }
+    if (req.method === "GET" && url.pathname === "/escalations") {
+      return serveStatic("/escalations.html");
+    }
+    if (req.method === "GET" && url.pathname === "/fleet") {
+      return serveStatic("/fleet.html");
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname);

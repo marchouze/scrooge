@@ -249,6 +249,124 @@ export interface RuntimeHandlerInfo {
   subscribesTo?: readonly string[]; // event types for event-driven handlers
 }
 
+// ---------------------------------------------------------------------------
+// A3.2 — CEO Oversight UI projections.
+//
+// Read-only views derived from the typed escalation lifecycle (A3.1) plus
+// runtime-handler metadata. The dashboard wraps the EscalationChannel.list()
+// fold + handler metadata into stable JSON shapes so the front-end never has
+// to know about the channel directly.
+// ---------------------------------------------------------------------------
+
+/**
+ * Lifecycle status as the channel sees it (open | acknowledged | delegated |
+ * decided). The `overdue` boolean is a separate decoration that may overlay
+ * any non-terminal status. The dashboard collapses both into a single tag in
+ * the UI when convenient — `decided` is terminal; `overdue` overlays open /
+ * acknowledged / delegated.
+ */
+export type EscalationLifecycle =
+  | "open"
+  | "acknowledged"
+  | "delegated"
+  | "decided"
+  | "overdue";
+
+export interface EscalationView {
+  escalationId: string;
+  raisedBy: string;
+  question: string;
+  options: readonly string[];
+  blockedBy: string;
+  severity: "low" | "medium" | "high" | "blocking";
+  routedTo: string;
+  deadline?: string;
+  /** Sealed-routing reason (POPIA, fraud, whistleblowing). undefined = unsealed. */
+  sealedReason?: "fraud" | "whistleblowing" | "popia-incident";
+  status: EscalationLifecycle;
+  /** Overdue decoration — may be true even for `acknowledged` / `delegated`. */
+  overdue: boolean;
+  /** Most recent responsible party (last delegate / acknowledger / original raiser / decider). */
+  currentResponsible: string;
+  acknowledgementCount: number;
+  delegationCount: number;
+  /** event_id of the originating AgentEscalation. */
+  openedEventId: string;
+  /** ISO 8601 of the originating AgentEscalation envelope. */
+  raisedAt: string;
+  /** True if a CeoDecision event with the same id as escalationId has landed. */
+  hasResolvingDecision: boolean;
+}
+
+export interface FleetAgentStatus {
+  /**
+   * The persona name (matches /Team/<Name>.md). When an agent registers
+   * multiple triggers, one entry per (agent, trigger) pair surfaces here.
+   */
+  agent: string;
+  trigger: string;
+  /** Composite key — `<lowercased-agent>:<trigger>`. */
+  handlerKey: string;
+  kind: "scheduled" | "event-driven" | "on-request";
+  cadenceHours?: number;
+  /** Synthetic agent URN — `agent:<lowercased-name>`. */
+  agentUrn: string;
+  /** Last activity attributed to the agent (deliverable / completion / decision). */
+  lastActivityAt?: string;
+  /**
+   * Predicted next scheduled run (now + cadenceHours from lastActivityAt).
+   * Undefined for event-driven / on-request. ISO 8601.
+   */
+  nextRunAt?: string;
+  /**
+   * In-flight runs the substrate is tracking. The current in-process model
+   * runs synchronously, so this is always 0 today; reserved for the
+   * substrate's future scheduler.
+   */
+  inFlightRuns: number;
+  pendingEscalationCount: number;
+  recentDecisionsCount: number;
+  /** Subscriptions for event-driven handlers — surfaced as the "trigger source". */
+  subscribesTo?: readonly string[];
+}
+
+export interface EscalationLifecycleEvent {
+  type:
+    | "AgentEscalation"
+    | "AgentEscalationAcknowledged"
+    | "AgentEscalationDecided"
+    | "AgentEscalationDelegated"
+    | "AgentEscalationOverdue";
+  escalationId: string;
+  asOf: string;
+  actor: string;
+  /** Free-form summary line — populated per type. */
+  summary: string;
+}
+
+export interface DecisionDrillDown {
+  decisionId: string;
+  /** The originating escalation, when one exists with the same id. */
+  escalation?: EscalationView;
+  /** All lifecycle events for the escalation, ordered oldest-first. */
+  lifecycle: readonly EscalationLifecycleEvent[];
+  /** The CeoDecision (if it has landed) folded into the resolved-decision shape. */
+  resolution?: ResolvedDecision;
+  /** The originating open-decision row (when still open). */
+  open?: OpenDecision;
+  /** Comments thread. */
+  comments: readonly DecisionCommentSummary[];
+  /**
+   * True when the decision's sealed-reason or sealed metadata implies
+   * POPIA s.71 (automated decisioning). Today we surface the notice for
+   * any decision with `sealedReason === "popia-incident"`. Refinable by
+   * Iris in a future pass.
+   */
+  popiaS71: boolean;
+  /** Citations attached to the originating escalation envelope. */
+  citations: readonly string[];
+}
+
 export interface DashboardState {
   asOf: string;
   bank: BankSummary;
