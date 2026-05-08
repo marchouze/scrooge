@@ -1,20 +1,12 @@
 {
-  "asOf": "2026-05-08T12:33:15.648Z",
+  "asOf": "2026-05-08T12:45:00.058Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
     "strategicFoundation": {
       "type": "Institutional global-markets trading bank",
-      "products": [
-        "JSE-listed bonds",
-        "JSE-listed equities",
-        "OTC interest-rate derivatives"
-      ],
-      "clients": [
-        "Large SA corporates",
-        "Banks",
-        "Non-bank financial institutions"
-      ],
+      "products": ["JSE-listed bonds", "JSE-listed equities", "OTC interest-rate derivatives"],
+      "clients": ["Large SA corporates", "Banks", "Non-bank financial institutions"],
       "geography": "South Africa · single branch",
       "capital": "R300m (committed shareholder capital)",
       "licence": "Application deferred"
@@ -145,9 +137,7 @@
       "owner": "Owen",
       "trigger": "Owen drafts; agent's next governance-cycle run",
       "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_governance-framework.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-06_governance-framework.md"],
       "brief": {
         "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
         "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
@@ -252,9 +242,7 @@
       "owner": "Imani",
       "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
       "decisionForCEO": "Engage / when / which firm.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
       "brief": {
         "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
         "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
@@ -349,9 +337,7 @@
       "owner": "Marc",
       "trigger": "Marc sets directly; Camille tracks against actuals",
       "decisionForCEO": "Set the monthly Anthropic API + Azure cloud cost cap for the build phase, and the trigger for revisiting it.",
-      "sourceDocs": [
-        "memory/project_ai_driven_bank.md"
-      ],
+      "sourceDocs": ["memory/project_ai_driven_bank.md"],
       "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). The real cost is API + cloud + Marc's attention; this decision sets the dollar cap.",
       "brief": {
         "summary": "Under the AI-driven-bank reframe, the bank's real costs during build are Anthropic API spend and (when M8 cloud lift happens) Azure infrastructure. Marc sets the monthly cap; Camille tracks actuals against it.",
@@ -536,9 +522,7 @@
       "owner": "Atlas + Anya",
       "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
       "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
       "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
       "brief": {
         "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
@@ -627,15 +611,28 @@
       }
     },
     {
+      "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+      "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+      "category": "near-term",
+      "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+      "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+      "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+      ],
+      "recommendation": {
+        "stance": "Approve all three author recommendation sets as drafted.",
+        "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+      }
+    },
+    {
       "id": "D-THIN-HUMAN-LAYER-MINIMUM",
       "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
       "category": "near-term",
       "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
       "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
       "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"],
       "recommendation": {
         "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
         "reasoning": ""
@@ -648,9 +645,7 @@
       "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
       "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
       "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
-      ],
+      "sourceDocs": ["Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"],
       "recommendation": {
         "stance": "Approve as drafted.",
         "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
@@ -857,9 +852,30 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+          "category": "near-term",
+          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+          ],
+          "recommendation": {
+            "stance": "Approve all three author recommendation sets as drafted.",
+            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+          }
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
+          "title": "scrooge · ceo decision pack · s7 targeted 3 5 open questions"
+        },
         {
           "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_scrooge_inbox-hygiene.md",
@@ -867,23 +883,18 @@
         },
         {
           "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s5.md",
+          "title": "scrooge · ceo decision record · s5"
+        },
+        {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-s7-targeted-3-5-open-questions.md",
+          "title": "scrooge · ceo decision record · d s7 targeted 3 5 open questions"
+        },
+        {
+          "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
           "title": "scrooge · ceo decision record · d fleet rollout sequencing"
-        },
-        {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md",
-          "title": "atlas scrooge · fleet rollout sequencing"
-        },
-        {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-a22-retire-legacy.md",
-          "title": "scrooge · ceo decision record · d a22 retire legacy"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
-          "title": "fix a second wave bea rohan niko tomas"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -963,7 +974,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 13
     },
     {
@@ -986,7 +997,23 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+          "category": "near-term",
+          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+          ],
+          "recommendation": {
+            "stance": "Approve all three author recommendation sets as drafted.",
+            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+          }
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1023,7 +1050,23 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
+          "openDecisionsOwned": [
+            {
+              "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+              "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+              "category": "near-term",
+              "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+              "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+              "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+              ],
+              "recommendation": {
+                "stance": "Approve all three author recommendation sets as drafted.",
+                "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+              }
+            }
+          ],
           "recentDeliverables": [
             {
               "date": "2026-05-09",
@@ -1059,7 +1102,23 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
+          "openDecisionsOwned": [
+            {
+              "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+              "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+              "category": "near-term",
+              "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+              "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+              "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+              ],
+              "recommendation": {
+                "stance": "Approve all three author recommendation sets as drafted.",
+                "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+              }
+            }
+          ],
           "recentDeliverables": [
             {
               "date": "2026-05-09",
@@ -1072,7 +1131,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 3,
       "totalRecentDeliverables": 11
     },
     {
@@ -1087,15 +1146,28 @@
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [
         {
+          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+          "category": "near-term",
+          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+          ],
+          "recommendation": {
+            "stance": "Approve all three author recommendation sets as drafted.",
+            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+          }
+        },
+        {
           "id": "D-A22-RETIRE-LEGACY",
           "title": "A2.2 dispatcher — cutover spec to retire the legacy in-process fan-out",
           "category": "near-term",
           "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
           "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
           "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
-          ],
+          "sourceDocs": ["Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"],
           "recommendation": {
             "stance": "Approve as drafted.",
             "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
@@ -1306,9 +1378,7 @@
               "owner": "Atlas + Anya",
               "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
               "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-              ],
+              "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
               "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
               "brief": {
                 "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
@@ -1403,9 +1473,7 @@
               "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
               "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
               "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
-              ],
+              "sourceDocs": ["Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"],
               "recommendation": {
                 "stance": "Approve as drafted.",
                 "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
@@ -1626,9 +1694,7 @@
               "owner": "Atlas + Anya",
               "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
               "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-              ],
+              "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
               "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
               "brief": {
                 "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
@@ -1755,9 +1821,7 @@
               "owner": "Imani",
               "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
               "decisionForCEO": "Engage / when / which firm.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-              ],
+              "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
               "brief": {
                 "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
                 "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
@@ -1919,7 +1983,7 @@
       ],
       "totalActive": 9,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 8,
+      "totalOpenDecisions": 9,
       "totalRecentDeliverables": 29
     },
     {
@@ -2099,7 +2163,23 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+          "category": "near-term",
+          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+          ],
+          "recommendation": {
+            "stance": "Approve all three author recommendation sets as drafted.",
+            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+          }
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -2136,7 +2216,23 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
+          "openDecisionsOwned": [
+            {
+              "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+              "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+              "category": "near-term",
+              "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+              "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+              "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
+              ],
+              "recommendation": {
+                "stance": "Approve all three author recommendation sets as drafted.",
+                "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
+              }
+            }
+          ],
           "recentDeliverables": [
             {
               "date": "2026-05-09",
@@ -2169,7 +2265,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 10
     },
     {
@@ -2190,9 +2286,7 @@
           "owner": "Owen",
           "trigger": "Owen drafts; agent's next governance-cycle run",
           "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-06_governance-framework.md"
-          ],
+          "sourceDocs": ["Owner Inbox/2026-05-06_governance-framework.md"],
           "brief": {
             "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
             "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
@@ -2297,9 +2391,7 @@
           "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
           "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
           "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
-          ],
+          "sourceDocs": ["Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"],
           "recommendation": {
             "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
             "reasoning": ""
@@ -2359,9 +2451,7 @@
           "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
           "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
           "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
-          ],
+          "sourceDocs": ["Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"],
           "recommendation": {
             "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
             "reasoning": ""
@@ -2616,6 +2706,21 @@
   ],
   "ownerInboxFeed": [
     {
+      "filename": "2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
+      "date": "2026-05-09",
+      "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
+      "decisionRequired": true,
+      "author": "Scrooge",
+      "summary": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
+      "decisionId": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+      "decisionCategory": "near-term",
+      "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
+      "decisionRecommendation": "Approve all three author recommendation sets as drafted. Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items.",
+      "decisionOwner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
+      "decisionStatus": "open"
+    },
+    {
       "filename": "2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
       "path": "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
       "date": "2026-05-09",
@@ -2756,6 +2861,54 @@
       "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
     },
     {
+      "filename": "2026-05-08_scrooge_ceo-decision-record_s8.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s8.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — CEO decision record: S8, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-08_scrooge_ceo-decision-record_s7.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s7.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — CEO decision record: S7, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-08_scrooge_ceo-decision-record_s6.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s6.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — CEO decision record: S6, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-08_scrooge_ceo-decision-record_s5.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s5.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — CEO decision record: S5, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-08_scrooge_ceo-decision-record_s3.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s3.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — CEO decision record: S3, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-08_scrooge_ceo-decision-record_d-s7-targeted-3-5-open-questions.md",
+      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-s7-targeted-3-5-open-questions.md",
+      "date": "2026-05-08",
+      "title": "Scrooge — CEO decision record: D-S7-TARGETED-3-5-OPEN-QUESTIONS, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
       "filename": "2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
       "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-fleet-rollout-sequencing.md",
       "date": "2026-05-08",
@@ -2778,62 +2931,6 @@
       "title": "Saskia — markets-readiness snapshot, 2026-05-08",
       "decisionRequired": false,
       "summary": "Autonomous run of Saskia's weekly markets-readiness snapshot per `Team/Saskia.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Tenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
-    },
-    {
-      "filename": "2026-05-08_sade_agentops-readiness.md",
-      "path": "Owner Inbox/2026-05-08_sade_agentops-readiness.md",
-      "date": "2026-05-08",
-      "title": "Sade — AgentOps readiness snapshot, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Sade's weekly AgentOps-readiness snapshot per `Team/Sade.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Handler #15 in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING` — c…"
-    },
-    {
-      "filename": "2026-05-08_rohan_risk-run.md",
-      "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
-      "date": "2026-05-08",
-      "title": "Rohan — daily risk run, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the enginee…"
-    },
-    {
-      "filename": "2026-05-08_ravi_alm-readiness.md",
-      "path": "Owner Inbox/2026-05-08_ravi_alm-readiness.md",
-      "date": "2026-05-08",
-      "title": "Ravi — ALM readiness, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Ravi's daily ALM-readiness attestation per `Team/Ravi.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Seventeenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING…"
-    },
-    {
-      "filename": "2026-05-08_rashida_cyber-resilience-snapshot.md",
-      "path": "Owner Inbox/2026-05-08_rashida_cyber-resilience-snapshot.md",
-      "date": "2026-05-08",
-      "title": "Rashida — cyber-resilience snapshot, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Rashida's weekly cyber-resilience snapshot per `Team/Rashida.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Pre-attestation digest for the quarterly Joint Standard 1 of 2024 programme atte…"
-    },
-    {
-      "filename": "2026-05-08_pax_role-research-queue.md",
-      "path": "Owner Inbox/2026-05-08_pax_role-research-queue.md",
-      "date": "2026-05-08",
-      "title": "PAX — role-research queue snapshot, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of PAX's weekly role-research-queue snapshot per `Team/PAX.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Handler #18 in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING` — cl…"
-    },
-    {
-      "filename": "2026-05-08_iris_popia-controls-snapshot.md",
-      "path": "Owner Inbox/2026-05-08_iris_popia-controls-snapshot.md",
-      "date": "2026-05-08",
-      "title": "Iris — POPIA controls snapshot, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Iris's weekly POPIA-controls snapshot per `Team/Iris.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Standing-duty digest under POPIA s.56; informs the quarterly s.19–22 joint review with R…"
-    },
-    {
-      "filename": "2026-05-08_imani_legal-readiness.md",
-      "path": "Owner Inbox/2026-05-08_imani_legal-readiness.md",
-      "date": "2026-05-08",
-      "title": "Imani — Legal-readiness snapshot, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Imani's weekly legal-readiness snapshot per `Team/Imani.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. 14th handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
     }
   ],
   "prototype": {
@@ -2892,6 +2989,14 @@
     "Personas reshaped under reframe: Sade → AgentOps for build; Niko paused; Yael / Imani build-phase scopes trimmed. Reshape work pending in /Team/."
   ],
   "findings": [
+    {
+      "id": "ebac227a-9541-4c50-a584-0b296b8b4a45",
+      "source": "agent:vera:overnight-recon",
+      "severity": "high",
+      "principle": "decisionsOpen",
+      "description": "Drift between persisted registry and derivation at decisionsOpen",
+      "asOf": "2026-05-07T02:00:00.000Z"
+    },
     {
       "id": "b539c473-99ea-4b8e-9b9f-18d27dfce9e9",
       "source": "agent:vera:overnight-recon",
@@ -2972,9 +3077,7 @@
       "agent": "Scrooge",
       "trigger": "follow-on-router",
       "kind": "event-driven",
-      "subscribesTo": [
-        "CeoDecision"
-      ]
+      "subscribesTo": ["CeoDecision"]
     },
     {
       "agent": "Owen",
