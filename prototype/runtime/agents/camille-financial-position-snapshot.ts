@@ -173,7 +173,8 @@ function readFinanceDomainEvents(sinceIso: string): FinanceDomainEvents {
   let capitalEvents = 0;
   let classifications = 0;
   for (const e of eventStore.replay({ type: "CloseApproved" })) if (e.as_of >= sinceIso) closes++;
-  for (const e of eventStore.replay({ type: "BAReturnSigned" })) if (e.as_of >= sinceIso) baReturns++;
+  for (const e of eventStore.replay({ type: "BAReturnSigned" }))
+    if (e.as_of >= sinceIso) baReturns++;
   for (const e of eventStore.replay({ type: "AFSSigned" })) if (e.as_of >= sinceIso) afs++;
   for (const e of eventStore.replay({ type: "AccountingPolicyChanged" })) {
     if (e.as_of >= sinceIso) policyChanges++;
@@ -184,7 +185,8 @@ function readFinanceDomainEvents(sinceIso: string): FinanceDomainEvents {
   for (const e of eventStore.replay({ type: "RestatementProposed" })) {
     if (e.as_of >= sinceIso) restatements++;
   }
-  for (const e of eventStore.replay({ type: "CapitalEvent" })) if (e.as_of >= sinceIso) capitalEvents++;
+  for (const e of eventStore.replay({ type: "CapitalEvent" }))
+    if (e.as_of >= sinceIso) capitalEvents++;
   for (const e of eventStore.replay({ type: "MaterialIFRSClassificationChange" })) {
     if (e.as_of >= sinceIso) classifications++;
   }
@@ -242,7 +244,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: CamilleSnapshot): strin
   lines.push("");
   lines.push("finance bench (Bea + Yael):");
   for (const s of snap.bench) {
-    lines.push(`  - ${s.persona}: ${s.handlerCount} runtime handler(s)${s.handlerCount > 0 ? ` [${s.handlerKeys.join(", ")}]` : ""}`);
+    lines.push(
+      `  - ${s.persona}: ${s.handlerCount} runtime handler(s)${s.handlerCount > 0 ? ` [${s.handlerKeys.join(", ")}]` : ""}`,
+    );
   }
   lines.push("");
   lines.push("CFO-domain events (last 7 days):");
@@ -326,7 +330,9 @@ function buildReportMarkdown(
   lines.push(`| \`TaxSubmissionApproved\` | ${snap.events.taxSubmissionsApprovedLast7d} |`);
   lines.push(`| \`RestatementProposed\` | ${snap.events.restatementsProposedLast7d} |`);
   lines.push(`| \`CapitalEvent\` | ${snap.events.capitalEventsLast7d} |`);
-  lines.push(`| \`MaterialIFRSClassificationChange\` | ${snap.events.classificationChangesLast7d} |`);
+  lines.push(
+    `| \`MaterialIFRSClassificationChange\` | ${snap.events.classificationChangesLast7d} |`,
+  );
   lines.push("");
   if (
     snap.events.closesApprovedLast7d === 0 &&
@@ -343,10 +349,18 @@ function buildReportMarkdown(
   lines.push("");
   lines.push("| Cycle | Last fired |");
   lines.push("|---|---|");
-  lines.push(`| Monthly close (\`CloseApproved\`) | ${snap.readiness.lastCloseApproved ?? "**never — substrate gap**"} |`);
-  lines.push(`| Quarterly BA return (\`BAReturnSigned\`) | ${snap.readiness.lastBaReturnSigned ?? "**never — substrate gap**"} |`);
-  lines.push(`| Annual AFS (\`AFSSigned\`) | ${snap.readiness.lastAfsSigned ?? "**never — substrate gap**"} |`);
-  lines.push(`| Capital-plan refresh (\`CapitalPlanRefreshed\`) | ${snap.readiness.lastCapitalPlanRefresh ?? "**never — substrate gap**"} |`);
+  lines.push(
+    `| Monthly close (\`CloseApproved\`) | ${snap.readiness.lastCloseApproved ?? "**never — substrate gap**"} |`,
+  );
+  lines.push(
+    `| Quarterly BA return (\`BAReturnSigned\`) | ${snap.readiness.lastBaReturnSigned ?? "**never — substrate gap**"} |`,
+  );
+  lines.push(
+    `| Annual AFS (\`AFSSigned\`) | ${snap.readiness.lastAfsSigned ?? "**never — substrate gap**"} |`,
+  );
+  lines.push(
+    `| Capital-plan refresh (\`CapitalPlanRefreshed\`) | ${snap.readiness.lastCapitalPlanRefresh ?? "**never — substrate gap**"} |`,
+  );
   lines.push("");
 
   lines.push("## Substrate gaps surfaced this run");

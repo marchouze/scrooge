@@ -226,9 +226,7 @@ function buildReportMarkdown(
   lines.push(
     `| Prior \`AuditCommitteePackPrepped\` | ${digest.priorPacksLast30d} | last 30 days |`,
   );
-  lines.push(
-    `| \`WhistleblowingDisclosure\` | ${digest.whistleblowingLast7d} | last 7 days |`,
-  );
+  lines.push(`| \`WhistleblowingDisclosure\` | ${digest.whistleblowingLast7d} | last 7 days |`);
   lines.push(
     `| \`ExternalAuditorInquiry\` | ${digest.externalAuditorInquiryLast7d} | last 7 days |`,
   );
@@ -278,10 +276,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const obligationsContent = existsSync(obligationsPath)
     ? readFileSync(obligationsPath, "utf8")
     : "";
-  const thirdLineObligations = countObligationsByOwner(
-    obligationsContent,
-    /Thandiwe|Vera|Audit/i,
-  );
+  const thirdLineObligations = countObligationsByOwner(obligationsContent, /Thandiwe|Vera|Audit/i);
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {

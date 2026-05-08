@@ -324,13 +324,13 @@ async function load() {
     if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
     const state = await stateR.json();
     latestRunByAgent = {};
-    if (runsR && runsR.ok) {
+    if (runsR?.ok) {
       const data = await runsR.json();
       for (const [agent, runs] of Object.entries(data.byAgent ?? {})) {
         if (runs.length > 0) latestRunByAgent[agent.toLowerCase()] = runs[0];
       }
     }
-    const gapsView = gapsR && gapsR.ok ? await gapsR.json() : null;
+    const gapsView = gapsR?.ok ? await gapsR.json() : null;
     renderStrategyBanner(state);
     renderAggregateStats(state);
     renderRuntimeAgents(state);

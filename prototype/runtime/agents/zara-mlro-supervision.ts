@@ -176,10 +176,7 @@ function readMiraOutputs(sinceIso: string): MiraOutputs {
     if (e.as_of >= sinceIso) {
       // Coarse filter: financial-crime / sanctions / conduct flavours.
       const cat = (e.payload as { category?: string })?.category ?? "";
-      if (
-        cat === "" ||
-        /aml|sanctions|fic|fais|conduct|str|popia/i.test(cat)
-      ) {
+      if (cat === "" || /aml|sanctions|fic|fais|conduct|str|popia/i.test(cat)) {
         findings++;
       }
     }
@@ -309,8 +306,12 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: ZaraSnapshot): string {
   lines.push(`  FAISConductBreachSuspected: ${snap.mlro.conductBreachesLast7d}`);
   lines.push(`  RegulatorInquiry: ${snap.mlro.regulatorInquiriesLast7d}`);
   lines.push("");
-  lines.push(`RMCP version approved (any RMCPVersionApproved event observed): ${snap.rmcpVersionApproved}`);
-  lines.push(`Sanctions list last refreshed: ${snap.sanctionsListLastRefreshed ?? "never (no SanctionsListRefreshed events)"}`);
+  lines.push(
+    `RMCP version approved (any RMCPVersionApproved event observed): ${snap.rmcpVersionApproved}`,
+  );
+  lines.push(
+    `Sanctions list last refreshed: ${snap.sanctionsListLastRefreshed ?? "never (no SanctionsListRefreshed events)"}`,
+  );
   lines.push("");
   lines.push(
     "Now write your narrative per the system instructions. Headline first; rank by what's load-bearing on a Zara-signed event; close with the next compliance move.",
@@ -385,7 +386,9 @@ function buildReportMarkdown(
   lines.push("");
   lines.push("| Item | State |");
   lines.push("|---|---|");
-  lines.push(`| RMCP version approved (\`RMCPVersionApproved\` event) | ${snap.rmcpVersionApproved ? "yes" : "**no — substrate gap**"} |`);
+  lines.push(
+    `| RMCP version approved (\`RMCPVersionApproved\` event) | ${snap.rmcpVersionApproved ? "yes" : "**no — substrate gap**"} |`,
+  );
   lines.push(
     `| Sanctions-list last refreshed | ${snap.sanctionsListLastRefreshed ?? "**never — substrate gap**"} |`,
   );

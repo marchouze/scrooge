@@ -15,7 +15,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { assertSpecs, run as agentSpecRun } from "../platform/recon/agent-spec";
+import { run as agentSpecRun, assertSpecs } from "../platform/recon/agent-spec";
 
 describe("agent-spec-integrity pipeline", () => {
   it("runs over the live /Team/ directory and returns a typed result", () => {
@@ -154,7 +154,8 @@ describe("agent-spec-integrity — synthetic malformations", () => {
     expect(r.ok).toBe(false);
     expect(
       r.violations.some(
-        (v) => v.severity === "fail" && v.message.includes("missing § 10 (Decisions that escalate)"),
+        (v) =>
+          v.severity === "fail" && v.message.includes("missing § 10 (Decisions that escalate)"),
       ),
     ).toBe(true);
   });
@@ -187,8 +188,7 @@ describe("agent-spec-integrity — synthetic malformations", () => {
     expect(r.ok).toBe(false);
     expect(
       r.violations.some(
-        (v) =>
-          v.severity === "fail" && v.message.includes("§ 17 (Change log) has no data rows"),
+        (v) => v.severity === "fail" && v.message.includes("§ 17 (Change log) has no data rows"),
       ),
     ).toBe(true);
   });

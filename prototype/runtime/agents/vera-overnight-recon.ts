@@ -240,9 +240,7 @@ function buildReportMarkdown(
   lines.push("## Substrate");
   lines.push("");
   lines.push(
-    "Pipelines invoked: " +
-      PIPELINES.map((p) => `\`${p.key}\``).join(", ") +
-      ". Citation gate runs separately under `bun run citation-gate` / CI; future runs will wrap it here.",
+    `Pipelines invoked: ${PIPELINES.map((p) => `\`${p.key}\``).join(", ")}. Citation gate runs separately under \`bun run citation-gate\` / CI; future runs will wrap it here.`,
   );
   lines.push("");
   lines.push(

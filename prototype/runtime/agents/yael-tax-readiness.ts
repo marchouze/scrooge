@@ -349,7 +349,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: YaelSnapshot): string {
   lines.push(`  VATFilingApproved: ${snap.events.vatFilingsApprovedLast7d}`);
   lines.push(`  FATCAReportingPublished: ${snap.events.fatcaReportingsPublishedLast7d}`);
   lines.push(`  CRSReportingPublished: ${snap.events.crsReportingsPublishedLast7d}`);
-  lines.push(`  TransferPricingFilingApproved: ${snap.events.transferPricingFilingsApprovedLast7d}`);
+  lines.push(
+    `  TransferPricingFilingApproved: ${snap.events.transferPricingFilingsApprovedLast7d}`,
+  );
   lines.push(`  STTRemitted: ${snap.events.sttRemittedLast7d}`);
   lines.push(`  SARSGuidanceScanned: ${snap.events.sarsGuidanceScannedLast7d}`);
   lines.push(`  TaxClassificationPublished: ${snap.events.taxClassificationsPublishedLast7d}`);
@@ -363,7 +365,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: YaelSnapshot): string {
   }
   lines.push("");
   lines.push("Camille's latest FinancialPositionSnapshot anchor:");
-  lines.push(`  as_of: ${snap.camille.snapshotAsOf ?? "never (no FinancialPositionSnapshot observed)"}`);
+  lines.push(
+    `  as_of: ${snap.camille.snapshotAsOf ?? "never (no FinancialPositionSnapshot observed)"}`,
+  );
   lines.push(`  last CloseApproved: ${snap.camille.lastCloseApproved ?? "never"}`);
   lines.push(`  last BAReturnSigned: ${snap.camille.lastBaReturnSigned ?? "never"}`);
   lines.push("");
@@ -421,11 +425,17 @@ function buildReportMarkdown(
   lines.push(`| \`VATFilingApproved\` | ${snap.events.vatFilingsApprovedLast7d} |`);
   lines.push(`| \`FATCAReportingPublished\` | ${snap.events.fatcaReportingsPublishedLast7d} |`);
   lines.push(`| \`CRSReportingPublished\` | ${snap.events.crsReportingsPublishedLast7d} |`);
-  lines.push(`| \`TransferPricingFilingApproved\` | ${snap.events.transferPricingFilingsApprovedLast7d} |`);
+  lines.push(
+    `| \`TransferPricingFilingApproved\` | ${snap.events.transferPricingFilingsApprovedLast7d} |`,
+  );
   lines.push(`| \`STTRemitted\` | ${snap.events.sttRemittedLast7d} |`);
   lines.push(`| \`SARSGuidanceScanned\` | ${snap.events.sarsGuidanceScannedLast7d} |`);
-  lines.push(`| \`TaxClassificationPublished\` | ${snap.events.taxClassificationsPublishedLast7d} |`);
-  lines.push(`| \`FATCAClassificationAssigned\` | ${snap.events.fatcaClassificationsAssignedLast7d} |`);
+  lines.push(
+    `| \`TaxClassificationPublished\` | ${snap.events.taxClassificationsPublishedLast7d} |`,
+  );
+  lines.push(
+    `| \`FATCAClassificationAssigned\` | ${snap.events.fatcaClassificationsAssignedLast7d} |`,
+  );
   lines.push(`| \`CRSClassificationAssigned\` | ${snap.events.crsClassificationsAssignedLast7d} |`);
   lines.push(`| \`TaxReturnDrafted\` | ${snap.events.taxReturnsDraftedLast7d} |`);
   lines.push("");
@@ -460,8 +470,12 @@ function buildReportMarkdown(
   lines.push(
     `| Latest \`FinancialPositionSnapshot\` as_of | ${snap.camille.snapshotAsOf ?? "**never — substrate gap**"} |`,
   );
-  lines.push(`| Last \`CloseApproved\` | ${snap.camille.lastCloseApproved ?? "never (build phase)"} |`);
-  lines.push(`| Last \`BAReturnSigned\` | ${snap.camille.lastBaReturnSigned ?? "never (build phase)"} |`);
+  lines.push(
+    `| Last \`CloseApproved\` | ${snap.camille.lastCloseApproved ?? "never (build phase)"} |`,
+  );
+  lines.push(
+    `| Last \`BAReturnSigned\` | ${snap.camille.lastBaReturnSigned ?? "never (build phase)"} |`,
+  );
   lines.push("");
   lines.push(
     "_Engineer-side pairing pattern: Yael consumes Camille's CFO snapshot to anchor tax-cycle readiness against the close view. Mirrors the way Rohan reads Helena's `RiskAppetiteSnapshot`._",

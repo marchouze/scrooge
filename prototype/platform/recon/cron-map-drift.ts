@@ -257,9 +257,7 @@ function arrEq(a: readonly number[], b: readonly number[]): boolean {
   return true;
 }
 
-function loadWorkflowFiles(
-  workflowsDir: string,
-): Readonly<Record<string, string>> {
+function loadWorkflowFiles(workflowsDir: string): Readonly<Record<string, string>> {
   if (!existsSync(workflowsDir)) return {};
   const out: Record<string, string> = {};
   for (const name of readdirSync(workflowsDir)) {

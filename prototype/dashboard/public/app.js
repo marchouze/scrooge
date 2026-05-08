@@ -169,10 +169,9 @@ function renderDecisionsOpen(decisions) {
   }
   const commentsByDecision = lastState?.decisionComments ?? {};
   $("#decisionsOpen").innerHTML = decisions
-    .map(
-      (d) => {
-        const ccount = (commentsByDecision[d.id] ?? []).length;
-        return `
+    .map((d) => {
+      const ccount = (commentsByDecision[d.id] ?? []).length;
+      return `
     <div class="dcard cat-${esc(d.category)}">
       <div class="head">
         <span class="id">${esc(d.id)}</span>
@@ -192,8 +191,7 @@ function renderDecisionsOpen(decisions) {
       </div>
     </div>
   `;
-      },
-    )
+    })
     .join("");
 
   // Wire "Review brief" buttons
@@ -450,11 +448,12 @@ function renderBrief(d) {
 }
 
 function renderCommentsSection(decisionId) {
-  const comments = (lastState?.decisionComments ?? {})[decisionId] ?? [];
+  const comments = lastState?.decisionComments?.[decisionId] ?? [];
   const items = comments
     .map((c) => {
       const dt = c.asOf.slice(0, 16).replace("T", " ");
-      const actorBadge = c.actorType === "human" ? "human" : c.actorType === "service" ? "agent" : "system";
+      const actorBadge =
+        c.actorType === "human" ? "human" : c.actorType === "service" ? "agent" : "system";
       return `
         <li class="comment comment-${actorBadge}">
           <div class="comment-head">
@@ -694,7 +693,9 @@ async function submitModal() {
   const routePattern = /^agent:[a-z][a-z0-9-]*:[a-z][a-z0-9-]*$/i;
   const badRoutes = followOnRoutes.filter((r) => !routePattern.test(r));
   if (badRoutes.length > 0) {
-    showModalError(`Invalid follow-on route(s): ${badRoutes.join(", ")} — must match agent:<name>:<trigger>.`);
+    showModalError(
+      `Invalid follow-on route(s): ${badRoutes.join(", ")} — must match agent:<name>:<trigger>.`,
+    );
     return;
   }
   if (!outcome) {

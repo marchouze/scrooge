@@ -265,12 +265,7 @@ export interface RuntimeHandlerInfo {
  * the UI when convenient — `decided` is terminal; `overdue` overlays open /
  * acknowledged / delegated.
  */
-export type EscalationLifecycle =
-  | "open"
-  | "acknowledged"
-  | "delegated"
-  | "decided"
-  | "overdue";
+export type EscalationLifecycle = "open" | "acknowledged" | "delegated" | "decided" | "overdue";
 
 export interface EscalationView {
   escalationId: string;

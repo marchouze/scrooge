@@ -1376,7 +1376,7 @@ for (const spec of SPECS) {
     continue;
   }
   const trailing = content.endsWith("\n") ? "" : "\n";
-  const next = content + trailing + spec.section.trimStart() + "\n";
+  const next = `${content + trailing + spec.section.trimStart()}\n`;
   writeFileSync(path, next, "utf8");
   console.log(`append ${spec.name}.md`);
   appended++;

@@ -80,8 +80,7 @@ function parseArgs(argv: readonly string[]): CliArgs {
   }
   if (!agent || !trigger) {
     throw new Error(
-      "Usage: bun runtime/run.ts --agent <Name> --trigger <id> [--dry-run]\n" +
-        `Available: ${Object.keys(HANDLERS).join(", ")}`,
+      `Usage: bun runtime/run.ts --agent <Name> --trigger <id> [--dry-run]\nAvailable: ${Object.keys(HANDLERS).join(", ")}`,
     );
   }
   return { agent, trigger, dryRun };

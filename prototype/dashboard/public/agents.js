@@ -78,7 +78,7 @@ function renderSummary(agents) {
   }
 }
 
-function renderWorkstreamItem(ws, opts = {}) {
+function renderWorkstreamItem(ws, _opts = {}) {
   const cls = ws.active ? "ws-active" : "ws-done";
   const label = ws.active
     ? `Started ${fmtDate(ws.startedAt)} · due ${ws.due}`
@@ -94,7 +94,7 @@ function renderWorkstreamItem(ws, opts = {}) {
     children.push(
       el("div", { class: "ws-outcome" }, [
         el("span", { class: "muted" }, "→ "),
-        el("a", { href: `#`, class: "ws-link", title: ws.outcomeDoc }, ws.outcomeDoc),
+        el("a", { href: "#", class: "ws-link", title: ws.outcomeDoc }, ws.outcomeDoc),
       ]),
     );
   }
@@ -357,20 +357,6 @@ function renderAgents(agents) {
   $("agentsSub").textContent = `${agents.length} agents`;
 }
 
-function renderStrategyBanner(state) {
-  const banner = $("strategyBanner");
-  if (!banner) return;
-  const phase = state.bank?.operatingPosture ?? "—";
-  const openCount = (state.decisionsOpen ?? []).length;
-  const agentCount = (state.agents ?? []).length;
-  banner.innerHTML = "";
-  banner.appendChild(el("span", { class: "banner-phase" }, `Phase: ${phase}`));
-  banner.appendChild(el("span", { class: "banner-sep" }, " · "));
-  banner.appendChild(el("span", {}, `${openCount} CEO decision${openCount === 1 ? "" : "s"} open`));
-  banner.appendChild(el("span", { class: "banner-sep" }, " · "));
-  banner.appendChild(el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`));
-}
-
 // Mapping of agent name → recent runs from /api/agent-runs. Refreshed
 // alongside /api/state on each load tick.
 let agentRunsByAgent = {};
@@ -461,7 +447,7 @@ async function load() {
     ]);
     if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
     const state = await stateR.json();
-    agentRunsByAgent = runsR && runsR.ok ? ((await runsR.json()).byAgent ?? {}) : {};
+    agentRunsByAgent = runsR?.ok ? ((await runsR.json()).byAgent ?? {}) : {};
     const agents = state.agents ?? [];
     renderStrategyBanner(state);
     renderSummary(agents);

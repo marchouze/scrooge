@@ -262,7 +262,9 @@ function buildReportMarkdown(
   lines.push("");
   lines.push("| Item | State |");
   lines.push("|---|---|");
-  lines.push(`| Registered agents (latest-wins per \`agentUrn\`) | ${snap.registry.registeredAgents} |`);
+  lines.push(
+    `| Registered agents (latest-wins per \`agentUrn\`) | ${snap.registry.registeredAgents} |`,
+  );
   lines.push(
     `| Latest \`AgentRegistered\` event | ${snap.registry.latestRegistrationAsOf ?? "**never — no events on this branch**"} |`,
   );
@@ -295,7 +297,9 @@ function buildReportMarkdown(
   lines.push(`| \`AgentRegistered\` | ${snap.agentops.agentRegisteredLast7d} |`);
   lines.push(`| \`AgentRetired\` | ${snap.agentops.agentRetiredLast7d} |`);
   lines.push(`| \`IdentityKeyRotated\` | ${snap.agentops.identityKeyRotatedLast7d} |`);
-  lines.push(`| \`PermissionPolicyPublished\` | ${snap.agentops.permissionPolicyPublishedLast7d} |`);
+  lines.push(
+    `| \`PermissionPolicyPublished\` | ${snap.agentops.permissionPolicyPublishedLast7d} |`,
+  );
   lines.push("");
   if (
     snap.agentops.agentRetiredLast7d === 0 &&
@@ -317,8 +321,12 @@ function buildReportMarkdown(
   lines.push("| Permission-policy generator (A2) | PR #3 — not yet on main | Atlas |");
   lines.push("| AgentOps audit trail | **TBD** — design only | Sade + Vera |");
   lines.push("| Fit-and-proper analogue spec | **TBD** — design only | Sade + Vera (Wave-4 #10) |");
-  lines.push("| Agent retirement procedure | **TBD** — `Procedures/by-policy/agent-retirement.md` planned | Sade |");
-  lines.push("| Capability-assignment register | **TBD** — `prototype/runtime/_capability-register.md` planned | Sade + Atlas |");
+  lines.push(
+    "| Agent retirement procedure | **TBD** — `Procedures/by-policy/agent-retirement.md` planned | Sade |",
+  );
+  lines.push(
+    "| Capability-assignment register | **TBD** — `prototype/runtime/_capability-register.md` planned | Sade + Atlas |",
+  );
   lines.push("| Persona-coherence drift detection | **TBD** — manual today | Sade + Anya |");
   lines.push("| Paused-persona register | **TBD** — `/Team/_paused-personas.md` planned | Sade |");
   lines.push("");
@@ -332,13 +340,21 @@ function buildReportMarkdown(
   lines.push("| Substrate | State |");
   lines.push("|---|---|");
   lines.push("| Payroll engine (gross-to-net) | paused; activates at licence-day |");
-  lines.push("| EMP201 / IRP5 / IT3(a) substrate | paused; activates at licence-day (joint with Yael) |");
+  lines.push(
+    "| EMP201 / IRP5 / IT3(a) substrate | paused; activates at licence-day (joint with Yael) |",
+  );
   lines.push("| BCEA leave register | paused; activates at licence-day |");
   lines.push("| EE / B-BBEE reporting | paused; activates at licence-day |");
-  lines.push("| Fit-and-proper register for humans | paused; activates at licence-day (joint with Mira) |");
-  lines.push("| Disciplinary records substrate | paused; activates at licence-day (joint with Imani) |");
+  lines.push(
+    "| Fit-and-proper register for humans | paused; activates at licence-day (joint with Mira) |",
+  );
+  lines.push(
+    "| Disciplinary records substrate | paused; activates at licence-day (joint with Imani) |",
+  );
   lines.push("| SDLA / WSP / SETA submissions | paused; activates at licence-day |");
-  lines.push("| PA Directive — remuneration governance for MRTs | paused; activates at licence-day (joint with Helena) |");
+  lines.push(
+    "| PA Directive — remuneration governance for MRTs | paused; activates at licence-day (joint with Helena) |",
+  );
   lines.push("");
 
   lines.push("## Substrate gaps surfaced this run");

@@ -34,7 +34,7 @@ function fmtRelative(iso, asOfIso) {
   const then = new Date(iso).getTime();
   const now = new Date(asOfIso).getTime();
   const ms = now - then;
-  const sign = ms >= 0 ? "" : "in ";
+  const _sign = ms >= 0 ? "" : "in ";
   const abs = Math.abs(ms);
   const h = Math.round(abs / 3600 / 1000);
   if (h < 1) return ms >= 0 ? "just now" : "in <1h";
@@ -110,9 +110,7 @@ function renderTable(rows, asOf) {
         : `${row.cadenceHours}h`
       : "—";
     const subscribesLabel =
-      row.subscribesTo && row.subscribesTo.length > 0
-        ? row.subscribesTo.join(", ")
-        : null;
+      row.subscribesTo && row.subscribesTo.length > 0 ? row.subscribesTo.join(", ") : null;
     tbody.appendChild(
       el("tr", { class: `fleet-row ${cls}` }, [
         el("td", { class: "fleet-agent" }, [

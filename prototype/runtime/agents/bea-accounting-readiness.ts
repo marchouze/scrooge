@@ -146,10 +146,10 @@ function readLatestCamilleSnapshot(): {
   return {
     asOf: latest.asOf,
     readiness: {
-      lastCloseApproved: (p["lastCloseApproved"] as string | null) ?? null,
-      lastBaReturnSigned: (p["lastBaReturnSigned"] as string | null) ?? null,
-      lastAfsSigned: (p["lastAfsSigned"] as string | null) ?? null,
-      lastCapitalPlanRefresh: (p["lastCapitalPlanRefresh"] as string | null) ?? null,
+      lastCloseApproved: (p.lastCloseApproved as string | null) ?? null,
+      lastBaReturnSigned: (p.lastBaReturnSigned as string | null) ?? null,
+      lastAfsSigned: (p.lastAfsSigned as string | null) ?? null,
+      lastCapitalPlanRefresh: (p.lastCapitalPlanRefresh as string | null) ?? null,
     },
   };
 }
@@ -301,7 +301,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: BeaSnapshot): string {
   lines.push(`  last CloseApproved: ${snap.camilleReadiness.lastCloseApproved ?? "never"}`);
   lines.push(`  last BAReturnSigned: ${snap.camilleReadiness.lastBaReturnSigned ?? "never"}`);
   lines.push(`  last AFSSigned: ${snap.camilleReadiness.lastAfsSigned ?? "never"}`);
-  lines.push(`  last CapitalPlanRefreshed: ${snap.camilleReadiness.lastCapitalPlanRefresh ?? "never"}`);
+  lines.push(
+    `  last CapitalPlanRefreshed: ${snap.camilleReadiness.lastCapitalPlanRefresh ?? "never"}`,
+  );
   lines.push("");
   lines.push("engineer-side readiness by cycle:");
   for (const r of snap.readiness) {
@@ -324,7 +326,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: BeaSnapshot): string {
   lines.push(`  ECLBookingApproved: ${snap.events.eclBookingApprovedLast7d}`);
   lines.push(`  SubLedgerEntryPosted: ${snap.events.subLedgerEntryPostedLast7d}`);
   lines.push(`  RestatementProposed: ${snap.events.restatementProposedLast7d}`);
-  lines.push(`  MaterialIFRSClassificationChange: ${snap.events.materialIfrsClassificationChangeLast7d}`);
+  lines.push(
+    `  MaterialIFRSClassificationChange: ${snap.events.materialIfrsClassificationChangeLast7d}`,
+  );
   lines.push("");
   lines.push(
     "Now write your narrative per the system instructions. Headline first; rank by what's load-bearing on Camille's first signed close; close with the next engineering move.",
@@ -350,7 +354,9 @@ function buildReportMarkdown(
   const readyN = snap.readiness.filter((r) => r.engineerSideState === "ready").length;
   const draftingN = snap.readiness.filter((r) => r.engineerSideState === "drafting").length;
   const specifiedN = snap.readiness.filter((r) => r.engineerSideState === "specified").length;
-  const unspecifiedN = snap.readiness.filter((r) => r.engineerSideState === "not-yet-specified").length;
+  const unspecifiedN = snap.readiness.filter(
+    (r) => r.engineerSideState === "not-yet-specified",
+  ).length;
   const totalEvents =
     snap.events.ifrsClassificationAssignedLast7d +
     snap.events.eclBookingApprovedLast7d +
@@ -371,13 +377,17 @@ function buildReportMarkdown(
   } else {
     lines.push(`Latest \`FinancialPositionSnapshot\` event: ${snap.latestCamilleRun}`);
     lines.push("");
-    lines.push("Bea's daily run pairs with Camille's weekly run: Camille reports the CFO-line readiness side; Bea reports the engineer side. Together they close the read-side ↔ build-side loop on the close / BA-return / AFS substrate.");
+    lines.push(
+      "Bea's daily run pairs with Camille's weekly run: Camille reports the CFO-line readiness side; Bea reports the engineer side. Together they close the read-side ↔ build-side loop on the close / BA-return / AFS substrate.",
+    );
   }
   lines.push("");
 
   lines.push("## Engineer-side readiness by cycle");
   lines.push("");
-  lines.push("| Cycle | Camille observes | Engineer-side state | Substrate required | Next engineering step |");
+  lines.push(
+    "| Cycle | Camille observes | Engineer-side state | Substrate required | Next engineering step |",
+  );
   lines.push("|---|---|---|---|---|");
   for (const r of snap.readiness) {
     lines.push(
@@ -406,11 +416,15 @@ function buildReportMarkdown(
   lines.push("");
   lines.push("| Event | Count |");
   lines.push("|---|---|");
-  lines.push(`| \`IFRSClassificationAssigned\` | ${snap.events.ifrsClassificationAssignedLast7d} |`);
+  lines.push(
+    `| \`IFRSClassificationAssigned\` | ${snap.events.ifrsClassificationAssignedLast7d} |`,
+  );
   lines.push(`| \`ECLBookingApproved\` | ${snap.events.eclBookingApprovedLast7d} |`);
   lines.push(`| \`SubLedgerEntryPosted\` | ${snap.events.subLedgerEntryPostedLast7d} |`);
   lines.push(`| \`RestatementProposed\` | ${snap.events.restatementProposedLast7d} |`);
-  lines.push(`| \`MaterialIFRSClassificationChange\` | ${snap.events.materialIfrsClassificationChangeLast7d} |`);
+  lines.push(
+    `| \`MaterialIFRSClassificationChange\` | ${snap.events.materialIfrsClassificationChangeLast7d} |`,
+  );
   lines.push("");
   if (totalEvents === 0) {
     lines.push(
@@ -465,7 +479,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Camille's latest `FinancialPositionSnapshot` via `eventStore.replay({type:\"FinancialPositionSnapshot\"})` (max as_of); engineer-side readiness map curated by Bea against `Team/Bea.md` § 16 (substrate gaps); Bea-owned obligation counts parsed from `Regulations/_obligations-register.md` (rows where Bea appears in any cell); event counts via `eventStore.replay({type:...})` filtered to last 7 days.",
+    'Camille\'s latest `FinancialPositionSnapshot` via `eventStore.replay({type:"FinancialPositionSnapshot"})` (max as_of); engineer-side readiness map curated by Bea against `Team/Bea.md` § 16 (substrate gaps); Bea-owned obligation counts parsed from `Regulations/_obligations-register.md` (rows where Bea appears in any cell); event counts via `eventStore.replay({type:...})` filtered to last 7 days.',
   );
   lines.push("");
   return lines.join("\n");
@@ -487,8 +501,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         cycleCount: snap.readiness.length,
         readinessReady: snap.readiness.filter((r) => r.engineerSideState === "ready").length,
         readinessDrafting: snap.readiness.filter((r) => r.engineerSideState === "drafting").length,
-        readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified").length,
-        readinessUnspecified: snap.readiness.filter((r) => r.engineerSideState === "not-yet-specified").length,
+        readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified")
+          .length,
+        readinessUnspecified: snap.readiness.filter(
+          (r) => r.engineerSideState === "not-yet-specified",
+        ).length,
         beaOwnedObligations: snap.obligations.total,
         obligationsInForce: snap.obligations.inForce,
         obligationsPartial: snap.obligations.partial,
@@ -565,7 +582,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const readyN = snap.readiness.filter((r) => r.engineerSideState === "ready").length;
   const draftingN = snap.readiness.filter((r) => r.engineerSideState === "drafting").length;
   const specifiedN = snap.readiness.filter((r) => r.engineerSideState === "specified").length;
-  const unspecifiedN = snap.readiness.filter((r) => r.engineerSideState === "not-yet-specified").length;
+  const unspecifiedN = snap.readiness.filter(
+    (r) => r.engineerSideState === "not-yet-specified",
+  ).length;
   return {
     eventsEmitted,
     ...(deliverable ? { deliverable } : {}),

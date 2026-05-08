@@ -247,7 +247,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: ImaniSnapshot): string 
   lines.push(`Run as-of: ${ctx.asOf}`);
   lines.push(`Trigger: ${ctx.trigger.id}`);
   lines.push("");
-  lines.push("Imani-owned obligations (rows in `Regulations/_obligations-register.md` that name Imani):");
+  lines.push(
+    "Imani-owned obligations (rows in `Regulations/_obligations-register.md` that name Imani):",
+  );
   lines.push(`  total: ${snap.obligations.total}`);
   lines.push(`    IN FORCE: ${snap.obligations.inForce}`);
   lines.push(`    IN FLIGHT: ${snap.obligations.inFlight}`);
@@ -347,7 +349,7 @@ function buildReportMarkdown(
     `| Clause-library version published | ${snap.substrate.clauseLibraryVersionPublished ? `yes (${snap.substrate.clauseLibraryClauseCount} clauses)` : "**no — substrate gap (DSL design-only)**"} |`,
   );
   lines.push(
-    `| Legal-entity tree count | ${snap.substrate.legalEntityTreeCount} (\`BANK-ZA-001\` placeholder${snap.substrate.legalEntityTreeCount === 1 ? "; no \`LegalEntityRegistered\` events yet" : ""}) |`,
+    `| Legal-entity tree count | ${snap.substrate.legalEntityTreeCount} (\`BANK-ZA-001\` placeholder${snap.substrate.legalEntityTreeCount === 1 ? "; no `LegalEntityRegistered` events yet" : ""}) |`,
   );
   lines.push(
     `| ECTA-execution path exercised | ${snap.substrate.ectaExecutionPathReady ? "yes" : "**no — engine + HSM integration design-only (§ 16)**"} |`,
@@ -423,8 +425,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         obligationsPlanned: snap.obligations.planned,
         obligationsDrafting: snap.obligations.drafting,
         masterAgreementsSignedLast7d: snap.events.masterAgreementsSignedLast7d,
-        clauseLibraryVersionsPublishedLast7d:
-          snap.events.clauseLibraryVersionsPublishedLast7d,
+        clauseLibraryVersionsPublishedLast7d: snap.events.clauseLibraryVersionsPublishedLast7d,
         legalEntitiesRegisteredLast7d: snap.events.legalEntitiesRegisteredLast7d,
         ectaExecutionsRecordedLast7d: snap.events.ectaExecutionsRecordedLast7d,
         priorReadinessSnapshotsLast30d: snap.events.priorReadinessSnapshotsLast30d,
