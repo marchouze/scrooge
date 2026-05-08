@@ -37,6 +37,7 @@
     "agent:zara-mlro-supervision": "bun run runtime/run.ts --agent Zara --trigger mlro-supervision",
     "agent:thandiwe-audit-committee-prep": "bun run runtime/run.ts --agent Thandiwe --trigger audit-committee-prep",
     "agent:rashida-cyber-resilience-snapshot": "bun run runtime/run.ts --agent Rashida --trigger cyber-resilience-snapshot",
+    "agent:iris-popia-controls-snapshot": "bun run runtime/run.ts --agent Iris --trigger popia-controls-snapshot",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

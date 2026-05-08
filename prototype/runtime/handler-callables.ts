@@ -19,6 +19,7 @@ import atlasSubstrateState from "./agents/atlas-substrate-state";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
+import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
@@ -52,4 +53,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "zara:mlro-supervision": zaraMlroSupervision,
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
+  "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
 };
