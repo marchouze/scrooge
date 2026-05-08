@@ -1,7 +1,7 @@
 ---
 agent: Anya
 trigger: projection-drift
-asOf: 2026-05-08T05:18:31.841Z
+asOf: 2026-05-08T05:22:14.041Z
 decision-required: false
 ---
 
@@ -21,7 +21,7 @@ Autonomous run of Anya's daily projection-drift sweep per `Team/Anya.md` operati
 | Obligations register rows (ORG-*) | 181 |
 | Regulations index — total | 94 |
 | Regulations index — POPULATED | 4 |
-| Owner Inbox deliverables | 69 |
+| Owner Inbox deliverables | 71 |
 | Team Inbox — open | 0 |
 | Team Inbox — actioned | 40 |
 
