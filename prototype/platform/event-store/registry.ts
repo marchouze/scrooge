@@ -46,10 +46,16 @@ import {
   busDispatchedPayloadSchema,
   decisionCommentPayloadSchema,
   identityKeyRotatedPayloadSchema,
+  modelSubmittedPayloadSchema,
+  modelTierClassifiedPayloadSchema,
+  modelValidationApprovedPayloadSchema,
+  modelValidationWithheldPayloadSchema,
   permissionPolicyPublishedPayloadSchema,
   riskRaisedPayloadSchema,
   scheduledTriggerPayloadSchema,
   substrateAlertPayloadSchema,
+  validationFindingClosedPayloadSchema,
+  validationFindingRaisedPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
 
@@ -305,6 +311,73 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// Model-registry event types. The skeleton lives in
+// `platform/model-registry/registry.ts`; co-curated by Rohan (submits)
+// and Nadia (validates). See `Team/Nadia.md` §11 / §12 / §15 for the
+// independence boundary; `Team/Rohan.md` §11 for the model-builder side.
+const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "ModelSubmitted",
+    class: "runtime",
+    payloadSchema: modelSubmittedPayloadSchema,
+    issuer: "Rohan",
+    subscribers: ["Nadia", "Helena", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["RAS-B7", "SR-11-7"],
+    source: "Team/Nadia.md §11; Team/Rohan.md §11; platform/model-registry/registry.ts",
+  },
+  {
+    type: "ModelTierClassified",
+    class: "runtime",
+    payloadSchema: modelTierClassifiedPayloadSchema,
+    issuer: "Nadia",
+    subscribers: ["Rohan", "Helena", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["RAS-B7", "SR-11-7"],
+    source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+  },
+  {
+    type: "ModelValidationApproved",
+    class: "runtime",
+    payloadSchema: modelValidationApprovedPayloadSchema,
+    issuer: "Nadia",
+    subscribers: ["Rohan", "Helena", "Vera", "Camille"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["RAS-B7", "SR-11-7", "SS-1-23"],
+    source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+  },
+  {
+    type: "ModelValidationWithheld",
+    class: "runtime",
+    payloadSchema: modelValidationWithheldPayloadSchema,
+    issuer: "Nadia",
+    subscribers: ["Rohan", "Helena", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["RAS-B7", "SR-11-7", "SS-1-23"],
+    source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+  },
+  {
+    type: "ValidationFindingRaised",
+    class: "runtime",
+    payloadSchema: validationFindingRaisedPayloadSchema,
+    issuer: "Nadia",
+    subscribers: ["Rohan", "Helena", "Vera"],
+    replay: "cumulative-fold",
+    citationsHint: ["SR-11-7", "SS-1-23"],
+    source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+  },
+  {
+    type: "ValidationFindingClosed",
+    class: "runtime",
+    payloadSchema: validationFindingClosedPayloadSchema,
+    issuer: "Nadia",
+    subscribers: ["Rohan", "Helena", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["SR-11-7", "SS-1-23"],
+    source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+  },
+];
+
 // Markets lifecycle event types from A0 §5. Today only TradeExecuted
 // is registered; the remaining 23 land as Kai's M4 / M5 work and the
 // other product families (M1 listed equity, M2 SAGB, M3 corporate
@@ -482,6 +555,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
  */
 export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...RUNTIME_EVENT_TYPES,
+  ...MODEL_REGISTRY_EVENT_TYPES,
   ...MARKETS_EVENT_TYPES,
   ...GOVERNANCE_EVENT_TYPES,
   ...AUDIT_EVENT_TYPES,
