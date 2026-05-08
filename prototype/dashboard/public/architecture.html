@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bank — stack architecture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="app.css" />
+    <style>
+      body {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 32px 64px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 4px;
+      }
+      .lede {
+        color: #666;
+        margin: 0 0 24px;
+      }
+      h2 {
+        font-size: 18px;
+        margin: 32px 0 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      .note {
+        color: #666;
+        font-size: 13px;
+        margin: 4px 0 16px;
+      }
+      .mermaid {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 12px 0 24px;
+        overflow: auto;
+      }
+      .legend {
+        font-size: 12.5px;
+        color: #555;
+        margin: 8px 0 0;
+      }
+      .legend code {
+        background: #f0f0f0;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+      nav {
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+      nav a {
+        color: #06c;
+        text-decoration: none;
+        margin-right: 16px;
+      }
+      nav a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/">← Dashboard</a>
+      <a href="#data">Data architecture</a>
+      <a href="#events">Event taxonomy</a>
+      <a href="#registers">Registers → projections</a>
+      <a href="#stack">Stack layers</a>
+    </nav>
+
+    <h1>Bank — stack architecture</h1>
+    <p class="lede">
+      Visual map of the bank's data substrate, event types, and runtime stack.
+      Re-derives from the live registry on every load — the diagrams reflect
+      what is on <code>main</code> right now.
+    </p>
+
+    <h2 id="data">1. Data architecture (ERD-ish)</h2>
+    <p class="note">
+      Per Principle 1 the <strong>event store is the only authoritative
+      durable artefact</strong>. Everything else — projections, caches,
+      registers' derived views — is reproducible from it. Curated registers
+      (markdown files) are <em>canonical authoring locations</em> for
+      reference data the events couldn't capture (regulations, policies,
+      mandates) and feed into projections via parsers.
+    </p>
+    <div class="mermaid">
+flowchart LR
+  classDef source fill:#fff8e1,stroke:#caa83b,color:#333,stroke-width:1.5px
+  classDef event fill:#e3f2fd,stroke:#2473b9,color:#1c4d80
+  classDef handler fill:#f1f8e9,stroke:#5b8a3a,color:#3d6024
+  classDef projection fill:#fce4ec,stroke:#a23a6f,color:#7c2956
+  classDef presentation fill:#ede7f6,stroke:#5c4ba0,color:#3d316d
+
+  subgraph SRC["Curated source registers (markdown — canonical authoring)"]
+    direction TB
+    REG_OBL["Regulations/_obligations-register.md<br/>~181 obligations"]:::source
+    REG_POL["Owner Inbox/2026-05-06_policy-register.md<br/>112 policies"]:::source
+    REG_PROC["Procedures/_index.md + by-policy/ + validation/"]:::source
+    REG_TEAM["Team/&lt;Name&gt;.md (29 personas)<br/>§11 = canonical permission policy"]:::source
+    REG_OWN["Owner Inbox/*.md<br/>(decisions, briefs, papers)"]:::source
+    REG_CL["CLAUDE.md (constitutional)<br/>+ Procedures/_*.md indexes"]:::source
+  end
+
+  subgraph EVT["Event store (Principle 1 — single durable truth)"]
+    direction TB
+    ES[("LocalEventStore<br/>append-only<br/>~78 typed event types")]:::event
+    BUS[("LocalEventTriggerBus<br/>A2.2 Phase 1<br/>idempotency: (eventId, handlerKey)")]:::event
+  end
+
+  subgraph SUB["Substrate (the runtime)"]
+    direction TB
+    SCHED["Scheduler<br/>cron-tick"]:::handler
+    IDENT["A1.2 Identity issuer<br/>+ Permission-policy publisher"]:::handler
+    CITGATE["Citation gate<br/>every emit needs citations[]"]:::handler
+    HANDLERS["~30 runtime handlers<br/>(each persona's mandates)"]:::handler
+    RECON["8 recon pipelines<br/>harness · dashboard · prose-dup<br/>handler-sync · agent-spec · cron-drift<br/>decision-rec · parallel-dispatch"]:::handler
+  end
+
+  subgraph PROJ["Projections / caches (re-derivable from events + registers)"]
+    direction TB
+    DASH_CACHE[("seeds/dashboard-state.json<br/>derived cache; biome-ignored")]:::projection
+    MODEL_REG[("Model registry<br/>prototype/platform/model-registry/")]:::projection
+    SEM_LAYER[("Anya semantic layer<br/>named-quantity definitions")]:::projection
+    PERMPOL[("Permission policies<br/>derived from Team/&lt;Name&gt;.md §11")]:::projection
+  end
+
+  subgraph PRES["Presentations"]
+    direction TB
+    DASH_API["/api/state · /api/obligations<br/>/api/decide · /api/policies"]:::presentation
+    DASH_UI["Dashboard pages<br/>policies · agents · decisions · activity<br/>obligations · escalations"]:::presentation
+    OWNER_INBOX_VIEW["Owner Inbox feed<br/>(decision-required: true → Decisions panel)"]:::presentation
+  end
+
+  REG_OBL -- "parsed by obligations-view.ts" --> DASH_CACHE
+  REG_POL -- "parsed by policy-register.ts" --> DASH_CACHE
+  REG_PROC -- "parsed by derive.ts" --> DASH_CACHE
+  REG_TEAM -- "parsed §11 by permission-policy.ts" --> PERMPOL
+  REG_TEAM -- "agent-spec recon" --> RECON
+  REG_OWN -- "frontmatter parsed by derive.ts" --> DASH_CACHE
+  REG_CL -- "principles + structure" --> DASH_CACHE
+
+  HANDLERS -- emit --> ES
+  ES -- replay-as-of --> BUS
+  BUS -- subscribesTo --> HANDLERS
+  SCHED -- cron triggers --> HANDLERS
+  IDENT --> HANDLERS
+  CITGATE -. asserts .-> ES
+
+  HANDLERS -- "anya:projection-refresh re-derives" --> DASH_CACHE
+  HANDLERS -- ModelSubmitted/Approved --> MODEL_REG
+  ES -- "reads for projections" --> SEM_LAYER
+
+  DASH_CACHE --> DASH_API
+  PERMPOL --> DASH_API
+  MODEL_REG --> DASH_API
+  DASH_API --> DASH_UI
+  REG_OWN --> OWNER_INBOX_VIEW
+
+  RECON -. "reads to assert" .-> ES
+  RECON -. "reads to assert" .-> REG_TEAM
+  RECON -. "reads to assert" .-> REG_OBL
+  RECON -. "reads to assert" .-> REG_POL
+    </div>
+    <p class="legend">
+      <strong>Legend.</strong>
+      <code class="src">Yellow</code> source registers (markdown, hand-authored under canonical-source-registry rules) ·
+      <code class="evt">Blue</code> event store (the durable truth) ·
+      <code class="hdl">Green</code> substrate / handlers ·
+      <code class="proj">Pink</code> derived projections / caches ·
+      <code class="pres">Purple</code> presentations.
+      Solid arrows = data flow; dashed arrows = recon assertions.
+    </p>
+
+    <h2 id="events">2. Event-type taxonomy (78 types, by domain)</h2>
+    <p class="note">
+      Every event carries a typed payload (<code>zod</code> schema in
+      <code>event-types.ts</code>) and a <code>citations[]</code> slot
+      enforced by the citation gate (Principle 2). Latest-wins-per-key folds
+      provide projection efficiency without sacrificing audit-replay.
+    </p>
+    <div class="mermaid">
+flowchart TB
+  classDef gov fill:#ede7f6,stroke:#5c4ba0,color:#3d316d
+  classDef rt fill:#e3f2fd,stroke:#2473b9,color:#1c4d80
+  classDef mkt fill:#e0f7fa,stroke:#00838f,color:#005662
+  classDef mr fill:#fce4ec,stroke:#a23a6f,color:#7c2956
+  classDef acc fill:#fff3e0,stroke:#ef6c00,color:#a04200
+  classDef sec fill:#fbe9e7,stroke:#c0392b,color:#7d1e10
+  classDef cmp fill:#f1f8e9,stroke:#5b8a3a,color:#3d6024
+  classDef ext fill:#fafafa,stroke:#888,color:#444
+
+  GOV["Governance &amp; runtime<br/>CeoDecision · DecisionComment<br/>AgentRegistered · AgentRetired<br/>AgentRunStarted · -Completed · -Failed<br/>AgentEscalation · -Acknowledged · -Decided · -Delegated · -Overdue<br/>WorkstreamRegistered · -Completed<br/>InboxHygieneSweep · GovernanceCyclePrep<br/>SubstrateStateSnapshot · DashboardProjectionRefreshed"]:::gov
+
+  RT["A2.2 bus &amp; recon<br/>BusDispatched · LegacyFanoutShadowed<br/>ScheduledTrigger · IdentityKeyRotated<br/>CitationGatePassed · -Failed<br/>ReconRunCompleted (per pipeline)"]:::rt
+
+  MKT["Markets &amp; pre-trade gateway<br/>OrderProposed<br/>GatewayCheckRequested · -Completed<br/>OrderApprovedAtGateway · OrderRejectedAtGateway<br/>PreTradeLimitChanged<br/>CdmBindingsRegenerated"]:::mkt
+
+  MR["Model risk &amp; backtest<br/>ModelSubmitted · ModelTierClassified<br/>ModelValidationApproved · -Withheld<br/>ValidationFindingRaised · -Closed<br/>ValidationMethodologyPublished<br/>BacktestRequested · BacktestRun<br/>BacktestBreachDisposed<br/>ModelDriftDetected · ProductionUseRequested<br/>MethodologyChangeRequested"]:::mr
+
+  ACC["Accounting (M1, just landed PR #34)<br/>IfrsClassificationApplied<br/>SubLedgerPostingEmitted"]:::acc
+
+  SEC["Security<br/>ThreatModelDimensionRegistered<br/>SecurityGateRegistered"]:::sec
+
+  CMP["Compliance / regulatory citations<br/>ObligationRegistered (Mira PR #33)<br/>(SanctionsScreened · PEPAlerted — planned)"]:::cmp
+
+  EXT["Risk-cycle &amp; ops<br/>RiskRaised · DataProjectionSnapshot<br/>AuditFinding · etc."]:::ext
+
+  ES[("LocalEventStore — every event from every family lands here<br/>Citation gate enforces citations.length &gt; 0 per envelope")]
+  GOV --> ES
+  RT --> ES
+  MKT --> ES
+  MR --> ES
+  ACC --> ES
+  SEC --> ES
+  CMP --> ES
+  EXT --> ES
+    </div>
+
+    <h2 id="registers">3. Registers → projections graph</h2>
+    <p class="note">
+      Curated markdown registers feed the dashboard's projections. Per
+      Principle 6 (single graph), every projection traces back to a single
+      canonical authoring location — no prose duplication.
+    </p>
+    <div class="mermaid">
+flowchart LR
+  classDef src fill:#fff8e1,stroke:#caa83b
+  classDef parser fill:#f1f8e9,stroke:#5b8a3a
+  classDef proj fill:#fce4ec,stroke:#a23a6f
+  classDef view fill:#ede7f6,stroke:#5c4ba0
+
+  R1["Regulations/_obligations-register.md<br/>(Mira — curates · v1.2)"]:::src
+  R2["Owner Inbox/2026-05-06_policy-register.md<br/>(Owen — 112 rows)"]:::src
+  R3["Procedures/_index.md + by-policy/<br/>+ validation/_methodology-tier-1.md (Nadia)"]:::src
+  R4["Team/&lt;Name&gt;.md ×29<br/>(persona §11 = events emitted)"]:::src
+  R5["Owner Inbox/*ceo-decision-record_*.md"]:::src
+  R6["CLAUDE.md + memory/MEMORY.md"]:::src
+
+  P1["obligations-view.ts"]:::parser
+  P2["policy-register.ts<br/>(Anya, PR #28)"]:::parser
+  P3["derive.ts (procedures section)"]:::parser
+  P4["agent-identity/permission-policy.ts<br/>(reads §11)"]:::parser
+  P5["derive.ts (decisions sections)"]:::parser
+  P6["derive.ts (principles + structure)"]:::parser
+
+  PR1["state.obligations<br/>(byId map — 181 entries)"]:::proj
+  PR2["state.policies<br/>(112 typed Policy[])"]:::proj
+  PR3["state.proceduresPlanned/Populated"]:::proj
+  PR4["A1.2 permission policies<br/>+ runtime-handler-sync recon"]:::proj
+  PR5["state.decisionsResolved + comments"]:::proj
+  PR6["state.principles + state.bank"]:::proj
+
+  V_API["/api/state<br/>/api/obligations<br/>/api/decide"]:::view
+  V_HTML["dashboard pages<br/>policies.html · obligations.html<br/>decision.html · agents.html · activity.html"]:::view
+
+  R1 --> P1 --> PR1
+  R2 --> P2 --> PR2
+  R3 --> P3 --> PR3
+  R4 --> P4 --> PR4
+  R5 --> P5 --> PR5
+  R6 --> P6 --> PR6
+
+  PR1 --> V_API
+  PR2 --> V_API
+  PR3 --> V_API
+  PR4 --> V_API
+  PR5 --> V_API
+  PR6 --> V_API
+  V_API --> V_HTML
+    </div>
+
+    <h2 id="stack">4. Stack layers (top-down)</h2>
+    <p class="note">
+      Layered view. Each layer builds on the one below. The layers below the
+      dotted line are the build-phase substrate; the layers above are
+      governance-ready surfaces.
+    </p>
+    <div class="mermaid">
+flowchart TB
+  L5["<b>Layer 5 — Presentations</b><br/>Owner Inbox briefs · Dashboard UI · CEO decision packs · Audit committee deliverables"]
+  L4["<b>Layer 4 — Projections / caches</b><br/>seeds/dashboard-state.json · model registry · semantic layer · permission policies"]
+  L3["<b>Layer 3 — Handlers (~30 personas)</b><br/>governance · markets · risk · accounting · compliance · security · ops · audit"]
+  L2["<b>Layer 2 — Substrate</b><br/>LocalEventTriggerBus · Scheduler · Identity issuer · Citation gate · Recon (×8)"]
+  L1["<b>Layer 1 — Event store</b><br/>append-only · 78 typed event types · zod-validated · citation-required"]
+  L0["<b>Layer 0 — Curated source registers (markdown)</b><br/>Regulations · Policies · Procedures · Team · CLAUDE.md · Owner Inbox · memory"]
+
+  L5 --> L4 --> L3 --> L2 --> L1 --> L0
+
+  classDef l0 fill:#fff8e1,stroke:#caa83b
+  classDef l1 fill:#e3f2fd,stroke:#2473b9
+  classDef l2 fill:#f1f8e9,stroke:#5b8a3a
+  classDef l3 fill:#f1f8e9,stroke:#5b8a3a
+  classDef l4 fill:#fce4ec,stroke:#a23a6f
+  classDef l5 fill:#ede7f6,stroke:#5c4ba0
+
+  class L0 l0
+  class L1 l1
+  class L2 l2
+  class L3 l3
+  class L4 l4
+  class L5 l5
+    </div>
+
+    <p class="note" style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+      Source: <code>prototype/platform/event-store/registry.ts</code> ·
+      <code>prototype/runtime/handlers-metadata.ts</code> ·
+      <code>prototype/dashboard/derive.ts</code> + <code>policy-register.ts</code> ·
+      <code>prototype/platform/agent-identity/permission-policy.ts</code> ·
+      <code>CLAUDE.md</code> Principles 1–7. Counts as of 2026-05-08.
+    </p>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "default",
+        flowchart: { htmlLabels: true, curve: "linear" },
+        themeVariables: {
+          fontSize: "13px",
+          fontFamily: "-apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+        }
+      });
+    </script>
+  </body>
+</html>
