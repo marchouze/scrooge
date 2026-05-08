@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policies · Bank operations dashboard</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Policies · library + drilldown</span>
+    </div>
+    <div class="meta">
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/agents.html">Agents</a>
+      <a class="nav-link" href="/activity.html">Activity</a>
+      <a class="nav-link" href="/health.html">Health</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <section class="policies-intro band">
+    <h1>Policy library</h1>
+    <p class="muted">
+      The bank's policies — what the bank does about regulations and its own objectives. Each policy implements one or
+      more obligations from <code>Regulations/_obligations-register.md</code>; per CLAUDE.md Principle 6, policies are
+      the <em>what</em> layer between (Regulation OR Bank Objective) and procedures. Click any policy for the drilldown
+      — owner, citations, linked obligations, source mix, bind state.
+    </p>
+  </section>
+
+  <section class="band policies-summary-band">
+    <div class="band-head">
+      <h2>Library at a glance</h2>
+      <span class="band-sub" id="policiesSummarySub"></span>
+    </div>
+    <div class="policies-summary" id="policiesSummary"></div>
+  </section>
+
+  <section class="band policies-controls-band">
+    <div class="band-head">
+      <h2>Filter</h2>
+      <span class="band-sub muted">Cumulative — all filters apply.</span>
+    </div>
+    <div class="policies-controls">
+      <div class="ctrl">
+        <label for="filterDomain">Domain</label>
+        <select id="filterDomain"><option value="">All domains</option></select>
+      </div>
+      <div class="ctrl">
+        <label for="filterStatus">Status</label>
+        <select id="filterStatus">
+          <option value="">All statuses</option>
+          <option value="IN FORCE">IN FORCE</option>
+          <option value="EXISTS">EXISTS</option>
+          <option value="DRAFTING">DRAFTING</option>
+          <option value="PLANNED">PLANNED</option>
+          <option value="BOARD-RES">BOARD-RES</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <label for="filterSource">Source</label>
+        <select id="filterSource">
+          <option value="">Any source</option>
+          <option value="REGULATORY">REGULATORY only</option>
+          <option value="OBJECTIVE">OBJECTIVE only</option>
+          <option value="BOTH">REGULATORY + OBJECTIVE</option>
+          <option value="NONE">No linked obligation</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <label for="filterBind">Bind</label>
+        <select id="filterBind">
+          <option value="">Any bind</option>
+          <option value="CORPORATE">CORPORATE</option>
+          <option value="LICENCE">LICENCE</option>
+          <option value="COMMENCEMENT">COMMENCEMENT</option>
+          <option value="CONDITIONAL">CONDITIONAL</option>
+        </select>
+      </div>
+      <div class="ctrl ctrl-checkbox">
+        <input type="checkbox" id="filterMvp">
+        <label for="filterMvp">★ MVP only (SARB licence-application set)</label>
+      </div>
+      <div class="ctrl ctrl-search">
+        <label for="filterSearch">Search</label>
+        <input type="search" id="filterSearch" placeholder="Name, owner, citation, ORG-id…">
+      </div>
+    </div>
+  </section>
+
+  <section class="band policies-list-band">
+    <div class="band-head">
+      <h2>Policies</h2>
+      <span class="band-sub" id="policiesListSub"></span>
+    </div>
+    <div class="policies-table-wrap">
+      <table class="policies-table" id="policiesTable">
+        <thead>
+          <tr>
+            <th class="col-name">Policy</th>
+            <th class="col-domain">Domain</th>
+            <th class="col-owner">Owner</th>
+            <th class="col-approval">Approval</th>
+            <th class="col-source">Source</th>
+            <th class="col-bind">Bind</th>
+            <th class="col-status">Status</th>
+            <th class="col-obligs">Obligations</th>
+          </tr>
+        </thead>
+        <tbody id="policiesBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- Drilldown modal -->
+<div id="policyDrill" class="policy-drill" hidden>
+  <div class="policy-drill-overlay" data-close></div>
+  <div class="policy-drill-panel" role="dialog" aria-modal="true" aria-labelledby="policyDrillTitle">
+    <button class="policy-drill-close" data-close aria-label="Close drilldown">×</button>
+    <div id="policyDrillBody"></div>
+  </div>
+</div>
+
+<script src="/_failure-banner.js"></script>
+<script src="/policies.js"></script>
+</body>
+</html>

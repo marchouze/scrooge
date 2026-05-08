@@ -80,6 +80,7 @@ export const SCHEDULER_CRON_MAP: Readonly<Record<string, string>> = {
   "senna:security-substrate-state": "37 7 * * 4",
   "rashida:cyber-resilience-snapshot": "49 7 * * 4",
   "saskia:markets-readiness-snapshot": "33 5 * * MON",
+  "kai:m1-cdm-typescript-bindings": "27 6 * * MON",
   "bea:accounting-readiness": "47 5 * * *",
   "yael:tax-readiness": "7 6 * * THU",
   "tomas:payments-readiness": "21 4 * * *",

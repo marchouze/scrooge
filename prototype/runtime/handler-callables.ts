@@ -23,6 +23,7 @@ import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import imaniLegalReadiness from "./agents/imani-legal-readiness";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
+import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
@@ -65,6 +66,7 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
+  "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,
   "bea:accounting-readiness": beaAccountingReadiness,
   "yael:tax-readiness": yaelTaxReadiness,
   "tomas:payments-readiness": tomasPaymentsReadiness,
