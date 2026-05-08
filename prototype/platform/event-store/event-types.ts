@@ -986,8 +986,7 @@ export const legacyFanoutShadowedPayloadSchema = z.object({
     .string()
     .min(1)
     .regex(/^[a-z0-9-]+:[a-z0-9-]+$/, {
-      message:
-        "triggeredHandlerKey must match `<lowercased-agent>:<trigger>` (a-z, 0-9, -)",
+      message: "triggeredHandlerKey must match `<lowercased-agent>:<trigger>` (a-z, 0-9, -)",
     }),
   /**
    * The event types the parent run appended that the triggered handler

@@ -183,7 +183,13 @@ function renderDecisionsOpen(decisions) {
         <div class="row"><b>Owner</b>${esc(d.owner)}</div>
         <div class="row"><b>Timeline</b>${esc(d.brief?.timeline ?? d.trigger)}</div>
         <div class="row"><b>For CEO</b>${esc(d.decisionForCEO)}</div>
-        ${d.note ? `<div class="note">${esc(d.note)}</div>` : ""}
+        ${
+          d.recommendation?.stance
+            ? `<div class="note"><b>Recommendation</b> ${esc(d.recommendation.stance)}${d.recommendation.reasoning ? ` ${esc(d.recommendation.reasoning)}` : ""}</div>`
+            : d.note
+              ? `<div class="note">${esc(d.note)}</div>`
+              : ""
+        }
         ${ccount > 0 ? `<div class="comment-badge">💬 ${ccount} comment${ccount === 1 ? "" : "s"}</div>` : ""}
       </div>
       <div class="review-btn">

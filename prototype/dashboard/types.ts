@@ -113,6 +113,7 @@ export interface OpenDecision {
   decisionForCEO: string;
   sourceDocs: readonly string[];
   note?: string;
+  recommendation?: DecisionRecommendation;
   brief?: DecisionBrief;
 }
 

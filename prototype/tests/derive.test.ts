@@ -18,6 +18,7 @@ import {
   type WorkstreamCompletedEventSummary,
   type WorkstreamStartedEventSummary,
   deriveState,
+  ownerInboxToOpenDecisions,
   parseOwnerInbox,
   parseOwnerInboxFile,
 } from "../dashboard/derive";
@@ -567,6 +568,71 @@ describe("Owner Inbox feed — parseOwnerInboxFile", () => {
   });
 });
 
+describe("Owner Inbox feed — ownerInboxToOpenDecisions", () => {
+  // The decision-recommendation recon (`platform/recon/decision-recommendation-recon.ts`)
+  // reads `OpenDecision.recommendation?.stance`. Earlier this lift wrote the
+  // recommendation into a `note: "Recommendation: …"` string, which the
+  // recon could not see — every Owner-Inbox-lifted decision warned. The
+  // shape now matches what the recon expects.
+  function liftItem(decisionRecommendation?: string) {
+    const item = parseOwnerInboxFile(
+      "2026-05-09_demo.md",
+      [
+        "---",
+        "title: Demo decision",
+        "decision-required: true",
+        "decision-id: D-DEMO-1",
+        ...(decisionRecommendation ? [`decision-recommendation: ${decisionRecommendation}`] : []),
+        "---",
+        "",
+        "# Demo decision",
+      ].join("\n"),
+    );
+    return ownerInboxToOpenDecisions([item], new Set<string>());
+  }
+
+  it("lifts decision-recommendation into structured { stance, reasoning }", () => {
+    const [open] = liftItem(
+      "Approve as drafted. Phase 1 is reversible inside one commit and Phase 2 has named gating.",
+    );
+    if (!open) throw new Error("unreachable: liftItem returned no open decision");
+    expect(open.recommendation).toEqual({
+      stance: "Approve as drafted.",
+      reasoning: "Phase 1 is reversible inside one commit and Phase 2 has named gating.",
+    });
+    expect(open.note).toBeUndefined();
+  });
+
+  it("uses the whole string as stance when there is no sentence break", () => {
+    const [open] = liftItem("Approve as drafted");
+    if (!open) throw new Error("unreachable: liftItem returned no open decision");
+    expect(open.recommendation).toEqual({ stance: "Approve as drafted", reasoning: "" });
+  });
+
+  it("omits recommendation when frontmatter has no decision-recommendation", () => {
+    const [open] = liftItem(undefined);
+    if (!open) throw new Error("unreachable: liftItem returned no open decision");
+    expect(open.recommendation).toBeUndefined();
+    expect(open.note).toBeUndefined();
+  });
+
+  it("excludes items already resolved via CeoDecision", () => {
+    const item = parseOwnerInboxFile(
+      "2026-05-09_resolved.md",
+      [
+        "---",
+        "title: Resolved",
+        "decision-required: true",
+        "decision-id: D-DEMO-RESOLVED",
+        "---",
+        "",
+        "# Resolved",
+      ].join("\n"),
+    );
+    expect(ownerInboxToOpenDecisions([item], new Set(["D-DEMO-RESOLVED"]))).toEqual([]);
+  });
+});
+
 describe("Owner Inbox feed — parseOwnerInbox (directory scan)", () => {
   it("returns items most-recent-first, skips underscore and dotfiles, caps at limit", () => {
     const f = makeFixture();
@@ -623,7 +689,7 @@ describe("deriveState — Owner Inbox decision lift", () => {
     expect(lifted).toBeDefined();
     expect(lifted?.title).toBe("Decision needed");
     expect(lifted?.decisionForCEO).toBe("Authorise the substrate build.");
-    expect(lifted?.note).toContain("Approve.");
+    expect(lifted?.recommendation?.stance).toBe("Approve.");
     expect(lifted?.sourceDocs).toContain("Owner Inbox/2026-05-07_decision-needed.md");
 
     const feed = state.ownerInboxFeed.find((i) => i.filename === "2026-05-07_decision-needed.md");
