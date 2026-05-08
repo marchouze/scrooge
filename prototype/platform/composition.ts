@@ -13,6 +13,8 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
+import { LocalPermissionPolicyPublisher } from "./agent-identity/permission-policy";
+import { gateEventStore, isGateEnabled } from "./event-store/permission-gate";
 import { EventStore } from "./event-store/store";
 import { LocalAuthenticator } from "./identity";
 import { logger } from "./observability/logger";
@@ -22,9 +24,35 @@ const dbPath = process.env.BANK_EVENT_DB ?? ".local/event.db";
 const idpKeyPath = process.env.BANK_IDP_KEY ?? ".local/keys/idp.key";
 mkdirSync(dirname(dbPath), { recursive: true });
 
-export const eventStore = new EventStore(dbPath);
+const rawEventStore = new EventStore(dbPath);
+
+// Permission policy resolver folds the event log; the gate consults it
+// per append. The publisher (used by `bun run identity:issue`) writes
+// through the underlying store so policy publication itself is never
+// blocked by the gate.
+const permissionPolicy = new LocalPermissionPolicyPublisher({ eventStore: rawEventStore });
+
+// Gate is feature-flagged — A1.2 lands the substrate; the flip-on-day
+// is M8 cloud lift per Atlas spec §3.1. Default off keeps existing
+// event flows untouched.
+export const eventStore = gateEventStore({
+  store: rawEventStore,
+  config: {
+    policy: permissionPolicy,
+    onDeny: ({ event, reason }) => {
+      logger.error(
+        { agentUrn: event.actor.id, eventType: event.type, reason },
+        "permission-gate — denied",
+      );
+    },
+  },
+});
+
 export const projector = new LocalProjector(eventStore);
 export const authenticator = new LocalAuthenticator({ keyPath: idpKeyPath });
-export { logger };
+export { logger, permissionPolicy };
 
-logger.debug({ dbPath, idpKeyPath }, "composition root wired");
+logger.debug(
+  { dbPath, idpKeyPath, permissionGateEnabled: isGateEnabled() },
+  "composition root wired",
+);
