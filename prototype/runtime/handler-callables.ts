@@ -22,6 +22,7 @@ import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
+import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
@@ -50,4 +51,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "senna:security-substrate-state": sennaSecuritySubstrateState,
   "zara:mlro-supervision": zaraMlroSupervision,
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
+  "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
 };
