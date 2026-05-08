@@ -86,6 +86,7 @@ export const SCHEDULER_CRON_MAP: Readonly<Record<string, string>> = {
   "imani:legal-readiness": "9 7 * * 5",
   "ravi:alm-readiness": "37 5 * * *",
   "sade:agentops-readiness": "41 7 * * 5",
+  "pax:role-research-queue": "11 8 * * 5",
 };
 
 /**
