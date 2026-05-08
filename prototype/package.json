@@ -61,6 +61,7 @@
     "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",
     "agent:pax-role-research-queue": "bun run runtime/run.ts --agent PAX --trigger role-research-queue",
     "agent:rohan-backtest-harness": "bun run runtime/run.ts --agent Rohan --trigger backtest-harness",
+    "agent:bea-m1-ifrs-classification-rules": "bun run runtime/run.ts --agent Bea --trigger m1-ifrs-classification-rules",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
