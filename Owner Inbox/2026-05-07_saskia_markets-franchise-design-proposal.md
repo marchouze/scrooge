@@ -8,6 +8,7 @@ decision-id: D-MARKETS-CAPITAL-TIME-SHAPE
 decision-category: near-term
 decision-owner: Saskia (with Helena, Camille, Eitan)
 decision-for-ceo: Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.
+decision-recommendation: Approve the §6.1 working split — ~R45m build CapEx, ~R75m/yr OpEx run-rate, ~R150m design-book capital, balance to liquidity buffer at Eitan's discretion — as the desk's working view, with Camille + Eitan to reshape and Helena to challenge through the paper ICAAP / ILAAP run.
 ---
 
 # Markets franchise design — proposal
