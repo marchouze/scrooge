@@ -13,24 +13,35 @@
 //
 // Substrate gaps surfaced (deferred slices):
 //
-//   1. **Variable-date holidays.** Good Friday and Family Day shift each
-//      year (computed via Easter algorithms). The Act sets them but the
-//      shift is an algorithm, not a fixed date. This slice does NOT
-//      include them — listed in §3 as a substrate gap; add in A2.x with
-//      the Easter-algorithm pull.
-//
-//   2. **Holiday-shifted-Monday rule.** Section 2(1) of the Act provides
+//   1. **Holiday-shifted-Monday rule.** Section 2(1) of the Act provides
 //      that when a public holiday falls on a Sunday, the following
 //      Monday is observed as the public holiday. We DO honour the
 //      shift in the holiday set (the Sunday's date is observed-on
 //      Monday), but the implementation here is the simplified "fixed
 //      date + Sunday-shift" — sufficient for scheduler skip semantics.
+//      Variable-date holidays (Good Friday Friday-by-construction,
+//      Family Day Monday-by-construction) do not need the Sunday-shift
+//      since they never fall on Sunday.
 //
-//   3. **Multi-jurisdiction calendars.** Today only ZA is wired. Adding
+//   2. **Multi-jurisdiction calendars.** Today only ZA is wired. Adding
 //      US/UK/EU calendars is a constant-table addition; the API surface
 //      already accepts a jurisdiction code.
 //
-// Author: Atlas (A2.1)
+//   3. **Christian-holiday entanglement.** Good Friday and Family Day
+//      are computed from Easter (Anonymous Gregorian / Computus
+//      algorithm). The Act stipulates the dates by name, not by
+//      religious framing — but the underlying computation is
+//      ecclesiastical. If Parliament redefines either holiday on a
+//      non-Easter basis the algorithm here must be retired in favour
+//      of an explicit per-year date table.
+//
+// Closed in this slice (was §1 above):
+//
+//   - **Variable-date holidays.** Good Friday and Family Day are now
+//     computed via the Easter algorithm. Workers' Day stays a fixed-
+//     date entry (May 1) and continues to use the Sunday-shift path.
+//
+// Author: Atlas (A2.1, extended for variable-date holidays)
 
 import type { Jurisdiction } from "../core/types";
 
@@ -67,9 +78,73 @@ const HOLIDAYS_BY_JURISDICTION: Readonly<Record<string, readonly PublicHoliday[]
 };
 
 /**
+ * Compute the date of Easter Sunday (Western / Gregorian) for a given
+ * year using the Anonymous Gregorian algorithm (a.k.a. Meeus / Jones /
+ * Butcher / Computus). Returns a UTC midnight Date.
+ *
+ * Reference: Jean Meeus, "Astronomical Algorithms" (1991), ch. 8.
+ * Also documented at <https://en.wikipedia.org/wiki/Computus>.
+ *
+ * Spot-check (canonical Easter dates):
+ *   - 2024 → 2024-03-31
+ *   - 2025 → 2025-04-20
+ *   - 2026 → 2026-04-05
+ *   - 2027 → 2027-03-28
+ */
+export function easterSunday(year: number): Date {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31); // 3 = March, 4 = April
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+/**
+ * Variable-date SA public holidays for a given year, derived from
+ * Easter Sunday:
+ *   - Good Friday — the Friday immediately preceding Easter Sunday
+ *     (Easter − 2 days).
+ *   - Family Day — the Monday immediately following Easter Sunday
+ *     (Easter + 1 day).
+ *
+ * Returns UTC-midnight Date objects.
+ */
+export function saVariableHolidays(year: number): {
+  readonly goodFriday: Date;
+  readonly familyDay: Date;
+} {
+  const easter = easterSunday(year);
+  const day = 24 * 60 * 60 * 1000;
+  return {
+    goodFriday: new Date(easter.getTime() - 2 * day),
+    familyDay: new Date(easter.getTime() + 1 * day),
+  };
+}
+
+/** Same-UTC-day equality check. */
+function sameUtcDay(a: Date, b: Date): boolean {
+  return (
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
+  );
+}
+
+/**
  * Return true iff `date` (UTC) is a public holiday in the given
  * jurisdiction. Implements the Sunday-shift rule for SA: a holiday
- * falling on Sunday is observed on the following Monday.
+ * falling on Sunday is observed on the following Monday. Also consults
+ * the variable-date set (Good Friday, Family Day) for ZA.
  */
 export function isPublicHoliday(date: Date, jurisdiction: Jurisdiction | string = "ZA"): boolean {
   const set = HOLIDAYS_BY_JURISDICTION[jurisdiction];
@@ -96,6 +171,15 @@ export function isPublicHoliday(date: Date, jurisdiction: Jurisdiction | string 
     for (const h of set) {
       if (h.month === ymonth && h.day === yday) return true;
     }
+  }
+
+  // Variable-date holidays (ZA only today): Good Friday + Family Day,
+  // computed from the Easter date for `date`'s year. Both fall on
+  // weekdays by construction (Friday and Monday respectively), so the
+  // Sunday-shift rule does not apply.
+  if (jurisdiction === "ZA") {
+    const { goodFriday, familyDay } = saVariableHolidays(date.getUTCFullYear());
+    if (sameUtcDay(date, goodFriday) || sameUtcDay(date, familyDay)) return true;
   }
 
   return false;
@@ -145,7 +229,46 @@ export function shiftPastHolidays(
   return t;
 }
 
-/** List of holidays the scheduler knows about, for diagnostic logging. */
+/** List of fixed-date holidays the scheduler knows about, for diagnostic logging. */
 export function listHolidays(jurisdiction: Jurisdiction | string = "ZA"): readonly PublicHoliday[] {
   return HOLIDAYS_BY_JURISDICTION[jurisdiction] ?? [];
+}
+
+/**
+ * Resolved holiday dates (fixed + variable + Sunday-shifted observed
+ * dates) for `year` in `jurisdiction`. Useful for diagnostic dumps and
+ * for downstream callers (e.g. ALCO calendars, settlement calendars)
+ * that want a concrete per-year date list rather than the rule set.
+ *
+ * Order: returned in chronological order. Each entry is the *observed*
+ * date — i.e. for a Sunday-on-holiday, the entry is the following
+ * Monday, not the Sunday.
+ */
+export function resolveHolidaysForYear(
+  year: number,
+  jurisdiction: Jurisdiction | string = "ZA",
+): readonly { readonly date: Date; readonly name: string }[] {
+  const set = HOLIDAYS_BY_JURISDICTION[jurisdiction];
+  if (!set) return [];
+
+  const out: { date: Date; name: string }[] = [];
+  for (const h of set) {
+    const candidate = new Date(Date.UTC(year, h.month - 1, h.day));
+    if (candidate.getUTCDay() === 0) {
+      // Observed on Monday.
+      out.push({
+        date: new Date(candidate.getTime() + 24 * 60 * 60 * 1000),
+        name: `${h.name} (observed)`,
+      });
+    } else {
+      out.push({ date: candidate, name: h.name });
+    }
+  }
+  if (jurisdiction === "ZA") {
+    const { goodFriday, familyDay } = saVariableHolidays(year);
+    out.push({ date: goodFriday, name: "Good Friday" });
+    out.push({ date: familyDay, name: "Family Day" });
+  }
+  out.sort((a, b) => a.date.getTime() - b.date.getTime());
+  return out;
 }

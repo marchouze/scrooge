@@ -20,7 +20,13 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { isPublicHoliday, shiftPastHolidays } from "../platform/scheduler/calendar";
+import {
+  easterSunday,
+  isPublicHoliday,
+  resolveHolidaysForYear,
+  saVariableHolidays,
+  shiftPastHolidays,
+} from "../platform/scheduler/calendar";
 import { nextFireAfter, parseCron } from "../platform/scheduler/cron-parse";
 import {
   LocalScheduler,
@@ -187,6 +193,75 @@ describe("calendar — SA holidays", () => {
     // unless the calendar declares it (we don't skip weekends in the
     // default skipWeekends=false call), so this lands on Sunday 27.
     expect(shifted.toISOString()).toBe("2026-12-27T06:00:00.000Z");
+  });
+
+  // -- variable-date holidays (extended slice) --------------------------
+
+  it("Easter algorithm matches canonical almanac dates", () => {
+    // Reference: USNO / Wikipedia Computus tables.
+    expect(easterSunday(2024).toISOString()).toBe("2024-03-31T00:00:00.000Z");
+    expect(easterSunday(2025).toISOString()).toBe("2025-04-20T00:00:00.000Z");
+    expect(easterSunday(2026).toISOString()).toBe("2026-04-05T00:00:00.000Z");
+    expect(easterSunday(2027).toISOString()).toBe("2027-03-28T00:00:00.000Z");
+  });
+
+  it("saVariableHolidays computes Good Friday and Family Day from Easter", () => {
+    // 2025: Easter = 2025-04-20 (Sun). GF = 2025-04-18 (Fri). FD = 2025-04-21 (Mon).
+    const v25 = saVariableHolidays(2025);
+    expect(v25.goodFriday.toISOString()).toBe("2025-04-18T00:00:00.000Z");
+    expect(v25.familyDay.toISOString()).toBe("2025-04-21T00:00:00.000Z");
+    // 2026: Easter = 2026-04-05 (Sun). FD = 2026-04-06 (Mon).
+    const v26 = saVariableHolidays(2026);
+    expect(v26.familyDay.toISOString()).toBe("2026-04-06T00:00:00.000Z");
+  });
+
+  it("isPublicHoliday recognises 2025 Good Friday (variable-date)", () => {
+    // 2025-04-18 — the Friday before Easter Sunday 2025-04-20.
+    expect(isPublicHoliday(new Date("2025-04-18T00:00:00Z"))).toBe(true);
+    // The day before is not a holiday.
+    expect(isPublicHoliday(new Date("2025-04-17T00:00:00Z"))).toBe(false);
+  });
+
+  it("isPublicHoliday recognises 2026 Family Day (variable-date)", () => {
+    // 2026-04-06 — the Monday after Easter Sunday 2026-04-05.
+    expect(isPublicHoliday(new Date("2026-04-06T00:00:00Z"))).toBe(true);
+    // Easter Sunday itself is NOT a SA public holiday.
+    expect(isPublicHoliday(new Date("2026-04-05T00:00:00Z"))).toBe(false);
+  });
+
+  it("Sunday-shift: Workers' Day 2022 falls on Sunday — observed on Monday 2022-05-02", () => {
+    // 2022-05-01 was a Sunday; per Public Holidays Act §2(1) the
+    // following Monday is the public holiday.
+    expect(isPublicHoliday(new Date("2022-05-01T00:00:00Z"))).toBe(false); // the Sunday itself
+    expect(isPublicHoliday(new Date("2022-05-02T00:00:00Z"))).toBe(true); // observed Monday
+  });
+
+  it("Sunday-shift does NOT trigger when Workers' Day falls on a weekday", () => {
+    // 2027-05-01 is a Saturday — no shift to Monday under the Act §2(1)
+    // rule (the Act shifts only Sunday-falling holidays). A Saturday-
+    // falling holiday simply lapses for the bank; it is the holiday
+    // itself only on the calendar day.
+    expect(isPublicHoliday(new Date("2027-05-01T00:00:00Z"))).toBe(true); // Saturday holiday
+    expect(isPublicHoliday(new Date("2027-05-03T00:00:00Z"))).toBe(false); // Monday — not shifted
+  });
+
+  it("resolveHolidaysForYear includes variable-date and Sunday-shifted entries", () => {
+    const list = resolveHolidaysForYear(2025);
+    const names = list.map((h) => h.name);
+    expect(names).toContain("Good Friday");
+    expect(names).toContain("Family Day");
+    expect(names).toContain("Workers' Day");
+    // List is chronologically ordered.
+    for (let i = 1; i < list.length; i++) {
+      const prev = list[i - 1]!.date.getTime();
+      const cur = list[i]!.date.getTime();
+      expect(cur >= prev).toBe(true);
+    }
+    // 2022 list contains the observed Workers' Day (Mon 2022-05-02), not the Sunday.
+    const list22 = resolveHolidaysForYear(2022);
+    const observed = list22.find((h) => h.name.startsWith("Workers' Day"));
+    expect(observed?.date.toISOString()).toBe("2022-05-02T00:00:00.000Z");
+    expect(observed?.name).toBe("Workers' Day (observed)");
   });
 });
 
