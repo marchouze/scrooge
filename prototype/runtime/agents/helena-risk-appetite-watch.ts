@@ -44,11 +44,7 @@ import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = [
-  "BANKS-ACT-94-1990",
-  "BCBS-CG-PRINCIPLE-6",
-  "RAS-FRAMEWORK-2026-05-06",
-];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BCBS-CG-PRINCIPLE-6", "RAS-FRAMEWORK-2026-05-06"];
 
 // Stable system prompt — KEEP BYTE-STABLE for prompt cache.
 const HELENA_NARRATIVE_SYSTEM = `You are Helena, the bank's Chief Risk Officer — owner of the Risk Appetite Statement & Framework, the risk taxonomy, three-lines-of-defence operating discipline, ICAAP / ILAAP, the stress-testing programme, model-risk governance, and the Board Risk Committee secretariat. Your operating spec is at \`Team/Helena.md\`. You report to the CEO with a direct line to the BRC.
@@ -114,7 +110,8 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     rasSection: "RAS §B3",
     category: "liquidity",
     tier: "tier-1",
-    summary: "Operate at 120% PA min in normal conditions; trigger management action <110%; mandatory BRC escalation <105%.",
+    summary:
+      "Operate at 120% PA min in normal conditions; trigger management action <110%; mandatory BRC escalation <105%.",
     measurementOwner: "Ravi (eng) → Eitan (Treasurer)",
   },
   {
@@ -132,7 +129,8 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     rasSection: "RAS §B3",
     category: "capital",
     tier: "tier-1",
-    summary: "Operate above PA min + Pillar 2A + CCB + 1.5pp; trigger at PA min + 0.75pp; escalate at PA min + 0.25pp.",
+    summary:
+      "Operate above PA min + Pillar 2A + CCB + 1.5pp; trigger at PA min + 0.75pp; escalate at PA min + 0.25pp.",
     measurementOwner: "Bea (eng) → Camille (CFO) joint with Helena (CRO)",
   },
   {
@@ -141,7 +139,8 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     rasSection: "RAS §B2",
     category: "credit",
     tier: "tier-2",
-    summary: "Default single-name exposure cap as % of CET1 (RAS §B2 default; PA Concentration Risk regs binding).",
+    summary:
+      "Default single-name exposure cap as % of CET1 (RAS §B2 default; PA Concentration Risk regs binding).",
     measurementOwner: "Rohan (eng) → Helena (CRO)",
   },
   {
@@ -150,7 +149,8 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     rasSection: "RAS §B2",
     category: "credit",
     tier: "tier-2",
-    summary: "Default sector cap as % of credit RWA (RAS §B2; cascade authored at first portfolio).",
+    summary:
+      "Default sector cap as % of credit RWA (RAS §B2; cascade authored at first portfolio).",
     measurementOwner: "Rohan (eng) → Helena (CRO)",
   },
   {
@@ -177,7 +177,8 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     rasSection: "RAS §B5",
     category: "financial-crime",
     tier: "zero-appetite",
-    summary: "All true-positive matches blocked pre-execution; any production override is a Zara-signed event.",
+    summary:
+      "All true-positive matches blocked pre-execution; any production override is a Zara-signed event.",
     measurementOwner: "Mira (eng) → Zara (CCO)",
   },
   {
@@ -222,7 +223,8 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     rasSection: "RAS A2 — Conduct risk",
     category: "conduct",
     tier: "zero-appetite",
-    summary: "Zero appetite for treating customers unfairly, mis-selling, fee opacity, conflicts of interest unmanaged, or market abuse.",
+    summary:
+      "Zero appetite for treating customers unfairly, mis-selling, fee opacity, conflicts of interest unmanaged, or market abuse.",
     measurementOwner: "Niko (eng) [paused] joint with Mira (eng) → Zara (CCO)",
   },
 ];
@@ -334,17 +336,23 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: AppetiteSnapshot): stri
   lines.push(`Run as-of: ${ctx.asOf}`);
   lines.push(`Trigger: ${ctx.trigger.id}`);
   lines.push("");
-  lines.push(`appetite-line inventory: ${APPETITE_LINES.length} lines across ${new Set(APPETITE_LINES.map((l) => l.category)).size} categories`);
+  lines.push(
+    `appetite-line inventory: ${APPETITE_LINES.length} lines across ${new Set(APPETITE_LINES.map((l) => l.category)).size} categories`,
+  );
   lines.push(`  measured (green/amber/red): ${snap.measuredCount}`);
   lines.push(`  unmeasured (substrate gap): ${snap.unmeasuredCount}`);
-  lines.push(`  n/a in build phase: ${snap.lineStates.filter((s) => s.status === "n/a-build-phase").length}`);
+  lines.push(
+    `  n/a in build phase: ${snap.lineStates.filter((s) => s.status === "n/a-build-phase").length}`,
+  );
   lines.push("");
-  lines.push(`breach counts:`);
-  lines.push(`  open: ${snap.breachCounts.openBreaches} (tier-1: ${snap.breachCounts.tier1Open}; tier-2: ${snap.breachCounts.tier2Open})`);
+  lines.push("breach counts:");
+  lines.push(
+    `  open: ${snap.breachCounts.openBreaches} (tier-1: ${snap.breachCounts.tier1Open}; tier-2: ${snap.breachCounts.tier2Open})`,
+  );
   lines.push(`  disposed: ${snap.breachCounts.disposedBreaches}`);
   lines.push("");
   lines.push(`days since RAS review: ${snap.daysSinceRasReview}`);
-  lines.push(`RAS quarterly cadence: next review due day 90`);
+  lines.push("RAS quarterly cadence: next review due day 90");
   lines.push("");
   lines.push("appetite-line states:");
   for (const s of snap.lineStates) {
@@ -406,10 +414,10 @@ function buildReportMarkdown(
 
   lines.push("## RAS cadence");
   lines.push("");
-  lines.push(`- RAS approved: 2026-05-06 (decision \`D-RAS\`)`);
+  lines.push("- RAS approved: 2026-05-06 (decision `D-RAS`)");
   lines.push(`- Days since approval: ${snap.daysSinceRasReview}`);
-  lines.push(`- Quarterly BRC review: due day 90 from approval`);
-  lines.push(`- Annual Board review: due day 365 from approval`);
+  lines.push("- Quarterly BRC review: due day 90 from approval");
+  lines.push("- Annual Board review: due day 365 from approval");
   lines.push("");
 
   lines.push("## Substrate gaps surfaced this run");
@@ -443,7 +451,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Hand-curated appetite-line shadow of `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` (RAS); breach counts via `eventStore.replay({type:\"AppetiteBreach\"})` reconciled against `AppetiteBreachDisposed`; RAS cadence anchored to the `D-RAS` decision date.",
+    'Hand-curated appetite-line shadow of `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` (RAS); breach counts via `eventStore.replay({type:"AppetiteBreach"})` reconciled against `AppetiteBreachDisposed`; RAS cadence anchored to the `D-RAS` decision date.',
   );
   lines.push("");
   return lines.join("\n");

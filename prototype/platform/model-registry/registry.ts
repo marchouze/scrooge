@@ -314,7 +314,7 @@ export class LocalModelRegistry implements ModelRegistry {
     // event has the same methodologyHash, no-op.
     const folds = this.buildFolds();
     const fold = folds.get(args.modelId);
-    if (fold && fold.seenHashes.has(args.methodologyHash)) {
+    if (fold?.seenHashes.has(args.methodologyHash)) {
       return {
         modelId: args.modelId,
         version: args.version,
@@ -479,9 +479,7 @@ export class LocalModelRegistry implements ModelRegistry {
       );
     }
     if (existing.status === "closed") {
-      throw new Error(
-        `ModelRegistry.closeFinding: finding "${args.findingId}" is already closed`,
-      );
+      throw new Error(`ModelRegistry.closeFinding: finding "${args.findingId}" is already closed`);
     }
 
     const event = makeValidationFindingClosed({
@@ -571,12 +569,8 @@ export class LocalModelRegistry implements ModelRegistry {
 
     // Pull all relevant events, in sequence order. Replay() yields in
     // sequence ASC per the EventStore contract.
-    const submittedEvents: Event[] = [
-      ...this.eventStore.replay({ type: "ModelSubmitted" }),
-    ];
-    const tierEvents: Event[] = [
-      ...this.eventStore.replay({ type: "ModelTierClassified" }),
-    ];
+    const submittedEvents: Event[] = [...this.eventStore.replay({ type: "ModelSubmitted" })];
+    const tierEvents: Event[] = [...this.eventStore.replay({ type: "ModelTierClassified" })];
     const approvedEvents: Event[] = [
       ...this.eventStore.replay({ type: "ModelValidationApproved" }),
     ];

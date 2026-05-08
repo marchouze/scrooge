@@ -203,9 +203,7 @@ function buildNarrativeInput(ctx: AgentRunContext, d: CyberDigest): string {
   lines.push(`  - KeyRotationPerformed: ${d.keyRotationsLast7d}`);
   lines.push(`  - SBOMAccepted / SBOMRejected: ${d.sbomAcceptedLast7d} / ${d.sbomRejectedLast7d}`);
   lines.push(`  - VendorSecurityReview: ${d.vendorSecurityReviewsLast7d}`);
-  lines.push(
-    `  - PersonalInformationCompromiseSuspected: ${d.popiaCompromiseSuspectedLast7d}`,
-  );
+  lines.push(`  - PersonalInformationCompromiseSuspected: ${d.popiaCompromiseSuspectedLast7d}`);
   lines.push("");
   lines.push(
     "Now write your narrative per the system instructions. Headline first; rank by Joint-Standard-1-of-2024 / POPIA s.19–22 binding strength; close with the next hardening step.",
@@ -238,9 +236,7 @@ function buildReportMarkdown(
   lines.push("| Slice | Count |");
   lines.push("|---|---|");
   lines.push(`| ORG-CY-* (cyber & information security) | ${d.cyberObligationsCount} |`);
-  lines.push(
-    `| Rows citing Joint Standard 1 of 2024 | ${d.jointStandardObligationsCount} |`,
-  );
+  lines.push(`| Rows citing Joint Standard 1 of 2024 | ${d.jointStandardObligationsCount} |`);
   lines.push(`| Rows citing POPIA s.19–22 | ${d.popiaSecurityObligationsCount} |`);
   lines.push("");
 
@@ -281,9 +277,7 @@ function buildReportMarkdown(
   lines.push(
     "- **Joint Standard 1 of 2024 programme map** — drafted; PA / FSCA reporting cadence rehearsed against simulated endpoints (Rashida § Build-only context).",
   );
-  lines.push(
-    "- **Threat-modelling gate** — operating; Senna runs; Rashida signs exceptions.",
-  );
+  lines.push("- **Threat-modelling gate** — operating; Senna runs; Rashida signs exceptions.");
   lines.push(
     "- **Cyber-resilience scenario test plan** — rehearsed cadence; first cycle in build-phase per § 5 first-90-days posture.",
   );

@@ -46,9 +46,7 @@ function renderEscalation(esc) {
   const sealedTag = esc.sealedReason
     ? el("span", { class: "pill esc-sealed" }, `sealed · ${esc.sealedReason}`)
     : null;
-  const overdueTag = esc.overdue
-    ? el("span", { class: "pill esc-overdue" }, "overdue")
-    : null;
+  const overdueTag = esc.overdue ? el("span", { class: "pill esc-overdue" }, "overdue") : null;
   const sevCls =
     esc.severity === "blocking"
       ? "esc-sev-blocking"
@@ -77,7 +75,9 @@ function renderEscalation(esc) {
         el("dd", {}, esc.routedTo),
         el("dt", {}, "Current responsible"),
         el("dd", {}, esc.currentResponsible),
-        ...(esc.deadline ? [el("dt", {}, "Deadline"), el("dd", {}, fmtTimestamp(esc.deadline))] : []),
+        ...(esc.deadline
+          ? [el("dt", {}, "Deadline"), el("dd", {}, fmtTimestamp(esc.deadline))]
+          : []),
         ...(esc.blockedBy ? [el("dt", {}, "Blocked by"), el("dd", {}, esc.blockedBy)] : []),
         el("dt", {}, "Acknowledgements"),
         el("dd", {}, String(esc.acknowledgementCount)),
@@ -169,7 +169,11 @@ function renderCitations(citations) {
   if (!citations || citations.length === 0) return null;
   return el("section", { class: "band" }, [
     el("div", { class: "band-head" }, [el("h2", {}, "Citation chain")]),
-    el("p", { class: "muted small" }, "Per Principle 2 — every escalation envelope carries the regulator / policy citations that justify the routing."),
+    el(
+      "p",
+      { class: "muted small" },
+      "Per Principle 2 — every escalation envelope carries the regulator / policy citations that justify the routing.",
+    ),
     el(
       "ul",
       { class: "citation-list" },
@@ -281,7 +285,7 @@ async function load() {
     if (drillR.status === 404) {
       renderNotFound(decisionId);
       live.classList.add("bad");
-      stamp.textContent = `Decision not found`;
+      stamp.textContent = "Decision not found";
       return;
     }
     if (!drillR.ok) throw new Error(`HTTP ${drillR.status}`);

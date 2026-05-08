@@ -262,7 +262,9 @@ export function eventSourceFromStore(store: EventStore): EventSource {
           actorId: e.actor.id,
           body: String(p.body ?? ""),
           asOf: e.as_of,
-          ...(typeof p.inReplyToEventId === "string" ? { inReplyToEventId: p.inReplyToEventId } : {}),
+          ...(typeof p.inReplyToEventId === "string"
+            ? { inReplyToEventId: p.inReplyToEventId }
+            : {}),
         });
       }
       return out;
@@ -1559,13 +1561,15 @@ export function deriveState(opts: DeriveOpts): DashboardState {
 // run.ts; this view recomputes automatically.
 // ---------------------------------------------------------------------------
 
-const RUNTIME_HANDLERS: readonly RuntimeHandlerInfo[] = HANDLERS_METADATA.map((h): RuntimeHandlerInfo => ({
-  agent: h.agent,
-  trigger: h.trigger,
-  kind: h.kind,
-  ...(h.cadenceHours !== undefined ? { cadenceHours: h.cadenceHours } : {}),
-  ...(h.subscribesTo !== undefined ? { subscribesTo: h.subscribesTo } : {}),
-}));
+const RUNTIME_HANDLERS: readonly RuntimeHandlerInfo[] = HANDLERS_METADATA.map(
+  (h): RuntimeHandlerInfo => ({
+    agent: h.agent,
+    trigger: h.trigger,
+    kind: h.kind,
+    ...(h.cadenceHours !== undefined ? { cadenceHours: h.cadenceHours } : {}),
+    ...(h.subscribesTo !== undefined ? { subscribesTo: h.subscribesTo } : {}),
+  }),
+);
 
 // ---------------------------------------------------------------------------
 // Watch-target paths — the set of canonical inputs the server should fs.watch.

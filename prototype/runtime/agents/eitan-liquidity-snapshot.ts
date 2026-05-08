@@ -97,7 +97,14 @@ function isoDaysAgo(asOf: string, days: number): string {
 function parseLiquidityObligations(content: string): LiquidityObligationRow[] {
   // Liquidity / treasury slice: ORG-PR-06 / 07 / 08 / 11 / 14 / 15 +
   // anything explicitly citing LCR / NSFR / BCBS 248 / IRRBB.
-  const wanted = new Set(["ORG-PR-06", "ORG-PR-07", "ORG-PR-08", "ORG-PR-11", "ORG-PR-14", "ORG-PR-15"]);
+  const wanted = new Set([
+    "ORG-PR-06",
+    "ORG-PR-07",
+    "ORG-PR-08",
+    "ORG-PR-11",
+    "ORG-PR-14",
+    "ORG-PR-15",
+  ]);
   const out: LiquidityObligationRow[] = [];
   for (const line of content.split(/\r?\n/)) {
     const m = line.match(/^\|\s*(ORG-[A-Za-z0-9()/-]+)\s*\|/);
@@ -262,9 +269,7 @@ function buildReportMarkdown(
   lines.push(
     "- **ALM engine** — under build (Ravi) per § 16. Daily ALM run is a manually-orchestrated query today.",
   );
-  lines.push(
-    "- **FTP curve generator** — not yet built (§ 16). Quarterly FTP review degraded.",
-  );
+  lines.push("- **FTP curve generator** — not yet built (§ 16). Quarterly FTP review degraded.");
   lines.push(
     "- **Auto-generated ALCO pack** — not yet built (§ 16). Pack authored against the cycle template; gap is the load-bearing P6-downward seam (Eitan does not assemble; he generates).",
   );
@@ -274,9 +279,7 @@ function buildReportMarkdown(
   lines.push(
     "- **Collateral inventory substrate** — not yet built (§ 16). Treasury collateral-move sign-offs operate on registered limits without live inventory.",
   );
-  lines.push(
-    "- **ILAAP engine** — not yet built (Helena's gap, Eitan co-owns liquidity slice).",
-  );
+  lines.push("- **ILAAP engine** — not yet built (Helena's gap, Eitan co-owns liquidity slice).");
   lines.push("");
 
   if (narrative) {

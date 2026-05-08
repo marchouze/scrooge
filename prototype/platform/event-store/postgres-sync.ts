@@ -222,14 +222,14 @@ export async function runSync(opts: {
 
     // --- push to cloud --------------------------------------------------
     if (toPushToCloud.length > 0) {
-      const escape = (s: string) => s.replace(/'/g, "''");
+      const escapeSql = (s: string) => s.replace(/'/g, "''");
       // Insert in batches; Bun.sql doesn't yet have the tagged-template
       // batch shape we want for typed values, so we use unsafe with
       // server-side parameter escaping for safety.
       for (const ev of toPushToCloud) {
         await pg.unsafe(
           `INSERT INTO events (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-             VALUES ('${escape(ev.event_id)}', '${escape(ev.type)}', '${escape(ev.as_of)}', '${escape(ev.entity)}', '${escape(ev.actor.type)}', '${escape(ev.actor.id)}', '${escape(JSON.stringify(ev.citations))}'::jsonb, '${escape(JSON.stringify(ev.payload))}'::jsonb)
+             VALUES ('${escapeSql(ev.event_id)}', '${escapeSql(ev.type)}', '${escapeSql(ev.as_of)}', '${escapeSql(ev.entity)}', '${escapeSql(ev.actor.type)}', '${escapeSql(ev.actor.id)}', '${escapeSql(JSON.stringify(ev.citations))}'::jsonb, '${escapeSql(JSON.stringify(ev.payload))}'::jsonb)
              ON CONFLICT (event_id) DO NOTHING`,
         );
       }

@@ -35,7 +35,12 @@ import { extname, join, normalize, resolve } from "node:path";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
-import { recordCeoDecision, recordDecisionComment } from "../runtime/decisions/record";
+import {
+  type RecordCeoDecisionResult,
+  type RecordDecisionCommentResult,
+  recordCeoDecision,
+  recordDecisionComment,
+} from "../runtime/decisions/record";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { getObligationsView } from "./obligations-view";
@@ -169,10 +174,12 @@ async function handleDecide(req: Request): Promise<Response> {
   // calls — single source of truth for CeoDecision emission, no
   // parallel paths.
   const followOnRoutes = Array.isArray(body.followOnRoutes)
-    ? body.followOnRoutes.filter((s) => typeof s === "string" && s.trim().length > 0).map((s) => s.trim())
+    ? body.followOnRoutes
+        .filter((s) => typeof s === "string" && s.trim().length > 0)
+        .map((s) => s.trim())
     : [];
 
-  let result;
+  let result: RecordCeoDecisionResult;
   try {
     result = recordCeoDecision(
       {
@@ -222,7 +229,7 @@ async function handleComment(req: Request): Promise<Response> {
   const actorId = "marc@tgv.co.za";
   const author = "Marc";
 
-  let result;
+  let result: RecordDecisionCommentResult;
   try {
     result = recordDecisionComment(
       {
@@ -231,7 +238,9 @@ async function handleComment(req: Request): Promise<Response> {
         actorType: "human",
         actorId,
         body: body.body,
-        ...(typeof body.inReplyToEventId === "string" ? { inReplyToEventId: body.inReplyToEventId } : {}),
+        ...(typeof body.inReplyToEventId === "string"
+          ? { inReplyToEventId: body.inReplyToEventId }
+          : {}),
       },
       nowUtc(),
     );
@@ -442,7 +451,7 @@ const server = Bun.serve({
     }
     {
       const decisionMatch = url.pathname.match(/^\/api\/decisions\/(.+)$/);
-      if (decisionMatch && decisionMatch[1] && req.method === "GET") {
+      if (decisionMatch?.[1] && req.method === "GET") {
         const decisionId = decodeURIComponent(decisionMatch[1]);
         const view = buildDecisionDrillDown(eventStore, cachedState, decisionId);
         if (!view) {

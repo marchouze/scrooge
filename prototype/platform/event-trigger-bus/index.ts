@@ -49,8 +49,6 @@
 //
 // Author: Atlas (A2.2)
 
-import type { TickResult as _BusTickResult } from "./bus";
-
 /**
  * One row of the bus's subscription registry. Derived from the canonical
  * handler-metadata registry on `syncSubscriptions()`.

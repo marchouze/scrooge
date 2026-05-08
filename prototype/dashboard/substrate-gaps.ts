@@ -65,7 +65,7 @@ function parseGaps(content: string): { asOf: string | null; gaps: string[] } {
     }
     if (NEXT_H2.test(line)) break;
     const m = line.match(/^-\s+(.+)$/);
-    if (m && m[1]) gaps.push(m[1].trim());
+    if (m?.[1]) gaps.push(m[1].trim());
   }
   return { asOf, gaps };
 }

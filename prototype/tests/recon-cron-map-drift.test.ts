@@ -15,10 +15,10 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  run as cronMapDrift,
   deriveKeyFromFilename,
   extractCronFromWorkflow,
   extractCronMapFromSource,
-  run as cronMapDrift,
 } from "../platform/recon/cron-map-drift";
 
 const WF_DAILY_VERA = `name: Vera overnight recon

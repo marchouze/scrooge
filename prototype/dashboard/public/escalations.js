@@ -75,7 +75,9 @@ function renderOptions(options) {
 }
 
 function renderEscalation(view) {
-  const wrap = el("article", { class: `esc-card status-${view.status}${view.overdue ? " is-overdue" : ""}` });
+  const wrap = el("article", {
+    class: `esc-card status-${view.status}${view.overdue ? " is-overdue" : ""}`,
+  });
   const head = el("header", { class: "esc-head" }, [
     el("div", { class: "esc-head-top" }, [
       el(
@@ -95,10 +97,7 @@ function renderEscalation(view) {
   const meta = el("div", { class: "esc-meta" });
   const metaRow = (label, value) => {
     if (value == null || value === "") return null;
-    return el("div", { class: "esc-meta-row" }, [
-      el("b", {}, label),
-      el("span", {}, value),
-    ]);
+    return el("div", { class: "esc-meta-row" }, [el("b", {}, label), el("span", {}, value)]);
   };
   const rows = [
     metaRow("Raised by", view.raisedBy),
@@ -107,7 +106,9 @@ function renderEscalation(view) {
     metaRow("Current responsible", view.currentResponsible),
     view.deadline ? metaRow("Deadline", fmtTimestamp(view.deadline)) : null,
     metaRow("Blocked by", view.blockedBy),
-    view.acknowledgementCount > 0 ? metaRow("Acknowledgements", String(view.acknowledgementCount)) : null,
+    view.acknowledgementCount > 0
+      ? metaRow("Acknowledgements", String(view.acknowledgementCount))
+      : null,
     view.delegationCount > 0 ? metaRow("Delegations", String(view.delegationCount)) : null,
   ];
   for (const r of rows) if (r) meta.appendChild(r);
@@ -173,9 +174,7 @@ function renderLists(views) {
   const decidedViews = views.filter((v) => v.status === "decided");
 
   if (openViews.length === 0) {
-    openNode.appendChild(
-      el("p", { class: "muted" }, "No open escalations. The fleet is settled."),
-    );
+    openNode.appendChild(el("p", { class: "muted" }, "No open escalations. The fleet is settled."));
   } else {
     for (const v of openViews) openNode.appendChild(renderEscalation(v));
   }
@@ -184,8 +183,7 @@ function renderLists(views) {
   } else {
     for (const v of decidedViews) decidedNode.appendChild(renderEscalation(v));
   }
-  $("openSub").textContent =
-    `${openViews.length} item${openViews.length === 1 ? "" : "s"}`;
+  $("openSub").textContent = `${openViews.length} item${openViews.length === 1 ? "" : "s"}`;
   $("decidedSub").textContent =
     `${decidedViews.length} item${decidedViews.length === 1 ? "" : "s"}`;
   $("escalationsSub").textContent = `${views.length} total`;

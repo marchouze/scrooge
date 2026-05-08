@@ -129,10 +129,7 @@ function buildDigest(ctx: AgentRunContext): IrisDigest {
     processingPurposeRejectedLast7d: countSince("ProcessingPurposeRejected", since7d),
     crossBorderTransferApprovedLast7d: countSince("CrossBorderTransferApproved", since7d),
     breachNotificationDispatchedLast7d: countSince("BreachNotificationDispatched", since7d),
-    popiaCompromiseSuspectedLast7d: countSince(
-      "PersonalInformationCompromiseSuspected",
-      since7d,
-    ),
+    popiaCompromiseSuspectedLast7d: countSince("PersonalInformationCompromiseSuspected", since7d),
     informationRegulatorInquiryLast7d: countSince("InformationRegulatorInquiry", since7d),
     priorSnapshotsLast30d: countSince("POPIAControlsSnapshot", since30d),
   };
@@ -158,9 +155,7 @@ function buildNarrativeInput(ctx: AgentRunContext, d: IrisDigest): string {
   );
   lines.push(`  - CrossBorderTransferApproved: ${d.crossBorderTransferApprovedLast7d}`);
   lines.push(`  - BreachNotificationDispatched (s.22): ${d.breachNotificationDispatchedLast7d}`);
-  lines.push(
-    `  - PersonalInformationCompromiseSuspected: ${d.popiaCompromiseSuspectedLast7d}`,
-  );
+  lines.push(`  - PersonalInformationCompromiseSuspected: ${d.popiaCompromiseSuspectedLast7d}`);
   lines.push(`  - InformationRegulatorInquiry: ${d.informationRegulatorInquiryLast7d}`);
   lines.push("");
   lines.push(`Prior POPIAControlsSnapshot runs (last 30d): ${d.priorSnapshotsLast30d}`);
@@ -216,18 +211,14 @@ function buildReportMarkdown(
   lines.push(`| \`ConsentWithdrawn\` | ${d.consentWithdrawnLast7d} |`);
   lines.push(`| \`ProcessingPurposeApproved\` | ${d.processingPurposeApprovedLast7d} |`);
   lines.push(`| \`ProcessingPurposeRejected\` | ${d.processingPurposeRejectedLast7d} |`);
-  lines.push(
-    `| \`CrossBorderTransferApproved\` (s.72) | ${d.crossBorderTransferApprovedLast7d} |`,
-  );
+  lines.push(`| \`CrossBorderTransferApproved\` (s.72) | ${d.crossBorderTransferApprovedLast7d} |`);
   lines.push(
     `| \`BreachNotificationDispatched\` (s.22) | ${d.breachNotificationDispatchedLast7d} |`,
   );
   lines.push(
     `| \`PersonalInformationCompromiseSuspected\` | ${d.popiaCompromiseSuspectedLast7d} |`,
   );
-  lines.push(
-    `| \`InformationRegulatorInquiry\` | ${d.informationRegulatorInquiryLast7d} |`,
-  );
+  lines.push(`| \`InformationRegulatorInquiry\` | ${d.informationRegulatorInquiryLast7d} |`);
   lines.push("");
   lines.push(
     "_Build-only context: no live customers and no live processing flows. Zero counts on DSAR / breach / consent are expected and not a substrate alarm. The s.22 breach-notification clock is on standby; absence of trigger is the design._",

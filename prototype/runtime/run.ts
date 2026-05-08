@@ -80,6 +80,7 @@ function parseArgs(argv: readonly string[]): CliArgs {
   }
   if (!agent || !trigger) {
     throw new Error(
+      // biome-ignore lint/style/useTemplate: minimal-touch — Atlas owns this file in A2.2 cutover (claude/cool-rhodes-9b2c4e); a template-literal collapse would clobber his single-commit-revert path. Re-fix in his next pass.
       "Usage: bun runtime/run.ts --agent <Name> --trigger <id> [--dry-run]\n" +
         `Available: ${Object.keys(HANDLERS).join(", ")}`,
     );

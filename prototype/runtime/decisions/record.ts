@@ -75,7 +75,9 @@ export function recordCeoDecision(
   if (!input.decisionId) throw new Error("decisionId is required");
   if (!input.action) throw new Error("action is required");
   if (!isValidDecisionAction(input.action)) {
-    throw new Error(`Invalid action "${input.action}" — must be one of ${VALID_DECISION_ACTIONS.join(" | ")}`);
+    throw new Error(
+      `Invalid action "${input.action}" — must be one of ${VALID_DECISION_ACTIONS.join(" | ")}`,
+    );
   }
   if (!input.title) throw new Error("title is required");
   if (!input.outcome) throw new Error("outcome is required");

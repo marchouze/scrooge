@@ -222,7 +222,9 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: ResilienceSnapshot): st
   lines.push("");
   lines.push("engineering bench (Devon's reports):");
   for (const s of snap.bench) {
-    lines.push(`  - ${s.persona}: ${s.handlerCount} runtime handler(s)${s.handlerCount > 0 ? ` [${s.handlerKeys.join(", ")}]` : ""}`);
+    lines.push(
+      `  - ${s.persona}: ${s.handlerCount} runtime handler(s)${s.handlerCount > 0 ? ` [${s.handlerKeys.join(", ")}]` : ""}`,
+    );
   }
   lines.push("");
   lines.push("operational events (last 7 days):");
@@ -301,9 +303,15 @@ function buildReportMarkdown(
   lines.push("");
   lines.push("| Source | Cadence per spec | Observed (last 7d) |");
   lines.push("|---|---|---|");
-  lines.push(`| Atlas — \`SubstrateStateSnapshot\` | weekly | ${snap.upstream.atlasSubstrateLast7d} |`);
-  lines.push(`| Anya — \`DataProjectionSnapshot\` | daily | ${snap.upstream.anyaProjectionDriftLast7d} |`);
-  lines.push(`| Senna — \`SecuritySubstrateSnapshot\` | weekly | ${snap.upstream.sennaSecurityLast7d} |`);
+  lines.push(
+    `| Atlas — \`SubstrateStateSnapshot\` | weekly | ${snap.upstream.atlasSubstrateLast7d} |`,
+  );
+  lines.push(
+    `| Anya — \`DataProjectionSnapshot\` | daily | ${snap.upstream.anyaProjectionDriftLast7d} |`,
+  );
+  lines.push(
+    `| Senna — \`SecuritySubstrateSnapshot\` | weekly | ${snap.upstream.sennaSecurityLast7d} |`,
+  );
   lines.push("");
   if (snap.upstream.anyaProjectionDriftLast7d < 5) {
     lines.push(
@@ -315,7 +323,9 @@ function buildReportMarkdown(
   lines.push("## Substrate exceptions on register");
   lines.push("");
   if (snap.exceptions.known.length === 0) {
-    lines.push("_No exception IDs parsed from `Owner Inbox/2026-05-07_owen_substrate-exception-register.md`. Either none registered, or the register has moved._");
+    lines.push(
+      "_No exception IDs parsed from `Owner Inbox/2026-05-07_owen_substrate-exception-register.md`. Either none registered, or the register has moved._",
+    );
   } else {
     for (const id of snap.exceptions.known) lines.push(`- \`${id}\``);
   }
@@ -336,7 +346,10 @@ function buildReportMarkdown(
     "- **Capacity-projection** — Anya / Atlas joint; not yet built. `CapacityBreach` event-type registered but no producer.",
   );
   lines.push(
-    `- **Engineering-bench coverage** — ${snap.bench.filter((s) => s.handlerCount === 0).length} of ${ENGINEERING_BENCH.length} seats have no runtime handler yet (engineering personas: ${snap.bench.filter((s) => s.handlerCount === 0).map((s) => s.persona).join(", ")}).`,
+    `- **Engineering-bench coverage** — ${snap.bench.filter((s) => s.handlerCount === 0).length} of ${ENGINEERING_BENCH.length} seats have no runtime handler yet (engineering personas: ${snap.bench
+      .filter((s) => s.handlerCount === 0)
+      .map((s) => s.persona)
+      .join(", ")}).`,
   );
   lines.push("");
 
