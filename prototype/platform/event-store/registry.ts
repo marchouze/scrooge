@@ -46,6 +46,7 @@ import {
   busDispatchedPayloadSchema,
   decisionCommentPayloadSchema,
   identityKeyRotatedPayloadSchema,
+  legacyFanoutShadowedPayloadSchema,
   modelSubmittedPayloadSchema,
   modelTierClassifiedPayloadSchema,
   modelValidationApprovedPayloadSchema,
@@ -308,6 +309,24 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01"],
     source: "Atlas runtime spec §3.3; A2.2 bus — platform/event-trigger-bus/bus.ts",
+  },
+  {
+    // Short-lived event introduced for D-A22-RETIRE-LEGACY Phase 1
+    // (bus-canonical, legacy-shadow). The legacy in-process fan-out
+    // emits this per (parent run, triggered handler key) row instead
+    // of invoking the handler. Phase 2 deletes both the legacy
+    // fan-out and this event type. Vera's Wave-4 #13b
+    // parallel-dispatch-divergence pipeline reconciles
+    // LegacyFanoutShadowed against BusDispatched during Phase 1.
+    type: "LegacyFanoutShadowed",
+    class: "runtime",
+    payloadSchema: legacyFanoutShadowedPayloadSchema,
+    issuer: "substrate",
+    subscribers: ["Atlas", "Vera"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01"],
+    source:
+      "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md §3.1; D-A22-RETIRE-LEGACY Phase 1",
   },
 ];
 
