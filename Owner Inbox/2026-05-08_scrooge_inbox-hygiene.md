@@ -1,7 +1,7 @@
 ---
 agent: Scrooge
 trigger: inbox-hygiene
-asOf: 2026-05-08T05:18:28.436Z
+asOf: 2026-05-08T06:01:53.514Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`.
 
-**Headline:** Team Inbox open: 0 (after run); actioned: 40; Owner Inbox: 70 files. 0 items auto-moved this run.
+**Headline:** Team Inbox open: 0 (after run); actioned: 40; Owner Inbox: 72 files. 0 items auto-moved this run.
 
 Team Inbox is empty. No action taken; no in-flight items pending Marc-or-agent action.
 
