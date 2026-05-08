@@ -79,6 +79,13 @@ export const SCHEDULER_CRON_MAP: Readonly<Record<string, string>> = {
   "iris:popia-controls-snapshot": "51 7 * * 3",
   "senna:security-substrate-state": "37 7 * * 4",
   "rashida:cyber-resilience-snapshot": "49 7 * * 4",
+  "saskia:markets-readiness-snapshot": "33 5 * * MON",
+  "bea:accounting-readiness": "47 5 * * *",
+  "yael:tax-readiness": "7 6 * * THU",
+  "tomas:payments-readiness": "21 4 * * *",
+  "imani:legal-readiness": "9 7 * * 5",
+  "ravi:alm-readiness": "37 5 * * *",
+  "sade:agentops-readiness": "41 7 * * 5",
 };
 
 /**
