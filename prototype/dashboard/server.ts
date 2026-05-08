@@ -38,6 +38,7 @@ import type { Event } from "../platform/event-store/types";
 import { recordCeoDecision, recordDecisionComment } from "../runtime/decisions/record";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { getObligationsView } from "./obligations-view";
 import {
   POPIA_S71_NOTICE,
   buildDecisionDrillDown,
@@ -390,6 +391,13 @@ const server = Bun.serve({
       // Substrate-gap inventory parsed from Atlas's most-recent
       // substrate-state deliverable. 5-min server-side cache.
       return jsonResponse(getSubstrateGapsView(REPO_ROOT));
+    }
+    if (url.pathname === "/api/obligations" && req.method === "GET") {
+      // Obligation-detail map keyed by ORG-* id, served to the policies
+      // drilldown so it can show citation / requirement / source / bind /
+      // status per linked obligation. Parsed from the obligations register
+      // on each request — file is small; no caching needed.
+      return jsonResponse(getObligationsView(REPO_ROOT));
     }
     if (url.pathname === "/api/agent-runs" && req.method === "GET") {
       // GitHub Actions run history per agent — for the per-agent "Recent
