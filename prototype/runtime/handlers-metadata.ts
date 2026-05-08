@@ -126,6 +126,15 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Rohan", "backtest-harness", "event-driven", {
     subscribesTo: ["BacktestRequested"],
   }),
+  // M1 — Mira's regulator-citation-URN handler. Event-driven on
+  // `CeoDecision`; processes only D-MARKETS-SCHEMA-FOUNDATION approvals.
+  // CEO authority approved 2026-05-07; brief at
+  // `Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md`.
+  // Appended at end of array per parallel-M1 file-clash protocol
+  // (Anya / Bea / Senna touch the same file).
+  entry("Mira", "m1-regulator-citation-urns", "event-driven", {
+    subscribesTo: ["CeoDecision"],
+  }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */

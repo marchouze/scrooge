@@ -26,6 +26,7 @@ import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
 import kaiPreTradeGatewayAggregator from "./agents/kai-pre-trade-gateway-aggregator";
 import miraCitationGate from "./agents/mira-citation-gate";
+import miraM1RegulatorCitationUrns from "./agents/mira-m1-regulator-citation-urns";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import paxRoleResearchQueue from "./agents/pax-role-research-queue";
@@ -78,4 +79,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,
   "rohan:backtest-harness": rohanBacktestHarness,
+  "mira:m1-regulator-citation-urns": miraM1RegulatorCitationUrns,
 };
