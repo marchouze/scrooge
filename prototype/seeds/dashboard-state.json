@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-08T06:04:00.312Z",
+  "asOf": "2026-05-08T06:29:34.632Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -28,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 7,
+      "ceoDecisionsActioned": 6,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -625,19 +625,21 @@
           }
         ]
       }
-    }
-  ],
-  "decisionsResolved": [
+    },
     {
       "id": "D-FLEET-ROLLOUT-SEQUENCING",
       "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
-      "actionedAt": "2026-05-08T04:51:05.824Z",
-      "outcome": "Approved as drafted. First-three handlers in order: Helena (risk-appetite-watch) → Devon (operational-resilience-snapshot) → Zara (mlro-supervision). A1 → A2 → A3 substrate build proceeds in parallel with handler-writing; the runtime seam means each handler re-binds cleanly when substrate components land — no rework.",
-      "sourceDoc": "(unsourced)",
-      "action": "approve",
-      "actionedBy": "marc@tgv.co.za",
-      "comment": "Approved in chat 2026-05-08; sub-decision under D-AGENT-RUNTIME-AUTHORIZE."
-    },
+      "category": "near-term",
+      "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
+      "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
+      "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
+      ],
+      "note": "Recommendation: Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework."
+    }
+  ],
+  "decisionsResolved": [
     {
       "id": "D1",
       "title": "Interim operating posture — build-only",
@@ -768,70 +770,6 @@
       "active": true,
       "startedAt": "2026-05-07",
       "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-1",
-      "what": "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite ",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-2",
-      "what": "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistere",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-3",
-      "what": "Runtime trigger kinds: scheduled, event-driven, and on-request are all first-cla",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-4",
-      "what": "Claude API integration for agent-narrative output: ROLLED OUT",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-5",
-      "what": "Projection-cache persistence: now closed by `anya:projection-refresh`, an event-",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-6",
-      "what": "Citation gate: now wrapped as `mira:citation-gate` (on-request)",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-    },
-    {
-      "id": "workstream:atlas:gh-actions-cron-unreliability",
-      "what": "GitHub Actions cron unreliability — interim staggering, permanent fix is A2.1 scheduler",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
-    },
-    {
-      "id": "workstream:atlas:substrate-gap-7",
-      "what": "GitHub Actions cron unreliability — interim substrate",
-      "owner": "Atlas",
-      "due": "",
-      "active": true,
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
     }
   ],
   "agents": [
@@ -845,7 +783,20 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-FLEET-ROLLOUT-SEQUENCING",
+          "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
+          "category": "near-term",
+          "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
+          "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
+          "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
+          ],
+          "note": "Recommendation: Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework."
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -874,7 +825,7 @@
           "title": "ceo decisions · fx sub decisions"
         }
       ],
-      "lastActivityAt": "2026-05-08",
+      "lastActivityAt": "2026-05-09",
       "subordinates": [
         {
           "name": "PAX",
@@ -884,6 +835,11 @@
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_pax_independent-validation-role-brief.md",
+              "title": "pax · independent validation role brief"
+            },
             {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md",
@@ -895,7 +851,7 @@
               "title": "obligations register schema"
             }
           ],
-          "lastActivityAt": "2026-05-07"
+          "lastActivityAt": "2026-05-09"
         },
         {
           "name": "Nolan",
@@ -941,8 +897,8 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 11
+      "totalOpenDecisions": 1,
+      "totalRecentDeliverables": 12
     },
     {
       "name": "Helena",
@@ -1010,6 +966,15 @@
             }
           ],
           "lastActivityAt": "2026-05-08"
+        },
+        {
+          "name": "Nadia",
+          "role": "Independent model-validation engineer (second line)",
+          "hasOperatingSpec": true,
+          "activeWorkstreams": [],
+          "recentlyCompletedWorkstreams": [],
+          "openDecisionsOwned": [],
+          "recentDeliverables": []
         }
       ],
       "totalActive": 1,
@@ -1027,7 +992,20 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-FLEET-ROLLOUT-SEQUENCING",
+          "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
+          "category": "near-term",
+          "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
+          "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
+          "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
+          ],
+          "note": "Recommendation: Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework."
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1061,70 +1039,6 @@
               "active": true,
               "startedAt": "2026-05-07",
               "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-1",
-              "what": "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite ",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-2",
-              "what": "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistere",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-3",
-              "what": "Runtime trigger kinds: scheduled, event-driven, and on-request are all first-cla",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-4",
-              "what": "Claude API integration for agent-narrative output: ROLLED OUT",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-5",
-              "what": "Projection-cache persistence: now closed by `anya:projection-refresh`, an event-",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-6",
-              "what": "Citation gate: now wrapped as `mira:citation-gate` (on-request)",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
-            },
-            {
-              "id": "workstream:atlas:gh-actions-cron-unreliability",
-              "what": "GitHub Actions cron unreliability — interim staggering, permanent fix is A2.1 scheduler",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
-            },
-            {
-              "id": "workstream:atlas:substrate-gap-7",
-              "what": "GitHub Actions cron unreliability — interim substrate",
-              "owner": "Atlas",
-              "due": "",
-              "active": true,
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_substrate-state.md"
             }
           ],
           "recentlyCompletedWorkstreams": [],
@@ -1324,6 +1238,18 @@
                   }
                 ]
               }
+            },
+            {
+              "id": "D-FLEET-ROLLOUT-SEQUENCING",
+              "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
+              "category": "near-term",
+              "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
+              "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
+              "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
+              ],
+              "note": "Recommendation: Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework."
             }
           ],
           "recentDeliverables": [
@@ -1769,9 +1695,9 @@
           "lastActivityAt": "2026-05-06"
         }
       ],
-      "totalActive": 10,
+      "totalActive": 2,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 5,
+      "totalOpenDecisions": 7,
       "totalRecentDeliverables": 19
     },
     {
@@ -2351,6 +2277,15 @@
   ],
   "ownerInboxFeed": [
     {
+      "filename": "2026-05-09_pax_independent-validation-role-brief.md",
+      "path": "Owner Inbox/2026-05-09_pax_independent-validation-role-brief.md",
+      "date": "2026-05-09",
+      "title": "Role brief — Independent-validation function",
+      "decisionRequired": false,
+      "author": "PAX",
+      "summary": "Role research for the independent model-validation function. Standing second-line agent that validates every model used in production (credit, market, liquidity, IFRS 9 ECL, capital), curates the model registry jointly with Rohan, and emits validation-decision events. Reports through Helena (CRO), functionally independent of all model builders. Closes the substrate gap Helena has flagged on every daily run since 2026-05-08; on the critical path for ICAAP / ILAAP signing authority and the bank's licence-day model-risk posture."
+    },
+    {
       "filename": "2026-05-08_zara_mlro-supervision.md",
       "path": "Owner Inbox/2026-05-08_zara_mlro-supervision.md",
       "date": "2026-05-08",
@@ -2467,7 +2402,7 @@
       "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
       "decisionRecommendation": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
       "decisionOwner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
-      "decisionStatus": "resolved"
+      "decisionStatus": "open"
     },
     {
       "filename": "2026-05-08_anya_projection-drift.md",
@@ -2545,14 +2480,6 @@
       "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
       "date": "2026-05-07",
       "title": "Scrooge — CEO decision record: D-MARKETS-CAPITAL-TIME-SHAPE, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
-      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-follow-on-router-test.md",
-      "date": "2026-05-07",
-      "title": "Scrooge — CEO decision record: D-FOLLOW-ON-ROUTER-TEST, 2026-05-07",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     }

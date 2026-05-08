@@ -239,6 +239,7 @@ All team member profiles live in `/Team/`. Each file is the **operating spec for
 | Mira | Compliance / RegTech engineer | FIC Act, FAIS, Twin Peaks, sanctions, transaction monitoring, obligations-register curator |
 | Kai | Trading systems engineer | OMS/EMS, FIX, multi-asset booking, exchange connectivity, surveillance feeds |
 | Rohan | Risk engineer | Market/credit/liquidity/op risk, IFRS 9 ECL, ICAAP/ILAAP, BCBS standards |
+| Nadia | Independent-validation engineer (second line) | Independent model validation, SR 11-7 / SS 1/23, BCBS CG-Principles, validation testing & backtesting, model-registry co-curatorship, RAS § B7 tier discipline |
 | Tomas | Operations & payments engineer | SAMOS, BankservAfrica, SWIFT, ISO 20022, reconciliation, cut-off engineering |
 | Imani | Legal-as-code engineer | Master agreements, clause libraries, ECTA execution, legal-entity hierarchy |
 | Sade | HR systems engineer | Payroll, BCEA, EE/B-BBEE, fit-and-proper, statutory submissions |
@@ -261,7 +262,7 @@ All team member profiles live in `/Team/`. Each file is the **operating spec for
 
 **Top-of-house reporting.** All governance seats and the Chief of Staff report directly to the CEO. CEO direct reports today: Scrooge (CoS, orchestrator), Helena (CRO), Devon (COO), Camille (CFO), Eitan (Treasurer), Saskia (Head of Global Markets), Owen (CoSec), Zara (CCO), Iris (IO), Thandiwe (CAE — administrative line; functional line into the Audit Committee / Interim Audit Forum), Rashida (CISO). Future direct reports as hired: GC, CHRO. Vera (internal audit engineer) reports **functionally** to Thandiwe (CAE) and **administratively** through the CEO — third-line independence is non-negotiable; the CAE's own functional line into the Interim Audit Forum (Owen chair, until a Board AC is constituted) preserves it.
 
-**Engineering vs governance.** Engineering roles *build* coded controls, projections, and platform components. Governance roles hold *named regulatory accountability* and oversee the engineers' outputs. Engineers report through their governance home: Rohan → Helena (CRO); Mira → Zara (CCO); Bea, Yael → Camille (CFO); Ravi → Eitan (Treasurer); Kai → Saskia (Head of Global Markets); Senna → Rashida (CISO); Atlas, Tomas, Niko, Anya, Imani (interim), Sade (interim) → Devon (COO). The two seat types are distinct; do not conflate them.
+**Engineering vs governance.** Engineering roles *build* coded controls, projections, and platform components. Governance roles hold *named regulatory accountability* and oversee the engineers' outputs. Engineers report through their governance home: Rohan → Helena (CRO); Nadia → Helena (CRO; functionally independent of Rohan, peer-in-second-line); Mira → Zara (CCO); Bea, Yael → Camille (CFO); Ravi → Eitan (Treasurer); Kai → Saskia (Head of Global Markets); Senna → Rashida (CISO); Atlas, Tomas, Niko, Anya, Imani (interim), Sade (interim) → Devon (COO). The two seat types are distinct; do not conflate them.
 
 
 New hires are added to this table and to the `/Team/` folder by Nolan after PAX completes the role research.
