@@ -16,6 +16,7 @@
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
+import beaAccountingReadiness from "./agents/bea-accounting-readiness";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
@@ -58,4 +59,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
+  "bea:accounting-readiness": beaAccountingReadiness,
 };
