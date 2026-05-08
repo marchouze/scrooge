@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-08T05:04:44.378Z
+asOf: 2026-05-08T05:19:07.959Z
 decision-required: false
 ---
 
@@ -9,19 +9,22 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 6 events across 5 types; 28/28 personas have operating specs; 14 runtime handlers registered; 74 files in /Owner Inbox/; 6 substrate gaps tracked.
+**Headline:** 22 events across 8 types; 28/28 personas have operating specs; 14 runtime handlers registered; 76 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `.local/event.db` · Total events: 6
+Path: `.local/event.db` · Total events: 22
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `DashboardProjectionRefreshed` | 2 | 2026-05-08 | 2026-05-08 |
+| `WorkstreamRegistered` | 7 | 2026-05-08 | 2026-05-08 |
+| `RiskRaised` | 6 | 2026-05-08 | 2026-05-08 |
+| `DashboardProjectionRefreshed` | 4 | 2026-05-08 | 2026-05-08 |
 | `CeoDecision` | 1 | 2026-05-08 | 2026-05-08 |
 | `RiskAppetiteSnapshot` | 1 | 2026-05-08 | 2026-05-08 |
 | `OperationalResilienceSnapshot` | 1 | 2026-05-08 | 2026-05-08 |
 | `MLROAttestation` | 1 | 2026-05-08 | 2026-05-08 |
+| `SubstrateStateSnapshot` | 1 | 2026-05-08 | 2026-05-08 |
 
 ## Personas — operating-spec coverage
 
@@ -58,6 +61,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 - Claude API integration for agent-narrative output: ROLLED OUT. All seven runtime handlers (Vera, Atlas, Mira, Owen, Senna, Anya, Scrooge) call `tryGenerateNarrative` after their mechanical pass. Each has a stable persona-grounded system prompt cached as the prefix; per-run state is the volatile suffix. Requires ANTHROPIC_API_KEY in the host env or GitHub Actions secret; runs degrade gracefully when unset.
 - Projection-cache persistence: now closed by `anya:projection-refresh`, an event-driven handler subscribed to SubstrateStateSnapshot / WorkstreamRegistered / WorkstreamCompleted / CeoDecision. Re-derives `prototype/seeds/dashboard-state.json` from canonical sources + the live event store and writes it to disk. Fans out from any parent run whose appended events match the subscription set; emits `DashboardProjectionRefreshed` for audit.
 - Citation gate: now wrapped as `mira:citation-gate` (on-request). Walks the event store, emits `CitationGatePassed` / `CitationGateFailed` and one `AuditFinding` per missing-citation event. Workflow at `.github/workflows/agent-runtime-mira-citation-gate.yml` (workflow_dispatch only — the gate is also still part of the `ci` script for synchronous CI verification).
+- GitHub Actions cron unreliability — interim substrate. GH Actions silently dropped Anya 03:00 UTC + Scrooge 04:00 UTC daily slots overnight 2026-05-07/08; Vera 02:00 UTC fired 2h46m late. All ten scheduled workflows re-pinned 2026-05-08 to off-the-hour distinct minutes (Vera 02:13, Anya 03:17, Scrooge 04:27, Helena 04:30, Devon Mon 05:23, Zara Mon 05:30, Atlas Mon 06:19, Owen Tue 07:31, Mira Wed 07:29, Senna Thu 07:37). Permanent fix is A2.1 — substrate scheduler emitting typed `ScheduledTrigger` events from a Bun process — at which point cron files become thin shims or retire entirely.
 
 ## Atlas's narrative
 

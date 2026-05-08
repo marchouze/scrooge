@@ -10,7 +10,9 @@ name: Devon operational-resilience snapshot
 
 on:
   schedule:
-    - cron: "0 5 * * MON"
+    # Mon 05:23 UTC — off-the-hour to dodge GH Actions cron drops
+    # observed 2026-05-08; A2.1 scheduler closes permanently.
+    - cron: "23 5 * * MON"
   workflow_dispatch: {}
 
 permissions:
