@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-08T06:40:01.693Z",
+  "asOf": "2026-05-08T07:11:31.776Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -28,7 +28,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 12,
       "proceduresPlanned": 76,
-      "ceoDecisionsActioned": 42,
+      "ceoDecisionsActioned": 43,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -137,24 +137,17 @@
       "summary": "The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own."
     }
   ],
-  "decisionsOpen": [
+  "decisionsOpen": [],
+  "decisionsResolved": [
     {
       "id": "D-FLEET-ROLLOUT-SEQUENCING",
       "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
-      "category": "near-term",
-      "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
-      "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
-      "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
-        "reasoning": "Author's stance from Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md; full reasoning in the source document."
-      }
-    }
-  ],
-  "decisionsResolved": [
+      "actionedAt": "2026-05-08T06:54:31.295Z",
+      "outcome": "Approved as drafted.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
     {
       "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
       "title": "Markets franchise design — proposal",
@@ -834,23 +827,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-FLEET-ROLLOUT-SEQUENCING",
-          "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
-          "category": "near-term",
-          "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
-          "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
-          "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
-            "reasoning": "Author's stance from Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md; full reasoning in the source document."
-          }
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -975,7 +952,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 3,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 12
     },
     {
@@ -1070,23 +1047,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-FLEET-ROLLOUT-SEQUENCING",
-          "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
-          "category": "near-term",
-          "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
-          "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
-          "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
-            "reasoning": "Author's stance from Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md; full reasoning in the source document."
-          }
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1162,23 +1123,7 @@
               "briefDoc": "Owner Inbox/test_router.md"
             }
           ],
-          "openDecisionsOwned": [
-            {
-              "id": "D-FLEET-ROLLOUT-SEQUENCING",
-              "title": "Agent-runtime fleet rollout — A1 → A4 sequencing + first-three handlers",
-              "category": "near-term",
-              "owner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
-              "trigger": "Consolidated build sequence from A1 (registry + identity) through A4 (fleet rollout) under the approved D-AGENT-RUNTIME-AUTHORIZE. Names Helena, Devon, Zara as the first three handlers to write next, with rationale and exit criteria. Confirms persona-spec rollout has converged (28/28); gating now concentrates in substrate-component build + handler-writing.",
-              "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md"
-              ],
-              "recommendation": {
-                "stance": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
-                "reasoning": "Author's stance from Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md; full reasoning in the source document."
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-08",
@@ -1354,7 +1299,7 @@
       ],
       "totalActive": 6,
       "totalRecentlyCompleted": 3,
-      "totalOpenDecisions": 2,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 19
     },
     {
@@ -1401,12 +1346,17 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-08",
+              "path": "Owner Inbox/2026-05-08_bea_accounting-readiness.md",
+              "title": "bea · accounting readiness"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
               "title": "core policies finance"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-08"
         },
         {
           "name": "Yael",
@@ -1428,7 +1378,7 @@
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 4
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Eitan",
@@ -1514,6 +1464,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_saskia_markets-readiness-snapshot.md",
+          "title": "saskia · markets readiness snapshot"
+        },
+        {
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
           "title": "saskia kai · fx product family"
@@ -1529,7 +1484,7 @@
           "title": "saskia kai · global markets trading system architecture"
         }
       ],
-      "lastActivityAt": "2026-05-07",
+      "lastActivityAt": "2026-05-08",
       "subordinates": [
         {
           "name": "Kai",
@@ -1570,7 +1525,7 @@
       "totalActive": 1,
       "totalRecentlyCompleted": 1,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 6
+      "totalRecentDeliverables": 7
     },
     {
       "name": "Owen",
@@ -1947,6 +1902,14 @@
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     },
     {
+      "filename": "2026-05-08_saskia_markets-readiness-snapshot.md",
+      "path": "Owner Inbox/2026-05-08_saskia_markets-readiness-snapshot.md",
+      "date": "2026-05-08",
+      "title": "Saskia — markets-readiness snapshot, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Saskia's weekly markets-readiness snapshot per `Team/Saskia.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Tenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
+    },
+    {
       "filename": "2026-05-08_rohan_risk-run.md",
       "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
       "date": "2026-05-08",
@@ -2003,6 +1966,14 @@
       "summary": "Autonomous run of Camille's weekly financial-position-snapshot per `Team/Camille.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fourth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUEN…"
     },
     {
+      "filename": "2026-05-08_bea_accounting-readiness.md",
+      "path": "Owner Inbox/2026-05-08_bea_accounting-readiness.md",
+      "date": "2026-05-08",
+      "title": "Bea — daily accounting readiness, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Bea's daily accounting-readiness attestation per `Team/Bea.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Eleventh handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCI…"
+    },
+    {
       "filename": "2026-05-08_atlas_substrate-state.md",
       "path": "Owner Inbox/2026-05-08_atlas_substrate-state.md",
       "date": "2026-05-08",
@@ -2023,7 +1994,7 @@
       "decisionForCEO": "Approve the proposed first-three handler order (Helena → Devon → Zara) and the A1 → A2 → A3 substrate-build sequence, so handler-writing begins concretely while substrate components proceed in parallel.",
       "decisionRecommendation": "Approve as proposed. The first-three can be written against today's substrate (handlers-metadata + GitHub Actions cron + in-process fan-out) and re-bind cleanly to A1–A2 components when those land — no rework.",
       "decisionOwner": "Atlas (substrate build) · Scrooge (fleet coordination) · Devon (governance)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-08_anya_projection-drift.md",
@@ -2087,22 +2058,6 @@
       "title": "Scrooge — follow-on routing, 2026-05-07",
       "decisionRequired": false,
       "summary": "Audit record of follow-on routes dispatched after CEO decision approvals. Each decision below names the routes declared in its CeoDecision payload and the dispatch outcome."
-    },
-    {
-      "filename": "2026-05-07_scrooge_ceo-decision-record_d-markets-schema-foundation.md",
-      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-schema-foundation.md",
-      "date": "2026-05-07",
-      "title": "Scrooge — CEO decision record: D-MARKETS-SCHEMA-FOUNDATION, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
-      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-capital-time-shape.md",
-      "date": "2026-05-07",
-      "title": "Scrooge — CEO decision record: D-MARKETS-CAPITAL-TIME-SHAPE, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     }
   ],
   "policies": [
