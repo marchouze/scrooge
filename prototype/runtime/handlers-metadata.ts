@@ -109,6 +109,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Eitan", "liquidity-snapshot", "scheduled", { cadenceHours: 24 }),
   entry("Saskia", "markets-readiness-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Kai", "m1-cdm-typescript-bindings", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Kai", "pre-trade-gateway-aggregator", "event-driven", {
+    subscribesTo: ["OrderProposed"],
+  }),
   entry("Bea", "accounting-readiness", "scheduled", { cadenceHours: 24 }),
   entry("Yael", "tax-readiness", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Tomas", "payments-readiness", "scheduled", { cadenceHours: 24 }),
