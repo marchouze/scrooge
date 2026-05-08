@@ -128,6 +128,18 @@ function renderOpen(open) {
         el("dd", {}, open.category),
         el("dt", {}, "Decision for CEO"),
         el("dd", {}, open.decisionForCEO ?? "—"),
+        ...(open.recommendation?.stance
+          ? [
+              el("dt", {}, "Recommendation"),
+              el(
+                "dd",
+                {},
+                open.recommendation.reasoning
+                  ? `${open.recommendation.stance} ${open.recommendation.reasoning}`
+                  : open.recommendation.stance,
+              ),
+            ]
+          : []),
         ...(open.note ? [el("dt", {}, "Note"), el("dd", {}, open.note)] : []),
       ]),
     ]),

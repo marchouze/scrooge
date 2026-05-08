@@ -37,6 +37,7 @@ import type {
   DecisionAction,
   DecisionCategory,
   DecisionCommentSummary,
+  DecisionRecommendation,
   FindingSummary,
   InFlightItem,
   OpenDecision,
@@ -930,6 +931,21 @@ export function parseOwnerInbox(dir: string, limit = 25): OwnerInboxItem[] {
   return items.slice(0, limit);
 }
 
+// Split a free-form `decision-recommendation:` string into the structured
+// `{ stance, reasoning }` shape consumed by `OpenDecision.recommendation`
+// and the `decision-recommendation` recon pipeline. The first sentence is
+// the stance; remaining sentences are the reasoning. Strings without a
+// sentence break go entirely into stance with empty reasoning.
+function splitRecommendation(text: string): DecisionRecommendation {
+  const trimmed = text.trim();
+  const idx = trimmed.indexOf(". ");
+  if (idx === -1) return { stance: trimmed, reasoning: "" };
+  return {
+    stance: trimmed.slice(0, idx + 1),
+    reasoning: trimmed.slice(idx + 2).trim(),
+  };
+}
+
 // Lift Owner-Inbox decision-required items into OpenDecision shape so they
 // merge into the same `decisionsOpen` list as the curated decisions. Items
 // already resolved via a CeoDecision event are excluded by the caller.
@@ -950,9 +966,7 @@ export function ownerInboxToOpenDecisions(
       decisionForCEO: item.decisionForCEO ?? `See ${item.path}`,
       sourceDocs: [item.path],
       ...(item.decisionRecommendation
-        ? {
-            note: `Recommendation: ${item.decisionRecommendation}`,
-          }
+        ? { recommendation: splitRecommendation(item.decisionRecommendation) }
         : {}),
     });
   }

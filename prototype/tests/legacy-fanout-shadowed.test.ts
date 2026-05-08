@@ -14,10 +14,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { BANK_ZA_001 } from "../platform/core/types";
-import {
-  makeLegacyFanoutShadowed,
-  TYPED_EVENT_TYPES,
-} from "../platform/event-store/event-types";
+import { TYPED_EVENT_TYPES, makeLegacyFanoutShadowed } from "../platform/event-store/event-types";
 import { lookupEventType } from "../platform/event-store/registry";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
@@ -27,10 +24,7 @@ const SHADOW_ACTOR: Actor = {
   id: "agent:atlas:legacy-fanout-shadow",
 };
 
-const PHASE_1_CITATIONS = [
-  "D-A22-RETIRE-LEGACY",
-  "GOV-FRAMEWORK-CEO-RESERVED",
-];
+const PHASE_1_CITATIONS = ["D-A22-RETIRE-LEGACY", "GOV-FRAMEWORK-CEO-RESERVED"];
 
 describe("LegacyFanoutShadowed — factory + payload validation", () => {
   it("builds a valid event with all required payload fields", () => {
@@ -166,7 +160,7 @@ describe("LegacyFanoutShadowed — event store end-to-end", () => {
       });
       store.append(event);
 
-      const out: typeof event[] = [];
+      const out: (typeof event)[] = [];
       for (const e of store.replay({ type: "LegacyFanoutShadowed" })) {
         out.push(e);
       }
