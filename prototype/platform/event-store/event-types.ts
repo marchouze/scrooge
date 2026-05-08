@@ -256,6 +256,104 @@ export function makeRiskRaised(args: {
 }
 
 // ---------------------------------------------------------------------------
+// AgentRegistered
+//
+// Emitted when Atlas's registry component validates a `/Team/<Name>.md`
+// agent operating spec and admits the agent into the runtime fleet
+// (Principle 7; Atlas substrate spec §3.1, §4 row #1). The runtime's
+// authoritative state is the event log — `AgentRegistry.list()` and
+// `lookup()` are queries that fold this stream.
+//
+// Replay-fold rule: latest-wins-per-key, keyed on `agentUrn`. A second
+// AgentRegistered with the same urn but a different specHash supersedes
+// the prior; identical specHash on re-registration is a no-op (the
+// registry is idempotent — see `prototype/platform/agent-runtime/registry.ts`).
+//
+// Subscribers: Vera (Wave-4 #10 agent-spec-integrity), Anya (semantic
+// layer + dashboard projections), Iris (POPIA — agent-as-actor records).
+// ---------------------------------------------------------------------------
+
+export const agentRegisteredPayloadSchema = z.object({
+  /** Stable URN: `agent:<lowercased-persona-name>`. The registry's primary key. */
+  agentUrn: z
+    .string()
+    .min(1)
+    .regex(/^agent:[a-z0-9-]+$/, {
+      message: "agentUrn must be `agent:<lowercased-persona-name>` (a-z, 0-9, -)",
+    }),
+  /** Persona name as it appears on /Team/<Name>.md (mixed-case allowed). */
+  personaName: z.string().min(1),
+  /**
+   * Governance-line owner per spec §1 ("Reports to"). Free-form because
+   * personas express this differently (e.g. "Devon (COO)" vs "CEO (Marc),
+   * with direct line of access to the Board Risk Committee"); the
+   * structured top-of-house mapping is in CLAUDE.md and reconciled by
+   * Vera Wave-4 #10.
+   */
+  reportsTo: z.string().min(1),
+  /** Free-text summary of §6 (Cadence) — typically the "Mode:" line. */
+  cadenceMode: z.string().min(1),
+  /** Number of trigger rows the agent declares in §7. */
+  triggerCount: z.number().int().nonnegative(),
+  /** Number of decision rows the agent declares in §9 (its authority surface). */
+  decisionsInScopeCount: z.number().int().nonnegative(),
+  /** Number of escalation rows the agent declares in §10. */
+  decisionsEscalateCount: z.number().int().nonnegative(),
+  /**
+   * `@platform/<x>` capability tokens parsed from §12. Used by Atlas's
+   * permission-policy generator (A2) to derive capability allow-lists,
+   * and by Vera Wave-5 to assert no capability-creep.
+   */
+  systemCapabilities: z.array(z.string().min(1)),
+  /**
+   * Typed event names parsed from §11 ("Events emitted"). The
+   * runtime's emit-allow-list is derived from this; cross-referenced by
+   * Vera against the event-type registry (`platform/event-store/registry.ts`).
+   */
+  eventsEmitted: z.array(z.string().min(1)),
+  /** Procedure paths parsed from §13. Reconciled to `/Procedures/_index.md`. */
+  proceduresOwned: z.array(z.string().min(1)),
+  /**
+   * Spec version from §17's first change-log row, or `v1.0` when the
+   * change log is absent / unparseable. The bump rule is the persona's
+   * own convention; the registry only uses this for human display.
+   */
+  specVersion: z.string().min(1),
+  /**
+   * SHA-256 of the persona file's raw contents at registration time.
+   * The registry's idempotency check compares this against the current
+   * latest-wins value — equal hash → no-op; different hash → new event.
+   */
+  specHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "specHash must be a lowercase hex sha256 (64 chars)",
+    }),
+});
+
+export type AgentRegisteredPayload = z.infer<typeof agentRegisteredPayloadSchema>;
+
+export function makeAgentRegistered(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentRegisteredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentRegistered",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentRegisteredPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // DecisionComment
 //
 // Append-only thread of comments / notes on a decisionId. Used for the
@@ -310,6 +408,7 @@ export const TYPED_EVENT_TYPES = [
   "AgentDecision",
   "WorkstreamRegistered",
   "RiskRaised",
+  "AgentRegistered",
   "DecisionComment",
 ] as const;
 

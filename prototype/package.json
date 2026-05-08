@@ -19,6 +19,7 @@
     "dashboard": "bun run dashboard/server.ts",
     "agent:run": "bun run runtime/run.ts",
     "event-store:sync": "bun run scripts/event-store-sync.ts",
+    "registry:sync": "bun run scripts/agent-registry-sync.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "agent:helena-risk-appetite-watch": "bun run runtime/run.ts --agent Helena --trigger risk-appetite-watch",

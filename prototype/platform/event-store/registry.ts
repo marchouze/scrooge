@@ -38,6 +38,7 @@ import type { z } from "zod";
 import {
   agentDecisionPayloadSchema,
   agentEscalationPayloadSchema,
+  agentRegisteredPayloadSchema,
   decisionCommentPayloadSchema,
   riskRaisedPayloadSchema,
   workstreamRegisteredPayloadSchema,
@@ -160,11 +161,12 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRegistered",
     class: "runtime",
+    payloadSchema: agentRegisteredPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Vera", "Anya", "Iris"],
     replay: "latest-wins-per-key",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01"],
-    source: "A0 freeze §4 #1",
+    source: "A0 freeze §4 #1; A1.1 registry — platform/agent-runtime/registry.ts",
   },
   {
     type: "AgentRetired",
