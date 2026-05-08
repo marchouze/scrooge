@@ -62,6 +62,8 @@
     "agent:pax-role-research-queue": "bun run runtime/run.ts --agent PAX --trigger role-research-queue",
     "agent:rohan-backtest-harness": "bun run runtime/run.ts --agent Rohan --trigger backtest-harness",
     "agent:bea-m1-ifrs-classification-rules": "bun run runtime/run.ts --agent Bea --trigger m1-ifrs-classification-rules",
+    "agent:mira-m1-regulator-citation-urns": "bun run runtime/run.ts --agent Mira --trigger m1-regulator-citation-urns",
+    "agent:senna-m1-trading-stack-threat-model": "bun run runtime/run.ts --agent Senna --trigger m1-trading-stack-threat-model",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

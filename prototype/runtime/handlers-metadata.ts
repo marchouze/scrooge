@@ -128,8 +128,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   }),
   // M1 — Bea IFRS-9 classification rules per `D-MARKETS-SCHEMA-FOUNDATION`.
   // Subscribes to lifecycle anchors (CeoDecision, CdmBindingsRegenerated)
-  // and the M1 CDM equity event types. Appended at the end of the array
-  // to minimise file-clash with parallel M1 agents (Anya / Mira / Senna).
+  // and the M1 CDM equity event types.
   entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
     subscribesTo: [
       "CeoDecision",
@@ -138,6 +137,14 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
       "EquitySettlementInstructed",
       "EquityCorporateActionApplied",
     ],
+  }),
+  // M1 — Mira's regulator-citation-URN handler.
+  entry("Mira", "m1-regulator-citation-urns", "event-driven", {
+    subscribesTo: ["CeoDecision"],
+  }),
+  // M1 — Senna's trading-stack threat-model handler.
+  entry("Senna", "m1-trading-stack-threat-model", "event-driven", {
+    subscribesTo: ["CeoDecision"],
   }),
 ];
 
