@@ -26,6 +26,7 @@ import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
+import paxRoleResearchQueue from "./agents/pax-role-research-queue";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import rohanRiskRun from "./agents/rohan-risk-run";
@@ -70,4 +71,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "imani:legal-readiness": imaniLegalReadiness,
   "ravi:alm-readiness": raviAlmReadiness,
   "sade:agentops-readiness": sadeAgentopsReadiness,
+  "pax:role-research-queue": paxRoleResearchQueue,
 };
