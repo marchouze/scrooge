@@ -41,6 +41,8 @@ import {
   agentRegisteredPayloadSchema,
   decisionCommentPayloadSchema,
   riskRaisedPayloadSchema,
+  scheduledTriggerPayloadSchema,
+  substrateAlertPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
 
@@ -198,11 +200,12 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "ScheduledTrigger",
     class: "runtime",
+    payloadSchema: scheduledTriggerPayloadSchema,
     issuer: "substrate",
-    subscribers: ["target-agent"],
+    subscribers: ["target-agent", "Atlas", "Vera"],
     replay: "cumulative-fold",
     citationsHint: ["ORG-CY-01"],
-    source: "A0 freeze §4 #5",
+    source: "A0 freeze §4 #5; A2.1 scheduler — platform/scheduler/scheduler.ts",
   },
   {
     type: "AgentRunStarted",
@@ -270,11 +273,12 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "SubstrateAlert",
     class: "runtime",
+    payloadSchema: substrateAlertPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Devon", "Atlas", "Vera"],
     replay: "latest-wins-per-key",
     citationsHint: ["ORG-CY-01", "ORG-PR-18"],
-    source: "A0 freeze §4 #15",
+    source: "A0 freeze §4 #15; A2.1 scheduler — platform/scheduler/scheduler.ts",
   },
 ];
 

@@ -399,6 +399,128 @@ export function makeDecisionComment(args: {
 }
 
 // ---------------------------------------------------------------------------
+// ScheduledTrigger
+//
+// Emitted by the scheduler substrate (A2.1; Atlas spec §3.2, §4 row #5)
+// when a registered agent's cron schedule is due. Carries observability
+// metadata (delayMs) so downstream consumers (Atlas substrate-state,
+// Vera Wave-4 #13 inactivity reconciliation) can surface scheduler
+// drift without inspecting wall-clock differences themselves.
+//
+// Today the scheduler emits the event but does NOT dispatch the agent
+// handler — the GH Actions cron files keep the dispatch responsibility
+// during A2.1; A2.2 brings the in-process bus that fans events to
+// handlers. ScheduledTrigger events are therefore an audit-trail record
+// + a stepping stone for A2.2.
+// ---------------------------------------------------------------------------
+
+export const scheduledTriggerPayloadSchema = z.object({
+  /** URN of the agent whose schedule fired. Matches A1.1's AgentUrn. */
+  agentUrn: z
+    .string()
+    .min(1)
+    .regex(/^agent:[a-z0-9-]+$/, {
+      message: "agentUrn must be `agent:<lowercased-persona-name>` (a-z, 0-9, -)",
+    }),
+  /**
+   * Trigger id from the persona spec § 7. Today derived from the
+   * `runtime/handlers-metadata.ts` (agent, trigger) key — the spec's §7
+   * trigger column is free-text, so the metadata key is canonical.
+   */
+  triggerId: z.string().min(1),
+  /** Cron expression that produced this fire time. */
+  cronExpression: z.string().min(1),
+  /** ISO 8601 — the cron-due timestamp the scheduler computed. */
+  scheduledFor: z.string().min(1),
+  /** ISO 8601 — when the scheduler actually emitted the event. */
+  firedAt: z.string().min(1),
+  /** firedAt - scheduledFor in milliseconds; for observability. May be 0. */
+  delayMs: z.number().int().nonnegative(),
+  /** P5 — calendar context (e.g. "ZA"). */
+  jurisdiction: z.string().min(1),
+  /**
+   * If a holiday-skip shifted the cron-due timestamp, the original
+   * unshifted timestamp. Undefined when no shift happened.
+   */
+  holidayShiftedFrom: z.string().optional(),
+});
+
+export type ScheduledTriggerPayload = z.infer<typeof scheduledTriggerPayloadSchema>;
+
+export function makeScheduledTrigger(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ScheduledTriggerPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ScheduledTrigger",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: scheduledTriggerPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SubstrateAlert
+//
+// Emitted by the substrate (Atlas / scheduler / event-trigger bus) when
+// a runtime invariant is breached: an inactivity SLA elapses without
+// the expected event, a per-agent capacity threshold trips, a latency
+// budget burns through, or an integrity check (e.g. spec-hash drift)
+// fails.
+//
+// Atlas spec §4 row #15 names the type; A2.1 adds the typed payload so
+// the scheduler's inactivity-SLA emitter has a strong contract.
+// Subscribers: Devon (operational resilience), Atlas (substrate-state
+// rollup), Vera (Wave-4 #13 — inactivity-reconciliation).
+// ---------------------------------------------------------------------------
+
+export const substrateAlertPayloadSchema = z.object({
+  /** Stable id; convention: `alert:<class>:<short-slug>`. */
+  alertId: z
+    .string()
+    .min(1)
+    .regex(/^alert:[a-z]+:[a-z0-9-]+$/, {
+      message: "alertId must match `alert:<class>:<short-slug>` (a-z, 0-9, -)",
+    }),
+  /** Alert classification. Drives routing + dashboard grouping. */
+  alertClass: z.enum(["inactivity", "capacity", "latency", "integrity"]),
+  /** When the alert is agent-scoped, the URN of the affected agent. */
+  agentUrn: z.string().optional(),
+  /** Human-readable description of what tripped. */
+  details: z.string().min(1),
+  /** Severity hint for routing. */
+  severity: z.enum(["low", "medium", "high"]),
+});
+
+export type SubstrateAlertPayload = z.infer<typeof substrateAlertPayloadSchema>;
+
+export function makeSubstrateAlert(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SubstrateAlertPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SubstrateAlert",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: substrateAlertPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
 // ---------------------------------------------------------------------------
@@ -410,6 +532,8 @@ export const TYPED_EVENT_TYPES = [
   "RiskRaised",
   "AgentRegistered",
   "DecisionComment",
+  "ScheduledTrigger",
+  "SubstrateAlert",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
