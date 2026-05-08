@@ -27,6 +27,7 @@ import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
+import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
@@ -48,4 +49,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "mira:citation-gate": miraCitationGate,
   "senna:security-substrate-state": sennaSecuritySubstrateState,
   "zara:mlro-supervision": zaraMlroSupervision,
+  "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
 };

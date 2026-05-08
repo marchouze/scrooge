@@ -103,6 +103,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Mira", "citation-gate", "on-request"),
   entry("Senna", "security-substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Zara", "mlro-supervision", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Thandiwe", "audit-committee-prep", "scheduled", { cadenceHours: 24 * 7 }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */
