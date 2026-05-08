@@ -126,21 +126,23 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Rohan", "backtest-harness", "event-driven", {
     subscribesTo: ["BacktestRequested"],
   }),
-  // M1 — Mira's regulator-citation-URN handler. Event-driven on
-  // `CeoDecision`; processes only D-MARKETS-SCHEMA-FOUNDATION approvals.
-  // CEO authority approved 2026-05-07; brief at
-  // `Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md`.
-  // Appended at end of array per parallel-M1 file-clash protocol
-  // (Anya / Bea / Senna touch the same file).
+  // M1 — Bea IFRS-9 classification rules per `D-MARKETS-SCHEMA-FOUNDATION`.
+  // Subscribes to lifecycle anchors (CeoDecision, CdmBindingsRegenerated)
+  // and the M1 CDM equity event types.
+  entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
+    subscribesTo: [
+      "CeoDecision",
+      "CdmBindingsRegenerated",
+      "EquityTradeBooked",
+      "EquitySettlementInstructed",
+      "EquityCorporateActionApplied",
+    ],
+  }),
+  // M1 — Mira's regulator-citation-URN handler.
   entry("Mira", "m1-regulator-citation-urns", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
-  // M1 — Senna's trading-stack threat-model handler. Event-driven on
-  // `CeoDecision` (filters for D-MARKETS-SCHEMA-FOUNDATION). Emits four
-  // `ThreatModelDimensionRegistered` events (STRIDE on FIX gateway,
-  // zero-trust gateway, HSM order signing, ops-security boundary) plus
-  // a `SecurityGateRegistered` for the M2 pre-condition. Authority:
-  // `Team Inbox/2026-05-07_brief_senna_m1-trading-stack-threat-model.md`.
+  // M1 — Senna's trading-stack threat-model handler.
   entry("Senna", "m1-trading-stack-threat-model", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),

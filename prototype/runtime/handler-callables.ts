@@ -17,6 +17,7 @@ import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
 import beaAccountingReadiness from "./agents/bea-accounting-readiness";
+import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
@@ -80,6 +81,7 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,
   "rohan:backtest-harness": rohanBacktestHarness,
+  "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
   "mira:m1-regulator-citation-urns": miraM1RegulatorCitationUrns,
   "senna:m1-trading-stack-threat-model": sennaM1TradingStackThreatModel,
 };

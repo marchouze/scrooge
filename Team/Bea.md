@@ -85,7 +85,7 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 
 ## 11. Outputs
 
-- **Events emitted:** `PostingRulePublished`, `IFRSClassificationAssigned`, `FVHierarchyAssigned`, `JournalEntryPosted`, `SubLedgerReconciled`, `CloseCycleCompleted`, `BAReturnCellMapped`, `BAReturnGenerated`, `AuditPackReady`, `RestatementBooked`, `AgentEscalation`, `AgentDecision`.
+- **Events emitted:** `PostingRulePublished`, `IFRSClassificationAssigned`, `IfrsClassificationApplied` (M1 — listed equities; per `D-MARKETS-SCHEMA-FOUNDATION`), `SubLedgerPostingEmitted` (M1), `FVHierarchyAssigned`, `JournalEntryPosted`, `SubLedgerReconciled`, `CloseCycleCompleted`, `BAReturnCellMapped`, `BAReturnGenerated`, `AuditPackReady`, `RestatementBooked`, `AgentEscalation`, `AgentDecision`.
 - **Registers maintained:** chart of accounts; posting-rule register; IFRS-classification register; FV-hierarchy register; BA-return cell-map register.
 - **Deliverables:** daily close report (Owner Inbox); monthly auditor pack (queries, not assemblies); quarterly BA-return packs (BA 100, BA 200, BA 300, BA 700); annual statutory AFS; XBRL pack.
 
@@ -140,4 +140,5 @@ Bea co-owns IFRS 9 ECL methodology with Rohan; the engineering build is shared, 
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Bea (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Camille (CFO) per top-of-house structure. |
+| v1.1 | 2026-05-08 | Bea | M1 IFRS-classification handler (`bea:m1-ifrs-classification-rules`) shipped per `D-MARKETS-SCHEMA-FOUNDATION`. §11 outputs updated to register `IfrsClassificationApplied` and `SubLedgerPostingEmitted` event types. |
 | v1.1 | 2026-05-07 | Bea (via Scrooge) | Chart of accounts v0 and posting-rule register v0 substrates landed at `prototype/platform/accounting/_chart-of-accounts.md` and `prototype/platform/accounting/_posting-rules.md` (with JSON schemas). Procedure `posting-rule-publication.md` populated as keystone of Bea's first end-to-end Reg→Policy→Procedure→Capability chain (PROC-FIN-AC-01). Two stub policies (Accounting Policies (IFRS); Financial Reporting & Disclosure) bundled at `Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md`. Substrate Gap §3 (close engine) status update: posting-rule register substrate live; close-engine still planned for M2. |
