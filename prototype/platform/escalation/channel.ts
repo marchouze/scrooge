@@ -403,9 +403,10 @@ function emitIntegrityAlert(
     detail: string;
   },
 ): void {
-  // SubstrateAlert is registered envelope-only in the registry today;
-  // we follow the convention used by other call sites (e.g. Atlas
-  // substrate-state) of a structured payload with `alertClass`.
+  // SubstrateAlert is typed (A2.1 schema): alertId / alertClass /
+  // details / severity required. The escalationId is embedded in the
+  // alertId for traceability.
+  const safeId = args.escalationId.replace(/[^a-z0-9-]/gi, "-").toLowerCase();
   eventStore.append({
     event_id: crypto.randomUUID(),
     type: "SubstrateAlert",
@@ -414,10 +415,10 @@ function emitIntegrityAlert(
     actor: args.actor,
     citations: SUBSTRATE_ALERT_CITATIONS,
     payload: {
-      alertClass: "integrity",
-      source: "platform/escalation/channel.ts",
-      escalationId: args.escalationId,
-      detail: args.detail,
+      alertId: `alert:integrity:escalation-${safeId}`,
+      alertClass: "integrity" as const,
+      details: `${args.detail} (escalationId: ${args.escalationId}; source: platform/escalation/channel.ts)`,
+      severity: "high" as const,
     },
   });
 }

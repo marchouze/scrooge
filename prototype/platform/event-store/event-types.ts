@@ -723,6 +723,158 @@ export function makeSubstrateAlert(args: {
 }
 
 // ---------------------------------------------------------------------------
+// IdentityKeyRotated
+//
+// Emitted when Atlas's identity issuer mints a new signing key for an
+// agent — either at first issuance or on rotation (Atlas spec §3.1; A0
+// freeze §4 #3). Subscribers: Senna + Rashida (cyber-resilience posture
+// — the rotation cadence is part of the zero-trust envelope).
+//
+// Replay-fold: latest-wins-per-key on `agentUrn` — the latest event for
+// an agent is the active key. Older events remain in the log for audit
+// (rotation history is reconstructible).
+// ---------------------------------------------------------------------------
+
+export const identityKeyRotatedPayloadSchema = z.object({
+  /** The agent whose key was rotated. Matches AgentRegistered.agentUrn. */
+  agentUrn: z
+    .string()
+    .min(1)
+    .regex(/^agent:[a-z0-9-]+$/, {
+      message: "agentUrn must be `agent:<lowercased-persona-name>` (a-z, 0-9, -)",
+    }),
+  /**
+   * Monotonic version of this key. Starts at 1 on first issuance;
+   * increments on each rotation. The substrate refuses non-monotonic
+   * reissuance to prevent replay of older keys.
+   */
+  keyVersion: z.number().int().positive(),
+  /** Public key in base64url (Ed25519, 32 bytes). The private half stays at the issuer. */
+  publicKey: z.string().min(1),
+  /** Signing algorithm. Today: Ed25519. Cloud (M8): same algo, HSM-backed. */
+  algorithm: z.literal("Ed25519"),
+  /**
+   * Why the key was rotated. `initial` for first issuance; `scheduled`
+   * for cadence-based rotation; `compromise` for incident response;
+   * `spec-change` when the agent spec changed and a fresh key supersedes
+   * the prior one.
+   */
+  reason: z.enum(["initial", "scheduled", "compromise", "spec-change"]),
+  /** ISO 8601 timestamp at which the previous key (if any) is treated as revoked. */
+  previousKeyRevokedAt: z.string().optional(),
+});
+
+export type IdentityKeyRotatedPayload = z.infer<typeof identityKeyRotatedPayloadSchema>;
+
+export function makeIdentityKeyRotated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: IdentityKeyRotatedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "IdentityKeyRotated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: identityKeyRotatedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// PermissionPolicyPublished
+//
+// Emitted when Atlas's permission-policy generator derives a fresh policy
+// from an agent's spec (§12 capabilities, §11 outputs, §7 triggers, §11
+// registers maintained) and publishes it (Atlas spec §3.1; A0 freeze §4
+// #4). The event-store permission-gate consumes the latest policy per
+// agent at append time.
+//
+// Replay-fold: latest-wins-per-key on `agentUrn`. Idempotent on
+// `policyHash` — re-publishing an unchanged policy is a no-op.
+// ---------------------------------------------------------------------------
+
+export const permissionPolicyPublishedPayloadSchema = z.object({
+  /** The agent the policy applies to. */
+  agentUrn: z
+    .string()
+    .min(1)
+    .regex(/^agent:[a-z0-9-]+$/, {
+      message: "agentUrn must be `agent:<lowercased-persona-name>` (a-z, 0-9, -)",
+    }),
+  /**
+   * Capability tokens (`@platform/<x>`) the agent is allowed to call.
+   * Derived from spec §12. The runtime asserts every capability call's
+   * target is in this list.
+   */
+  capabilityAllowList: z.array(z.string().min(1)),
+  /**
+   * Event types the agent is allowed to emit. Derived from spec §11
+   * "Events emitted:". The event-store permission-gate rejects appends
+   * whose type is outside this list when the gate is enabled.
+   */
+  eventEmitAllowList: z.array(z.string().min(1)),
+  /**
+   * Event types the agent is allowed to subscribe to (event-trigger bus,
+   * A2). Derived from spec §7 "Triggers" — typed event names appearing
+   * in backticks within the trigger rows.
+   */
+  eventSubscribeAllowList: z.array(z.string().min(1)),
+  /**
+   * Registers the agent is allowed to write to. Derived from spec §11
+   * "Registers maintained:" — list of register names the agent owns.
+   */
+  registerWriteAllowList: z.array(z.string().min(1)),
+  /**
+   * SHA-256 hex digest of the canonicalised policy contents. The policy
+   * publisher uses this for idempotency: equal hash → no-op.
+   */
+  policyHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "policyHash must be a lowercase hex sha256 (64 chars)",
+    }),
+  /**
+   * Hash of the agent spec the policy was derived from. Lets auditors
+   * reconcile policy ↔ spec versions at any point in time.
+   */
+  derivedFromSpecHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "derivedFromSpecHash must be a lowercase hex sha256 (64 chars)",
+    }),
+});
+
+export type PermissionPolicyPublishedPayload = z.infer<
+  typeof permissionPolicyPublishedPayloadSchema
+>;
+
+export function makePermissionPolicyPublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: PermissionPolicyPublishedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "PermissionPolicyPublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: permissionPolicyPublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
 // ---------------------------------------------------------------------------
@@ -740,6 +892,8 @@ export const TYPED_EVENT_TYPES = [
   "DecisionComment",
   "ScheduledTrigger",
   "SubstrateAlert",
+  "IdentityKeyRotated",
+  "PermissionPolicyPublished",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

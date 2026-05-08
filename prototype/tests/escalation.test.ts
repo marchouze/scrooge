@@ -315,7 +315,9 @@ describe("EscalationChannel — duplicate decide raises SubstrateAlert", () => {
     expect(alerts.length).toBe(1);
     const alert = alerts[0];
     expect((alert?.payload as { alertClass?: string }).alertClass).toBe("integrity");
-    expect((alert?.payload as { escalationId?: string }).escalationId).toBe("escalation:dup:1");
+    // SubstrateAlert is typed (A2.1) — escalation id rides in alertId + details fields
+    expect((alert?.payload as { alertId?: string }).alertId).toContain("escalation-dup-1");
+    expect((alert?.payload as { details?: string }).details).toContain("escalation:dup:1");
     store.close();
   });
 });
