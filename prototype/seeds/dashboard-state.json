@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-08T05:31:01.757Z",
+  "asOf": "2026-05-08T06:04:00.312Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -625,29 +625,6 @@
           }
         ]
       }
-    },
-    {
-      "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-      "title": "Markets franchise design — proposal",
-      "category": "near-term",
-      "owner": "Saskia (with Helena, Camille, Eitan)",
-      "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-      "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-      ]
-    },
-    {
-      "id": "D-MARKETS-SCHEMA-FOUNDATION",
-      "title": "Global markets trading system — schema foundation, building blocks, build sequence",
-      "category": "near-term",
-      "owner": "Saskia (governance) · Kai (engineering)",
-      "trigger": "ISDA CDM (Common Domain Model) as the canonical schema for every tradeable / holdable instrument. Composable primitives (cashflow, schedule, index, optionality, settlement, collateral) compose into simple cash products and complex structured trades. M1–M5 build sequence proposed.",
-      "decisionForCEO": "Approve ISDA CDM as the canonical schema foundation for the trading system, sequenced M1 (listed cash) → M3 (OTC IRS) → M5 (FRTB-ready, structured products).",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md"
-      ],
-      "note": "Recommendation: Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD)."
     }
   ],
   "decisionsResolved": [
@@ -987,19 +964,7 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1049,7 +1014,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 6
     },
     {
@@ -1819,19 +1784,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1882,7 +1835,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 4
     },
     {
@@ -1895,28 +1848,21 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_eitan_liquidity-snapshot.md",
+          "title": "eitan · liquidity snapshot"
+        },
         {
           "date": "2026-05-06",
           "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
           "title": "core policies finance"
         }
       ],
-      "lastActivityAt": "2026-05-06",
+      "lastActivityAt": "2026-05-08",
       "subordinates": [
         {
           "name": "Ravi",
@@ -1937,8 +1883,8 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
-      "totalRecentDeliverables": 2
+      "totalOpenDecisions": 0,
+      "totalRecentDeliverables": 3
     },
     {
       "name": "Saskia",
@@ -1960,31 +1906,7 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-MARKETS-CAPITAL-TIME-SHAPE",
-          "title": "Markets franchise design — proposal",
-          "category": "near-term",
-          "owner": "Saskia (with Helena, Camille, Eitan)",
-          "trigger": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-          "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md"
-          ]
-        },
-        {
-          "id": "D-MARKETS-SCHEMA-FOUNDATION",
-          "title": "Global markets trading system — schema foundation, building blocks, build sequence",
-          "category": "near-term",
-          "owner": "Saskia (governance) · Kai (engineering)",
-          "trigger": "ISDA CDM (Common Domain Model) as the canonical schema for every tradeable / holdable instrument. Composable primitives (cashflow, schedule, index, optionality, settlement, collateral) compose into simple cash products and complex structured trades. M1–M5 build sequence proposed.",
-          "decisionForCEO": "Approve ISDA CDM as the canonical schema foundation for the trading system, sequenced M1 (listed cash) → M3 (OTC IRS) → M5 (FRTB-ready, structured products).",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md"
-          ],
-          "note": "Recommendation: Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD)."
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -2011,20 +1933,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-MARKETS-SCHEMA-FOUNDATION",
-              "title": "Global markets trading system — schema foundation, building blocks, build sequence",
-              "category": "near-term",
-              "owner": "Saskia (governance) · Kai (engineering)",
-              "trigger": "ISDA CDM (Common Domain Model) as the canonical schema for every tradeable / holdable instrument. Composable primitives (cashflow, schedule, index, optionality, settlement, collateral) compose into simple cash products and complex structured trades. M1–M5 build sequence proposed.",
-              "decisionForCEO": "Approve ISDA CDM as the canonical schema foundation for the trading system, sequenced M1 (listed cash) → M3 (OTC IRS) → M5 (FRTB-ready, structured products).",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md"
-              ],
-              "note": "Recommendation: Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD)."
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-07",
@@ -2047,7 +1956,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 3,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 6
     },
     {
@@ -2286,6 +2195,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_iris_popia-controls-snapshot.md",
+          "title": "iris · popia controls snapshot"
+        },
+        {
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md",
           "title": "iris · popia s19 s22 walkthrough for rashida"
@@ -2296,12 +2210,12 @@
           "title": "core policies compliance privacy"
         }
       ],
-      "lastActivityAt": "2026-05-07",
+      "lastActivityAt": "2026-05-08",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 2
+      "totalRecentDeliverables": 3
     },
     {
       "name": "Thandiwe",
@@ -2325,7 +2239,13 @@
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
-      "recentDeliverables": [],
+      "recentDeliverables": [
+        {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_thandiwe_audit-committee-prep.md",
+          "title": "thandiwe · audit committee prep"
+        }
+      ],
       "lastActivityAt": "2026-05-08",
       "subordinates": [
         {
@@ -2368,7 +2288,7 @@
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 5
+      "totalRecentDeliverables": 6
     },
     {
       "name": "Rashida",
@@ -2382,8 +2302,14 @@
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
-      "recentDeliverables": [],
-      "lastActivityAt": "2026-05-07",
+      "recentDeliverables": [
+        {
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_rashida_cyber-resilience-snapshot.md",
+          "title": "rashida · cyber resilience snapshot"
+        }
+      ],
+      "lastActivityAt": "2026-05-08",
       "subordinates": [
         {
           "name": "Senna",
@@ -2420,7 +2346,7 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 4
+      "totalRecentDeliverables": 5
     }
   ],
   "ownerInboxFeed": [
@@ -2439,6 +2365,14 @@
       "title": "Vera — overnight recon, 2026-05-08",
       "decisionRequired": false,
       "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
+    },
+    {
+      "filename": "2026-05-08_thandiwe_audit-committee-prep.md",
+      "path": "Owner Inbox/2026-05-08_thandiwe_audit-committee-prep.md",
+      "date": "2026-05-08",
+      "title": "Thandiwe — Audit-Committee prep, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Thandiwe's weekly Audit-Committee prep per `Team/Thandiwe.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Feeds the Interim Audit Forum (Owen chair) until a Board AC is constituted."
     },
     {
       "filename": "2026-05-08_scrooge_inbox-hygiene.md",
@@ -2465,12 +2399,36 @@
       "summary": "Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the enginee…"
     },
     {
+      "filename": "2026-05-08_rashida_cyber-resilience-snapshot.md",
+      "path": "Owner Inbox/2026-05-08_rashida_cyber-resilience-snapshot.md",
+      "date": "2026-05-08",
+      "title": "Rashida — cyber-resilience snapshot, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Rashida's weekly cyber-resilience snapshot per `Team/Rashida.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Pre-attestation digest for the quarterly Joint Standard 1 of 2024 programme atte…"
+    },
+    {
+      "filename": "2026-05-08_iris_popia-controls-snapshot.md",
+      "path": "Owner Inbox/2026-05-08_iris_popia-controls-snapshot.md",
+      "date": "2026-05-08",
+      "title": "Iris — POPIA controls snapshot, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Iris's weekly POPIA-controls snapshot per `Team/Iris.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Standing-duty digest under POPIA s.56; informs the quarterly s.19–22 joint review with R…"
+    },
+    {
       "filename": "2026-05-08_helena_risk-appetite-watch.md",
       "path": "Owner Inbox/2026-05-08_helena_risk-appetite-watch.md",
       "date": "2026-05-08",
       "title": "Helena — risk-appetite watch, 2026-05-08",
       "decisionRequired": false,
       "summary": "Autonomous run of Helena's daily risk-appetite-watch per `Team/Helena.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. First handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
+    },
+    {
+      "filename": "2026-05-08_eitan_liquidity-snapshot.md",
+      "path": "Owner Inbox/2026-05-08_eitan_liquidity-snapshot.md",
+      "date": "2026-05-08",
+      "title": "Eitan — liquidity snapshot, 2026-05-08",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Eitan's daily liquidity snapshot per `Team/Eitan.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Build-phase degraded-mode digest — substantive LCR / NSFR / IRRBB / FX positions are not yet…"
     },
     {
       "filename": "2026-05-08_devon_operational-resilience-snapshot.md",
@@ -2597,51 +2555,6 @@
       "title": "Scrooge — CEO decision record: D-FOLLOW-ON-ROUTER-TEST, 2026-05-07",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
-      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md",
-      "date": "2026-05-07",
-      "title": "Scrooge — CEO decision record: D-BRAND-DESIGN-HIRE, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
-      "path": "Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-bank-name-selection.md",
-      "date": "2026-05-07",
-      "title": "Scrooge — CEO decision record: D-BANK-NAME-SELECTION, 2026-05-07",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-07_saskia_markets-franchise-design-proposal.md",
-      "path": "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md",
-      "date": "2026-05-07",
-      "title": "Markets franchise design — proposal",
-      "decisionRequired": true,
-      "author": "Saskia",
-      "summary": "First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.",
-      "decisionId": "D-MARKETS-CAPITAL-TIME-SHAPE",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.",
-      "decisionOwner": "Saskia (with Helena, Camille, Eitan)",
-      "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
-      "path": "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
-      "date": "2026-05-07",
-      "title": "Global markets trading system — schema foundation, building blocks, build sequence",
-      "decisionRequired": true,
-      "author": "Saskia · Kai",
-      "summary": "ISDA CDM (Common Domain Model) as the canonical schema for every tradeable / holdable instrument. Composable primitives (cashflow, schedule, index, optionality, settlement, collateral) compose into simple cash products and complex structured trades. M1–M5 build sequence proposed.",
-      "decisionId": "D-MARKETS-SCHEMA-FOUNDATION",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Approve ISDA CDM as the canonical schema foundation for the trading system, sequenced M1 (listed cash) → M3 (OTC IRS) → M5 (FRTB-ready, structured products).",
-      "decisionRecommendation": "Approve. CDM is open-source, regulator-friendly, multi-asset, composable, and is the only public standard whose decomposition matches the strategic-foundation product mix (listed cash + OTC IRD).",
-      "decisionOwner": "Saskia (governance) · Kai (engineering)",
-      "decisionStatus": "open"
     }
   ],
   "prototype": {
@@ -2801,6 +2714,30 @@
       "trigger": "mlro-supervision",
       "kind": "scheduled",
       "cadenceHours": 168
+    },
+    {
+      "agent": "Thandiwe",
+      "trigger": "audit-committee-prep",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
+      "agent": "Rashida",
+      "trigger": "cyber-resilience-snapshot",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
+      "agent": "Iris",
+      "trigger": "popia-controls-snapshot",
+      "kind": "scheduled",
+      "cadenceHours": 168
+    },
+    {
+      "agent": "Eitan",
+      "trigger": "liquidity-snapshot",
+      "kind": "scheduled",
+      "cadenceHours": 24
     }
   ],
   "decisionComments": {}
