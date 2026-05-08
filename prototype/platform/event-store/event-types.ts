@@ -1323,6 +1323,873 @@ export function makeValidationFindingClosed(args: {
   });
 }
 
+// ===========================================================================
+// Backtest family — gates Rohan's S7-Targeted #4 backtest harness.
+//
+// Schemas per `Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md`
+// §4.1 + §4.2. Co-evolved with Nadia's validation-event family (`Team/Nadia.md`
+// §11, §16) — `BacktestRun` is exactly the input to `BacktestBreachDisposed`,
+// so field names align. Both fold latest-wins-per-key on the model's stream
+// for "most recent backtest" queries; the full history stays append-only in
+// the log (Principle 1).
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// BacktestRequested
+//
+// Emitted when a backtest cycle is initiated against a model version. The
+// `methodologyHash` locks the methodology version under test — re-running
+// with the same hash + window is idempotent at the harness level.
+//
+// Authority:
+//   - SR-11-7-2011 — model-risk-management framework (US Federal Reserve / OCC)
+//   - SS-1-23-2023 — PRA Model Risk Management Principles (esp. Principle 4 Validation)
+//   - BANKS-ACT-94-1990 — § 70(2A)(b) risk-management process
+//   - The model's own methodology citation chain (resolved via methodologyHash)
+//
+// Replay-fold: latest-wins-per-key on `(modelId, version)` for "most recent
+// backtest request". Full history is append-only.
+// ---------------------------------------------------------------------------
+
+export const backtestPredictionGranularitySchema = z.enum(["daily", "monthly", "per-event"]);
+
+export const backtestOutcomeMetricSchema = z.enum([
+  "kupiec",
+  "christoffersen",
+  "traffic-light",
+  "staging-stability",
+  "migration-matrix",
+  "coverage-test",
+  "custom",
+]);
+
+export const backtestRequestedPayloadSchema = z.object({
+  /** Stable model id — must resolve in the model registry. */
+  modelId: z.string().min(1),
+  /** Version label — must match a registered version for `modelId`. */
+  version: z.string().min(1),
+  /** ISO 8601 — start of the backtest observation window. */
+  windowStart: z.string().min(1),
+  /** ISO 8601 — end of the backtest observation window. */
+  windowEnd: z.string().min(1),
+  /** Cadence of predictions inside the window. */
+  predictionGranularity: backtestPredictionGranularitySchema,
+  /** Outcome metric the run will compute. */
+  outcomeMetric: backtestOutcomeMetricSchema,
+  /** Strong identity of the requester. Convention: `agent:rohan`, `agent:nadia`, `substrate:scheduler`. */
+  requestedBy: z.string().min(1),
+  /** SHA-256 (lowercase hex) of the methodology spec at submission. */
+  methodologyHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "methodologyHash must be a lowercase hex sha256 (64 chars)",
+    }),
+});
+
+export type BacktestRequestedPayload = z.infer<typeof backtestRequestedPayloadSchema>;
+
+export function makeBacktestRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BacktestRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BacktestRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: backtestRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// BacktestRun
+//
+// Emitted when a backtest run completes. The `severity` traffic-light maps
+// the metric's bands per Basel BCBS-VAR-BACKTEST-1996 / Kupiec / Christoffersen
+// thresholds. Failed runs (severity = red) become inputs to Nadia's
+// `BacktestBreachDisposed` (the validator's decision surface — auto-suspend
+// would violate the model-builder/validator separation in `Team/Nadia.md` §15).
+//
+// Authority:
+//   - SR-11-7-2011, SS-1-23-2023, BANKS-ACT-94-1990 — see BacktestRequested
+//   - BCBS-VAR-BACKTEST-1996 — Basel Committee VaR backtesting traffic-light
+//   - Comparison-metric-specific references (e.g. KUPIEC-1995, CHRISTOFFERSEN-1998)
+//
+// Replay-fold: latest-wins-per-key on `(modelId, version, comparisonMetric)`
+// for "most recent run"; full history append-only.
+// ---------------------------------------------------------------------------
+
+export const backtestSeveritySchema = z.enum(["within-tolerance", "amber", "red"]);
+
+export const backtestRunPayloadSchema = z.object({
+  /** Stable id for this run. Convention: `backtest:<modelId>:<short-slug>`. */
+  backtestRunId: z.string().min(1),
+  /** Model under test. */
+  modelId: z.string().min(1),
+  /** Version under test. */
+  version: z.string().min(1),
+  /** ISO 8601 — start of the observation window the run covered. */
+  windowStart: z.string().min(1),
+  /** ISO 8601 — end of the observation window the run covered. */
+  windowEnd: z.string().min(1),
+  /** Same enum as BacktestRequested.outcomeMetric. */
+  comparisonMetric: backtestOutcomeMetricSchema,
+  /** Expected exception count under the null per metric (non-negative). */
+  expectedExceptions: z.number().nonnegative(),
+  /** Observed exception count over the window (non-negative integer). */
+  observedExceptions: z.number().int().nonnegative(),
+  /** Traffic-light band per metric. */
+  severity: backtestSeveritySchema,
+  /** SHA-256 (lowercase hex) — must match the BacktestRequested that opened this run. */
+  methodologyHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "methodologyHash must be a lowercase hex sha256 (64 chars)",
+    }),
+  /** Number of prediction observations in the window — drives test power. */
+  predictionCount: z.number().int().nonnegative(),
+  /** Wall-clock duration of the run, milliseconds. Observability. */
+  runDurationMs: z.number().nonnegative(),
+  /** event_id of the BacktestRequested that opened this run. */
+  sourceRequestEventId: z.string().min(1),
+});
+
+export type BacktestRunPayload = z.infer<typeof backtestRunPayloadSchema>;
+
+export function makeBacktestRun(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BacktestRunPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BacktestRun",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: backtestRunPayloadSchema.parse(args.payload),
+  });
+}
+
+// ===========================================================================
+// Pre-trade gateway family — gates Saskia+Kai's S7-Targeted #5 envelope.
+//
+// Schemas per `Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md`
+// §3 (architecture sketch) + §5.1 (registry gaps). Six event types running on
+// the bus-canonical runtime (D-A22-RETIRE-LEGACY Phase 1, landed 2026-05-08).
+// Each check handler is separately-registered under runtime/handlers-metadata.ts;
+// per A1.2 permission-policy each handler's identity scopes its event-stream
+// access (Principle 4 — zero trust + least privilege applied to internal handlers).
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// OrderProposed
+//
+// Emitted by an upstream order-source (sales agent, market-making engine,
+// internal client, treasurer HQLA turnover, Saskia auto-quote). Picked up by
+// the pre-trade gateway, which fans out K parallel GatewayCheckRequested events.
+//
+// Authority:
+//   - JSE-RULES-EQUITIES — exchange listing & trading rules
+//   - FMA-S5 — Financial Markets Act § 5 market integrity
+//   - Team/Kai.md §11 (markets-events catalogue)
+//
+// Replay-fold: latest-wins-per-key on `orderId` (an order may be re-proposed
+// after revision); the full proposal history is append-only.
+// ---------------------------------------------------------------------------
+
+export const orderSideSchema = z.enum(["buy", "sell"]);
+
+export const orderProposedPayloadSchema = z.object({
+  /** Correlation id for the order across the gateway → OMS → fill chain. */
+  orderId: z.string().min(1),
+  /** Counterparty LEI (20-char ISO 17442). */
+  counterpartyLei: z
+    .string()
+    .min(1)
+    .regex(/^[A-Z0-9]{20}$/, { message: "counterpartyLei must be a 20-char ISO 17442 LEI" }),
+  /**
+   * Instrument identifier (CDM-typed; v0 carries an opaque string keyed to
+   * the per-product CDM variant under `platform/markets/cdm/`).
+   */
+  instrument: z.string().min(1),
+  /** Buy or sell. */
+  side: orderSideSchema,
+  /** Order quantity (positive). */
+  quantity: z.number().positive(),
+  /** Limit / indicative price (positive). */
+  price: z.number().positive(),
+  /** ISO 4217 currency of `price`. */
+  priceCurrency: z
+    .string()
+    .min(3)
+    .regex(/^[A-Z]{3}$/, { message: "priceCurrency must be ISO 4217 (3-char uppercase)" }),
+  /** Booking entity (legal-entity-tree node). Convention: `entity:<short-slug>`. */
+  bookingEntity: z.string().min(1),
+  /** Strong identity of the requesting actor. Convention: `agent:<name>` or `human:<email>`. */
+  requestedActor: z.string().min(1),
+});
+
+export type OrderProposedPayload = z.infer<typeof orderProposedPayloadSchema>;
+
+export function makeOrderProposed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OrderProposedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OrderProposed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: orderProposedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// GatewayCheckRequested
+//
+// Emitted by the pre-trade gateway, one per check per OrderProposed. Each
+// check handler subscribes to its own check kind via @platform/runtime/bus
+// (permission-policy gate scopes each handler's event-stream access).
+//
+// Replay-fold: pair-coupled with GatewayCheckCompleted on `(orderId, checkKind)`.
+// ---------------------------------------------------------------------------
+
+export const gatewayCheckKindSchema = z.enum([
+  "identity",
+  "sanctions",
+  "suitability",
+  "surveillance",
+  "credit-limit",
+  "market-risk",
+  "capital-impact",
+  "funding",
+  "documentation",
+  "jurisdiction",
+]);
+
+export const gatewayCheckRequestedPayloadSchema = z.object({
+  /** Order under check; correlates back to OrderProposed.orderId. */
+  orderId: z.string().min(1),
+  /** Which check this dispatch is for. */
+  checkKind: gatewayCheckKindSchema,
+  /** event_id of the OrderProposed that opened this check. */
+  sourceOrderEventId: z.string().min(1),
+  /** ISO 8601 — when the gateway dispatched the check. Drives the timeout window. */
+  requestedAt: z.string().min(1),
+  /**
+   * Optional per-check timeout, milliseconds. Per Team/Kai.md §7, the binding
+   * gateway latency budget is 50ms for pre-trade evaluation; individual
+   * checks may set their own ceiling (e.g. capital-impact). Undefined =
+   * inherit gateway default.
+   */
+  timeoutMs: z.number().int().positive().optional(),
+});
+
+export type GatewayCheckRequestedPayload = z.infer<typeof gatewayCheckRequestedPayloadSchema>;
+
+export function makeGatewayCheckRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: GatewayCheckRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "GatewayCheckRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: gatewayCheckRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// GatewayCheckCompleted
+//
+// Emitted by a check handler when its evaluation finishes. The aggregator
+// (Kai-owned) collects K of K results and applies the rule:
+// any reject → reject; all approve → approve; timeout → §6 Q2 default.
+//
+// Replay-fold: pair-coupled with GatewayCheckRequested on `(orderId, checkKind)`.
+// ---------------------------------------------------------------------------
+
+export const gatewayCheckOutcomeSchema = z.enum(["approve", "reject", "timeout"]);
+
+export const gatewayCheckCompletedPayloadSchema = z.object({
+  /** Order under check. */
+  orderId: z.string().min(1),
+  /** Which check completed. */
+  checkKind: gatewayCheckKindSchema,
+  /** Outcome of this individual check. */
+  outcome: gatewayCheckOutcomeSchema,
+  /** event_id of the GatewayCheckRequested that opened this completion. */
+  sourceCheckRequestEventId: z.string().min(1),
+  /** ISO 8601 — when the check returned. */
+  completedAt: z.string().min(1),
+  /** Wall-clock duration, milliseconds. Observability for the 50ms budget. */
+  durationMs: z.number().nonnegative(),
+  /**
+   * Reject-only: typed reason. Required when outcome = reject; ignored
+   * otherwise. The aggregator surfaces this in OrderRejectedAtGateway.
+   */
+  rejectionReason: z.string().optional(),
+  /**
+   * Reject-only: citation to the rule that drove the reject. e.g. a FIC
+   * sanctions-list URN, a RAS § B-credit headroom row. Required for the
+   * Saskia-flagged "rejections are first-class business events" semantics.
+   */
+  citationToRule: z.string().optional(),
+});
+
+export type GatewayCheckCompletedPayload = z.infer<typeof gatewayCheckCompletedPayloadSchema>;
+
+export function makeGatewayCheckCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: GatewayCheckCompletedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "GatewayCheckCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: gatewayCheckCompletedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// OrderApprovedAtGateway
+//
+// Emitted by the aggregator when all K checks return approve. The order
+// then routes to OMS/EMS (Kai's substrate) — TradeProposed follows when
+// the counterparty acknowledges per `Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md` §6.
+//
+// Replay-fold: pair-coupled with OrderProposed on `orderId` (mutually
+// exclusive with OrderRejectedAtGateway).
+// ---------------------------------------------------------------------------
+
+export const orderApprovedAtGatewayPayloadSchema = z.object({
+  /** Order that passed the gateway. */
+  orderId: z.string().min(1),
+  /**
+   * Citations that backed the approval — the union of every check's
+   * approval citation. Used by Vera's continuous-controls recon to
+   * reconstruct the gateway-decision audit trail per order.
+   */
+  approvalCitations: z.array(z.string().min(1)),
+  /** ISO 8601 — when the aggregator concluded approve. */
+  passedAt: z.string().min(1),
+});
+
+export type OrderApprovedAtGatewayPayload = z.infer<typeof orderApprovedAtGatewayPayloadSchema>;
+
+export function makeOrderApprovedAtGateway(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OrderApprovedAtGatewayPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OrderApprovedAtGateway",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: orderApprovedAtGatewayPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// OrderRejectedAtGateway
+//
+// Emitted when any check returns reject (or a configurable timeout-default
+// kicks in). Per Saskia (§3 brief): rejections are first-class business
+// events — the desk needs to see them, surveillance consumes them, the
+// soft-franchise pipeline (Niko + Imani) feeds documentation gaps back.
+// They are signal, not failure-to-suppress.
+//
+// Replay-fold: pair-coupled with OrderProposed on `orderId` (mutually
+// exclusive with OrderApprovedAtGateway).
+// ---------------------------------------------------------------------------
+
+export const orderRejectedAtGatewayPayloadSchema = z.object({
+  /** Order that failed the gateway. */
+  orderId: z.string().min(1),
+  /** Typed rejection reason — surfaced from the rejecting check. */
+  rejectionReason: z.string().min(1),
+  /** Which check drove the reject (the first reject wins under the aggregation rule). */
+  rejectingCheck: gatewayCheckKindSchema,
+  /** Citation to the rule the rejecting check enforced. */
+  citationToRule: z.string().min(1),
+  /** ISO 8601 — when the aggregator concluded reject. */
+  rejectedAt: z.string().min(1),
+});
+
+export type OrderRejectedAtGatewayPayload = z.infer<typeof orderRejectedAtGatewayPayloadSchema>;
+
+export function makeOrderRejectedAtGateway(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OrderRejectedAtGatewayPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OrderRejectedAtGateway",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: orderRejectedAtGatewayPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// PreTradeLimitChanged
+//
+// Emitted when a pre-trade gateway limit is changed (raised, lowered, or
+// reshaped). Per Team/Kai.md §15: Kai cannot disable the gateway and Rohan
+// cannot raise limits without Saskia citing Helena's RAS envelope. Helena's
+// authority is the appetite line; Saskia's is the franchise scope; Rohan's
+// is the engine; Kai's is the substrate. This event records the chain.
+//
+// Authority:
+//   - RAS-B-CREDIT / RAS-B-MARKET / RAS-B-CAPITAL — appetite-line citations
+//   - GOV-FRAMEWORK-CEO-RESERVED — when the change escalates
+//   - Team/Kai.md §11, §15 (limit-change protocol)
+//
+// Replay-fold: latest-wins-per-key on `limitId` for the current value;
+// full history append-only.
+// ---------------------------------------------------------------------------
+
+export const preTradeLimitKindSchema = z.enum([
+  "credit",
+  "market-risk",
+  "capital-impact",
+  "funding",
+  "concentration",
+  "instrument-eligibility",
+  "counterparty-eligibility",
+]);
+
+export const preTradeLimitChangedPayloadSchema = z.object({
+  /** Stable id for the limit. Convention: `limit:<kind>:<short-slug>`. */
+  limitId: z.string().min(1),
+  /** Which dimension this limit governs. */
+  limitKind: preTradeLimitKindSchema,
+  /** Previous numeric value, if applicable. Undefined for first issue or non-numeric limits. */
+  previousValue: z.number().optional(),
+  /** New numeric value, if applicable. Undefined for purely qualitative reshapes. */
+  newValue: z.number().optional(),
+  /** ISO 4217 currency for value fields, if applicable. */
+  valueCurrency: z
+    .string()
+    .min(3)
+    .regex(/^[A-Z]{3}$/, { message: "valueCurrency must be ISO 4217 (3-char uppercase)" })
+    .optional(),
+  /** Strong identity of the changer. Convention: `agent:<name>` or `human:<email>`. */
+  changedBy: z.string().min(1),
+  /**
+   * Reference to the RAS envelope citation Saskia attaches to authorise
+   * the change (per the four-way protocol). Required — the change cannot
+   * land without one.
+   */
+  rasEnvelopeCitation: z.string().min(1),
+  /** One-line rationale for the change. */
+  rationale: z.string().min(1),
+  /** ISO 8601 — when the new value takes effect. */
+  effectiveFrom: z.string().min(1),
+});
+
+export type PreTradeLimitChangedPayload = z.infer<typeof preTradeLimitChangedPayloadSchema>;
+
+export function makePreTradeLimitChanged(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: PreTradeLimitChangedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "PreTradeLimitChanged",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: preTradeLimitChangedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ===========================================================================
+// Validation / methodology family — gates Nadia's S7-Targeted #3 methodology
+// library.
+//
+// Schemas per `Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md`
+// §5.3 + §6 (gaps #3 and #5), and `Team/Nadia.md` §11 (Outputs catalogue).
+// `BacktestBreachDisposed` field set is named in
+// `Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md` §7 Q3 + Q5.
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// ValidationMethodologyPublished
+//
+// Emitted by Nadia when a validation methodology version is published
+// (Tier-1 / Tier-2 / Tier-3). Methodology versions are the authority surface
+// the validation cycle references — `BacktestRequested.methodologyHash`
+// resolves through this stream.
+//
+// Authority:
+//   - SR-11-7-2011 — model-risk-management framework
+//   - SS-1-23-2023 — PRA Model Risk Management Principles
+//   - RAS-B7 — model-risk tier discipline
+//   - Team/Nadia.md §11 (issuer)
+//
+// Replay-fold: latest-wins-per-key on `(tier, methodologyId)` for the
+// current published version; full version history append-only.
+// ---------------------------------------------------------------------------
+
+export const validationMethodologyTierSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
+
+export const validationMethodologyPublishedPayloadSchema = z.object({
+  /** Stable id for the methodology. Convention: `methodology:<tier>:<short-slug>`. */
+  methodologyId: z.string().min(1),
+  /** Tier per RAS § B7. */
+  tier: validationMethodologyTierSchema,
+  /** Version label. Convention: `v0.1`, `v1.0`, `2026.05-q2`. */
+  version: z.string().min(1),
+  /** Strong identity of the publisher. Convention: `agent:nadia` or `human:<email>`. */
+  publishedBy: z.string().min(1),
+  /**
+   * SHA-256 (lowercase hex) of the methodology contents at publication.
+   * `BacktestRequested.methodologyHash` resolves to this value.
+   */
+  methodologyHash: z
+    .string()
+    .min(1)
+    .regex(/^[0-9a-f]{64}$/, {
+      message: "methodologyHash must be a lowercase hex sha256 (64 chars)",
+    }),
+  /** ISO 8601 — when this methodology version becomes the cycle authority. */
+  effectiveFrom: z.string().min(1),
+  /** One-line summary of what this version changes vs. the prior version. */
+  summary: z.string().min(1),
+});
+
+export type ValidationMethodologyPublishedPayload = z.infer<
+  typeof validationMethodologyPublishedPayloadSchema
+>;
+
+export function makeValidationMethodologyPublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ValidationMethodologyPublishedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ValidationMethodologyPublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: validationMethodologyPublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// BacktestBreachDisposed
+//
+// Emitted by Nadia when she dispositions a failed `BacktestRun` (severity
+// = red, or amber per `Team/Nadia.md` §9). The disposition is one of
+// `tolerate`, `remediate-by-deadline`, `withdraw-validation`. The
+// withdraw-validation disposition propagates automatically to the model
+// registry (production-eligibility flips to false); Nadia's authoring of the
+// disposition is the human-in-the-loop step. Auto-suspend on red would be a
+// Rohan→production-state edit, which violates the model-builder/validator
+// separation (Team/Nadia.md §15).
+//
+// Authority:
+//   - SR-11-7-2011, SS-1-23-2023 — validation framework
+//   - Team/Nadia.md §9, §11, §15
+//
+// Replay-fold: pair-coupled with the source BacktestRun on `backtestRunId`.
+// ---------------------------------------------------------------------------
+
+export const backtestBreachDispositionSchema = z.enum([
+  "tolerate",
+  "remediate-by-deadline",
+  "withdraw-validation",
+]);
+
+export const backtestBreachDisposedPayloadSchema = z.object({
+  /** Matches BacktestRun.backtestRunId of the breaching run. */
+  backtestRunId: z.string().min(1),
+  /** Model under disposition. */
+  modelId: z.string().min(1),
+  /** Version under disposition. */
+  version: z.string().min(1),
+  /** Strong identity of the disposing validator. Convention: `agent:nadia` or `human:<email>`. */
+  disposedBy: z.string().min(1),
+  /** The disposition itself. */
+  disposition: backtestBreachDispositionSchema,
+  /** One-line rationale citing the methodology / finding context. */
+  rationale: z.string().min(1),
+  /**
+   * For `remediate-by-deadline`: ISO 8601 deadline by which remediation
+   * must complete or the disposition escalates. Required for that
+   * disposition; undefined for `tolerate` and `withdraw-validation`.
+   */
+  remediationDeadline: z.string().optional(),
+  /**
+   * Finding ids the disposition opens (or references). e.g. for
+   * `withdraw-validation` the disposition typically references the
+   * blocking finding it crystallises.
+   */
+  linkedFindings: z.array(z.string().min(1)),
+});
+
+export type BacktestBreachDisposedPayload = z.infer<typeof backtestBreachDisposedPayloadSchema>;
+
+export function makeBacktestBreachDisposed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BacktestBreachDisposedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BacktestBreachDisposed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: backtestBreachDisposedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ModelDriftDetected
+//
+// Emitted when a model's behaviour drifts from its validated envelope
+// (input distribution shift, output distribution shift, performance
+// degradation outside the backtest cadence). Distinct from a backtest
+// breach — drift is the early-warning signal that may precede a breach.
+//
+// Authority:
+//   - SR-11-7-2011 — model-risk framework (ongoing monitoring)
+//   - SS-1-23-2023 — Principle 5 (Monitoring)
+//   - Team/Nadia.md §11
+//
+// Replay-fold: append-only-audit (each detection is a fresh observation).
+// ---------------------------------------------------------------------------
+
+export const modelDriftKindSchema = z.enum([
+  "input-distribution-shift",
+  "output-distribution-shift",
+  "performance-degradation",
+  "feature-stability",
+  "concept-drift",
+]);
+
+export const modelDriftDetectedPayloadSchema = z.object({
+  /** Model the drift was observed on. */
+  modelId: z.string().min(1),
+  /** Version observed (the production-eligible one at observation time). */
+  version: z.string().min(1),
+  /** Which kind of drift was detected. */
+  driftKind: modelDriftKindSchema,
+  /** Strong identity of the detector. Convention: `agent:nadia`, `agent:anya`, `substrate:monitor`. */
+  detectedBy: z.string().min(1),
+  /** Quantitative metric value at detection (e.g. PSI, KS-stat, AUC delta). */
+  metricValue: z.number(),
+  /** Threshold the metric crossed to trigger detection. */
+  metricThreshold: z.number(),
+  /** Severity hint — drives whether the detection auto-escalates. */
+  severity: z.enum(["low", "medium", "high", "blocking"]),
+  /** ISO 8601 — when the drift was observed. */
+  observedAt: z.string().min(1),
+  /** One-line description of the drift signal. */
+  description: z.string().min(1),
+});
+
+export type ModelDriftDetectedPayload = z.infer<typeof modelDriftDetectedPayloadSchema>;
+
+export function makeModelDriftDetected(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ModelDriftDetectedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ModelDriftDetected",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: modelDriftDetectedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ProductionUseRequested
+//
+// Emitted when a model owner requests production use of a (model, version)
+// — typically following a successful validation cycle. Distinct from
+// `ModelSubmitted` (which opens the validation flow) and from
+// `ModelValidationApproved` (which is Nadia's sign-off): this event is the
+// *request* that the production-use boundary applies. Nadia's response is
+// either an approval (already typed as `ModelValidationApproved`) or a
+// withhold. The pre-trade gateway envelope (S7-Targeted #5) consumes this
+// event when boundary enforcement lands.
+//
+// Authority:
+//   - SR-11-7-2011, SS-1-23-2023
+//   - Team/Nadia.md §11, §16 (production-use boundary)
+//
+// Replay-fold: latest-wins-per-key on `(modelId, version)` for the current
+// request; pair-coupled with `ModelValidationApproved` / `ModelValidationWithheld`.
+// ---------------------------------------------------------------------------
+
+export const productionUseRequestedPayloadSchema = z.object({
+  /** Model under request. */
+  modelId: z.string().min(1),
+  /** Version under request. */
+  version: z.string().min(1),
+  /** Strong identity of the requester. Convention: `agent:rohan`, `agent:saskia`, `agent:eitan`. */
+  requestedBy: z.string().min(1),
+  /**
+   * Description of the production-use envelope being requested — asset
+   * class, portfolio scope, scenario range. Free-form prose at v0; types
+   * to a `ProductionUseBoundary` schema when slice #5 lands per Nadia §5.4.
+   */
+  envelopeDescription: z.string().min(1),
+  /** ISO 8601 — when the requester wants production use to begin. */
+  requestedFrom: z.string().min(1),
+  /** One-line business rationale. */
+  rationale: z.string().min(1),
+});
+
+export type ProductionUseRequestedPayload = z.infer<typeof productionUseRequestedPayloadSchema>;
+
+export function makeProductionUseRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductionUseRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductionUseRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productionUseRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// MethodologyChangeRequested
+//
+// Emitted when a request to change a published validation methodology is
+// raised (typically by Nadia, occasionally by Rohan or Helena). Opens the
+// methodology-change cycle — the response is either a new
+// `ValidationMethodologyPublished` (the change was adopted) or a withhold
+// finding the change was not warranted.
+//
+// Authority:
+//   - SR-11-7-2011, SS-1-23-2023
+//   - Team/Nadia.md §11
+//
+// Replay-fold: pair-coupled with the next `ValidationMethodologyPublished`
+// for the same `methodologyId`.
+// ---------------------------------------------------------------------------
+
+export const methodologyChangeRequestedPayloadSchema = z.object({
+  /** Stable id for this change request. Convention: `methodology-change:<short-slug>`. */
+  changeRequestId: z.string().min(1),
+  /** The methodology under request. */
+  methodologyId: z.string().min(1),
+  /** Tier of the methodology being changed. */
+  tier: validationMethodologyTierSchema,
+  /** Version this change supersedes (the currently-published version). */
+  fromVersion: z.string().min(1),
+  /** Strong identity of the requester. Convention: `agent:nadia`, `agent:rohan`, `agent:helena`. */
+  requestedBy: z.string().min(1),
+  /** One-line description of the proposed change. */
+  proposedChange: z.string().min(1),
+  /** Rationale citing the trigger (drift, regulator update, breach pattern). */
+  rationale: z.string().min(1),
+  /** ISO 8601 — target date the requester wants the change effective. */
+  targetEffectiveFrom: z.string().optional(),
+});
+
+export type MethodologyChangeRequestedPayload = z.infer<
+  typeof methodologyChangeRequestedPayloadSchema
+>;
+
+export function makeMethodologyChangeRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: MethodologyChangeRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "MethodologyChangeRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: methodologyChangeRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -1351,6 +2218,19 @@ export const TYPED_EVENT_TYPES = [
   "ModelValidationWithheld",
   "ValidationFindingRaised",
   "ValidationFindingClosed",
+  "BacktestRequested",
+  "BacktestRun",
+  "OrderProposed",
+  "GatewayCheckRequested",
+  "GatewayCheckCompleted",
+  "OrderApprovedAtGateway",
+  "OrderRejectedAtGateway",
+  "PreTradeLimitChanged",
+  "ValidationMethodologyPublished",
+  "BacktestBreachDisposed",
+  "ModelDriftDetected",
+  "ProductionUseRequested",
+  "MethodologyChangeRequested",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
