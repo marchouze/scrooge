@@ -91,9 +91,9 @@ The escalation channel is the typed `AgentEscalation` event (Wave-4 #14). Side-c
 
 ## 11. Outputs
 
-- **Events emitted:** `ThreatModelGateDecision`, `SecurityIncidentRaised`, `SecurityIncidentEnriched`, `SecurityResponseOrchestrated`, `KeyRotationPerformed`, `KeyRotationPolicySet`, `SecureSdlcPipelineChanged`, `DetectionRuleChanged`, `SbomAccepted`, `RehearsalApproved`, `SecuritySubstrateSnapshot`, `AgentEscalation` (where Senna is the issuing agent). Schemas in `prototype/platform/event-store/event-types.ts` (extended).
+- **Events emitted:** `ThreatModelGateDecision`, `ThreatModelDimensionRegistered`, `SecurityGateRegistered`, `SecurityIncidentRaised`, `SecurityIncidentEnriched`, `SecurityResponseOrchestrated`, `KeyRotationPerformed`, `KeyRotationPolicySet`, `SecureSdlcPipelineChanged`, `DetectionRuleChanged`, `SbomAccepted`, `RehearsalApproved`, `SecuritySubstrateSnapshot`, `AgentEscalation` (where Senna is the issuing agent). Schemas in `prototype/platform/event-store/event-types.ts` (extended); registry rows in `prototype/platform/event-store/registry.ts`.
 - **Registers maintained:** threat-model artefact register (`security/threat-models/`, planned); SBOM register (`security/sbom/`, planned); detection-rule catalogue (planned); IR-runbook library (planned). Senna also contributes to the substrate-exception register (`Owner Inbox/2026-05-07_owen_substrate-exception-register.md`, Owen owns).
-- **Deliverables:** weekly security-substrate-state snapshot (`Owner Inbox/<date>_senna_security-substrate-state.md`); monthly IR-rehearsal note; quarterly programme-state report to Rashida; per-PR threat-model decision records.
+- **Deliverables:** weekly security-substrate-state snapshot (`Owner Inbox/<date>_senna_security-substrate-state.md`); M1 trading-stack threat-model completion (`Owner Inbox/<date>_senna_m1-trading-stack-threat-model_completion.md`, emitted by `runtime/agents/senna-m1-trading-stack-threat-model.ts` on `CeoDecision` for `D-MARKETS-SCHEMA-FOUNDATION`); monthly IR-rehearsal note; quarterly programme-state report to Rashida; per-PR threat-model decision records.
 
 ## 12. System capabilities called
 
@@ -147,3 +147,4 @@ Vera (third line) tests Senna's substrate via Wave-1 / Wave-3 pipelines; Senna d
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Senna (via Scrooge) | Initial agent-spec authorship; upgraded from character-sheet form per CEO directive 2026-05-07. Reports-to corrected to Rashida (CISO) per top-of-house structure. |
+| v1.1 | 2026-05-08 | Senna | Added §11 entries for `ThreatModelDimensionRegistered` / `SecurityGateRegistered` events and the M1 trading-stack threat-model deliverable, on landing `runtime/agents/senna-m1-trading-stack-threat-model.ts` per `Team Inbox/2026-05-07_brief_senna_m1-trading-stack-threat-model.md`. Authority: D-MARKETS-SCHEMA-FOUNDATION; Joint Standard 1 of 2024; POPIA s.19–22; CLAUDE.md Principle 4. |

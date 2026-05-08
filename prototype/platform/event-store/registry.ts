@@ -720,6 +720,24 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     source: "runtime/agents/scrooge-inbox-hygiene.ts",
   },
+  {
+    type: "ThreatModelDimensionRegistered",
+    class: "audit",
+    issuer: "Senna",
+    subscribers: ["Rashida", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-CY-01", "ORG-CY-03", "ORG-CY-05", "ORG-PR(IV)-06"],
+    source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
+  },
+  {
+    type: "SecurityGateRegistered",
+    class: "audit",
+    issuer: "Senna",
+    subscribers: ["Rashida", "Atlas", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-CY-01", "ORG-CY-03", "GOV-FRAMEWORK-CEO-RESERVED"],
+    source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
+  },
 ];
 
 /**

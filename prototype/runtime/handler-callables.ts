@@ -38,6 +38,7 @@ import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-sn
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
+import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-threat-model";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
@@ -78,4 +79,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,
   "rohan:backtest-harness": rohanBacktestHarness,
+  "senna:m1-trading-stack-threat-model": sennaM1TradingStackThreatModel,
 };
