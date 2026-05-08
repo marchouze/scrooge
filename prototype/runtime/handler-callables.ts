@@ -31,6 +31,7 @@ import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import paxRoleResearchQueue from "./agents/pax-role-research-queue";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
+import rohanBacktestHarness from "./agents/rohan-backtest-harness";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
@@ -76,4 +77,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "ravi:alm-readiness": raviAlmReadiness,
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,
+  "rohan:backtest-harness": rohanBacktestHarness,
 };

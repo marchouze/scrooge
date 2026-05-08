@@ -119,6 +119,13 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Ravi", "alm-readiness", "scheduled", { cadenceHours: 24 }),
   entry("Sade", "agentops-readiness", "scheduled", { cadenceHours: 24 * 7 }),
   entry("PAX", "role-research-queue", "scheduled", { cadenceHours: 24 * 7 }),
+  // S7-Targeted #4 — Rohan's backtest harness (v0). Event-driven on
+  // `BacktestRequested`; emits `BacktestRun`. Tier-1 IFRS 9 ECL only.
+  // Added at the end of the array to minimise file-clash with Saskia+Kai's
+  // parallel gateway slice (six handler-metadata entries land alongside).
+  entry("Rohan", "backtest-harness", "event-driven", {
+    subscribesTo: ["BacktestRequested"],
+  }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */
