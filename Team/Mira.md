@@ -54,6 +54,7 @@ Mira does **not** write postings, run audits (Vera's role), draft contracts (Ima
 | `RegulatoryInstrumentUpdate` event | External feed (weekly Monday scan) | Register update within 5 working days; impact note within 10 |
 | Quarter-end | Runtime scheduler | RMCP attestation pack within 10 working days |
 | `AlertOpened` event with score ≥ MLRO threshold | Screening or monitoring pipeline | Disposition within 24h |
+| `CeoDecision` event for `D-MARKETS-SCHEMA-FOUNDATION` | Event-driven fan-out (`mira:m1-regulator-citation-urns`) | Register the M1 URN tranche (per source proposal §8) within the run; emit `ObligationRegistered` per URN |
 
 ## 8. Inputs
 
@@ -86,9 +87,9 @@ Mira does **not** write postings, run audits (Vera's role), draft contracts (Ima
 
 ## 11. Outputs
 
-- **Events emitted:** `KycTierAssigned`, `ClientAccepted`, `ClientReferredEdd`, `ClientReviewTriggered`, `SanctionsMatchClassified`, `AlertOpened`, `AlertDisposed`, `ObligationRegistered`, `ObligationImpactAssessed`, `StrDrafted`, `CtrDrafted`, `TprDrafted`, `AgentEscalation` (where Mira is the issuing agent).
+- **Events emitted:** `KycTierAssigned`, `ClientAccepted`, `ClientReferredEdd`, `ClientReviewTriggered`, `SanctionsMatchClassified`, `AlertOpened`, `AlertDisposed`, `ObligationRegistered`, `M1CitationTrancheRegistered`, `ObligationImpactAssessed`, `StrDrafted`, `CtrDrafted`, `TprDrafted`, `AgentEscalation` (where Mira is the issuing agent).
 - **Registers maintained:** `Regulations/_obligations-register.md` (curator); `prototype/platform/screening/_typology-catalogue.md` (planned); RMCP attestation register (planned).
-- **Deliverables:** quarterly RMCP attestation pack; annual FATCA / CRS XML submission (with Yael); regulatory-change-impact notes.
+- **Deliverables:** quarterly RMCP attestation pack; annual FATCA / CRS XML submission (with Yael); regulatory-change-impact notes; per-tranche URN-registration completion records (`Owner Inbox/<date>_mira_m1-regulator-citation-urns_completion.md` from `mira:m1-regulator-citation-urns`, fired event-driven on `CeoDecision` for `D-MARKETS-SCHEMA-FOUNDATION` and successor markets-decision IDs).
 
 ## 12. System capabilities called
 
@@ -141,3 +142,4 @@ Mira drafts STR / CTR filings; Zara as MLRO signs. The drafter / signer split is
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Mira (via Scrooge) | Upgraded to agent operating spec under Principle 7. Reports-to corrected to Zara (CCO) per top-of-house structure. |
+| v1.1 | 2026-05-08 | Mira | Added `mira:m1-regulator-citation-urns` event-driven handler under D-MARKETS-SCHEMA-FOUNDATION (markets-foundation proposal §8 + brief 2026-05-07). Registers the M1 regulator-citation URN tranche (market-infrastructure / OTC anchors / accounting / prudential / operational+cyber / AML+privacy / reporting). Emits `ObligationRegistered` + `M1CitationTrancheRegistered`. Trigger row added to §7; deliverable + event types added to §11; change log entry here. |

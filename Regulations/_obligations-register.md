@@ -1,6 +1,8 @@
 # Obligations register
 
-**Curator:** Mira (compliance / RegTech engineer) · **Governance:** Zara (CCO) · **Date:** 2026-05-07 · **Version:** 1.1
+**Curator:** Mira (compliance / RegTech engineer) · **Governance:** Zara (CCO) · **Date:** 2026-05-08 · **Version:** 1.2
+
+> v1.2 — added Domain N (M1 markets-foundation citation URNs): the regulator-citation URN tranche populated by the `mira:m1-regulator-citation-urns` handler under CEO decision `D-MARKETS-SCHEMA-FOUNDATION` (approved 2026-05-07). 24 typed URNs across 7 tranches (market-infrastructure / OTC anchors / accounting / prudential / operational+cyber / AML+privacy / reporting). Source: brief `Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md` + proposal `Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md` §8.
 
 > v1.1 — added Domain M (OTC Derivative Provider): 25 new obligations under FMA, FSCA Conduct Standards 1–3 of 2018, Joint Standard 2 of 2020 (as amended 9 June 2023), Joint Notice 2 of 2024, Currency & Exchanges Manual. Source: `Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md`.
 
@@ -257,6 +259,37 @@ Where multiple regulators converge on the same obligation, it is listed once wit
 | ORG-JS2-006 | JS 2/2020 §8 | Margin-specific dispute-resolution procedures pre-transaction. | Margin Dispute Procedure (Imani) | Imani | DRAFTING |
 | ORG-JN2-2024 | Joint Notice 2/2024 + JS 2/2020 | Margin information reporting to PA via Umoja portal from 1 April 2025. | Trade Reporting Policy (Umoja sub-pipeline); Margin Policy | Tomas + Anya | DRAFTING |
 | ORG-EXCON-ODP-001 | Currency and Exchanges Manual + SARB FinSurv | Non-resident counterparty OTC derivative transactions: Authorised Dealer compliance + FinSurv reporting + approvals where required. | Excon Compliance Policy; OTC Trading Policy | Eitan (Mira) | DRAFTING |
+
+## Domain N — M1 markets-foundation citation URNs
+
+> *Added 2026-05-08 by Mira via the `mira:m1-regulator-citation-urns` event-driven handler. Authority: CEO decision `D-MARKETS-SCHEMA-FOUNDATION` (approved 2026-05-07). Source: brief `Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md` + proposal `Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md` §8. Each URN below is callable from `@platform/citation/` and is consumed by at least one downstream procedure / system capability at the named M-phase. Vera's Wave-4 audit pipeline will assert URN-to-running-consumer reconciliation at M2 start.*
+
+| URN | Tranche | Instrument | Section | First consumed at | Confidence | Cross-references |
+|---|---|---|---|---|---|---|
+| `JSE-EQUITIES-RULES-2024` | market-infrastructure | JSE Equities Rules and Directives | Rules + Directives (consolidated) | M1 | verified | ORG-MK-01 |
+| `JSE-LISTINGS-REQUIREMENTS-2024` | market-infrastructure | JSE Listings Requirements | Service Issue (consolidated) | M1 | verified | ORG-MK-05 |
+| `FMA-19-2012` | market-infrastructure | Financial Markets Act 19 of 2012 | Ch. X (market abuse) + s.5 + s.6A | M1 | verified | ORG-MK-01, ORG-FMA-001 |
+| `FSCA-CONDUCT-STANDARD-MARKET-CONDUCT` | market-infrastructure | FSCA Conduct Standards on market conduct + market abuse | Conduct Standards 1–3 of 2018; market-abuse regulations under FMA Ch. X | M1 | verified | ORG-MK-02 |
+| `STT-ACT-25-2007` | market-infrastructure | Securities Transfer Tax Act 25 of 2007 | Sections 2 + 3 | M1 | verified | (extends Tax Policy / Domain H) |
+| `ISDA-MASTER-2002` | otc-derivatives-anchors | ISDA Master Agreement (2002 form) | Sections 1–14 | M3 | verified | ORG-MK-06, ORG-CS3-001 |
+| `ISDA-CSA-NY-LAW-1994` | otc-derivatives-anchors | ISDA Credit Support Annex (NY Law) | Paragraphs 1–13 (1994 form) | M3 | verified | ORG-MK-06, ORG-JS2-001 |
+| `ISDA-CSA-ENGLISH-LAW-1995` | otc-derivatives-anchors | ISDA Credit Support Annex (English Law — Transfer) | Paragraphs 1–11 (1995 form, as updated) | M3 | verified | ORG-MK-06, ORG-JS2-001 |
+| `ICMA-GMRA-2011-SA-SCHEDULE` | otc-derivatives-anchors | Global Master Repurchase Agreement 2011 (with SA schedule) | Paragraphs 1–20 + SA-jurisdiction schedule | M4 | verified | ORG-MK-06 |
+| `IFRS-9-2014` | accounting | IFRS 9 Financial Instruments | Ch. 4 + Ch. 5.5 (ECL) + Ch. 6 (hedge accounting) | M1 | verified | ORG-AC-01 |
+| `IFRS-13-2011` | accounting | IFRS 13 Fair Value Measurement | Sections 1–99 | M3 | verified | ORG-AC-01 |
+| `IFRS-7-2005` | accounting | IFRS 7 Financial Instruments: Disclosures | Sections 1–45 (consolidated) | M1 | verified | ORG-AC-01 |
+| `IAS-21-1993` | accounting | IAS 21 The Effects of Changes in Foreign Exchange Rates | Sections 1–60 (consolidated) | M4 | verified | ORG-AC-01 |
+| `IAS-12-1996` | accounting | IAS 12 Income Taxes | Sections 1–99 (incl. equity-dividends + STT credit treatment) | M1 | verified | ORG-AC-01, ORG-TX-01 |
+| `BCBS-D457-FRTB-2019` | prudential | BCBS d457 Minimum capital requirements for market risk (FRTB, revised) | Full standard (SA + IMA) | M5 | verified | ORG-PR-19 |
+| `BCBS-D279-SA-CCR-2014` | prudential | BCBS d279 Standardised approach for measuring counterparty credit risk exposures (SA-CCR) | Full standard (effective 1 Jan 2017) | M3 | verified | ORG-PR-16 |
+| `BCBS-D368-IRRBB-2016` | prudential | BCBS d368 Standards on interest rate risk in the banking book (IRRBB) | Full standard | M3 | verified | ORG-PR-11 |
+| `JOINT-STANDARD-1-2024-CYBER` | operational-cyber | Joint Standard 1 of 2024 — Cybersecurity and Cyber Resilience | Full standard (governance, risk, IR, third-party, resilience-testing) | M1 | verified | (extends Domain E) |
+| `BANKS-ACT-REG-39-OPERATIONAL-RISK` | operational-cyber | Regulations Relating to Banks (under Banks Act 94 of 1990) — Reg 39 | Regulation 39 (operational-risk management) | M1 | verified | ORG-PR-17 |
+| `FIC-ACT-38-2001-S21-S43B` | aml-privacy | Financial Intelligence Centre Act 38 of 2001 | Sections 21–43B (CDD, EDD, BO, record-keeping, CTR/STR/PAR/TPR, RMCP) | M1 | verified | ORG-FC-01 (anchors Domain B) |
+| `POPIA-S71-AUTOMATED-DECISIONING` | aml-privacy | Protection of Personal Information Act 4 of 2013 | Section 71 (automated decision-making) | M1 | verified | ORG-PR(IV)-01 |
+| `FATCA-IGA-ANNEX-II-SA` | reporting | FATCA IGA between South Africa and the United States | Annex II — exempt and deemed-compliant FFIs; reportable accounts | M4 | verified | ORG-FC-15 |
+| `CRS-OECD-2014` | reporting | Common Reporting Standard (Standard for Automatic Exchange) | Sections I–IX + SA implementation under Tax Admin Act | M4 | verified | ORG-FC-16 |
+| `FSCA-CONDUCT-REPORTING-TEMPLATES` | reporting | FSCA conduct reporting templates (per Conduct Standards 1–3 of 2018) | Reporting templates referenced by Conduct Standards 1–3 of 2018 | M3 | draft | ORG-CS2-001 |
 
 ## Domain L — Whistleblowing, ethics, anti-bribery (cross-cutting)
 
