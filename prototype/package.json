@@ -41,6 +41,7 @@
     "agent:iris-popia-controls-snapshot": "bun run runtime/run.ts --agent Iris --trigger popia-controls-snapshot",
     "agent:eitan-liquidity-snapshot": "bun run runtime/run.ts --agent Eitan --trigger liquidity-snapshot",
     "agent:saskia-markets-readiness-snapshot": "bun run runtime/run.ts --agent Saskia --trigger markets-readiness-snapshot",
+    "agent:bea-accounting-readiness": "bun run runtime/run.ts --agent Bea --trigger accounting-readiness",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
