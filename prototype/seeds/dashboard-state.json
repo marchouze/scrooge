@@ -1,12 +1,20 @@
 {
-  "asOf": "2026-05-08T11:38:17.029Z",
+  "asOf": "2026-05-08T12:33:15.648Z",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
     "strategicFoundation": {
       "type": "Institutional global-markets trading bank",
-      "products": ["JSE-listed bonds", "JSE-listed equities", "OTC interest-rate derivatives"],
-      "clients": ["Large SA corporates", "Banks", "Non-bank financial institutions"],
+      "products": [
+        "JSE-listed bonds",
+        "JSE-listed equities",
+        "OTC interest-rate derivatives"
+      ],
+      "clients": [
+        "Large SA corporates",
+        "Banks",
+        "Non-bank financial institutions"
+      ],
       "geography": "South Africa · single branch",
       "capital": "R300m (committed shareholder capital)",
       "licence": "Application deferred"
@@ -137,7 +145,9 @@
       "owner": "Owen",
       "trigger": "Owen drafts; agent's next governance-cycle run",
       "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-      "sourceDocs": ["Owner Inbox/2026-05-06_governance-framework.md"],
+      "sourceDocs": [
+        "Owner Inbox/2026-05-06_governance-framework.md"
+      ],
       "brief": {
         "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
         "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
@@ -242,7 +252,9 @@
       "owner": "Imani",
       "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
       "decisionForCEO": "Engage / when / which firm.",
-      "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
+      "sourceDocs": [
+        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
+      ],
       "brief": {
         "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
         "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
@@ -337,7 +349,9 @@
       "owner": "Marc",
       "trigger": "Marc sets directly; Camille tracks against actuals",
       "decisionForCEO": "Set the monthly Anthropic API + Azure cloud cost cap for the build phase, and the trigger for revisiting it.",
-      "sourceDocs": ["memory/project_ai_driven_bank.md"],
+      "sourceDocs": [
+        "memory/project_ai_driven_bank.md"
+      ],
       "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). The real cost is API + cloud + Marc's attention; this decision sets the dollar cap.",
       "brief": {
         "summary": "Under the AI-driven-bank reframe, the bank's real costs during build are Anthropic API spend and (when M8 cloud lift happens) Azure infrastructure. Marc sets the monthly cap; Camille tracks actuals against it.",
@@ -522,7 +536,9 @@
       "owner": "Atlas + Anya",
       "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
       "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-      "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
+      "sourceDocs": [
+        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+      ],
       "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
       "brief": {
         "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
@@ -611,13 +627,30 @@
       }
     },
     {
+      "id": "D-THIN-HUMAN-LAYER-MINIMUM",
+      "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
+      "category": "near-term",
+      "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
+      "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
+      "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
+      ],
+      "recommendation": {
+        "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
+        "reasoning": ""
+      }
+    },
+    {
       "id": "D-A22-RETIRE-LEGACY",
       "title": "A2.2 dispatcher — cutover spec to retire the legacy in-process fan-out",
       "category": "near-term",
       "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
       "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
       "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-      "sourceDocs": ["Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"],
+      "sourceDocs": [
+        "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
+      ],
       "recommendation": {
         "stance": "Approve as drafted.",
         "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
@@ -1060,7 +1093,9 @@
           "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
           "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
           "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-          "sourceDocs": ["Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"],
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
+          ],
           "recommendation": {
             "stance": "Approve as drafted.",
             "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
@@ -1271,7 +1306,9 @@
               "owner": "Atlas + Anya",
               "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
               "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-              "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
+              "sourceDocs": [
+                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+              ],
               "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
               "brief": {
                 "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
@@ -1366,7 +1403,9 @@
               "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
               "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
               "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-              "sourceDocs": ["Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"],
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
+              ],
               "recommendation": {
                 "stance": "Approve as drafted.",
                 "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
@@ -1587,7 +1626,9 @@
               "owner": "Atlas + Anya",
               "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
               "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-              "sourceDocs": ["Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"],
+              "sourceDocs": [
+                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+              ],
               "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
               "brief": {
                 "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
@@ -1714,7 +1755,9 @@
               "owner": "Imani",
               "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
               "decisionForCEO": "Engage / when / which firm.",
-              "sourceDocs": ["Owner Inbox/2026-05-06_next-decisions-proposal.md"],
+              "sourceDocs": [
+                "Owner Inbox/2026-05-06_next-decisions-proposal.md"
+              ],
               "brief": {
                 "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
                 "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
@@ -1801,9 +1844,29 @@
                   }
                 ]
               }
+            },
+            {
+              "id": "D-THIN-HUMAN-LAYER-MINIMUM",
+              "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
+              "category": "near-term",
+              "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
+              "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
+              "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
+              ],
+              "recommendation": {
+                "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
+                "reasoning": ""
+              }
             }
           ],
           "recentDeliverables": [
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md",
+              "title": "owen imani · thin human layer minimum possible"
+            },
             {
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md",
@@ -1823,11 +1886,6 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_imani_clause-library-v0-and-fix-a-demonstration.md",
               "title": "imani · clause library v0 and fix a demonstration"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_imani_isda-readiness-deep-dive-priority-a.md",
-              "title": "imani · isda readiness deep dive priority a"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -1861,7 +1919,7 @@
       ],
       "totalActive": 9,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 7,
+      "totalOpenDecisions": 8,
       "totalRecentDeliverables": 29
     },
     {
@@ -2132,7 +2190,9 @@
           "owner": "Owen",
           "trigger": "Owen drafts; agent's next governance-cycle run",
           "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-          "sourceDocs": ["Owner Inbox/2026-05-06_governance-framework.md"],
+          "sourceDocs": [
+            "Owner Inbox/2026-05-06_governance-framework.md"
+          ],
           "brief": {
             "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
             "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
@@ -2229,10 +2289,30 @@
             ]
           },
           "note": "AI-driven bank reframe (2026-05-07): statutory humans appear at licence-day in the minimum number SA law requires. Marc's interim coverage of multiple seats (CEO + Chair + IO + MLRO) is the default until SARB / Companies Act forces otherwise."
+        },
+        {
+          "id": "D-THIN-HUMAN-LAYER-MINIMUM",
+          "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
+          "category": "near-term",
+          "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
+          "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
+          "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
+          ],
+          "recommendation": {
+            "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
+            "reasoning": ""
+          }
         }
       ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md",
+          "title": "owen imani · thin human layer minimum possible"
+        },
         {
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_owen_substrate-exception-register.md",
@@ -2252,18 +2332,13 @@
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_owen_governance-cycle-prep.md",
           "title": "owen · governance cycle prep"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_policy-register.md",
-          "title": "policy register"
         }
       ],
-      "lastActivityAt": "2026-05-07",
+      "lastActivityAt": "2026-05-09",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 5
     },
     {
@@ -2276,7 +2351,23 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [],
+      "openDecisionsOwned": [
+        {
+          "id": "D-THIN-HUMAN-LAYER-MINIMUM",
+          "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
+          "category": "near-term",
+          "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
+          "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
+          "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
+          ],
+          "recommendation": {
+            "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
+            "reasoning": ""
+          }
+        }
+      ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -2303,7 +2394,23 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
+          "openDecisionsOwned": [
+            {
+              "id": "D-THIN-HUMAN-LAYER-MINIMUM",
+              "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
+              "category": "near-term",
+              "owner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
+              "trigger": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
+              "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md"
+              ],
+              "recommendation": {
+                "stance": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
+                "reasoning": ""
+              }
+            }
+          ],
           "recentDeliverables": [
             {
               "date": "2026-05-07",
@@ -2336,7 +2443,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 0,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 8
     },
     {
@@ -2536,6 +2643,20 @@
       "summary": "Role research for the independent model-validation function. Standing second-line agent that validates every model used in production (credit, market, liquidity, IFRS 9 ECL, capital), curates the model registry jointly with Rohan, and emits validation-decision events. Reports through Helena (CRO), functionally independent of all model builders. Closes the substrate gap Helena has flagged on every daily run since 2026-05-08; on the critical path for ICAAP / ILAAP signing authority and the bank's licence-day model-risk posture."
     },
     {
+      "filename": "2026-05-09_owen-imani_thin-human-layer-minimum-possible.md",
+      "path": "Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md",
+      "date": "2026-05-09",
+      "title": "Thin human layer — \"Minimum possible\" composition under SA banking law",
+      "decisionRequired": true,
+      "author": "Owen + Imani",
+      "summary": "Re-scope of S3 under the CEO's \"Minimum possible\" modification. Identifies the smallest legally-mandated set of separate humans the bank must recruit at licence-day — five — and names which seats Marc retains interim. Flags the SARB fit-and-proper concentration-risk caveats the posture creates and the seats whose merger is conditional rather than safe.",
+      "decisionId": "D-THIN-HUMAN-LAYER-MINIMUM",
+      "decisionForCEO": "Approve the \"minimum possible\" composition (five separate humans plus Marc) as the bank's standing thin-human-layer posture for licence-application, OR override on specific seat-merger questions where the analysis surfaces a SARB-precedent risk worth tightening.",
+      "decisionRecommendation": "Approve the five-human minimum (independent Chair · second NED · MLRO+FIC CO+IO triple-hatted · external auditor · key audit partner is auditor's, not bank's), with three concentration-risk caveats SARB Prudential Authority will probe at licence-application — see §4.",
+      "decisionOwner": "Owen (Company Secretary) · Imani (legal-as-code) · Mira (FIC + FAIS) · Zara (CCO governance line)",
+      "decisionStatus": "open"
+    },
+    {
       "filename": "2026-05-09_nadia_validation-methodology-library-v0-scoping.md",
       "path": "Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md",
       "date": "2026-05-09",
@@ -2713,14 +2834,6 @@
       "title": "Imani — Legal-readiness snapshot, 2026-05-08",
       "decisionRequired": false,
       "summary": "Autonomous run of Imani's weekly legal-readiness snapshot per `Team/Imani.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. 14th handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
-    },
-    {
-      "filename": "2026-05-08_helena_risk-appetite-watch.md",
-      "path": "Owner Inbox/2026-05-08_helena_risk-appetite-watch.md",
-      "date": "2026-05-08",
-      "title": "Helena — risk-appetite watch, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Helena's daily risk-appetite-watch per `Team/Helena.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. First handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
     }
   ],
   "prototype": {
@@ -2780,23 +2893,15 @@
   ],
   "findings": [
     {
-      "id": "e610d1c2-0fe6-491d-bb68-406262858375",
+      "id": "b539c473-99ea-4b8e-9b9f-18d27dfce9e9",
       "source": "agent:vera:overnight-recon",
       "severity": "high",
-      "principle": "decisionsOpen",
-      "description": "Drift between persisted registry and derivation at decisionsOpen",
+      "principle": "inFlight",
+      "description": "Drift between persisted registry and derivation at inFlight",
       "asOf": "2026-05-07T02:00:00.000Z"
     },
     {
-      "id": "e562b746-94b9-4ae3-9bda-37d50de654fc",
-      "source": "agent:vera:overnight-recon",
-      "severity": "high",
-      "principle": "decisionsOpen",
-      "description": "Drift between persisted registry and derivation at decisionsOpen",
-      "asOf": "2026-05-07T02:00:00.000Z"
-    },
-    {
-      "id": "e29fac50-7da5-4e98-9d49-b1c1ead602a2",
+      "id": "a3ff5cc7-0570-42e7-8f75-a6766bc783d6",
       "source": "agent:vera:overnight-recon",
       "severity": "high",
       "principle": "decisionsOpen",
@@ -2867,7 +2972,9 @@
       "agent": "Scrooge",
       "trigger": "follow-on-router",
       "kind": "event-driven",
-      "subscribesTo": ["CeoDecision"]
+      "subscribesTo": [
+        "CeoDecision"
+      ]
     },
     {
       "agent": "Owen",
