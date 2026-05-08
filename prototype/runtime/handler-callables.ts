@@ -18,6 +18,7 @@ import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
+import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import miraCitationGate from "./agents/mira-citation-gate";
@@ -54,4 +55,5 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
+  "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
 };
