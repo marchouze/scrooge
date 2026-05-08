@@ -21,11 +21,13 @@ import camilleFinancialPositionSnapshot from "./agents/camille-financial-positio
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
+import imaniLegalReadiness from "./agents/imani-legal-readiness";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
+import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
@@ -33,7 +35,9 @@ import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
+import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
+import yaelTaxReadiness from "./agents/yael-tax-readiness";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
 
@@ -60,4 +64,8 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
   "bea:accounting-readiness": beaAccountingReadiness,
+  "yael:tax-readiness": yaelTaxReadiness,
+  "tomas:payments-readiness": tomasPaymentsReadiness,
+  "imani:legal-readiness": imaniLegalReadiness,
+  "ravi:alm-readiness": raviAlmReadiness,
 };

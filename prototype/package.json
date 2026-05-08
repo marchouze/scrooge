@@ -44,6 +44,10 @@
     "agent:eitan-liquidity-snapshot": "bun run runtime/run.ts --agent Eitan --trigger liquidity-snapshot",
     "agent:saskia-markets-readiness-snapshot": "bun run runtime/run.ts --agent Saskia --trigger markets-readiness-snapshot",
     "agent:bea-accounting-readiness": "bun run runtime/run.ts --agent Bea --trigger accounting-readiness",
+    "agent:yael-tax-readiness": "bun run runtime/run.ts --agent Yael --trigger tax-readiness",
+    "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",
+    "agent:imani-legal-readiness": "bun run runtime/run.ts --agent Imani --trigger legal-readiness",
+    "agent:ravi-alm-readiness": "bun run runtime/run.ts --agent Ravi --trigger alm-readiness",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
