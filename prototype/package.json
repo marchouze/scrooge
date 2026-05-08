@@ -61,6 +61,7 @@
     "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",
     "agent:pax-role-research-queue": "bun run runtime/run.ts --agent PAX --trigger role-research-queue",
     "agent:rohan-backtest-harness": "bun run runtime/run.ts --agent Rohan --trigger backtest-harness",
+    "agent:anya-m1-projection-runtime-mapping": "bun run runtime/run.ts --agent Anya --trigger m1-projection-runtime-mapping",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

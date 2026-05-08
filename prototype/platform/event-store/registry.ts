@@ -720,6 +720,29 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     source: "runtime/agents/scrooge-inbox-hygiene.ts",
   },
+  // M1 markets-projection family — emitted by Anya's
+  // m1-projection-runtime-mapping handler. Envelope-only at v0;
+  // typed payload schemas land at M2 alongside the persisted
+  // projection cache.
+  {
+    type: "MarketsProjectionRegistered",
+    class: "audit",
+    issuer: "Anya",
+    subscribers: ["Bea", "Kai", "Saskia", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["JSE-RULES-EQUITIES", "ORG-AC-01", "ORG-AC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
+    source:
+      "runtime/agents/anya-m1-projection-runtime-mapping.ts; Team Inbox/2026-05-07_brief_anya_m1-projection-runtime-mapping.md",
+  },
+  {
+    type: "MarketsProjectionRefreshed",
+    class: "audit",
+    issuer: "Anya",
+    subscribers: ["Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["JSE-RULES-EQUITIES", "ORG-AC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
+    source: "runtime/agents/anya-m1-projection-runtime-mapping.ts",
+  },
 ];
 
 /**

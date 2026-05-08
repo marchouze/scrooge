@@ -1,0 +1,188 @@
+// platform/projections/markets/sub-ledger.ts
+//
+// Sub-ledger projection — M1 equity slice. Materialises typed accounting
+// entries that Bea's IFRS classifier consumes without bespoke plumbing.
+// Each row is the raw posting candidate keyed by (sourceEventId, leg);
+// classification (HFT / FVTPL / FVOCI / amortised cost) is Bea's
+// downstream call — this projection is the typed input to that call.
+//
+// P1 — derived from the equity event log.
+// P2 — every row inherits the source event's citations; sub-ledger
+//      rules trace back through the projectionRule field of the
+//      semantic-layer entries.
+// P5 — entity + currency on every row.
+// P6 — the projection is the typed contract Bea consumes; the data
+//      contract is the row shape itself.
+//
+// Author: Anya · M1 per D-MARKETS-SCHEMA-FOUNDATION.
+
+import type { Projection } from "../types";
+import type {
+  EquityCorporateActionAppliedEvent,
+  EquityLifecycleEvent,
+  EquitySettlementInstructedEvent,
+  EquityTradeBookedEvent,
+} from "./types";
+
+export type SubLedgerLegKind =
+  /** The trade-booking leg — recognises the financial-instrument acquisition / disposal. */
+  | "trade-acquisition"
+  | "trade-disposal"
+  /** Cash leg of a corporate action (dividend received). */
+  | "ca-cash"
+  /** Quantity-only leg of a corporate action (split / consolidation / scrip). */
+  | "ca-ratio"
+  /** Settlement leg — net cash + net quantity exchanged at the CSD. */
+  | "settlement-net";
+
+export interface SubLedgerRow {
+  /** Primary key — (sourceEventId, legKind) uniquely identifies a row. */
+  readonly sourceEventId: string;
+  readonly legKind: SubLedgerLegKind;
+  readonly entity: string;
+  readonly asOf: string;
+  readonly instrumentId: string | null;
+  readonly bookId: string | null;
+  /** Currency of the leg (single currency per row). */
+  readonly currency: string | null;
+  /** Signed cash impact in the smallest currency unit (positive = cash in, negative = cash out). */
+  readonly cashAmountMinor: number | null;
+  /** Signed quantity impact. */
+  readonly quantityAmount: number | null;
+  /** Trade / settlement / corporate-action identifier rolled forward. */
+  readonly externalRef: string | null;
+  /** Citations carried forward from the source event (Principle 2). */
+  readonly citations: readonly string[];
+}
+
+export interface SubLedgerState {
+  /** Append-ordered rows; idempotent on (sourceEventId, legKind). */
+  readonly rows: ReadonlyArray<SubLedgerRow>;
+}
+
+export const subLedgerInitial: SubLedgerState = { rows: [] };
+
+function rowKey(r: Pick<SubLedgerRow, "sourceEventId" | "legKind">): string {
+  return `${r.sourceEventId}::${r.legKind}`;
+}
+
+function appendIfFresh(state: SubLedgerState, newRow: SubLedgerRow): SubLedgerState {
+  for (const existing of state.rows) {
+    if (rowKey(existing) === rowKey(newRow)) return state;
+  }
+  return { rows: [...state.rows, newRow] };
+}
+
+function isEquityLifecycle(event: { type: string }): event is EquityLifecycleEvent {
+  return (
+    event.type === "EquityTradeBooked" ||
+    event.type === "EquityCorporateActionApplied" ||
+    event.type === "EquitySettlementInstructed"
+  );
+}
+
+function applyTradeBooked(state: SubLedgerState, e: EquityTradeBookedEvent): SubLedgerState {
+  const p = e.payload;
+  const isAcquisition = p.side === "buy";
+  const cashAmountMinor = isAcquisition
+    ? -p.consideration.amountMinor
+    : p.consideration.amountMinor;
+  const quantityAmount = isAcquisition ? p.quantity.amount : -p.quantity.amount;
+  return appendIfFresh(state, {
+    sourceEventId: e.event_id,
+    legKind: isAcquisition ? "trade-acquisition" : "trade-disposal",
+    entity: e.entity,
+    asOf: e.as_of,
+    instrumentId: p.instrument.identifier.value,
+    bookId: p.bookId,
+    currency: p.consideration.currency,
+    cashAmountMinor,
+    quantityAmount,
+    externalRef: p.tradeId.value,
+    citations: e.citations,
+  });
+}
+
+function applyCorporateAction(
+  state: SubLedgerState,
+  e: EquityCorporateActionAppliedEvent,
+): SubLedgerState {
+  const p = e.payload;
+  let next = state;
+  if (p.cashPerShare) {
+    // cashPerShare is a Price (major unit per share); positionAtRecord is in
+    // the share quantity unit. The leg amount is captured in the smallest
+    // currency unit by multiplying through and rounding to the nearest
+    // minor unit (centavo / cent). Bea's classifier owns the precise
+    // accounting policy on rounding; the projection records the raw leg.
+    const major = p.cashPerShare.amount * p.positionAtRecord.amount;
+    const cashAmountMinor = Math.round(major * 100);
+    next = appendIfFresh(next, {
+      sourceEventId: e.event_id,
+      legKind: "ca-cash",
+      entity: e.entity,
+      asOf: e.as_of,
+      instrumentId: p.instrument.identifier.value,
+      bookId: p.bookId,
+      currency: p.cashPerShare.currency,
+      cashAmountMinor,
+      quantityAmount: null,
+      externalRef: p.actionId.value,
+      citations: e.citations,
+    });
+  }
+  if (p.ratio && p.ratio.numerator !== p.ratio.denominator) {
+    const ratio = p.ratio.numerator / p.ratio.denominator;
+    const delta = p.positionAtRecord.amount * (ratio - 1);
+    next = appendIfFresh(next, {
+      sourceEventId: e.event_id,
+      legKind: "ca-ratio",
+      entity: e.entity,
+      asOf: e.as_of,
+      instrumentId: p.instrument.identifier.value,
+      bookId: p.bookId,
+      currency: null,
+      cashAmountMinor: null,
+      quantityAmount: delta,
+      externalRef: p.actionId.value,
+      citations: e.citations,
+    });
+  }
+  return next;
+}
+
+function applySettlementInstructed(
+  state: SubLedgerState,
+  e: EquitySettlementInstructedEvent,
+): SubLedgerState {
+  const p = e.payload;
+  return appendIfFresh(state, {
+    sourceEventId: e.event_id,
+    legKind: "settlement-net",
+    entity: e.entity,
+    asOf: e.as_of,
+    instrumentId: null,
+    bookId: null,
+    currency: p.netCash.currency,
+    cashAmountMinor: p.netCash.amountMinor,
+    quantityAmount: p.netQuantity.amount,
+    externalRef: p.settlementId.value,
+    citations: e.citations,
+  });
+}
+
+export const subLedgerProjection: Projection<SubLedgerState, EquityLifecycleEvent> = {
+  name: "markets.sub-ledger",
+  initial: subLedgerInitial,
+  accepts: (e): e is EquityLifecycleEvent => isEquityLifecycle(e),
+  reduce(state, event) {
+    switch (event.type) {
+      case "EquityTradeBooked":
+        return applyTradeBooked(state, event);
+      case "EquityCorporateActionApplied":
+        return applyCorporateAction(state, event);
+      case "EquitySettlementInstructed":
+        return applySettlementInstructed(state, event);
+    }
+  },
+};
