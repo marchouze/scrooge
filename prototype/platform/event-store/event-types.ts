@@ -62,6 +62,19 @@ export const agentEscalationPayloadSchema = z.object({
    * (the CEO). A future Board AC adds `human:board-ac` etc.
    */
   routedTo: z.string().min(1),
+  /**
+   * Optional confidentiality wrapper (Atlas substrate spec §3.5). When
+   * set, the escalation channel overrides `routedTo` with the seat list
+   * mandated by the reason — `fraud` routes to CAE+CEO+CoSec,
+   * `whistleblowing` to CAE only, `popia-incident` to IO+CEO. The
+   * channel records the resolved routing in this same payload so the
+   * audit trail captures both the seal and the routing.
+   */
+  sealed: z
+    .object({
+      reason: z.enum(["fraud", "whistleblowing", "popia-incident"]),
+    })
+    .optional(),
 });
 
 export type AgentEscalationPayload = z.infer<typeof agentEscalationPayloadSchema>;
@@ -82,6 +95,195 @@ export function makeAgentEscalation(args: {
     actor: args.actor,
     citations: args.citations,
     payload: agentEscalationPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AgentEscalationAcknowledged
+//
+// Emitted when an overseer (human or delegated agent) signals "I see this
+// escalation". Acknowledgement does NOT resolve the escalation — it just
+// marks that the routing landed and a responsible party has eyes on it.
+// Multiple acknowledgements are permitted (a CEO may acknowledge before a
+// CoSec acknowledges), so the channel never enforces a single-ack
+// invariant.
+//
+// Atlas substrate spec §3.5; A0 freeze §4 #11.
+// ---------------------------------------------------------------------------
+
+export const agentEscalationAcknowledgedPayloadSchema = z.object({
+  /** Matches the `escalationId` of the AgentEscalation being acknowledged. */
+  escalationId: z.string().min(1),
+  /** Strong identity of the acknowledger. Convention: `human:<email>` or `agent:<name>`. */
+  acknowledgedBy: z.string().min(1),
+  /** ISO 8601 timestamp at which the overseer signalled acknowledgement. */
+  acknowledgedAt: z.string().min(1),
+});
+
+export type AgentEscalationAcknowledgedPayload = z.infer<
+  typeof agentEscalationAcknowledgedPayloadSchema
+>;
+
+export function makeAgentEscalationAcknowledged(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentEscalationAcknowledgedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentEscalationAcknowledged",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentEscalationAcknowledgedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AgentEscalationDecided
+//
+// Terminal lifecycle event for an escalation. The overseer chose one of
+// the options the issuing agent enumerated (or, when `options` was empty,
+// declared a free-form decision). Per Atlas spec §3.5, the issuing agent's
+// next run consumes this event; Vera Wave-4 #14 reconciles open
+// AgentEscalation events to their AgentEscalationDecided counterpart.
+//
+// Channel-level invariant: at most one Decided per escalationId. A second
+// Decided is a substrate-integrity finding (the channel emits a
+// SubstrateAlert with alertClass: integrity).
+// ---------------------------------------------------------------------------
+
+export const agentEscalationDecidedPayloadSchema = z.object({
+  /** Matches the `escalationId` of the AgentEscalation being resolved. */
+  escalationId: z.string().min(1),
+  /** Strong identity of the deciding overseer. `human:<email>` or `agent:<name>`. */
+  decidedBy: z.string().min(1),
+  /**
+   * Option chosen. When the originating AgentEscalation enumerated
+   * options, this must match one of them; the channel enforces that
+   * check at decide time. When the AgentEscalation had an empty options
+   * array, any non-empty string is accepted.
+   */
+  chosenOption: z.string().min(1),
+  /** Why this option, in the overseer's voice. */
+  rationale: z.string().min(1),
+});
+
+export type AgentEscalationDecidedPayload = z.infer<typeof agentEscalationDecidedPayloadSchema>;
+
+export function makeAgentEscalationDecided(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentEscalationDecidedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentEscalationDecided",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentEscalationDecidedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AgentEscalationDelegated
+//
+// Overseer A reassigns the escalation to overseer B. Multiple
+// delegations are permitted (a chain of reassignment); the most recent
+// delegation determines the current responsible overseer. Delegation does
+// NOT resolve the escalation — the deadline still applies, and a
+// subsequent AgentEscalationDecided is still required.
+//
+// Atlas substrate spec §3.5; A0 freeze §4 #13.
+// ---------------------------------------------------------------------------
+
+export const agentEscalationDelegatedPayloadSchema = z.object({
+  /** Matches the `escalationId` of the AgentEscalation being delegated. */
+  escalationId: z.string().min(1),
+  /** Strong identity of the overseer who is delegating. `human:<email>` or `agent:<name>`. */
+  delegatedBy: z.string().min(1),
+  /** Strong identity of the new responsible overseer. */
+  delegatedTo: z.string().min(1),
+  /** Why the original overseer is reassigning. */
+  reason: z.string().min(1),
+});
+
+export type AgentEscalationDelegatedPayload = z.infer<typeof agentEscalationDelegatedPayloadSchema>;
+
+export function makeAgentEscalationDelegated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentEscalationDelegatedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentEscalationDelegated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentEscalationDelegatedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AgentEscalationOverdue
+//
+// Substrate-emitted (not agent-emitted) when a channel sweep observes an
+// open AgentEscalation past its declared deadline that has no matching
+// AgentEscalationDecided / AgentEscalationDelegated yet. The channel
+// emits at most one Overdue per escalationId — a second sweep is a
+// no-op (idempotent).
+//
+// `escalatedTo` records the human or agent the substrate routed the
+// overdue notice to. Today this defaults to `human:marc@tgv.co.za` (Marc
+// wears every governance hat in the build phase); future: read the
+// issuing agent's reports-to chain from the persona spec.
+//
+// Atlas substrate spec §3.5; A0 freeze §4 #14.
+// ---------------------------------------------------------------------------
+
+export const agentEscalationOverduePayloadSchema = z.object({
+  /** Matches the `escalationId` of the AgentEscalation that missed its deadline. */
+  escalationId: z.string().min(1),
+  /** ISO 8601 — the deadline that was missed. */
+  deadline: z.string().min(1),
+  /** ISO 8601 — when the substrate observed the miss. */
+  detectedAt: z.string().min(1),
+  /** Where the overdue notice was routed. `human:<email>` or `agent:<name>`. */
+  escalatedTo: z.string().min(1),
+});
+
+export type AgentEscalationOverduePayload = z.infer<typeof agentEscalationOverduePayloadSchema>;
+
+export function makeAgentEscalationOverdue(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentEscalationOverduePayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentEscalationOverdue",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentEscalationOverduePayloadSchema.parse(args.payload),
   });
 }
 
@@ -527,6 +729,10 @@ export function makeSubstrateAlert(args: {
 
 export const TYPED_EVENT_TYPES = [
   "AgentEscalation",
+  "AgentEscalationAcknowledged",
+  "AgentEscalationDecided",
+  "AgentEscalationDelegated",
+  "AgentEscalationOverdue",
   "AgentDecision",
   "WorkstreamRegistered",
   "RiskRaised",
