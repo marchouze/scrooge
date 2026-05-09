@@ -46,7 +46,7 @@ Slices 4–8 sequence after D-NEW-PRODUCT-APPROVAL-POLICY procedures land (Slice
 - `agent:Vera (Internal audit engineer)` — author the attestation-integrity recon in `@platform/recon/` (Slice 8): every `ProductApproved` is preceded by 14 `ProductDimensionAttested` for the same `productId @ version`; orphan attestations and missing dimensions are findings; lifecycle-stage transitions match the event sequence.
 - `agent:Owen (Company Secretary, governance)` — register the five planned procedures cited in §9 of the brief into the procedures index: `new-product-due-diligence.md`, `product-controlled-launch.md`, `product-post-implementation-review.md`, `product-retirement-migration.md`, `event-schema-evolution.md`. Each cites D-NEW-PRODUCT-APPROVAL-POLICY parent and, where relevant, the obligations-register URN.
 - `agent:Mira (Compliance / RegTech engineer)` — bind `[register: route to Mira]` items: confirm Banks Act Reg 39 sub-clauses bind on product approval; populate Domain N (M1 markets-foundation citation URNs) and Domain J (markets/trading) URN slugs; cross-link into `_obligations-register.md`.
-- `agent:Anya (Data / analytics engineer)` — semantic-layer entries for `productId`, `productFamily`, `productVersion`, `productLifecycleStage`, and the per-dimension attestation surface so the Product Register projection (D-NEW-PRODUCT-APPROVAL-POLICY) reads cleanly.
+- `agent:Anya (Data / analytics engineer)` — semantic-layer entries for `productId`, `productFamily`, `productVersion`, `productLifecycleStage`, and the per-dimension attestation surface so the Product Register projection (D-NEW-PRODUCT-APPROVAL-POLICY) reads cleanly. [done in PR #109]
 
 ## Substrate gaps surfaced (not solved by this decision)
 
