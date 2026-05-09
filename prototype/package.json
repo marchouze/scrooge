@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "bun test",
+    "test": "bun test --isolate",
     "lint": "biome check .",
     "format": "biome format --write .",
     "typecheck": "bunx tsc --noEmit",
-    "ci": "bun run typecheck && bun run lint && bun test && bun run citation-gate && bun run recon && bun run recon:dashboard && bun run recon:prose-duplication && bun run recon:runtime-handler-sync && bun run recon:agent-spec && bun run recon:cron-map-drift && bun run recon:decision-recommendation && bun run recon:parallel-dispatch-divergence",
+    "ci": "bun run typecheck && bun run lint && bun run test && bun run citation-gate && bun run recon && bun run recon:dashboard && bun run recon:prose-duplication && bun run recon:runtime-handler-sync && bun run recon:agent-spec && bun run recon:cron-map-drift && bun run recon:decision-recommendation && bun run recon:parallel-dispatch-divergence",
     "scenario:hello": "bun run scenarios/01-hello-bank.ts",
     "scenario:onboard": "bun run scenarios/02-onboard-counterparty.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
