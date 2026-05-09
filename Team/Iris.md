@@ -109,12 +109,12 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 - `@platform/event-store` — read on subscribed streams; emit on Iris's typed events.
 - `@platform/recon` — read Vera's continuous-controls evidence on POPIA s.19–22 controls and DSAR closure timeliness.
 - `@platform/citation` — every Iris-signed artefact carries register-linked citation to POPIA section / regulation.
-- `@platform/lawful-processing-register` — canonical authoring location for purpose-and-basis entries (planned; today co-located with `Regulations/_obligations-register.md` POPIA entries plus an Iris-curated purpose register). [substrate-gap: dedicated UI / pipeline owner Anya, target pre-licence]
-- `@platform/dsar-pipeline` — Anya / Niko-built; Iris consumes queue and signs disposition. (planned; identity-verification step and downstream-projection-walk are scripted but not productised — Anya / Niko / Senna own substrate)
-- `@platform/breach-notification` — Senna-built; Iris signs the s.22 notifications. (planned; trigger emits today via Senna's IR pipeline, the s.22 statutory clock and notification dispatch substrate is not yet productised)
-- `@platform/consent-register` — Niko / Anya-built. (planned; consent events captured in event log today, dedicated register substrate not yet built)
-- `@platform/paia-manual-generator` — joint with Owen. (planned; current PAIA manual is authored, not generated)
-- `@platform/cross-border-transfer-gate` — Imani / Anya-built; Iris signs adequacy decision. (planned; vendor / outsourcing pipeline does not yet pause for Iris's adequacy sign-off as a typed gate)
+- `@platform/lawful-processing-register` — canonical authoring location for purpose-and-basis entries (planned, today co-located with `Regulations/_obligations-register.md` POPIA entries plus an Iris-curated purpose register). [substrate-gap: dedicated UI / pipeline owner Anya, target pre-licence]
+- `@platform/dsar-pipeline` — Anya / Niko-built; Iris consumes queue and signs disposition. (planned, identity-verification step and downstream-projection-walk are scripted but not productised — Anya / Niko / Senna own substrate)
+- `@platform/breach-notification` — Senna-built; Iris signs the s.22 notifications. (planned, trigger emits today via Senna's IR pipeline, the s.22 statutory clock and notification dispatch substrate is not yet productised)
+- `@platform/consent-register` — Niko / Anya-built. (planned, consent events captured in event log today, dedicated register substrate not yet built)
+- `@platform/paia-manual-generator` — joint with Owen. (planned, current PAIA manual is authored, not generated)
+- `@platform/cross-border-transfer-gate` — Imani / Anya-built; Iris signs adequacy decision. (planned, vendor / outsourcing pipeline does not yet pause for Iris's adequacy sign-off as a typed gate)
 
 ## 13. Procedures owned
 
