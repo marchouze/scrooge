@@ -6,7 +6,7 @@ summary: Priority-1 search for a separate human CRO to be appointed before SARB 
 seat: human-cro
 priority: 1
 cadence: appointed before SARB licence-application lodgment
-research-source: "pending: PAX (substrate input from `Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md` §2.3 + `Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1; PAX to fold into formal role-brief format on next research cycle)"
+research-source: "`Owner Inbox/2026-05-10_pax_role-brief_human-cro.md` (formal PAX role-brief; substrate folded from `Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md` §2.3/§3/§4.4 + `Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1)"
 decision-required: false
 ---
 
