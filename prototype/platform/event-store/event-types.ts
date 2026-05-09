@@ -2866,6 +2866,474 @@ export function makeIntraGroupArrangementSigned(args: {
   });
 }
 
+// ===========================================================================
+// Product-lifecycle event family (12 events).
+//
+// Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (CEO approved
+// 2026-05-10). Source brief §4 — typed-event surface; the 12 events
+// that govern a Product's lifecycle from proposal through retirement.
+//
+// All twelve are `append-only-audit` per §4 of the source brief: the
+// Product's *current state* (lifecycle stage, conditions, gates
+// cleared) is a projection over this stream — never stored as
+// authoritative.
+//
+// Per Q2 resolution: per-dimension agent emits its own
+// `ProductDimensionAttested`; the orchestrator only sequences and
+// assembles into `ProductDueDiligenceCompleted`. The emitting agent
+// is recorded in the standard envelope's `actor` field — no separate
+// `producedBy` field is added at v1 (the prompt specifies "do not
+// invent fields beyond what the brief specifies").
+//
+// Per Q3 resolution: `ProductDimensionAttested.result` carries
+// `"design-attested"` vs `"implementation-attested"` distinction.
+//
+// Author: Atlas (substrate) · Kai (markets engineering; co-author).
+// ===========================================================================
+
+/** Product family — mirrors `productFamilySchema` in
+ * `@platform/markets/products/types`. Re-declared here as a small
+ * literal to avoid a runtime cycle between event-store and markets. */
+const productFamilyForEventSchema = z.enum([
+  "listed-equity",
+  "listed-bond",
+  "repo",
+  "otc-ird",
+  "fx",
+  "structured",
+]);
+
+// ---------------------------------------------------------------------------
+// 1. ProductProposalRegistered — `{productId, family, proposedBy, asOf}`
+// ---------------------------------------------------------------------------
+
+export const productProposalRegisteredPayloadSchema = z.object({
+  productId: z.string().min(1),
+  family: productFamilyForEventSchema,
+  /** Agent or human ref that proposed the product (e.g. "agent:Saskia"). */
+  proposedBy: z.string().min(1),
+  /** ISO-8601 of the proposal moment. Distinct from envelope as_of for traceability. */
+  asOf: z.string().min(1),
+});
+
+export type ProductProposalRegisteredPayload = z.infer<
+  typeof productProposalRegisteredPayloadSchema
+>;
+
+export function makeProductProposalRegistered(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductProposalRegisteredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductProposalRegistered",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productProposalRegisteredPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 2. ProductConceptualised — `{productId, version, cdmComposition, lifecycleEventFamily}`
+// ---------------------------------------------------------------------------
+
+export const productConceptualisedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /** Semver. */
+  version: z.string().min(1),
+  /**
+   * The CDM-composition snapshot at conceptualisation. Free-shape
+   * record at v1 (the canonical typed shape lives in
+   * `@platform/markets/products/types.cdmCompositionSchema`); this
+   * event records the snapshot rather than re-validating to keep the
+   * event-store layer free of a downward dependency on the markets
+   * package.
+   */
+  cdmComposition: z.record(z.unknown()),
+  /** Per-trade lifecycle event types this product produces. */
+  lifecycleEventFamily: z.array(z.string().min(1)),
+});
+
+export type ProductConceptualisedPayload = z.infer<typeof productConceptualisedPayloadSchema>;
+
+export function makeProductConceptualised(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductConceptualisedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductConceptualised",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productConceptualisedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 3. ProductDueDiligenceCompleted — `{productId, gatesCleared[], gatesFailed[]}`
+// ---------------------------------------------------------------------------
+
+export const productDueDiligenceCompletedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /** Dimension names that cleared. */
+  gatesCleared: z.array(z.string().min(1)),
+  /** Dimension names that failed. Per Q4 resolution, gatesFailed[] non-empty
+   *  lifts a Decisions-for-CEO card and waits — it does NOT auto-progress. */
+  gatesFailed: z.array(z.string().min(1)),
+});
+
+export type ProductDueDiligenceCompletedPayload = z.infer<
+  typeof productDueDiligenceCompletedPayloadSchema
+>;
+
+export function makeProductDueDiligenceCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductDueDiligenceCompletedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductDueDiligenceCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productDueDiligenceCompletedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 4. ProductDueDiligenceWithheld — `{productId, gatesFailed[], remediation}`
+// ---------------------------------------------------------------------------
+
+export const productDueDiligenceWithheldPayloadSchema = z.object({
+  productId: z.string().min(1),
+  gatesFailed: z.array(z.string().min(1)).min(1),
+  /** Remediation plan (narrative). */
+  remediation: z.string().min(1),
+});
+
+export type ProductDueDiligenceWithheldPayload = z.infer<
+  typeof productDueDiligenceWithheldPayloadSchema
+>;
+
+export function makeProductDueDiligenceWithheld(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductDueDiligenceWithheldPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductDueDiligenceWithheld",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productDueDiligenceWithheldPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 5. ProductDimensionAttested — `{productId, dimension, result, citationChain}`
+//
+// Per Q2 resolution: per-dimension agent emits this; the orchestrator
+// only sequences. The emitting agent is recorded via the envelope's
+// `actor` field.
+//
+// Per Q3 resolution: `result` distinguishes "design-attested" (substrate
+// not yet built; the gate is design-clear) from "implementation-attested"
+// (substrate built, gate runtime-clear). The schema also tolerates
+// "failed" for completeness — pairs into ProductDueDiligenceWithheld.
+// ---------------------------------------------------------------------------
+
+export const productDimensionAttestedResultSchema = z.enum([
+  "design-attested",
+  "implementation-attested",
+  "failed",
+]);
+
+export type ProductDimensionAttestedResult = z.infer<typeof productDimensionAttestedResultSchema>;
+
+export const productDimensionAttestedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /** Dimension name — e.g. "market-risk", "accounting", "AML". */
+  dimension: z.string().min(1),
+  result: productDimensionAttestedResultSchema,
+  /** Citation chain — Principle 2 anchor for the attestation. Non-empty. */
+  citationChain: z.array(z.string().min(1)).min(1),
+});
+
+export type ProductDimensionAttestedPayload = z.infer<typeof productDimensionAttestedPayloadSchema>;
+
+export function makeProductDimensionAttested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductDimensionAttestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductDimensionAttested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productDimensionAttestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 6. ProductApproved — `{productId, version, conditions[], approvedBy}`
+// ---------------------------------------------------------------------------
+
+export const productApprovedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  version: z.string().min(1),
+  /** Conditions imposed at approval (open list). */
+  conditions: z.array(z.string().min(1)),
+  /** Agent or human ref that approved (e.g. "human:marc@tgv.co.za" pre-Board). */
+  approvedBy: z.string().min(1),
+});
+
+export type ProductApprovedPayload = z.infer<typeof productApprovedPayloadSchema>;
+
+export function makeProductApproved(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductApprovedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductApproved",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productApprovedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 7. ProductWithheld — `{productId, version, reason}`
+// ---------------------------------------------------------------------------
+
+export const productWithheldPayloadSchema = z.object({
+  productId: z.string().min(1),
+  version: z.string().min(1),
+  reason: z.string().min(1),
+});
+
+export type ProductWithheldPayload = z.infer<typeof productWithheldPayloadSchema>;
+
+export function makeProductWithheld(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductWithheldPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductWithheld",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productWithheldPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 8. ProductLaunched — `{productId, version, controlledLaunchLimits, launchedAt}`
+// ---------------------------------------------------------------------------
+
+export const productLaunchedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  version: z.string().min(1),
+  /** Controlled-launch limits, free-shape record (limit-name -> value). */
+  controlledLaunchLimits: z.record(z.unknown()),
+  /** ISO-8601 launch moment. */
+  launchedAt: z.string().min(1),
+});
+
+export type ProductLaunchedPayload = z.infer<typeof productLaunchedPayloadSchema>;
+
+export function makeProductLaunched(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductLaunchedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductLaunched",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productLaunchedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 9. ProductPostImplementationReviewCompleted — `{productId, verdict, amendedConditions[]}`
+// ---------------------------------------------------------------------------
+
+export const productPostImplementationReviewCompletedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  verdict: z.enum(["passed", "passed-with-conditions", "remediation-required", "withdrawn"]),
+  amendedConditions: z.array(z.string().min(1)),
+});
+
+export type ProductPostImplementationReviewCompletedPayload = z.infer<
+  typeof productPostImplementationReviewCompletedPayloadSchema
+>;
+
+export function makeProductPostImplementationReviewCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductPostImplementationReviewCompletedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductPostImplementationReviewCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productPostImplementationReviewCompletedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 10. ProductReviewCompleted — `{productId, cycle, verdict}` (annual)
+// ---------------------------------------------------------------------------
+
+export const productReviewCompletedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /** Review cycle ref — e.g. "2026-annual". */
+  cycle: z.string().min(1),
+  verdict: z.enum(["passed", "passed-with-conditions", "remediation-required", "retire"]),
+});
+
+export type ProductReviewCompletedPayload = z.infer<typeof productReviewCompletedPayloadSchema>;
+
+export function makeProductReviewCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductReviewCompletedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductReviewCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productReviewCompletedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 11. ProductRetired — `{productId, reason, migrationPath}`
+// ---------------------------------------------------------------------------
+
+export const productRetiredPayloadSchema = z.object({
+  productId: z.string().min(1),
+  reason: z.string().min(1),
+  /** Migration path for open positions (narrative; binds to Imani's clause library). */
+  migrationPath: z.string().min(1),
+});
+
+export type ProductRetiredPayload = z.infer<typeof productRetiredPayloadSchema>;
+
+export function makeProductRetired(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductRetiredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductRetired",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productRetiredPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 12. ProductVersionPublished — `{productId, oldVersion, newVersion, materialChanges[]}`
+//
+// Per Q5 resolution: material changes increment version on the same
+// productId; new productId is reserved for genuinely new products.
+// ---------------------------------------------------------------------------
+
+export const productVersionPublishedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  oldVersion: z.string().min(1),
+  newVersion: z.string().min(1),
+  /** List of material-change descriptions (narrative). */
+  materialChanges: z.array(z.string().min(1)).min(1),
+});
+
+export type ProductVersionPublishedPayload = z.infer<typeof productVersionPublishedPayloadSchema>;
+
+export function makeProductVersionPublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductVersionPublishedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductVersionPublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productVersionPublishedPayloadSchema.parse(args.payload),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -2916,6 +3384,19 @@ export const TYPED_EVENT_TYPES = [
   "LegalEntityRegistered",
   "LegalEntityChanged",
   "IntraGroupArrangementSigned",
+  // Product-lifecycle event family — D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2.
+  "ProductProposalRegistered",
+  "ProductConceptualised",
+  "ProductDueDiligenceCompleted",
+  "ProductDueDiligenceWithheld",
+  "ProductDimensionAttested",
+  "ProductApproved",
+  "ProductWithheld",
+  "ProductLaunched",
+  "ProductPostImplementationReviewCompleted",
+  "ProductReviewCompleted",
+  "ProductRetired",
+  "ProductVersionPublished",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
