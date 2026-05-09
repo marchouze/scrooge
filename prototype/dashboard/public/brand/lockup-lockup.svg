@@ -1,0 +1,23 @@
+<!-- lockup-lockup.svg — Hoz default lockup (mark + wordmark).
+     Authority: D-BANK-NAME-SELECTION revised 2026-05-09 (Hoz);
+     Linnea v1 brand package §2.1 (Direction A construction);
+     Linnea v3 brand-application supplement §2.1 (lockup family).
+     Use: default brand surface — page header, business card,
+     regulator-submission cover, board-pack title, customer letterhead.
+     Min size: 144px wide. Clear-space: one mark-diameter on all sides.
+     Dimensionally identical to logo-direction-a.svg from v0; v3 ships
+     under the lockup- prefix to form the discoverable family.
+     Construction: 220×64 viewBox. Mark: 64×64u; circle d=56u centred
+     at (32,32); chord y=24u; stroke 2u/3u. Wordmark: Inter 700 at 36u
+     to the right of the mark with chord-stroke gutter (3u). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 64" width="220" height="64" role="img" aria-label="Hoz — geometric mark with wordmark">
+  <!-- Mark -->
+  <g>
+    <circle cx="32" cy="32" r="28" fill="none" stroke="#1F2A37" stroke-width="2"/>
+    <line x1="6" y1="24" x2="58" y2="24" stroke="#1F2A37" stroke-width="3" stroke-linecap="square"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="76" y="44"
+        font-family="Inter, 'Inter Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="36" font-weight="700" fill="#1F2A37" letter-spacing="-0.5">Hoz</text>
+</svg>

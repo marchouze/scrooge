@@ -1,0 +1,13 @@
+<!-- apple-touch-icon.svg — Hoz apple-touch-icon at 180×180.
+     Authority: Linnea v3 brand-supplement §3.1.
+     Use: iOS home-screen + Safari pinned tab. Apple-touch-icons render
+     within a rounded-rect mask applied by iOS — keep the mark inset
+     enough to survive the corner mask without clipping the chord.
+     Construction: v1 grid scaled to fit a 180-grid with extra inset
+     (circle d=140u centred at 90; chord y=70u; stroke 5u/8u).
+     Slate ink on Paper. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180" role="img" aria-label="Hoz">
+  <rect width="180" height="180" fill="#F7F4EE"/>
+  <circle cx="90" cy="90" r="70" fill="none" stroke="#1F2A37" stroke-width="5"/>
+  <line x1="25" y1="70" x2="155" y2="70" stroke="#1F2A37" stroke-width="8" stroke-linecap="square"/>
+</svg>
