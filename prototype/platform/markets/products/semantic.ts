@@ -85,6 +85,20 @@ const C_BCBS_NEW_PRODUCT = "BCBS-195-2011"; // Sound Practices for the Managemen
 const C_REG_39_ROUTE = "[register: route to Mira — Banks Act Reg 39 sub-clauses]";
 const C_DOMAIN_J_ROUTE = "[register: route to Mira — Domain J markets/trading URN slugs]";
 const C_DOMAIN_N_ROUTE = "[register: route to Mira — Domain N M1 markets-foundation URN slugs]";
+/** Slice 3 commit on main — Atlas + Kai composeProduct runtime + M1/M2 fixtures. */
+const C_SLICE3_COMMIT = "commit:0019c07 — D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 (PR #115)";
+/** Source brief §3 — composition rule + worked examples. */
+const C_BRIEF_SECTION_3 =
+  "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §3 (composition rule, worked examples)";
+/**
+ * Slice 8 substrate gap from Atlas's Slice 3 completion report — the
+ * djb2-style fingerprint in `composeProduct.ts` is *deterministic*, not
+ * *integrity-protected*. HSM-keyed cryptographic hash lands at Slice 8
+ * (cloud lift) once Senna's HSM custody substrate is up. Recorded as a
+ * structured citation so Vera's recon can detect closure.
+ */
+const C_SLICE8_HSM_GAP =
+  "[substrate-gap: HSM-keyed integrity hash for ProductTemplate.fingerprint — Slice 8 cloud lift; today's djb2 digest is deterministic, not integrity-protected; integrity comes from the event log per Principle 1]";
 
 // ---------------------------------------------------------------------------
 // Allowed-value tables — verified against the source brief / policy
@@ -248,7 +262,7 @@ const PRODUCT_DIMENSION_RESULT_VALUES: readonly {
 // ---------------------------------------------------------------------------
 // Product-layer semantic entries.
 //
-// Five entry-groups:
+// Six entry-groups:
 //   1. productId
 //   2. productFamily
 //   3. productVersion
@@ -256,6 +270,12 @@ const PRODUCT_DIMENSION_RESULT_VALUES: readonly {
 //   5. Per-dimension attestation surface — 14 dimensions + the `dimension`
 //      and `result` enum entries that bound the `ProductDimensionAttested`
 //      payload.
+//   6. Composition-runtime surface (Slice 3 follow-on) —
+//      productTemplate (the composeProduct() output) + compositionFingerprint
+//      (the deterministic stable-hash field on ProductTemplate). Both
+//      land here as Anya's follow-on to Atlas (Core banking platform
+//      architect) Slice 3 PR #115; gap surfaced in the Slice 3 completion
+//      report.
 // ---------------------------------------------------------------------------
 
 export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[] = [
@@ -437,6 +457,88 @@ export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[
       jurisdiction: "n/a",
     },
   },
+
+  // ---- 6. Composition-runtime surface (Slice 3 follow-on) ----------------
+  // 6a — productTemplate (the composeProduct() output).
+  {
+    id: "product-template",
+    name: "Product template",
+    definition:
+      "The runtime-resolved view of a Product's composition: validated CDM primitives + family-specific extensions + composition rule + deterministic fingerprint, produced by `composeProduct(primitives, extensions, compositionRule)` (or the convenience overload `composeFromProduct(product)`). Same input → identical ProductTemplate every time (sorted by stable address; serialisable as JSON). Per Q1 single-type discipline, this is the only composition path — M1 listed-equity, M2 SAGB-bond, M2 repo, M3 IRS, M4 FX swap all flow through this one function.",
+    cdmPrimitive:
+      "composeProduct(primitives, extensions, compositionRule) → ProductTemplate; convenience overload composeFromProduct(product) reads product.cdmComposition.{primitives, extensions, compositionRule}. Source: prototype/platform/markets/products/composeProduct.ts §lines 67–82 (productTemplateSchema), §lines 102–142 (composeProduct).",
+    projectionRule:
+      "Not directly persisted. ProductTemplate is a *derived view* over the Product record — recomputable from `product.cdmComposition` at any point in time (Principle 1). Downstream slices (Slice 4 policy-attestation runtime; the Product Register projection) will fold composition fingerprints into per-product per-version cells; the template itself is not stored as authoritative state.",
+    presentationField: "Markets ▸ Product Register ▸ Composition (drill-down view)",
+    citations: [
+      C_DECISION_BRIEF,
+      C_DECISION_RECORD,
+      C_BRIEF_SECTION_3,
+      C_SLICE3_COMMIT,
+      C_DOMAIN_J_ROUTE,
+    ],
+    unit: "object",
+    tsType:
+      "ProductTemplate /* z.infer<typeof productTemplateSchema> from @platform/markets/products/composeProduct (composeProduct.ts:84) */",
+    allowedValues: [],
+    // Multi-X (Principle 5):
+    //
+    // [verify: ProductTemplate does NOT directly carry legalEntityId,
+    // currency, jurisdiction — those live on the upstream `Product`
+    // record (types.ts §lines 285, 287, 292) which the template is
+    // derived from. The template's fields are
+    // `{primitives, extensions, compositionRule, fingerprint}` only.]
+    //
+    // The triple is therefore *carried-on-Product* (not on the template
+    // itself); a ProductTemplate is meaningful only in the context of
+    // its source Product, which carries the singular
+    // legalEntityId/currency/jurisdiction. Multi-X compliance is
+    // satisfied at the Product layer; the template inherits it by
+    // reference. If a future Slice extends ProductTemplate to carry the
+    // triple inline (e.g. for cross-entity composition), the multiX
+    // values below must be revisited.
+    multiX: {
+      currency: "carried-on-Product",
+      entity: "carried-on-Product",
+      jurisdiction: "carried-on-Product",
+    },
+  },
+  // 6b — compositionFingerprint (the deterministic stable hash on ProductTemplate).
+  {
+    id: "composition-fingerprint",
+    name: "Composition fingerprint",
+    definition:
+      "Deterministic stable digest over a ProductTemplate's canonicalised primitives + extensions + composition rule. Same inputs → identical fingerprint every time. Recomputable from event-log replay (Principle 1) — given a Product's `cdmComposition` payload at any point in time, `composeProduct(...)` reproduces the same fingerprint. v1 form: `pt-v1-<8-hex-djb2>-len<canonical-json-length>` per `computeFingerprint` in composeProduct.ts §lines 160–193. Today's digest is *deterministic*, not *integrity-protected*; integrity is supplied by the event log itself.",
+    cdmPrimitive:
+      "ProductTemplate.fingerprint — composeProduct.ts:81 (`fingerprint: z.string().min(1)` on productTemplateSchema); produced by computeFingerprint(resolvedPrimitives, resolvedExtensions, compositionRule) at composeProduct.ts:160.",
+    projectionRule:
+      "markets.product-register (planned, Slice 4 follow-on) — folds the fingerprint into the per-product per-version composition cell as the stable identity of a unique composition. Equality test: equal `compositionFingerprint` across two `ProductTemplate` instances ⇒ equal substantive composition (modulo metadata). The projection's drift-detector flags any Product whose recomputed fingerprint diverges from the fingerprint embedded in its `ProductProposed` / `ProductVersionPublished` event payload — that divergence is a Vera-recon finding (composition-integrity invariant).",
+    presentationField: "Markets ▸ Product Register ▸ Composition fingerprint (cell badge)",
+    citations: [
+      C_DECISION_BRIEF,
+      C_DECISION_RECORD,
+      C_BRIEF_SECTION_3,
+      C_SLICE3_COMMIT,
+      C_SLICE8_HSM_GAP,
+    ],
+    unit: "digest",
+    tsType:
+      'string /* ProductTemplate["fingerprint"] — z.string().min(1); v1 format `pt-v1-<8-hex>-len<n>`. Slice 8 may swap to a Brand<string, "CompositionFingerprint"> once HSM-keyed substrate lands. */',
+    allowedValues: [],
+    // Multi-X (Principle 5): n/a at the fingerprint level — the
+    // fingerprint is a content hash over the composition payload only,
+    // not a record carrying entity / currency / jurisdiction. The
+    // Product the fingerprint identifies carries the triple; the
+    // fingerprint itself is jurisdiction-agnostic by design (the same
+    // composition cited for two legal entities yields the same
+    // fingerprint, which is the desired property — composition identity
+    // is independent of entity-scope).
+    multiX: {
+      currency: "n/a",
+      entity: "n/a",
+      jurisdiction: "n/a",
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -484,4 +586,12 @@ export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[
 // 6. Multi-X identity entries (`product-currencies`, `product-entity-scope`,
 //    `product-jurisdiction-matrix`) — land alongside Slice 1 since they
 //    bind directly to fields on the `Product` type.
+// 7. HSM-keyed integrity hash for `ProductTemplate.fingerprint` —
+//    surfaced by Atlas (Core banking platform architect) in the Slice 3
+//    completion report. Slice 8 (cloud lift) will swap the v1 djb2
+//    digest in `composeProduct.ts:160` for an HSM-keyed cryptographic
+//    hash once Senna's HSM-custody substrate lands. The semantic-layer
+//    `composition-fingerprint` entry above carries `C_SLICE8_HSM_GAP`
+//    in its citation chain so Vera's recon can detect closure when
+//    the upgrade lands.
 // ---------------------------------------------------------------------------
