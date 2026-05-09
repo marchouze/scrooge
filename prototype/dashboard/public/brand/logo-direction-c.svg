@@ -2,8 +2,11 @@
      Source: Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md §2.3.
      Three parallel horizontal lines, right-aligned, unequal lengths
      (16u / 24u / 32u); gutters 6u; right-edge at 38u (of a 48-grid),
-     translated to 64-grid for parity with directions A and B. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="The Bank — abstract symbol (inactive alternate)">
+     translated to 64-grid for parity with directions A and B. The
+     three-stripe construction reads pleasantly as a glyphless echo of
+     the three-letter Hoz wordmark — coincidence, not design intent.
+     Authority: D-BANK-NAME-SELECTION revised 2026-05-09. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Hoz — abstract symbol (inactive alternate)">
   <g stroke="#1F2A37" stroke-width="4" stroke-linecap="square">
     <line x1="34" y1="22" x2="50" y2="22"/>
     <line x1="26" y1="32" x2="50" y2="32"/>

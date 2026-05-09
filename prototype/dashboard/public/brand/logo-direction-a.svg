@@ -1,7 +1,21 @@
-<!-- Direction A — geometric mark. Active in v0 shell header.
+<!-- Direction A — geometric mark + wordmark lockup. Active in v0 shell header.
      Source: Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md §2.1.
-     Construction: 64×64u; circle d=56u centred; chord at y=24u; stroke 2u (circle), 3u (chord). -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="The Bank — geometric mark">
-  <circle cx="32" cy="32" r="28" fill="none" stroke="#1F2A37" stroke-width="2"/>
-  <line x1="6" y1="24" x2="58" y2="24" stroke="#1F2A37" stroke-width="3" stroke-linecap="square"/>
+     Construction:
+       Mark — 64×64u; circle d=56u centred; chord at y=24u; stroke 2u
+       (circle), 3u (chord). The mark is name-agnostic by design.
+       Wordmark — Inter 700 at ~36u, set in Slate. Three-letter "Hoz"
+       sits to the right of the mark with a fixed gutter; lockup
+       proportions follow §2.1 wordmark-to-mark ratio.
+     Pronunciation posture (Linnea v3 supplement-pending): "rhymes with
+     pause". Authority: D-BANK-NAME-SELECTION revised 2026-05-09. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 64" width="220" height="64" role="img" aria-label="Hoz — geometric mark with wordmark">
+  <!-- Mark -->
+  <g>
+    <circle cx="32" cy="32" r="28" fill="none" stroke="#1F2A37" stroke-width="2"/>
+    <line x1="6" y1="24" x2="58" y2="24" stroke="#1F2A37" stroke-width="3" stroke-linecap="square"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="76" y="44"
+        font-family="Inter, 'Inter Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="36" font-weight="700" fill="#1F2A37" letter-spacing="-0.5">Hoz</text>
 </svg>

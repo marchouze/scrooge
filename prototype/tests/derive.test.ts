@@ -209,6 +209,7 @@ function makeFixture(): Fixture {
     curated: join(root, "prototype", "seeds", "dashboard-curated.json"),
     teamDir: join(root, "Team"),
     ownerInboxDir: join(root, "Owner Inbox"),
+    bankNameRegister: join(root, "Regulations", "_bank-name.md"),
   };
 
   return {

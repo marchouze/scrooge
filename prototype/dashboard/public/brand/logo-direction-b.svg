@@ -1,9 +1,12 @@
 <!-- Direction B — typographic monogram. Inactive alternate.
      Source: Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md §2.2.
-     Single uppercase letter (placeholder "B" until D-BANK-NAME-SELECTION resolves)
-     in a serif with squared terminal. Will re-cut once the name lands. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="The Bank — typographic monogram (inactive alternate)">
+     For "Hoz" the monogram resolves to "H" (initial capital) in a serif
+     with squared terminal. Letter-spacing tuned for single-letter
+     enclosure; Linnea v3 brand-supplement may switch to a "Hz" two-
+     letter ligature if the three-letter name benefits from a richer
+     mark. Authority: D-BANK-NAME-SELECTION revised 2026-05-09. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Hoz — typographic monogram (inactive alternate)">
   <text x="32" y="48" text-anchor="middle"
         font-family="Georgia, 'Iowan Old Style', serif"
-        font-size="56" font-weight="700" fill="#1F2A37" letter-spacing="-2">B</text>
+        font-size="56" font-weight="700" fill="#1F2A37" letter-spacing="-2">H</text>
 </svg>

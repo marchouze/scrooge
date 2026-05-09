@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Bank — home</title>
-  <meta name="description" content="The Bank's operating launcher. Dashboards, reports, decisions, registers, substrate operations.">
+  <title>home · Hoz</title>
+  <meta name="description" content="Hoz operating launcher. Dashboards, reports, decisions, registers, substrate operations.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
@@ -16,16 +17,17 @@
 
   <header class="shell-header" role="banner">
     <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="The Bank — home">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz (rhymes with pause) — home">
         <!-- Linnea Direction A: geometric mark — circle with a horizontal chord
-             cutting through the upper third (the "settling" gesture).
+             cutting through the upper third (the "settling" gesture). The mark
+             is name-agnostic by design (no embedded letters), so it reads
+             cleanly with the three-letter "Hoz" wordmark.
              Reference: Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md §2.1. -->
         <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
           <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
         </svg>
-        <span class="shell-wordmark">The Bank</span>
-        <span class="shell-wordmark-suffix" title="Bank-name selection pending — D-BANK-NAME-SELECTION">[name TBD]</span>
+        <span class="shell-wordmark" title="Hoz · rhymes with 'pause' (pronunciation posture pending Linnea v3 brand-supplement)">Hoz</span>
       </a>
       <div class="shell-meta">
         <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh tile data now">Refresh</button>
@@ -56,7 +58,7 @@
 
     <main class="shell-main" id="shell-main" tabindex="-1">
       <div class="shell-page-header">
-        <h1 class="shell-page-title">The Bank</h1>
+        <h1 class="shell-page-title">Hoz</h1>
         <p class="shell-page-lede">
           Operating launcher. Dashboards, reports, decisions, registers, and
           substrate operations all start here. Every tile is a query over
@@ -143,7 +145,7 @@
           <li>Audit-trail UI — every shell click is in-memory only; <code>UiInteraction</code> event-type and the trail viewer land in v1.</li>
           <li>Existing pages still render their own legacy chrome — retrofit lands in v1 as a follow-on PR.</li>
           <li>Customer / board / regulator portals are placeholder slots; substrate stands up at licence-day approach.</li>
-          <li>Bank name placeholder — selection sits with D-BANK-NAME-SELECTION.</li>
+          <li>Bank-name pronunciation surface — recommended posture is "rhymes with pause"; Linnea v3 brand-supplement to confirm or revise.</li>
         </ul>
       </aside>
     </main>

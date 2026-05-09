@@ -425,6 +425,14 @@ export interface Policy {
 
 export interface DashboardState {
   asOf: string;
+  /**
+   * Canonical bank name, surfaced for client pages to read consistently.
+   * Sourced from `Regulations/_bank-name.md` (canonical register, URN
+   * `urn:obligation:bank:gv:bank-name-registered:v1`); falls through to
+   * `bank.name` if the register is unreadable. Drift between register
+   * and `bank.name` is reportable under Vera Wave-4 #16.
+   */
+  bankName: string;
   bank: BankSummary;
   directReports: readonly Person[];
   openSeats: readonly OpenSeat[];

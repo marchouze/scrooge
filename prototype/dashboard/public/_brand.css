@@ -1,27 +1,43 @@
 /*
- * _brand.css — Cadens (placeholder name) brand tokens.
+ * _brand.css — Hoz brand tokens.
  *
  * Rendered, not authored. Substance is in
  * `Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md`. Every
  * token below maps to a row in §3 (palette), §4 (typography), or §6
  * (overall feel) of that package — no improvisation.
  *
- * The bank's name has not yet been selected (D-BANK-NAME-SELECTION
- * pending). The "Cadens" naming on tokens is Linnea's recommendation;
- * if the CEO picks a different name, only the wordmark string in the
- * shell needs to change — tokens stay.
+ * The bank's name is **Hoz** (D-BANK-NAME-SELECTION revised 2026-05-09;
+ * decision record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md`,
+ * PR #57). Canonical bank-name register at `Regulations/_bank-name.md`
+ * (URN `urn:obligation:bank:gv:bank-name-registered:v1`).
+ * Supersession chain: v1 Cadens → v2 Lucet (closed PR #55) → v3 Hoz.
  *
- * Authored under CEO directive 2026-05-09 (bank-UI v0). Cited by
- * `_shell.css`. No component file should bypass these tokens.
+ * Palette tokens retain the inaugural brand-package palette names
+ * (Slate, Slate Deep). Linnea's v3 brand-supplement may rename the
+ * palette to align with the Hoz wordmark; until then, the colour
+ * values are the substance and the palette names are labels.
+ *
+ * Authored under CEO directive 2026-05-09 (bank-UI v0); updated
+ * 2026-05-09 to apply the Hoz name. Cited by `_shell.css`. No
+ * component file should bypass these tokens.
  *
  * Author: Linnea (Brand & design lead) — tokens lift from inaugural
  * brand package §3, §4.
  */
 
 :root {
+  /* ---------------- Bank-name token --------------------------- */
+  /* Mirror of the canonical-source bank-name register at
+   * `Regulations/_bank-name.md`. Surfaced here for legacy components
+   * that don't read `/api/state.bankName`; modern components read the
+   * `/api/state` value directly. Drift between this token and the
+   * register is reportable under Vera Wave-4 #16 prose-duplication
+   * recon. */
+  --brand-name: "Hoz";
+
   /* ---------------- §3.1 Primary ------------------------------ */
-  --brand-primary: #1f2a37; /* Cadens Slate */
-  --brand-primary-emphasis: #0f1722; /* Cadens Slate Deep */
+  --brand-primary: #1f2a37; /* Slate */
+  --brand-primary-emphasis: #0f1722; /* Slate Deep */
 
   /* ---------------- §3.2 Secondary (accents) ------------------ */
   --accent-clay: #b8654a;
