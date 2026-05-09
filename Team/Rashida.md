@@ -189,14 +189,14 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 - `@platform/event-store` — read on subscribed streams; emit on Rashida's typed events.
 - `@platform/recon` — read Vera's continuous-controls evidence on cyber controls.
 - `@platform/citation` — every Rashida-signed artefact carries register-linked citation to Joint Standard / POPIA section / Banks Act regulation.
-- `@platform/threat-model-gate` — Senna-built; Rashida is the gate-decision signer.
-- `@platform/key-management` — HSM substrate (planned) — FIPS 140-2/3 Level 3 boundary; key-ceremony orchestration.
-- `@platform/detection-pipeline` — Senna-built; Rashida sets standard.
-- `@platform/soar-orchestrator` — planned; IR-runbook execution.
-- `@platform/sbom-slsa-pipeline` — Atlas / Senna-built; supply-chain verification.
-- `@platform/obligations-register` — read consumer for Joint Standard / POPIA s.19–22 citation chains.
-- `@platform/substrate-exception-register` — Owen-owned; Rashida co-signs entries with security implication.
-- `@platform/vendor-security-review` — Imani / Senna-built.
+- `@platform/threat-model-gate` — Senna-built (planned). Today the gate is procedural via `Procedures/by-policy/secure-sdlc.md`; Rashida is the future gate-decision signer.
+- `@platform/key-management` — HSM substrate (planned). FIPS 140-2/3 Level 3 boundary not yet operational — see §16; key-ceremony orchestration is the consumer.
+- `@platform/detection-pipeline` — Senna-built (planned). Today only rule-based signals on synthetic flows; Rashida sets standard.
+- `@platform/soar-orchestrator` — (planned). IR runbooks are document-form today — see §16.
+- `@platform/sbom-slsa-pipeline` — Atlas / Senna-built (planned). SLSA / sigstore verification gate not yet wired into the build pipeline.
+- `@platform/obligations-register` — read consumer for Joint Standard / POPIA s.19–22 citation chains (planned). Mira-curated register lives as `/Regulations/_obligations-register.md` markdown today; no `@platform/` module yet.
+- `@platform/substrate-exception-register` — Owen-owned (planned). Lives as `Owner Inbox/2026-05-07_owen_substrate-exception-register.md` markdown today; no `@platform/` module yet. Rashida co-signs entries with security implication.
+- `@platform/vendor-security-review` — Imani / Senna-built (planned). Vendor onboarding flow not yet built.
 
 ## 13. Procedures owned
 
@@ -257,3 +257,4 @@ Substrate items are tracked in Senna's state-of-platform note (`Owner Inbox/2026
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CISO hire confirmation. |
 | v0.2 | 2026-05-07 | Rashida (via Scrooge) | Operating-spec stub added under Principle 7. |
 | v1.0 | 2026-05-07 | Rashida (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated with load-bearing CISO-independence section per CEO directive 2026-05-07. |
+| v1.1 | 2026-05-09 | Rashida (via Scrooge) | § 12 capability bullets annotated with explicit `(planned)` markers per Vera Wave-4 #10 cross-link recon; closes 7 findings. No substrate exists yet for the security capability stack — every entry except `event-store`, `recon`, and `citation` is roadmap. |

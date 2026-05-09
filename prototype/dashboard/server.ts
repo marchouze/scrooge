@@ -51,6 +51,7 @@ import {
   enrichBlockedBy,
   listEscalations,
 } from "./oversight";
+import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import type {
@@ -407,6 +408,14 @@ const server = Bun.serve({
       // status per linked obligation. Parsed from the obligations register
       // on each request — file is small; no caching needed.
       return jsonResponse(getObligationsView(REPO_ROOT));
+    }
+    if (url.pathname === "/api/procedures" && req.method === "GET") {
+      // Procedures index — every row of `Procedures/_index.md` grouped by
+      // its H2 domain section, enriched per-row with frontmatter parsed
+      // from the per-procedure file under `Procedures/by-policy/`. Surfaces
+      // the "no orphans" count (rows whose cited file does not exist) per
+      // Principle 6. Parsed live; small enough not to cache.
+      return jsonResponse(getProceduresIndex(REPO_ROOT));
     }
     if (url.pathname === "/api/agent-runs" && req.method === "GET") {
       // GitHub Actions run history per agent — for the per-agent "Recent
