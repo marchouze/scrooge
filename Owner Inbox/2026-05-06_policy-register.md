@@ -144,7 +144,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 | Best Execution Policy | Saskia | BRC | Annual | FAIS; FMA; FSCA conduct standards | `PLANNED` |
 | Voice & Communications Recording Policy | Saskia (with Senna, Iris, Sade) | BRC | Annual | FMA Ch. X; POPIA; FAIS | `PLANNED` |
 | Counterparty Onboarding Policy (markets) | Saskia (with Zara, Imani) | BRC | Annual | FIC Act; FATCA; ISDA | `PLANNED` |
-| New Product Approval Policy | Saskia (with Helena, Camille, Zara) | BRC | On product | BCBS; FSCA conduct standards | `PLANNED` |
+| New Product Approval Policy | Saskia (with Helena, Camille, Zara) | BRC | On product | BCBS; FSCA conduct standards | **`IN FORCE`** (Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md; v1.0; D-NEW-PRODUCT-APPROVAL-POLICY) |
 
 ## 10. Customer / sales policies (Niko)
 
