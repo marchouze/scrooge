@@ -2238,9 +2238,7 @@ export const counterpartyEligibilityOutcomeSchema = z.enum([
   "indeterminate",
 ]);
 
-export type CounterpartyEligibilityOutcome = z.infer<
-  typeof counterpartyEligibilityOutcomeSchema
->;
+export type CounterpartyEligibilityOutcome = z.infer<typeof counterpartyEligibilityOutcomeSchema>;
 
 // ---------------------------------------------------------------------------
 // CounterpartyEligibilityScreened
