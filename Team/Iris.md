@@ -102,24 +102,25 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 
 - **Events emitted:** `ProcessingPurposeApproved`, `ProcessingPurposeRejected`, `DSARClosed`, `BreachNotificationDispatched` (sealed), `DataSubjectNotificationDispatched`, `CrossBorderTransferApproved`, `PAIAManualVersionApproved`, `ConsentTemplateApproved`, `RetentionScheduleApproved`, `AgentEscalation` (where Iris is the issuing agent), `AgentDecision`.
 - **Registers maintained:** lawful-processing register (curator); purpose register; consent / notice register; retention schedule; PAIA manual (joint with Owen); DSAR case register; cross-border-transfer register.
-- **Deliverables:** quarterly POPIA programme pack to BRC / AC (generated, not assembled); annual PAIA manual; Information-Regulator notifications; data-subject notifications; combined-assurance contribution to Vera + Thandiwe.
+- **Deliverables:** quarterly POPIA programme pack to BRC / AC (generated, not assembled); annual PAIA manual; Information-Regulator notifications; data-subject notifications; combined-assurance contribution to Vera + Thandiwe. Authored briefs to date: `Owner Inbox/2026-05-07_iris_popia-s19-s22-walkthrough-for-rashida.md`, `Owner Inbox/2026-05-08_iris_popia-controls-snapshot.md`, `Owner Inbox/2026-05-09_iris_per-entity-popia-io-designation-scoping.md`.
 
 ## 12. System capabilities called
 
 - `@platform/event-store` — read on subscribed streams; emit on Iris's typed events.
 - `@platform/recon` — read Vera's continuous-controls evidence on POPIA s.19–22 controls and DSAR closure timeliness.
 - `@platform/citation` — every Iris-signed artefact carries register-linked citation to POPIA section / regulation.
-- `@platform/lawful-processing-register` — canonical authoring location for purpose-and-basis entries (planned substrate; today co-located with `Regulations/_obligations-register.md`).
-- `@platform/dsar-pipeline` — Anya / Niko-built; Iris consumes queue and signs disposition.
-- `@platform/breach-notification` — Senna-built; Iris signs the s.22 notifications.
-- `@platform/consent-register` — Niko / Anya-built.
-- `@platform/paia-manual-generator` — joint with Owen.
-- `@platform/cross-border-transfer-gate` — Imani / Anya-built; Iris signs adequacy decision.
+- `@platform/lawful-processing-register` — canonical authoring location for purpose-and-basis entries (planned; today co-located with `Regulations/_obligations-register.md` POPIA entries plus an Iris-curated purpose register). [substrate-gap: dedicated UI / pipeline owner Anya, target pre-licence]
+- `@platform/dsar-pipeline` — Anya / Niko-built; Iris consumes queue and signs disposition. (planned; identity-verification step and downstream-projection-walk are scripted but not productised — Anya / Niko / Senna own substrate)
+- `@platform/breach-notification` — Senna-built; Iris signs the s.22 notifications. (planned; trigger emits today via Senna's IR pipeline, the s.22 statutory clock and notification dispatch substrate is not yet productised)
+- `@platform/consent-register` — Niko / Anya-built. (planned; consent events captured in event log today, dedicated register substrate not yet built)
+- `@platform/paia-manual-generator` — joint with Owen. (planned; current PAIA manual is authored, not generated)
+- `@platform/cross-border-transfer-gate` — Imani / Anya-built; Iris signs adequacy decision. (planned; vendor / outsourcing pipeline does not yet pause for Iris's adequacy sign-off as a typed gate)
 
 ## 13. Procedures owned
 
 - `Procedures/by-policy/popia-breach-notification.md` — **owner; co-owned with Rashida (CISO seat) and Senna (engineer)** (populated).
 - `Procedures/by-policy/popia-dsar.md` — **owner** (populated).
+- `Procedures/by-policy/popia-io-designation.md` — **owner; per-entity POPIA s.55–56 Information-Officer designation procedure (PROC-PRIV-IO-DSG-01)**. Landed via PR #91 (`Owner Inbox/2026-05-09_iris_per-entity-popia-io-designation-scoping.md`); reconciles to D-LEGAL-ENTITY-TREE-V0.
 - `Procedures/by-policy/processing-purpose-registration.md` — **owner** (planned).
 - `Procedures/by-policy/cross-border-transfer.md` — **owner; co-signed with Imani on contractual safeguards** (planned).
 - `Procedures/by-policy/paia-manual-cycle.md` — **co-owner with Owen** (planned).
@@ -156,3 +157,4 @@ POPIA co-governance with Zara (RMCP / FIC seam) and with Rashida (s.19–22 secu
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from IO hire confirmation. |
 | v0.2 | 2026-05-07 | Iris (via Scrooge) | Operating-spec stub added under Principle 7. |
 | v1.0 | 2026-05-07 | Iris (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated per CEO directive 2026-05-07. |
+| v1.1 | 2026-05-09 | Iris (via Scrooge) | Vera Wave-4 #10 cross-link recon closure: §12 capability bullets annotated with `(planned)` / `[substrate-gap: ...]` markers (6 findings); §13 adds landed `popia-io-designation.md` (PR #91, PROC-PRIV-IO-DSG-01); §11 references authored briefs. |
