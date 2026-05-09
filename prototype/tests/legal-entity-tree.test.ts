@@ -25,7 +25,6 @@
 
 import { describe, expect, it } from "bun:test";
 
-import seed from "../seeds/legal-entity-tree.json";
 import {
   type IntraGroupArrangementSignedPayload,
   type LegalEntityChangedPayload,
@@ -37,6 +36,7 @@ import {
 } from "../platform/event-store/event-types";
 import { lookupEventType } from "../platform/event-store/registry";
 import type { Actor } from "../platform/event-store/types";
+import seed from "../seeds/legal-entity-tree.json";
 
 const ENTITY = "urn:legal-entity:hoz:hoz-group:v1";
 const T0 = "2026-05-09T08:00:00.000Z";
@@ -62,10 +62,7 @@ const REGISTERED_PAYLOAD: LegalEntityRegisteredPayload = {
   parentEntityId: null,
   regulatoryRegime: {
     primaryRegulator: "none-companies-act-only",
-    regimeAnchor: [
-      "Companies Act 71 of 2008",
-      "Banks Act 94 of 1990 § 60",
-    ],
+    regimeAnchor: ["Companies Act 71 of 2008", "Banks Act 94 of 1990 § 60"],
   },
   directors: [],
   registrationDate: "2026-05-09",
@@ -83,7 +80,9 @@ describe("LegalEntityRegistered — factory", () => {
     expect(event.type).toBe("LegalEntityRegistered");
     expect(event.payload.legalName).toBe("Hoz Group Limited");
     expect(event.payload.parentEntityId).toBeNull();
-    expect(event.payload.regulatoryRegime.primaryRegulator).toBe("none-companies-act-only");
+    expect((event.payload as LegalEntityRegisteredPayload).regulatoryRegime.primaryRegulator).toBe(
+      "none-companies-act-only",
+    );
   });
 
   it("rejects an envelope with empty citations (P2)", () => {
@@ -189,25 +188,33 @@ describe("LegalEntityChanged — factory", () => {
   });
 
   it("requires priorValue (undefined rejected; null is permitted as explicit absence)", () => {
+    // Cast to bypass the TS narrowing on the Zod-inferred type — we are
+    // exercising the runtime guard that rejects `undefined` even though
+    // the schema permits `unknown`.
+    const bad = {
+      ...changedPayload,
+      priorValue: undefined,
+    } as unknown as LegalEntityChangedPayload;
     expect(() =>
       makeLegalEntityChanged({
         asOf: T0,
         entity: "urn:legal-entity:hoz:hoz-bank:v1",
         actor: IMANI_ACTOR,
         citations: CITATIONS,
-        payload: { ...changedPayload, priorValue: undefined },
+        payload: bad,
       }),
     ).toThrow();
   });
 
   it("requires newValue (undefined rejected; null is permitted as explicit absence)", () => {
+    const bad = { ...changedPayload, newValue: undefined } as unknown as LegalEntityChangedPayload;
     expect(() =>
       makeLegalEntityChanged({
         asOf: T0,
         entity: "urn:legal-entity:hoz:hoz-bank:v1",
         actor: IMANI_ACTOR,
         citations: CITATIONS,
-        payload: { ...changedPayload, newValue: undefined },
+        payload: bad,
       }),
     ).toThrow();
   });
@@ -300,9 +307,7 @@ describe("Canonical seed — Regulations/_legal-entity-tree.md mirror", () => {
   });
 
   it("seeds the three Hoz entities with the expected URNs and primaryRegulators", () => {
-    const byId = new Map(
-      seed.entities.map((e) => [e.entityId, e] as const),
-    );
+    const byId = new Map(seed.entities.map((e) => [e.entityId, e] as const));
     expect(byId.get("urn:legal-entity:hoz:hoz-group:v1")?.regulatoryRegime.primaryRegulator).toBe(
       "none-companies-act-only",
     );

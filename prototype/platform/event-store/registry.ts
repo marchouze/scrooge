@@ -892,11 +892,7 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Imani",
     subscribers: ["Owen", "Mira", "Bea", "Yael", "Helena", "Anya", "dashboard", "Vera"],
     replay: "cumulative-fold",
-    citationsHint: [
-      "COMPANIES-ACT-71-2008",
-      "BANKS-ACT-94-1990",
-      "GOV-FRAMEWORK-CEO-RESERVED",
-    ],
+    citationsHint: ["COMPANIES-ACT-71-2008", "BANKS-ACT-94-1990", "GOV-FRAMEWORK-CEO-RESERVED"],
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6.2; Regulations/_legal-entity-tree.md",
   },
