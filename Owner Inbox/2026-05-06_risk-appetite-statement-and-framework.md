@@ -7,6 +7,8 @@
 
 > **Note on derivation (Principle 6).** The RAS is the *policy* layer. The RAF is the *standard* layer that codifies how the RAS is operated, monitored, and breached. Operational limits and KRIs sit at the standard layer; live limits and breaches are *data*. Board RAS document (this) is a **summary** of the operational stack — never the original.
 
+> **Note on entity-scope of this RAS (added 2026-05-09 by Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) under CEO decision `D-REGULATORY-PERIMETER`, approved 2026-05-09; record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` / PR #85).** This RAS is a **`Hoz Bank Limited` document**, not a `Hoz Group Limited` document. The risk appetite is set, governed, and reported at the **bank-entity** level. The SARB Prudential Authority's consolidated-supervision powers under **Banks Act 94 of 1990 § 60+** `[citation: TBC — exact § 60-series sub-section index for parent-of-bank designation, group capital adequacy, group large-exposures, group recovery-plan]` operate as a **look-through** *via* the bank entity — the PA does not separately license, supervise, or set prudential ratios on `Hoz Group Limited` as a stand-alone, but the PA may require certain metrics to be **assessed on a consolidated basis** (group-wide capital, group-wide liquidity, group-wide concentration). The bank therefore reports both entity-level and consolidated-basis figures for the metrics the PA assesses on a consolidated basis; the **appetite line itself is set at the entity level**, with the consolidated view monitored, not separately appetite-bound. See §A4 ("Entity scope of this RAS") and §B14 ("PA look-through framing in RAS / ICAAP / ILAAP") below.
+
 ---
 
 # Part A — Risk Appetite Statement (Board-level)
@@ -70,6 +72,29 @@ The bank operates under a **zero-tolerance** appetite for: regulatory breach, fi
 ## A3. Appetite multipliers across P5
 
 The appetite levels above apply **per legal entity** and, where currency-sensitive, **per significant currency**. As entities or jurisdictions are added (P5), the RAS is replicated by template; absolute amounts are jurisdiction-specific.
+
+## A4. Entity scope of this RAS
+
+> *Added 2026-05-09 by Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) under CEO decision `D-REGULATORY-PERIMETER` (approved 2026-05-09; record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` / PR #85). The framing refines `D-LEGAL-ENTITY-TREE-V0` (PR #82) at the regulatory-perimeter layer.*
+
+The bank is structured as a three-entity group (`Hoz Group Limited` non-operating parent; `Hoz Bank Limited` regulated bank; `Hoz Securities Limited` JSE-member / FSP-OTC-Derivative-Provider). The CEO has codified the **regulatory perimeter per entity**: `Hoz Bank Limited` is supervised by the SARB Prudential Authority under the Banks Act; `Hoz Securities Limited` is supervised primarily by the JSE (FSCA / FAIS secondarily); `Hoz Group Limited` is **not separately regulated** as a stand-alone — it sits under Companies Act 71 of 2008 only, with the SARB PA exercising consolidated-supervision powers via **look-through** through the bank.
+
+This RAS therefore binds at the **bank-entity level**. The risk appetite — every line in §A2, every default in Part B — is set, governed, monitored, and breach-reported at `Hoz Bank Limited`. There is no separate group-level RAS; there is no separate group-level appetite line. Where the PA requires a metric on a consolidated basis (group-wide capital, group-wide liquidity, group-wide concentration, consolidated cyber-resilience programme, consolidated recovery plan), that metric is the **bank's RAS metric measured on a consolidated basis** — not a separate group RAS line. See §B14 for the per-metric pattern.
+
+**Implications for related documents.**
+
+- The **B-cluster appetite lines (L-B8a-1..5)** introduced under `D-RAS-B-CLUSTER-CONCENTRATION-LINES` (CEO ratified 2026-05-09; record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md` / PR #67) are bank-entity appetite lines, measured at the entity level. The named-pair correspondent posture (Standard Bank + FirstRand primary; Absa + Nedbank reserve) binds on `Hoz Bank Limited`'s SARB Authorised Dealer relationships under the Currency and Exchanges Manual. **No change to the numerical lines.**
+- **Hoz Securities Limited** has its own risk taxonomy under JSE Membership Rules + FSCA conduct + FMA / Joint Standard 2 of 2020 (ODP). A separate Securities-entity risk-appetite document is a future deliverable, scoped under Saskia (Head of Global Markets, governance) + Kai (Trading systems engineer) when Hoz Securities Limited's M-phase build approaches commencement-of-trading. Until then, trading-franchise risk-taking on the bank's balance sheet is governed by this RAS at the bank-entity level.
+- **Hoz Group Limited** does **not** have its own RAS. As a Companies Act-only entity its risk profile is constituted by its participation in the bank and securities entities and the related-party regime under IFRS 10 / IAS 24 — the consolidated-supervision metrics the PA may assess are bank-RAS metrics measured on a consolidated basis (per §B14), not group-RAS metrics.
+
+**Authority and citations.**
+
+- **Banks Act 94 of 1990 § 60+** (parent-of-bank / controlling-company / consolidated-supervision regime) `[citation: TBC — exact § 60-series sub-section index]`.
+- **BCBS Corporate Governance Principles for Banks** (2015 revision) — Principle 1 ("Board's overall responsibilities") and Principle 5 ("Governance of group structures") `[citation: TBC — exact Principle 5 paragraphs on parent-board oversight of subsidiaries; Principle 1 paragraphs on bank-board RAS ownership]`.
+- **BCBS 144** (Principles for the home-host supervisor relationship; consolidated-supervision context) `[citation: TBC — exact paragraph index]` — used as a reference for the look-through pattern, even though Hoz is single-jurisdiction at this stage (P5 multi-jurisdiction expansion would activate the home-host dimension).
+- **BCBS D295** (Corporate governance principles for banks — earlier edition) and **BCBS D335** (Guidelines on Corporate governance principles for banks) `[citation: TBC — paragraph indexes for risk-appetite and group-governance principles]` — referenced for the discipline that risk appetite is owned at the regulated-bank level under board accountability, not at the unregulated parent.
+- CLAUDE.md **Principle 5 — multi-entity from day one**.
+- CLAUDE.md **Principle 2 — every action traces to a source**.
 
 ---
 
