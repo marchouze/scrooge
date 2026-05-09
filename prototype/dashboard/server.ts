@@ -44,7 +44,6 @@ import {
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { getObligationsView } from "./obligations-view";
-import { getProceduresIndex } from "./procedures-index";
 import {
   POPIA_S71_NOTICE,
   buildDecisionDrillDown,
@@ -52,6 +51,7 @@ import {
   enrichBlockedBy,
   listEscalations,
 } from "./oversight";
+import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import type {

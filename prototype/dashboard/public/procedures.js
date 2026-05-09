@@ -80,7 +80,7 @@ function applyFilters() {
       // verifyHints absence + procedureFile presence; cheap check below
       // covers the common case.
       if (r.orphan || !r.procedureFile) return false;
-      if (r.verifyHints && r.verifyHints.includes("NO-FRONTMATTER")) return false;
+      if (r.verifyHints?.includes("NO-FRONTMATTER")) return false;
     }
     if (fAuthored === "AUTHORED") {
       // Stricter pass: must have a procedureFile and not be orphaned.
@@ -323,9 +323,7 @@ function renderTable(rows) {
 // ---------------------------------------------------------------------------
 
 function renderFindings() {
-  const findings = allRows.filter(
-    (r) => r.orphan || (r.verifyHints && r.verifyHints.length > 0),
-  );
+  const findings = allRows.filter((r) => r.orphan || (r.verifyHints && r.verifyHints.length > 0));
   const summary = $("procFindingsSummary");
   const orphanCount = allRows.filter((r) => r.orphan).length;
   const noFm = allRows.filter((r) => (r.verifyHints ?? []).includes("NO-FRONTMATTER")).length;

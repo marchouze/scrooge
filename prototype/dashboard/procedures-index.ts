@@ -135,6 +135,14 @@ interface ProcedureCellParse {
   procedureFile: string;
   /** The link caption, or the bare filename, or the cell stripped to its first chunk. */
   procedureLabel: string;
+  /**
+   * `true` when the cell uses an explicit `[caption](by-policy/<file>.md)`
+   * link form — the index author is asserting the file exists. A bare
+   * backticked filename is treated as a *forward reference* (typically on
+   * a PLANNED row) and does NOT trigger orphan flagging when the file is
+   * absent.
+   */
+  isExplicitLink: boolean;
 }
 
 /** Pull the procedure file name + label out of the index cell. */
@@ -144,6 +152,7 @@ function parseProcedureCell(cell: string): ProcedureCellParse {
     return {
       procedureFile: (link[2] ?? "").trim(),
       procedureLabel: (link[1] ?? "").trim(),
+      isExplicitLink: true,
     };
   }
   const bare = cell.match(BARE_FILE_RE);
@@ -151,10 +160,15 @@ function parseProcedureCell(cell: string): ProcedureCellParse {
     return {
       procedureFile: (bare[1] ?? "").trim(),
       procedureLabel: (bare[1] ?? "").trim(),
+      isExplicitLink: false,
     };
   }
   // No file reference — cell is descriptive text only ("shared", "future CAE", etc.).
-  return { procedureFile: "", procedureLabel: cell.replace(/\*\*/g, "").trim() };
+  return {
+    procedureFile: "",
+    procedureLabel: cell.replace(/\*\*/g, "").trim(),
+    isExplicitLink: false,
+  };
 }
 
 interface ProcedureFrontmatter {
@@ -213,7 +227,10 @@ function buildVerifyHints(
   const hints: string[] = [];
   if (!parsed.procedureFile) return hints; // descriptive cell — no hints expected
   if (!fileExists) {
-    hints.push("ORPHAN-FILE-MISSING");
+    // Only an explicit `[caption](by-policy/<file>.md)` link missing on
+    // disk is an orphan. A bare backticked filename is a forward
+    // reference (typical on PLANNED rows) and does not warrant a hint.
+    if (parsed.isExplicitLink) hints.push("ORPHAN-FILE-MISSING");
     return hints;
   }
   if (!fm.hadFrontmatter) {
@@ -247,7 +264,6 @@ export function getProceduresIndex(repoRoot: string): ProceduresIndexView {
 
   const text = readFileSync(indexPath, "utf8");
   const lines = text.split(/\r?\n/);
-  let currentDomain: string | null = null;
   let currentGroup: ProcedureGroup | null = null;
   // After "---" the index transitions into the status-summary appendix
   // (Status summary table, How-to-extend, etc.). We stop ingesting domain
@@ -263,7 +279,6 @@ export function getProceduresIndex(repoRoot: string): ProceduresIndexView {
 
     const heading = parseHeading(raw);
     if (heading) {
-      currentDomain = heading;
       currentGroup = { domain: heading, rows: [] };
       groups.push(currentGroup);
       continue;
@@ -293,7 +308,10 @@ export function getProceduresIndex(repoRoot: string): ProceduresIndexView {
       : "";
     const fileExists = procedureFile ? existsSync(filePath) : false;
     const fm = fileExists ? readProcedureFrontmatter(filePath) : EMPTY_FRONTMATTER;
-    const orphan = Boolean(procedureFile) && !fileExists;
+    // Orphan = the index *links* to a file that does not exist on disk.
+    // Bare backticked filenames are forward references (PLANNED rows) and
+    // are not orphans even when the file is absent.
+    const orphan = Boolean(procedureFile) && !fileExists && parsed.isExplicitLink;
     const verifyHints = buildVerifyHints(parsed, fileExists, fm);
 
     const status = normaliseStatus(statusCell);
