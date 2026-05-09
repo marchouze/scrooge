@@ -3,11 +3,14 @@ title: FSP application path under FAIS-KI clarification — open question for CE
 author: Zara
 date: 2026-05-09
 summary: Surfaces the open question on whether the bank's institutional-only / wholesale posture requires an FSP licence under FAIS at all, frames the two possible postures and their triggers, recommends a PAX research dispatch on FSP-licence necessity, and confirms the interim posture (Marc as FAIS KI; Saskia steady-state).
-decision-required: true
+decision-required: false
+decision-status: actioned
 decision-id: D-FSP-LICENCE-NECESSITY
 maps-to-decision-id: D-THIN-HUMAN-LAYER-MINIMUM
 note: Conduct-side framing of the question PAX must answer. The decision pack noted `agent:Saskia` would dispatch PAX; this paper writes the question. The interim posture (Marc-as-KI) is unchanged by this paper; the steady-state posture (Saskia-as-KI vs no-KI-needed) is what this paper asks Marc to scope for research before fixing.
 ---
+
+> **Decision: confirm-A-no-research, 2026-05-09. See `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62). Posture A is the steady-state. PAX research dispatch withdrawn. This paper closes as actioned.**
 
 # FSP application path under FAIS-KI clarification — open question for CEO
 
