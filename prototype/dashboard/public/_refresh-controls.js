@@ -138,9 +138,72 @@
     btn.disabled = false;
   }
 
+  // ---------- Shell back-link (v0 nav-back) ----------
+  //
+  // Per CEO directive 2026-05-09: every dashboard page needs a minimal
+  // shell-aware nav-back to /home.html so users on /agents.html etc.
+  // are not stranded. The full per-page shell-chrome retrofit is v3.1
+  // (Linnea, brand-supplement). Until then, a single anchor tag pinned
+  // at the top of every non-home page does the job.
+  //
+  // Single-file injection: every page that loads `_refresh-controls.js`
+  // (which is now all 9 sibling pages — agents, policies, decision,
+  // activity, escalations, fleet, health, architecture, obligations)
+  // picks up the back-link without per-page edits.
+  //
+  // Author: Linnea (Brand & design lead) + Anya (Data / analytics
+  // engineer) — under CEO directive 2026-05-09.
+
+  function isHomePage() {
+    const p = window.location.pathname;
+    return p === "/home.html" || p === "/" || p === "";
+  }
+
+  function injectShellBackLink() {
+    if (isHomePage()) return;
+    if (document.querySelector(".shell-back-link")) return;
+
+    const link = document.createElement("a");
+    link.className = "shell-back-link";
+    link.href = "/home.html";
+    link.setAttribute("data-shell-nav", "back-to-home");
+    link.setAttribute("aria-label", "Back to Hoz home");
+    // U+2190 leftward arrow + thin space — kept inline so the arrow
+    // does not depend on a webfont being loaded.
+    link.innerHTML = '<span class="shell-back-arrow" aria-hidden="true">←</span> Hoz home';
+
+    // Preferred: nest inside the legacy `.topbar .meta` so the link
+    // sits next to the existing nav-links and inherits the topbar
+    // colour. Most pages have this layout (agents, policies,
+    // decision, activity, escalations, fleet, health, obligations).
+    const meta = document.querySelector(".topbar .meta");
+    if (meta) {
+      // Insert at the start of the meta cluster so the back-link is
+      // the leftmost element — closest visual analogue to a header
+      // breadcrumb.
+      meta.insertBefore(link, meta.firstChild);
+      link.classList.add("shell-back-link--topbar");
+      return;
+    }
+
+    // Fallback: pages without `.topbar` (e.g. architecture.html which
+    // uses a plain body layout). Pin a small bar to the very top of
+    // the body so the link is visible without scrolling.
+    const bar = document.createElement("div");
+    bar.className = "shell-back-bar";
+    bar.appendChild(link);
+    if (document.body.firstChild) {
+      document.body.insertBefore(bar, document.body.firstChild);
+    } else {
+      document.body.appendChild(bar);
+    }
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", injectRefreshButton);
+    document.addEventListener("DOMContentLoaded", injectShellBackLink);
   } else {
     injectRefreshButton();
+    injectShellBackLink();
   }
 })();
