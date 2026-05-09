@@ -792,5 +792,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   fetchState();
-  setInterval(fetchState, POLL_MS);
+  if (typeof window.registerPagePoll === "function") {
+    window.registerPagePoll(fetchState, POLL_MS);
+  } else {
+    setInterval(fetchState, POLL_MS);
+  }
 });
