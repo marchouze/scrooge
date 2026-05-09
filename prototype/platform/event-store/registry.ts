@@ -673,6 +673,68 @@ const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["BCBS-239-2013", "RAS-B7"],
     source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
   },
+  // M1 IFRS-classification + sub-ledger family — emitted by Bea's
+  // m1-ifrs-classification-rules handler under D-MARKETS-SCHEMA-FOUNDATION
+  // (CEO approved 2026-05-07). `IfrsClassificationApplied` records the
+  // IFRS-9 / IFRS-13 / IAS-21 dispatch outcome per equity trade
+  // (category, hierarchy level, FX flag, business model, SPPI result);
+  // `SubLedgerPostingEmitted` records the trade-date / settlement-date
+  // / dividend-accrual posting derived from the classification. Both
+  // are append-only-audit: the accounting record is forensic — a
+  // re-classification or correction posts a new event, never an
+  // overwrite (Principle 1; matches the audit-trail expectation under
+  // IAS 1 / Companies Act 71/2008 s.28-30 accounting records).
+  // Retention floor is 7 years (SA accounting + tax retention norm:
+  // Companies Act 71/2008 s.24 record-retention period for accounting
+  // records and supporting documents). Subscribers: Anya consumes for
+  // GL-projection assembly; Camille (CFO) + Bea consume for the
+  // close engine; Vera for the IFRS-classification recon.
+  {
+    type: "IfrsClassificationApplied",
+    class: "markets",
+    issuer: "Bea",
+    subscribers: ["Anya", "Camille", "Bea", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "IFRS-9-§4.1.1",
+      "IFRS-9-§4.1.2",
+      "IFRS-9-§5.7.5",
+      "IFRS-13-§72-90",
+      "IAS-21-§23",
+      "ORG-AC-01",
+      "ORG-AC-05",
+      "COMPANIES-ACT-71-2008-S24",
+    ],
+    // Retention floor: ≥7 years — Companies Act 71/2008 s.24
+    // (accounting-records retention) covers IFRS-classification
+    // outputs as supporting accounting documents. The bank's
+    // Principle-1 default retains the append-only log indefinitely;
+    // the 7-year floor is the regulator-mandated minimum.
+    source:
+      "runtime/agents/bea-m1-ifrs-classification-rules.ts; Team Inbox/2026-05-07_brief_bea_m1-ifrs-classification-rules.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: Companies Act 71/2008 s.24 accounting records, ≥7y)",
+  },
+  {
+    type: "SubLedgerPostingEmitted",
+    class: "markets",
+    issuer: "Bea",
+    subscribers: ["Anya", "Camille", "Bea", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "IFRS-9-§4.1.1",
+      "IAS-1",
+      "IAS-21-§23",
+      "ORG-AC-01",
+      "ORG-AC-08",
+      "COMPANIES-ACT-71-2008-S24",
+    ],
+    // Retention floor: ≥7 years — Companies Act 71/2008 s.24
+    // (accounting-records retention period for company financial
+    // records and supporting documentation). Sub-ledger postings are
+    // the accounting record; the GL projection (Anya) is a derived
+    // cache. Principle-1 default keeps the log indefinitely.
+    source:
+      "runtime/agents/bea-m1-ifrs-classification-rules.ts; Team Inbox/2026-05-07_brief_bea_m1-ifrs-classification-rules.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: Companies Act 71/2008 s.24 accounting records, ≥7y)",
+  },
 ];
 
 // Governance / audit / observation event types currently in flight.
@@ -800,6 +862,57 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     citationsHint: ["FIC-ACT-38-2001", "FAIS-ACT-37-2002", "BANKS-ACT-94-1990"],
     source: "runtime/agents/mira-obligations-snapshot.ts",
+  },
+  // M1 obligations-register family — emitted by Mira's
+  // m1-regulator-citation-urns handler under D-MARKETS-SCHEMA-FOUNDATION
+  // (CEO approved 2026-05-07). Each `ObligationRegistered` records a
+  // single regulator-citation URN with the upstream decision-event id;
+  // `M1CitationTrancheRegistered` is the per-run summary covering the
+  // catalogue (count registered / skipped). Both are append-only-audit:
+  // the obligations register is canonical-source, never latest-wins —
+  // a re-registration with corrected metadata produces a new event, not
+  // an overwrite. Retention floor is 5 years (CS 3/2018 §12 + FIC Act
+  // s.22 record-keeping); the bank's Principle 1 default retains the
+  // append-only log indefinitely. No emit-side subscribers — Mira is
+  // the issuer; Vera's URN-coverage recon (Wave-4) and Anya's
+  // dashboard projections consume the stream.
+  {
+    type: "ObligationRegistered",
+    class: "governance",
+    issuer: "Mira",
+    subscribers: ["Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "P2-CITATION-DISCIPLINE",
+      "ORG-FC-01",
+      "ORG-CS3-009",
+      "ORG-FC-05",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    // Retention floor: ≥5 years per ORG-CS3-009 (SARB CS 3/2018 §12 —
+    // Records ≥5y, tamper-evident) and ORG-FC-05 (FIC Act s.22 —
+    // 5-year record-keeping on CDD/EDD/transactions/STRs).
+    source:
+      "runtime/agents/mira-m1-regulator-citation-urns.ts; Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: ORG-CS3-009 + ORG-FC-05, ≥5y)",
+  },
+  {
+    type: "M1CitationTrancheRegistered",
+    class: "governance",
+    issuer: "Mira",
+    subscribers: ["Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "P2-CITATION-DISCIPLINE",
+      "ORG-FC-01",
+      "ORG-CS3-009",
+      "ORG-FC-05",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    // Retention floor: ≥5 years per ORG-CS3-009 + ORG-FC-05 (mirrors
+    // ObligationRegistered — the tranche summary is the audit anchor
+    // for the per-run registration cohort).
+    source:
+      "runtime/agents/mira-m1-regulator-citation-urns.ts; Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: ORG-CS3-009 + ORG-FC-05, ≥5y)",
   },
   {
     type: "SecuritySubstrateSnapshot",
