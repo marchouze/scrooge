@@ -303,7 +303,7 @@ function capabilityResolves(ref: string): boolean {
  * Returns `undefined` on success, or the (truncated) cell value on
  * failure for the violation message.
  */
-function resolveOverseer(cellValue: string, roster: Set<string>): string | undefined {
+function resolveOverseer(cellValue: string, roster: ReadonlySet<string>): string | undefined {
   // Tokenise the cell on any non-letter boundary, lower-case, and check
   // each token against the roster + recognised-bodies list. The lowest
   // false-positive rate comes from accepting any single-name match —
