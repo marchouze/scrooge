@@ -508,7 +508,7 @@ export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[
     id: "composition-fingerprint",
     name: "Composition fingerprint",
     definition:
-      'Deterministic stable digest over a ProductTemplate\'s canonicalised primitives + extensions + composition rule. Same inputs → identical fingerprint every time. Recomputable from event-log replay (Principle 1) — given a Product\'s `cdmComposition` payload at any point in time, `composeProduct(...)` reproduces the same fingerprint. v1 form: `pt-v1-<8-hex-djb2>-len<canonical-json-length>` per `computeFingerprint` in composeProduct.ts §lines 160–193. Today\'s digest is *deterministic*, not *integrity-protected*; integrity is supplied by the event log itself.',
+      "Deterministic stable digest over a ProductTemplate's canonicalised primitives + extensions + composition rule. Same inputs → identical fingerprint every time. Recomputable from event-log replay (Principle 1) — given a Product's `cdmComposition` payload at any point in time, `composeProduct(...)` reproduces the same fingerprint. v1 form: `pt-v1-<8-hex-djb2>-len<canonical-json-length>` per `computeFingerprint` in composeProduct.ts §lines 160–193. Today's digest is *deterministic*, not *integrity-protected*; integrity is supplied by the event log itself.",
     cdmPrimitive:
       "ProductTemplate.fingerprint — composeProduct.ts:81 (`fingerprint: z.string().min(1)` on productTemplateSchema); produced by computeFingerprint(resolvedPrimitives, resolvedExtensions, compositionRule) at composeProduct.ts:160.",
     projectionRule:
