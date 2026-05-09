@@ -155,4 +155,64 @@ describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 — composeProduct runtime", 
     expect(t.extensions.every((e) => typeof e.citationUrn === "string")).toBe(true);
     expect(t.compositionRule.length).toBeGreaterThan(0);
   });
+
+  // ---------------------------------------------------------------------------
+  // Multi-X derivation (PR #118 follow-on, Anya `[verify: ...]` resolution).
+  //
+  // Per the resolved semantic-layer entry for `product-template`, the multi-X
+  // triple (legalEntityId / currency / jurisdiction) lives canonically on the
+  // upstream `Product` record and is *not* duplicated inline on the derived
+  // ProductTemplate. These tests pin that contract: the template carries
+  // composition fields only, and multi-X resolves through the source Product.
+  // If a future Slice adds the triple inline, this test must be revisited
+  // alongside the semantic-layer entry's multiX block.
+  // ---------------------------------------------------------------------------
+
+  it("ProductTemplate does NOT carry multi-X inline (carried-on-Product contract)", () => {
+    const t = composeFromProduct(M1_JSE_EQUITY_CASH_FIXTURE);
+    // Template's keys are exactly the composition surface — no triple.
+    const keys = Object.keys(t).sort();
+    expect(keys).toEqual(["compositionRule", "extensions", "fingerprint", "primitives"]);
+    // Defence-in-depth: assert the triple is genuinely absent on the instance.
+    expect((t as Record<string, unknown>).legalEntityId).toBeUndefined();
+    expect((t as Record<string, unknown>).currency).toBeUndefined();
+    expect((t as Record<string, unknown>).jurisdiction).toBeUndefined();
+  });
+
+  it("multi-X resolves through the source Product (derivation rule)", () => {
+    // Round-trip: derive the template, then read multi-X via the upstream
+    // Product reference — the only legitimate path under the carried-on-
+    // Product contract.
+    const product = M1_JSE_EQUITY_CASH_FIXTURE;
+    const template = composeFromProduct(product);
+
+    // Template was produced from product; multi-X reads back through product.
+    expect(typeof product.legalEntityId).toBe("string");
+    expect(product.legalEntityId.length).toBeGreaterThan(0);
+    expect(product.currency).toMatch(/^[A-Z]{3}$/);
+    expect(product.jurisdiction).toMatch(/^[A-Z]{2}$/);
+
+    // The template fingerprint depends only on the composition surface,
+    // not on multi-X — same composition across two entities/jurisdictions
+    // produces the same fingerprint (composition identity is independent
+    // of entity-scope, per the `composition-fingerprint` semantic entry).
+    expect(template.fingerprint).toMatch(/^pt-v1-[0-9a-f]{8}-len\d+$/);
+  });
+
+  it("two Products with same composition but different multi-X yield identical fingerprints", () => {
+    // Confirms the carried-on-Product semantic: composition fingerprint
+    // is jurisdiction-agnostic by design. The same composition cited
+    // for two legal entities yields the same fingerprint — multi-X
+    // does not flow into the template surface.
+    const productA = M1_JSE_EQUITY_CASH_FIXTURE;
+    const productB = {
+      ...M1_JSE_EQUITY_CASH_FIXTURE,
+      legalEntityId: "entity-hypothetical-second",
+      currency: "USD",
+      jurisdiction: "US",
+    };
+    const tA = composeFromProduct(productA);
+    const tB = composeFromProduct(productB);
+    expect(tA.fingerprint).toBe(tB.fingerprint);
+  });
 });

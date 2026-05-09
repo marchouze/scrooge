@@ -102,13 +102,15 @@ The escalation channel is the typed `AgentEscalation` event (Wave-4 #14).
 ## 12. System capabilities called
 
 - `@platform/event-store` — emit markets event stream.
-- `@platform/markets/oms-ems` — **owner; build-phase prototype** — order management and execution.
-- `@platform/markets/fix-gateway` — **owner; build-phase synthetic** — FIX 4.4 / 5.0 sessions.
-- `@platform/markets/market-data` — **owner; build-phase synthetic** — multi-vendor subscription manager.
-- `@platform/markets/pre-trade-gateway` — **co-owner with Rohan** — non-bypassable pre-trade controls.
-- `@platform/markets/surveillance-feed` — **owner; emits to Mira** — privacy-respecting market-abuse feed.
-- `@platform/markets/best-execution` — **owner** — venue-comparison evidence pipeline.
-- `@platform/markets/trade-reporting` — **owner; build-phase synthetic** — Strate Trade Repository connector (gated on 1 March 2027 cutover).
+- `@platform/markets/products` — **owner with Atlas (Core banking platform architect)** — Product layer (`composeProduct.ts`, `types.ts`, `fixtures.ts`, `semantic.ts`); single canonical composition runtime per Q1 single-type discipline. Landed via PRs #113 (Slice 1 `Product` type), #114 (Slice 2 12-event lifecycle), #115 (Slice 3 `composeProduct` runtime + M1/M2 fixtures), and PR #109 (Anya's semantic-layer entries; co-author Kai on attestation surface).
+- `@platform/markets/cdm` — **co-owner with Atlas** — CDM primitives + extension refs (the building blocks `composeProduct` resolves). Landed alongside the Product layer in PRs #113–#115.
+- `@platform/markets/oms-ems` [substrate-gap: build-phase prototype only; live OMS / EMS gated on pre-licence — multi-asset booking design per `Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md` and `Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md`] — **owner** — order management and execution.
+- `@platform/markets/fix-gateway` [substrate-gap: build-phase synthetic only; live JSE FIX certification not yet lodged — co-tracked in §16] — **owner** — FIX 4.4 / 5.0 sessions.
+- `@platform/markets/market-data` [substrate-gap: build-phase synthetic; vendor selection in flight — co-tracked in §16, owner Kai (selection) + Imani (licence terms) + Camille (cost)] — **owner** — multi-vendor subscription manager.
+- `@platform/markets/pre-trade-gateway` [substrate-gap: equities path designed; FX / rates / OTC derivatives paths in build per `Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md` — co-tracked in §16] — **co-owner with Rohan (Risk engineer)** — non-bypassable pre-trade controls.
+- `@platform/markets/surveillance-feed` [substrate-gap: feed shape designed; typology catalogue under Mira (Compliance / RegTech engineer) at M1 — co-tracked in §16] — **owner; emits to Mira** — privacy-respecting market-abuse feed.
+- `@platform/markets/best-execution` [substrate-gap: pipeline gated on FIX-gateway certification + multi-vendor market-data licences; FSCA best-execution criteria framework not yet codified — surfaces alongside live OMS / EMS at pre-licence] — **owner** — venue-comparison evidence pipeline.
+- `@platform/markets/trade-reporting` (gated on 1 March 2027 Strate Trade Repository cutover under Joint Notice 2 of 2024) — **owner** — Strate Trade Repository connector.
 - `@platform/citation/gate.ts` — every emitted event carries a citation to JSE rulebook / FMD section / FSCA conduct standard.
 
 ## 13. Procedures owned
@@ -154,3 +156,4 @@ The surveillance feed is **emitted to Mira** but Mira consumes it read-only — 
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v0.5 | 2026-05-07 | Kai (via Scrooge) | Partial agent-spec sketch added under Principle 7. |
 | v1.0 | 2026-05-07 | Kai (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained; Sections 6–17 expanded substantively. Reports-to corrected to Saskia (Head of Global Markets) per top-of-house structure. References A0 event-schema freeze and Saskia / Kai trading-system architecture both authored 2026-05-07. |
+| v1.1 | 2026-05-09 | Kai (via Scrooge) | Closed Vera (Internal audit / continuous-assurance engineer) Wave-4 #10 cross-link findings: §12 capabilities `oms-ems`, `fix-gateway`, `market-data`, `pre-trade-gateway`, `surveillance-feed`, `best-execution` annotated `[substrate-gap: ...]` with cross-references to §16 and the canonical authoring briefs. Added two newly-landed §12 entries — `@platform/markets/products` and `@platform/markets/cdm` (Atlas + Kai Slices 1–3 of D-PRODUCT-CONSTRUCTION-SUBSTRATE; PRs #113 / #114 / #115; Anya's semantic-layer entries via PR #109). |
