@@ -44,6 +44,7 @@
 | Sanctions / FIC | `str-filing.md` | Zara (MLRO) | PLANNED |
 | Sanctions / FIC | `tpr-filing.md` | Zara (MLRO) | PLANNED |
 | Sanctions / FIC | `ctr-filing.md` | Zara (MLRO) | PLANNED |
+| RMCP / Sanctions / FIC | [`fic-submission-cycle.md`](by-policy/fic-submission-cycle.md) | Triple-hatted compliance lead (MLRO + FIC CO + IO) — Zara (governance) + Mira (engineering) | **DRAFT v0.1** (post D-THIN-HUMAN-LAYER-MINIMUM) |
 
 ## Privacy & data protection
 
