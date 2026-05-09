@@ -28,6 +28,7 @@
         <span class="shell-wordmark-suffix" title="Bank-name selection pending — D-BANK-NAME-SELECTION">[name TBD]</span>
       </a>
       <div class="shell-meta">
+        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh tile data now">Refresh</button>
         <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
         <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
       </div>
@@ -157,6 +158,16 @@
   </footer>
 
   <script src="/_shell.js"></script>
+  <!--
+    Optional: Anya's shared refresh-controls substrate (PR #51). When
+    present, `home.js` registers `loadTiles` with `registerPagePoll` so
+    the launcher picks up the same visibility-aware polling + last-
+    updated chip + manual-refresh wiring as the rest of the dashboard.
+    When absent (404), `home.js` falls back to a plain 30s setInterval —
+    the dashboards-live bar is still met. Loaded with `defer` and a
+    silent onerror so neither path blocks rendering.
+  -->
+  <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
   <script src="/home.js"></script>
 </body>
 </html>

@@ -174,6 +174,31 @@
     });
   }
 
+  // ---------------- Manual refresh button -------------------
+  // Header refresh button — re-runs the page-specific loader if one
+  // has been registered. Pages register a loader via
+  // `window.bankHome.loadTiles` (home) or any equivalent surface.
+  function instrumentRefresh() {
+    const btn = document.querySelector("[data-shell-refresh]");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      auditLog("shell.refresh.click", {});
+      btn.disabled = true;
+      btn.classList.add("is-busy");
+      try {
+        const loader =
+          (window.bankHome && window.bankHome.loadTiles) ||
+          (window.bankShell?.pageReload && window.bankShell.pageReload);
+        if (typeof loader === "function") {
+          await loader();
+        }
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("is-busy");
+      }
+    });
+  }
+
   // Expose a handful of fetchers for home.js / future shell pages.
   window.bankShell.fetch = {
     state: fetchState,
@@ -190,6 +215,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     renderIdentity();
     instrumentNav();
+    instrumentRefresh();
     auditLog("shell.page.load", { title: document.title });
   });
 })();

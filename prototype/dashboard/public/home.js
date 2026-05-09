@@ -455,17 +455,13 @@
     return counts;
   }
 
-  // ---------------- Boot -------------------------------------
+  // ---------------- Tile loader (re-runnable) ----------------
 
-  async function boot() {
-    if (!window.bankShell) {
-      console.error("[home] window.bankShell not available — _shell.js failed to load");
-      return;
-    }
-
-    // Initial render with skeletons (no counts yet) so the page is
-    // useful while async fetches resolve.
-    renderTiles(CATALOGUE, {});
+  // Extracted so `_refresh-controls.js` can poll it (PR #51) and so a
+  // manual refresh from the shell header re-fetches without reloading
+  // the page. Returns a Promise so the polling substrate can await it.
+  async function loadTiles() {
+    if (!window.bankShell) return;
 
     // Parallel fetch — five endpoints, one round-trip wall-clock.
     const [state, obligations, substrateGaps, fleet, escalations] = await Promise.all([
@@ -484,11 +480,45 @@
 
     const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations);
     renderTiles(CATALOGUE, counts);
-    window.bankShell.audit.log("home.tiles.rendered", {
-      tilesTotal: CATALOGUE.length,
-      tilesWithCounts: Object.keys(counts).length,
-    });
+    if (window.bankShell.audit) {
+      window.bankShell.audit.log("home.tiles.rendered", {
+        tilesTotal: CATALOGUE.length,
+        tilesWithCounts: Object.keys(counts).length,
+      });
+    }
   }
+
+  // ---------------- Boot -------------------------------------
+
+  async function boot() {
+    if (!window.bankShell) {
+      console.error("[home] window.bankShell not available — _shell.js failed to load");
+      return;
+    }
+
+    // Initial render with skeletons (no counts yet) so the page is
+    // useful while async fetches resolve.
+    renderTiles(CATALOGUE, {});
+
+    await loadTiles();
+
+    // Wire periodic refresh. Prefer Anya's shared substrate
+    // (`_refresh-controls.js` from PR #51) when present — it gives the
+    // user a Refresh button + last-updated chip + visibility-aware
+    // polling. Fall back to a plain setInterval so v0 still meets the
+    // dashboards-live bar even when the shared controls aren't
+    // loaded yet.
+    if (typeof window.registerPagePoll === "function") {
+      window.registerPagePoll(loadTiles, 30_000);
+    } else {
+      setInterval(() => {
+        loadTiles().catch((e) => console.warn("[home] tile refresh failed", e));
+      }, 30_000);
+    }
+  }
+
+  // Expose for manual triggering (header refresh button, future tests).
+  window.bankHome = { loadTiles };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

@@ -114,6 +114,33 @@ body {
   color: var(--neutral-mist);
 }
 
+.shell-refresh-btn {
+  font-family: var(--font-body);
+  font-size: var(--type-small);
+  font-weight: var(--weight-medium);
+  color: var(--neutral-paper);
+  background: transparent;
+  border: 1px solid var(--neutral-mist);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  transition: background var(--motion-duration-fast) var(--motion-easing), border-color
+    var(--motion-duration-fast) var(--motion-easing);
+}
+
+.shell-refresh-btn:hover,
+.shell-refresh-btn:focus {
+  background: var(--brand-primary-emphasis);
+  border-color: var(--neutral-paper);
+  outline: none;
+}
+
+.shell-refresh-btn:disabled,
+.shell-refresh-btn.is-busy {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .shell-identity {
   display: flex;
   align-items: center;
