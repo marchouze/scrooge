@@ -26,6 +26,7 @@ const sampleOpen: OpenDecision = {
 function mk(opens: OpenDecision[] = [sampleOpen], inFlight: InFlightItem[] = []): DashboardState {
   return {
     asOf: "2026-05-06T00:00:00.000Z",
+    bankName: "Test Bank",
     bank: {
       name: "Test Bank",
       operatingPosture: "Build-only",

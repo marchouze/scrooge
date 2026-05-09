@@ -70,6 +70,7 @@ export interface SourcePaths {
   readonly curated: string;
   readonly teamDir: string; // /Team — persona files
   readonly ownerInboxDir: string; // /Owner Inbox — deliverables
+  readonly bankNameRegister: string; // /Regulations/_bank-name.md — canonical bank-name register
 }
 
 export interface CeoDecisionEventSummary {
@@ -164,7 +165,21 @@ export function defaultSourcePaths(repoRoot: string): SourcePaths {
     curated: join(repoRoot, "prototype", "seeds", "dashboard-curated.json"),
     teamDir: join(repoRoot, "Team"),
     ownerInboxDir: join(repoRoot, "Owner Inbox"),
+    bankNameRegister: join(repoRoot, "Regulations", "_bank-name.md"),
   };
+}
+
+// source: /Regulations/_bank-name.md table — `| **Bank name** | <value> |`
+// row. Canonical register per D-BANK-NAME-SELECTION; surfaced as
+// `state.bankName` so client pages don't hard-code the name.
+export function readBankNameFromRegister(path: string): string | null {
+  if (!existsSync(path)) return null;
+  const lines = readFileSync(path, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const m = line.match(/^\|\s*\*\*Bank name\*\*\s*\|\s*([^|]+?)\s*\|/);
+    if (m?.[1]) return m[1].trim();
+  }
+  return null;
 }
 
 // Bridge a real EventStore to the EventSource interface used here.
@@ -1515,8 +1530,16 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     .sort((a, b) => (a.asOf < b.asOf ? 1 : -1))
     .slice(0, 50);
 
+  // Canonical bank-name register (Principle 6 downward derivation): prefer
+  // /Regulations/_bank-name.md; fall through to the curated seed if the
+  // register is unreadable. Drift between the two is a Vera Wave-4 #16
+  // prose-duplication finding.
+  const bankNameFromRegister = readBankNameFromRegister(opts.sources.bankNameRegister);
+  const bankName = bankNameFromRegister ?? curated.bank.name;
+
   return {
     asOf: now(),
+    bankName,
     bank: {
       name: curated.bank.name,
       operatingPosture: curated.bank.operatingPosture,
@@ -1584,6 +1607,7 @@ export function watchTargets(s: SourcePaths): string[] {
     s.proceduresIndex,
     s.curated,
     s.ownerInboxDir, // fires on any deliverable add/change so the feed stays live
+    s.bankNameRegister, // re-derive `state.bankName` if the canonical register is edited
   ];
   // Walking entire /Regulations/ would be noisy; the index is the
   // single source for instrument counts. Same for Procedures/_index.md.
