@@ -1,5 +1,6 @@
 {
-  "asOf": "2026-05-09T05:23:06.208Z",
+  "asOf": "2026-05-09T07:32:39.046Z",
+  "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
     "operatingPosture": "Build-only (no live trading until SARB licence)",
@@ -23,11 +24,11 @@
     "metrics": {
       "principles": 7,
       "policies": 112,
-      "obligations": 191,
+      "obligations": 211,
       "instruments": 83,
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 18,
-      "proceduresPlanned": 81,
+      "proceduresPlanned": 78,
       "ceoDecisionsActioned": 6,
       "directReports": 11,
       "openGovernanceSeats": 2
@@ -642,6 +643,21 @@
       }
     },
     {
+      "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+      "title": "Product-construction substrate — typed Product composition from CDM primitives",
+      "category": "near-term",
+      "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
+      "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
+      "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
+      ],
+      "recommendation": {
+        "stance": "Approve.",
+        "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
+      }
+    },
+    {
       "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
       "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
       "category": "near-term",
@@ -657,18 +673,18 @@
       }
     },
     {
-      "id": "D-A22-RETIRE-LEGACY",
-      "title": "A2.2 dispatcher — cutover spec to retire the legacy in-process fan-out",
+      "id": "D-M4-FX-SUB-DECISIONS",
+      "title": "M4 FX foundation — sub-decisions surfaced",
       "category": "near-term",
-      "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
-      "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
-      "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
+      "owner": "Saskia (Head of Global Markets) + Kai (engineering)",
+      "trigger": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
+      "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
       "sourceDocs": [
-        "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
+        "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md"
       ],
       "recommendation": {
-        "stance": "Approve as drafted.",
-        "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
+        "stance": "Approve all three as recommended; defaults are operationally safe.",
+        "reasoning": ""
       }
     }
   ],
@@ -841,24 +857,24 @@
           "title": "scrooge · ceo decision pack · s7 targeted 3 5 open questions"
         },
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_scrooge_inbox-hygiene.md",
-          "title": "scrooge · inbox hygiene"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_scrooge_testing-strategy-simulated-data.md",
+          "title": "scrooge · testing strategy simulated data"
         },
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md",
-          "title": "scrooge · ceo decision record · d thin human layer minimum"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
+          "title": "scrooge · ceo decision record · d ras b cluster concentration lines"
         },
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s5.md",
-          "title": "scrooge · ceo decision record · s5"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
+          "title": "scrooge · ceo decision record · d group structure"
         },
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-s7-targeted-3-5-open-questions.md",
-          "title": "scrooge · ceo decision record · d s7 targeted 3 5 open questions"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md",
+          "title": "scrooge · ceo decision record · d bank name hoz"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -877,19 +893,24 @@
               "title": "pax · independent validation role brief"
             },
             {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_pax_role-research-queue.md",
-              "title": "pax · role research queue"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_pax_role-research_compliance-lead.md",
+              "title": "pax · role research · compliance lead"
             },
             {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_pax_brand-design-role-brief.md",
-              "title": "pax · brand design role brief"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_pax_role-research_company-secretary.md",
+              "title": "pax · role research · company secretary"
             },
             {
-              "date": "2026-05-05",
-              "path": "Owner Inbox/2026-05-05_obligations-register-schema.md",
-              "title": "obligations register schema"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_pax_role-research_ned-2.md",
+              "title": "pax · role research · ned 2"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_pax_role-research_independent-chair.md",
+              "title": "pax · role research · independent chair"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -913,6 +934,11 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_nolan_recruitment-scope-thin-human-layer.md",
+              "title": "nolan · recruitment scope thin human layer"
+            },
+            {
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_cae-shortlist.md",
               "title": "cae shortlist"
@@ -933,13 +959,13 @@
               "title": "cae hire confirmation"
             }
           ],
-          "lastActivityAt": "2026-05-06"
+          "lastActivityAt": "2026-05-09"
         }
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 1,
-      "totalRecentDeliverables": 13
+      "totalRecentDeliverables": 15
     },
     {
       "name": "Helena",
@@ -986,24 +1012,24 @@
           "title": "rohan · backtest harness v0 scoping"
         },
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_helena_risk-appetite-watch.md",
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_helena-rohan_ras-b-cluster-recalibration.md",
+          "title": "helena rohan · ras b cluster recalibration"
+        },
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_helena_risk-appetite-watch.md",
           "title": "helena · risk appetite watch"
         },
         {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_helena_ras-recalibration-v1.md",
-          "title": "helena · ras recalibration v1"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_helena_cro-seat-fit-and-proper-criteria.md",
+          "title": "helena · cro seat fit and proper criteria"
         },
         {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_governance-framework.md",
-          "title": "governance framework"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md",
-          "title": "risk appetite statement and framework"
+          "date": "2026-05-08",
+          "path": "Owner Inbox/2026-05-08_helena_risk-appetite-watch.md",
+          "title": "helena · risk appetite watch"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -1049,8 +1075,18 @@
           "recentDeliverables": [
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_rohan_risk-run.md",
+              "title": "rohan · risk run"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md",
               "title": "rohan · backtest harness v0 scoping"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_helena-rohan_ras-b-cluster-recalibration.md",
+              "title": "helena rohan · ras b cluster recalibration"
             },
             {
               "date": "2026-05-08",
@@ -1061,16 +1097,6 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
               "title": "fix a second wave bea rohan niko tomas"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_rohan_risk-policies-bundle-v0.md",
-              "title": "rohan · risk policies bundle v0"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_core-policies-risk.md",
-              "title": "core policies risk"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -1103,6 +1129,11 @@
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md",
               "title": "nadia · validation methodology library v0 scoping"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_nadia_methodology-v0-slice-a-completion.md",
+              "title": "nadia · methodology v0 slice a completion"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -1111,7 +1142,7 @@
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 4,
-      "totalRecentDeliverables": 11
+      "totalRecentDeliverables": 12
     },
     {
       "name": "Devon",
@@ -1140,6 +1171,21 @@
           }
         },
         {
+          "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+          "title": "Product-construction substrate — typed Product composition from CDM primitives",
+          "category": "near-term",
+          "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
+          "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
+          "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
+          ],
+          "recommendation": {
+            "stance": "Approve.",
+            "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
+          }
+        },
+        {
           "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
           "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
           "category": "near-term",
@@ -1153,44 +1199,34 @@
             "stance": "Approve all three author recommendation sets as drafted.",
             "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
           }
-        },
-        {
-          "id": "D-A22-RETIRE-LEGACY",
-          "title": "A2.2 dispatcher — cutover spec to retire the legacy in-process fan-out",
-          "category": "near-term",
-          "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
-          "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
-          "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
-          }
         }
       ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_devon_operational-resilience-snapshot.md",
-          "title": "devon · operational resilience snapshot"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-registration-plan.md",
+          "title": "devon tomas · hoz domain registration plan"
         },
         {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_tomas_payments-policies-bundle-v0.md",
-          "title": "tomas · payments policies bundle v0"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-plan-completion.md",
+          "title": "devon tomas · hoz domain plan completion"
         },
         {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_core-policies-infosec-ops.md",
-          "title": "core policies infosec ops"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-completion.md",
+          "title": "devon tomas · named correspondent pair completion"
         },
         {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_institutional-client-lifecycle-proposal.md",
-          "title": "institutional client lifecycle proposal"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md",
+          "title": "devon tomas · named correspondent pair proposal"
+        },
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
+          "title": "zara imani · fsp confirm a scope updates"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -1424,18 +1460,18 @@
               }
             },
             {
-              "id": "D-A22-RETIRE-LEGACY",
-              "title": "A2.2 dispatcher — cutover spec to retire the legacy in-process fan-out",
+              "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+              "title": "Product-construction substrate — typed Product composition from CDM primitives",
               "category": "near-term",
-              "owner": "Atlas (substrate build) · Devon (governance — operational resilience)",
-              "trigger": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
-              "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
+              "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
+              "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
+              "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
               "sourceDocs": [
-                "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md"
+                "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
               ],
               "recommendation": {
-                "stance": "Approve as drafted.",
-                "reasoning": "Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden."
+                "stance": "Approve.",
+                "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
               }
             }
           ],
@@ -1446,24 +1482,24 @@
               "title": "atlas · event store scaling design"
             },
             {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
+              "title": "atlas kai saskia · product construction substrate"
+            },
+            {
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_atlas_substrate-completeness-budget.md",
               "title": "atlas · substrate completeness budget"
             },
             {
               "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md",
-              "title": "atlas · a22 dispatcher retire legacy spec"
+              "path": "Owner Inbox/2026-05-09_atlas_naming-pre-clearance-procedure-stub.md",
+              "title": "atlas · naming pre clearance procedure stub"
             },
             {
               "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_atlas_a22-phase1-cutover-completion.md",
-              "title": "atlas · a22 phase1 cutover completion"
-            },
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_atlas-scrooge_fleet-rollout-sequencing.md",
-              "title": "atlas scrooge · fleet rollout sequencing"
+              "path": "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md",
+              "title": "atlas · a22 dispatcher retire legacy spec"
             }
           ],
           "lastActivityAt": "2026-05-10"
@@ -1477,22 +1513,32 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_tomas_payments-readiness.md",
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-registration-plan.md",
+              "title": "devon tomas · hoz domain registration plan"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-plan-completion.md",
+              "title": "devon tomas · hoz domain plan completion"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-completion.md",
+              "title": "devon tomas · named correspondent pair completion"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_tomas_payments-readiness.md",
               "title": "tomas · payments readiness"
             },
             {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
-              "title": "fix a second wave bea rohan niko tomas"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_tomas_payments-policies-bundle-v0.md",
-              "title": "tomas · payments policies bundle v0"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md",
+              "title": "devon tomas · named correspondent pair proposal"
             }
           ],
-          "lastActivityAt": "2026-05-08"
+          "lastActivityAt": "2026-05-09"
         },
         {
           "name": "Niko",
@@ -1502,6 +1548,11 @@
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_niko_counterparty-institutional-eligibility-screening-v0.md",
+              "title": "niko · counterparty institutional eligibility screening v0"
+            },
             {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
@@ -1521,14 +1572,9 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_niko_top-100-sa-institutional-targets.md",
               "title": "niko · top 100 sa institutional targets"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_institutional-client-lifecycle-proposal.md",
-              "title": "institutional client lifecycle proposal"
             }
           ],
-          "lastActivityAt": "2026-05-07"
+          "lastActivityAt": "2026-05-09"
         },
         {
           "name": "Anya",
@@ -1761,27 +1807,32 @@
           ],
           "recentDeliverables": [
             {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_anya_projection-drift.md",
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_anya_dashboard-client-refresh-v0.md",
+              "title": "anya · dashboard client refresh v0"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_linnea-atlas-anya_hoz-application-v0.md",
+              "title": "linnea atlas anya · hoz application v0"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_anya_projection-drift.md",
               "title": "anya · projection drift"
             },
             {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_anya_projection-drift.md",
-              "title": "anya · projection drift"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_anya-linnea_intranet-fix-v0.md",
+              "title": "anya linnea · intranet fix v0"
             },
             {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md",
-              "title": "client master and continuous kyc"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_reporting-capability-spec.md",
-              "title": "reporting capability spec"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_atlas-anya-linnea_bank-ui-shell-v0.md",
+              "title": "atlas anya linnea · bank ui shell v0"
             }
           ],
-          "lastActivityAt": "2026-05-08"
+          "lastActivityAt": "2026-05-09"
         },
         {
           "name": "Imani",
@@ -1891,28 +1942,28 @@
           "recentDeliverables": [
             {
               "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_thin-human-layer-legal-as-code-update.md",
-              "title": "imani · thin human layer legal as code update"
+              "path": "Owner Inbox/2026-05-09_imani_hoz-cipc-reservation-scoping.md",
+              "title": "imani · hoz cipc reservation scoping"
             },
             {
               "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md",
-              "title": "imani · external counsel licence application"
+              "path": "Owner Inbox/2026-05-09_imani_hoz-name-clearance-scoping.md",
+              "title": "imani · hoz name clearance scoping"
             },
             {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_imani_legal-readiness.md",
-              "title": "imani · legal readiness"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_imani_hoz-tm-act-scoping.md",
+              "title": "imani · hoz tm act scoping"
             },
             {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_tomas_payments-policies-bundle-v0.md",
-              "title": "tomas · payments policies bundle v0"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_imani_hoz-banks-act-s22-scoping.md",
+              "title": "imani · hoz banks act s22 scoping"
             },
             {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_imani_clause-library-v0-and-fix-a-demonstration.md",
-              "title": "imani · clause library v0 and fix a demonstration"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_imani_hoz-language-sweep-scoping.md",
+              "title": "imani · hoz language sweep scoping"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -1925,6 +1976,11 @@
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_sade_fais-ki-fit-and-proper-template.md",
+              "title": "sade · fais ki fit and proper template"
+            },
             {
               "date": "2026-05-08",
               "path": "Owner Inbox/2026-05-08_sade_agentops-readiness.md",
@@ -1941,13 +1997,13 @@
               "title": "core policies conduct hr"
             }
           ],
-          "lastActivityAt": "2026-05-08"
+          "lastActivityAt": "2026-05-09"
         }
       ],
       "totalActive": 2,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 11,
-      "totalRecentDeliverables": 29
+      "totalRecentDeliverables": 34
     },
     {
       "name": "Camille",
@@ -1999,6 +2055,11 @@
           "openDecisionsOwned": [],
           "recentDeliverables": [
             {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_bea_accounting-readiness.md",
+              "title": "bea · accounting readiness"
+            },
+            {
               "date": "2026-05-08",
               "path": "Owner Inbox/2026-05-08_bea_accounting-readiness.md",
               "title": "bea · accounting readiness"
@@ -2019,7 +2080,7 @@
               "title": "core policies finance"
             }
           ],
-          "lastActivityAt": "2026-05-08"
+          "lastActivityAt": "2026-05-09"
         },
         {
           "name": "Yael",
@@ -2046,7 +2107,7 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 11
+      "totalRecentDeliverables": 12
     },
     {
       "name": "Eitan",
@@ -2077,7 +2138,7 @@
           "title": "core policies finance"
         }
       ],
-      "lastActivityAt": "2026-05-08",
+      "lastActivityAt": "2026-05-09",
       "subordinates": [
         {
           "name": "Ravi",
@@ -2087,6 +2148,11 @@
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [],
           "recentDeliverables": [
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_ravi_alm-readiness.md",
+              "title": "ravi · alm readiness"
+            },
             {
               "date": "2026-05-08",
               "path": "Owner Inbox/2026-05-08_ravi_alm-readiness.md",
@@ -2098,13 +2164,13 @@
               "title": "core policies finance"
             }
           ],
-          "lastActivityAt": "2026-05-08"
+          "lastActivityAt": "2026-05-09"
         }
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 5
+      "totalRecentDeliverables": 6
     },
     {
       "name": "Saskia",
@@ -2128,6 +2194,21 @@
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [
         {
+          "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+          "title": "Product-construction substrate — typed Product composition from CDM primitives",
+          "category": "near-term",
+          "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
+          "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
+          "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
+          ],
+          "recommendation": {
+            "stance": "Approve.",
+            "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
+          }
+        },
+        {
           "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
           "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
           "category": "near-term",
@@ -2141,10 +2222,40 @@
             "stance": "Approve all three author recommendation sets as drafted.",
             "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
           }
+        },
+        {
+          "id": "D-M4-FX-SUB-DECISIONS",
+          "title": "M4 FX foundation — sub-decisions surfaced",
+          "category": "near-term",
+          "owner": "Saskia (Head of Global Markets) + Kai (engineering)",
+          "trigger": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
+          "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md"
+          ],
+          "recommendation": {
+            "stance": "Approve all three as recommended; defaults are operationally safe.",
+            "reasoning": ""
+          }
         }
       ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
+          "title": "atlas kai saskia · product construction substrate"
+        },
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
+          "title": "saskia kai · m4 sub decisions"
+        },
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
+          "title": "saskia · fsp confirm a pax withdraw"
+        },
         {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_saskia_fais-ki-handover-note.md",
@@ -2152,26 +2263,11 @@
         },
         {
           "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
-          "title": "saskia kai · pre trade gateway envelope v0 scoping"
-        },
-        {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_saskia_markets-readiness-snapshot.md",
-          "title": "saskia · markets readiness snapshot"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
-          "title": "saskia kai · fx product family"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_saskia_markets-franchise-design-proposal.md",
-          "title": "saskia · markets franchise design proposal"
+          "path": "Owner Inbox/2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
+          "title": "saskia kai · m4 foundation slice completion"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [
         {
           "name": "Kai",
@@ -2180,6 +2276,21 @@
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
           "openDecisionsOwned": [
+            {
+              "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+              "title": "Product-construction substrate — typed Product composition from CDM primitives",
+              "category": "near-term",
+              "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
+              "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
+              "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
+              ],
+              "recommendation": {
+                "stance": "Approve.",
+                "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
+              }
+            },
             {
               "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
               "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
@@ -2194,9 +2305,39 @@
                 "stance": "Approve all three author recommendation sets as drafted.",
                 "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
               }
+            },
+            {
+              "id": "D-M4-FX-SUB-DECISIONS",
+              "title": "M4 FX foundation — sub-decisions surfaced",
+              "category": "near-term",
+              "owner": "Saskia (Head of Global Markets) + Kai (engineering)",
+              "trigger": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
+              "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md"
+              ],
+              "recommendation": {
+                "stance": "Approve all three as recommended; defaults are operationally safe.",
+                "reasoning": ""
+              }
             }
           ],
           "recentDeliverables": [
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
+              "title": "atlas kai saskia · product construction substrate"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
+              "title": "saskia kai · m4 sub decisions"
+            },
+            {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
+              "title": "saskia kai · m4 foundation slice completion"
+            },
             {
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
@@ -2206,29 +2347,14 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md",
               "title": "atlas kai · a0 event schema freeze"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_saskia-kai_fx-product-family.md",
-              "title": "saskia kai · fx product family"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md",
-              "title": "saskia kai · global markets trading system architecture"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_kai_m1-cdm-typescript-bindings.md",
-              "title": "kai · m1 cdm typescript bindings"
             }
           ],
-          "lastActivityAt": "2026-05-09"
+          "lastActivityAt": "2026-05-10"
         }
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
+      "totalOpenDecisions": 6,
       "totalRecentDeliverables": 10
     },
     {
@@ -2354,28 +2480,28 @@
       "recentDeliverables": [
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_owen_governance-framework-fais-ki-steady-state.md",
+          "title": "owen · governance framework fais ki steady state"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md",
           "title": "owen · thin human layer composition final"
+        },
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
+          "title": "zara imani · fsp confirm a scope updates"
+        },
+        {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md",
+          "title": "imani owen · legal entity tree v0"
         },
         {
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_owen_substrate-exception-register.md",
           "title": "owen · substrate exception register"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
-          "title": "procedure audit actor and citation"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_owen_canonical-source-registry.md",
-          "title": "owen · canonical source registry"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_owen_governance-cycle-prep.md",
-          "title": "owen · governance cycle prep"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -2400,23 +2526,28 @@
       "recentDeliverables": [
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_zara_tcf-substrate-plan-v0.md",
+          "title": "zara · tcf substrate plan v0"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
           "title": "mira zara · concentration risk conduct confirmation"
         },
         {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_zara_mlro-supervision.md",
-          "title": "zara · mlro supervision"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_zara_fsp-application-path.md",
+          "title": "zara · fsp application path"
         },
         {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_niko_conduct-policies-bundle-v0.md",
-          "title": "niko · conduct policies bundle v0"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_mira_finsurv-urn-cluster-wave-1.md",
+          "title": "mira · finsurv urn cluster wave 1"
         },
         {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_core-policies-compliance-privacy.md",
-          "title": "core policies compliance privacy"
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
+          "title": "zara imani · fsp confirm a scope updates"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -2447,6 +2578,11 @@
           "recentDeliverables": [
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_mira_fais-posture-a-register-application.md",
+              "title": "mira · fais posture a register application"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_mira_obligations-register-thin-human-layer-gaps-closed.md",
               "title": "mira · obligations register thin human layer gaps closed"
             },
@@ -2456,19 +2592,14 @@
               "title": "mira zara · concentration risk conduct confirmation"
             },
             {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_mira_finsurv-urn-cluster-wave-1.md",
+              "title": "mira · finsurv urn cluster wave 1"
+            },
+            {
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_mira_citation-gate.md",
               "title": "mira · citation gate"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_mira_fsca-odp-compliance-preparation.md",
-              "title": "mira · fsca odp compliance preparation"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_mira_obligations-snapshot.md",
-              "title": "mira · obligations snapshot"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -2477,7 +2608,7 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 1,
-      "totalRecentDeliverables": 9
+      "totalRecentDeliverables": 10
     },
     {
       "name": "Iris",
@@ -2544,7 +2675,7 @@
           "title": "thandiwe · audit committee prep"
         }
       ],
-      "lastActivityAt": "2026-05-08",
+      "lastActivityAt": "2026-05-09",
       "subordinates": [
         {
           "name": "Vera",
@@ -2571,6 +2702,11 @@
           ],
           "recentDeliverables": [
             {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_vera_overnight-recon.md",
+              "title": "vera · overnight recon"
+            },
+            {
               "date": "2026-05-08",
               "path": "Owner Inbox/2026-05-08_vera_overnight-recon.md",
               "title": "vera · overnight recon"
@@ -2589,14 +2725,9 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
               "title": "procedure audit actor and citation"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_continuous-controls-programme.md",
-              "title": "continuous controls programme"
             }
           ],
-          "lastActivityAt": "2026-05-08"
+          "lastActivityAt": "2026-05-09"
         }
       ],
       "totalActive": 1,
@@ -2684,6 +2815,136 @@
       "decisionStatus": "open"
     },
     {
+      "filename": "2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
+      "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
+      "date": "2026-05-10",
+      "title": "Product-construction substrate — typed Product composition from CDM primitives",
+      "decisionRequired": true,
+      "author": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority)",
+      "summary": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
+      "decisionId": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+      "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
+      "decisionRecommendation": "Approve. Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits.",
+      "decisionOwner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-09_zara_tcf-substrate-plan-v0.md",
+      "path": "Owner Inbox/2026-05-09_zara_tcf-substrate-plan-v0.md",
+      "date": "2026-05-09",
+      "title": "TCF substrate plan v0 — six outcomes mapped against the bank's institutional-only posture",
+      "decisionRequired": false,
+      "author": "Zara",
+      "summary": "Treating Customers Fairly substrate plan v0. Lists the six TCF outcomes precisely, identifies which apply at the bank's institutional-only / wholesale posture (and which do not, with citation rationale), specifies the substrate footprint TCF imposes on the engineering line (complaint-handling pipeline, advice-record substrate, product-suitability checks intersecting Saskia's NPA policy), and surfaces open questions and substrate gaps."
+    },
+    {
+      "filename": "2026-05-09_zara_fsp-application-path.md",
+      "path": "Owner Inbox/2026-05-09_zara_fsp-application-path.md",
+      "date": "2026-05-09",
+      "title": "FSP application path under FAIS-KI clarification — open question for CEO",
+      "decisionRequired": false,
+      "author": "Zara",
+      "summary": "Surfaces the open question on whether the bank's institutional-only / wholesale posture requires an FSP licence under FAIS at all, frames the two possible postures and their triggers, recommends a PAX research dispatch on FSP-licence necessity, and confirms the interim posture (Marc as FAIS KI; Saskia steady-state)."
+    },
+    {
+      "filename": "2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
+      "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
+      "date": "2026-05-09",
+      "title": "D-FSP-LICENCE-NECESSITY confirm-A — scope updates across FSP-path, TCF substrate, and counsel-application papers",
+      "decisionRequired": false,
+      "author": "Zara (Chief Compliance Officer, governance) + Imani (Legal-as-code engineer)",
+      "summary": "Joint completion note recording the three scope-updates Zara and Imani applied to their prior PR-44 / PR-41 deliverables following the CEO's confirm-A-no-research resolution of D-FSP-LICENCE-NECESSITY (2026-05-09; PR #62). Closes the FSP-application-path paper as actioned, narrows TCF-4 from gated to load-bearing, and refines Imani's external-counsel scope from \"evaluate Posture A vs B\" to \"ratify Posture-A bundle + counterparty-eligibility evidence package\"."
+    },
+    {
+      "filename": "2026-05-09_vera_overnight-recon.md",
+      "path": "Owner Inbox/2026-05-09_vera_overnight-recon.md",
+      "date": "2026-05-09",
+      "title": "Vera — overnight recon, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
+    },
+    {
+      "filename": "2026-05-09_tomas_payments-readiness.md",
+      "path": "Owner Inbox/2026-05-09_tomas_payments-readiness.md",
+      "date": "2026-05-09",
+      "title": "Tomas — daily payments-readiness, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Tomas's daily payments-readiness attestation per `Team/Tomas.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Thirteenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQU…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_testing-strategy-simulated-data.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_testing-strategy-simulated-data.md",
+      "date": "2026-05-09",
+      "title": "Testing strategy — simulated clients, transactions, and market data through licence-day",
+      "decisionRequired": false,
+      "author": "Scrooge (Chief of Staff / Orchestrator)",
+      "summary": "How the bank exercises every system capability end-to-end during build phase using synthetic data — clients, instruments, market data, transactions, regulator queries, audit evidence. The strategy distinguishes synthetic from real, prevents accidental commingling, and makes the build-phase rehearsal as substantively production-grade as the licence-day operation. Five layers of testing (unit / integration / scenario / recon / end-to-end), three classes of synthetic data (party / market / event), one boundary discipline (synthetic-only flag on every event during build phase)."
+    },
+    {
+      "filename": "2026-05-09_scrooge_inbox-hygiene.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_inbox-hygiene.md",
+      "date": "2026-05-09",
+      "title": "Scrooge — inbox hygiene, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-RAS-B-CLUSTER-CONCENTRATION-LINES, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-m4-fx-sub-decisions.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-m4-fx-sub-decisions.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-M4-FX-SUB-DECISIONS, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted below; written-direct under Principle 7 \"steady-state v…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-GROUP-STRUCTURE, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-fx-correspondent-pair-naming.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fx-correspondent-pair-naming.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-FX-CORRESPONDENT-PAIR-NAMING, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-FSP-LICENCE-NECESSITY, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-cro-climate-fluency-preferred.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-cro-climate-fluency-preferred.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-CRO-CLIMATE-FLUENCY, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-BANK-NAME-SELECTION, 2026-05-09 (revised)",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
       "filename": "2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
       "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
       "date": "2026-05-09",
@@ -2699,13 +2960,22 @@
       "decisionStatus": "open"
     },
     {
+      "filename": "2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
+      "path": "Owner Inbox/2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
+      "date": "2026-05-09",
+      "title": "FAIS-KI handover Gate (a) closed and PAX FSP-licence dispatch withdrawn — D-FSP-LICENCE-NECESSITY confirm-A actioning",
+      "decisionRequired": false,
+      "author": "Saskia (Head of Global Markets, governance)",
+      "summary": "Completion note recording Saskia (Head of Global Markets, governance)'s actioning of D-FSP-LICENCE-NECESSITY confirm-A (CEO decision record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62). Two updates landed in PR `claude/saskia-fsp-confirm-a-pax-withdraw` — (1) the FAIS-KI handover note (PR #45) is updated to record Gate (a) — external-counsel confirmation of FSP-licensing scope — as **closed**, and the Marc-interim → Saskia-steady-state transition trigger is reduced to **Gate (b) alone** (Saskia FAIS-KI fit-and-proper file completion under the Determination of Fit and Proper Requirements 2017); (2) the PAX (Role researcher) FSP-licence-necessity research dispatch (PR #45) is **withdrawn** with a header-note citing the decision record, and the brief is moved from `Team Inbox/` to `Team Inbox/actioned/` per the team-inbox-hygiene rule. Steady-state confirmation: Saskia is the steady-state FAIS Key Individual under FAIS Act 37 of 2002 s.8, subject only to fit-and-proper file completion. Transition cadence accelerates — no longer waits on counsel; gates on Saskia's own fit-and-proper file. Counsel role narrowed to Posture-A application-bundle ratification at the licence-application gate (does not re-litigate A-vs-B)."
+    },
+    {
       "filename": "2026-05-09_saskia_fais-ki-handover-note.md",
       "path": "Owner Inbox/2026-05-09_saskia_fais-ki-handover-note.md",
       "date": "2026-05-09",
       "title": "FAIS Key Individual handover note — Marc-interim → Saskia-steady-state",
       "decisionRequired": false,
       "author": "Saskia",
-      "summary": "Acknowledgement of the steady-state FAIS Key Individual seat under the approved thin-human-layer composition (D-THIN-HUMAN-LAYER-MINIMUM, 2026-05-08). Records the Marc-interim → Saskia-steady-state handover, the fit-and-proper requirements the steady-state holder must satisfy under FAIS, and the gating triggers for the transition (external-counsel confirmation of FSP-licensing scope; Saskia FAIS-KI fit-and-proper file completion). Surfaces the open question of whether the bank's institutional-only / wholesale posture requires an FSP licence at all — routed in parallel to PAX as a research dispatch (`Team Inbox/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`)."
+      "summary": "Acknowledgement of the steady-state FAIS Key Individual seat under the approved thin-human-layer composition (D-THIN-HUMAN-LAYER-MINIMUM, 2026-05-08). Records the Marc-interim → Saskia-steady-state handover, the fit-and-proper requirements the steady-state holder must satisfy under FAIS, and the (now-narrowed) gating trigger for the transition. **Updated 2026-05-09 by D-FSP-LICENCE-NECESSITY confirm-A (`Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62):** Gate (a) — external-counsel confirmation of FSP-licensing scope — is **closed** (CEO read the FSP-scope question as pre-resolved Posture A; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question). The handover now gates on **Gate (b) alone** (Saskia FAIS-KI fit-and-proper file completion under the Determination of Fit and Proper Requirements 2017). The PAX research dispatch is **withdrawn** and moved to `Team Inbox/actioned/`."
     },
     {
       "filename": "2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
@@ -2717,6 +2987,47 @@
       "summary": "Scopes the v0 envelope of pre-trade checks every order traverses before it reaches an exchange or counterparty. Names the cross-persona dependencies, the event-type surface, the substrate gaps, and the open questions Marc must adjudicate before code lands. This is the brief, not the gateway."
     },
     {
+      "filename": "2026-05-09_saskia-kai_m4-sub-decisions.md",
+      "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
+      "date": "2026-05-09",
+      "title": "M4 FX foundation — sub-decisions surfaced",
+      "decisionRequired": true,
+      "author": "Saskia, Kai",
+      "summary": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
+      "decisionId": "D-M4-FX-SUB-DECISIONS",
+      "decisionCategory": "near-term",
+      "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
+      "decisionRecommendation": "Approve all three as recommended; defaults are operationally safe.",
+      "decisionOwner": "Saskia (Head of Global Markets) + Kai (engineering)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
+      "path": "Owner Inbox/2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
+      "date": "2026-05-09",
+      "title": "M4 FX foundation slice — completion brief",
+      "decisionRequired": false,
+      "author": "Saskia, Kai",
+      "summary": "M4 foundation slice landed — four FX variants (Spot, Forward, Swap, NDF) with typed shapes, the bookType discriminator on FxTradeExecuted per D-FX-BOOK-BOUNDARY, and correspondent-routed FxSettlementInstructed per D-FX-CLS-MEMBERSHIP. No new schema primitives outside the additions named here. Substrate gaps and downstream dependencies named."
+    },
+    {
+      "filename": "2026-05-09_sade_fais-ki-fit-and-proper-template.md",
+      "path": "Owner Inbox/2026-05-09_sade_fais-ki-fit-and-proper-template.md",
+      "date": "2026-05-09",
+      "title": "FAIS-KI fit-and-proper file template (PROC-FAIS-KI-FAP-01) — STUB scaffold",
+      "decisionRequired": false,
+      "author": "Sade (AgentOps engineer — engineering-substrate seat)",
+      "summary": "Procedure scaffolded under D-FSP-LICENCE-NECESSITY (confirm-A-no-research) to make Gate (b) of the Saskia-as-FAIS-KI handover operationally executable. Five-dimension Determination 2017 framework with six typed-event substrate gaps named for Atlas; FSCA section refs [citation: TBC] routed to Imani + counsel."
+    },
+    {
+      "filename": "2026-05-09_rohan_risk-run.md",
+      "path": "Owner Inbox/2026-05-09_rohan_risk-run.md",
+      "date": "2026-05-09",
+      "title": "Rohan — daily risk run, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the enginee…"
+    },
+    {
       "filename": "2026-05-09_rohan_backtest-harness-v0-scoping.md",
       "path": "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md",
       "date": "2026-05-09",
@@ -2724,183 +3035,6 @@
       "decisionRequired": false,
       "author": "Rohan",
       "summary": "Architecture, sequence dependencies, and open questions for the typed backtest engine that replays a model over the event log and emits a BacktestRun event. Item #4 on Atlas's CEO-approved S7-Targeted critical path; this brief scopes — does not implement."
-    },
-    {
-      "filename": "2026-05-09_pax_independent-validation-role-brief.md",
-      "path": "Owner Inbox/2026-05-09_pax_independent-validation-role-brief.md",
-      "date": "2026-05-09",
-      "title": "Role brief — Independent-validation function",
-      "decisionRequired": false,
-      "author": "PAX",
-      "summary": "Role research for the independent model-validation function. Standing second-line agent that validates every model used in production (credit, market, liquidity, IFRS 9 ECL, capital), curates the model registry jointly with Rohan, and emits validation-decision events. Reports through Helena (CRO), functionally independent of all model builders. Closes the substrate gap Helena has flagged on every daily run since 2026-05-08; on the critical path for ICAAP / ILAAP signing authority and the bank's licence-day model-risk posture."
-    },
-    {
-      "filename": "2026-05-09_owen_thin-human-layer-composition-final.md",
-      "path": "Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md",
-      "date": "2026-05-09",
-      "title": "Thin human layer — final composition (six humans + Marc + audit firm)",
-      "decisionRequired": false,
-      "author": "Owen",
-      "summary": "Final composition paper for the bank's licence-day thin human layer, superseding the Owen+Imani draft. Per CEO decision D-THIN-HUMAN-LAYER-MINIMUM (approved 2026-05-08 with modification), the roster is six separate humans + Marc + external audit firm. The modification adds a separate human CRO before licence-application lodgment, per Mira+Zara's Joint Standard 1 of 2024 §6–§7 challenge. Codifies the alternates split (deputy-IO = CoSec; MLRO-alternate = AC-Chair NED), the FAIS KI posture (Saskia steady-state; Marc-interim subject to counsel confirmation), the auditor / key-audit-partner separation, and the residual concentration-risk caveats (interim-CRO-as-CEO is dropped)."
-    },
-    {
-      "filename": "2026-05-09_nadia_validation-methodology-library-v0-scoping.md",
-      "path": "Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md",
-      "date": "2026-05-09",
-      "title": "Validation-methodology library v0 — scoping brief",
-      "decisionRequired": false,
-      "author": "Nadia",
-      "summary": "Scopes the validation-methodology library by tier (Tier-1 / Tier-2 / Tier-3); names the model-spec contract Rohan must produce so methodology is enforceable; surfaces the open questions Marc must adjudicate before substantive Tier-1 / Tier-2 / Tier-3 methodology pages land."
-    },
-    {
-      "filename": "2026-05-09_mira_obligations-register-thin-human-layer-gaps-closed.md",
-      "path": "Owner Inbox/2026-05-09_mira_obligations-register-thin-human-layer-gaps-closed.md",
-      "date": "2026-05-09",
-      "title": "Obligations register — 10 thin-human-layer gaps closed (D-THIN-HUMAN-LAYER-MINIMUM)",
-      "decisionRequired": false,
-      "author": "Mira",
-      "summary": "Closes the 10 obligations-register gaps named in the conduct-side confirmation paper §5 under CEO decision D-THIN-HUMAN-LAYER-MINIMUM. New Domain O (\"Thin human layer obligations\") added to `Regulations/_obligations-register.md` with 7 new rows + 3 gloss/reconciliation rows that cross-reference existing parents (ORG-FC-11, ORG-PR(IV)-13, ORG-CY-02). Three rows carry [citation: TBC] flags pending precise FIC PCC / FAIS subordinate-legislation references."
-    },
-    {
-      "filename": "2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
-      "path": "Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
-      "date": "2026-05-09",
-      "title": "Conduct + AML/CFT confirmation — minimum-possible thin human layer",
-      "decisionRequired": false,
-      "author": "Mira + Zara",
-      "summary": "Confirmation read on Owen + Imani's PR #22 (\"minimum possible\" thin-human-layer composition) from the FIC + FAIS + POPIA + Joint Standard 1 of 2024 angle. Confirms 6 of 7 substantive questions; partially challenges 1 (Marc retaining interim CRO accountability) on Joint-Standard-1-of-2024 grounds and proposes a tightening rather than a structural change."
-    },
-    {
-      "filename": "2026-05-09_imani_thin-human-layer-legal-as-code-update.md",
-      "path": "Owner Inbox/2026-05-09_imani_thin-human-layer-legal-as-code-update.md",
-      "date": "2026-05-09",
-      "title": "Legal-as-code update — JS-1 structural CRO + alternates split (D-THIN-HUMAN-LAYER-MINIMUM)",
-      "decisionRequired": false,
-      "author": "Imani",
-      "summary": "Codifies the CEO-approved modification to the thin-human-layer composition (D-THIN-HUMAN-LAYER-MINIMUM) as a small set of testable legal-as-code rules. Under Joint Standard 1 of 2024 the separate-CRO test moves from best-practice (post-licence sequencing) to **structural** (pre-lodgment requirement). The alternates split is now binding: deputy-IO = CoSec; MLRO-alternate = AC-Chair NED, not double-hatted CoSec. FAIS Key Individual gates on external-counsel confirmation of FSP scope before transitioning Marc-interim → Saskia steady-state. Names the TypeScript modules under `prototype/platform/legal/` that need to land to make these rules executable; module build is a separate slice."
-    },
-    {
-      "filename": "2026-05-09_imani_external-counsel-licence-application.md",
-      "path": "Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md",
-      "date": "2026-05-09",
-      "title": "External legal counsel for the SARB banking-licence application",
-      "decisionRequired": false,
-      "author": "Imani",
-      "summary": "Recommendation paper on engagement of external legal counsel for the SARB Banks Act 94 of 1990 licence application. Frames the why-now-vs-defer tradeoff against the build-phase no-real-counsel rule, scopes categories of expertise required, presents three engagement-model options (retained panel · project-based · deferred-until-pre-application gate), gives indicative budget bands with explicit uncertainty, and recommends the deferred-with-precondition option — engage at the moment a SARB licence-application date is set, scope-bounded to the application itself."
-    },
-    {
-      "filename": "2026-05-09_camille_api-cloud-cost-budget.md",
-      "path": "Owner Inbox/2026-05-09_camille_api-cloud-cost-budget.md",
-      "date": "2026-05-09",
-      "title": "API + cloud cost budget for the build phase",
-      "decisionRequired": false,
-      "author": "Camille",
-      "summary": "Proposes a monthly Anthropic API budget envelope for the build phase (lean / balanced / accelerated), a watch-and-report cadence, and a placeholder for the Azure projection that lands at M8. Recommends the balanced envelope."
-    },
-    {
-      "filename": "2026-05-09_atlas_substrate-completeness-budget.md",
-      "path": "Owner Inbox/2026-05-09_atlas_substrate-completeness-budget.md",
-      "date": "2026-05-09",
-      "title": "Substrate-completeness budget — unit, rate, options for closing the gap to autonomy",
-      "decisionRequired": false,
-      "author": "Atlas",
-      "summary": "Companion to S8 (agent-runtime substrate spec). Proposes a unit of measure (Anthropic-token-spend within Marc-attention-bounded sessions), names today's consumption rate from the 2026-05-08 landing, and offers three named options (Lean / Targeted / Aggressive) for budgeting the remaining substrate work to close gaps that block fully-autonomous operation."
-    },
-    {
-      "filename": "2026-05-09_atlas_a22-phase1-cutover-completion.md",
-      "path": "Owner Inbox/2026-05-09_atlas_a22-phase1-cutover-completion.md",
-      "date": "2026-05-09",
-      "title": "A2.2 dispatcher — Phase 1 cutover completion note (D-A22-RETIRE-LEGACY)",
-      "decisionRequired": false,
-      "author": "Atlas",
-      "summary": "Phase 1 (bus-canonical, legacy-shadow) is already merged on main via PR #12 (2026-05-08). This note records what landed, the divergence-telemetry contract in production, the gating criteria for Phase 2, and substrate gaps surfaced by the cutover."
-    },
-    {
-      "filename": "2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md",
-      "path": "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md",
-      "date": "2026-05-09",
-      "title": "A2.2 dispatcher — cutover spec to retire the legacy in-process fan-out",
-      "decisionRequired": true,
-      "author": "Atlas",
-      "summary": "Cutover plan to retire the legacy in-process fan-out in `runtime/run.ts:132–199` once the A2.2 LocalEventTriggerBus has been observed in steady state. Three phases — bus-canonical/legacy-shadow → legacy retire → observe — with named gating criteria, named failure modes, and a single-commit rollback. Decision asked: authorise Phase 1 on the gating criteria.",
-      "decisionId": "D-A22-RETIRE-LEGACY",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Authorise the cutover sequence to retire the legacy in-process fan-out from `runtime/run.ts`, starting with Phase 1 (bus-canonical, legacy-shadow) on the named gating criteria.",
-      "decisionRecommendation": "Approve as drafted. Phase 1 is reversible inside one commit; Phase 2 has named gating; the cutover surfaces three substrate gaps (scheduler-bus coupling, cross-workflow dispatch ceiling, recon-pipeline parity) that the retire itself doesn't close — those are tracked, not hidden.",
-      "decisionOwner": "Atlas (substrate build) · Devon (governance — operational resilience)",
-      "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-08_zara_mlro-supervision.md",
-      "path": "Owner Inbox/2026-05-08_zara_mlro-supervision.md",
-      "date": "2026-05-08",
-      "title": "Zara — MLRO supervision attestation, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Zara's weekly MLRO-supervision attestation per `Team/Zara.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Third handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
-    },
-    {
-      "filename": "2026-05-08_yael_tax-readiness.md",
-      "path": "Owner Inbox/2026-05-08_yael_tax-readiness.md",
-      "date": "2026-05-08",
-      "title": "Yael — tax readiness, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Yael's weekly tax-readiness snapshot per `Team/Yael.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Twelfth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`."
-    },
-    {
-      "filename": "2026-05-08_vera_overnight-recon.md",
-      "path": "Owner Inbox/2026-05-08_vera_overnight-recon.md",
-      "date": "2026-05-08",
-      "title": "Vera — overnight recon, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
-    },
-    {
-      "filename": "2026-05-08_tomas_payments-readiness.md",
-      "path": "Owner Inbox/2026-05-08_tomas_payments-readiness.md",
-      "date": "2026-05-08",
-      "title": "Tomas — daily payments-readiness, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Tomas's daily payments-readiness attestation per `Team/Tomas.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Thirteenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQU…"
-    },
-    {
-      "filename": "2026-05-08_thandiwe_audit-committee-prep.md",
-      "path": "Owner Inbox/2026-05-08_thandiwe_audit-committee-prep.md",
-      "date": "2026-05-08",
-      "title": "Thandiwe — Audit-Committee prep, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Thandiwe's weekly Audit-Committee prep per `Team/Thandiwe.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Feeds the Interim Audit Forum (Owen chair) until a Board AC is constituted."
-    },
-    {
-      "filename": "2026-05-08_senna_m1-trading-stack-threat-model_completion.md",
-      "path": "Owner Inbox/2026-05-08_senna_m1-trading-stack-threat-model_completion.md",
-      "date": "2026-05-08",
-      "title": "Senna — M1 trading-stack threat-model, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Senna's M1 trading-stack threat-model handler per `Team Inbox/2026-05-07_brief_senna_m1-trading-stack-threat-model.md`. Triggered event-driven on `CeoDecision` for `D-MARKETS-SCHEMA-FOUNDATION`."
-    },
-    {
-      "filename": "2026-05-08_scrooge_inbox-hygiene.md",
-      "path": "Owner Inbox/2026-05-08_scrooge_inbox-hygiene.md",
-      "date": "2026-05-08",
-      "title": "Scrooge — inbox hygiene, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
-    },
-    {
-      "filename": "2026-05-08_scrooge_ceo-decision-record_s8.md",
-      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s8.md",
-      "date": "2026-05-08",
-      "title": "Scrooge — CEO decision record: S8, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
-    },
-    {
-      "filename": "2026-05-08_scrooge_ceo-decision-record_s7.md",
-      "path": "Owner Inbox/2026-05-08_scrooge_ceo-decision-record_s7.md",
-      "date": "2026-05-08",
-      "title": "Scrooge — CEO decision record: S7, 2026-05-08",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     }
   ],
   "policies": [
@@ -2981,6 +3115,7 @@
       "statusRaw": "`DRAFTING` (in RAS-RAF)",
       "mvp": false,
       "linkedObligations": [
+        "ORG-PR-23",
         "ORG-AC-15",
         "ORG-CS1-003",
         "ORG-JS2-005",
@@ -3175,7 +3310,8 @@
       "statusRaw": "`PLANNED`",
       "mvp": true,
       "linkedObligations": [
-        "ORG-PR-17"
+        "ORG-PR-17",
+        "ORG-PR-23"
       ]
     },
     {
@@ -3198,6 +3334,7 @@
       "linkedObligations": [
         "ORG-PR-18",
         "ORG-PR-22",
+        "ORG-PR-23",
         "ORG-CY-05",
         "ORG-CY-08",
         "ORG-CS1-004"
@@ -3583,8 +3720,7 @@
       "linkedObligations": [
         "ORG-CD-02",
         "ORG-CD-03",
-        "ORG-CD-04",
-        "ORG-FAIS-KI"
+        "ORG-CD-04"
       ]
     },
     {
@@ -4802,7 +4938,6 @@
         "ORG-GV-CFO-INDEPENDENCE",
         "ORG-FC-11-GLOSS-CEO-MLRO-BAR",
         "ORG-FC-MLRO-ALTERNATE",
-        "ORG-FAIS-KI",
         "ORG-CY-02-RECON-CRO-INDEPENDENCE"
       ]
     },
