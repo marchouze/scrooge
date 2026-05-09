@@ -7,6 +7,8 @@
 
 > **Note on derivation (Principle 6).** The RAS is the *policy* layer. The RAF is the *standard* layer that codifies how the RAS is operated, monitored, and breached. Operational limits and KRIs sit at the standard layer; live limits and breaches are *data*. Board RAS document (this) is a **summary** of the operational stack — never the original.
 
+> **Note on entity-scope of this RAS (added 2026-05-09 by Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) under CEO decision `D-REGULATORY-PERIMETER`, approved 2026-05-09; record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` / PR #85).** This RAS is a **`Hoz Bank Limited` document**, not a `Hoz Group Limited` document. The risk appetite is set, governed, and reported at the **bank-entity** level. The SARB Prudential Authority's consolidated-supervision powers under **Banks Act 94 of 1990 § 60+** `[citation: TBC — exact § 60-series sub-section index for parent-of-bank designation, group capital adequacy, group large-exposures, group recovery-plan]` operate as a **look-through** *via* the bank entity — the PA does not separately license, supervise, or set prudential ratios on `Hoz Group Limited` as a stand-alone, but the PA may require certain metrics to be **assessed on a consolidated basis** (group-wide capital, group-wide liquidity, group-wide concentration). The bank therefore reports both entity-level and consolidated-basis figures for the metrics the PA assesses on a consolidated basis; the **appetite line itself is set at the entity level**, with the consolidated view monitored, not separately appetite-bound. See §A4 ("Entity scope of this RAS") and §B14 ("PA look-through framing in RAS / ICAAP / ILAAP") below.
+
 ---
 
 # Part A — Risk Appetite Statement (Board-level)
@@ -70,6 +72,29 @@ The bank operates under a **zero-tolerance** appetite for: regulatory breach, fi
 ## A3. Appetite multipliers across P5
 
 The appetite levels above apply **per legal entity** and, where currency-sensitive, **per significant currency**. As entities or jurisdictions are added (P5), the RAS is replicated by template; absolute amounts are jurisdiction-specific.
+
+## A4. Entity scope of this RAS
+
+> *Added 2026-05-09 by Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) under CEO decision `D-REGULATORY-PERIMETER` (approved 2026-05-09; record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` / PR #85). The framing refines `D-LEGAL-ENTITY-TREE-V0` (PR #82) at the regulatory-perimeter layer.*
+
+The bank is structured as a three-entity group (`Hoz Group Limited` non-operating parent; `Hoz Bank Limited` regulated bank; `Hoz Securities Limited` JSE-member / FSP-OTC-Derivative-Provider). The CEO has codified the **regulatory perimeter per entity**: `Hoz Bank Limited` is supervised by the SARB Prudential Authority under the Banks Act; `Hoz Securities Limited` is supervised primarily by the JSE (FSCA / FAIS secondarily); `Hoz Group Limited` is **not separately regulated** as a stand-alone — it sits under Companies Act 71 of 2008 only, with the SARB PA exercising consolidated-supervision powers via **look-through** through the bank.
+
+This RAS therefore binds at the **bank-entity level**. The risk appetite — every line in §A2, every default in Part B — is set, governed, monitored, and breach-reported at `Hoz Bank Limited`. There is no separate group-level RAS; there is no separate group-level appetite line. Where the PA requires a metric on a consolidated basis (group-wide capital, group-wide liquidity, group-wide concentration, consolidated cyber-resilience programme, consolidated recovery plan), that metric is the **bank's RAS metric measured on a consolidated basis** — not a separate group RAS line. See §B14 for the per-metric pattern.
+
+**Implications for related documents.**
+
+- The **B-cluster appetite lines (L-B8a-1..5)** introduced under `D-RAS-B-CLUSTER-CONCENTRATION-LINES` (CEO ratified 2026-05-09; record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md` / PR #67) are bank-entity appetite lines, measured at the entity level. The named-pair correspondent posture (Standard Bank + FirstRand primary; Absa + Nedbank reserve) binds on `Hoz Bank Limited`'s SARB Authorised Dealer relationships under the Currency and Exchanges Manual. **No change to the numerical lines.**
+- **Hoz Securities Limited** has its own risk taxonomy under JSE Membership Rules + FSCA conduct + FMA / Joint Standard 2 of 2020 (ODP). A separate Securities-entity risk-appetite document is a future deliverable, scoped under Saskia (Head of Global Markets, governance) + Kai (Trading systems engineer) when Hoz Securities Limited's M-phase build approaches commencement-of-trading. Until then, trading-franchise risk-taking on the bank's balance sheet is governed by this RAS at the bank-entity level.
+- **Hoz Group Limited** does **not** have its own RAS. As a Companies Act-only entity its risk profile is constituted by its participation in the bank and securities entities and the related-party regime under IFRS 10 / IAS 24 — the consolidated-supervision metrics the PA may assess are bank-RAS metrics measured on a consolidated basis (per §B14), not group-RAS metrics.
+
+**Authority and citations.**
+
+- **Banks Act 94 of 1990 § 60+** (parent-of-bank / controlling-company / consolidated-supervision regime) `[citation: TBC — exact § 60-series sub-section index]`.
+- **BCBS Corporate Governance Principles for Banks** (2015 revision) — Principle 1 ("Board's overall responsibilities") and Principle 5 ("Governance of group structures") `[citation: TBC — exact Principle 5 paragraphs on parent-board oversight of subsidiaries; Principle 1 paragraphs on bank-board RAS ownership]`.
+- **BCBS 144** (Principles for the home-host supervisor relationship; consolidated-supervision context) `[citation: TBC — exact paragraph index]` — used as a reference for the look-through pattern, even though Hoz is single-jurisdiction at this stage (P5 multi-jurisdiction expansion would activate the home-host dimension).
+- **BCBS D295** (Corporate governance principles for banks — earlier edition) and **BCBS D335** (Guidelines on Corporate governance principles for banks) `[citation: TBC — paragraph indexes for risk-appetite and group-governance principles]` — referenced for the discipline that risk appetite is owned at the regulated-bank level under board accountability, not at the unregulated parent.
+- CLAUDE.md **Principle 5 — multi-entity from day one**.
+- CLAUDE.md **Principle 2 — every action traces to a source**.
 
 ---
 
@@ -209,6 +234,65 @@ For each breach severity:
 ## B13. Co-dependence with the Governance Framework
 
 This RAS / RAF is intentionally co-tabled with the **governance framework** (`Owner Inbox/2026-05-06_governance-framework.md`). The governance framework provides the *structures* (Board, BRC, AC, ALCO, S&E, RemCo, NomCo, three lines of defence). This RAS / RAF provides the *content* those structures govern. Approvals must be congruent; changes to one require review of the other.
+
+## B14. PA look-through framing in RAS / ICAAP / ILAAP
+
+> *Added 2026-05-09 by Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) under CEO decision `D-REGULATORY-PERIMETER` (record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` / PR #85). Companion to §A4. Substrate gap #5 from the decision record ("PA look-through framing in RAS / ICAAP / ILAAP — Helena + Rohan substrate work; v1") is closed at the framing layer; the consolidated-basis metric **computation** is the v1 substrate task.*
+
+The SARB Prudential Authority's consolidated-supervision regime under **Banks Act 94 of 1990 § 60+** `[citation: TBC — exact § 60-series sub-section index]` requires the PA to be able to assess prudential metrics on a **consolidated basis** across the banking group (the bank entity plus subsidiaries / structured entities consolidated under IFRS 10), even where those subsidiaries are not themselves prudentially licensed. The legal obligation, however, **binds on `Hoz Bank Limited`** as the regulated entity — the bank produces the consolidated metric, the bank is held to PA expectations on it, and the bank's RAS is the document under which the metric is governed.
+
+Operationally, this means: for each prudential metric the PA assesses on a consolidated basis, the bank reports the metric **at two scopes** — entity-level (`Hoz Bank Limited` stand-alone) and consolidated-basis (`Hoz Bank Limited` + `Hoz Securities Limited` + any future consolidated entity, with IFRS 10 consolidation eliminations and IAS 27 minority-interest treatment where applicable). The **appetite line is set at the entity level** (per §A4); the **consolidated view is monitored** as part of the PA look-through dialogue, but is not itself a separate RAS line. If the consolidated view drifts in a direction the PA flags or the BRC views as material, the response is either (a) a tightening of the entity-level appetite line under §B10 review cadence, or (b) a structural change at the subsidiary level (e.g. capping Hoz Securities Limited's balance-sheet usage) — never the creation of a parallel group-RAS line.
+
+### B14.1 Capital metrics
+
+For each capital metric the bank reports both entity-level and consolidated-basis figures:
+
+| Metric | Entity-level appetite line | Consolidated-basis monitoring | Citation |
+|---|---|---|---|
+| **CET1 ratio** | RAS §B3 — PA minimum + Pillar 2A + capital conservation buffer + 1.5pp management buffer; trigger PA min + 0.75pp; escalate PA min + 0.25pp. **Set at `Hoz Bank Limited`.** | Consolidated CET1 computed under IFRS 10 consolidation (eliminate intra-group exposures, recognise minority interests per IAS 27); reported alongside entity CET1 in BRC pack §B11; PA assesses both. | Banks Act § 60+ `[citation: TBC]`; BCBS Basel III/IV consolidated-capital framework `[citation: TBC — exact paragraph index]` |
+| **Tier 1 ratio** | RAS §B3 — same buffer pattern as CET1 with AT1 stack. **Set at `Hoz Bank Limited`.** | Same — consolidated Tier 1 reported as monitored metric. | Same as CET1 |
+| **Total capital ratio** | RAS §B3 — entity-level. | Same — consolidated Total Capital reported as monitored metric. | Same as CET1 |
+| **Leverage ratio** | RAS §B3 — entity-level above PA-set minimum. | Consolidated leverage ratio under BCBS leverage-ratio framework `[citation: TBC — exact BCBS paragraph index]`; reported as monitored metric. | BCBS leverage ratio framework `[citation: TBC]` |
+
+The PA assesses both scopes; the appetite line is entity-level (the consolidated view is monitored, not separately appetite-bound) per §A4.
+
+### B14.2 Liquidity metrics
+
+| Metric | Entity-level appetite line | Consolidated-basis monitoring | Citation |
+|---|---|---|---|
+| **LCR** | RAS §B3 — 120% of PA minimum normal; 110% trigger; 105% escalate. **Set at `Hoz Bank Limited`.** | Consolidated LCR aggregating HQLA and net cash outflows across `Hoz Bank Limited` + consolidated subsidiaries with restricted-cash adjustments per BCBS LCR §50 et seq. `[citation: TBC — exact BCBS LCR paragraph for consolidated treatment]`; reported alongside entity LCR in ALCO pack §B11. | Regs Relating to Banks LCR provisions `[citation: TBC]`; BCBS LCR consolidated-treatment paragraphs `[citation: TBC]` |
+| **NSFR** | RAS §B3 — 115% of PA minimum normal; 108% trigger; 103% escalate. **Set at `Hoz Bank Limited`.** | Consolidated NSFR aggregating ASF and RSF across consolidated entities; reported as monitored metric. | BCBS NSFR consolidated-treatment paragraphs `[citation: TBC]` |
+| **IRRBB** | RAS §A2 IRRBB — conservative EVE and NII sensitivity profile relative to capital and earnings. **Set at `Hoz Bank Limited`.** Hedging is the default. | IRRBB on a consolidated banking-book basis where Hoz Securities Limited carries banking-book exposures (in practice unlikely under the institutional-trading mandate; trading-book exposures stay outside IRRBB and inside market-risk warehouse). | BCBS Standards on IRRBB `[citation: TBC — exact paragraph for consolidated banking-book scope]` |
+
+### B14.3 Concentration metrics
+
+| Metric | Entity-level appetite line | Consolidated-basis monitoring | Citation |
+|---|---|---|---|
+| **Single-counterparty large-exposure** | RAS §B2 / §B8 — single-name large-exposure capped below regulatory ceiling. **Set at `Hoz Bank Limited`.** | Consolidated single-counterparty exposure aggregating `Hoz Bank Limited` + `Hoz Securities Limited` exposures to the same counterparty / connected-counterparty group per BCBS Large Exposures framework consolidated-treatment paragraphs `[citation: TBC — exact paragraph index for consolidated single-counterparty treatment]`; reported as monitored metric. The consolidated view tightens economic exposure where the same counterparty appears on both balance sheets. | BCBS Supervisory Framework for measuring and controlling large exposures (D283) `[citation: TBC — exact paragraph index]`; Regs Relating to Banks large-exposures provisions `[citation: TBC]` |
+| **Top-N cumulative concentration** | RAS §B2 — sector ≤25% without BRC approval; geographic concentration capped. **Set at `Hoz Bank Limited`.** | Consolidated top-N concentration computed as monitored metric. | Same as single-counterparty |
+| **B-cluster FX-settlement concentration** (L-B8a-1..5) | RAS §B8a — single-counterparty intraday FX-settlement notional ≤ 97% steady-state / ≤ 99% switch-test window; top-2 cumulative ≤ 100% by design; backup-readiness ≤ 100 days; reserve-correspondents active-but-dormant. **Set at `Hoz Bank Limited`** (the named-pair posture binds to the bank's SARB Authorised Dealer relationships under the Currency and Exchanges Manual). | The B-cluster lines are **not** currently consolidated — `Hoz Securities Limited` does not maintain its own correspondent-bank rails for FX settlement during the build phase; trading-franchise FX flows route through `Hoz Bank Limited`'s Authorised Dealer rails. A consolidated B-cluster view becomes meaningful only if Hoz Securities Limited acquires its own settlement-rail relationships, at which point a v2 line is added to §B8a. | `D-FX-CORRESPONDENT-PAIR-NAMING` · `D-RAS-B-CLUSTER-CONCENTRATION-LINES` · BCBS Principles for Sound Management of Operational Risk (2021) — concentration of operational dependencies `[citation: TBC]` |
+
+The B-cluster lines are explicitly **entity-level** by design under §A4 — the named-pair posture is a `Hoz Bank Limited` operating-model choice, not a group-level discipline.
+
+### B14.4 Other consolidated-basis programmes the PA assesses (not appetite-bound)
+
+Some PA expectations are consolidated-basis programmes that are **not** appetite-line metrics — they are governance-and-reporting deliverables the bank produces on a consolidated basis as part of the PA look-through dialogue. These include:
+
+- **ICAAP** (Internal Capital Adequacy Assessment Process) — produced at consolidated-basis with entity-level breakdown; the bank's ICAAP is the document.
+- **ILAAP** (Internal Liquidity Adequacy Assessment Process) — same pattern.
+- **Recovery Plan** — produced at consolidated-basis with entity-level recovery options; a single `Hoz Bank Limited` recovery plan, not a separate group recovery plan.
+- **Cyber-resilience programme** under **Joint Standard 1 of 2024** `[citation: TBC — exact JS 1 of 2024 clause distinguishing group programme from entity controls]` — group-level programme + per-entity controls. The bank's RAS §A2 (operational and cyber risk) and §B6 (cyber severity tiers) are the appetite reference; the consolidated programme is governance-and-reporting.
+- **BCBS Corporate Governance Principles for Banks** Principle 5 (group structure governance) `[citation: TBC]` — group governance discharge sits in `Owner Inbox/2026-05-06_governance-framework.md` under the bank's board-of-directors structure.
+
+These are recorded on the **obligations register** (`Regulations/_obligations-register.md`) under Mira (Compliance / RegTech engineer)'s `applies-at: consolidated` annotation pattern (PR #84 / D-LEGAL-ENTITY-TREE-V0 follow-on). They are not separate RAS lines.
+
+### B14.5 Reconciliation and substrate gaps
+
+- **Reconciliation rule.** Every consolidated-basis figure reported in BRC / ALCO / Board packs must reconcile to entity-level figures via documented IFRS 10 consolidation eliminations and IAS 27 minority-interest treatment. The reconciliation is itself a derived-projection (Principle 1) — not a hand-assembled spreadsheet (Principle 6 downward).
+- **Substrate gaps.**
+  - **Consolidated-basis metric computation** — no projection today computes consolidated CET1 / LCR / NSFR / large-exposure across the three legal entities. v1 substrate task (Anya (Data / analytics engineer) projection-runtime + Bea (Accounting & financial reporting engineer) consolidation logic + Rohan instrument). Surfaced as decision-record substrate gap #5.
+  - **PA reporting cadence** — once consolidated metrics are computed, the cadence at which the bank reports them to the PA (BA returns annex? separate consolidated-supervision return? Pillar 3 disclosure cycle?) is a v1 decision. Likely confirmed at the licence-application gate via Imani (Legal-as-code engineer) + external counsel.
+  - **Future group-level recon under PA look-through** — Vera (Internal audit / continuous-assurance engineer) Wave-4 substrate gap; the recon harness must compare entity-reported figures to consolidated-derived figures and surface drift as a finding. Not yet scheduled; planned alongside the consolidated-basis projection work.
 
 ---
 
