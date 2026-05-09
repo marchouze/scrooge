@@ -47,6 +47,9 @@ import {
   backtestRequestedPayloadSchema,
   backtestRunPayloadSchema,
   busDispatchedPayloadSchema,
+  counterpartyEligibilityBreachedPayloadSchema,
+  counterpartyEligibilityRevalidatedPayloadSchema,
+  counterpartyEligibilityScreenedPayloadSchema,
   decisionCommentPayloadSchema,
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
@@ -573,6 +576,60 @@ const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "RAS-B7"],
     source: "Team/Kai.md §11, §15",
+  },
+  // CRM lifecycle — counterparty institutional-eligibility screening
+  // (Niko, v0). D-FSP-LICENCE-NECESSITY confirm-A binds Posture A:
+  // every counterparty must clear an institutional-eligibility test
+  // anchoring FAIS scope-of-services to institutional product set.
+  // Citation hint references Mira's PR #70 FAIS Posture A URN cluster;
+  // sub-section refs of FAIS s.45 carry [citation: TBC pending counsel].
+  {
+    type: "CounterpartyEligibilityScreened",
+    class: "markets",
+    payloadSchema: counterpartyEligibilityScreenedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Saskia", "Zara", "Imani", "Mira", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "FAIS-ACT-37-2002",
+      "urn:obligation:bank:fais:general-code-of-conduct:v1",
+      "ORG-CD-01",
+      "ORG-CD-04",
+    ],
+    source:
+      "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01); Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md (PR #62)",
+  },
+  {
+    type: "CounterpartyEligibilityRevalidated",
+    class: "markets",
+    payloadSchema: counterpartyEligibilityRevalidatedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Saskia", "Zara", "Imani", "Mira", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "FAIS-ACT-37-2002",
+      "urn:obligation:bank:fais:general-code-of-conduct:v1",
+      "ORG-CD-01",
+      "ORG-CD-04",
+    ],
+    source:
+      "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01)",
+  },
+  {
+    type: "CounterpartyEligibilityBreached",
+    class: "markets",
+    payloadSchema: counterpartyEligibilityBreachedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Saskia", "Zara", "Imani", "Mira", "Kai", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "FAIS-ACT-37-2002",
+      "urn:obligation:bank:fais:general-code-of-conduct:v1",
+      "ORG-CD-01",
+      "ORG-CD-04",
+    ],
+    source:
+      "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01)",
   },
 ];
 
