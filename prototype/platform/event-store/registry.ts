@@ -70,6 +70,9 @@ import {
   riskRaisedPayloadSchema,
   scheduledTriggerPayloadSchema,
   substrateAlertPayloadSchema,
+  switchTestActivatedPayloadSchema,
+  switchTestEndedPayloadSchema,
+  switchTestReportPayloadSchema,
   validationFindingClosedPayloadSchema,
   validationFindingRaisedPayloadSchema,
   validationMethodologyPublishedPayloadSchema,
@@ -630,6 +633,42 @@ const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     ],
     source:
       "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01)",
+  },
+  // Switch-test event family — opens/closes/reports the quarterly +
+  // triggered switch-test window during which a configurable fraction
+  // of `primary`-tagged FX traffic is routed via the backup
+  // correspondent. Per Devon (COO, governance) + Tomas (Operations &
+  // payments engineer) named-correspondent-pair proposal §4 (PR #58)
+  // and D-FX-CORRESPONDENT-PAIR-NAMING (CEO approved 2026-05-09; PR #59).
+  {
+    type: "SwitchTestActivated",
+    class: "markets",
+    payloadSchema: switchTestActivatedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Saskia", "Devon", "Helena", "Rohan", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["BCBS-239-2013", "GOV-FRAMEWORK-CEO-RESERVED"],
+    source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
+  },
+  {
+    type: "SwitchTestEnded",
+    class: "markets",
+    payloadSchema: switchTestEndedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Saskia", "Devon", "Helena", "Rohan", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["BCBS-239-2013"],
+    source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
+  },
+  {
+    type: "SwitchTestReport",
+    class: "markets",
+    payloadSchema: switchTestReportPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Saskia", "Devon", "Helena", "Rohan", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["BCBS-239-2013", "RAS-B7"],
+    source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
   },
 ];
 
