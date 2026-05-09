@@ -69,6 +69,18 @@ import {
   orderRejectedAtGatewayPayloadSchema,
   permissionPolicyPublishedPayloadSchema,
   preTradeLimitChangedPayloadSchema,
+  productApprovedPayloadSchema,
+  productConceptualisedPayloadSchema,
+  productDimensionAttestedPayloadSchema,
+  productDueDiligenceCompletedPayloadSchema,
+  productDueDiligenceWithheldPayloadSchema,
+  productLaunchedPayloadSchema,
+  productPostImplementationReviewCompletedPayloadSchema,
+  productProposalRegisteredPayloadSchema,
+  productRetiredPayloadSchema,
+  productReviewCompletedPayloadSchema,
+  productVersionPublishedPayloadSchema,
+  productWithheldPayloadSchema,
   productionUseRequestedPayloadSchema,
   riskRaisedPayloadSchema,
   scheduledTriggerPayloadSchema,
@@ -1259,6 +1271,191 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// Product-lifecycle event family — D-PRODUCT-CONSTRUCTION-SUBSTRATE
+// (CEO approved 2026-05-10) Slice 2. Twelve events governing a Product
+// from proposal through retirement (source brief §4). All twelve are
+// `append-only-audit`: the Product's *current state* is a projection
+// over this stream — never stored as authoritative.
+//
+// Per Q2 resolution: per-dimension agent emits its own
+// `ProductDimensionAttested`; the orchestrator only sequences. The
+// emitting agent is recorded via the envelope `actor` field, so issuer
+// here is "any-agent" for ProductDimensionAttested. The other 11 are
+// emitted by Saskia (franchise authority) for proposal/conceptualisation,
+// the orchestrator/governance for due-diligence aggregation, and the
+// CEO/BRC for approval/withholding/launch. At v1, all are scoped
+// "any-agent" pending the dispatch substrate (Slice 4) that will
+// publish per-event-type permission policies.
+//
+// Retention: governance-7y. Product-approval records are
+// regulator-relevant under Banks Act Reg 39 + BCBS new-product-approval
+// principles; 7y matches Companies Act director-decision retention.
+const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "ProductProposalRegistered",
+    class: "governance",
+    payloadSchema: productProposalRegisteredPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #1; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductConceptualised",
+    class: "governance",
+    payloadSchema: productConceptualisedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Kai", "Atlas", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #2; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductDueDiligenceCompleted",
+    class: "governance",
+    payloadSchema: productDueDiligenceCompletedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Camille", "Zara", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #3; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductDueDiligenceWithheld",
+    class: "governance",
+    payloadSchema: productDueDiligenceWithheldPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #4; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    // Per Q2 resolution: per-dimension agent emits its own attestation —
+    // the actor envelope captures *which* agent. Per Q3: result carries
+    // "design-attested" / "implementation-attested" / "failed".
+    type: "ProductDimensionAttested",
+    class: "governance",
+    payloadSchema: productDimensionAttestedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Camille", "Zara", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY", "P2-CITATION-DISCIPLINE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #5 + §5; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q2 + Q3 resolutions)",
+  },
+  {
+    type: "ProductApproved",
+    class: "governance",
+    payloadSchema: productApprovedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: [
+      "Saskia",
+      "Owen",
+      "Helena",
+      "Camille",
+      "Zara",
+      "Kai",
+      "Vera",
+      "Anya",
+      "dashboard",
+    ],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-NEW-PRODUCT-APPROVAL-POLICY",
+      "BCBS-NEW-PRODUCT-PRINCIPLES",
+      "BANKS-ACT-94-1990",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #6; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductWithheld",
+    class: "governance",
+    payloadSchema: productWithheldPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #7; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q4 explicit-decision resolution)",
+  },
+  {
+    type: "ProductLaunched",
+    class: "governance",
+    payloadSchema: productLaunchedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Kai", "Helena", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY", "RAS-B7"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #8; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductPostImplementationReviewCompleted",
+    class: "governance",
+    payloadSchema: productPostImplementationReviewCompletedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #9; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductReviewCompleted",
+    class: "governance",
+    payloadSchema: productReviewCompletedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #10 (annual cadence); D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    type: "ProductRetired",
+    class: "governance",
+    payloadSchema: productRetiredPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Imani", "Helena", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #11 (binds Imani migration-clause); D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+  },
+  {
+    // Per Q5 resolution: material change increments version on the same
+    // productId; new productId reserved for genuinely new products.
+    type: "ProductVersionPublished",
+    class: "governance",
+    payloadSchema: productVersionPublishedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Kai", "Helena", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #12; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q5 same-productId resolution)",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -1271,6 +1468,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...GOVERNANCE_EVENT_TYPES,
   ...AUDIT_EVENT_TYPES,
   ...LEGAL_ENTITY_EVENT_TYPES,
+  ...PRODUCT_LIFECYCLE_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
