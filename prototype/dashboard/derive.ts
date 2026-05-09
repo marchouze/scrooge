@@ -69,6 +69,8 @@ export interface SourcePaths {
   readonly proceduresIndex: string;
   readonly curated: string;
   readonly teamDir: string; // /Team — persona files
+  readonly teamRoster: string; // /Team/_team-roster.json — canonical roster (Principle 6)
+  readonly principlesDir: string; // /Principles — one file per principle (Principle 6 single-graph)
   readonly ownerInboxDir: string; // /Owner Inbox — deliverables
   readonly bankNameRegister: string; // /Regulations/_bank-name.md — canonical bank-name register
 }
@@ -164,6 +166,8 @@ export function defaultSourcePaths(repoRoot: string): SourcePaths {
     proceduresIndex: join(repoRoot, "Procedures", "_index.md"),
     curated: join(repoRoot, "prototype", "seeds", "dashboard-curated.json"),
     teamDir: join(repoRoot, "Team"),
+    teamRoster: join(repoRoot, "Team", "_team-roster.json"),
+    principlesDir: join(repoRoot, "Principles"),
     ownerInboxDir: join(repoRoot, "Owner Inbox"),
     bankNameRegister: join(repoRoot, "Regulations", "_bank-name.md"),
   };
@@ -354,32 +358,47 @@ function readCurated(path: string): Curated {
 // Parsers — small, deliberately conservative readers over the canonical docs.
 // ---------------------------------------------------------------------------
 
-const PRINCIPLE_HEADING = /^### Principle (\d+) — (.+)$/;
 const TABLE_ROW = /^\|(.+)\|$/;
+const PRINCIPLE_FILENAME = /^(\d+)-([^.]+)\.md$/;
+const PRINCIPLE_TITLE_HEADING = /^#\s+Principle\s+(\d+)\s+—\s+(.+)$/;
 
 function readLines(path: string): string[] {
   return readFileSync(path, "utf8").split(/\r?\n/);
 }
 
-// source: CLAUDE.md `### Principle N — <title>` headings + first paragraph
-function parsePrinciples(claudeMd: string): readonly Principle[] {
-  const lines = readLines(claudeMd);
+// source: /Principles/<n>-<slug>.md — one file per principle. The file's
+// `# Principle N — <title>` heading carries the canonical title; the first
+// non-empty paragraph below the heading is the summary. The Principles
+// directory is the single source of truth (Principle 6 single-graph
+// discipline); CLAUDE.md renders pointers but does not own the text.
+function parsePrinciples(principlesDir: string): readonly Principle[] {
+  if (!existsSync(principlesDir)) return [];
   const out: Principle[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i] ?? "";
-    const m = line.match(PRINCIPLE_HEADING);
-    if (!m || !m[1] || !m[2]) continue;
+  for (const filename of readdirSync(principlesDir)) {
+    const fm = filename.match(PRINCIPLE_FILENAME);
+    if (!fm || !fm[1]) continue;
+    const path = join(principlesDir, filename);
+    const lines = readLines(path);
+    let title = "";
     let summary = "";
-    for (let j = i + 1; j < lines.length && j < i + 8; j++) {
-      const next = lines[j]?.trim() ?? "";
-      if (next === "") continue;
-      if (next.startsWith("#")) break;
-      summary = next;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i] ?? "";
+      const m = line.match(PRINCIPLE_TITLE_HEADING);
+      if (!m || !m[2]) continue;
+      title = m[2].trim();
+      for (let j = i + 1; j < lines.length && j < i + 12; j++) {
+        const next = lines[j]?.trim() ?? "";
+        if (next === "") continue;
+        if (next.startsWith(">") || next.startsWith("#")) continue;
+        summary = next;
+        break;
+      }
       break;
     }
-    out.push({ n: Number(m[1]), title: m[2].trim(), summary });
+    if (!title) continue;
+    out.push({ n: Number(fm[1]), title, summary });
   }
-  return out;
+  return out.sort((a, b) => a.n - b.n);
 }
 
 // Table rows whose cell count >= cells.min get returned as cell arrays.
@@ -471,67 +490,49 @@ function procedureStats(proceduresIndex: string): ProcStats {
   return { populated, planned };
 }
 
-// source: CLAUDE.md "Top-of-house reporting" paragraph
-//   "CEO direct reports today: Scrooge (CoS, orchestrator), Helena (CRO), ..."
-//   "Future direct reports as hired: CISO, GC, CHRO."
-function parseTopOfHouse(claudeMd: string): { directReports: Person[]; openSeats: OpenSeat[] } {
-  const text = readFileSync(claudeMd, "utf8");
+// source: Team/_team-roster.json `topOfHouse` block. The roster JSON is
+// the single source of truth (Principle 6 single-graph discipline);
+// CLAUDE.md narrates around it but does not own the data. CLAUDE.md text
+// is also read for `openSeatStatusFor` to surface per-seat status notes.
+function parseTopOfHouse(
+  teamRoster: string,
+  claudeMd: string,
+): { directReports: Person[]; openSeats: OpenSeat[] } {
   const directReports: Person[] = [];
   const openSeats: OpenSeat[] = [];
+  if (!existsSync(teamRoster)) return { directReports, openSeats };
 
-  const todayMatch = text.match(
-    /CEO direct reports today:\s*([^.]*?)(?:\.\s*Future direct reports)/s,
-  );
-  if (todayMatch?.[1]) {
-    // Split on commas at the top level. The body has parentheticals so a
-    // simple comma split works because parentheticals are inside ( ).
-    const items = splitTopLevel(todayMatch[1], ",");
-    for (const raw of items) {
-      const item = raw.trim().replace(/\s+/g, " ");
-      if (!item) continue;
-      const m = item.match(/^([A-Za-z]+)\s*\(([^)]+)\)/);
-      if (!m || !m[1] || !m[2]) continue;
-      const name = m[1];
-      const parens = m[2];
-      // The parens may carry annotations after a delimiter (e.g.
-      //   "CAE — administrative line; functional line into AC").
-      // Take only up to the first comma / em-dash / semicolon.
-      const role = parens.split(/[,—;]/)[0]?.trim() ?? "";
-      const type: Person["type"] = name === "Scrooge" ? "Functional" : "Governance";
-      directReports.push({ name, role: expandRole(role), type });
-    }
+  interface RosterShape {
+    topOfHouse?: {
+      ceoDirectReports?: readonly string[];
+      futureDirectReportsAsHired?: readonly string[];
+    };
+  }
+  const raw = readFileSync(teamRoster, "utf8");
+  const data = JSON.parse(raw) as RosterShape;
+  const top = data.topOfHouse;
+  if (!top) return { directReports, openSeats };
+
+  for (const item of top.ceoDirectReports ?? []) {
+    const trimmed = item.trim().replace(/\s+/g, " ");
+    if (!trimmed) continue;
+    const m = trimmed.match(/^([A-Za-z]+)\s*\(([^)]+)\)/);
+    if (!m || !m[1] || !m[2]) continue;
+    const name = m[1];
+    const parens = m[2];
+    const role = parens.split(/[,—;]/)[0]?.trim() ?? "";
+    const type: Person["type"] = name === "Scrooge" ? "Functional" : "Governance";
+    directReports.push({ name, role: expandRole(role), type });
   }
 
-  const futureMatch = text.match(/Future direct reports as hired:\s*([^.]*)/);
-  if (futureMatch?.[1]) {
-    const seats = futureMatch[1]
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    for (const seat of seats) {
-      openSeats.push({ role: seat, status: openSeatStatusFor(seat, text) });
-    }
+  const claudeText = existsSync(claudeMd) ? readFileSync(claudeMd, "utf8") : "";
+  for (const seat of top.futureDirectReportsAsHired ?? []) {
+    const cleaned = seat.trim();
+    if (!cleaned) continue;
+    openSeats.push({ role: cleaned, status: openSeatStatusFor(cleaned, claudeText) });
   }
 
   return { directReports, openSeats };
-}
-
-function splitTopLevel(s: string, sep: string): string[] {
-  const out: string[] = [];
-  let depth = 0;
-  let buf = "";
-  for (const ch of s) {
-    if (ch === "(") depth++;
-    else if (ch === ")") depth = Math.max(0, depth - 1);
-    if (ch === sep && depth === 0) {
-      out.push(buf);
-      buf = "";
-    } else {
-      buf += ch;
-    }
-  }
-  if (buf.trim()) out.push(buf);
-  return out;
 }
 
 const ROLE_EXPANSIONS: Record<string, string> = {
@@ -1401,7 +1402,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const now = opts.now ?? (() => new Date().toISOString());
   const curated = readCurated(opts.sources.curated);
 
-  const principles = parsePrinciples(opts.sources.claudeMd);
+  const principles = parsePrinciples(opts.sources.principlesDir);
   // P1: parse the policy register into typed Policy[] entries on every tick.
   // The count flows into bank.metrics.policies; the array surfaces as the
   // top-level `policies` field for the policies-library page.
@@ -1412,7 +1413,10 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const obligations = countObligations(opts.sources.obligationsRegister);
   const regs = regulationStats(opts.sources.regulationsIndex);
   const procs = procedureStats(opts.sources.proceduresIndex);
-  const { directReports, openSeats } = parseTopOfHouse(opts.sources.claudeMd);
+  const { directReports, openSeats } = parseTopOfHouse(
+    opts.sources.teamRoster,
+    opts.sources.claudeMd,
+  );
 
   const ceoEvents = opts.events.ceoDecisions();
   const wsStarts = opts.events.workstreamStarts();
