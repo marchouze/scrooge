@@ -1,0 +1,32 @@
+<!-- lockup-bank.svg — Hoz Bank sub-brand lockup (mark + wordmark + qualifier).
+     Authority: D-LEGAL-ENTITY-TREE-V0 (PR #82, merged 2026-05-09);
+     Linnea v1 brand package §2.1 (Direction A construction; IBM Plex Sans);
+     Linnea v3 brand-application supplement §2.1 (lockup family);
+     Linnea v3.2 sub-brand application §1, §3.
+     Use: Hoz Bank Limited contexts — SARB PA correspondence, BA-return
+     headers, banking-product-customer letterheads, banking business cards.
+     Min size: 184px wide. Clear-space: one mark-diameter on all sides.
+     Construction: 280×64 viewBox (extends group lockup 220×64 by 60u for the
+     qualifier slot). Mark + wordmark are dimensionally identical to
+     lockup-lockup.svg — the group's visual anchor (per v3.2 §3 rules: the mark
+     is consistent across sub-brand lockups). Sub-brand qualifier "Bank" set in
+     IBM Plex Sans 500 at 18u, baseline-aligned with the wordmark cap-height
+     (y=44u, matching wordmark baseline within optical tolerance), separated by
+     a 1u-wide vertical divider at x=144u running 14u→44u. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" width="280" height="64" role="img" aria-label="Hoz Bank — sub-brand lockup">
+  <!-- Mark (identical to group lockup) -->
+  <g>
+    <circle cx="32" cy="32" r="28" fill="none" stroke="#1F2A37" stroke-width="2"/>
+    <line x1="6" y1="24" x2="58" y2="24" stroke="#1F2A37" stroke-width="3" stroke-linecap="square"/>
+  </g>
+  <!-- Wordmark "Hoz" (identical to group lockup) -->
+  <text x="76" y="44"
+        font-family="Inter, 'Inter Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="36" font-weight="700" fill="#1F2A37" letter-spacing="-0.5">Hoz</text>
+  <!-- Divider — typographic device separating wordmark from sub-brand qualifier -->
+  <line x1="144" y1="20" x2="144" y2="44" stroke="#1F2A37" stroke-width="1" stroke-linecap="square"/>
+  <!-- Sub-brand qualifier "Bank" (IBM Plex Sans 500 — distinct from Inter wordmark) -->
+  <text x="156" y="40"
+        font-family="'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif"
+        font-size="20" font-weight="500" fill="#1F2A37" letter-spacing="0.2">Bank</text>
+</svg>
