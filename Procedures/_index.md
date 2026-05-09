@@ -177,6 +177,7 @@
 | Whistleblowing | `whistleblowing-case.md` | Owen | PLANNED |
 | Gifts | `gift-registration.md` | Owen | PLANNED |
 | Insider Trading / PA Dealing | `pa-dealing-pre-clearance.md` | Owen + Zara | PLANNED |
+| Corporate Naming Policy v0.1 (planned by Owen) | [`naming-pre-clearance.md`](by-policy/naming-pre-clearance.md) (TM + Banks Act § 22 + CIPC + 11-language sweep) | Owen + Imani · Mira (s.22) · PAX (language sweep) · Atlas (substrate) | STUB |
 
 ## Legal
 
