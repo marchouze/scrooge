@@ -146,6 +146,7 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Customer Acceptance | (`kyc-onboarding.md` covers acceptance gate) | Niko + Zara | **POPULATED** (shared) |
+| Institutional-only / FAIS Posture A (D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09; PR #62) | [`counterparty-institutional-eligibility-screening.md`](by-policy/counterparty-institutional-eligibility-screening.md) (PROC-CRM-CIE-01) | Niko · Saskia (governance) · Zara (governance) | **STUB** |
 | FAIS Policy v0.1 (STUB, FSP-conditional) + Customer Treatment (TCF) v0.1 (STUB) | [`fais-advice-record-capture.md`](by-policy/fais-advice-record-capture.md) | Niko · Zara · Sade (paused build-phase; activates licence-day) | **POPULATED** |
 | Customer Treatment (TCF) | `complaints-handling.md` | Niko + Zara | PLANNED |
 | Marketing & Advertising | `marketing-claim-validation.md` | Niko + Zara | PLANNED |

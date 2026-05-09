@@ -2190,6 +2190,242 @@ export function makeMethodologyChangeRequested(args: {
   });
 }
 
+// ===========================================================================
+// CRM — counterparty institutional-eligibility screening (Niko, v0)
+//
+// D-FSP-LICENCE-NECESSITY (CEO resolution `confirm-A-no-research`,
+// 2026-05-09; PR #62) binds Posture A: every counterparty onboarded
+// must clear an institutional-eligibility test that anchors the FAIS
+// scope-of-services to the institutional product set. The three event
+// types below carry the typed contract for the screening lifecycle:
+//
+//   • CounterpartyEligibilityScreened — initial / cycle screening.
+//   • CounterpartyEligibilityRevalidated — periodic re-eligibility.
+//   • CounterpartyEligibilityBreached — ongoing-monitoring drift signal.
+//
+// Authority chain:
+//   - D-FSP-LICENCE-NECESSITY → D-THIN-HUMAN-LAYER-MINIMUM →
+//     D-MARKETS-SCHEMA-FOUNDATION; strategic-foundation memory
+//     (institutional-only / wholesale).
+//   - FAIS Act 37/2002 + Subordinate Legislation s.45 (institutional /
+//     professional-counterparty exemption — counsel ratifies the
+//     precise sub-section refs at the licence-application gate; until
+//     then citations carry `[citation: TBC pending counsel]`).
+//   - Mira (Compliance / RegTech engineer) Posture A FAIS-record-keeping
+//     URN cluster (PR #70 — `urn:obligation:bank:fais:*`).
+//
+// Procedure: `Procedures/by-policy/counterparty-institutional-eligibility-screening.md`
+// (PROC-CRM-CIE-01).
+//
+// Substrate gaps named (NOT built in this PR):
+//   - `prototype/platform/lifecycle/counterparty-eligibility.ts` — the
+//     classification module that performs the test and emits the
+//     events. Atlas (Core banking platform architect) + Niko (Sales /
+//     CRM engineer) joint follow-on.
+//   - Vera (Internal-audit / continuous-assurance engineer) Wave-4
+//     finding-pipeline for the `Order*`-without-current-eligibility
+//     recon. Vera planning task.
+//   - Institutional-eligibility-criteria-as-code (the typed criteria
+//     taxonomy) — Niko + Imani (Legal-as-code engineer) joint follow-on.
+//
+// Author: Niko (Sales / CRM engineer)
+// ===========================================================================
+
+/** Outcome of an institutional-eligibility screening. */
+export const counterpartyEligibilityOutcomeSchema = z.enum([
+  "institutional-eligible",
+  "ineligible",
+  "indeterminate",
+]);
+
+export type CounterpartyEligibilityOutcome = z.infer<typeof counterpartyEligibilityOutcomeSchema>;
+
+// ---------------------------------------------------------------------------
+// CounterpartyEligibilityScreened
+//
+// Emitted at counterparty onboarding (and at each scheduled re-eligibility
+// cycle that produces a fresh screening). Records which institutional-
+// eligibility criteria were applied, the resulting outcome, the evidence
+// references that justify the outcome, and the citations binding the
+// criteria to FAIS s.45 + Subordinate Legislation.
+//
+// Authority:
+//   - FAIS Act 37/2002; Subordinate Legislation s.45 (institutional /
+//     professional-counterparty exemption — `[citation: TBC]` on the
+//     precise sub-section refs).
+//   - Decision record: PR #62 (D-FSP-LICENCE-NECESSITY confirm-A).
+//   - Mira (Compliance / RegTech engineer) PR #70 FAIS Posture A URN cluster.
+//
+// Replay-fold: `latest-wins-per-key` keyed on `counterpartyId` for the
+// "current eligibility outcome" projection; the full sequence is also
+// available via `cumulative-fold` for audit replay.
+// ---------------------------------------------------------------------------
+
+export const counterpartyEligibilityScreenedPayloadSchema = z.object({
+  /** Stable id for the counterparty (FK into the counterparty-master-data domain). */
+  counterpartyId: z.string().min(1),
+  /**
+   * Stable id for this screening run. Convention:
+   * `cp-eligibility:<counterpartyId>:<isoDate>`.
+   */
+  screeningId: z.string().min(1),
+  /**
+   * Criteria applied. Free-form strings at v0; the typed criteria
+   * taxonomy lands with the criteria-as-code substrate gap (Niko +
+   * Imani follow-on). Must be non-empty — a screening with zero
+   * criteria is meaningless.
+   */
+  criteria: z.array(z.string().min(1)).min(1),
+  /** Outcome of the screening. */
+  outcome: counterpartyEligibilityOutcomeSchema,
+  /**
+   * References to the evidence supporting the outcome. Examples:
+   * FSCA-licence number, SARB-licence number, SAIA registration, CIS
+   * manager number, board resolution, regulator-confirmation letter,
+   * or `Owner Inbox/<counterpartyId>/eligibility-screening-<screeningId>.md`
+   * for the screening rationale. Must be non-empty per the
+   * reconciliation rule in PROC-CRM-CIE-01.
+   */
+  evidenceRefs: z.array(z.string().min(1)).min(1),
+  /** ISO 8601 — the as-of timestamp the screening was performed at. */
+  asOf: z.string().min(1),
+});
+
+export type CounterpartyEligibilityScreenedPayload = z.infer<
+  typeof counterpartyEligibilityScreenedPayloadSchema
+>;
+
+export function makeCounterpartyEligibilityScreened(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CounterpartyEligibilityScreenedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CounterpartyEligibilityScreened",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: counterpartyEligibilityScreenedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CounterpartyEligibilityRevalidated
+//
+// Emitted when the periodic re-eligibility cycle (annual default; or
+// trigger-based — counterparty material-change signal) runs and confirms
+// or restates the eligibility outcome. Pairs to the prior screening via
+// `priorScreeningId` so the audit trail forms a chain.
+//
+// Authority: same as `CounterpartyEligibilityScreened` (re-validation is
+// a re-application of the same s.45 test).
+// ---------------------------------------------------------------------------
+
+export const counterpartyEligibilityRevalidatedPayloadSchema = z.object({
+  counterpartyId: z.string().min(1),
+  screeningId: z.string().min(1),
+  /**
+   * The prior screening this revalidation supersedes. Must resolve to a
+   * `CounterpartyEligibilityScreened` (or earlier
+   * `CounterpartyEligibilityRevalidated`) for the same counterparty.
+   * Required — without it the chain is broken.
+   */
+  priorScreeningId: z.string().min(1),
+  criteria: z.array(z.string().min(1)).min(1),
+  outcome: counterpartyEligibilityOutcomeSchema,
+  evidenceRefs: z.array(z.string().min(1)).min(1),
+  asOf: z.string().min(1),
+});
+
+export type CounterpartyEligibilityRevalidatedPayload = z.infer<
+  typeof counterpartyEligibilityRevalidatedPayloadSchema
+>;
+
+export function makeCounterpartyEligibilityRevalidated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CounterpartyEligibilityRevalidatedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CounterpartyEligibilityRevalidated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: counterpartyEligibilityRevalidatedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CounterpartyEligibilityBreached
+//
+// Emitted when ongoing-monitoring detects a counterparty has drifted out
+// of institutional-eligibility — examples include the entity changing
+// status (e.g. FSP licence withdrawn), a business-model change that
+// removes them from the s.45 categories, or a regulatory-classification
+// change. The breach forces a re-screening and gates further `Order*`
+// activity for the counterparty.
+//
+// Authority: same as the screening events; `recommendedAction` cites the
+// procedure step that should fire (suspend trading, escalate to Zara +
+// counsel, run a fresh screening, etc.).
+// ---------------------------------------------------------------------------
+
+export const counterpartyEligibilityBreachedPayloadSchema = z.object({
+  counterpartyId: z.string().min(1),
+  /**
+   * The screening this breach invalidates. Must resolve to the most-
+   * recent `CounterpartyEligibilityScreened` /
+   * `CounterpartyEligibilityRevalidated` for the counterparty.
+   */
+  priorScreeningId: z.string().min(1),
+  /** One-line description of the breach trigger. Required — no breach is
+   * recorded without a reason. */
+  breachReason: z.string().min(1),
+  /** Recommended action — typed enum at v0; widens as the criteria-as-code
+   * substrate lands. */
+  recommendedAction: z.enum([
+    "suspend-trading-and-rescreen",
+    "escalate-to-zara-and-counsel",
+    "run-fresh-screening",
+    "no-action-monitor",
+  ]),
+  /** ISO 8601 — when the breach was detected. */
+  asOf: z.string().min(1),
+});
+
+export type CounterpartyEligibilityBreachedPayload = z.infer<
+  typeof counterpartyEligibilityBreachedPayloadSchema
+>;
+
+export function makeCounterpartyEligibilityBreached(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CounterpartyEligibilityBreachedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CounterpartyEligibilityBreached",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: counterpartyEligibilityBreachedPayloadSchema.parse(args.payload),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -2231,6 +2467,9 @@ export const TYPED_EVENT_TYPES = [
   "ModelDriftDetected",
   "ProductionUseRequested",
   "MethodologyChangeRequested",
+  "CounterpartyEligibilityScreened",
+  "CounterpartyEligibilityRevalidated",
+  "CounterpartyEligibilityBreached",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
