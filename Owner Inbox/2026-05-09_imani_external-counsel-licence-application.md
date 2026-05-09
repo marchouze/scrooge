@@ -93,16 +93,31 @@ The scope below is enumerated in **categories**, not firm names and not specific
 
 **Why this is hard to substitute.** This category is the most counsel-unique slice of the scope. The bank's autonomous fleet has no SARB-engagement track record; the legal-as-code engineer (Imani) does not engage the regulator on the bank's behalf — the engagement is a CEO + CoSec + Compliance act. Counsel's value here is procedural, comparative, and reputational; the bank cannot build it in-house.
 
-### 2.4 FAIS key-individual sponsor and FSP licence path (if any)
+### 2.4 FAIS key-individual sponsor and FSP licence path — Posture A confirmed
 
-**Category.** Financial Advisory and Intermediary Services Act 37 of 2002 (FAIS) practice — specifically the key-individual designation requirements, the form of the FSP licence application (if pursued), and the interaction between FSP licensing and banking licensing for an institutional-only markets dealer.
+**Category.** Financial Advisory and Intermediary Services Act 37 of 2002 (FAIS) practice — specifically the key-individual designation requirements, the form of the FSP licence application, and the interaction between FSP licensing and banking licensing for an institutional-only markets dealer.
 
-**What counsel does on this surface.**
-- Reviews whether the bank's institutional-only client base + product set (JSE bonds, JSE equities, OTC IRD per `project_strategic_foundation.md`) requires FSP licensing in addition to a banking licence, and if so, the licence categories.
-- Advises on the key-individual designation pathway for the relevant statutory humans at licence-day (the build-phase posture per `project_strategic_foundation.md` is no FSP in interim; this category becomes live at the licence-application gate).
-- Reviews the suitability records and advice-records architecture against FAIS requirements where relevant.
+**Decision-state update (2026-05-09).** The CEO has resolved D-FSP-LICENCE-NECESSITY as `confirm-A-no-research`. Posture A is the steady-state: the bank pursues an FSP licence; advice is given; FAIS Categories I + II are the working scope; Saskia (Head of Global Markets, governance) is the steady-state Key Individual; the FAIS-record-keeping substrate is binding. Counsel's scope on this surface is therefore narrowed to **ratifying** the Posture-A application bundle. Counsel does **not** evaluate Posture B — that question is closed by CEO decision. [citations: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62); `Owner Inbox/2026-05-09_zara_fsp-application-path.md` (Zara — Chief Compliance Officer, governance — header); `Owner Inbox/2026-05-09_zara_tcf-substrate-plan-v0.md` §2 TCF 4 row.]
 
-**Open question this scope inherits.** `project_strategic_foundation.md` records the interim posture as "no FSP licence pursued in interim". Whether an FSP licence is required *at all* for an institutional-only wholesale markets dealer is itself a counsel question — the answer depends on how counterparties are characterised under FAIS (clients vs not) and is not a question the build-phase brief presumes to answer.
+**What counsel does on this surface (Posture A scope).**
+- **Ratifies the Posture-A application-bundle scope.** Confirms the institutional-only product set (JSE bonds, JSE equities, OTC IRD per `project_strategic_foundation.md`) is appropriately scoped to FAIS Categories I + II, and that the Posture-A application bundle (KI designation, fit-and-proper file, advice-record architecture) is consistent with FSCA expectations for an institutional-only markets dealer.
+- **Reviews KI designation pathway** for Saskia (Head of Global Markets, governance) as the steady-state Key Individual; Marc-interim KI during build-phase. Confirms the Determination of Fit and Proper 2017 file form for both interim and steady-state KIs.
+- **Reviews the FAIS-record-keeping substrate** — advice records, suitability assessments, fee disclosures, General Code of Conduct application — against FAIS Categories I + II requirements; the substrate is now load-bearing per Zara's TCF substrate plan §3.2.
+- **Cross-references Mira (Compliance / RegTech engineer)'s parallel FAIS-record-keeping URN cluster work** on `Regulations/_obligations-register.md` (`claude/mira-fais-posture-a-register`; cluster: `ORG-FAIS-KI`, `ORG-FAIS-RK-ADVICE`, `ORG-FAIS-RK-SUITABILITY`, `ORG-FAIS-RK-FEE-DISCLOSURE`, `ORG-FAIS-RK-COMPLAINT-HANDLING`, `ORG-FAIS-RK-GENERAL-CODE`) for the citation backbone. The `[citation: TBC]` rows on those URNs are returned by counsel at this gate.
+
+**Out of scope (closed by CEO decision).** Counsel does **not** evaluate whether an FSP licence is required at all (Posture B). The bank does not seek a documented FAIS s.45 / Subordinate Legislation carve-out. Counsel's review is bounded to Posture-A ratification and the institutional-only counterparty-eligibility evidence package below.
+
+#### 2.4.1 Institutional-only counterparty-eligibility evidence requirements
+
+Posture A presumes an institutional-only / wholesale counterparty book. Counsel must confirm the institutional-only posture is **operationally enforceable** — not merely asserted. The evidence package counsel needs to review:
+
+- **Counterparty-categorisation criteria.** The typed criteria the bank applies to determine institutional / professional counterparty status at onboarding. Includes the link to FSCA's expected counterparty-type framework for wholesale TCF reframing [citation: TBC pending counsel — specific FSCA Conduct Standard sections that bind counterparty-type determination] and the bank's `Procedures/by-policy/client-categorisation.md` [citation: TBC pending counsel — confirmation that the procedure's criteria align with the FSCA-expected framework].
+- **Eligibility-screening at onboarding.** The control point at counterparty-onboarding (Niko's KYC / categorisation gate) where institutional eligibility is asserted, evidenced, and persisted as a typed event. [citation: TBC pending counsel — whether attestation alone suffices or whether documentary verification is required, and at what evidence-grade.]
+- **Ongoing-eligibility monitoring.** The control loop that re-tests institutional eligibility on a defined cadence and on triggering events (counterparty restructuring, change-of-control, regulator-categorisation change). [citation: TBC pending counsel — specific monitoring cadence and triggering-event taxonomy under FAIS / FSCA guidance.]
+- **Exception-handling.** What happens if a counterparty falls out of institutional status mid-relationship — orderly run-off, novation, mandatory disclosure to FSCA, or other treatment. [citation: TBC pending counsel — specific FAIS / FSCA exit-pathway guidance for wholesale-only firms.]
+- **Audit trail.** The reconciliation that proves the institutional-only book is, at any point in time, actually institutional-only — typed events, evidence retention, third-line testability. [citation: TBC pending counsel — minimum evidence-retention period and form for FSCA audit purposes.]
+
+**Cross-references.** D-FSP-LICENCE-NECESSITY (PR #62); Zara (Chief Compliance Officer, governance)'s FSP-application-path paper (header) and TCF substrate plan v0 (TCF 4 row + §3.2). Mira (Compliance / RegTech engineer)'s parallel obligations-register update on the FAIS-record-keeping URN cluster is the upstream citation backbone.
 
 ### 2.5 FIC Act registration and the RMCP
 
