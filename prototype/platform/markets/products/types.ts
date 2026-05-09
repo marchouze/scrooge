@@ -143,12 +143,7 @@ export const riskProfileSchema = z.object({
     "hqla-eligible-l2b",
     "non-hqla",
   ]),
-  fundingProfile: z.enum([
-    "cash-funded",
-    "repo-funded",
-    "uncollateralised",
-    "csa-collateralised",
-  ]),
+  fundingProfile: z.enum(["cash-funded", "repo-funded", "uncollateralised", "csa-collateralised"]),
   /** Nadia methodology — Tier 1 highest scrutiny (RAS § B7). */
   modelRiskTier: z.enum(["tier-1", "tier-2", "tier-3"]),
 });
@@ -174,16 +169,15 @@ export type AccountingClassification = z.infer<typeof accountingClassificationSc
 // ---------------------------------------------------------------------------
 
 export const legalDocumentationSchema = z.object({
-  masterAgreement: z.enum([
-    "isda-2002",
-    "isda-2025",
-    "gmra-2011",
-    "gmsla-2018",
-    "none-listed",
-  ]),
+  masterAgreement: z.enum(["isda-2002", "isda-2025", "gmra-2011", "gmsla-2018", "none-listed"]),
   ectaExecutionPath: z.enum(["electronic-default", "wet-signature-required", "hybrid"]),
   /** ISO-3166-1 alpha-2 codes. */
-  jurisdictionMatrix: z.array(z.string().length(2).regex(/^[A-Z]{2}$/)),
+  jurisdictionMatrix: z.array(
+    z
+      .string()
+      .length(2)
+      .regex(/^[A-Z]{2}$/),
+  ),
 });
 
 export type LegalDocumentation = z.infer<typeof legalDocumentationSchema>;
@@ -328,8 +322,7 @@ export const productSchema = z.object({
 
   /** Principle 2 chain — non-empty enforced. */
   citations: z.array(z.string().min(1)).min(1, {
-    message:
-      "P2 violation: every Product must carry at least one obligations-register citation",
+    message: "P2 violation: every Product must carry at least one obligations-register citation",
   }),
 });
 

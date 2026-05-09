@@ -18,7 +18,10 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { M1_JSE_EQUITY_CASH_FIXTURE, M2_SAGB_FIXED_COUPON_FIXTURE } from "../platform/markets/products/fixtures";
+import {
+  M1_JSE_EQUITY_CASH_FIXTURE,
+  M2_SAGB_FIXED_COUPON_FIXTURE,
+} from "../platform/markets/products/fixtures";
 import { parseProduct, productSchema } from "../platform/markets/products/types";
 
 describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 1 — typed Product layer", () => {
