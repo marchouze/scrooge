@@ -2426,6 +2426,165 @@ export function makeCounterpartyEligibilityBreached(args: {
   });
 }
 
+// ===========================================================================
+// FX correspondent-routing — switch-test event family
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// SwitchTestActivated
+//
+// Opens a switch-test window — for the duration of the window, a
+// configurable fraction (0–100%) of `primary`-tagged FX settlement
+// routing intents is routed via the backup correspondent. Quarterly
+// default 0.05–0.10 per Devon (COO, governance) + Tomas (Operations &
+// payments engineer) named-correspondent-pair proposal §4.
+//
+// Authority:
+//   - D-FX-CORRESPONDENT-PAIR-NAMING (CEO approved 2026-05-09; PR #59)
+//   - PR #58 — named-correspondent-pair proposal §4
+//
+// Replay-fold: pair-coupled with the next `SwitchTestEnded` for the same
+// `windowId`; consumed by the correspondent-routing projection at
+// `prototype/platform/markets/correspondent-routing.ts`.
+// ---------------------------------------------------------------------------
+
+export const switchTestActivatedPayloadSchema = z.object({
+  /** Stable id for the switch-test window. Convention: `switch-test:<yyyyqn>:<short-slug>`. */
+  windowId: z.string().min(1),
+  /** ISO-8601 — when the window opened. */
+  openedAt: z.string().min(1),
+  /**
+   * Fraction of `primary`-intent traffic to route via the backup, in
+   * [0, 1]. Quarterly default 0.05–0.10 per proposal §4. 0 = no
+   * override (sanity test); 1 = full failover (allowed per §4
+   * trigger 1).
+   */
+  fraction: z.number().min(0).max(1),
+  /** Free-text rationale citing the trigger (quarterly cadence / failover trigger). */
+  rationale: z.string().min(1),
+  /** Strong identity of the activator. Convention: `agent:tomas` / `agent:devon`. */
+  activatedBy: z.string().min(1),
+});
+
+export type SwitchTestActivatedPayload = z.infer<typeof switchTestActivatedPayloadSchema>;
+
+export function makeSwitchTestActivated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SwitchTestActivatedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SwitchTestActivated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: switchTestActivatedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SwitchTestEnded
+//
+// Closes the switch-test window opened by a prior `SwitchTestActivated`
+// with the same `windowId`. After this event folds, the routing
+// projection treats `primary`-intent traffic as straight `primary`
+// again.
+// ---------------------------------------------------------------------------
+
+export const switchTestEndedPayloadSchema = z.object({
+  /** windowId that this end-event closes. Pairs with `SwitchTestActivated.windowId`. */
+  windowId: z.string().min(1),
+  /** ISO-8601 — when the window closed. */
+  closedAt: z.string().min(1),
+  /**
+   * One-line reason — usually `quarterly-cycle-complete`, `failover-resolved`,
+   * `manual-close`. Free-form at v0; types to an enum when slice #2 lands.
+   */
+  reason: z.string().min(1),
+  /** Strong identity of the closer. Convention: `agent:tomas` / `agent:devon`. */
+  closedBy: z.string().min(1),
+});
+
+export type SwitchTestEndedPayload = z.infer<typeof switchTestEndedPayloadSchema>;
+
+export function makeSwitchTestEnded(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SwitchTestEndedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SwitchTestEnded",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: switchTestEndedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SwitchTestReport
+//
+// Emitted at window-end with the observed fraction, leg counts, latency
+// stats, and any breach indicators. Consumed by Vera's continuous-controls
+// recon to assert the switch-test was performed at the declared
+// fraction-band, and by Helena (CRO) + Rohan (Risk engineer) for RAS
+// appetite-line checks (per proposal §4).
+// ---------------------------------------------------------------------------
+
+export const switchTestReportPayloadSchema = z.object({
+  /** windowId reported on. */
+  windowId: z.string().min(1),
+  /** Total `primary`-intent legs observed during the window. */
+  primaryIntentCount: z.number().int().nonnegative(),
+  /** Total legs actually routed via backup during the window. */
+  routedViaBackupCount: z.number().int().nonnegative(),
+  /** Observed override fraction, computed at report time. */
+  observedFraction: z.number().min(0).max(1),
+  /** Configured override fraction the window opened at. */
+  configuredFraction: z.number().min(0).max(1),
+  /**
+   * True iff `observedFraction` strayed outside the appetite band
+   * (quarterly default 0.05–0.10). The breach test itself is owned by
+   * Helena (Chief Risk Officer, governance) + Rohan (Risk engineer);
+   * v0 records the indicator on the report so the breach test has its
+   * input.
+   */
+  appetiteBandBreached: z.boolean(),
+  /** Free-text notes — exceptions, operator interventions, tooling gaps. */
+  notes: z.string().min(1),
+});
+
+export type SwitchTestReportPayload = z.infer<typeof switchTestReportPayloadSchema>;
+
+export function makeSwitchTestReport(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SwitchTestReportPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SwitchTestReport",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: switchTestReportPayloadSchema.parse(args.payload),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -2470,6 +2629,9 @@ export const TYPED_EVENT_TYPES = [
   "CounterpartyEligibilityScreened",
   "CounterpartyEligibilityRevalidated",
   "CounterpartyEligibilityBreached",
+  "SwitchTestActivated",
+  "SwitchTestEnded",
+  "SwitchTestReport",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

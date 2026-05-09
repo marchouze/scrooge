@@ -1,0 +1,35 @@
+{
+  "$schema": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md",
+  "asOf": "2026-05-09",
+  "source": "D-FX-CORRESPONDENT-PAIR-NAMING (PR #59)",
+  "primary": {
+    "tag": "primary",
+    "partyName": "Standard Bank of South Africa Ltd",
+    "lei": "[citation: TBC pending Tomas LEI registration — D-FX-CORRESPONDENT-PAIR-NAMING follow-on]",
+    "correspondentBankCode": "[citation: TBC pending Tomas BIC registration]",
+    "jurisdiction": "ZA"
+  },
+  "backup": {
+    "tag": "backup",
+    "partyName": "FirstRand Bank Ltd (RMB)",
+    "lei": "[citation: TBC pending Tomas LEI registration — D-FX-CORRESPONDENT-PAIR-NAMING follow-on]",
+    "correspondentBankCode": "[citation: TBC pending Tomas BIC registration]",
+    "jurisdiction": "ZA"
+  },
+  "reserve": [
+    {
+      "tag": "reserve-1",
+      "partyName": "Absa Bank Ltd",
+      "lei": "[citation: TBC]",
+      "correspondentBankCode": "[citation: TBC]",
+      "jurisdiction": "ZA"
+    },
+    {
+      "tag": "reserve-2",
+      "partyName": "Nedbank Ltd",
+      "lei": "[citation: TBC]",
+      "correspondentBankCode": "[citation: TBC]",
+      "jurisdiction": "ZA"
+    }
+  ]
+}
