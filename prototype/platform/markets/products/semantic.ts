@@ -483,20 +483,24 @@ export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[
     allowedValues: [],
     // Multi-X (Principle 5):
     //
-    // [verify: ProductTemplate does NOT directly carry legalEntityId,
-    // currency, jurisdiction — those live on the upstream `Product`
-    // record (types.ts §lines 285, 287, 292) which the template is
-    // derived from. The template's fields are
-    // `{primitives, extensions, compositionRule, fingerprint}` only.]
+    // Resolved 2026-05-10 (PR #118 follow-on, Kai authoring): the multi-X
+    // triple lives canonically on the upstream `Product` record
+    // (types.ts §lines 285 `legalEntityId`, 287 `currency`, 292
+    // `jurisdiction`). `productTemplateSchema` (composeProduct.ts §lines
+    // 67–82) carries `{primitives, extensions, compositionRule,
+    // fingerprint}` only — the triple is *not* duplicated inline.
     //
-    // The triple is therefore *carried-on-Product* (not on the template
-    // itself); a ProductTemplate is meaningful only in the context of
-    // its source Product, which carries the singular
-    // legalEntityId/currency/jurisdiction. Multi-X compliance is
-    // satisfied at the Product layer; the template inherits it by
-    // reference. If a future Slice extends ProductTemplate to carry the
-    // triple inline (e.g. for cross-entity composition), the multiX
-    // values below must be revisited.
+    // Derivation rule: a ProductTemplate is a derived view over a
+    // Product (composeFromProduct(product) at composeProduct.ts:148–154
+    // is the canonical entry point). Its multi-X context resolves
+    // through `product.legalEntityId / product.currency /
+    // product.jurisdiction` — never independently. The template is
+    // meaningful *only* in the context of its source Product; carrying
+    // the triple twice would invite drift, which Principle 1 (events as
+    // truth) forbids. Multi-X compliance is therefore satisfied at the
+    // Product layer; the template inherits it by reference. The
+    // round-trip test (`composeProduct.test.ts` — multi-X derivation)
+    // asserts this contract.
     multiX: {
       currency: "carried-on-Product",
       entity: "carried-on-Product",
