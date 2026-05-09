@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T08:28:05.567Z",
+  "asOf": "2026-05-09T09:27:12.086Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -628,6 +628,32 @@
       }
     },
     {
+      "id": "D-CI-GATE-INTEGRITY",
+      "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
+      "category": "near-term",
+      "owner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
+      "trigger": ">",
+      "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md"
+      ]
+    },
+    {
+      "id": "D-HIRE-SIX-SEATS-PACK",
+      "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
+      "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
+      "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
+      ],
+      "recommendation": {
+        "stance": "**Approve all six** role-brief recommendations as drafted.",
+        "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
+      }
+    },
+    {
       "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
       "title": "New Product Approval Policy v1.0",
       "category": "near-term",
@@ -640,6 +666,96 @@
       "recommendation": {
         "stance": "Approve as drafted.",
         "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
+      }
+    },
+    {
+      "id": "D-HIRE-NED-3",
+      "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "trigger": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted.",
+        "reasoning": "Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat)."
+      }
+    },
+    {
+      "id": "D-HIRE-NED-2",
+      "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "trigger": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted.",
+        "reasoning": "Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation."
+      }
+    },
+    {
+      "id": "D-HIRE-INDEPENDENT-CHAIR",
+      "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+      "trigger": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted.",
+        "reasoning": "Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test."
+      }
+    },
+    {
+      "id": "D-HIRE-HUMAN-CRO",
+      "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+      "trigger": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input.",
+        "reasoning": "Open questions in §9 require CEO direction before vendor engagement."
+      }
+    },
+    {
+      "id": "D-HIRE-COMPLIANCE-LEAD",
+      "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "trigger": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted.",
+        "reasoning": "Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search."
+      }
+    },
+    {
+      "id": "D-HIRE-COMPANY-SECRETARY",
+      "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
+      "category": "near-term",
+      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "trigger": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md"
+      ],
+      "recommendation": {
+        "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
+        "reasoning": ""
       }
     },
     {
@@ -670,36 +786,6 @@
       "recommendation": {
         "stance": "Approve.",
         "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-      }
-    },
-    {
-      "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-      "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-      "category": "near-term",
-      "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-      "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-      "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-      ],
-      "recommendation": {
-        "stance": "Approve all three author recommendation sets as drafted.",
-        "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
-      }
-    },
-    {
-      "id": "D-M4-FX-SUB-DECISIONS",
-      "title": "M4 FX foundation — sub-decisions surfaced",
-      "category": "near-term",
-      "owner": "Saskia (Head of Global Markets) + Kai (engineering)",
-      "trigger": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
-      "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md"
-      ],
-      "recommendation": {
-        "stance": "Approve all three as recommended; defaults are operationally safe.",
-        "reasoning": ""
       }
     }
   ],
@@ -847,52 +933,36 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-          "category": "near-term",
-          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-          ],
-          "recommendation": {
-            "stance": "Approve all three author recommendation sets as drafted.",
-            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
-          }
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-new-product-approval-policy.md",
+          "title": "scrooge · ceo decision record · d new product approval policy"
+        },
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md",
+          "title": "scrooge · ceo decision pack · d hire six seats"
+        },
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-event-store-scaling.md",
+          "title": "scrooge · ceo decision record · d event store scaling"
+        },
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
+          "title": "scrooge · ceo decision record · d product construction substrate"
+        },
         {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
           "title": "scrooge · ceo decision record · d hoz domain registration set defer"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
-          "title": "scrooge · ceo decision pack · s7 targeted 3 5 open questions"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_scrooge_testing-strategy-simulated-data.md",
-          "title": "scrooge · testing strategy simulated data"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
-          "title": "scrooge · ceo decision record · d ras b cluster concentration lines"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
-          "title": "scrooge · ceo decision record · d group structure"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [
         {
           "name": "PAX",
@@ -900,35 +970,51 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
+          "openDecisionsOwned": [
             {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_pax_independent-validation-role-brief.md",
-              "title": "pax · independent validation role brief"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_pax_role-research_compliance-lead.md",
-              "title": "pax · role research · compliance lead"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_pax_role-research_company-secretary.md",
-              "title": "pax · role research · company secretary"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_pax_role-research_ned-2.md",
-              "title": "pax · role research · ned 2"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_pax_role-research_independent-chair.md",
-              "title": "pax · role research · independent chair"
+              "id": "D-HIRE-SIX-SEATS-PACK",
+              "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
+              "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
+              "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
+              ],
+              "recommendation": {
+                "stance": "**Approve all six** role-brief recommendations as drafted.",
+                "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
+              }
             }
           ],
-          "lastActivityAt": "2026-05-09"
+          "recentDeliverables": [
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md",
+              "title": "pax · role brief · compliance lead"
+            },
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md",
+              "title": "pax · role brief · ned 2"
+            },
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md",
+              "title": "pax · role brief · company secretary"
+            },
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md",
+              "title": "pax · role brief · ned 3"
+            },
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md",
+              "title": "pax · role brief · human cro"
+            }
+          ],
+          "lastActivityAt": "2026-05-10"
         },
         {
           "name": "Nolan",
@@ -946,8 +1032,119 @@
             }
           ],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
+          "openDecisionsOwned": [
+            {
+              "id": "D-HIRE-SIX-SEATS-PACK",
+              "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
+              "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
+              "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
+              ],
+              "recommendation": {
+                "stance": "**Approve all six** role-brief recommendations as drafted.",
+                "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
+              }
+            },
+            {
+              "id": "D-HIRE-NED-3",
+              "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+              "trigger": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
+              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md"
+              ],
+              "recommendation": {
+                "stance": "Approve as drafted.",
+                "reasoning": "Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat)."
+              }
+            },
+            {
+              "id": "D-HIRE-NED-2",
+              "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+              "trigger": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
+              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md"
+              ],
+              "recommendation": {
+                "stance": "Approve as drafted.",
+                "reasoning": "Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation."
+              }
+            },
+            {
+              "id": "D-HIRE-INDEPENDENT-CHAIR",
+              "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+              "trigger": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
+              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md"
+              ],
+              "recommendation": {
+                "stance": "Approve as drafted.",
+                "reasoning": "Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test."
+              }
+            },
+            {
+              "id": "D-HIRE-HUMAN-CRO",
+              "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+              "trigger": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
+              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md"
+              ],
+              "recommendation": {
+                "stance": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input.",
+                "reasoning": "Open questions in §9 require CEO direction before vendor engagement."
+              }
+            },
+            {
+              "id": "D-HIRE-COMPLIANCE-LEAD",
+              "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+              "trigger": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
+              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md"
+              ],
+              "recommendation": {
+                "stance": "Approve as drafted.",
+                "reasoning": "Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search."
+              }
+            },
+            {
+              "id": "D-HIRE-COMPANY-SECRETARY",
+              "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
+              "category": "near-term",
+              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+              "trigger": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
+              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md"
+              ],
+              "recommendation": {
+                "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
+                "reasoning": ""
+              }
+            }
+          ],
           "recentDeliverables": [
+            {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md",
+              "title": "pax · role brief · company secretary"
+            },
             {
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_nolan_recruitment-scope-thin-human-layer.md",
@@ -967,19 +1164,14 @@
               "date": "2026-05-06",
               "path": "Owner Inbox/2026-05-06_ciso-shortlist.md",
               "title": "ciso shortlist"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_cae-hire-confirmation.md",
-              "title": "cae hire confirmation"
             }
           ],
-          "lastActivityAt": "2026-05-09"
+          "lastActivityAt": "2026-05-10"
         }
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 8,
       "totalRecentDeliverables": 15
     },
     {
@@ -1016,21 +1208,6 @@
           "recommendation": {
             "stance": "Approve as drafted.",
             "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
-          }
-        },
-        {
-          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-          "category": "near-term",
-          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-          ],
-          "recommendation": {
-            "stance": "Approve all three author recommendation sets as drafted.",
-            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
           }
         }
       ],
@@ -1085,21 +1262,6 @@
                 "stance": "Approve the framing and the Azure target.",
                 "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
               }
-            },
-            {
-              "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-              "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-              "category": "near-term",
-              "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-              "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-              "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-              ],
-              "recommendation": {
-                "stance": "Approve all three author recommendation sets as drafted.",
-                "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
-              }
             }
           ],
           "recentDeliverables": [
@@ -1137,23 +1299,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-              "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-              "category": "near-term",
-              "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-              "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-              "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-              ],
-              "recommendation": {
-                "stance": "Approve all three author recommendation sets as drafted.",
-                "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-09",
@@ -1171,7 +1317,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 5,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 12
     },
     {
@@ -1185,6 +1331,122 @@
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [
+        {
+          "id": "D-CI-GATE-INTEGRITY",
+          "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
+          "category": "near-term",
+          "owner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
+          "trigger": ">",
+          "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md"
+          ]
+        },
+        {
+          "id": "D-HIRE-SIX-SEATS-PACK",
+          "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
+          "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
+          "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
+          ],
+          "recommendation": {
+            "stance": "**Approve all six** role-brief recommendations as drafted.",
+            "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
+          }
+        },
+        {
+          "id": "D-HIRE-NED-3",
+          "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+          "trigger": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
+          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted.",
+            "reasoning": "Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat)."
+          }
+        },
+        {
+          "id": "D-HIRE-NED-2",
+          "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+          "trigger": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
+          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted.",
+            "reasoning": "Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation."
+          }
+        },
+        {
+          "id": "D-HIRE-INDEPENDENT-CHAIR",
+          "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+          "trigger": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
+          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted.",
+            "reasoning": "Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test."
+          }
+        },
+        {
+          "id": "D-HIRE-HUMAN-CRO",
+          "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+          "trigger": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
+          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input.",
+            "reasoning": "Open questions in §9 require CEO direction before vendor engagement."
+          }
+        },
+        {
+          "id": "D-HIRE-COMPLIANCE-LEAD",
+          "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+          "trigger": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
+          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted.",
+            "reasoning": "Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search."
+          }
+        },
+        {
+          "id": "D-HIRE-COMPANY-SECRETARY",
+          "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+          "trigger": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
+          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md"
+          ],
+          "recommendation": {
+            "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
+            "reasoning": ""
+          }
+        },
         {
           "id": "D-EVENT-STORE-SCALING",
           "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
@@ -1213,21 +1475,6 @@
           "recommendation": {
             "stance": "Approve.",
             "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-          }
-        },
-        {
-          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-          "category": "near-term",
-          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-          ],
-          "recommendation": {
-            "stance": "Approve all three author recommendation sets as drafted.",
-            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
           }
         }
       ],
@@ -1473,6 +1720,17 @@
                   }
                 ]
               }
+            },
+            {
+              "id": "D-CI-GATE-INTEGRITY",
+              "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
+              "category": "near-term",
+              "owner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
+              "trigger": ">",
+              "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
+              "sourceDocs": [
+                "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md"
+              ]
             },
             {
               "id": "D-EVENT-STORE-SCALING",
@@ -2032,7 +2290,7 @@
       ],
       "totalActive": 2,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 11,
+      "totalOpenDecisions": 19,
       "totalRecentDeliverables": 34
     },
     {
@@ -2046,6 +2304,21 @@
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [
+        {
+          "id": "D-HIRE-SIX-SEATS-PACK",
+          "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+          "category": "near-term",
+          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
+          "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
+          "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
+          ],
+          "recommendation": {
+            "stance": "**Approve all six** role-brief recommendations as drafted.",
+            "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
+          }
+        },
         {
           "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
           "title": "New Product Approval Policy v1.0",
@@ -2102,6 +2375,11 @@
           "recentDeliverables": [
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_bea_ifrs10-consolidation-substrate-v0.md",
+              "title": "bea · ifrs10 consolidation substrate v0"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_bea_accounting-readiness.md",
               "title": "bea · accounting readiness"
             },
@@ -2119,11 +2397,6 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md",
               "title": "bea · finance policies bundle v0"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
-              "title": "core policies finance"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -2152,7 +2425,7 @@
       ],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 12
     },
     {
@@ -2273,36 +2546,6 @@
             "stance": "Approve.",
             "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
           }
-        },
-        {
-          "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-          "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-          "category": "near-term",
-          "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-          "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-          "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-          ],
-          "recommendation": {
-            "stance": "Approve all three author recommendation sets as drafted.",
-            "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
-          }
-        },
-        {
-          "id": "D-M4-FX-SUB-DECISIONS",
-          "title": "M4 FX foundation — sub-decisions surfaced",
-          "category": "near-term",
-          "owner": "Saskia (Head of Global Markets) + Kai (engineering)",
-          "trigger": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
-          "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md"
-          ],
-          "recommendation": {
-            "stance": "Approve all three as recommended; defaults are operationally safe.",
-            "reasoning": ""
-          }
         }
       ],
       "recentlyResolvedDecisions": [],
@@ -2356,36 +2599,6 @@
                 "stance": "Approve.",
                 "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
               }
-            },
-            {
-              "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-              "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-              "category": "near-term",
-              "owner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-              "trigger": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-              "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md"
-              ],
-              "recommendation": {
-                "stance": "Approve all three author recommendation sets as drafted.",
-                "reasoning": "Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items."
-              }
-            },
-            {
-              "id": "D-M4-FX-SUB-DECISIONS",
-              "title": "M4 FX foundation — sub-decisions surfaced",
-              "category": "near-term",
-              "owner": "Saskia (Head of Global Markets) + Kai (engineering)",
-              "trigger": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
-              "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md"
-              ],
-              "recommendation": {
-                "stance": "Approve all three as recommended; defaults are operationally safe.",
-                "reasoning": ""
-              }
             }
           ],
           "recentDeliverables": [
@@ -2420,7 +2633,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 7,
+      "totalOpenDecisions": 3,
       "totalRecentDeliverables": 10
     },
     {
@@ -2551,6 +2764,11 @@
         },
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_owen_shared-board-governance-update.md",
+          "title": "owen · shared board governance update"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md",
           "title": "owen · thin human layer composition final"
         },
@@ -2563,11 +2781,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md",
           "title": "imani owen · legal entity tree v0"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_owen_substrate-exception-register.md",
-          "title": "owen · substrate exception register"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -2706,6 +2919,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_iris_per-entity-popia-io-designation-scoping.md",
+          "title": "iris · per entity popia io designation scoping"
+        },
+        {
           "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_iris_popia-controls-snapshot.md",
           "title": "iris · popia controls snapshot"
@@ -2721,12 +2939,12 @@
           "title": "core policies compliance privacy"
         }
       ],
-      "lastActivityAt": "2026-05-08",
+      "lastActivityAt": "2026-05-09",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 3
+      "totalRecentDeliverables": 4
     },
     {
       "name": "Thandiwe",
@@ -2757,7 +2975,7 @@
           "title": "thandiwe · audit committee prep"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [
         {
           "name": "Vera",
@@ -2784,6 +3002,11 @@
           ],
           "recentDeliverables": [
             {
+              "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md",
+              "title": "vera · ci gate integrity finding"
+            },
+            {
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_vera_overnight-recon.md",
               "title": "vera · overnight recon"
@@ -2802,14 +3025,9 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_vera_overnight-recon.md",
               "title": "vera · overnight recon"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_procedure-audit-actor-and-citation.md",
-              "title": "procedure audit actor and citation"
             }
           ],
-          "lastActivityAt": "2026-05-09"
+          "lastActivityAt": "2026-05-10"
         }
       ],
       "totalActive": 1,
@@ -2883,6 +3101,57 @@
   ],
   "ownerInboxFeed": [
     {
+      "filename": "2026-05-10_vera_ci-gate-integrity-finding.md",
+      "path": "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md",
+      "date": "2026-05-10",
+      "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
+      "decisionRequired": true,
+      "author": "Vera (Internal audit / continuous-assurance engineer)",
+      "summary": ">",
+      "decisionId": "D-CI-GATE-INTEGRITY",
+      "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
+      "decisionOwner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-PRODUCT-CONSTRUCTION-SUBSTRATE, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-new-product-approval-policy.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-new-product-approval-policy.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-NEW-PRODUCT-APPROVAL-POLICY, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-event-store-scaling.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-event-store-scaling.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-EVENT-STORE-SCALING, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md",
+      "date": "2026-05-10",
+      "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+      "decisionRequired": true,
+      "author": "Scrooge (Chief of Staff / Orchestrator)",
+      "summary": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
+      "decisionId": "D-HIRE-SIX-SEATS-PACK",
+      "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
+      "decisionRecommendation": "**Approve all six** role-brief recommendations as drafted. Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches.",
+      "decisionOwner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
+      "decisionStatus": "open"
+    },
+    {
       "filename": "2026-05-10_saskia_new-product-approval-policy.md",
       "path": "Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md",
       "date": "2026-05-10",
@@ -2894,6 +3163,90 @@
       "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
       "decisionRecommendation": "Approve as drafted. Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation.",
       "decisionOwner": "Saskia (lead) · Helena · Camille · Zara",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_pax_role-brief_ned-3.md",
+      "path": "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md",
+      "date": "2026-05-10",
+      "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
+      "decisionRequired": true,
+      "author": "PAX (Role researcher)",
+      "summary": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
+      "decisionId": "D-HIRE-NED-3",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "decisionRecommendation": "Approve as drafted. Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat).",
+      "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_pax_role-brief_ned-2.md",
+      "path": "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md",
+      "date": "2026-05-10",
+      "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
+      "decisionRequired": true,
+      "author": "PAX (Role researcher)",
+      "summary": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
+      "decisionId": "D-HIRE-NED-2",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
+      "decisionRecommendation": "Approve as drafted. Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation.",
+      "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_pax_role-brief_independent-chair.md",
+      "path": "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md",
+      "date": "2026-05-10",
+      "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
+      "decisionRequired": true,
+      "author": "PAX (Role researcher)",
+      "summary": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
+      "decisionId": "D-HIRE-INDEPENDENT-CHAIR",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
+      "decisionRecommendation": "Approve as drafted. Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test.",
+      "decisionOwner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_pax_role-brief_human-cro.md",
+      "path": "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md",
+      "date": "2026-05-10",
+      "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
+      "decisionRequired": true,
+      "author": "PAX (Role researcher)",
+      "summary": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
+      "decisionId": "D-HIRE-HUMAN-CRO",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "decisionRecommendation": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input. Open questions in §9 require CEO direction before vendor engagement.",
+      "decisionOwner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_pax_role-brief_compliance-lead.md",
+      "path": "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md",
+      "date": "2026-05-10",
+      "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
+      "decisionRequired": true,
+      "author": "PAX (Role researcher)",
+      "summary": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
+      "decisionId": "D-HIRE-COMPLIANCE-LEAD",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "decisionRecommendation": "Approve as drafted. Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search.",
+      "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_pax_role-brief_company-secretary.md",
+      "path": "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md",
+      "date": "2026-05-10",
+      "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
+      "decisionRequired": true,
+      "author": "PAX (Role researcher)",
+      "summary": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
+      "decisionId": "D-HIRE-COMPANY-SECRETARY",
+      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
+      "decisionRecommendation": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
+      "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
       "decisionStatus": "open"
     },
     {
@@ -3015,111 +3368,6 @@
       "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-LEGAL-ENTITY-TREE-V0, 2026-05-09",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-HOZ-DOMAIN-REGISTRATION-SET, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-GROUP-STRUCTURE, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-fx-correspondent-pair-naming.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fx-correspondent-pair-naming.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-FX-CORRESPONDENT-PAIR-NAMING, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-FSP-LICENCE-NECESSITY, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-cro-climate-fluency-preferred.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-cro-climate-fluency-preferred.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-CRO-CLIMATE-FLUENCY, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-BANK-NAME-SELECTION, 2026-05-09 (revised)",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
-      "date": "2026-05-09",
-      "title": "CEO decision pack — S7-Targeted #3 / #4 / #5 open questions",
-      "decisionRequired": true,
-      "author": "Scrooge",
-      "summary": "One-pass adjudication of the fifteen open questions that gate the next three S7-Targeted critical-path items — Nadia validation-methodology v0 (#3), Rohan backtest harness v0 (#4), Saskia + Kai pre-trade gateway envelope v0 (#5). Each sub-decision carries the author's recommendation, the default-if-no-decision, and any cross-brief interaction. Resolving all three unblocks slice 1 of every item; selective resolution unblocks the corresponding subset.",
-      "decisionId": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Adjudicate the three sub-decisions (one per S7-Targeted item). For each, either approve the author's recommendation as drafted, override on a specific question, or send back a question for re-scoping. Sub-decisions can be resolved together or independently.",
-      "decisionRecommendation": "Approve all three author recommendation sets as drafted. Each recommendation is internally consistent; the cross-brief interactions resolve cleanly under the \"Tier-1 first; v0 is shape, not depth\" framing all three authors converge on; substrate gaps are surfaced (not hidden) and tracked as roadmap items.",
-      "decisionOwner": "Scrooge (orchestration) · Nadia / Rohan / Saskia + Kai (substantive owners) · Helena (CRO governance line for #3 and #4) · Devon (COO governance line for #5)",
-      "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
-      "path": "Owner Inbox/2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
-      "date": "2026-05-09",
-      "title": "FAIS-KI handover Gate (a) closed and PAX FSP-licence dispatch withdrawn — D-FSP-LICENCE-NECESSITY confirm-A actioning",
-      "decisionRequired": false,
-      "author": "Saskia (Head of Global Markets, governance)",
-      "summary": "Completion note recording Saskia (Head of Global Markets, governance)'s actioning of D-FSP-LICENCE-NECESSITY confirm-A (CEO decision record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62). Two updates landed in PR `claude/saskia-fsp-confirm-a-pax-withdraw` — (1) the FAIS-KI handover note (PR #45) is updated to record Gate (a) — external-counsel confirmation of FSP-licensing scope — as **closed**, and the Marc-interim → Saskia-steady-state transition trigger is reduced to **Gate (b) alone** (Saskia FAIS-KI fit-and-proper file completion under the Determination of Fit and Proper Requirements 2017); (2) the PAX (Role researcher) FSP-licence-necessity research dispatch (PR #45) is **withdrawn** with a header-note citing the decision record, and the brief is moved from `Team Inbox/` to `Team Inbox/actioned/` per the team-inbox-hygiene rule. Steady-state confirmation: Saskia is the steady-state FAIS Key Individual under FAIS Act 37 of 2002 s.8, subject only to fit-and-proper file completion. Transition cadence accelerates — no longer waits on counsel; gates on Saskia's own fit-and-proper file. Counsel role narrowed to Posture-A application-bundle ratification at the licence-application gate (does not re-litigate A-vs-B)."
-    },
-    {
-      "filename": "2026-05-09_saskia_fais-ki-handover-note.md",
-      "path": "Owner Inbox/2026-05-09_saskia_fais-ki-handover-note.md",
-      "date": "2026-05-09",
-      "title": "FAIS Key Individual handover note — Marc-interim → Saskia-steady-state",
-      "decisionRequired": false,
-      "author": "Saskia",
-      "summary": "Acknowledgement of the steady-state FAIS Key Individual seat under the approved thin-human-layer composition (D-THIN-HUMAN-LAYER-MINIMUM, 2026-05-08). Records the Marc-interim → Saskia-steady-state handover, the fit-and-proper requirements the steady-state holder must satisfy under FAIS, and the (now-narrowed) gating trigger for the transition. **Updated 2026-05-09 by D-FSP-LICENCE-NECESSITY confirm-A (`Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62):** Gate (a) — external-counsel confirmation of FSP-licensing scope — is **closed** (CEO read the FSP-scope question as pre-resolved Posture A; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question). The handover now gates on **Gate (b) alone** (Saskia FAIS-KI fit-and-proper file completion under the Determination of Fit and Proper Requirements 2017). The PAX research dispatch is **withdrawn** and moved to `Team Inbox/actioned/`."
-    },
-    {
-      "filename": "2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
-      "path": "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
-      "date": "2026-05-09",
-      "title": "Pre-trade gateway envelope v0 — scoping brief",
-      "decisionRequired": false,
-      "author": "Saskia + Kai",
-      "summary": "Scopes the v0 envelope of pre-trade checks every order traverses before it reaches an exchange or counterparty. Names the cross-persona dependencies, the event-type surface, the substrate gaps, and the open questions Marc must adjudicate before code lands. This is the brief, not the gateway."
-    },
-    {
-      "filename": "2026-05-09_saskia-kai_m4-sub-decisions.md",
-      "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
-      "date": "2026-05-09",
-      "title": "M4 FX foundation — sub-decisions surfaced",
-      "decisionRequired": true,
-      "author": "Saskia, Kai",
-      "summary": "M4 foundation slice surfaces three sub-decisions whose answers are not yet in the inbox: settlement-path concentration backup correspondent, FX FinSurv URN cluster ownership cadence, and primary FX venue selection. Each is recommended-with-default; none gates the foundation slice.",
-      "decisionId": "D-M4-FX-SUB-DECISIONS",
-      "decisionCategory": "near-term",
-      "decisionForCEO": "Approve the three M4 FX sub-decisions (backup correspondent, FinSurv curation cadence, primary venue selection) — or amend the recommended defaults.",
-      "decisionRecommendation": "Approve all three as recommended; defaults are operationally safe.",
-      "decisionOwner": "Saskia (Head of Global Markets) + Kai (engineering)",
-      "decisionStatus": "open"
     }
   ],
   "policies": [
