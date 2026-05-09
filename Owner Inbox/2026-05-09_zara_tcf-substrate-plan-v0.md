@@ -45,11 +45,11 @@ The bank's posture is institutional-only / wholesale per `project_strategic_foun
 | **TCF 1** (culture and governance) | **Yes — fully.** | TCF 1 is a governance / culture obligation, not a customer-segment obligation. The Board's TCF accountability binds regardless of whether counterparties are retail or institutional. Owen owns Board-level TCF reporting; Zara owns the governance-framework reflection. [citation: TBC — `Owner Inbox/2026-05-06_governance-framework.md` does not yet name TCF as a Board-pack standing item; gap.] |
 | **TCF 2** (products and services) | **Yes — but reframed.** | The "identified customer groups" become "identified institutional / professional counterparty types". Product-design discipline applies; target-market identification is the sub-set of institutions the product serves. **Direct intersection with Saskia's NPA policy at PR #39** — the New Product Approval gate is where target-market identification and product-design suitability are tested before go-live. [citation: D-NEW-PRODUCT-APPROVAL-POLICY, PR #39 if it lands; `project_product_lifecycle_npa_vs_engineering.md` for the NPA-as-go-live-gate framing.] |
 | **TCF 3** (clear and appropriate information) | **Partial.** | Disclosure obligations to institutional counterparties are calibrated differently — institutional counterparties are presumed to understand product mechanics. But ongoing information flow (post-trade reporting, mark-to-market, corporate-action notices) still applies, calibrated to the institutional counterparty's information needs. The substrate is real (post-trade reporting, statements, corporate-action notices), narrower than retail. |
-| **TCF 4** (suitable advice) | **Conditional — depends on D-FSP-LICENCE-NECESSITY.** | If the bank operates under Posture A (FSP licence pursued; Marc-interim KI / Saskia steady-state), advice is given and TCF 4 binds — substrate is the FAIS advice-record-capture pipeline. If Posture B (carve-out), no advice is given; TCF 4 does not bind. **This outcome is gated on the FSP-licence-necessity research dispatch** [citation: `Owner Inbox/2026-05-09_zara_fsp-application-path.md`]. |
+| **TCF 4** (suitable advice) | **Binding under Posture A confirmed (D-FSP-LICENCE-NECESSITY 2026-05-09; PR #62).** | The bank operates under Posture A as steady-state: FSP licence pursued; Marc-interim KI; Saskia (Head of Global Markets, governance) steady-state KI. Advice is given; TCF 4 binds. Substrate is the FAIS advice-record-capture pipeline, now load-bearing. Cross-references Mira (Compliance / RegTech engineer)'s parallel FAIS-record-keeping URN cluster work on `Regulations/_obligations-register.md` (`claude/mira-fais-posture-a-register`; cluster: `ORG-FAIS-RK-ADVICE`, `ORG-FAIS-RK-SUITABILITY`, `ORG-FAIS-RK-FEE-DISCLOSURE`, `ORG-FAIS-RK-COMPLAINT-HANDLING`, `ORG-FAIS-RK-GENERAL-CODE`, `ORG-FAIS-KI`). [citations: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62); `Owner Inbox/2026-05-09_zara_fsp-application-path.md` (header).] |
 | **TCF 5** (performance and service expectations) | **Yes — but reframed.** | Institutional counterparties are entitled to performance against contractual / disclosed expectations. The bank's product disclosures (term sheets, ISDA / GMRA framing, prospectuses where applicable) define expectations; the bank must perform against them. Service-quality expectation is the SLA the bank has committed to in counterparty agreements. |
 | **TCF 6** (switching, redress, and complaints) | **Yes — fully on complaints; partial on switching / redress.** | Complaint-handling is universal — institutional counterparties have a right to complain and to be heard. Substrate is the complaint-handling pipeline (see §3.1). Switching / redress is more product-specific (e.g., loan early-settlement, derivative novation); the substrate exists in the contracts (Imani's clause library) and the operations layer (Tomas's settlement). |
 
-**Headline.** All six outcomes apply at the bank's posture, with TCF 4 gated on the FSP-licence decision and TCF 3 / TCF 5 / TCF 6 reframed for the wholesale context.
+**Headline.** All six outcomes apply at the bank's posture. TCF 4 is **binding** under Posture A as confirmed by the CEO on 2026-05-09 (D-FSP-LICENCE-NECESSITY confirm-A; PR #62); TCF 3 / TCF 5 / TCF 6 are reframed for the wholesale context.
 
 [citation: Mira's parallel obligations-register update will surface row(s) for TCF outcomes under `ORG-CD-*` series; pending row content. The COMMENCEMENT-BIND classification per `project_rules_bind_at_commencement.md` means substrate is staged for licence-day even though the binding fires at commencement-of-trading.]
 
@@ -69,15 +69,15 @@ TCF imposes the following substrate footprint. Each capability is an engineering
 
 **Status:** `PLANNED` substrate gap S-1.
 
-### 3.2 Advice-record substrate / FAIS-record-keeping (TCF 4)
+### 3.2 Advice-record substrate / FAIS-record-keeping (TCF 4) — load-bearing under Posture A
 
-**Capability:** if Posture A holds (FSP licence pursued), every advice interaction is recorded — counterparty profile, advice given, suitability assessment, fee disclosure — under the FAIS General Code of Conduct + Determination of Fit and Proper 2017.
+**Capability:** Posture A is the confirmed steady-state (D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09; PR #62). Every advice interaction is recorded — counterparty profile, advice given, suitability assessment, fee disclosure — under the FAIS General Code of Conduct + Determination of Fit and Proper 2017.
 
-**Engineering owner:** Niko on the customer-interaction record-capture; Mira on the FAIS-substrate engine (suitability rules, record format, retention).
+**Engineering owner:** Niko (Sales / CRM engineer) on the customer-interaction record-capture; Mira (Compliance / RegTech engineer) on the FAIS-substrate engine (suitability rules, record format, retention). Mira's parallel FAIS-record-keeping URN cluster work (branch `claude/mira-fais-posture-a-register`; URNs `ORG-FAIS-RK-ADVICE`, `ORG-FAIS-RK-SUITABILITY`, `ORG-FAIS-RK-FEE-DISCLOSURE`, `ORG-FAIS-RK-COMPLAINT-HANDLING`, `ORG-FAIS-RK-GENERAL-CODE`, `ORG-FAIS-KI` on `Regulations/_obligations-register.md`) is the citation backbone this substrate consumes.
 
-**Procedure footprint:** existing `Procedures/by-policy/fais-advice-record-capture.md` becomes binding under TCF 4 + Posture A. Conditional under Posture B.
+**Procedure footprint:** existing `Procedures/by-policy/fais-advice-record-capture.md` is **binding** under TCF 4 + Posture A.
 
-**Status:** `PLANNED` substrate; gating decision is D-FSP-LICENCE-NECESSITY.
+**Status:** `LOAD-BEARING` substrate; gating decision D-FSP-LICENCE-NECESSITY resolved 2026-05-09 (PR #62). Engineering build proceeds; commencement-of-trading triggers the active obligation per `project_rules_bind_at_commencement.md`.
 
 ### 3.3 Product-suitability checks (TCF 2 + TCF 4)
 
@@ -129,7 +129,7 @@ TCF imposes the following substrate footprint. Each capability is an engineering
 
 | # | Question | Owner | Resolution path |
 |---|---|---|---|
-| Q1 | Does TCF 4 (suitable advice) bind at all? | Marc (decision); PAX research | Gated on D-FSP-LICENCE-NECESSITY [citation: `Owner Inbox/2026-05-09_zara_fsp-application-path.md`]. |
+| Q1 | ~~Does TCF 4 (suitable advice) bind at all?~~ **Resolved 2026-05-09.** | Marc (decision) | **Resolved**: TCF 4 binds under Posture A confirmed. D-FSP-LICENCE-NECESSITY closed `confirm-A-no-research` [citation: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62); `Owner Inbox/2026-05-09_zara_fsp-application-path.md` header]. |
 | Q2 | What FSCA Conduct Standard citation rows belong in `Regulations/_obligations-register.md` for the six TCF outcomes? | Mira | Mira's parallel obligations-register update under D-THIN-HUMAN-LAYER-MINIMUM follow-on; `ORG-CD-*` series. |
 | Q3 | Does Saskia's NPA policy at PR #39 expose `TargetMarket` and `SuitabilityProfile` fields the TCF 2 / TCF 4 substrate can inherit? | Saskia (PR #39) | If PR #39 lands with these fields, TCF substrate inherits; if not, TCF substrate derives them (duplication risk under Principle 6). [citation: PR #39 if it lands.] |
 | Q4 | Does the bank's counterparty-categorisation discipline (KYC / institutional / professional) align with the FSCA's expected counterparty-type framework for wholesale TCF reframing? | Mira + Niko | Build-phase: Mira reads FSCA Conduct Standards on wholesale counterparties; cross-checks with `Procedures/by-policy/client-categorisation.md`. |
