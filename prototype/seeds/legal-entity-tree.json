@@ -1,0 +1,91 @@
+{
+  "$schema": "Regulations/_legal-entity-tree.md",
+  "asOf": "2026-05-09",
+  "source": "D-LEGAL-ENTITY-TREE-V0 (PR #82) + D-REGULATORY-PERIMETER (PR #85)",
+  "entities": [
+    {
+      "entityId": "urn:legal-entity:hoz:hoz-group:v1",
+      "legalName": "Hoz Group Limited",
+      "registeredForm": "Ltd",
+      "jurisdiction": "ZA",
+      "registeredOffice": {
+        "street": "[citation: TBC pending Imani + counsel — registered-office secured]",
+        "city": "Johannesburg",
+        "country": "ZA"
+      },
+      "parentEntityId": null,
+      "regulatoryRegime": {
+        "primaryRegulator": "none-companies-act-only",
+        "regimeAnchor": [
+          "Companies Act 71 of 2008",
+          "Banks Act 94 of 1990 § 60 (consolidated-supervision look-through, not separate licence)"
+        ]
+      },
+      "directors": [],
+      "registrationDate": "[citation: TBC pending CIPC reservation execution — D-HOZ-DOMAIN-REGISTRATION-SET deferred per PR #86]",
+      "citations": [
+        "[citation: TBC pending counsel verification — Companies Act 71 of 2008 § 8(2)(b) public-company]",
+        "[citation: TBC pending counsel verification — Banks Act 94 of 1990 § 60 controlling-company designation]",
+        "[citation: TBC pending counsel verification — Regulations Relating to Banks Reg 36]"
+      ]
+    },
+    {
+      "entityId": "urn:legal-entity:hoz:hoz-bank:v1",
+      "legalName": "Hoz Bank Limited",
+      "registeredForm": "Ltd",
+      "jurisdiction": "ZA",
+      "registeredOffice": {
+        "street": "[citation: TBC pending Imani + counsel — registered-office secured]",
+        "city": "Johannesburg",
+        "country": "ZA"
+      },
+      "parentEntityId": "urn:legal-entity:hoz:hoz-group:v1",
+      "regulatoryRegime": {
+        "primaryRegulator": "PA",
+        "regimeAnchor": [
+          "Banks Act 94 of 1990 (s.7 banking licence)",
+          "Joint Standards",
+          "BCBS principles as applied by PA",
+          "FAIS Act 37 of 2002 (where applicable per D-FSP-LICENCE-NECESSITY)"
+        ]
+      },
+      "directors": [],
+      "registrationDate": "[citation: TBC pending CIPC reservation execution — D-HOZ-DOMAIN-REGISTRATION-SET deferred per PR #86]",
+      "citations": [
+        "[citation: TBC pending counsel verification — Banks Act 94 of 1990 § 7 banking-licence]",
+        "[citation: TBC pending counsel verification — Banks Act 94 of 1990 § 11 bank-as-public-company]",
+        "[citation: TBC pending counsel verification — Joint Standard 1 of 2024]",
+        "[citation: TBC pending counsel verification — FAIS Act 37 of 2002 § 7]"
+      ]
+    },
+    {
+      "entityId": "urn:legal-entity:hoz:hoz-securities:v1",
+      "legalName": "Hoz Securities Limited",
+      "registeredForm": "Ltd",
+      "jurisdiction": "ZA",
+      "registeredOffice": {
+        "street": "[citation: TBC pending Imani + counsel — registered-office secured]",
+        "city": "Johannesburg",
+        "country": "ZA"
+      },
+      "parentEntityId": "urn:legal-entity:hoz:hoz-group:v1",
+      "regulatoryRegime": {
+        "primaryRegulator": "JSE",
+        "regimeAnchor": [
+          "JSE Listings Requirements",
+          "JSE Equities + Bonds Membership Rules",
+          "STRATE Participant Rules",
+          "FAIS Act 37 of 2002 (secondary, FSCA conduct standards)"
+        ]
+      },
+      "directors": [],
+      "registrationDate": "[citation: TBC pending CIPC reservation execution — D-HOZ-DOMAIN-REGISTRATION-SET deferred per PR #86]",
+      "citations": [
+        "[citation: TBC pending counsel verification — JSE Equities Rules]",
+        "[citation: TBC pending counsel verification — JSE Debt Listings Requirements]",
+        "[citation: TBC pending counsel verification — STRATE participation rules]",
+        "[citation: TBC pending counsel verification — FSCA Determination of Securities Services]"
+      ]
+    }
+  ]
+}
