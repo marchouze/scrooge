@@ -1,8 +1,8 @@
 ---
-title: "Hoz brand-application v3 — lockups, favicons, sample headers, pronunciation, voice on Hoz"
+title: "Hoz brand-application v3 — lockups, favicons, pronunciation, voice on Hoz (sample headers v3.1 deferred)"
 author: "Linnea (Brand & design lead)"
 date: 2026-05-09
-summary: "v3 brand-supplement closes the brand-application loop after the substrate v0 (PR #61). Confirms pronunciation posture (rhymes with 'pause', /hɒz/), delivers the full lockup family (wordmark / logomark / lockup / reversed), iterates the favicon set (multi-size SVG + apple-touch + manifest.json), produces three sample document-header renderings (regulator-submission cover, customer correspondence, board-pack title page), and adds voice-on-Hoz refinements to the inaugural voice-and-tone."
+summary: "v3 brand-supplement closes most of the brand-application loop after the substrate v0 (PR #61). Confirms pronunciation posture (rhymes with 'pause', /hɒz/), delivers the full lockup family (wordmark / logomark / lockup / reversed), iterates the favicon set (multi-size SVG + apple-touch + manifest.json), and adds voice-on-Hoz refinements to the inaugural voice-and-tone. Three sample document-header renderings (regulator-submission cover, customer correspondence, board-pack title page) are scoped in §4 but deferred to v3.1."
 decision-required: false
 supersedes: "2026-05-07_linnea_inaugural-brand-package.md (v3 supplement, additive — palette, typography, voice principles all stand)"
 ---
@@ -163,9 +163,11 @@ Manifest fields: `name`, `short_name`, `description`, `icons` (array referencing
 
 ---
 
-## 4. Sample document headers
+## 4. Sample document headers — [v3.1 deferred]
 
-Three sample renderings demonstrating Hoz at the presentation layer. **These are samples, not binding templates** — the binding templates land later as Owen / Camille / Saskia / Mira do their own template sweeps and Linnea reviews against this supplement. The samples are HTML files (renderable in any browser) in `Owner Inbox/`.
+> **Status:** scoped here, **not shipped in v3**. The three sample HTML renderings below are deferred to v3.1 as a separate close-out. v3 ships the lockup family + favicons + manifest + voice posture; v3.1 will add the sample headers that exercise those assets at the document-presentation layer. The §4 design choices below stand as the v3.1 brief.
+
+Three sample renderings demonstrating Hoz at the presentation layer. **These are samples, not binding templates** — the binding templates land later as Owen / Camille / Saskia / Mira do their own template sweeps and Linnea reviews against this supplement. The samples will be HTML files (renderable in any browser) in `Owner Inbox/`.
 
 ### 4.1 Regulator-submission cover sheet
 
@@ -260,7 +262,7 @@ The name does the smallest possible job: it is short, pronounceable across audie
 1. **`home.html` `<head>` block — favicon + manifest wire-up deferred.** The v3 supplement ships the favicon set + manifest.json + sample HTMLs but does not modify `home.html` (in-flight conflict with PR #61 substrate v0). After PR #61 lands, the next dashboard-template agent run wires the `<link rel="icon">` + `<link rel="apple-touch-icon">` + `<link rel="manifest">` block in `home.html`, and the per-page retrofit across the 8 sibling pages (activity / agents / architecture / decision / escalations / fleet / health / index / policies) is captured as a v4 task. **Roadmap item.**
 2. **PNG / ICO favicon fallbacks.** v3 ships SVG-only at all favicon sizes. The build pipeline should rasterise to PNG / ICO from the SVG sources at deploy time. Atlas substrate task. **Roadmap item.**
 3. **No automated lockup-vs-source drift recon.** The wordmark / logomark / lockup / reversed-lockup variants share the same construction grid. Drift between them (a chord stroke-width change in one variant that doesn't propagate) is not asserted by any test. Recommend a recon line that asserts the four lockup files share consistent geometric primitives. **Vera Wave-4 candidate.**
-4. **Sample-template-to-binding-template progression.** §4 ships three sample HTMLs (regulator cover, customer letter, board-pack title). The binding templates that downstream owners (Owen, Camille, Saskia, Mira) use must derive from these samples. The substrate that propagates v3 sample → binding template does not yet exist. **Roadmap item — capture in the brand-review procedure when activated.**
+4. **Sample-template HTML renderings — deferred to v3.1.** §4 scopes three sample HTMLs (regulator cover, customer letter, board-pack title) but v3 does **not** ship them. v3.1 will produce the renderings against the §4 brief. Once shipped, the binding templates that downstream owners (Owen, Camille, Saskia, Mira) use must derive from those samples; the substrate that propagates sample → binding template does not yet exist. **v3.1 + roadmap item.**
 5. **No brand-asset event-typing.** Per the v1 implementation roadmap §7 step 8 (Atlas types `BrandAssetPublished`, `BrandReviewCompleted`, `NamingShortlistProposed`), the v3 supplement and the SVG / favicon assets it ships should emit `BrandAssetPublished` events on landing. The event types are not yet implemented. **Atlas roadmap item; carries forward from v1.**
 6. **Voice-on-Hoz copy-deck.** §5 codifies the posture; the copy deck (10–20 worked examples per surface — letter openers, call scripts, regulator cover lines, internal memo openers) does not yet exist. Recommended next Linnea run. **Linnea roadmap item.**
 
@@ -274,7 +276,7 @@ The name does the smallest possible job: it is short, pronounceable across audie
 - **Authority (brand-substance layer):** `Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md` — palette §3, typography §4, voice §5, logo Direction A §2.1.
 - **Active assets (v0):** `prototype/dashboard/public/brand/logo-direction-{a,b,c}.svg`, `prototype/dashboard/public/favicon.svg`, `prototype/dashboard/public/_brand.css`.
 - **Active assets (v3 — this supplement):** `prototype/dashboard/public/brand/lockup-{wordmark,logomark,lockup,lockup-reversed}.svg`, `prototype/dashboard/public/brand/favicon-{16,32,64,192,512}.svg`, `prototype/dashboard/public/brand/apple-touch-icon.svg`, `prototype/dashboard/public/manifest.json`.
-- **Active samples (v3 — this supplement):** `Owner Inbox/2026-05-09_linnea_hoz-sample-regulator-cover.html`, `Owner Inbox/2026-05-09_linnea_hoz-sample-customer-correspondence.html`, `Owner Inbox/2026-05-09_linnea_hoz-sample-board-pack-title.html`.
+- **Sample HTMLs (v3.1 deferred — paths reserved):** `Owner Inbox/2026-05-09_linnea_hoz-sample-regulator-cover.html`, `Owner Inbox/2026-05-09_linnea_hoz-sample-customer-correspondence.html`, `Owner Inbox/2026-05-09_linnea_hoz-sample-board-pack-title.html` — to be authored in v3.1 against §4.
 
 ---
 
