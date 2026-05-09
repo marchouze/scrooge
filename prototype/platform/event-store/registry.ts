@@ -132,10 +132,14 @@ export type ArchivalTier = "hot-only" | "hot-cool" | "hot-cool-archive";
  * The `citationRef` resolves into the obligations register
  * (Regulations/_obligations-register.md) — Vera's planned Wave-4 #14
  * recon (`retention-citation-coverage`) asserts every value here is a
- * live URN. Where a row carries a `[register: route to Mira]` marker,
- * Mira owns the follow-on to populate the URN before that recon turns
- * fail-closed; today the recon will tolerate the marker form so this
- * Slice 1 ships ahead of Mira's citation-population work.
+ * live URN. As of v1.12 of the obligations register
+ * (D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 follow-on, 2026-05-10),
+ * every retention class below carries a concrete URN — the four
+ * `[register: route to Mira]` markers introduced under
+ * D-EVENT-STORE-SCALING Slice 1 are closed (`ORG-GV-21`,
+ * `ORG-MK-15`, `ORG-RM-01`, plus the M2-fixture
+ * `ORG-MK-16` JSE Debt Listing Rules row). The recon may now
+ * fail-closed on any future regression to a marker form.
  */
 export interface RetentionMetadata {
   /** Minimum retention horizon in years (regulator-mandated floor). */
@@ -177,28 +181,45 @@ const RETENTION_ACCOUNTING_7Y: RetentionMetadata = {
 
 const RETENTION_GOVERNANCE_7Y: RetentionMetadata = {
   // Audit / governance / decision events. Companies Act director-decision
-  // retention + BCBS 239 audit-trail expectations. URN slug awaiting
-  // Mira's follow-on registration per D-EVENT-STORE-SCALING Slice 1
-  // exit-criterion.
+  // retention (Companies Act ss.24 + 66 + 71 + 73 + 75 read together with
+  // Banks Act s.60) + BCBS 239 audit-trail expectations (Principles I,
+  // III, IX, XIV). Register row `ORG-GV-21` (Domain F) — landed under
+  // v1.12 of `Regulations/_obligations-register.md` per
+  // D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 follow-on Mira route.
   minimumYears: 7,
   archivalTier: "hot-cool-archive",
-  citationRef:
-    "[register: route to Mira — Companies Act 71/2008 director-decision retention; BCBS 239 audit-trail expectations]",
+  citationRef: "urn:obligation:bank:org:gv:director-decision-retention:v1",
 };
 
 const RETENTION_JSE_TRADE_7Y: RetentionMetadata = {
+  // JSE Equities Rules — trade-record retention sub-rules (the JSE
+  // Equities Rules' record-keeping section imposes a 7-year retention
+  // floor on trading-member books and records; cross-reads with FMA
+  // s.5 exchange-licence-conditions). Register row `ORG-MK-15`
+  // (Domain J) — landed under v1.12 of
+  // `Regulations/_obligations-register.md` per
+  // D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 follow-on Mira route.
   minimumYears: 7,
   archivalTier: "hot-cool-archive",
-  citationRef: "[register: route to Mira — JSE-EQUITIES-RULES-2024 retention specifics]",
+  citationRef: "urn:obligation:bank:mk:jse-equities-rules-retention:v1",
 };
 
 const RETENTION_RUNTIME_1Y: RetentionMetadata = {
-  // Operational substrate events. Internal-policy retention pending
-  // Records Management Policy (Owen + Mira, planned).
+  // Operational substrate events. Internal-policy retention via the
+  // bank's Records Management Policy (planned — Owen primary, Devon
+  // secondary, Board approval per `Owner Inbox/2026-05-06_policy-register.md`
+  // line 111). Register row `ORG-RM-01` (Domain RM — internal-policy
+  // citation handles) — landed under v1.12 of
+  // `Regulations/_obligations-register.md` per
+  // D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 follow-on Mira route.
+  // The URN handle is a citation seat: it resolves to the policy
+  // register entry today; once Owen authors policy text, the URN's
+  // citation chain expands to name precise policy sections (Vera
+  // Wave-4 records-management-policy-authoring-gap finding tracks the
+  // gap).
   minimumYears: 1,
   archivalTier: "hot-cool",
-  citationRef:
-    "[register: route to Mira — operational-substrate retention; cite Records Management Policy when published]",
+  citationRef: "urn:policy:bank:records-management:operational-substrate-retention:v1",
 };
 
 /**
