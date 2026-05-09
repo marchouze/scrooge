@@ -74,8 +74,8 @@
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Outsourcing & Third-Party Risk | `outsourcing-due-diligence.md` (pre-engagement) | Devon + Senna + Iris + Imani | PLANNED |
-| Outsourcing & Third-Party Risk | `directive-3-pa-notification.md` | Devon | PLANNED |
+| Outsourcing & Third-Party Risk | [`outsourcing-due-diligence.md`](by-policy/outsourcing-due-diligence.md) (pre-engagement) | Devon + Senna + Iris + Imani + Mira | STUB |
+| Outsourcing & Third-Party Risk | [`directive-3-pa-notification.md`](by-policy/directive-3-pa-notification.md) | Devon + Owen + Imani + Senna + Rashida + Iris | STUB |
 | Cloud Computing | `cloud-residency-attestation.md` | Devon + Senna | PLANNED |
 | BCP / DR | `dr-test-execution.md` | Devon | PLANNED |
 | BCP / DR | `crisis-management-activation.md` | Devon + Helena | PLANNED |
