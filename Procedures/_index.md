@@ -104,6 +104,7 @@
 | Capital Management | [`capital-ratio-monitoring.md`](by-policy/capital-ratio-monitoring.md) (covers CET1 / leverage) | Camille (Bea) | **POPULATED** |
 | Capital Management | `capital-instrument-issuance.md` | Camille + Eitan | PLANNED |
 | Accounting Policies (IFRS) v0.1 (STUB) + Financial Reporting & Disclosure v0.1 (STUB) | [`posting-rule-publication.md`](by-policy/posting-rule-publication.md) | Bea · Atlas | **POPULATED** |
+| Accounting Policies (IFRS) — IFRS 10 consolidation policy (planned by Camille; sub-policy of Accounting Policies (IFRS) v0.1 STUB + Financial Reporting & Disclosure v0.1 STUB) | [`ifrs10-consolidation-cycle.md`](by-policy/ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01 — three-entity group consolidation per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER) | Bea · Camille (governance sign-off) | **STUB** |
 | Accounting Policies (IFRS) | `month-end-close.md` | Camille (Bea) | PLANNED |
 | Accounting Policies (IFRS) | `ba-return-generation.md` | Bea | PLANNED |
 | Provisioning / IFRS 9 ECL Policy v0.1 (STUB) + RAS (in-force) | [`ecl-stage-projection-refresh.md`](by-policy/ecl-stage-projection-refresh.md) | Rohan · Bea | **POPULATED** |
