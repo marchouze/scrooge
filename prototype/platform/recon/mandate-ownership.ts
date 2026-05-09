@@ -78,21 +78,53 @@ function listProcedureFiles(): string[] {
     .map((f) => resolve(PROCEDURES_DIR, f));
 }
 
-function extractOwners(content: string): string[] {
-  // Look for the "Owner:" field in the procedure header. Tolerant of
-  // various shapes: "**Owner:** X · Y" / "Owner: X (role) · Y (role)".
-  const match = content.match(/^\*?\*?Owner:\*?\*?\s+(.+?)$/m);
-  if (!match) return [];
-  const raw = match[1] ?? "";
+function splitOwnerList(raw: string): string[] {
   // Strip parenthetical role notes FIRST (they may contain delimiters
   // like "/", ";", "and" that would otherwise corrupt the split). Then
+  // strip composite role-line prefixes ("governance-line:", "engineering-
+  // line:" — established convention in /Procedures/by-policy/*.md as of
+  // 2026-05-09; see Vera's CI-gate-integrity finding §3 Failure 2). Then
   // split on the owner-list separators.
-  const stripped = raw.replace(/\([^)]*\)/g, "");
+  const stripped = raw
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\b(?:governance|engineering|conduct)[- ]line\s*:/gi, "");
   return stripped
     .split(/·|,|;|\bor\b|\band\b|\+|\//)
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
     .map((s) => s.toLowerCase());
+}
+
+function extractOwners(content: string): string[] {
+  // Owner field shapes seen in /Procedures/by-policy/ as of 2026-05-09:
+  //   (1) frontmatter "owner: X · Y · Z" or
+  //       frontmatter "owner: X + governance-line: Y + Z"  — composite form
+  //   (2) body  "**Owner:** X · Y · Z"
+  // Prefer frontmatter when present (it is the canonical owner declaration
+  // under the procedure-frontmatter convention). Fall back to the body
+  // **Owner:** line otherwise.
+
+  // Frontmatter "owner:" — the YAML key (lowercase) appears within the
+  // top frontmatter block bounded by --- markers. Restrict the search to
+  // that block to avoid matching "Owner:" or "owner:" prose deeper in
+  // the file (e.g. step body that says "Owner: <name>" as illustration).
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (fmMatch) {
+    const fm = fmMatch[1] ?? "";
+    const ownerLine = fm.match(/^owner:\s+(.+?)$/im);
+    if (ownerLine) return splitOwnerList(ownerLine[1] ?? "");
+  }
+
+  // Body "**Owner:**" — the established narrative-header convention.
+  // Tolerant of "**Owner:**", "Owner:", and the dual-line shape
+  // "**Owner (engineering):** X" / "**Owner (governance):** Y" by
+  // accepting the optional "(qualifier)" between Owner and the colon.
+  // First match wins (procedure files put the canonical owner line at
+  // the top of the body); subsequent matches in body prose are ignored.
+  const bodyMatch = content.match(/^\*{0,2}Owner(?:\s*\([^)]*\))?:\*{0,2}\s+(.+?)$/m);
+  if (bodyMatch) return splitOwnerList(bodyMatch[1] ?? "");
+
+  return [];
 }
 
 function resolves(owner: string, personas: Set<string>): boolean {

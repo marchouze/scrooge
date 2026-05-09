@@ -50,4 +50,6 @@ writeFileSync(REGISTRY_PATH, `${JSON.stringify(next, null, 2)}\n`, "utf8");
 // `metrics` lives under bank.metrics.obligations in the schema; access defensively.
 const obligationsCount = (next as unknown as { bank?: { metrics?: { obligations?: number } } }).bank
   ?.metrics?.obligations;
-console.log(`Re-derived dashboard state. Obligations metric: ${obligationsCount ?? "(unavailable)"}`);
+console.log(
+  `Re-derived dashboard state. Obligations metric: ${obligationsCount ?? "(unavailable)"}`,
+);
