@@ -83,6 +83,7 @@
 | Records Management | `records-retention-disposal.md` | Owen + Devon | PLANNED |
 | Records Management | `legal-hold.md` | Imani (with Owen) | PLANNED |
 | Change Management + Secure SDLC + InfoSec (Atlas Step 2 substrate) | [`agent-runtime-deploy.md`](by-policy/agent-runtime-deploy.md) | Atlas · Senna · Rashida · Vera (audit) | **POPULATED** |
+| Change Management + Secure SDLC + D-NEW-PRODUCT-APPROVAL-POLICY (cross-cutting schema discipline) | [`event-schema-evolution.md`](by-policy/event-schema-evolution.md) (PROC-PLAT-EV-EVOL-01 — schema amendment after events exist in store) | Atlas · Anya · Senna · Mira (citation gate) · Vera (audit) | **STUB** |
 
 ## Payments and operations
 
@@ -125,7 +126,11 @@
 | Market Abuse / Surveillance | `surveillance-alert-triage.md` | Zara (Mira) + Saskia | PLANNED |
 | Voice & Comms Recording | `recording-retention.md` | Saskia + Senna + Sade | PLANNED |
 | Counterparty Onboarding (markets) | `counterparty-onboarding-markets.md` | Saskia + Imani + Eitan | PLANNED |
-| New Product Approval | `npa-gate.md` | Saskia + Helena + Camille + Zara | PLANNED |
+| New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`new-product-due-diligence.md`](by-policy/new-product-due-diligence.md) (PROC-MK-NPA-DD-01 — stage 3, 14-dimension cycle) | Saskia + Devon | **STUB** |
+| New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-controlled-launch.md`](by-policy/product-controlled-launch.md) (PROC-MK-NPA-CL-01 — stage 5 limit administration + daily monitoring) | Saskia | **STUB** |
+| New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-post-implementation-review.md`](by-policy/product-post-implementation-review.md) (PROC-MK-NPA-PIR-01 — stage 6 PIR convening) | Saskia + Devon | **STUB** |
+| New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-retirement-migration.md`](by-policy/product-retirement-migration.md) (PROC-MK-NPA-RET-01 — stage 8 open-position migration) | Saskia + Imani + Tomas | **STUB** |
+| New Product Approval | `npa-gate.md` | Saskia + Helena + Camille + Zara | PLANNED (superseded by the four NPA stage procedures above; entry retained for index continuity until removed in next index review) |
 
 ## Markets — OTC Derivative Provider (FMA / FSCA)
 
