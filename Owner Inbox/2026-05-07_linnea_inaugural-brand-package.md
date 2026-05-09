@@ -23,6 +23,8 @@ decision-owner: Linnea
 
 ## 1. Bank-name longlist
 
+> **Superseded by `2026-05-09_linnea_bank-name-v2-analysis.md` (AI-theme redo, 2026-05-09).** The v2 analysis re-anchors the naming axes around the bank's defining AI-driven characteristic (Principle 7). Sections 1.1–1.8 below are retained as the prior-version record per Principle 6 versioning discipline; the v2 shortlist (Lucet / Noeta / Synaps) and single recommendation (Lucet) replace this section's recommendations for D-BANK-NAME-SELECTION.
+
 The name is the single most consequential brand decision: regulator letterhead, counterparty introductions, audited statements, every customer-facing surface. It does not change without serious cost. Rubric applied: Banks Act 94 of 1990 s.22 use-of-name, IP conflict (Trade Marks Act 194 of 1993 + CIPC), .za domain, SA 11-language check, market-positioning fit, sound-when-said.
 
 Banks Act s.22 restricts use of "bank" / "banking" in a trade name unless the entity is a registered bank. Since this entity is pursuing a banking licence, the "Bank" suffix becomes legitimate at licence-grant; the entity operates as "[Name]" until then and adopts "[Name] Bank" at licence-day. All ten candidates are evaluated on that basis. IP and domain signals below are market-knowledge signals only; formal pre-clearance is Imani's pipeline, not mine.
