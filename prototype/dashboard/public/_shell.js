@@ -186,9 +186,7 @@
       btn.disabled = true;
       btn.classList.add("is-busy");
       try {
-        const loader =
-          (window.bankHome && window.bankHome.loadTiles) ||
-          (window.bankShell?.pageReload && window.bankShell.pageReload);
+        const loader = window.bankHome?.loadTiles || window.bankShell?.pageReload;
         if (typeof loader === "function") {
           await loader();
         }
