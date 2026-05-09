@@ -1262,6 +1262,44 @@ main {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.35);
 }
+
+/* ---------- Shell back-link (auto-injected by _refresh-controls.js) ----------
+ * Linnea (Brand & design lead) + Anya (Data / analytics engineer) —
+ * CEO directive 2026-05-09. v0 nav-back; full per-page shell retrofit
+ * is v3.1 deferred per Linnea PR #72.
+ */
+.shell-back-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12.5px;
+  margin-right: 14px;
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.4);
+  padding-bottom: 1px;
+}
+.shell-back-link:hover,
+.shell-back-link:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.85);
+  outline: none;
+}
+.shell-back-arrow {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Fallback bar for pages without a `.topbar` (architecture.html). */
+.shell-back-bar {
+  background: var(--primary, #1a2540);
+  color: #fff;
+  padding: 8px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+}
+.shell-back-bar .shell-back-link {
+  color: #fff;
+  margin-right: 0;
+}
 .refresh-now:hover {
   background: rgba(255, 255, 255, 0.18);
 }

@@ -325,5 +325,10 @@ flowchart TB
         }
       });
     </script>
+    <!-- Shared refresh + shell-back-link injection (Anya / Linnea v0).
+         architecture.html has no `.topbar`, so the back-link falls
+         back to the `.shell-back-bar` pinned at the top of <body>. -->
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
   </body>
 </html>
