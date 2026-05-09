@@ -191,7 +191,7 @@ export const M2_SAGB_FIXED_COUPON_FIXTURE: Product = {
       {
         name: "ACT/365 SA day-count",
         module: "@platform/markets/cdm/bond",
-        citationUrn: "[register: route to Mira — JSE-DEBT-LISTING-RULES day-count convention]",
+        citationUrn: "urn:obligation:bank:mk:jse-debt-listing-rules:v1",
       },
     ],
     compositionRule:
@@ -236,7 +236,7 @@ export const M2_SAGB_FIXED_COUPON_FIXTURE: Product = {
   citations: [
     "D-MARKETS-SCHEMA-FOUNDATION",
     "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-    "[register: route to Mira — JSE-DEBT-LISTING-RULES]",
+    "urn:obligation:bank:mk:jse-debt-listing-rules:v1",
     "FMA-S5",
     "ORG-AC-01",
   ],

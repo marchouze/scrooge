@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T14:02:12.689Z",
+  "asOf": "2026-05-09T14:57:15.024Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -24,7 +24,7 @@
     "metrics": {
       "principles": 7,
       "policies": 112,
-      "obligations": 228,
+      "obligations": 232,
       "instruments": 83,
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 18,
@@ -3452,6 +3452,7 @@
         "ORG-PR-25",
         "ORG-PR-26",
         "ORG-PR-23",
+        "ORG-GV-21",
         "ORG-AC-15",
         "ORG-CS1-003",
         "ORG-JS2-005",
@@ -4633,6 +4634,7 @@
       "linkedObligations": [
         "ORG-FC-05",
         "ORG-PR(IV)-03",
+        "ORG-GV-21",
         "ORG-TX-04",
         "ORG-CS3-009"
       ]
