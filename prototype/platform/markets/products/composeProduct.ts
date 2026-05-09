@@ -191,4 +191,3 @@ function computeFingerprint(
   }
   return `pt-v1-${hash.toString(16).padStart(8, "0")}-len${canonical.length}`;
 }
-
