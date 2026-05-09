@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T07:34:02.574Z",
+  "asOf": "2026-05-09T07:50:27.693Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -24,7 +24,7 @@
     "metrics": {
       "principles": 7,
       "policies": 112,
-      "obligations": 211,
+      "obligations": 219,
       "instruments": 83,
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 18,
@@ -1518,6 +1518,11 @@
             },
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
+              "title": "saskia kai atlas · routing policy projection v0"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_atlas_substrate-completeness-budget.md",
               "title": "atlas · substrate completeness budget"
             },
@@ -1525,11 +1530,6 @@
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_atlas_naming-pre-clearance-procedure-stub.md",
               "title": "atlas · naming pre clearance procedure stub"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md",
-              "title": "atlas · a22 dispatcher retire legacy spec"
             }
           ],
           "lastActivityAt": "2026-05-10"
@@ -1982,6 +1982,11 @@
             },
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_imani_cipc-three-reservation-update.md",
+              "title": "imani · cipc three reservation update"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_imani_hoz-tm-act-scoping.md",
               "title": "imani · hoz tm act scoping"
             },
@@ -1989,11 +1994,6 @@
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_imani_hoz-banks-act-s22-scoping.md",
               "title": "imani · hoz banks act s22 scoping"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_hoz-language-sweep-scoping.md",
-              "title": "imani · hoz language sweep scoping"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -2314,6 +2314,11 @@
         },
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
+          "title": "saskia kai atlas · routing policy projection v0"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
           "title": "saskia kai · m4 sub decisions"
         },
@@ -2321,11 +2326,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
           "title": "saskia · fsp confirm a pax withdraw"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_saskia_fais-ki-handover-note.md",
-          "title": "saskia · fais ki handover note"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -2391,6 +2391,11 @@
             },
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
+              "title": "saskia kai atlas · routing policy projection v0"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
               "title": "saskia kai · m4 sub decisions"
             },
@@ -2403,11 +2408,6 @@
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
               "title": "saskia kai · pre trade gateway envelope v0 scoping"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md",
-              "title": "atlas kai · a0 event schema freeze"
             }
           ],
           "lastActivityAt": "2026-05-10"
@@ -2603,6 +2603,11 @@
       "recentDeliverables": [
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_mira_per-entity-register-scoping-v0.md",
+          "title": "mira · per entity register scoping v0"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_zara_tcf-substrate-plan-v0.md",
           "title": "zara · tcf substrate plan v0"
         },
@@ -2620,11 +2625,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_mira_finsurv-urn-cluster-wave-1.md",
           "title": "mira · finsurv urn cluster wave 1"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
-          "title": "zara imani · fsp confirm a scope updates"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -2665,6 +2665,11 @@
             },
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_mira_per-entity-register-scoping-v0.md",
+              "title": "mira · per entity register scoping v0"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
               "title": "mira zara · concentration risk conduct confirmation"
             },
@@ -2672,11 +2677,6 @@
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_mira_finsurv-urn-cluster-wave-1.md",
               "title": "mira · finsurv urn cluster wave 1"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_mira_citation-gate.md",
-              "title": "mira · citation gate"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -3110,13 +3110,13 @@
       "summary": "M4 foundation slice landed — four FX variants (Spot, Forward, Swap, NDF) with typed shapes, the bookType discriminator on FxTradeExecuted per D-FX-BOOK-BOUNDARY, and correspondent-routed FxSettlementInstructed per D-FX-CLS-MEMBERSHIP. No new schema primitives outside the additions named here. Substrate gaps and downstream dependencies named."
     },
     {
-      "filename": "2026-05-09_sade_fais-ki-fit-and-proper-template.md",
-      "path": "Owner Inbox/2026-05-09_sade_fais-ki-fit-and-proper-template.md",
+      "filename": "2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
+      "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
       "date": "2026-05-09",
-      "title": "FAIS-KI fit-and-proper file template (PROC-FAIS-KI-FAP-01) — STUB scaffold",
+      "title": "Correspondent routing-policy projection v0 — completion note",
       "decisionRequired": false,
-      "author": "Sade (AgentOps engineer — engineering-substrate seat)",
-      "summary": "Procedure scaffolded under D-FSP-LICENCE-NECESSITY (confirm-A-no-research) to make Gate (b) of the Saskia-as-FAIS-KI handover operationally executable. Five-dimension Determination 2017 framework with six typed-event substrate gaps named for Atlas; FSCA section refs [citation: TBC] routed to Imani + counsel."
+      "author": "Saskia (Head of Global Markets, governance) + Kai (Trading-systems engineer) + Atlas (Core banking platform architect)",
+      "summary": "Routing-policy projection for the FX correspondent-pair (Standard Bank ZA primary; FirstRand-RMB ZA backup) with switch-test-live-traffic override mechanism, plus typed SwitchTestActivated / SwitchTestEnded / SwitchTestReport event family. Closes the D-FX-CORRESPONDENT-PAIR-NAMING substrate gap surfaced by Devon + Tomas in PR #58."
     }
   ],
   "policies": [
