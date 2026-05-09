@@ -345,4 +345,8 @@ async function load() {
 }
 
 load();
-setInterval(load, 30_000);
+if (typeof window.registerPagePoll === "function") {
+  window.registerPagePoll(load, 30_000);
+} else {
+  setInterval(load, 30_000);
+}

@@ -1253,6 +1253,23 @@ main {
   border-bottom-color: rgba(255, 255, 255, 0.85);
 }
 
+/* ---------- Manual "Refresh" button (auto-injected by _refresh-controls.js) ---------- */
+.refresh-now {
+  margin-right: 12px;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.refresh-now:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.refresh-now:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
 /* ---------- Agents page ---------- */
 .agents-intro h1 {
   font-family: var(--serif);
