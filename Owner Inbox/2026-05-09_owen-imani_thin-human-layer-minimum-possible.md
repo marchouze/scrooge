@@ -15,6 +15,8 @@ note: Re-scope under CEO modification of S3 ("Minimum possible"). Replaces the o
 
 # Thin human layer — "Minimum possible" composition under SA banking law
 
+> **Superseded by D-THIN-HUMAN-LAYER-MINIMUM (modified, approved 2026-05-08).** The CEO approved this paper's recommendation **with modification**, adopting Mira+Zara's Joint Standard 1 of 2024 challenge (`Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1). The standing composition is **6 separate humans + Marc + external audit firm** (was 5+Marc+audit-firm in this paper) — the 6th human is a separate human CRO appointed **before** licence-application lodgment, not "as the first hire post-licence". The alternates split is now operative: deputy-IO = CoSec; MLRO-alternate = AC-Chair NED (NOT double-hatted CoSec). FAIS KI is Saskia steady-state, Marc-interim acceptable until external counsel confirms FSP licensing scope. See `Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md` for the canonical decision record, and `Owner Inbox/2026-05-09_imani_thin-human-layer-legal-as-code-update.md` for the legal-as-code consequences.
+
 **Authors:** Owen (Company Secretary — governance machinery) and Imani (Legal-as-code engineer — corporate-law and licence-application surface).
 **Reports through:** Owen direct to CEO; Imani via Devon (COO) on the engineering line, co-curated with Owen on the governance line for items that cross the regulator-engagement boundary.
 **Contributors / dependencies:** Mira (compliance — FIC s.43A / s.43B precedent; FAIS key-individual rules), Zara (CCO — sanctions-and-MLRO precedent reading), Sade (HR engineer — fit-and-proper file structure), Helena (CRO — RAS-side view on concentration).
