@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T09:27:12.086Z",
+  "asOf": "2026-05-09T14:02:12.689Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -24,7 +24,7 @@
     "metrics": {
       "principles": 7,
       "policies": 112,
-      "obligations": 219,
+      "obligations": 228,
       "instruments": 83,
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 18,
@@ -938,6 +938,11 @@
       "recentDeliverables": [
         {
           "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-ci-github-plan-upgrade-defer.md",
+          "title": "scrooge · ceo decision record · d ci github plan upgrade defer"
+        },
+        {
+          "date": "2026-05-10",
           "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-new-product-approval-policy.md",
           "title": "scrooge · ceo decision record · d new product approval policy"
         },
@@ -953,13 +958,8 @@
         },
         {
           "date": "2026-05-10",
-          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
-          "title": "scrooge · ceo decision record · d product construction substrate"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
-          "title": "scrooge · ceo decision record · d hoz domain registration set defer"
+          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-hire-six-seats-pack.md",
+          "title": "scrooge · ceo decision record · d hire six seats pack"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -3130,10 +3130,34 @@
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
     },
     {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-hire-six-seats-pack.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-hire-six-seats-pack.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-HIRE-SIX-SEATS-PACK + six sub-decisions, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` events emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs cur…"
+    },
+    {
       "filename": "2026-05-10_scrooge_ceo-decision-record_d-event-store-scaling.md",
       "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-event-store-scaling.md",
       "date": "2026-05-10",
       "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-EVENT-STORE-SCALING, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-ci-github-plan-upgrade-defer.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-ci-github-plan-upgrade-defer.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-CI-GITHUB-PLAN-UPGRADE-DEFER, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-ci-gate-integrity-closure.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-ci-gate-integrity-closure.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-CI-GATE-INTEGRITY closure, 2026-05-10",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs curr…"
     },
@@ -3344,30 +3368,6 @@
       "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-REGULATORY-PERIMETER, 2026-05-09",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-RAS-B-CLUSTER-CONCENTRATION-LINES, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-m4-fx-sub-decisions.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-m4-fx-sub-decisions.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-M4-FX-SUB-DECISIONS, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted below; written-direct under Principle 7 \"steady-state v…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-LEGAL-ENTITY-TREE-V0, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
     }
   ],
   "policies": [
@@ -3448,6 +3448,9 @@
       "statusRaw": "`DRAFTING` (in RAS-RAF)",
       "mvp": false,
       "linkedObligations": [
+        "ORG-PR-24",
+        "ORG-PR-25",
+        "ORG-PR-26",
         "ORG-PR-23",
         "ORG-AC-15",
         "ORG-CS1-003",
@@ -3644,6 +3647,9 @@
       "mvp": true,
       "linkedObligations": [
         "ORG-PR-17",
+        "ORG-PR-24",
+        "ORG-PR-25",
+        "ORG-PR-26",
         "ORG-PR-23"
       ]
     },
@@ -4539,6 +4545,7 @@
       "statusRaw": "`PLANNED`",
       "mvp": true,
       "linkedObligations": [
+        "ORG-PR-24",
         "ORG-CY-06",
         "ORG-CY-07"
       ]
