@@ -53,6 +53,7 @@
 | POPIA / Privacy Policy | [`popia-breach-notification.md`](by-policy/popia-breach-notification.md) | Iris + Senna + Zara | **POPULATED** |
 | POPIA / Privacy Policy | [`popia-dsar.md`](by-policy/popia-dsar.md) (data subject access request) | Iris + Anya + Senna | **POPULATED** |
 | POPIA / Privacy Policy | `popia-dsar-correction.md` (correction / deletion) | Iris | PLANNED |
+| POPIA / Privacy Policy | [`popia-io-designation.md`](by-policy/popia-io-designation.md) (PROC-PRIV-IO-DSG-01 — per-entity IO + Deputy IO designation; PAIA s.51 manual) | Iris + Owen | **STUB** (binds at licence-day; scoping at `Owner Inbox/2026-05-09_iris_per-entity-popia-io-designation-scoping.md`) |
 | Cross-Border Transfer Policy | `s72-transfer-assessment.md` | Iris (with Devon) | PLANNED |
 | PAIA Manual | `paia-request-handling.md` | Iris + Owen | PLANNED |
 | Data Retention | `retention-disposal.md` | Iris + Owen | PLANNED |
