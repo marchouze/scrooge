@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T07:50:27.693Z",
+  "asOf": "2026-05-09T08:28:05.567Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -868,6 +868,11 @@
       "recentDeliverables": [
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
+          "title": "scrooge · ceo decision record · d hoz domain registration set defer"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-pack_s7-targeted-3-5-open-questions.md",
           "title": "scrooge · ceo decision pack · s7 targeted 3 5 open questions"
         },
@@ -885,11 +890,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-group-structure.md",
           "title": "scrooge · ceo decision record · d group structure"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md",
-          "title": "scrooge · ceo decision record · d bank name hoz"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -1048,6 +1048,11 @@
         },
         {
           "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_helena-rohan_ras-pa-lookthrough-reframe.md",
+          "title": "helena rohan · ras pa lookthrough reframe"
+        },
+        {
+          "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_helena_risk-appetite-watch.md",
           "title": "helena · risk appetite watch"
         },
@@ -1055,11 +1060,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_helena_cro-seat-fit-and-proper-criteria.md",
           "title": "helena · cro seat fit and proper criteria"
-        },
-        {
-          "date": "2026-05-08",
-          "path": "Owner Inbox/2026-05-08_helena_risk-appetite-watch.md",
-          "title": "helena · risk appetite watch"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -1119,14 +1119,14 @@
               "title": "helena rohan · ras b cluster recalibration"
             },
             {
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_helena-rohan_ras-pa-lookthrough-reframe.md",
+              "title": "helena rohan · ras pa lookthrough reframe"
+            },
+            {
               "date": "2026-05-08",
               "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
               "title": "rohan · risk run"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
-              "title": "fix a second wave bea rohan niko tomas"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -2169,6 +2169,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_eitan_liquidity-snapshot.md",
+          "title": "eitan · liquidity snapshot"
+        },
+        {
           "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_eitan_liquidity-snapshot.md",
           "title": "eitan · liquidity snapshot"
@@ -2216,7 +2221,7 @@
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 6
+      "totalRecentDeliverables": 7
     },
     {
       "name": "Saskia",
@@ -2665,6 +2670,11 @@
             },
             {
               "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_mira_domain-q-reclassification-d-regulatory-perimeter.md",
+              "title": "mira · domain q reclassification d regulatory perimeter"
+            },
+            {
+              "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_mira_per-entity-register-scoping-v0.md",
               "title": "mira · per entity register scoping v0"
             },
@@ -2672,11 +2682,6 @@
               "date": "2026-05-09",
               "path": "Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
               "title": "mira zara · concentration risk conduct confirmation"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_mira_finsurv-urn-cluster-wave-1.md",
-              "title": "mira · finsurv urn cluster wave 1"
             }
           ],
           "lastActivityAt": "2026-05-09"
@@ -2980,6 +2985,14 @@
       "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
     },
     {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-REGULATORY-PERIMETER, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
       "filename": "2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
       "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-ras-b-cluster-concentration-lines.md",
       "date": "2026-05-09",
@@ -3000,6 +3013,14 @@
       "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md",
       "date": "2026-05-09",
       "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-LEGAL-ENTITY-TREE-V0, 2026-05-09",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
+    },
+    {
+      "filename": "2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
+      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-hoz-domain-registration-set-defer.md",
+      "date": "2026-05-09",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-HOZ-DOMAIN-REGISTRATION-SET, 2026-05-09",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
     },
@@ -3099,24 +3120,6 @@
       "decisionRecommendation": "Approve all three as recommended; defaults are operationally safe.",
       "decisionOwner": "Saskia (Head of Global Markets) + Kai (engineering)",
       "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
-      "path": "Owner Inbox/2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
-      "date": "2026-05-09",
-      "title": "M4 FX foundation slice — completion brief",
-      "decisionRequired": false,
-      "author": "Saskia, Kai",
-      "summary": "M4 foundation slice landed — four FX variants (Spot, Forward, Swap, NDF) with typed shapes, the bookType discriminator on FxTradeExecuted per D-FX-BOOK-BOUNDARY, and correspondent-routed FxSettlementInstructed per D-FX-CLS-MEMBERSHIP. No new schema primitives outside the additions named here. Substrate gaps and downstream dependencies named."
-    },
-    {
-      "filename": "2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
-      "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
-      "date": "2026-05-09",
-      "title": "Correspondent routing-policy projection v0 — completion note",
-      "decisionRequired": false,
-      "author": "Saskia (Head of Global Markets, governance) + Kai (Trading-systems engineer) + Atlas (Core banking platform architect)",
-      "summary": "Routing-policy projection for the FX correspondent-pair (Standard Bank ZA primary; FirstRand-RMB ZA backup) with switch-test-live-traffic override mechanism, plus typed SwitchTestActivated / SwitchTestEnded / SwitchTestReport event family. Closes the D-FX-CORRESPONDENT-PAIR-NAMING substrate gap surfaced by Devon + Tomas in PR #58."
     }
   ],
   "policies": [
