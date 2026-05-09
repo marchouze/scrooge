@@ -472,6 +472,16 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/escalations") {
       return serveStatic("/escalations.html");
     }
+    // Bank UI v0 — `/` lands on the home shell. The legacy operations
+    // dashboard remains at `/index.html` for backwards reference and
+    // is linked from the shell sidebar. CEO directive 2026-05-09;
+    // Atlas + Anya + Linnea bank-UI v0.
+    if (req.method === "GET" && url.pathname === "/") {
+      return new Response(null, {
+        status: 302,
+        headers: { Location: "/home.html" },
+      });
+    }
     if (req.method === "GET" && url.pathname === "/fleet") {
       return serveStatic("/fleet.html");
     }

@@ -1,0 +1,99 @@
+/*
+ * _brand.css — Cadens (placeholder name) brand tokens.
+ *
+ * Rendered, not authored. Substance is in
+ * `Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md`. Every
+ * token below maps to a row in §3 (palette), §4 (typography), or §6
+ * (overall feel) of that package — no improvisation.
+ *
+ * The bank's name has not yet been selected (D-BANK-NAME-SELECTION
+ * pending). The "Cadens" naming on tokens is Linnea's recommendation;
+ * if the CEO picks a different name, only the wordmark string in the
+ * shell needs to change — tokens stay.
+ *
+ * Authored under CEO directive 2026-05-09 (bank-UI v0). Cited by
+ * `_shell.css`. No component file should bypass these tokens.
+ *
+ * Author: Linnea (Brand & design lead) — tokens lift from inaugural
+ * brand package §3, §4.
+ */
+
+:root {
+  /* ---------------- §3.1 Primary ------------------------------ */
+  --brand-primary: #1f2a37; /* Cadens Slate */
+  --brand-primary-emphasis: #0f1722; /* Cadens Slate Deep */
+
+  /* ---------------- §3.2 Secondary (accents) ------------------ */
+  --accent-clay: #b8654a;
+  --accent-moss: #5c7c66;
+  --accent-ink: #3a4f6b;
+
+  /* ---------------- §3.3 Neutrals ----------------------------- */
+  --neutral-paper: #f7f4ee;
+  --neutral-mist: #e5e2db;
+  --neutral-stone: #9aa0a6;
+  --neutral-graphite: #3c4248;
+
+  /* ---------------- §3.4 Semantic ----------------------------- */
+  --semantic-success: #2f6b47; /* Forest */
+  --semantic-warning: #9a6b16; /* Amber */
+  --semantic-error: #a33442; /* Crimson */
+  --semantic-info: #2d5ba8; /* Cobalt */
+
+  /* ---------------- §4 Typography ----------------------------- */
+  /* Inter = display weights; IBM Plex Sans = body/UI; IBM Plex Mono = monospace.
+   * All SIL OFL 1.1, suitable for build-phase static dashboard.
+   * Self-hosting is M8 cloud-lift work (Atlas).
+   */
+  --font-display: "Inter", "Inter Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* §4.2 Type scale — modular, ratio 1.250 */
+  --type-caption: 12px;
+  --type-small: 14px;
+  --type-body: 16px;
+  --type-lead: 20px;
+  --type-h3: 25px;
+  --type-h2: 31px;
+  --type-h1: 39px;
+  --type-display: 49px;
+
+  /* §4.3 Weights */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---------------- Spacing scale (4-base) -------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ---------------- Elevation -------------------------------- */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(15, 23, 34, 0.05);
+  --elevation-2: 0 2px 8px rgba(15, 23, 34, 0.08);
+  --elevation-3: 0 8px 24px rgba(15, 23, 34, 0.12);
+
+  /* ---------------- Borders / radius ------------------------- */
+  --border-subtle: 1px solid var(--neutral-mist);
+  --border-strong: 1px solid var(--neutral-stone);
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  /* ---------------- Motion ----------------------------------- */
+  /* Linnea §2.1 — "the chord settles into place"; nothing bouncy */
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 200ms;
+  --motion-easing: ease-out;
+}

@@ -1,0 +1,7 @@
+<!-- Direction A — geometric mark. Active in v0 shell header.
+     Source: Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md §2.1.
+     Construction: 64×64u; circle d=56u centred; chord at y=24u; stroke 2u (circle), 3u (chord). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="The Bank — geometric mark">
+  <circle cx="32" cy="32" r="28" fill="none" stroke="#1F2A37" stroke-width="2"/>
+  <line x1="6" y1="24" x2="58" y2="24" stroke="#1F2A37" stroke-width="3" stroke-linecap="square"/>
+</svg>
