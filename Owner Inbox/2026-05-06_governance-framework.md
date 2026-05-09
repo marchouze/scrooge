@@ -104,26 +104,76 @@ Required by Companies Act regulation 43.
 
 ## 3. Executive structure and named accountabilities
 
-Source: `CLAUDE.md` and the role briefs.
+Source: `CLAUDE.md` and the role briefs. The agent fleet (Helena, Devon, Camille, Eitan, Saskia, Owen, Zara, Iris, Thandiwe, Rashida, Scrooge) is the bank's standing autonomous executive layer (Principle 7); the named *human* seats appointed at licence-day are the regulator-facing accountabilities the agent outputs flow through. The thin-human-layer composition that satisfies SA banking law at licence-day is set out in §3A below; the steady-state engineering-vs-governance split is summarised in the table that follows.
 
-CEO direct reports today (9): Scrooge (CoS), Helena (CRO), Devon (COO), Camille (CFO), Eitan (Treasurer), Saskia (Head of Global Markets), Owen (CoSec), Zara (CCO), Iris (IO).
+### 3A. Thin human layer at licence-day — six humans + Marc + audit firm
 
-Open governance seats (recommended hiring order — see §11): **Company Secretary deputy (none — Owen has succession risk)**, **CISO**, **CAE**, **General Counsel**, **CHRO**.
+**Decision authority.** D-THIN-HUMAN-LAYER-MINIMUM, approved 2026-05-08 (CEO modify): tighten the original Owen+Imani draft from five to six separate humans + Marc + external audit firm. The modification adds a separate human CRO before licence-application lodgment, per Mira+Zara's Joint Standard 1 of 2024 challenge (interim-CRO-as-CEO is a structural finding under JS 1 of 2024 §6–§7, not just a SARB-precedent matter).
 
-Named regulatory designations (consolidated):
+| # | Seat | Regulatory anchor | Human / Marc / firm | Appointment cadence |
+|---|---|---|---|---|
+| 1 | **Independent Chair** + Audit Committee Chair + S&E Committee independent NED | Companies Act s.66; s.94; Reg.43; Banks Act s.60; King IV | New hire — independent NED | Before licence-application lodgment |
+| 2 | **NED #2** + Audit Committee member | Companies Act s.94; Banks Act s.60 | New hire — independent NED | Before licence-application lodgment |
+| 3 | **NED #3** + Audit Committee member | Companies Act s.94; Banks Act s.60 | New hire — non-executive director | Before licence-application lodgment |
+| 4 | **Company Secretary** | Companies Act ss.86–89 | New hire — CoSec (cannot be Marc) | Before licence-application lodgment |
+| 5 | **Triple-hatted Compliance Lead** — MLRO + FIC Compliance Officer + POPIA Information Officer | FIC Act s.43A; FIC Act s.43B; POPIA s.56 | New hire — compliance lead | Before licence-application lodgment |
+| 6 | **Chief Risk Officer (human seat)** — Banks Act CRO; second-line independence under JS 1 of 2024 | Banks Act s.60; Joint Standard 1 of 2024 §6–§7; BCBS Corp Gov Principles 2015 §3 | New hire — human CRO | **Before licence-application lodgment** *(NEW per D-THIN-HUMAN-LAYER-MINIMUM)* |
+| Marc | **CEO** + executive director + Public Officer + interim Banks Act CFO + interim FAIS Key Individual (until counsel confirms FSP scope) | Banks Act + Companies Act + Tax Admin Act + FAIS s.8 | Marc | Already in seat |
+| External | **External auditor (firm; key audit partner is auditor's named individual)** | Banks Act s.61; Companies Act s.90; Auditing Profession Act 26 of 2005 | Audit firm (PA-approved). The key audit partner is an employee of the audit firm and **not on the bank's roster** — the firm is the bank's appointment, the partner is the firm's. | Appointed at licence-application lodgment |
 
-| Designation | Holder | Authority |
-|---|---|---|
-| Public Officer (Companies Act / SARS) | Camille | Companies Act / SARS |
-| CoSec under Companies Act ss.86–89 | Owen | Companies Act 71 of 2008 |
-| CRO under Banks Act | Helena | Banks Act / Joint Standard 1 of 2024 |
-| MLRO and FIC Compliance Officer | Zara | FIC Act 38 of 2001 |
-| FAIS Key Individual(s) | Saskia / Niko-area (when FSP licence carried) | FAIS Act 37 of 2002 |
-| POPIA Information Officer | Iris (subject to Regulator lodgment) | POPIA 4 of 2013 s.56 |
-| Operational-resilience accountable | Devon | BCBS / Joint Standard 1 of 2024 |
-| Cyber-resilience (interim) | Devon, supported by Senna | Joint Standard 1 of 2024 |
-| Treasury / liquidity accountable | Eitan | Banks Act / BCBS |
-| Trading conduct accountable | Saskia | FMA / FAIS |
+**Roster headline.** Six separate humans + Marc on the bank's roster; one external audit firm appointed under Banks Act s.61. The six-human composition is the regulator-facing answer to *"who, statutorily?"* in the SARB licence-application file.
+
+**Reporting lines.**
+
+- Independent Chair → chairs the Board; reports through Board fiduciary structure to shareholders.
+- NED #2 and NED #3 → Board members; AC members.
+- Company Secretary → Board; functional independence from CEO under Companies Act s.86(2)(b).
+- Triple-hatted Compliance Lead → CEO administratively; **functionally to the Board / AC** for STR-escalation and POPIA-Regulator pathways (this preserves the second-line independence FIC's published RMCP guidance requires).
+- Human CRO → CEO administratively; **functionally to the Board / BRC** for risk-appetite and limit-breach pathways (JS 1 of 2024 §7).
+
+**Engineering-vs-governance reconciliation.** The agents Helena (engineering CRO), Camille (engineering CFO), Owen (engineering CoSec), Zara (engineering CCO + named MLRO of the agent fleet), Iris (engineering IO) continue to operate as standing autonomous agents. The licence-day human seats are the regulator-facing designations the agent outputs flow through (Principle 7). For the named CRO and MLRO+FIC CO+IO seats this is **load-bearing**: the human carries the legal designation, the agent carries the operational substrate.
+
+### 3B. Alternates split (deputy-IO and MLRO-alternate)
+
+Per D-THIN-HUMAN-LAYER-MINIMUM and Mira+Zara's §4.2 conduct-side amplification, the deputy-IO and MLRO-alternate roles are **split across two humans** rather than both falling on the CoSec:
+
+- **Deputy POPIA Information Officer = Company Secretary** (seat #4). POPIA Regulation 4 contemplates a deputy; the CoSec carries this designation alongside the Compliance Lead's primary IO role. Lodgment with the Information Regulator follows the primary IO designation.
+- **MLRO-alternate = the AC-Chair NED** (seat #1). FIC published guidance on accountable-institution governance recommends an MLRO-alternate; the AC Chair is the designated alternate on the basis that AC oversight already touches AML/CFT controls, and to avoid a single-point-of-failure at the CoSec seat. The fit-and-proper file declares this overlap explicitly per Mira+Zara §4.3.
+
+This split supersedes any earlier draft that named the CoSec for both alternates.
+
+### 3C. FAIS Key Individual posture
+
+- **Steady state:** Saskia (Head of Global Markets) is the named FAIS Key Individual under FAIS Act s.8 once the human Saskia seat is hired post-licence-day.
+- **Interim:** Marc retains FAIS KI accountability **only until external counsel confirms whether the bank's institutional-only / wholesale posture requires an FSP licence at all** (per `2026-05-09_imani_external-counsel-licence-application.md` §2.4 and Mira+Zara Q4). The conservative posture is to pursue an FSP licence in the categories the bank's product set requires; counsel-confirmation lands at the licence-application gate.
+
+### 3D. Auditor and key-audit-partner separation
+
+The **external auditor is a firm**, appointed under Banks Act s.61 and Companies Act s.90. The firm is on the bank's regulator-facing register; the **key audit partner is an employee of the audit firm**, named in the firm's engagement letter, and is **not on the bank's own thin-human-layer roster**. SARB's fit-and-proper review covers the partner-of-record because the audit firm carries that obligation; the bank's appointment obligation is to the firm.
+
+### 3E. CEO direct reports today and named designations (steady-state)
+
+CEO direct reports today (the agent fleet — Principle 7): Scrooge (CoS), Helena (CRO), Devon (COO), Camille (CFO), Eitan (Treasurer), Saskia (Head of Global Markets), Owen (CoSec), Zara (CCO), Iris (IO), Thandiwe (CAE — administrative line), Rashida (CISO).
+
+Open governance seats post-licence (recommended hiring order — see §13): **General Counsel**, **CHRO**.
+
+Named regulatory designations (steady-state agent fleet; the licence-day human seats above are the regulator-facing analogues):
+
+| Designation | Agent (engineering seat) | Licence-day human seat | Authority |
+|---|---|---|---|
+| Public Officer (Companies Act / SARS) | Camille | Marc (CEO; mergeable per ORG-TX-08) | Companies Act / SARS |
+| CoSec under Companies Act ss.86–89 | Owen | **Seat #4** (separate human; not Marc) | Companies Act 71 of 2008 |
+| CRO under Banks Act / JS 1 of 2024 | Helena | **Seat #6** (separate human; before lodgment) | Banks Act s.60; Joint Standard 1 of 2024 |
+| MLRO and FIC Compliance Officer | Zara | **Seat #5** (triple-hatted with IO) | FIC Act 38 of 2001 ss.43A–43B |
+| POPIA Information Officer | Iris | **Seat #5** (triple-hatted with MLRO+FIC CO); deputy = Seat #4 (CoSec) | POPIA 4 of 2013 s.56 + Reg. 4 |
+| FAIS Key Individual | Saskia (steady-state); Marc (interim, counsel-confirmed) | Saskia post-licence (or Marc-interim if FSP route) | FAIS Act 37 of 2002 s.8 |
+| Operational-resilience accountable | Devon | CEO (until COO hire) | BCBS / JS 1 of 2024 |
+| Cyber-resilience accountable | Rashida (CISO governance) + Senna (engineering) | Rashida — agent-substrate at licence-day; human seat not in licence-day six (deferred per JS 1 of 2024 §6 derogation argument; see §13) | Joint Standard 1 of 2024 |
+| Treasury / liquidity accountable | Eitan | CEO (until Treasurer human hire) | Banks Act / BCBS |
+| Trading conduct accountable | Saskia | Saskia (post-licence) | FMA / FAIS |
+| External auditor (firm) | n/a | Audit firm (PA-approved); key audit partner is firm's named individual | Banks Act s.61; Companies Act s.90 |
+
+**MLRO-alternate designation:** AC-Chair NED (seat #1), per §3B above.
 
 ## 4. Three lines of defence — operating discipline
 
@@ -238,15 +288,15 @@ When new legal entities are added:
 
 ## 13. Recommended order of remaining governance hires
 
-Helena's recommendation, weighing where design pressures are surfacing today:
+Per D-THIN-HUMAN-LAYER-MINIMUM, the licence-day six (3 NEDs, CoSec, Compliance Lead, CRO) are the **before-lodgment** roster. Post-licence, the residual hires the framework names — none statutorily required at licence-day under the minimum-possible reading (per Owen+Imani §2.9):
 
-1. **Chief Audit Executive (CAE).** Vera's third-line independence is currently propped up by a dotted line; a CAE is the proper home and a regulator-credible audit posture cannot wait long. **Hire next.**
-2. **Chief Information Security Officer (CISO).** Devon is interim-accountable; the threat-model gate operates, but Joint Standard 1 of 2024 expects a named CISO. **Hire second.**
+1. **Chief Information Security Officer (CISO) — human seat.** Rashida operates as the CISO agent today and carries the JS 1 of 2024 §6 responsible-person designation through the agent fleet. The licence-application file defends the absence of a separate human CISO at lodgment by naming Rashida-as-agent-substrate plus Devon as interim operational-resilience-accountable; SARB pre-application engagement determines whether this defence holds or whether the CISO becomes a seventh human. **Hire first post-licence (or accelerate to before-lodgment if SARB engagement signals concern).**
+2. **Chief Audit Executive (CAE) — human seat.** Thandiwe operates as the CAE agent today; Vera's third-line independence is preserved through the functional line into the Interim Audit Forum (Owen chair). Post-licence the human CAE seat consolidates third-line accountability. **Hire second post-licence.**
 3. **General Counsel (GC).** Imani builds, but legal-risk governance — especially as counterparty agreements (ISDA, GMRA) come on stream via Saskia — needs a named seat. **Hire third.**
 4. **CHRO.** People governance and remuneration sit on Sade today; the seat will be material once a Board RemCo is constituted. **Hire fourth.**
 5. **Possibly COO deputy / additional executives** as scale requires.
 
-Sequence may be revised as the bank approaches its SARB licence application.
+The CRO seat that originally sat on this list is now seat #6 of the licence-day six (§3A) and is **before-lodgment**, not post-licence. Sequence may be revised as the bank approaches its SARB licence application.
 
 ## 14. Open items requiring CEO action
 
@@ -255,3 +305,4 @@ Sequence may be revised as the bank approaches its SARB licence application.
 3. Iris's POPIA Information Officer designation lodgment (out-of-system — CEO signature required).
 4. Confirmation of the interim governance arrangement (§8).
 5. **F1 resolved (CEO modify, 2026-05-06):** the framework operates at the *policy* layer of Principle 6 — it is a constitutional / meta-policy artefact. Standards are the technical and operational specifications underneath (ISO 20022 mappings, encryption schemes, screening-rule specifications); policies in the library cite this framework. The *standard*-layer reading initially proposed has been retired.
+6. **D-THIN-HUMAN-LAYER-MINIMUM resolved (CEO modify, 2026-05-08):** licence-day human roster set at six separate humans + Marc + external audit firm. CRO becomes seat #6, appointed before licence-application lodgment, per Joint Standard 1 of 2024 §6–§7 challenge from Mira+Zara. Section 3A above is the canonical authoring location for the composition; section 3B codifies the alternates split (deputy-IO = CoSec; MLRO-alternate = AC-Chair NED); section 3C names the FAIS KI posture; section 3D names the auditor / key-audit-partner separation. The current paper is `2026-05-09_owen_thin-human-layer-composition-final.md`, which supersedes the original Owen+Imani draft (`2026-05-09_owen-imani_thin-human-layer-minimum-possible.md`, moved to `actioned/`).
