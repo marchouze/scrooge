@@ -170,7 +170,8 @@ const RETENTION_GOVERNANCE_7Y: RetentionMetadata = {
   // exit-criterion.
   minimumYears: 7,
   archivalTier: "hot-cool-archive",
-  citationRef: "[register: route to Mira — Companies Act 71/2008 director-decision retention; BCBS 239 audit-trail expectations]",
+  citationRef:
+    "[register: route to Mira — Companies Act 71/2008 director-decision retention; BCBS 239 audit-trail expectations]",
 };
 
 const RETENTION_JSE_TRADE_7Y: RetentionMetadata = {
@@ -184,14 +185,23 @@ const RETENTION_RUNTIME_1Y: RetentionMetadata = {
   // Records Management Policy (Owen + Mira, planned).
   minimumYears: 1,
   archivalTier: "hot-cool",
-  citationRef: "[register: route to Mira — operational-substrate retention; cite Records Management Policy when published]",
+  citationRef:
+    "[register: route to Mira — operational-substrate retention; cite Records Management Policy when published]",
 };
 
-const RETENTION_CONSERVATIVE_DEFAULT: RetentionMetadata = {
-  // Default-when-unknown: conservative class. Banks Act + CS 3/2018 §12
-  // 5-year floor; full-tier-down. Any row using this default is an
-  // explicit "use the strongest applicable floor pending classification"
-  // and is a Mira follow-on to refine.
+/**
+ * Default-when-unknown retention. Conservative class — Banks Act +
+ * CS 3/2018 §12 5-year floor; full-tier-down. Any row using this
+ * default is an explicit "use the strongest applicable floor pending
+ * classification" and is a Mira follow-on to refine.
+ *
+ * Exported so future event-type rows that ship before the contributor
+ * has classified the retention class can drop in this default safely;
+ * the Vera Wave-4 #14 retention-citation-coverage recon then surfaces
+ * them as findings to refine. Today (Slice 1 exit) every registered
+ * row carries a classified retention — no row uses this default.
+ */
+export const RETENTION_CONSERVATIVE_DEFAULT: RetentionMetadata = {
   minimumYears: 5,
   archivalTier: "hot-cool-archive",
   citationRef: "ORG-CS3-009",
@@ -939,6 +949,7 @@ const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Owen", "dashboard", "Vera"],
     replay: "latest-wins-per-key",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "Procedures/by-policy/ceo-decision-review.md",
   },
   {
@@ -948,6 +959,7 @@ const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["dashboard"],
     replay: "pair-coupled",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
   },
   {
@@ -957,6 +969,7 @@ const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["dashboard"],
     replay: "pair-coupled",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
   },
 ];
@@ -969,6 +982,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Thandiwe", "Vera", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "Vera continuous-controls programme; Mira citation-gate",
   },
   {
@@ -978,6 +992,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Thandiwe", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/recon/types.ts",
   },
   {
@@ -987,6 +1002,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Thandiwe", "Vera"],
     replay: "append-only-audit",
     citationsHint: ["P2-CITATION-DISCIPLINE", "FIC-ACT-38-2001"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-citation-gate.ts",
   },
   {
@@ -996,6 +1012,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Thandiwe", "Vera", "Atlas"],
     replay: "append-only-audit",
     citationsHint: ["P2-CITATION-DISCIPLINE", "FIC-ACT-38-2001"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-citation-gate.ts",
   },
   {
@@ -1005,6 +1022,8 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Devon", "dashboard", "Anya"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    // Substrate-state is operational telemetry — runtime tier.
+    retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/atlas-substrate-state.ts",
   },
   {
@@ -1014,6 +1033,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Atlas", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-projection-refresh.ts",
   },
   {
@@ -1023,6 +1043,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Vera", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-projection-drift.ts",
   },
   {
@@ -1033,6 +1054,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "dashboard decision-comments thread (Phase 1 slice 2)",
   },
   {
@@ -1042,6 +1064,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["dashboard"],
     replay: "append-only-audit",
     citationsHint: ["COMPANIES-ACT-71-2008", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/owen-governance-cycle-prep.ts",
   },
   {
@@ -1051,6 +1074,9 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Zara", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["FIC-ACT-38-2001", "FAIS-ACT-37-2002", "BANKS-ACT-94-1990"],
+    // Obligations register is FIC-record-bind (5y) but treated as
+    // governance retention 7y for audit-trail integrity.
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-obligations-snapshot.ts",
   },
   // M1 obligations-register family — emitted by Mira's
@@ -1079,6 +1105,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "ORG-FC-05",
       "GOV-FRAMEWORK-CEO-RESERVED",
     ],
+    retention: RETENTION_BANKING_5Y,
     // Retention floor: ≥5 years per ORG-CS3-009 (SARB CS 3/2018 §12 —
     // Records ≥5y, tamper-evident) and ORG-FC-05 (FIC Act s.22 —
     // 5-year record-keeping on CDD/EDD/transactions/STRs).
@@ -1098,6 +1125,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "ORG-FC-05",
       "GOV-FRAMEWORK-CEO-RESERVED",
     ],
+    retention: RETENTION_BANKING_5Y,
     // Retention floor: ≥5 years per ORG-CS3-009 + ORG-FC-05 (mirrors
     // ObligationRegistered — the tranche summary is the audit anchor
     // for the per-run registration cohort).
@@ -1111,6 +1139,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Rashida", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["JOINT-STANDARD-1-2024", "POPIA-S19-22"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-security-substrate-state.ts",
   },
   {
@@ -1120,6 +1149,8 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    // Inbox-hygiene sweeps are operational housekeeping — runtime tier.
+    retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/scrooge-inbox-hygiene.ts",
   },
   // M1 markets-projection family — emitted by Anya's
@@ -1132,6 +1163,8 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Bea", "Kai", "Saskia", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
     citationsHint: ["JSE-RULES-EQUITIES", "ORG-AC-01", "ORG-AC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
+    // Markets projection registry is governance-of-projections — 7y.
+    retention: RETENTION_GOVERNANCE_7Y,
     source:
       "runtime/agents/anya-m1-projection-runtime-mapping.ts; Team Inbox/2026-05-07_brief_anya_m1-projection-runtime-mapping.md",
   },
@@ -1142,6 +1175,8 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Vera", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["JSE-RULES-EQUITIES", "ORG-AC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
+    // High-cadence refresh — runtime tier.
+    retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-m1-projection-runtime-mapping.ts",
   },
   // M1 security family — emitted by Senna's m1-trading-stack-threat-model handler.
@@ -1152,6 +1187,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Rashida", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
     citationsHint: ["ORG-CY-01", "ORG-CY-03", "ORG-CY-05", "ORG-PR(IV)-06"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
   },
   {
@@ -1161,6 +1197,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Rashida", "Atlas", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
     citationsHint: ["ORG-CY-01", "ORG-CY-03", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
   },
 ];
@@ -1185,6 +1222,7 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "JSE-RULES",
       "GOV-FRAMEWORK-CEO-RESERVED",
     ],
+    retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6; Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md (PR #82); Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md (PR #85); Regulations/_legal-entity-tree.md",
   },
@@ -1196,6 +1234,7 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Owen", "Mira", "Bea", "Yael", "Helena", "Anya", "dashboard", "Vera"],
     replay: "cumulative-fold",
     citationsHint: ["COMPANIES-ACT-71-2008", "BANKS-ACT-94-1990", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6.2; Regulations/_legal-entity-tree.md",
   },
@@ -1212,6 +1251,9 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "BANKS-ACT-94-1990-S73",
       "OECD-TP-GUIDELINES",
     ],
+    // Related-party arrangements bind accounting + Companies Act
+    // record-keeping — 7y per accounting retention.
+    retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §2 (intra-group arrangement stubs); Regulations/_legal-entity-tree.md §2",
   },
