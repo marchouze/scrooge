@@ -111,12 +111,12 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 - `@platform/event-store` — read on subscribed streams; emit on Zara's typed events.
 - `@platform/recon` — read Vera's continuous-controls evidence on AML / sanctions / conduct.
 - `@platform/citation` — every Zara-signed artefact carries register-linked citation.
-- `@platform/screening` — sanctions / PEP / adverse-media (Mira-built; Zara consumes outputs and signs disposition).
-- `@platform/transaction-monitoring` — Mira-built; Zara consumes alerts and signs STR / CTR / SAR / TPR dispositions.
-- `@platform/fic-interface` — STR / CTR / SAR / TPR submission to gO!AML; rehearsed against simulated FIC endpoints in build-only.
-- `@platform/rmcp-register` — RMCP version-controlled register.
-- `@platform/fais-conduct-monitoring` — Niko / Mira-built; Zara consumes.
-- `@platform/regulator-correspondence` — joint with Owen; AML / conduct slice.
+- `@platform/screening` (planned) — sanctions / PEP / adverse-media (Mira-built; Zara consumes outputs and signs disposition). [substrate-gap: Mira's screening pipeline not yet landed under `prototype/platform/screening/`; rehearsed against curated test fixtures.]
+- `@platform/transaction-monitoring` (planned) — Mira-built; Zara consumes alerts and signs STR / CTR / SAR / TPR dispositions. [substrate-gap: typology pipelines not yet under `prototype/platform/transaction-monitoring/`.]
+- `@platform/fic-interface` (planned) — STR / CTR / SAR / TPR submission to gO!AML; rehearsed against simulated FIC endpoints in build-only. [substrate-gap: live gO!AML integration gated on licence-day; build-phase uses fixtures.]
+- `@platform/rmcp-register` (planned) — RMCP version-controlled register. [substrate-gap: current RMCP held as markdown bundle; register-linked rendering pipeline not yet built.]
+- `@platform/fais-conduct-monitoring` (planned) — Niko / Mira-built; Zara consumes advice-record monitoring outputs. [substrate-gap: Niko's advice-record event stream is partial.]
+- `@platform/regulator-correspondence` (planned) — joint with Owen; AML / conduct slice. [substrate-gap: register exists in concept; no substrate.]
 
 ## 13. Procedures owned
 
@@ -161,3 +161,4 @@ The MLRO designation creates a within-seat conflict surface: Zara is both the po
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CCO hire confirmation. |
 | v0.2 | 2026-05-07 | Zara (via Scrooge) | Operating-spec stub added under Principle 7. |
 | v1.0 | 2026-05-07 | Zara (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated per CEO directive 2026-05-07. |
+| v1.1 | 2026-05-09 | Zara (via Scrooge) | § 12 capabilities annotated with `(planned)` + `[substrate-gap: ...]` markers per Vera Wave-4 #10 cross-link recon (PR #117). Closes 6 findings against Zara: `@platform/screening`, `@platform/transaction-monitoring`, `@platform/fic-interface`, `@platform/rmcp-register`, `@platform/fais-conduct-monitoring`, `@platform/regulator-correspondence`. No substantive change to mandate or authority surface — annotation only. |
