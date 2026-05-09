@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Bank — home</title>
+  <meta name="description" content="The Bank's operating launcher. Dashboards, reports, decisions, registers, substrate operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="The Bank — home">
+        <!-- Linnea Direction A: geometric mark — circle with a horizontal chord
+             cutting through the upper third (the "settling" gesture).
+             Reference: Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md §2.1. -->
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">The Bank</span>
+        <span class="shell-wordmark-suffix" title="Bank-name selection pending — D-BANK-NAME-SELECTION">[name TBD]</span>
+      </a>
+      <div class="shell-meta">
+        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Section navigation">
+      <h2>Sections</h2>
+      <ul>
+        <li><a href="#dashboards" data-shell-nav="sidebar:dashboards">Dashboards</a></li>
+        <li><a href="#reports" data-shell-nav="sidebar:reports">Reports</a></li>
+        <li><a href="#decisions" data-shell-nav="sidebar:decisions">Decisions</a></li>
+        <li><a href="#registers" data-shell-nav="sidebar:registers">Registers</a></li>
+        <li><a href="#substrate" data-shell-nav="sidebar:substrate">Substrate ops</a></li>
+        <li><a href="#markets" data-shell-nav="sidebar:markets">Markets</a></li>
+        <li><a href="#compliance" data-shell-nav="sidebar:compliance">Compliance</a></li>
+      </ul>
+      <h2>Reference</h2>
+      <ul>
+        <li><a href="/index.html" data-shell-nav="ref:legacy-dashboard">Legacy operations dashboard</a></li>
+        <li><a href="/architecture.html" data-shell-nav="ref:architecture">Architecture</a></li>
+      </ul>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">The Bank</h1>
+        <p class="shell-page-lede">
+          Operating launcher. Dashboards, reports, decisions, registers, and
+          substrate operations all start here. Every tile is a query over
+          the canonical sources — events, registers, procedures.
+        </p>
+      </div>
+
+      <!-- ============= DASHBOARDS (live) ============= -->
+      <section class="shell-category" id="dashboards" aria-labelledby="cat-dashboards">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-dashboards">Dashboards</h2>
+          <span class="shell-category-kind" data-kind="live">Live</span>
+        </div>
+        <p class="shell-category-blurb">Continuously re-derived from the event log and canonical registers. Numbers reflect the bank now.</p>
+        <div class="shell-tiles" data-shell-tiles="dashboards"></div>
+      </section>
+
+      <!-- ============= REPORTS (as-of-date) ============= -->
+      <section class="shell-category" id="reports" aria-labelledby="cat-reports">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-reports">Reports</h2>
+          <span class="shell-category-kind" data-kind="reports">As-of-date</span>
+        </div>
+        <p class="shell-category-blurb">Point-in-time renderings — board packs, regulator returns, financial statements, audit reports. Generated, never assembled (Principle 6 downward chain).</p>
+        <div class="shell-tiles" data-shell-tiles="reports"></div>
+      </section>
+
+      <!-- ============= DECISIONS ============= -->
+      <section class="shell-category" id="decisions" aria-labelledby="cat-decisions">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-decisions">Decisions</h2>
+          <span class="shell-category-kind" data-kind="live">Live</span>
+        </div>
+        <p class="shell-category-blurb">CEO and Board decisions. Each decision carries options, recommendation, and a citation chain back to the governance framework.</p>
+        <div class="shell-tiles" data-shell-tiles="decisions"></div>
+      </section>
+
+      <!-- ============= REGISTERS ============= -->
+      <section class="shell-category" id="registers" aria-labelledby="cat-registers">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-registers">Registers</h2>
+          <span class="shell-category-kind" data-kind="canonical">Canonical</span>
+        </div>
+        <p class="shell-category-blurb">The single citable sources. Obligations, policies, procedures, agents, regulations.</p>
+        <div class="shell-tiles" data-shell-tiles="registers"></div>
+      </section>
+
+      <!-- ============= SUBSTRATE OPS ============= -->
+      <section class="shell-category" id="substrate" aria-labelledby="cat-substrate">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-substrate">Substrate operations</h2>
+          <span class="shell-category-kind" data-kind="live">Live</span>
+        </div>
+        <p class="shell-category-blurb">The platform itself — fleet status, health checks, escalations, the substrate-gap inventory, the architecture diagram.</p>
+        <div class="shell-tiles" data-shell-tiles="substrate"></div>
+      </section>
+
+      <!-- ============= MARKETS ============= -->
+      <section class="shell-category" id="markets" aria-labelledby="cat-markets">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-markets">Markets</h2>
+          <span class="shell-category-kind" data-kind="m-phase">M-phase</span>
+        </div>
+        <p class="shell-category-blurb">Trading desks, portfolios, exposures, risk positions. Substrate is in progress; tiles are placeholders for the M-phase deliveries.</p>
+        <div class="shell-tiles" data-shell-tiles="markets"></div>
+      </section>
+
+      <!-- ============= COMPLIANCE ============= -->
+      <section class="shell-category" id="compliance" aria-labelledby="cat-compliance">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-compliance">Compliance</h2>
+          <span class="shell-category-kind" data-kind="placeholders">Procedures</span>
+        </div>
+        <p class="shell-category-blurb">FIC submissions, sanctions, KYC, conduct surveillance. Each tile links to the procedure that owns the workflow (Principle 6 upward chain).</p>
+        <div class="shell-tiles" data-shell-tiles="compliance"></div>
+      </section>
+
+      <!-- ============= Substrate-gap callout ============= -->
+      <aside class="shell-callout" aria-labelledby="callout-gaps">
+        <h3 id="callout-gaps">v0 surfaces what is not yet wired</h3>
+        <p>This launcher is a presentation layer over existing dashboards. The substrate work below is named so it is not hidden:</p>
+        <ul>
+          <li>Real authentication — Senna (Security engineer) zero-trust posture under Joint Standard 1 of 2024; Iris (Information Officer, governance) for POPIA s.19. Today the identity is a stub.</li>
+          <li>Audit-trail UI — every shell click is in-memory only; <code>UiInteraction</code> event-type and the trail viewer land in v1.</li>
+          <li>Existing pages still render their own legacy chrome — retrofit lands in v1 as a follow-on PR.</li>
+          <li>Customer / board / regulator portals are placeholder slots; substrate stands up at licence-day approach.</li>
+          <li>Bank name placeholder — selection sits with D-BANK-NAME-SELECTION.</li>
+        </ul>
+      </aside>
+    </main>
+  </div>
+
+  <footer class="shell-footer" role="contentinfo">
+    Bank UI v0 · derived from
+    <a href="/api/state">/api/state</a> ·
+    <a href="/api/substrate-gaps">/api/substrate-gaps</a> ·
+    <a href="/api/obligations">/api/obligations</a> ·
+    Cited under CEO directive 2026-05-09; Principle 6 downward chain.
+  </footer>
+
+  <script src="/_shell.js"></script>
+  <script src="/home.js"></script>
+</body>
+</html>
