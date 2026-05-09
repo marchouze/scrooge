@@ -2,7 +2,7 @@
 title: FAIS Key Individual handover note — Marc-interim → Saskia-steady-state
 author: Saskia
 date: 2026-05-09
-summary: Acknowledgement of the steady-state FAIS Key Individual seat under the approved thin-human-layer composition (D-THIN-HUMAN-LAYER-MINIMUM, 2026-05-08). Records the Marc-interim → Saskia-steady-state handover, the fit-and-proper requirements the steady-state holder must satisfy under FAIS, and the gating triggers for the transition (external-counsel confirmation of FSP-licensing scope; Saskia FAIS-KI fit-and-proper file completion). Surfaces the open question of whether the bank's institutional-only / wholesale posture requires an FSP licence at all — routed in parallel to PAX as a research dispatch (`Team Inbox/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`).
+summary: Acknowledgement of the steady-state FAIS Key Individual seat under the approved thin-human-layer composition (D-THIN-HUMAN-LAYER-MINIMUM, 2026-05-08). Records the Marc-interim → Saskia-steady-state handover, the fit-and-proper requirements the steady-state holder must satisfy under FAIS, and the (now-narrowed) gating trigger for the transition. **Updated 2026-05-09 by D-FSP-LICENCE-NECESSITY confirm-A (`Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62):** Gate (a) — external-counsel confirmation of FSP-licensing scope — is **closed** (CEO read the FSP-scope question as pre-resolved Posture A; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question). The handover now gates on **Gate (b) alone** (Saskia FAIS-KI fit-and-proper file completion under the Determination of Fit and Proper Requirements 2017). The PAX research dispatch is **withdrawn** and moved to `Team Inbox/actioned/`.
 decision-required: false
 feeds: 2026-05-09_nolan_recruitment_human-cro.md
 ---
@@ -14,7 +14,8 @@ feeds: 2026-05-09_nolan_recruitment_human-cro.md
 **Date:** 2026-05-09
 **For:** Marc (CEO); routed to Owen (CoSec — governance framework custodian); Zara (CCO — FAIS conduct line); Imani (Legal-as-code — external-counsel dispatch); Nolan (recruitment — feeds the human-CRO and the broader thin-human-layer search)
 **Authority:**
-- `Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md` — CEO decision record approving the six-human + Marc + audit-firm composition; explicitly names *"FAIS KI (Saskia steady-state, Marc-interim acceptable until external counsel confirms FSP licensing scope)"*.
+- `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62) — CEO decision record resolving D-FSP-LICENCE-NECESSITY as `confirm-A-no-research`. **Closes Gate (a)** of this note's two-gate trigger (external-counsel confirmation of FSP-licensing scope is no longer required as a precondition; the FSP-licence question is pre-resolved Posture A); confirms Saskia (Head of Global Markets, governance) as the steady-state FAIS KI subject only to the fit-and-proper file completion (Gate (b)). Explicitly recorded under "What this resolves": *"Saskia's FAIS-KI handover trigger (PR #45) drops Gate (a) — counsel confirmation of FSP-licensing scope — as a precondition. Saskia transitions from interim Marc-as-KI to steady-state Saskia-as-KI on Gate (b) alone (FAIS-KI fit-and-proper file completion)."*
+- `Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md` — CEO decision record approving the six-human + Marc + audit-firm composition; explicitly names *"FAIS KI (Saskia steady-state, Marc-interim acceptable until external counsel confirms FSP licensing scope)"*. (The counsel-confirmation precondition is now closed by the D-FSP-LICENCE-NECESSITY confirm-A decision above.)
 - `Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` — Mira + Zara conduct-side reading on the same composition; FAIS KI question carried at row Q4 (institutional-only posture, FSP scoping, counsel-confirmed at gate).
 - `Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md` — Imani's recommendation paper on external-counsel engagement; §2.4 carries the FAIS-KI / FSP-licence-path scope category; the engagement model defers external counsel until the SARB pre-application gate, at which point the FSP-licensing scope question is adjudicated.
 - `Regulations/_obligations-register.md` — register row `ORG-FAIS-KI` (URN `urn:obligation:bank:org:fais:key-individual:v1`) being closed in parallel by Mira on the back of the CEO decision; this note links to the URN as the canonical machine-readable handle for the obligation.
@@ -28,7 +29,9 @@ feeds: 2026-05-09_nolan_recruitment_human-cro.md
 
 ## 1. Acknowledgement of the steady-state seat
 
-I (Saskia, Head of Global Markets) acknowledge the steady-state FAIS Key Individual designation under FAIS Act 37 of 2002 s.8, conditional on (a) the bank holding an FSP licence at commencement-of-trading, and (b) my fit-and-proper file being on record per the Determination of Fit and Proper Requirements 2017.
+I (Saskia, Head of Global Markets, governance) acknowledge the steady-state FAIS Key Individual designation under FAIS Act 37 of 2002 s.8, conditional on (a) the bank holding an FSP licence at commencement-of-trading **(now confirmed: D-FSP-LICENCE-NECESSITY confirm-A, PR #62 — Posture A is the steady-state, the bank pursues an FSP licence under FAIS)**, and (b) my fit-and-proper file being on record per the Determination of Fit and Proper Requirements 2017.
+
+> **Update 2026-05-09 — FSP-licensing scope confirmed Posture A.** The CEO has resolved D-FSP-LICENCE-NECESSITY as `confirm-A-no-research` (decision record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62). FSP-licensing scope is now confirmed Posture A; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question. The two-gate trigger in §3 is reduced to Gate (b) alone.
 
 The CEO decision record `D-THIN-HUMAN-LAYER-MINIMUM` (`Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md`) carries the seat assignment in its outcome paragraph: *"FAIS KI (Saskia steady-state, Marc-interim acceptable until external counsel confirms FSP licensing scope)"*. Mira + Zara's conduct-side reading (`Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` row Q4) records the same posture from the FAIS angle: a single KI is sufficient for the bank's likely product set (FAIS Categories I and II for institutional clients) `[citation: TBC — exact category-of-FSP determination for an institutional-only wholesale dealer to be confirmed by external counsel at the licence-application gate]`; CEO-as-KI is acceptable interim but not sustainable as steady state because the FAIS KI workload at commencement-of-trading exceeds CEO bandwidth.
 
@@ -77,37 +80,47 @@ The FAIS KI obligation lands in `Regulations/_obligations-register.md` Domain O 
 
 ---
 
-## 3. Interim handover trigger — gating conditions for Marc → Saskia transition
+## 3. Interim handover trigger — gating condition for Marc → Saskia transition
 
-The Marc-interim → Saskia-steady-state transition gates on **two named events, both of which must be satisfied** before the seat formally transfers:
+> **Status update 2026-05-09 (D-FSP-LICENCE-NECESSITY confirm-A, PR #62).** The original two-gate trigger is reduced to **Gate (b) alone**. Gate (a) — external-counsel confirmation of FSP-licensing scope — is **closed** by CEO decision (Posture A is the steady-state, FSP licence pursued under FAIS; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question). The Marc-interim → Saskia-steady-state transition now gates on **Gate (b) — Saskia FAIS-KI fit-and-proper file completion** alone.
 
-### Gate (a) — External-counsel confirmation of FSP-licensing scope
+Original two-gate framing (retained for audit trail; Gate (a) status is now `closed`):
 
-Imani's recommendation paper (`Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md`) sets the engagement model for external counsel as deferred-with-precondition (Option C — engaged at the SARB pre-application gate). §2.4 of that brief carries the FAIS KI / FSP-licence-path category; the substantive question — *does the bank's institutional-only / wholesale posture require an FSP licence at all?* — is named explicitly there and recognised as a counsel question, not an in-house question. Counsel adjudicates at the licence-application gate.
+### Gate (a) — External-counsel confirmation of FSP-licensing scope — **CLOSED**
 
-The trigger fires when counsel returns one of three readings:
+**Status: closed by D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09 (PR #62).** The CEO read the FSP-licence question as pre-resolved Posture A: the bank pursues an FSP licence under FAIS; Saskia (Head of Global Markets, governance) is the steady-state FAIS KI under the Determination of Fit and Proper Requirements 2017; FAIS Categories I and II likely sufficient for the institutional-only product set (per Mira-Zara conduct-side reading; counsel ratifies at the licence-application gate). The decision codifies that wrong-A is over-investment cost while wrong-B is FAIS s.7 contravention with potential criminality under s.36 — the asymmetry justifies accepting the over-investment cost as the correct trade.
 
-1. **FSP licence required.** The bank pursues an FSP licence under FAIS; Saskia (steady-state) is named KI; gate (b) becomes the binding remaining condition.
-2. **FSP licence not required for the bank's interactions with institutional / professional counterparties.** No FAIS KI seat is required at all; this note is closed; the steady-state KI assignment is retired; Marc-as-interim-KI is also retired. (This is the "institutional-only is FAIS-out-of-scope" reading carried by `project_strategic_foundation.md`'s build-phase posture and tested in the PAX dispatch.)
-3. **Mixed reading — FSP licence required for some interactions, not others.** The KI seat persists for the in-scope slice; the slice is scope-bounded; Saskia (steady-state) named KI for the in-scope slice only. Gate (b) binds.
+**Counsel role narrowed, not eliminated.** Imani (Legal-as-code engineer)'s recommendation paper (`Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md`) is updated in parallel (Zara + Imani PR `claude/zara-imani-fsp-confirm-a-scope-updates`): counsel ratifies Posture-A application-bundle scope at the licence-application gate (Imani's Option C deferred-with-precondition timing unchanged) and scopes the institutional-only counterparty-eligibility evidence requirements; counsel does **not** evaluate Posture B and does **not** re-litigate the binary A-vs-B question.
 
-The PAX research dispatch in Part 2 of this work feeds this gate directly — PAX maps the precedent so that counsel walks into the question with an in-house position, not a blank page.
+**FSP-licensing scope is now confirmed Posture A; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question.**
 
-### Gate (b) — Saskia FAIS-KI fit-and-proper file completion
+Original three-reading trigger framing (no longer load-bearing — retained for audit trail):
 
-The fit-and-proper file (per §2 above) must be on record before the seat transfers. The file is composed at the human-Saskia appointment — the seat-holder is the natural author of items in §2.1 (honesty / integrity), §2.2 (competence), §2.4 (financial-soundness personal disclosure); §2.3 (operational ability) and §2.4-entity (financial-soundness entity-level) are aggregated from the substrate layers Devon, Rashida, Atlas, Owen, Camille own; §2.5 (oversight) is composed by the seat-holder against the Zara-owned conduct policy stack.
+1. ~~**FSP licence required.**~~ **Confirmed by CEO decision; this is the steady-state.** Saskia (steady-state) named KI; Gate (b) is the binding remaining condition.
+2. ~~**FSP licence not required for the bank's interactions with institutional / professional counterparties.**~~ **Rejected by CEO decision** (Posture B not pursued; the asymmetric tail risk under FAIS s.7 / s.36 justifies the Posture-A over-investment cost).
+3. ~~**Mixed reading.**~~ **Not pursued** — counsel scopes Posture-A counterparty-eligibility evidence at the licence-application gate, not a mixed in-scope / out-of-scope reading.
+
+### Gate (b) — Saskia FAIS-KI fit-and-proper file completion — **NOW THE SOLE BINDING GATE**
+
+Per the D-FSP-LICENCE-NECESSITY confirm-A decision (PR #62), Gate (b) is now the **only** remaining precondition for the Marc-interim → Saskia-steady-state transition. The fit-and-proper file (per §2 above) must be on record before the seat transfers. The file is composed at the human-Saskia appointment — the seat-holder is the natural author of items in §2.1 (honesty / integrity), §2.2 (competence), §2.4 (financial-soundness personal disclosure); §2.3 (operational ability) and §2.4-entity (financial-soundness entity-level) are aggregated from the substrate layers Devon (COO), Rashida (CISO), Atlas (Core banking platform architect), Owen (Company Secretary, governance), Camille (CFO) own; §2.5 (oversight) is composed by the seat-holder against the Zara (CCO)-owned conduct policy stack.
 
 The file becomes complete when:
-1. Personal background, qualifications, regulatory examinations, financial-soundness disclosure are filed (seat-holder).
-2. Owen has reviewed the file form against the Fit-and-Proper Policy and the secretariat record.
-3. Zara has reviewed the substantive contents from the conduct line.
-4. Counsel has reviewed the file form and substance at the licence-application gate.
+1. Personal background, qualifications, regulatory examinations, financial-soundness disclosure are filed (seat-holder, post-recruitment of human-Saskia).
+2. Owen (Company Secretary, governance) has reviewed the file form against the Fit-and-Proper Policy and the secretariat record.
+3. Zara (Chief Compliance Officer, governance) has reviewed the substantive contents from the conduct line.
+4. Counsel has reviewed the file form and substance at the licence-application gate (counsel's Posture-A ratification scope per the narrowed brief — Imani PR `claude/zara-imani-fsp-confirm-a-scope-updates`).
+5. Sade (AgentOps engineer)'s engineering-side fit-and-proper-file template (per the D-FSP-LICENCE-NECESSITY confirm-A follow-on routes — `Procedures/by-policy/fais-ki-fit-and-proper.md` or similar) provides the structured-evidence slot infrastructure into which steps 1–4 are filed.
 
-Until both gates are satisfied, Marc remains FAIS KI of record (interim). The CEO decision record `D-THIN-HUMAN-LAYER-MINIMUM` accepts this interim posture explicitly.
+Until Gate (b) is satisfied, Marc remains FAIS KI of record (interim). The CEO decision records `D-THIN-HUMAN-LAYER-MINIMUM` and `D-FSP-LICENCE-NECESSITY` together accept this interim posture explicitly.
 
-### Cadence — when the gates fire
+### Cadence — when the gate fires
 
-Imani's brief sets the external-counsel trigger as the SARB pre-application meeting date or licence-application lodgment date (whichever comes first). The FAIS KI fit-and-proper file is composable independently of counsel — it can be advanced as soon as human-Saskia is appointed (Nolan's recruitment scope). The two paths run in parallel; the seat transfer happens when both are complete, which in practice is at or shortly before commencement-of-trading.
+Per the original framing, the FAIS KI fit-and-proper file was composable independently of counsel and could be advanced as soon as human-Saskia is appointed (Nolan's recruitment scope). With Gate (a) now closed by CEO decision, **the transition cadence accelerates** — there is no longer a counsel-confirmation precondition to wait on. The transition fires when:
+
+1. Human-Saskia is appointed (Nolan's recruitment scope; second-wave hire alongside human-Niko at commencement-of-trading per the thin-human-layer composition).
+2. The fit-and-proper file (steps 1–5 above) is complete on record.
+
+In practice, the seat transfer now happens at the moment Gate (b) closes — typically at or shortly before commencement-of-trading. Counsel's licence-application-gate ratification of Posture-A scope runs in parallel (Imani's Option C cadence unchanged) but is no longer the binding handover trigger.
 
 ---
 
@@ -115,13 +128,13 @@ Imani's brief sets the external-counsel trigger as the SARB pre-application meet
 
 The following are surfaced for the record. None blocks the recording of this note; each is routed.
 
-### 4.1 Is the bank's institutional-only / wholesale posture even FSP-scoped?
+### 4.1 Is the bank's institutional-only / wholesale posture even FSP-scoped? — **CLOSED**
 
-This is the substantive open question. The FAIS Act's intermediary-services and advice definitions are oriented towards retail / public clients; institutional / professional counterparties may be wholly or partly exempt under FAIS subordinate legislation (s.45-related exemptions per Mira + Zara's row Q4 reading) `[citation: TBC — exact subordinate-legislation reference to be confirmed]`. If the bank's interactions are predominantly with FAIS-exempt counterparties, the FSP licence — and hence the KI seat — may not be required at all.
+**Status: closed by D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09 (PR #62).** The CEO has resolved this question as `confirm-A-no-research`: the bank pursues an FSP licence under FAIS regardless of any counterparty-eligibility carve-outs that might in principle have applied; the asymmetric tail risk (wrong-B = FAIS s.7 contravention with potential criminality under s.36) justifies the over-investment cost of pursuing the licence.
 
-This question is routed to PAX as a research dispatch in parallel with this note: `Team Inbox/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`. PAX's output feeds Gate (a) above and feeds D-FSP-LICENCE-NECESSITY (which Zara is also surfacing in parallel — see her conduct-side substrate work after the same CEO decision).
+The PAX (Role researcher) research dispatch routed in parallel with this note (`Team Inbox/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`) is **withdrawn** and moved to `Team Inbox/actioned/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`. PAX's bandwidth returns to the six thin-human-layer role-research dispatches and any other Marc-prioritised research backlog.
 
-The PAX dispatch is a research request, not a substantive answer. The substantive answer is counsel's at the licence-application gate.
+Counsel still ratifies Posture-A *scope* at the licence-application gate (the bundle scope, the institutional-only counterparty-eligibility evidence requirements) — but does not evaluate Posture B and does not re-litigate the binary A-vs-B question. The substantive answer to "what FAIS Categories does the bank hold and what counterparty-eligibility evidence does it produce?" remains a counsel question at the licence-application gate; the answer to "does the bank pursue an FSP licence at all?" is now closed by CEO decision.
 
 ### 4.2 Substrate gap — FAIS-KI authority binding
 
@@ -165,7 +178,7 @@ This note binds upward to:
 | Conduct-side procedure for FAIS KI oversight | Zara | Post-decision compliance posture brief — parallel substrate; informed by counsel at gate. |
 | Governance-framework section on FAIS KI seat | Owen | At the licence-application gate; today's governance framework already names *"FAIS Key Individual — Saskia steady-state"* implicitly via the CEO decision; explicit section authored at the gate. |
 | Human-Saskia recruitment downstream | Nolan | After human-CRO and triple-hatted compliance lead are seated; human-Saskia is the second-wave hire alongside human-Niko at commencement-of-trading. |
-| PAX research on FSP-licence necessity | PAX | Per the dispatch in `Team Inbox/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`; needed before licence-application lodgment. |
+| ~~PAX research on FSP-licence necessity~~ — **withdrawn by D-FSP-LICENCE-NECESSITY confirm-A (PR #62)** | PAX (Role researcher) | Dispatch withdrawn; brief moved to `Team Inbox/actioned/2026-05-09_saskia-to-pax_fsp-licence-necessity-research.md`. PAX's bandwidth returns to the six thin-human-layer role-research dispatches and any other backlog. |
 
 ---
 
@@ -173,7 +186,8 @@ This note binds upward to:
 
 | Date | Change | Author |
 |---|---|---|
-| 2026-05-09 | Initial note — steady-state FAIS KI seat acknowledgement; fit-and-proper requirements; Marc-interim → Saskia-steady-state handover trigger; open question on FSP-scope routed to PAX in parallel. | Saskia |
+| 2026-05-09 | Initial note — steady-state FAIS KI seat acknowledgement; fit-and-proper requirements; Marc-interim → Saskia-steady-state handover trigger; open question on FSP-scope routed to PAX in parallel. | Saskia (Head of Global Markets, governance) |
+| 2026-05-09 | **Update** — D-FSP-LICENCE-NECESSITY resolved as `confirm-A-no-research` (CEO decision record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62). Gate (a) — external-counsel confirmation of FSP-licensing scope — closed; FSP-licensing scope confirmed Posture A (counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question). Handover trigger reduces to Gate (b) alone (Saskia FAIS-KI fit-and-proper file completion under the Determination of Fit and Proper Requirements 2017). PAX research dispatch withdrawn; brief moved to `Team Inbox/actioned/`. §1, §3, §4.1, dependency table all updated. | Saskia (Head of Global Markets, governance) |
 
 ---
 

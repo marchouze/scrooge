@@ -1,10 +1,28 @@
 ---
-title: PAX research dispatch — does an institutional-only / wholesale bank require an FSP licence under FAIS?
+title: "[WITHDRAWN] PAX research dispatch — does an institutional-only / wholesale bank require an FSP licence under FAIS?"
 author: Saskia
 date: 2026-05-09
-summary: Research request to PAX. Question — under what conditions does the bank's institutional-only / wholesale posture require an FSP licence under FAIS at all? Sub-questions — what precedent exists for institutional-only banks operating without FSP registration; how do the FAIS s.45 (and related) institutional / professional counterparty exemptions operate in practice; what comparable-jurisdiction precedent informs the question? The output feeds D-FSP-LICENCE-NECESSITY (Zara surfacing in parallel) and Gate (a) of the Marc → Saskia FAIS KI handover. Cadence — input needed before SARB licence-application lodgment. This is a DISPATCH BRIEF, not a substantive answer; PAX runs the research separately.
+status: withdrawn
+withdrawn-by: D-FSP-LICENCE-NECESSITY confirm-A (PR #62), 2026-05-09
+summary: "[WITHDRAWN 2026-05-09 by D-FSP-LICENCE-NECESSITY confirm-A — PR #62.] Original brief — research request to PAX (Role researcher) on the institutional-only / wholesale FSP-licence-necessity question. Withdrawn because the CEO closed the question as `confirm-A-no-research` (Posture A is the steady-state; the bank pursues an FSP licence under FAIS); no PAX research dispatch required."
 addressee: PAX
 priority: 1
+---
+
+> **Withdrawn 2026-05-09 by D-FSP-LICENCE-NECESSITY confirm-A (PR #62).** The CEO closed the FSP-licence necessity question as `confirm-A`; no PAX (Role researcher) research dispatch required. PAX's bandwidth returns to the six thin-human-layer role-research dispatches and any other backlog.
+>
+> **Decision record:** `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62).
+>
+> **Outcome codified:** Posture A is the steady-state. The bank pursues an FSP licence under FAIS Act 37 of 2002 s.8; Saskia (Head of Global Markets, governance) is the steady-state FAIS Key Individual under the Determination of Fit and Proper Requirements 2017; FAIS Categories I and II likely sufficient for the institutional-only product set (per Mira-Zara conduct-side reading; counsel ratifies application-bundle scope at the licence-application gate but does not re-litigate the binary A-vs-B question).
+>
+> **Why withdrawn (not paused).** The CEO accepted the asymmetric trade — wrong-A is over-investment cost, wrong-B is FAIS s.7 contravention with potential criminality under s.36 (Zara's §2.3 framing) — and elected to bear the over-investment cost rather than spend research bandwidth adjudicating Posture B. Research that would have refined the question is no longer load-bearing because the question is closed.
+>
+> **Cross-reference for the audit trail:** Saskia's handover note (`Owner Inbox/2026-05-09_saskia_fais-ki-handover-note.md`) is updated in parallel; Gate (a) — external-counsel confirmation of FSP-licensing scope — is closed; the Marc-interim → Saskia-steady-state transition now gates on Gate (b) alone (FAIS-KI fit-and-proper file completion).
+>
+> **File moved:** From `Team Inbox/` to `Team Inbox/actioned/` per the team-inbox-hygiene rule (`feedback_team_inbox_hygiene.md`, `feedback_decisions_workflow.md` — Team Inbox shows only in-progress / to-do; processed items move to `actioned/`).
+>
+> Original dispatch brief retained below for the audit trail.
+
 ---
 
 # PAX research dispatch — FSP-licence necessity for an institutional-only / wholesale bank
