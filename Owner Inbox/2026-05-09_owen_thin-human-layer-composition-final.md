@@ -2,7 +2,7 @@
 title: Thin human layer — final composition (six humans + Marc + audit firm)
 author: Owen
 date: 2026-05-09
-summary: Final composition paper for the bank's licence-day thin human layer, superseding the Owen+Imani draft. Per CEO decision D-THIN-HUMAN-LAYER-MINIMUM (approved 2026-05-08 with modification), the roster is six separate humans + Marc + external audit firm. The modification adds a separate human CRO before licence-application lodgment, per Mira+Zara's Joint Standard 1 of 2024 §6–§7 challenge. Codifies the alternates split (deputy-IO = CoSec; MLRO-alternate = AC-Chair NED), the FAIS KI posture (Saskia steady-state; Marc-interim subject to counsel confirmation), the auditor / key-audit-partner separation, and the residual concentration-risk caveats (interim-CRO-as-CEO is dropped).
+summary: Final composition paper for the bank's licence-day thin human layer, superseding the Owen+Imani draft. Per CEO decision D-THIN-HUMAN-LAYER-MINIMUM (approved 2026-05-08 with modification), the roster is six separate humans + Marc + external audit firm. The modification adds a separate human CRO before licence-application lodgment, per Mira+Zara's Joint Standard 1 of 2024 §6–§7 challenge. Codifies the alternates split (deputy-IO = CoSec; MLRO-alternate = AC-Chair NED), the FAIS KI posture (Saskia steady-state; Marc-interim until Saskia's fit-and-proper file completes — counsel scope-gate closed by D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09), the auditor / key-audit-partner separation, and the residual concentration-risk caveats (interim-CRO-as-CEO is dropped).
 decision-required: false
 supersedes: 2026-05-09_owen-imani_thin-human-layer-minimum-possible.md
 maps-to-decision-id: D-THIN-HUMAN-LAYER-MINIMUM
@@ -31,7 +31,7 @@ The CEO approved the original Owen+Imani draft with one modification: **tighten 
   - Three NEDs at the AC-composition floor (Companies Act s.94); one Independent Chair doubling as AC Chair and S&E independent NED.
   - Separate Company Secretary (Companies Act s.86(2)(b)) — cannot be Marc.
   - Triple-hatted Compliance Lead — MLRO + FIC Compliance Officer + POPIA Information Officer in one human.
-  - Marc retains: CEO + executive director + Public Officer + interim Banks Act CFO + interim FAIS KI (counsel-confirmed).
+  - Marc retains: CEO + executive director + Public Officer + interim Banks Act CFO + interim FAIS KI (until Saskia's fit-and-proper file completes; counsel scope-gate closed by D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09).
   - External auditor is a firm; key audit partner is firm's named individual, not on the bank's roster.
 
 ---
@@ -48,7 +48,7 @@ The licence-day human layer is **six separate humans on the bank's roster + Marc
 | 4 | **Company Secretary** | Companies Act ss.86–89 | New hire — CoSec (cannot be Marc per s.86(2)(b)) | Before licence-application lodgment |
 | 5 | **Triple-hatted Compliance Lead** — MLRO + FIC Compliance Officer + POPIA Information Officer | FIC Act 38 of 2001 ss.43A, 43B; POPIA Act 4 of 2013 s.56 | New hire — compliance lead | Before licence-application lodgment |
 | 6 | **Chief Risk Officer (human seat)** — Banks Act CRO; second-line independence under JS 1 of 2024 | Banks Act s.60; Joint Standard 1 of 2024 §6–§7; BCBS Corporate Governance Principles 2015 §3 | New hire — human CRO *(NEW per D-THIN-HUMAN-LAYER-MINIMUM)* | **Before licence-application lodgment** |
-| Marc | **CEO** + executive director + Public Officer + interim Banks Act CFO accountable + interim FAIS Key Individual (subject to counsel confirmation of FSP scope) | Banks Act + Companies Act + Tax Administration Act 28 of 2011 + FAIS Act 37 of 2002 s.8 | Marc | Already in seat |
+| Marc | **CEO** + executive director + Public Officer + interim Banks Act CFO accountable + interim FAIS Key Individual (until Saskia's fit-and-proper file completes — counsel scope-gate closed by D-FSP-LICENCE-NECESSITY confirm-A, 2026-05-09) | Banks Act + Companies Act + Tax Administration Act 28 of 2011 + FAIS Act 37 of 2002 s.8 + Determination of Fit and Proper Requirements 2017 | Marc | Already in seat |
 | External | **External auditor (firm)**; the **key audit partner is an employee of the audit firm**, named in the firm's engagement letter, and is **not on the bank's roster** | Banks Act s.61; Companies Act s.90; Auditing Profession Act 26 of 2005 | Audit firm (PA-approved) | Appointed at licence-application lodgment |
 
 **Headline.** Six separate humans + Marc on the bank's roster; one external audit firm. The bank's own thin-human-layer headcount is seven (Marc + six). The audit firm is statutorily required but counted separately as a third party.
@@ -137,12 +137,14 @@ This split supersedes any earlier draft that named the CoSec for both alternates
 
 ## 6. FAIS Key Individual posture
 
-- **Steady state:** Saskia (Head of Global Markets) is the named FAIS Key Individual under FAIS Act s.8 once the human Saskia seat is hired post-licence-day. Saskia is operationally responsible for the FSP activities the bank carries (institutional-only / wholesale categories under FAIS Subordinate Legislation).
-- **Interim:** Marc retains FAIS KI accountability **only until external counsel confirms whether the bank's institutional-only / wholesale posture requires an FSP licence at all.** Per `2026-05-09_imani_external-counsel-licence-application.md` §2.4 and Mira+Zara Q4, this is genuinely a counsel call. The conservative posture is to pursue an FSP licence in the categories the product set requires; counsel-confirmation lands at the licence-application gate.
+> **Updated 2026-05-09 per D-FSP-LICENCE-NECESSITY confirm-A.** Posture A is now the steady-state, not just the conservative interim. The bank pursues an FSP licence under FAIS Act 37 of 2002 (Categories I and II likely sufficient); counsel ratifies scope at the licence-application gate but no longer evaluates Posture B. The "if counsel confirms no FSP licence is required, the FAIS KI seat falls away" branch is **closed**. Decision record: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62).
 
-If counsel confirms no FSP licence is required for the bank's institutional-only counterparty interactions, the FAIS KI seat falls away entirely and Marc carries no FAIS-KI residual.
+- **Steady state (confirmed):** Saskia (Head of Global Markets, governance) is the **named steady-state FAIS Key Individual under FAIS Act s.8 + Determination of Fit and Proper Requirements 2017**. Saskia is operationally responsible for the FSP activities the bank carries (FAIS Categories I and II, with the precise sub-category set ratified by counsel at licence-application). Saskia's KI appointment is **subject only to the fit-and-proper file completion (Saskia's PR #45 Gate (b))** — Gate (a), the counsel scope-confirmation, is closed by D-FSP-LICENCE-NECESSITY confirm-A.
+- **Interim:** Marc retains FAIS KI accountability **until Saskia's fit-and-proper file completes** (Saskia's PR #45 Gate (b)). The earlier "until external counsel confirms whether the bank's institutional-only / wholesale posture requires an FSP licence at all" wording is **superseded**: counsel-confirmation is no longer a gate on Saskia's KI appointment, only on the precise FAIS sub-category set in the licence-application file.
 
-**Citation:** FAIS Act 37 of 2002 s.8; Determination of Fit and Proper Requirements 2017; FAIS Subordinate Legislation on s.45 institutional / professional-counterparty exemptions.
+The FAIS KI is **not a 7th human**. Saskia holds the FAIS KI seat in addition to her Head of Global Markets governance role; the 6-human composition in §2 is unchanged by this confirmation.
+
+**Citation:** FAIS Act 37 of 2002 s.8; Determination of Fit and Proper Requirements 2017; D-FSP-LICENCE-NECESSITY confirm-A (`Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md`, PR #62).
 
 ---
 
