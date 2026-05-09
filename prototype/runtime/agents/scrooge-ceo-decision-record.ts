@@ -43,6 +43,20 @@
 //     spawn the follow-on agents — but the event is now in the right
 //     place for the router (when it lands) to pick up.
 //
+// Preserve-existing-record semantics (added 2026-05-10):
+//   - If `Owner Inbox/<date>_scrooge_ceo-decision-record_<decision-id>.md`
+//     already exists for the (date, decisionId) pair, the handler skips
+//     the auto-generated stub write and keeps the existing file. The
+//     CeoDecision event still emits — the markdown is a human-readable
+//     mirror, not the canonical authority (Principle 1).
+//   - This prevents the handler from clobbering detailed records Scrooge
+//     writes directly in chat under the Principle 7 "steady-state vs
+//     current substrate" fallback. Before this change, invoking the
+//     handler to backfill a missing event would erase the substantive
+//     hand-written content with a brief stub.
+//   - Result: hand-written + auto-generated paths are now both safe to
+//     run for the same decisionId. Idempotent.
+//
 // Author: Scrooge (handler) · Atlas (runtime substrate)
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -172,6 +186,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   let deliverable: string | undefined;
+  let preservedExistingRecord = false;
   if (!ctx.dryRun) {
     if (!existsSync(ctx.ownerInboxDir)) {
       mkdirSync(ctx.ownerInboxDir, { recursive: true });
@@ -180,8 +195,20 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // day don't collide.
     const safeId = input.decisionId.toLowerCase().replace(/[^a-z0-9-]/g, "-");
     const filename = `${fmtDateUTC(ctx.asOf)}_scrooge_ceo-decision-record_${safeId}.md`;
-    writeFileSync(resolve(ctx.ownerInboxDir, filename), buildAuditMarkdown(ctx, input), "utf8");
-    deliverable = `Owner Inbox/${filename}`;
+    const filepath = resolve(ctx.ownerInboxDir, filename);
+    // Skip the auto-generated stub if a hand-written record already exists
+    // for this (date, decisionId) pair. Scrooge often writes detailed
+    // records directly in chat under the Principle 7 "steady-state vs
+    // current substrate" fallback; clobbering them with a brief stub
+    // erases the substantive content. The event still emits — the
+    // markdown is a human-readable mirror, not the canonical authority.
+    if (existsSync(filepath)) {
+      preservedExistingRecord = true;
+      deliverable = `Owner Inbox/${filename}`;
+    } else {
+      writeFileSync(filepath, buildAuditMarkdown(ctx, input), "utf8");
+      deliverable = `Owner Inbox/${filename}`;
+    }
   }
 
   logger.info(
@@ -189,14 +216,18 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       decisionId: input.decisionId,
       action: input.action,
       followOnRoutes: input.followOnRoutes ?? [],
+      preservedExistingRecord,
     },
-    "scrooge:ceo-decision-record — CeoDecision event emitted",
+    preservedExistingRecord
+      ? "scrooge:ceo-decision-record — CeoDecision event emitted; existing detailed record preserved"
+      : "scrooge:ceo-decision-record — CeoDecision event emitted",
   );
 
+  const summarySuffix = preservedExistingRecord ? " (existing record preserved)" : "";
   return {
     eventsEmitted,
     ...(deliverable ? { deliverable } : {}),
-    summary: `${input.decisionId} ${input.action}: ${input.outcome.slice(0, 60)}${input.outcome.length > 60 ? "..." : ""}`,
+    summary: `${input.decisionId} ${input.action}: ${input.outcome.slice(0, 60)}${input.outcome.length > 60 ? "..." : ""}${summarySuffix}`,
     ok: true,
   };
 };
