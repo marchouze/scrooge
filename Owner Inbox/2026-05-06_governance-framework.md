@@ -176,6 +176,65 @@ Named regulatory designations (steady-state agent fleet; the licence-day human s
 
 **MLRO-alternate designation:** AC-Chair NED (seat #1), per §3B above.
 
+### 3F. Group structure governance — three-entity Hoz group, shared board
+
+**Decision authority.** D-LEGAL-ENTITY-TREE-V0 (CEO approve, 2026-05-09; record at `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md`, PR #82) and D-REGULATORY-PERIMETER (CEO approve, 2026-05-09; record at `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md`, PR #85) jointly resolve the bank's legal-entity tree and the regulatory perimeter per entity.
+
+**Group structure (v0).** The bank is a **three-entity SA group**:
+
+1. **Hoz Group Limited** — holding company, registered with CIPC under Companies Act 71 of 2008. Owns the Hoz trademark; holds 100% of Hoz Bank Limited and Hoz Securities Limited.
+2. **Hoz Bank Limited** — the bank entity, applicant under Banks Act 94 of 1990 s.7. Holds the SARB Banks Act licence at licence-day.
+3. **Hoz Securities Limited** — the securities entity. Applicant for JSE Equities and Bonds Membership and STRATE participation; FSCA Authorised Dealer / FAIS FSP licence as ratified by counsel at the licence-application gate (per D-FSP-LICENCE-NECESSITY confirm-A, PR #62).
+
+The joint v0 specification is at `Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md` (PR #80).
+
+**Shared-board posture.** Per D-LEGAL-ENTITY-TREE-V0 §4 (CEO confirmed), the **same six humans + Marc + audit firm composition specified in §3A serves as a shared board across all three entities** — Hoz Group Limited, Hoz Bank Limited, and Hoz Securities Limited. The 6-human composition is unchanged by the multi-entity application; the same humans wear entity-specific hats. Companies-Act-required officers (CoSec under ss.86–89; Public Officer under Tax Administration Act s.246) operate at each entity, but **may be the same human across all three entities** — there is no statutory bar on a single CoSec or Public Officer serving multiple group entities.
+
+**Entity-specific fit-and-proper triangulation.** Fit-and-proper is **assessed per entity**, not once for the group. Every director on the shared board must clear:
+
+- **Bank fit-and-proper** under Banks Act s.60 + SARB PA fit-and-proper expectations + Joint Standard 1 of 2024 §6 (responsible-person designation) — for their seat on the Hoz Bank Limited board.
+- **Securities fit-and-proper** under FAIS Determination of Fit and Proper Requirements 2017 + JSE Membership Rules + JSE Listings Requirements — for their seat on the Hoz Securities Limited board.
+- **Director fit-and-proper** under Companies Act 71 of 2008 ss.69, 71 — for their seat on the Hoz Group Limited board (and as a base layer applicable to all three).
+
+The fit-and-proper file template owned by Sade (AgentOps engineer) — **PROC-FAIS-KI-FAP-01** (PR #69, merged) — is the substrate template that extends to multi-entity. Each director's fit-and-proper file under PROC-FAIS-KI-FAP-01 carries entity-specific declarations covering all three regimes; the AgentOps substrate captures the triangulation as a typed structure rather than three separate files. Sade's per-entity extension of PROC-FAIS-KI-FAP-01 is a v1 substrate task surfaced as a follow-on to D-LEGAL-ENTITY-TREE-V0.
+
+#### Per-entity statutory officers
+
+The Companies-Act-required and entity-regulator-required statutory officers per entity are listed below. Same humans may carry the role across entities (denoted "shared with Hoz Bank" / "shared with Hoz Group"); the *seat* is entity-specific even when the *human* is reused.
+
+| Statutory officer | Hoz Group Limited | Hoz Bank Limited | Hoz Securities Limited | Authority |
+|---|---|---|---|---|
+| **Public Officer (tax)** | Same human as Hoz Bank | Marc (interim; mergeable per ORG-TX-08) | Same human as Hoz Bank | Tax Administration Act 28 of 2011 s.246 |
+| **Company Secretary (CoSec)** | Same human as Hoz Bank | Seat #4 (separate human; not Marc, per Companies Act s.86(2)(b)) | Same human as Hoz Bank | Companies Act 71 of 2008 ss.86–89 |
+| **External Auditor (firm)** | Same firm as Hoz Bank | PA-approved audit firm (Banks Act s.61) | Same firm as Hoz Bank | Banks Act s.61; Companies Act s.90; Auditing Profession Act 26 of 2005 |
+| **MLRO + FIC Compliance Officer** | n/a (group is not an accountable institution) | Seat #5 (triple-hatted Compliance Lead) | **Same human as Hoz Bank** — both bank and securities are **accountable institutions** under FIC Act Schedule 1 (banks under item 6; persons authorised to deal in securities under item 13) | FIC Act 38 of 2001 ss.43A, 43B; FIC Act Schedule 1 |
+| **POPIA Information Officer + Deputy IO** | IO + Deputy IO (Iris's per-entity scoping at `Owner Inbox/<date>_iris_per-entity-popia-io-designation.md`) | Seat #5 IO + Seat #4 Deputy IO (per §3B) | IO + Deputy IO (Iris's per-entity scoping; default same humans as Hoz Bank) | POPIA Act 4 of 2013 s.55–56; POPIA Regulation 4 |
+| **FAIS Key Individual** | n/a | n/a (bank entity does not currently anticipate a separate FSP licence; under D-REGULATORY-PERIMETER, FAIS sits on Hoz Securities) | **Saskia (Head of Global Markets, governance)** — steady-state per D-FSP-LICENCE-NECESSITY confirm-A (PR #62), subject to fit-and-proper file completion (Saskia's PR #45 Gate (b)) | FAIS Act 37 of 2002 s.8; Determination of Fit and Proper Requirements 2017 |
+| **JSE Member-firm representatives** | n/a | n/a | Required per JSE Equities & Bonds Membership Rules — directors of the member firm + Compliance Officer + Settlement Officer designations; counsel ratifies the precise list at licence-application | JSE Equities Membership Rules; JSE Bonds Membership Rules |
+
+**Cross-references.** Iris (Information Officer, governance) is producing the substantive per-entity POPIA IO scoping in `Owner Inbox/<date>_iris_per-entity-popia-io-designation.md` (concurrent dispatch). The IO row above is a placeholder in this framework that defers to Iris's authoring; this section names the seats but Iris does the substantive per-entity assessment.
+
+#### Regulatory perimeter per entity
+
+Per D-REGULATORY-PERIMETER (CEO, 2026-05-09):
+
+| Entity | Primary regulator | Regulatory regime |
+|---|---|---|
+| **Hoz Group Limited** | **Not separately regulated** | Companies Act 71 of 2008 (incorporation, group, related-party disclosures); IFRS 10 consolidated financial statements; IAS 24 related-party disclosures; subject to **SARB PA consolidated-supervision look-through** under Banks Act § 60+ via the bank entity. The group itself does **not** hold a separate prudential / conduct licence. |
+| **Hoz Bank Limited** | **SARB Prudential Authority** | Banks Act 94 of 1990 + Regulations Relating to Banks + Prudential Standards + Joint Standards (incl. JS 1 of 2024 cyber + JS 2 of 2024 op-resilience) + BCBS standards as applied by PA. Group-wide consolidated metrics (CGPs, ICAAP, ILAAP, recovery plan, cyber-resilience) bind on Hoz Bank Limited measured at group level (PA look-through). |
+| **Hoz Securities Limited** | **Johannesburg Stock Exchange (JSE)** | JSE Equities + Bonds Membership Rules + JSE Listings Requirements + STRATE participant rules (primary). FAIS Act 37 of 2002 + FSCA conduct standards apply secondarily where the securities entity provides advice / intermediary services to clients. The FSCA-vs-JSE primary-supervisor allocation is ratified by counsel at the licence-application gate. |
+
+This perimeter clarifies that **consolidated supervision is a PA look-through via the bank**, not a direct PA regime over the group. Mira (Compliance / RegTech engineer) refines the obligations register `applies-at` vocabulary on this basis (PR #84 close-out task).
+
+**Cross-references.**
+
+- The legal-entity-tree v0 specification: `Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md` (PR #80).
+- The CIPC name reservation list (Hoz Group + Hoz Bank + Hoz Securities + defensive set): `Owner Inbox/2026-05-09_imani_hoz-cipc-reservation-scoping.md` (PR #76, merged; Imani updates per D-LEGAL-ENTITY-TREE-V0 follow-on).
+- Sub-brand lockup variants (Hoz Bank, Hoz Securities): Linnea's v3.2 brand-supplement (`claude/linnea-hoz-sub-brand-lockups-v3-2`).
+- IFRS 10 consolidation substrate: Bea (Accounting & financial reporting engineer) v0 stub (`claude/bea-ifrs10-consolidation-substrate-v0`).
+- LegalEntityRegistered + LegalEntityChanged + IntraGroupArrangementSigned event families: Atlas (Core banking platform architect) v1 substrate (`claude/atlas-legal-entity-event-family-v0`).
+- Group-level RAS / PA-look-through framing: Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) reframe (`claude/helena-rohan-ras-pa-lookthrough-reframe`).
+
 ## 4. Three lines of defence — operating discipline
 
 - **First line** *builds and operates*. May not also independently challenge their own outputs. Limit breaches escalate to second line.
@@ -273,11 +332,13 @@ SARB Directive 3 of 2018 on cloud computing and offshoring of data:
 
 ## 11. Subsidiarity vs centralisation
 
-When new legal entities are added:
+> **Per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER (2026-05-09).** The bank is a three-entity SA group (Hoz Group + Hoz Bank + Hoz Securities) operating under a shared-board posture. §3F is the canonical authoring location for the per-entity governance posture; this section is the *general* subsidiarity framework that future jurisdictions / entities slot into.
 
-- **Centralised at group level:** RAS, framework, policy library, obligations register, semantic layer, identity, audit independence, CoSec function, IO function (POPIA Regulator engagement), CCO function (FIC liaison).
-- **Replicated at entity level:** Board (where required), local fit-and-proper designations, local regulatory designations, jurisdiction-specific policy variants registered against entity-level register entries.
-- Inter-entity transactions are explicit events with arm's-length pricing (P5).
+When new legal entities are added (today: the three Hoz entities; future: foreign-jurisdiction holding companies, asset-management or insurance entities):
+
+- **Centralised at group level:** brand identity (Hoz group brand), RAS framework (with bank-entity primacy and PA-look-through measurement), policy library, obligations register, semantic layer, identity, audit independence, CoSec function (where the same human serves multiple entities), CCO function (FIC liaison for the bank and securities accountable-institution touchpoints).
+- **Replicated at entity level:** Board (the shared-board v0 per §3F is a multi-entity application of a single composition; future entities may need separate boards if regulatory or commercial logic requires), local fit-and-proper designations (entity-specific per §3F — bank, securities, group), local regulatory designations (per-entity statutory officers per §3F), jurisdiction-specific policy variants registered against entity-level register entries, **per-entity POPIA Information Officer designations** (each entity is its own responsible party — see Iris's per-entity scoping).
+- Inter-entity transactions are explicit events with arm's-length pricing (P5). The intra-group services agreement, IP licensing (Hoz Group → subs), capital injections (Hoz Group → subs), and intra-group exposures (Hoz Bank ↔ Hoz Securities) are v0 stubs in the legal-entity-tree v0 (PR #80) with substantive contracts at the licence-day approach.
 
 ## 12. Co-governance seams (specific to current team)
 
@@ -308,3 +369,5 @@ The CRO seat that originally sat on this list is now seat #6 of the licence-day 
 5. **F1 resolved (CEO modify, 2026-05-06):** the framework operates at the *policy* layer of Principle 6 — it is a constitutional / meta-policy artefact. Standards are the technical and operational specifications underneath (ISO 20022 mappings, encryption schemes, screening-rule specifications); policies in the library cite this framework. The *standard*-layer reading initially proposed has been retired.
 6. **D-THIN-HUMAN-LAYER-MINIMUM resolved (CEO modify, 2026-05-08):** licence-day human roster set at six separate humans + Marc + external audit firm. CRO becomes seat #6, appointed before licence-application lodgment, per Joint Standard 1 of 2024 §6–§7 challenge from Mira+Zara. Section 3A above is the canonical authoring location for the composition; section 3B codifies the alternates split (deputy-IO = CoSec; MLRO-alternate = AC-Chair NED); section 3C names the FAIS KI posture; section 3D names the auditor / key-audit-partner separation. The current paper is `2026-05-09_owen_thin-human-layer-composition-final.md`, which supersedes the original Owen+Imani draft (`2026-05-09_owen-imani_thin-human-layer-minimum-possible.md`, moved to `actioned/`).
 7. **D-FSP-LICENCE-NECESSITY resolved (CEO confirm, 2026-05-09):** Posture A confirmed as steady-state. Bank pursues an FSP licence under FAIS Act 37 of 2002 (Categories I and II likely sufficient; counsel ratifies scope at licence-application gate). Saskia (Head of Global Markets, governance) confirmed as **steady-state FAIS Key Individual under FAIS s.8 + Determination of Fit and Proper Requirements 2017**, subject only to fit-and-proper file completion (Saskia's PR #45 Gate (b)). Counsel scope-gate (Gate (a)) is closed. The 6-human composition in §3A is unchanged — Saskia holds the FAIS KI seat in addition to her governance role; not a 7th human. Decision record: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md` (PR #62).
+8. **D-LEGAL-ENTITY-TREE-V0 resolved (CEO approve, 2026-05-09):** Bank is a three-entity SA group — `Hoz Group Limited` + `Hoz Bank Limited` + `Hoz Securities Limited`, all registered in Johannesburg. Shared-board v0: the 6-human composition + Marc + audit firm in §3A serves as the shared board across all three entities. Companies-Act-required officers (CoSec, Public Officer) operate at each entity but may be the same human across all three. Fit-and-proper is entity-specific (bank fit-and-proper under Banks Act § 60 + JS 1 of 2024; securities fit-and-proper under FAIS Determination of Fit and Proper Requirements 2017 + JSE Membership Rules; director fit-and-proper under Companies Act ss.69, 71). Section 3F is the canonical authoring location; §11 is updated for multi-entity subsidiarity framing. Decision record: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md` (PR #82). Joint v0 spec: `Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md` (PR #80).
+9. **D-REGULATORY-PERIMETER resolved (CEO approve, 2026-05-09):** Regulatory perimeter per entity confirmed. Hoz Group Limited is **not separately regulated** (Companies Act + IFRS 10 + IAS 24; PA consolidated-supervision look-through via the bank). Hoz Bank Limited is SARB Prudential Authority-regulated under Banks Act 94 of 1990 + Prudential Standards + Joint Standards. Hoz Securities Limited is **JSE-regulated (primary)** + FSCA-regulated (secondary, FAIS conduct). Section 3F carries the perimeter table verbatim. Decision record: `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` (PR #85).
