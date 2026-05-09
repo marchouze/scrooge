@@ -24,7 +24,7 @@
 | IRRBB Policy | `irrbb-measurement.md` | Helena + Eitan | PLANNED |
 | Operational Risk Policy | `rcsa-cycle.md` | Helena + Devon | PLANNED |
 | Operational Resilience Policy | `severe-but-plausible-test.md` | Devon | PLANNED |
-| Model Risk Policy | `model-validation.md` | Helena (independent validation) | PLANNED |
+| Model Risk Policy | [`model-validation.md`](by-policy/model-validation.md) | Helena (independent validation) | **STUB** (Nadia cross-link; awaiting Helena population — Slice D of validation-methodology library v0) |
 | Stress Testing Policy | `stress-test-cycle.md` | Helena | PLANNED |
 | Climate-Related Risk | `climate-scenario-analysis.md` | Helena (with S&E) | PLANNED |
 
