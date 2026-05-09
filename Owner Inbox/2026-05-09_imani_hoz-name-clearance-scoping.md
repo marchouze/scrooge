@@ -43,11 +43,13 @@ feeds: 2026-05-09_imani_external-counsel-licence-application.md
 
 Each gate has its own sub-brief. The table below is the navigation index.
 
+> **Gate 3 update — 2026-05-09 by D-LEGAL-ENTITY-TREE-V0 (PR #82, merged).** The Gate 3 sub-brief now scopes a **three-reservation** filing — `Hoz Group Limited` + `Hoz Bank Limited` + `Hoz Securities Limited` — rather than the original single-entity `Hoz Bank Limited` default. See the sub-brief § 5 for the per-entity citation surface (Companies Act + Banks Act § 22 + Banks Act § 60 + Banks Act § 37 + FAIS s.13 + FSCA conduct-standards + JSE Listings Requirements + JSE Membership Rules), § 6 for filing cadence (single batch at SARB / FSCA pre-application engagement window), § 7 for sub-brand domain coordination feeding the `D-HOZ-DOMAIN-REGISTRATION-SET` card. Cross-reference: `Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md` (joint v0) and `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md` (decision record).
+
 | # | Gate | Sub-brief | Authority |
 |---|---|---|---|
 | 1 | Trade Marks Act 194 of 1993 (Class 36 + adjacent; SA + foreign) | `Owner Inbox/2026-05-09_imani_hoz-tm-act-scoping.md` | Trade Marks Act 194 of 1993; Madrid Protocol (WIPO); EUIPO Reg (EU) 2017/1001; US Lanham Act (US Class 102 = Class 36 international); AU Trade Marks Act 1995 |
 | 2 | Banks Act 94 of 1990 § 22 (deceptive-similarity + unauthorised-implication) | `Owner Inbox/2026-05-09_imani_hoz-banks-act-s22-scoping.md` | Banks Act 94 of 1990 § 22 |
-| 3 | Companies Act 71 of 2008 + CIPC name reservation | `Owner Inbox/2026-05-09_imani_hoz-cipc-reservation-scoping.md` | Companies Act 71 of 2008 ss.11–12; Companies Regulations 2011 Reg.8 (objections) |
+| 3 | Companies Act 71 of 2008 + CIPC name reservation **(now three reservations — Hoz Group + Hoz Bank + Hoz Securities — per D-LEGAL-ENTITY-TREE-V0)** | `Owner Inbox/2026-05-09_imani_hoz-cipc-reservation-scoping.md` | Companies Act 71 of 2008 ss.11–12; Companies Regulations 2011 Reg.8 (objections); Banks Act 94 of 1990 §§ 22, 37, 60 (parent + bank); FAIS s.13 + FSCA conduct-standards (securities); JSE Listings Requirements + JSE Membership Rules (securities) |
 | 4 | SA 11-language sweep (+ institutional-international set) | `Owner Inbox/2026-05-09_imani_hoz-language-sweep-scoping.md` | Constitution of the Republic of South Africa, 1996 s.6 |
 
 ---
