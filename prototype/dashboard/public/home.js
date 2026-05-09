@@ -141,7 +141,7 @@
       category: "registers",
       title: "Obligations register",
       blurb: "Mira (Compliance / RegTech engineer) — typed citations to regulator instruments.",
-      href: "/policies.html",
+      href: "/obligations.html",
     },
     {
       id: "reg-policies",
@@ -155,9 +155,7 @@
       category: "registers",
       title: "Procedures index",
       blurb: "Owen + domain leads — every procedure ties to a policy and a system capability.",
-      href: "#",
-      placeholder: true,
-      flag: "Index UI v1",
+      href: "/procedures.html",
     },
     {
       id: "reg-agents",
