@@ -24,6 +24,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import type { EventTypeMetadata } from "../platform/event-store/registry";
 import {
   assertRetentionCitationCoverage,
   isRouteMarker,
@@ -32,7 +33,6 @@ import {
   parseObligationsRegister,
   run as retentionRun,
 } from "../platform/recon/retention-citation-coverage";
-import type { EventTypeMetadata } from "../platform/event-store/registry";
 
 // Minimal synthetic event-type row constructor — avoids depending on the
 // runtime registry contents (which drift) and keeps the test self-
@@ -120,9 +120,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
 
   it("flags an event-type whose citation looks like an ORG-* but doesn't resolve", () => {
     const r = assertRetentionCitationCoverage({
-      registry: [
-        syntheticRow({ type: "GhostEvent", citationRef: "ORG-XX-99" }),
-      ],
+      registry: [syntheticRow({ type: "GhostEvent", citationRef: "ORG-XX-99" })],
       orgIds,
       externalAnchors,
     });
@@ -232,9 +230,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
 
 describe("retention-citation-coverage — citation-form helpers", () => {
   it("isRouteMarker recognises the canonical route-marker form", () => {
-    expect(
-      isRouteMarker("[register: route to Mira — Companies Act 71/2008 retention]"),
-    ).toBe(true);
+    expect(isRouteMarker("[register: route to Mira — Companies Act 71/2008 retention]")).toBe(true);
     expect(isRouteMarker("ORG-FC-05")).toBe(false);
     expect(isRouteMarker("[register: route elsewhere]")).toBe(false);
   });
