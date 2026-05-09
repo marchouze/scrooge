@@ -126,7 +126,9 @@ export const instrumentClassSchema = z.enum([
   "listed-bond",
   "otc-irs",
   "fx-spot",
+  "fx-forward",
   "fx-swap",
+  "fx-ndf",
   "repo",
   "etf",
   "structured-note",
@@ -151,3 +153,52 @@ export const instrumentSchema = z.object({
 });
 
 export type Instrument = z.infer<typeof instrumentSchema>;
+
+// ---------------------------------------------------------------------------
+// CurrencyPair — typed pair of ISO 4217 currency codes, expressed as the
+// market-convention base/quote ordering. Per Principle 5 (multi-currency
+// from day one), every FX trade carries its pair at the type level — there
+// is no implicit "ZAR vs other" assumption baked into the substrate.
+//
+// Citations:
+//   - ISDA-1998-FX-DEFINITIONS — base/quote convention.
+//   - SARB-EXCON-MANUAL — ZAR as resident currency for FinSurv reporting.
+// ---------------------------------------------------------------------------
+
+export const currencyPairSchema = z
+  .object({
+    /** Base currency (ISO 4217). Convention: the unit currency in the quote. */
+    base: z
+      .string()
+      .length(3)
+      .regex(/^[A-Z]{3}$/),
+    /** Quote currency (ISO 4217). Convention: the price currency in the quote. */
+    quote: z
+      .string()
+      .length(3)
+      .regex(/^[A-Z]{3}$/),
+  })
+  .refine((p) => p.base !== p.quote, {
+    message: "currencyPair base and quote must differ",
+  });
+
+export type CurrencyPair = z.infer<typeof currencyPairSchema>;
+
+// ---------------------------------------------------------------------------
+// BookType — markets-vs-treasury book discriminator. Per
+// `Owner Inbox/2026-05-07_ceo-decisions_fx-sub-decisions.md` § D-FX-BOOK-BOUNDARY,
+// this discriminator is set at execution time on FX `TradeExecuted` payloads
+// from M4 onwards; reclassification across the boundary requires an explicit
+// `TradeAmended` event with full audit trail (no post-hoc reclassification).
+//
+// Citations:
+//   - D-FX-BOOK-BOUNDARY — explicit-tag-at-execution discipline.
+//   - IFRS-9-CLASSIFICATION — Bea's IFRS dispatch reads `bookType`.
+//   - PRINCIPLE-1-EVENTS-AS-TRUTH — no authoritative aggregates outside the
+//     event log; the boundary lives on the typed payload, not in a
+//     reconciliation-time election.
+// ---------------------------------------------------------------------------
+
+export const bookTypeSchema = z.enum(["trading", "banking-treasury"]);
+
+export type BookType = z.infer<typeof bookTypeSchema>;
