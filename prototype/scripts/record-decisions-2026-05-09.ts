@@ -24,13 +24,11 @@ const ENTRIES = [
   {
     decisionId: "D-RMS-PHASE-1",
     action: "approve" as const,
-    title:
-      "Records Management Substrate Phase-1 — retire Owner Inbox / Team Inbox",
+    title: "Records Management Substrate Phase-1 — retire Owner Inbox / Team Inbox",
     outcome:
       "Owen (Company Secretary, governance) + Atlas (Core banking platform architect)'s Phase 1 spec approved as drafted. Scope: seven typed events (AgentBriefIssued, AgentRunStarted, AgentRunCompleted, DecisionRequested, CeoDecision-extended, Feedback, BriefSuperseded, RecordFiled), BLAKE3-hashed content-addressed document store at prototype/data/documents/, seven registers (Decisions, Correspondence, Records-of-agent-runs, Document, Feedback, Briefs / dispatches, Workstreams), dual-render dashboard. ~5 sessions under the Targeted substrate budget. Owen + Atlas joint authorship for Phase 2-4 specs as they land approved. Phases 2-4 sequenced after Phase 1 acceptance criteria met.",
     comment: "approve both — chat-intake 2026-05-09",
-    sourceDoc:
-      "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md",
+    sourceDoc: "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md",
     asOf: "2026-05-09T16:05:00.000Z",
   },
 ];
