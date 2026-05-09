@@ -1,0 +1,226 @@
+{
+  "$schema": "./_team-roster.schema.json",
+  "asOf": "2026-05-09",
+  "note": "Canonical team roster. Source of truth for CLAUDE.md team-table renders, dashboard direct-reports tile, Vera mandate-coverage recon, and persona-file headers. Edited by Nolan after PAX role-research; never hand-edited from a render.",
+  "personas": [
+    {
+      "name": "PAX",
+      "role": "Role researcher",
+      "type": "engineering",
+      "expertise": "Role definition, regulatory scans, talent-market intelligence, structured role briefs",
+      "reportsTo": "Devon"
+    },
+    {
+      "name": "Nolan",
+      "role": "Recruiter",
+      "type": "engineering",
+      "expertise": "Translating role briefs into hires, persona drafting, maintaining the team roster",
+      "reportsTo": "Devon"
+    },
+    {
+      "name": "Atlas",
+      "role": "Core banking platform architect",
+      "type": "engineering",
+      "expertise": "Event-sourced platform, projections, identity, IaC, cloud-native foundations",
+      "reportsTo": "Devon"
+    },
+    {
+      "name": "Bea",
+      "role": "Accounting & financial reporting engineer",
+      "type": "engineering",
+      "expertise": "IFRS, SARB BA returns, automated close, sub-ledger architecture",
+      "reportsTo": "Camille"
+    },
+    {
+      "name": "Mira",
+      "role": "Compliance / RegTech engineer",
+      "type": "engineering",
+      "expertise": "FIC Act, FAIS, Twin Peaks, sanctions, transaction monitoring, obligations-register curator",
+      "reportsTo": "Zara"
+    },
+    {
+      "name": "Kai",
+      "role": "Trading systems engineer",
+      "type": "engineering",
+      "expertise": "OMS/EMS, FIX, multi-asset booking, exchange connectivity, surveillance feeds",
+      "reportsTo": "Saskia"
+    },
+    {
+      "name": "Rohan",
+      "role": "Risk engineer",
+      "type": "engineering",
+      "expertise": "Market/credit/liquidity/op risk, IFRS 9 ECL, ICAAP/ILAAP, BCBS standards",
+      "reportsTo": "Helena"
+    },
+    {
+      "name": "Nadia",
+      "role": "Independent-validation engineer (second line)",
+      "type": "engineering",
+      "expertise": "Independent model validation, SR 11-7 / SS 1/23, BCBS CG-Principles, validation testing & backtesting, model-registry co-curatorship, RAS § B7 tier discipline",
+      "reportsTo": "Helena",
+      "independenceNote": "Functionally independent of Rohan; peer-in-second-line"
+    },
+    {
+      "name": "Tomas",
+      "role": "Operations & payments engineer",
+      "type": "engineering",
+      "expertise": "SAMOS, BankservAfrica, SWIFT, ISO 20022, reconciliation, cut-off engineering",
+      "reportsTo": "Devon"
+    },
+    {
+      "name": "Imani",
+      "role": "Legal-as-code engineer",
+      "type": "engineering",
+      "expertise": "Master agreements, clause libraries, ECTA execution, legal-entity hierarchy",
+      "reportsTo": "Devon",
+      "reportsToNote": "Interim; routes to GC when hired",
+      "buildPhaseStatus": "ISDA / GMRA / clause-library / legal-entity-tree / ECTA slice real and load-bearing now. Employment-contracts / disciplinary slice paused."
+    },
+    {
+      "name": "Sade",
+      "role": "HR systems engineer",
+      "type": "engineering",
+      "expertise": "Payroll, BCEA, EE/B-BBEE, fit-and-proper, statutory submissions",
+      "reportsTo": "Devon",
+      "reportsToNote": "Interim; routes to CHRO when hired",
+      "buildPhaseStatus": "Reshape to AgentOps (agent registration, retirement, capability assignment, agent fit-and-proper analogue). Human-HR slice activates at licence-day."
+    },
+    {
+      "name": "Niko",
+      "role": "Sales / CRM engineer",
+      "type": "engineering",
+      "expertise": "Lead-to-client lifecycle, FAIS-compliant advice records, onboarding hand-off",
+      "reportsTo": "Devon",
+      "buildPhaseStatus": "Paused; activates at licence-day."
+    },
+    {
+      "name": "Yael",
+      "role": "Tax engineer",
+      "type": "engineering",
+      "expertise": "SARS submissions, VAT FS apportionment, FATCA/CRS, IAS 12, transfer pricing",
+      "reportsTo": "Camille",
+      "buildPhaseStatus": "PAYE / EMP201 / IRP5 slice paused. CIT / VAT / STT / FATCA / CRS slice activates when revenue starts."
+    },
+    {
+      "name": "Vera",
+      "role": "Internal audit / continuous-assurance engineer",
+      "type": "engineering",
+      "expertise": "Continuous controls monitoring, evidence engineering, IIA IPPF, audit-committee reporting",
+      "reportsTo": "Thandiwe",
+      "reportsToNote": "Functional line to Thandiwe (CAE); administrative line via CEO. Third-line independence is non-negotiable."
+    },
+    {
+      "name": "Senna",
+      "role": "Security engineer",
+      "type": "engineering",
+      "expertise": "Threat modelling, zero-trust, HSM key management, secure SDLC, IR, POPIA breach workflow, Joint Standard 1 of 2024",
+      "reportsTo": "Rashida"
+    },
+    {
+      "name": "Ravi",
+      "role": "Treasury / ALM engineer",
+      "type": "engineering",
+      "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, SAMOS funding",
+      "reportsTo": "Eitan"
+    },
+    {
+      "name": "Anya",
+      "role": "Data / analytics engineer",
+      "type": "engineering",
+      "expertise": "Projection runtime, master data, semantic layer, regulatory/MI marts, data contracts, ML platform",
+      "reportsTo": "Devon"
+    },
+    {
+      "name": "Helena",
+      "role": "Chief Risk Officer",
+      "type": "governance",
+      "expertise": "Risk Appetite Statement & Framework, risk taxonomy, three lines of defence, ICAAP/ILAAP, BRC, model-risk governance, regulator engagement on risk",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Owen",
+      "role": "Company Secretary",
+      "type": "governance",
+      "expertise": "Board & committee secretariat, governance framework custodianship, director duties, Companies Act compliance, conflicts & related-party registers, whistleblowing",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Zara",
+      "role": "Chief Compliance Officer",
+      "type": "governance",
+      "expertise": "RMCP under FIC, MLRO, FIC Compliance Officer, FAIS conduct, sanctions & PEP policy, TCF, regulator engagement on conduct & AML/CFT",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Iris",
+      "role": "Information Officer",
+      "type": "governance",
+      "expertise": "POPIA Information Officer (s.56), lawful-processing register, data-subject rights, breach notification, PAIA manual, cross-border transfer governance",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Devon",
+      "role": "Chief Operating Officer",
+      "type": "governance",
+      "expertise": "Operating model, operational resilience, technology & platform governance, change governance; engineering reports for ops/platform/data/customer-facing seats",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Camille",
+      "role": "Chief Financial Officer",
+      "type": "governance",
+      "expertise": "Financial reporting (IFRS, BA returns), capital management, accounting, tax, FP&A, external-audit relationship",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Eitan",
+      "role": "Treasurer",
+      "type": "governance",
+      "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, SAMOS funding, capital actions (operational), ALCO chair",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Saskia",
+      "role": "Head of Global Markets",
+      "type": "governance",
+      "expertise": "Sales & trading franchise; market-making and institutional sales; market-risk warehouse within CRO appetite; trading conduct & surveillance",
+      "reportsTo": "CEO"
+    },
+    {
+      "name": "Thandiwe",
+      "role": "Chief Audit Executive",
+      "type": "governance",
+      "expertise": "Internal audit charter, risk-based audit plan, continuous-controls assurance programme, AC secretariat (third-line); IIA IPPF, BCBS 223, King IV; investigations; combined assurance",
+      "reportsTo": "CEO",
+      "reportsToNote": "Administrative line via CEO; functional line into Audit Committee / Interim Audit Forum (Owen chair, until Board AC constituted)."
+    },
+    {
+      "name": "Rashida",
+      "role": "Chief Information Security Officer",
+      "type": "governance",
+      "expertise": "InfoSec / Cyber Resilience / IR policy ownership, Joint Standard 1 of 2024 programme, POPIA s.19–22 operational security, threat-model gate, cyber-resilience scenario testing, HSM key governance, supply-chain security, incident command",
+      "reportsTo": "CEO"
+    }
+  ],
+  "topOfHouse": {
+    "ceoDirectReports": [
+      "Scrooge (CoS, orchestrator — functional)",
+      "Helena (CRO)",
+      "Devon (COO)",
+      "Camille (CFO)",
+      "Eitan (Treasurer)",
+      "Saskia (Head of Global Markets)",
+      "Owen (CoSec)",
+      "Zara (CCO)",
+      "Iris (IO)",
+      "Thandiwe (CAE — administrative; functional into AC / Interim Audit Forum)",
+      "Rashida (CISO)"
+    ],
+    "futureDirectReportsAsHired": ["GC", "CHRO"]
+  },
+  "rules": {
+    "engineeringVsGovernance": "Engineering roles BUILD coded controls, projections, and platform components. Governance roles hold NAMED REGULATORY ACCOUNTABILITY and oversee the engineers' outputs. The two seat types are distinct; do not conflate them.",
+    "newHires": "Added by Nolan to this file and to the /Team/ folder after PAX completes the role research.",
+    "personaFiles": "Each /Team/<name>.md is the operating spec for a standing autonomous agent (Principle 7). Canonical structure: 17 sections (1–5 legacy character data; 6–17 operating spec proper). Template at Team/_agent-spec-template.md. Files lacking sections 6–17 are findings until upgraded (Vera Wave-4 #10)."
+  }
+}

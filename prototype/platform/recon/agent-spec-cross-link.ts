@@ -73,7 +73,6 @@ const REPO_ROOT = findRepoRoot(import.meta.dir);
 const TEAM_DIR = resolve(REPO_ROOT, "Team");
 const PROCEDURES_DIR = resolve(REPO_ROOT, "Procedures");
 const PROTOTYPE_DIR = resolve(REPO_ROOT, "prototype");
-const CLAUDE_MD = resolve(REPO_ROOT, "CLAUDE.md");
 
 /**
  * The tokens that exempt a bullet from resolution. A bullet is exempted
@@ -140,31 +139,24 @@ function extractSection(content: string, num: number, label: string): string | u
 }
 
 /**
- * Parse the team table from CLAUDE.md. Each `| <Name> | <Role> | ... |`
- * row contributes one entry. Returns the lower-cased name set. Used as
- * the resolution table for §10 escalation targets.
+ * Parse the team roster. Canonical source is `Team/_team-roster.json`
+ * (Principle 6 single-graph discipline — the JSON is authoritative;
+ * CLAUDE.md and the dashboard are renders). Returns the lower-cased
+ * name set. Used as the resolution table for §10 escalation targets.
  */
 function loadTeamRoster(): Set<string> {
-  if (!existsSync(CLAUDE_MD)) return new Set();
-  const content = readFileSync(CLAUDE_MD, "utf8");
-  const lines = content.split(/\r?\n/);
   const out = new Set<string>();
-  let sawHeader = false;
-  for (const line of lines) {
-    const m = line.match(/^\|\s*([A-Z][A-Za-z]+)\s*\|/);
-    if (!m) continue;
-    const name = m[1];
-    if (!name) continue;
-    if (!sawHeader && name === "Name") {
-      sawHeader = true;
-      continue;
+  const rosterPath = resolve(REPO_ROOT, "Team/_team-roster.json");
+  if (existsSync(rosterPath)) {
+    const raw = readFileSync(rosterPath, "utf8");
+    const data = JSON.parse(raw) as { personas?: Array<{ name?: string }> };
+    for (const p of data.personas ?? []) {
+      if (typeof p.name === "string") out.add(p.name.toLowerCase());
     }
-    if (!sawHeader) continue;
-    out.add(name.toLowerCase());
   }
   // Marc (CEO) and Scrooge (CoS) are valid escalation targets even
-  // though the team table starts with PAX. CLAUDE.md treats Marc as
-  // the CEO and Scrooge as the Chief of Staff (orchestrator) above the
+  // though the roster starts with PAX. CLAUDE.md treats Marc as the
+  // CEO and Scrooge as the Chief of Staff (orchestrator) above the
   // engineering / governance roster — both are legitimate overseers
   // for §10 escalations. Add them explicitly.
   out.add("marc");

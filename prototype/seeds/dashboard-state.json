@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T14:57:15.024Z",
+  "asOf": "2026-05-09T16:31:24.863Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -130,7 +130,7 @@
     {
       "n": 6,
       "title": "Single-graph discipline: presentations derive downward, capabilities justify upward",
-      "summary": "> *Consolidates the former Principles 6 (presentations derive from data) and 7 (implementation traceability), approved on 2026-05-06. Principle 2 (atomic citation discipline) remains separate; this principle is the structural rule about how those citations connect into a single graph.*"
+      "summary": "Every artefact in the bank — events, controls, procedures, system capabilities, policies, standards, regulator instruments, presentations — sits in a **single citable bidirectional graph**. The graph is testable from any node; no artefact exists outside it."
     },
     {
       "n": 7,
@@ -1147,23 +1147,23 @@
             },
             {
               "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_nolan_recruitment-scope-thin-human-layer.md",
-              "title": "nolan · recruitment scope thin human layer"
+              "path": "Owner Inbox/2026-05-09_nolan_recruitment-execution_ned-2.md",
+              "title": "nolan · recruitment execution · ned 2"
             },
             {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_cae-shortlist.md",
-              "title": "cae shortlist"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_nolan_recruitment-execution_human-cro.md",
+              "title": "nolan · recruitment execution · human cro"
             },
             {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_ciso-hire-confirmation.md",
-              "title": "ciso hire confirmation"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_nolan_recruitment-execution_ned-3.md",
+              "title": "nolan · recruitment execution · ned 3"
             },
             {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_ciso-shortlist.md",
-              "title": "ciso shortlist"
+              "date": "2026-05-09",
+              "path": "Owner Inbox/2026-05-09_nolan_recruitment-execution_company-secretary.md",
+              "title": "nolan · recruitment execution · company secretary"
             }
           ],
           "lastActivityAt": "2026-05-10"
@@ -1240,85 +1240,11 @@
         }
       ],
       "lastActivityAt": "2026-05-09",
-      "subordinates": [
-        {
-          "name": "Rohan",
-          "role": "Risk engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-EVENT-STORE-SCALING",
-              "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-              "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-              "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the framing and the Azure target.",
-                "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-              }
-            }
-          ],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_rohan_risk-run.md",
-              "title": "rohan · risk run"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md",
-              "title": "rohan · backtest harness v0 scoping"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_helena-rohan_ras-b-cluster-recalibration.md",
-              "title": "helena rohan · ras b cluster recalibration"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_helena-rohan_ras-pa-lookthrough-reframe.md",
-              "title": "helena rohan · ras pa lookthrough reframe"
-            },
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_rohan_risk-run.md",
-              "title": "rohan · risk run"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        },
-        {
-          "name": "Nadia",
-          "role": "Independent model-validation engineer (second line)",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md",
-              "title": "nadia · validation methodology library v0 scoping"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_nadia_methodology-v0-slice-a-completion.md",
-              "title": "nadia · methodology v0 slice a completion"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        }
-      ],
+      "subordinates": [],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
-      "totalRecentDeliverables": 12
+      "totalOpenDecisions": 1,
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Devon",
@@ -1506,792 +1432,12 @@
           "title": "zara imani · fsp confirm a scope updates"
         }
       ],
-      "lastActivityAt": "2026-05-10",
-      "subordinates": [
-        {
-          "name": "Atlas",
-          "role": "Core banking platform architect",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [
-            {
-              "id": "WS-AGENT-RUNTIME-SUBSTRATE",
-              "what": "Agent-runtime substrate (S8) — scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
-              "owner": "Atlas + Anya",
-              "due": "Drafted; approval pending",
-              "active": true,
-              "startedAt": "2026-05-07",
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-            }
-          ],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "S7",
-              "title": "Substrate-completeness budget — sessions / agent runs to substrate-complete",
-              "category": "near-term",
-              "owner": "Atlas + Anya",
-              "trigger": "Atlas + Anya draft against the agent-runtime-substrate spec",
-              "decisionForCEO": "Approve the substrate-completeness target measured in agent runs / sessions, and the scope/quality tradeoff.",
-              "sourceDocs": [
-                "memory/project_ai_driven_bank.md",
-                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-              ],
-              "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). Defines the build-phase end condition in agent-time units.",
-              "brief": {
-                "summary": "Build phase ends at the pre-licence go-live readiness gate (substrate-complete). Atlas + Anya draft a substrate-completeness budget: how many agent runs / sessions of focused engineering work are needed to reach the gate, broken down by domain.",
-                "background": "Under Principle 7 + the AI-driven-bank reframe, build-phase duration is measured in agent runs and Marc's session cadence, not weeks. Atlas + Anya's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md` is the input. The decision approves a scope-vs-quality tradeoff: e.g. minimum-viable substrate (event runtime + scheduler + recon harnesses) is X sessions; production-grade substrate (with full Vera audit-pipeline coverage and projection persistence) is X+Y sessions.",
-                "options": [
-                  {
-                    "label": "Minimum-viable substrate",
-                    "description": "Smallest substrate that can run agents autonomously between sessions; defer projection persistence, ML platform, advanced detection.",
-                    "consequence": "Earlier licence-application; more substrate gaps to close at licence-day."
-                  },
-                  {
-                    "label": "Production-grade substrate",
-                    "description": "Full substrate including projection persistence, ML platform, advanced detection, full Vera audit pipelines.",
-                    "consequence": "Longer build phase; cleaner licence-application posture."
-                  },
-                  {
-                    "label": "Phase-gated (minimum then production)",
-                    "description": "Hit minimum-viable first; reassess at that gate before extending to production-grade.",
-                    "consequence": "Optionality preserved; mid-phase decision required."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "Phase-gated (minimum then production).",
-                  "reasoning": "Reaching minimum-viable proves the model works; the reassessment gate is the right place to decide whether to extend or push to licence-application directly. Avoids upfront over-commitment."
-                },
-                "dependencies": {
-                  "gatedOn": [
-                    {
-                      "ref": "S6",
-                      "title": "API + cloud cost budget",
-                      "status": "open"
-                    },
-                    {
-                      "ref": "S8",
-                      "title": "Agent-runtime-substrate brief approval",
-                      "status": "open"
-                    }
-                  ],
-                  "gates": [
-                    {
-                      "ref": "pre-licence-readiness",
-                      "title": "Pre-licence go-live readiness gate",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Atlas",
-                    "role": "Platform architect",
-                    "position": "Substrate scope; effort estimate."
-                  },
-                  {
-                    "name": "Anya",
-                    "role": "Data engineer",
-                    "position": "Projection / data-substrate scope."
-                  },
-                  {
-                    "name": "Vera",
-                    "role": "Internal audit engineer",
-                    "position": "Audit-pipeline coverage requirements."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO",
-                    "position": "Approves scope-vs-quality tradeoff."
-                  }
-                ],
-                "timeline": "Atlas + Anya draft against the substrate spec; Marc approves at next governance session.",
-                "supportingDocs": [
-                  {
-                    "path": "memory/project_ai_driven_bank.md",
-                    "title": "Bank is AI-driven, not a simulation",
-                    "summary": "Authoritative reframe."
-                  },
-                  {
-                    "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-                    "title": "Atlas — agent-runtime-substrate spec",
-                    "summary": "The substrate scope that this budget sizes."
-                  },
-                  {
-                    "path": "Team/Vera.md",
-                    "title": "Vera persona",
-                    "summary": "Substrate-gap inventory pipelines (#10-#15) gated on the runtime."
-                  }
-                ]
-              }
-            },
-            {
-              "id": "S8",
-              "title": "Agent-runtime-substrate brief — approve scope",
-              "category": "near-term",
-              "owner": "Atlas + Anya",
-              "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
-              "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-              ],
-              "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
-              "brief": {
-                "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
-                "background": "Per Principle 7, every persona is a standing autonomous agent that runs on its own cadence. Today the substrate is partial — agents are realised by Scrooge-coordinated in-session runs. The substrate that closes the gap: event-driven scheduler, AgentEscalation / AgentDecision / WorkstreamRegistered / RiskRaised event types, event-sourced workstream lifecycle (so dashboard-curated.json's inFlight + risks fields can be retired), and projection persistence. Atlas's spec at the linked path defines the scope; this decision approves it.",
-                "options": [
-                  {
-                    "label": "Approve as drafted",
-                    "description": "Atlas's full scope.",
-                    "consequence": "Maximum substrate coverage; longest build."
-                  },
-                  {
-                    "label": "Approve with named cuts",
-                    "description": "Approve scope minus specific items (e.g. defer ML platform).",
-                    "consequence": "Faster substrate landing; named gaps to close later."
-                  },
-                  {
-                    "label": "Request revision",
-                    "description": "Substantive scope disagreement.",
-                    "consequence": "Atlas re-drafts; one cycle."
-                  },
-                  {
-                    "label": "Defer",
-                    "description": "Hold pending S6 / S7 outcomes.",
-                    "consequence": "Substrate work blocked until then."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "Approve with named cuts: defer ML platform; defer advanced detection (deception, UBA); land minimum-viable runtime first.",
-                  "reasoning": "Minimum-viable runtime is the binding constraint on every persona; the deferred items are not (Senna can keep operating against synthetic flows). Phase-gated approach is consistent with S7's recommended stance."
-                },
-                "dependencies": {
-                  "gatedOn": [],
-                  "gates": [
-                    {
-                      "ref": "agent-fleet-autonomous",
-                      "title": "Agents run autonomously between sessions",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Atlas",
-                    "role": "Platform architect",
-                    "position": "Drafter; lead engineer."
-                  },
-                  {
-                    "name": "Anya",
-                    "role": "Data engineer",
-                    "position": "Co-owner of event-substrate seam."
-                  },
-                  {
-                    "name": "Vera",
-                    "role": "Internal audit engineer",
-                    "position": "Pipelines #10-#15 gated on substrate."
-                  },
-                  {
-                    "name": "Senna",
-                    "role": "Security engineer",
-                    "position": "Threat model on the substrate."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO",
-                    "position": "Approves scope."
-                  }
-                ],
-                "timeline": "Marc decides at next session.",
-                "supportingDocs": [
-                  {
-                    "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-                    "title": "Atlas — agent-runtime-substrate spec",
-                    "summary": "The drafted scope."
-                  },
-                  {
-                    "path": "Team/Vera.md",
-                    "title": "Vera persona",
-                    "summary": "Pipelines #10-#15 (agent-spec integrity, mandate-agent reconciliation, substrate-gap inventory, escalation-channel discipline, agent-scope) — all substrate-gated."
-                  },
-                  {
-                    "path": "memory/project_principle_7_autonomous.md",
-                    "title": "Principle 7",
-                    "summary": "Why the substrate is foundational."
-                  }
-                ]
-              }
-            },
-            {
-              "id": "D-CI-GATE-INTEGRITY",
-              "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
-              "category": "near-term",
-              "owner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
-              "trigger": ">",
-              "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md"
-              ]
-            },
-            {
-              "id": "D-EVENT-STORE-SCALING",
-              "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-              "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-              "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the framing and the Azure target.",
-                "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-              }
-            },
-            {
-              "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-              "title": "Product-construction substrate — typed Product composition from CDM primitives",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-              "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-              "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-              ],
-              "recommendation": {
-                "stance": "Approve.",
-                "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-              }
-            }
-          ],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-10",
-              "path": "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md",
-              "title": "atlas · event store scaling design"
-            },
-            {
-              "date": "2026-05-10",
-              "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
-              "title": "atlas kai saskia · product construction substrate"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
-              "title": "saskia kai atlas · routing policy projection v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_atlas_substrate-completeness-budget.md",
-              "title": "atlas · substrate completeness budget"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_atlas_naming-pre-clearance-procedure-stub.md",
-              "title": "atlas · naming pre clearance procedure stub"
-            }
-          ],
-          "lastActivityAt": "2026-05-10"
-        },
-        {
-          "name": "Tomas",
-          "role": "Operations & payments engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-registration-plan.md",
-              "title": "devon tomas · hoz domain registration plan"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-plan-completion.md",
-              "title": "devon tomas · hoz domain plan completion"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-completion.md",
-              "title": "devon tomas · named correspondent pair completion"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_tomas_payments-readiness.md",
-              "title": "tomas · payments readiness"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md",
-              "title": "devon tomas · named correspondent pair proposal"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        },
-        {
-          "name": "Niko",
-          "role": "Sales / CRM engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_niko_counterparty-institutional-eligibility-screening-v0.md",
-              "title": "niko · counterparty institutional eligibility screening v0"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
-              "title": "fix a second wave bea rohan niko tomas"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_niko_conduct-policies-bundle-v0.md",
-              "title": "niko · conduct policies bundle v0"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_niko_top-30-outreach-packet.md",
-              "title": "niko · top 30 outreach packet"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_niko_top-100-sa-institutional-targets.md",
-              "title": "niko · top 100 sa institutional targets"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        },
-        {
-          "name": "Anya",
-          "role": "Data / analytics engineer; owner of projections, master data, and the semantic layer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [
-            {
-              "id": "WS-AGENT-RUNTIME-SUBSTRATE",
-              "what": "Agent-runtime substrate (S8) — scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
-              "owner": "Atlas + Anya",
-              "due": "Drafted; approval pending",
-              "active": true,
-              "startedAt": "2026-05-07",
-              "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-            }
-          ],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "S7",
-              "title": "Substrate-completeness budget — sessions / agent runs to substrate-complete",
-              "category": "near-term",
-              "owner": "Atlas + Anya",
-              "trigger": "Atlas + Anya draft against the agent-runtime-substrate spec",
-              "decisionForCEO": "Approve the substrate-completeness target measured in agent runs / sessions, and the scope/quality tradeoff.",
-              "sourceDocs": [
-                "memory/project_ai_driven_bank.md",
-                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-              ],
-              "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). Defines the build-phase end condition in agent-time units.",
-              "brief": {
-                "summary": "Build phase ends at the pre-licence go-live readiness gate (substrate-complete). Atlas + Anya draft a substrate-completeness budget: how many agent runs / sessions of focused engineering work are needed to reach the gate, broken down by domain.",
-                "background": "Under Principle 7 + the AI-driven-bank reframe, build-phase duration is measured in agent runs and Marc's session cadence, not weeks. Atlas + Anya's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md` is the input. The decision approves a scope-vs-quality tradeoff: e.g. minimum-viable substrate (event runtime + scheduler + recon harnesses) is X sessions; production-grade substrate (with full Vera audit-pipeline coverage and projection persistence) is X+Y sessions.",
-                "options": [
-                  {
-                    "label": "Minimum-viable substrate",
-                    "description": "Smallest substrate that can run agents autonomously between sessions; defer projection persistence, ML platform, advanced detection.",
-                    "consequence": "Earlier licence-application; more substrate gaps to close at licence-day."
-                  },
-                  {
-                    "label": "Production-grade substrate",
-                    "description": "Full substrate including projection persistence, ML platform, advanced detection, full Vera audit pipelines.",
-                    "consequence": "Longer build phase; cleaner licence-application posture."
-                  },
-                  {
-                    "label": "Phase-gated (minimum then production)",
-                    "description": "Hit minimum-viable first; reassess at that gate before extending to production-grade.",
-                    "consequence": "Optionality preserved; mid-phase decision required."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "Phase-gated (minimum then production).",
-                  "reasoning": "Reaching minimum-viable proves the model works; the reassessment gate is the right place to decide whether to extend or push to licence-application directly. Avoids upfront over-commitment."
-                },
-                "dependencies": {
-                  "gatedOn": [
-                    {
-                      "ref": "S6",
-                      "title": "API + cloud cost budget",
-                      "status": "open"
-                    },
-                    {
-                      "ref": "S8",
-                      "title": "Agent-runtime-substrate brief approval",
-                      "status": "open"
-                    }
-                  ],
-                  "gates": [
-                    {
-                      "ref": "pre-licence-readiness",
-                      "title": "Pre-licence go-live readiness gate",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Atlas",
-                    "role": "Platform architect",
-                    "position": "Substrate scope; effort estimate."
-                  },
-                  {
-                    "name": "Anya",
-                    "role": "Data engineer",
-                    "position": "Projection / data-substrate scope."
-                  },
-                  {
-                    "name": "Vera",
-                    "role": "Internal audit engineer",
-                    "position": "Audit-pipeline coverage requirements."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO",
-                    "position": "Approves scope-vs-quality tradeoff."
-                  }
-                ],
-                "timeline": "Atlas + Anya draft against the substrate spec; Marc approves at next governance session.",
-                "supportingDocs": [
-                  {
-                    "path": "memory/project_ai_driven_bank.md",
-                    "title": "Bank is AI-driven, not a simulation",
-                    "summary": "Authoritative reframe."
-                  },
-                  {
-                    "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-                    "title": "Atlas — agent-runtime-substrate spec",
-                    "summary": "The substrate scope that this budget sizes."
-                  },
-                  {
-                    "path": "Team/Vera.md",
-                    "title": "Vera persona",
-                    "summary": "Substrate-gap inventory pipelines (#10-#15) gated on the runtime."
-                  }
-                ]
-              }
-            },
-            {
-              "id": "S8",
-              "title": "Agent-runtime-substrate brief — approve scope",
-              "category": "near-term",
-              "owner": "Atlas + Anya",
-              "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
-              "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-              ],
-              "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
-              "brief": {
-                "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
-                "background": "Per Principle 7, every persona is a standing autonomous agent that runs on its own cadence. Today the substrate is partial — agents are realised by Scrooge-coordinated in-session runs. The substrate that closes the gap: event-driven scheduler, AgentEscalation / AgentDecision / WorkstreamRegistered / RiskRaised event types, event-sourced workstream lifecycle (so dashboard-curated.json's inFlight + risks fields can be retired), and projection persistence. Atlas's spec at the linked path defines the scope; this decision approves it.",
-                "options": [
-                  {
-                    "label": "Approve as drafted",
-                    "description": "Atlas's full scope.",
-                    "consequence": "Maximum substrate coverage; longest build."
-                  },
-                  {
-                    "label": "Approve with named cuts",
-                    "description": "Approve scope minus specific items (e.g. defer ML platform).",
-                    "consequence": "Faster substrate landing; named gaps to close later."
-                  },
-                  {
-                    "label": "Request revision",
-                    "description": "Substantive scope disagreement.",
-                    "consequence": "Atlas re-drafts; one cycle."
-                  },
-                  {
-                    "label": "Defer",
-                    "description": "Hold pending S6 / S7 outcomes.",
-                    "consequence": "Substrate work blocked until then."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "Approve with named cuts: defer ML platform; defer advanced detection (deception, UBA); land minimum-viable runtime first.",
-                  "reasoning": "Minimum-viable runtime is the binding constraint on every persona; the deferred items are not (Senna can keep operating against synthetic flows). Phase-gated approach is consistent with S7's recommended stance."
-                },
-                "dependencies": {
-                  "gatedOn": [],
-                  "gates": [
-                    {
-                      "ref": "agent-fleet-autonomous",
-                      "title": "Agents run autonomously between sessions",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Atlas",
-                    "role": "Platform architect",
-                    "position": "Drafter; lead engineer."
-                  },
-                  {
-                    "name": "Anya",
-                    "role": "Data engineer",
-                    "position": "Co-owner of event-substrate seam."
-                  },
-                  {
-                    "name": "Vera",
-                    "role": "Internal audit engineer",
-                    "position": "Pipelines #10-#15 gated on substrate."
-                  },
-                  {
-                    "name": "Senna",
-                    "role": "Security engineer",
-                    "position": "Threat model on the substrate."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO",
-                    "position": "Approves scope."
-                  }
-                ],
-                "timeline": "Marc decides at next session.",
-                "supportingDocs": [
-                  {
-                    "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-                    "title": "Atlas — agent-runtime-substrate spec",
-                    "summary": "The drafted scope."
-                  },
-                  {
-                    "path": "Team/Vera.md",
-                    "title": "Vera persona",
-                    "summary": "Pipelines #10-#15 (agent-spec integrity, mandate-agent reconciliation, substrate-gap inventory, escalation-channel discipline, agent-scope) — all substrate-gated."
-                  },
-                  {
-                    "path": "memory/project_principle_7_autonomous.md",
-                    "title": "Principle 7",
-                    "summary": "Why the substrate is foundational."
-                  }
-                ]
-              }
-            },
-            {
-              "id": "D-EVENT-STORE-SCALING",
-              "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-              "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-              "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the framing and the Azure target.",
-                "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-              }
-            }
-          ],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_anya_dashboard-client-refresh-v0.md",
-              "title": "anya · dashboard client refresh v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_linnea-atlas-anya_hoz-application-v0.md",
-              "title": "linnea atlas anya · hoz application v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_anya_projection-drift.md",
-              "title": "anya · projection drift"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_anya-linnea_intranet-fix-v0.md",
-              "title": "anya linnea · intranet fix v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_atlas-anya-linnea_bank-ui-shell-v0.md",
-              "title": "atlas anya linnea · bank ui shell v0"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        },
-        {
-          "name": "Imani",
-          "role": "Legal-as-code engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "S5",
-              "title": "External legal counsel for SARB licence application",
-              "category": "second-order",
-              "owner": "Imani",
-              "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
-              "decisionForCEO": "Engage / when / which firm.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-              ],
-              "brief": {
-                "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
-                "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
-                "options": [
-                  {
-                    "label": "Engage now",
-                    "description": "Engage a partner firm immediately.",
-                    "consequence": "Earliest start; some retainer cost during pre-application phase; firm becomes a deep partner ahead of application."
-                  },
-                  {
-                    "label": "Engage 6 months pre-lodgment",
-                    "description": "Standard timing.",
-                    "consequence": "Conventional engagement; firm has time to draft and run regulator meetings; matches Imani's likely recommendation."
-                  },
-                  {
-                    "label": "Engage 9 months pre-lodgment",
-                    "description": "Conservative timing; firm has full window.",
-                    "consequence": "Slightly more cost; full preparation runway."
-                  },
-                  {
-                    "label": "No external counsel",
-                    "description": "Run application via internal Imani only.",
-                    "consequence": "Significantly higher application risk; not market-standard for SA banking licences."
-                  }
-                ],
-                "recommendation": {
-                  "stance": "Engage 6–9 months ahead of lodgment; let Imani's recommendation paper land first.",
-                  "reasoning": "External counsel is essentially required for a credible SARB application. Timing 6–9 months ahead is conventional and well-justified. Decision can wait ~6 months; Imani's recommendation paper can land in the meantime."
-                },
-                "dependencies": {
-                  "gatedOn": [
-                    {
-                      "ref": "licence-application-timing",
-                      "title": "SARB licence-application sequencing (long-horizon)",
-                      "status": "open"
-                    }
-                  ],
-                  "gates": [
-                    {
-                      "ref": "licence-application-prep",
-                      "title": "Formal licence-application preparation",
-                      "status": "open"
-                    }
-                  ]
-                },
-                "stakeholders": [
-                  {
-                    "name": "Imani",
-                    "role": "Legal-as-code engineer",
-                    "position": "Drafter; runs the recommendation paper."
-                  },
-                  {
-                    "name": "Marc",
-                    "role": "CEO",
-                    "position": "Engagement decision."
-                  },
-                  {
-                    "name": "Owen",
-                    "role": "CoSec",
-                    "position": "Governance interface; engagement letter signing pathway."
-                  },
-                  {
-                    "name": "Camille",
-                    "role": "CFO",
-                    "position": "Cost envelope."
-                  }
-                ],
-                "timeline": "Imani drafts when ready; not urgent.",
-                "supportingDocs": [
-                  {
-                    "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-                    "title": "Next-decisions proposal §9 (S5)",
-                    "summary": "Framing of the external-counsel question."
-                  },
-                  {
-                    "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
-                    "title": "Strategic foundation",
-                    "summary": "Licence deferred; ~12–18 month indicative lodgment timeline informs the engagement decision."
-                  },
-                  {
-                    "path": "Team/Imani.md",
-                    "title": "Imani persona",
-                    "summary": "Mandate boundaries — internal legal-as-code; external partner-firm relationship is Marc's call with her recommendation."
-                  }
-                ]
-              }
-            }
-          ],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_hoz-cipc-reservation-scoping.md",
-              "title": "imani · hoz cipc reservation scoping"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_hoz-name-clearance-scoping.md",
-              "title": "imani · hoz name clearance scoping"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_cipc-three-reservation-update.md",
-              "title": "imani · cipc three reservation update"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_hoz-tm-act-scoping.md",
-              "title": "imani · hoz tm act scoping"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_imani_hoz-banks-act-s22-scoping.md",
-              "title": "imani · hoz banks act s22 scoping"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        },
-        {
-          "name": "Sade",
-          "role": "AgentOps engineer during build phase; HR engineer for the human layer once it exists at licence-day",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_sade_fais-ki-fit-and-proper-template.md",
-              "title": "sade · fais ki fit and proper template"
-            },
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_sade_agentops-readiness.md",
-              "title": "sade · agentops readiness"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_org-structure.md",
-              "title": "org structure"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_core-policies-conduct-hr.md",
-              "title": "core policies conduct hr"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        }
-      ],
-      "totalActive": 2,
+      "lastActivityAt": "2026-05-09",
+      "subordinates": [],
+      "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 19,
-      "totalRecentDeliverables": 34
+      "totalOpenDecisions": 10,
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Camille",
@@ -2343,6 +1489,11 @@
           "title": "camille · api cloud cost budget"
         },
         {
+          "date": "2026-05-09",
+          "path": "Owner Inbox/2026-05-09_camille_compensation-framework_thin-human-layer-six-seats.md",
+          "title": "camille · compensation framework · thin human layer six seats"
+        },
+        {
           "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_camille_financial-position-snapshot.md",
           "title": "camille · financial position snapshot"
@@ -2356,77 +1507,14 @@
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_camille_capital-plan-v1.md",
           "title": "camille · capital plan v1"
-        },
-        {
-          "date": "2026-05-06",
-          "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
-          "title": "core policies finance"
         }
       ],
       "lastActivityAt": "2026-05-09",
-      "subordinates": [
-        {
-          "name": "Bea",
-          "role": "Accounting & financial reporting engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_bea_ifrs10-consolidation-substrate-v0.md",
-              "title": "bea · ifrs10 consolidation substrate v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_bea_accounting-readiness.md",
-              "title": "bea · accounting readiness"
-            },
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_bea_accounting-readiness.md",
-              "title": "bea · accounting readiness"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_fix-a-second-wave-bea-rohan-niko-tomas.md",
-              "title": "fix a second wave bea rohan niko tomas"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md",
-              "title": "bea · finance policies bundle v0"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        },
-        {
-          "name": "Yael",
-          "role": "Tax engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_yael_tax-readiness.md",
-              "title": "yael · tax readiness"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
-              "title": "core policies finance"
-            }
-          ],
-          "lastActivityAt": "2026-05-08"
-        }
-      ],
+      "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 2,
-      "totalRecentDeliverables": 12
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Eitan",
@@ -2463,38 +1551,11 @@
         }
       ],
       "lastActivityAt": "2026-05-09",
-      "subordinates": [
-        {
-          "name": "Ravi",
-          "role": "Treasury / ALM engineer; runs the bank's balance sheet",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_ravi_alm-readiness.md",
-              "title": "ravi · alm readiness"
-            },
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_ravi_alm-readiness.md",
-              "title": "ravi · alm readiness"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_core-policies-finance.md",
-              "title": "core policies finance"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        }
-      ],
+      "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 7
+      "totalRecentDeliverables": 4
     },
     {
       "name": "Saskia",
@@ -2577,64 +1638,11 @@
         }
       ],
       "lastActivityAt": "2026-05-10",
-      "subordinates": [
-        {
-          "name": "Kai",
-          "role": "Trading systems engineer",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-              "title": "Product-construction substrate — typed Product composition from CDM primitives",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-              "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-              "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-              ],
-              "recommendation": {
-                "stance": "Approve.",
-                "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-              }
-            }
-          ],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-10",
-              "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
-              "title": "atlas kai saskia · product construction substrate"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
-              "title": "saskia kai atlas · routing policy projection v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
-              "title": "saskia kai · m4 sub decisions"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_saskia-kai_m4-foundation-slice-completion.md",
-              "title": "saskia kai · m4 foundation slice completion"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md",
-              "title": "saskia kai · pre trade gateway envelope v0 scoping"
-            }
-          ],
-          "lastActivityAt": "2026-05-10"
-        }
-      ],
+      "subordinates": [],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 3,
-      "totalRecentDeliverables": 10
+      "totalOpenDecisions": 2,
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Owen",
@@ -2774,13 +1782,13 @@
         },
         {
           "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
-          "title": "zara imani · fsp confirm a scope updates"
+          "path": "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md",
+          "title": "owen atlas · records management substrate · phase 1 spec"
         },
         {
           "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md",
-          "title": "imani owen · legal entity tree v0"
+          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
+          "title": "zara imani · fsp confirm a scope updates"
         }
       ],
       "lastActivityAt": "2026-05-09",
@@ -2846,64 +1854,11 @@
         }
       ],
       "lastActivityAt": "2026-05-09",
-      "subordinates": [
-        {
-          "name": "Mira",
-          "role": "Compliance / RegTech engineer; curator of the obligations register",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-EVENT-STORE-SCALING",
-              "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-              "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-              "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the framing and the Azure target.",
-                "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-              }
-            }
-          ],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_mira_fais-posture-a-register-application.md",
-              "title": "mira · fais posture a register application"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_mira_obligations-register-thin-human-layer-gaps-closed.md",
-              "title": "mira · obligations register thin human layer gaps closed"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_mira_domain-q-reclassification-d-regulatory-perimeter.md",
-              "title": "mira · domain q reclassification d regulatory perimeter"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_mira_per-entity-register-scoping-v0.md",
-              "title": "mira · per entity register scoping v0"
-            },
-            {
-              "date": "2026-05-09",
-              "path": "Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
-              "title": "mira zara · concentration risk conduct confirmation"
-            }
-          ],
-          "lastActivityAt": "2026-05-09"
-        }
-      ],
+      "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
-      "totalRecentDeliverables": 10
+      "totalOpenDecisions": 1,
+      "totalRecentDeliverables": 5
     },
     {
       "name": "Iris",
@@ -3055,48 +2010,11 @@
         }
       ],
       "lastActivityAt": "2026-05-08",
-      "subordinates": [
-        {
-          "name": "Senna",
-          "role": "Security engineer; engineering owner of the bank's cyber-resilience substrate under PA / FSCA Joint Standard 1 of 2024",
-          "hasOperatingSpec": true,
-          "activeWorkstreams": [],
-          "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [],
-          "recentDeliverables": [
-            {
-              "date": "2026-05-08",
-              "path": "Owner Inbox/2026-05-08_senna_m1-trading-stack-threat-model_completion.md",
-              "title": "senna · m1 trading stack threat model · completion"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_senna_security-substrate-state.md",
-              "title": "senna · security substrate state"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_senna_state-of-platform-note-to-rashida.md",
-              "title": "senna · state of platform note to rashida"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_senna_neon-event-store-threat-model.md",
-              "title": "senna · neon event store threat model"
-            },
-            {
-              "date": "2026-05-06",
-              "path": "Owner Inbox/2026-05-06_core-policies-infosec-ops.md",
-              "title": "core policies infosec ops"
-            }
-          ],
-          "lastActivityAt": "2026-05-08"
-        }
-      ],
+      "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 6
+      "totalRecentDeliverables": 1
     }
   ],
   "ownerInboxFeed": [

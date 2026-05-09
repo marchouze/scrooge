@@ -37,32 +37,69 @@ function makeFixture(): Fixture {
   mkdirSync(join(root, "Owner Inbox"));
   mkdirSync(join(root, "Regulations"));
   mkdirSync(join(root, "Procedures"));
+  mkdirSync(join(root, "Principles"));
+  mkdirSync(join(root, "Team"));
   mkdirSync(join(root, "prototype/seeds"), { recursive: true });
 
-  // CLAUDE.md fixture — three principles, top-of-house with one direct
-  // report and one open seat.
+  // CLAUDE.md fixture — narrates the structure but the canonical
+  // principle and roster data live in /Principles/ and Team/_team-roster.json
+  // respectively (Principle 6 single-graph discipline). The CLAUDE.md prose
+  // is read for `openSeatStatusFor` per-seat status fall-through only.
   writeFileSync(
     join(root, "CLAUDE.md"),
     [
       "# Bank",
       "",
-      "### Principle 1 — Events are the only source of truth",
+      "## Architectural principles",
       "",
-      "All state is queries.",
-      "",
-      "### Principle 2 — Every action traces to a source",
-      "",
-      "Atomic citation discipline.",
-      "",
-      "### Principle 3 — Cloud-native; nothing manual or physical except where essential",
-      "",
-      "IaC; coded workflows.",
+      "- Principle 1 — Events are the only source of truth.",
+      "- Principle 2 — Every action traces to a source.",
+      "- Principle 3 — Cloud-native; nothing manual or physical except where essential.",
       "",
       "**Top-of-house reporting.** All governance seats and the Chief of Staff report directly to the CEO.",
-      "CEO direct reports today: Scrooge (CoS, orchestrator), Helena (CRO), Thandiwe (CAE — administrative line; functional line into AC).",
-      "Future direct reports as hired: GC, CHRO.",
       "",
     ].join("\n"),
+  );
+
+  // /Principles/<n>-<slug>.md — canonical principle text.
+  writeFileSync(
+    join(root, "Principles", "1-events.md"),
+    ["# Principle 1 — Events are the only source of truth", "", "All state is queries."].join("\n"),
+  );
+  writeFileSync(
+    join(root, "Principles", "2-citations.md"),
+    ["# Principle 2 — Every action traces to a source", "", "Atomic citation discipline."].join(
+      "\n",
+    ),
+  );
+  writeFileSync(
+    join(root, "Principles", "3-cloud.md"),
+    [
+      "# Principle 3 — Cloud-native; nothing manual or physical except where essential",
+      "",
+      "IaC; coded workflows.",
+    ].join("\n"),
+  );
+
+  // Team/_team-roster.json — canonical roster: one direct report + one
+  // future-as-hired open seat.
+  writeFileSync(
+    join(root, "Team", "_team-roster.json"),
+    JSON.stringify(
+      {
+        topOfHouse: {
+          ceoDirectReports: [
+            "Scrooge (CoS, orchestrator)",
+            "Helena (CRO)",
+            "Thandiwe (CAE — administrative line; functional line into AC)",
+          ],
+          futureDirectReportsAsHired: ["GC", "CHRO"],
+        },
+        personas: [],
+      },
+      null,
+      2,
+    ),
   );
 
   // Policy register — two domain sections (1, 2), three policies total +
@@ -195,9 +232,6 @@ function makeFixture(): Fixture {
     ),
   );
 
-  // Empty Team and Owner Inbox dirs so the agents derivation runs cleanly.
-  mkdirSync(join(root, "Team"));
-
   const sources: SourcePaths = {
     repoRoot: root,
     claudeMd: join(root, "CLAUDE.md"),
@@ -208,6 +242,8 @@ function makeFixture(): Fixture {
     proceduresIndex: join(root, "Procedures", "_index.md"),
     curated: join(root, "prototype", "seeds", "dashboard-curated.json"),
     teamDir: join(root, "Team"),
+    teamRoster: join(root, "Team", "_team-roster.json"),
+    principlesDir: join(root, "Principles"),
     ownerInboxDir: join(root, "Owner Inbox"),
     bankNameRegister: join(root, "Regulations", "_bank-name.md"),
   };
