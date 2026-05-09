@@ -157,6 +157,7 @@
 | Remuneration Policy | `annual-remuneration-review.md` | Sade + Helena (RemCo) | PLANNED |
 | Remuneration Policy | `malus-clawback-trigger.md` | Sade + Helena | PLANNED |
 | Fit-and-Proper Policy | `fit-and-proper-attestation.md` | Sade + Owen + Helena | PLANNED |
+| Fit-and-Proper Policy + FAIS Policy v0.1 (STUB) | [`fais-ki-fit-and-proper.md`](by-policy/fais-ki-fit-and-proper.md) (PROC-FAIS-KI-FAP-01 — five-dimension Determination 2017 framework) | Sade · Zara · Saskia (named KI) | STUB |
 | Recruitment & Selection | `recruitment-process.md` | Sade | PLANNED |
 | Disciplinary | `disciplinary-process.md` | Sade | PLANNED |
 | Grievance | `grievance-process.md` | Sade | PLANNED |
