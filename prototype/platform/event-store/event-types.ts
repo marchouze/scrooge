@@ -2585,6 +2585,287 @@ export function makeSwitchTestReport(args: {
   });
 }
 
+// ===========================================================================
+// LEGAL-ENTITY EVENT FAMILY (D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER)
+//
+// Three typed events that materialise the v0 legal-entity tree (Hoz Group
+// Limited / Hoz Bank Limited / Hoz Securities Limited) into the event log
+// per Principle 1 (events are the source of truth) and Principle 5
+// (multi-entity from day one).
+//
+// Substrate gap closed by this section:
+//   - The Imani (Legal-as-code engineer) + Owen (Company Secretary,
+//     governance) joint v0 spec at
+//     `Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md` (§6)
+//     sketched the payload shape; this is the runtime substrate.
+//   - The CEO-resolved D-REGULATORY-PERIMETER decision (PR #85) named
+//     three regulatoryRegimes (PA / JSE / none-companies-act-only); the
+//     `regulatoryRegime` field on `LegalEntityRegistered` carries that
+//     designation in a typed enum.
+//
+// Authors of the substantive content:
+//   - Imani (Legal-as-code engineer; reports to Devon, COO, governance)
+//   - Owen (Company Secretary, governance; reports to CEO)
+// Substrate author:
+//   - Atlas (Core banking platform architect; reports to Devon, COO)
+//
+// Citation classes (Principle 2):
+//   - `LegalEntityRegistered` — Companies Act 71 of 2008, Banks Act 94
+//     of 1990 § 7 / § 60, FAIS Act 37 of 2002, JSE Rules.
+//   - `LegalEntityChanged` — Companies Act § 16 (MOI amendments), § 71
+//     (director removals), Banks Act § 60 (controlling-company changes).
+//   - `IntraGroupArrangementSigned` — Companies Act § 75 (director
+//     conflicts), IAS 24 (related-party disclosures), Banks Act § 73
+//     (large-exposure limits, intra-group), OECD TP Guidelines.
+//
+// Sibling event `RegulatoryLicenceStatusChanged` is sketched in the spec
+// but deferred to the licence-application work (out of scope for v0;
+// licence-day is far enough out that the typed schema waits for the
+// producer to land).
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// LegalEntityRegistered
+//
+// Emitted when a new legal entity enters the bank's perimeter — at v0,
+// the three Hoz entities seeded from `Regulations/_legal-entity-tree.md`
+// via `prototype/seeds/legal-entity-tree.json`. The eventual auto-emit
+// path is "CIPC reservation completes → registrar substrate emits
+// LegalEntityRegistered". Until that path lands, the seed-loader is the
+// emitter (substrate gap captured in the completion note).
+// ---------------------------------------------------------------------------
+
+export const legalEntityRegisteredPayloadSchema = z.object({
+  /**
+   * Stable URN. Convention: `urn:legal-entity:<group-slug>:<entity-slug>:v1`.
+   * The version suffix is for forward-compat with re-registrations
+   * (e.g. a change of legal name that issues a new entity-id rather than
+   * a `LegalEntityChanged`).
+   */
+  entityId: z.string().min(1),
+  /** Full registered name. e.g. "Hoz Group Limited". */
+  legalName: z.string().min(1),
+  /**
+   * Companies Act registered form. `Ltd` (public), `RF` (ring-fenced
+   * variant), `Pty` (private). Banks Act § 11 requires the bank entity
+   * to be `Ltd`; the registry asserts that downstream.
+   */
+  registeredForm: z.enum(["Ltd", "RF", "Pty"]),
+  /**
+   * ISO 3166-1 alpha-2 country code. v0 expects "ZA" for the three Hoz
+   * entities; multi-jurisdiction is in scope per Principle 5.
+   */
+  jurisdiction: z.string().length(2),
+  /** Registered office address. v0 carries street-level placeholders. */
+  registeredOffice: z.object({
+    street: z.string().min(1),
+    city: z.string().min(1),
+    country: z.string().length(2),
+  }),
+  /**
+   * URN of the parent entity, or null for the top-of-tree group. The
+   * registrar substrate enforces tree-shape (no cycles, single parent
+   * per child) at append time; v0 ships the invariant in the seed and
+   * defers the runtime enforcement to the entity-tree projection.
+   */
+  parentEntityId: z.string().min(1).nullable(),
+  /**
+   * Regulatory-perimeter designation per D-REGULATORY-PERIMETER (PR #85).
+   * `primaryRegulator` is the seat that signs the licence; `regimeAnchor`
+   * is the ordered list of statutory / regulatory anchors that bind the
+   * entity. `none-companies-act-only` is the parent-of-bank holdco
+   * designation under Banks Act § 60 consolidated supervision (the
+   * group is not separately licensed; the bank's licence and the
+   * controlling-company designation between them establish the regime).
+   */
+  regulatoryRegime: z.object({
+    primaryRegulator: z.enum(["PA", "JSE", "FSCA", "none-companies-act-only", "other"]),
+    regimeAnchor: z.array(z.string().min(1)).min(1),
+  }),
+  /**
+   * Director roster at registration. Each entry references a fit-and-
+   * proper file (Sade's HR substrate at v0; Owen reviews per-entity
+   * submissions). v0 permits an empty array because shared-board
+   * appointments may post-date entity registration — the
+   * `LegalEntityChanged` `director-added` change-type fills the gap.
+   */
+  directors: z.array(
+    z.object({
+      name: z.string().min(1),
+      fitAndProperFileId: z.string().min(1),
+      appointmentDate: z.string().min(1),
+    }),
+  ),
+  /** ISO 8601 date the entity was registered with CIPC (or equivalent). */
+  registrationDate: z.string().min(1),
+});
+
+export type LegalEntityRegisteredPayload = z.infer<typeof legalEntityRegisteredPayloadSchema>;
+
+export function makeLegalEntityRegistered(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: LegalEntityRegisteredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "LegalEntityRegistered",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: legalEntityRegisteredPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// LegalEntityChanged
+//
+// Emitted on any change to a registered entity — renames, parent-of
+// changes, director-additions / removals, regulatory-regime updates,
+// registered-office moves. Each event records both the prior value and
+// the new value so the entity-tree projection can replay-fold to any
+// as-of without re-walking the whole history.
+// ---------------------------------------------------------------------------
+
+export const legalEntityChangedPayloadSchema = z.object({
+  /** URN of the entity being changed. Must match a prior `LegalEntityRegistered`. */
+  entityId: z.string().min(1),
+  /**
+   * Typed change discriminator. The projection dispatches on this to
+   * decide which field to update.
+   */
+  changeType: z.enum([
+    "renamed",
+    "parent-changed",
+    "director-added",
+    "director-removed",
+    "regulatory-regime-updated",
+    "registered-office-changed",
+  ]),
+  /**
+   * The value before the change. Untyped at the envelope level — the
+   * projection knows how to interpret it given `changeType`. Required
+   * (a change-event without a prior value is a registration, not a
+   * change).
+   */
+  priorValue: z.unknown().refine((v) => v !== undefined, {
+    message: "priorValue is required (use null for explicit absence; undefined is rejected)",
+  }),
+  /** The value after the change. Required for symmetric reasons. */
+  newValue: z.unknown().refine((v) => v !== undefined, {
+    message: "newValue is required (use null for explicit absence; undefined is rejected)",
+  }),
+  /** ISO 8601 date the change took effect. */
+  effectiveDate: z.string().min(1),
+});
+
+export type LegalEntityChangedPayload = z.infer<typeof legalEntityChangedPayloadSchema>;
+
+export function makeLegalEntityChanged(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: LegalEntityChangedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "LegalEntityChanged",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: legalEntityChangedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// IntraGroupArrangementSigned
+//
+// Emitted when an inter-company arrangement (services / IP licensing /
+// capital injection / intra-group exposure / other related-party) is
+// executed between two entities in the group. Discharges the IAS 24
+// related-party disclosure substrate and the Companies Act § 75
+// director-conflict register; Yael (Tax engineer; reports to Camille,
+// CFO, governance) consumes the stream for transfer-pricing analysis.
+// ---------------------------------------------------------------------------
+
+export const intraGroupArrangementSignedPayloadSchema = z
+  .object({
+    /**
+     * Stable ID for the arrangement. Convention:
+     * `arrangement:<from-slug>:<to-slug>:<arrangement-type>:<v>`.
+     */
+    arrangementId: z.string().min(1),
+    /**
+     * Typed arrangement-class. Mirrors the IAS 24 + Companies Act
+     * § 75 + Banks Act § 73 categorisation in the v0 spec §2.
+     */
+    arrangementType: z.enum([
+      "services",
+      "ip-licensing",
+      "capital-injection",
+      "intra-group-exposure",
+      "other-related-party",
+    ]),
+    /** URN of the providing / paying entity. */
+    fromEntityId: z.string().min(1),
+    /** URN of the receiving / billed entity. */
+    toEntityId: z.string().min(1),
+    /** ISO 8601 effective date. */
+    effectiveDate: z.string().min(1),
+    /**
+     * Optional ISO 8601 termination date. Null / undefined =
+     * evergreen-until-superseded; many intra-group arrangements (the
+     * services agreement, the IP licence) are open-ended.
+     */
+    terminationDate: z.string().min(1).optional(),
+    /**
+     * Free-text rationale for arm's-length pricing. v0 carries
+     * `[citation: TBC pending Yael TP analysis]` placeholders; the
+     * substantive contracts land closer to licence-day.
+     */
+    armsLengthRationale: z.string().min(1),
+    /**
+     * Reference to the IAS 24 related-party disclosure that captures
+     * this arrangement in the consolidated AFS. Convention:
+     * `disclosure:<entity-slug>:<period>:ias24:<arrangement-id>`.
+     */
+    "IAS24-disclosure-ref": z.string().min(1),
+  })
+  .refine((p) => p.fromEntityId !== p.toEntityId, {
+    message: "fromEntityId and toEntityId must differ (no self-arrangements)",
+    path: ["toEntityId"],
+  });
+
+export type IntraGroupArrangementSignedPayload = z.infer<
+  typeof intraGroupArrangementSignedPayloadSchema
+>;
+
+export function makeIntraGroupArrangementSigned(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: IntraGroupArrangementSignedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "IntraGroupArrangementSigned",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: intraGroupArrangementSignedPayloadSchema.parse(args.payload),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -2632,6 +2913,9 @@ export const TYPED_EVENT_TYPES = [
   "SwitchTestActivated",
   "SwitchTestEnded",
   "SwitchTestReport",
+  "LegalEntityRegistered",
+  "LegalEntityChanged",
+  "IntraGroupArrangementSigned",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

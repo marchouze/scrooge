@@ -54,7 +54,10 @@ import {
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
   identityKeyRotatedPayloadSchema,
+  intraGroupArrangementSignedPayloadSchema,
   legacyFanoutShadowedPayloadSchema,
+  legalEntityChangedPayloadSchema,
+  legalEntityRegisteredPayloadSchema,
   methodologyChangeRequestedPayloadSchema,
   modelDriftDetectedPayloadSchema,
   modelSubmittedPayloadSchema,
@@ -859,6 +862,58 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// Legal-entity event family (D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER).
+// Three typed events that materialise the v0 entity tree (Hoz Group +
+// Hoz Bank + Hoz Securities) into the event log per Principle 1 +
+// Principle 5. Substantive content: Imani (Legal-as-code engineer) +
+// Owen (Company Secretary, governance). Substrate: Atlas.
+const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "LegalEntityRegistered",
+    class: "governance",
+    payloadSchema: legalEntityRegisteredPayloadSchema,
+    issuer: "Imani",
+    subscribers: ["Owen", "Mira", "Bea", "Yael", "Helena", "Anya", "dashboard", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "COMPANIES-ACT-71-2008",
+      "BANKS-ACT-94-1990",
+      "FAIS-ACT-37-2002",
+      "JSE-RULES",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    source:
+      "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6; Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md (PR #82); Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md (PR #85); Regulations/_legal-entity-tree.md",
+  },
+  {
+    type: "LegalEntityChanged",
+    class: "governance",
+    payloadSchema: legalEntityChangedPayloadSchema,
+    issuer: "Imani",
+    subscribers: ["Owen", "Mira", "Bea", "Yael", "Helena", "Anya", "dashboard", "Vera"],
+    replay: "cumulative-fold",
+    citationsHint: ["COMPANIES-ACT-71-2008", "BANKS-ACT-94-1990", "GOV-FRAMEWORK-CEO-RESERVED"],
+    source:
+      "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6.2; Regulations/_legal-entity-tree.md",
+  },
+  {
+    type: "IntraGroupArrangementSigned",
+    class: "governance",
+    payloadSchema: intraGroupArrangementSignedPayloadSchema,
+    issuer: "Imani",
+    subscribers: ["Owen", "Bea", "Yael", "Camille", "Mira", "Helena", "dashboard", "Vera"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "COMPANIES-ACT-71-2008-S75",
+      "IAS-24",
+      "BANKS-ACT-94-1990-S73",
+      "OECD-TP-GUIDELINES",
+    ],
+    source:
+      "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §2 (intra-group arrangement stubs); Regulations/_legal-entity-tree.md §2",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -870,6 +925,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...MARKETS_EVENT_TYPES,
   ...GOVERNANCE_EVENT_TYPES,
   ...AUDIT_EVENT_TYPES,
+  ...LEGAL_ENTITY_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
