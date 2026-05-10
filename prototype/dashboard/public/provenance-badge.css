@@ -1,0 +1,144 @@
+/* provenance-badge.css
+ *
+ * D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking.
+ *
+ * The badge is *visible by intent* — it sits in the page chrome (top-of-page
+ * or top-of-tile), not in a tooltip. Per pack §6.3, silent provenance is a
+ * P1 audit-integrity risk; the recon `recon:provenance-badge-coverage`
+ * fails the build if any render path omits the badge.
+ *
+ * Three modes (per pack §6.2 + dispatch brief):
+ *   production-only  → 🟢 PRODUCTION DATA       (green; solid border)
+ *   simulated-only   → 🟡 SIMULATED DATA        (amber; dashed border)
+ *   combined         → 🔵 COMBINED (P+S)        (blue; double border)
+ *
+ * Filter narrowing (scenario / variant / sourceLineage) appends a suffix
+ * to the badge label per §6.2 — handled by the JS module, not CSS.
+ *
+ * Author: Anya (Data / analytics engineer, engineering — projection runtime
+ *   + watermark layer).
+ */
+
+.provenance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: "IBM Plex Sans", "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.provenance-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.provenance-badge-label {
+  font-weight: 700;
+}
+
+.provenance-badge-suffix {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.85;
+}
+
+/* ---------------- Production-only — green ---------------- */
+.provenance-badge[data-mode="production-only"] {
+  background: #e6f7ec;
+  color: #126a32;
+  border-color: #2c9b54;
+  border-style: solid;
+  border-width: 1px;
+}
+.provenance-badge[data-mode="production-only"] .provenance-badge-dot {
+  background: #2c9b54;
+}
+
+/* ---------------- Simulated-only — amber ----------------- */
+.provenance-badge[data-mode="simulated-only"] {
+  background: #fff4d6;
+  color: #6b4a00;
+  border-color: #d49500;
+  border-style: dashed;
+  border-width: 1px;
+}
+.provenance-badge[data-mode="simulated-only"] .provenance-badge-dot {
+  background: #d49500;
+}
+
+/* ---------------- Combined — blue (double border) ------- */
+.provenance-badge[data-mode="combined"] {
+  background: #e6efff;
+  color: #1e3a8a;
+  border-color: #1e3a8a;
+  border-style: double;
+  border-width: 3px;
+  padding: 2px 9px; /* compensate for thicker border */
+}
+.provenance-badge[data-mode="combined"] .provenance-badge-dot {
+  background: #1e3a8a;
+}
+
+/* ---------------- Unknown / loading state --------------- */
+.provenance-badge[data-mode="unknown"] {
+  background: #f3f3f3;
+  color: #666;
+  border-color: #c0c0c0;
+  border-style: dotted;
+}
+.provenance-badge[data-mode="unknown"] .provenance-badge-dot {
+  background: #c0c0c0;
+}
+
+/* ---------------- Error / failed-to-load --------------- */
+.provenance-badge[data-mode="error"] {
+  background: #fde2e1;
+  color: #7a1411;
+  border-color: #b3261e;
+  border-style: solid;
+}
+.provenance-badge[data-mode="error"] .provenance-badge-dot {
+  background: #b3261e;
+}
+
+/* ---------------- Page-top placement -------------------- */
+/* When the badge is mounted at the top of a page (auto-mount on
+ * the page chrome), align it with the rest of the header meta. */
+.provenance-badge-page-top {
+  margin: 0 12px;
+  align-self: center;
+}
+
+/* When mounted inside a tile, give it some top-of-tile breathing room. */
+.provenance-badge-tile {
+  margin: 0 0 8px;
+}
+
+/* ---------------- Print / PDF watermarking -------------- */
+/* Per pack §6.1 + §6.3, "rendered artefacts" includes printed PDFs
+ * (when reporting templates land — see substrate gap §11). For the
+ * dashboard pages, ensure the badge is preserved (not display:none) on
+ * print so a printed snapshot retains the watermark. */
+@media print {
+  .provenance-badge {
+    color: black !important;
+    background: transparent !important;
+    border-color: black !important;
+  }
+  .provenance-badge-dot {
+    border: 1px solid black;
+  }
+}
