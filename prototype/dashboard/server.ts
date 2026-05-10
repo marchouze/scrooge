@@ -621,6 +621,56 @@ function handleOwnerInboxFetch(filename: string): Response {
   });
 }
 
+// Stream the raw markdown body for a single procedure file under
+// `Procedures/by-policy/` so the procedures-page inline-preview modal can
+// render it without leaving the page. Mirrors the Owner Inbox endpoint
+// (`handleOwnerInboxFetch`) — same rejection pattern, same allow-list
+// discipline. Authored by Anya (Data / analytics engineer).
+//
+// Safety:
+//   • Filename must be exactly a basename (no `/`, no `..`).
+//   • Filename must end in `.md`.
+//   • Filename must be present in the live procedures index — i.e. some
+//     `_index.md` row resolves to the file under `by-policy/`. An orphan
+//     citation (file missing on disk) is *not* in the allow-list because
+//     `getProceduresIndex` flags it but the file does not exist; any such
+//     request returns 404 rather than 500.
+function handleProcedureFetch(filename: string): Response {
+  if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
+    return jsonResponse({ error: "invalid filename" }, 400);
+  }
+  if (!filename.toLowerCase().endsWith(".md")) {
+    return jsonResponse({ error: "only .md files are previewable" }, 400);
+  }
+  // Allow-list check against the live procedures index. The index is the
+  // canonical source for the policy → procedure mapping (Principle 6); we
+  // never serve a `Procedures/by-policy/<file>.md` that the index does
+  // not cite, even if the file exists on disk.
+  const view = getProceduresIndex(REPO_ROOT);
+  const allowed = view.groups.some((g) =>
+    g.rows.some((r) => r.procedureFile === filename && !r.orphan),
+  );
+  if (!allowed) {
+    return jsonResponse({ error: `not in current procedures index: ${filename}` }, 404);
+  }
+  const filePath = join(REPO_ROOT, "Procedures", "by-policy", filename);
+  if (!existsSync(filePath)) {
+    return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
+  }
+  let content: string;
+  try {
+    content = readFileSync(filePath, "utf8");
+  } catch (err) {
+    return jsonResponse(
+      { error: `failed to read file: ${err instanceof Error ? err.message : String(err)}` },
+      500,
+    );
+  }
+  return new Response(content, {
+    headers: { "Content-Type": "text/markdown; charset=utf-8" },
+  });
+}
+
 function handleRmsRegister(register: string): Response {
   if (!isRmsRegisterKey(register)) {
     return jsonResponse(
@@ -706,6 +756,17 @@ const server = Bun.serve({
       const oiMatch = url.pathname.match(/^\/api\/owner-inbox\/(.+)$/);
       if (oiMatch?.[1] && req.method === "GET") {
         return handleOwnerInboxFetch(decodeURIComponent(oiMatch[1]));
+      }
+    }
+    // Procedure markdown body fetch for the procedures-page inline-preview
+    // modal. Mirrors the Owner Inbox endpoint above; allow-list bound to
+    // the live procedures index. Authored by Anya (Data / analytics
+    // engineer); does not mutate state and does not change
+    // `getProceduresIndex`'s derivation contract.
+    {
+      const procMatch = url.pathname.match(/^\/api\/procedure\/(.+)$/);
+      if (procMatch?.[1] && req.method === "GET") {
+        return handleProcedureFetch(decodeURIComponent(procMatch[1]));
       }
     }
     // ---------- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking ----------
