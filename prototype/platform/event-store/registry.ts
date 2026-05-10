@@ -36,6 +36,8 @@
 import type { z } from "zod";
 
 import {
+  accountingPeriodClosedPayloadSchema,
+  accountingPeriodOpenedPayloadSchema,
   agentBriefIssuedPayloadSchema,
   agentDecisionPayloadSchema,
   agentEscalationAcknowledgedPayloadSchema,
@@ -98,6 +100,7 @@ import {
   switchTestActivatedPayloadSchema,
   switchTestEndedPayloadSchema,
   switchTestReportPayloadSchema,
+  trialBalanceSnapshottedPayloadSchema,
   validationFindingClosedPayloadSchema,
   validationFindingRaisedPayloadSchema,
   validationMethodologyPublishedPayloadSchema,
@@ -1751,6 +1754,93 @@ const BANK_ACCOUNT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// ===========================================================================
+// Period-close event family — D-REPORTING-CAPABILITY-SLICE-2.
+//
+// Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
+// 2026-05-10), pack §6 Slice 2. Three event types govern accounting-period
+// close per entity (per pack §6 Q2: each Hoz entity closes independently).
+//
+// Replay-fold rules:
+//   - AccountingPeriodOpened    → idempotent-terminal on (entity, periodId)
+//                                 while the period is open. Reopens append a
+//                                 new event with `reopenOf` chain — the
+//                                 forensic chain is open → close → open
+//                                 (reopen) → close (reclose).
+//   - AccountingPeriodClosed    → idempotent-terminal on (entity, periodId).
+//                                 References the trial-balance-snapshot
+//                                 event_id captured at close.
+//   - TrialBalanceSnapshotted   → append-only-audit. Multiple snapshots per
+//                                 (entity, periodId) — one `close`-kind
+//                                 emitted automatically; arbitrary `interim`-
+//                                 kind for in-period checkpoints.
+//
+// Subscribers: Bea (close orchestration owner) + Camille (CFO accountable
+// signer per Slice 6+ AFS approvals) + Vera (continuous-controls — recon
+// pipelines on close coverage + trial-balance-debits-equal-credits) +
+// Anya (semantic-layer + downstream BA-return generators consume the
+// snapshot) + dashboard (period-status tile).
+//
+// Retention: RETENTION_ACCOUNTING_7Y — Companies Act 71/2008 s.24
+// accounting-records floor. Principle 1's append-only log retains
+// indefinitely; the 7-year minimum is the regulator-mandated floor.
+// ===========================================================================
+
+const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "AccountingPeriodOpened",
+    class: "markets", // accounting events sit in the same class as M1 sub-ledger postings
+    payloadSchema: accountingPeriodOpenedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Anya", "Vera", "dashboard"],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "D-REPORTING-CAPABILITY-SLICE-2",
+      "IAS-1",
+      "IAS-21-§9",
+      "COMPANIES-ACT-71-2008-S24",
+    ],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+  },
+  {
+    type: "AccountingPeriodClosed",
+    class: "markets",
+    payloadSchema: accountingPeriodClosedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Anya", "Helena", "Eitan", "Vera", "dashboard"],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "D-REPORTING-CAPABILITY-SLICE-2",
+      "IAS-1",
+      "COMPANIES-ACT-71-2008-S24",
+    ],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+  },
+  {
+    type: "TrialBalanceSnapshotted",
+    class: "markets",
+    payloadSchema: trialBalanceSnapshottedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Anya", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "D-REPORTING-CAPABILITY-SLICE-2",
+      "IAS-1",
+      "COMPANIES-ACT-71-2008-S24",
+    ],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -1766,6 +1856,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...PRODUCT_LIFECYCLE_EVENT_TYPES,
   ...RMS_EVENT_TYPES,
   ...BANK_ACCOUNT_EVENT_TYPES,
+  ...PERIOD_CLOSE_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
