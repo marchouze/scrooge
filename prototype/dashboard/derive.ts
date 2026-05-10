@@ -904,6 +904,126 @@ function decisionIdFromRecordFilename(filename: string): string | null {
   return m[1].toUpperCase();
 }
 
+// Like `decisionIdFromRecordFilename` but also recognises sessional ids
+// such as `..._ceo-decision-record_s7.md` → `S7`. Used by the resolved-set
+// synthesiser, which needs to mark sessional decisions resolved too. Kept
+// separate from the display-title helper so existing presentation tests
+// don't shift.
+function resolutionIdFromRecordFilename(filename: string): string | null {
+  const dPath = decisionIdFromRecordFilename(filename);
+  if (dPath) return dPath;
+  const m = filename.match(/_ceo-decision-record_(s\d+)\.md$/i);
+  return m?.[1] ? m[1].toUpperCase() : null;
+}
+
+// Parse on-disk Owner-Inbox decision records into CeoDecision-event-shaped
+// summaries. Used by `runtime/decisions/backfill-from-records.ts` to emit
+// any events that are missing from the local store at boot — the local
+// sqlite store is gitignored and per-worktree (memory
+// `feedback_cache_in_commit_graph_anti_pattern`), so a fresh worktree
+// reads zero CeoDecision events even though 30+ records sit on disk.
+// Backfilling at boot keeps Principle 1 intact: the event store remains
+// the single canonical source the dashboard derivation reads from.
+//
+// Parses three body shapes:
+//   - Single-id record:   `- **Decision ID:** \`D-XXX\``
+//   - Multi-id record:    `- **Decision IDs resolved:** \`D-A\` + \`D-B\` + ...`
+//   - Title-only fallback (filename slug used when both lines are absent).
+const RECORD_FILENAME_RE = /_ceo-decision-record_/i;
+const DECISION_ID_LINE_RE = /\*\*Decision ID(?:s resolved)?:\*\*\s*(.+?)\s*$/i;
+const ALL_DIDS_RE = /`((?:D|S)-[A-Z0-9][A-Z0-9-]*)`/g;
+const ACTION_LINE_RE = /\*\*Action:\*\*\s*(.+?)\s*$/i;
+const TITLE_LINE_RE = /\*\*Title:\*\*\s*(.+?)\s*$/i;
+const OUTCOME_LINE_RE = /\*\*Outcome:\*\*\s*(.+?)\s*$/i;
+const ACTOR_LINE_RE = /\*\*Actor:\*\*\s*`?([^`(]+)`?/i;
+const COMMENT_LINE_RE = /\*\*Comment:\*\*\s*(.+?)\s*$/i;
+const ASOF_FRONTMATTER_RE = /^asOf:\s*(.+?)\s*$/im;
+
+function parseAction(raw: string): DecisionAction {
+  const lower = raw.toLowerCase();
+  if (lower.includes("request-revision") || lower.includes("revise")) return "request-revision";
+  if (lower.startsWith("defer")) return "defer";
+  if (lower.startsWith("modify")) return "modify";
+  return "approve"; // "approve as drafted", "approve all 3", bare "approve", or unknown
+}
+
+export function synthesizeCeoDecisionsFromRecords(
+  ownerInboxDir: string,
+): CeoDecisionEventSummary[] {
+  if (!existsSync(ownerInboxDir)) return [];
+  const out: CeoDecisionEventSummary[] = [];
+  const dirs = [ownerInboxDir, join(ownerInboxDir, "actioned")];
+  for (const dir of dirs) {
+    if (!existsSync(dir)) continue;
+    for (const filename of readdirSync(dir)) {
+      if (!RECORD_FILENAME_RE.test(filename)) continue;
+      if (!filename.toLowerCase().endsWith(".md")) continue;
+      const full = join(dir, filename);
+      try {
+        if (!statSync(full).isFile()) continue;
+      } catch {
+        continue;
+      }
+      const content = readFileSync(full, "utf8");
+      const fmMatch = content.match(FRONTMATTER_RE);
+      const body = fmMatch ? content.slice(fmMatch[0].length) : content;
+      const fmBlock = fmMatch?.[1] ?? "";
+
+      // Collect decision-ids: prefer the explicit `Decision IDs resolved`
+      // line (multi-id case); fall back to the filename-derived id.
+      const ids = new Set<string>();
+      for (const line of body.split(/\r?\n/)) {
+        const m = line.match(DECISION_ID_LINE_RE);
+        if (!m?.[1]) continue;
+        for (const idMatch of m[1].matchAll(ALL_DIDS_RE)) {
+          if (idMatch[1]) ids.add(idMatch[1].toUpperCase());
+        }
+      }
+      if (ids.size === 0) {
+        const idFromFilename = resolutionIdFromRecordFilename(filename);
+        if (idFromFilename) ids.add(idFromFilename);
+      }
+      if (ids.size === 0) continue;
+
+      // Pull metadata from the record body.
+      let action: DecisionAction = "approve";
+      let title = "";
+      let outcome = "";
+      let actor = "marc@tgv.co.za";
+      let comment: string | undefined;
+      for (const line of body.split(/\r?\n/)) {
+        const a = line.match(ACTION_LINE_RE);
+        if (a?.[1]) action = parseAction(a[1]);
+        const t = line.match(TITLE_LINE_RE);
+        if (t?.[1]) title = t[1].replace(/`/g, "").trim();
+        const o = line.match(OUTCOME_LINE_RE);
+        if (o?.[1]) outcome = o[1].trim();
+        const ac = line.match(ACTOR_LINE_RE);
+        if (ac?.[1]) actor = ac[1].trim();
+        const c = line.match(COMMENT_LINE_RE);
+        if (c?.[1]) comment = c[1].replace(/^["']|["']$/g, "").trim();
+      }
+      const asOfFm = fmBlock.match(ASOF_FRONTMATTER_RE);
+      const date = fileDate(filename);
+      const asOf = asOfFm?.[1]?.trim() ?? (date ? `${date}T12:00:00.000Z` : "");
+      if (!asOf) continue;
+
+      for (const id of ids) {
+        out.push({
+          decisionId: id,
+          title: title || id,
+          action,
+          outcome,
+          actor,
+          asOf,
+          ...(comment ? { comment } : {}),
+        });
+      }
+    }
+  }
+  return out;
+}
+
 // Build a short, scannable title for the Owner Inbox feed. Verbose
 // agent-prefixed titles like
 //   "Scrooge (Chief of Staff / Orchestrator) — CEO decision record:

@@ -65,16 +65,27 @@ export interface RunOpts {
    * fixture used by the existing test set).
    */
   eventDecisionIds?: ReadonlySet<string>;
+  /** Optional override for tests; same semantics as `AssertionContext.reopenedDecisionIds`. */
+  reopenedDecisionIds?: ReadonlySet<string>;
 }
 
 interface AssertionContext {
   state: DashboardState;
   eventDecisionIds: ReadonlySet<string>;
+  /**
+   * Subset of `eventDecisionIds` whose latest CeoDecision event has
+   * `action: "request-revision"`. The dashboard derivation intentionally
+   * leaves these decisions OPEN (the action communicates "send back / not
+   * ready"), so the inverse "every event surfaces in resolved" assertion
+   * must skip them — they are events of record, but not resolutions.
+   */
+  reopenedDecisionIds: ReadonlySet<string>;
 }
 
 function loadState(opts: RunOpts): {
   state?: DashboardState;
   eventDecisionIds: Set<string>;
+  reopenedDecisionIds: Set<string>;
   setupViolations: ReconViolation[];
 } {
   const setupViolations: ReconViolation[] = [];
@@ -82,6 +93,7 @@ function loadState(opts: RunOpts): {
     return {
       state: opts.state,
       eventDecisionIds: new Set(opts.eventDecisionIds ?? []),
+      reopenedDecisionIds: new Set(opts.reopenedDecisionIds ?? []),
       setupViolations,
     };
   }
@@ -96,11 +108,12 @@ function loadState(opts: RunOpts): {
         severity: "fail",
       });
     }
-    return { eventDecisionIds: new Set(), setupViolations };
+    return { eventDecisionIds: new Set(), reopenedDecisionIds: new Set(), setupViolations };
   }
 
   const dbPath = opts.dbPath ?? DEFAULT_DB;
   const eventDecisionIds = new Set<string>();
+  const reopenedDecisionIds = new Set<string>();
   const events = (() => {
     if (!existsSync(dbPath)) {
       // No event store yet → empty event source. The dashboard derivation
@@ -118,10 +131,22 @@ function loadState(opts: RunOpts): {
     const store = new EventStore(dbPath);
     // Capture decision-ids alongside the dashboard derivation so the
     // bidirectional reconciliation (events ↔ derived `decisionsResolved`)
-    // can run without a second store traversal.
+    // can run without a second store traversal. Latest event per
+    // decisionId determines whether the decision is currently in
+    // request-revision (reopened) state.
+    const latestAction = new Map<string, { action: string; asOf: string }>();
     for (const e of store.replay({ type: "CeoDecision" })) {
-      const id = (e.payload as { decisionId?: string }).decisionId;
-      if (id) eventDecisionIds.add(id);
+      const p = e.payload as { decisionId?: string; action?: string };
+      const id = p.decisionId;
+      if (!id) continue;
+      eventDecisionIds.add(id);
+      const prev = latestAction.get(id);
+      if (!prev || prev.asOf <= e.as_of) {
+        latestAction.set(id, { action: String(p.action ?? "approve"), asOf: e.as_of });
+      }
+    }
+    for (const [id, { action }] of latestAction) {
+      if (action === "request-revision") reopenedDecisionIds.add(id);
     }
     return eventSourceFromStore(store);
   })();
@@ -135,10 +160,10 @@ function loadState(opts: RunOpts): {
       message: `Derivation threw: ${(e as Error).message}`,
       severity: "fail",
     });
-    return { eventDecisionIds, setupViolations };
+    return { eventDecisionIds, reopenedDecisionIds, setupViolations };
   }
 
-  return { state, eventDecisionIds, setupViolations };
+  return { state, eventDecisionIds, reopenedDecisionIds, setupViolations };
 }
 
 // ---------------------------------------------------------------------------
@@ -271,10 +296,12 @@ function assertResolvedDecisionsReconcile(ctx: AssertionContext): {
   }
 
   // Inverse: every CeoDecision event in the store must surface in the
-  // derived `decisionsResolved`. Missing here means the derivation
-  // dropped a real event somewhere.
+  // derived `decisionsResolved`, *except* for decisions whose latest
+  // event is `request-revision` — those are intentionally left open by
+  // the derivation (the action communicates "send back / not ready").
   const derivedIds = new Set(state.decisionsResolved.map((d: ResolvedDecision) => d.id));
   for (const id of eventDecisionIds) {
+    if (ctx.reopenedDecisionIds.has(id)) continue;
     asserted++;
     if (!derivedIds.has(id)) {
       violations.push({
@@ -406,14 +433,14 @@ function assertOpenDecisionShape(state: DashboardState): {
 export function run(opts: RunOpts = {}): ReconResult {
   const result = emptyResult("dashboard-derivation-reconciliation");
 
-  const { state, eventDecisionIds, setupViolations } = loadState(opts);
+  const { state, eventDecisionIds, reopenedDecisionIds, setupViolations } = loadState(opts);
   if (setupViolations.length || !state) {
     result.violations = setupViolations;
     result.ok = setupViolations.every((v) => v.severity !== "fail");
     return result;
   }
 
-  const ctx: AssertionContext = { state, eventDecisionIds };
+  const ctx: AssertionContext = { state, eventDecisionIds, reopenedDecisionIds };
   const violations: ReconViolation[] = [];
   let asserted = 0;
 
