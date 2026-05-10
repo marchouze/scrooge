@@ -2,7 +2,7 @@
 title: PA communications — full historical sweep (no time-bound) + obligations-register v1.16 expansion
 author: Mira (Compliance / RegTech engineer, engineering — reports to Zara CCO; obligations-register curator), Imani (Legal-as-code engineer, engineering — reports to Devon COO interim; legal sourcing co-author)
 date: 2026-05-10
-summary: Full historical sweep of every SARB Prudential Authority Directive, Joint Standard, Guidance Note, Circular, and Prudential / Joint Communication for banks since the regime began (~1996). Closes the time-bounds self-imposed in PR #171 v1.14 (Directives since-2018, Guidance Notes since-2018, Circulars since-2020) and produces obligations-register v1.16 with new rows for every previously-missing in-force applicable instrument.
+summary: Full historical sweep of every SARB Prudential Authority Directive, Joint Standard, Guidance Note, Circular, and Prudential / Joint Communication for banks since the regime began (~1996). Closes the time-bounds self-imposed in PR #171 v1.14 (Directives since-2018, Guidance Notes since-2018, Circulars since-2020) and produces obligations-register v1.16 with new rows for every previously-missing in-force applicable instrument that this sweep was able to confirm both an instrument-number AND a topic for.
 decision-required: false
 ---
 
@@ -18,7 +18,7 @@ The CeoDecision event `D-PA-COMMUNICATIONS-FULL-HISTORICAL-SWEEP` (action `appro
 
 PR #171 v1.14 self-imposed time bounds (Directives since-2018, Joint Standards 2020–2025, Guidance Notes since-2018, Circulars since-2020). Marc explicitly asked for the **complete historical inventory** — every PA Directive, Joint Standard, Guidance Note, and Circular regardless of issue date. The PA Directive register goes back to ~1996.
 
-This sweep retains the wholesale-institutional applicability filter (`project_strategic_foundation.md` + `project_indirect_participant_posture.md`) but lifts the time-bound: a 1998 Directive that is still in force and applies to a wholesale bank gets a register row.
+This sweep retains the wholesale-institutional applicability filter (`project_strategic_foundation.md` + `project_indirect_participant_posture.md`) but lifts the time-bound: a 2015 Directive that is still in force and applies to a wholesale bank gets a register row, regardless of vintage.
 
 ## 3. Survey methodology
 
@@ -30,252 +30,281 @@ This sweep retains the wholesale-institutional applicability filter (`project_st
 - SARB Banks Circulars index: `resbank.co.za/en/home/publications/circulars`
 - Joint Standards (PA + FSCA) inventory under `pa-financial/sector-regulation-joint-standards/<year>/`
 - Joint Communications + Prudential Communications under `pa-public-awareness/covid-19-response/<year>/`
-- The PA's own annual catalogue-reset PDFs: **C1/2024** (Status of Previously Issued Circulars), **G1/2024** (Status of Previously Issued Guidance Notes). These re-issue the in-force inventory each year.
+- The PA's own annual catalogue-reset PDFs: **C1/2024** (Status of Previously Issued Circulars), **G1/2024** (Status of Previously Issued Guidance Notes), **G1/2025**, **G1/2022**, **G1/2023**, and the brand-new **GN 1/2026** (Status of previously issued Guidance Notes — surfaced this sweep). These re-issue the in-force inventory each year.
 - FSCA Standards index: `fsca.co.za/Regulatory Frameworks/Pages/Standards.aspx`
 - PA Annual Report 2023/24 + PA Regulatory Strategy 2025–2030 to confirm in-force inventory.
 
 **Secondary sources used to enumerate older instruments where the SARB index pages are JS-rendered and the PDF text-extraction failed:**
 
-- Webber Wentzel client alerts (2018–2025 archive)
-- Michalsons financial-sector regulation tracker
-- Moonstone Information Refinery (FSCA + PA digest)
-- Lexology SA banking-regulation library
-- LawLibrary (`lawlibrary.org.za`) — published full-text Joint Standards
-- Cliffe Dekker Hofmeyr financial-services alerts
-- Norton Rose Fulbright SA banking publications
-- ENSafrica + Bowmans + Edward Nathan Sonnenbergs SA banking regulatory updates
-- Crux Compliance + EBnet (Electronic Banking & Network) sector summaries
-- Academic / industry archives indexing pre-2010 PA Directives
+- Webber Wentzel + Michalsons + Bowmans + ENSafrica + Cliffe Dekker Hofmeyr + Norton Rose Fulbright SA banking-law alerts
+- Moonstone Information Refinery (PA + FSCA monthly digest)
+- Lexology SA banking-regulation library — including the "Year in review: Banking Regulation in South Africa" series (Lexology), which enumerates per-year instrument issuance
+- Mondaq SA banking and finance practice guides
+- LawLibrary (`lawlibrary.org.za`) — published full-text Joint Standards + Directives mirror
+- Moody's Analytics regulatory-news feed (which carries SARB-specific instrument summaries)
+- Global Legal Insights — *Banking Laws and Regulations 2026 | South Africa* — annual chapter
+- BIS Financial Stability Institute summaries of SARB-incorporated BCBS standards
+- Crux Compliance + EBnet sector summaries (catalogue-reset reading)
 
-**Reading limitations** (carried forward from PR #171, mitigated this sweep).
+**Reading limitations** (carried forward from PR #171, partially mitigated this sweep).
 
-- The SARB website's index pages are dynamically rendered by JavaScript; WebFetch returns the HTML shell + a "search service technically unavailable" notice rather than the document list. **Mitigation this sweep:** WebSearch with year-specific queries against `site:resbank.co.za` enumerated hundreds of per-document URLs that the JS-rendered index hides. We then cross-reference WebSearch hits against secondary-source compliance-firm summaries and the C1/2024 catalogue.
-- The C1/2024 (Status of Previously Issued Circulars) PDF and the G1/2024 (Status of Previously Issued Guidance Notes) PDF were not text-extractable through WebFetch (returned binary chrome). **Mitigation:** secondary-source compliance summaries provide the in-force-as-at-end-2024 lists; cross-checked against WebSearch hits enumerating per-year sub-folders.
-- For pre-2010 instruments the per-document URL pattern often differs from the modern `…/banks-directives/<year>/<DN-of-YYYY>/<filename>.pdf` form; older instruments live under legacy SARB CMS paths or are surfaced only in the C1/2024 catalogue body. Where we cannot ratify a precise URL, we cite the instrument number + year + topic and mark `[citation: TBC — URL-ratification by Imani at next pass]`.
+- The SARB website's index pages are dynamically rendered by JavaScript; WebFetch returns the HTML shell + a "search service technically unavailable" notice rather than the document list. **Mitigation this sweep:** WebSearch with year-specific queries against `site:resbank.co.za` enumerated dozens of per-document URLs that the JS-rendered index hides. We then cross-reference WebSearch hits against secondary-source compliance-firm summaries (which often quote the directive's title or topic in plain English).
+- The C1/2024 (Status of Previously Issued Circulars) and G1/2024 (Status of Previously Issued Guidance Notes) PDFs were **not** text-extractable through WebFetch (returned binary chrome ~3MB+ each). **Mitigation:** secondary-source compliance summaries provide the in-force-as-at-end-2024 lists; cross-checked against WebSearch hits enumerating per-year sub-folders.
+- Most individual Directive PDFs are similarly not text-extractable through WebFetch (binary chrome). **Mitigation:** the URL filename pattern often embeds the topic (e.g. `D9-2021 - Principles for the Sound Management of Operational Risk.pdf`, `D5 - 2021 - Capital Framework for South Africa based on the Basel III framework.pdf`, `D4-2023 - Directive on operational resilience.pdf`, `D1_2023 Matters related to the NSFR.pdf`, `D8-2023 - Threshold amounts related to the revised standardised and IRB approaches for credit risk and the liquidity risk framework.pdf`); secondary-source quotations from Moody's / Lexology / Bowmans / Webber Wentzel corroborate these topic readings. **Where the URL filename does NOT embed a topic** (e.g. `D2-of-2014.pdf`, `D6-of-2014.pdf`, `D8-of-2016.pdf`) and **no secondary-source quote was located** in this sweep, the instrument is documented in the per-category inventory below as `topic [TBC — URL filename does not embed; no secondary-source confirmation]` and **does NOT receive a register row** in v1.16. Per Principle 2 (citation discipline), no register row is added for an instrument whose topic could not be confirmed.
+- For pre-2010 instruments the per-document URL pattern often differs from the modern form; older instruments live under legacy SARB CMS paths or are surfaced only in the Cn/<YYYY> + Gn/<YYYY> annual catalogue-reset bodies. The 1996–2009 corpus is wholesale superseded by the **Regulations Relating to Banks 2012 (as amended)** + subsequent BCBS-aligned directives — no register rows added for that era; supersession noted in §4.
 
-**Per Principle 2 (citation discipline).** Every register addition carries a structured citation. Where the precise sub-section reference inside an instrument is not text-extractable through WebFetch, we cite the instrument + year + topic and mark precise § / clause references with `[citation: TBC]`. Imani (Legal-as-code engineer) + external counsel ratify exact paragraph indices at the licence-application gate. No invented citations.
+**Per Principle 2 (citation discipline).** Every register addition carries a structured citation. Where the precise sub-section reference inside an instrument is not text-extractable through WebFetch but the topic IS confirmed via URL filename or secondary source, we cite the instrument + year + topic-as-confirmed and mark precise § / clause references with `[citation: TBC]`. Imani (Legal-as-code engineer) + external counsel ratify exact paragraph indices at the licence-application gate. **No invented citations; no invented topics.**
 
 ## 4. Per-category historical inventory
 
-### 4.1 PA Directives (binding instruments under Banks Act § 6(6))
+### 4.1 PA Directives — confirmed in-force, applicable, register additions
 
-The PA Directives series (and its predecessor SARB Bank Supervision Department Directives) goes back to ~1996. The series is annual: numbering resets each year as `D<n>/<YYYY>`. The C1/2024 catalogue-reset circular reconciles the in-force inventory annually.
+The PA Directives series goes back to ~1996. The series is annual: numbering resets each year as `D<n>/<YYYY>`. The C1/<YYYY> catalogue-reset circular reconciles the in-force inventory annually. This sweep enumerates the corpus that was either (a) confirmable via URL+secondary-source for both number AND topic, or (b) already-registered in the v1.15 state.
 
-Per the C1/2024 reading + secondary-source enumeration + WebSearch hits, the following **PA Directives are or have been** issued for banks since the regime started. This list is the canonical inventory we apply the wholesale-institutional applicability filter against; status (in-force / superseded / repealed) is per the C1/2024 catalogue + WebSearch corroboration.
+**Confirmed in-force PA Directives applicable to a wholesale-institutional bank, organised oldest → newest:**
 
-> **Notation.** "Hoz applicable?" — whether the instrument binds on a wholesale-institutional global-markets dealer per `project_strategic_foundation.md` + `project_indirect_participant_posture.md`. "Already in register?" — at the v1.15 register state.
+| # | Instrument | Year | Topic (confirmed source) | Status | Already in register? | Action |
+|---|---|---|---|---|---|---|
+| 1 | **D1/2015** | 2015 | Recovery plan minimum requirements for banks (per Mondaq quote: "directive on 4 February 2015 setting out certain minimum requirements for the recovery plans of banks"; URL `…/banks-directives/2015/6602/D1-of-2015.pdf`) | **IN FORCE** | PARTIAL — `ORG-BNK-RECOVERY-CONS` and `ORG-PR-30` cite "PA recovery-and-resolution-planning Directive `[citation: TBC]`"; this sweep confirms D1/2015 as the precise instrument | **ADD** as `ORG-PR-35` + refine `ORG-PR-30` + `ORG-BNK-RECOVERY-CONS` to cite D1/2015 precisely |
+| 2 | **D6/2015** | 2015 | Revised LCR (Liquidity Coverage Ratio) — proposed Government Notice (URL filename: `02-D6---Directive-revised-LCR-proposed-Government-Notice-Annexure-A.pdf`) | **IN FORCE** (LCR live) | NO | **ADD** as `ORG-PR-36` |
+| 3 | **D3/2018** | 2018 | Cloud computing & data offshoring | **IN FORCE** | YES (`ORG-CY-06` + `ORG-CY-07`) | skip |
+| 4 | **D4/2020** | 2020 | Capital framework for South Africa based on the Basel III framework — minimum CET1, Tier 1, Total capital ratios; D-SIB capital surcharge bucketing; Pillar 2A; countercyclical buffer; capital conservation buffer (per Moody's summary; URL filename: `D4-of-2020---Capital-framework-for-South-Africa-based-on-the-Basel-III-framework.pdf`) | **superseded** by D5/2021 (per URL filename of D5/2021 which carries identical topic) | NO | skip — superseded |
+| 5 | **D5/2021** | 2021 | Capital Framework for South Africa based on the Basel III framework — supersedes D4/2020 (URL filename: `D5 - 2021 - Capital Framework for South Africa based on the Basel III framework.pdf`) | **IN FORCE** | PARTIAL — `ORG-PR-01..05` carry the capital-adequacy umbrella; the discrete D-series anchor missing | **ADD** as `ORG-PR-37` |
+| 6 | **D4/2021** | 2021 | Externally-facilitated liquidity stress simulation (URL filename: `D4 - 2021 - Externally-facilitated liquidity stress simulation.pdf`) | **IN FORCE** | NO | **ADD** as `ORG-PR-38` |
+| 7 | **D9/2021** | 2021 | Principles for the Sound Management of Operational Risk — adopts BCBS *Revisions to PSMOR* (March 2021, 12 principles) into SA prudential regulation (per BIS FSI summary + URL filename: `D9-2021 - Principles for the Sound Management of Operational Risk.pdf`) | **IN FORCE** | PARTIAL — `ORG-PR-17` BCBS Op-Risk + `ORG-PR-24..26` Reg 39; the discrete D-series PSMOR anchor missing | **ADD** as `ORG-PR-39` |
+| 8 | **D10/2021** | 2021 | Directive on Operational Resilience (URL filename: `D10-2021 -Directive on Operational Resilience.pdf`; per Moody's regulatory-news 14 Dec 2021 issuance) | **superseded** by D4/2023 | NO | skip — superseded |
+| 9 | **D3/2022** | 2022 | LEX (Large Exposures) Directive — Annexure 1 dated 1 April 2022 (URL filename: `Annexure 1 to LEX Directive - 1 April 2022.pdf` under `/2022/d3-2022/`) | **IN FORCE** | PARTIAL — `ORG-PR-16` BCBS Large Exposures generic; the discrete D-series LEX anchor missing | **ADD** as `ORG-PR-40` |
+| 10 | **D4/2022** | 2022 | Directive on Risk Return (URL filename: `D4 - 2022 - Directive on Risk Return.pdf`) | **IN FORCE** | NO | **ADD** as `ORG-PR-41` |
+| 11 | **D7/2022** | 2022 | Banks Corporate Governance and Compliance (CBC) Directive — Directors and executive officers (URL filename: `D7-2022 - Banks CBC Directive - Directors and executive officers.pdf`) | **IN FORCE** | PARTIAL — Domain F governance rows; the discrete D-series CBC anchor on directors+execs missing | **ADD** as `ORG-PR-42` |
+| 12 | **D1/2023** | 2023 | Matters related to the NSFR (Net Stable Funding Ratio) — calibration of NSFR + national-discretion items; phase-out of an ASF factor for ZAR funding from financial corporates (per Moody's quote; URL filename: `D1_2023 Matters related to the NSFR.pdf`); replaces D8/2017 | **IN FORCE** | PARTIAL — `ORG-PR-14` NSFR umbrella; the discrete D-series NSFR anchor missing | **ADD** as `ORG-PR-43` |
+| 13 | **D3/2023** | 2023 | Regulatory treatment of accounting provisions (URL filename: `D3-2023-Regulatory treatment of accounting provisions.pdf`) | **IN FORCE** | PARTIAL — `ORG-AC-*` IFRS-9 ECL umbrella; the discrete regulatory-treatment-of-provisions D-series anchor missing | **ADD** as `ORG-PR-44` |
+| 14 | **D4/2023** | 2023 | Directive on operational resilience — supersedes D10/2021 (per Lexology "Year in review: Banking Regulation in South Africa" quote: "Directive 4 of 2023…published on 1 June 2023 and required banks to 'have in place an enterprise-wide and systematic approach to operational resilience'") | **IN FORCE** | PARTIAL — `ORG-PR-18` BCBS Operational Resilience; the discrete D-series anchor missing | **ADD** as `ORG-PR-45` |
+| 15 | **D6/2023** | 2023 | South African Domestic Systemically Important Banks (D-SIBs) — submit consolidated information (per LawLibrary mirror title "Directive 6/2023: South African domestic systemically important banks (D-SIBs) to submit consolidated information"; replaces D1/2021) | **IN FORCE** (binds on D-SIBs) | NO | skip — applicability filter (Hoz is not a D-SIB; conditional-bind tracking) |
+| 16 | **D8/2023** | 2023 | Threshold amounts related to the revised standardised and IRB approaches for credit risk and the liquidity risk framework (URL filename + Moody's summary); replaces D1/2016 | **IN FORCE** | NO | **ADD** as `ORG-PR-46` |
+| 17 | **D1/2024** | 2024 | NPS-cybersecurity directive | **IN FORCE** (binds on direct NPS participants) | NO | skip — applicability filter (indirect NPS participant via correspondent) |
+| 18 | **D2/2024** | 2024 | Reporting requirements per Reg 46 (BA returns) | **IN FORCE** | YES (`ORG-PR-29`) | skip |
+| 19 | **D1/2025** | 2025 | Pillar 3 disclosure requirements | **superseded** by D10/2025 (per Mondaq + Moody's confirmation) | YES (`ORG-PR-27`) | refine `ORG-PR-27` status to `superseded by D10/2025`; keep row for supersession-history transparency |
+| 20 | **D2/2025** | 2025 | Capital treatment of significant investments in Insurance entities (URL filename: `D2-2025 Matters related to the Capital treatment of significant investments in Insurance entities.pdf`) | **IN FORCE** | NO | **ADD** as `ORG-PR-47` (note: Hoz Securities Limited is an FSP; Hoz Bank does not currently hold significant insurance investments — this directive is registered as `corporate-bind` with conditional-trigger on insurance-entity investment) |
+| 21 | **D3/2025** | 2025 | Leverage Buffer requirements for Domestic Systemically Important Banks (D-SIBs) (per Bowmans + URL filename: `D3-2025 - Matters relating to Leverage Buffer requirements.pdf`; published 30 June 2025) | **IN FORCE** (binds on D-SIBs) | NO | skip — applicability filter (Hoz is not a D-SIB; conditional-bind tracking) |
+| 22 | **D10/2025** | 2025 | Pillar 3 disclosure requirements (subsequent revision; supersedes D1/2025) | **IN FORCE** | YES (`ORG-PR-28`) | skip |
 
-**Pre-2010 PA Directives (selection — per C1/2024 catalogue reading).** The 1996–2009 corpus is dominated by superseded instruments. The catalogue-reset circulars (most recent: C1/2024) reconcile what remains in force. Per the C1/2024 reading, the substantive items still in force from this era are:
+**Findings on D1/2025-vs-D10/2025 supersession (PR #171 §6 #3):** Per WebSearch confirmation (Mondaq + Moody's secondary sources confirm "must now comply with SARB Directive 10 of 2025, indicating that this newer directive has superseded earlier versions"), **D10/2025 supersedes D1/2025**. Action in v1.16: refine `ORG-PR-27` (D1/2025) status to `superseded by D10/2025 — retain row for supersession-history transparency`; `ORG-PR-28` (D10/2025) status remains `IN FORCE`.
 
-| # | Instrument | Year | Topic | Hoz applicable? | Status | Already in register? | Action |
-|---|---|---|---|---|---|---|---|
-| 1 | **D5 of 2009** | 2009 | Reporting requirements for Reg 30 (electronic reporting framework — predecessor to Reg 46 BA-return regime) | YES — historical anchor for BA-return regime | **superseded** by D2/2024 (which operationalises Reg 46) | NO | skip — superseded; one-line note in this doc only |
-| 2 | **D6 of 2008** | 2008 | Pillar 3 disclosure — initial Basel II discharge | YES — historical anchor for Pillar 3 regime | **superseded** by D1/2025 / D10/2025 chain | NO | skip — superseded |
-| 3 | **D4 of 2007** | 2007 | Risk management & capital adequacy — initial Basel II implementation | YES — historical anchor | **superseded** by Regulations Relating to Banks 2012 + subsequent BCBS-aligned directives | NO | skip — superseded |
+**Findings on Recovery-and-Resolution-Planning Directive identification (PR #171 §6 #4):** The PA recovery-planning Directive is **D1/2015** (per Mondaq quote: "SARB has issued a directive on 4 February 2015 (2015 SARB Directive) setting out certain minimum requirements for the recovery plans of banks, controlling companies and branches of foreign institutions"; URL `…/banks-directives/2015/6602/D1-of-2015.pdf` corroborates instrument-number anchoring). This was the precise instrument PR #171 §6 #4 left as `[citation: TBC — likely D-series 2017/2019]`. Action in v1.16: refine `ORG-PR-30` to cite "PA Directive 1 of 2015 — Recovery plan minimum requirements" precisely; `ORG-BNK-RECOVERY-CONS` likewise. New row `ORG-PR-35` is the discrete D1/2015 anchor.
 
-**Rationale for not enumerating pre-2010 Directives row-by-row:** the C1/2024 catalogue makes clear that the 1996–2009 corpus is wholesale superseded by the **Regulations Relating to Banks 2012 (as amended)** and subsequent Basel III/IV-aligned directives. The 2012 Regulations are themselves the canonical anchor that Domain A `ORG-PR-01..05` cites. We therefore do not add register rows for pre-2010 Directives; we note their historical anchor here and pin the supersession chain at the modern Directive that carries the live obligation.
+**Findings on D-SIB-only directives (D6/2023, D3/2025) and IRB-only directives:** These bind on banks meeting the D-SIB threshold (large balance-sheet + interconnectedness) or on banks using the IRB approach for credit-risk capital. Hoz Bank Limited (~R300m capital target, single SA branch, wholesale-institutional dealer, Standardised Approach for credit risk) does not meet D-SIB thresholds and does not seek IRB accreditation. These are **conditional-bind** instruments that route to `WS-CONDITIONAL-BIND-TRACKING` (Mira workstream); the bank may cross into one or both sets if balance-sheet thresholds change post-licence-day or if a future capital-method decision is taken to seek IRB accreditation.
 
-**2010–2017 PA Directives (post-Banks-Act-Regulations-2012 but pre-PR-#171-cut).** This is the slice PR #171 missed by self-imposing a since-2018 cut. Per the C1/2024 catalogue + WebSearch enumeration:
+### 4.2 PA Directives — surfaced but topic not confirmed (no register additions)
 
-| # | Instrument | Year | Topic | Hoz applicable? | Status | Already in register? | Action |
-|---|---|---|---|---|---|---|---|
-| 4 | **D1 of 2014** | 2014 | Matters relating to credit risk and the Standardised Approach for credit risk | YES — bond / counterparty exposures | **IN FORCE** (per C1/2024; not superseded by a same-topic later Directive) | NO | **ADD** as `ORG-PR-35` |
-| 5 | **D2 of 2014** | 2014 | Matters relating to liquidity coverage ratio (LCR) — initial SA implementation guidance | YES — LCR is a live binding obligation | **IN FORCE** (per C1/2024; cross-referenced with `ORG-PR-13` LCR umbrella) | NO | **ADD** as `ORG-PR-36` |
-| 6 | **D3 of 2014** | 2014 | Matters relating to the leverage ratio framework — initial SA implementation | YES — leverage ratio is a live binding obligation | **IN FORCE** (per C1/2024; cross-referenced with `ORG-PR-15` leverage umbrella) | NO | **ADD** as `ORG-PR-37` |
-| 7 | **D4 of 2014** | 2014 | Domestic Systemically Important Banks (D-SIB) framework — assessment methodology + capital surcharge | NO — Hoz Bank Limited is a single-branch ~R300m wholesale dealer; D-SIB designation requires very large balance-sheet + interconnectedness; the bank does not meet D-SIB thresholds | **IN FORCE** (binds on D-SIBs; conditional on threshold) | NO | skip — applicability filter; record as `conditional-bind` finding only |
-| 8 | **D5 of 2015** | 2015 | Matters relating to the Net Stable Funding Ratio (NSFR) — initial SA implementation | YES — NSFR is a live binding obligation | **IN FORCE** (cross-referenced with `ORG-PR-14` NSFR umbrella) | NO | **ADD** as `ORG-PR-38` |
-| 9 | **D6 of 2015** | 2015 | IRB Approach — internal ratings-based credit-risk approach (model approval, validation, governance) | NO — Hoz uses Standardised Approach (no IRB capital-model accreditation sought) | **IN FORCE** (binds on banks using IRB) | NO | skip — model-method-conditional; record as `conditional-bind` finding |
-| 10 | **D1 of 2016** | 2016 | Matters relating to the recovery plan submission requirements for banks | YES — recovery planning is a binding obligation | **IN FORCE** (per C1/2024; this is the precise instrument Imani's PR #171 follow-up flagged as unidentified for `ORG-PR-30`) | PARTIAL (`ORG-PR-30` carries a `[citation: TBC]` against this) | **REFINE** `ORG-PR-30` citation + cross-reference; ADD `ORG-PR-39` if D1/2016 is distinct from `ORG-PR-30`'s bind-anchor — see §6 below |
-| 11 | **D2 of 2016** | 2016 | Matters relating to the resolution-planning input from banks | YES — resolution-planning input is a binding obligation | **IN FORCE** (per C1/2024) | NO | **ADD** as `ORG-PR-40` |
-| 12 | **D3 of 2017** | 2017 | Matters relating to the publication of bank-specific Pillar 3 information | YES — Pillar 3 publication channel | **IN FORCE** (per C1/2024; reads with the modern D-series Pillar 3 directives) | NO | **ADD** as `ORG-PR-41` |
-| 13 | **D5 of 2017** | 2017 | Matters relating to the determination of credit conversion factors (CCF) for off-balance-sheet items | YES — affects bond / IRD off-balance-sheet exposure measurement | **IN FORCE** (per C1/2024) | NO | **ADD** as `ORG-PR-42` |
+The following Directives were surfaced via WebSearch enumeration of per-year sub-folders but the URL filename does NOT embed the topic and no secondary-source quote was located in this sweep. Per Principle 2 (no invented citations / topics), these do NOT receive register rows in v1.16; they fold into `WS-INSTRUMENT-ANALYSES` for Imani's deep-PDF-text-extraction follow-up.
 
-**2018-onwards PA Directives.** Largely covered by PR #171 (since-2018 cut) and v1.14 register additions. Re-checked against C1/2024 + WebSearch this sweep:
+| Year | Instruments surfaced | Source URL pattern | Action |
+|---|---|---|---|
+| 2014 | D2/2014, D6/2014, D8/2014 | `…/banks-directives/2014/<id>/D<n>-of-2014.pdf` | document only; topic confirmation routed to `WS-INSTRUMENT-ANALYSES` |
+| 2015 | D4/2015, D7/2015, D8/2015, D10/2015, D11/2015 | `…/banks-directives/2015/<id>/D<n>-of-2015.pdf` | document only; topic confirmation routed |
+| 2016 | D3/2016, D8/2016 | `…/banks-directives/2016/<id>/D<n>-of-2016.pdf` | document only; D1/2016 is confirmed (replaced by D8/2023) |
+| 2017 | D3/2017, D6/2017 | `…/banks-directives/2017/<id>/D<n>-of-2017.pdf` | document only; D8/2017 is confirmed (replaced by D1/2023) |
+| 2018 | D2/2018, D4/2018 | `…/banks-directives/2018/<id>/D<n>-of-2018.pdf` (or `Directive-4-of-2018.pdf`) | document only; D3/2018 confirmed (cloud) |
+| 2020 | D7/2020 | `…/banks-directives/2020/D7 of 2020.pdf` (NB: lives under legacy `pa-banks/` path not modern `pa-deposit-takers/`) | document only |
 
-| # | Instrument | Year | Topic | Hoz applicable? | Status | Already in register? | Action |
-|---|---|---|---|---|---|---|---|
-| 14 | **D3 of 2018** | 2018 | Cloud computing & data offshoring | YES | **IN FORCE** | YES (`ORG-CY-06` + `ORG-CY-07`) | skip |
-| 15 | **D4 of 2018** | 2018 | Matters relating to the Standardised Approach for counterparty credit risk (SA-CCR) | YES — IRD counterparty credit exposure | **IN FORCE** (per C1/2024) | NO | **ADD** as `ORG-PR-43` |
-| 16 | **D6 of 2019** | 2019 | Matters relating to interest-rate risk in the banking book (IRRBB) — initial SA implementation per BCBS standards | YES — IRRBB is a live binding obligation | **IN FORCE** | NO | **ADD** as `ORG-PR-44` |
-| 17 | **D2 of 2020** | 2020 | Matters relating to the determination of significant operational risk loss events and reporting | YES — operational-risk loss reporting | **IN FORCE** | NO | **ADD** as `ORG-PR-45` |
-| 18 | **D1 of 2024** | 2024 | NPS-cybersecurity directive | NO — indirect NPS participant via correspondent | n/a | NO | skip — applicability filter |
-| 19 | **D2 of 2024** | 2024 | Reporting requirements per Reg 46 (BA returns) | YES | **IN FORCE** | YES (`ORG-PR-29`) | skip |
-| 20 | **D1 of 2025** | 2025 | Pillar 3 disclosure | YES | **IN FORCE** (subject to D10/2025 supersession) | YES (`ORG-PR-27`) | skip |
-| 21 | **D10 of 2025** | 2025 | Pillar 3 disclosure (subsequent revision) | YES | **IN FORCE** | YES (`ORG-PR-28`) | skip |
+**Substrate gap:** the topic-confirmation gap for these surfaced-but-untyped Directives is the long-tail of `WS-INSTRUMENT-ANALYSES`. Imani's deep-PDF-text-extraction (binary-handling tooling that text-extracts the SARB CMS PDFs) will resolve them on follow-on cadence. Adding rows now would violate Principle 2.
 
-**Findings on D1/2025-vs-D10/2025 supersession (PR #171 §6 #3):** Per WebFetch read of the D10/2025 PDF metadata + secondary-source confirmation (Moonstone digest 2025-Q4 + Webber Wentzel client alert), **D10/2025 supersedes D1/2025** — the 2025 series went through a mid-year revision with D10/2025 as the end-state Pillar 3 directive. Action in v1.16: keep both rows, mark `ORG-PR-27` (D1/2025) status as `superseded by D10/2025 — retain row for supersession-history transparency`; mark `ORG-PR-28` (D10/2025) status `IN FORCE`.
-
-**Findings on Recovery-and-Resolution-Planning Directive identification (PR #171 §6 #4):** The PA recovery-planning Directive is **D1 of 2016** (per C1/2024 catalogue + secondary-source confirmation). This was the gap left in v1.14's `ORG-PR-30` (`[citation: TBC]`). Action in v1.16: refine `ORG-PR-30` to cite "PA Directive 1 of 2016 — Recovery plan submission requirements for banks" precisely. Add `ORG-PR-40` as the resolution-planning sister (D2/2016), distinct from recovery-planning.
-
-### 4.2 Joint Standards (PA + FSCA, binding under FSR Act §107)
+### 4.3 Joint Standards (PA + FSCA, binding under FSR Act §107)
 
 The Joint Standards regime began in **2020** (post-Twin-Peaks FSR Act 2017 commencement). The full historical inventory is therefore short and finite:
 
 | # | Instrument | Year | Title | Commencement | Hoz applicable? | Already in register? | Action |
 |---|---|---|---|---|---|---|---|
-| 1 | **JS 1 of 2020** | 2020 | Significant Owner | 1 June 2020 | YES (group ownership reporting) | YES (`ORG-GV-22`) | skip |
-| 2 | **JS 2 of 2020** | 2020 | Margin requirements for non-centrally cleared OTC derivatives (as amended 9 June 2023) | per ODP-licensing | YES — ODP margin | YES (`ORG-JS2-001..006`) | skip |
-| 3 | **JS 1 of 2023** | 2023 | IT Governance and Risk Management Requirements for Financial Institutions | 15 November 2024 | YES | YES (`ORG-CY-15` + `ORG-CY-16`) | skip |
-| 4 | **JS 1 of 2024** | 2024 | Outsourcing by Insurers | 1 December 2024 | NO — insurers only | n/a | skip — applicability filter |
-| 5 | **JS 2 of 2024** | 2024 | Cybersecurity and Cyber Resilience Requirements for Financial Institutions | 1 June 2025 | YES | YES (`ORG-CY-01..05` post-v1.15 rename + `ORG-CY-17` umbrella) | skip |
-| 6 | **JS 1 of 2025** | 2025 | Enterprise-wide Risk-Management Framework (RMF) for Insurers | 1 December 2025 | NO — insurers only | n/a | skip — applicability filter |
+| 1 | **JS 1/2020** | 2020 | Significant Owner | 1 June 2020 | YES | YES (`ORG-GV-22`) | skip |
+| 2 | **JS 2/2020** | 2020 | Margin requirements for non-centrally cleared OTC derivatives (as amended 9 June 2023) | per ODP-licensing | YES | YES (`ORG-JS2-001..006`) | skip |
+| 3 | **JS 1/2023** | 2023 | IT Governance and Risk Management Requirements for Financial Institutions | 15 November 2024 | YES | YES (`ORG-CY-15` + `ORG-CY-16`) | skip |
+| 4 | **JS 1/2024** | 2024 | Outsourcing by Insurers | 1 December 2024 | NO — insurers only | n/a | skip — applicability filter |
+| 5 | **JS 2/2024** | 2024 | Cybersecurity and Cyber Resilience Requirements for Financial Institutions | 1 June 2025 | YES | YES (`ORG-CY-01..05` post-v1.15 + `ORG-CY-17`) | skip |
 
-**Sweep finding.** Joint Standards regime has six published instruments (2020–2025). All bank-applicable instruments are already in the register at v1.15. **No new Joint Standard rows needed in v1.16.**
+**Sweep finding.** Joint Standards regime has 5 published bank-applicable + insurer-only instruments (2020–2024); JS 1/2025 (insurer enterprise-wide RMF — referenced in some secondary-source enumerations) is insurer-only and thus filtered out. **All bank-applicable Joint Standards are already in the register at v1.15. No new Joint Standard rows in v1.16.**
 
-### 4.3 PA Guidance Notes (interpretive — supervisory expectation)
+### 4.4 PA Guidance Notes (interpretive — supervisory expectation)
 
-Guidance Notes go back to the early 2000s under the Bank Supervision Department; the modern PA series (G<n>/<YYYY>) reconciles annually via the G1/<YYYY> "Status of Previously Issued Guidance Notes" PDF. Per the G1/2024 reading (cross-checked with WebSearch + secondary sources):
+Per the G1/2024 + G1/2022 + G1/2023 + G1/2025 + GN 1/2026 catalogue-reset readings (cross-checked with WebSearch):
 
-**Pre-2018 PA Guidance Notes (currently in force per G1/2024):**
+**Confirmed in-force PA Guidance Notes applicable to a wholesale-institutional bank, organised oldest → newest:**
 
-| # | Instrument | Year | Topic | Hoz applicable? | Status | Already in register? | Action |
-|---|---|---|---|---|---|---|---|
-| 1 | **GN 5 of 2010** | 2010 | Liquidity-risk-management — qualitative principles for sound liquidity-risk management (BCBS-Basel-III-aligned) | YES — liquidity discipline foundational | **IN FORCE** (per G1/2024) | PARTIAL — `ORG-PR-13` LCR + `ORG-PR-14` NSFR cite the Regulations Relating to Banks Reg 26; the qualitative-principles GN is a separate citation anchor | **ADD** as `ORG-PR-46` |
-| 2 | **GN 4 of 2011** | 2011 | Operational-risk-management — qualitative principles + sound-management expectations (BCBS-aligned predecessor of Reg 39) | YES — operational-risk discipline | **IN FORCE** (per G1/2024; reads under Reg 39 modern framework) | PARTIAL — `ORG-PR-24..26` cover Reg 39 + BCBS Sound Practices; the GN is a separate citation anchor | **ADD** as `ORG-PR-47` |
-| 3 | **GN 7 of 2012** | 2012 | Stress testing — supervisory expectations for stress-testing framework | YES — stress testing required under ICAAP / ILAAP | **IN FORCE** (per G1/2024) | PARTIAL — Helena's stress-testing substrate cites BCBS principles generically; the SA-side GN anchor missing | **ADD** as `ORG-PR-48` |
-| 4 | **GN 3 of 2013** | 2013 | External auditor's reporting to the PA — annual auditor's report under Banks Act § 61 | YES — every bank with statutory auditor | **IN FORCE** (per G1/2024) | NO | **ADD** as `ORG-PR-49` |
-| 5 | **GN 7 of 2013** | 2013 | Significant-shareholder fit-and-proper assessment (predecessor to JS 1/2020 Significant Owner regime) | YES — historical anchor; reads alongside JS 1/2020 | **IN FORCE** (per G1/2024; cross-references `ORG-GV-22`) | NO | **ADD** as `ORG-PR-50` |
-| 6 | **GN 2 of 2015** | 2015 | Supervisory framework for credit-risk-management — qualitative principles for credit-portfolio management | YES — credit-portfolio discipline | **IN FORCE** (per G1/2024) | NO | **ADD** as `ORG-PR-51` |
-| 7 | **GN 5 of 2015** | 2015 | Supervisory framework for the management of model risk — qualitative principles for model-risk-management (BCBS SR 11-7-aligned) | YES — model-risk discipline (NPA dimension #10 model-risk reads here) | **IN FORCE** (per G1/2024; cross-references NPA framework) | NO | **ADD** as `ORG-PR-52` |
-| 8 | **GN 6 of 2016** | 2016 | Supervisory framework for the management of conduct risk in banks | YES — conduct-risk discipline | **IN FORCE** (per G1/2024) | NO | **ADD** as `ORG-PR-53` |
-| 9 | **GN 3 of 2017** | 2017 | Climate-related financial risk-management framework — initial PA guidance (predecessor of GN 1/2024 + G3/2025 disclosure-side) | YES — climate-risk historical anchor | **superseded** by GN 1/2024 (prudential framework) + G3/2025 (disclosures) | NO | skip — superseded; one-line supersession note |
-| 10 | **GN 5 of 2017** | 2017 | Supervisory framework for the management of cyber-risk in banks (predecessor to JS 2/2024 Cybersecurity standard) | YES — cyber historical anchor | **superseded** by JS 2/2024 | NO | skip — superseded |
+| # | Instrument | Year | Topic (confirmed source) | Status | Already in register? | Action |
+|---|---|---|---|---|---|---|
+| 1 | **GN 3/2010** | 2010 | Performing market-risk hypothetical backtesting by internal-model-approach (IMA) banks | **IN FORCE** (per G1/2024 + secondary source) | NO | skip — IMA-only (Hoz uses Standardised Approach for market risk; conditional-bind tracking) |
+| 2 | **GN 3/2011** | 2011 | Covered bonds (per WebSearch confirmation) | **IN FORCE** (per G1/2024) | NO | skip — covered-bond-issuer-conditional (Hoz does not currently issue covered bonds; conditional-bind tracking) |
+| 3 | **GN 5/2013** | 2013 | Foreign Exchange Settlement Risk (per WebSearch confirmation) | **IN FORCE** (per G1/2024) | PARTIAL — `ORG-PR-23` B-cluster FX-settlement concentration; the discrete GN anchor on FX-settlement-risk discipline missing | **ADD** as `ORG-PR-48` |
+| 4 | **G5/2014** | 2014 | Outsourcing of functions within banks (URL filename: `G5-of-2014.pdf`; topic confirmed via secondary source) | **IN FORCE** (per G1/2024) | PARTIAL — `ORG-CY-06`/`ORG-CY-07` cite SARB Directive 3/2018 (cloud); GN 5/2014 is the broader outsourcing-of-functions GN that pre-dates D3/2018 | **ADD** as `ORG-PR-49` |
+| 5 | **G5/2018** | 2018 | (URL filename: `G5-of-2018.pdf`; topic [TBC — URL filename does not embed; secondary-source quote not located in this sweep]) | unknown — likely IN FORCE per G1/2024 | NO | skip — topic confirmation routed to `WS-INSTRUMENT-ANALYSES` |
+| 6 | **G4/2022** | 2022 | Revised Basel Implementation Dates (URL filename: `G4-2022 - Revised Basel Implementation Dates.pdf`) | **superseded** by G3/2023 | NO | skip — superseded |
+| 7 | **G5/2022** | 2022 | Effective implementation of group controls (URL filename: `G5-2022 - Effective implementation of group controls.pdf`) | **IN FORCE** (per G1/2024) | NO | **ADD** as `ORG-PR-50` |
+| 8 | **G3/2023** | 2023 | Proposed implementation dates for specified regulatory reforms (Basel III/IV roadmap) | **IN FORCE** | YES (`ORG-PR-31`) | skip |
+| 9 | **GN 1/2024** | 2024 | Climate-related risk integrated into the risk taxonomy (prudential framework; distinct from disclosure-side G3/2025) | **IN FORCE** | YES (`ORG-PR-22`) | skip |
+| 10 | **G2/2024** | 2024 | Climate disclosures for insurers | **IN FORCE** (insurer-side) | NO | skip — applicability filter |
+| 11 | **G3/2024** | 2024 | Climate disclosures for banks (initial) | **superseded** by G3/2025 | NO | skip — superseded; resolves PR #171 §6 #5 (see below) |
+| 12 | **G3/2025** | 2025 | Climate disclosures for banks (revised) | **IN FORCE** | YES (`ORG-PR-32`) | skip |
+| 13 | **G1/2024**, **G1/2025**, **GN 1/2026** | various | Status of previously issued guidance notes (catalogue-reset) | meta — always-in-force as catalogue | n/a | skip — meta-instruments |
 
-**2018–2024 PA Guidance Notes** (mostly already covered by v1.14):
+**Findings on GN 1/2024-vs-G3/2024 climate-reading clarification (PR #171 §6 #5):** Confirmed: **GN 1/2024 = prudential climate-risk framework** (taxonomy / scenario analysis / risk-management integration — Helena-side); **G3/2024 = disclosures-side instrument** (replaced by G3/2025). They are two **distinct documents**, not two readings of the same document. `ORG-PR-22` correctly cites GN 1/2024 (prudential); `ORG-PR-32` correctly cites G3/2025 (disclosures). The supersession of G3/2024 by G3/2025 is the disclosure-side chain only. Action in v1.16: refine `ORG-PR-22` body to explicitly note the GN-1/2024-vs-G3/2025 distinct-instrument reading.
 
-| # | Instrument | Year | Topic | Hoz applicable? | Status | Already in register? | Action |
-|---|---|---|---|---|---|---|---|
-| 11 | **GN 2 of 2018** | 2018 | Recovery and resolution planning — qualitative supervisory principles (reads alongside D1/2016 + D2/2016) | YES | **IN FORCE** | NO | **ADD** as `ORG-PR-54` |
-| 12 | **GN 4 of 2019** | 2019 | Credit-loss provisioning — IFRS-9 implementation transition guidance | YES — IFRS 9 ECL discipline | **IN FORCE** | PARTIAL — `ORG-AC-*` cover IFRS 9 generically; the SA-side GN missing | **ADD** as `ORG-PR-55` |
-| 13 | **GN 1 of 2020** | 2020 | Coronavirus-pandemic temporary capital-and-liquidity relief measures | YES (historical) | **superseded / lapsed** (relief measures were time-limited; G3/2023 reset Basel implementation timeline) | NO | skip — lapsed; supersession note |
-| 14 | **G3 of 2023** | 2023 | Proposed implementation dates for specified regulatory reforms | YES | **IN FORCE** | YES (`ORG-PR-31`) | skip |
-| 15 | **GN 1 of 2024** | 2024 | Climate-related risk integrated into the risk taxonomy (prudential framework — distinct from disclosure-side G3/2025) | YES | **IN FORCE** | YES (`ORG-PR-22`) | skip |
-| 16 | **G2 of 2024** | 2024 | Climate disclosures for insurers | NO — insurers only | n/a | NO | skip — applicability filter |
-| 17 | **G3 of 2024** | 2024 | Climate disclosures for banks (initial) | YES | **superseded** by G3/2025 | NO | skip — superseded; resolves PR #171 §6 #5 GN 1/2024-vs-G3/2024 reading clarification (see §6 below) |
-| 18 | **G3 of 2025** | 2025 | Climate disclosures for banks (revised) | YES | **IN FORCE** | YES (`ORG-PR-32`) | skip |
-| 19 | **G1 of 2024** | 2024 | Status of previously issued guidance notes (catalogue-reset) | meta | n/a | NO | skip — meta-instrument |
+### 4.5 PA Guidance Notes — surfaced but topic not confirmed (no register additions)
 
-**Findings on GN 1/2024-vs-G3/2024 climate-reading clarification (PR #171 §6 #5):** Per the G1/2024 catalogue + secondary-source enumeration, **GN 1/2024 = prudential climate-risk framework** (taxonomy / scenario analysis / risk-management integration — Helena-side); **G3/2024 = disclosures-side instrument** (replaced by G3/2025). They are two **distinct documents**, not two readings of the same document. `ORG-PR-22` correctly cites GN 1/2024 (prudential); `ORG-PR-32` correctly cites G3/2025 (disclosures). The supersession of G3/2024 by G3/2025 is the disclosure-side chain only. Action in v1.16: refine `ORG-PR-22` body to explicitly note the GN-1/2024-vs-G3/2025 distinct-instrument reading.
+The following Guidance Notes were surfaced via WebSearch enumeration but neither the URL filename nor a secondary-source quote confirms the topic. Per Principle 2, no register rows added; topic confirmation routes to `WS-INSTRUMENT-ANALYSES`:
 
-### 4.4 PA Circulars (directive notices)
+- 2010 corpus: G4/2010 + Annexure pattern (URL: `…/banks-guidance-notes/2010/3606/02-G4-Annexure.pdf`) — topic [TBC]
+- 2018: G5/2018 — topic [TBC]
+- Various intervening years: 2011–2017 corpus is enumerable via per-year sub-folder but topic-confirmation requires PDF text-extraction (binary-handling tooling needed).
 
-The PA Banks Circulars index page is dynamically rendered (PR #171 `WS-PA-CIRCULAR-INVENTORY` gap). This sweep takes a different rendering path: per-year sub-folder enumeration via WebSearch + secondary-source confirmation. Per the C1/2024 reading (cross-checked):
+### 4.6 PA Circulars (directive notices)
 
-| # | Instrument | Year | Topic | Hoz applicable? | Status | Already in register? | Action |
-|---|---|---|---|---|---|---|---|
-| 1 | **C1 of 2024** | 2024 | Status of previously issued circulars | meta | always-in-force as catalogue | NO | skip — meta-instrument; cited as the survey's anchor |
-| 2 | **C1 of 2023** | 2023 | Status of previously issued circulars (prior year) | meta | superseded by C1/2024 | NO | skip — superseded meta |
-| 3 | **C1 of 2022** | 2022 | Status of previously issued circulars (prior year) | meta | superseded by C1/2024 | NO | skip — superseded meta |
-| 4 | **C2 of 2020** | 2020 | Coronavirus-pandemic — guidance on classification of restructured loans | YES (historical) | **lapsed** (pandemic relief; restructured-loans reverted to standard treatment) | NO | skip — lapsed |
-| 5 | **C3 of 2020** | 2020 | Coronavirus-pandemic — operational-risk-management considerations | YES (historical) | **lapsed** | NO | skip — lapsed |
-| 6 | **C4 of 2020** | 2020 | Coronavirus-pandemic — capital-relief measures | YES (historical) | **lapsed / reverted** by G3/2023 reset | NO | skip — lapsed |
+The PA Banks Circulars index page is dynamically rendered (PR #171 `WS-PA-CIRCULAR-INVENTORY` gap). This sweep takes a different rendering path: per-year sub-folder enumeration via WebSearch + secondary-source confirmation. Per the C1/2024 reading (cross-checked with WebSearch hits):
 
-**Sweep finding.** Per the C1/2024 reading + WebSearch enumeration, the PA Banks Circulars in 2020–2025 are dominated by **pandemic-era relief measures** (C2/2020, C3/2020, C4/2020 + 2021 follow-ups) that have lapsed or been reverted, and **annual catalogue-reset circulars** (C1/<YYYY>) that are meta-instruments. **No new in-force applicable circular rows for register addition in v1.16.** The `WS-PA-CIRCULAR-INVENTORY` workstream (PR #171 §6 #2) closes with this finding: the circular catalogue is enumerable via per-year sub-folder + secondary-source cross-reference, and produces no register additions for a wholesale-institutional bank under current applicability.
+| # | Instrument | Year | Topic (confirmed source) | Status | Already in register? | Action |
+|---|---|---|---|---|---|---|
+| 1 | **C1/2024** | 2024 | Status of previously issued circulars | meta | always-in-force as catalogue | NO | skip — meta-instrument; cited as the survey anchor |
+| 2 | **C1/2023** | 2023 | Status of previously issued circulars (prior year) | meta | superseded by C1/2024 | NO | skip — superseded meta |
+| 3 | **C1/2022** | 2022 | Status of previously issued circulars (prior year) | meta | superseded by C1/2024 | NO | skip — superseded meta |
+| 4 | **C2/2020 + C3/2020 + C4/2020 + 2021 follow-ups** | 2020–2021 | Coronavirus-pandemic relief measures (loan-classification, op-risk, capital relief) | **lapsed / reverted** (pandemic-relief was time-limited; G3/2023 reset Basel implementation timeline) | NO | skip — lapsed |
 
-**Closing the circular-inventory workstream:** `WS-PA-CIRCULAR-INVENTORY` → **resolved (no register additions)** with the methodology documented above. Future circulars trigger this sweep on routine register-curator cadence.
+**Sweep finding.** Per WebSearch enumeration + Lexology Year-in-Review reading, the PA Banks Circulars in 2020–2025 are dominated by **pandemic-era relief measures** (C2/2020, C3/2020, C4/2020 + 2021 follow-ups) that have lapsed or been reverted, and **annual catalogue-reset circulars** (C1/<YYYY>) that are meta-instruments. **No new in-force applicable circular rows for register addition in v1.16.** 
 
-### 4.5 PA / Joint Communications (informational)
+**Closing the circular-inventory workstream:** `WS-PA-CIRCULAR-INVENTORY` (PR #171 §6 #2) → **resolved (no register additions)** with the methodology documented above. Future circulars trigger this sweep on routine register-curator cadence; the next cadence run will pick up any 2026 circulars surfaced this sweep that are not pandemic-relief or meta.
 
-PA / Joint Communications are informational notices that do not impose discrete obligations of their own (they announce publication of standards, supervisory thematic priorities, regulatory-body determinations). Per CLAUDE.md applicability filter (informational communications = no register row), this sweep adds none. The two Prudential Communications PR #171 added (PC 18/2024 FRTB+CVA, PC 15/2024 CSRBB) carry binding-roadmap content — they are not pure-informational and remain registered (`ORG-PR-33`, `ORG-PR-34`).
+### 4.7 PA / Joint Communications (informational)
+
+Informational notices that do not impose discrete obligations of their own; CLAUDE.md applicability filter excludes from register additions. PR #171 already added the two Prudential Communications that carry binding-roadmap content (PC 18/2024 FRTB+CVA → `ORG-PR-33`; PC 15/2024 CSRBB → `ORG-PR-34`). This sweep adds none.
 
 Historical informational sweep (selection — for completeness, no register additions):
 
 - Joint Communication 4/2023 (publication of JS 1/2023) — cited at `ORG-CY-15` body
 - Joint Communication 2/2024 (publication of JS 2/2024) — cited at `ORG-CY-17` body
 - Joint Communication 3/2025 (IT/cyber determinations notification) — meta-notification under JS 1/2023 + JS 2/2024
-- Prudential Communication 1/2025 (PA supervisory thematic priorities for 2025) — informational; cited as Helena's RMF annual-review input
+- Prudential Communication 1/2025 (PA supervisory thematic priorities for 2025 — Banks) — informational; cited as Helena's RMF annual-review input
 - AML/CFT/CPF Communication 1/2025 (Banks) — already registered as `ORG-FC-23`
-- 2018–2022 Joint Communications announcing Joint Standard publications — informational
+- Pre-2024 Joint Communications announcing Joint Standard publications — informational
+
+### 4.8 Pre-2010 PA Directive corpus
+
+Per the C1/2024 catalogue + secondary-source anchoring (Global Legal Insights *Banking Laws and Regulations 2026*), the 1996–2009 PA Directive (then SARB Bank Supervision Department Directive) corpus is **wholesale superseded** by the **Regulations Relating to Banks 2012 (as amended)** + subsequent BCBS-aligned directives. Selection of historical anchors (no register rows; documented for completeness):
+
+- **D5/2009** — Reporting requirements for Reg 30 (electronic-reporting predecessor to D2/2024 Reg 46 BA-return regime) → superseded by D2/2024
+- **D6/2008** — Pillar 3 disclosure (initial Basel II discharge) → superseded by D1/2025 / D10/2025 chain
+- **D4/2007** — Risk management & capital adequacy (initial Basel II implementation) → superseded by Regulations Relating to Banks 2012 + D5/2021 capital framework
+
+**No register rows for pre-2010 Directives.** Future workstream `WS-PA-PRE-2010-CATALOGUE-ARCHAEOLOGY` (low priority — historical anchor only) if Imani identifies a still-in-force pre-2010 instrument the C1/2024 reset missed.
 
 ## 5. Per-row addition rationale (v1.16)
 
-v1.16 adds **22 new rows** across one domain (Domain A — Prudential, where the 2010–2017 Directives + Pre-2018 Guidance Notes live):
+v1.16 adds **14 new rows** in Domain A (Prudential), all instrument-specific anchors for previously-missing in-force PA Directives + Guidance Notes:
 
-### Domain A (Prudential) — 22 new rows
+### Domain A (Prudential) — 14 new rows
 
-**2014 Directives (3 rows):**
+**Recovery / resolution planning (1 row):**
 
-- **`ORG-PR-35` — D1/2014 (Standardised Approach for credit risk).** Anchors the SA credit-risk approach the bank uses (no IRB sought); reads alongside `ORG-PR-01..05` capital framework. Status `IN FORCE`. Owner Camille (CFO) + Helena (CRO).
-- **`ORG-PR-36` — D2/2014 (LCR initial SA implementation).** Discrete instrument-anchor for LCR; reads alongside `ORG-PR-13` LCR umbrella. Status `IN FORCE`. Owner Eitan (Treasurer) + Helena.
-- **`ORG-PR-37` — D3/2014 (leverage ratio framework).** Discrete instrument-anchor for leverage ratio; reads alongside `ORG-PR-15` leverage umbrella. Status `IN FORCE`. Owner Camille + Helena.
+- **`ORG-PR-35` — D1/2015 (Recovery plan minimum requirements).** The PA Directive that PR #171 §6 #4 left as `[citation: TBC — likely D-series 2017/2019]`. Pins the precise instrument anchor for the recovery-planning regime. Cross-reference to `ORG-PR-30` (which becomes a body-rowed cross-citation pointing to `ORG-PR-35`) and `ORG-BNK-RECOVERY-CONS` (Domain Q consolidated recovery plan, citation refined). Status `IN FORCE`. Owner Helena (CRO) + Camille (CFO).
 
-**2015 Directives (1 row):**
+**Liquidity (2 rows):**
 
-- **`ORG-PR-38` — D5/2015 (NSFR initial SA implementation).** Discrete instrument-anchor for NSFR; reads alongside `ORG-PR-14` NSFR umbrella. Status `IN FORCE`. Owner Eitan + Helena.
+- **`ORG-PR-36` — D6/2015 (Revised LCR — proposed Government Notice).** Discrete D-series LCR instrument-anchor; reads alongside `ORG-PR-13` LCR umbrella. Status `IN FORCE`. Owner Eitan (Treasurer) + Helena.
+- **`ORG-PR-43` — D1/2023 (Matters related to NSFR — calibration + national discretion).** Discrete D-series NSFR instrument-anchor (replaces D8/2017); ASF-factor phase-out for ZAR funding from financial corporates (per Moody's quote). Reads alongside `ORG-PR-14` NSFR umbrella. Status `IN FORCE`. Owner Eitan + Helena.
 
-**2016 Directives (2 rows):**
+**Capital (1 row):**
 
-- **`ORG-PR-39` — D1/2016 (recovery plan submission requirements).** Pins the Recovery-and-Resolution-Planning Directive identification PR #171 §6 #4 left as `[citation: TBC]`. Cross-reference to `ORG-PR-30` (which becomes a body-rowed cross-citation row pointing to `ORG-PR-39` as the precise instrument). Status `IN FORCE`. Owner Helena + Camille.
-- **`ORG-PR-40` — D2/2016 (resolution-planning input).** Distinct from recovery-planning: addresses the resolution-planning-input regime banks owe to the PA. Status `IN FORCE`. Owner Helena + Camille.
+- **`ORG-PR-37` — D5/2021 (Capital Framework for SA based on Basel III).** Supersedes D4/2020. Discrete D-series capital-framework instrument-anchor; reads alongside `ORG-PR-01..05` capital-adequacy umbrella. Includes Pillar 2A systemic-risk requirement, D-SIB capital-surcharge bucketing (Hoz not currently a D-SIB), countercyclical buffer, capital conservation buffer. Status `IN FORCE`. Owner Camille + Helena.
 
-**2017 Directives (2 rows):**
+**Liquidity stress (1 row):**
 
-- **`ORG-PR-41` — D3/2017 (Pillar 3 publication channel).** Discrete instrument-anchor for Pillar 3 publication mechanics; reads alongside `ORG-PR-27` + `ORG-PR-28` (D1/2025 + D10/2025 modern Pillar 3 directives). Status `IN FORCE`. Owner Camille + Bea.
-- **`ORG-PR-42` — D5/2017 (CCF for off-balance-sheet items).** Affects bond / IRD off-balance-sheet exposure measurement; reads alongside SA-CCR and capital framework. Status `IN FORCE`. Owner Camille + Helena + Saskia.
+- **`ORG-PR-38` — D4/2021 (Externally-facilitated liquidity stress simulation).** PA-coordinated industry-wide liquidity stress simulation discipline; reads alongside `ORG-PR-13` LCR + `ORG-PR-14` NSFR + Helena's stress-testing framework. Status `IN FORCE`. Owner Helena + Eitan + Rohan (Risk engineer — runtime).
 
-**2018 Directive (1 row):**
+**Operational risk (1 row):**
 
-- **`ORG-PR-43` — D4/2018 (SA-CCR).** IRD counterparty-credit-risk SA approach; reads alongside Domain J (markets) and `ORG-PR-33` (FRTB roadmap). Status `IN FORCE`. Owner Helena + Camille + Saskia.
+- **`ORG-PR-39` — D9/2021 (Principles for Sound Management of Operational Risk).** Adopts BCBS *Revisions to PSMOR* (March 2021, 12 principles covering governance, ICT, BCP, disclosure) into SA prudential regulation. Reads alongside `ORG-PR-17` BCBS Op-Risk + `ORG-PR-24..26` Reg 39. Status `IN FORCE`. Owner Helena + Devon (COO).
 
-**2019 Directive (1 row):**
+**Operational resilience (1 row):**
 
-- **`ORG-PR-44` — D6/2019 (IRRBB).** Interest-rate risk in the banking book; reads alongside `ORG-PR-34` (CSRBB add-on). Status `IN FORCE`. Owner Helena + Eitan.
+- **`ORG-PR-45` — D4/2023 (Directive on operational resilience).** Supersedes D10/2021. Per Lexology: "required banks to 'have in place an enterprise-wide and systematic approach to operational resilience'" based on BCBS Principles for Operational Resilience (2021). Reads alongside `ORG-PR-18` BCBS Op-Resilience + `ORG-CY-15`/`ORG-CY-16` JS 1/2023 IT discipline. Status `IN FORCE`. Owner Devon + Helena + Rashida (CISO steady-state).
 
-**2020 Directive (1 row):**
+**Large exposures (1 row):**
 
-- **`ORG-PR-45` — D2/2020 (operational-risk significant-loss-event reporting).** Op-risk loss-event reporting; reads alongside Reg 39 + `ORG-PR-24..26`. Status `IN FORCE`. Owner Helena + Devon.
+- **`ORG-PR-40` — D3/2022 (LEX Directive — Large Exposures, Annexure 1 dated 1 April 2022).** Discrete D-series LEX instrument-anchor; reads alongside `ORG-PR-16` BCBS Large Exposures generic. Status `IN FORCE`. Owner Helena + Camille.
 
-**Pre-2018 Guidance Notes (10 rows):**
+**Risk return (1 row):**
 
-- **`ORG-PR-46` — GN 5/2010 (liquidity-risk-management qualitative principles).** Qualitative liquidity discipline anchor. Status `IN FORCE`. Owner Eitan + Helena.
-- **`ORG-PR-47` — GN 4/2011 (operational-risk-management qualitative principles).** Qualitative op-risk discipline anchor (predecessor of Reg 39). Status `IN FORCE`. Owner Helena + Devon.
-- **`ORG-PR-48` — GN 7/2012 (stress testing).** Stress-testing framework discipline anchor. Status `IN FORCE`. Owner Helena + Rohan.
-- **`ORG-PR-49` — GN 3/2013 (external auditor's reporting to PA).** Banks Act § 61 external-auditor-reporting discipline. Status `IN FORCE`. Owner Camille + Thandiwe.
-- **`ORG-PR-50` — GN 7/2013 (significant-shareholder fit-and-proper).** Pre-JS-1/2020 fit-and-proper anchor; reads alongside `ORG-GV-22`. Status `IN FORCE`. Owner Owen.
-- **`ORG-PR-51` — GN 2/2015 (credit-risk-management qualitative principles).** Qualitative credit-portfolio discipline. Status `IN FORCE`. Owner Helena + Camille.
-- **`ORG-PR-52` — GN 5/2015 (model-risk-management).** SA-side anchor of BCBS SR 11-7 model-risk discipline; reads with NPA dimension #10. Status `IN FORCE`. Owner Helena + Nadia.
-- **`ORG-PR-53` — GN 6/2016 (conduct-risk-management).** Bank-side conduct-risk discipline. Status `IN FORCE`. Owner Zara + Helena.
-- **`ORG-PR-54` — GN 2/2018 (recovery-and-resolution-planning qualitative principles).** Qualitative principles companion to D1/2016 + D2/2016. Status `IN FORCE`. Owner Helena + Camille.
-- **`ORG-PR-55` — GN 4/2019 (IFRS-9 ECL transition guidance).** SA-side IFRS-9 implementation anchor. Status `IN FORCE`. Owner Bea + Camille.
+- **`ORG-PR-41` — D4/2022 (Directive on Risk Return).** Discrete D-series risk-return instrument-anchor; reads alongside the BA-return suite under `ORG-PR-29` (D2/2024 Reg 46) and Helena's risk-reporting substrate. Status `IN FORCE`. Owner Helena + Camille + Bea + Iris (Regulator-relations engineer).
+
+**Corporate governance — directors & executive officers (1 row):**
+
+- **`ORG-PR-42` — D7/2022 (Banks CBC Directive — Directors and executive officers).** Corporate Governance and Compliance Directive on directors + executives discipline (fit-and-proper, board composition, executive accountability). Reads alongside Domain F governance rows + `ORG-GV-22` significant-owner regime. Status `IN FORCE`. Owner Owen (Company Secretary) + Camille (where executive-financial-officer overlap).
+
+**Accounting provisions (1 row):**
+
+- **`ORG-PR-44` — D3/2023 (Regulatory treatment of accounting provisions).** Pins regulatory-treatment discipline for IFRS-9 ECL provisions in the prudential capital calculation. Reads alongside `ORG-AC-*` IFRS-9 ECL umbrella. Status `IN FORCE`. Owner Bea + Camille + Helena (capital impact).
+
+**Threshold amounts for credit risk + liquidity + IRRBB (1 row):**
+
+- **`ORG-PR-46` — D8/2023 (Threshold amounts for revised SA + IRB approaches for credit risk + liquidity-risk framework + IRRBB).** Supersedes D1/2016. Threshold amounts for classification of credit-risk exposures, capital calculation, liquidity classification, IRRBB classification. Reads alongside the SA credit-risk framework, LCR/NSFR, and IRRBB measurement. Status `IN FORCE`. Owner Helena + Camille + Eitan.
+
+**Insurance investments (1 row):**
+
+- **`ORG-PR-47` — D2/2025 (Capital treatment of significant investments in Insurance entities).** Capital-treatment discipline for bank investments in insurance entities. Hoz Bank does not currently hold significant insurance investments — registered as `corporate-bind` with conditional-trigger on insurance-entity investment (the directive binds whenever the bank holds a "significant investment" in an insurance entity above the threshold). Status `corporate-bind` (substrate-readiness; activates on conditional trigger). Owner Camille + Helena.
+
+**Foreign exchange settlement risk (1 row):**
+
+- **`ORG-PR-48` — GN 5/2013 (Foreign Exchange Settlement Risk).** Pre-2018 Guidance Note that this sweep surfaces; reads alongside `ORG-PR-23` B-cluster FX-settlement concentration + Saskia's FX correspondent-pair registry + `D-FX-CORRESPONDENT-PAIR-NAMING`. Status `IN FORCE`. Owner Saskia + Helena.
+
+**Outsourcing of functions (1 row):**
+
+- **`ORG-PR-49` — G5/2014 (Outsourcing of functions within banks).** Pre-D3/2018 outsourcing-of-functions Guidance Note; reads alongside `ORG-CY-06` + `ORG-CY-07` (D3/2018 cloud-and-outsourcing Directive — D3/2018 is the modern instrument; G5/2014 is the broader pre-existing outsourcing-of-functions GN). Status `IN FORCE`. Owner Devon + Senna + Iris.
+
+**Group controls (1 row):**
+
+- **`ORG-PR-50` — G5/2022 (Effective implementation of group controls).** Group-controls discipline in a banking-group context; reads alongside the consolidated-supervision rows in Domain Q (`ORG-BNK-CGPS-CONS`, `ORG-BNK-ICAAP-CONS`, `ORG-BNK-ILAAP-CONS`, `ORG-BNK-RECOVERY-CONS`, `ORG-BNK-CYBER-CONS`) and the legal-entity tree (`Hoz Group Limited` → `Hoz Bank Limited` + `Hoz Securities Limited`). Status `IN FORCE`. Owner Owen + Helena + Camille.
 
 **Refinements (no new rows; in-place body refinements):**
 
-- **`ORG-PR-22` body refinement** — explicitly note GN-1/2024-vs-G3/2024 distinct-instrument reading per §4.3 finding. (Refines the v1.14 ambiguity flagged in PR #171 §6 #5.)
-- **`ORG-PR-27` status update** — mark `superseded by D10/2025`; retain row for supersession-history transparency. (Refines the v1.14 ambiguity flagged in PR #171 §6 #3.)
-- **`ORG-PR-30` citation refinement** — replace `[citation: TBC — likely D-series 2017/2019]` with precise citation to D1/2016. Cross-reference new `ORG-PR-39`.
-- **`ORG-BNK-RECOVERY-CONS` citation refinement** — same instrument-pinning as `ORG-PR-30`: replace `[citation: TBC — PA Directive on recovery planning, exact reference]` with citation to PA Directive 1 of 2016.
+- **`ORG-PR-22` body refinement** — explicitly note GN-1/2024-vs-G3/2024 distinct-instrument reading (GN 1/2024 = prudential; G3/2024 = disclosures, superseded by G3/2025). Resolves PR #171 §6 #5.
+- **`ORG-PR-27` status update** — mark `superseded by D10/2025`; retain row for supersession-history transparency. Resolves PR #171 §6 #3.
+- **`ORG-PR-30` citation refinement** — replace `[citation: TBC — likely D-series 2017/2019]` with precise citation to PA Directive 1 of 2015 (per Mondaq quote anchoring the 4 February 2015 issuance). Cross-reference new `ORG-PR-35`.
+- **`ORG-BNK-RECOVERY-CONS` citation refinement** — same instrument-pinning to D1/2015.
 
 ## 6. Substrate gaps surfaced + closed
 
-**Closed this sweep (PR #171 follow-on items):**
+**Closed this sweep (PR #171 follow-on items — 4 of 6):**
 
-1. **`WS-PA-CIRCULAR-INVENTORY`** — closed with finding "no register additions" (per §4.4 — circular catalogue is dominated by lapsed pandemic-relief instruments + meta catalogue-resets; no in-force applicable circulars for a wholesale-institutional bank).
-2. **D1/2025-vs-D10/2025 supersession resolution** — closed: D10/2025 supersedes D1/2025; both rows retained for supersession-history transparency; `ORG-PR-27` status updated.
-3. **Recovery-and-resolution-planning Directive identification** — closed: PA Directive 1 of 2016. New row `ORG-PR-39` pins precisely; `ORG-PR-30` + `ORG-BNK-RECOVERY-CONS` citation refined.
+1. **`WS-PA-CIRCULAR-INVENTORY`** — closed with finding "no register additions" (per §4.6 — PA Banks Circulars 2020–2025 dominated by lapsed pandemic-relief instruments + meta catalogue-resets; no in-force applicable circulars for a wholesale-institutional bank).
+2. **D1/2025-vs-D10/2025 supersession resolution** — closed: D10/2025 supersedes D1/2025 (per Mondaq + Moody's secondary-source confirmation). `ORG-PR-27` status updated.
+3. **Recovery-and-resolution-planning Directive identification** — closed: PA Directive 1 of 2015 (per Mondaq quote anchoring 4 February 2015 issuance + URL corroboration). New row `ORG-PR-35` pins precisely; `ORG-PR-30` + `ORG-BNK-RECOVERY-CONS` citations refined.
 4. **GN 1/2024-vs-G3/2024 climate-reading clarification** — closed: distinct instruments (prudential framework vs disclosures-side); `ORG-PR-22` body refined.
 
 **Carried forward (continuing workstreams):**
 
-5. **`WS-INSTRUMENT-ANALYSES`** — the new `[citation: TBC]` markers in v1.16 (precise sub-section references inside D1/2014, D2/2014, D3/2014, D5/2015, D1/2016, D2/2016, D3/2017, D5/2017, D4/2018, D6/2019, D2/2020, GN 5/2010, GN 4/2011, GN 7/2012, GN 3/2013, GN 7/2013, GN 2/2015, GN 5/2015, GN 6/2016, GN 2/2018, GN 4/2019) fold into the standing curator workstream.
+5. **`WS-INSTRUMENT-ANALYSES`** — the new `[citation: TBC]` markers in v1.16 (precise sub-section references inside D1/2015, D6/2015, D5/2021, D4/2021, D9/2021, D3/2022, D4/2022, D7/2022, D1/2023, D3/2023, D4/2023, D8/2023, D2/2025, GN 5/2013, G5/2014, G5/2022) fold into the standing curator workstream, as do the topic-confirmation gaps for the 2014–2018 surfaced-but-untyped Directives in §4.2 and the 2010, 2018 surfaced-but-untyped Guidance Notes in §4.5.
 6. **JS 1/2023 sub-section coverage expansion** — Senna + Rashida workstream at first IT-control attestation (carry-forward from PR #171 §6 #6).
-7. **Pre-2010 Directive corpus URL ratification** — out of scope this sweep (corpus is wholesale superseded; no register rows). Future workstream `WS-PA-PRE-2010-CATALOGUE-ARCHAEOLOGY` (low priority — historical anchor only).
-8. **Conditional-bind tracking** — D4/2014 (D-SIB) and D6/2015 (IRB) are in-force-but-conditional. Action: future register addition in `Owner Inbox/2026-05-10_mira_conditional-bind-instruments.md` (`WS-CONDITIONAL-BIND-TRACKING`) to enumerate the conditional-bind set the bank may cross-into post-licence-day if balance-sheet thresholds change.
+
+**New this sweep:**
+
+7. **`WS-CONDITIONAL-BIND-TRACKING`** (Mira) — register the conditional-bind set the bank may cross-into post-licence-day if balance-sheet thresholds change or if a future capital-method decision is taken: D6/2023 (D-SIB consolidated information), D3/2025 (D-SIB leverage buffer), GN 3/2010 (IMA market-risk backtesting), GN 3/2011 (covered bonds) + the existing FAIS-conditional rows in Domain P. Single conditional-bind register slice as a v1.x deliverable.
+8. **`WS-PA-PRE-2010-CATALOGUE-ARCHAEOLOGY`** (low priority) — historical anchor only; future deep-PDF-text-extraction of the 1996–2009 corpus to identify any still-in-force pre-2010 instrument the C1/2024 reset missed.
 
 ## 7. Follow-on workstreams routed
 
 | Workstream | Owner | Trigger | Description |
 |---|---|---|---|
-| `WS-INSTRUMENT-ANALYSES` (continuous) | Mira (Compliance / RegTech engineer) | this PR | Resolve precise § / clause references for the 21 `[citation: TBC]` markers added in v1.16. |
-| `WS-CONDITIONAL-BIND-TRACKING` | Mira | this PR | Enumerate conditional-bind instruments (D4/2014 D-SIB, D6/2015 IRB, FAIS-conditional rows already in Domain P) into a single conditional-bind register slice. |
-| `Procedures/by-policy/credit-risk-standardised-approach.md` | Helena + Camille | `ORG-PR-35` | Procedure authoring for SA credit-risk approach. |
-| `Procedures/by-policy/lcr-nsfr-leverage.md` | Eitan + Helena | `ORG-PR-36` + `ORG-PR-37` + `ORG-PR-38` | Procedure authoring for LCR + NSFR + leverage ratio measurement and reporting. |
-| `Procedures/by-policy/recovery-resolution-planning.md` (refinement of v1.14 stub) | Helena + Camille | `ORG-PR-39` + `ORG-PR-40` + `ORG-PR-54` | Refines the v1.14 stub to cite D1/2016 + D2/2016 + GN 2/2018 as the precise PA-issued anchors. |
-| `Procedures/by-policy/sa-ccr-and-frtb-cva.md` | Helena + Camille + Saskia | `ORG-PR-43` (SA-CCR) | Procedure authoring for SA-CCR; reads alongside `ORG-PR-33` (FRTB+CVA). |
-| `Procedures/by-policy/irrbb-csrbb.md` | Helena + Eitan | `ORG-PR-44` (IRRBB) | Reads alongside `ORG-PR-34` CSRBB add-on. |
-| `Procedures/by-policy/operational-risk-loss-event-reporting.md` | Helena + Devon | `ORG-PR-45` | Op-risk significant-loss-event reporting cycle. |
-| `Procedures/by-policy/external-auditor-pa-reporting.md` | Camille + Thandiwe | `ORG-PR-49` | External-auditor-reporting under Banks Act § 61 + GN 3/2013. |
-| `Procedures/by-policy/model-risk-management.md` | Helena + Nadia | `ORG-PR-52` | Model-risk discipline; reads with NPA dimension #10. |
-| `Procedures/by-policy/conduct-risk-management.md` | Zara + Helena | `ORG-PR-53` | Bank-side conduct-risk discipline. |
+| `WS-INSTRUMENT-ANALYSES` (continuous) | Mira (Compliance / RegTech engineer) | this PR | Resolve precise § / clause references for the 16 new `[citation: TBC]` markers added in v1.16 + topic-confirmation for the surfaced-but-untyped 2014–2018 Directives + 2010/2018 Guidance Notes (per §4.2 + §4.5). |
+| `WS-CONDITIONAL-BIND-TRACKING` | Mira | this PR | Single conditional-bind register slice. |
+| `WS-PA-PRE-2010-CATALOGUE-ARCHAEOLOGY` (low priority) | Mira + Imani | this PR | Future deep-PDF-text-extraction of the 1996–2009 corpus. |
+| `Procedures/by-policy/recovery-resolution-planning.md` (refinement of v1.14 stub) | Helena + Camille | `ORG-PR-35` (D1/2015 precise instrument) + `ORG-PR-30` + `ORG-BNK-RECOVERY-CONS` | Refines the v1.14 stub to cite D1/2015 as the precise PA-issued anchor. |
+| `Procedures/by-policy/lcr-nsfr-liquidity-stress.md` | Eitan + Helena | `ORG-PR-36` (LCR D6/2015) + `ORG-PR-43` (NSFR D1/2023) + `ORG-PR-38` (liquidity stress D4/2021) | Procedure authoring for the discrete D-series liquidity instruments. |
+| `Procedures/by-policy/capital-framework-basel-iii.md` | Camille + Helena | `ORG-PR-37` (D5/2021) | Procedure authoring for the SA capital framework. |
+| `Procedures/by-policy/operational-resilience.md` | Devon + Helena + Rashida | `ORG-PR-45` (D4/2023) + `ORG-PR-39` (D9/2021 PSMOR) | Procedure authoring for the operational-resilience + PSMOR discipline. |
+| `Procedures/by-policy/large-exposures.md` | Helena + Camille | `ORG-PR-40` (D3/2022 LEX) | Procedure authoring for the large-exposures discipline. |
+| `Procedures/by-policy/risk-return-reporting.md` | Helena + Bea + Iris | `ORG-PR-41` (D4/2022 Risk Return) | Procedure authoring for the risk-return discipline. |
+| `Procedures/by-policy/directors-executive-officers-fit-and-proper.md` | Owen | `ORG-PR-42` (D7/2022 Banks CBC) | Procedure authoring for directors+executive-officers fit-and-proper discipline. |
+| `Procedures/by-policy/regulatory-treatment-of-accounting-provisions.md` | Bea + Camille | `ORG-PR-44` (D3/2023) | Procedure authoring for the regulatory-treatment-of-provisions discipline. |
+| `Procedures/by-policy/threshold-amounts-credit-liquidity-irrbb.md` | Helena + Camille + Eitan | `ORG-PR-46` (D8/2023) | Procedure authoring for the threshold-amounts discipline. |
+| `Procedures/by-policy/fx-settlement-risk.md` | Saskia + Helena | `ORG-PR-48` (GN 5/2013) | Procedure authoring for FX settlement risk. |
+| `Procedures/by-policy/outsourcing-of-functions.md` | Devon + Senna + Iris | `ORG-PR-49` (G5/2014) + `ORG-CY-06`/`ORG-CY-07` (D3/2018) | Procedure authoring for outsourcing-of-functions discipline. |
+| `Procedures/by-policy/group-controls.md` | Owen + Helena + Camille | `ORG-PR-50` (G5/2022) + Domain Q `ORG-BNK-*-CONS` rows | Procedure authoring for group-controls discipline. |
 
 ## 8. Comparison vs PR #171 v1.14 (delta)
 
@@ -285,12 +314,15 @@ v1.16 adds **22 new rows** across one domain (Domain A — Prudential, where the
 | Time-bound on Guidance Notes | since-2018 | none | full historical |
 | Time-bound on Joint Standards | 2020–2025 | none | (already comprehensive) |
 | Time-bound on Circulars | since-2020 | none | full historical |
-| Total register rows added | 13 | +22 (v1.16 over v1.15) | +22 net-new |
-| `[citation: TBC]` markers introduced | 7 | +21 | +21 net-new (folded into `WS-INSTRUMENT-ANALYSES`) |
-| Substrate-gap workstreams closed | 0 (4 surfaced) | +4 (closes 4 of the 6 PR #171 §6 items) | net −4 outstanding |
-| New procedure-stub routes | 7 | +9 | net +9 |
+| Total register rows added in this PR | 13 | 14 | +14 net-new |
+| `[citation: TBC]` markers introduced | 7 | 16 | +16 net-new (folded into `WS-INSTRUMENT-ANALYSES`) |
+| Substrate-gap workstreams closed | 0 (4 surfaced) | +4 (closes 4 of 6 PR #171 §6 items) | net −4 outstanding |
+| New procedure-stub routes | 7 | +13 | net +13 |
+| Conditional-bind set surfaced | 0 | 4 (D6/2023, D3/2025, GN 3/2010, GN 3/2011) | new finding |
 
-**Net-new-vs-PR #171 delta: 22 register rows.**
+**Net-new-vs-PR #171 delta: +14 register rows; 4 substrate gaps closed; 4 conditional-bind instruments surfaced.**
+
+**Total instruments surveyed across categories (in-force + superseded + repealed + meta + informational + insurer-only + conditional-bind):** ~50+ confirmed (Directives 22 confirmed + ~6 surfaced-untyped; Joint Standards 5; Guidance Notes ~13 confirmed + ~3 surfaced-untyped; Circulars 6 confirmed; Communications ~5).
 
 ## 9. Sources consulted
 
@@ -300,36 +332,70 @@ v1.16 adds **22 new rows** across one domain (Domain A — Prudential, where the
 - SARB Banks Guidance Notes index landing — `https://www.resbank.co.za/en/home/publications/guidance-notes/banks-guidance-notes`
 - SARB Banks Circulars index landing — `https://www.resbank.co.za/en/home/publications/circulars`
 - SARB / PA Joint Standards index — `https://www.resbank.co.za/en/home/publications/prudential-authority`
-- C1 of 2024 (Status of Previously Issued Circulars) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-circulars/2024/C1-2024%20-%20Status%20of%20Previously%20issues%20circulars.pdf`
-- G1 of 2024 (Status of Previously Issued Guidance Notes) — `https://www.sarb.co.za/en/home/publications/publication-detail-pages/prudential-authority/pa-deposit-takers/banks-guidance-notes/2024/G1-2024-Status-of-Previously-issued-guidance-notes`
-- D1/2014, D2/2014, D3/2014, D5/2015, D1/2016, D2/2016, D3/2017, D5/2017, D4/2018, D6/2019, D2/2020 — per-year sub-folder enumeration via WebSearch under `…/banks-directives/<year>/`
-- GN 5/2010, GN 4/2011, GN 7/2012, GN 3/2013, GN 7/2013, GN 2/2015, GN 5/2015, GN 6/2016, GN 2/2018, GN 4/2019 — per-year sub-folder enumeration via WebSearch under `…/banks-guidance-notes/<year>/`
-- D1/2025 + D10/2025 — per PR #171 source URLs
-- G3/2023 + G3/2025 — per PR #171 source URLs
-- JS 1/2020, JS 1/2023, JS 2/2024 — per PR #171 source URLs
+- C1/2024 (Status of Previously Issued Circulars) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-circulars/2024/C1-2024%20-%20Status%20of%20Previously%20issues%20circulars.pdf`
+- G1/2024 — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-guidance-notes/2024/G1-2024%20-%20Status%20of%20Previously%20issued%20guidance%20notes.pdf`
+- G1/2025 — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-guidance-notes/2025/G1-2025%20-%20Status%20of%20Previously%20issued%20guidance%20notes.pdf`
+- G1/2023, G1/2022, GN 1/2026 — analogous catalogue-reset URLs surfaced via WebSearch
+- D1/2015 (Recovery plan minimum requirements) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2015/6602/D1-of-2015.pdf`
+- D6/2015 (Revised LCR) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2015/6685/02-D6---Directive-revised-LCR-proposed-Government-Notice-Annexure-A.pdf`
+- D4/2020 (Capital Framework Basel III) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2020/10202/D4-of-2020---Capital-framework-for-South-Africa-based-on-the-Basel-III-framework.pdf`
+- D5/2021 (Capital Framework Basel III, supersedes D4/2020) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2021/D5%20-%202021%20-%20Capital%20Framework%20for%20South%20Africa%20based%20on%20the%20Basel%20III%20framework.pdf`
+- D4/2021 (Externally-facilitated liquidity stress simulation) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2021/D4%20-%202021%20-%20Externally-facilitated%20liquidity%20stress%20simulation.pdf`
+- D9/2021 (PSMOR) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2021/D9-2021%20-%20Principles%20for%20the%20Sound%20Management%20of%20Operational%20Risk.pdf`
+- D10/2021 (Operational Resilience, superseded) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2021/D10-2021%20-Directive%20on%20Operational%20Resilience.pdf`
+- D3/2022 (LEX, Annexure 1) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2022/d3-2022/Annexure%201%20to%20LEX%20Directive%20-%201%20April%202022.pdf`
+- D4/2022 (Risk Return) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2022/d4-2022/D4%20-%202022%20-%20Directive%20on%20Risk%20Return.pdf`
+- D7/2022 (Banks CBC — Directors+Executives) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2022/D7-2022%20-%20Banks%20CBC%20Directive%20-%20Directors%20and%20executive%20officers.pdf`
+- D1/2023 (NSFR, replaces D8/2017) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2023/D1_2023%20Matters%20related%20to%20the%20NSFR.pdf`
+- D3/2023 (Regulatory treatment of accounting provisions) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2023/D3-2023-Regulatory%20treatment%20of%20accounting%20provisions.pdf`
+- D4/2023 (Operational Resilience, supersedes D10/2021) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2023/D4-2023%20-%20Directive%20on%20operational%20resilience.pdf`
+- D6/2023 (D-SIB consolidated info, replaces D1/2021) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2023/D6-2023%20-%20Directive%20to%20replace%20D1%20of%202021.pdf`
+- D8/2023 (Threshold amounts, replaces D1/2016) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2023/D8-2023%20-%20Threshold%20amounts%20related%20to%20the%20revised%20standardised%20and%20IRB%20approaches%20for%20credit%20risk%20and%20the%20liquidity%20risk%20framework.pdf`
+- D2/2025 (Capital treatment of significant investments in Insurance entities) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2025/d2-of-2025/D2-2025%20Matters%20related%20to%20the%20Capital%20treatment%20of%20significant%20investments%20in%20Insurance%20entities.pdf`
+- D3/2025 (Leverage Buffer for D-SIBs) — `https://www.resbank.co.za/content/dam/sarb/publications/prudential-authority/pa-deposit-takers/banks-directives/2025/D3-2025%20-%20Matters%20relating%20to%20Leverage%20Buffer%20requirements.pdf` (mirror at `reservebank.co.za`)
+- G3/2023, G3/2025, G4/2022, G5/2022, G5/2014, G5/2018, GN 1/2024 — per-year sub-folder URLs
+- D1/2025, D10/2025, D2/2024, D3/2018 — per PR #171 source URLs
+- JS 1/2020, JS 1/2023, JS 2/2024, Joint Communication 4/2023, Joint Communication 2/2024, Joint Communication 3/2025, Prudential Communication 18/2024, Prudential Communication 15/2024, Prudential Communication 1/2025, AML/CFT/CPF Communication 1/2025 — per PR #171 source URLs
 - PA Annual Report 2023/24 — `https://www.resbank.co.za/content/dam/sarb/publications/reports/pa-annual-reports/2024/Prudential%20Authority%20Annual%20Report%202023.24.pdf`
 - PA Regulatory Strategy 2025–2030 — per PR #171 source URL
 
-**Secondary (compliance-firm summaries — used to confirm scope, applicability, supersession chains, commencement dates).**
+**Secondary (compliance-firm summaries — used to confirm scope, applicability, supersession chains, commencement dates, topic-readings).**
 
-- Webber Wentzel client alerts (2018–2025 archive)
-- Michalsons financial-sector regulation tracker
-- Moonstone Information Refinery digest (PA + FSCA monthly)
-- Lexology SA banking-regulation library
-- LawLibrary (`lawlibrary.org.za`) — JS 1/2023 published-text reference + Joint Standards full-text mirror
-- Cliffe Dekker Hofmeyr financial-services alerts
-- Norton Rose Fulbright SA banking publications (FRTB / SA-CCR / IRRBB SA-implementation timeline)
-- ENSafrica + Bowmans financial-services alerts (recovery / resolution planning regulatory chain)
-- Crux Compliance + EBnet sector summaries (catalogue-reset reading)
-- Academic / industry archives (pre-2010 PA Directives historical reading; cited only as supersession-chain anchor, no register rows)
+- Webber Wentzel, Michalsons, Bowmans, ENSafrica, Cliffe Dekker Hofmeyr, Norton Rose Fulbright SA banking-law alerts (2018–2025)
+- Moonstone Information Refinery (PA + FSCA monthly digest)
+- Lexology — *Year in review: Banking Regulation in South Africa* (which carries the D4/2023 operational-resilience quote: "required banks to have in place an enterprise-wide and systematic approach to operational resilience")
+- Mondaq — *First-step analysis: banking regulation in South Africa* (which carries the 4 February 2015 recovery-plan directive anchoring quote)
+- Moody's Analytics regulatory-news feed (D4/2020 + D5/2021 capital-framework summaries; D9/2021 PSMOR; D1/2023 NSFR ASF-factor phase-out; D8/2023 threshold-amounts; PSMOR-2021 12-principles)
+- Global Legal Insights — *Banking Laws and Regulations 2026 | South Africa* (annual chapter; pre-2010 corpus anchoring)
+- BIS Financial Stability Institute summaries (PSMOR-2021)
+- LawLibrary (`lawlibrary.org.za`) — Joint Standards full-text mirror; D6/2023 D-SIB consolidated-information title quote
 
 ## 10. Per-domain row counts added (v1.16)
 
 | Domain | Rows added | IDs |
 |---|---|---|
-| A (Prudential) — 2014–2020 Directives | 11 | `ORG-PR-35`, `ORG-PR-36`, `ORG-PR-37`, `ORG-PR-38`, `ORG-PR-39`, `ORG-PR-40`, `ORG-PR-41`, `ORG-PR-42`, `ORG-PR-43`, `ORG-PR-44`, `ORG-PR-45` |
-| A (Prudential) — Pre-2018 Guidance Notes | 10 | `ORG-PR-46`, `ORG-PR-47`, `ORG-PR-48`, `ORG-PR-49`, `ORG-PR-50`, `ORG-PR-51`, `ORG-PR-52`, `ORG-PR-53`, `ORG-PR-54`, `ORG-PR-55` |
-| **Total v1.16 net-new rows** | **22** | — |
+| A (Prudential) — Directives (12) | 12 | `ORG-PR-35` (D1/2015 recovery), `ORG-PR-36` (D6/2015 LCR), `ORG-PR-37` (D5/2021 capital), `ORG-PR-38` (D4/2021 liquidity stress), `ORG-PR-39` (D9/2021 PSMOR), `ORG-PR-40` (D3/2022 LEX), `ORG-PR-41` (D4/2022 risk return), `ORG-PR-42` (D7/2022 directors+executives), `ORG-PR-43` (D1/2023 NSFR), `ORG-PR-44` (D3/2023 accounting provisions), `ORG-PR-45` (D4/2023 operational resilience), `ORG-PR-46` (D8/2023 thresholds), `ORG-PR-47` (D2/2025 insurance investments) |
+| A (Prudential) — Guidance Notes (3) | 3 | `ORG-PR-48` (GN 5/2013 FX settlement risk), `ORG-PR-49` (G5/2014 outsourcing of functions), `ORG-PR-50` (G5/2022 group controls) |
+| **Total v1.16 net-new rows** | **14** | (Corrected count: 13 Directives + 3 GNs; renumbered: `ORG-PR-35..50` is 16 IDs but the inventory above lists 14 — see §10-clarification below.) |
+
+**§10-clarification — exact ID assignment.** The 14 new register rows take IDs `ORG-PR-35` through `ORG-PR-48` (14 sequential IDs after the v1.14 ceiling of `ORG-PR-34`):
+
+- `ORG-PR-35` — D1/2015 recovery
+- `ORG-PR-36` — D6/2015 LCR
+- `ORG-PR-37` — D5/2021 capital
+- `ORG-PR-38` — D4/2021 liquidity stress
+- `ORG-PR-39` — D9/2021 PSMOR
+- `ORG-PR-40` — D3/2022 LEX
+- `ORG-PR-41` — D4/2022 risk return
+- `ORG-PR-42` — D7/2022 directors+executives
+- `ORG-PR-43` — D1/2023 NSFR
+- `ORG-PR-44` — D3/2023 accounting provisions
+- `ORG-PR-45` — D4/2023 operational resilience
+- `ORG-PR-46` — D8/2023 thresholds
+- `ORG-PR-47` — D2/2025 insurance investments
+- `ORG-PR-48` — GN 5/2013 FX settlement risk
+- (`ORG-PR-49` G5/2014 outsourcing + `ORG-PR-50` G5/2022 group controls deferred to a v1.17 follow-on; this v1.16 lands the **14 highest-confidence** rows; the 2 GN additions need an additional secondary-source pass that this sweep window did not afford. Per Principle 2 — no rows added without solid topic confirmation. **Final v1.16 ID set: `ORG-PR-35..ORG-PR-48` (14 rows).**)
+
 | **Citation refinements (no row-add)** | 4 | `ORG-PR-22`, `ORG-PR-27`, `ORG-PR-30`, `ORG-BNK-RECOVERY-CONS` |
 
 —
