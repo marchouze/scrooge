@@ -47,11 +47,8 @@ import { resolve } from "node:path";
 
 import { randomBytes } from "node:crypto";
 
+import { WorktreeBoundaryError, createRunnerWorker } from "../platform/agent-runtime/runner-worker";
 import { eventStore } from "../platform/composition";
-import {
-  WorktreeBoundaryError,
-  createRunnerWorker,
-} from "../platform/agent-runtime/runner-worker";
 import {
   makeLegacyFanoutShadowed,
   makeSubstrateAgentRunCompleted,
@@ -200,7 +197,10 @@ function emitWorktreeBoundaryAlert(args: {
         actor: RUNNER_WORKER_ALERT_ACTOR,
         citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
         payload: {
-          alertId: `alert:integrity:worktree-boundary-${args.runId.replace(/[^a-z0-9]/gi, "").slice(0, 16).toLowerCase()}`,
+          alertId: `alert:integrity:worktree-boundary-${args.runId
+            .replace(/[^a-z0-9]/gi, "")
+            .slice(0, 16)
+            .toLowerCase()}`,
           alertClass: "integrity",
           agentUrn: `agent:${args.agent.toLowerCase()}`,
           details: `RunnerWorker boundary escape: agent="${args.agent}" runId="${args.runId}" attemptedPath="${args.err.attemptedPath}" worktreeRoot="${args.err.worktreeRoot}"`,
@@ -404,6 +404,38 @@ function buildHandlerMap(): Readonly<Record<string, HandlerEntry>> {
 
 const HANDLERS: Readonly<Record<string, HandlerEntry>> = buildHandlerMap();
 
+/**
+ * Test seam (S8 §3.4 worker-isolation integration tests) — temporarily
+ * substitute the handler callable for a registered key. Returns a
+ * disposer that restores the original.
+ *
+ * Used only by `tests/scheduler-driven-run.test.ts` to plant a stub
+ * handler that exercises the runner-worker boundary check (e.g. a
+ * handler that attempts `process.chdir("..")`). Production code paths
+ * never call this. The metadata key MUST already exist in
+ * `HANDLERS_METADATA`; the seam refuses to register new (agent, trigger)
+ * pairs because that would bypass the handlers-metadata canonicality
+ * recon (Wave-4 #11).
+ */
+export function __testOverrideHandler(
+  key: string,
+  handler: AgentRunHandler,
+): { dispose: () => void } {
+  const handlersMutable = HANDLERS as Record<string, HandlerEntry>;
+  const existing = handlersMutable[key];
+  if (!existing) {
+    throw new Error(
+      `__testOverrideHandler: no registered handler for ${key}. Test seam refuses to add new keys; add a metadata row to handlers-metadata.ts first.`,
+    );
+  }
+  handlersMutable[key] = { metadata: existing.metadata, handler };
+  return {
+    dispose: () => {
+      handlersMutable[key] = existing;
+    },
+  };
+}
+
 interface CliArgs {
   agent: string;
   trigger: string;
@@ -494,11 +526,25 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   // typed SubstrateAlert sink before re-throw.
   const isOuter = runnerWorkerDepth === 0;
   let workerDispose: (() => void) | undefined;
+  // Capture the host process's pre-install cwd so we can restore it on
+  // dispose. The worker primitive itself does not restore cwd (the
+  // production model is one worker per process / one Container App Job
+  // per agent run, where the post-run cwd is irrelevant). For the
+  // local-first single-process model the host's cwd matters: leaving
+  // cwd at repoRoot after dispose breaks any downstream caller that
+  // resolves paths relative to the original cwd — including Bun's test
+  // runner with `bunfig.toml`'s `[test].preload` path.
+  let cwdBeforeInstall: string | undefined;
   if (isOuter) {
+    try {
+      cwdBeforeInstall = process.cwd();
+    } catch {
+      // process.cwd() can throw on a deleted directory; let it.
+      cwdBeforeInstall = undefined;
+    }
     const worker = createRunnerWorker({
       worktreeRoot: repoRoot,
-      onBoundaryEscape: (err) =>
-        emitWorktreeBoundaryAlert({ agent: ctx.agent, runId, err }),
+      onBoundaryEscape: (err) => emitWorktreeBoundaryAlert({ agent: ctx.agent, runId, err }),
     });
     try {
       const handle = worker.install();
@@ -518,6 +564,33 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   if (isOuter) runnerWorkerDepth = 1;
   else runnerWorkerDepth += 1;
 
+  // Internal helper — paired with the install above. Invoked from both
+  // the success path and the catch unwind to restore host state.
+  const restoreWorker = (): void => {
+    runnerWorkerDepth = Math.max(0, runnerWorkerDepth - 1);
+    if (!isOuter) return;
+    if (workerDispose) {
+      try {
+        workerDispose();
+      } catch (disposeErr) {
+        logger.error(
+          { runId, agent: ctx.agent, err: (disposeErr as Error).message },
+          "runner-worker — dispose() failed",
+        );
+      }
+    }
+    if (cwdBeforeInstall !== undefined) {
+      try {
+        process.chdir(cwdBeforeInstall);
+      } catch (cwdErr) {
+        logger.error(
+          { runId, agent: ctx.agent, cwdBeforeInstall, err: (cwdErr as Error).message },
+          "runner-worker — restore cwd failed (host left at worktree root)",
+        );
+      }
+    }
+  };
+
   // Invoke the handler. Wrap in try/catch so a thrown error still emits
   // the closing `…Failed` lifecycle event before propagating.
   let result: AgentRunOutput;
@@ -535,19 +608,9 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
       errorMessage: truncateErrMsg((err as Error).message ?? "unknown"),
       sequenceAtFailure: seqAtFailure,
     });
-    // Restore the worker before re-throwing so the host process is never
-    // left with a stale chdir override.
-    runnerWorkerDepth = Math.max(0, runnerWorkerDepth - 1);
-    if (isOuter && workerDispose) {
-      try {
-        workerDispose();
-      } catch (disposeErr) {
-        logger.error(
-          { runId, agent: ctx.agent, err: (disposeErr as Error).message },
-          "runner-worker — dispose() failed during exception unwind",
-        );
-      }
-    }
+    // Restore worker + cwd before re-throwing so the host process is
+    // never left with a stale chdir override or worktree-rooted cwd.
+    restoreWorker();
     throw err;
   }
   const ms = Date.now() - t0;
@@ -568,7 +631,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     decisionsEmitted,
     escalationsEmitted,
     sequenceAtCompletion: seqAtCompletion,
-    deliverable: result.deliverable,
+    ...(result.deliverable !== undefined ? { deliverable: result.deliverable } : {}),
     summary: result.summary,
   });
   logger.info(
@@ -805,17 +868,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   // runAgent for event-driven handlers, and those nested calls expect
   // to inherit the parent's worktree binding. Only the top-level call
   // disposes (inner re-entries see runnerWorkerDepth > 0).
-  runnerWorkerDepth = Math.max(0, runnerWorkerDepth - 1);
-  if (isOuter && workerDispose) {
-    try {
-      workerDispose();
-    } catch (disposeErr) {
-      logger.error(
-        { runId, agent: ctx.agent, err: (disposeErr as Error).message },
-        "runner-worker — dispose() failed at run completion",
-      );
-    }
-  }
+  restoreWorker();
 
   return result;
 }

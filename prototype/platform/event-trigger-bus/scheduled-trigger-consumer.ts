@@ -316,7 +316,10 @@ export class ScheduledTriggerConsumer {
 
   /** Stable alert id keyed off a short event-id slug. */
   private alertIdFor(eventId: string, handlerKey: string, kind: string): string {
-    const short = eventId.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 8);
+    const short = eventId
+      .replace(/[^a-z0-9]/gi, "")
+      .toLowerCase()
+      .slice(0, 8);
     const handlerSlug = handlerKey.replace(/:/g, "-");
     return `alert:integrity:scheduled-${kind}-${handlerSlug}-${short}`;
   }
