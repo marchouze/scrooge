@@ -7,9 +7,18 @@
 // P4 — events carry the typed actor for security audit.
 // P5 — events carry the legal entity (jurisdictional context follows).
 //
+// D-DATA-PROVENANCE-SUBSTRATE Slice 1 — every event carries a typed
+// `ProvenanceTag` (kind / scenario / variant / sourceLineage / tags).
+// The schema marks the field optional so legacy callers + the soft-tagger
+// path don't trip the Zod parse; the store's append() enforces presence
+// when the substrate-active flag is true (Slice 1 hard-rejection,
+// gated per the §7 ordering note).
+//
 // Author: Atlas
 
 import { z } from "zod";
+
+import { type ProvenanceTag, provenanceTagSchema } from "./provenance.ts";
 
 export const actorSchema = z.object({
   type: z.enum(["system", "human", "service"]),
@@ -29,10 +38,18 @@ export const eventSchema = z.object({
     message: "P2 violation: events must carry at least one obligations-register citation",
   }),
   payload: z.record(z.unknown()),
+  // D-DATA-PROVENANCE-SUBSTRATE Slice 1: typed multi-axis provenance.
+  // Marked optional at the schema level so the soft-tagger can still parse
+  // legacy untagged appends; the store's append() enforces presence when
+  // the substrate-active flag is true.
+  provenance: provenanceTagSchema.optional(),
 });
 
 export type Event = z.infer<typeof eventSchema>;
 export type Actor = z.infer<typeof actorSchema>;
+
+/** Re-export so consumers don't need a second import for the tag type. */
+export type { ProvenanceTag };
 
 /** Convenience — create an Event without forcing the payload to be unknown. */
 export function makeEvent<P extends Record<string, unknown>>(
