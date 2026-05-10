@@ -106,10 +106,7 @@ function citationsForRecon(reconKey: string): readonly string[] {
   }
 }
 
-function emitAuditFindingEvents(
-  ctx: AgentRunContext,
-  result: ReconResult,
-): number {
+function emitAuditFindingEvents(ctx: AgentRunContext, result: ReconResult): number {
   if (ctx.dryRun) return 0;
   // Emit one AuditFinding per warn / fail violation. Info-severity rows
   // are aggregate heartbeat lines — they're rendered into the deliverable
@@ -137,10 +134,7 @@ function emitAuditFindingEvents(
   return ofInterest.length;
 }
 
-function buildReportMarkdown(
-  ctx: AgentRunContext,
-  results: readonly ReconResult[],
-): string {
+function buildReportMarkdown(ctx: AgentRunContext, results: readonly ReconResult[]): string {
   const date = fmtDateUTC(ctx.asOf);
   const totalAsserted = results.reduce((s, r) => s + r.asserted, 0);
   const totalFails = results.reduce((s, r) => s + severityCount(r.violations, "fail"), 0);
@@ -222,12 +216,10 @@ function buildReportMarkdown(
 
   lines.push("## Substrate");
   lines.push("");
-  lines.push(
-    `Recons invoked: ${PIPELINES.map((p) => `\`${p.key}\``).join(", ")}.`,
-  );
+  lines.push(`Recons invoked: ${PIPELINES.map((p) => `\`${p.key}\``).join(", ")}.`);
   lines.push("");
   lines.push(
-    `Events emitted: one \`AuditFinding\` per warn/fail finding (info-severity heartbeat rows are rendered into the deliverable, not emitted as events).`,
+    "Events emitted: one `AuditFinding` per warn/fail finding (info-severity heartbeat rows are rendered into the deliverable, not emitted as events).",
   );
   lines.push("");
   lines.push(
@@ -263,10 +255,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     } catch (e) {
       runErrors++;
       const msg = (e as Error).message;
-      logger.error(
-        { pipeline: p.key, err: msg },
-        `vera:codebase-quality-review — ${p.key} threw`,
-      );
+      logger.error({ pipeline: p.key, err: msg }, `vera:codebase-quality-review — ${p.key} threw`);
       results.push({
         pipeline: `code-quality:${p.key}`,
         ok: false,
@@ -293,14 +282,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     deliverable = `Owner Inbox/${filename}`;
   }
 
-  const totalFails = results.reduce(
-    (s, r) => s + severityCount(r.violations, "fail"),
-    0,
-  );
-  const totalWarns = results.reduce(
-    (s, r) => s + severityCount(r.violations, "warn"),
-    0,
-  );
+  const totalFails = results.reduce((s, r) => s + severityCount(r.violations, "fail"), 0);
+  const totalWarns = results.reduce((s, r) => s + severityCount(r.violations, "warn"), 0);
   const ok = runErrors === 0 && totalFails === 0;
 
   return {

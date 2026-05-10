@@ -83,6 +83,54 @@ interface Match {
 }
 
 /**
+ * Mask out line-comments and block-comments from `source` by replacing
+ * comment-character ranges with spaces (newlines preserved so line
+ * numbers in error messages stay truthful). The masked source is what
+ * we scan with the catch-keyword regex — this prevents the regex from
+ * matching `catch` text *inside* a comment (e.g. doc-headers describing
+ * the patterns this recon detects).
+ */
+function maskComments(source: string): string {
+  const out = source.split("");
+  let i = 0;
+  while (i < out.length) {
+    const c = out[i];
+    const next = out[i + 1];
+    if (c === "/" && next === "/") {
+      while (i < out.length && out[i] !== "\n") {
+        out[i] = " ";
+        i++;
+      }
+    } else if (c === "/" && next === "*") {
+      out[i] = " ";
+      out[i + 1] = " ";
+      i += 2;
+      while (i < out.length) {
+        if (out[i] === "*" && out[i + 1] === "/") {
+          out[i] = " ";
+          out[i + 1] = " ";
+          i += 2;
+          break;
+        }
+        if (out[i] !== "\n") out[i] = " ";
+        i++;
+      }
+    } else if (c === '"' || c === "'" || c === "`") {
+      const quote = c;
+      i++;
+      while (i < out.length && out[i] !== quote) {
+        if (out[i] === "\\") i++;
+        i++;
+      }
+      i++;
+    } else {
+      i++;
+    }
+  }
+  return out.join("");
+}
+
+/**
  * Find swallowed-error matches in a source. We do this with a stateful
  * scan rather than a giant regex: regex-based matching of balanced
  * braces is famously fragile, and the catch body might contain nested
@@ -91,11 +139,13 @@ interface Match {
  */
 export function findSwallowedErrors(source: string, path: string): Match[] {
   const matches: Match[] = [];
+  // Mask comments so the catch-detector regex doesn't fire on commentary
+  // describing the patterns this recon detects.
+  const masked = maskComments(source);
   // Regex finds the opening of every `catch` block, optionally with a
   // binding parenthesis. The `{` index is the start of the body.
   const catchRe = /\bcatch\s*(?:\([^)]*\)\s*)?\{/g;
-  let m: RegExpExecArray | null;
-  while ((m = catchRe.exec(source)) !== null) {
+  for (let m: RegExpExecArray | null = catchRe.exec(masked); m !== null; m = catchRe.exec(masked)) {
     const openIdx = m.index + m[0].length - 1; // index of the `{`
     // Walk forward to find matching close. We do not enter strings or
     // comments — naive but enough for catch bodies, which are short.
