@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
 </head>
 <body>
   <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
@@ -30,6 +31,7 @@
         <span class="shell-wordmark" title="Hoz · rhymes with 'pause' (pronunciation posture pending Linnea v3 brand-supplement)">Hoz</span>
       </a>
       <div class="shell-meta">
+        <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
         <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh tile data now">Refresh</button>
         <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
         <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
@@ -160,6 +162,7 @@
   </footer>
 
   <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
   <!--
     Optional: Anya's shared refresh-controls substrate (PR #51). When
     present, `home.js` registers `loadTiles` with `registerPagePoll` so

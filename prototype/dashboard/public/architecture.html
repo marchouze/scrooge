@@ -329,6 +329,14 @@ flowchart TB
          architecture.html has no `.topbar`, so the back-link falls
          back to the `.shell-back-bar` pinned at the top of <body>. -->
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/provenance-badge.css" />
     <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+    <!-- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking. The
+         badge auto-mounts into the page chrome on DOMContentLoaded; no
+         explicit marker on this page (architecture has its own minimal
+         body shell, not the bank shell). -->
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"
+          style="position: fixed; top: 16px; right: 16px; z-index: 1000;"></span>
+    <script src="/provenance-badge.js"></script>
   </body>
 </html>

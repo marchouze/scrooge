@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/markets/fx/desk.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
 </head>
 <body>
   <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
@@ -26,6 +27,7 @@
         <span class="shell-wordmark">Hoz</span>
       </a>
       <div class="shell-meta">
+        <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
         <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh counterparty list now">Refresh</button>
         <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
         <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
@@ -323,6 +325,7 @@
 
   <script src="/_shell.js"></script>
   <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  <script src="/provenance-badge.js"></script>
   <script src="/markets/fx/desk.js"></script>
 </body>
 </html>
