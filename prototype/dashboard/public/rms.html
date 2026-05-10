@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RMS registers · Hoz</title>
+  <meta name="description" content="Records Management Substrate — seven canonical registers projected from the event log (D-RMS-PHASE-1).">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/rms.css">
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+      </a>
+      <div class="shell-meta">
+        <button type="button" class="shell-refresh-btn" id="rmsRefreshBtn" aria-label="Refresh register data">Refresh</button>
+        <span class="shell-as-of" id="rmsAsOf" aria-live="polite">connecting…</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="RMS navigation">
+      <h2>Registers</h2>
+      <ul id="rmsSidebar"></ul>
+      <h2>Reference</h2>
+      <ul>
+        <li><a href="/home.html">Home</a></li>
+        <li><a href="/index.html">Legacy dashboard</a></li>
+        <li><a href="/api/rms">/api/rms (JSON)</a></li>
+      </ul>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div id="rmsHeader" class="shell-page-header">
+        <h1 class="shell-page-title" id="rmsTitle">RMS registers</h1>
+        <p class="shell-page-lede" id="rmsLede">
+          The seven canonical registers projected from the event log per
+          <code>D-RMS-PHASE-1</code>. Each register is a typed projection
+          (<a href="/api/rms">/api/rms</a>) — Phase 1 dual-render keeps the
+          legacy Owner Inbox feed visible alongside.
+        </p>
+      </div>
+
+      <!-- Hub view (no ?register= query param) -->
+      <section id="rmsHubSection" class="rms-section" hidden>
+        <div class="shell-tiles" id="rmsHubTiles"></div>
+        <aside class="shell-callout" aria-labelledby="rms-callout-dual">
+          <h3 id="rms-callout-dual">Phase 1 dual-render</h3>
+          <p>
+            The seven registers below render <em>alongside</em> the legacy
+            Owner Inbox feed at <a href="/index.html">/index.html</a>. No
+            legacy view is touched. Phase 4 is when the legacy folders
+            archive and the registers become sole canonical.
+          </p>
+          <p class="rms-callout-meta">
+            Substrate gaps tracked: Slice 5 e2e round-trip · Phase 2 dual-render
+            maturation (Decisions Desk keystrokes, side-panel records browser,
+            mode-toggle filter chips) · Phase 3 cutover · Phase 4 archive.
+          </p>
+        </aside>
+      </section>
+
+      <!-- Per-register table view (?register=<key>) -->
+      <section id="rmsTableSection" class="rms-section" hidden>
+        <div class="rms-meta">
+          <a href="/rms.html" class="rms-back-link">‹ All registers</a>
+          <span class="rms-count" id="rmsRowCount" aria-live="polite"></span>
+          <span class="rms-status-key" id="rmsStatusKey"></span>
+        </div>
+        <div class="rms-table-wrap">
+          <table class="rms-table" id="rmsTable">
+            <thead><tr id="rmsTableHead"></tr></thead>
+            <tbody id="rmsTableBody"></tbody>
+          </table>
+        </div>
+        <p class="rms-empty" id="rmsEmpty" hidden>
+          The register has no rows yet. Once the corresponding events are
+          appended to the event log, rows will appear here on the next refresh.
+        </p>
+      </section>
+
+      <div id="rmsError" class="rms-error" hidden></div>
+    </main>
+  </div>
+
+  <footer class="shell-footer" role="contentinfo">
+    Bank UI · RMS register render (Slice 4) · derived from
+    <a href="/api/rms">/api/rms</a> ·
+    <a href="/Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md">spec</a>
+  </footer>
+
+  <script src="/rms.js"></script>
+</body>
+</html>
