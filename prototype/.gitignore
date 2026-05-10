@@ -17,3 +17,14 @@ build/
 # envelope per spec §4.1). The .gitkeep below preserves the dir itself.
 data/documents/*
 !data/documents/.gitkeep
+
+# D-EVENT-STORE-SCALING Slice 3b (2026-05-10): the dashboard cache is a
+# *projection* (Principle 1 — events/sources are truth, projections are
+# queries). Slice 3a moved the runtime cache to `.local/`; Slice 3b
+# removes the historical baseline `seeds/dashboard-state.json` from the
+# commit graph entirely. The recon harness now derives + asserts internal
+# consistency at recon time, never compares against a stored cache. The
+# file may still exist locally as a one-shot derivation artefact; it is
+# never committed.
+# See `Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3b-cache-from-commit-graph.md`.
+seeds/dashboard-state.json
