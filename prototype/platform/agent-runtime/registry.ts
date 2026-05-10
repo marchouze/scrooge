@@ -140,6 +140,12 @@ function payloadToSpec(payload: Record<string, unknown>): AgentSpec {
     reportsTo: String(payload.reportsTo ?? ""),
     cadenceMode: String(payload.cadenceMode ?? ""),
     triggerCount: Number(payload.triggerCount ?? 0),
+    // The AgentRegistered payload doesn't carry triggerSubscriptions —
+    // the subscribe allow-list is published in the parallel
+    // PermissionPolicyPublished event. Spec-from-payload is a registry
+    // query for display / list / lookup; consumers that need the
+    // canonical subscribe list read the policy.
+    triggerSubscriptions: [],
     decisionsInScopeCount: Number(payload.decisionsInScopeCount ?? 0),
     decisionsEscalateCount: Number(payload.decisionsEscalateCount ?? 0),
     systemCapabilities: Array.isArray(payload.systemCapabilities)
