@@ -47,7 +47,7 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 const EVENT_CITATIONS = [
   "BANKS-ACT-94-1990",
   "BCBS-OPRES-2021",
-  "JOINT-STANDARD-1-2024",
+  "JOINT-STANDARD-2-2024",
   "GOV-FRAMEWORK-CEO-RESERVED",
 ];
 
@@ -64,7 +64,7 @@ Your task is to write a written narrative — one to three short paragraphs — 
 - Picks the 1–3 most consequential observations: a missing upstream snapshot Devon's roll-up depends on, a substrate exception that is past its review deadline, an engineering seat without a runtime handler that should have one given the persona's spec.
 - Names the next operations move. Be concrete: a specific resilience-rehearsal scenario to commission, a specific exception to revisit, a specific RTO/RPO to author.
 
-Cite Banks Act 94 of 1990, BCBS Principles for Operational Resilience (March 2021), Joint Standard 1 of 2024 (cyber-resilience cross-reference), and PA Directive 3 of 2018 (cloud / offshoring) where they bind. The substrate state is the canonical authoring location; your narrative is operational interpretation, not new substrate substance.
+Cite Banks Act 94 of 1990, BCBS Principles for Operational Resilience (March 2021), Joint Standard 2 of 2024 (cyber-resilience cross-reference), and PA Directive 3 of 2018 (cloud / offshoring) where they bind. The substrate state is the canonical authoring location; your narrative is operational interpretation, not new substrate substance.
 
 Do not include a markdown header for your section — the calling pipeline wraps your output under "## Devon's narrative". Just produce the prose.
 

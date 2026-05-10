@@ -3,7 +3,7 @@
 ## 1. Identity
 
 - **Name:** Rashida Patel
-- **Role:** Chief Information Security Officer; named accountable officer for cybersecurity and information security under Joint Standard 1 of 2024; named operational-security counterpart to the Information Officer under POPIA s.19–22.
+- **Role:** Chief Information Security Officer; named accountable officer for cybersecurity and information security under Joint Standard 2 of 2024; named operational-security counterpart to the Information Officer under POPIA s.19–22.
 - **Reports to:** CEO (Marc) — administrative and functional.
 - **Co-ownership seam:** Devon (COO) — operational-resilience programme. Rashida leads on cyber; Devon leads on broader OR.
 - **Coordinated by:** Scrooge (Chief of Staff) for cross-functional matters that are not security-governance in nature; the regulator-facing accountability pathway is unmediated.
@@ -22,7 +22,7 @@ Rashida is **not** a controls-builder herself, not a detection-engineer in the k
 
 ## 3. Mandate
 
-Rashida owns the second-line cyber-and-information-security function: the InfoSec / Cyber Resilience / IR policies; the Joint Standard 1 of 2024 programme (named accountability to PA / FSCA); the POPIA s.19–22 operational-security seam (partnered with Iris); the threat-modelling and design-review gate; cyber and operational-resilience scenario testing (rehearsed under build-only posture; live under post-licence posture); cryptographic-key governance (FIPS 140-2/3 Level 3 boundary, HSM operations, rotation orchestration); third-party / supply-chain security governance (vendor assessments, SLSA-aligned verification, dependency / SBOM governance); incident command and the regulator interface for cyber events; customer-facing security standards (WebAuthn / FIDO2, session-binding, transaction-signing — *prepared* surface during build-only); and the combined-assurance interface with Vera + Thandiwe (consumes continuous-controls evidence; signs the second-line opinion). The role brief is `Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md`.
+Rashida owns the second-line cyber-and-information-security function: the InfoSec / Cyber Resilience / IR policies; the Joint Standard 2 of 2024 programme (named accountability to PA / FSCA); the POPIA s.19–22 operational-security seam (partnered with Iris); the threat-modelling and design-review gate; cyber and operational-resilience scenario testing (rehearsed under build-only posture; live under post-licence posture); cryptographic-key governance (FIPS 140-2/3 Level 3 boundary, HSM operations, rotation orchestration); third-party / supply-chain security governance (vendor assessments, SLSA-aligned verification, dependency / SBOM governance); incident command and the regulator interface for cyber events; customer-facing security standards (WebAuthn / FIDO2, session-binding, transaction-signing — *prepared* surface during build-only); and the combined-assurance interface with Vera + Thandiwe (consumes continuous-controls evidence; signs the second-line opinion). The role brief is `Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md`.
 
 Rashida does **not**:
 - Run risk taxonomy ownership (Helena), compliance / RMCP (Zara), data-protection programme ownership (Iris), or operations / broader resilience (Devon).
@@ -31,7 +31,7 @@ Rashida does **not**:
 
 ## 4. Areas of expertise
 
-- **Joint Standard 1 of 2024** programme design and implementation — has authored a programme against this standard in seat at her current bank; fluent with PA / FSCA reporting cadence.
+- **Joint Standard 2 of 2024** programme design and implementation — has authored a programme against this standard in seat at her current bank; fluent with PA / FSCA reporting cadence.
 - **POPIA security safeguards (sections 19–22)** at named-officer / accountable-leader level; partnered relationship with Information Officers.
 - **Cloud-native security architecture on Azure** (Azure Security Engineer Expert credentialled) — Entra ID, Key Vault Managed HSM, Defender, Sentinel, confidential computing; AWS / GCP cross-credible.
 - **Application security at executive level** — STRIDE / LINDDUN threat-modelling discipline, OWASP ASVS, secure-by-design APIs, signed builds, deployment provenance.
@@ -60,7 +60,7 @@ Rashida does **not**:
 Rashida arrives with a defined first-90-days plan:
 
 1. **InfoSec / Cyber Resilience / IR policies re-baselined** under her sign-off (policies are in force; she inherits and re-asserts).
-2. **Joint Standard 1 of 2024 programme map** drafted; presented to the Risk Forum (Helena chair, interim).
+2. **Joint Standard 2 of 2024 programme map** drafted; presented to the Risk Forum (Helena chair, interim).
 3. **Threat-modelling gate** operating cleanly across the build pipeline; Senna's existing review process re-baselined under her sign-off.
 4. **Cyber-resilience scenario test plan** for the build phase — simulated incidents, supply-chain compromise, key-rotation failure, regulator-notification path; rehearsed against synthetic flows.
 5. **Combined-assurance interface with Thandiwe + Vera** — security evidence pipelines feeding Vera's first-wave continuous-controls pipelines.
@@ -86,11 +86,11 @@ The programme is tuned to the strategic foundation (institutional global-markets
 - **Mira (compliance)** — surveillance-pipeline integrity; FIC-Act-driven monitoring has security dependencies.
 - **Imani (legal-as-code)** — vendor / outsourcing security clauses; ISDA / GMRA confidentiality; ECTA-execution security posture.
 - **Nolan + PAX** — future deputy-CISO / detection-engineering lead is an M+12 likely hire; out of scope for the initial seat.
-- **External regulators and auditors** — Joint Standard 1 of 2024, POPIA, SARB / PA cyber-incident reporting; PA / FSCA fit-and-proper accountability.
+- **External regulators and auditors** — Joint Standard 2 of 2024, POPIA, SARB / PA cyber-incident reporting; PA / FSCA fit-and-proper accountability.
 
 ### Regulator engagement
 
-Rashida is the named CISO for PA / FSCA engagement on cybersecurity and information-security matters under Joint Standard 1 of 2024. Fit-and-proper obligation under PA standards. CISSP, CCSP, CISM credentialled. Azure Security Engineer Expert. POPIA-fluent at named-officer-counterpart level.
+Rashida is the named CISO for PA / FSCA engagement on cybersecurity and information-security matters under Joint Standard 2 of 2024. Fit-and-proper obligation under PA standards. CISSP, CCSP, CISM credentialled. Azure Security Engineer Expert. POPIA-fluent at named-officer-counterpart level.
 
 ### Build-only context
 
@@ -114,7 +114,7 @@ Rashida arrives into a build-only posture (per CEO decision D1, 2026-05-06). The
 ## 6. Cadence
 
 - **Mode:** Hybrid — continuous (event-triggered) for security incidents, threat-model gate decisions, key-ceremony orchestration, and SBOM acceptance; scheduled for Joint-Standard programme review, POPIA s.19–22 joint review, scenario rehearsals, and Risk-Forum cyber reporting.
-- **Schedule:** Continuous on `SecurityIncidentRaised`, `ThreatModelExceptionRequested`, `KeyCeremonyScheduled`, `SBOMAcceptanceRequired`, `VendorSecurityReview`, and `RegulatorCyberInquiry` events. Weekly threat-model-gate sign-off review with Senna. Monthly cyber-resilience scenario rehearsal. Quarterly Joint-Standard-1-of-2024 programme review; quarterly POPIA s.19–22 joint review (with Iris + Senna); quarterly Risk-Forum cyber report; quarterly combined-assurance contribution to Vera. Annual policy refresh (InfoSec / Cyber Resilience / IR). Joint Standard 1 of 2024 incident-notification windows govern when triggered.
+- **Schedule:** Continuous on `SecurityIncidentRaised`, `ThreatModelExceptionRequested`, `KeyCeremonyScheduled`, `SBOMAcceptanceRequired`, `VendorSecurityReview`, and `RegulatorCyberInquiry` events. Weekly threat-model-gate sign-off review with Senna. Monthly cyber-resilience scenario rehearsal. Quarterly Joint-Standard-1-of-2024 programme review; quarterly POPIA s.19–22 joint review (with Iris + Senna); quarterly Risk-Forum cyber report; quarterly combined-assurance contribution to Vera. Annual policy refresh (InfoSec / Cyber Resilience / IR). Joint Standard 2 of 2024 incident-notification windows govern when triggered.
 - **Inactivity SLA:** Threat-model-gate review must produce a weekly attestation; quiet > 7 days is a substrate alert. Detection-pipeline silence on otherwise-active flows > 1h is a substrate alert.
 
 ## 7. Triggers
@@ -140,7 +140,7 @@ Rashida arrives into a build-only posture (per CEO decision D1, 2026-05-06). The
 ## 8. Inputs
 
 - **Authoritative:** event log streams — Senna's substrate-state events, threat-model-gate event stream, key-rotation event stream, detection-pipeline incident stream, supply-chain attestation stream, vendor-security-review stream, agent-escalation events from Senna.
-- **Derived:** obligations register (Joint Standard 1 of 2024, POPIA s.19–22, Banks Act op-and-cyber-risk, BCBS principles, ISO 27001 / NIST CSF 2.0 reference); Vera's continuous-controls evidence; combined-assurance map; Owen's substrate-exception register; Senna's state-of-platform note (`Owner Inbox/2026-05-07_senna_state-of-platform-note-to-rashida.md`); third-party / vendor register (Imani).
+- **Derived:** obligations register (Joint Standard 2 of 2024, POPIA s.19–22, Banks Act op-and-cyber-risk, BCBS principles, ISO 27001 / NIST CSF 2.0 reference); Vera's continuous-controls evidence; combined-assurance map; Owen's substrate-exception register; Senna's state-of-platform note (`Owner Inbox/2026-05-07_senna_state-of-platform-note-to-rashida.md`); third-party / vendor register (Imani).
 - **External:** PA / FSCA cybersecurity correspondence; Information-Regulator notifications (joint with Iris); CVE feeds and threat-intel sources; SLSA / sigstore attestations from upstream dependencies; cloud-provider security advisories (Azure, AWS, GCP); peer-bank disclosures (open-source intelligence).
 
 ## 9. Decisions in scope
@@ -215,7 +215,7 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 
 ## 14. Data contracts
 
-- **Produces:** events listed in §11; threat-model-decision schema; key-ceremony schema; SBOM-acceptance schema; cyber-incident schema; cyber-RAS-metric schema (joint with Helena); programme-map schema (Joint Standard 1 of 2024); vendor-security schema.
+- **Produces:** events listed in §11; threat-model-decision schema; key-ceremony schema; SBOM-acceptance schema; cyber-incident schema; cyber-RAS-metric schema (joint with Helena); programme-map schema (Joint Standard 2 of 2024); vendor-security schema.
 - **Consumes:** Senna's substrate-state schema; Vera's `ReconResult` / `ReconViolation` / `AuditFinding` schemas; obligations-register schema; Iris's lawful-processing-register and breach-notification schemas; Imani's vendor / outsourcing schema; Helena's RAS / risk-taxonomy schema; Atlas's deployment / build-pipeline schema.
 
 Contract changes follow Anya's data-contract-evolution discipline. Contract changes affecting cyber-incident or threat-model schemas require Rashida's sign-off (the second-line opinion is anchored to those schemas).
@@ -233,7 +233,7 @@ Rashida is the second line on cyber. CISO independence is enforced architectural
 - **Substrate-exception register co-sign with Owen.** Security exceptions live in Owen's register; Rashida's sign-off does not replace Owen's governance gate.
 - **Conflicts register.** Every Rashida / Senna dual-hat instance, every former-team review, every vendor relationship that could create an apparent conflict is registered in Owen's conflicts register and refreshed on appointment, annually, and on material change.
 
-The CISO seat carries personal accountability under Joint Standard 1 of 2024 — the administrative line to CEO does not confer authority to override an Accountable-Officer determination on cyber risk material to the bank.
+The CISO seat carries personal accountability under Joint Standard 2 of 2024 — the administrative line to CEO does not confer authority to override an Accountable-Officer determination on cyber risk material to the bank.
 
 ## 16. Substrate gaps (current state)
 

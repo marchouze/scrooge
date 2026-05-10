@@ -74,7 +74,7 @@ Autonomous run of Senna's M1 trading-stack threat-model handler per `Team Inbox/
 ## M2 security gate
 
 - **Gate ID.** `gate:senna:m1-trading-stack-threat-model:m2-precondition`
-- **Pre-condition.** M2 (listed bonds + repo) cannot start until the four dimensions above are reviewed and ratified by Rashida (CISO) per the Joint Standard 1 of 2024 programme.
+- **Pre-condition.** M2 (listed bonds + repo) cannot start until the four dimensions above are reviewed and ratified by Rashida (CISO) per the Joint Standard 2 of 2024 programme.
 - **Enforcement.** v1 records the gate as a `SecurityGateRegistered` event; Atlas's gate-check (planned Vera Wave-4 reconciliation) will block M2 dispatch until the gated dimensions carry a `ThreatModelGateApproved` event from Rashida.
 
 ## Citation chain
@@ -89,7 +89,7 @@ Every event emitted by this handler carries the union of the base chain and the 
 - `ORG-PR(IV)-06`
 - `GOV-FRAMEWORK-CEO-RESERVED`
 
-Joint Standard 1 of 2024 binds at ORG-CY-01 / 03 / 05; POPIA s.19–22 binds at ORG-PR(IV)-06; BCBS Op Resilience binds at ORG-PR-17 / ORG-CY-08 (cited per dimension where the resilience boundary is load-bearing). NIST SSDF (ORG-CY-12) and ISO 27001:2022 (ORG-CY-09 / 14) are reference-aligned anchors per the obligations register.
+Joint Standard 2 of 2024 binds at ORG-CY-01 / 03 / 05; POPIA s.19–22 binds at ORG-PR(IV)-06; BCBS Op Resilience binds at ORG-PR-17 / ORG-CY-08 (cited per dimension where the resilience boundary is load-bearing). NIST SSDF (ORG-CY-12) and ISO 27001:2022 (ORG-CY-09 / 14) are reference-aligned anchors per the obligations register.
 
 _Substrate-gap citations flagged inline with `[citation: route to Mira]` are forward-load — Mira's parallel `m1-regulator-citation-urns` handler is updating the register alongside this run; missing URNs land in the next register snapshot._
 

@@ -1,10 +1,10 @@
-# Joint Standard 1 of 2024 — Cybersecurity and Cyber Resilience
+# Joint Standard 2 of 2024 — Cybersecurity and Cyber Resilience
 
 **Curator:** Mira (with Senna) · **Status:** POPULATED · **Last reviewed:** 2026-05-06
 
 ## Citation
 
-- **Title:** Joint Standard 1 of 2024 on Cybersecurity and Cyber Resilience.
+- **Title:** Joint Standard 2 of 2024 on Cybersecurity and Cyber Resilience.
 - **Issuing authorities:** South African Reserve Bank Prudential Authority (PA) and Financial Sector Conduct Authority (FSCA), jointly under the FSR Act 9 of 2017.
 - **Effective:** 2024 (with implementation grace periods for in-scope financial institutions).
 - **Source:** [resbank.co.za](https://www.resbank.co.za) and [fsca.co.za](https://www.fsca.co.za) — Joint Standards.

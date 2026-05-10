@@ -468,7 +468,7 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     citationsHint: ["ORG-CY-01", "ORG-CY-09", "ORG-PR-17"],
     // Key-rotation events are security-of-record. 7y matches the
-    // governance / audit-trail norm; Joint Standard 1 of 2024 expects
+    // governance / audit-trail norm; Joint Standard 2 of 2024 expects
     // forensic key-management trails for the lifetime of the affected
     // material, which the Principle 1 indefinite-log delivers.
     retention: RETENTION_GOVERNANCE_7Y,
@@ -1254,7 +1254,7 @@ const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Senna",
     subscribers: ["Rashida", "dashboard"],
     replay: "append-only-audit",
-    citationsHint: ["JOINT-STANDARD-1-2024", "POPIA-S19-22"],
+    citationsHint: ["JOINT-STANDARD-2-2024", "POPIA-S19-22"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-security-substrate-state.ts",
   },

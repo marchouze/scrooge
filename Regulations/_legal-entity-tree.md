@@ -57,7 +57,7 @@ entities only.
   4. FAIS Act 37 of 2002 (where applicable per D-FSP-LICENCE-NECESSITY)
 - **Citations** (Principle 2):
   - `[citation: TBC pending counsel verification — Banks Act 94 of 1990 § 7 banking-licence]`
-  - `[citation: TBC pending counsel verification — Joint Standard 1 of 2024]`
+  - `[citation: TBC pending counsel verification — Joint Standard 2 of 2024]`
   - `[citation: TBC pending counsel verification — FAIS Act 37 of 2002 § 7]`
 
 ### Hoz Securities Limited

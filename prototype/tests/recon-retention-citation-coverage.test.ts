@@ -90,7 +90,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
   const externalAnchors = new Set([
     "BCBS-D457-FRTB-2019",
     "JSE-EQUITIES-RULES-2024",
-    "JOINT-STANDARD-1-2024-CYBER",
+    "JOINT-STANDARD-2-2024-CYBER",
   ]);
   const urnAnchors = new Set([
     "urn:obligation:bank:org:gv:director-decision-retention:v1",
@@ -337,7 +337,7 @@ describe("retention-citation-coverage — citation-form helpers", () => {
     expect(looksLikeExternalAnchor("BANKS-ACT-94-1990")).toBe(true);
     expect(looksLikeExternalAnchor("COMPANIES-ACT-71-2008-S24")).toBe(true);
     expect(looksLikeExternalAnchor("FIC-ACT-38-2001")).toBe(true);
-    expect(looksLikeExternalAnchor("JOINT-STANDARD-1-2024-CYBER")).toBe(true);
+    expect(looksLikeExternalAnchor("JOINT-STANDARD-2-2024-CYBER")).toBe(true);
     expect(looksLikeExternalAnchor("POPIA-S71-AUTOMATED-DECISIONING")).toBe(true);
     expect(looksLikeExternalAnchor("ORG-FC-05")).toBe(false);
     expect(looksLikeExternalAnchor("some-arbitrary-string")).toBe(false);

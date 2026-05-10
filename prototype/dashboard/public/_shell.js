@@ -2,7 +2,7 @@
 //
 // Identity stub: hardcoded `Marc · CEO` for v0. Real identity is a v1
 // substrate item (Senna (Security engineer) zero-trust posture under
-// Joint Standard 1 of 2024 + Iris (Information Officer, governance) for
+// Joint Standard 2 of 2024 + Iris (Information Officer, governance) for
 // POPIA s.19 lawful-processing). The shell exposes
 // `window.bankShell.user` so any consuming page can role-gate without
 // re-reading config.

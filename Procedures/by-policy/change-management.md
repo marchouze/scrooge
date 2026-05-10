@@ -19,8 +19,8 @@
 |---|---|
 | `ORG-PR-17` (BCBS Operational Risk) | Operational-risk identification, measurement, control framework. |
 | `ORG-PR-18` (BCBS Operational Resilience) | IBS impact tolerances respected through change. |
-| `ORG-CY-01` (Joint Standard 1 of 2024) | Cybersecurity framework with named accountability. |
-| `ORG-CY-03` (Joint Standard 1 of 2024) | Threat modelling and controls catalogue. |
+| `ORG-CY-01` (Joint Standard 2 of 2024) | Cybersecurity framework with named accountability. |
+| `ORG-CY-03` (Joint Standard 2 of 2024) | Threat modelling and controls catalogue. |
 | Internal | RAS B6 cyber severity overlap — material changes can introduce risk. |
 
 ## 3. Purpose

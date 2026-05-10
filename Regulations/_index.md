@@ -25,7 +25,7 @@
 
 | Instrument | File | Status | Source |
 |---|---|---|---|
-| Joint Standard 1 of 2024 — Cybersecurity & Cyber Resilience | [Joint-Standards/js-1-of-2024-cyber.md](Joint-Standards/js-1-of-2024-cyber.md) | **POPULATED** | resbank.co.za / fsca.co.za |
+| Joint Standard 2 of 2024 — Cybersecurity & Cyber Resilience | [Joint-Standards/js-2-of-2024-cyber.md](Joint-Standards/js-2-of-2024-cyber.md) | **POPULATED** | resbank.co.za / fsca.co.za |
 
 ## FSCA
 
@@ -144,7 +144,7 @@
 
 ## Status summary
 
-- **POPULATED:** 4 (Banks Act, FIC Act, POPIA, Joint Standard 1 of 2024) — exemplars demonstrating the analysis pattern.
+- **POPULATED:** 4 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024) — exemplars demonstrating the analysis pattern.
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 

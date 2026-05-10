@@ -34,7 +34,7 @@ Same statutory anchor as the Independent Chair scope (Companies Act s.66, s.94; 
 | Banks Act 94 of 1990 | s.60 | Sufficient size and composition. |
 | King IV | Principle 7; Principle 8 | Independence; committees. [citation: King IV Code, Principle 7] |
 | BCBS Corporate Governance Principles for Banks (2015) | Principle 3 | Substantive-independence reading. |
-| Joint Standard 1 of 2024 | §6, §8 | If the AC oversees cybersecurity (Owen+Imani §4.2 caveat for MLRO-alternate split, this NED may carry the MLRO-alternate role per Mira+Zara §4.2) |
+| Joint Standard 2 of 2024 | §6, §8 | If the AC oversees cybersecurity (Owen+Imani §4.2 caveat for MLRO-alternate split, this NED may carry the MLRO-alternate role per Mira+Zara §4.2) |
 
 ## 3. Mandate boundary
 
@@ -81,7 +81,7 @@ Same as Independent Chair scope §4, with two specifications:
 
 - Prior NED at a SARB-regulated bank.
 - Banking-regulatory experience.
-- Technology / cyber expertise (Joint Standard 1 of 2024 oversight).
+- Technology / cyber expertise (Joint Standard 2 of 2024 oversight).
 - Trading-bank exposure.
 - B-BBEE positive contribution.
 - FIC / AML-CFT exposure (for the MLRO-alternate fit).
@@ -110,6 +110,6 @@ Same as Independent Chair scope §4, with two specifications:
 - `Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md` — CEO decision.
 - `Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md` §2.2, §3 (item 3), §4.3.
 - `Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §4.2.
-- Companies Act 71 of 2008; Banks Act 94 of 1990; King IV Code; BCBS Corporate Governance Principles for Banks (2015); Joint Standard 1 of 2024.
+- Companies Act 71 of 2008; Banks Act 94 of 1990; King IV Code; BCBS Corporate Governance Principles for Banks (2015); Joint Standard 2 of 2024.
 
 —Nolan

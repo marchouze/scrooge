@@ -11,7 +11,7 @@
 //   - CEO decision `D-MARKETS-SCHEMA-FOUNDATION` (approved 2026-05-07) —
 //     the trigger condition for this handler.
 //   - CLAUDE.md Principle 4 — security designed in from the start.
-//   - Joint Standard 1 of 2024 (PA + FSCA) on cyber resilience for the
+//   - Joint Standard 2 of 2024 (PA + FSCA) on cyber resilience for the
 //     trading estate; ORG-CY-01..05, ORG-CY-09..14 in the obligations
 //     register.
 //   - POPIA s.19–22 — operational security safeguards (ORG-PR(IV)-06).
@@ -84,12 +84,12 @@ const M2_GATE_ID = "gate:senna:m1-trading-stack-threat-model:m2-precondition";
 /**
  * Citation chain shared across every emission from this handler. Per
  * Principle 2 each event traces to a structured source. Anchors:
- *   - ORG-CY-01 — Joint Standard 1 of 2024 framework (cyber-resilience
+ *   - ORG-CY-01 — Joint Standard 2 of 2024 framework (cyber-resilience
  *     accountable named substrate).
- *   - ORG-CY-03 — Joint Standard 1 of 2024 threat modelling, risk
+ *   - ORG-CY-03 — Joint Standard 2 of 2024 threat modelling, risk
  *     assessment, controls catalogue (the explicit obligation this
  *     handler discharges at engineering level).
- *   - ORG-CY-05 — Joint Standard 1 of 2024 + BCBS Op Resilience tested
+ *   - ORG-CY-05 — Joint Standard 2 of 2024 + BCBS Op Resilience tested
  *     cyber-incident response with rehearsed runbooks (anchors the
  *     ops-security boundary dimension).
  *   - ORG-CY-09 — ISO/IEC 27001:2022 reference alignment for the ISMS.
@@ -236,7 +236,7 @@ const DIMENSIONS: readonly ThreatModelDimension[] = [
     extraCitations: [
       "ORG-CY-08",
       // BCBS principles on operational and cyber risk are cited alongside
-      // Joint Standard 1 of 2024 at ORG-CY-05; the operational-risk
+      // Joint Standard 2 of 2024 at ORG-CY-05; the operational-risk
       // umbrella sits at ORG-PR-17.
       "ORG-PR-17",
     ],
@@ -322,7 +322,7 @@ function emitDimensions(ctx: AgentRunContext, decisionId: string): RunOutcome {
         gateId: M2_GATE_ID,
         gateKind: "m2-precondition",
         description:
-          "M2 (listed bonds + repo) cannot start until the four trading-stack threat-model dimensions are reviewed and ratified by Rashida (CISO) per Joint Standard 1 of 2024 programme.",
+          "M2 (listed bonds + repo) cannot start until the four trading-stack threat-model dimensions are reviewed and ratified by Rashida (CISO) per Joint Standard 2 of 2024 programme.",
         gatedDimensionIds: DIMENSIONS.map((d) => d.dimensionId),
         sourceDecisionId: decisionId,
         runTrigger: ctx.trigger.id,
@@ -371,7 +371,7 @@ function buildReportMarkdown(
   lines.push("");
   lines.push(`- **Gate ID.** \`${M2_GATE_ID}\``);
   lines.push(
-    "- **Pre-condition.** M2 (listed bonds + repo) cannot start until the four dimensions above are reviewed and ratified by Rashida (CISO) per the Joint Standard 1 of 2024 programme.",
+    "- **Pre-condition.** M2 (listed bonds + repo) cannot start until the four dimensions above are reviewed and ratified by Rashida (CISO) per the Joint Standard 2 of 2024 programme.",
   );
   lines.push(
     "- **Enforcement.** v1 records the gate as a `SecurityGateRegistered` event; Atlas's gate-check (planned Vera Wave-4 reconciliation) will block M2 dispatch until the gated dimensions carry a `ThreatModelGateApproved` event from Rashida.",
@@ -387,7 +387,7 @@ function buildReportMarkdown(
   for (const c of BASE_CITATIONS) lines.push(`- \`${c}\``);
   lines.push("");
   lines.push(
-    "Joint Standard 1 of 2024 binds at ORG-CY-01 / 03 / 05; POPIA s.19–22 binds at ORG-PR(IV)-06; BCBS Op Resilience binds at ORG-PR-17 / ORG-CY-08 (cited per dimension where the resilience boundary is load-bearing). NIST SSDF (ORG-CY-12) and ISO 27001:2022 (ORG-CY-09 / 14) are reference-aligned anchors per the obligations register.",
+    "Joint Standard 2 of 2024 binds at ORG-CY-01 / 03 / 05; POPIA s.19–22 binds at ORG-PR(IV)-06; BCBS Op Resilience binds at ORG-PR-17 / ORG-CY-08 (cited per dimension where the resilience boundary is load-bearing). NIST SSDF (ORG-CY-12) and ISO 27001:2022 (ORG-CY-09 / 14) are reference-aligned anchors per the obligations register.",
   );
   lines.push("");
   lines.push(

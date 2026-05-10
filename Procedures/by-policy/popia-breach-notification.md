@@ -18,7 +18,7 @@
 |---|---|
 | `ORG-PR(IV)-06` (POPIA ss.19–22) | Security safeguards; integrity and confidentiality of personal information. |
 | `ORG-PR(IV)-07` (POPIA s.22) | Notify Information Regulator and data subjects of compromise as soon as reasonably possible. |
-| `ORG-CY-04` (Joint Standard 1 of 2024) | Incident reporting to PA / FSCA per stipulated timelines. |
+| `ORG-CY-04` (Joint Standard 2 of 2024) | Incident reporting to PA / FSCA per stipulated timelines. |
 | `ORG-CY-11` (RAS B6) | Cyber severity tier model T1–T4 with Regulator-notification thresholds at T3 / T4. |
 
 ## 3. Purpose

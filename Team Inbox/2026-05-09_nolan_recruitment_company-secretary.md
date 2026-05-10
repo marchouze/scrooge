@@ -90,7 +90,7 @@ Mira+Zara's confirmation paper §4.2 places the **deputy-IO designation under PO
 **Nice-to-have:**
 
 - Prior CoSec at a SARB-regulated bank.
-- Joint Standard 1 of 2024 fluency (Board-papers cybersecurity coverage).
+- Joint Standard 2 of 2024 fluency (Board-papers cybersecurity coverage).
 - B-BBEE positive contribution.
 - Trading-bank exposure.
 - Technology fluency — autonomous-by-default operating model means CoSec interfaces with engineering Owen-the-agent.

@@ -78,7 +78,7 @@ The register is a **projection** over the underlying instrument analyses. As Mir
 
 The library is **scaffolded** with the directory structure, the index, and a substantive obligations register covering ~180 obligations across the full breadth of regulation applicable to a SARB-regulated bank.
 
-A handful of **exemplar instrument files** are populated to demonstrate the analysis pattern (Banks Act, FIC Act, POPIA, Joint Standard 1 of 2024). The remaining instruments are listed in `_index.md` with status `STUB` — Mira will populate them as the policy library is built out and as regulatory-change management surfaces concrete amendments to track.
+A handful of **exemplar instrument files** are populated to demonstrate the analysis pattern (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024). The remaining instruments are listed in `_index.md` with status `STUB` — Mira will populate them as the policy library is built out and as regulatory-change management surfaces concrete amendments to track.
 
 ## Co-dependencies
 

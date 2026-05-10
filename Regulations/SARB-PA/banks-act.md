@@ -49,7 +49,7 @@ The bank is **pre-licence** as of 2026-05-06; the licence application is forthco
 - **s.60** — Designate Chief Executive Officer; ensure board governance per fit-and-proper standards.
 - **s.60B** — Conduct and conduct-related supervision (interfaces with FSR Act / FSCA).
 - **PA fit-and-proper standards** — All designated persons (CEO, CRO, CFO, CCO, CISO, etc.) must be fit-and-proper.
-- **Joint Standard 1 of 2024** — Cyber-resilience accountability (named officer).
+- **Joint Standard 2 of 2024** — Cyber-resilience accountability (named officer).
 
 ### Reporting
 
@@ -81,7 +81,7 @@ The bank is **pre-licence** as of 2026-05-06; the licence application is forthco
 | Risk function (s.60A) | Risk Management Framework; Governance Framework | Helena |
 | Compliance function | RMCP; Governance Framework | Zara |
 | Governance (s.60) | Governance Framework; Fit-and-Proper Policy | Owen + Sade |
-| Cyber accountability (Joint Standard 1 of 2024) | Cyber Resilience Policy; Governance Framework | Devon (interim CISO) |
+| Cyber accountability (Joint Standard 2 of 2024) | Cyber Resilience Policy; Governance Framework | Devon (interim CISO) |
 | BA returns | Financial Reporting & Disclosure Policy; Capital / Liquidity / Provisioning policies | Camille (Bea) |
 | Annual FS + audit | Accounting Policies (IFRS); External Audit Engagement Policy | Camille (with future CAE) |
 | Internal audit (s.62) | Internal Audit Charter (planned, post-CAE hire) | future CAE (Vera) |

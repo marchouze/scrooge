@@ -24,7 +24,7 @@
 | `ORG-FC-*` (FIC Act ss.21–28A — CDD / EDD; ss.28–29 — CTR / STR; ss.42–42A — RMCP) [citation: `Regulations/_obligations-register.md`] | CTR thresholds, STR triggers, and the RMCP that frames both. |
 | `ORG-FC-SANCTIONS-SCREENING` (FIC Public Compliance Communications on sanctions; UNSC sanctions regime) [citation: TBC — Mira's parallel obligations-register update, sanctions-screening row currently a gap] | Sanctions screening is operationalised by the accountable institution; named accountability is the FIC Compliance Officer. |
 | `ORG-PR(IV)-13` (POPIA Reg. 4 — deputy-IO designation form) [citation: `Regulations/_obligations-register.md`, deputy-IO sub-gloss to harden] | Deputy-IO is a separate lodgment with the Information Regulator; carried by CoSec per the alternates split. |
-| `ORG-CY-04` (Joint Standard 1 of 2024 — incident reporting timelines) [citation: `Regulations/_obligations-register.md`] | Cyber-incident reporting to PA / FSCA per stipulated timelines, where the incident has financial-crime indicators (overlap with STR pathway). |
+| `ORG-CY-04` (Joint Standard 2 of 2024 — incident reporting timelines) [citation: `Regulations/_obligations-register.md`] | Cyber-incident reporting to PA / FSCA per stipulated timelines, where the incident has financial-crime indicators (overlap with STR pathway). |
 
 ## 3. Purpose
 
@@ -98,7 +98,7 @@ These are reviewed periodically for whether automation has caught up; agents tha
 | Failure mode | Detection | Escalation channel |
 |---|---|---|
 | STR SLA missed | Statutory deadline event timer | Triple-hatted lead → CEO (Marc); AC chair NED (MLRO-alternate) [citation: `ORG-FC-MLRO-ALTERNATE`] |
-| MLRO unavailable / on leave / incapacitated | Roster check on trigger fire | MLRO-alternate = AC-Chair NED (NOT double-hatted CoSec) [citation: Mira-Zara confirmation paper §4.2; Joint Standard 1 of 2024 reading on second-line independence; Mira's gap-closure URN `ORG-FC-MLRO-ALTERNATE`]. The CoSec carries deputy-IO only, not MLRO-alternate, to avoid single-point-of-failure at the CoSec seat (a JS-1-of-2024-aware framing). |
+| MLRO unavailable / on leave / incapacitated | Roster check on trigger fire | MLRO-alternate = AC-Chair NED (NOT double-hatted CoSec) [citation: Mira-Zara confirmation paper §4.2; Joint Standard 2 of 2024 reading on second-line independence; Mira's gap-closure URN `ORG-FC-MLRO-ALTERNATE`]. The CoSec carries deputy-IO only, not MLRO-alternate, to avoid single-point-of-failure at the CoSec seat (a JS-2-of-2024-aware framing). |
 | FIC portal extended outage | Portal-submission timeout event | Fallback channel + CEO notice + AC notice |
 | Sanctions hit unresolved past MTTR | Case-ageing dashboard | Triple-hatted lead → CEO; potential FIC engagement |
 | RMCP out of date past annual review | Calendar event | Triple-hatted lead → AC; Helena (CRO) interlock under JS-1-of-2024 read |
@@ -147,4 +147,4 @@ These gaps are roadmap items, not hidden. Vera tests this discipline as part of 
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v0.1 | 2026-05-09 | Zara (with Mira on engineering-line) | Initial draft post D-THIN-HUMAN-LAYER-MINIMUM. Names triple-hatted compliance lead (MLRO + FIC CO + IO) as procedure owner. Codifies MLRO-alternate = AC-Chair NED (NOT double-hatted CoSec) per Joint Standard 1 of 2024 reading and Mira's gap-closure URN `ORG-FC-MLRO-ALTERNATE`. Cross-references to Mira's parallel obligations-register update and Owen's parallel governance-framework update. |
+| v0.1 | 2026-05-09 | Zara (with Mira on engineering-line) | Initial draft post D-THIN-HUMAN-LAYER-MINIMUM. Names triple-hatted compliance lead (MLRO + FIC CO + IO) as procedure owner. Codifies MLRO-alternate = AC-Chair NED (NOT double-hatted CoSec) per Joint Standard 2 of 2024 reading and Mira's gap-closure URN `ORG-FC-MLRO-ALTERNATE`. Cross-references to Mira's parallel obligations-register update and Owen's parallel governance-framework update. |

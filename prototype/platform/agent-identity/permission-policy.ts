@@ -166,7 +166,7 @@ const DEFAULT_ENTITY = "BANK-ZA-001";
 const DEFAULT_ACTOR: Actor = { type: "service", id: "agent:atlas:permission-policy" };
 const DEFAULT_CITATIONS: readonly string[] = [
   "GOV-FRAMEWORK-CEO-RESERVED",
-  "JOINT-STANDARD-1-2024",
+  "JOINT-STANDARD-2-2024",
   "ORG-CY-09",
 ];
 
