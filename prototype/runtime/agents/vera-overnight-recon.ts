@@ -25,7 +25,10 @@ import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { run as runDashboardDerivation } from "../../platform/recon/dashboard-derivation-recon";
 import { run as runDecisionEvent } from "../../platform/recon/decision-event-recon";
+import { run as runDecisionRequiredEventPairing } from "../../platform/recon/decision-required-event-pairing";
+import { run as runEventTypeRegistryCoverage } from "../../platform/recon/event-type-registry-coverage";
 import { run as runMandateOwnership } from "../../platform/recon/mandate-ownership";
+import { run as runPermissionGateDefault } from "../../platform/recon/permission-gate-default";
 import { run as runProseDuplication } from "../../platform/recon/prose-duplication";
 import type { ReconResult, ReconViolation } from "../../platform/recon/types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
@@ -45,6 +48,21 @@ const PIPELINES: PipelineEntry[] = [
     key: "prose-duplication",
     title: "Prose duplication / canonical-source registry",
     run: runProseDuplication,
+  },
+  {
+    key: "permission-gate-default",
+    title: "Permission-gate secure-by-default integrity (F-031)",
+    run: runPermissionGateDefault,
+  },
+  {
+    key: "event-type-registry-coverage",
+    title: "Event-type registry coverage (F-032)",
+    run: runEventTypeRegistryCoverage,
+  },
+  {
+    key: "decision-required-event-pairing",
+    title: "Decision-required → CeoDecision pairing (F-033)",
+    run: runDecisionRequiredEventPairing,
   },
 ];
 
