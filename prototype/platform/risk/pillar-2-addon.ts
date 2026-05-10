@@ -36,7 +36,7 @@
 // Author: Rohan (Risk engineer, engineering — reports to Helena CRO)
 //   + Helena (Chief Risk Officer, governance — Pillar-2 accountable owner).
 
-import type { StressEngineOutput, ScenarioProjection } from "./stress-engine";
+import type { ScenarioProjection, StressEngineOutput } from "./stress-engine";
 
 export const PILLAR_2_CITATIONS = {
   banksAct: "BANKS-ACT-94-1990",

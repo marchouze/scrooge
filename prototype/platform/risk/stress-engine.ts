@@ -83,17 +83,14 @@
 // Author: Rohan (Risk engineer, engineering — reports to Helena CRO).
 
 import type { RwaEngineOutput } from "./rwa-engine";
-import {
-  RWA_BANK_ENTITIES,
-  RwaEngineError,
-} from "./rwa-engine";
+import { RWA_BANK_ENTITIES, RwaEngineError } from "./rwa-engine";
 import {
   type QuarterlyShock,
   type ReverseStressTarget,
-  type StressScenario,
-  type StressScenarioId,
   STRESS_HORIZON_QUARTERS,
   STRESS_SCENARIO_CITATION_LIST,
+  type StressScenario,
+  type StressScenarioId,
 } from "./stress-scenarios";
 
 // ---------------------------------------------------------------------------
@@ -384,7 +381,10 @@ function buildInitialState(input: StressEngineInput): MutableState {
   };
 }
 
-function projectScenario(input: StressEngineInput, scenario: StressScenario): QuarterlyProjection[] {
+function projectScenario(
+  input: StressEngineInput,
+  scenario: StressScenario,
+): QuarterlyProjection[] {
   const state = buildInitialState(input);
   const projections: QuarterlyProjection[] = [];
   // Q0 — base (no shock applied)
@@ -465,7 +465,9 @@ function runReverseStress(
   // should be deeply below the bind. Bisection finds k* such that
   // terminal CET1 ratio ≈ bindRatio.
 
-  const evalAtK = (k: number): { readonly projections: QuarterlyProjection[]; readonly terminalCet1: number } => {
+  const evalAtK = (
+    k: number,
+  ): { readonly projections: QuarterlyProjection[]; readonly terminalCet1: number } => {
     const projections = projectScaledScenario(input, scenario, k);
     const terminal = projections[projections.length - 1];
     if (!terminal) {
@@ -553,12 +555,16 @@ export function projectStress(input: StressEngineInput): StressEngineOutput {
     for (const p of scenario.placeholders) placeholders.add(p);
 
     if (quarterlyProjections.length === 0) {
-      throw new StressEngineError(`Stress engine: scenario '${scenario.id}' produced empty projection`);
+      throw new StressEngineError(
+        `Stress engine: scenario '${scenario.id}' produced empty projection`,
+      );
     }
     const worst = quarterlyProjections.reduce((acc, p) => (p.cet1Ratio < acc.cet1Ratio ? p : acc));
     const terminal = quarterlyProjections[quarterlyProjections.length - 1];
     if (!terminal) {
-      throw new StressEngineError(`Stress engine: scenario '${scenario.id}' missing terminal projection`);
+      throw new StressEngineError(
+        `Stress engine: scenario '${scenario.id}' missing terminal projection`,
+      );
     }
 
     const projection: ScenarioProjection = {
@@ -566,7 +572,9 @@ export function projectStress(input: StressEngineInput): StressEngineOutput {
       label: scenario.label,
       quarterlyProjections,
       ...(reverseStressScale !== undefined ? { reverseStressScale } : {}),
-      ...(scenario.reverseStressTarget ? { reverseStressTarget: scenario.reverseStressTarget } : {}),
+      ...(scenario.reverseStressTarget
+        ? { reverseStressTarget: scenario.reverseStressTarget }
+        : {}),
       ...(reverseStressConverged !== undefined ? { reverseStressConverged } : {}),
       worstQuarter: worst,
       terminalQuarter: terminal,

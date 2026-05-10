@@ -34,9 +34,9 @@
 //   accountable owner) + Rohan (Risk engineer, engineering — feed
 //   engineer; reports to Helena).
 
+import type { Pillar2AddOnOutput } from "./pillar-2-addon";
 import type { RwaEngineOutput } from "./rwa-engine";
 import type { StressEngineOutput } from "./stress-engine";
-import type { Pillar2AddOnOutput } from "./pillar-2-addon";
 
 export const ICAAP_NARRATIVE_CITATIONS = {
   banksAct: "BANKS-ACT-94-1990",
@@ -256,8 +256,7 @@ export function buildIcaapNarrativeData(input: IcaapNarrativeDataInput): IcaapNa
     riskBucketAddOnSumMinor: input.pillar2.riskBucketAddOnSumMinor,
     pillar2AddOnMinor: input.pillar2.pillar2AddOnMinor,
     pillar2AddOnPct: input.pillar2.pillar2AddOnPct,
-    note:
-      "Pillar-2 add-on is the institution-specific overlay above Pillar-1 standardised capital required to cover risks not (or under-) captured by the standardised approach + the stress-projection deficit.",
+    note: "Pillar-2 add-on is the institution-specific overlay above Pillar-1 standardised capital required to cover risks not (or under-) captured by the standardised approach + the stress-projection deficit.",
   };
 
   // Capital-planning derivation

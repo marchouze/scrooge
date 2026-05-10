@@ -77,11 +77,7 @@ export const STRESS_HORIZON_QUARTERS = 12;
 // Scenario shock shape
 // ---------------------------------------------------------------------------
 
-export type StressScenarioId =
-  | "base"
-  | "adverse"
-  | "severely-adverse"
-  | "reverse-stress";
+export type StressScenarioId = "base" | "adverse" | "severely-adverse" | "reverse-stress";
 
 /**
  * Per-quarter shock for one stress scenario. All multipliers are
@@ -252,7 +248,7 @@ export const BASE_SCENARIO: StressScenario = {
     asfCumulative: 1.1,
     rsfCumulative: 1.08,
   }),
-  citations: [STRESS_SCENARIO_CITATION_LIST[0]!, STRESS_SCENARIO_CITATIONS.orgPr12],
+  citations: [STRESS_SCENARIO_CITATIONS.banksAct, STRESS_SCENARIO_CITATIONS.orgPr12],
   placeholders: [
     "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact PA-published macro forecast path; build-phase fixture in use]",
   ],
@@ -370,7 +366,10 @@ export const REVERSE_STRESS_SCENARIO: StressScenario = {
     metric: "cet1Ratio",
     bindRatio: 0.045, // PA-min CET1 per Reg 38 / BCBS Basel III
   },
-  citations: [STRESS_SCENARIO_CITATIONS.basel3Icaap, STRESS_SCENARIO_CITATIONS.basel3StressPrinciples],
+  citations: [
+    STRESS_SCENARIO_CITATIONS.basel3Icaap,
+    STRESS_SCENARIO_CITATIONS.basel3StressPrinciples,
+  ],
   placeholders: [
     "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact PA-published reverse-stress framework; build-phase fixture in use]",
   ],
