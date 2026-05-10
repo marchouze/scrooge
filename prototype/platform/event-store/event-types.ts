@@ -3527,9 +3527,7 @@ export const agentRunCompletedFollowOnRouteSchema = z.object({
   directive: z.string().min(1),
 });
 
-export type AgentRunCompletedFollowOnRoute = z.infer<
-  typeof agentRunCompletedFollowOnRouteSchema
->;
+export type AgentRunCompletedFollowOnRoute = z.infer<typeof agentRunCompletedFollowOnRouteSchema>;
 
 export const agentRunCompletedPayloadSchema = z.object({
   runId: z.string().min(1),
@@ -3679,15 +3677,7 @@ export const feedbackPayloadSchema = z.object({
   intakeAt: z.string().min(1),
   /** What the feedback is about. */
   subject: z.object({
-    kind: z.enum([
-      "decision",
-      "brief",
-      "run",
-      "register",
-      "policy",
-      "principle",
-      "operating-rule",
-    ]),
+    kind: z.enum(["decision", "brief", "run", "register", "policy", "principle", "operating-rule"]),
     /** Reference to the subject — decisionId, briefId, runId, register key, etc. */
     ref: z.string().min(1),
   }),
@@ -3697,9 +3687,7 @@ export const feedbackPayloadSchema = z.object({
   bodyDocumentHash: documentHashSchema.optional(),
   /** Classifications. */
   classifications: z
-    .array(
-      z.enum(["directive", "preference", "correction", "question", "praise", "concern"]),
-    )
+    .array(z.enum(["directive", "preference", "correction", "question", "praise", "concern"]))
     .min(1),
   /** Optional fan-out targets. */
   routedTo: z.array(rmsAgentRefSchema).optional(),
