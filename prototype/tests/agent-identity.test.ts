@@ -46,6 +46,7 @@ function fakeSpec(overrides: Partial<AgentSpec> = {}): AgentSpec {
     reportsTo: "Devon (COO)",
     cadenceMode: "Scheduled.",
     triggerCount: 1,
+    triggerSubscriptions: [],
     decisionsInScopeCount: 1,
     decisionsEscalateCount: 0,
     systemCapabilities: ["@platform/event-store", "@platform/observability"],

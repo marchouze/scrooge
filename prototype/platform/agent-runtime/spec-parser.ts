@@ -47,6 +47,15 @@ export interface AgentSpec {
   readonly cadenceMode: string;
   /** Number of trigger rows in §7's table. */
   readonly triggerCount: number;
+  /**
+   * Typed event-name tokens parsed from the *first column* of §7's
+   * trigger table (backticked tokens that look like `EventName`).
+   * Powers the permission-policy `eventSubscribeAllowList` (S8 §3.3,
+   * A4 — Gap #2 closure). Scheduled wakes and natural-language
+   * triggers do not appear here; the §6 cadence + the source column
+   * carry them.
+   */
+  readonly triggerSubscriptions: readonly string[];
   /** Number of in-scope decision rows in §9's table. */
   readonly decisionsInScopeCount: number;
   /** Number of escalation rows in §10's table. */
@@ -162,6 +171,68 @@ function countTableDataRows(section: string | undefined): number {
     break;
   }
   return dataRows;
+}
+
+/**
+ * Extract typed event-name tokens from the first column of §7's
+ * trigger table. The convention across the fleet:
+ *
+ *   | Trigger                          | Source     | Response SLA |
+ *   |---|---|---|
+ *   | `TransactionPosted` event        | Event store| 60s          |
+ *   | Scheduled wake-up — daily 02:00  | Scheduler  | by 03:00     |
+ *   | PR opened on `prototype/...`     | Git        | 1 working day|
+ *
+ * We extract backticked tokens whose shape looks like a typed event
+ * name (UpperCamelCase, ASCII alnum) from the *first column only*. The
+ * Source / SLA columns may also carry backticked tokens (registers,
+ * URNs, timestamps) that are not subscriptions.
+ *
+ * Multiple tokens in one row are kept; some rows declare a tuple
+ * (e.g. "`PepListPublished` / `AdverseMediaPublished`"). Deduplicated
+ * in input order. Rows without a typed-event token contribute nothing.
+ *
+ * Author: Atlas (S8 §3.3, A4 — Gap #2 closure).
+ */
+function extractTriggerSubscriptions(section: string | undefined): string[] {
+  if (!section) return [];
+  const lines = section.split(/\r?\n/);
+  let inTable = false;
+  let separatorSeen = false;
+  const tokens: string[] = [];
+  const seen = new Set<string>();
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!inTable) {
+      if (/^\|\s*[-:]+(\s*\|\s*[-:]+)+\s*\|?\s*$/.test(trimmed)) {
+        inTable = true;
+        separatorSeen = true;
+        continue;
+      }
+      continue;
+    }
+    if (trimmed.startsWith("|")) {
+      if (!separatorSeen) continue;
+      // Slice the first column. Markdown rows look like `| col1 | col2 | col3 |`.
+      // Strip leading `|`, then split on `|` and take index 0.
+      const stripped = trimmed.replace(/^\|/, "");
+      const firstCol = stripped.split("|")[0] ?? "";
+      // Match backticked UpperCamelCase ASCII tokens — typed event names.
+      // Allow internal digits but not hyphens, dots, or underscores
+      // (those occur in URNs and procedure paths, not event names).
+      for (const m of firstCol.matchAll(/`([A-Z][A-Za-z0-9]*)`/g)) {
+        const tok = m[1]?.trim();
+        if (tok && !seen.has(tok)) {
+          seen.add(tok);
+          tokens.push(tok);
+        }
+      }
+      continue;
+    }
+    if (trimmed === "") break;
+    break;
+  }
+  return tokens;
 }
 
 /**
@@ -422,6 +493,7 @@ export function parseSpecContent(
     reportsTo,
     cadenceMode: extractCadenceMode(cadence),
     triggerCount: countTableDataRows(triggers),
+    triggerSubscriptions: extractTriggerSubscriptions(triggers),
     decisionsInScopeCount: countTableDataRows(decisionsInScope),
     decisionsEscalateCount: countTableDataRows(decisionsEscalate),
     systemCapabilities: extractCapabilities(capabilities),

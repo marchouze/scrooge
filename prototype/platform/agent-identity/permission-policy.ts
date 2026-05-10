@@ -70,28 +70,23 @@ export interface PermissionPolicyPublisher extends PermissionPolicyResolver {
 }
 
 /**
- * Extract typed event names (backticked tokens) from the trigger rows
- * of an agent's spec. We don't have the raw §7 text here (the parser
- * only counts rows); instead we use the spec's `eventsEmitted` as a
- * proxy when no explicit subscribe list is parsed. This is a known
- * substrate gap: A1.1's parser dropped the trigger details.
+ * Extract typed event names from the trigger rows of an agent's spec.
  *
- * Mitigation: callers that need the *real* subscribe allow-list should
- * pass the full §7 trigger text. For now we expose a derivation that
- * works against either the AgentSpec alone (returns []) or against an
- * augmented spec with `triggerSubscriptions` filled.
+ * S8 §3.3 + A4 (Atlas, 2026-05-10) — Gap #2 closure: the spec parser
+ * now captures `triggerSubscriptions` from §7's first column (typed
+ * event names that look like `EventNameLikeThis`). The subscribe
+ * allow-list mirrors that list verbatim. Scheduled triggers and
+ * natural-language triggers ("PR opened on `prototype/...`") do not
+ * become event subscriptions; they wake via the scheduler / source-
+ * specific consumers, not via the event-trigger bus.
  *
- * Substrate gap surfaced: Wave-4 #11 (event-subscribe coverage) will
- * tighten this when A1.1's parser is extended to capture trigger
- * payload typing.
+ * Empty result when the parser found no typed-event tokens — that is
+ * a faithful representation of an agent that subscribes to no event
+ * type (typical for governance personas whose triggers are
+ * scheduler-only).
  */
 function deriveEventSubscribeAllowList(spec: AgentSpec): string[] {
-  // The parser doesn't yet expose the raw trigger text. The current
-  // safe default is the empty list — A2's event-trigger bus will
-  // explicitly subscribe via spec, not via inference. The parser
-  // upgrade is tracked as a substrate gap.
-  void spec;
-  return [];
+  return [...spec.triggerSubscriptions];
 }
 
 /**

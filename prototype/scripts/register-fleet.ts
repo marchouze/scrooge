@@ -41,9 +41,9 @@ import { makeSubstrateAlert } from "../platform/event-store/event-types";
 import type { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 
-import type { AgentRegistry } from "../platform/agent-runtime/registry";
 import type { AgentIdentityIssuer } from "../platform/agent-identity/issuer";
 import type { PermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
+import type { AgentRegistry } from "../platform/agent-runtime/registry";
 
 /** Roster-JSON shape we depend on. Narrow to the fields we read. */
 interface RosterPersona {
@@ -184,12 +184,7 @@ export function registerOnePersona(
 
   const parse = parseSpecFile(specPath);
   if (!parse.ok) {
-    emitParseFailureAlert(
-      `agent:${persona.name.toLowerCase()}`,
-      parse.reason,
-      config,
-      store,
-    );
+    emitParseFailureAlert(`agent:${persona.name.toLowerCase()}`, parse.reason, config, store);
     return {
       personaName: persona.name,
       position,
