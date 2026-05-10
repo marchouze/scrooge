@@ -49,7 +49,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
+import { makeAccountingReadinessSnapshot } from "../../platform/event-store/event-types-readiness-snapshots";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -490,33 +490,34 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "AccountingReadinessSnapshot",
-      as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
-      actor: { type: "service", id: "agent:bea:accounting-readiness" },
-      citations: EVENT_CITATIONS,
-      payload: {
-        cycleCount: snap.readiness.length,
-        readinessReady: snap.readiness.filter((r) => r.engineerSideState === "ready").length,
-        readinessDrafting: snap.readiness.filter((r) => r.engineerSideState === "drafting").length,
-        readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified")
-          .length,
-        readinessUnspecified: snap.readiness.filter(
-          (r) => r.engineerSideState === "not-yet-specified",
-        ).length,
-        beaOwnedObligations: snap.obligations.total,
-        obligationsInForce: snap.obligations.inForce,
-        obligationsPartial: snap.obligations.partial,
-        obligationsPlanned: snap.obligations.planned,
-        obligationsDrafting: snap.obligations.drafting,
-        obligationsNAyet: snap.obligations.nAyet,
-        ...snap.events,
-        latestCamilleRun: snap.latestCamilleRun,
-        runTrigger: ctx.trigger.id,
-      },
-    });
+    eventStore.append(
+      makeAccountingReadinessSnapshot({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:bea:accounting-readiness" },
+        citations: EVENT_CITATIONS,
+        payload: {
+          cycleCount: snap.readiness.length,
+          readinessReady: snap.readiness.filter((r) => r.engineerSideState === "ready").length,
+          readinessDrafting: snap.readiness.filter((r) => r.engineerSideState === "drafting")
+            .length,
+          readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified")
+            .length,
+          readinessUnspecified: snap.readiness.filter(
+            (r) => r.engineerSideState === "not-yet-specified",
+          ).length,
+          beaOwnedObligations: snap.obligations.total,
+          obligationsInForce: snap.obligations.inForce,
+          obligationsPartial: snap.obligations.partial,
+          obligationsPlanned: snap.obligations.planned,
+          obligationsDrafting: snap.obligations.drafting,
+          obligationsNAyet: snap.obligations.nAyet,
+          ...snap.events,
+          latestCamilleRun: snap.latestCamilleRun,
+          runTrigger: ctx.trigger.id,
+        },
+      }),
+    );
     eventsEmitted = 1;
   }
 

@@ -44,7 +44,6 @@ import {
   fxSettlementInstructedPayloadSchema,
   fxTradeExecutedPayloadSchema,
 } from "../markets/cdm/fx";
-import { cdmBindingsRegeneratedPayloadSchema } from "./event-types-cdm";
 import {
   accountingPeriodClosedPayloadSchema,
   accountingPeriodOpenedPayloadSchema,
@@ -120,6 +119,12 @@ import {
   validationMethodologyPublishedPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
+import { cdmBindingsRegeneratedPayloadSchema } from "./event-types-cdm";
+import {
+  accountingReadinessSnapshotPayloadSchema,
+  agentOpsReadinessSnapshotPayloadSchema,
+  mlroAttestationPayloadSchema,
+} from "./event-types-readiness-snapshots";
 
 /**
  * Archival-tier policy per event type. Mirrors §4.2 of the event-store
@@ -2013,6 +2018,54 @@ const RAS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// Per-persona readiness-snapshot family. Each handler emits a weekly
+// (or trigger-driven) snapshot rolling up the persona's obligations
+// register slice + persona-specific operational counters. The
+// snapshots feed Saskia's pre-licence go-live readiness gate, Devon's
+// resilience digest, and Vera's audit trail. Schemas live at
+// `platform/event-store/event-types-readiness-snapshots.ts`. F-032
+// brought the gap from envelope-only to schema-typed; payload shapes
+// diverge enough between personas that a shared schema would force
+// `z.record(...)` and add no validation.
+const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "MLROAttestation",
+    class: "governance",
+    payloadSchema: mlroAttestationPayloadSchema,
+    issuer: "Zara",
+    subscribers: ["Saskia", "Devon", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["FIC-ACT-38-2001", "ORG-FC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_FIC_5Y,
+    source:
+      "runtime/agents/zara-mlro-supervision.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+  {
+    type: "AccountingReadinessSnapshot",
+    class: "governance",
+    payloadSchema: accountingReadinessSnapshotPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Saskia", "Devon", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["COMPANIES-ACT-71-2008-S24", "ORG-AC-01", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "runtime/agents/bea-accounting-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+  {
+    type: "AgentOpsReadinessSnapshot",
+    class: "governance",
+    payloadSchema: agentOpsReadinessSnapshotPayloadSchema,
+    issuer: "Sade",
+    subscribers: ["Saskia", "Devon", "Atlas", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-CY-01", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -2030,6 +2083,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...BANK_ACCOUNT_EVENT_TYPES,
   ...PERIOD_CLOSE_EVENT_TYPES,
   ...RAS_EVENT_TYPES,
+  ...READINESS_SNAPSHOT_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

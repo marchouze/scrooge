@@ -239,10 +239,7 @@ function readFactoryConsumers(prototypeDir: string, factories: ReadonlySet<strin
       (rel.endsWith(".ts") || rel.endsWith(".tsx"))
     )
       return true;
-    if (
-      rel.startsWith("platform/markets/cdm/") &&
-      (rel.endsWith(".ts") || rel.endsWith(".tsx"))
-    )
+    if (rel.startsWith("platform/markets/cdm/") && (rel.endsWith(".ts") || rel.endsWith(".tsx")))
       return true;
     return false;
   };

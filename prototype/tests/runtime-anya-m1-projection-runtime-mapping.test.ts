@@ -29,7 +29,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { eventStore } from "../platform/composition";
-import { newEventId } from "../platform/core/types";
 import { makeCdmBindingsRegenerated } from "../platform/event-store/event-types-cdm";
 import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
