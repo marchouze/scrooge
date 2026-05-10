@@ -344,6 +344,30 @@ describe("FX desk Slice 1 — page surface", () => {
     expect(html).toContain("/_shell.js");
   });
 
+  it("renders the Slice-2 RFQ form + confirmation panel surface", () => {
+    const deskHtmlPath = join(PUBLIC_DIR, "markets", "fx", "desk.html");
+    const html = readFileSync(deskHtmlPath, "utf8");
+    // RFQ form fields
+    expect(html).toContain("data-fx-rfq-form");
+    expect(html).toContain("data-fx-rfq-counterparty");
+    expect(html).toContain("data-fx-rfq-pair");
+    expect(html).toContain("data-fx-rfq-side");
+    expect(html).toContain("data-fx-rfq-notional");
+    expect(html).toContain("data-fx-rfq-value-date");
+    expect(html).toContain("data-fx-rfq-submit");
+    // Quote panel
+    expect(html).toContain("data-fx-rfq-bid");
+    expect(html).toContain("data-fx-rfq-mid");
+    expect(html).toContain("data-fx-rfq-offer");
+    // Confirmation panel
+    expect(html).toContain("data-fx-rfq-confirmation");
+    expect(html).toContain("data-fx-conf-trade-id");
+    expect(html).toContain("data-fx-conf-event-id");
+    expect(html).toContain("data-fx-conf-provenance");
+    // First-dry-run constraint copy
+    expect(html).toContain("USD/ZAR");
+  });
+
   it("ships the desk.css and desk.js assets", () => {
     expect(existsSync(join(PUBLIC_DIR, "markets", "fx", "desk.css"))).toBe(true);
     expect(existsSync(join(PUBLIC_DIR, "markets", "fx", "desk.js"))).toBe(true);

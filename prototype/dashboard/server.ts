@@ -61,7 +61,7 @@ import {
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
-import { emitTrade, quoteOnly, type RfqInput } from "./markets-fx-trade";
+import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
 import {
   POPIA_S71_NOTICE,
@@ -320,7 +320,7 @@ async function handleFxTrade(req: Request): Promise<Response> {
     return jsonResponse({ status: "rejected", reason: "invalid JSON body" }, 400);
   }
 
-  let result;
+  let result: TradeEmitResult;
   try {
     result = emitTrade({
       store: eventStore,
@@ -329,10 +329,7 @@ async function handleFxTrade(req: Request): Promise<Response> {
     });
   } catch (e) {
     // CDM zod-parse / append-rejection failures land here.
-    return jsonResponse(
-      { status: "rejected", reason: (e as Error).message },
-      400,
-    );
+    return jsonResponse({ status: "rejected", reason: (e as Error).message }, 400);
   }
 
   if (result.status === "rejected") {

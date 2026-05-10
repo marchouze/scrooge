@@ -33,14 +33,11 @@
 //         Markets, governance) · Anya (Data / analytics engineer,
 //         engineering — projection / derivation pattern review).
 
-import {
-  type FxTradeExecutedPayload,
-  makeFxTradeExecuted,
-} from "../platform/markets/cdm/fx";
-import type { EventStore } from "../platform/event-store/store";
-import { simulatedTag } from "../platform/event-store/provenance";
-import type { Event, ProvenanceTag } from "../platform/event-store/types";
 import { newEventId } from "../platform/core/types";
+import { simulatedTag } from "../platform/event-store/provenance";
+import type { EventStore } from "../platform/event-store/store";
+import type { Event, ProvenanceTag } from "../platform/event-store/types";
+import { type FxTradeExecutedPayload, makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 
 // ---------------------------------------------------------------------------
@@ -220,7 +217,11 @@ export function validateRfqInput(input: unknown): TradeEmitErr | null {
     };
   }
   if (i.rfqId !== undefined && (typeof i.rfqId !== "string" || !i.rfqId.trim())) {
-    return { status: "rejected", reason: "rfqId, if supplied, must be a non-empty string", field: "rfqId" };
+    return {
+      status: "rejected",
+      reason: "rfqId, if supplied, must be a non-empty string",
+      field: "rfqId",
+    };
   }
   return null;
 }
@@ -256,16 +257,13 @@ export function buildSpotPayload(args: {
   asOfDate: string;
 }): FxTradeExecutedPayload {
   const baseNotionalUsdMinor = Math.round(args.input.notional * 100); // USD cents
-  const counterNotionalZarMinor = Math.round(
-    args.input.notional * args.quote.rateUsed * 100,
-  );
+  const counterNotionalZarMinor = Math.round(args.input.notional * args.quote.rateUsed * 100);
 
   // Bank "buy" of USD: pays ZAR, receives USD.
   // Bank "sell" of USD: pays USD, receives ZAR.
   const payCurrency = args.input.side === "buy" ? "ZAR" : "USD";
   const receiveCurrency = args.input.side === "buy" ? "USD" : "ZAR";
-  const payAmountMinor =
-    args.input.side === "buy" ? counterNotionalZarMinor : baseNotionalUsdMinor;
+  const payAmountMinor = args.input.side === "buy" ? counterNotionalZarMinor : baseNotionalUsdMinor;
   const receiveAmountMinor =
     args.input.side === "buy" ? baseNotionalUsdMinor : counterNotionalZarMinor;
 

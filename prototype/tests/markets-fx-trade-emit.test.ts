@@ -27,7 +27,7 @@
 //         Markets, governance) + Anya (Data / analytics engineer,
 //         engineering).
 
-import { mkdtempSync, rmSync, existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
