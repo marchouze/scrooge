@@ -46,7 +46,7 @@
 // Author: Atlas (Core banking platform architect, engineering) +
 //         Owen (Company Secretary, governance)
 
-import { existsSync, readFileSync, renameSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import { logger } from "../../platform/composition";
@@ -81,10 +81,12 @@ interface ArchiveOutcome {
  * `Owner Inbox/2026-05-10_atlas_foo.md`. Some legacy events store an
  * absolute path; we normalise to repo-relative before checking.
  */
-function classifySourceDoc(
-  sourceDoc: string,
-  repoRoot: string,
-): { kind: "open"; absPath: string; relPath: string } | { kind: "actioned" | "outside" } {
+type SourceClassification =
+  | { kind: "open"; absPath: string; relPath: string }
+  | { kind: "actioned" }
+  | { kind: "outside" };
+
+function classifySourceDoc(sourceDoc: string, repoRoot: string): SourceClassification {
   const ownerInboxRel = "Owner Inbox";
   const absPath = isAbsolute(sourceDoc) ? sourceDoc : resolve(repoRoot, sourceDoc);
   const relPath = relative(repoRoot, absPath);
@@ -173,6 +175,19 @@ function processCeoDecision(
 
   // Open source card — proceed to validate file existence + frontmatter.
   if (!existsSync(classification.absPath)) {
+    // Idempotency layer 2: check whether the file already lives in
+    // `actioned/` under the same filename. If yes, this is a re-fire of
+    // a previously-archived event — quiet no-op, not a warn.
+    const filenameOnly = classification.relPath.split(sep)[1];
+    if (filenameOnly) {
+      const actionedTarget = resolve(ctx.repoRoot, "Owner Inbox", "actioned", filenameOnly);
+      if (existsSync(actionedTarget)) {
+        return {
+          outcome: { decisionId, sourceDoc, status: "already-archived" },
+          eventsEmitted: 0,
+        };
+      }
+    }
     logger.warn(
       { decisionId, sourceDoc, eventId: event.event_id },
       "scrooge:owner-inbox-archiver — sourceDoc not found",
@@ -259,10 +274,7 @@ function processCeoDecision(
     // a confusing failure mode if a fresh worktree somehow lacks
     // `Owner Inbox/actioned/`.
     if (!existsSync(dirname(targetAbs))) {
-      // Use sync mkdir; the directory either exists (no-op) or we create
-      // it. node:fs's mkdirSync with recursive:true is idempotent.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mkdirSync } = require("node:fs");
+      // mkdirSync with recursive:true is idempotent.
       mkdirSync(dirname(targetAbs), { recursive: true });
     }
     renameSync(classification.absPath, targetAbs);
