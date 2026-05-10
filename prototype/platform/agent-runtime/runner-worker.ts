@@ -83,9 +83,7 @@ export class WorktreeBoundaryError extends Error {
   readonly worktreeRoot: string;
 
   constructor(attemptedPath: string, worktreeRoot: string) {
-    super(
-      `WorktreeBoundaryError: path "${attemptedPath}" escapes worktree root "${worktreeRoot}"`,
-    );
+    super(`WorktreeBoundaryError: path "${attemptedPath}" escapes worktree root "${worktreeRoot}"`);
     this.name = "WorktreeBoundaryError";
     this.attemptedPath = attemptedPath;
     this.worktreeRoot = worktreeRoot;
@@ -164,9 +162,7 @@ export function resolveWithinRoot(inputPath: string, worktreeRoot: string): stri
   // by default. We pin them explicitly to `root` so a worker bound to
   // `/A/worktree-1` always resolves "./foo" under that worktree, never
   // under whatever cwd the host process happens to have.
-  const resolved = isAbsolute(inputPath)
-    ? resolve(inputPath)
-    : resolve(root, inputPath);
+  const resolved = isAbsolute(inputPath) ? resolve(inputPath) : resolve(root, inputPath);
   if (resolved === root) {
     return resolved;
   }

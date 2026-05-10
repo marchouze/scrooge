@@ -23,7 +23,7 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -116,9 +116,7 @@ describe("resolveWithinRoot", () => {
   it("throws WorktreeBoundaryError on absolute path outside root", () => {
     const root = makeWorktree();
     try {
-      expect(() => resolveWithinRoot("/etc/passwd", root)).toThrow(
-        WorktreeBoundaryError,
-      );
+      expect(() => resolveWithinRoot("/etc/passwd", root)).toThrow(WorktreeBoundaryError);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -127,9 +125,7 @@ describe("resolveWithinRoot", () => {
   it("throws WorktreeBoundaryError on relative .. traversal", () => {
     const root = makeWorktree();
     try {
-      expect(() => resolveWithinRoot("../../../etc/passwd", root)).toThrow(
-        WorktreeBoundaryError,
-      );
+      expect(() => resolveWithinRoot("../../../etc/passwd", root)).toThrow(WorktreeBoundaryError);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -252,9 +248,7 @@ describe("RunnerWorker.install — node:fs shim", () => {
     const handle = worker.install();
     activeDisposers.push(handle.dispose);
     try {
-      expect(() => fsCjs.readFileSync("/etc/passwd", "utf8")).toThrow(
-        WorktreeBoundaryError,
-      );
+      expect(() => fsCjs.readFileSync("/etc/passwd", "utf8")).toThrow(WorktreeBoundaryError);
     } finally {
       handle.dispose();
       activeDisposers = activeDisposers.filter((d) => d !== handle.dispose);
@@ -271,9 +265,7 @@ describe("RunnerWorker.install — node:fs shim", () => {
     activeDisposers.push(handle.dispose);
     try {
       // tmpdir is outside the worktree root by construction.
-      expect(() => fsCjs.writeFileSync(escapeTarget, "bad")).toThrow(
-        WorktreeBoundaryError,
-      );
+      expect(() => fsCjs.writeFileSync(escapeTarget, "bad")).toThrow(WorktreeBoundaryError);
     } finally {
       handle.dispose();
       activeDisposers = activeDisposers.filter((d) => d !== handle.dispose);
@@ -291,9 +283,7 @@ describe("RunnerWorker.install — node:fs shim", () => {
     try {
       // The override is in effect; cwd is the root. "../etc/passwd"
       // resolves above the root and must be rejected.
-      expect(() => fsCjs.readFileSync("../etc/passwd", "utf8")).toThrow(
-        WorktreeBoundaryError,
-      );
+      expect(() => fsCjs.readFileSync("../etc/passwd", "utf8")).toThrow(WorktreeBoundaryError);
     } finally {
       handle.dispose();
       activeDisposers = activeDisposers.filter((d) => d !== handle.dispose);
@@ -328,9 +318,7 @@ describe("RunnerWorker.install — dispose() restores", () => {
     const handle = worker.install();
     try {
       // Under override, an absolute read outside the root throws.
-      expect(() => fsCjs.readFileSync("/etc/passwd", "utf8")).toThrow(
-        WorktreeBoundaryError,
-      );
+      expect(() => fsCjs.readFileSync("/etc/passwd", "utf8")).toThrow(WorktreeBoundaryError);
     } finally {
       handle.dispose();
     }
