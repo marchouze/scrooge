@@ -910,11 +910,7 @@ function decisionIdFromRecordFilename(filename: string): string | null {
 //    D-PRODUCT-CONSTRUCTION-SUBSTRATE, 2026-05-10"
 // collapse to "Decision record · D-PRODUCT-CONSTRUCTION-SUBSTRATE".
 // Returns the original title when no rule applies.
-export function displayTitleFor(
-  title: string,
-  filename: string,
-  kind: OwnerInboxKind,
-): string {
+export function displayTitleFor(title: string, filename: string, kind: OwnerInboxKind): string {
   if (kind === "decision-record") {
     const id = decisionIdFromRecordFilename(filename);
     if (id) return `Decision record · ${id}`;
