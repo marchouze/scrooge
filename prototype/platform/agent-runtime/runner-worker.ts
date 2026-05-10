@@ -29,8 +29,47 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import * as nodeFs from "node:fs";
+import { createRequire } from "node:module";
 import { isAbsolute, relative, resolve } from "node:path";
+
+/**
+ * The fs shim patches the **CJS** view of `node:fs`. ESM namespace
+ * imports (`import * as fs from "node:fs"`) are bound at import-time
+ * and cannot be reassigned post-hoc — those callers escape the shim.
+ *
+ * This is an honest limitation of in-process accident-prevention:
+ *   - The chdir override (process.chdir) is global and catches every
+ *     caller regardless of import style.
+ *   - The fs shim catches CJS-require callers; ESM callers route
+ *     around it.
+ *
+ * The 2026-05-09 incidents were all chdir escapes (the agent ran a
+ * `cd` shell command, or used `process.chdir`), so the chdir override
+ * is the load-bearing primitive. The fs shim is a defence-in-depth
+ * layer for the most-common Node-style fs callers that happen to be
+ * CJS — see Owner Inbox/2026-05-10_atlas_agent-runner-worker-isolation-spike.md
+ * §6.2 for the gap envelope.
+ */
+const fsRequire = createRequire(import.meta.url);
+
+/**
+ * Marker symbol stashed on wrapper functions so a subsequent install()
+ * can unwrap defensively if a prior dispose() never ran (e.g. a test
+ * threw before its `finally` block). Without this, stale wrappers
+ * accumulate: the second install() would treat the first wrapper as
+ * the "original" and re-wrap, producing a chain that can never be
+ * fully restored. The marker lets us walk back to the genuine original.
+ */
+const ORIGINAL_CHDIR_MARKER: unique symbol = Symbol("runner-worker:original-chdir");
+const ORIGINAL_FS_MARKER: unique symbol = Symbol("runner-worker:original-fs-call");
+
+type ChdirWithMarker = typeof process.chdir & {
+  [ORIGINAL_CHDIR_MARKER]?: typeof process.chdir;
+};
+
+type FsCallWithMarker = ((...args: unknown[]) => unknown) & {
+  [ORIGINAL_FS_MARKER]?: (...args: unknown[]) => unknown;
+};
 
 /**
  * Typed error thrown when the agent's runtime attempts to access a
@@ -151,15 +190,14 @@ export function resolveWithinRoot(inputPath: string, worktreeRoot: string): stri
  * `fs.symlink` (two paths) — those are tracked as substrate gaps in
  * the design doc §8.
  */
-type FsKey = keyof typeof nodeFs;
 type FsCall = (...args: unknown[]) => unknown;
 
 interface FsPatch {
-  readonly key: FsKey;
+  readonly key: string;
   readonly original: FsCall;
 }
 
-const FS_KEYS_PATCHED: readonly FsKey[] = [
+const FS_KEYS_PATCHED: readonly string[] = [
   "readFileSync",
   "writeFileSync",
   "readdirSync",
@@ -206,12 +244,19 @@ class LocalRunnerWorker implements RunnerWorker {
     }
     this.installed = true;
 
-    // 1. chdir into the worktree root before patching, so the override's
-    //    "current cwd is under root" invariant holds from the first call.
-    process.chdir(this.worktreeRoot);
+    // 1. Capture the truly-original chdir BEFORE we modify the host.
+    //    If a stale wrapper from a prior aborted install() is still in
+    //    place (test-suite hygiene), unwrap it first via the marker.
+    const currentChdir = process.chdir as ChdirWithMarker;
+    const originalChdir: typeof process.chdir =
+      currentChdir[ORIGINAL_CHDIR_MARKER] ?? currentChdir.bind(process);
 
-    // 2. Wrap process.chdir.
-    const originalChdir = process.chdir.bind(process);
+    // 2. chdir into the worktree root using the *original* implementation
+    //    (so stale wrappers don't reject a valid root). The next chdir
+    //    after we install our wrapper will be checked.
+    originalChdir(this.worktreeRoot);
+
+    // 3. Wrap process.chdir.
     const root = this.worktreeRoot;
     const onEscape = (err: WorktreeBoundaryError): never => {
       if (this.onBoundaryEscape) {
@@ -219,7 +264,7 @@ class LocalRunnerWorker implements RunnerWorker {
       }
       throw err;
     };
-    const wrappedChdir: typeof process.chdir = (target: string) => {
+    const wrappedChdir: ChdirWithMarker = ((target: string) => {
       try {
         const safe = resolveWithinRoot(target, root);
         originalChdir(safe);
@@ -229,7 +274,10 @@ class LocalRunnerWorker implements RunnerWorker {
         }
         throw err;
       }
-    };
+    }) as ChdirWithMarker;
+    // Stash the original on the wrapper so a subsequent install() can
+    // unwrap defensively if dispose() never ran (test-suite hygiene).
+    wrappedChdir[ORIGINAL_CHDIR_MARKER] = originalChdir;
     process.chdir = wrappedChdir;
 
     // 3. Wrap a curated set of node:fs path-accepting helpers. Each
@@ -241,16 +289,21 @@ class LocalRunnerWorker implements RunnerWorker {
     //    the three incidents all used sync APIs (Bash + git + scaffold
     //    file writes), so the *Sync surface is the immediate priority.
     const patches: FsPatch[] = [];
-    const fsAny = nodeFs as unknown as Record<string, FsCall>;
+    // Patch the CJS view of node:fs. ESM-namespace callers escape this
+    // shim by design (see comment at top of file).
+    const fsAny = fsRequire("node:fs") as Record<string, FsCall>;
     for (const key of FS_KEYS_PATCHED) {
-      const original = fsAny[key];
-      if (typeof original !== "function") {
+      const current = fsAny[key] as FsCallWithMarker | undefined;
+      if (typeof current !== "function") {
         // Some helpers may be absent on stripped runtimes — skip
         // silently rather than fail install().
         continue;
       }
+      // Walk back to the genuine original via the marker (defensive
+      // against stale wrappers from a prior aborted install()).
+      const original: FsCall = current[ORIGINAL_FS_MARKER] ?? current;
       patches.push({ key, original });
-      fsAny[key] = (...args: unknown[]): unknown => {
+      const wrapped: FsCallWithMarker = ((...args: unknown[]): unknown => {
         const first = args[0];
         if (typeof first === "string") {
           try {
@@ -266,7 +319,9 @@ class LocalRunnerWorker implements RunnerWorker {
         // unchecked. fd-based fs calls have already passed through an
         // openSync (which we shim), so the boundary check fires there.
         return original(...args);
-      };
+      }) as FsCallWithMarker;
+      wrapped[ORIGINAL_FS_MARKER] = original;
+      fsAny[key] = wrapped;
     }
 
     return {
