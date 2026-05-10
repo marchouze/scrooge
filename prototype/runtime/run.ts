@@ -45,8 +45,16 @@
 
 import { resolve } from "node:path";
 
+import { randomBytes } from "node:crypto";
+
 import { eventStore } from "../platform/composition";
-import { makeLegacyFanoutShadowed, makeSubstrateAlert } from "../platform/event-store/event-types";
+import {
+  makeLegacyFanoutShadowed,
+  makeSubstrateAgentRunCompleted,
+  makeSubstrateAgentRunFailed,
+  makeSubstrateAgentRunStarted,
+  makeSubstrateAlert,
+} from "../platform/event-store/event-types";
 import type { Actor } from "../platform/event-store/types";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import { logger } from "../platform/observability/logger";
@@ -108,6 +116,169 @@ const PHASE_1_CITATIONS: readonly string[] = [
 ];
 
 const DEFAULT_ENTITY = "BANK-ZA-001";
+
+// ---------------------------------------------------------------------------
+// Substrate-runner lifecycle (S8 / D-AGENT-RUNTIME-AUTHORIZE; spec §3.4)
+//
+// Every `runAgent` invocation is wrapped in `SubstrateAgentRunStarted` →
+// (`SubstrateAgentRunCompleted` | `SubstrateAgentRunFailed`). The pair-coupling
+// key is the `runId` minted at run start. Vera Wave-4 #13 (inactivity-SLA)
+// will fold these streams to detect runs that opened but never closed.
+//
+// Authority: S8 / D-AGENT-RUNTIME-AUTHORIZE (CEO-approved 2026-05-08).
+// Assessment: Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md.
+// ---------------------------------------------------------------------------
+
+const SUBSTRATE_RUNNER_ACTOR: Actor = {
+  type: "service",
+  id: "agent:atlas:substrate-runner",
+};
+
+const SUBSTRATE_LIFECYCLE_CITATIONS: readonly string[] = [
+  "D-AGENT-RUNTIME-AUTHORIZE",
+  "GOV-FRAMEWORK-CEO-RESERVED",
+  "JOINT-STANDARD-2-2024",
+  "ORG-CY-09",
+];
+
+/** Cap for SubstrateAgentRunFailed.errorMessage. Schema enforces 1024; we trim defensively. */
+const ERROR_MESSAGE_MAX_LEN = 1024;
+
+/**
+ * Mint a stable run id for the substrate-runner lifecycle. Format:
+ * `run:<lowercased-agent>:<iso-utc-no-punct>:<short-rand>`. The
+ * substrateRunIdSchema in event-types.ts validates the same regex; keep
+ * the two in sync.
+ */
+function mintRunId(agent: string, startedAt: string): string {
+  const slug = agent.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  // ISO-8601 with `:` and `.` stripped — keeps the regex-friendly char set.
+  // Example "2026-05-10T13:55:01.234Z" → "2026-05-10T135501234Z".
+  const tsCompact = startedAt.replace(/[:.]/g, "");
+  const rand = randomBytes(4).toString("hex");
+  return `run:${slug}:${tsCompact}:${rand}`;
+}
+
+function truncateErrMsg(msg: string): string {
+  if (msg.length <= ERROR_MESSAGE_MAX_LEN) return msg;
+  return `${msg.slice(0, ERROR_MESSAGE_MAX_LEN - 1)}…`;
+}
+
+function emitSubstrateRunStarted(payload: {
+  runId: string;
+  agent: string;
+  trigger: { kind: "scheduled" | "event-driven" | "on-request"; id: string };
+  startedAt: string;
+  dryRun: boolean;
+  sequenceAtStart: number;
+}): void {
+  try {
+    eventStore.append(
+      makeSubstrateAgentRunStarted({
+        asOf: payload.startedAt,
+        entity: DEFAULT_ENTITY,
+        actor: SUBSTRATE_RUNNER_ACTOR,
+        citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+        payload: {
+          runId: payload.runId,
+          agent: payload.agent,
+          trigger: payload.trigger,
+          startedAt: payload.startedAt,
+          dryRun: payload.dryRun,
+          // Today every `runAgent` invocation is the autonomous substrate
+          // path. Scrooge-coordinated in-session runs do not call into
+          // `runAgent` — they run handler logic directly. The flag exists
+          // so future substrate-vs-Scrooge distinguishing remains explicit.
+          substrate: "agent-runtime",
+          sequenceAtStart: payload.sequenceAtStart,
+        },
+      }),
+    );
+  } catch (err) {
+    logger.error(
+      { runId: payload.runId, agent: payload.agent, err: (err as Error).message },
+      "substrate-runner — SubstrateAgentRunStarted append failed (non-fatal)",
+    );
+  }
+}
+
+function emitSubstrateRunCompleted(payload: {
+  runId: string;
+  agent: string;
+  completedAt: string;
+  durationMs: number;
+  ok: boolean;
+  eventsEmitted: number;
+  decisionsEmitted: number;
+  escalationsEmitted: number;
+  sequenceAtCompletion: number;
+  deliverable?: string;
+  summary: string;
+}): void {
+  try {
+    eventStore.append(
+      makeSubstrateAgentRunCompleted({
+        asOf: payload.completedAt,
+        entity: DEFAULT_ENTITY,
+        actor: SUBSTRATE_RUNNER_ACTOR,
+        citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+        payload: {
+          runId: payload.runId,
+          agent: payload.agent,
+          completedAt: payload.completedAt,
+          durationMs: payload.durationMs,
+          ok: payload.ok,
+          eventsEmitted: payload.eventsEmitted,
+          decisionsEmitted: payload.decisionsEmitted,
+          escalationsEmitted: payload.escalationsEmitted,
+          sequenceAtCompletion: payload.sequenceAtCompletion,
+          ...(payload.deliverable ? { deliverable: payload.deliverable } : {}),
+          summary: payload.summary,
+        },
+      }),
+    );
+  } catch (err) {
+    logger.error(
+      { runId: payload.runId, agent: payload.agent, err: (err as Error).message },
+      "substrate-runner — SubstrateAgentRunCompleted append failed (non-fatal)",
+    );
+  }
+}
+
+function emitSubstrateRunFailed(payload: {
+  runId: string;
+  agent: string;
+  failedAt: string;
+  durationMs: number;
+  errorClass: "exception" | "structured" | "timeout" | "unknown";
+  errorMessage: string;
+  sequenceAtFailure: number;
+}): void {
+  try {
+    eventStore.append(
+      makeSubstrateAgentRunFailed({
+        asOf: payload.failedAt,
+        entity: DEFAULT_ENTITY,
+        actor: SUBSTRATE_RUNNER_ACTOR,
+        citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+        payload: {
+          runId: payload.runId,
+          agent: payload.agent,
+          failedAt: payload.failedAt,
+          durationMs: payload.durationMs,
+          errorClass: payload.errorClass,
+          errorMessage: payload.errorMessage,
+          sequenceAtFailure: payload.sequenceAtFailure,
+        },
+      }),
+    );
+  } catch (err) {
+    logger.error(
+      { runId: payload.runId, agent: payload.agent, err: (err as Error).message },
+      "substrate-runner — SubstrateAgentRunFailed append failed (non-fatal)",
+    );
+  }
+}
 
 /**
  * Lazily-built bus singleton. Constructed on first use rather than at
@@ -202,17 +373,26 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   }
 
   const repoRoot = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
+  const startedAt = new Date().toISOString();
+  const runId = mintRunId(opts.agent, startedAt);
   const ctx: AgentRunContext = {
     agent: opts.agent,
+    runId,
     trigger: { kind: entry.metadata.kind, id: opts.trigger },
-    asOf: new Date().toISOString(),
+    asOf: startedAt,
     repoRoot,
     ownerInboxDir: resolve(repoRoot, "Owner Inbox"),
     dryRun: opts.dryRun,
   };
 
   logger.info(
-    { agent: ctx.agent, trigger: ctx.trigger.id, asOf: ctx.asOf, dryRun: ctx.dryRun },
+    {
+      agent: ctx.agent,
+      runId,
+      trigger: ctx.trigger.id,
+      asOf: ctx.asOf,
+      dryRun: ctx.dryRun,
+    },
     "agent run started",
   );
   const t0 = Date.now();
@@ -220,11 +400,64 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   // observe what new event types this run appended (for event-driven
   // fan-out below).
   const seqBefore = eventStore.count();
-  const result = await entry.handler(ctx);
+
+  // Emit the substrate-runner lifecycle Started event (S8 §3.4).
+  // Best-effort — a permission-gate denial here would leave the run
+  // running without lifecycle pairing, which is a finding for Vera but
+  // not a runtime fail. We log + continue.
+  emitSubstrateRunStarted({
+    runId,
+    agent: ctx.agent,
+    trigger: ctx.trigger,
+    startedAt,
+    dryRun: ctx.dryRun,
+    sequenceAtStart: seqBefore,
+  });
+
+  // Invoke the handler. Wrap in try/catch so a thrown error still emits
+  // the closing `…Failed` lifecycle event before propagating.
+  let result: AgentRunOutput;
+  try {
+    result = await entry.handler(ctx);
+  } catch (err) {
+    const ms = Date.now() - t0;
+    const seqAtFailure = eventStore.count();
+    emitSubstrateRunFailed({
+      runId,
+      agent: ctx.agent,
+      failedAt: new Date().toISOString(),
+      durationMs: ms,
+      errorClass: "exception",
+      errorMessage: truncateErrMsg((err as Error).message ?? "unknown"),
+      sequenceAtFailure: seqAtFailure,
+    });
+    throw err;
+  }
   const ms = Date.now() - t0;
+  const seqAtCompletion = eventStore.count();
+  // Count the run's own emissions of decision / escalation events so the
+  // closing payload carries the per-run tallies (Atlas spec §3.4 — "count
+  // of decisions emitted, count of escalations emitted").
+  const newEventsThisRun = [...eventStore.replay({ fromSequence: seqBefore + 1 })];
+  const decisionsEmitted = newEventsThisRun.filter((e) => e.type === "AgentDecision").length;
+  const escalationsEmitted = newEventsThisRun.filter((e) => e.type === "AgentEscalation").length;
+  emitSubstrateRunCompleted({
+    runId,
+    agent: ctx.agent,
+    completedAt: new Date().toISOString(),
+    durationMs: ms,
+    ok: result.ok,
+    eventsEmitted: Math.max(0, seqAtCompletion - seqBefore),
+    decisionsEmitted,
+    escalationsEmitted,
+    sequenceAtCompletion: seqAtCompletion,
+    deliverable: result.deliverable,
+    summary: result.summary,
+  });
   logger.info(
     {
       agent: ctx.agent,
+      runId,
       trigger: ctx.trigger.id,
       ok: result.ok,
       eventsEmitted: result.eventsEmitted,

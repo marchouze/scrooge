@@ -946,6 +946,192 @@ export function makeBusDispatched(args: {
 }
 
 // ---------------------------------------------------------------------------
+// SubstrateAgentRunStarted / SubstrateAgentRunCompleted / SubstrateAgentRunFailed
+//
+// Substrate-emitted run lifecycle. Distinct from RMS's `AgentRunStarted` /
+// `AgentRunCompleted` (which require a `briefId` and govern brief-coupled
+// records-of-agent-runs). These three primitives wrap *every* `runAgent`
+// invocation — scheduled tick, event-driven dispatch, on-request CLI — and
+// are the substrate's own evidence that an agent run happened.
+//
+// Authority: D-AGENT-RUNTIME-AUTHORIZE / S8 (CEO-approved 2026-05-08).
+// Spec: `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md` §3.4.
+// Assessment: `Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md`.
+//
+// S8/RMS overlap (Scrooge ruling, 2026-05-10): RMS owns the brief-coupled
+// `AgentRunStarted` / `AgentRunCompleted`; S8 owns the substrate primitives
+// `SubstrateAgentRun*`. Distinct event-type names so the disposition test in
+// `tests/rms-event-types.test.ts` continues to pass and the two streams can
+// be folded independently. Pair-coupling via `runId`.
+//
+// Replay-fold: pair-coupled on `runId`. `SubstrateAgentRunStarted` opens the
+// pair; exactly one of `SubstrateAgentRunCompleted` / `SubstrateAgentRunFailed`
+// closes it. A `Started` without a closer is an in-flight run; the scheduler's
+// inactivity-SLA recon (Vera Wave-4 #13) will assert closure within the SLA.
+// ---------------------------------------------------------------------------
+
+/**
+ * `runId` shape. Convention: `run:<lowercased-agent>:<iso-utc-no-punct>:<short-rand>`.
+ * The substrate runner mints the id; handlers receive it on `AgentRunContext`
+ * and tag domain events / decisions for traceback. Format-validated for
+ * stability — the recon harness assumes the prefix.
+ */
+const substrateRunIdSchema = z
+  .string()
+  .min(1)
+  .regex(
+    /^run:[a-z0-9-]+:[0-9TZ-]+:[a-z0-9]+$/,
+    "runId must match `run:<lowercased-agent>:<iso-utc-no-punct>:<short-rand>`",
+  );
+
+export const substrateAgentRunStartedPayloadSchema = z.object({
+  /** Stable run identifier; pair-couples Started/Completed/Failed. */
+  runId: substrateRunIdSchema,
+  /** Persona name as it appears in `/Team/<Name>.md`. */
+  agent: z.string().min(1),
+  /** Trigger that fired this run. */
+  trigger: z.object({
+    kind: z.enum(["scheduled", "event-driven", "on-request"]),
+    /** Trigger id, e.g. `overnight-recon`, `weekly-pipeline-state`. */
+    id: z.string().min(1),
+  }),
+  /** ISO 8601 — when the substrate runner began the run. */
+  startedAt: z.string().min(1),
+  /** Whether this is a dry-run (no side-effects). Dry-runs are still recorded for audit. */
+  dryRun: z.boolean(),
+  /**
+   * Substrate carrying the run. Distinguishes a fully-autonomous substrate
+   * run from a Scrooge-coordinated in-session run while the substrate gap
+   * is still open (P7 — surface gaps, do not hide).
+   */
+  substrate: z.enum(["agent-runtime", "scrooge-coordinated-in-session"]),
+  /**
+   * Sequence number snapshot at run start. The closing `…Completed`/`…Failed`
+   * carries the count of new events appended (snapshot at close − this).
+   */
+  sequenceAtStart: z.number().int().nonnegative(),
+});
+
+export type SubstrateAgentRunStartedPayload = z.infer<typeof substrateAgentRunStartedPayloadSchema>;
+
+export function makeSubstrateAgentRunStarted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SubstrateAgentRunStartedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SubstrateAgentRunStarted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: substrateAgentRunStartedPayloadSchema.parse(args.payload),
+  });
+}
+
+export const substrateAgentRunCompletedPayloadSchema = z.object({
+  /** Same shape as Started.runId; must match a prior `…Started` payload. */
+  runId: substrateRunIdSchema,
+  /** Persona name (denormalised for fold convenience). */
+  agent: z.string().min(1),
+  /** ISO 8601 — when the substrate runner observed handler completion. */
+  completedAt: z.string().min(1),
+  /** Wall-clock duration in milliseconds. */
+  durationMs: z.number().int().nonnegative(),
+  /**
+   * Whether the handler reported `ok: true`. A `false` value with a
+   * Completed (rather than Failed) closer means the handler returned
+   * a structured failure but did not throw.
+   */
+  ok: z.boolean(),
+  /** Number of events appended to the store during this run. */
+  eventsEmitted: z.number().int().nonnegative(),
+  /** Number of `AgentDecision` events appended during this run. */
+  decisionsEmitted: z.number().int().nonnegative(),
+  /** Number of `AgentEscalation` events appended during this run. */
+  escalationsEmitted: z.number().int().nonnegative(),
+  /** Sequence number snapshot at run close (one past the last appended). */
+  sequenceAtCompletion: z.number().int().nonnegative(),
+  /** Path of the deliverable produced (relative to repoRoot), if any. */
+  deliverable: z.string().min(1).optional(),
+  /** Brief one-line summary the handler returned. */
+  summary: z.string().min(1),
+});
+
+export type SubstrateAgentRunCompletedPayload = z.infer<
+  typeof substrateAgentRunCompletedPayloadSchema
+>;
+
+export function makeSubstrateAgentRunCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SubstrateAgentRunCompletedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SubstrateAgentRunCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: substrateAgentRunCompletedPayloadSchema.parse(args.payload),
+  });
+}
+
+export const substrateAgentRunFailedPayloadSchema = z.object({
+  /** Same shape as Started.runId; pair-couples to the prior `…Started`. */
+  runId: substrateRunIdSchema,
+  /** Persona name. */
+  agent: z.string().min(1),
+  /** ISO 8601 — when the failure was observed. */
+  failedAt: z.string().min(1),
+  /** Wall-clock duration in milliseconds (from start to failure). */
+  durationMs: z.number().int().nonnegative(),
+  /**
+   * Coarse failure class for fold-tally — the runtime distinguishes thrown
+   * errors (`exception`) from clean-return-with-ok-false (`structured`).
+   * `timeout` reserved for future scheduler-driven cancellation; `unknown`
+   * is the catch-all for envelope failures (e.g. context build failed).
+   */
+  errorClass: z.enum(["exception", "structured", "timeout", "unknown"]),
+  /**
+   * Truncated error message. Capped at 1024 chars at construction time —
+   * audit-grade, not stack-trace-grade. Stack-trace hashes deferred (spec §3.4).
+   */
+  errorMessage: z.string().min(1).max(1024),
+  /** Sequence number snapshot at failure. */
+  sequenceAtFailure: z.number().int().nonnegative(),
+});
+
+export type SubstrateAgentRunFailedPayload = z.infer<typeof substrateAgentRunFailedPayloadSchema>;
+
+export function makeSubstrateAgentRunFailed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SubstrateAgentRunFailedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SubstrateAgentRunFailed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: substrateAgentRunFailedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // LegacyFanoutShadowed
 //
 // Emitted by the legacy in-process fan-out in `runtime/run.ts` once the

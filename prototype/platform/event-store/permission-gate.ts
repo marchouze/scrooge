@@ -281,6 +281,16 @@ export const LEGACY_PRE_A1_EVENT_TYPES: ReadonlySet<string> = new Set([
   "SecuritySubstrateSnapshot",
   "SubLedgerEntryPosted",
   "SubLedgerPostingEmitted",
+  // Substrate-runner lifecycle primitives (S8 / D-AGENT-RUNTIME-AUTHORIZE).
+  // Authored 2026-05-10 — same date as the legacy-bypass snapshot, under
+  // the same closed-set discipline. The substrate runner actor
+  // (`agent:atlas:substrate-runner`) emits these without a published
+  // permission policy until A4 fleet rollout publishes one for the
+  // substrate's own service identity. Vera's recon driving the bypass
+  // count to zero will close out this hand-off when the policy lands.
+  "SubstrateAgentRunCompleted",
+  "SubstrateAgentRunFailed",
+  "SubstrateAgentRunStarted",
   "SubstrateAlert",
   "SubstrateStateSnapshot",
   "SwitchTestActivated",

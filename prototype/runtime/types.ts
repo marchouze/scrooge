@@ -28,6 +28,21 @@ import type { Event } from "../platform/event-store/types";
 export interface AgentRunContext {
   /** Persona name as it appears in /Team/<Name>.md */
   readonly agent: string;
+  /**
+   * Stable run identifier minted by the substrate runner. Convention:
+   * `run:<lowercased-agent>:<iso-utc-no-punct>:<short-rand>`. Pair-couples
+   * the `SubstrateAgentRunStarted` envelope to its closing
+   * `SubstrateAgentRunCompleted` / `…Failed`. Handlers may tag domain
+   * events / decisions with this id for traceback (Vera Wave-4 #15).
+   *
+   * Populated by the substrate runner (`runtime/run.ts`'s `runAgent`); the
+   * legacy fan-out and direct test/scenario callsites that bypass the
+   * runner construct contexts without a `runId` — the field is optional
+   * so those sites do not need a per-callsite update. Once every direct
+   * callsite routes through the runner (A4 fleet rollout), this field
+   * becomes required and the optional marker drops.
+   */
+  readonly runId?: string;
   /** Trigger that fired this run — distinct from the agent's full set of triggers. */
   readonly trigger: {
     readonly kind: TriggerKind;
