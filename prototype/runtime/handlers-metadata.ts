@@ -322,7 +322,5 @@ export function derivedCronMap(): Readonly<Record<string, string>> {
  * surfaces these as findings.
  */
 export function scheduledHandlersMissingCron(): readonly HandlerMetadata[] {
-  return HANDLERS_METADATA.filter(
-    (h) => h.kind === "scheduled" && h.cronExpression === undefined,
-  );
+  return HANDLERS_METADATA.filter((h) => h.kind === "scheduled" && h.cronExpression === undefined);
 }
