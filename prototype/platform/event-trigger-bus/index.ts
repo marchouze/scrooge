@@ -124,4 +124,10 @@ export interface EventTriggerBus {
 }
 
 export { LocalEventTriggerBus, defaultBusSource, inMemoryBusSource } from "./bus";
-export type { BusSource, LocalEventTriggerBusConfig } from "./bus";
+export type { BusRunner, BusRunnerResult, BusSource, LocalEventTriggerBusConfig } from "./bus";
+export { ScheduledTriggerConsumer } from "./scheduled-trigger-consumer";
+export type {
+  ScheduledConsumeResult,
+  ScheduledDispatchResult,
+  ScheduledTriggerConsumerConfig,
+} from "./scheduled-trigger-consumer";

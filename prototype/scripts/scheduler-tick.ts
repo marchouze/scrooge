@@ -1,8 +1,9 @@
 // scripts/scheduler-tick.ts
 //
 // One-shot CLI: derives the schedule registry from registered agents,
-// emits `ScheduledTrigger` events for any due fire-times, and emits
-// `SubstrateAlert` events for any agent whose inactivity SLA has
+// emits `ScheduledTrigger` events for any due fire-times, dispatches
+// any matching scheduled handlers via the bus consumer (S8 §3.3), and
+// emits `SubstrateAlert` events for any agent whose inactivity SLA has
 // elapsed.
 //
 // Invocation: `bun run scheduler:tick` (npm script in package.json).
@@ -11,25 +12,26 @@
 //   1. syncRegistry — refresh schedule entries from registered agents
 //      + the runtime's handlers-metadata.
 //   2. tick — emit ScheduledTrigger events for any due entries.
-//   3. inactivityCheck — emit SubstrateAlert for any agent past SLA.
+//   3. consume — read any pending ScheduledTrigger events and dispatch
+//      the matching scheduled handler via runAgent. This closes the
+//      end-to-end chain: scheduler → bus → runner-worker → handler.
+//      Disabled by `BANK_SCHEDULER_AUTODISPATCH=false` for CI runs that
+//      only want to emit the trigger event without invoking handlers.
+//   4. inactivityCheck — emit SubstrateAlert for any agent past SLA.
 //
-// The CLI does NOT invoke the agent handlers. That's a future slice —
-// A2.1 emits the event; A2.2's bus reads ScheduledTrigger and
-// dispatches. During A2.1 the GH Actions cron files keep firing
-// handlers in parallel; A2.1's events are an audit-trail record + a
-// stepping stone toward A2.2.
-//
-// Author: Atlas (A2.1)
+// Author: Atlas (A2.1; S8 §3.3 dispatch wiring 2026-05-10)
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../platform/composition";
+import { ScheduledTriggerConsumer } from "../platform/event-trigger-bus";
 import {
   LocalScheduler,
   defaultSchedulerSource,
   parseInactivitySlaHours,
 } from "../platform/scheduler/scheduler";
+import { runAgent } from "../runtime/run";
 
 const REPO_ROOT = resolve(import.meta.dir, "..", "..");
 const TEAM_DIR = resolve(REPO_ROOT, "Team");
@@ -106,7 +108,47 @@ async function main(): Promise<number> {
     );
   }
 
-  // 3. inactivityCheck — alert on any agent past SLA.
+  // 3. consume — dispatch any pending ScheduledTrigger events through the
+  //    bus consumer to the matching scheduled handler. The consumer is
+  //    idempotent on (eventId, handlerKey) via BusDispatched, so re-runs
+  //    of `bun run scheduler:tick` against an unchanged store are no-ops.
+  //    Disabled via BANK_SCHEDULER_AUTODISPATCH=false for the legacy
+  //    path that only wants the audit-trail event.
+  const autoDispatch = process.env.BANK_SCHEDULER_AUTODISPATCH !== "false";
+  let dispatchOk = 0;
+  let dispatchFailed = 0;
+  let dispatchUnmatched = 0;
+  if (autoDispatch) {
+    const consumer = new ScheduledTriggerConsumer({
+      eventStore,
+      runner: async ({ agent, trigger }) => {
+        const out = await runAgent({ agent, trigger, dryRun: false });
+        return { ok: out.ok };
+      },
+    });
+    const result = await consumer.consume(now);
+    for (const d of result.dispatches) {
+      if (d.outcome === "ok") dispatchOk += 1;
+      else if (d.outcome === "failed") dispatchFailed += 1;
+      else dispatchUnmatched += 1;
+    }
+    logger.info(
+      {
+        considered: result.considered,
+        ok: dispatchOk,
+        failed: dispatchFailed,
+        unmatched: dispatchUnmatched,
+      },
+      `scheduler:tick — consume: ${dispatchOk}/${result.considered} dispatched (${dispatchFailed} failed, ${dispatchUnmatched} unmatched)`,
+    );
+  } else {
+    logger.info(
+      { autoDispatch: false },
+      "scheduler:tick — consume: disabled via BANK_SCHEDULER_AUTODISPATCH=false",
+    );
+  }
+
+  // 4. inactivityCheck — alert on any agent past SLA.
   const inact = scheduler.inactivityCheck(now);
   logger.info(
     { findings: inact.findings.length, considered: inact.considered },
@@ -122,9 +164,12 @@ async function main(): Promise<number> {
       entries: sync.count,
       parseFailures: sync.parseFailures.length,
       firings: tick.firings.length,
+      dispatched: dispatchOk,
+      dispatchFailed,
+      dispatchUnmatched,
       alerts: inact.findings.length,
     },
-    `scheduler:tick — done: entries=${sync.count} fired=${tick.firings.length} alerts=${inact.findings.length} parseFailures=${sync.parseFailures.length}`,
+    `scheduler:tick — done: entries=${sync.count} fired=${tick.firings.length} dispatched=${dispatchOk} alerts=${inact.findings.length} parseFailures=${sync.parseFailures.length}`,
   );
 
   return sync.parseFailures.length === 0 ? 0 : 1;
