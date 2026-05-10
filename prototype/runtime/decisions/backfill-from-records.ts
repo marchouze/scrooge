@@ -15,8 +15,11 @@
 //   up unchanged.
 //
 // Idempotency:
-//   The backfill skips any decisionId for which a CeoDecision event
-//   already exists. Re-running on each server boot is safe.
+//   The backfill skips any (decisionId, asOf) pair for which a CeoDecision
+//   event already exists. Re-running on each server boot is safe; multiple
+//   on-disk records for the same decisionId (e.g. request-revision then
+//   approve / approve then correction) each emit one event, and the
+//   projection's "latest event by asOf wins" rule handles supersession.
 //
 // Author: Atlas (substrate)
 
@@ -28,18 +31,27 @@ import type { EventStore } from "../../platform/event-store/store";
 import type { Event } from "../../platform/event-store/types";
 
 export interface BackfillResult {
-  readonly emitted: readonly string[]; // decisionIds emitted
-  readonly skipped: readonly string[]; // decisionIds already in the store
+  readonly emitted: readonly string[]; // decisionIds emitted (one entry per emitted event)
+  readonly skipped: readonly string[]; // decisionIds skipped (already present at that asOf)
 }
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
 
-function existingDecisionIds(eventStore: EventStore): Set<string> {
+// Build the dedup key from a (decisionId, asOf) tuple. Distinct on-disk
+// records for the same decisionId have distinct `asOf` stamps (frontmatter
+// or filename-date fallback), so each one maps to a unique key. Re-actions
+// (request-revision, then approve; approve, then correction) produce
+// separate events; the projection picks the latest by asOf.
+function dedupKey(decisionId: string, asOf: string): string {
+  return `${decisionId}|${asOf}`;
+}
+
+function existingDecisionKeys(eventStore: EventStore): Set<string> {
   const out = new Set<string>();
   for (const e of eventStore.replay({ type: "CeoDecision" })) {
     const p = e.payload as Record<string, unknown>;
     const id = typeof p.decisionId === "string" ? p.decisionId : "";
-    if (id) out.add(id);
+    if (id && e.as_of) out.add(dedupKey(id, e.as_of));
   }
   return out;
 }
@@ -69,16 +81,17 @@ export function backfillCeoDecisionsFromRecords(
   eventStore: EventStore,
 ): BackfillResult {
   const fromRecords = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
-  const existing = existingDecisionIds(eventStore);
+  const existing = existingDecisionKeys(eventStore);
   const emitted: string[] = [];
   const skipped: string[] = [];
   for (const summary of fromRecords) {
-    if (existing.has(summary.decisionId)) {
+    const key = dedupKey(summary.decisionId, summary.asOf);
+    if (existing.has(key)) {
       skipped.push(summary.decisionId);
       continue;
     }
     eventStore.append(buildEvent(summary));
-    existing.add(summary.decisionId);
+    existing.add(key);
     emitted.push(summary.decisionId);
   }
   return { emitted, skipped };
