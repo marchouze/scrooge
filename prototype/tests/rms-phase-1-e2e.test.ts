@@ -33,17 +33,17 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync 
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { eventStore } from "../platform/composition";
 import { LocalFsDocumentStore } from "../platform/document-store";
+import { LocalProjector } from "../platform/projections";
 import {
   recordAgentRunCompleted,
   recordAgentRunStarted,
   recordBriefIssued,
   recordDecisionRequested,
 } from "../platform/records";
-import { LocalProjector } from "../platform/projections";
 import {
   agentRunsRegisterProjection,
   agentRunsRegisterRows,
@@ -197,6 +197,39 @@ afterEach(() => {
   rmSync(docStoreRoot, { recursive: true, force: true });
 });
 
+// Belt-and-braces cleanup of the stray-doc-store leak that the auto-archive
+// handler creates when invoked from tests with a tmp-dir repoRoot. The
+// handler calls `recordFiled()` which uses the singleton document store
+// (resolved from process.cwd() = `prototype/`); the stale path therefore
+// becomes `prototype/prototype/data/documents/`. Pre-existing pattern from
+// scrooge-owner-inbox-archiver.test.ts (history: 69e6575 "remove stray
+// prototype/prototype/ test artefacts"). Cleaning up here prevents the
+// leak from re-landing after a slice-5 test run.
+afterAll(() => {
+  // The leak path is predictable: cwd-relative `prototype/data/documents/`.
+  // From `bun test` invoked from `prototype/`, cwd is `prototype/`, so the
+  // singleton's resolved root is `<cwd>/prototype/data/documents/`. We
+  // only nuke that specific path, never higher.
+  const leakRoot = resolve(process.cwd(), "prototype", "data", "documents");
+  if (existsSync(leakRoot)) {
+    rmSync(leakRoot, { recursive: true, force: true });
+    // Clean up empty parents up to (but not including) cwd.
+    const parents = [
+      resolve(process.cwd(), "prototype", "data"),
+      resolve(process.cwd(), "prototype"),
+    ];
+    for (const p of parents) {
+      try {
+        // rmdir only succeeds on empty dirs; safety net against deleting
+        // anything else.
+        rmSync(p, { recursive: false, force: false });
+      } catch {
+        /* not empty or not present — leave it */
+      }
+    }
+  }
+});
+
 // Snapshot the singleton event store's count so we can read the delta
 // emitted *during the run window*. The setup-preload temp DB is shared
 // across tests, so cross-test leakage of event types like `RecordFiled`
@@ -283,8 +316,7 @@ describe("RMS Phase 1 — end-to-end round-trip (Slice 5)", () => {
         expectedOutputs: [
           {
             kind: "decision-card",
-            description:
-              "DecisionRequested for the cadence shift; CEO sign-off via Decisions Desk",
+            description: "DecisionRequested for the cadence shift; CEO sign-off via Decisions Desk",
           },
         ],
         citations: [...ENVELOPE_CITATIONS, ...BRIEF_CITATIONS],
@@ -411,7 +443,8 @@ describe("RMS Phase 1 — end-to-end round-trip (Slice 5)", () => {
         decisionId: DECISION_ID,
         action: "approve",
         title: "Refresh FIC s.42 cadence to monthly",
-        outcome: "Approved per Mira's recommendation; cadence shift lands at next FIC reporting tick.",
+        outcome:
+          "Approved per Mira's recommendation; cadence shift lands at next FIC reporting tick.",
         actor: "marc@tgv.co.za",
         comment: "downstream dispatch from D-RMS-PHASE-1; cadence change low-risk",
         sourceDoc: `Owner Inbox/${SOURCE_CARD_FILENAME}`,

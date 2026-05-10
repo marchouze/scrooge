@@ -260,8 +260,7 @@ function step4DecisionRequested(asOf: string, ds: LocalFsDocumentStore): StepRep
       decisionForActor: "Approve cadence shift to monthly per FIC GN7.",
       recommendation: {
         stance: "approve",
-        reasoning:
-          "FIC GN7 update lifts the cadence floor; monthly is least-effort compliant.",
+        reasoning: "FIC GN7 update lifts the cadence floor; monthly is least-effort compliant.",
       },
       sourceDocumentBodies: [RECOMMENDATION_BODY],
       decisionCitations: [...BRIEF_CITATIONS],
@@ -421,10 +420,10 @@ export async function runRoundtrip(opts: {
     CeoDecision: 0,
     RecordFiled: 0,
   };
+  const countsMap = counts as Record<string, number>;
   for (const e of eventStore.replay()) {
-    if (e.type in counts) {
-      (counts as Record<string, number>)[e.type] =
-        (counts as Record<string, number>)[e.type] + 1;
+    if (e.type in countsMap) {
+      countsMap[e.type] = (countsMap[e.type] ?? 0) + 1;
     }
   }
 
