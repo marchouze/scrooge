@@ -23,13 +23,21 @@
 //      surface keeps the controls signal visible to the audit-committee
 //      digest, not buried in a unit test).
 //   3. `retention.citationRef` resolves into the obligations register
-//      under one of three accepted forms:
+//      under one of four accepted forms:
 //        a. `ORG-<DOMAIN>-<NN>` ID — a register-row ID (Domain A–O).
 //        b. External-anchor URN token — `BCBS-<id>`, `JSE-<id>`,
 //           `IFRS-<id>`, `IAS-<id>`, `BANKS-ACT-…`, `COMPANIES-ACT-…`,
 //           `FIC-ACT-…`, `JOINT-STANDARD-…`, `POPIA-…`, `FATCA-…`,
 //           `CRS-…`, `STT-ACT-…`, `FMA-…`, `FSCA-…`, `ICMA-…`, `ISDA-…`.
-//        c. Route-marker — `[register: route to Mira — ...]`. Tolerated
+//        c. URN-form anchor — `urn:obligation:bank:<domain>:…:v<n>` or
+//           `urn:policy:bank:<scope>:…:v<n>`. The Domain-RM and Slice-3
+//           follow-on rows (`ORG-GV-21`, `ORG-MK-15`, `ORG-RM-01`)
+//           expose URN handles in the *Citation* cell of the row rather
+//           than as a Domain-N first-cell anchor; the recon resolves
+//           those URN handles directly. Case-sensitive (URNs are
+//           lower-case by RFC 8141 convention; the substrate emits
+//           them that way).
+//        d. Route-marker — `[register: route to Mira — ...]`. Tolerated
 //           today (Slice 1 prioritised metadata coverage; Mira's URN-
 //           population work follows). Surfaced as a finding so the
 //           inventory is visible in the Vera digest and an audit-
@@ -117,6 +125,28 @@ const EXTERNAL_ANCHOR_PREFIXES: readonly string[] = [
 ];
 
 /**
+ * Prefix list of recognised URN-form anchors. The Slice-3 follow-on
+ * register rows (`ORG-GV-21`, `ORG-MK-15`, `ORG-RM-01`) expose URN
+ * handles directly in the row's Citation cell — the recon resolves
+ * `urn:obligation:bank:…:v<n>` and `urn:policy:bank:…:v<n>` against
+ * those handles rather than against a Domain-N first-cell anchor.
+ *
+ * Targeted by namespace (not "anything URN-shaped"): only the
+ * namespaces the substrate actually emits as `retention.citationRef`
+ * values are recognised. New namespaces extend this list explicitly
+ * when the substrate begins to emit them.
+ *
+ * Case-sensitive — RFC 8141 URN convention is lower-case; the
+ * substrate emits lower-case; the register stores lower-case in
+ * backticks. Avoids the upper-case fold the ORG-* / external-anchor
+ * branches use (those are conventionally upper-case tokens).
+ */
+const URN_ANCHOR_PREFIXES: readonly string[] = [
+  "urn:obligation:",
+  "urn:policy:",
+];
+
+/**
  * Markets-class retention floor — JSE Equities Rules retention norms +
  * FMA s.5/s.6A + STT Act s.2/s.3 record-keeping all read as ≥ 5 years
  * for a trade-record. A markets-class event-type with a floor below this
@@ -133,8 +163,19 @@ const MARKETS_RETENTION_FLOOR_YEARS = 5;
  *   - the set of external-anchor URN tokens that appear as Domain N
  *     URN-table keys (or anywhere as a `\`URN-TOKEN\`` codespan in a
  *     row id position).
+ *   - the set of `urn:obligation:*` / `urn:policy:*` URN-form anchors
+ *     that appear anywhere in the register as a backtick codespan.
+ *     The Slice-3 follow-on rows (`ORG-GV-21`, `ORG-MK-15`,
+ *     `ORG-RM-01`) carry their URN handle in the *Citation* cell of
+ *     the row rather than as a Domain-N first-cell anchor; the parser
+ *     extracts URNs from anywhere they appear so the recon can
+ *     resolve `retention.citationRef` URN-form values against them.
  *
- * Returns both sets in lower-cased form for case-insensitive matching.
+ * `orgIds` and `externalAnchors` are returned upper-cased for case-
+ * insensitive matching (those tokens are conventionally upper-case);
+ * `urnAnchors` is returned lower-cased and matched case-sensitively
+ * (URNs are lower-case by RFC 8141 convention).
+ *
  * Note: the register today carries some inline `[citation: TBC ...]`
  * placeholders against precise sub-section indices — those are the
  * register's own gap-tracking, distinct from this pipeline's resolution
@@ -143,9 +184,11 @@ const MARKETS_RETENTION_FLOOR_YEARS = 5;
 export function parseObligationsRegister(content: string): {
   orgIds: ReadonlySet<string>;
   externalAnchors: ReadonlySet<string>;
+  urnAnchors: ReadonlySet<string>;
 } {
   const orgIds = new Set<string>();
   const externalAnchors = new Set<string>();
+  const urnAnchors = new Set<string>();
 
   const lines = content.split(/\r?\n/);
   for (const line of lines) {
@@ -164,7 +207,18 @@ export function parseObligationsRegister(content: string): {
     }
   }
 
-  return { orgIds, externalAnchors };
+  // URN-form anchors — extract every `urn:obligation:*` /
+  // `urn:policy:*` codespan from anywhere in the document. The Slice-3
+  // follow-on rows expose URN handles in the row's Citation cell or in
+  // prose, not always at a fixed cell position. A second pass over the
+  // full content (rather than per-line) tolerates URNs that appear in
+  // any row column and stays cheap (one regex sweep).
+  const urnRegex = /`(urn:(?:obligation|policy):[a-z0-9][a-z0-9:.\-]+)`/g;
+  for (const match of content.matchAll(urnRegex)) {
+    if (match[1]) urnAnchors.add(match[1]);
+  }
+
+  return { orgIds, externalAnchors, urnAnchors };
 }
 
 /**
@@ -175,9 +229,10 @@ export function parseObligationsRegister(content: string): {
 function loadObligationsRegisterFromDisk(): {
   orgIds: ReadonlySet<string>;
   externalAnchors: ReadonlySet<string>;
+  urnAnchors: ReadonlySet<string>;
 } {
   if (!existsSync(OBLIGATIONS_REGISTER)) {
-    return { orgIds: new Set(), externalAnchors: new Set() };
+    return { orgIds: new Set(), externalAnchors: new Set(), urnAnchors: new Set() };
   }
   return parseObligationsRegister(readFileSync(OBLIGATIONS_REGISTER, "utf8"));
 }
@@ -194,6 +249,15 @@ export function isRouteMarker(citationRef: string): boolean {
  */
 export function looksLikeExternalAnchor(citationRef: string): boolean {
   return EXTERNAL_ANCHOR_PREFIXES.some((p) => citationRef.startsWith(p));
+}
+
+/**
+ * Whether a citation token is a URN-form anchor in one of the
+ * substrate-emitted namespaces (`urn:obligation:`, `urn:policy:`).
+ * Targeted by namespace — does not match arbitrary URN-shaped strings.
+ */
+export function looksLikeUrnAnchor(citationRef: string): boolean {
+  return URN_ANCHOR_PREFIXES.some((p) => citationRef.startsWith(p));
 }
 
 /** Whether a citation token is the `ORG-<DOMAIN>-<n>` ID form. */
@@ -215,6 +279,8 @@ export interface AssertOpts {
   orgIds?: ReadonlySet<string>;
   /** Override the external-anchor URN set. */
   externalAnchors?: ReadonlySet<string>;
+  /** Override the URN-form anchor set (case-sensitive, RFC 8141 lower-case). */
+  urnAnchors?: ReadonlySet<string>;
 }
 
 /**
@@ -229,10 +295,12 @@ export function assertRetentionCitationCoverage(opts: AssertOpts = {}): ReconRes
   const registry = opts.registry ?? EVENT_TYPE_REGISTRY;
   let orgIds = opts.orgIds;
   let externalAnchors = opts.externalAnchors;
-  if (orgIds === undefined || externalAnchors === undefined) {
+  let urnAnchors = opts.urnAnchors;
+  if (orgIds === undefined || externalAnchors === undefined || urnAnchors === undefined) {
     const loaded = loadObligationsRegisterFromDisk();
     orgIds = orgIds ?? loaded.orgIds;
     externalAnchors = externalAnchors ?? loaded.externalAnchors;
+    urnAnchors = urnAnchors ?? loaded.urnAnchors;
   }
 
   for (const row of registry) {
@@ -298,13 +366,27 @@ export function assertRetentionCitationCoverage(opts: AssertOpts = {}): ReconRes
         });
       }
       // resolved external-anchor — no finding.
+    } else if (looksLikeUrnAnchor(cite)) {
+      // URN-form anchor (urn:obligation:* / urn:policy:*) — match
+      // case-sensitively against URN handles extracted from anywhere
+      // in the register. The Slice-3 follow-on rows (`ORG-GV-21`,
+      // `ORG-MK-15`, `ORG-RM-01`) expose URN handles in the row's
+      // Citation cell rather than as a Domain-N first-cell anchor.
+      if (!urnAnchors.has(cite)) {
+        violations.push({
+          subject,
+          message: `${row.type}: retention.citationRef "${cite}" is a urn:obligation: / urn:policy: URN-form anchor but does not resolve to any URN handle in Regulations/_obligations-register.md. Remediation: either (a) Mira lands a register row exposing this URN handle, or (b) update the citation to a resolvable ORG-* / external-anchor / URN-form anchor, or (c) replace with a "[register: route to Mira — …]" marker naming the follow-on.`,
+          severity: "warn",
+        });
+      }
+      // resolved URN-form anchor — no finding.
     } else {
       // Doesn't match any recognised form. Surface as a finding so the
       // citation conventions stay coherent (catching typos and ad-hoc
       // tokens that drift outside the URN namespace).
       violations.push({
         subject,
-        message: `${row.type}: retention.citationRef "${cite}" does not match any recognised citation form (ORG-* register ID, external-anchor URN with one of the canonical regulator prefixes, or "[register: route to Mira — …]" marker). Remediation: align the citation with the obligations-register URN namespace defined in Regulations/_obligations-register.md.`,
+        message: `${row.type}: retention.citationRef "${cite}" does not match any recognised citation form (ORG-* register ID, external-anchor URN with one of the canonical regulator prefixes, urn:obligation:/urn:policy: URN-form anchor, or "[register: route to Mira — …]" marker). Remediation: align the citation with the obligations-register URN namespace defined in Regulations/_obligations-register.md.`,
         severity: "warn",
       });
     }
