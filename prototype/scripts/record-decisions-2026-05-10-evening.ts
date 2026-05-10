@@ -41,6 +41,28 @@ const ENTRIES = [
     sourceDoc: "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md",
     asOf: "2026-05-10T07:35:00.000Z",
   },
+  {
+    decisionId: "D-DATA-PROVENANCE-SUBSTRATE",
+    action: "approve" as const,
+    title:
+      "Data-provenance substrate v1 — typed multi-axis ProvenanceTag + 3-mode projection filtering + watermarked outputs (8 slices)",
+    outcome:
+      "Atlas (Core banking platform architect) + Anya (Data / analytics engineer)'s 8-slice data-provenance substrate build spec approved as drafted. Slices 1-3 (~5 sessions) authorised for immediate build under the Targeted budget. Slice 6 (backfill, idempotent soft-tagger) ships first, then Slice 1 (hard-rejection gated on provenance-substrate-active flag) — combined as one initial dispatch per Atlas's ordering note. Test-fixtures recommendation adopted (test fixtures stay separate from provenance dimension; use kind: simulated, scenario: unit-test). Two backfill carve-outs adopted: CeoDecision events tagged production (binding architectural commitments) + AgentBriefIssued events tagged production (real instructions); rest tagged simulated.",
+    comment: "approve — chat-intake 2026-05-10",
+    sourceDoc: "Owner Inbox/2026-05-10_atlas-anya_d-data-provenance-substrate-build-spec.md",
+    asOf: "2026-05-10T08:15:00.000Z",
+  },
+  {
+    decisionId: "D-FIRST-DRY-RUN-SCENARIO",
+    action: "approve" as const,
+    title:
+      "First Dry-Run Scenario — end-to-end rehearsal (open accounts → FX trade → IFRS statements → BA returns → risk reports)",
+    outcome:
+      "Saskia (Head of Global Markets, governance) + Bea (Accounting & financial reporting engineer) + Mira (Compliance / RegTech engineer) + Helena (Chief Risk Officer, governance)'s scenario design approved as drafted. Hoz Bank solo · one ZAR/USD spot trade · synthetic counterparty · one-month period · phases A→E. Every event tagged scenario: 'first-dry-run-2026-Q1'. Phase A dispatch set (4 parallel briefs: D-BANK-ACCOUNT-SUBSTRATE, D-SCENARIO-CLOCK, FX Slice 2, scenario script) authorised to fire as soon as D-DATA-PROVENANCE-SUBSTRATE Slice 1 lands. Two net-new sub-decisions adopted under this parent: D-BANK-ACCOUNT-SUBSTRATE (Tomas + Atlas + Bea) and D-SCENARIO-CLOCK (Atlas). Recommended Q1-Q5 answers adopted in one go per no-pause rule.",
+    comment: "approve — chat-intake 2026-05-10",
+    sourceDoc: "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md",
+    asOf: "2026-05-10T08:30:00.000Z",
+  },
 ];
 
 function main(): number {
