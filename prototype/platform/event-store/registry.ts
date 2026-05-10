@@ -36,6 +36,7 @@
 import type { z } from "zod";
 
 import {
+  agentBriefIssuedPayloadSchema,
   agentDecisionPayloadSchema,
   agentEscalationAcknowledgedPayloadSchema,
   agentEscalationDecidedPayloadSchema,
@@ -43,7 +44,10 @@ import {
   agentEscalationOverduePayloadSchema,
   agentEscalationPayloadSchema,
   agentRegisteredPayloadSchema,
+  agentRunCompletedPayloadSchema,
+  agentRunStartedPayloadSchema,
   backtestBreachDisposedPayloadSchema,
+  briefSupersededPayloadSchema,
   backtestRequestedPayloadSchema,
   backtestRunPayloadSchema,
   busDispatchedPayloadSchema,
@@ -51,6 +55,8 @@ import {
   counterpartyEligibilityRevalidatedPayloadSchema,
   counterpartyEligibilityScreenedPayloadSchema,
   decisionCommentPayloadSchema,
+  decisionRequestedPayloadSchema,
+  feedbackPayloadSchema,
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
   identityKeyRotatedPayloadSchema,
@@ -82,6 +88,7 @@ import {
   productVersionPublishedPayloadSchema,
   productWithheldPayloadSchema,
   productionUseRequestedPayloadSchema,
+  recordFiledPayloadSchema,
   riskRaisedPayloadSchema,
   scheduledTriggerPayloadSchema,
   substrateAlertPayloadSchema,
@@ -487,24 +494,36 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source: "A0 freeze §4 #5; A2.1 scheduler — platform/scheduler/scheduler.ts",
   },
   {
+    // Typed under D-RMS-PHASE-1 Slice 2 (CEO standing authority 2026-05-09).
+    // S8/RMS overlap disposition (Scrooge ruling, 2026-05-10) — RMS owns
+    // this records-of-agent-runs lifecycle event; class / issuer /
+    // subscribers / replay unchanged from the A0 envelope-only row.
     type: "AgentRunStarted",
     class: "runtime",
+    payloadSchema: agentRunStartedPayloadSchema,
     issuer: "substrate",
     subscribers: ["Vera", "Anya"],
     replay: "pair-coupled",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
-    source: "A0 freeze §4 #6",
+    source:
+      "A0 freeze §4 #6; D-RMS-PHASE-1 Slice 2 typed payload — Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.2",
   },
   {
+    // Typed under D-RMS-PHASE-1 Slice 2 (CEO standing authority 2026-05-09).
+    // S8/RMS overlap disposition (Scrooge ruling, 2026-05-10) — RMS owns
+    // this records-of-agent-runs lifecycle event; class / issuer /
+    // subscribers / replay unchanged from the A0 envelope-only row.
     type: "AgentRunCompleted",
     class: "runtime",
+    payloadSchema: agentRunCompletedPayloadSchema,
     issuer: "substrate",
     subscribers: ["Vera", "Anya"],
     replay: "pair-coupled",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
-    source: "A0 freeze §4 #7",
+    source:
+      "A0 freeze §4 #7; D-RMS-PHASE-1 Slice 2 typed payload — Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.3",
   },
   {
     type: "AgentRunFailed",
@@ -1535,6 +1554,120 @@ const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// ===========================================================================
+// Records Management Substrate (RMS) Phase 1 Slice 2 — five new event types.
+//
+// Authority: D-RMS-PHASE-1 (CEO-approved 2026-05-09); slice authorisation
+// D-RMS-PHASE-1-SLICE-2. Spec at
+// `Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md`
+// §3 (Event type definitions).
+//
+// S8/RMS overlap disposition (Scrooge ruling, 2026-05-10): RMS owns the seven
+// records-of-agent-runs event types; S8 keeps the agent-runtime primitives.
+// Two of the seven (`AgentRunStarted`, `AgentRunCompleted`) already had
+// envelope-only rows in `RUNTIME_EVENT_TYPES`; Slice 2 added typed payload
+// schemas in-place there. The remaining five are registered below.
+//
+// Class is `governance` for `RecordFiled` (it makes a markdown a *record* in
+// the governance sense — Owen's note in spec §3.8) and `runtime` for the
+// rest (they describe the bank's agent-run lifecycle / dispatch / decision-
+// surfacing flow, not a regulator-facing record themselves). Retention is
+// `RETENTION_RUNTIME_1Y` for the runtime types; `RecordFiled` is governance
+// (the record-filing event itself is governance retention; the retention
+// regime of the record's *content* is what the payload's `retention.citationRef`
+// names).
+//
+// Replay rules:
+//   - `AgentBriefIssued`     → pair-coupled (closes when AgentRunCompleted
+//                              with matching briefId, or when BriefSuperseded).
+//   - `DecisionRequested`    → pair-coupled (closes when CeoDecision with
+//                              matching decisionId).
+//   - `Feedback`             → append-only-audit (no closure semantics; the
+//                              register accumulates).
+//   - `BriefSuperseded`      → append-only-audit (the supersession chain is
+//                              audit; the Briefs register reads it as a fold).
+//   - `RecordFiled`          → append-only-audit (records are immutable;
+//                              corrections land as a new RecordFiled).
+//
+// Author: Owen (Company Secretary, governance) +
+//         Atlas (Core banking platform architect, engineering)
+// ===========================================================================
+
+const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "AgentBriefIssued",
+    class: "runtime",
+    payloadSchema: agentBriefIssuedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["target-agent", "Vera", "Anya", "dashboard"],
+    replay: "pair-coupled",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_RUNTIME_1Y,
+    source:
+      "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.1; D-RMS-PHASE-1 Slice 2",
+  },
+  {
+    type: "DecisionRequested",
+    class: "runtime",
+    payloadSchema: decisionRequestedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Scrooge", "Vera", "dashboard"],
+    replay: "pair-coupled",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    // Decision-surfacing events are governance-adjacent: the CeoDecision
+    // they pair with is 7y-retained; the DecisionRequested seat for that
+    // pairing rides the same governance horizon for symmetry.
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.4; D-RMS-PHASE-1 Slice 2",
+  },
+  {
+    type: "Feedback",
+    class: "runtime",
+    payloadSchema: feedbackPayloadSchema,
+    issuer: "Scrooge",
+    subscribers: ["target-agent", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    // Feedback events become canonical CEO direction once the substrate
+    // intakes from chat — that direction may inform later disputes /
+    // governance reviews. Promote to governance 7y.
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.6; D-RMS-PHASE-1 Slice 2",
+  },
+  {
+    type: "BriefSuperseded",
+    class: "runtime",
+    payloadSchema: briefSupersededPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["target-agent", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_RUNTIME_1Y,
+    source:
+      "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.7; D-RMS-PHASE-1 Slice 2",
+  },
+  {
+    type: "RecordFiled",
+    // RecordFiled is the event that turns a markdown into a *record* in the
+    // governance sense (Owen's note, spec §3.8). Class = governance.
+    class: "governance",
+    payloadSchema: recordFiledPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Vera", "Owen", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    // The RecordFiled event itself rides governance retention (7y). The
+    // *record* it refers to has its own retention regime named in the
+    // payload's `retention.citationRef`; that field is what the recon
+    // ultimately checks for the document's retention horizon.
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.8; D-RMS-PHASE-1 Slice 2",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -1548,6 +1681,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...AUDIT_EVENT_TYPES,
   ...LEGAL_ENTITY_EVENT_TYPES,
   ...PRODUCT_LIFECYCLE_EVENT_TYPES,
+  ...RMS_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

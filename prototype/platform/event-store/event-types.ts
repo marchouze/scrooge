@@ -3334,6 +3334,566 @@ export function makeProductVersionPublished(args: {
   });
 }
 
+// ===========================================================================
+// RMS Phase 1 Slice 2 — seven typed event payload schemas.
+//
+// Authority: D-RMS-PHASE-1 (CEO-approved 2026-05-09); slice authorisation
+// D-RMS-PHASE-1-SLICE-2. Spec at
+// `Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md`
+// §3 (Event type definitions).
+//
+// S8/RMS overlap disposition (Scrooge ruling, 2026-05-10): RMS owns the seven
+// records-of-agent-runs event types below — `AgentBriefIssued`,
+// `AgentRunStarted`, `AgentRunCompleted`, `DecisionRequested`, `Feedback`,
+// `BriefSuperseded`, `RecordFiled`. They are agent-run *records*, not
+// agent-runtime *primitives*. S8 keeps the runtime primitives
+// (`AgentRegistered`, `AgentRetired`, `IdentityKeyRotated`,
+// `PermissionPolicyPublished`, `AgentDecision`, plus the AgentEscalation
+// family). `AgentRunStarted` / `AgentRunCompleted` previously sat in the
+// registry as envelope-only rows under the runtime class — Slice 2 adds typed
+// payload schemas without changing class / issuer / subscribers.
+//
+// Each event payload references stored documents by `documentHash` (or its
+// `…Hashes` plural) — the BLAKE3 hex strings the document-store from Slice 1
+// returns. The payload schemas validate the format prefix; the document store
+// itself is the source of truth for whether the bytes resolve.
+//
+// Every event also carries an `agent` ref pairing `name` + `position` per the
+// identity-discipline rule (CLAUDE.md "Dispatch discipline").
+//
+// Author: Owen (Company Secretary, governance) +
+//         Atlas (Core banking platform architect, engineering)
+// ===========================================================================
+
+/**
+ * Reusable agent reference shape — `{ name, position, agentId? }`. The
+ * identity-discipline rule (CLAUDE.md "Dispatch discipline") requires every
+ * agent reference to pair name + position on first mention; this schema
+ * enforces it at the payload boundary.
+ */
+export const rmsAgentRefSchema = z.object({
+  /** Display name, e.g. "Scrooge", "Owen", "Atlas". Matches /Team/<Name>.md. */
+  name: z.string().min(1),
+  /** Seat / role on first mention, e.g. "Chief of Staff / Orchestrator". */
+  position: z.string().min(1),
+  /** Optional strong identity, e.g. `agent:scrooge` or `urn:agent:bank:scrooge`. */
+  agentId: z.string().min(1).optional(),
+});
+export type RmsAgentRef = z.infer<typeof rmsAgentRefSchema>;
+
+/**
+ * BLAKE3 document-hash string. Format: `blake3:<64-hex-chars>`. Matches the
+ * `DocumentHash` shape returned by `platform/document-store/hash.ts`. The
+ * payload schema validates the format prefix; the document store is the
+ * source of truth for whether the bytes resolve.
+ */
+const documentHashSchema = z
+  .string()
+  .regex(/^blake3:[0-9a-f]{64}$/, "documentHash must match `blake3:<64-hex-chars>`");
+
+// ---------------------------------------------------------------------------
+// RMS-1 — AgentBriefIssued
+//
+// Scrooge dispatches a brief to an agent. The brief body is content-addressed
+// in the document store (`directiveDocumentHash`). Reduces into the Briefs /
+// Dispatches register; status derives from downstream `AgentRunStarted` /
+// `AgentRunCompleted` / `BriefSuperseded`.
+//
+// Spec §3.1.
+// ---------------------------------------------------------------------------
+
+export const agentBriefIssuedPayloadSchema = z.object({
+  /** Stable brief identifier. Convention: `brief:<agent>:<short-slug>`. */
+  briefId: z.string().min(1),
+  /** Agent the brief is dispatched to. */
+  issuedTo: rmsAgentRefSchema,
+  /** Agent issuing the brief — typically Scrooge (Chief of Staff / Orchestrator). */
+  issuedBy: rmsAgentRefSchema,
+  /** One-line title of the brief. */
+  title: z.string().min(1),
+  /** BLAKE3 hash of the directive body (markdown). */
+  directiveDocumentHash: documentHashSchema,
+  /** Optional workstream this brief belongs to. */
+  workstreamId: z.string().min(1).optional(),
+  /** Dispatch priority. */
+  priority: z.enum(["now", "next-tick", "scheduled"]),
+  /** ISO 8601; required when `priority === "scheduled"`. */
+  scheduledFor: z.string().min(1).optional(),
+  /** Prior briefId this supersedes, if any. */
+  supersedes: z.string().min(1).optional(),
+  /** Expected outputs the brief targets. */
+  expectedOutputs: z
+    .array(
+      z.object({
+        kind: z.enum(["decision-card", "deliverable-document", "register-row", "code-pr"]),
+        description: z.string().min(1),
+      }),
+    )
+    .min(1),
+});
+
+export type AgentBriefIssuedPayload = z.infer<typeof agentBriefIssuedPayloadSchema>;
+
+export function makeAgentBriefIssued(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentBriefIssuedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentBriefIssued",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentBriefIssuedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RMS-2 — AgentRunStarted
+//
+// The agent runtime — or Scrooge in-session as the P7 fallback — opens an
+// agent run against a brief. Pair-coupled with `AgentRunCompleted` via
+// `runId`. Reduces into Records-of-agent-runs (lifecycle row); updates the
+// Briefs register status to `in-flight`.
+//
+// Pre-existing envelope-only registry row (registry §RUNTIME #6); Slice 2
+// adds the typed payload schema without changing class / replay rule.
+//
+// Spec §3.2.
+// ---------------------------------------------------------------------------
+
+export const agentRunStartedPayloadSchema = z.object({
+  /** Stable run identifier. Convention: `run:<agent>:<iso-utc>:<short>`. */
+  runId: z.string().min(1),
+  /** Brief this run is executing. */
+  briefId: z.string().min(1),
+  /** Agent executing the run. */
+  agent: rmsAgentRefSchema,
+  /** ISO 8601 — when the agent began work. */
+  startedAt: z.string().min(1),
+  /** Substrate carrying the run. */
+  substrate: z.enum(["agent-runtime", "scrooge-coordinated-in-session"]),
+  /** Optional worktree path when the run is isolated (CLAUDE.md "Dispatch discipline"). */
+  worktree: z.string().min(1).optional(),
+});
+
+export type AgentRunStartedPayload = z.infer<typeof agentRunStartedPayloadSchema>;
+
+export function makeAgentRunStarted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentRunStartedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentRunStarted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentRunStartedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RMS-3 — AgentRunCompleted
+//
+// Closes the run lifecycle. Records the deliverable document hashes, the
+// substrate gaps the run surfaced (Principle 7 — surface, do not hide),
+// citations, and any follow-on routes the agent fans out (downstream briefs,
+// decisions, register updates). Reduces into Records-of-agent-runs (closes
+// the row); each `deliverableDocumentHash` becomes a Document Register row;
+// `followOnRoutes` fan into `AgentBriefIssued` / `DecisionRequested`.
+//
+// Pre-existing envelope-only registry row (registry §RUNTIME #7); Slice 2
+// adds the typed payload schema without changing class / replay rule.
+//
+// Spec §3.3.
+// ---------------------------------------------------------------------------
+
+export const agentRunCompletedFollowOnRouteSchema = z.object({
+  kind: z.enum(["agent", "decision", "register-update"]),
+  /** Agent ref string, decisionId, or register key. */
+  target: z.string().min(1),
+  /** Free-form directive the upstream agent attaches. */
+  directive: z.string().min(1),
+});
+
+export type AgentRunCompletedFollowOnRoute = z.infer<
+  typeof agentRunCompletedFollowOnRouteSchema
+>;
+
+export const agentRunCompletedPayloadSchema = z.object({
+  runId: z.string().min(1),
+  briefId: z.string().min(1),
+  agent: rmsAgentRefSchema,
+  /** ISO 8601 — when the agent finished. */
+  completedAt: z.string().min(1),
+  /** Outcome of the run. `delivered` / `blocked` / `withdrawn`. */
+  outcome: z.enum(["delivered", "blocked", "withdrawn"]),
+  /** BLAKE3 hashes of the run's deliverable documents. May be empty for `withdrawn`. */
+  deliverableDocumentHashes: z.array(documentHashSchema),
+  /**
+   * Substrate gaps the run surfaced (Principle 7 — surface gaps, do not hide).
+   * Free-form sentences naming what blocked a fully-autonomous run.
+   */
+  substrateGapsSurfaced: z.array(z.string().min(1)),
+  /** Citations the deliverable rests on (Principle 2). */
+  citations: z.array(z.string().min(1)),
+  /** Follow-on routes the agent fans out. */
+  followOnRoutes: z.array(agentRunCompletedFollowOnRouteSchema),
+});
+
+export type AgentRunCompletedPayload = z.infer<typeof agentRunCompletedPayloadSchema>;
+
+export function makeAgentRunCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentRunCompletedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentRunCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentRunCompletedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RMS-4 — DecisionRequested
+//
+// Any agent or process surfaces a decision needing CEO / Board / governance-
+// committee call. Pair-coupled with `CeoDecision` via `decisionId`. Reduces
+// into the Decisions register (status `open` until a matching `CeoDecision`
+// resolves it).
+//
+// Spec §3.4.
+// ---------------------------------------------------------------------------
+
+export const decisionRequestedPayloadSchema = z.object({
+  /** Stable decision identifier. Convention: `D-<SHORT-NAME>`. */
+  decisionId: z.string().min(1),
+  /** One-line title of the decision. */
+  title: z.string().min(1),
+  /** Decision category for routing / pacing. */
+  category: z.enum([
+    "pacing",
+    "near-term",
+    "second-order",
+    "medium-term",
+    "long-horizon",
+    "substrate-foundational",
+  ]),
+  /** Proposing agent. */
+  owner: rmsAgentRefSchema,
+  /** Whose decision this is. */
+  forActor: z.enum(["CEO", "Board", "AC", "ALCO", "BRC"]),
+  /** The question the decider must answer, in their voice. */
+  decisionForActor: z.string().min(1),
+  /** Recommendation from the proposing agent. */
+  recommendation: z.object({
+    stance: z.string().min(1),
+    reasoning: z.string().min(1),
+  }),
+  /** Source / supporting documents (BLAKE3 hashes). May be empty. */
+  sourceDocumentHashes: z.array(documentHashSchema),
+  /** Citations constraining the decision. */
+  citations: z.array(z.string().min(1)),
+  /** ISO 8601 deadline, or undefined for "no deadline". */
+  deadline: z.string().min(1).optional(),
+  /** Options the decider may pick from. Empty = free-form decision. */
+  options: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        description: z.string().min(1),
+      }),
+    )
+    .optional(),
+});
+
+export type DecisionRequestedPayload = z.infer<typeof decisionRequestedPayloadSchema>;
+
+export function makeDecisionRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: DecisionRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "DecisionRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: decisionRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RMS-5 — Feedback
+//
+// Captures human (CEO chat-message) or recon feedback on an agent output. The
+// most novel event type in RMS — see spec §17. Reduces into the Feedback
+// register; `directive` classifications auto-fan into `AgentBriefIssued`.
+//
+// Spec §3.6.
+// ---------------------------------------------------------------------------
+
+export const feedbackPayloadSchema = z.object({
+  /** Stable feedback identifier. Convention: `feedback:<short-slug>`. */
+  feedbackId: z.string().min(1),
+  /** Where the feedback comes from. */
+  from: z.object({
+    actor: z.enum(["CEO", "Board", "Agent"]),
+    /** Strong identity, e.g. `human:marc@tgv.co.za` or `agent:scrooge`. */
+    identity: z.string().min(1),
+    /** Optional agent ref when actor === "Agent". */
+    agent: rmsAgentRefSchema.optional(),
+  }),
+  /** Channel the feedback arrived on. */
+  channel: z.enum([
+    "chat",
+    "decisions-desk-comment",
+    "register-annotation",
+    "review-meeting-record",
+  ]),
+  /** ISO 8601 — when the feedback was intaked. */
+  intakeAt: z.string().min(1),
+  /** What the feedback is about. */
+  subject: z.object({
+    kind: z.enum([
+      "decision",
+      "brief",
+      "run",
+      "register",
+      "policy",
+      "principle",
+      "operating-rule",
+    ]),
+    /** Reference to the subject — decisionId, briefId, runId, register key, etc. */
+    ref: z.string().min(1),
+  }),
+  /** Short body. Long-form bodies live in the document store via `bodyDocumentHash`. */
+  body: z.string().min(1),
+  /** Optional BLAKE3 hash of the long-form body. */
+  bodyDocumentHash: documentHashSchema.optional(),
+  /** Classifications. */
+  classifications: z
+    .array(
+      z.enum(["directive", "preference", "correction", "question", "praise", "concern"]),
+    )
+    .min(1),
+  /** Optional fan-out targets. */
+  routedTo: z.array(rmsAgentRefSchema).optional(),
+});
+
+export type FeedbackPayload = z.infer<typeof feedbackPayloadSchema>;
+
+export function makeFeedback(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FeedbackPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "Feedback",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: feedbackPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RMS-6 — BriefSuperseded
+//
+// An older brief is withdrawn or replaced by a newer one. Append-only audit
+// (no edit-in-place); the supersession chain is the audit trail. Reduces
+// into the Briefs register (marks the row `superseded`); flags any in-flight
+// run on the original brief.
+//
+// Spec §3.7.
+// ---------------------------------------------------------------------------
+
+export const briefSupersededPayloadSchema = z.object({
+  /** The brief being superseded. */
+  originalBriefId: z.string().min(1),
+  /** The brief replacing it. */
+  supersededBy: z.string().min(1),
+  /** Why the supersession. */
+  reason: z.enum(["withdrawn", "merged", "scope-changed", "actioned-out-of-band"]),
+  /** Agent authorising the supersession. */
+  authorisedBy: rmsAgentRefSchema,
+});
+
+export type BriefSupersededPayload = z.infer<typeof briefSupersededPayloadSchema>;
+
+export function makeBriefSuperseded(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BriefSupersededPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BriefSuperseded",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: briefSupersededPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RMS-7 — RecordFiled
+//
+// An artefact has been filed into the document store as a *record*
+// (governance sense — not a draft). Carries the BLAKE3 document hash,
+// register classification, and retention regime. Owen's note (spec §3.8):
+// this is the event that turns a markdown into a *record*.
+//
+// Reduces into the Document Register; the named register's row gains the
+// `recordId`.
+//
+// Spec §3.8.
+// ---------------------------------------------------------------------------
+
+export const recordFiledPayloadSchema = z.object({
+  /** Stable record identifier. Convention: `record:<register>:<short-slug>`. */
+  recordId: z.string().min(1),
+  /** Which register this record belongs to. */
+  registerKey: z.enum([
+    "decisions",
+    "correspondence",
+    "agent-runs",
+    "documents",
+    "feedback",
+    "briefs",
+    "workstreams",
+  ]),
+  /** BLAKE3 hash of the canonical document body. */
+  documentHash: documentHashSchema,
+  /** Classification — drives access controls + dashboard visibility. */
+  classification: z.enum([
+    "ceo-only",
+    "governance-seat",
+    "engineering-seat",
+    "agent-internal",
+    "public-disclosure",
+  ]),
+  /** Retention regime (POPIA / Companies Act / Banks Act / FIC / records-management policy). */
+  retention: z.object({
+    /** Obligations-register URN or `ORG-<DOMAIN>-<NN>` identifier. */
+    citationRef: z.string().min(1),
+    /** Minimum retention horizon in years (regulator-mandated floor). */
+    minimumYears: z.number().int().positive(),
+    /** Archival tier (matches event-store retention `archivalTier` taxonomy). */
+    archivalTier: z.enum(["hot", "cool", "archive"]),
+  }),
+  /** Prior record this one supersedes, if any. */
+  supersedes: z.string().min(1).optional(),
+  /** True iff this record corrects errors in the prior `supersedes` record. */
+  correctsOriginalErrors: z.boolean().optional(),
+});
+
+export type RecordFiledPayload = z.infer<typeof recordFiledPayloadSchema>;
+
+export function makeRecordFiled(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RecordFiledPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RecordFiled",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: recordFiledPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CeoDecision payload — RMS additive extension.
+//
+// Per spec §3.5 + the S8/RMS overlap disposition (Scrooge ruling, 2026-05-10):
+// the existing `CeoDecision` event remains substantively complete; RMS
+// extends it minimally with three optional / additive fields:
+//
+//   - `requestEventId`            — the `DecisionRequested` event this CeoDecision resolves.
+//   - `recordDocumentHashes`      — BLAKE3 hashes of the typed CEO-decision-record artefacts.
+//   - `modifiedRecommendation`    — present when `action === "modify"`, captures the modified stance.
+//
+// Backwards compatible: events without these fields continue to work; the
+// dashboard's resolved-decision derivation is unchanged for legacy events.
+// `recordCeoDecision()` in `runtime/decisions/record.ts` continues to author
+// CeoDecision events without these fields; the typed Zod payload schema
+// here is the contract for future writers (RMS Slice 3 + dashboard /api/decide
+// pickup) and is published so consumers can validate against it.
+//
+// This schema is *not* yet wired into `eventSchema` envelope-validation for
+// `CeoDecision` (the existing append path in `recordCeoDecision()` does not
+// use a typed payload schema); Slice 3 will wire it through the registry.
+// Today it is the documented surface for the new fields.
+// ---------------------------------------------------------------------------
+
+export const ceoDecisionRmsExtendedPayloadSchema = z.object({
+  // pre-existing fields (unchanged):
+  decisionId: z.string().min(1),
+  action: z.enum(["approve", "defer", "modify", "request-revision"]),
+  title: z.string().min(1),
+  outcome: z.string().min(1),
+  comment: z.string().optional(),
+  /** Legacy markdown-path field — deprecated under RMS, retained for back-compat. */
+  sourceDoc: z.string().optional(),
+  followOnRoutes: z.array(z.string().min(1)).optional(),
+  recordedVia: z.string().min(1),
+
+  // new in RMS Slice 2 (additive, all optional):
+  /** EventId of the `DecisionRequested` event this `CeoDecision` resolves. */
+  requestEventId: z.string().min(1).optional(),
+  /** BLAKE3 hashes of the typed CEO-decision-record artefacts. */
+  recordDocumentHashes: z.array(documentHashSchema).optional(),
+  /** Present when `action === "modify"`; captures the modified stance + reasoning. */
+  modifiedRecommendation: z
+    .object({
+      stance: z.string().min(1),
+      reasoning: z.string().min(1),
+    })
+    .optional(),
+});
+
+export type CeoDecisionRmsExtendedPayload = z.infer<typeof ceoDecisionRmsExtendedPayloadSchema>;
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -3397,6 +3957,18 @@ export const TYPED_EVENT_TYPES = [
   "ProductReviewCompleted",
   "ProductRetired",
   "ProductVersionPublished",
+  // Records Management Substrate event family — D-RMS-PHASE-1 Slice 2.
+  // S8/RMS overlap disposition (Scrooge ruling, 2026-05-10): RMS owns these
+  // seven records-of-agent-runs types; S8 keeps the agent-runtime primitives.
+  // `AgentRunStarted` / `AgentRunCompleted` were envelope-only registry rows
+  // already; Slice 2 adds typed payload schemas without changing class.
+  "AgentBriefIssued",
+  "AgentRunStarted",
+  "AgentRunCompleted",
+  "DecisionRequested",
+  "Feedback",
+  "BriefSuperseded",
+  "RecordFiled",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
