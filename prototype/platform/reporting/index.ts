@@ -132,3 +132,81 @@ export {
   BA_600_XSD_URI,
   ba600ToXmlPayload,
 } from "./ba-600-xml-adapter";
+
+// ---------------------------------------------------------------------------
+// Slice 6 — IFRS statement renderer (BS / IS / CF / Equity / Notes skeleton)
+// ---------------------------------------------------------------------------
+
+export {
+  type IfrsAccountClass,
+  type IfrsAccountClassification,
+  type IfrsCashFlowClass,
+  type IfrsGeneratorInput,
+  type IfrsLineItem,
+  type IfrsOpeningEquityComponents,
+  type IfrsOutputMeta,
+  IFRS_AFS_BASE_CITATIONS,
+  IFRS_BANK_ENTITIES,
+  IfrsGeneratorError,
+  assertIfrsBankEntity,
+  fingerprintIfrsClassifications,
+  indexClassifications,
+} from "./ifrs-types";
+
+export {
+  type IfrsBalanceSheetOutput,
+  type IfrsBalanceSheetSection,
+  generateIfrsBalanceSheet,
+} from "./ifrs-balance-sheet";
+
+export {
+  type IfrsIncomeSection,
+  type IfrsIncomeStatementOutput,
+  generateIfrsIncomeStatement,
+} from "./ifrs-income-statement";
+
+export {
+  type IfrsCashFlowOutput,
+  type IfrsCashFlowSection,
+  generateIfrsCashFlow,
+} from "./ifrs-cash-flow";
+
+export {
+  type EquityComponentKey,
+  type EquityComponentMovement,
+  type IfrsChangesInEquityOutput,
+  generateIfrsChangesInEquity,
+} from "./ifrs-changes-in-equity";
+
+export {
+  type IfrsNoteHeading,
+  type IfrsNotesOutput,
+  generateIfrsNotes,
+} from "./ifrs-notes";
+
+export {
+  type IfrsBalanceSheetRender,
+  type IfrsBundleInput,
+  type IfrsBundleRender,
+  type IfrsCashFlowRender,
+  type IfrsChangesInEquityRender,
+  type IfrsIncomeStatementRender,
+  type IfrsNotesRender,
+  type RenderIfrsOptions,
+  IFRS_RENDERER_VERSION,
+  IFRS_SCHEMA_BASE_URL,
+  IfrsBalanceSheetRenderSchema,
+  IfrsBundleRenderSchema,
+  IfrsCashFlowRenderSchema,
+  IfrsChangesInEquityRenderSchema,
+  IfrsIncomeStatementRenderSchema,
+  IfrsNotesRenderSchema,
+  canonicaliseIfrs,
+  renderIfrsBalanceSheet,
+  renderIfrsBundle,
+  renderIfrsBundleCanonical,
+  renderIfrsCashFlow,
+  renderIfrsChangesInEquity,
+  renderIfrsIncomeStatement,
+  renderIfrsNotes,
+} from "./ifrs-render";

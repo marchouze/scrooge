@@ -75,3 +75,16 @@ export {
   opRiskCapitalTsa,
   opRiskRwa,
 } from "./op-risk-entries";
+
+export {
+  SLICE_6_IFRS_ENTRIES,
+  netCashFromFinancing,
+  netCashFromInvesting,
+  netCashFromOperating,
+  otherComprehensiveIncome,
+  profitOrLoss,
+  totalAssets,
+  totalComprehensiveIncome,
+  totalEquity,
+  totalLiabilities,
+} from "./ifrs-classification-entries";
