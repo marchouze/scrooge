@@ -43,8 +43,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
+import { makeMLROAttestation } from "../../platform/event-store/event-types-readiness-snapshots";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -440,30 +440,30 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "MLROAttestation",
-      as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
-      actor: { type: "service", id: "agent:zara:mlro-supervision" },
-      citations: EVENT_CITATIONS,
-      payload: {
-        zaraOwnedObligations: snap.obligations.total,
-        obligationsInForce: snap.obligations.inForce,
-        obligationsPartial: snap.obligations.partial,
-        obligationsPlanned: snap.obligations.planned,
-        obligationsDrafting: snap.obligations.drafting,
-        obligationsNAyet: snap.obligations.nAyet,
-        miraSnapshotsLast7d: snap.mira.obligationsSnapshotsLast7d,
-        miraCitationGatePassedLast7d: snap.mira.citationGatePassedLast7d,
-        miraCitationGateFailedLast7d: snap.mira.citationGateFailedLast7d,
-        miraAuditFindingsLast7d: snap.mira.auditFindingsLast7d,
-        ...snap.mlro,
-        rmcpVersionApproved: snap.rmcpVersionApproved,
-        sanctionsListLastRefreshed: snap.sanctionsListLastRefreshed,
-        runTrigger: ctx.trigger.id,
-      },
-    });
+    eventStore.append(
+      makeMLROAttestation({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:zara:mlro-supervision" },
+        citations: EVENT_CITATIONS,
+        payload: {
+          zaraOwnedObligations: snap.obligations.total,
+          obligationsInForce: snap.obligations.inForce,
+          obligationsPartial: snap.obligations.partial,
+          obligationsPlanned: snap.obligations.planned,
+          obligationsDrafting: snap.obligations.drafting,
+          obligationsNAyet: snap.obligations.nAyet,
+          miraSnapshotsLast7d: snap.mira.obligationsSnapshotsLast7d,
+          miraCitationGatePassedLast7d: snap.mira.citationGatePassedLast7d,
+          miraCitationGateFailedLast7d: snap.mira.citationGateFailedLast7d,
+          miraAuditFindingsLast7d: snap.mira.auditFindingsLast7d,
+          ...snap.mlro,
+          rmcpVersionApproved: snap.rmcpVersionApproved,
+          sanctionsListLastRefreshed: snap.sanctionsListLastRefreshed,
+          runTrigger: ctx.trigger.id,
+        },
+      }),
+    );
     eventsEmitted = 1;
 
     if (openStrPastSla > 0) {

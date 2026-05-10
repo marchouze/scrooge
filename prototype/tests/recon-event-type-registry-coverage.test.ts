@@ -32,11 +32,50 @@ describe("event-type registry-coverage recon (F-032)", () => {
     expect(r.asserted).toBeGreaterThan(0);
     expect(r.ok).toBe(true);
     // The warn-count baseline: floor of 1 (we expect there to be at
-    // least one real-corpus warn today — there are 22 — and the recon
-    // surfaces them as designed). When the future tightening lands,
-    // this floor goes to 0.
+    // least one real-corpus warn today — and the recon surfaces them
+    // as designed). When the future tightening lands, this floor
+    // goes to 0.
     const warns = r.violations.filter((v) => v.severity === "warn");
     expect(warns.length).toBeGreaterThan(0);
+    // Ratchet: the F-032 substrate slice landing 2026-05-10 closed 7
+    // gaps (3 equity + CdmBindingsRegenerated + MLROAttestation + 2
+    // readiness snapshots) and incidentally registered the FX pair
+    // (FxTradeExecuted + FxSettlementInstructed) once the recon's
+    // factory scan was widened to per-domain files. The ceiling here
+    // is a regression guard: any future PR that re-introduces a gap
+    // breaks this test and must update the ceiling explicitly. Adjust
+    // downward as further gaps close; do not raise without
+    // justification in the PR body.
+    expect(warns.length).toBeLessThanOrEqual(14);
+  });
+
+  it("F-032 closed types — equity + CDM + FX + MLRO + Bea/Sade readiness", () => {
+    // Regression guard: the eight types closed in the 2026-05-10 F-032
+    // slice MUST remain registered. If any drift back into the warn
+    // list, this test fails loudly.
+    const r = run();
+    const warnedTypes = new Set(
+      r.violations
+        .filter((v) => v.severity === "warn")
+        .map((v) => v.subject.replace(/^event-type:/, "")),
+    );
+    const mustBeClosed = [
+      "EquityTradeBooked",
+      "EquitySettlementInstructed",
+      "EquityCorporateActionApplied",
+      "FxTradeExecuted",
+      "FxSettlementInstructed",
+      "CdmBindingsRegenerated",
+      "MLROAttestation",
+      "AccountingReadinessSnapshot",
+      "AgentOpsReadinessSnapshot",
+    ];
+    for (const t of mustBeClosed) {
+      expect({ closedType: t, stillWarning: warnedTypes.has(t) }).toEqual({
+        closedType: t,
+        stillWarning: false,
+      });
+    }
   });
 
   it("catches warn — subscribesTo references unregistered type", () => {

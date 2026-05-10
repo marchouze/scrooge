@@ -29,7 +29,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { eventStore } from "../platform/composition";
-import { newEventId } from "../platform/core/types";
+import { makeCdmBindingsRegenerated } from "../platform/event-store/event-types-cdm";
 import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
 import {
@@ -64,15 +64,23 @@ function makeContext(overrides: Partial<AgentRunContext> = {}): AgentRunContext 
 }
 
 function appendCdmBindingsRegenerated(entity: string): Event {
-  const e: Event = {
-    event_id: newEventId(),
-    type: "CdmBindingsRegenerated",
-    as_of: "2026-05-09T07:55:00.000Z",
+  const e = makeCdmBindingsRegenerated({
+    asOf: "2026-05-09T07:55:00.000Z",
     entity,
     actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings" },
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
-    payload: { primitiveCount: 6, equityEventTypeCount: 3 },
-  };
+    payload: {
+      primitiveCount: 6,
+      equityEventTypeCount: 3,
+      registeredEventTypes: [
+        "EquityTradeBooked",
+        "EquityCorporateActionApplied",
+        "EquitySettlementInstructed",
+      ],
+      selfTestPassed: true,
+      runTrigger: "test:cdm-bindings-regenerated",
+    },
+  });
   eventStore.append(e);
   return e;
 }

@@ -36,6 +36,15 @@
 import type { z } from "zod";
 
 import {
+  equityCorporateActionAppliedPayloadSchema,
+  equitySettlementInstructedPayloadSchema,
+  equityTradeBookedPayloadSchema,
+} from "../markets/cdm/equity";
+import {
+  fxSettlementInstructedPayloadSchema,
+  fxTradeExecutedPayloadSchema,
+} from "../markets/cdm/fx";
+import {
   accountingPeriodClosedPayloadSchema,
   accountingPeriodOpenedPayloadSchema,
   agentBriefIssuedPayloadSchema,
@@ -110,6 +119,12 @@ import {
   validationMethodologyPublishedPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
+import { cdmBindingsRegeneratedPayloadSchema } from "./event-types-cdm";
+import {
+  accountingReadinessSnapshotPayloadSchema,
+  agentOpsReadinessSnapshotPayloadSchema,
+  mlroAttestationPayloadSchema,
+} from "./event-types-readiness-snapshots";
 
 /**
  * Archival-tier policy per event type. Mirrors §4.2 of the event-store
@@ -1099,6 +1114,92 @@ const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source:
       "runtime/agents/bea-m1-ifrs-classification-rules.ts; Team Inbox/2026-05-07_brief_bea_m1-ifrs-classification-rules.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: Companies Act 71/2008 s.24 accounting records, ≥7y)",
   },
+  // M1 CDM equity events — schemas live at platform/markets/cdm/equity.ts
+  // (their natural domain home); referenced from the registry to satisfy
+  // F-032 event-type-registry-coverage. Issuer is `Kai` (M1 OMS / EMS
+  // bookings) with the M1-tranche subscriber set already exercising the
+  // payloads through `m1-projection-runtime-mapping` (Anya) and
+  // `m1-ifrs-classification-rules` (Bea).
+  {
+    type: "EquityTradeBooked",
+    class: "markets",
+    payloadSchema: equityTradeBookedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Anya", "Bea", "Rohan", "Mira", "Tomas", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5", "ISDA-CDM"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  {
+    type: "EquitySettlementInstructed",
+    class: "markets",
+    payloadSchema: equitySettlementInstructedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Tomas", "Bea", "Anya", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["JSE-RULES-EQUITIES", "STRATE-RULES", "ISDA-CDM"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  {
+    type: "EquityCorporateActionApplied",
+    class: "markets",
+    payloadSchema: equityCorporateActionAppliedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Anya", "Bea", "Rohan", "Vera"],
+    replay: "append-only-audit",
+    citationsHint: ["JSE-RULES-EQUITIES", "IFRS-9-§5.7.5", "ISDA-CDM"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  // M3 CDM FX events — schemas at platform/markets/cdm/fx.ts. Today
+  // exercised by the FX end-to-end rehearsal scenario + dashboard widget;
+  // registry rows close the F-032 surface so the typed payload contract
+  // is enforced at append-time regardless of caller.
+  {
+    type: "FxTradeExecuted",
+    class: "markets",
+    payloadSchema: fxTradeExecutedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Anya", "Bea", "Rohan", "Tomas", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["FMA-S5", "EXCON-SARB-CIRC-3-2020", "ISDA-CDM"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/fx.ts (Kai M3 FX bindings); scenarios/03-fx-end-to-end-rehearsal.ts; Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  {
+    type: "FxSettlementInstructed",
+    class: "markets",
+    payloadSchema: fxSettlementInstructedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Tomas", "Bea", "Anya", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["FMA-S5", "EXCON-SARB-CIRC-3-2020", "ISDA-CDM"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/fx.ts (Kai M3 FX bindings); scenarios/03-fx-end-to-end-rehearsal.ts; Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  // CDM substrate — bindings-regeneration self-test, emitted by Kai's
+  // m1-cdm-typescript-bindings handler after inventory + round-trip. The
+  // payload records the surface inventory + self-test outcome; downstream
+  // subscribers re-validate their mappings on the latest event per stream.
+  {
+    type: "CdmBindingsRegenerated",
+    class: "markets",
+    payloadSchema: cdmBindingsRegeneratedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Anya", "Bea", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ISDA-CDM"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/event-store/event-types-cdm.ts; runtime/agents/kai-m1-cdm-typescript-bindings.ts; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07)",
+  },
 ];
 
 // Governance / audit / observation event types currently in flight.
@@ -1917,6 +2018,54 @@ const RAS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// Per-persona readiness-snapshot family. Each handler emits a weekly
+// (or trigger-driven) snapshot rolling up the persona's obligations
+// register slice + persona-specific operational counters. The
+// snapshots feed Saskia's pre-licence go-live readiness gate, Devon's
+// resilience digest, and Vera's audit trail. Schemas live at
+// `platform/event-store/event-types-readiness-snapshots.ts`. F-032
+// brought the gap from envelope-only to schema-typed; payload shapes
+// diverge enough between personas that a shared schema would force
+// `z.record(...)` and add no validation.
+const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "MLROAttestation",
+    class: "governance",
+    payloadSchema: mlroAttestationPayloadSchema,
+    issuer: "Zara",
+    subscribers: ["Saskia", "Devon", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["FIC-ACT-38-2001", "ORG-FC-05", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_FIC_5Y,
+    source:
+      "runtime/agents/zara-mlro-supervision.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+  {
+    type: "AccountingReadinessSnapshot",
+    class: "governance",
+    payloadSchema: accountingReadinessSnapshotPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Saskia", "Devon", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["COMPANIES-ACT-71-2008-S24", "ORG-AC-01", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "runtime/agents/bea-accounting-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+  {
+    type: "AgentOpsReadinessSnapshot",
+    class: "governance",
+    payloadSchema: agentOpsReadinessSnapshotPayloadSchema,
+    issuer: "Sade",
+    subscribers: ["Saskia", "Devon", "Atlas", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-CY-01", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -1934,6 +2083,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...BANK_ACCOUNT_EVENT_TYPES,
   ...PERIOD_CLOSE_EVENT_TYPES,
   ...RAS_EVENT_TYPES,
+  ...READINESS_SNAPSHOT_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
