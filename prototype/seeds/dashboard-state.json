@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-10T07:07:14.012Z",
+  "asOf": "2026-05-10T07:24:21.738Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -774,6 +774,21 @@
       }
     },
     {
+      "id": "D-FX-SALES-TRADING-FRONTEND",
+      "title": "FX sales & trading front-end v1 — build proposal + slice decomposition",
+      "category": "medium-term",
+      "owner": "Kai (Trading systems engineer) · Saskia (Head of Global Markets)",
+      "trigger": "Scopes a v1 FX sales & trading front-end as a rehearsal artefact over the existing FX backend substrate (CDM, pre-trade gateway, correspondent routing, product-construction layer). UI is a thin presentation over already-typed events — sales RFQ + quote, trader pricer + blotter, risk-officer read-view, CEO oversight. Eight slices, Slices 1-3 buildable pre-M2 under the Targeted budget; trade booking, confirmation, settlement deferred to v2 behind named triggers.",
+      "decisionForCEO": "Approve scope of FX sales & trading front-end v1 (eight named slices) and authorise Slices 1-3 pre-M2 under the Targeted budget; recommended answers to five open questions adopted in one go per the no-pause rule.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted.",
+        "reasoning": "v1 is the institutional-dealer FX sales + trader UI layered over existing backend; v1 is rehearsal-only (no live trading, no live counterparties — D-INTERIM-OPERATING-POSTURE binds); booking + settlement defer to v2 when the product-instance lifecycle ships."
+      }
+    },
+    {
       "id": "D-EVENT-STORE-SCALING",
       "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
       "category": "near-term",
@@ -1402,21 +1417,6 @@
             "stance": "Approve the framing and the Azure target.",
             "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
           }
-        },
-        {
-          "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-          "title": "Product-construction substrate — typed Product composition from CDM primitives",
-          "category": "near-term",
-          "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-          "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-          "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-          ],
-          "recommendation": {
-            "stance": "Approve.",
-            "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-          }
         }
       ],
       "recentlyResolvedDecisions": [],
@@ -1451,7 +1451,7 @@
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 10,
+      "totalOpenDecisions": 9,
       "totalRecentDeliverables": 5
     },
     {
@@ -1609,18 +1609,18 @@
           }
         },
         {
-          "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-          "title": "Product-construction substrate — typed Product composition from CDM primitives",
-          "category": "near-term",
-          "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-          "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-          "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
+          "id": "D-FX-SALES-TRADING-FRONTEND",
+          "title": "FX sales & trading front-end v1 — build proposal + slice decomposition",
+          "category": "medium-term",
+          "owner": "Kai (Trading systems engineer) · Saskia (Head of Global Markets)",
+          "trigger": "Scopes a v1 FX sales & trading front-end as a rehearsal artefact over the existing FX backend substrate (CDM, pre-trade gateway, correspondent routing, product-construction layer). UI is a thin presentation over already-typed events — sales RFQ + quote, trader pricer + blotter, risk-officer read-view, CEO oversight. Eight slices, Slices 1-3 buildable pre-M2 under the Targeted budget; trade booking, confirmation, settlement deferred to v2 behind named triggers.",
+          "decisionForCEO": "Approve scope of FX sales & trading front-end v1 (eight named slices) and authorise Slices 1-3 pre-M2 under the Targeted budget; recommended answers to five open questions adopted in one go per the no-pause rule.",
           "sourceDocs": [
-            "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
+            "Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md"
           ],
           "recommendation": {
-            "stance": "Approve.",
-            "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
+            "stance": "Approve as drafted.",
+            "reasoning": "v1 is the institutional-dealer FX sales + trader UI layered over existing backend; v1 is rehearsal-only (no live trading, no live counterparties — D-INTERIM-OPERATING-POSTURE binds); booking + settlement defer to v2 when the product-instance lifecycle ships."
           }
         }
       ],
@@ -1637,6 +1637,11 @@
           "title": "atlas kai saskia · product construction substrate"
         },
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md",
+          "title": "kai saskia · fx sales trading front end proposal"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_saskia-kai-atlas_routing-policy-projection-v0.md",
           "title": "saskia kai atlas · routing policy projection v0"
@@ -1645,11 +1650,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_saskia-kai_m4-sub-decisions.md",
           "title": "saskia kai · m4 sub decisions"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_saskia_fsp-confirm-a-pax-withdraw.md",
-          "title": "saskia · fsp confirm a pax withdraw"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -1786,6 +1786,11 @@
           "title": "owen atlas · rms phase 1 slice 1 document store"
         },
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-2-event-types.md",
+          "title": "owen atlas · rms phase 1 slice 2 event types"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen_governance-framework-fais-ki-steady-state.md",
           "title": "owen · governance framework fais ki steady state"
@@ -1799,11 +1804,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md",
           "title": "owen · thin human layer composition final"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md",
-          "title": "owen atlas · records management substrate · phase 1 spec"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -2260,6 +2260,15 @@
       "decisionStatus": "open"
     },
     {
+      "filename": "2026-05-10_owen-atlas_rms-phase-1-slice-2-event-types.md",
+      "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-2-event-types.md",
+      "date": "2026-05-10",
+      "title": "RMS Phase 1 Slice 2 — seven event types + record-helpers (S8/RMS overlap disposed)",
+      "decisionRequired": false,
+      "author": "Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)",
+      "summary": "Second slice of D-RMS-PHASE-1 lands. Seven typed Zod payload schemas + `make<...>` constructors for the RMS event family (`AgentBriefIssued`, `AgentRunStarted`, `AgentRunCompleted`, `DecisionRequested`, `Feedback`, `BriefSuperseded`, `RecordFiled`); record-helpers module (`prototype/platform/records/`) that pair document-store puts with event appends; backwards-compatible `CeoDecision` extension surface. S8/RMS overlap disposed per Scrooge ruling — RMS owns records-of-agent-runs types, S8 keeps runtime primitives. 51 tests passing across the two new test files; CI green."
+    },
+    {
       "filename": "2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
       "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
       "date": "2026-05-10",
@@ -2276,6 +2285,21 @@
       "decisionRequired": false,
       "author": "Mira (Compliance / RegTech engineer)",
       "summary": "v1.13 of the obligations register reconciles header counters to actuals (232 obligations, 23 domain prefixes) and unifies the table schema to a single 9-column shape (ID, URN, Citation, Requirement, Fulfilment policy, Owner, Status, Entity scope, Applies-at), closing audit findings P1 #1 and P1 #2."
+    },
+    {
+      "filename": "2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md",
+      "path": "Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md",
+      "date": "2026-05-10",
+      "title": "FX sales & trading front-end v1 — build proposal + slice decomposition",
+      "decisionRequired": true,
+      "author": "Kai (Trading systems engineer) · Saskia (Head of Global Markets)",
+      "summary": "Scopes a v1 FX sales & trading front-end as a rehearsal artefact over the existing FX backend substrate (CDM, pre-trade gateway, correspondent routing, product-construction layer). UI is a thin presentation over already-typed events — sales RFQ + quote, trader pricer + blotter, risk-officer read-view, CEO oversight. Eight slices, Slices 1-3 buildable pre-M2 under the Targeted budget; trade booking, confirmation, settlement deferred to v2 behind named triggers.",
+      "decisionId": "D-FX-SALES-TRADING-FRONTEND",
+      "decisionCategory": "medium-term",
+      "decisionForCEO": "Approve scope of FX sales & trading front-end v1 (eight named slices) and authorise Slices 1-3 pre-M2 under the Targeted budget; recommended answers to five open questions adopted in one go per the no-pause rule.",
+      "decisionRecommendation": "Approve as drafted. v1 is the institutional-dealer FX sales + trader UI layered over existing backend; v1 is rehearsal-only (no live trading, no live counterparties — D-INTERIM-OPERATING-POSTURE binds); booking + settlement defer to v2 when the product-instance lifecycle ships.",
+      "decisionOwner": "Kai (Trading systems engineer) · Saskia (Head of Global Markets)",
+      "decisionStatus": "open"
     },
     {
       "filename": "2026-05-10_atlas_event-store-scaling-design.md",
@@ -2308,29 +2332,6 @@
       "decisionRequired": false,
       "author": "Atlas (Core banking platform architect, engineering)",
       "summary": "Implements the local snapshot substrate authorised under D-EVENT-STORE-SCALING Slice 2 (CEO-approved 2026-05-10) — `eventStore.snapshot()` / `loadSnapshot()` / `listSnapshots()` / `replayFromSnapshot()` / `shouldSnapshot()` APIs behind the existing EventStore class, additive `snapshots` SQLite table, per-event-type cadence registry (Q1 hybrid 1000-events / 1-hour default, optional per-type override). M8 cloud lift swaps the implementation for Cosmos DB Core hot-tier without changing the API surface."
-    },
-    {
-      "filename": "2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
-      "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
-      "date": "2026-05-10",
-      "title": "Product-construction substrate — typed Product composition from CDM primitives",
-      "decisionRequired": true,
-      "author": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority)",
-      "summary": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-      "decisionId": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-      "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-      "decisionRecommendation": "Approve. Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits.",
-      "decisionOwner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-      "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-09_zara_tcf-substrate-plan-v0.md",
-      "path": "Owner Inbox/2026-05-09_zara_tcf-substrate-plan-v0.md",
-      "date": "2026-05-09",
-      "title": "TCF substrate plan v0 — six outcomes mapped against the bank's institutional-only posture",
-      "decisionRequired": false,
-      "author": "Zara",
-      "summary": "Treating Customers Fairly substrate plan v0. Lists the six TCF outcomes precisely, identifies which apply at the bank's institutional-only / wholesale posture (and which do not, with citation rationale), specifies the substrate footprint TCF imposes on the engineering line (complaint-handling pipeline, advice-record substrate, product-suitability checks intersecting Saskia's NPA policy), and surfaces open questions and substrate gaps."
     }
   ],
   "policies": [
