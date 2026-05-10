@@ -18,7 +18,6 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { spawn, type Subprocess } from "bun";
 import {
   copyFileSync,
   existsSync,
@@ -30,6 +29,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { type Subprocess, spawn } from "bun";
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
@@ -54,6 +54,9 @@ async function findFreePort(): Promise<number> {
   const probe = Bun.serve({ port: 0, fetch: () => new Response("probe") });
   const port = probe.port;
   probe.stop();
+  if (typeof port !== "number") {
+    throw new Error("Bun.serve probe did not return a numeric port");
+  }
   return port;
 }
 

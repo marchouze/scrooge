@@ -24,8 +24,7 @@ const ENTRY = {
   outcome:
     "Atlas (Core banking platform architect, engineering)'s Slice 3a substrate change approved as drafted under standing D-EVENT-STORE-SCALING Slice 3 authority. Dashboard server now writes derived state to a gitignored runtime path (`prototype/.local/dashboard-state.json`, env `BANK_DASHBOARD_RUNTIME_STATE`); the committed seed `prototype/seeds/dashboard-state.json` is read-only baseline for the dashboard-derivation recon. Existing `BANK_EVENT_DB` env var documented as the shared-event-store seam — set to a per-machine absolute path to share decision history across worktrees. Default behaviour unchanged (per-worktree); opt-in only. Closes the two halves of today's stale-decisions intake without prejudging the Azure target (Event Hubs + Cosmos) which lands in later slices.",
   comment: "downstream dispatch from D-EVENT-STORE-SCALING Slice 3; no new policy decision",
-  sourceDoc:
-    "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
+  sourceDoc: "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
   asOf: "2026-05-10T08:00:00.000Z",
 };
 
@@ -54,10 +53,7 @@ function main(): number {
     },
     ENTRY.asOf,
   );
-  logger.info(
-    { decisionId: ENTRY.decisionId, action: ENTRY.action },
-    "CeoDecision event emitted",
-  );
+  logger.info({ decisionId: ENTRY.decisionId, action: ENTRY.action }, "CeoDecision event emitted");
   return 0;
 }
 

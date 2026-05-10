@@ -48,13 +48,7 @@
 //
 // Author: Atlas · Anya (derivation)
 
-import {
-  type FSWatcher,
-  existsSync,
-  watch as fsWatch,
-  mkdirSync,
-  readFileSync,
-} from "node:fs";
+import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 
 import { eventStore, logger } from "../platform/composition";
