@@ -84,7 +84,11 @@ export interface IfrsAccountClassification {
    * earnings`, `oci-reserve`, `other-reserves`. Required when
    * accountClass is `equity`.
    */
-  readonly equityComponent?: "share-capital" | "retained-earnings" | "oci-reserve" | "other-reserves";
+  readonly equityComponent?:
+    | "share-capital"
+    | "retained-earnings"
+    | "oci-reserve"
+    | "other-reserves";
 }
 
 // ---------------------------------------------------------------------------
@@ -258,7 +262,8 @@ export function filterByClass(
   accountClass: IfrsAccountClass,
   currency: string,
 ): readonly { row: TrialBalanceSnapshotRow; classification: IfrsAccountClassification }[] {
-  const filtered: { row: TrialBalanceSnapshotRow; classification: IfrsAccountClassification }[] = [];
+  const filtered: { row: TrialBalanceSnapshotRow; classification: IfrsAccountClassification }[] =
+    [];
   for (const row of trialBalance) {
     if (row.currency !== currency) continue;
     const c = classMap.get(row.leafAccountId);

@@ -26,16 +26,15 @@
 //   platform architect, engineering — substrate consult).
 
 import {
-  type IfrsAccountClassification,
+  IFRS_AFS_BASE_CITATIONS,
+  IfrsGeneratorError,
   type IfrsGeneratorInput,
   type IfrsLineItem,
   type IfrsOutputMeta,
-  IFRS_AFS_BASE_CITATIONS,
-  IfrsGeneratorError,
   assertIfrsBankEntity,
   assertIso4217,
-  fingerprintIfrsClassifications,
   filterByClass,
+  fingerprintIfrsClassifications,
   indexClassifications,
 } from "./ifrs-types";
 
@@ -194,10 +193,7 @@ export function generateIfrsIncomeStatement(input: IfrsGeneratorInput): IfrsInco
   };
 }
 
-function signWarning(
-  amountMinor: number,
-  expectSign: "debit" | "credit",
-): string | undefined {
+function signWarning(amountMinor: number, expectSign: "debit" | "credit"): string | undefined {
   if (amountMinor === 0) return undefined;
   if (expectSign === "debit" && amountMinor < 0) {
     return "warning: account expected to carry a debit balance has a credit balance";
