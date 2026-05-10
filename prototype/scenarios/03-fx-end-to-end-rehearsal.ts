@@ -1159,30 +1159,296 @@ export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): Phase
   };
 }
 
+// ===========================================================================
+// PHASE D — BA returns at period close
+// ===========================================================================
+//
+// Per pack §5 Phase D + dispatch (Bea+Tomas, 2026-05-10). Phase D extends
+// the post-close state from Phase B with four SARB BA returns, each:
+//
+//   - generated against the post-close trial balance (Phase B output);
+//   - rendered as canonical (deterministic) JSON (XML for BA 350 / BA 600
+//     via Reporting Slice 5's xml-render adapter);
+//   - tagged with the Phase-D source lineage
+//     `scenario:03-fx-end-to-end-rehearsal:phase-d` (overrides the
+//     scenario-runner default for Phase-D-emitted RecordFiled events);
+//   - written to `.local/dry-run-outputs/<periodId>/<form>.json` (gitignored
+//     runtime path — never committed);
+//   - stored in a per-run BLAKE3 document store (RMS Slice 1);
+//   - linked to the scenario via a typed `RecordFiled` event whose
+//     `documentHash` matches the rendered bytes' BLAKE3 hash.
+//
+// The Phase-D logic lives in `_phase-d-helpers.ts` to keep this file
+// readable; here we wire the closed period from Phase B into the Phase-D
+// generators and emit the writes.
+//
+// Substrate gaps surfaced in the decision record:
+//   1. **Real classifications** — BA 325 / BA 350 / BA 600 generators take
+//      caller-supplied classification + position inputs. Until Mira's
+//      WS-INSTRUMENT-ANALYSES + Reporting Slice 6 expand the semantic-layer
+//      registry, Phase D uses rehearsal-grade fixtures derived from Phase
+//      A+B's footprint.
+//   2. **Real RWA inputs** — W2 Slice 3 RWA engine (PR #177) is merged but
+//      takes its own typed inputs; Phase D passes a fixture
+//      `RwaDecomposition` for now.
+//   3. **No `ReportGenerated` event family yet** — Phase D uses RMS
+//      Slice 1's `RecordFiled` event as the equivalent content-addressed
+//      link. When `ReportGenerated` lands, the helpers swap to it
+//      (mechanical; document-store hash is the same).
+// ---------------------------------------------------------------------------
+
+import {
+  PHASE_D_FORMS,
+  PHASE_D_SOURCE_LINEAGE,
+  type PhaseDForm,
+  type PhaseDInputs,
+  type PhaseDWriteResult,
+  makePhaseDDocumentStore,
+  runPhaseD,
+} from "./_phase-d-helpers";
+
+/**
+ * Phase-D-specific provenance tag — the scenario base tag carries
+ * `sourceLineage: "scenario-runner:03-fx-end-to-end-rehearsal"`; Phase D's
+ * outputs are produced *by Phase D code*, not the scenario runner, so the
+ * lineage is overridden to make the originating step explicit.
+ */
+export const PHASE_D_PROVENANCE = simulatedTag({
+  scenario: SCENARIO_ID,
+  sourceLineage: PHASE_D_SOURCE_LINEAGE,
+});
+
+export interface PhaseDResult {
+  readonly ok: boolean;
+  /** Total events in the store after Phase A + B + D (includes RecordFiled events). */
+  readonly emitted: number;
+  /** Phase-D event count — one RecordFiled per BA form. */
+  readonly phaseDEmitted: number;
+  /** One write-result per form, in `PHASE_D_FORMS` order. */
+  readonly writeResults: readonly PhaseDWriteResult[];
+  /** Counts-by-type across the full store post-Phase-D. */
+  readonly countsByType: Record<string, number>;
+  /** Per-form key sample metrics — surfaced in the runner log + decision record. */
+  readonly summary: PhaseDSummary;
+}
+
+export interface PhaseDSummary {
+  readonly ba325: { readonly lcrPercent: string; readonly compliant: boolean };
+  readonly ba700: {
+    readonly cet1Ratio: string;
+    readonly tier1Ratio: string;
+    readonly totalRatio: string;
+    readonly compliant: boolean;
+  };
+  readonly ba350: { readonly capitalMinor: number; readonly rwaMinor: number };
+  readonly ba600: { readonly capitalMinor: number; readonly rwaMinor: number };
+}
+
+export function runPhaseAandBandD(opts: {
+  readonly dbPath: string;
+  readonly outputDir: string;
+  readonly docStoreRoot: string;
+  readonly cleanup: boolean;
+}): PhaseDResult {
+  // 1) Run Phase A + B against a fresh store (without cleanup so we can
+  //    keep the store and append Phase-D RecordFiled events).
+  const phaseA = buildPhaseAEvents();
+  try {
+    unlinkSync(opts.dbPath);
+  } catch {
+    /* first run */
+  }
+  const store = new EventStore(opts.dbPath);
+  store.appendAll([...phaseA.all]);
+
+  const zarAccountEvent = phaseA.accountsOpened[0];
+  const usdAccountEvent = phaseA.accountsOpened[1];
+  if (!zarAccountEvent || !usdAccountEvent) {
+    throw new Error("runPhaseAandBandD: Phase-A accountsOpened must include ZAR + USD nostros");
+  }
+  const usdAccountPayload = usdAccountEvent.payload as { accountId: string };
+  const zarAccountPayload = zarAccountEvent.payload as { accountId: string };
+
+  const phaseBPre = buildPhaseBPreCloseEvents({
+    trade: phaseA.trade,
+    usdNostroAccountId: usdAccountPayload.accountId,
+    zarNostroAccountId: zarAccountPayload.accountId,
+  });
+
+  const openedPayload = phaseBPre.accountingPeriodOpened.payload as Parameters<
+    typeof openPeriod
+  >[0]["payload"];
+
+  store.append(phaseBPre.tradeDatePosting);
+  for (const e of phaseBPre.settlementInstructed) store.append(e);
+  for (let i = 0; i < phaseBPre.settlementPostings.length; i++) {
+    const posting = phaseBPre.settlementPostings[i];
+    const balance = phaseBPre.accountBalanceUpdates[i];
+    if (!posting || !balance) {
+      throw new Error("runPhaseAandBandD: settlement postings + balance updates must pair 1:1");
+    }
+    store.append(posting);
+    store.append(balance);
+  }
+
+  openPeriod({
+    eventStore: store,
+    entity: ENTITY,
+    actor: { type: "human", id: "bea@bank.local" },
+    citations: ["IAS-1", "COMPANIES-ACT-71-2008-S24", "D-REPORTING-CAPABILITY-SLICE-2"],
+    payload: openedPayload,
+    provenance: SCENARIO_PROVENANCE,
+  });
+
+  store.append(phaseBPre.revaluationPosting);
+
+  const closeResult = closePeriod({
+    eventStore: store,
+    entity: ENTITY,
+    periodId: "2026-Q1-M01",
+    closedAt: "2026-01-31T15:02:00.000Z",
+    actor: { type: "human", id: "bea@bank.local" },
+    citations: ["IAS-1", "COMPANIES-ACT-71-2008-S24", "D-REPORTING-CAPABILITY-SLICE-2"],
+    provenance: SCENARIO_PROVENANCE,
+  });
+
+  // 2) Phase D — generate + render + write the four BA returns.
+  const periodId = openedPayload.periodId;
+  const docStore = makePhaseDDocumentStore(opts.docStoreRoot);
+
+  const phaseDInputs: PhaseDInputs = {
+    entity: ENTITY,
+    asOf: closeResult.accountingPeriodClosedEvent.as_of,
+    periodId,
+    functionalCurrency: openedPayload.functionalCurrency,
+    trialBalance: closeResult.trialBalance.rows,
+    trialBalanceSnapshotEventId: closeResult.trialBalanceSnapshotEvent.event_id,
+  };
+
+  const phaseDOut = runPhaseD({
+    inputs: phaseDInputs,
+    options: {
+      entity: ENTITY,
+      periodId,
+      outputDir: opts.outputDir,
+      documentStore: docStore,
+      eventStore: store,
+      provenance: PHASE_D_PROVENANCE,
+      actor: { type: "human", id: "bea@bank.local" },
+      asOf: "2026-01-31T15:05:00.000Z",
+      citations: [
+        "D-FIRST-DRY-RUN-SCENARIO",
+        "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+        "D-RMS-PHASE-1",
+        "COMPANIES-ACT-71-2008-S24",
+      ],
+    },
+  });
+
+  // 3) Tally + provenance recon (Phase-D events carry the Phase-D lineage;
+  //    Phase A+B events carry the scenario-runner lineage; both are valid
+  //    `simulated` provenance under the same scenario id).
+  const allEvents: Event[] = [];
+  for (const e of store.replay({ entity: ENTITY })) allEvents.push(e);
+
+  let provenanceOk = true;
+  for (const e of allEvents) {
+    if (e.provenance?.kind !== "simulated" || e.provenance.scenario !== SCENARIO_ID) {
+      provenanceOk = false;
+      break;
+    }
+  }
+
+  const total = store.count();
+  const phaseBaseCount = phaseA.all.length + phaseBPre.all.length + 2; // +2 for TB + Closed
+  const phaseDEmitted = total - phaseBaseCount;
+
+  const countsByType: Record<string, number> = {};
+  for (const e of allEvents) countsByType[e.type] = (countsByType[e.type] ?? 0) + 1;
+
+  // 4) Sample metrics — read from the typed generator outputs (not the
+  //    rendered bytes) so the runner / decision-record / test all see the
+  //    same numbers without re-parsing.
+  const summary: PhaseDSummary = {
+    ba325: {
+      lcrPercent: Number.isFinite(phaseDOut.generated.ba325.lcrRatio)
+        ? `${(phaseDOut.generated.ba325.lcrRatio * 100).toFixed(2)}%`
+        : "infinity",
+      compliant: phaseDOut.generated.ba325.lcrCompliant,
+    },
+    ba700: {
+      cet1Ratio: `${(phaseDOut.generated.ba700.ratios.cet1Ratio * 100).toFixed(2)}%`,
+      tier1Ratio: `${(phaseDOut.generated.ba700.ratios.tier1Ratio * 100).toFixed(2)}%`,
+      totalRatio: `${(phaseDOut.generated.ba700.ratios.totalRatio * 100).toFixed(2)}%`,
+      compliant:
+        phaseDOut.generated.ba700.ratios.cet1Compliant &&
+        phaseDOut.generated.ba700.ratios.tier1Compliant &&
+        phaseDOut.generated.ba700.ratios.totalCompliant,
+    },
+    ba350: {
+      capitalMinor: phaseDOut.generated.ba350.totalMarketRiskCapitalMinor,
+      rwaMinor: phaseDOut.generated.ba350.totalMarketRiskRwaMinor,
+    },
+    ba600: {
+      capitalMinor: phaseDOut.generated.ba600.opRiskCapitalMinor,
+      rwaMinor: phaseDOut.generated.ba600.opRiskRwaMinor,
+    },
+  };
+
+  store.close();
+  if (opts.cleanup) {
+    try {
+      unlinkSync(opts.dbPath);
+    } catch {
+      /* nothing to clean */
+    }
+  }
+
+  return {
+    ok: provenanceOk && phaseDEmitted === PHASE_D_FORMS.length,
+    emitted: total,
+    phaseDEmitted,
+    writeResults: phaseDOut.writeResults,
+    countsByType,
+    summary,
+  };
+}
+
+export { PHASE_D_FORMS, PHASE_D_SOURCE_LINEAGE };
+export type { PhaseDForm, PhaseDInputs, PhaseDWriteResult };
+
 // Top-level invocation — `bun run scenarios/03-fx-end-to-end-rehearsal.ts`.
 // Bun executes the file body; we gate on import.meta.main so the test can
-// import the module without firing the runner.
+// import the module without firing the runner. Default invocation now runs
+// Phase A + Phase B + Phase D end-to-end (per dispatch §3 deliverable 3).
 if (import.meta.main) {
   logger.info(
     {
       scenario: SCENARIO_ID,
       sourceLineage: SOURCE_LINEAGE,
-      phase: "A+B",
+      phase: "A+B+D",
     },
-    "scenario 03 — FX end-to-end rehearsal — Phase A + Phase B starting",
+    "scenario 03 — FX end-to-end rehearsal — Phase A + Phase B + Phase D starting",
   );
 
-  const result = runPhaseAandB({
-    dbPath: ".local/scenario-03-phase-ab.db",
+  const result = runPhaseAandBandD({
+    dbPath: ".local/scenario-03-phase-abd.db",
+    outputDir: ".local/dry-run-outputs/2026-Q1-M01",
+    docStoreRoot: ".local/dry-run-outputs/2026-Q1-M01/_doc-store",
     cleanup: true,
   });
 
   logger.info(
     {
       emitted: result.emitted,
-      phaseBEmitted: result.phaseBEmitted,
+      phaseDEmitted: result.phaseDEmitted,
       countsByType: result.countsByType,
-      trialBalanceRowCount: result.trialBalanceRowCount,
+      summary: result.summary,
+      writes: result.writeResults.map((w) => ({
+        form: w.form,
+        path: w.outputPath,
+        documentHash: w.documentHash,
+      })),
       provenance: {
         kind: SCENARIO_PROVENANCE.kind,
         scenario: SCENARIO_PROVENANCE.scenario,
@@ -1190,7 +1456,7 @@ if (import.meta.main) {
       },
       ok: result.ok,
     },
-    result.ok ? "Phase A + B passed" : "Phase A + B failed",
+    result.ok ? "Phase A + B + D passed" : "Phase A + B + D failed",
   );
 
   process.exit(result.ok ? 0 : 1);
