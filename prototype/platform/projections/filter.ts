@@ -31,13 +31,13 @@
 
 import { createHash } from "node:crypto";
 
-import type { Event, ProvenanceTag } from "../event-store/types";
 import type {
   ProvenanceKind,
   ScenarioId,
   SourceLineageRef,
   VariantId,
 } from "../event-store/provenance";
+import type { Event, ProvenanceTag } from "../event-store/types";
 
 // ---------------------------------------------------------------------------
 // Types
