@@ -70,3 +70,65 @@ export {
   renderBa700ToJson,
   type RenderBa700Options,
 } from "./ba-700-render";
+
+// ---------------------------------------------------------------------------
+// Slice 5 — BA 350 (market risk), BA 600 (operational risk), XML render
+// layer.
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba350GeneratorInput,
+  Ba350GeneratorError,
+  type Ba350LineItem,
+  type Ba350Output,
+  type Ba350IrGeneralSection,
+  type Ba350IrSpecificSection,
+  type Ba350EquitySection,
+  type Ba350FxSection,
+  type Ba350CommoditySection,
+  type IrMaturityBandRow,
+  type IrSpecificRiskRow,
+  type EquityRow,
+  type FxPositionRow,
+  type CommodityPositionRow,
+  BA_350_BANK_ENTITIES,
+  generateBa350MarketRisk,
+} from "./ba-350-market-risk";
+
+export {
+  type Ba600GeneratorInput,
+  Ba600GeneratorError,
+  type Ba600LineItem,
+  type Ba600Output,
+  type Ba600BiaSection,
+  type Ba600TsaSection,
+  type BaselBusinessLine,
+  type OpRiskGrossIncomeRow,
+  BA_600_BANK_ENTITIES,
+  BUSINESS_LINE_BETA,
+  generateBa600OpRisk,
+} from "./ba-600-op-risk";
+
+export {
+  type RenderXmlOptions,
+  type SarbXmlReportPayload,
+  type SarbXmlSection,
+  type SarbXmlValue,
+  XmlRenderError,
+  renderSarbXml,
+  validateSarbXmlStructural,
+} from "./xml-render";
+
+export {
+  BA_350_NAMESPACE,
+  BA_350_REQUIRED_ELEMENTS,
+  BA_350_XSD_URI,
+  ba350ToXmlPayload,
+} from "./ba-350-xml-adapter";
+
+export {
+  BA_600_NAMESPACE,
+  BA_600_REQUIRED_ELEMENTS,
+  BA_600_XSD_URI,
+  ba600ToXmlPayload,
+} from "./ba-600-xml-adapter";
