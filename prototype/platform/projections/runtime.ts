@@ -108,7 +108,13 @@ export class LocalProjector implements Projector {
         state = p.reduce(state, event);
       }
       logger.debug(
-        { projection: p.name, streamKey: opts.streamKey, asOf: opts.asOf, deltaCount, snapshot: null },
+        {
+          projection: p.name,
+          streamKey: opts.streamKey,
+          asOf: opts.asOf,
+          deltaCount,
+          snapshot: null,
+        },
         "projection materialised from naive replay (no snapshot)",
       );
       return { state, deltaCount };
