@@ -61,6 +61,7 @@ import {
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
+import { emitTrade, quoteOnly, type RfqInput } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
 import {
   POPIA_S71_NOTICE,
@@ -293,6 +294,63 @@ async function handleComment(req: Request): Promise<Response> {
   return jsonResponse({ ok: true, eventId: result.eventId });
 }
 
+// ---------------------------------------------------------------------------
+// FX desk Slice 2 — RFQ quote + trade-emit handlers.
+// ---------------------------------------------------------------------------
+
+async function handleFxQuote(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ status: "rejected", reason: "invalid JSON body" }, 400);
+  }
+  const result = quoteOnly(body as RfqInput);
+  if (result.status === "rejected") {
+    return jsonResponse(result, 400);
+  }
+  return jsonResponse(result);
+}
+
+async function handleFxTrade(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ status: "rejected", reason: "invalid JSON body" }, 400);
+  }
+
+  let result;
+  try {
+    result = emitTrade({
+      store: eventStore,
+      input: body as RfqInput,
+      asOf: nowUtc(),
+    });
+  } catch (e) {
+    // CDM zod-parse / append-rejection failures land here.
+    return jsonResponse(
+      { status: "rejected", reason: (e as Error).message },
+      400,
+    );
+  }
+
+  if (result.status === "rejected") {
+    return jsonResponse(result, 400);
+  }
+  refresh("fx-trade");
+  logger.info(
+    {
+      tradeId: result.tradeId,
+      rfqId: result.rfqId,
+      eventId: result.eventId,
+      provenanceScenario: result.provenance.scenario,
+    },
+    "FX trade event emitted via dashboard",
+  );
+  return jsonResponse(result);
+}
+
 async function handleStartWorkstream(req: Request): Promise<Response> {
   let body: StartWorkstreamRequestBody;
   try {
@@ -473,6 +531,24 @@ const server = Bun.serve({
       // is small in build phase).
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
       return jsonResponse(buildCounterpartiesView(eventStore));
+    }
+    if (url.pathname === "/api/markets/fx/quote" && req.method === "POST") {
+      // FX desk Slice 2 — synthetic-quote stub. Returns a fixed-spread
+      // bid/offer for ZAR/USD spot without appending any event.
+      // Authority: D-FX-SALES-TRADING-FRONTEND-SLICE-2.
+      return handleFxQuote(req);
+    }
+    if (url.pathname === "/api/markets/fx/trade" && req.method === "POST") {
+      // FX desk Slice 2 — trade-emit endpoint. Validates the RFQ form
+      // input, gates on counterparty eligibility (pack §3 G1), prices a
+      // synthetic quote, appends an FxTradeExecuted event from the FX
+      // CDM (event-types intentionally untouched per dispatch brief
+      // constraint; new RfqRequested / QuoteResponded events queue
+      // behind RMS Slice 2 per pack §9 #2), and returns the trade-id
+      // + event-id for the UI confirmation panel. Provenance tag is
+      // simulated/first-dry-run-2026-Q1/agent-runtime:kai-fx-rfq.
+      // Authority: D-FX-SALES-TRADING-FRONTEND-SLICE-2.
+      return handleFxTrade(req);
     }
     if (url.pathname === "/api/refresh" && req.method === "POST") {
       refresh("api-refresh");
