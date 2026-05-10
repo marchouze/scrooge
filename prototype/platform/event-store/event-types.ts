@@ -4163,6 +4163,405 @@ export function makeBankAccountClosed(args: {
   });
 }
 
+// ===========================================================================
+// Period-close event family — D-REPORTING-CAPABILITY-SLICE-2.
+//
+// Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
+// 2026-05-10). Pack §6 Slice 2 lists this slice as a sub-decision under
+// the standing umbrella; no new CEO approval required.
+//
+// Three event types govern the accounting-period close lifecycle. Period
+// close is the unit of all subsequent prudential / IFRS reports — pack
+// §6 Slice 2 calls it "the unit of all subsequent prudential / IFRS
+// reports". The substrate is per-entity (each Hoz legal entity closes
+// independently — pack §6 Q2 — Hoz Bank, Hoz Securities, and the Group
+// consolidated rollup all run their own AccountingPeriodOpened →
+// AccountingPeriodClosed → TrialBalanceSnapshotted chain) and provenance-
+// aware (close events inherit the provenance discipline of D-DATA-
+// PROVENANCE-SUBSTRATE — production close vs simulated close, with
+// per-entity stream-key isolation).
+//
+//   - AccountingPeriodOpened    — start of an accounting period for a given
+//                                 entity. Carries entity / periodId /
+//                                 periodKind (year/quarter/month) /
+//                                 periodStart / periodEnd / openedAt /
+//                                 functionalCurrency. Idempotent-terminal
+//                                 on (entity, periodId): the same period
+//                                 may not be opened twice without a close
+//                                 in between.
+//   - AccountingPeriodClosed    — end of an accounting period. Triggers
+//                                 trial-balance snapshot via the
+//                                 EvSS Slice 2 snapshot APIs (per pack
+//                                 §6 Slice 2 — "snapshots the trial balance
+//                                 to the RMS document store"). Idempotent-
+//                                 terminal on (entity, periodId).
+//   - TrialBalanceSnapshotted   — the close-event's by-product: the per-
+//                                 entity trial balance frozen as of the
+//                                 period-end, content-hashed via the RMS
+//                                 document store (BLAKE3 per RMS Slice 1).
+//                                 Append-only-audit; one event per
+//                                 (entity, periodId, snapshotKind) where
+//                                 snapshotKind is "close" (default) or
+//                                 "interim" (for in-period checkpoints).
+//
+// Reopen handling. Pack §6 Slice 2 does NOT specify a separate
+// `PeriodReopened` event; per Principle 1 (events are truth, append-only-
+// audit) a corrections-after-close flow appends a NEW
+// AccountingPeriodOpened with a `reopenOf` reference to the prior
+// AccountingPeriodClosed event_id. The audit trail is forensic — the
+// close event is never overwritten. The `reopenOf` discipline is enforced
+// at construction (not at the store envelope) so the reopen reason is
+// always typed.
+//
+// Manual journal entries during close are NOT modelled as a new event
+// type — they reuse the existing `SubLedgerPostingEmitted` (M1) with a
+// `closeAdjustment: true` flag carried in the existing payload's
+// `postingMemo` field plus a citation linking to the open period. This
+// avoids duplicating the sub-ledger event family and keeps the GL-
+// projection's fold a single function over `SubLedgerPostingEmitted`.
+//
+// Two trial-balance snapshot kinds:
+//   - `close`  — emitted automatically by the close orchestration when
+//                AccountingPeriodClosed is appended. The snapshot is
+//                durable; the AccountingPeriodClosed event references the
+//                snapshot's document hash.
+//   - `interim`— ad-hoc operational snapshots during a period (debug,
+//                dashboard refresh). No close event; no document-store
+//                anchor required (the snapshot lives in the snapshot
+//                substrate only).
+//
+// Provenance: pack §6 Slice 2 inherits the D-DATA-PROVENANCE-SUBSTRATE
+// discipline — production-close events tagged
+// `productionTag({sourceLineage: 'agent:bea:period-close'})`; simulated-
+// close events (dry-run scenarios) tagged
+// `simulatedTag({scenario, sourceLineage: 'agent:bea:period-close'})`.
+// The constructors below accept an optional `provenance` field —
+// substrate-active flag-flip is forward-compatible.
+//
+// Retention: Companies Act 71/2008 s.24 — accounting-records retention,
+// 7-year minimum. Mapped to RETENTION_ACCOUNTING_7Y in the registry.
+// Principle 1's indefinite log preserves the append-only chain regardless
+// of the regulatory-floor minimum.
+//
+// Stream-key convention (per pack §6 Q2 + D-EVENT-STORE-SCALING Slice 2
+// Q4): close events partition on `<entity>|accounting-period`, e.g.
+// `LE-ZA-HOZ-BANK|accounting-period`. Trial-balance snapshots partition
+// per-entity on the same stream-key — every close-snapshot for an entity
+// flows through one logical stream so loadSnapshot(streamKey, asOf)
+// resolves the latest period-end snapshot ≤ asOf.
+//
+// Authors: Bea (Accounting & financial reporting engineer, engineering —
+//   reports to Camille CFO; close orchestration + accounting-rule owner)
+//   · Atlas (Core banking platform architect, engineering — substrate
+//   consult; registry rows + retention metadata).
+// ===========================================================================
+
+/**
+ * Accounting period kind. Mirrors the IAS 1 § presentation-period taxonomy
+ * + the bank's policy on interim close cadence (monthly close per
+ * `Owner Inbox/2026-05-06_core-policies-finance.md` §3 — "monthly close +
+ * quarterly attestation + annual audited AFS"). Quarterly and annual are
+ * regulatory-significant (BA-return cadence + AFS); monthly is internal.
+ */
+export const accountingPeriodKindSchema = z.enum([
+  "month",
+  "quarter",
+  "half-year",
+  "year",
+]);
+
+export type AccountingPeriodKind = z.infer<typeof accountingPeriodKindSchema>;
+
+/** Trial-balance snapshot kind. See header comment §"Two trial-balance snapshot kinds". */
+export const trialBalanceSnapshotKindSchema = z.enum(["close", "interim"]);
+
+export type TrialBalanceSnapshotKind = z.infer<typeof trialBalanceSnapshotKindSchema>;
+
+// ---------------------------------------------------------------------------
+// AccountingPeriodOpened
+//
+// Lifecycle-start event for an accounting period at a given entity.
+// Idempotency: (entity, periodId) is unique while the period is open;
+// re-opening after close requires a `reopenOf` reference to the prior
+// close event_id (creates a forensic chain: open → close → reopen).
+// ---------------------------------------------------------------------------
+
+export const accountingPeriodOpenedPayloadSchema = z
+  .object({
+    /**
+     * Stable period identifier. Convention: `period:<entity-short>:<kind>:
+     * <iso-period>` — e.g. `period:hoz-bank:month:2026-05`,
+     * `period:hoz-bank:quarter:2026-Q2`, `period:hoz-group:year:2026`.
+     */
+    periodId: z.string().min(1),
+    /** Period kind per `accountingPeriodKindSchema`. */
+    periodKind: accountingPeriodKindSchema,
+    /** ISO 8601 — first business-time instant the period covers (inclusive). */
+    periodStart: z.string().min(1),
+    /** ISO 8601 — last business-time instant the period covers (inclusive). */
+    periodEnd: z.string().min(1),
+    /** ISO 8601 — when the period was opened (processing time). */
+    openedAt: z.string().min(1),
+    /**
+     * Functional currency for this period (per IAS 21 §9). Single-currency
+     * per period (Principle 5 — FX exposure flows through translation, not
+     * through period-functional-currency variation). ISO 4217 3-letter.
+     */
+    functionalCurrency: z.string().length(3),
+    /**
+     * Optional reopen-reference. Present when this open-event is a
+     * corrections-after-close reopen of a previously-closed period; the
+     * value is the `event_id` of the prior `AccountingPeriodClosed`.
+     * Append-only audit chain — the prior close is not overwritten.
+     */
+    reopenOf: z.string().min(1).optional(),
+    /**
+     * Why the period was reopened. Required when `reopenOf` is set;
+     * forbidden otherwise. Audit-sensitive — every reopen carries a
+     * typed reason.
+     */
+    reopenReason: z
+      .enum([
+        "post-close-adjustment",
+        "audit-finding",
+        "regulator-direction",
+        "restatement-prior-period-error",
+        "operational-correction",
+      ])
+      .optional(),
+  })
+  .superRefine((p, ctx) => {
+    // periodEnd must be > periodStart (no zero-length / inverted periods).
+    const start = Date.parse(p.periodStart);
+    const end = Date.parse(p.periodEnd);
+    if (!Number.isNaN(start) && !Number.isNaN(end) && end <= start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "AccountingPeriodOpened.periodEnd must be after periodStart",
+        path: ["periodEnd"],
+      });
+    }
+    // reopenOf and reopenReason are paired: both or neither.
+    if (p.reopenOf !== undefined && p.reopenReason === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "AccountingPeriodOpened.reopenReason is required when reopenOf is set (every reopen needs a typed reason)",
+        path: ["reopenReason"],
+      });
+    }
+    if (p.reopenOf === undefined && p.reopenReason !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "AccountingPeriodOpened.reopenReason is forbidden without reopenOf (reason has no referent)",
+        path: ["reopenReason"],
+      });
+    }
+  });
+
+export type AccountingPeriodOpenedPayload = z.infer<typeof accountingPeriodOpenedPayloadSchema>;
+
+export function makeAccountingPeriodOpened(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AccountingPeriodOpenedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AccountingPeriodOpened",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: accountingPeriodOpenedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AccountingPeriodClosed
+//
+// Lifecycle-end event for an accounting period. Idempotent-terminal on
+// (entity, periodId) — a closed period cannot be closed again without a
+// reopen-and-reclose chain. References the trial-balance snapshot
+// captured at close via `trialBalanceSnapshotEventId` (the
+// TrialBalanceSnapshotted event the close orchestration emitted as part
+// of the close transaction).
+// ---------------------------------------------------------------------------
+
+export const accountingPeriodClosedPayloadSchema = z.object({
+  /** Period being closed. Must match a prior AccountingPeriodOpened.periodId for the same entity. */
+  periodId: z.string().min(1),
+  /** ISO 8601 — when the period was closed (processing time, ≥ periodEnd). */
+  closedAt: z.string().min(1),
+  /**
+   * `event_id` of the `TrialBalanceSnapshotted` event captured at close.
+   * Required: every close emits a snapshot; the close event references the
+   * snapshot for downstream consumers (BA-return generators, AFS, recon).
+   */
+  trialBalanceSnapshotEventId: z.string().min(1),
+  /**
+   * Document-store hash of the trial-balance JSON. Present when the
+   * close-orchestration wrote the trial-balance to the RMS document
+   * store (BLAKE3 per RMS Slice 1). Format: `<algo>:<hex-digest>`.
+   * Optional during build-phase — RMS Slice 1 lands the document store
+   * separately; closes that pre-date the doc-store omit this field.
+   */
+  trialBalanceDocumentHash: z.string().min(1).optional(),
+  /**
+   * Sub-ledger projection upto-sequence at close. Used by the close
+   * orchestration to assert that no new postings landed between trial-
+   * balance compute and the AccountingPeriodClosed append.
+   */
+  uptoSequence: z.number().int().nonnegative(),
+});
+
+export type AccountingPeriodClosedPayload = z.infer<typeof accountingPeriodClosedPayloadSchema>;
+
+export function makeAccountingPeriodClosed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AccountingPeriodClosedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AccountingPeriodClosed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: accountingPeriodClosedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// TrialBalanceSnapshotted
+//
+// The close orchestration's by-product. Records that a per-entity trial
+// balance was frozen at a given as-of, identified by content-addressed
+// hash in the RMS document store. Append-only-audit: every snapshot is a
+// new event; corrections post a new snapshot, never overwrite.
+//
+// The trial-balance JSON shape is documented separately in
+// `prototype/platform/accounting/period-close.ts` — the event references
+// the hash, not the bytes (Principle 1 — events cite documents by hash).
+// ---------------------------------------------------------------------------
+
+export const trialBalanceSnapshotRowSchema = z.object({
+  /** GL leaf account ID — `ACC-NNNN-NNN`. */
+  leafAccountId: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/, {
+    message:
+      "TrialBalanceSnapshotted.row.leafAccountId must match `ACC-NNNN-NNN` per chart-of-accounts.schema.json",
+  }),
+  /** ISO 4217 currency this row sits in (Principle 5 — every row has a currency). */
+  currency: z.string().length(3),
+  /** Signed cash amount in minor units. Positive = debit; negative = credit. */
+  amountMinor: z.number().int(),
+});
+
+export type TrialBalanceSnapshotRow = z.infer<typeof trialBalanceSnapshotRowSchema>;
+
+export const trialBalanceSnapshottedPayloadSchema = z
+  .object({
+    /** Period this snapshot belongs to. Must match an open or just-closed AccountingPeriodOpened. */
+    periodId: z.string().min(1),
+    /** Snapshot kind per `trialBalanceSnapshotKindSchema`. */
+    snapshotKind: trialBalanceSnapshotKindSchema,
+    /** ISO 8601 — business-time the trial balance was computed at. */
+    snapshotAsOf: z.string().min(1),
+    /** Sub-ledger projection upto-sequence the snapshot folded. */
+    uptoSequence: z.number().int().nonnegative(),
+    /**
+     * Trial-balance rows — one per (leafAccountId, currency) where the
+     * fold produced a non-zero balance. Stored inline in the event for
+     * forensic reproducibility. The corresponding RMS-doc-store hash
+     * (when present) is a denormalised cache of `JSON.stringify(rows)`.
+     */
+    rows: z.array(trialBalanceSnapshotRowSchema),
+    /**
+     * Document-store hash of the canonical trial-balance JSON. Present
+     * when the snapshot was persisted to the RMS document store
+     * (BLAKE3 per RMS Slice 1). Optional during build-phase — RMS Slice 1
+     * lands the document store separately.
+     */
+    documentHash: z.string().min(1).optional(),
+    /**
+     * Per-currency debit/credit totals. Asserted equal at construction
+     * (debits = credits per currency); the substrate guarantees a
+     * balanced trial balance or rejects the event.
+     */
+    perCurrencyTotals: z.array(
+      z.object({
+        currency: z.string().length(3),
+        debitMinor: z.number().int().nonnegative(),
+        creditMinor: z.number().int().nonnegative(),
+      }),
+    ),
+  })
+  .superRefine((p, ctx) => {
+    // Per-currency debits MUST equal credits (the trial-balance invariant).
+    for (const total of p.perCurrencyTotals) {
+      if (total.debitMinor !== total.creditMinor) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `TrialBalanceSnapshotted.perCurrencyTotals[${total.currency}] unbalanced: debits=${total.debitMinor} credits=${total.creditMinor}`,
+          path: ["perCurrencyTotals"],
+        });
+      }
+    }
+    // The rows MUST sum to the perCurrencyTotals (forensic consistency).
+    const rowTotals = new Map<string, { debit: number; credit: number }>();
+    for (const r of p.rows) {
+      const t = rowTotals.get(r.currency) ?? { debit: 0, credit: 0 };
+      if (r.amountMinor >= 0) t.debit += r.amountMinor;
+      else t.credit += -r.amountMinor;
+      rowTotals.set(r.currency, t);
+    }
+    for (const total of p.perCurrencyTotals) {
+      const rt = rowTotals.get(total.currency) ?? { debit: 0, credit: 0 };
+      if (rt.debit !== total.debitMinor || rt.credit !== total.creditMinor) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `TrialBalanceSnapshotted.rows for currency ${total.currency} (debit=${rt.debit}, credit=${rt.credit}) do not match perCurrencyTotals (debit=${total.debitMinor}, credit=${total.creditMinor})`,
+          path: ["rows"],
+        });
+      }
+    }
+  });
+
+export type TrialBalanceSnapshottedPayload = z.infer<typeof trialBalanceSnapshottedPayloadSchema>;
+
+export function makeTrialBalanceSnapshotted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: TrialBalanceSnapshottedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "TrialBalanceSnapshotted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: trialBalanceSnapshottedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -4243,6 +4642,12 @@ export const TYPED_EVENT_TYPES = [
   "BankAccountOpened",
   "BankAccountConfigured",
   "BankAccountClosed",
+  // Period-close event family — D-REPORTING-CAPABILITY-SLICE-2 (under
+  // standing authority of D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, CEO-
+  // approved 2026-05-10). Pack §6 Slice 2.
+  "AccountingPeriodOpened",
+  "AccountingPeriodClosed",
+  "TrialBalanceSnapshotted",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
