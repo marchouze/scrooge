@@ -77,6 +77,11 @@ async function bootServer(envOverrides: Record<string, string>): Promise<BootedS
       BANK_DASHBOARD_RUNTIME_STATE: runtimeStatePath,
       BANK_EVENT_DB: eventDbPath,
       BANK_REPO_ROOT: REPO_ROOT,
+      // Point the RMS document store at the tmp dir so the spawned
+      // server doesn't drop blobs under prototype/prototype/data/documents/
+      // (gitignore is relative to prototype/, so a leak there would
+      // dirty git state).
+      BANK_DOCUMENT_STORE_PATH: join(tmpDir, "docstore"),
       BANK_DASHBOARD_REFRESH_MS: "0",
       LOG_LEVEL: "warn",
       ...envOverrides,
@@ -113,7 +118,8 @@ describe("/api/provenance/mode — build phase (default)", () => {
   });
 
   it("returns the env-derived simulated-only filter", async () => {
-    const r = await fetch(`http://127.0.0.1:${booted!.port}/api/provenance/mode`);
+    if (!booted) throw new Error("server not booted");
+    const r = await fetch(`http://127.0.0.1:${booted.port}/api/provenance/mode`);
     expect(r.ok).toBe(true);
     const body = (await r.json()) as {
       asOf: string;
@@ -143,7 +149,8 @@ describe("/api/provenance/mode — licence-day", () => {
   });
 
   it("returns production-only when BANK_PHASE is licence-day", async () => {
-    const r = await fetch(`http://127.0.0.1:${booted!.port}/api/provenance/mode`);
+    if (!booted) throw new Error("server not booted");
+    const r = await fetch(`http://127.0.0.1:${booted.port}/api/provenance/mode`);
     expect(r.ok).toBe(true);
     const body = (await r.json()) as {
       bankPhase: string;

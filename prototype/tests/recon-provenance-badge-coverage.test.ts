@@ -15,9 +15,6 @@
 //   + watermark layer) on behalf of Vera (Internal audit / continuous-
 //   assurance engineer).
 
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
-
 import { describe, expect, it } from "bun:test";
 
 import { run as runReconLive } from "../platform/recon/provenance-badge-coverage";

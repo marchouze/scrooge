@@ -97,7 +97,7 @@
    * @returns {HTMLElement}
    */
   function render(filter, opts) {
-    const placement = (opts && opts.placement) || "page-top";
+    const placement = opts?.placement || "page-top";
     const m = describe(filter);
 
     const root = document.createElement("span");
@@ -110,9 +110,7 @@
     );
     root.setAttribute(
       "title",
-      m.suffix
-        ? `${m.label} — ${m.suffix}`
-        : `${m.label} — D-DATA-PROVENANCE-SUBSTRATE Slice 3`,
+      m.suffix ? `${m.label} — ${m.suffix}` : `${m.label} — D-DATA-PROVENANCE-SUBSTRATE Slice 3`,
     );
     if (placement === "page-top") root.classList.add("provenance-badge-page-top");
     if (placement === "tile") root.classList.add("provenance-badge-tile");
@@ -172,9 +170,9 @@
    */
   function mount(target, opts) {
     if (!target) return null;
-    opts = opts || {};
-    const filter = opts.filter !== undefined ? opts.filter : cached;
-    const node = render(filter, opts);
+    const effectiveOpts = opts || {};
+    const filter = effectiveOpts.filter !== undefined ? effectiveOpts.filter : cached;
+    const node = render(filter, effectiveOpts);
     target.replaceChildren(node);
     return node;
   }
@@ -196,7 +194,7 @@
       const body = await res.json();
       // The endpoint returns the resolved filter directly OR `{ filter: ... }`;
       // accept both for forward-compat with the Slice 7 toggle UX.
-      const filter = body && body.filter ? body.filter : body;
+      const filter = body?.filter ? body.filter : body;
       cached = filter && typeof filter.mode === "string" ? filter : null;
       return cached;
     } catch (e) {
@@ -226,14 +224,14 @@
   function autoMount() {
     const markers = document.querySelectorAll("[data-provenance-badge]");
     if (markers.length > 0) {
-      markers.forEach((el) => {
+      for (const el of markers) {
         const placement = el.getAttribute("data-provenance-badge") || "page-top";
         const node =
           cached === null ? renderError("/api/provenance/mode") : render(cached, { placement });
         // Marker was an empty span in markup — replace its children only;
         // do not re-create the marker itself (preserves layout siblings).
         el.replaceChildren(node);
-      });
+      }
       return;
     }
 
@@ -248,7 +246,9 @@
       document.body;
     if (!fallback) return;
     const node =
-      cached === null ? renderError("/api/provenance/mode") : render(cached, { placement: "page-top" });
+      cached === null
+        ? renderError("/api/provenance/mode")
+        : render(cached, { placement: "page-top" });
     // Place at the start so the badge is the first thing the eye reaches.
     fallback.insertBefore(node, fallback.firstChild);
   }

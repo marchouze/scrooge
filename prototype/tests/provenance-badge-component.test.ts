@@ -23,13 +23,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "bun:test";
 
-const MODULE_PATH = resolve(
-  import.meta.dir,
-  "..",
-  "dashboard",
-  "public",
-  "provenance-badge.js",
-);
+const MODULE_PATH = resolve(import.meta.dir, "..", "dashboard", "public", "provenance-badge.js");
 const MODULE_SRC = readFileSync(MODULE_PATH, "utf8");
 
 describe("provenance-badge.js — source shape", () => {
@@ -83,24 +77,51 @@ interface FakeNode {
   attrs: Map<string, string>;
   children: FakeNode[];
   textContent: string;
+  setAttribute(k: string, v: string): void;
+  appendChild(c: FakeNode): FakeNode;
+  replaceChildren(...newChildren: FakeNode[]): void;
+  insertBefore(c: FakeNode, ref: FakeNode | null): FakeNode;
+  classList: { add: (cls: string) => void };
+  firstChild: FakeNode | null;
 }
 
 function makeFakeNode(tag: string): FakeNode {
-  return {
+  const node: FakeNode = {
     tagName: tag,
     className: "",
     attrs: new Map(),
     children: [],
     textContent: "",
+    firstChild: null,
+    setAttribute(k: string, v: string) {
+      this.attrs.set(k, String(v));
+    },
+    appendChild(c: FakeNode) {
+      this.children.push(c);
+      this.firstChild = this.children[0] ?? null;
+      return c;
+    },
+    replaceChildren(...newChildren: FakeNode[]) {
+      this.children = [...newChildren];
+      this.firstChild = this.children[0] ?? null;
+    },
+    insertBefore(c: FakeNode, _ref: FakeNode | null) {
+      this.children.unshift(c);
+      this.firstChild = this.children[0] ?? null;
+      return c;
+    },
+    classList: {
+      add: (cls: string) => {
+        node.className = node.className ? `${node.className} ${cls}` : cls;
+      },
+    },
   };
+  return node;
 }
 
 function loadModuleInFakeDom(): {
   api: {
-    render: (
-      filter: unknown,
-      opts?: { placement?: string },
-    ) => FakeNode;
+    render: (filter: unknown, opts?: { placement?: string }) => FakeNode;
     describe: (filter: unknown) => {
       mode: string;
       label: string;
@@ -114,28 +135,7 @@ function loadModuleInFakeDom(): {
   const fakeWindow: Record<string, unknown> = {};
   const fakeDocumentListeners = new Map<string, Array<() => void>>();
   const fakeDocument = {
-    createElement: (tag: string) => {
-      const node = makeFakeNode(tag);
-      // Mock setAttribute / classList / appendChild on the fake node.
-      Object.assign(node, {
-        setAttribute(k: string, v: string) {
-          this.attrs.set(k, String(v));
-        },
-        appendChild(c: FakeNode) {
-          this.children.push(c);
-          return c;
-        },
-        replaceChildren(...newChildren: FakeNode[]) {
-          this.children = [...newChildren];
-        },
-        classList: {
-          add: (cls: string) => {
-            node.className = node.className ? `${node.className} ${cls}` : cls;
-          },
-        },
-      });
-      return node;
-    },
+    createElement: (tag: string): FakeNode => makeFakeNode(tag),
     querySelectorAll: () => [] as FakeNode[],
     querySelector: () => null as FakeNode | null,
     addEventListener: (ev: string, fn: () => void) => {
@@ -226,7 +226,7 @@ describe("provenance-badge.js — render / describe", () => {
     // Label child has the descriptor label.
     const labels = node.children.filter((c) => c.className.includes("provenance-badge-label"));
     expect(labels.length).toBe(1);
-    expect(labels[0].textContent).toBe("Production data");
+    expect(labels[0]?.textContent).toBe("Production data");
   });
 
   it("render(simulated-only) sets data-mode='simulated-only'", () => {
@@ -250,11 +250,9 @@ describe("provenance-badge.js — render / describe", () => {
       mode: "simulated-only",
       scenarios: ["unit-test"],
     });
-    const suffixes = node.children.filter((c) =>
-      c.className.includes("provenance-badge-suffix"),
-    );
+    const suffixes = node.children.filter((c) => c.className.includes("provenance-badge-suffix"));
     expect(suffixes.length).toBe(1);
-    expect(suffixes[0].textContent).toContain("scenarios: unit-test");
+    expect(suffixes[0]?.textContent).toContain("scenarios: unit-test");
   });
 
   it("render(null) emits the unknown badge — never disappears", () => {
@@ -265,16 +263,13 @@ describe("provenance-badge.js — render / describe", () => {
   it("renderError emits an error badge with title carrying the cause", () => {
     const node = api.renderError("/api/provenance/mode timeout");
     expect(node.attrs.get("data-mode")).toBe("error");
-    expect(node.attrs.get("title")).toContain("/api/provenance/mode timeout");
+    const title = node.attrs.get("title");
+    expect(title).toBeDefined();
+    expect(title).toContain("/api/provenance/mode timeout");
   });
 
   it("mount with explicit filter overrides the cached filter", () => {
     const target = makeFakeNode("div");
-    Object.assign(target, {
-      replaceChildren(...c: FakeNode[]) {
-        this.children = [...c];
-      },
-    });
     const node = api.mount(target, { filter: { mode: "combined" }, placement: "tile" });
     expect(node).not.toBeNull();
     expect(node?.attrs.get("data-mode")).toBe("combined");
