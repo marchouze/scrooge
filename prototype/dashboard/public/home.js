@@ -77,7 +77,7 @@
       title: "Owner Inbox",
       blurb:
         "Every deliverable for the CEO — board-pack drafts, decision briefs, agent run reports.",
-      href: "/api/state",
+      href: "/index.html",
     },
     {
       id: "ba-returns",
