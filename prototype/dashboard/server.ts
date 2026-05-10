@@ -49,6 +49,9 @@
 import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 
+import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
+import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
+import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
@@ -59,6 +62,7 @@ import {
   recordCeoDecision,
   recordDecisionComment,
 } from "../runtime/decisions/record";
+import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
@@ -123,6 +127,7 @@ let cachedState: DashboardState = bootDerive();
 
 function bootDerive(): DashboardState {
   try {
+    bootFleetRegistration();
     const s = deriveState({ sources: SOURCES, events: EVENTS });
     ensureRuntimeDir(RUNTIME_STATE_PATH);
     saveState(s, RUNTIME_STATE_PATH);
@@ -130,6 +135,77 @@ function bootDerive(): DashboardState {
   } catch (e) {
     logger.error({ err: (e as Error).message }, "initial derivation failed");
     throw e;
+  }
+}
+
+/**
+ * S8 §3.1 + A4 — fleet registration on dashboard server boot.
+ *
+ * Drives `Team/_team-roster.json` (27 personas) through the agent
+ * registry / identity issuer / permission-policy publisher. Idempotent
+ * on re-boot — a fresh worktree boots a registered fleet without
+ * manual intervention; subsequent boots emit zero events and log
+ * skip-counts only.
+ *
+ * Failure mode: a registration failure is degraded-but-progressing —
+ * the per-persona alert is in the event log (SubstrateAlert,
+ * alertClass: integrity); the dashboard boot itself continues. We do
+ * not re-throw because the fleet rollout is auxiliary to the
+ * dashboard's primary responsibility (rendering the registry); even a
+ * fully-failed rollout still permits the dashboard to serve cached
+ * state from prior boots.
+ */
+function bootFleetRegistration(): void {
+  if (process.env.BANK_DASHBOARD_FLEET_ROLLOUT_DISABLED === "true") return;
+  const teamDir = resolve(REPO_ROOT, "Team");
+  const rosterPath = resolve(teamDir, "_team-roster.json");
+  if (!existsSync(rosterPath)) {
+    logger.debug({ rosterPath }, "fleet-rollout: roster not found; skipping");
+    return;
+  }
+  try {
+    const registry = new LocalAgentRegistry({ eventStore });
+    const identity = new LocalAgentIdentityIssuer({
+      eventStore,
+      keyDir: process.env.BANK_AGENT_KEY_DIR ?? resolve(".local/keys"),
+    });
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore });
+    const summary = registerFleet({
+      eventStore,
+      registry,
+      identity,
+      publisher,
+      rosterPath,
+      teamDir,
+    });
+    if (summary.emitted === 0) {
+      logger.debug(
+        {
+          total: summary.total,
+          unchanged: summary.unchanged,
+          failed: summary.failed,
+        },
+        "fleet-rollout: idempotent boot; no events emitted",
+      );
+    } else {
+      logger.info(
+        {
+          total: summary.total,
+          registered: summary.registered,
+          updated: summary.updated,
+          unchanged: summary.unchanged,
+          partial: summary.partial,
+          failed: summary.failed,
+          emitted: summary.emitted,
+        },
+        `fleet-rollout: ${summary.emitted} events emitted across ${summary.total} personas`,
+      );
+    }
+  } catch (e) {
+    logger.error(
+      { err: (e as Error).message },
+      "fleet-rollout: roster read or driver failure; boot continues",
+    );
   }
 }
 
