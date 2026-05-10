@@ -30,6 +30,7 @@ import {
   isRouteMarker,
   looksLikeExternalAnchor,
   looksLikeOrgId,
+  looksLikeUrnAnchor,
   parseObligationsRegister,
   run as retentionRun,
 } from "../platform/recon/retention-citation-coverage";
@@ -91,12 +92,18 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
     "JSE-EQUITIES-RULES-2024",
     "JOINT-STANDARD-1-2024-CYBER",
   ]);
+  const urnAnchors = new Set([
+    "urn:obligation:bank:org:gv:director-decision-retention:v1",
+    "urn:obligation:bank:mk:jse-equities-rules-retention:v1",
+    "urn:policy:bank:records-management:operational-substrate-retention:v1",
+  ]);
 
   it("passes when an event-type carries a resolvable ORG-* citation", () => {
     const r = assertRetentionCitationCoverage({
       registry: [syntheticRow({ type: "FicEventOk", citationRef: "ORG-FC-05" })],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.ok).toBe(true);
     expect(r.violations).toEqual([]);
@@ -113,6 +120,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       ],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.ok).toBe(true);
     expect(r.violations).toEqual([]);
@@ -123,6 +131,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       registry: [syntheticRow({ type: "GhostEvent", citationRef: "ORG-XX-99" })],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.ok).toBe(true); // warn, not fail
     expect(r.violations.length).toBe(1);
@@ -141,6 +150,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       ],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.violations.length).toBe(1);
     expect(r.violations[0]?.message).toContain("BCBS-D999-IMAGINARY-2099");
@@ -158,6 +168,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       ],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.ok).toBe(true); // warn, not fail
     expect(r.violations.length).toBe(1);
@@ -174,6 +185,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       ],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.violations.length).toBe(1);
     expect(r.violations[0]?.message).toContain("does not match any recognised citation form");
@@ -184,6 +196,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       registry: [syntheticRow({ type: "EmptyCitationEvent", citationRef: "" })],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.violations.length).toBe(1);
     expect(r.violations[0]?.message).toContain("missing or empty");
@@ -202,6 +215,7 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       ],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     // Citation resolves (no citation-side finding) but class-consistency
     // fires.
@@ -222,9 +236,84 @@ describe("retention-citation-coverage — synthetic resolution cases", () => {
       ],
       orgIds,
       externalAnchors,
+      urnAnchors,
     });
     expect(r.ok).toBe(true);
     expect(r.violations).toEqual([]);
+  });
+
+  it("passes when an event-type carries a resolvable urn:obligation: URN-form anchor", () => {
+    const r = assertRetentionCitationCoverage({
+      registry: [
+        syntheticRow({
+          type: "GovernanceUrnEvent",
+          citationRef: "urn:obligation:bank:org:gv:director-decision-retention:v1",
+        }),
+      ],
+      orgIds,
+      externalAnchors,
+      urnAnchors,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations).toEqual([]);
+  });
+
+  it("passes when an event-type carries a resolvable urn:policy: URN-form anchor", () => {
+    const r = assertRetentionCitationCoverage({
+      registry: [
+        syntheticRow({
+          type: "RuntimeUrnEvent",
+          citationRef: "urn:policy:bank:records-management:operational-substrate-retention:v1",
+        }),
+      ],
+      orgIds,
+      externalAnchors,
+      urnAnchors,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations).toEqual([]);
+  });
+
+  it("flags a URN-form anchor that does not resolve to any register URN handle", () => {
+    const r = assertRetentionCitationCoverage({
+      registry: [
+        syntheticRow({
+          type: "PhantomUrnEvent",
+          citationRef: "urn:obligation:bank:zz:imaginary-retention:v9",
+        }),
+      ],
+      orgIds,
+      externalAnchors,
+      urnAnchors,
+    });
+    expect(r.ok).toBe(true); // warn, not fail
+    expect(r.violations.length).toBe(1);
+    expect(r.violations[0]?.message).toContain("urn:obligation:bank:zz:imaginary-retention:v9");
+    expect(r.violations[0]?.message).toContain("does not resolve");
+  });
+
+  it("matches URN anchors case-sensitively (uppercased URN does not resolve)", () => {
+    // RFC 8141 + substrate convention: URNs are lower-case; the recon
+    // does not silently fold case for URN-form anchors (avoids the
+    // upper-case ambiguity that the ORG-* / external-anchor branches
+    // tolerate by design).
+    const r = assertRetentionCitationCoverage({
+      registry: [
+        syntheticRow({
+          type: "UpperCaseUrnEvent",
+          citationRef: "URN:OBLIGATION:BANK:ORG:GV:DIRECTOR-DECISION-RETENTION:V1",
+        }),
+      ],
+      orgIds,
+      externalAnchors,
+      urnAnchors,
+    });
+    // The upper-case form does not start with a recognised URN prefix
+    // (those are lower-case), so it falls through to the malformed-
+    // citation branch. Either way it is a finding — the test guards
+    // that no silent case-fold makes the URN resolve.
+    expect(r.violations.length).toBe(1);
+    expect(r.violations[0]?.message).toContain("does not match any recognised");
   });
 });
 
@@ -253,6 +342,23 @@ describe("retention-citation-coverage — citation-form helpers", () => {
     expect(looksLikeExternalAnchor("ORG-FC-05")).toBe(false);
     expect(looksLikeExternalAnchor("some-arbitrary-string")).toBe(false);
   });
+
+  it("looksLikeUrnAnchor recognises urn:obligation: / urn:policy: prefixes only", () => {
+    expect(looksLikeUrnAnchor("urn:obligation:bank:org:gv:director-decision-retention:v1")).toBe(
+      true,
+    );
+    expect(
+      looksLikeUrnAnchor("urn:policy:bank:records-management:operational-substrate-retention:v1"),
+    ).toBe(true);
+    // Targeted by namespace — does not match arbitrary URN-shaped strings.
+    expect(looksLikeUrnAnchor("urn:isbn:0451450523")).toBe(false);
+    expect(looksLikeUrnAnchor("urn:other:bank:something:v1")).toBe(false);
+    // Case-sensitive — RFC 8141 lower-case convention; the upper-case
+    // form is not recognised (avoids silent case-fold).
+    expect(looksLikeUrnAnchor("URN:OBLIGATION:BANK:ORG:GV:V1")).toBe(false);
+    expect(looksLikeUrnAnchor("ORG-FC-05")).toBe(false);
+    expect(looksLikeUrnAnchor("BCBS-D457-FRTB-2019")).toBe(false);
+  });
 });
 
 describe("retention-citation-coverage — register parser", () => {
@@ -275,10 +381,43 @@ describe("retention-citation-coverage — register parser", () => {
       "| Anchor | URN | Description |",
       "|---|---|---|",
       "| `BCBS-D457-FRTB-2019` | `urn:obligation:bank:m1:prudential:bcbs-d457-frtb-2019:v1` | FRTB |",
-      "| `JSE-EQUITIES-RULES-2024` | `urn:...` | JSE rules |",
+      "| `JSE-EQUITIES-RULES-2024` | `urn:obligation:bank:m1:market-infrastructure:jse-equities-rules:v1` | JSE rules |",
     ].join("\n");
     const { externalAnchors } = parseObligationsRegister(fixture);
     expect(externalAnchors.has("BCBS-D457-FRTB-2019")).toBe(true);
     expect(externalAnchors.has("JSE-EQUITIES-RULES-2024")).toBe(true);
+  });
+
+  it("extracts urn:obligation:* / urn:policy:* URN-form anchors from anywhere in the register", () => {
+    // Slice-3 follow-on rows expose URN handles in the Citation cell
+    // (not a fixed first-cell position). The parser sweeps the full
+    // document for backtick-quoted URNs in the recognised namespaces.
+    const fixture = [
+      "| ID | Citation | Requirement |",
+      "|---|---|---|",
+      "| ORG-MK-15 | `urn:obligation:bank:mk:jse-equities-rules-retention:v1` | trade-record retention |",
+      "| ORG-RM-01 | `urn:policy:bank:records-management:operational-substrate-retention:v1` | runtime-substrate retention |",
+      "",
+      "Prose may also reference URN `urn:obligation:bank:org:gv:director-decision-retention:v1` inline.",
+      "",
+      "Other-namespace URN `urn:isbn:0451450523` is not recognised.",
+    ].join("\n");
+    const { urnAnchors } = parseObligationsRegister(fixture);
+    expect(urnAnchors.has("urn:obligation:bank:mk:jse-equities-rules-retention:v1")).toBe(true);
+    expect(
+      urnAnchors.has("urn:policy:bank:records-management:operational-substrate-retention:v1"),
+    ).toBe(true);
+    expect(urnAnchors.has("urn:obligation:bank:org:gv:director-decision-retention:v1")).toBe(true);
+    expect(urnAnchors.has("urn:isbn:0451450523")).toBe(false);
+  });
+
+  it("URN extraction is case-sensitive (lower-case only — RFC 8141 convention)", () => {
+    const fixture = [
+      "| ID | Citation |",
+      "|---|---|",
+      "| ORG-XX-01 | `URN:OBLIGATION:BANK:UPPER:V1` |",
+    ].join("\n");
+    const { urnAnchors } = parseObligationsRegister(fixture);
+    expect(urnAnchors.size).toBe(0);
   });
 });
