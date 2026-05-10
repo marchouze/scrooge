@@ -24,6 +24,12 @@ import { dirname } from "node:path";
 
 import { Database } from "bun:sqlite";
 import {
+  type ProvenanceTag,
+  defaultProvenanceFor,
+  isProvenanceSubstrateActive,
+  provenanceTagSchema,
+} from "./provenance";
+import {
   DEFAULT_SNAPSHOT_CADENCE,
   type SnapshotCadence,
   lookupEventType,
@@ -42,7 +48,13 @@ CREATE TABLE IF NOT EXISTS events (
   actor_id    TEXT    NOT NULL,
   citations   TEXT    NOT NULL,   -- JSON array
   payload     TEXT    NOT NULL,   -- JSON object
-  recorded_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  recorded_at TEXT    NOT NULL DEFAULT (datetime('now')),
+  -- D-DATA-PROVENANCE-SUBSTRATE Slice 1 — typed multi-axis provenance
+  -- tag (kind / scenario / variant / sourceLineage / tags). JSON-serialised
+  -- ProvenanceTag. NULL until the Slice-6 backfill / soft-tagger runs;
+  -- substrate-active flag (off in tests, on at composition root + after
+  -- backfill) gates append-rejection of unset values.
+  provenance  TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_events_type   ON events(type);
 CREATE INDEX IF NOT EXISTS idx_events_entity ON events(entity);
@@ -161,20 +173,105 @@ export class EventStore {
     }
     this.db = new Database(path);
     this.db.exec(DDL);
+    // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — additive column migration for
+    // pre-Slice-1 stores opened in place. CREATE TABLE IF NOT EXISTS does
+    // not add columns to an existing table; the ALTER TABLE below brings
+    // legacy event-store DBs up to schema. Idempotent — bun:sqlite throws
+    // "duplicate column" if the column already exists; we tolerate that.
+    try {
+      this.db.exec("ALTER TABLE events ADD COLUMN provenance TEXT");
+    } catch {
+      // column already present; pre-Slice-1 path doesn't need this.
+    }
+    // D-DATA-PROVENANCE-SUBSTRATE Slice 6 — soft-tagger. If the store
+    // contains untagged events (column NULL), apply the carve-out lookup
+    // + build-phase default. Idempotent: zero-untagged ⇒ no-op. The
+    // soft-tagger runs unconditionally (independent of the substrate-
+    // active flag) so a freshly-opened legacy DB heals before the first
+    // append; the hard-rejection path then sees a fully-tagged store.
+    this.softTagUntaggedEvents();
+  }
+
+  /**
+   * Slice 6 soft-tagger. Walks rows with `provenance IS NULL` and
+   * applies `defaultProvenanceFor(event.type)` (carve-outs first, build-
+   * phase simulated default otherwise). Returns the count of events
+   * tagged so callers (and the backfill script) can report.
+   */
+  softTagUntaggedEvents(): {
+    readonly tagged: number;
+    readonly byKind: Readonly<Record<"production" | "simulated", number>>;
+  } {
+    const rows = this.db
+      .prepare("SELECT event_id, type FROM events WHERE provenance IS NULL")
+      .all() as Array<{ event_id: string; type: string }>;
+    if (rows.length === 0) {
+      return { tagged: 0, byKind: { production: 0, simulated: 0 } };
+    }
+    const byKind = { production: 0, simulated: 0 };
+    const stmt = this.db.prepare("UPDATE events SET provenance = ? WHERE event_id = ?");
+    const tx = this.db.transaction((batch: typeof rows) => {
+      for (const row of batch) {
+        const tag = defaultProvenanceFor(row.type);
+        stmt.run(JSON.stringify(tag), row.event_id);
+        byKind[tag.kind] += 1;
+      }
+    });
+    tx(rows);
+    return { tagged: rows.length, byKind };
+  }
+
+  /**
+   * Per-kind event counts. Diagnostic surface for the backfill script
+   * and for operators verifying substrate-active gating. Untagged events
+   * (post-soft-tagger; should always be zero in steady state) appear under
+   * `untagged`.
+   */
+  countByProvenanceKind(): {
+    readonly production: number;
+    readonly simulated: number;
+    readonly untagged: number;
+  } {
+    const rows = this.db
+      .prepare(
+        `SELECT
+           SUM(CASE WHEN provenance IS NULL THEN 1 ELSE 0 END) AS untagged,
+           SUM(CASE WHEN json_extract(provenance, '$.kind') = 'production' THEN 1 ELSE 0 END) AS production,
+           SUM(CASE WHEN json_extract(provenance, '$.kind') = 'simulated' THEN 1 ELSE 0 END) AS simulated
+         FROM events`,
+      )
+      .get() as { untagged: number | null; production: number | null; simulated: number | null };
+    return {
+      production: rows.production ?? 0,
+      simulated: rows.simulated ?? 0,
+      untagged: rows.untagged ?? 0,
+    };
   }
 
   /** Append a single event. P2 enforced via the schema (citations ≥ 1).
    * Per-type payload validation dispatched through the A1 event-type
    * registry — types with a registered Zod schema fail-closed; types
-   * without one (or unregistered types) flow through envelope-only. */
+   * without one (or unregistered types) flow through envelope-only.
+   *
+   * D-DATA-PROVENANCE-SUBSTRATE Slice 1 — `provenance` enforcement:
+   *   - Always validated by Zod (cross-axis rules in `provenanceTagSchema`)
+   *     when present, regardless of the substrate-active flag.
+   *   - When `isProvenanceSubstrateActive()` returns true (default), an
+   *     append without `provenance` is rejected with a hard error UNLESS
+   *     the event type carries a carve-out (CeoDecision, AgentBriefIssued)
+   *     in which case the carve-out provenance is auto-applied.
+   *   - When the flag is false (test pin / operator override), absent
+   *     provenance falls through to NULL (legacy pre-Slice-1 behaviour).
+   */
   append(raw: Event): void {
     const e = eventSchema.parse(raw);
     validatePayload(e.type, e.payload);
+    const provenance = this.resolveProvenanceForAppend(e);
     this.db
       .prepare(
         `INSERT INTO events
-           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload, provenance)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         e.event_id,
@@ -185,7 +282,45 @@ export class EventStore {
         e.actor.id,
         JSON.stringify(e.citations),
         JSON.stringify(e.payload),
+        provenance ? JSON.stringify(provenance) : null,
       );
+  }
+
+  /**
+   * Resolve the `ProvenanceTag` to persist alongside this append.
+   *
+   * Rules:
+   *   1. Caller-supplied `provenance` wins (already cross-axis-validated by Zod).
+   *   2. If the substrate-active flag is true:
+   *      a. Carve-out lookup by `event.type` (CeoDecision, AgentBriefIssued)
+   *         auto-injects the production tag for those types.
+   *      b. Any other type missing `provenance` is hard-rejected.
+   *   3. If the substrate-active flag is false (legacy / test path), the
+   *      append proceeds with NULL provenance; the soft-tagger heals
+   *      such rows on the next store-open.
+   */
+  private resolveProvenanceForAppend(e: Event): ProvenanceTag | undefined {
+    if (e.provenance !== undefined) {
+      // Re-validate defensively — a caller might have hand-rolled the
+      // tag without going through `provenanceTagSchema.parse`. The cost
+      // is one extra Zod parse per append; the value is that the
+      // cross-axis rules cannot be bypassed by skipping the helper.
+      return provenanceTagSchema.parse(e.provenance);
+    }
+    if (!isProvenanceSubstrateActive()) {
+      return undefined;
+    }
+    const carveOut = defaultProvenanceFor(e.type);
+    // The build-phase fallback (PRE_SUBSTRATE_BACKFILL_TAG) is intentionally
+    // NOT auto-applied at append time — only for the soft-tagger / backfill
+    // pass over historical data. Live appends without an explicit tag must
+    // either be a carve-out type or be hard-rejected.
+    if (carveOut.sourceLineage === "pre-substrate-backfill") {
+      throw new Error(
+        `D-DATA-PROVENANCE-SUBSTRATE: append rejected — event type "${e.type}" requires an explicit provenance tag (no carve-out applies). See Owner Inbox/2026-05-10_atlas-anya_d-data-provenance-substrate-build-spec.md §4.1.`,
+      );
+    }
+    return carveOut;
   }
 
   /** Append a batch atomically. */
@@ -229,6 +364,7 @@ export class EventStore {
         actor: { type: row.actor_type as Event["actor"]["type"], id: row.actor_id },
         citations: JSON.parse(row.citations) as string[],
         payload: JSON.parse(row.payload) as Record<string, unknown>,
+        ...(row.provenance ? { provenance: JSON.parse(row.provenance) as ProvenanceTag } : {}),
       };
     }
   }
@@ -504,4 +640,5 @@ interface RowShape {
   citations: string;
   payload: string;
   recorded_at: string;
+  provenance: string | null;
 }
