@@ -163,14 +163,7 @@ export const RMS_REGISTER_CATALOGUE: readonly RmsRegisterDescriptor[] = [
     blurb:
       "AgentBriefIssued rows keyed by briefId; status derived from downstream AgentRunStarted / AgentRunCompleted / BriefSuperseded events.",
     folds: ["AgentBriefIssued", "AgentRunStarted", "AgentRunCompleted", "BriefSuperseded"],
-    statusTaxonomy: [
-      "issued",
-      "in-flight",
-      "delivered",
-      "blocked",
-      "withdrawn",
-      "superseded",
-    ],
+    statusTaxonomy: ["issued", "in-flight", "delivered", "blocked", "withdrawn", "superseded"],
   },
   {
     key: "workstreams",
