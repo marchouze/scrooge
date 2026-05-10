@@ -201,6 +201,24 @@
 
 </main>
 
+<!--
+  Procedure inline-preview modal — read-only render of the markdown body
+  for an authored procedure file. Authored by Anya (Data / analytics
+  engineer); mirrors the Owner Inbox preview modal on the home dashboard.
+  Reuses the `oi-preview-*` CSS classes from `styles.css` so the look-and-
+  feel stays consistent across the surface.
+-->
+<div class="modal oi-preview-modal" id="procPreviewModal" hidden>
+  <div class="oi-preview-card">
+    <div class="oi-preview-head">
+      <h2 id="procPreviewTitle">Procedure preview</h2>
+      <button class="icon-btn" id="procPreviewClose" aria-label="Close">×</button>
+    </div>
+    <div class="oi-preview-path muted small" id="procPreviewPath"></div>
+    <div class="oi-preview-body" id="procPreviewBody"></div>
+  </div>
+</div>
+
 <script src="/_failure-banner.js"></script>
 <script src="/provenance-badge.js"></script>
 <script src="/procedures.js"></script>

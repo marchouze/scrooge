@@ -214,11 +214,13 @@ function renderProcedureCell(r) {
       <div class="proc-row-meta">${esc(r.procedureLabel)}</div>
     `;
   }
-  // Authored: link to the source markdown so reviewers can jump directly
-  // to the procedure file in the repo's GitHub view (relative link to the
-  // raw file works in dev; a substrate seam later swaps in a richer
-  // viewer if we land one).
-  const href = `/Procedures/by-policy/${encodeURIComponent(r.procedureFile)}`;
+  // Authored: open an inline-preview modal that streams the markdown body
+  // from /api/procedure/:filename. Mirrors the Owner Inbox preview UX on
+  // the home dashboard so the procedures page feels consistent with the
+  // rest of the surface. Anchor href is kept (=> /api/procedure/:filename)
+  // so middle-click / cmd-click still resolves to a viewable URL; the
+  // primary click is intercepted to open the modal.
+  const href = `/api/procedure/${encodeURIComponent(r.procedureFile)}`;
   const idChip = r.procedureId
     ? `<span class="proc-tag" style="margin-left:6px;">${esc(r.procedureId)}</span>`
     : "";
@@ -227,7 +229,7 @@ function renderProcedureCell(r) {
     : "";
   return `
     <div class="proc-row-link">
-      <a href="${esc(href)}"><code>${esc(r.procedureFile)}</code></a>
+      <a href="${esc(href)}" class="proc-preview-link" data-procedure-file="${esc(r.procedureFile)}"><code>${esc(r.procedureFile)}</code></a>
       ${idChip}
     </div>
     ${titleLine}
@@ -359,6 +361,190 @@ function renderFindings() {
 }
 
 // ---------------------------------------------------------------------------
+// Inline-preview modal — mirrors the home dashboard's Owner Inbox preview.
+// Streams /api/procedure/:filename and renders with a tiny line-oriented
+// markdown formatter (same shape as `renderMarkdownLite` in app.js). No
+// third-party dep, no exec'd HTML. Anything fancier lands in the <pre>
+// fallback. Anya — keep visual consistency with /home.
+// ---------------------------------------------------------------------------
+
+let procPreviewActive = null;
+
+async function openProcedurePreview(filename, label) {
+  if (!filename) return;
+  procPreviewActive = filename;
+  const modal = $("procPreviewModal");
+  const titleEl = $("procPreviewTitle");
+  const bodyEl = $("procPreviewBody");
+  const pathEl = $("procPreviewPath");
+  if (!modal || !bodyEl) return;
+  if (titleEl) titleEl.textContent = label || filename;
+  if (pathEl) pathEl.textContent = `Procedures/by-policy/${filename}`;
+  bodyEl.innerHTML = `<div class="muted" style="padding: 24px;">Loading…</div>`;
+  modal.hidden = false;
+  try {
+    const r = await fetch(`/api/procedure/${encodeURIComponent(filename)}`);
+    if (!r.ok) {
+      const errBody = await r.text();
+      throw new Error(`HTTP ${r.status}: ${errBody.slice(0, 240)}`);
+    }
+    const md = await r.text();
+    // Stale-modal guard: another preview was opened while we waited.
+    if (procPreviewActive !== filename) return;
+    bodyEl.innerHTML = renderMarkdownLite(md);
+  } catch (err) {
+    if (procPreviewActive !== filename) return;
+    bodyEl.innerHTML = `<div class="error" style="padding:14px;">Could not load preview: ${esc(err.message ?? err)}</div>`;
+  }
+}
+
+function closeProcedurePreview() {
+  const modal = $("procPreviewModal");
+  if (modal) modal.hidden = true;
+  procPreviewActive = null;
+}
+
+function renderMarkdownLite(md) {
+  const src = String(md ?? "");
+  let body = src;
+  if (body.startsWith("---")) {
+    const end = body.indexOf("\n---", 3);
+    if (end !== -1) body = body.slice(end + 4);
+  }
+  const lines = body.split(/\r?\n/);
+  const out = [];
+  let inCode = false;
+  let codeBuf = [];
+  let inList = false;
+  let listType = null;
+  const closeList = () => {
+    if (inList) {
+      out.push(listType === "ol" ? "</ol>" : "</ul>");
+      inList = false;
+      listType = null;
+    }
+  };
+  const inlineFormat = (line) => {
+    let s = esc(line);
+    s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
+    s = s.replace(/\*\*([^*]+)\*\*/g, (_, t) => `<strong>${t}</strong>`);
+    s = s.replace(/(^|\W)\*([^*]+)\*(\W|$)/g, (_m, a, t, b) => `${a}<em>${t}</em>${b}`);
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, href) => {
+      const safe = /^(https?:|\/|\.\.?\/)/i.test(href) ? href : "#";
+      return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+    });
+    return s;
+  };
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    if (line.startsWith("```")) {
+      if (inCode) {
+        out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+        codeBuf = [];
+        inCode = false;
+      } else {
+        closeList();
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeBuf.push(line);
+      continue;
+    }
+    if (!line.trim()) {
+      closeList();
+      continue;
+    }
+    const h1 = line.match(/^# (.+)$/);
+    if (h1) {
+      closeList();
+      out.push(`<h2>${inlineFormat(h1[1])}</h2>`);
+      continue;
+    }
+    const h2 = line.match(/^## (.+)$/);
+    if (h2) {
+      closeList();
+      out.push(`<h3>${inlineFormat(h2[1])}</h3>`);
+      continue;
+    }
+    const h3 = line.match(/^### (.+)$/);
+    if (h3) {
+      closeList();
+      out.push(`<h4>${inlineFormat(h3[1])}</h4>`);
+      continue;
+    }
+    const ul = line.match(/^[-*]\s+(.+)$/);
+    if (ul) {
+      if (!inList || listType !== "ul") {
+        closeList();
+        out.push("<ul>");
+        inList = true;
+        listType = "ul";
+      }
+      out.push(`<li>${inlineFormat(ul[1])}</li>`);
+      continue;
+    }
+    const ol = line.match(/^\d+\.\s+(.+)$/);
+    if (ol) {
+      if (!inList || listType !== "ol") {
+        closeList();
+        out.push("<ol>");
+        inList = true;
+        listType = "ol";
+      }
+      out.push(`<li>${inlineFormat(ol[1])}</li>`);
+      continue;
+    }
+    if (line.startsWith("> ")) {
+      closeList();
+      out.push(`<blockquote>${inlineFormat(line.slice(2))}</blockquote>`);
+      continue;
+    }
+    closeList();
+    out.push(`<p>${inlineFormat(line)}</p>`);
+  }
+  if (inCode) {
+    out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+  }
+  closeList();
+  return out.join("\n");
+}
+
+function wirePreviewLinks() {
+  const target = $("procDomainBlocks");
+  if (!target) return;
+  // One delegated listener — preserves middle-click / cmd-click navigation
+  // (which doesn't fire `click` with default-prevented semantics) while
+  // intercepting the primary click to open the modal.
+  target.addEventListener("click", (e) => {
+    const link = e.target.closest("a.proc-preview-link");
+    if (!link) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+    e.preventDefault();
+    const filename = link.dataset.procedureFile;
+    const label = link.querySelector("code")?.textContent ?? filename;
+    openProcedurePreview(filename, label);
+  });
+}
+
+function wirePreviewModal() {
+  const closeBtn = $("procPreviewClose");
+  if (closeBtn) closeBtn.addEventListener("click", closeProcedurePreview);
+  const modal = $("procPreviewModal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeProcedurePreview();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const m = $("procPreviewModal");
+    if (m && !m.hidden) closeProcedurePreview();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Refresh dispatch
 // ---------------------------------------------------------------------------
 
@@ -405,5 +591,7 @@ function wireFilters() {
 }
 
 wireFilters();
+wirePreviewLinks();
+wirePreviewModal();
 load();
 setInterval(load, 30_000);
