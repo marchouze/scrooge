@@ -61,11 +61,7 @@ export const balance: SemanticEntry = {
   description:
     "Money-units balance of a GL account, sliced by entity, currency, IFRS classification, and as-of date. Base quantity every BA-return cell and AFS line decomposes into.",
   units: "money-minor",
-  dimensions: [
-    "currency",
-    "account",
-    "ifrsClassification",
-  ],
+  dimensions: ["currency", "account", "ifrsClassification"],
   projection: "gl-projection",
   formula:
     "sum(SubLedgerPostingEmitted.cashAmountMinor where {entity, account, currency, ifrsClassification, asOf <= asOfQuery})",
@@ -84,8 +80,16 @@ export const balance: SemanticEntry = {
       ifrsRef: "IFRS 9 §4.1",
       note: "Classification (amortised-cost / FVOCI / FVTPL) drives the dimension.",
     },
-    { type: "regulation", regulationId: "ORG-AC-01", note: "IFRS 9 classification at recognition." },
-    { type: "regulation", regulationId: "ORG-AC-08", note: "IAS 1 financial-statements presentation." },
+    {
+      type: "regulation",
+      regulationId: "ORG-AC-01",
+      note: "IFRS 9 classification at recognition.",
+    },
+    {
+      type: "regulation",
+      regulationId: "ORG-AC-08",
+      note: "IAS 1 financial-statements presentation.",
+    },
     {
       type: "policy",
       policyRef: "Accounting Policies (IFRS) v0.1 (STUB)",
@@ -95,7 +99,14 @@ export const balance: SemanticEntry = {
   ],
   signers: ["Bea", "Camille"],
   entityScope: [...ALL_ENTITIES],
-  ifrsClassifications: ["amortised-cost", "fvoci-debt", "fvoci-equity", "fvtpl", "non-financial", "equity"],
+  ifrsClassifications: [
+    "amortised-cost",
+    "fvoci-debt",
+    "fvoci-equity",
+    "fvtpl",
+    "non-financial",
+    "equity",
+  ],
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
@@ -222,7 +233,11 @@ export const cashAndBalancesAtSARB: SemanticEntry = {
       ifrsRef: "IAS 1 §54(i)",
       note: "Separate balance-sheet line for cash and cash equivalents.",
     },
-    { type: "regulation", regulationId: "ORG-AC-01", note: "IFRS 9 classification at recognition." },
+    {
+      type: "regulation",
+      regulationId: "ORG-AC-01",
+      note: "IFRS 9 classification at recognition.",
+    },
     { type: "regulation", regulationId: "ORG-AC-13", note: "BA-return submission obligation." },
     {
       type: "regulation",

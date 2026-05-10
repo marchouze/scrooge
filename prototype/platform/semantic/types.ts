@@ -101,7 +101,12 @@ export type IfrsClassification =
  */
 export type SemanticCitation =
   | { readonly type: "regulation"; readonly regulationId: string; readonly note?: string }
-  | { readonly type: "policy"; readonly policyRef: string; readonly section?: string; readonly note?: string }
+  | {
+      readonly type: "policy";
+      readonly policyRef: string;
+      readonly section?: string;
+      readonly note?: string;
+    }
   | { readonly type: "ifrs"; readonly ifrsRef: string; readonly note?: string }
   | { readonly type: "statute"; readonly statuteRef: string; readonly note?: string }
   /**
