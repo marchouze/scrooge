@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Procedures index — Hoz</title>
 <link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
 <style>
   /* Page-local — keep in sync with obligations.html visual conventions. */
   .proc-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
@@ -86,6 +87,7 @@
       <span class="muted">· Procedures · Reg → Policy → Procedure → System Capability</span>
     </div>
     <div class="meta">
+      <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
       <a class="nav-link" href="/">Dashboard</a>
       <a class="nav-link" href="/agents.html">Agents</a>
       <a class="nav-link" href="/obligations.html">Obligations</a>
@@ -200,6 +202,7 @@
 </main>
 
 <script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
 <script src="/procedures.js"></script>
 <!-- Shared refresh + shell-back-link injection (Anya / Linnea v0). -->
 <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>

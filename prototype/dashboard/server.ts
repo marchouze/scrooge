@@ -52,6 +52,7 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
+import { defaultProvenanceFilter } from "../platform/projections";
 import {
   type RecordCeoDecisionResult,
   type RecordDecisionCommentResult,
@@ -557,6 +558,25 @@ const server = Bun.serve({
     const url = new URL(req.url);
     if (url.pathname === "/api/state" && req.method === "GET") {
       return jsonResponse(cachedState);
+    }
+    // ---------- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking ----------
+    // Single source of the resolved ProvenanceFilter for the page chrome's
+    // <ProvenanceBadge>. Reads the projection-runtime default (env-derived
+    // from BANK_PHASE per Slice 2 §5.2) so the badge reflects exactly the
+    // filter projections compute under at request time.
+    //
+    // Slice 7 (toggle UX) extends this to honour a per-user session
+    // override; today the response is the env-derived default only.
+    // Authority: D-DATA-PROVENANCE-SUBSTRATE (CEO-approved 2026-05-10);
+    // pack §6 + §7 row 3.
+    if (url.pathname === "/api/provenance/mode" && req.method === "GET") {
+      const filter = defaultProvenanceFilter();
+      return jsonResponse({
+        asOf: nowUtc(),
+        bankPhase: process.env.BANK_PHASE ?? "build",
+        filter,
+        sliceAuthority: "D-DATA-PROVENANCE-SUBSTRATE-SLICE-3",
+      });
     }
     if (url.pathname === "/api/substrate-gaps" && req.method === "GET") {
       // Substrate-gap inventory parsed from Atlas's most-recent

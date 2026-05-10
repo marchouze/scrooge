@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Obligations · Bank operations dashboard</title>
 <link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
 <style>
   /* Page-local — keep in sync with policies.html visual conventions. */
   .oblig-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
@@ -84,6 +85,7 @@
       <span class="muted">· Obligations · register + Principle-6 citation map</span>
     </div>
     <div class="meta">
+      <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
       <a class="nav-link" href="/">Dashboard</a>
       <a class="nav-link" href="/agents.html">Agents</a>
       <a class="nav-link" href="/policies.html">Policies</a>
@@ -255,6 +257,7 @@
 </main>
 
 <script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script src="/obligations.js"></script>
 <!-- Shared refresh + shell-back-link injection (Anya / Linnea v0). -->
