@@ -19,10 +19,22 @@
 // `eventStore.snapshot()` / `loadSnapshot()`, collapsing rebuild cost from
 // O(N_events) to O(snapshot + delta).
 //
-// Author: Atlas (platform plumbing) · Anya (data substrate; Slice 3 codec)
+// D-DATA-PROVENANCE-SUBSTRATE Slice 2 — every projection-runtime call
+// site declares its `ProvenanceFilter`. The filter narrows the events
+// folded into the projection state and is included (as a structural
+// digest) in the effective snapshot stream key, so a snapshot computed
+// under `production-only` is never returned to a `simulated-only`
+// request. The filter is *optional* on the opts surface for
+// backward-compatibility; when omitted the runtime computes
+// `defaultProvenanceFilter()` from the `BANK_PHASE` env var (see
+// `filter.ts`).
+//
+// Author: Atlas (platform plumbing) · Anya (data substrate; Slice 3 codec
+// + Slice 2 provenance filter)
 
 import type { SnapshotRow } from "../event-store/store";
 import type { Event } from "../event-store/types";
+import type { ProvenanceFilter } from "./filter";
 
 /**
  * A reducer is a *pure* function from (state, event) → state. It must be
@@ -77,11 +89,21 @@ export interface ProjectionReplayOpts {
  * `filter` narrows the delta replay (e.g. to a specific entity / event
  * type); the consumer is responsible for choosing a filter equivalent to
  * its naive replay path.
+ *
+ * D-DATA-PROVENANCE-SUBSTRATE Slice 2 — `provenanceFilter` selects the
+ * projection's read-time provenance mode (production-only / simulated-
+ * only / combined) and any scenario / variant / lineage narrowing.
+ * Optional on this surface for backward compatibility; when omitted the
+ * runtime applies `defaultProvenanceFilter()` (env-derived from
+ * `BANK_PHASE`). The filter digest rides inside the effective stream
+ * key the runtime passes to the snapshot APIs, so cross-mode snapshots
+ * never cross-contaminate.
  */
 export interface SnapshotProjectionOpts {
   readonly streamKey: string;
   readonly asOf: string;
   readonly filter?: { entity?: string; type?: string };
+  readonly provenanceFilter?: ProvenanceFilter;
 }
 
 /**
@@ -98,6 +120,12 @@ export interface ProjectionSnapshotOpts<S> {
   /** Resolves the cadence rule used by `EventStore.shouldSnapshot`. When
    *  omitted the store falls back to `DEFAULT_SNAPSHOT_CADENCE`. */
   readonly eventType?: string;
+  /** D-DATA-PROVENANCE-SUBSTRATE Slice 2 — provenance filter under which
+   *  `state` was computed. Rides inside the effective snapshot stream
+   *  key so cross-mode snapshots never cross-contaminate. Optional on
+   *  the opts surface for backward compatibility; when omitted the
+   *  runtime applies `defaultProvenanceFilter()`. */
+  readonly provenanceFilter?: ProvenanceFilter;
 }
 
 /** Outcome of a `maybeSnapshot` call. */
@@ -116,11 +144,16 @@ export interface SnapshotEmissionResult {
 export interface Projector {
   build<S, E extends Event>(p: Projection<S, E>, opts?: ProjectionReplayOpts): S;
   fold<S, E extends Event>(p: Projection<S, E>, initial: S, opts?: ProjectionReplayOpts): S;
-  /** D-EVENT-STORE-SCALING Slice 3 — snapshot-aware projection. */
+  /** D-EVENT-STORE-SCALING Slice 3 — snapshot-aware projection.
+   *
+   *  D-DATA-PROVENANCE-SUBSTRATE Slice 2 — the result includes the
+   *  resolved `provenanceFilter` so consumers can confirm which mode
+   *  the state was computed under (esp. when the runtime resolved the
+   *  default rather than the consumer supplying one explicitly). */
   projectFromSnapshot<S, E extends Event>(
     p: Projection<S, E>,
     opts: SnapshotProjectionOpts,
-  ): { state: S; snapshot?: SnapshotRow; deltaCount: number };
+  ): { state: S; snapshot?: SnapshotRow; deltaCount: number; provenanceFilter: ProvenanceFilter };
   /** D-EVENT-STORE-SCALING Slice 3 — cadence-driven snapshot emit. */
   maybeSnapshot<S, E extends Event>(
     p: Projection<S, E>,
