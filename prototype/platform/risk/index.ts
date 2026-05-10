@@ -13,9 +13,19 @@
 // `version`-bumped semantic entries in a later slice; the v0.1 engine
 // names the standardised approach.
 //
+// Slice 4 of D-REGULATORY-READINESS-W2 adds the stress-projection engine
+// (3-year quarterly projection of CET1 / Tier1 / Total / Leverage / LCR /
+// NSFR under base + adverse + severely-adverse + reverse-stress scenarios
+// per `ORG-PR-12`), the Pillar-2 add-on computation, and the ICAAP
+// narrative-data feed (typed shape consumed by Helena's narrative author).
+//
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
-//   reports to Camille CFO)
-//   + Camille (Chief Financial Officer, governance — reports to CEO).
+//   reports to Camille CFO; Slice 3)
+//   + Camille (Chief Financial Officer, governance — reports to CEO; Slice 3)
+//   + Rohan (Risk engineer, engineering — reports to Helena CRO; Slice 4)
+//   + Helena (Chief Risk Officer, governance — reports to CEO; Slice 4)
+//   + Nadia (Independent-validation engineer, engineering — peer-in-second-
+//     line under Helena; Slice 4 model validation).
 
 export {
   type BusinessIndicatorInput,
@@ -43,3 +53,58 @@ export {
   standardisedRiskWeight,
   type TradingBookPosition,
 } from "./rwa-engine";
+
+// W2 Slice 4 — stress-projection engine + Pillar-2 add-on + ICAAP
+// narrative-data feed
+export {
+  ADVERSE_SCENARIO,
+  BASE_SCENARIO,
+  REVERSE_STRESS_SCENARIO,
+  SEVERELY_ADVERSE_SCENARIO,
+  STANDARD_STRESS_SCENARIO_BUNDLE,
+  STRESS_HORIZON_QUARTERS,
+  STRESS_SCENARIO_CITATIONS,
+  STRESS_SCENARIO_CITATION_LIST,
+  type QuarterlyShock,
+  type ReverseStressTarget,
+  type StressScenario,
+  type StressScenarioId,
+} from "./stress-scenarios";
+
+export {
+  type CurrentStateCapital,
+  type CurrentStateLeverage,
+  type CurrentStateLiquidity,
+  type QuarterlyProjection,
+  type ScenarioProjection,
+  type StressEngineInput,
+  type StressEngineOutput,
+  StressEngineError,
+  projectStress,
+  stressEngine,
+} from "./stress-engine";
+
+export {
+  PILLAR_2_CITATIONS,
+  type Pillar2AddOnInput,
+  type Pillar2AddOnOutput,
+  type Pillar2RiskBucket,
+  type Pillar2RiskBucketCategory,
+  type Pillar2RiskBucketLine,
+  type StressDeficitDecomposition,
+  Pillar2AddOnError,
+  computePillar2AddOn,
+} from "./pillar-2-addon";
+
+export {
+  ICAAP_NARRATIVE_CITATIONS,
+  type CapitalAdequacySection,
+  type CapitalPlanningSection,
+  type IcaapNarrativeDataFeed,
+  type IcaapNarrativeDataInput,
+  type Pillar2Section,
+  type ScenarioSummaryLine,
+  type StressTestingSection,
+  IcaapNarrativeDataError,
+  buildIcaapNarrativeData,
+} from "./icaap-narrative-data";
