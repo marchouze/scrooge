@@ -97,6 +97,9 @@ import {
   recordFiledPayloadSchema,
   riskRaisedPayloadSchema,
   scheduledTriggerPayloadSchema,
+  substrateAgentRunCompletedPayloadSchema,
+  substrateAgentRunFailedPayloadSchema,
+  substrateAgentRunStartedPayloadSchema,
   substrateAlertPayloadSchema,
   switchTestActivatedPayloadSchema,
   switchTestEndedPayloadSchema,
@@ -611,6 +614,50 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // High-cardinality dispatch trail — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "Atlas runtime spec §3.3; A2.2 bus — platform/event-trigger-bus/bus.ts",
+  },
+  {
+    // Substrate-runner lifecycle (S8 / D-AGENT-RUNTIME-AUTHORIZE).
+    // Distinct from RMS's brief-coupled `AgentRunStarted` (which requires
+    // a `briefId`). Wraps every `runAgent` invocation regardless of
+    // whether a brief exists. Pair-coupled with `SubstrateAgentRun*` via
+    // `runId`. See assessment doc
+    // `Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md`.
+    type: "SubstrateAgentRunStarted",
+    class: "runtime",
+    payloadSchema: substrateAgentRunStartedPayloadSchema,
+    issuer: "substrate",
+    subscribers: ["Vera", "Atlas"],
+    replay: "pair-coupled",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
+    retention: RETENTION_RUNTIME_1Y,
+    source:
+      "Atlas runtime spec §3.4; S8 substrate-runner lifecycle — runtime/run.ts (Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md)",
+  },
+  {
+    type: "SubstrateAgentRunCompleted",
+    class: "runtime",
+    payloadSchema: substrateAgentRunCompletedPayloadSchema,
+    issuer: "substrate",
+    subscribers: ["Vera", "Atlas"],
+    replay: "pair-coupled",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
+    retention: RETENTION_RUNTIME_1Y,
+    source:
+      "Atlas runtime spec §3.4; S8 substrate-runner lifecycle — runtime/run.ts (Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md)",
+  },
+  {
+    // Failures retained for 7y for incident analysis (matches the existing
+    // RMS `AgentRunFailed` row's retention rule).
+    type: "SubstrateAgentRunFailed",
+    class: "runtime",
+    payloadSchema: substrateAgentRunFailedPayloadSchema,
+    issuer: "substrate",
+    subscribers: ["Vera", "Devon", "Atlas"],
+    replay: "pair-coupled",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09", "ORG-PR-17"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Atlas runtime spec §3.4; S8 substrate-runner lifecycle — runtime/run.ts (Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md)",
   },
   {
     // Short-lived event introduced for D-A22-RETIRE-LEGACY Phase 1
