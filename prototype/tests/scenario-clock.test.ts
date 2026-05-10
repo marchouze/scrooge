@@ -86,9 +86,7 @@ describe("SimulatedClock — controlled-time substrate", () => {
   });
 
   it("rejects unparseable ISO baseline", () => {
-    expect(() => new SimulatedClock("not-a-date")).toThrow(
-      /not a valid ISO-8601 timestamp/,
-    );
+    expect(() => new SimulatedClock("not-a-date")).toThrow(/not a valid ISO-8601 timestamp/);
   });
 
   it("rejects non-finite numeric baseline", () => {
@@ -206,22 +204,14 @@ describe("resolveCompositionClock — env-var wiring", () => {
 describe("resolveScenarioClockMode — env parsing", () => {
   it("returns 'wall' for unset / empty / unrecognised values", () => {
     expect(resolveScenarioClockMode({})).toBe("wall");
-    expect(resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "" })).toBe(
-      "wall",
-    );
-    expect(
-      resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "production" }),
-    ).toBe("wall");
+    expect(resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "" })).toBe("wall");
+    expect(resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "production" })).toBe("wall");
   });
 
   it("returns 'simulated' only for the exact literal 'simulated'", () => {
-    expect(
-      resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "simulated" }),
-    ).toBe("simulated");
+    expect(resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "simulated" })).toBe("simulated");
     // Case-sensitive — typo defaults safely.
-    expect(
-      resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "Simulated" }),
-    ).toBe("wall");
+    expect(resolveScenarioClockMode({ [SCENARIO_CLOCK_MODE_ENV]: "Simulated" })).toBe("wall");
   });
 });
 

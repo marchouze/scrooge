@@ -30,18 +30,14 @@ export class SimulatedClock implements ScenarioClock {
   constructor(baseline: string | number) {
     if (typeof baseline === "number") {
       if (!Number.isFinite(baseline)) {
-        throw new Error(
-          `SimulatedClock: numeric baseline must be finite (got ${baseline})`,
-        );
+        throw new Error(`SimulatedClock: numeric baseline must be finite (got ${baseline})`);
       }
       this.currentMs = baseline;
       return;
     }
     const parsed = Date.parse(baseline);
     if (Number.isNaN(parsed)) {
-      throw new Error(
-        `SimulatedClock: baseline "${baseline}" is not a valid ISO-8601 timestamp`,
-      );
+      throw new Error(`SimulatedClock: baseline "${baseline}" is not a valid ISO-8601 timestamp`);
     }
     this.currentMs = parsed;
   }
@@ -56,14 +52,10 @@ export class SimulatedClock implements ScenarioClock {
 
   advance(duration: DurationMs): void {
     if (this.isFrozen) {
-      throw new Error(
-        "SimulatedClock.advance: clock is frozen; call unfreeze() first",
-      );
+      throw new Error("SimulatedClock.advance: clock is frozen; call unfreeze() first");
     }
     if (!Number.isFinite(duration)) {
-      throw new Error(
-        `SimulatedClock.advance: duration must be finite (got ${duration})`,
-      );
+      throw new Error(`SimulatedClock.advance: duration must be finite (got ${duration})`);
     }
     // Negative durations rewind — explicitly legal (scenarios sometimes
     // reset to an earlier baseline). The store's as-of replay is monotonic
@@ -73,15 +65,11 @@ export class SimulatedClock implements ScenarioClock {
 
   setTo(asOf: string): void {
     if (this.isFrozen) {
-      throw new Error(
-        "SimulatedClock.setTo: clock is frozen; call unfreeze() first",
-      );
+      throw new Error("SimulatedClock.setTo: clock is frozen; call unfreeze() first");
     }
     const parsed = Date.parse(asOf);
     if (Number.isNaN(parsed)) {
-      throw new Error(
-        `SimulatedClock.setTo: "${asOf}" is not a valid ISO-8601 timestamp`,
-      );
+      throw new Error(`SimulatedClock.setTo: "${asOf}" is not a valid ISO-8601 timestamp`);
     }
     this.currentMs = parsed;
   }
