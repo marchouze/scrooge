@@ -3882,6 +3882,287 @@ export const ceoDecisionRmsExtendedPayloadSchema = z.object({
 
 export type CeoDecisionRmsExtendedPayload = z.infer<typeof ceoDecisionRmsExtendedPayloadSchema>;
 
+// ===========================================================================
+// Bank-account event family — D-BANK-ACCOUNT-SUBSTRATE.
+//
+// Standing authority: D-FIRST-DRY-RUN-SCENARIO (CEO-approved 2026-05-10),
+// which adopted D-BANK-ACCOUNT-SUBSTRATE as a net-new sub-decision under its
+// umbrella (per pack §6 brief #A1). No new CEO approval required.
+//
+// Three event types govern the lifecycle of a bank account (the bank's own
+// nostro / vostro / capital / clearing accounts at correspondent banks and at
+// SARB; not — yet — customer accounts, which are Niko's licence-day surface):
+//
+//   - BankAccountOpened       — new account opened. Carries entity / currency
+//                               / accountType / chart-of-accounts mapping /
+//                               counterparty / openedAt.
+//   - BankAccountConfigured   — limits, restrictions, sub-classifications
+//                               applied to an already-open account. Append-
+//                               only audit trail of configuration changes.
+//   - BankAccountClosed       — terminal lifecycle event. Append-only; no
+//                               re-open. A new account is required to resume
+//                               activity at the same external bank.
+//
+// Two projections under `prototype/platform/projections/accounts/` consume
+// this stream:
+//
+//   - `accounts.master`       — current state per accountId (open + closed +
+//                               most-recent configuration). Per-entity, per-
+//                               currency, per-chart-of-accounts-leaf; the
+//                               account-master register the dashboard reads
+//                               and downstream postings dispatch against.
+//   - `accounts.balance`      — sum of postings per account, fold over the
+//                               existing M1 sub-ledger projection rows
+//                               (`SubLedgerRow.cashAmountMinor` joined to
+//                               accountId via the account-master). The
+//                               projection is the typed input every BA-return
+//                               cell + AFS line ultimately decomposes into
+//                               via the `Balance` semantic-layer entry.
+//
+// Provenance discipline (D-DATA-PROVENANCE-SUBSTRATE Slice 1):
+// dry-run-scenario callers attach `simulatedTag({ scenario:
+// 'first-dry-run-2026-Q1', sourceLineage: 'agent:tomas:bank-account' })`
+// when constructing these events. The substrate-active flag is currently
+// false, so untagged appends are tolerated; the constructors below accept
+// an optional `provenance` field already so callers are forward-compatible
+// for the flag flip (Slice 2 emitter migration).
+//
+// Schema layering: each event-type schema is layered on top of the envelope
+// (`eventSchema`), so a payload that fails its type schema fails *before*
+// the event hits the store — same convention as every other typed event in
+// this file.
+//
+// Authors: Tomas (Operations & payments engineer, engineering — reports to
+//   Devon COO; lead) · Atlas (Core banking platform architect, engineering
+//   — substrate consult) · Bea (Accounting & financial reporting engineer,
+//   engineering — reports to Camille CFO; chart-of-accounts integration).
+// ===========================================================================
+
+/**
+ * Account-type taxonomy. Mirrors the GL families on the chart-of-accounts:
+ *
+ *   - `nostro`              — the bank's account at a correspondent bank, in
+ *                             a foreign or domestic currency. Asset side.
+ *   - `vostro`              — a counterparty's account at the bank. Liability
+ *                             side. (Not used in first dry-run; included for
+ *                             completeness so the substrate doesn't need a
+ *                             reshape when correspondent relationships open
+ *                             in the other direction.)
+ *   - `capital`             — equity / capital account holding share capital,
+ *                             share premium, retained earnings. Equity side.
+ *   - `sarb-operational`    — operational account at the South African Reserve
+ *                             Bank (the chart-of-accounts row `ACC-1100-001`
+ *                             feeds this account-type). Asset side; LCR
+ *                             HQLA Level 1.
+ *   - `clearing`            — settlement-account at a market infrastructure
+ *                             (CLS sponsor, JSE clearing member, Strate). Asset
+ *                             or liability depending on net direction.
+ *   - `internal-suspense`   — the bank's own suspense / clearing-in-transit
+ *                             account. Asset side. Net-zero target at period
+ *                             close.
+ */
+export const bankAccountTypeSchema = z.enum([
+  "nostro",
+  "vostro",
+  "capital",
+  "sarb-operational",
+  "clearing",
+  "internal-suspense",
+]);
+
+export type BankAccountType = z.infer<typeof bankAccountTypeSchema>;
+
+/**
+ * A single chart-of-accounts mapping anchored to the GL leaf account ID
+ * (`ACC-NNNN-NNN`) defined in `prototype/platform/accounting/_chart-of-
+ * accounts.md`. Stored as a typed reference rather than denormalised
+ * (Principle 6 — single graph; account-master cites the leaf, never copies
+ * its classification fields). Downstream consumers resolve the leaf via
+ * Anya's semantic-layer registry (see PR #156 — `Balance` /
+ * `CashAndBalancesAtSARB` entries' `formula` strings cite this same leaf).
+ */
+export const chartOfAccountsRefSchema = z.object({
+  /** GL leaf account ID, e.g. `ACC-1100-001`. */
+  leafAccountId: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/, {
+    message:
+      "ChartOfAccountsRef.leafAccountId must match `ACC-NNNN-NNN` per chart-of-accounts.schema.json",
+  }),
+  /** Free-form note for human reviewers (e.g. "operational ZAR at SARB"). */
+  note: z.string().optional(),
+});
+
+export type ChartOfAccountsRef = z.infer<typeof chartOfAccountsRefSchema>;
+
+// ---------------------------------------------------------------------------
+// BankAccountOpened
+//
+// Lifecycle-start event for a bank-owned account. After this event lands,
+// the account is live: postings may flow against it and the master /
+// balance projections include it in their state.
+//
+// Idempotency: (accountId) is unique. A second BankAccountOpened with the
+// same accountId is a substrate-integrity violation; the master projection
+// keeps the first and ignores the second (asserted by tests).
+// ---------------------------------------------------------------------------
+
+export const bankAccountOpenedPayloadSchema = z.object({
+  /**
+   * Stable account identifier. Convention: `account:<entity-short>:<account-
+   * type>:<currency>:<short-slug>` — e.g. `account:hoz-bank:nostro:usd:01`
+   * or `account:hoz-bank:capital:zar:share-capital`.
+   */
+  accountId: z.string().min(1),
+  /** Account type per `bankAccountTypeSchema`. */
+  accountType: bankAccountTypeSchema,
+  /**
+   * ISO 4217 currency. Single-currency per account (Principle 5 — no implicit
+   * multi-currency accounts; FX exposure must be visible at the account level).
+   */
+  currency: z.string().length(3),
+  /**
+   * Counterparty the account is held at, when applicable. `null` for accounts
+   * held at the bank itself (e.g. `internal-suspense`, `capital` accounts on
+   * the bank's own balance sheet). Convention: LEI or `CP-<short-slug>` — the
+   * counterparty registry resolves the reference.
+   */
+  counterpartyId: z.string().min(1).nullable(),
+  /** Chart-of-accounts mapping. Resolves to a GL leaf the postings dispatch against. */
+  chartOfAccounts: chartOfAccountsRefSchema,
+  /** ISO 8601 — when the account opened (business time, not processing time). */
+  openedAt: z.string().min(1),
+  /** Optional free-form descriptive name for human reviewers / dashboards. */
+  displayName: z.string().min(1).optional(),
+});
+
+export type BankAccountOpenedPayload = z.infer<typeof bankAccountOpenedPayloadSchema>;
+
+export function makeBankAccountOpened(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BankAccountOpenedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BankAccountOpened",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: bankAccountOpenedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// BankAccountConfigured
+//
+// Append-only audit trail of configuration changes against an already-open
+// account: limits, restrictions, sub-classifications. The master projection
+// applies the most-recent configuration over the initial-opened state
+// (latest-wins per `(accountId, configKey)` pair).
+//
+// `configKey` is a free-form slug (e.g. `daily-debit-limit`, `restriction:
+// outbound-suspended`, `sub-classification:hqla-level-1`) — the substrate
+// does not enumerate the keys; downstream consumers (limit-checks, BA-return
+// classifiers) recognise the slugs they care about.
+// ---------------------------------------------------------------------------
+
+export const bankAccountConfiguredPayloadSchema = z.object({
+  /** Account being configured. Must match an existing BankAccountOpened.accountId. */
+  accountId: z.string().min(1),
+  /** Free-form configuration key. */
+  configKey: z.string().min(1),
+  /**
+   * Configuration value. `unknown` shape so the substrate doesn't constrain
+   * downstream-specific schemas (limit values, restriction toggles, sub-
+   * classification slugs all flow through the same audit trail).
+   */
+  configValue: z.unknown(),
+  /** ISO 8601 — when the configuration takes effect. */
+  effectiveAt: z.string().min(1),
+  /** Why the configuration changed; mandatory so the audit trail is readable. */
+  rationale: z.string().min(1),
+});
+
+export type BankAccountConfiguredPayload = z.infer<typeof bankAccountConfiguredPayloadSchema>;
+
+export function makeBankAccountConfigured(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BankAccountConfiguredPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BankAccountConfigured",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: bankAccountConfiguredPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// BankAccountClosed
+//
+// Terminal lifecycle event. Append-only; no re-open. Postings against a
+// closed account are a substrate-integrity violation (Vera follow-on recon
+// — substrate gap noted in the decision record).
+//
+// Closure-cascade rules (e.g. zero-balance precondition, outstanding-
+// commitment unwind) are downstream policy; this event records the closure
+// fact only. The decision record names this gap explicitly.
+// ---------------------------------------------------------------------------
+
+export const bankAccountClosedPayloadSchema = z.object({
+  /** Account being closed. Must match an existing BankAccountOpened.accountId. */
+  accountId: z.string().min(1),
+  /** ISO 8601 — when the account closed. */
+  closedAt: z.string().min(1),
+  /** Why the account was closed. */
+  reason: z.enum([
+    "counterparty-relationship-ended",
+    "consolidation",
+    "regulatory-direction",
+    "operational-cleanup",
+    "incorrectly-opened",
+  ]),
+  /** Free-form note for human reviewers. */
+  note: z.string().optional(),
+});
+
+export type BankAccountClosedPayload = z.infer<typeof bankAccountClosedPayloadSchema>;
+
+export function makeBankAccountClosed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BankAccountClosedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BankAccountClosed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: bankAccountClosedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -3957,6 +4238,11 @@ export const TYPED_EVENT_TYPES = [
   "Feedback",
   "BriefSuperseded",
   "RecordFiled",
+  // Bank-account event family — D-BANK-ACCOUNT-SUBSTRATE (under standing
+  // authority of D-FIRST-DRY-RUN-SCENARIO, CEO-approved 2026-05-10).
+  "BankAccountOpened",
+  "BankAccountConfigured",
+  "BankAccountClosed",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
