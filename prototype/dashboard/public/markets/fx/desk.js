@@ -1,12 +1,21 @@
-// dashboard/public/markets/fx/desk.js — FX desk Slice 1.
+// dashboard/public/markets/fx/desk.js — FX desk Slices 1 + 2.
 //
-// Reads `/api/markets/fx/counterparties` and renders the eligibility-
-// passing counterparty list. Re-uses `_refresh-controls.js` for periodic
-// refresh + the shell header refresh button. The page is read-only in
-// Slice 1; RFQ submission lands in Slice 2.
+// Slice 1 — reads `/api/markets/fx/counterparties` and renders the
+//   eligibility-passing counterparty list (read-only). Re-uses
+//   `_refresh-controls.js` for periodic refresh + the shell header
+//   refresh button.
+//
+// Slice 2 — wires the RFQ form: populates the counterparty select from
+//   the live picker, calls POST /api/markets/fx/quote on input changes
+//   to render the synthetic bid/offer/mid, and on submit calls
+//   POST /api/markets/fx/trade which appends an FxTradeExecuted event
+//   to the local event store with the simulated provenance tag for
+//   the first-dry-run-2026-Q1 scenario. The confirmation panel renders
+//   the emitted tradeId + eventId + provenance.
 //
 // Author: Kai (Trading systems engineer, engineering — reports to Saskia,
-//         Head of Global Markets).
+//         Head of Global Markets) · Saskia (Head of Global Markets,
+//         governance) · Anya (Data / analytics engineer, engineering).
 
 (() => {
   function $(sel) {
@@ -103,6 +112,7 @@
   async function loadDesk() {
     const payload = await fetchCounterparties();
     renderCounterparties(payload);
+    populateCounterpartySelect(payload);
 
     if (window.bankShell?.render) {
       const asOf = payload?.asOf ? payload.asOf : new Date().toISOString();
@@ -115,11 +125,211 @@
     }
   }
 
+  // ============================================================
+  // Slice 2 — RFQ form + quote + trade-emit
+  // ============================================================
+
+  function fmtRate(n) {
+    if (typeof n !== "number" || !Number.isFinite(n)) return "—";
+    return n.toFixed(4);
+  }
+
+  function defaultValueDate() {
+    // Spot convention: T+2 (no calendar adjustment in the form — calendar
+    // logic lands at M2 with the bond cut-off work).
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() + 2);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function populateCounterpartySelect(payload) {
+    const sel = $("[data-fx-rfq-counterparty]");
+    if (!sel) return;
+    const list = (payload?.counterparties ?? []).map((c) => c.counterpartyId);
+    const previous = sel.value;
+    const opts = list
+      .map((id) => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`)
+      .join("");
+    sel.innerHTML = `<option value="">— select an eligible counterparty —</option>${opts}`;
+    if (previous && list.includes(previous)) {
+      sel.value = previous;
+    }
+    // Refresh derived UI state on every reload (e.g. submit-button
+    // enable/disable).
+    refreshFormState();
+  }
+
+  function readForm() {
+    const cp = $("[data-fx-rfq-counterparty]")?.value || "";
+    const pair = $("[data-fx-rfq-pair]")?.value || "";
+    const sideEl = document.querySelector("[data-fx-rfq-side]:checked");
+    const side = sideEl ? sideEl.value : "buy";
+    const notionalRaw = $("[data-fx-rfq-notional]")?.value || "";
+    const valueDate = $("[data-fx-rfq-value-date]")?.value || "";
+    const notional = Number(notionalRaw);
+    return {
+      counterpartyId: cp,
+      currencyPair: pair,
+      side,
+      notional: Number.isFinite(notional) ? notional : 0,
+      valueDate,
+    };
+  }
+
+  function isFormFillable(input) {
+    return (
+      !!input.counterpartyId &&
+      input.currencyPair === "USD/ZAR" &&
+      (input.side === "buy" || input.side === "sell") &&
+      typeof input.notional === "number" &&
+      input.notional > 0 &&
+      /^\d{4}-\d{2}-\d{2}$/.test(input.valueDate)
+    );
+  }
+
+  function setStatus(msg, isError = false) {
+    const el = $("[data-fx-rfq-status]");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.toggle("is-error", isError);
+  }
+
+  function renderQuote(quote) {
+    const set = (sel, v) => {
+      const el = $(sel);
+      if (el) el.textContent = v;
+    };
+    if (!quote) {
+      set("[data-fx-rfq-bid]", "—");
+      set("[data-fx-rfq-mid]", "—");
+      set("[data-fx-rfq-offer]", "—");
+      set("[data-fx-rfq-rate]", "—");
+      set("[data-fx-rfq-source]", "—");
+      return;
+    }
+    set("[data-fx-rfq-bid]", fmtRate(quote.bidRate));
+    set("[data-fx-rfq-mid]", fmtRate(quote.midRate));
+    set("[data-fx-rfq-offer]", fmtRate(quote.offerRate));
+    set("[data-fx-rfq-rate]", fmtRate(quote.rateUsed));
+    set("[data-fx-rfq-source]", quote.source ?? "—");
+  }
+
+  async function refreshQuote() {
+    const input = readForm();
+    if (!isFormFillable(input)) {
+      renderQuote(null);
+      return;
+    }
+    try {
+      const res = await fetch("/api/markets/fx/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.status === "ok" && data.quote) {
+        renderQuote(data.quote);
+      } else {
+        renderQuote(null);
+      }
+    } catch (e) {
+      console.warn("[fx-desk] quote fetch failed", e);
+      renderQuote(null);
+    }
+  }
+
+  function refreshFormState() {
+    const submitBtn = $("[data-fx-rfq-submit]");
+    if (!submitBtn) return;
+    const input = readForm();
+    submitBtn.disabled = !isFormFillable(input);
+  }
+
+  function showConfirmation(result) {
+    const panel = $("[data-fx-rfq-confirmation]");
+    if (!panel) return;
+    const set = (sel, v) => {
+      const el = $(sel);
+      if (el) el.textContent = v;
+    };
+    panel.hidden = false;
+    set("[data-fx-conf-status]", result.status ?? "—");
+    set("[data-fx-conf-trade-id]", result.tradeId ?? "—");
+    set("[data-fx-conf-rfq-id]", result.rfqId ?? "—");
+    set("[data-fx-conf-event-id]", result.eventId ?? "—");
+    set("[data-fx-conf-event-type]", result.eventType ?? "—");
+    const prov = result.provenance
+      ? `${result.provenance.kind} · scenario:${result.provenance.scenario ?? "—"} · sourceLineage:${result.provenance.sourceLineage ?? "—"}`
+      : "—";
+    set("[data-fx-conf-provenance]", prov);
+    set("[data-fx-conf-asof]", result.asOf ?? "—");
+  }
+
+  async function submitTrade(ev) {
+    ev.preventDefault();
+    const input = readForm();
+    if (!isFormFillable(input)) {
+      setStatus("Form is incomplete.", true);
+      return;
+    }
+    setStatus("Emitting FxTradeExecuted…");
+    const submitBtn = $("[data-fx-rfq-submit]");
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      const res = await fetch("/api/markets/fx/trade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.status === "ok") {
+        setStatus(`Trade ${data.tradeId} emitted.`);
+        showConfirmation(data);
+        if (window.bankShell?.audit) {
+          window.bankShell.audit.log("fx-desk.trade.emitted", {
+            tradeId: data.tradeId,
+            eventId: data.eventId,
+          });
+        }
+      } else {
+        const reason = data?.reason ?? `HTTP ${res.status}`;
+        setStatus(`Rejected: ${reason}`, true);
+      }
+    } catch (e) {
+      console.warn("[fx-desk] trade emit failed", e);
+      setStatus(`Network error: ${e?.message ?? e}`, true);
+    } finally {
+      refreshFormState();
+    }
+  }
+
+  function bindForm() {
+    const form = $("[data-fx-rfq-form]");
+    if (!form) return;
+    // Default value date.
+    const vd = $("[data-fx-rfq-value-date]");
+    if (vd && !vd.value) vd.value = defaultValueDate();
+    form.addEventListener("submit", submitTrade);
+    form.addEventListener("input", () => {
+      refreshFormState();
+      // Quote re-fetch on any input change. Fire-and-forget; simple
+      // last-write-wins (no debounce in v1 — synthetic stub is local).
+      refreshQuote().catch((e) => console.warn("[fx-desk] quote refresh", e));
+    });
+    form.addEventListener("change", () => {
+      refreshFormState();
+      refreshQuote().catch((e) => console.warn("[fx-desk] quote refresh", e));
+    });
+    refreshFormState();
+    refreshQuote().catch((e) => console.warn("[fx-desk] initial quote", e));
+  }
+
   async function boot() {
     // Render skeleton immediately so the shell chrome lays out even
     // before the first API call returns.
     renderEmpty("Loading…");
     await loadDesk();
+    bindForm();
     if (typeof window.registerPagePoll === "function") {
       window.registerPagePoll(loadDesk, 30_000);
     } else {

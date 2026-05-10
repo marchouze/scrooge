@@ -55,6 +55,7 @@
       <h2>FX desk</h2>
       <ul>
         <li><a href="#counterparties" data-shell-nav="sidebar:counterparties">Counterparties</a></li>
+        <li><a href="#rfq" data-shell-nav="sidebar:rfq">RFQ (Slice 2)</a></li>
         <li><a href="#workflow" data-shell-nav="sidebar:workflow">Workflow (next slices)</a></li>
         <li><a href="#substrate" data-shell-nav="sidebar:substrate">Substrate trail</a></li>
       </ul>
@@ -69,10 +70,13 @@
       <div class="shell-page-header">
         <h1 class="shell-page-title">FX sales & trading desk</h1>
         <p class="shell-page-lede">
-          Slice 1 surface: counterparty picker filtered to institutional-eligibility-passing parties
-          (Niko's screening events), the substrate-mode banner, and the page shell. RFQ form (Slice 2),
-          pricer (Slice 3), and risk-officer view (Slice 5) land in subsequent slices per the
-          eight-slice plan in the parent pack.
+          Slice 1 surface (live): counterparty picker filtered to institutional-eligibility-passing
+          parties (Niko's screening events), the substrate-mode banner, and the page shell.
+          Slice 2 surface (live, this slice): RFQ form + synthetic-quote stub + trade-emit button
+          firing <code>FxTradeExecuted</code> events with the
+          <code>first-dry-run-2026-Q1</code> simulated provenance tag.
+          Real pricer (Slice 3), gateway visualisation (Slice 4), and risk-officer view (Slice 5)
+          land in subsequent slices per the eight-slice plan in the parent pack.
         </p>
       </div>
 
@@ -120,25 +124,147 @@
         </p>
       </section>
 
+      <!-- ============= RFQ form + trade-emit (Slice 2) ============= -->
+      <section class="shell-category" id="rfq" aria-labelledby="cat-rfq">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-rfq">RFQ — request for quote (Slice 2)</h2>
+          <span class="shell-category-kind" data-kind="live">Live · synthetic</span>
+        </div>
+        <p class="shell-category-blurb">
+          ZAR/USD spot only for the first-dry-run (per dispatch brief).
+          Submit emits an <code>FxTradeExecuted</code> event from the FX CDM
+          (<code>platform/markets/cdm/fx.ts</code>) tagged
+          <code>kind: simulated, scenario: first-dry-run-2026-Q1,
+          sourceLineage: agent-runtime:kai-fx-rfq</code>. Real pricer is
+          Slice 3; gateway fan-out (<code>OrderProposed</code> →
+          <code>OrderApprovedAtGateway</code>) is Slice 4. The form re-checks
+          counterparty eligibility at emit time (pack §3 G1).
+        </p>
+
+        <form class="fx-rfq-form" data-fx-rfq-form aria-label="FX RFQ form">
+          <div class="fx-rfq-grid">
+            <label class="fx-rfq-field">
+              <span class="fx-rfq-label">Counterparty</span>
+              <select name="counterpartyId" data-fx-rfq-counterparty required>
+                <option value="">— select an eligible counterparty —</option>
+              </select>
+            </label>
+
+            <label class="fx-rfq-field">
+              <span class="fx-rfq-label">Currency pair</span>
+              <input
+                name="currencyPair"
+                data-fx-rfq-pair
+                type="text"
+                value="USD/ZAR"
+                readonly
+                aria-readonly="true"
+              />
+              <small class="fx-rfq-hint">First-dry-run constraint: USD/ZAR spot only.</small>
+            </label>
+
+            <fieldset class="fx-rfq-field fx-rfq-side">
+              <legend class="fx-rfq-label">Side (bank perspective)</legend>
+              <label class="fx-rfq-radio">
+                <input type="radio" name="side" value="buy" data-fx-rfq-side checked>
+                Buy USD
+              </label>
+              <label class="fx-rfq-radio">
+                <input type="radio" name="side" value="sell" data-fx-rfq-side>
+                Sell USD
+              </label>
+            </fieldset>
+
+            <label class="fx-rfq-field">
+              <span class="fx-rfq-label">Notional (USD)</span>
+              <input
+                name="notional"
+                data-fx-rfq-notional
+                type="number"
+                min="1"
+                step="1"
+                value="1000000"
+                required
+              />
+              <small class="fx-rfq-hint">USD base notional, major units.</small>
+            </label>
+
+            <label class="fx-rfq-field">
+              <span class="fx-rfq-label">Value date</span>
+              <input
+                name="valueDate"
+                data-fx-rfq-value-date
+                type="date"
+                required
+              />
+              <small class="fx-rfq-hint">Spot convention: T+2 (auto-defaulted).</small>
+            </label>
+          </div>
+
+          <div class="fx-rfq-quote" data-fx-rfq-quote aria-live="polite">
+            <h3>Synthetic quote (stub v1)</h3>
+            <dl class="fx-rfq-quote-grid">
+              <dt>Bid</dt><dd data-fx-rfq-bid>—</dd>
+              <dt>Mid</dt><dd data-fx-rfq-mid>—</dd>
+              <dt>Offer</dt><dd data-fx-rfq-offer>—</dd>
+              <dt>Bank rate (side-applied)</dt><dd data-fx-rfq-rate>—</dd>
+              <dt>Source</dt><dd data-fx-rfq-source>—</dd>
+            </dl>
+            <p class="fx-rfq-quote-note">
+              Real pricer (market-data-driven) is Slice 3; this is the
+              fixed-spread substrate-stub per pack §11 Q3.
+            </p>
+          </div>
+
+          <div class="fx-rfq-actions">
+            <button
+              type="submit"
+              class="fx-rfq-submit"
+              data-fx-rfq-submit
+              disabled
+            >Trade — emit FxTradeExecuted</button>
+            <span class="fx-rfq-status" data-fx-rfq-status role="status" aria-live="polite"></span>
+          </div>
+        </form>
+
+        <article class="fx-rfq-confirmation" data-fx-rfq-confirmation hidden>
+          <h3>Trade confirmation</h3>
+          <dl class="fx-rfq-confirmation-grid">
+            <dt>Status</dt><dd data-fx-conf-status>—</dd>
+            <dt>Trade id</dt><dd data-fx-conf-trade-id>—</dd>
+            <dt>RFQ id</dt><dd data-fx-conf-rfq-id>—</dd>
+            <dt>Event id</dt><dd data-fx-conf-event-id>—</dd>
+            <dt>Event type</dt><dd data-fx-conf-event-type>—</dd>
+            <dt>Provenance</dt><dd data-fx-conf-provenance>—</dd>
+            <dt>Asof</dt><dd data-fx-conf-asof>—</dd>
+          </dl>
+          <p class="fx-rfq-confirmation-note">
+            Event appended to the local event store.
+            Bea's IFRS sub-ledger / Tomas's settlement chain pick this up
+            via the scenario stream (first-dry-run pack §2.1).
+          </p>
+        </article>
+      </section>
+
       <!-- ============= Workflow placeholders (next slices) ============= -->
       <section class="shell-category" id="workflow" aria-labelledby="cat-workflow">
         <div class="shell-category-head">
           <h2 class="shell-category-title" id="cat-workflow">Next-slice surfaces</h2>
-          <span class="shell-category-kind" data-kind="placeholders">Slices 2–5</span>
+          <span class="shell-category-kind" data-kind="placeholders">Slices 3–7</span>
         </div>
         <p class="shell-category-blurb">
           Each placeholder names the slice that lands the surface and the substrate it consumes.
-          No code in Slice 1 — placeholders only, so the page shape is visible and reviewable.
+          Slice 2 (RFQ form + trade-emit) is now live above; the cards below stay placeholder
+          until their slices land.
         </p>
         <div class="fx-placeholders">
           <article class="fx-placeholder is-placeholder">
-            <h3>RFQ intake form</h3>
-            <p>Spot / Forward / Swap / NDF — fields per <code>cdm/fx.ts</code>. Emits <code>RfqRequested</code>.</p>
-            <span class="fx-placeholder-flag">Slice 2 — Kai + Anya</span>
-          </article>
-          <article class="fx-placeholder is-placeholder">
-            <h3>Trader pricer</h3>
-            <p>Quote response (<code>QuoteResponded</code>) + headroom panel against Helena's RAS B-cluster.</p>
+            <h3>Trader pricer + headroom</h3>
+            <p>
+              Real pricer (replaces the synthetic stub above) +
+              <code>RfqRequested</code> / <code>QuoteResponded</code> events
+              + headroom panel against Helena's RAS B-cluster.
+            </p>
             <span class="fx-placeholder-flag">Slice 3 — Kai + Rohan</span>
           </article>
           <article class="fx-placeholder is-placeholder">

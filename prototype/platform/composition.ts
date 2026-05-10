@@ -19,6 +19,7 @@ import { EventStore } from "./event-store/store";
 import { LocalAuthenticator } from "./identity";
 import { logger } from "./observability/logger";
 import { LocalProjector } from "./projections";
+import { resolveCompositionClock } from "./scenario-clock";
 
 // Local event-store path. Default `prototype/.local/event.db` is per-worktree
 // (each `.claude/worktrees/...` spawn starts with an empty store), which means
@@ -69,9 +70,29 @@ export const eventStore = gateEventStore({
 
 export const projector = new LocalProjector(eventStore);
 export const authenticator = new LocalAuthenticator({ keyPath: idpKeyPath });
+
+// Controlled-time substrate (D-SCENARIO-CLOCK, authorised under
+// D-FIRST-DRY-RUN-SCENARIO; CEO-approved 2026-05-10). Default `WallClock`
+// keeps existing call sites unchanged. Scenarios that need controlled
+// time set `BANK_SCENARIO_CLOCK_MODE=simulated` (and optionally
+// `BANK_SCENARIO_CLOCK_BASELINE=<iso-8601>`) at boot, OR construct a
+// `SimulatedClock` directly and pass it through their own composition
+// (see `prototype/platform/scenario-clock/index.ts`).
+//
+// Callers source `as_of` from `clock.now()` instead of `new Date().toISOString()`.
+// Existing `nowUtc()` / `Date.now()` callsites are intentionally left in
+// place — they remain wall-clock-bound — so this slice does not perturb
+// production behaviour. Scenario-aware callers migrate over time.
+export const clock = resolveCompositionClock();
+
 export { logger, permissionPolicy };
 
 logger.debug(
-  { dbPath, idpKeyPath, permissionGateEnabled: isGateEnabled() },
+  {
+    dbPath,
+    idpKeyPath,
+    permissionGateEnabled: isGateEnabled(),
+    clockMode: clock.mode,
+  },
   "composition root wired",
 );

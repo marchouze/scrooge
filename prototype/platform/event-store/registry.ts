@@ -49,6 +49,9 @@ import {
   backtestBreachDisposedPayloadSchema,
   backtestRequestedPayloadSchema,
   backtestRunPayloadSchema,
+  bankAccountClosedPayloadSchema,
+  bankAccountConfiguredPayloadSchema,
+  bankAccountOpenedPayloadSchema,
   briefSupersededPayloadSchema,
   busDispatchedPayloadSchema,
   counterpartyEligibilityBreachedPayloadSchema,
@@ -1668,6 +1671,86 @@ const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// ===========================================================================
+// Bank-account event family — D-BANK-ACCOUNT-SUBSTRATE.
+//
+// Standing authority: D-FIRST-DRY-RUN-SCENARIO (CEO-approved 2026-05-10),
+// which adopted D-BANK-ACCOUNT-SUBSTRATE as a sub-decision under its
+// umbrella per pack §6 brief #A1. No new CEO approval required.
+//
+// Three events govern the lifecycle of a bank-owned account (nostro / vostro
+// / capital / SARB-operational / clearing / internal-suspense). Every
+// posting in the bank's sub-ledger ultimately dispatches against an account
+// in this family — the account-master + account-balance projections are the
+// typed input to every BA-return cell and AFS line that decomposes into a
+// `Balance` semantic-layer query.
+//
+// Class is `governance` because account opening / closing decisions are
+// regulator-relevant under Banks Act + the bank's own Records Management
+// Policy (account openings feed BA-return composition and the chart-of-
+// accounts mapping is itself a board-approved register). Retention is
+// 7-year governance + a citation chain into the chart-of-accounts.
+//
+// Replay rule:
+//   - `BankAccountOpened`     → idempotent-terminal on (accountId): a second
+//                               open with the same accountId is a substrate-
+//                               integrity violation; the master keeps the
+//                               first.
+//   - `BankAccountConfigured` → cumulative-fold on (accountId, configKey):
+//                               latest-wins per key; the audit trail records
+//                               every transition.
+//   - `BankAccountClosed`     → idempotent-terminal on (accountId): once
+//                               present the account is closed; no re-open.
+//
+// Authors: Tomas (Operations & payments engineer, engineering — reports to
+//   Devon COO; lead) · Atlas (Core banking platform architect, engineering
+//   — substrate consult) · Bea (Accounting & financial reporting engineer,
+//   engineering — reports to Camille CFO; chart-of-accounts integration).
+// ===========================================================================
+
+const BANK_ACCOUNT_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "BankAccountOpened",
+    class: "governance",
+    payloadSchema: bankAccountOpenedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Tomas", "Bea", "Eitan", "Anya", "Vera", "dashboard"],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "D-FIRST-DRY-RUN-SCENARIO",
+      "D-BANK-ACCOUNT-SUBSTRATE",
+      "INTERNAL-FINANCE-CHART-OF-ACCOUNTS",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md §6 #A1; D-BANK-ACCOUNT-SUBSTRATE",
+  },
+  {
+    type: "BankAccountConfigured",
+    class: "governance",
+    payloadSchema: bankAccountConfiguredPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Tomas", "Bea", "Helena", "Eitan", "Vera", "dashboard"],
+    replay: "cumulative-fold",
+    citationsHint: ["D-FIRST-DRY-RUN-SCENARIO", "D-BANK-ACCOUNT-SUBSTRATE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md §6 #A1; D-BANK-ACCOUNT-SUBSTRATE",
+  },
+  {
+    type: "BankAccountClosed",
+    class: "governance",
+    payloadSchema: bankAccountClosedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Tomas", "Bea", "Eitan", "Anya", "Vera", "dashboard"],
+    replay: "idempotent-terminal",
+    citationsHint: ["D-FIRST-DRY-RUN-SCENARIO", "D-BANK-ACCOUNT-SUBSTRATE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md §6 #A1; D-BANK-ACCOUNT-SUBSTRATE",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -1682,6 +1765,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...LEGAL_ENTITY_EVENT_TYPES,
   ...PRODUCT_LIFECYCLE_EVENT_TYPES,
   ...RMS_EVENT_TYPES,
+  ...BANK_ACCOUNT_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
