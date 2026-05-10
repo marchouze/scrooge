@@ -116,13 +116,7 @@ export type CounterpartyType =
  * External credit rating bucket per the standardised-approach lookup
  * table. Maps to the long-term-issue rating buckets BCBS CRE20 uses.
  */
-export type CreditRatingBucket =
-  | "aaa-aa"
-  | "a"
-  | "bbb"
-  | "bb"
-  | "below-bb"
-  | "unrated";
+export type CreditRatingBucket = "aaa-aa" | "a" | "bbb" | "bb" | "below-bb" | "unrated";
 
 /**
  * Residual-maturity bucket — relevant for bank exposures (short-term gets
@@ -637,9 +631,9 @@ export function computeRwa(input: RwaEngineInput): RwaEngineOutput {
     }
     const rw = standardisedRiskWeight({
       counterpartyType: e.counterpartyType,
-      ratingBucket: e.ratingBucket,
-      residualMaturity: e.residualMaturity,
-      ltvBucket: e.ltvBucket,
+      ...(e.ratingBucket !== undefined ? { ratingBucket: e.ratingBucket } : {}),
+      ...(e.residualMaturity !== undefined ? { residualMaturity: e.residualMaturity } : {}),
+      ...(e.ltvBucket !== undefined ? { ltvBucket: e.ltvBucket } : {}),
     });
     const contributionMinor = Math.round(e.eadMinor * rw);
     const key = `${e.counterpartyType}.${e.ratingBucket ?? "unrated"}.${e.residualMaturity ?? "any"}.${e.ltvBucket ?? "any"}`;
