@@ -20,19 +20,19 @@
 //         platform architect, engineering — UI shell) · Anya (Data /
 //         analytics engineer, engineering — projection pattern).
 
-import { existsSync, readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import { buildCounterpartiesView } from "../dashboard/markets-fx-counterparties";
-import { EventStore } from "../platform/event-store/store";
 import {
   makeCounterpartyEligibilityBreached,
   makeCounterpartyEligibilityRevalidated,
   makeCounterpartyEligibilityScreened,
 } from "../platform/event-store/event-types";
+import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 
 const PROTOTYPE_ROOT = resolve(import.meta.dir, "..");
@@ -256,7 +256,8 @@ describe("FX desk Slice 1 — counterparty eligibility fold", () => {
 
     const view = buildCounterpartiesView(store);
     expect(view.counterparties).toHaveLength(1);
-    const row = view.counterparties[0]!;
+    const row = view.counterparties[0];
+    if (!row) throw new Error("expected at least one counterparty row");
     expect(row.counterpartyId).toBe("cp:standard-bank-za");
     expect(row.isBreached).toBe(false);
     // Revalidation is the latest screening — its `screeningId` and `asOf`
@@ -315,7 +316,8 @@ describe("FX desk Slice 1 — counterparty eligibility fold", () => {
 
     const view = buildCounterpartiesView(store);
     expect(view.counterparties).toHaveLength(1);
-    const row = view.counterparties[0]!;
+    const row = view.counterparties[0];
+    if (!row) throw new Error("expected at least one counterparty row");
     expect(row.screeningId).toBe("cp-eligibility:cp:firstrand-rmb:2027-05-09");
     expect(row.evidenceRefs).toEqual(["revalidation-2027"]);
 

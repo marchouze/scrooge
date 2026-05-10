@@ -104,11 +104,11 @@
     const payload = await fetchCounterparties();
     renderCounterparties(payload);
 
-    if (window.bankShell && window.bankShell.render) {
-      const asOf = payload && payload.asOf ? payload.asOf : new Date().toISOString();
+    if (window.bankShell?.render) {
+      const asOf = payload?.asOf ? payload.asOf : new Date().toISOString();
       window.bankShell.render.asOf(asOf);
     }
-    if (window.bankShell && window.bankShell.audit) {
+    if (window.bankShell?.audit) {
       window.bankShell.audit.log("fx-desk.tiles.rendered", {
         counterparties: payload?.counterparties?.length ?? 0,
       });
