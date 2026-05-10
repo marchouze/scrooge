@@ -141,10 +141,7 @@ const EXTERNAL_ANCHOR_PREFIXES: readonly string[] = [
  * backticks. Avoids the upper-case fold the ORG-* / external-anchor
  * branches use (those are conventionally upper-case tokens).
  */
-const URN_ANCHOR_PREFIXES: readonly string[] = [
-  "urn:obligation:",
-  "urn:policy:",
-];
+const URN_ANCHOR_PREFIXES: readonly string[] = ["urn:obligation:", "urn:policy:"];
 
 /**
  * Markets-class retention floor — JSE Equities Rules retention norms +
