@@ -121,9 +121,20 @@ function renderTimeline(feed) {
       } else {
         header.appendChild(el("span", { class: "timeline-agent agent-human" }, "human"));
       }
-      header.appendChild(el("span", { class: "timeline-title" }, item.title));
+      // Prefer the derived `displayTitle` (short ceo-decision-record titles
+      // collapse to "Decision record · D-FOO"); fall back to raw `title`.
+      header.appendChild(el("span", { class: "timeline-title" }, item.displayTitle || item.title));
       if (item.decisionRequired) {
-        header.appendChild(el("span", { class: "pill timeline-decision" }, "decision-required"));
+        // Reflect resolved status — a resolved decision should not display
+        // a "decision-required" badge (it's already actioned).
+        const isResolved = item.decisionStatus === "resolved";
+        header.appendChild(
+          el(
+            "span",
+            { class: `pill timeline-decision${isResolved ? " timeline-decision-resolved" : ""}` },
+            isResolved ? "decision-resolved" : "decision-required",
+          ),
+        );
       }
       li.appendChild(header);
 

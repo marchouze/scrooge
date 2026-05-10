@@ -220,10 +220,18 @@
 
     // -------- Markets (M-phase) --------
     {
+      id: "mkts-fx-desk",
+      category: "markets",
+      title: "FX desk",
+      blurb:
+        "Sales / trading rehearsal surface — counterparty picker (eligibility-passing only). Slice 1 of D-FX-SALES-TRADING-FRONTEND.",
+      href: "/markets/fx/desk.html",
+    },
+    {
       id: "mkts-desks",
       category: "markets",
-      title: "Trading desks",
-      blurb: "OMS / EMS surfaces, FIX connectivity, exchange routing.",
+      title: "Trading desks (other)",
+      blurb: "Equities / bonds / IRS — OMS / EMS surfaces, FIX connectivity, exchange routing.",
       href: "#",
       placeholder: true,
       flag: "M2 — Kai",

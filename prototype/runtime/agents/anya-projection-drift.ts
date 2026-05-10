@@ -20,6 +20,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { defaultSourcePaths, deriveState, eventSourceFromStore } from "../../dashboard/derive";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
@@ -114,17 +115,39 @@ interface DashboardSnapshot {
 }
 
 function readDashboardCache(repoRoot: string): DashboardSnapshot {
-  const path = resolve(repoRoot, "prototype", "seeds", "dashboard-state.json");
-  if (!existsSync(path)) return { reachable: false, metrics: undefined, asOf: undefined };
+  // D-EVENT-STORE-SCALING Slice 3b (2026-05-10): the committed seed
+  // `prototype/seeds/dashboard-state.json` is gone from the commit graph.
+  // Read the runtime cache under `.local/` if present; otherwise derive on
+  // the fly from canonical sources + the in-process event store. The
+  // "unreachable" branch is now genuinely a "derivation threw" condition
+  // rather than a "no cache file" one.
+  const runtimeRel = process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
+  const runtimePath = resolve(repoRoot, "prototype", runtimeRel);
+  if (existsSync(runtimePath)) {
+    try {
+      const raw = JSON.parse(readFileSync(runtimePath, "utf8")) as {
+        asOf?: string;
+        bank?: { metrics?: Record<string, number> };
+      };
+      return {
+        reachable: true,
+        asOf: raw.asOf,
+        metrics: raw.bank?.metrics,
+      };
+    } catch {
+      // Fall through to derivation.
+    }
+  }
   try {
-    const raw = JSON.parse(readFileSync(path, "utf8")) as {
-      asOf?: string;
-      bank?: { metrics?: Record<string, number> };
-    };
+    const sources = defaultSourcePaths(repoRoot);
+    const state = deriveState({
+      sources,
+      events: eventSourceFromStore(eventStore),
+    });
     return {
       reachable: true,
-      asOf: raw.asOf,
-      metrics: raw.bank?.metrics,
+      asOf: state.asOf,
+      metrics: state.bank.metrics as unknown as Record<string, number>,
     };
   } catch {
     return { reachable: false, metrics: undefined, asOf: undefined };
@@ -247,7 +270,7 @@ function buildReportMarkdown(
   lines.push("");
   if (!snapshot.reachable) {
     lines.push(
-      "_Dashboard cache (`prototype/seeds/dashboard-state.json`) not reachable from this runner. Cross-check skipped — expected on a fresh GitHub Actions runner if the dashboard server has not refreshed it. The canonical-source counts above stand on their own._",
+      "_Dashboard cache could not be read or derived from this runner. Cross-check skipped — likely a derivation throw on missing canonical sources. The canonical-source counts above stand on their own._",
     );
   } else {
     lines.push(`Cache asOf: \`${snapshot.asOf ?? "—"}\``);
@@ -290,7 +313,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Counts read directly from canonical files: CLAUDE.md, /Team/*.md, /Procedures/by-policy/*.md, /Regulations/_obligations-register.md, /Regulations/_index.md, /Owner Inbox/*, /Team Inbox/*. Dashboard cache read from `prototype/seeds/dashboard-state.json`.",
+    "Counts read directly from canonical files: CLAUDE.md, /Team/*.md, /Procedures/by-policy/*.md, /Regulations/_obligations-register.md, /Regulations/_index.md, /Owner Inbox/*, /Team Inbox/*. Dashboard cache read from `prototype/.local/dashboard-state.json` if present, else derived live (D-EVENT-STORE-SCALING Slice 3b).",
   );
   lines.push("");
   return lines.join("\n");

@@ -17,6 +17,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 
+import { defaultSourcePaths, deriveState, eventSourceFromStore } from "../../dashboard/derive";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
@@ -52,32 +53,53 @@ interface DashboardSlice {
 }
 
 function readDashboard(repoRoot: string): DashboardSlice {
-  // D-EVENT-STORE-SCALING Slice 3a (2026-05-10): prefer the runtime cache
-  // (live state if a dashboard or anya:projection-refresh has materialised
-  // it), fall back to the committed seed (the recon baseline; always
-  // present in a clean checkout). Either is acceptable for Owen — the
-  // runtime cache shows live "right now"; the seed shows the curated
-  // baseline that CI vouches for.
+  // D-EVENT-STORE-SCALING Slice 3a (2026-05-10): the runtime cache lives
+  // at `.local/dashboard-state.json` (gitignored). Slice 3b (same day)
+  // removes the committed seed entirely — the dashboard cache is a
+  // projection (Principle 1). When the runtime cache is missing (fresh
+  // GitHub Actions runner with no dashboard server having run), Owen
+  // derives state on the fly from canonical sources + the in-process
+  // event store. Same algorithm the dashboard server uses; deterministic;
+  // no committed-cache dependency.
   const runtimeRaw = process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
   const runtimePath = isAbsolute(runtimeRaw)
     ? runtimeRaw
     : resolve(repoRoot, "prototype", runtimeRaw);
-  const seedPath = resolve(repoRoot, "prototype", "seeds", "dashboard-state.json");
-  const path = existsSync(runtimePath) ? runtimePath : seedPath;
-  if (!existsSync(path)) {
-    return { reachable: false, decisionsOpen: [], openSeats: [] };
+  if (existsSync(runtimePath)) {
+    try {
+      const raw = JSON.parse(readFileSync(runtimePath, "utf8")) as {
+        asOf?: string;
+        decisionsOpen?: { id: string; title: string; owner: string; decisionForCEO?: string }[];
+        openSeats?: { role: string; status: string }[];
+      };
+      return {
+        reachable: true,
+        ...(raw.asOf !== undefined ? { asOf: raw.asOf } : {}),
+        decisionsOpen: raw.decisionsOpen ?? [],
+        openSeats: raw.openSeats ?? [],
+      };
+    } catch {
+      // Fall through to fresh derivation on parse error.
+    }
   }
+
+  // Runtime cache absent or unreadable — derive on the fly.
   try {
-    const raw = JSON.parse(readFileSync(path, "utf8")) as {
-      asOf?: string;
-      decisionsOpen?: { id: string; title: string; owner: string; decisionForCEO?: string }[];
-      openSeats?: { role: string; status: string }[];
-    };
+    const sources = defaultSourcePaths(repoRoot);
+    const state = deriveState({
+      sources,
+      events: eventSourceFromStore(eventStore),
+    });
     return {
       reachable: true,
-      ...(raw.asOf !== undefined ? { asOf: raw.asOf } : {}),
-      decisionsOpen: raw.decisionsOpen ?? [],
-      openSeats: raw.openSeats ?? [],
+      asOf: state.asOf,
+      decisionsOpen: state.decisionsOpen.map((d) => ({
+        id: d.id,
+        title: d.title,
+        owner: d.owner,
+        ...(d.decisionForCEO ? { decisionForCEO: d.decisionForCEO } : {}),
+      })),
+      openSeats: state.openSeats.map((s) => ({ role: s.role, status: s.status })),
     };
   } catch {
     return { reachable: false, decisionsOpen: [], openSeats: [] };
@@ -248,7 +270,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Read the dashboard state (runtime cache `prototype/.local/dashboard-state.json` if present, falling back to the committed seed `prototype/seeds/dashboard-state.json`) for open decisions + seats; replayed `CeoDecision` events from the host event store for the last 7 days.",
+    "Read the dashboard state (runtime cache `prototype/.local/dashboard-state.json` if present; otherwise derived live via `dashboard/derive.ts` from canonical sources + the in-process event store, per D-EVENT-STORE-SCALING Slice 3b) for open decisions + seats; replayed `CeoDecision` events from the host event store for the last 7 days.",
   );
   lines.push("");
   return lines.join("\n");

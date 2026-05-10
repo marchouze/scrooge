@@ -150,7 +150,7 @@ For this run you have just executed the four continuous-controls reconciliation 
 
   1. **mandate-ownership** — every persona's claimed mandate reconciles to a procedure that exists, and every procedure has an owning persona.
   2. **decision-event** — every dashboard-resolved CEO decision has a backing \`CeoDecision\` event in the event store, and every \`CeoDecision\` event has a registry entry.
-  3. **dashboard-derivation** — the persisted \`seeds/dashboard-state.json\` cache reproduces from \`deriveState()\` against the canonical sources.
+  3. **dashboard-derivation** — \`deriveState()\` runs against the canonical sources at recon time and the resulting projection is internally consistent (every \`decisionsOpen[].id\` reachable; every ISO-timestamped \`decisionsResolved[]\` matched by a \`CeoDecision\` event; metric counts match their backing arrays). Per D-EVENT-STORE-SCALING Slice 3b the recon no longer compares against a committed seed.
   4. **prose-duplication** — no canonical-source fact is duplicated in prose elsewhere; every cross-reference is a typed citation per the canonical-source registry.
 
 You produce a written narrative — one to three short paragraphs — that:

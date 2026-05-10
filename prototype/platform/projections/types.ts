@@ -13,8 +13,15 @@
 //      runtime (upward chain). The cloud lift swaps the runtime; reducers
 //      stay identical.
 //
-// Author: Atlas (platform plumbing) · Anya (data substrate)
+// D-EVENT-STORE-SCALING Slice 3 (consumer adoption) — projections gain an
+// optional snapshot codec (`encodeSnapshot` / `decodeSnapshot`). When
+// supplied, the runtime can persist + restore the projection's state via
+// `eventStore.snapshot()` / `loadSnapshot()`, collapsing rebuild cost from
+// O(N_events) to O(snapshot + delta).
+//
+// Author: Atlas (platform plumbing) · Anya (data substrate; Slice 3 codec)
 
+import type { SnapshotRow } from "../event-store/store";
 import type { Event } from "../event-store/types";
 
 /**
@@ -36,12 +43,25 @@ export type EventFilter<E extends Event = Event> = (event: Event) => event is E;
  *
  * `name` is used for telemetry and (later) as the cache table key when
  * projections are persisted. Names should be stable across replays.
+ *
+ * Optional snapshot codec (D-EVENT-STORE-SCALING Slice 3). When supplied,
+ * the projection can be persisted to the event store's snapshot substrate
+ * and restored via `Projector.projectFromSnapshot`. Codec contract:
+ *   - `encodeSnapshot(state)` → JSON-string suitable for `SnapshotOpts.payload`.
+ *   - `decodeSnapshot(payload)` → typed state, equivalent to a fresh
+ *     fold over the events the snapshot covers.
+ * Round-trip is asserted by the snapshot equivalence test for any
+ * projection that defines both.
  */
 export interface Projection<S, E extends Event = Event> {
   readonly name: string;
   readonly initial: S;
   readonly accepts: EventFilter<E>;
   readonly reduce: Reducer<S, E>;
+  /** Snapshot encoder — serialise state to a JSON-string payload. */
+  readonly encodeSnapshot?: (state: S) => string;
+  /** Snapshot decoder — re-hydrate state from a serialised payload. */
+  readonly decodeSnapshot?: (payload: string) => S;
 }
 
 /** Replay options the projector forwards to the event store. */
@@ -49,6 +69,42 @@ export interface ProjectionReplayOpts {
   fromSequence?: number;
   entity?: string;
   asOf?: string; // upper bound (inclusive) on event.as_of (P1 — as-of replay)
+}
+
+/**
+ * Snapshot-projection opts — the inputs to `Projector.projectFromSnapshot`.
+ * `streamKey` and `asOf` are forwarded to `eventStore.replayFromSnapshot`;
+ * `filter` narrows the delta replay (e.g. to a specific entity / event
+ * type); the consumer is responsible for choosing a filter equivalent to
+ * its naive replay path.
+ */
+export interface SnapshotProjectionOpts {
+  readonly streamKey: string;
+  readonly asOf: string;
+  readonly filter?: { entity?: string; type?: string };
+}
+
+/**
+ * Snapshot-emission opts — the inputs to `Projector.maybeSnapshot`. The
+ * caller owns the projection's current state; the runtime asks the event
+ * store whether the cadence rule for `eventType` has fired for `streamKey`,
+ * and if so persists the encoded state.
+ */
+export interface ProjectionSnapshotOpts<S> {
+  readonly streamKey: string;
+  readonly asOf: string;
+  readonly uptoSequence: number;
+  readonly state: S;
+  /** Resolves the cadence rule used by `EventStore.shouldSnapshot`. When
+   *  omitted the store falls back to `DEFAULT_SNAPSHOT_CADENCE`. */
+  readonly eventType?: string;
+}
+
+/** Outcome of a `maybeSnapshot` call. */
+export interface SnapshotEmissionResult {
+  readonly emitted: boolean;
+  readonly reason: string;
+  readonly snapshot?: SnapshotRow;
 }
 
 /**
@@ -60,6 +116,16 @@ export interface ProjectionReplayOpts {
 export interface Projector {
   build<S, E extends Event>(p: Projection<S, E>, opts?: ProjectionReplayOpts): S;
   fold<S, E extends Event>(p: Projection<S, E>, initial: S, opts?: ProjectionReplayOpts): S;
+  /** D-EVENT-STORE-SCALING Slice 3 — snapshot-aware projection. */
+  projectFromSnapshot<S, E extends Event>(
+    p: Projection<S, E>,
+    opts: SnapshotProjectionOpts,
+  ): { state: S; snapshot?: SnapshotRow; deltaCount: number };
+  /** D-EVENT-STORE-SCALING Slice 3 — cadence-driven snapshot emit. */
+  maybeSnapshot<S, E extends Event>(
+    p: Projection<S, E>,
+    opts: ProjectionSnapshotOpts<S>,
+  ): SnapshotEmissionResult;
 }
 
 /**

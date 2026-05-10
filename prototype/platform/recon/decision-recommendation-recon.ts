@@ -10,6 +10,12 @@
 // the *residual*). A missing recommendation on an open decision is therefore
 // a controls finding, not a UI quirk.
 //
+// Per D-EVENT-STORE-SCALING Slice 3b (2026-05-10) the committed cache
+// `prototype/seeds/dashboard-state.json` is no longer in the commit
+// graph. This pipeline now derives state from canonical sources at recon
+// time and asserts the recommendation-presence invariant against the
+// derived `decisionsOpen` list.
+//
 // Two lift paths produce open decisions; the recommendation can sit in
 // either of two places per the dashboard's `OpenDecision` shape:
 //   - `recommendation` (top-level — set by Owner-Inbox lift from the
@@ -27,47 +33,105 @@
 //
 // Author: Vera
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { EventStore } from "@platform/event-store/store";
+import {
+  defaultSourcePaths,
+  deriveState,
+  eventSourceFromStore,
+  missingSources,
+} from "../../dashboard/derive";
+import type { DashboardState } from "../../dashboard/types";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
-interface OpenDecisionShape {
-  id: string;
-  title: string;
-  owner?: string;
-  recommendation?: { stance: string; reasoning: string };
-  brief?: { recommendation?: { stance: string; reasoning: string } };
+function findRepoRoot(start: string): string {
+  let dir = start;
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(resolve(dir, "CLAUDE.md"))) return dir;
+    dir = resolve(dir, "..");
+  }
+  throw new Error("Cannot locate repo root (CLAUDE.md not found by walking up)");
 }
 
-interface RegistryShape {
-  decisionsOpen: OpenDecisionShape[];
-}
-
-const DEFAULT_REGISTRY = resolve(import.meta.dir, "../../seeds/dashboard-state.json");
+const REPO_ROOT = findRepoRoot(import.meta.dir);
+const DEFAULT_DB = process.env.BANK_EVENT_DB ?? resolve(REPO_ROOT, "prototype/.local/event.db");
 
 export interface RunOpts {
-  registryPath?: string;
+  dbPath?: string;
+  /**
+   * Optional pre-derived state, used by tests to inject a deterministic
+   * fixture. Production runs leave this unset — the recon derives at
+   * recon time from canonical sources.
+   */
+  state?: DashboardState;
+}
+
+function loadDerivedState(opts: RunOpts): {
+  state?: DashboardState;
+  setupViolations: ReconViolation[];
+} {
+  const setupViolations: ReconViolation[] = [];
+  if (opts.state) {
+    return { state: opts.state, setupViolations };
+  }
+
+  const sources = defaultSourcePaths(REPO_ROOT);
+  const missing = missingSources(sources);
+  if (missing.length) {
+    for (const m of missing) {
+      setupViolations.push({
+        subject: m,
+        message: `Canonical source missing: ${m}`,
+        severity: "fail",
+      });
+    }
+    return { setupViolations };
+  }
+
+  const dbPath = opts.dbPath ?? DEFAULT_DB;
+  const events = (() => {
+    if (!existsSync(dbPath)) {
+      return {
+        ceoDecisions: () => [],
+        workstreamStarts: () => [],
+        workstreamCompletions: () => [],
+        workstreamRegistrations: () => [],
+        agentEscalations: () => [],
+        auditFindings: () => [],
+        decisionComments: () => [],
+      };
+    }
+    return eventSourceFromStore(new EventStore(dbPath));
+  })();
+
+  let state: DashboardState;
+  try {
+    state = deriveState({ sources, events });
+  } catch (e) {
+    setupViolations.push({
+      subject: "deriveState",
+      message: `Derivation threw: ${(e as Error).message}`,
+      severity: "fail",
+    });
+    return { setupViolations };
+  }
+  return { state, setupViolations };
 }
 
 export function run(opts: RunOpts = {}): ReconResult {
   const result = emptyResult("decision-recommendation");
   const violations: ReconViolation[] = [];
 
-  const registryPath = opts.registryPath ?? DEFAULT_REGISTRY;
-  if (!existsSync(registryPath)) {
-    violations.push({
-      subject: registryPath,
-      message: "Dashboard registry not found",
-      severity: "fail",
-    });
-    result.violations = violations;
-    result.ok = false;
+  const { state, setupViolations } = loadDerivedState(opts);
+  if (setupViolations.length || !state) {
+    result.violations = setupViolations;
+    result.ok = setupViolations.every((v) => v.severity !== "fail");
     return result;
   }
-  const registry = JSON.parse(readFileSync(registryPath, "utf8")) as RegistryShape;
 
-  for (const d of registry.decisionsOpen) {
+  for (const d of state.decisionsOpen) {
     result.asserted++;
     const hasReco = !!(d.recommendation?.stance ?? d.brief?.recommendation?.stance);
     if (!hasReco) {
