@@ -1,0 +1,191 @@
+// scripts/render-ba-325.ts
+//
+// CLI wrapper for the BA 325 (LCR) generator + renderer.
+//
+// Usage:
+//   bun run scripts/render-ba-325.ts \
+//       --entity LE-ZA-HOZ-BANK \
+//       --as-of 2026-05-31T23:59:59.999Z \
+//       --period-id period:hoz-bank:month:2026-05 \
+//       [--functional-currency ZAR] \
+//       [--classifications path/to/classifications.json] \
+//       [--out path/to/ba-325.json]
+//
+// What it does:
+//   1. Replays the event store for the entity.
+//   2. Computes the trial balance over the period.
+//      (If the period is closed, it uses the closed trial balance via
+//      `periodAuditChain` to find the most-recent
+//      `TrialBalanceSnapshotted`. Otherwise it computes ad-hoc from
+//      `SubLedgerPostingEmitted`.)
+//   3. Loads the per-account liquidity classifications from
+//      `--classifications` (JSON array of `AccountLiquidityClassification`).
+//      Defaults to a built-in build-phase fixture (see
+//      `BUILD_PHASE_DEFAULT_CLASSIFICATIONS` below).
+//   4. Generates the BA 325 projection.
+//   5. Renders to canonical JSON.
+//   6. Writes to stdout (default) or `--out`.
+//
+// This script is rehearsal-grade. The production form (Slice 5) emits a
+// `ReportGenerated` event that hashes the rendered bytes into the RMS
+// document store. Until then this CLI is the fastest path to a usable
+// BA 325 for human review.
+//
+// Authors: Bea (Accounting & financial reporting engineer, engineering —
+//   reports to Camille CFO) + Eitan (Treasurer, governance) + Anya (Data /
+//   analytics engineer, engineering).
+
+import { readFileSync, writeFileSync } from "node:fs";
+
+import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
+import { eventStore } from "../platform/composition";
+import {
+  type AccountLiquidityClassification,
+  type Ba325GeneratorInput,
+  generateBa325Lcr,
+  renderBa325Canonical,
+} from "../platform/reporting";
+
+// ---------------------------------------------------------------------------
+// Build-phase default classifications — fallback when --classifications
+// not supplied. Pinned to chart-of-accounts ACC-1100-001 (the worked
+// Slice-1 row) — Cash and balances at SARB → HQLA Level 1.
+// ---------------------------------------------------------------------------
+
+const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
+  {
+    leafAccountId: "ACC-1100-001",
+    hqlaLevel: "level-1",
+    subCategory: "level-1.central-bank-reserves",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Argv parsing — minimal, hand-rolled (no external dep).
+// ---------------------------------------------------------------------------
+
+interface CliArgs {
+  readonly entity: string;
+  readonly asOf: string;
+  readonly periodId: string;
+  readonly functionalCurrency: string;
+  readonly classificationsPath?: string;
+  readonly outPath?: string;
+  readonly periodStart?: string;
+  readonly periodEnd?: string;
+}
+
+function parseArgs(argv: readonly string[]): CliArgs {
+  const get = (flag: string): string | undefined => {
+    const i = argv.indexOf(flag);
+    return i >= 0 && i + 1 < argv.length ? argv[i + 1] : undefined;
+  };
+  const entity = get("--entity");
+  const asOf = get("--as-of");
+  const periodId = get("--period-id");
+  if (!entity || !asOf || !periodId) {
+    throw new Error(
+      "render-ba-325: --entity, --as-of, --period-id are required. See script header for usage.",
+    );
+  }
+  const functionalCurrency = get("--functional-currency") ?? "ZAR";
+  const classificationsPath = get("--classifications");
+  const outPath = get("--out");
+  const periodStart = get("--period-start");
+  const periodEnd = get("--period-end");
+  return {
+    entity,
+    asOf,
+    periodId,
+    functionalCurrency,
+    ...(classificationsPath ? { classificationsPath } : {}),
+    ...(outPath ? { outPath } : {}),
+    ...(periodStart ? { periodStart } : {}),
+    ...(periodEnd ? { periodEnd } : {}),
+  };
+}
+
+function loadClassifications(path: string): readonly AccountLiquidityClassification[] {
+  const raw = readFileSync(path, "utf8");
+  const parsed = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new Error(`render-ba-325: --classifications file at ${path} must be a JSON array`);
+  }
+  return parsed as readonly AccountLiquidityClassification[];
+}
+
+// ---------------------------------------------------------------------------
+// Trial-balance discovery
+// ---------------------------------------------------------------------------
+
+interface TrialBalanceResolution {
+  readonly rows: Ba325GeneratorInput["trialBalance"];
+  readonly trialBalanceSnapshotEventId?: string;
+}
+
+function resolveTrialBalance(args: CliArgs): TrialBalanceResolution {
+  // Prefer a closed-period TrialBalanceSnapshotted from the audit chain.
+  const chain = periodAuditChain({
+    eventStore,
+    entity: args.entity,
+    periodId: args.periodId,
+  });
+  for (let i = chain.length - 1; i >= 0; i--) {
+    const e = chain[i];
+    if (e && e.type === "TrialBalanceSnapshotted") {
+      const p = e.payload as { rows: Ba325GeneratorInput["trialBalance"] };
+      return { rows: p.rows, trialBalanceSnapshotEventId: e.event_id };
+    }
+  }
+
+  // Fallback: ad-hoc compute from the supplied window. Useful for
+  // pre-close rehearsal runs.
+  if (!args.periodStart || !args.periodEnd) {
+    throw new Error(
+      `render-ba-325: no TrialBalanceSnapshotted for (entity=${args.entity}, periodId=${args.periodId}); supply --period-start + --period-end for ad-hoc compute, or run the period-close orchestration first.`,
+    );
+  }
+  const tb = computeTrialBalance({
+    eventStore,
+    entity: args.entity,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+  });
+  return { rows: tb.rows };
+}
+
+// ---------------------------------------------------------------------------
+// main
+// ---------------------------------------------------------------------------
+
+function main(argv: readonly string[]): number {
+  const args = parseArgs(argv);
+  const classifications = args.classificationsPath
+    ? loadClassifications(args.classificationsPath)
+    : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
+  const tb = resolveTrialBalance(args);
+  const output = generateBa325Lcr({
+    entity: args.entity,
+    asOf: args.asOf,
+    periodId: args.periodId,
+    functionalCurrency: args.functionalCurrency,
+    trialBalance: tb.rows,
+    classifications,
+    ...(tb.trialBalanceSnapshotEventId
+      ? { trialBalanceSnapshotEventId: tb.trialBalanceSnapshotEventId }
+      : {}),
+  });
+  const { canonicalJson } = renderBa325Canonical(output, {
+    renderedAt: new Date().toISOString(),
+  });
+  if (args.outPath) {
+    writeFileSync(args.outPath, canonicalJson, "utf8");
+  } else {
+    process.stdout.write(canonicalJson);
+    process.stdout.write("\n");
+  }
+  return 0;
+}
+
+const argv = process.argv.slice(2);
+process.exit(main(argv));

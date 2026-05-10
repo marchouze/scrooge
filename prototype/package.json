@@ -11,6 +11,7 @@
     "scenario:hello": "bun run scenarios/01-hello-bank.ts",
     "scenario:onboard": "bun run scenarios/02-onboard-counterparty.ts",
     "scenario:dry-run-fx": "bun run scenarios/03-fx-end-to-end-rehearsal.ts",
+    "scenario:rms-roundtrip": "bun run scenarios/04-rms-phase-1-roundtrip.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
     "recon": "bun run platform/recon/harness.ts",
     "recon:mandate": "bun run platform/recon/mandate-ownership.ts",

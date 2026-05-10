@@ -26,3 +26,13 @@ export type {
 export { SemanticRegistry, SemanticRegistryError } from "./registry";
 
 export { SLICE_1_ENTRIES, balance, cashAndBalancesAtSARB, exposure } from "./entries";
+
+export {
+  SLICE_3_LIQUIDITY_ENTRIES,
+  hqlaLevel1,
+  hqlaLevel2A,
+  hqlaLevel2B,
+  lcrCashOutflows30D,
+  lcrCashInflows30D,
+  liquidityCoverageRatio,
+} from "./liquidity-entries";
