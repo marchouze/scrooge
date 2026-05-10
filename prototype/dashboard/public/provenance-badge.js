@@ -66,6 +66,13 @@
 
   /** Module-private cached resolved filter. */
   let cached = null;
+  /**
+   * True when the last fetch resolved successfully with `pageProvenance: null`
+   * (i.e. the endpoint explicitly said "no data was queried, suppress the
+   * badge"). Distinct from "fetch failed" — the latter renders the error
+   * state, the former renders nothing at all.
+   */
+  let suppressed = false;
 
   /** Map from ProvenanceMode → { label, modeAttr } per the §6.2 taxonomy. */
   const MODE_DESCRIPTORS = {
@@ -231,23 +238,34 @@
       const body = await res.json();
       // Three response shapes are accepted, in priority order:
       //   1. Page-scoped `{ pageProvenance: <filter|null>, ... }` (Slice 3.5).
+      //      pageProvenance present + null → endpoint explicitly says
+      //      "no data, suppress badge". This is distinct from a failed
+      //      fetch.
       //   2. Top-level `{ filter: <filter>, ... }` (`/api/provenance/mode`,
       //      Slice 3 original).
       //   3. The resolved filter at the top level (forward-compat).
       let filter = null;
+      let explicitNull = false;
       if (body && Object.prototype.hasOwnProperty.call(body, "pageProvenance")) {
-        // pageProvenance: null → no data was queried, signal "skip".
         filter = body.pageProvenance;
+        explicitNull = filter === null;
       } else if (body?.filter) {
         filter = body.filter;
       } else {
         filter = body;
       }
+      if (explicitNull) {
+        cached = null;
+        suppressed = true;
+        return null;
+      }
       cached = filter && typeof filter.mode === "string" ? filter : null;
+      suppressed = false;
       return cached;
     } catch (e) {
       console.warn("[provenance-badge] fetch failed", url, e);
       cached = null;
+      suppressed = false;
       return null;
     }
   }
@@ -312,6 +330,12 @@
       // Intentional opt-out. Render nothing — not even an error state.
       return;
     }
+    if (suppressed) {
+      // Endpoint returned `pageProvenance: null` — endpoint-side opt-out
+      // (e.g. /api/procedures, which surfaces authored markdown, not
+      // event-derived data). Render nothing, same as the page-side opt-out.
+      return;
+    }
 
     const markers = document.querySelectorAll("[data-provenance-badge]");
     if (markers.length > 0) {
@@ -358,6 +382,7 @@
     autoMount,
     describe, // exposed for tests
     readPageDeclaration, // exposed for tests
+    isSuppressed: () => suppressed, // exposed for tests
   };
 
   document.addEventListener("DOMContentLoaded", async () => {

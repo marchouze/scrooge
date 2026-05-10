@@ -61,6 +61,7 @@ const REQUIRED_CSS = "/provenance-badge.css";
 const REQUIRED_JS = "/provenance-badge.js";
 const REQUIRED_MARKER = "data-provenance-badge";
 const PROSE_OPT_OUT = 'data-provenance-content="none"';
+const PER_PAGE_SOURCE = "data-provenance-source";
 
 /** Walk a directory and yield every `.html` file under it. */
 function* walkHtml(dir: string): Generator<string> {
@@ -87,6 +88,7 @@ interface PageCheck {
   readonly hasJs: boolean;
   readonly hasMarker: boolean;
   readonly hasProseOptOut: boolean;
+  readonly hasPerPageSource: boolean;
 }
 
 function checkPage(file: string): PageCheck {
@@ -97,6 +99,7 @@ function checkPage(file: string): PageCheck {
     hasJs: content.includes(REQUIRED_JS),
     hasMarker: content.includes(REQUIRED_MARKER),
     hasProseOptOut: content.includes(PROSE_OPT_OUT),
+    hasPerPageSource: content.includes(PER_PAGE_SOURCE),
   };
 }
 
@@ -146,6 +149,18 @@ export function run(): ReconResult {
         subject: rel,
         message: `page declares both \`${PROSE_OPT_OUT}\` AND a [${REQUIRED_MARKER}] marker — pick one. The opt-out wins at runtime; the marker is dead markup.`,
         severity: "fail",
+      });
+    } else if (check.hasMarker && !check.hasPerPageSource) {
+      // Data page with a badge marker but no per-page API source
+      // declaration. Falls back to /api/provenance/mode (the env-derived
+      // global), which is exactly the over-paint behaviour Marc flagged
+      // 2026-05-10. Severity is `warn` rather than `fail` while the
+      // per-endpoint `pageProvenance` rollout completes — once every
+      // page declares a source, tighten to `fail`.
+      violations.push({
+        subject: rel,
+        message: `data page has a [${REQUIRED_MARKER}] marker but no \`${PER_PAGE_SOURCE}\` attribute — the badge will fall back to /api/provenance/mode (the env-derived global), which paints every page the same. Add \`${PER_PAGE_SOURCE}="/api/<endpoint>"\` to the marker so the badge resolves the mode from the page's primary API response (which now returns \`pageProvenance\`).`,
+        severity: "warn",
       });
     }
   }

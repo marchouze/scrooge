@@ -31,7 +31,16 @@
         <span class="shell-wordmark" title="Hoz · rhymes with 'pause' (pronunciation posture pending Linnea v3 brand-supplement)">Hoz</span>
       </a>
       <div class="shell-meta">
-        <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+        <!-- D-DATA-PROVENANCE-SUBSTRATE Slice 3.5 — per-page resolution.
+             `data-provenance-source` declares the page's primary API
+             endpoint; the badge fetches `pageProvenance` from it
+             instead of the global `/api/provenance/mode` fallback.
+             Home folds /api/state (the dashboard projection). -->
+        <span
+          data-provenance-badge="page-top"
+          data-provenance-source="/api/state"
+          aria-label="Provenance badge"
+        ></span>
         <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh tile data now">Refresh</button>
         <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
         <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>

@@ -76,6 +76,12 @@ import {
   enrichBlockedBy,
   listEscalations,
 } from "./oversight";
+import {
+  eventDerivedPageProvenance,
+  productionReferencePageProvenance,
+  proseAuthoredPageProvenance,
+  substrateGapsPageProvenance,
+} from "./page-provenance";
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import {
@@ -575,7 +581,13 @@ function getRmsFold(): ReturnType<typeof buildRmsRegistersFold> {
 }
 
 function handleRmsCatalogue(): Response {
-  return jsonResponse(summariseFold(getRmsFold()));
+  // pageProvenance: event-derived — RMS registers fold typed events
+  // from the event store (Phase 1 dual-render). Build phase →
+  // simulated-only.
+  return jsonResponse({
+    ...summariseFold(getRmsFold()),
+    pageProvenance: eventDerivedPageProvenance(),
+  });
 }
 
 // Stream the raw markdown body for a single Owner-Inbox deliverable so the
@@ -686,6 +698,7 @@ function handleRmsRegister(register: string): Response {
     asOf: fold.asOf,
     register,
     rows: selectRegisterView(fold, register),
+    pageProvenance: eventDerivedPageProvenance(),
   });
 }
 
@@ -742,7 +755,12 @@ const server = Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname === "/api/state" && req.method === "GET") {
-      return jsonResponse(cachedState);
+      // Slice 3.5 — attach `pageProvenance` so the badge resolves the
+      // page's mode from the data the endpoint actually returned, not
+      // from a page-global env-derived default. /api/state folds
+      // event-store-derived projections → build phase resolves to
+      // simulated-only; licence-day flips automatically.
+      return jsonResponse({ ...cachedState, pageProvenance: eventDerivedPageProvenance() });
     }
     // Owner-Inbox markdown body fetch for the inline-preview modal on the
     // home dashboard. Polish-layer endpoint authored by Anya
@@ -791,14 +809,24 @@ const server = Bun.serve({
     if (url.pathname === "/api/substrate-gaps" && req.method === "GET") {
       // Substrate-gap inventory parsed from Atlas's most-recent
       // substrate-state deliverable. 5-min server-side cache.
-      return jsonResponse(getSubstrateGapsView(REPO_ROOT));
+      // pageProvenance: production-only — authored register (reference
+      // data), not event-derived.
+      return jsonResponse({
+        ...getSubstrateGapsView(REPO_ROOT),
+        pageProvenance: substrateGapsPageProvenance(),
+      });
     }
     if (url.pathname === "/api/obligations" && req.method === "GET") {
       // Obligation-detail map keyed by ORG-* id, served to the policies
       // drilldown so it can show citation / requirement / source / bind /
       // status per linked obligation. Parsed from the obligations register
       // on each request — file is small; no caching needed.
-      return jsonResponse(getObligationsView(REPO_ROOT));
+      // pageProvenance: production-only — register cites regulators
+      // (SARB / FIC / FSCA / PA), production reference data.
+      return jsonResponse({
+        ...getObligationsView(REPO_ROOT),
+        pageProvenance: productionReferencePageProvenance(),
+      });
     }
     if (url.pathname === "/api/procedures" && req.method === "GET") {
       // Procedures index — every row of `Procedures/_index.md` grouped by
@@ -806,12 +834,22 @@ const server = Bun.serve({
       // from the per-procedure file under `Procedures/by-policy/`. Surfaces
       // the "no orphans" count (rows whose cited file does not exist) per
       // Principle 6. Parsed live; small enough not to cache.
-      return jsonResponse(getProceduresIndex(REPO_ROOT));
+      // pageProvenance: null — procedures are markdown authored as the
+      // canonical source per Principle 6 upward chain. No data surface
+      // → no badge. The /procedures.html page can declare its own
+      // `data-provenance-content="none"` if it consumes this and renders
+      // nothing else, OR mount the badge with the null mode (suppress).
+      return jsonResponse({
+        ...getProceduresIndex(REPO_ROOT),
+        pageProvenance: proseAuthoredPageProvenance(),
+      });
     }
     if (url.pathname === "/api/agent-runs" && req.method === "GET") {
       // GitHub Actions run history per agent — for the per-agent "Recent
       // runs" enrichment on /agents.html and the conclusion-aware
       // traffic-light on /health.html. 5-minute server-side cache.
+      // pageProvenance: production-only — GitHub Actions runs are
+      // production observability data (real CI), not simulated events.
       const result = await getAgentRuns();
       return jsonResponse({
         fetchedAt: new Date(result.fetchedAt).toISOString(),
@@ -819,6 +857,7 @@ const server = Bun.serve({
         ...(result.error ? { error: result.error } : {}),
         byAgent: groupByAgent(result.runs, 5),
         all: result.runs,
+        pageProvenance: productionReferencePageProvenance(),
       });
     }
     if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
@@ -827,7 +866,11 @@ const server = Bun.serve({
       // pass-and-not-breached set. Read-only; no caching (event volume
       // is small in build phase).
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
-      return jsonResponse(buildCounterpartiesView(eventStore));
+      // pageProvenance: event-derived → simulated-only in build phase.
+      return jsonResponse({
+        ...buildCounterpartiesView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
     }
     if (url.pathname === "/api/markets/fx/quote" && req.method === "POST") {
       // FX desk Slice 2 — synthetic-quote stub. Returns a fixed-spread
@@ -877,15 +920,25 @@ const server = Bun.serve({
     }
     // ---------- A3.2 Oversight UI projections (read-only) ----------
     if (url.pathname === "/api/escalations" && req.method === "GET") {
+      // pageProvenance: event-derived → simulated-only in build phase.
       const resolvedIds = new Set(cachedState.decisionsResolved.map((r) => r.id));
       const views = enrichBlockedBy(listEscalations(eventStore, resolvedIds), eventStore);
-      return jsonResponse({ asOf: cachedState.asOf, escalations: views });
+      return jsonResponse({
+        asOf: cachedState.asOf,
+        escalations: views,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
     }
     if (url.pathname === "/api/fleet" && req.method === "GET") {
+      // pageProvenance: event-derived → simulated-only in build phase.
       const resolvedIds = new Set(cachedState.decisionsResolved.map((r) => r.id));
       const escalations = enrichBlockedBy(listEscalations(eventStore, resolvedIds), eventStore);
       const fleet = buildFleetStatus(cachedState, escalations);
-      return jsonResponse({ asOf: cachedState.asOf, fleet });
+      return jsonResponse({
+        asOf: cachedState.asOf,
+        fleet,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
     }
     {
       const decisionMatch = url.pathname.match(/^\/api\/decisions\/(.+)$/);
@@ -899,6 +952,9 @@ const server = Bun.serve({
           asOf: cachedState.asOf,
           ...view,
           ...(view.popiaS71 ? { popiaNotice: POPIA_S71_NOTICE } : {}),
+          // Decision drill-down folds CeoDecision* events from the
+          // event store → build phase resolves to simulated-only.
+          pageProvenance: eventDerivedPageProvenance(),
         });
       }
     }
