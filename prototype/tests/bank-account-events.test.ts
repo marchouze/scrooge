@@ -33,8 +33,8 @@ import {
   makeBankAccountConfigured,
   makeBankAccountOpened,
 } from "../platform/event-store/event-types";
-import { EVENT_TYPE_REGISTRY, lookupEventType } from "../platform/event-store/registry";
 import { simulatedTag } from "../platform/event-store/provenance";
+import { EVENT_TYPE_REGISTRY, lookupEventType } from "../platform/event-store/registry";
 import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
 import { LocalProjector } from "../platform/projections";

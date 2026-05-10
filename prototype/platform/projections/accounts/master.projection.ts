@@ -35,11 +35,7 @@ import type {
 } from "../../event-store/event-types";
 import type { Event } from "../../event-store/types";
 import type { Projection } from "../types";
-import type {
-  AccountConfigurationEntry,
-  AccountMasterRow,
-  AccountMasterState,
-} from "./types";
+import type { AccountConfigurationEntry, AccountMasterRow, AccountMasterState } from "./types";
 import { accountMasterInitial } from "./types";
 
 /** Narrowed Event type for the bank-account family. */
