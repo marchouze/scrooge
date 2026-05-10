@@ -173,6 +173,18 @@
       placeholder: true,
       flag: "Index UI v1",
     },
+    {
+      // RMS Phase 1 Slice 4 — register hub launcher tile.
+      // Spec: Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md
+      // Authority: D-RMS-PHASE-1-SLICE-4 under standing D-RMS-PHASE-1.
+      id: "reg-rms",
+      category: "registers",
+      title: "RMS registers",
+      blurb:
+        "Owen + Atlas — seven typed registers (Decisions, Correspondence, Records-of-agent-runs, Document, Feedback, Briefs/Dispatches, Workstreams) projected from the event log per D-RMS-PHASE-1.",
+      href: "/rms.html",
+      flag: "Phase 1 dual-render",
+    },
 
     // -------- Substrate ops --------
     {
@@ -469,13 +481,20 @@
   async function loadTiles() {
     if (!window.bankShell) return;
 
-    // Parallel fetch — five endpoints, one round-trip wall-clock.
-    const [state, obligations, substrateGaps, fleet, escalations] = await Promise.all([
+    // Parallel fetch — five existing endpoints + the RMS catalogue
+    // (Slice 4). One round-trip wall-clock per tick.
+    const [state, obligations, substrateGaps, fleet, escalations, rms] = await Promise.all([
       window.bankShell.fetch.state(),
       window.bankShell.fetch.obligations(),
       window.bankShell.fetch.substrateGaps(),
       window.bankShell.fetch.fleet(),
       window.bankShell.fetch.escalations(),
+      // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
+      // refreshed; falling through to a plain fetch keeps Slice 4 self-
+      // contained.
+      fetch("/api/rms", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
     ]);
 
     if (window.bankShell.render && state && state.asOf) {
@@ -485,6 +504,25 @@
     }
 
     const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations);
+    if (rms?.counts) {
+      const total =
+        safeNum(rms.counts.decisions) +
+        safeNum(rms.counts.correspondence) +
+        safeNum(rms.counts.agentRuns) +
+        safeNum(rms.counts.document) +
+        safeNum(rms.counts.feedback) +
+        safeNum(rms.counts.briefsDispatches) +
+        safeNum(rms.counts.workstreams);
+      counts["reg-rms"] = {
+        text: String(total),
+        tone: total > 0 ? "default" : "muted",
+        aria: `${total} rows across the seven RMS registers`,
+        meta: [
+          { label: `${safeNum(rms.counts.decisions)} decisions`, tone: "muted" },
+          { label: `${safeNum(rms.counts.document)} documents`, tone: "muted" },
+        ],
+      };
+    }
     renderTiles(CATALOGUE, counts);
     if (window.bankShell.audit) {
       window.bankShell.audit.log("home.tiles.rendered", {

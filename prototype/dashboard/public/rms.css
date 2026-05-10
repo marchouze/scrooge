@@ -1,0 +1,182 @@
+/* rms.css — RMS register hub + per-register table view.
+ *
+ * RMS Phase 1 Slice 4 — dashboard register render. Additive styles
+ * layered on top of /_brand.css + /_shell.css; does not modify
+ * /styles.css (the legacy dashboard's stylesheet).
+ *
+ * Author: Anya (Data / analytics engineer, engineering)
+ */
+
+.rms-section {
+  margin-top: 1.25rem;
+}
+
+.rms-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--shell-text-muted, #5b6470);
+  flex-wrap: wrap;
+}
+
+.rms-back-link {
+  color: var(--shell-link, #226);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.rms-back-link:hover,
+.rms-back-link:focus {
+  text-decoration: underline;
+}
+
+.rms-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--shell-text, #222);
+}
+
+.rms-status-key {
+  font-style: italic;
+}
+
+.rms-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--shell-border, #d8dde3);
+  border-radius: 6px;
+  background: var(--shell-card-bg, #fff);
+}
+
+.rms-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.rms-table thead th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: var(--shell-table-head-bg, #f4f6f8);
+  border-bottom: 1px solid var(--shell-border, #d8dde3);
+  font-weight: 600;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.rms-table tbody td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--shell-border-faint, #eef0f3);
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.rms-table tbody tr:nth-child(even) td {
+  background: var(--shell-table-row-alt, #fafbfc);
+}
+
+.rms-table tbody tr:hover td {
+  background: var(--shell-table-row-hover, #f0f4f8);
+}
+
+.rms-empty {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--shell-card-bg, #fff);
+  border: 1px dashed var(--shell-border, #d8dde3);
+  border-radius: 6px;
+  color: var(--shell-text-muted, #5b6470);
+  font-style: italic;
+}
+
+.rms-error {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: #fbeaea;
+  border-left: 4px solid #c33;
+  color: #722;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* Status pills — reuse the shell tone palette where possible. */
+.rms-status {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--shell-tag-bg, #e9ecef);
+  color: var(--shell-tag-text, #333);
+  white-space: nowrap;
+}
+
+.rms-status-open,
+.rms-status-in-flight,
+.rms-status-active,
+.rms-status-issued {
+  background: #e3f0fb;
+  color: #0e4670;
+}
+
+.rms-status-resolved,
+.rms-status-delivered,
+.rms-status-complete {
+  background: #e3f5e3;
+  color: #1f5a1f;
+}
+
+.rms-status-blocked,
+.rms-status-revision-requested {
+  background: #fdecd5;
+  color: #7a4a00;
+}
+
+.rms-status-superseded,
+.rms-status-withdrawn {
+  background: #ececec;
+  color: #555;
+  font-style: italic;
+}
+
+/* Sidebar register count chip */
+.rms-side-count {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--shell-tag-bg, #e9ecef);
+  color: var(--shell-tag-text, #333);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.shell-sidebar li.is-active a {
+  font-weight: 700;
+  color: var(--shell-link-active, #112);
+  background: var(--shell-sidebar-active-bg, rgba(0, 0, 0, 0.04));
+  border-radius: 4px;
+}
+
+/* Hub tile additions */
+.rms-tile-taxonomy {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--shell-text-muted, #5b6470);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+
+.rms-callout-meta {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--shell-text-muted, #5b6470);
+  font-style: italic;
+}

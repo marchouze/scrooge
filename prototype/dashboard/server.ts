@@ -72,6 +72,13 @@ import {
 } from "./oversight";
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
+import {
+  RMS_REGISTER_KEYS,
+  buildRmsRegistersFold,
+  isRmsRegisterKey,
+  selectRegisterView,
+  summariseFold,
+} from "./rms-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import type {
   CompleteWorkstreamRequestBody,
@@ -129,6 +136,10 @@ function refresh(reason: string): void {
   try {
     const next = deriveState({ sources: SOURCES, events: EVENTS });
     cachedState = next;
+    // RMS Slice 4 — invalidate the register-fold cache because new
+    // appends to the event store may have changed any of the seven
+    // projections. The next /api/rms* request re-folds.
+    invalidateRmsFold();
     ensureRuntimeDir(RUNTIME_STATE_PATH);
     saveState(next, RUNTIME_STATE_PATH);
     logger.debug(
@@ -434,6 +445,65 @@ async function handleCompleteWorkstream(req: Request): Promise<Response> {
 }
 
 // ---------------------------------------------------------------------------
+// RMS Phase 1 Slice 4 — register render endpoints.
+//
+// Two endpoints surface the seven RMS register projections (Slice 3
+// substrate at `prototype/platform/rms-registers/`) alongside the legacy
+// Owner Inbox feed (Phase 1 dual-render contract):
+//
+//   GET /api/rms                 — catalogue + counts.
+//   GET /api/rms/:register       — rows for one register.
+//
+// A 5s server-side cache avoids re-folding the event store on every poll
+// from the front-end. The cache invalidates whenever the dashboard's
+// `refresh()` runs (decisions, fx-trade, workstream-mutation, fs.watch),
+// because the underlying event store may have new appends.
+//
+// Authority: D-RMS-PHASE-1-SLICE-4 under standing D-RMS-PHASE-1.
+// ---------------------------------------------------------------------------
+
+const RMS_FOLD_CACHE_TTL_MS = 5_000;
+let rmsFoldCache: ReturnType<typeof buildRmsRegistersFold> | null = null;
+let rmsFoldCacheAt = 0;
+
+function invalidateRmsFold(): void {
+  rmsFoldCache = null;
+  rmsFoldCacheAt = 0;
+}
+
+function getRmsFold(): ReturnType<typeof buildRmsRegistersFold> {
+  const now = Date.now();
+  if (rmsFoldCache && now - rmsFoldCacheAt < RMS_FOLD_CACHE_TTL_MS) {
+    return rmsFoldCache;
+  }
+  rmsFoldCache = buildRmsRegistersFold(eventStore);
+  rmsFoldCacheAt = now;
+  return rmsFoldCache;
+}
+
+function handleRmsCatalogue(): Response {
+  return jsonResponse(summariseFold(getRmsFold()));
+}
+
+function handleRmsRegister(register: string): Response {
+  if (!isRmsRegisterKey(register)) {
+    return jsonResponse(
+      {
+        error: `unknown register: ${register}`,
+        validKeys: RMS_REGISTER_KEYS,
+      },
+      404,
+    );
+  }
+  const fold = getRmsFold();
+  return jsonResponse({
+    asOf: fold.asOf,
+    register,
+    rows: selectRegisterView(fold, register),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Continuous derivation: poll + fs.watch (debounced).
 // ---------------------------------------------------------------------------
 
@@ -563,6 +633,18 @@ const server = Bun.serve({
     if (url.pathname === "/api/inflight/complete" && req.method === "POST") {
       return handleCompleteWorkstream(req);
     }
+    // ---------- RMS Phase 1 Slice 4 — register render endpoints ----------
+    // Catalogue + counts. Authority: D-RMS-PHASE-1-SLICE-4 under standing
+    // D-RMS-PHASE-1.
+    if (url.pathname === "/api/rms" && req.method === "GET") {
+      return handleRmsCatalogue();
+    }
+    {
+      const rmsMatch = url.pathname.match(/^\/api\/rms\/(.+)$/);
+      if (rmsMatch?.[1] && req.method === "GET") {
+        return handleRmsRegister(decodeURIComponent(rmsMatch[1]));
+      }
+    }
     // ---------- A3.2 Oversight UI projections (read-only) ----------
     if (url.pathname === "/api/escalations" && req.method === "GET") {
       const resolvedIds = new Set(cachedState.decisionsResolved.map((r) => r.id));
@@ -610,6 +692,10 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/fleet") {
       return serveStatic("/fleet.html");
+    }
+    // RMS register hub + per-register page (Slice 4).
+    if (req.method === "GET" && (url.pathname === "/rms" || url.pathname === "/rms/")) {
+      return serveStatic("/rms.html");
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname);
