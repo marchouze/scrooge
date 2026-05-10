@@ -27,6 +27,7 @@ import { join } from "node:path";
 
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
+import { makeCdmBindingsRegenerated } from "../platform/event-store/event-types-cdm";
 import type { Event } from "../platform/event-store/types";
 import { makeEquitySettlementInstructed, makeEquityTradeBooked } from "../platform/markets/cdm";
 import beaM1IfrsClassificationRules, {
@@ -375,15 +376,23 @@ describe("runtime — bea:m1-ifrs-classification-rules", () => {
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
       payload: { decisionId: "D-MARKETS-SCHEMA-FOUNDATION" },
     };
-    const cdmRefresh: Event = {
-      event_id: newEventId(),
-      type: "CdmBindingsRegenerated",
-      as_of: "2026-05-09T00:00:00.000Z",
+    const cdmRefresh: Event = makeCdmBindingsRegenerated({
+      asOf: "2026-05-09T00:00:00.000Z",
       entity: "BANK-ZA-001",
       actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings" },
       citations: ["ISDA-CDM"],
-      payload: {},
-    };
+      payload: {
+        primitiveCount: 6,
+        equityEventTypeCount: 3,
+        registeredEventTypes: [
+          "EquityTradeBooked",
+          "EquityCorporateActionApplied",
+          "EquitySettlementInstructed",
+        ],
+        selfTestPassed: true,
+        runTrigger: "test:bea-m1-ifrs-classification",
+      },
+    });
     const ctx = makeContext({ triggeringEvents: [ceoDecision, cdmRefresh] });
     try {
       const r = await beaM1IfrsClassificationRules(ctx);

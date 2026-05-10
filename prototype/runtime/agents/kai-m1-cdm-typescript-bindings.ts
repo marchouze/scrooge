@@ -30,7 +30,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
+import { makeCdmBindingsRegenerated } from "../../platform/event-store/event-types-cdm";
 import {
   EQUITY_EVENT_TYPES,
   identifierSchema,
@@ -253,21 +253,21 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "CdmBindingsRegenerated",
-      as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
-      actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings" },
-      citations: EVENT_CITATIONS,
-      payload: {
-        primitiveCount: inv.primitiveCount,
-        equityEventTypeCount: inv.equityEventTypeCount,
-        registeredEventTypes: inv.registeredEventTypes,
-        selfTestPassed: inv.selfTestPassed,
-        runTrigger: ctx.trigger.id,
-      },
-    });
+    eventStore.append(
+      makeCdmBindingsRegenerated({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings" },
+        citations: EVENT_CITATIONS,
+        payload: {
+          primitiveCount: inv.primitiveCount,
+          equityEventTypeCount: inv.equityEventTypeCount,
+          registeredEventTypes: [...inv.registeredEventTypes],
+          selfTestPassed: inv.selfTestPassed,
+          runTrigger: ctx.trigger.id,
+        },
+      }),
+    );
     eventsEmitted = 1;
   }
 

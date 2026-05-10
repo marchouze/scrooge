@@ -152,13 +152,40 @@ function listTsFiles(dir: string, base: string, out: string[]): void {
 }
 
 function readFactoryNames(prototypeDir: string): Set<string> {
-  const path = resolve(prototypeDir, "platform/event-store/event-types.ts");
-  if (!existsSync(path)) return new Set();
-  const source = readFileSync(path, "utf8");
-  const re = /^export\s+function\s+make([A-Z][A-Za-z0-9]*)\s*\(/gm;
+  // F-020 split: factories were originally all in `event-types.ts`. As that
+  // file is broken up by domain (Atlas, post-F-020), factories may live in
+  // any sibling `event-types-*.ts` under `platform/event-store/` or in
+  // domain-local modules such as `platform/markets/cdm/equity.ts`. The
+  // recon scans both surfaces so a moved-but-not-deleted factory is still
+  // discoverable.
   const out = new Set<string>();
-  for (const match of source.matchAll(re)) {
-    if (match[1]) out.add(match[1]);
+  const re = /^export\s+function\s+make([A-Z][A-Za-z0-9]*)\s*\(/gm;
+  const scanPaths: string[] = [];
+  const eventStoreDir = resolve(prototypeDir, "platform/event-store");
+  if (existsSync(eventStoreDir)) {
+    for (const name of readdirSync(eventStoreDir)) {
+      if (name === "event-types.ts" || name.startsWith("event-types-")) {
+        if (name.endsWith(".ts")) scanPaths.push(resolve(eventStoreDir, name));
+      }
+    }
+  }
+  // Markets-CDM factories (per-domain home for equity payloads).
+  const cdmDir = resolve(prototypeDir, "platform/markets/cdm");
+  if (existsSync(cdmDir)) {
+    for (const name of readdirSync(cdmDir)) {
+      if (name.endsWith(".ts")) scanPaths.push(resolve(cdmDir, name));
+    }
+  }
+  for (const path of scanPaths) {
+    let source: string;
+    try {
+      source = readFileSync(path, "utf8");
+    } catch {
+      continue;
+    }
+    for (const match of source.matchAll(re)) {
+      if (match[1]) out.add(match[1]);
+    }
   }
   return out;
 }
@@ -201,8 +228,26 @@ function readFactoryConsumers(prototypeDir: string, factories: ReadonlySet<strin
   const namePattern = [...factories].map((n) => `make${n}`).join("|");
   if (namePattern.length === 0) return out;
   const re = new RegExp(`\\b(${namePattern})\\s*\\(`, "g");
+  // Files that *define* factories must be skipped to avoid self-counting
+  // their own definitions as consumers. Post-F-020 the split spans
+  // `event-types.ts` plus any sibling `event-types-*.ts` plus the markets
+  // CDM module that hosts equity factories.
+  const isFactoryDefiningFile = (rel: string): boolean => {
+    if (rel === "platform/event-store/event-types.ts") return true;
+    if (
+      rel.startsWith("platform/event-store/event-types-") &&
+      (rel.endsWith(".ts") || rel.endsWith(".tsx"))
+    )
+      return true;
+    if (
+      rel.startsWith("platform/markets/cdm/") &&
+      (rel.endsWith(".ts") || rel.endsWith(".tsx"))
+    )
+      return true;
+    return false;
+  };
   for (const rel of files) {
-    if (rel === "platform/event-store/event-types.ts") continue; // skip definitions
+    if (isFactoryDefiningFile(rel)) continue;
     let content: string;
     try {
       content = readFileSync(resolve(prototypeDir, rel), "utf8");
