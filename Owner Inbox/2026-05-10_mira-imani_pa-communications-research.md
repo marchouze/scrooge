@@ -128,19 +128,21 @@ Eight new register rows added in v1.14 across four domains:
 
 - **`ORG-FC-12` — AML/CFT/CPF Communication 1 of 2025 (Banks).** PA-issued banks-specific AML/CFT/CPF communication setting supervisory expectations under the post-FATF-greylisting regime. Sits on top of FICA s.43 obligations (already covered in Domain B `ORG-FC-01..11`) but adds proliferation-financing (CPF) explicit expectations and PA-specific inspection topics. Status `IN FORCE`. Owner Zara (CCO, governance) + Mira (Compliance / RegTech engineer) + future MLRO.
 
-### Domain G (Cyber / IT)
+### Domain B (Financial crime, AML/CFT, sanctions)
 
-- **`ORG-CY-08` — Joint Standard 1 of 2023 (IT Governance — umbrella).** IT governance discipline — board-level IT governance, IT strategy alignment, IT risk-management framework, IT change-management governance. Distinct from cybersecurity (covered in JS 2 of 2024 + the existing `ORG-CY-01..05` reading). Commenced 15 November 2024. Status `IN FORCE`. Owner Devon (COO interim CISO function) + Senna (engineering — IT governance) + Rashida (CISO steady-state).
+- **`ORG-FC-23` — AML/CFT/CPF Communication 1 of 2025 (Banks).** PA-issued banks-specific AML/CFT/CPF communication setting supervisory expectations under the post-FATF-greylisting regime. Sits on top of FICA s.43 obligations (already covered in Domain B `ORG-FC-01..22`) but adds proliferation-financing (CPF) explicit expectations and PA-specific inspection topics. Status `IN FORCE`. Owner Zara (CCO, governance) + Mira (Compliance / RegTech engineer) + future MLRO. (Note: the existing register has `ORG-FC-12` already taken by an FIC-Act-s.43-training row; the new addition takes the next free ID `ORG-FC-23`.)
 
-- **`ORG-CY-09` — Joint Standard 1 of 2023 (IT Risk Management — umbrella).** IT risk-management discipline under the same instrument — IT risk taxonomy, IT-control catalogue, IT third-party risk, IT incident-management. Split from `ORG-CY-08` to reflect that the instrument itself runs governance + risk-management as two parallel discipline-clusters. Status `IN FORCE`. Owner Devon + Senna.
+### Domain E (Cyber and operational resilience)
 
-- **`ORG-CY-10` — Joint Standard 2 of 2024 (Cybersecurity and Cyber Resilience — corrective umbrella row).** The register currently cites "Joint Standard 1 of 2024" against `ORG-CY-01..05` and `ORG-BNK-CYBER-CONS`. Per the survey, the cybersecurity Joint Standard is **Joint Standard 2 of 2024** (commenced 1 June 2025); JS 1 of 2024 is the *insurer outsourcing* standard. Rather than re-thread the existing rows mid-flight in this survey-PR (which would touch ~15 rows and conflict with parallel work), we land `ORG-CY-10` as a corrective umbrella row pinning JS 2 of 2024 correctly + register a Vera substrate finding (`WS-JS-NUMBER-RECONCILIATION`) routed via §6 below. Status `IN FORCE`. Owner Rashida (CISO steady-state) + Devon (interim CISO function) + Senna (engineering).
+- **`ORG-CY-15` — Joint Standard 1 of 2023 (IT Governance — umbrella).** IT governance discipline — board-level IT governance, IT strategy alignment, IT risk-management framework, IT change-management governance. Distinct from cybersecurity (covered in JS 2 of 2024 + the existing `ORG-CY-01..05` reading). Commenced 15 November 2024. Status `IN FORCE`. Owner Devon (COO interim CISO function) + Senna (engineering — IT governance) + Rashida (CISO steady-state). (The existing register slots `ORG-CY-08..14` are taken — the new addition takes the next free ID `ORG-CY-15`.)
 
-### Domain JS (Joint Standards) — new prefix per the v1.13 prefix taxonomy expansion pattern
+- **`ORG-CY-16` — Joint Standard 1 of 2023 (IT Risk Management — umbrella).** IT risk-management discipline under the same instrument — IT risk taxonomy, IT-control catalogue, IT third-party risk, IT incident-management. Split from `ORG-CY-15` to reflect that the instrument itself runs governance + risk-management as two parallel discipline-clusters. Status `IN FORCE`. Owner Devon + Senna.
 
-- **`ORG-CS-JS1` — Joint Standard 1 of 2020 (Significant Owner).** Reporting and notification obligations triggered when a person becomes / ceases to be a "significant owner" of a bank or financial institution. Binds on `Hoz Group Limited` as the parent (and on any future material shareholder) and on `Hoz Bank Limited` as the financial-institution-side reporting entity. Status `corporate-bind` (binds at corporate formation; reporting cycle activates on equity-event). Owner Owen (Company Secretary, governance) + Camille (CFO, governance — notification mechanics).
+- **`ORG-CY-17` — Joint Standard 2 of 2024 (Cybersecurity and Cyber Resilience — corrective umbrella row).** The register currently cites "Joint Standard 1 of 2024" against `ORG-CY-01..05` and `ORG-BNK-CYBER-CONS`. Per the survey, the cybersecurity Joint Standard is **Joint Standard 2 of 2024** (commenced 1 June 2025); JS 1 of 2024 is the *insurer outsourcing* standard. Rather than re-thread the existing rows mid-flight in this survey-PR (which would touch ~15 rows and conflict with parallel work), we land `ORG-CY-17` as a corrective umbrella row pinning JS 2 of 2024 correctly + register a Vera substrate finding (`WS-JS-NUMBER-RECONCILIATION`) routed via §6 below. Status `IN FORCE`. Owner Rashida (CISO steady-state) + Devon (interim CISO function) + Senna (engineering).
 
-(Naming note: the prefix `ORG-CS-JS1` is provisional; per v1.13 prefix-taxonomy discipline, a new prefix `JS1` could be added to the schema. We use `CS-JS1` here to stay within the existing `CS1`/`CS2`/`CS3` Conduct Standards family; if Vera flags this as drift, the row can be renamed to `ORG-JS1-001` in a follow-on PR — the URN form is unaffected.)
+### Domain F (Governance — Significant Owner)
+
+- **`ORG-GV-22` — Joint Standard 1 of 2020 (Significant Owner).** Reporting and notification obligations triggered when a person becomes / ceases to be a "significant owner" of a bank or financial institution. Binds on `Hoz Group Limited` as the parent (and on any future material shareholder) and on `Hoz Bank Limited` as the financial-institution-side reporting entity. Status `corporate-bind` (binds at corporate formation; reporting cycle activates on equity-event). Owner Owen (Company Secretary, governance) + Camille (CFO, governance — notification mechanics). (The Significant Owner standard is fundamentally a corporate-governance / shareholder-disclosure obligation — Domain F is the natural home; the existing Domain F sequence runs to `ORG-GV-21`, so this takes `ORG-GV-22`.)
 
 ## 6. Substrate gaps surfaced
 
@@ -207,9 +209,9 @@ Eight new register rows added in v1.14 across four domains:
 | Domain | Rows added | IDs |
 |---|---|---|
 | A (Prudential) | 8 | `ORG-PR-27`, `ORG-PR-28`, `ORG-PR-29`, `ORG-PR-30`, `ORG-PR-31`, `ORG-PR-32`, `ORG-PR-33`, `ORG-PR-34` |
-| B (Financial crime) | 1 | `ORG-FC-12` |
-| G (Cyber / IT) | 3 | `ORG-CY-08`, `ORG-CY-09`, `ORG-CY-10` |
-| JS (Joint Standards) | 1 | `ORG-CS-JS1` |
+| B (Financial crime, AML/CFT) | 1 | `ORG-FC-23` |
+| E (Cyber and operational resilience) | 3 | `ORG-CY-15`, `ORG-CY-16`, `ORG-CY-17` |
+| F (Governance) | 1 | `ORG-GV-22` |
 | **Total** | **13** | — |
 
 —
