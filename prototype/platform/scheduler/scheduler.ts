@@ -30,6 +30,7 @@ import type {
   FiredTrigger,
   InactivityCheckResult,
   InactivityFinding,
+  InactivityFindingClass,
   ScheduleEntry,
   Scheduler,
   SyncResult,
@@ -404,31 +405,78 @@ export class LocalScheduler implements Scheduler {
     const entries = this.entries(now);
     const findings: InactivityFinding[] = [];
 
-    // Pre-fold the event log into a per-agent latest-event timestamp map
-    // so we don't re-scan once per entry. Inactivity is keyed off "any
-    // event for this agent in the window"; for stricter event-class
-    // SLAs the persona spec names a specific event type, which Vera's
-    // pipeline will reconcile separately.
-    const lastByAgent = new Map<string, number>();
-    for (const e of this.eventStore.replay()) {
-      const ms = Date.parse(e.as_of);
-      if (Number.isNaN(ms)) continue;
-      // Heuristic: actor.id `agent:<name>:...` or the actor.id matches
-      // `agent:<name>`. We bucket by the first two `:`-segments so that
-      // a per-trigger sub-actor (`agent:atlas:scheduler`) attributes to
-      // `agent:atlas`.
-      const actorId = e.actor.id;
-      const idMatch = /^agent:([a-z0-9-]+)/i.exec(actorId);
-      if (!idMatch) continue;
-      const urn = `agent:${(idMatch[1] ?? "").toLowerCase()}`;
-      const prev = lastByAgent.get(urn);
-      if (prev === undefined || ms > prev) lastByAgent.set(urn, ms);
+    // -------------------------------------------------------------------
+    // Lifecycle-pair fold (S8 §3.4 / D-AGENT-RUNTIME-AUTHORIZE).
+    //
+    // Walk SubstrateAgentRunStarted + SubstrateAgentRunCompleted +
+    // SubstrateAgentRunFailed and build, per agent URN, the latest
+    // closed-run timestamp + the set of orphaned (Started without
+    // Completed/Failed) runs.
+    //
+    // This intentionally REPLACES the pre-#189 heuristic ("any event by
+    // agent"), which false-greened when the scheduler's own
+    // SubstrateAlert / the bus's BusDispatched / the runner-worker's
+    // boundary-escape SubstrateAlert attributed back to the agent's URN.
+    //
+    // Authority: D-AGENT-RUNTIME-AUTHORIZE (CEO-approved 2026-05-08).
+    // Closure: spec §9 A2 exit criterion ("inactivity-SLA recon
+    //          enforcement live").
+    // -------------------------------------------------------------------
+
+    interface OrphanRun {
+      readonly runId: string;
+      readonly startedAtMs: number;
+    }
+    interface LifecycleFold {
+      /** Most recent SubstrateAgentRun{Completed,Failed} ms; -Infinity if none. */
+      lastClosedAtMs: number;
+      /** Open Started runs not yet closed by Completed/Failed. */
+      readonly orphans: Map<string, OrphanRun>;
+    }
+    const foldByAgent = new Map<string, LifecycleFold>();
+    const getFold = (urn: string): LifecycleFold => {
+      let f = foldByAgent.get(urn);
+      if (!f) {
+        f = { lastClosedAtMs: Number.NEGATIVE_INFINITY, orphans: new Map() };
+        foldByAgent.set(urn, f);
+      }
+      return f;
+    };
+
+    // Pass 1 — collect all Started events as orphans-pending-close.
+    for (const e of this.eventStore.replay({ type: "SubstrateAgentRunStarted" })) {
+      const p = e.payload as Record<string, unknown>;
+      const agentName = typeof p.agent === "string" ? p.agent : "";
+      const runId = typeof p.runId === "string" ? p.runId : "";
+      const startedAt = typeof p.startedAt === "string" ? p.startedAt : e.as_of;
+      const startedAtMs = Date.parse(startedAt);
+      if (!agentName || !runId || Number.isNaN(startedAtMs)) continue;
+      const urn = `agent:${agentName.toLowerCase()}`;
+      getFold(urn).orphans.set(runId, { runId, startedAtMs });
+    }
+    // Pass 2 — close orphans on Completed / Failed; advance lastClosedAtMs.
+    for (const closingType of ["SubstrateAgentRunCompleted", "SubstrateAgentRunFailed"] as const) {
+      for (const e of this.eventStore.replay({ type: closingType })) {
+        const p = e.payload as Record<string, unknown>;
+        const agentName = typeof p.agent === "string" ? p.agent : "";
+        const runId = typeof p.runId === "string" ? p.runId : "";
+        const closedAtKey =
+          closingType === "SubstrateAgentRunCompleted" ? "completedAt" : "failedAt";
+        const closedAt = typeof p[closedAtKey] === "string" ? (p[closedAtKey] as string) : e.as_of;
+        const closedAtMs = Date.parse(closedAt);
+        if (!agentName || !runId || Number.isNaN(closedAtMs)) continue;
+        const urn = `agent:${agentName.toLowerCase()}`;
+        const fold = getFold(urn);
+        fold.orphans.delete(runId);
+        if (closedAtMs > fold.lastClosedAtMs) fold.lastClosedAtMs = closedAtMs;
+      }
     }
 
-    // Build a set of already-emitted alert keys for idempotency. A
-    // SubstrateAlert with the same alertId is a latest-wins-per-key
-    // event in the registry; we still skip re-emission to keep the
-    // tick output clean.
+    // Build a set of already-emitted alert keys for idempotency. Alert
+    // ids are now class-discriminated so the three finding classes
+    // (`no-runs`, `stale-runs`, `orphaned-run`) get distinct ids — a
+    // stale-runs alert and a later orphaned-run alert for the same
+    // (agent, trigger) must coexist.
     const emittedAlertIds = new Set<string>();
     for (const e of this.eventStore.replay({ type: "SubstrateAlert" })) {
       const p = e.payload as Record<string, unknown>;
@@ -452,46 +500,114 @@ export class LocalScheduler implements Scheduler {
         // Last-resort default — 7d.
         return 24 * 7;
       })();
+      const cadenceMs = cadenceHours * 60 * 60 * 1000;
 
-      const last = lastByAgent.get(entry.agentUrn);
-      const hoursSince =
-        last === undefined ? Number.POSITIVE_INFINITY : (now.getTime() - last) / (60 * 60 * 1000);
-      if (hoursSince <= cadenceHours) continue;
+      const fold = foldByAgent.get(entry.agentUrn);
+      const lastClosedAtMs = fold?.lastClosedAtMs ?? Number.NEGATIVE_INFINITY;
+      const orphans = fold ? [...fold.orphans.values()] : [];
 
-      const alertId = `alert:inactivity:${lc}-${entry.triggerId}`.toLowerCase();
-      const details =
-        last === undefined
-          ? `${entry.agentUrn} (${entry.triggerId}): no events recorded; SLA ${cadenceHours.toFixed(1)}h`
-          : `${entry.agentUrn} (${entry.triggerId}): last event ${hoursSince.toFixed(1)}h ago; SLA ${cadenceHours.toFixed(1)}h`;
-      const severity = hoursSince > cadenceHours * 2 ? "high" : "medium";
-
-      if (!emittedAlertIds.has(alertId)) {
-        this.eventStore.append(
-          makeSubstrateAlert({
-            asOf: now.toISOString(),
-            entity: this.entity,
-            actor: this.actor,
-            citations: [...this.citations],
-            payload: {
-              alertId,
-              alertClass: "inactivity",
-              agentUrn: entry.agentUrn,
-              details,
-              severity,
-            },
-          }),
-        );
-        emittedAlertIds.add(alertId);
+      // -------- stale-runs / no-runs (closed-run lateness) --------
+      let staleClass: InactivityFindingClass | undefined;
+      let staleHoursSince: number;
+      if (lastClosedAtMs === Number.NEGATIVE_INFINITY) {
+        // Never closed a run AND never started one would be no-runs;
+        // never closed a run BUT has an orphan still counts as no-runs
+        // (no successful close has ever landed). The orphan branch
+        // below catches the in-flight evidence separately.
+        staleHoursSince = Number.POSITIVE_INFINITY;
+        staleClass = "no-runs";
+      } else {
+        staleHoursSince = (now.getTime() - lastClosedAtMs) / (60 * 60 * 1000);
+        if (staleHoursSince > cadenceHours) staleClass = "stale-runs";
       }
 
-      findings.push({
-        agentUrn: entry.agentUrn,
-        triggerId: entry.triggerId,
-        alertId,
-        slaHours: cadenceHours,
-        hoursSinceLastEvent: hoursSince,
-        details,
-      });
+      if (staleClass !== undefined) {
+        const alertId = `alert:inactivity:${lc}-${entry.triggerId}-${staleClass}`.toLowerCase();
+        const details =
+          staleClass === "no-runs"
+            ? `${entry.agentUrn} (${entry.triggerId}): no SubstrateAgentRunStarted/Completed/Failed events recorded; SLA ${cadenceHours.toFixed(1)}h`
+            : `${entry.agentUrn} (${entry.triggerId}): last closed run ${staleHoursSince.toFixed(1)}h ago; SLA ${cadenceHours.toFixed(1)}h`;
+        const severity = staleHoursSince > cadenceHours * 2 ? "high" : "medium";
+        if (!emittedAlertIds.has(alertId)) {
+          this.eventStore.append(
+            makeSubstrateAlert({
+              asOf: now.toISOString(),
+              entity: this.entity,
+              actor: this.actor,
+              citations: [...this.citations],
+              payload: {
+                alertId,
+                alertClass: "inactivity",
+                agentUrn: entry.agentUrn,
+                details,
+                severity,
+              },
+            }),
+          );
+          emittedAlertIds.add(alertId);
+        }
+        findings.push({
+          agentUrn: entry.agentUrn,
+          triggerId: entry.triggerId,
+          alertId,
+          slaHours: cadenceHours,
+          hoursSinceLastEvent: staleHoursSince,
+          details,
+          findingClass: staleClass,
+        });
+      }
+
+      // -------- orphaned-run (Started with no Completed/Failed within SLA) --------
+      // Spec §3.2 final bullet: "if an agent fails to emit an
+      // AgentRunCompleted within its declared inactivity SLA, the
+      // scheduler emits a SubstrateAlert". One alert per stale orphan
+      // — older orphans by `startedAtMs` first for stable ordering.
+      const staleOrphans = orphans
+        .filter((o) => now.getTime() - o.startedAtMs > cadenceMs)
+        .sort((a, b) => a.startedAtMs - b.startedAtMs);
+      for (const orphan of staleOrphans) {
+        const orphanHoursSince = (now.getTime() - orphan.startedAtMs) / (60 * 60 * 1000);
+        // Run-id-scoped alertId so a per-orphan alert is idempotent
+        // even when the same agent has multiple stuck runs. We keep the
+        // (agent, trigger) prefix so Vera Wave-4 #13's per-trigger
+        // bucket fold still works.
+        const runIdSuffix = orphan.runId
+          .replace(/[^a-z0-9]/gi, "")
+          .toLowerCase()
+          .slice(0, 24);
+        const alertId =
+          `alert:inactivity:${lc}-${entry.triggerId}-orphan-${runIdSuffix}`.toLowerCase();
+        const details = `${entry.agentUrn} (${entry.triggerId}): run ${orphan.runId} started ${orphanHoursSince.toFixed(1)}h ago and never closed; SLA ${cadenceHours.toFixed(1)}h`;
+        const severity = orphanHoursSince > cadenceHours * 2 ? "high" : "medium";
+        if (!emittedAlertIds.has(alertId)) {
+          this.eventStore.append(
+            makeSubstrateAlert({
+              asOf: now.toISOString(),
+              entity: this.entity,
+              actor: this.actor,
+              citations: [...this.citations],
+              payload: {
+                alertId,
+                alertClass: "inactivity",
+                agentUrn: entry.agentUrn,
+                details,
+                severity,
+              },
+            }),
+          );
+          emittedAlertIds.add(alertId);
+        }
+        findings.push({
+          agentUrn: entry.agentUrn,
+          triggerId: entry.triggerId,
+          alertId,
+          slaHours: cadenceHours,
+          hoursSinceLastEvent: orphanHoursSince,
+          details,
+          findingClass: "orphaned-run",
+          orphanedRunId: orphan.runId,
+        });
+      }
     }
     return { findings, considered: entries.length };
   }
