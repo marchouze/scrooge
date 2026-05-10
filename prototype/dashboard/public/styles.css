@@ -1160,6 +1160,41 @@ main {
   flex-direction: column;
   gap: 6px;
 }
+/* Group header — separates "Decision required" / "Informational" /
+   "Decision · resolved" sections so the CEO scans open work first. */
+.oi-group-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 14px 0 4px 0;
+  border-bottom: 1px solid var(--border);
+  margin-top: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.oi-group-head:first-child {
+  margin-top: 0;
+  padding-top: 4px;
+}
+.oi-group-head[data-group="decision-open"] {
+  color: var(--accent);
+}
+.oi-group-head[data-group="decision-resolved"] {
+  color: var(--good, #2e7d32);
+}
+.oi-group-count {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--border);
+  padding: 1px 7px;
+  border-radius: 999px;
+  letter-spacing: 0;
+  text-transform: none;
+}
 .oi-row {
   display: grid;
   grid-template-columns: 90px 1fr auto;
@@ -1179,6 +1214,7 @@ main {
 .oi-row.oi-decision.oi-resolved {
   border-left-color: var(--good, #2e7d32);
   background: var(--good-soft, #eaf3eb);
+  opacity: 0.75;
 }
 .oi-date {
   font-family: var(--mono);
@@ -1755,6 +1791,12 @@ main {
   background: var(--warn-soft);
   color: var(--warn);
   border-color: var(--warn);
+}
+/* Resolved decisions show a softer green badge — no longer "required". */
+.timeline-decision.timeline-decision-resolved {
+  background: var(--good-soft, #eaf3eb);
+  color: var(--good, #2e7d32);
+  border-color: var(--good, #2e7d32);
 }
 .timeline-summary {
   margin: 4px 0 0;

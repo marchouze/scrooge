@@ -46,7 +46,9 @@ import type {
   InFlightItem,
   OpenDecision,
   OpenSeat,
+  OwnerInboxGroup,
   OwnerInboxItem,
+  OwnerInboxKind,
   Person,
   Policy,
   Principle,
@@ -880,6 +882,52 @@ function decisionIdFromFilename(filename: string): string {
     .replace(/^-|-$/g, "")}`;
 }
 
+// Filename-based classification. Used by the renderer for grouping and by
+// `displayTitleFor` for title cleanup. See `OwnerInboxKind` in types.ts.
+export function ownerInboxKindFromFilename(filename: string): OwnerInboxKind {
+  // `*_ceo-decision-record_*.md` (any agent prefix)
+  if (/_ceo-decision-record[_-]/i.test(filename)) return "decision-record";
+  // `*_ceo-decision-pack_*.md` (any agent prefix)
+  if (/_ceo-decision-pack[_-]/i.test(filename)) return "decision-pack";
+  return "deliverable";
+}
+
+// Extract the decision id (D-XXX) from a decision-record / decision-pack
+// filename. Returns null if no D-XXX slug is present. Used by
+// `displayTitleFor` to build short titles like "Decision record · D-FOO".
+function decisionIdFromRecordFilename(filename: string): string | null {
+  // Examples:
+  //   2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md
+  //   2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md
+  const m = filename.match(/_(d-[a-z0-9-]+?)(?:\.md|_)/i);
+  if (!m || !m[1]) return null;
+  return m[1].toUpperCase();
+}
+
+// Build a short, scannable title for the Owner Inbox feed. Verbose
+// agent-prefixed titles like
+//   "Scrooge (Chief of Staff / Orchestrator) — CEO decision record:
+//    D-PRODUCT-CONSTRUCTION-SUBSTRATE, 2026-05-10"
+// collapse to "Decision record · D-PRODUCT-CONSTRUCTION-SUBSTRATE".
+// Returns the original title when no rule applies.
+export function displayTitleFor(title: string, filename: string, kind: OwnerInboxKind): string {
+  if (kind === "decision-record") {
+    const id = decisionIdFromRecordFilename(filename);
+    if (id) return `Decision record · ${id}`;
+    // Fallback: try to extract the id out of the title itself.
+    const m = title.match(/(D-[A-Z0-9][A-Z0-9-]+)/);
+    if (m?.[1]) return `Decision record · ${m[1]}`;
+    return "Decision record";
+  }
+  if (kind === "decision-pack") {
+    const id = decisionIdFromRecordFilename(filename);
+    if (id) return `Decision pack · ${id}`;
+    const m = title.match(/(D-[A-Z0-9][A-Z0-9-]+)/);
+    if (m?.[1]) return `Decision pack · ${m[1]}`;
+  }
+  return title;
+}
+
 export function parseOwnerInboxFile(filename: string, content: string): OwnerInboxItem {
   const { fm, body } = parseFrontmatter(content);
   const date = fm.date ?? fileDate(filename) ?? "";
@@ -887,12 +935,22 @@ export function parseOwnerInboxFile(filename: string, content: string): OwnerInb
   const author = fm.author ?? fallbackAuthor(body);
   const summary = fm.summary ?? fallbackSummary(body);
   const decisionRequired = fm.decisionRequired ?? false;
+  const kind = ownerInboxKindFromFilename(filename);
+  const displayTitle = displayTitleFor(title, filename, kind);
+  // `group` is computed conservatively here — `decision-open` if
+  // `decisionRequired` is set, otherwise `informational`. `deriveState`
+  // upgrades this to `decision-resolved` once it has the CeoDecision
+  // event set for the run.
+  const group: OwnerInboxGroup = decisionRequired ? "decision-open" : "informational";
   const item: OwnerInboxItem = {
     filename,
     path: `Owner Inbox/${filename}`,
     date,
     title,
+    displayTitle,
+    kind,
     decisionRequired,
+    group,
     ...(author ? { author } : {}),
     ...(summary ? { summary } : {}),
   };
@@ -942,6 +1000,29 @@ function splitRecommendation(text: string): DecisionRecommendation {
     stance: trimmed.slice(0, idx + 1),
     reasoning: trimmed.slice(idx + 2).trim(),
   };
+}
+
+// Comparator for the rendered Owner Inbox feed. Groups items into three
+// buckets — open decisions first, informational second, resolved last —
+// and within each group orders most-recent-first (date desc, then filename
+// desc for stability within a date).
+//
+// Rationale (Anya + Atlas, 2026-05-10): pure date-sort interleaves open
+// decisions with informational records and resolved items, which makes the
+// "what does the CEO need to action?" queue hard to scan. Grouping puts
+// open work at the top and demotes resolved noise to the bottom without
+// hiding it (audit trail intact).
+const GROUP_ORDER: Record<OwnerInboxGroup, number> = {
+  "decision-open": 0,
+  informational: 1,
+  "decision-resolved": 2,
+};
+export function ownerInboxFeedSort(a: OwnerInboxItem, b: OwnerInboxItem): number {
+  const ag = GROUP_ORDER[a.group];
+  const bg = GROUP_ORDER[b.group];
+  if (ag !== bg) return ag - bg;
+  if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+  return a.filename < b.filename ? 1 : -1;
 }
 
 // Lift Owner-Inbox decision-required items into OpenDecision shape so they
@@ -1461,13 +1542,23 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   // surfaces in the dashboard, and `decision-required: true` items are lifted
   // into decisionsOpen alongside the curated set. Resolved status is read off
   // the CeoDecision event stream.
+  //
+  // Presentation grouping (Anya + Atlas, 2026-05-10): the rendered feed
+  // groups items into three buckets — open decisions first, informational
+  // second, resolved decisions last — and within each group sorts most-
+  // recent-first. This replaces the prior pure date-sort which interleaved
+  // open / resolved / informational and made the queue hard to scan.
   const resolvedIds = new Set(resolved.map((r) => r.id));
   const rawOwnerInbox = parseOwnerInbox(opts.sources.ownerInboxDir);
-  const ownerInboxFeed: OwnerInboxItem[] = rawOwnerInbox.map((item) =>
-    item.decisionRequired && item.decisionId
-      ? { ...item, decisionStatus: resolvedIds.has(item.decisionId) ? "resolved" : "open" }
-      : item,
-  );
+  const ownerInboxFeed: OwnerInboxItem[] = rawOwnerInbox
+    .map((item): OwnerInboxItem => {
+      if (!item.decisionRequired || !item.decisionId) return item;
+      const isResolved = resolvedIds.has(item.decisionId);
+      const decisionStatus: "open" | "resolved" = isResolved ? "resolved" : "open";
+      const group: OwnerInboxGroup = isResolved ? "decision-resolved" : "decision-open";
+      return { ...item, decisionStatus, group };
+    })
+    .sort(ownerInboxFeedSort);
   const ownerInboxOpenDecisions = ownerInboxToOpenDecisions(ownerInboxFeed, resolvedIds);
 
   // Lift AgentEscalation events into open decisions (Atlas substrate-gap

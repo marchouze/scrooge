@@ -206,6 +206,58 @@ function renderDecisionsOpen(decisions) {
   }
 }
 
+// Group ordering matches `ownerInboxFeedSort` in derive.ts. Backstop only —
+// the API already returns items pre-sorted; this is defence against a stale
+// cache or future caller that does not honour the sort.
+const OI_GROUP_ORDER = {
+  "decision-open": 0,
+  informational: 1,
+  "decision-resolved": 2,
+};
+const OI_GROUP_LABEL = {
+  "decision-open": "Decision required",
+  informational: "Informational",
+  "decision-resolved": "Decision · resolved",
+};
+
+function ownerInboxGroupOf(i) {
+  // Backwards-compat: items from older caches may not carry `group`.
+  if (i.group) return i.group;
+  if (!i.decisionRequired) return "informational";
+  return i.decisionStatus === "resolved" ? "decision-resolved" : "decision-open";
+}
+
+function ownerInboxDisplayTitle(i) {
+  // Backwards-compat: items from older caches may not carry `displayTitle`.
+  return i.displayTitle || i.title;
+}
+
+function renderOwnerInboxRow(i) {
+  const group = ownerInboxGroupOf(i);
+  const isDecision = group === "decision-open" || group === "decision-resolved";
+  const isResolved = group === "decision-resolved";
+  const classes = ["oi-row", isDecision ? "oi-decision" : "", isResolved ? "oi-resolved" : ""]
+    .filter(Boolean)
+    .join(" ");
+  const titleHtml = `<b>${esc(ownerInboxDisplayTitle(i))}</b>`;
+  const actionHtml =
+    group === "decision-open" && i.decisionId
+      ? `<div class="oi-action"><button class="btn-primary" data-brief-open="${esc(i.decisionId)}">Review →</button></div>`
+      : "";
+  return `
+    <div class="${classes}">
+      <span class="oi-date">${esc(i.date)}</span>
+      <div class="oi-body">
+        <div class="oi-title">${titleHtml}</div>
+        ${i.author ? `<div class="oi-meta">${esc(i.author)}</div>` : ""}
+        ${i.summary ? `<div class="oi-summary">${esc(i.summary)}</div>` : ""}
+        <div class="oi-path">${esc(i.path)}</div>
+      </div>
+      ${actionHtml}
+    </div>
+  `;
+}
+
 function renderOwnerInbox(items) {
   const sub = $("#ownerInboxSub");
   const list = $("#ownerInboxFeed");
@@ -215,44 +267,33 @@ function renderOwnerInbox(items) {
     list.innerHTML = `<div class="muted" style="padding: 12px;">No deliverables yet.</div>`;
     return;
   }
-  const decisionCount = items.filter(
-    (i) => i.decisionRequired && i.decisionStatus !== "resolved",
-  ).length;
-  if (sub) {
-    sub.textContent =
-      decisionCount > 0
-        ? `${items.length} item${items.length === 1 ? "" : "s"} · ${decisionCount} awaiting decision`
-        : `${items.length} item${items.length === 1 ? "" : "s"}`;
+  // Group items by `group`, preserving the API-provided order within each group.
+  const groups = { "decision-open": [], informational: [], "decision-resolved": [] };
+  for (const i of items) {
+    const g = ownerInboxGroupOf(i);
+    (groups[g] || groups.informational).push(i);
   }
-  list.innerHTML = items
-    .map(
-      (i) => `
-    <div class="oi-row${i.decisionRequired ? " oi-decision" : ""}${i.decisionStatus === "resolved" ? " oi-resolved" : ""}">
-      <span class="oi-date">${esc(i.date)}</span>
-      <div class="oi-body">
-        <div class="oi-title">
-          ${
-            i.decisionRequired
-              ? i.decisionStatus === "resolved"
-                ? `<span class="oi-pill oi-pill-resolved">Decision · resolved</span>`
-                : `<span class="oi-pill oi-pill-decision">Decision required</span>`
-              : ""
-          }
-          <b>${esc(i.title)}</b>
-        </div>
-        ${i.author ? `<div class="oi-meta">${esc(i.author)}</div>` : ""}
-        ${i.summary ? `<div class="oi-summary">${esc(i.summary)}</div>` : ""}
-        <div class="oi-path">${esc(i.path)}</div>
-      </div>
-      ${
-        i.decisionRequired && i.decisionStatus !== "resolved" && i.decisionId
-          ? `<div class="oi-action"><button class="btn-primary" data-brief-open="${esc(i.decisionId)}">Review →</button></div>`
-          : ""
-      }
-    </div>
-  `,
-    )
-    .join("");
+  const openCount = groups["decision-open"].length;
+  const resolvedCount = groups["decision-resolved"].length;
+  if (sub) {
+    const parts = [`${items.length} item${items.length === 1 ? "" : "s"}`];
+    if (openCount > 0) parts.push(`${openCount} awaiting decision`);
+    if (resolvedCount > 0) parts.push(`${resolvedCount} resolved`);
+    sub.textContent = parts.join(" · ");
+  }
+  // Render each non-empty group with a section heading. Order is fixed by
+  // OI_GROUP_ORDER so a stale cache that did not pre-sort still renders right.
+  const orderedGroups = Object.keys(groups).sort((a, b) => OI_GROUP_ORDER[a] - OI_GROUP_ORDER[b]);
+  const sections = [];
+  for (const g of orderedGroups) {
+    const arr = groups[g];
+    if (!arr.length) continue;
+    sections.push(
+      `<div class="oi-group-head" data-group="${esc(g)}">${esc(OI_GROUP_LABEL[g])} <span class="oi-group-count">${arr.length}</span></div>`,
+    );
+    for (const i of arr) sections.push(renderOwnerInboxRow(i));
+  }
+  list.innerHTML = sections.join("");
   for (const btn of $$(".oi-row .oi-action button")) {
     btn.addEventListener("click", () => openBrief(btn.dataset.briefOpen));
   }

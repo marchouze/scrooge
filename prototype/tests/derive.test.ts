@@ -18,6 +18,9 @@ import {
   type WorkstreamCompletedEventSummary,
   type WorkstreamStartedEventSummary,
   deriveState,
+  displayTitleFor,
+  ownerInboxFeedSort,
+  ownerInboxKindFromFilename,
   ownerInboxToOpenDecisions,
   parseOwnerInbox,
   parseOwnerInboxFile,
@@ -605,6 +608,145 @@ describe("Owner Inbox feed — parseOwnerInboxFile", () => {
   });
 });
 
+describe("Owner Inbox feed — kind / displayTitle (presentation)", () => {
+  it("classifies ceo-decision-record filenames as 'decision-record'", () => {
+    expect(
+      ownerInboxKindFromFilename(
+        "2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
+      ),
+    ).toBe("decision-record");
+  });
+
+  it("classifies ceo-decision-pack filenames as 'decision-pack'", () => {
+    expect(
+      ownerInboxKindFromFilename("2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"),
+    ).toBe("decision-pack");
+  });
+
+  it("treats other filenames as 'deliverable'", () => {
+    expect(ownerInboxKindFromFilename("2026-05-10_atlas_event-store-scaling-design.md")).toBe(
+      "deliverable",
+    );
+    expect(ownerInboxKindFromFilename("2026-05-09_zara_tcf-substrate-plan-v0.md")).toBe(
+      "deliverable",
+    );
+  });
+
+  it("collapses verbose ceo-decision-record titles to 'Decision record · D-XXX'", () => {
+    const filename = "2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md";
+    const verbose =
+      "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-PRODUCT-CONSTRUCTION-SUBSTRATE, 2026-05-10";
+    expect(displayTitleFor(verbose, filename, "decision-record")).toBe(
+      "Decision record · D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+    );
+  });
+
+  it("collapses ceo-decision-pack titles to 'Decision pack · D-XXX'", () => {
+    const filename = "2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md";
+    expect(
+      displayTitleFor(
+        "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
+        filename,
+        "decision-pack",
+      ),
+    ).toBe("Decision pack · D-HIRE-SIX-SEATS");
+  });
+
+  it("returns the original title when no shortening rule applies", () => {
+    expect(
+      displayTitleFor(
+        "Event-store scaling design — snapshots, partitioning, archival, compaction",
+        "2026-05-10_atlas_event-store-scaling-design.md",
+        "deliverable",
+      ),
+    ).toBe("Event-store scaling design — snapshots, partitioning, archival, compaction");
+  });
+
+  it("populates kind + displayTitle on parseOwnerInboxFile", () => {
+    const filename = "2026-05-10_scrooge_ceo-decision-record_d-foo.md";
+    const item = parseOwnerInboxFile(
+      filename,
+      [
+        "---",
+        "title: Scrooge (CoS) — CEO decision record: D-FOO, 2026-05-10",
+        "decision-required: false",
+        "---",
+        "",
+        "# Scrooge (CoS) — CEO decision record: D-FOO, 2026-05-10",
+      ].join("\n"),
+    );
+    expect(item.kind).toBe("decision-record");
+    expect(item.displayTitle).toBe("Decision record · D-FOO");
+    // Raw title is preserved for audit / graph linkage.
+    expect(item.title).toBe("Scrooge (CoS) — CEO decision record: D-FOO, 2026-05-10");
+  });
+
+  it("sets group='informational' for non-decision items at parse time", () => {
+    const item = parseOwnerInboxFile(
+      "2026-05-10_atlas_design-note.md",
+      ["---", "title: Design note", "decision-required: false", "---", "", "# Design note"].join(
+        "\n",
+      ),
+    );
+    expect(item.group).toBe("informational");
+  });
+
+  it("sets group='decision-open' for decision-required items at parse time", () => {
+    // `parseOwnerInboxFile` cannot know yet whether the decision is resolved
+    // (that needs the CeoDecision event stream); deriveState upgrades to
+    // 'decision-resolved' when applicable.
+    const item = parseOwnerInboxFile(
+      "2026-05-10_zara_decision.md",
+      [
+        "---",
+        "title: Zara decision",
+        "decision-required: true",
+        "decision-id: D-ZARA-1",
+        "---",
+        "",
+        "# Zara decision",
+      ].join("\n"),
+    );
+    expect(item.group).toBe("decision-open");
+  });
+});
+
+describe("Owner Inbox feed — ownerInboxFeedSort (grouping)", () => {
+  function mkItem(overrides: Partial<ReturnType<typeof parseOwnerInboxFile>>) {
+    const base = parseOwnerInboxFile(
+      "2026-05-01_x_seed.md",
+      ["---", "title: Seed", "decision-required: false", "---", "# Seed"].join("\n"),
+    );
+    return { ...base, ...overrides };
+  }
+
+  it("places open decisions first, informational second, resolved last", () => {
+    const items = [
+      mkItem({ filename: "a.md", date: "2026-05-01", group: "informational" }),
+      mkItem({ filename: "b.md", date: "2026-05-10", group: "decision-resolved" }),
+      mkItem({ filename: "c.md", date: "2026-05-05", group: "decision-open" }),
+      mkItem({ filename: "d.md", date: "2026-05-08", group: "decision-open" }),
+    ];
+    const sorted = [...items].sort(ownerInboxFeedSort);
+    expect(sorted.map((i) => i.filename)).toEqual([
+      "d.md", // open, latest
+      "c.md", // open
+      "a.md", // informational
+      "b.md", // resolved
+    ]);
+  });
+
+  it("sorts by date desc within a group, with filename desc as a stable tie-break", () => {
+    const items = [
+      mkItem({ filename: "a.md", date: "2026-05-05", group: "decision-open" }),
+      mkItem({ filename: "z.md", date: "2026-05-05", group: "decision-open" }),
+      mkItem({ filename: "m.md", date: "2026-05-10", group: "decision-open" }),
+    ];
+    const sorted = [...items].sort(ownerInboxFeedSort);
+    expect(sorted.map((i) => i.filename)).toEqual(["m.md", "z.md", "a.md"]);
+  });
+});
+
 describe("Owner Inbox feed — ownerInboxToOpenDecisions", () => {
   // The decision-recommendation recon (`platform/recon/decision-recommendation-recon.ts`)
   // reads `OpenDecision.recommendation?.stance`. Earlier this lift wrote the
@@ -774,6 +916,88 @@ describe("deriveState — Owner Inbox decision lift", () => {
     const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
     expect(state.ownerInboxFeed.some((i) => i.filename === "2026-05-07_just-info.md")).toBe(true);
     expect(state.decisionsOpen.some((d) => d.title === "Info only")).toBe(false);
+  });
+
+  it("groups Owner Inbox feed: open first, informational second, resolved last", () => {
+    // Three items, three groups, deliberately authored in date order so a
+    // pure date-sort would interleave them. The grouping must dominate.
+    const f = makeFixture();
+    writeFileSync(
+      join(f.sources.ownerInboxDir, "2026-05-09_resolved-decision.md"),
+      [
+        "---",
+        "title: Resolved",
+        "decision-required: true",
+        "decision-id: D-OI-RESOLVED",
+        "---",
+        "# Resolved",
+      ].join("\n"),
+    );
+    writeFileSync(
+      join(f.sources.ownerInboxDir, "2026-05-08_info-deliverable.md"),
+      ["---", "title: Info", "decision-required: false", "---", "# Info"].join("\n"),
+    );
+    writeFileSync(
+      join(f.sources.ownerInboxDir, "2026-05-07_open-decision.md"),
+      [
+        "---",
+        "title: Open decision",
+        "decision-required: true",
+        "decision-id: D-OI-OPEN",
+        "---",
+        "# Open decision",
+      ].join("\n"),
+    );
+    const state = deriveState({
+      sources: f.sources,
+      events: f.setEvents([
+        {
+          decisionId: "D-OI-RESOLVED",
+          title: "Resolved",
+          action: "approve",
+          outcome: "Approved.",
+          actor: "marc@tgv.co.za",
+          asOf: "2026-05-09T09:00:00.000Z",
+        },
+      ]),
+    });
+    // The makeFixture seeds an additional informational policy-register note;
+    // filter to the three we just authored so the assertion is local.
+    const ours = state.ownerInboxFeed.filter((i) =>
+      [
+        "2026-05-09_resolved-decision.md",
+        "2026-05-08_info-deliverable.md",
+        "2026-05-07_open-decision.md",
+      ].includes(i.filename),
+    );
+    const groups = ours.map((i) => i.group);
+    // Open decisions first, informational second, resolved last —
+    // independent of authoring date.
+    expect(groups).toEqual(["decision-open", "informational", "decision-resolved"]);
+    // Resolved item carries the resolved-decision marker fields too.
+    const resolved = state.ownerInboxFeed.find((i) => i.decisionId === "D-OI-RESOLVED");
+    expect(resolved?.group).toBe("decision-resolved");
+    expect(resolved?.decisionStatus).toBe("resolved");
+  });
+
+  it("derives displayTitle for ceo-decision-record items in the feed", () => {
+    const f = makeFixture();
+    writeFileSync(
+      join(f.sources.ownerInboxDir, "2026-05-10_scrooge_ceo-decision-record_d-foo-bar.md"),
+      [
+        "---",
+        "title: Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-FOO-BAR, 2026-05-10",
+        "decision-required: false",
+        "---",
+        "# Scrooge — CEO decision record: D-FOO-BAR",
+      ].join("\n"),
+    );
+    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const item = state.ownerInboxFeed.find((i) =>
+      i.filename.includes("ceo-decision-record_d-foo-bar"),
+    );
+    expect(item?.kind).toBe("decision-record");
+    expect(item?.displayTitle).toBe("Decision record · D-FOO-BAR");
   });
 });
 
