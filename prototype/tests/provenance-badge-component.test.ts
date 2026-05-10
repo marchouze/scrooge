@@ -36,8 +36,25 @@ describe("provenance-badge.js — source shape", () => {
     expect(MODULE_SRC).toContain("describe");
   });
 
-  it("targets the /api/provenance/mode endpoint", () => {
+  it("targets the /api/provenance/mode endpoint as a fallback", () => {
     expect(MODULE_SRC).toContain("/api/provenance/mode");
+  });
+
+  it("supports the prose opt-out (data-provenance-content='none')", () => {
+    // Per-page resolution rule, Marc complaint 2026-05-10: prose pages
+    // declare `data-provenance-content="none"` on a wrapper element and
+    // the auto-mounter must render nothing.
+    expect(MODULE_SRC).toContain("data-provenance-content");
+    expect(MODULE_SRC).toContain('"none"');
+    expect(MODULE_SRC).toContain("readPageDeclaration");
+  });
+
+  it("supports per-page API endpoint declaration (data-provenance-source)", () => {
+    // Data pages can declare `data-provenance-source="/api/<endpoint>"`
+    // and the badge fetches `pageProvenance` from that endpoint instead
+    // of the global `/api/provenance/mode` fallback.
+    expect(MODULE_SRC).toContain("data-provenance-source");
+    expect(MODULE_SRC).toContain("pageProvenance");
   });
 
   it("wires the three modes into the descriptor map", () => {
@@ -78,6 +95,7 @@ interface FakeNode {
   children: FakeNode[];
   textContent: string;
   setAttribute(k: string, v: string): void;
+  getAttribute(k: string): string | null;
   appendChild(c: FakeNode): FakeNode;
   replaceChildren(...newChildren: FakeNode[]): void;
   insertBefore(c: FakeNode, ref: FakeNode | null): FakeNode;
@@ -95,6 +113,9 @@ function makeFakeNode(tag: string): FakeNode {
     firstChild: null,
     setAttribute(k: string, v: string) {
       this.attrs.set(k, String(v));
+    },
+    getAttribute(k: string): string | null {
+      return this.attrs.has(k) ? (this.attrs.get(k) as string) : null;
     },
     appendChild(c: FakeNode) {
       this.children.push(c);
@@ -119,31 +140,61 @@ function makeFakeNode(tag: string): FakeNode {
   return node;
 }
 
-function loadModuleInFakeDom(): {
-  api: {
-    render: (filter: unknown, opts?: { placement?: string }) => FakeNode;
-    describe: (filter: unknown) => {
-      mode: string;
-      label: string;
-      suffix: string | null;
-      aria?: string;
-    };
-    renderError: (msg: string) => FakeNode;
-    mount: (target: FakeNode, opts?: { filter?: unknown; placement?: string }) => FakeNode | null;
+interface BadgeApi {
+  render: (filter: unknown, opts?: { placement?: string }) => FakeNode;
+  describe: (filter: unknown) => {
+    mode: string;
+    label: string;
+    suffix: string | null;
+    aria?: string;
   };
-} {
+  renderError: (msg: string) => FakeNode;
+  mount: (target: FakeNode, opts?: { filter?: unknown; placement?: string }) => FakeNode | null;
+  readPageDeclaration: () => { content: "none" | "data"; endpoint?: string | null };
+  autoMount: () => void;
+}
+
+function loadModuleInFakeDom(
+  overrides: {
+    proseOptOut?: boolean;
+    sourceEndpoint?: string;
+    markers?: number;
+  } = {},
+): { api: BadgeApi; bodyNode: FakeNode; markerNodes: FakeNode[] } {
   const fakeWindow: Record<string, unknown> = {};
   const fakeDocumentListeners = new Map<string, Array<() => void>>();
+  const bodyNode = makeFakeNode("body");
+  const optOutNode = overrides.proseOptOut ? makeFakeNode("body") : null;
+  const sourceNode = overrides.sourceEndpoint ? makeFakeNode("body") : null;
+  const markerNodes: FakeNode[] = [];
+  for (let i = 0; i < (overrides.markers ?? 0); i++) {
+    markerNodes.push(makeFakeNode("span"));
+  }
+  if (optOutNode) optOutNode.attrs.set("data-provenance-content", "none");
+  if (sourceNode && overrides.sourceEndpoint) {
+    sourceNode.attrs.set("data-provenance-source", overrides.sourceEndpoint);
+  }
+  for (const m of markerNodes) {
+    m.attrs.set("data-provenance-badge", "page-top");
+  }
   const fakeDocument = {
     createElement: (tag: string): FakeNode => makeFakeNode(tag),
-    querySelectorAll: () => [] as FakeNode[],
-    querySelector: () => null as FakeNode | null,
+    querySelectorAll: (sel: string): FakeNode[] => {
+      if (sel === "[data-provenance-badge]") return markerNodes;
+      return [];
+    },
+    querySelector: (sel: string): FakeNode | null => {
+      if (sel === "[data-provenance-content]") return optOutNode;
+      if (sel === "[data-provenance-source]") return sourceNode;
+      return null;
+    },
     addEventListener: (ev: string, fn: () => void) => {
       const arr = fakeDocumentListeners.get(ev) ?? [];
       arr.push(fn);
       fakeDocumentListeners.set(ev, arr);
     },
-    body: makeFakeNode("body"),
+    body: bodyNode,
+    documentElement: makeFakeNode("html"),
   };
 
   // Evaluate the IIFE in a sandbox that exposes our fakes. We use
@@ -163,7 +214,7 @@ function loadModuleInFakeDom(): {
     { warn: () => undefined, debug: () => undefined },
     () => Promise.resolve({ ok: true, json: () => Promise.resolve({ mode: "simulated-only" }) }),
   );
-  return { api };
+  return { api, bodyNode, markerNodes };
 }
 
 describe("provenance-badge.js — render / describe", () => {
@@ -274,5 +325,43 @@ describe("provenance-badge.js — render / describe", () => {
     expect(node).not.toBeNull();
     expect(node?.attrs.get("data-mode")).toBe("combined");
     expect(target.children.length).toBe(1);
+  });
+});
+
+describe("provenance-badge.js — readPageDeclaration + autoMount", () => {
+  it("readPageDeclaration returns content='none' when page opts out", () => {
+    const { api } = loadModuleInFakeDom({ proseOptOut: true });
+    const decl = api.readPageDeclaration();
+    expect(decl.content).toBe("none");
+  });
+
+  it("readPageDeclaration returns content='data' when no opt-out is present", () => {
+    const { api } = loadModuleInFakeDom({});
+    const decl = api.readPageDeclaration();
+    expect(decl.content).toBe("data");
+  });
+
+  it("readPageDeclaration exposes the per-page endpoint when declared", () => {
+    const { api } = loadModuleInFakeDom({ sourceEndpoint: "/api/state" });
+    const decl = api.readPageDeclaration();
+    expect(decl.content).toBe("data");
+    expect(decl.endpoint).toBe("/api/state");
+  });
+
+  it("autoMount renders nothing when the page declares prose opt-out", () => {
+    const { api, bodyNode, markerNodes } = loadModuleInFakeDom({
+      proseOptOut: true,
+      markers: 1, // even with a stale marker present, opt-out wins
+    });
+    api.autoMount();
+    expect(bodyNode.children.length).toBe(0);
+    expect(markerNodes[0]?.children.length).toBe(0);
+  });
+
+  it("autoMount mounts into each marker when no opt-out is present", () => {
+    const { api, markerNodes } = loadModuleInFakeDom({ markers: 2 });
+    api.autoMount();
+    expect(markerNodes[0]?.children.length).toBe(1);
+    expect(markerNodes[1]?.children.length).toBe(1);
   });
 });

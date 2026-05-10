@@ -62,7 +62,13 @@
       nav a:hover { text-decoration: underline; }
     </style>
   </head>
-  <body>
+  <!-- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — per-page resolution.
+       This page surfaces no data — it's a prose / mermaid-diagram view of
+       the stack architecture. Declare `data-provenance-content="none"` so
+       the badge auto-mounter renders nothing. Marc's complaint 2026-05-10:
+       every page was painting "Simulated data" regardless of what was on
+       screen; prose pages must not paint a watermark at all. -->
+  <body data-provenance-content="none">
     <nav>
       <a href="/">← Dashboard</a>
       <a href="#data">Data architecture</a>
@@ -331,12 +337,12 @@ flowchart TB
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/provenance-badge.css" />
     <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
-    <!-- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking. The
-         badge auto-mounts into the page chrome on DOMContentLoaded; no
-         explicit marker on this page (architecture has its own minimal
-         body shell, not the bank shell). -->
-    <span data-provenance-badge="page-top" aria-label="Provenance badge"
-          style="position: fixed; top: 16px; right: 16px; z-index: 1000;"></span>
+    <!-- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking.
+         This page declares `data-provenance-content="none"` on <body>
+         (above) so the badge auto-mounter skips it entirely. The script
+         + stylesheet remain linked so the recon's static check
+         (`recon:provenance-badge-coverage`) keeps passing — the script
+         itself early-returns on the `none` declaration. -->
     <script src="/provenance-badge.js"></script>
   </body>
 </html>

@@ -2,19 +2,33 @@
 //
 // D-DATA-PROVENANCE-SUBSTRATE Slice 3 — recon (Vera, owned).
 //
-// Asserts: every dashboard render path emits a `<ProvenanceBadge>`. The
-// badge is *not* a tooltip — per pack §6.1 + §6.3 it sits visibly in the
-// page chrome, and silent provenance is a P1 audit-integrity risk.
+// Asserts: every dashboard page makes an *explicit* declaration about
+// the provenance of its content — either it surfaces no data (prose,
+// mermaid diagrams, principles viewers, persona-spec render) and
+// declares `data-provenance-content="none"`, OR it surfaces data and
+// carries a `[data-provenance-badge]` marker so the badge can paint.
+// No fallback / silent-default behaviour — each page is either
+// explicitly prose or explicitly data-bearing.
 //
-// Scope (per pack §6.3 + Slice 3 dispatch brief):
+// Scope (per pack §6.3 + Slice 3 dispatch brief + Marc's per-page
+// resolution complaint 2026-05-10):
 //   - All `prototype/dashboard/public/**/*.html` files must:
 //       1. link the badge stylesheet (`/provenance-badge.css`),
 //       2. include the badge script (`/provenance-badge.js`),
-//       3. carry at least one explicit `[data-provenance-badge]` marker
-//          OR fall through to the runtime auto-mount path. The runtime
-//          path is best-effort; this recon insists on the explicit marker
-//          so authors don't quietly rely on chrome-injection (which can
-//          mis-place the badge if the page chrome differs from the shell).
+//       3. EITHER:
+//          a. declare `data-provenance-content="none"` on `<body>` or
+//             a wrapper element (prose pages — no badge mounted), OR
+//          b. carry at least one explicit `[data-provenance-badge]`
+//             marker (data pages — badge mounts, mode resolved per
+//             page-scoped endpoint or the env-derived default).
+//
+//   - Pages that omit BOTH the `none` declaration AND any badge marker
+//     fail the recon at `fail` severity. The previous behaviour
+//     (chrome auto-injection of a fallback badge) over-painted prose
+//     pages with "Simulated data" in build phase — see Marc's
+//     2026-05-10 complaint. This recon now insists on an explicit
+//     declaration per page; the runtime fallback is preserved as a
+//     defence-in-depth backstop but no page should rely on it.
 //
 //   - PDF templates (`prototype/reporting/**`) — out of scope today
 //     (substrate gap §11; no reporting templates exist yet — Bea+Atlas
@@ -24,6 +38,10 @@
 //   - RMS Correspondence records — out of scope here (Slice 5 graph-walk
 //     recon owns cross-reference rules; the badge is a render-layer
 //     concern handled by the dashboard register render of Slice 4).
+//
+//   - Drift between a page's declared mode and the actual lineages of
+//     the data it surfaces is a follow-on for Vera (cross-source
+//     graph-walk recon, Slice 5 territory).
 //
 // Severity: `fail` for missing badge wiring on a dashboard HTML page;
 // `info` for the deferred PDF / Correspondence scopes.
@@ -42,6 +60,7 @@ const PIPELINE = "recon:provenance-badge-coverage";
 const REQUIRED_CSS = "/provenance-badge.css";
 const REQUIRED_JS = "/provenance-badge.js";
 const REQUIRED_MARKER = "data-provenance-badge";
+const PROSE_OPT_OUT = 'data-provenance-content="none"';
 
 /** Walk a directory and yield every `.html` file under it. */
 function* walkHtml(dir: string): Generator<string> {
@@ -67,6 +86,7 @@ interface PageCheck {
   readonly hasCss: boolean;
   readonly hasJs: boolean;
   readonly hasMarker: boolean;
+  readonly hasProseOptOut: boolean;
 }
 
 function checkPage(file: string): PageCheck {
@@ -76,6 +96,7 @@ function checkPage(file: string): PageCheck {
     hasCss: content.includes(REQUIRED_CSS),
     hasJs: content.includes(REQUIRED_JS),
     hasMarker: content.includes(REQUIRED_MARKER),
+    hasProseOptOut: content.includes(PROSE_OPT_OUT),
   };
 }
 
@@ -107,10 +128,23 @@ export function run(): ReconResult {
         severity: "fail",
       });
     }
-    if (!check.hasMarker) {
+    // Per-page resolution rule (post Marc 2026-05-10 complaint): every
+    // page must make an EXPLICIT declaration. Either it surfaces no
+    // data (`data-provenance-content="none"`) and the badge is
+    // suppressed, OR it carries a `[data-provenance-badge]` marker
+    // and the badge mounts. Pages that have neither used to silently
+    // hit the chrome auto-injection fallback and paint "Simulated
+    // data" on every page regardless of content — that's the bug.
+    if (!check.hasMarker && !check.hasProseOptOut) {
       violations.push({
         subject: rel,
-        message: `missing [${REQUIRED_MARKER}] marker — page relies on chrome auto-injection only; add an explicit <span data-provenance-badge="page-top"> in the page header so the badge placement is intentional, not implicit.`,
+        message: `page makes no provenance declaration — add EITHER \`${PROSE_OPT_OUT}\` on <body> (prose page, no data → no badge) OR an explicit <span data-provenance-badge="page-top"> in the page header (data page → badge mounts). Silent fallback to chrome injection is no longer permitted.`,
+        severity: "fail",
+      });
+    } else if (check.hasMarker && check.hasProseOptOut) {
+      violations.push({
+        subject: rel,
+        message: `page declares both \`${PROSE_OPT_OUT}\` AND a [${REQUIRED_MARKER}] marker — pick one. The opt-out wins at runtime; the marker is dead markup.`,
         severity: "fail",
       });
     }
