@@ -1,43 +1,78 @@
 // provenance-badge.js — D-DATA-PROVENANCE-SUBSTRATE Slice 3.
 //
-// Output watermarking. Renders a visible <ProvenanceBadge> on every dashboard
-// page so the reader knows whether the data on screen is production,
-// simulated, or a mix. Per pack §6.1 the badge is *not* in a tooltip — it
-// sits in the page chrome (top-of-page) or top-of-tile, visible by intent.
+// Output watermarking. Renders a visible <ProvenanceBadge> on dashboard
+// pages that surface data, so the reader knows whether what's on screen
+// is production, simulated, or a mix. Per pack §6.1 the badge is *not*
+// in a tooltip — it sits in the page chrome (top-of-page) or top-of-tile,
+// visible by intent.
 //
 // Three modes (per pack §6.2 + dispatch brief):
 //   production-only  → 🟢 PRODUCTION DATA
 //   simulated-only   → 🟡 SIMULATED DATA
 //   combined         → 🔵 COMBINED (P+S)
 //
+// Plus a fourth opt-out:
+//   data-provenance-content="none"  → no badge mounted at all
+//                                     (prose pages — architecture diagrams,
+//                                     principles viewers, persona-spec
+//                                     surfaces — that surface no data).
+//
 // Filter narrowing (scenario / variant / sourceLineage) appends a suffix
 // to the badge label (e.g. "SIMULATED DATA · scenario: rehearsal-2026-Q1").
+//
+// Per-page resolution (the "two-source-of-truth" rule, set 2026-05-10
+// after Marc flagged that every page was painting "Simulated data"
+// regardless of what was on screen):
+//   1. **Static markup opt-out.** A `data-provenance-content="none"`
+//      attribute on `<body>` or any wrapper element instructs the
+//      auto-mounter to skip the page entirely — no badge node is
+//      created. Prose pages (no data) declare this.
+//   2. **Per-page API-driven mode.** Data pages declare a primary API
+//      endpoint via `data-provenance-source="/api/<endpoint>"` on the
+//      same element they use to mark provenance content. The auto-
+//      mounter fetches that endpoint and reads `pageProvenance` from
+//      the response (mode + optional scenario / variant / lineage
+//      narrowing) — *not* from the global `/api/provenance/mode`.
+//   3. **Fallback.** Pages with no `data-provenance-source` fall back
+//      to `/api/provenance/mode` (the env-derived default). The recon
+//      flags pages that hit this fallback as findings; the runtime
+//      keeps the watermark visible regardless.
 //
 // API:
 //   window.provenanceBadge.render(filter)         → HTMLElement (caller-owned)
 //   window.provenanceBadge.mount(target, opts?)   → mounts into the target
 //                                                   element (replaces children)
-//   window.provenanceBadge.fetch()                → fetches /api/provenance/mode
+//   window.provenanceBadge.fetch(endpoint?)       → fetches the resolved
+//                                                   filter from the page's
+//                                                   primary API endpoint
+//                                                   (or `/api/provenance/mode`
+//                                                   when none is given)
 //   window.provenanceBadge.autoMount()            → auto-mounts on every
 //                                                   `[data-provenance-badge]`
-//                                                   marker + injects a top-of-
-//                                                   page badge into the page
-//                                                   header if no marker exists
+//                                                   marker, OR skips entirely
+//                                                   when `data-provenance-
+//                                                   content="none"` is
+//                                                   declared on the page
 //
-// Auto-init: runs on DOMContentLoaded — fetches the resolved mode then mounts
-// every marker. Pages that don't include a marker get one injected into the
-// `.shell-meta` block (new shell) or `.meta` block (legacy index/activity).
-// This guarantees coverage even on pages that forget to add the marker —
-// the recon backstops that guarantee at build time.
+// Auto-init: runs on DOMContentLoaded — checks the page declaration first;
+// if `none`, no badge is rendered. Otherwise fetches the page-scoped mode
+// and mounts every marker.
 //
 // Author: Anya (Data / analytics engineer, engineering — projection runtime
 //   + watermark layer).
 
 (() => {
-  const ENDPOINT = "/api/provenance/mode";
+  const FALLBACK_ENDPOINT = "/api/provenance/mode";
 
   /** Module-private cached resolved filter. */
   let cached = null;
+  /**
+   * True when the last fetch resolved successfully with `pageProvenance: null`
+   * (i.e. the endpoint explicitly said "no data was queried, suppress the
+   * badge"). Distinct from "fetch failed" — the latter renders the error
+   * state, the former renders nothing at all.
+   */
+  let suppressed = false;
 
   /** Map from ProvenanceMode → { label, modeAttr } per the §6.2 taxonomy. */
   const MODE_DESCRIPTORS = {
@@ -182,24 +217,55 @@
   // ------------------------------------------------------------------
 
   /**
-   * Fetch the resolved filter from `/api/provenance/mode`. On success the
+   * Fetch the resolved filter from a page-scoped endpoint, or
+   * `/api/provenance/mode` when no endpoint is given. On success the
    * resolved filter is cached so subsequent `mount()` calls don't refetch.
    * On failure caches `null` and returns `null`; the badge renders an
    * explicit error state rather than disappearing.
+   *
+   * Page-scoped responses must include a `pageProvenance` field that is
+   * either a `ProvenanceFilter` or `null` (null → no data was queried,
+   * caller should suppress the badge). The fallback endpoint
+   * `/api/provenance/mode` returns the resolved filter at the top level
+   * (or under a `filter` key) and is treated as a always-non-null
+   * env-derived default.
    */
-  async function fetchFilter() {
+  async function fetchFilter(endpoint) {
+    const url = typeof endpoint === "string" && endpoint.length > 0 ? endpoint : FALLBACK_ENDPOINT;
     try {
-      const res = await fetch(ENDPOINT, { headers: { Accept: "application/json" } });
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
       if (!res.ok) throw new Error(`status ${res.status}`);
       const body = await res.json();
-      // The endpoint returns the resolved filter directly OR `{ filter: ... }`;
-      // accept both for forward-compat with the Slice 7 toggle UX.
-      const filter = body?.filter ? body.filter : body;
+      // Three response shapes are accepted, in priority order:
+      //   1. Page-scoped `{ pageProvenance: <filter|null>, ... }` (Slice 3.5).
+      //      pageProvenance present + null → endpoint explicitly says
+      //      "no data, suppress badge". This is distinct from a failed
+      //      fetch.
+      //   2. Top-level `{ filter: <filter>, ... }` (`/api/provenance/mode`,
+      //      Slice 3 original).
+      //   3. The resolved filter at the top level (forward-compat).
+      let filter = null;
+      let explicitNull = false;
+      if (body && Object.prototype.hasOwnProperty.call(body, "pageProvenance")) {
+        filter = body.pageProvenance;
+        explicitNull = filter === null;
+      } else if (body?.filter) {
+        filter = body.filter;
+      } else {
+        filter = body;
+      }
+      if (explicitNull) {
+        cached = null;
+        suppressed = true;
+        return null;
+      }
       cached = filter && typeof filter.mode === "string" ? filter : null;
+      suppressed = false;
       return cached;
     } catch (e) {
-      console.warn("[provenance-badge] fetch failed", e);
+      console.warn("[provenance-badge] fetch failed", url, e);
       cached = null;
+      suppressed = false;
       return null;
     }
   }
@@ -209,25 +275,76 @@
   // ------------------------------------------------------------------
 
   /**
+   * Read the page-level provenance declaration. Returns:
+   *   - `{ content: "none" }` when the page declares it surfaces no data.
+   *   - `{ content: "data", endpoint: <string|null> }` otherwise. The
+   *     endpoint is the page's primary API URL (read from the closest
+   *     element carrying a `data-provenance-source` attribute, typically
+   *     `<body>` or the badge marker itself); when no endpoint is
+   *     declared, the global fallback is used.
+   *
+   * The check looks at `<body>` and `<html>` first (so a page-wide
+   * declaration on either is the canonical place), then any element
+   * carrying `data-provenance-content`. A page is "none" if any such
+   * declaration says `none`.
+   */
+  function readPageDeclaration() {
+    const declElement =
+      document.querySelector("[data-provenance-content]") ||
+      document.body ||
+      document.documentElement;
+    const content = declElement?.getAttribute
+      ? declElement.getAttribute("data-provenance-content")
+      : null;
+    if (content === "none") {
+      return { content: "none" };
+    }
+    const sourceElement = document.querySelector("[data-provenance-source]");
+    const endpoint = sourceElement?.getAttribute
+      ? sourceElement.getAttribute("data-provenance-source")
+      : null;
+    return { content: "data", endpoint: endpoint || null };
+  }
+
+  /**
    * Auto-mount the badge:
    *
-   *   1. Find every element with `[data-provenance-badge]` and mount a
-   *      placement-appropriate badge (defaults to "page-top"; tile-marked
-   *      elements use `data-provenance-badge="tile"`).
+   *   1. If the page declares `data-provenance-content="none"` on `<body>`
+   *      or any wrapper element, **no badge is rendered** — not the
+   *      "Provenance unavailable" error state, not the chrome fallback,
+   *      nothing. The page is intentionally blank.
    *
-   *   2. If no `[data-provenance-badge]` marker exists on the page,
-   *      inject a fallback badge into the page chrome:
-   *        - new shell: `.shell-meta` (the meta strip in the header)
-   *        - legacy index.html: `.meta` strip in `.topbar-inner`
-   *      This guarantees coverage even on pages that forget the marker.
+   *   2. Otherwise, find every element with `[data-provenance-badge]`
+   *      and mount a placement-appropriate badge (defaults to "page-top";
+   *      tile-marked elements use `data-provenance-badge="tile"`).
+   *
+   *   3. If no `[data-provenance-badge]` marker exists on the page,
+   *      inject a fallback badge into the page chrome (`.shell-meta`,
+   *      legacy `.topbar-inner .meta`, `<header>`, or `<body>`). The
+   *      recon flags pages that hit this fallback so authors add an
+   *      explicit marker in a follow-up.
    */
   function autoMount() {
+    const decl = readPageDeclaration();
+    if (decl.content === "none") {
+      // Intentional opt-out. Render nothing — not even an error state.
+      return;
+    }
+    if (suppressed) {
+      // Endpoint returned `pageProvenance: null` — endpoint-side opt-out
+      // (e.g. /api/procedures, which surfaces authored markdown, not
+      // event-derived data). Render nothing, same as the page-side opt-out.
+      return;
+    }
+
     const markers = document.querySelectorAll("[data-provenance-badge]");
     if (markers.length > 0) {
       for (const el of markers) {
         const placement = el.getAttribute("data-provenance-badge") || "page-top";
         const node =
-          cached === null ? renderError("/api/provenance/mode") : render(cached, { placement });
+          cached === null
+            ? renderError(decl.endpoint || FALLBACK_ENDPOINT)
+            : render(cached, { placement });
         // Marker was an empty span in markup — replace its children only;
         // do not re-create the marker itself (preserves layout siblings).
         el.replaceChildren(node);
@@ -247,7 +364,7 @@
     if (!fallback) return;
     const node =
       cached === null
-        ? renderError("/api/provenance/mode")
+        ? renderError(decl.endpoint || FALLBACK_ENDPOINT)
         : render(cached, { placement: "page-top" });
     // Place at the start so the badge is the first thing the eye reaches.
     fallback.insertBefore(node, fallback.firstChild);
@@ -264,10 +381,18 @@
     fetch: fetchFilter,
     autoMount,
     describe, // exposed for tests
+    readPageDeclaration, // exposed for tests
+    isSuppressed: () => suppressed, // exposed for tests
   };
 
   document.addEventListener("DOMContentLoaded", async () => {
-    await fetchFilter();
+    const decl = readPageDeclaration();
+    if (decl.content === "none") {
+      // Skip the network round-trip when the page has opted out of any
+      // provenance render. Saves an /api/* call on every prose page.
+      return;
+    }
+    await fetchFilter(decl.endpoint || undefined);
     autoMount();
   });
 })();

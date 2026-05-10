@@ -18,7 +18,14 @@
       <span class="muted">· Activity · agent and human deliverables</span>
     </div>
     <div class="meta">
-      <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+      <!-- Slice 3.5 — `data-provenance-source` declares the page's
+           primary API endpoint; the badge resolves the mode from
+           that endpoint's `pageProvenance` field. -->
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/state"
+        aria-label="Provenance badge"
+      ></span>
       <a class="nav-link" href="/">Dashboard</a>
       <a class="nav-link" href="/agents.html">Agents</a>
       <a class="nav-link" href="/health.html">Health</a>

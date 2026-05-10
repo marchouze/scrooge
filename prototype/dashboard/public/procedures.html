@@ -87,7 +87,16 @@
       <span class="muted">· Procedures · Reg → Policy → Procedure → System Capability</span>
     </div>
     <div class="meta">
-      <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+      <!-- Procedures page consumes /api/procedures which returns
+           `pageProvenance: null` — procedures are authored markdown
+           (canonical source per Principle 6), not data. Badge
+           suppresses on null. The marker remains so recon passes
+           the data-page contract; runtime sees null and renders nothing. -->
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/procedures"
+        aria-label="Provenance badge"
+      ></span>
       <a class="nav-link" href="/">Dashboard</a>
       <a class="nav-link" href="/agents.html">Agents</a>
       <a class="nav-link" href="/obligations.html">Obligations</a>
