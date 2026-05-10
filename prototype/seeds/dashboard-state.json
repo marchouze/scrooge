@@ -787,21 +787,6 @@
         "stance": "Approve the framing and the Azure target.",
         "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
       }
-    },
-    {
-      "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-      "title": "Product-construction substrate — typed Product composition from CDM primitives",
-      "category": "near-term",
-      "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-      "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-      "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-      ],
-      "recommendation": {
-        "stance": "Approve.",
-        "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-      }
     }
   ],
   "decisionsResolved": [
