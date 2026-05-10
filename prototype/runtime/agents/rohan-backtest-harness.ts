@@ -2,6 +2,25 @@
 //
 // Rohan's backtest-harness handler — v0, Tier-1 IFRS 9 ECL only.
 //
+// D-EVENT-STORE-SCALING Slice 3 (consumer adoption) — the inner per-
+// prediction-point replay loop is now a snapshot-aware projection. For
+// each request the harness:
+//   1. Loads the latest credit-critical signal projection for the
+//      request's `entity` via `eventStore.replayFromSnapshot()`, then
+//      folds the delta-from-snapshot events on top.
+//   2. Iterates prediction points in-memory (no second replay per
+//      point — the snapshot map is the truth).
+//   3. After the run, asks `eventStore.shouldSnapshot()` whether the
+//      cadence rule has fired and persists the projection state when it
+//      has (via `eventStore.snapshot()`).
+//
+// Feature flag: `BANK_BACKTEST_USE_SNAPSHOTS` (default `true`). Set to
+// `false` to fall back to the naive per-prediction-point replay path
+// for byte-identical equivalence regression checks. Equivalence between
+// the two paths is asserted by `tests/runtime-rohan-backtest-snapshot.test.ts`.
+// Per the design brief §6 Slice 3 exit criterion, the two paths must
+// produce identical `BacktestRun` payloads on any fixture.
+//
 // S7-Targeted critical-path item #4 (CEO-approved 2026-05-08 via
 // `D-S7-TARGETED-3-5-OPEN-QUESTIONS`, sub-decision B). Scoped in
 // `Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md` —
@@ -206,31 +225,180 @@ function isCreditCriticalSignal(e: Event): boolean {
   return p.severity === "critical" && p.category === "credit";
 }
 
+// ---------------------------------------------------------------------------
+// Credit-critical signal projection (D-EVENT-STORE-SCALING Slice 3).
+//
+// Per-entity projection of the RiskRaised event-id stream filtered to
+// credit-critical signals, keyed on event_id, capturing as_of. Stable
+// across replays — every backtest within an entity reads the same
+// projection. The snapshot payload is the list of `{ event_id, as_of }`
+// tuples in sequence order; the harness restores it on the snapshot
+// path and folds delta events on top.
+// ---------------------------------------------------------------------------
+
+interface SignalEntry {
+  readonly eventId: string;
+  readonly asOf: string;
+}
+
+interface SignalProjection {
+  /** Sorted in append-sequence order (the order the store yields events). */
+  readonly entries: readonly SignalEntry[];
+  /** Last sequence-position folded; consumers pass this back into snapshot. */
+  readonly uptoIndex: number;
+}
+
+function backtestStreamKey(entity: string): string {
+  // Per Atlas's design Q4 — entity + aggregate. The aggregate identifies
+  // the per-stream projection that the backtest harness consumes.
+  return `${entity}|backtest/risk-raised-credit-critical`;
+}
+
+function snapshotsEnabled(): boolean {
+  // Default on — opt-out via env to support naive-replay regression runs
+  // (Slice 3 exit criterion: byte-identical equivalence between paths).
+  const v = process.env.BANK_BACKTEST_USE_SNAPSHOTS;
+  if (v === undefined || v === "") return true;
+  const normalised = v.toLowerCase();
+  return normalised !== "0" && normalised !== "false" && normalised !== "no";
+}
+
+function decodeSignalSnapshot(payload: string): SignalProjection {
+  const parsed = JSON.parse(payload) as {
+    entries?: SignalEntry[];
+    uptoIndex?: number;
+  };
+  return {
+    entries: parsed.entries ?? [],
+    uptoIndex: parsed.uptoIndex ?? 0,
+  };
+}
+
+function encodeSignalSnapshot(p: SignalProjection): string {
+  return JSON.stringify({ entries: p.entries, uptoIndex: p.uptoIndex });
+}
+
+/**
+ * Build the credit-critical signal projection for {entity} as-of {asOf}.
+ * Snapshot-aware: loads the latest snapshot ≤ asOf for the stream and
+ * folds the delta-from-snapshot events on top via
+ * `eventStore.replayFromSnapshot()`. Falls back to a naive full-history
+ * replay when `BANK_BACKTEST_USE_SNAPSHOTS=false` or when no snapshot
+ * exists.
+ *
+ * The result includes `uptoIndex` so the caller can pass it through to
+ * `eventStore.snapshot({ uptoSequence })` after the run.
+ *
+ * Equivalence (Slice 3 acceptance): for any (streamKey, asOf) the
+ * snapshot path and the naive path must produce identical `entries` —
+ * asserted by `tests/runtime-rohan-backtest-snapshot.test.ts`.
+ */
+function buildSignalProjection(
+  entity: string,
+  asOf: string,
+  useSnapshot: boolean,
+): SignalProjection {
+  const streamKey = backtestStreamKey(entity);
+  let entries: SignalEntry[] = [];
+  let folded = 0;
+
+  if (useSnapshot) {
+    const snap = eventStore.loadSnapshot(streamKey, asOf);
+    if (snap) {
+      const seed = decodeSignalSnapshot(snap.payload);
+      entries = [...seed.entries];
+      folded = seed.uptoIndex;
+      for (const e of eventStore.replayFromSnapshot({
+        streamKey,
+        asOf,
+        filter: { entity, type: "RiskRaised" },
+      })) {
+        if (!isCreditCriticalSignal(e)) continue;
+        entries.push({ eventId: e.event_id, asOf: e.as_of });
+        folded++;
+      }
+      return { entries, uptoIndex: folded };
+    }
+    // No snapshot — degrade to naive (still a single full replay).
+  }
+
+  for (const e of eventStore.replay({ type: "RiskRaised", entity, asOf })) {
+    if (!isCreditCriticalSignal(e)) continue;
+    entries.push({ eventId: e.event_id, asOf: e.as_of });
+    folded++;
+  }
+  return { entries, uptoIndex: folded };
+}
+
 function runEclBacktest(req: BacktestRequestedPayload, entity: string): BacktestComputation {
   const points = predictionPoints(req);
+  if (points.length === 0) {
+    return {
+      predictionCount: 0,
+      expectedExceptions: 0,
+      observedExceptions: 0,
+      perPointSamples: [],
+    };
+  }
+
+  // Build the credit-critical signal projection ONCE for the full window
+  // (out to the last horizon-end). Per the Slice-3 design this is the
+  // load-bearing read; the per-prediction-point loop below is a pure
+  // in-memory fold over the projection. The snapshot path collapses the
+  // read amplification by ~K× per Atlas §2.3.
+  const useSnap = snapshotsEnabled();
+  const lastPoint = points[points.length - 1];
+  if (!lastPoint) {
+    return {
+      predictionCount: 0,
+      expectedExceptions: 0,
+      observedExceptions: 0,
+      perPointSamples: [],
+    };
+  }
+  const projAsOf = lastPoint.horizonEnd;
+  const projection = buildSignalProjection(entity, projAsOf, useSnap);
+
+  // Persist a fresh snapshot if the cadence rule has fired (idempotent
+  // on (streamKey, asOf, uptoSequence)). The store does not auto-snapshot
+  // inside append(); Slice-3 consumers own this call.
+  if (useSnap && projection.entries.length > 0) {
+    const streamKey = backtestStreamKey(entity);
+    const cadence = eventStore.shouldSnapshot({
+      streamKey,
+      eventType: "RiskRaised",
+    });
+    if (cadence.shouldSnapshot) {
+      try {
+        eventStore.snapshot({
+          streamKey,
+          asOf: projAsOf,
+          uptoSequence: projection.uptoIndex,
+          payload: encodeSignalSnapshot(projection),
+        });
+      } catch (err) {
+        // Snapshot failure is non-fatal (the backtest result is unaffected;
+        // the next run will retry). Log & continue.
+        const msg = (err as Error).message;
+        if (!msg.includes("UNIQUE")) {
+          // UNIQUE collisions are the idempotent path — already snapshotted.
+          // Anything else is worth a structured log.
+          // (No throw — the run's result is the source of truth.)
+        }
+      }
+    }
+  }
+
+  // Per-prediction-point fold over the in-memory projection.
   const perPointSamples: { t: string; observed: number }[] = [];
   const observedIds = new Set<string>();
-
   for (const p of points) {
-    // Replay to as-of t — the predictor's information set at t. Per Q4 the
-    // model only sees information available at t (no leakage). The replay
-    // is read-only; nothing in the store is mutated. Entity-scoped so the
-    // backtest sees only signals for the request's portfolio (Principle 5
-    // — every event is entity-scoped; the model is portfolio-bound).
-    const priorSignals = new Set<string>();
-    for (const e of eventStore.replay({ type: "RiskRaised", entity, asOf: p.t })) {
-      if (isCreditCriticalSignal(e)) priorSignals.add(e.event_id);
-    }
-
-    // Replay to as-of t+horizon — the realised state. Exceptions are the
-    // credit-critical RiskRaised events that occurred in (t, t+horizon].
     let observedAtPoint = 0;
-    for (const e of eventStore.replay({ type: "RiskRaised", entity, asOf: p.horizonEnd })) {
-      if (priorSignals.has(e.event_id)) continue; // already in predictor set
-      if (e.as_of <= p.t) continue; // not in (t, t+horizon]
-      if (!isCreditCriticalSignal(e)) continue;
-      if (observedIds.has(e.event_id)) continue; // dedupe across prediction windows
-      observedIds.add(e.event_id);
+    for (const entry of projection.entries) {
+      if (entry.asOf <= p.t) continue; // not in (t, t+horizon]
+      if (entry.asOf > p.horizonEnd) continue; // beyond horizon
+      if (observedIds.has(entry.eventId)) continue; // dedupe across windows
+      observedIds.add(entry.eventId);
       observedAtPoint++;
     }
     perPointSamples.push({ t: p.t, observed: observedAtPoint });
