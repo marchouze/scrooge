@@ -95,13 +95,41 @@ export interface TickResult {
   readonly considered: number;
 }
 
+/**
+ * Discriminator for the kind of inactivity the recon caught. Vera's
+ * Wave-4 #13 inactivity-SLA pipeline filters on this — `orphaned-run`
+ * is operationally distinct from `stale-runs` (the former is a runner
+ * that died mid-flow; the latter is a runner that hasn't fired at all
+ * for a while).
+ *
+ *   - `no-runs`       — agent has never emitted a `SubstrateAgentRunStarted`.
+ *   - `stale-runs`    — most recent paired close (`SubstrateAgentRunCompleted`
+ *                       or `SubstrateAgentRunFailed`) is older than the SLA.
+ *   - `orphaned-run`  — a `SubstrateAgentRunStarted` exists with no closing
+ *                       event and `(now - startedAt) > SLA`.
+ */
+export type InactivityFindingClass = "no-runs" | "stale-runs" | "orphaned-run";
+
 export interface InactivityFinding {
   readonly agentUrn: string;
   readonly triggerId: string;
   readonly alertId: string;
   readonly slaHours: number;
+  /**
+   * Hours since the last *closed* run (`SubstrateAgentRunCompleted` or
+   * `…Failed`). For `findingClass: "no-runs"` this is `Number.POSITIVE_INFINITY`.
+   * For `findingClass: "orphaned-run"` this is hours since the orphan
+   * `…Started`.
+   */
   readonly hoursSinceLastEvent: number;
   readonly details: string;
+  /** What kind of inactivity was caught — see {@link InactivityFindingClass}. */
+  readonly findingClass: InactivityFindingClass;
+  /**
+   * For `findingClass: "orphaned-run"`, the runId of the unclosed run.
+   * Undefined for the other two classes.
+   */
+  readonly orphanedRunId?: string;
 }
 
 export interface InactivityCheckResult {
@@ -132,12 +160,25 @@ export interface Scheduler {
    * Inactivity check — for each scheduled entry, compute the SLA
    * window (read from the persona spec § 6, fall back to
    * `cadenceHours * 1.5` from handlers-metadata) and emit a
-   * `SubstrateAlert` (alertClass=inactivity) when no expected event
-   * has landed inside the window.
+   * `SubstrateAlert` (alertClass=inactivity) when no expected
+   * substrate run has closed inside the window.
    *
-   * Idempotency: alert ids are stable per (agent, trigger) so re-
-   * running before a new event lands does not duplicate the alert
-   * (the registry is `latest-wins-per-key` on the alert).
+   * Recon input: pair-coupled `SubstrateAgentRunStarted` /
+   * `SubstrateAgentRunCompleted` / `SubstrateAgentRunFailed` lifecycle
+   * events (S8 spec §3.4). The fold isolates real run lifecycle from
+   * substrate infrastructure noise — the previous heuristic ("any
+   * event by agent") false-greened when the scheduler's own
+   * `SubstrateAlert` or the bus's `BusDispatched` attributed to the
+   * agent's URN.
+   *
+   * Three finding classes (see {@link InactivityFindingClass}):
+   *   - `no-runs`       — never started.
+   *   - `stale-runs`    — last close older than SLA.
+   *   - `orphaned-run`  — started but unclosed within SLA.
+   *
+   * Idempotency: alert ids are stable per (agent, trigger, class)
+   * so re-running before a closing event lands does not duplicate
+   * the alert (the registry is `latest-wins-per-key` on the alert).
    */
   inactivityCheck(now: Date): InactivityCheckResult;
 }

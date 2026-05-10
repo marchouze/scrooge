@@ -19,6 +19,12 @@
 
 import { describe, expect, it } from "bun:test";
 
+import {
+  makeSubstrateAgentRunCompleted,
+  makeSubstrateAgentRunFailed,
+  makeSubstrateAgentRunStarted,
+  makeSubstrateAlert,
+} from "../platform/event-store/event-types";
 import { EventStore } from "../platform/event-store/store";
 import {
   easterSunday,
@@ -363,33 +369,120 @@ describe("LocalScheduler — tick", () => {
   });
 });
 
-describe("LocalScheduler — inactivityCheck", () => {
-  it("emits SubstrateAlert when no events for an agent past SLA", () => {
-    const store = new EventStore(":memory:");
+describe("LocalScheduler — inactivityCheck (lifecycle-pair fold)", () => {
+  // Helper — append a typed SubstrateAgentRunStarted event.
+  function appendStarted(
+    store: EventStore,
+    args: {
+      agent: string;
+      trigger: string;
+      runId: string;
+      startedAt: string;
+    },
+  ): void {
+    store.append(
+      makeSubstrateAgentRunStarted({
+        asOf: args.startedAt,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas:substrate-runner" },
+        citations: ["D-AGENT-RUNTIME-AUTHORIZE", "GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
+        payload: {
+          runId: args.runId,
+          agent: args.agent,
+          trigger: { kind: "scheduled", id: args.trigger },
+          startedAt: args.startedAt,
+          dryRun: false,
+          substrate: "agent-runtime",
+          sequenceAtStart: 0,
+        },
+      }),
+    );
+  }
+
+  function appendCompleted(
+    store: EventStore,
+    args: {
+      agent: string;
+      runId: string;
+      completedAt: string;
+      ok?: boolean;
+    },
+  ): void {
+    store.append(
+      makeSubstrateAgentRunCompleted({
+        asOf: args.completedAt,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas:substrate-runner" },
+        citations: ["D-AGENT-RUNTIME-AUTHORIZE", "GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
+        payload: {
+          runId: args.runId,
+          agent: args.agent,
+          completedAt: args.completedAt,
+          durationMs: 100,
+          ok: args.ok ?? true,
+          eventsEmitted: 0,
+          decisionsEmitted: 0,
+          escalationsEmitted: 0,
+          sequenceAtCompletion: 1,
+          summary: "test run completed",
+        },
+      }),
+    );
+  }
+
+  function appendFailed(
+    store: EventStore,
+    args: {
+      agent: string;
+      runId: string;
+      failedAt: string;
+    },
+  ): void {
+    store.append(
+      makeSubstrateAgentRunFailed({
+        asOf: args.failedAt,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas:substrate-runner" },
+        citations: ["D-AGENT-RUNTIME-AUTHORIZE", "GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
+        payload: {
+          runId: args.runId,
+          agent: args.agent,
+          failedAt: args.failedAt,
+          durationMs: 100,
+          errorClass: "exception",
+          errorMessage: "test failure",
+          sequenceAtFailure: 1,
+        },
+      }),
+    );
+  }
+
+  function veraSched(store: EventStore): LocalScheduler {
     const source = inMemorySchedulerSource({
       cronMap: { "vera:overnight-recon": "13 2 * * *" },
       handlers: [{ agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 }],
       slaForAgent: (a) => (a === "vera" ? 24 : undefined),
     });
-    const sched = new LocalScheduler({ eventStore: store, source });
+    return new LocalScheduler({ eventStore: store, source });
+  }
+
+  it("no-runs: emits a no-runs SubstrateAlert when agent has never run", () => {
+    const store = new EventStore(":memory:");
+    const sched = veraSched(store);
     sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
     const result = sched.inactivityCheck(new Date("2026-05-08T12:00:00Z"));
     expect(result.findings.length).toBe(1);
+    expect(result.findings[0]?.findingClass).toBe("no-runs");
     expect(result.findings[0]?.agentUrn).toBe("agent:vera");
-    // Verify SubstrateAlert recorded.
+    expect(result.findings[0]?.alertId.endsWith("-no-runs")).toBe(true);
     let count = 0;
     for (const _e of store.replay({ type: "SubstrateAlert" })) count++;
     expect(count).toBe(1);
   });
 
-  it("is idempotent — does not double-emit alert with same alertId", () => {
+  it("idempotent: re-running inactivityCheck does not duplicate alerts", () => {
     const store = new EventStore(":memory:");
-    const source = inMemorySchedulerSource({
-      cronMap: { "vera:overnight-recon": "13 2 * * *" },
-      handlers: [{ agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 }],
-      slaForAgent: (a) => (a === "vera" ? 24 : undefined),
-    });
-    const sched = new LocalScheduler({ eventStore: store, source });
+    const sched = veraSched(store);
     sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
     const at = new Date("2026-05-08T12:00:00Z");
     sched.inactivityCheck(at);
@@ -397,5 +490,205 @@ describe("LocalScheduler — inactivityCheck", () => {
     let count = 0;
     for (const _e of store.replay({ type: "SubstrateAlert" })) count++;
     expect(count).toBe(1);
+  });
+
+  it("recent paired Started+Completed: no alert", () => {
+    const store = new EventStore(":memory:");
+    const sched = veraSched(store);
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260508T020000000Z:abc12345",
+      startedAt: "2026-05-08T02:00:00.000Z",
+    });
+    appendCompleted(store, {
+      agent: "Vera",
+      runId: "run:vera:20260508T020000000Z:abc12345",
+      completedAt: "2026-05-08T02:00:01.000Z",
+    });
+    // 2h after the most recent close — well inside the 24h SLA.
+    const result = sched.inactivityCheck(new Date("2026-05-08T04:00:00Z"));
+    expect(result.findings.length).toBe(0);
+    let count = 0;
+    for (const _e of store.replay({ type: "SubstrateAlert" })) count++;
+    expect(count).toBe(0);
+  });
+
+  it("stale-runs: paired Started+Completed older than SLA → stale-runs alert", () => {
+    const store = new EventStore(":memory:");
+    const sched = veraSched(store);
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260506T020000000Z:abc12345",
+      startedAt: "2026-05-06T02:00:00.000Z",
+    });
+    appendCompleted(store, {
+      agent: "Vera",
+      runId: "run:vera:20260506T020000000Z:abc12345",
+      completedAt: "2026-05-06T02:00:01.000Z",
+    });
+    // 48h after the most recent close — past the 24h SLA.
+    const result = sched.inactivityCheck(new Date("2026-05-08T02:00:01Z"));
+    expect(result.findings.length).toBe(1);
+    expect(result.findings[0]?.findingClass).toBe("stale-runs");
+    expect(result.findings[0]?.alertId.endsWith("-stale-runs")).toBe(true);
+    expect(result.findings[0]?.hoursSinceLastEvent).toBeGreaterThan(24);
+    expect(result.findings[0]?.hoursSinceLastEvent).toBeLessThan(72);
+  });
+
+  it("Failed close also resets stale-runs (treated as a closed run)", () => {
+    const store = new EventStore(":memory:");
+    const sched = veraSched(store);
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260508T020000000Z:abc12345",
+      startedAt: "2026-05-08T02:00:00.000Z",
+    });
+    appendFailed(store, {
+      agent: "Vera",
+      runId: "run:vera:20260508T020000000Z:abc12345",
+      failedAt: "2026-05-08T02:00:01.000Z",
+    });
+    // 4h after a Failed close — well inside the 24h SLA.
+    const result = sched.inactivityCheck(new Date("2026-05-08T06:00:01Z"));
+    expect(result.findings.length).toBe(0);
+  });
+
+  it("orphaned-run: Started without close past SLA → orphaned-run alert", () => {
+    const store = new EventStore(":memory:");
+    const sched = veraSched(store);
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    // A run started 36h ago, never closed.
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260506T140000000Z:orph0001",
+      startedAt: "2026-05-06T14:00:00.000Z",
+    });
+    const result = sched.inactivityCheck(new Date("2026-05-08T02:00:00Z"));
+    // We expect both a stale-runs (no closed-run ever, so no-runs)
+    // alert AND an orphaned-run alert — distinct alertIds.
+    const orphan = result.findings.find((f) => f.findingClass === "orphaned-run");
+    expect(orphan).toBeDefined();
+    expect(orphan?.orphanedRunId).toBe("run:vera:20260506T140000000Z:orph0001");
+    expect(orphan?.alertId).toContain("-orphan-");
+    // Counterpart no-runs (no successful close ever).
+    const noRuns = result.findings.find((f) => f.findingClass === "no-runs");
+    expect(noRuns).toBeDefined();
+    // Two distinct SubstrateAlert events.
+    let count = 0;
+    for (const _e of store.replay({ type: "SubstrateAlert" })) count++;
+    expect(count).toBe(2);
+  });
+
+  it("orphaned-run: distinct runIds → distinct alerts (per-run idempotency)", () => {
+    const store = new EventStore(":memory:");
+    const sched = veraSched(store);
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260506T140000000Z:orph0001",
+      startedAt: "2026-05-06T14:00:00.000Z",
+    });
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260506T150000000Z:orph0002",
+      startedAt: "2026-05-06T15:00:00.000Z",
+    });
+    const result = sched.inactivityCheck(new Date("2026-05-08T02:00:00Z"));
+    const orphans = result.findings.filter((f) => f.findingClass === "orphaned-run");
+    expect(orphans.length).toBe(2);
+    const orphanIds = new Set(orphans.map((o) => o.orphanedRunId));
+    expect(orphanIds.has("run:vera:20260506T140000000Z:orph0001")).toBe(true);
+    expect(orphanIds.has("run:vera:20260506T150000000Z:orph0002")).toBe(true);
+    // Re-run is idempotent.
+    const result2 = sched.inactivityCheck(new Date("2026-05-08T02:00:00Z"));
+    expect(result2.findings.filter((f) => f.findingClass === "orphaned-run").length).toBe(2);
+    let alertCount = 0;
+    for (const _e of store.replay({ type: "SubstrateAlert" })) alertCount++;
+    // 2 orphaned-run + 1 no-runs = 3 alerts; not duplicated on re-run.
+    expect(alertCount).toBe(3);
+  });
+
+  it("regression: SubstrateAlert by the agent's URN does NOT mask inactivity (false-green guard)", () => {
+    // Pre-#189 the inactivityCheck folded "any event by agent". The
+    // scheduler's own SubstrateAlert by `agent:atlas:scheduler`
+    // attributed to `agent:atlas` and false-greened Atlas's inactivity.
+    // The lifecycle-pair fold ignores non-lifecycle events entirely.
+    const store = new EventStore(":memory:");
+    const source = inMemorySchedulerSource({
+      cronMap: { "atlas:substrate-state": "19 6 * * 1" },
+      handlers: [{ agent: "Atlas", trigger: "substrate-state", cadenceHours: 24 * 7 }],
+      slaForAgent: (a) => (a === "atlas" ? 24 * 7 : undefined),
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    // Atlas has never closed a run, but the scheduler emits a
+    // SubstrateAlert (sub-actor `agent:atlas:scheduler`). Under the old
+    // heuristic this would mask inactivity; under the new fold it's
+    // ignored.
+    store.append(
+      makeSubstrateAlert({
+        asOf: "2026-05-08T01:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas:scheduler" },
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED", "JOINT-STANDARD-2-2024", "ORG-CY-01"],
+        payload: {
+          alertId: "alert:integrity:test-noise",
+          alertClass: "integrity",
+          agentUrn: "agent:atlas:scheduler",
+          details: "noise event",
+          severity: "low",
+        },
+      }),
+    );
+    const result = sched.inactivityCheck(new Date("2026-05-08T02:00:00Z"));
+    // Atlas should still be flagged as no-runs — the noise SubstrateAlert
+    // does not count as a closed run.
+    const noRuns = result.findings.find(
+      (f) => f.agentUrn === "agent:atlas" && f.findingClass === "no-runs",
+    );
+    expect(noRuns).toBeDefined();
+  });
+
+  it("two agents in parallel: per-(agent,trigger) alertId scoping", () => {
+    const store = new EventStore(":memory:");
+    const source = inMemorySchedulerSource({
+      cronMap: {
+        "vera:overnight-recon": "13 2 * * *",
+        "atlas:substrate-state": "19 6 * * 1",
+      },
+      handlers: [
+        { agent: "Vera", trigger: "overnight-recon", cadenceHours: 24 },
+        { agent: "Atlas", trigger: "substrate-state", cadenceHours: 24 * 7 },
+      ],
+      slaForAgent: (a) => (a === "vera" ? 24 : a === "atlas" ? 24 * 7 : undefined),
+    });
+    const sched = new LocalScheduler({ eventStore: store, source });
+    sched.syncRegistry(new Date("2026-05-08T00:00:00Z"));
+    // Vera ran fine recently; Atlas never ran.
+    appendStarted(store, {
+      agent: "Vera",
+      trigger: "overnight-recon",
+      runId: "run:vera:20260508T020000000Z:abc12345",
+      startedAt: "2026-05-08T02:00:00.000Z",
+    });
+    appendCompleted(store, {
+      agent: "Vera",
+      runId: "run:vera:20260508T020000000Z:abc12345",
+      completedAt: "2026-05-08T02:00:01.000Z",
+    });
+    const result = sched.inactivityCheck(new Date("2026-05-08T04:00:00Z"));
+    // Atlas should be no-runs; Vera should be silent.
+    expect(result.findings.length).toBe(1);
+    expect(result.findings[0]?.agentUrn).toBe("agent:atlas");
+    expect(result.findings[0]?.findingClass).toBe("no-runs");
   });
 });
