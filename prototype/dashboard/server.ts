@@ -60,6 +60,7 @@ import {
 } from "../runtime/decisions/record";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { getObligationsView } from "./obligations-view";
 import {
   POPIA_S71_NOTICE,
@@ -464,6 +465,14 @@ const server = Bun.serve({
         byAgent: groupByAgent(result.runs, 5),
         all: result.runs,
       });
+    }
+    if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
+      // FX desk Slice 1 picker source. Folds the counterparty
+      // institutional-eligibility events (Niko, PR #77) and returns the
+      // pass-and-not-breached set. Read-only; no caching (event volume
+      // is small in build phase).
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+      return jsonResponse(buildCounterpartiesView(eventStore));
     }
     if (url.pathname === "/api/refresh" && req.method === "POST") {
       refresh("api-refresh");
