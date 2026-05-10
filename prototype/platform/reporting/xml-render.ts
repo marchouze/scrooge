@@ -153,10 +153,7 @@ export interface RenderXmlOptions {
  * Render a typed report payload to canonical SARB-XML. Pure function;
  * deterministic for fixed `renderedAt`.
  */
-export function renderSarbXml(
-  payload: SarbXmlReportPayload,
-  opts: RenderXmlOptions,
-): string {
+export function renderSarbXml(payload: SarbXmlReportPayload, opts: RenderXmlOptions): string {
   const indent = opts.indent ?? "  ";
   assertElementName(payload.formId);
 
@@ -262,8 +259,9 @@ function emitChild(
     lines.push(`${indent.repeat(depth)}<${name}>${escapeText(String(value))}</${name}>`);
     return;
   }
-  // Section.
-  emitSection(value, name, lines, depth, indent);
+  // Section. (Array was handled above; primitives + null + undefined are
+  // exhausted; remaining shape must be a SarbXmlSection.)
+  emitSection(value as SarbXmlSection, name, lines, depth, indent);
 }
 
 // ---------------------------------------------------------------------------
@@ -320,14 +318,14 @@ export function validateSarbXmlStructural(args: {
   }
 
   // Tag balance — count opens (excluding self-closing) and closes for the
-  // root element. This is a first-line-of-defence; full balance check is
-  // an XSD validator's job.
-  const openCount = (args.xml.match(new RegExp(`<${args.formId}\\s[^/]*>`, "g")) ?? []).length;
+  // root element. The open-tag regex matches `<formId` followed by either
+  // whitespace + attributes ending in non-`/>`, or no attributes ending
+  // in `>`. Self-closing `<formId .../>` is excluded.
+  const openRx = new RegExp(`<${args.formId}(?:\\s[^>]*[^/])?>`, "g");
+  const openCount = (args.xml.match(openRx) ?? []).length;
   const closeCount = (args.xml.match(new RegExp(`</${args.formId}>`, "g")) ?? []).length;
   if (openCount !== closeCount) {
-    violations.push(
-      `root element tag-balance off — opens=${openCount} closes=${closeCount}`,
-    );
+    violations.push(`root element tag-balance off — opens=${openCount} closes=${closeCount}`);
   }
 
   return violations.length === 0 ? { ok: true } : { ok: false, violations };

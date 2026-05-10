@@ -231,7 +231,7 @@ export const foreignExchangeRisk: SemanticEntry = {
       note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 350 FX-position line numbering + structural-position carve-out criteria]",
     },
   ],
-  signers: ["Helena", "Camille", "Saskia"],
+  signers: ["Helena", "Camille"],
   entityScope: [HOZ_BANK],
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,

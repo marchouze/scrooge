@@ -155,8 +155,7 @@ export const opRiskCapitalTsa: SemanticEntry = {
   units: "money-minor",
   dimensions: [],
   projection: "income-projection",
-  formula:
-    "(1/3) × sum_y max(0, sum_i (β_i × grossIncome_{y,i})) for y in {y-2, y-1, y}",
+  formula: "(1/3) × sum_y max(0, sum_i (β_i × grossIncome_{y,i})) for y in {y-2, y-1, y}",
   regulatoryCells: [
     {
       form: "BA 600",

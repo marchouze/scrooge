@@ -180,10 +180,7 @@ function assertBankEntity(entity: string): void {
 
 const BIA_ALPHA = 0.15;
 
-function buildBia(
-  rows: readonly OpRiskGrossIncomeRow[],
-  ccy: string,
-): Ba600BiaSection {
+function buildBia(rows: readonly OpRiskGrossIncomeRow[], ccy: string): Ba600BiaSection {
   // Aggregate gross income per year (BIA does not decompose by business line).
   const yearTotals = new Map<string, number>();
   for (const r of rows) {
@@ -215,10 +212,7 @@ function buildBia(
 // TSA arithmetic
 // ---------------------------------------------------------------------------
 
-function buildTsa(
-  rows: readonly OpRiskGrossIncomeRow[],
-  ccy: string,
-): Ba600TsaSection {
+function buildTsa(rows: readonly OpRiskGrossIncomeRow[], ccy: string): Ba600TsaSection {
   // Group by year, then by business line, then weight + sum + max(0,_).
   const perYear = new Map<string, Map<BaselBusinessLine, number>>();
   for (const r of rows) {
@@ -226,9 +220,7 @@ function buildTsa(
     yMap.set(r.businessLine, (yMap.get(r.businessLine) ?? 0) + r.grossIncomeMinor);
     perYear.set(r.fiscalYear, yMap);
   }
-  const sortedYears = [...perYear.entries()].sort(([a], [b]) =>
-    a < b ? -1 : a > b ? 1 : 0,
-  );
+  const sortedYears = [...perYear.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   const perYearLines: Ba600LineItem[] = [];
   let sumYears = 0;
   let nYears = 0;
@@ -268,8 +260,7 @@ export function generateBa600OpRisk(input: Ba600GeneratorInput): Ba600Output {
   const bia = buildBia(input.grossIncome, ccy);
   const tsa = buildTsa(input.grossIncome, ccy);
 
-  const selectedCapital =
-    input.approach === "tsa" ? tsa.capitalMinor : bia.capitalMinor;
+  const selectedCapital = input.approach === "tsa" ? tsa.capitalMinor : bia.capitalMinor;
   const rwa = Math.round(12.5 * selectedCapital);
 
   const placeholders: string[] = [
