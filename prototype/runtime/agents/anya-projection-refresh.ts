@@ -1,15 +1,24 @@
 // runtime/agents/anya-projection-refresh.ts
 //
 // Anya's event-driven projection-refresh handler. Closes Atlas
-// substrate-gap #5: the dashboard projection cache (`seeds/dashboard-state.json`)
-// was previously refreshed only by the live dashboard server; on a
-// headless GitHub Actions runner the cache went stale because no derive
-// pass was tied to the runtime.
+// substrate-gap #5: the dashboard projection cache was previously
+// refreshed only by the live dashboard server; on a headless GitHub
+// Actions runner the cache went stale because no derive pass was tied
+// to the runtime.
 //
 // This handler subscribes to the event types that change projection
 // inputs — SubstrateStateSnapshot, WorkstreamRegistered, WorkstreamCompleted,
 // CeoDecision — and re-derives the projection from canonical sources +
-// the in-process event store, then writes the result to disk.
+// the in-process event store, then writes the result to the runtime
+// cache path (default `prototype/.local/dashboard-state.json`,
+// overridable via `BANK_DASHBOARD_RUNTIME_STATE`).
+//
+// As of D-EVENT-STORE-SCALING Slice 3a (2026-05-10) this handler writes
+// only to the runtime path — never to the committed seed at
+// `prototype/seeds/dashboard-state.json`. The seed is the recon-baseline
+// that CI asserts canonical-source derivation can still reproduce; if a
+// runner needed to overwrite it the recon would oscillate. Anya's job is
+// to keep the *runtime* cache fresh.
 //
 // Trigger kind: event-driven. Fans out from any parent run that appends
 // one of the subscribed event types. The runtime takes care of
@@ -18,7 +27,7 @@
 // Author: Anya (handler) · Atlas (runtime substrate).
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, isAbsolute, resolve } from "node:path";
 
 import { defaultSourcePaths, deriveState, eventSourceFromStore } from "../../dashboard/derive";
 import { eventStore, logger } from "../../platform/composition";
@@ -26,10 +35,20 @@ import { newEventId } from "../../platform/core/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
+const DEFAULT_RUNTIME_REL = ".local/dashboard-state.json";
+
+function resolveRuntimePath(repoRoot: string): { abs: string; rel: string } {
+  // BANK_DASHBOARD_RUNTIME_STATE may be absolute or prototype-relative.
+  // Default is `prototype/.local/dashboard-state.json` (gitignored).
+  const raw = process.env.BANK_DASHBOARD_RUNTIME_STATE ?? DEFAULT_RUNTIME_REL;
+  const abs = isAbsolute(raw) ? raw : resolve(repoRoot, "prototype", raw);
+  const rel = isAbsolute(raw) ? raw : `prototype/${raw}`;
+  return { abs, rel };
+}
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const sources = defaultSourcePaths(ctx.repoRoot);
-  const cachePath = resolve(ctx.repoRoot, "prototype", "seeds", "dashboard-state.json");
+  const { abs: cachePath, rel: cacheRel } = resolveRuntimePath(ctx.repoRoot);
 
   // Re-derive from canonical sources + the live event store. This is the
   // same function the dashboard server calls; running it from the runtime
@@ -42,8 +61,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let bytesWritten = 0;
   if (!ctx.dryRun) {
-    if (!existsSync(resolve(ctx.repoRoot, "prototype", "seeds"))) {
-      mkdirSync(resolve(ctx.repoRoot, "prototype", "seeds"), { recursive: true });
+    const cacheDir = dirname(cachePath);
+    if (!existsSync(cacheDir)) {
+      mkdirSync(cacheDir, { recursive: true });
     }
     const json = `${JSON.stringify(state, null, 2)}\n`;
     writeFileSync(cachePath, json, "utf8");
@@ -60,7 +80,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       actor: { type: "service", id: "agent:anya:projection-refresh" },
       citations: EVENT_CITATIONS,
       payload: {
-        cachePath: "prototype/seeds/dashboard-state.json",
+        cachePath: cacheRel,
         bytesWritten,
         triggerKind: ctx.trigger.kind,
         triggerId: ctx.trigger.id,

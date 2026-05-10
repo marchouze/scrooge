@@ -447,10 +447,12 @@ export function buildLinkedObligationsIndex(obligationsRegister: string): Map<st
     const m = raw.match(TABLE_ROW);
     if (!m) continue;
     const cells = (m[1] ?? "").split("|").map((c) => c.trim());
-    if (cells.length < 6) continue;
+    // Nine-column register (v1.13+):
+    //   ID | URN | Citation | Requirement | Fulfilment | Owner | Status | Entity scope | Applies-at
+    if (cells.length < 9) continue;
     const id = cells[0] ?? "";
     if (!/^ORG-/i.test(id)) continue;
-    const fulfilment = cells[3] ?? "";
+    const fulfilment = cells[4] ?? "";
     if (!fulfilment) continue;
     // Each cell may name several policies separated by ';' — split, normalise,
     // strip "Policy" qualifiers / trailing notes.

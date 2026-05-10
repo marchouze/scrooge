@@ -431,8 +431,8 @@ function countObligations(obligationsRegister: string): number {
   let n = 0;
   for (const row of rows) {
     if (!row[0]) continue;
-    // Obligations table: ID | Citation | Requirement | Fulfilment policy | Owner | Status
-    if (row.length < 6) continue;
+    // Obligations table (v1.13+): ID | URN | Citation | Requirement | Fulfilment policy | Owner | Status | Entity scope | Applies-at
+    if (row.length < 9) continue;
     if (isHeaderRow(row, ["ID"])) continue;
     if (!/^ORG-/i.test(row[0])) continue;
     n++;
