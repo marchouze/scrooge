@@ -197,36 +197,32 @@ afterEach(() => {
   rmSync(docStoreRoot, { recursive: true, force: true });
 });
 
-// Belt-and-braces cleanup of the stray-doc-store leak that the auto-archive
-// handler creates when invoked from tests with a tmp-dir repoRoot. The
-// handler calls `recordFiled()` which uses the singleton document store
-// (resolved from process.cwd() = `prototype/`); the stale path therefore
-// becomes `prototype/prototype/data/documents/`. Pre-existing pattern from
-// scrooge-owner-inbox-archiver.test.ts (history: 69e6575 "remove stray
-// prototype/prototype/ test artefacts"). Cleaning up here prevents the
-// leak from re-landing after a slice-5 test run.
+// Regression guard: the previous version of `LocalFsDocumentStore`
+// resolved its default root against `process.cwd()`. Run from `prototype/`
+// (the canonical `bun test` cwd), the singleton therefore created a
+// stray `prototype/prototype/data/documents/` tree on disk. The fix
+// (this commit) anchors the default root on the repo root via
+// `findRepoRoot(import.meta.dir)` so the leak path can never form. We
+// keep this `afterAll` as a tripwire — if it ever finds the leak path
+// again, the regression has resurfaced.
 afterAll(() => {
-  // The leak path is predictable: cwd-relative `prototype/data/documents/`.
-  // From `bun test` invoked from `prototype/`, cwd is `prototype/`, so the
-  // singleton's resolved root is `<cwd>/prototype/data/documents/`. We
-  // only nuke that specific path, never higher.
   const leakRoot = resolve(process.cwd(), "prototype", "data", "documents");
   if (existsSync(leakRoot)) {
     rmSync(leakRoot, { recursive: true, force: true });
-    // Clean up empty parents up to (but not including) cwd.
     const parents = [
       resolve(process.cwd(), "prototype", "data"),
       resolve(process.cwd(), "prototype"),
     ];
     for (const p of parents) {
       try {
-        // rmdir only succeeds on empty dirs; safety net against deleting
-        // anything else.
         rmSync(p, { recursive: false, force: false });
       } catch {
         /* not empty or not present — leave it */
       }
     }
+    throw new Error(
+      `LocalFsDocumentStore default-root regression: found stray leak path ${leakRoot}. The default root must anchor on the repo root, not process.cwd().`,
+    );
   }
 });
 

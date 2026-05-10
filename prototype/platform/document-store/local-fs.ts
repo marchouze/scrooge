@@ -15,8 +15,11 @@
 //
 // Env var:
 //   BANK_DOCUMENT_STORE_PATH — absolute or relative root for the store.
-//   Defaults to `prototype/data/documents/` resolved against the current
-//   working directory.
+//   Defaults to `<repo-root>/prototype/data/documents/`. The default is
+//   resolved from a stable anchor (this module's own location, walked up
+//   to the repo's `CLAUDE.md`) — *not* `process.cwd()` — to avoid the
+//   double-`prototype/prototype/` leak when a caller runs from inside
+//   `prototype/` (e.g. `bun test`, `bun run scheduler:tick`).
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
@@ -34,12 +37,38 @@ import {
   type PutResult,
 } from "./types";
 
-const DEFAULT_ROOT = "prototype/data/documents";
+/**
+ * Walk up from `start` looking for the repo-root marker (`CLAUDE.md`).
+ * Mirrors the helper in `platform/recon/runtime-handler-sync.ts` and
+ * peers — the same anchor every other module uses. Bounded walk so a
+ * malformed deployment fails fast rather than chewing the filesystem.
+ */
+function findRepoRoot(start: string): string {
+  let dir = start;
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(resolve(dir, "CLAUDE.md"))) return dir;
+    const parent = resolve(dir, "..");
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error(
+    "LocalFsDocumentStore: cannot locate repo root (CLAUDE.md not found by walking up)",
+  );
+}
+
+/**
+ * Default document-store root, anchored on the repo root rather than
+ * `process.cwd()`. Resolved once at module-load time.
+ */
+function defaultRoot(): string {
+  const repoRoot = findRepoRoot(import.meta.dir);
+  return resolve(repoRoot, "prototype/data/documents");
+}
 
 export interface LocalFsDocumentStoreOptions {
   /**
    * Root directory. Defaults to `BANK_DOCUMENT_STORE_PATH` env var, then
-   * `prototype/data/documents/` resolved against `process.cwd()`.
+   * `<repo-root>/prototype/data/documents/`.
    */
   readonly root?: string;
   /**
@@ -59,8 +88,17 @@ export class LocalFsDocumentStore implements DocumentStore {
 
   constructor(opts: LocalFsDocumentStoreOptions = {}) {
     const envRoot = process.env.BANK_DOCUMENT_STORE_PATH;
-    const rootRaw = opts.root ?? envRoot ?? DEFAULT_ROOT;
-    this.root = isAbsolute(rootRaw) ? rootRaw : resolve(process.cwd(), rootRaw);
+    // Precedence: explicit opts.root → env var → repo-root-anchored default.
+    // Only the env var / opts paths may be relative; in that case they
+    // resolve against `process.cwd()` (caller-controlled). The default
+    // path is *always* absolute via `findRepoRoot`, so it never collides
+    // with cwd-shaped doubling like `prototype/prototype/...`.
+    const rootRaw = opts.root ?? envRoot;
+    if (rootRaw === undefined) {
+      this.root = defaultRoot();
+    } else {
+      this.root = isAbsolute(rootRaw) ? rootRaw : resolve(process.cwd(), rootRaw);
+    }
     this.verifyOnRead = opts.verifyOnRead ?? true;
   }
 
