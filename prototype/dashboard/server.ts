@@ -21,6 +21,25 @@
 //   • Re-derivation triggers: server startup, a polling timer, fs.watch on
 //     canonical paths (debounced), and any state-mutating POST.
 //
+// Two state paths (D-EVENT-STORE-SCALING Slice 3a, 2026-05-10):
+//   • SEED_STATE_PATH (`BANK_DASHBOARD_STATE`, default `seeds/dashboard-state.json`)
+//     is the *committed baseline*: the curated, version-controlled snapshot
+//     that the recon harness asserts canonical-source derivation can still
+//     reproduce. The server **never writes** to this path. CI / `bun run
+//     recon:dashboard` reads it.
+//   • RUNTIME_STATE_PATH (`BANK_DASHBOARD_RUNTIME_STATE`, default
+//     `.local/dashboard-state.json`) is the *live runtime cache*: re-derived
+//     on every poll / mutation / fs.watch tick. Lives under `.local/` (which
+//     is gitignored) so a dashboard run never makes `git status` dirty. Other
+//     local consumers (e.g. Owen's governance-cycle-prep) prefer this path
+//     when present; they fall back to the seed when running on a fresh
+//     runner with no live dashboard.
+// Background: prior to this change the server overwrote the committed seed
+// every 30s, which (a) made `git status` perpetually dirty for any dev who
+// ran `make dashboard`, and (b) embedded local-only `.local/event.db` events
+// (T-stamps, decisionsResolved entries) that CI couldn't reproduce. See
+// `Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md`.
+//
 // Substrate-replacement seam (P6 — upward chain). The local Bun.serve
 // implementation is replaced at M8 by an Azure Container App; the HTTP
 // surface and event integration are unchanged. The fs.watch trigger is
@@ -29,8 +48,14 @@
 //
 // Author: Atlas · Anya (derivation)
 
-import { type FSWatcher, existsSync, watch as fsWatch, readFileSync } from "node:fs";
-import { extname, join, normalize, resolve } from "node:path";
+import {
+  type FSWatcher,
+  existsSync,
+  watch as fsWatch,
+  mkdirSync,
+  readFileSync,
+} from "node:fs";
+import { dirname, extname, join, normalize, resolve } from "node:path";
 
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
@@ -66,7 +91,14 @@ const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);
 const WATCH_DEBOUNCE_MS = Number(process.env.BANK_DASHBOARD_WATCH_DEBOUNCE_MS ?? 500);
 const REPO_ROOT = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
-const STATE_PATH = process.env.BANK_DASHBOARD_STATE ?? "seeds/dashboard-state.json";
+// Read-only committed seed; never overwritten by the server. Recon harness
+// reads this path (`prototype/seeds/dashboard-state.json`) to assert that
+// canonical-source derivation reproduces the committed baseline.
+const SEED_STATE_PATH = process.env.BANK_DASHBOARD_STATE ?? "seeds/dashboard-state.json";
+// Live runtime cache; re-derived on every poll / mutation / watch event.
+// Lives under `.local/` (gitignored) so the server never dirties git state.
+const RUNTIME_STATE_PATH =
+  process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
 const PUBLIC_DIR = resolve(import.meta.dir, "public");
 const VALID_ACTIONS: readonly DecisionAction[] = ["approve", "defer", "modify", "request-revision"];
 
@@ -79,12 +111,20 @@ const SOURCES = (() => {
 })();
 const EVENTS = eventSourceFromStore(eventStore);
 
+function ensureRuntimeDir(path: string): void {
+  const dir = dirname(path);
+  if (dir && dir !== "." && !existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
 let cachedState: DashboardState = bootDerive();
 
 function bootDerive(): DashboardState {
   try {
     const s = deriveState({ sources: SOURCES, events: EVENTS });
-    saveState(s, STATE_PATH);
+    ensureRuntimeDir(RUNTIME_STATE_PATH);
+    saveState(s, RUNTIME_STATE_PATH);
     return s;
   } catch (e) {
     logger.error({ err: (e as Error).message }, "initial derivation failed");
@@ -96,8 +136,12 @@ function refresh(reason: string): void {
   try {
     const next = deriveState({ sources: SOURCES, events: EVENTS });
     cachedState = next;
-    saveState(next, STATE_PATH);
-    logger.debug({ reason, asOf: next.asOf }, "dashboard re-derived");
+    ensureRuntimeDir(RUNTIME_STATE_PATH);
+    saveState(next, RUNTIME_STATE_PATH);
+    logger.debug(
+      { reason, asOf: next.asOf, runtimePath: RUNTIME_STATE_PATH },
+      "dashboard re-derived",
+    );
   } catch (e) {
     // Failing closed: keep serving the previous state, log loudly.
     logger.error(
@@ -501,5 +545,13 @@ const server = Bun.serve({
   },
 });
 
-logger.info({ port: server.port, refreshMs: REFRESH_MS }, "Bank dashboard live");
+logger.info(
+  {
+    port: server.port,
+    refreshMs: REFRESH_MS,
+    seedStatePath: SEED_STATE_PATH,
+    runtimeStatePath: RUNTIME_STATE_PATH,
+  },
+  "Bank dashboard live",
+);
 console.log(`\n  Bank dashboard:  http://localhost:${server.port}\n`);
