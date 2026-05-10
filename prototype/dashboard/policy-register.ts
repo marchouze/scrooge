@@ -16,10 +16,39 @@
 // Author: Anya (data)
 
 import { existsSync, readFileSync } from "node:fs";
+import { basename } from "node:path";
 
 import type { Policy, PolicyBind, PolicySource, PolicyStatus } from "./types";
 
 const TABLE_ROW = /^\s*\|(.*)\|\s*$/;
+
+// The canonical policy register basename — included as a `sourceFiles[]`
+// fallback for every policy so that a row always has *something*
+// previewable, and the user lands on the row-of-truth for any policy
+// whose authoring document is not yet split out into a standalone file.
+const POLICY_REGISTER_BASENAME = "2026-05-06_policy-register.md";
+
+// Match `Owner Inbox/<name>.md` references appearing inline in any cell
+// (typically the status cell). We deliberately match `Owner Inbox/`
+// rather than a bare `.md` so we don't pick up procedure-file mentions
+// like `procedure secure-sdlc.md` (those live under
+// `Procedures/by-policy/`, not `Owner Inbox/`).
+const OWNER_INBOX_MD_REF = /Owner\s+Inbox\/([A-Za-z0-9._-]+\.md)/g;
+
+function extractOwnerInboxPolicyFiles(...cells: string[]): string[] {
+  const out = new Set<string>();
+  for (const cell of cells) {
+    if (!cell) continue;
+    for (const m of cell.matchAll(OWNER_INBOX_MD_REF)) {
+      const name = m[1];
+      if (!name) continue;
+      // Defensive: strip any path segment so the result is always a
+      // basename suitable for the `/api/policy/:filename` allow-list.
+      out.add(basename(name));
+    }
+  }
+  return Array.from(out);
+}
 
 // ---------------------------------------------------------------------------
 // Citation classifiers — keyword sets harvested from the obligations and
@@ -498,6 +527,16 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
     const id = policyId(row.domainNumber, name);
     const linkedObligations = linkIdx.get(normalisePolicyName(name)) ?? [];
 
+    // Per-policy source files: any `Owner Inbox/<name>.md` reference in
+    // the citation or status cell, plus the policy register itself as
+    // the canonical fallback. De-duped, register first so the default
+    // preview lands on the row-of-truth.
+    const explicit = extractOwnerInboxPolicyFiles(citation ?? "", statusCell ?? "");
+    const sourceFiles = [
+      POLICY_REGISTER_BASENAME,
+      ...explicit.filter((f) => f !== POLICY_REGISTER_BASENAME),
+    ];
+
     out.push({
       id,
       name,
@@ -512,6 +551,7 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
       statusRaw: (statusCell ?? "").trim(),
       mvp,
       linkedObligations,
+      sourceFiles,
     });
   }
   return out;

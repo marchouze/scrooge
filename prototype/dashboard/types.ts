@@ -450,6 +450,16 @@ export interface Policy {
   mvp: boolean;
   /** ORG-* obligation IDs whose Fulfilment-policy column names this policy. */
   linkedObligations: readonly string[];
+  /**
+   * Source markdown files that author this policy, basenames only (the
+   * server resolves under `Owner Inbox/`). Always non-empty: the canonical
+   * policy register is included for every policy as the row-of-truth, and
+   * any explicit `Owner Inbox/...md` path mentioned in the status cell is
+   * appended (e.g. policies that point at a standalone document or one of
+   * the `core-policies-*.md` bundles). The `/api/policy/:filename`
+   * endpoint allow-list is the union of these paths.
+   */
+  sourceFiles: readonly string[];
 }
 
 export interface DashboardState {
