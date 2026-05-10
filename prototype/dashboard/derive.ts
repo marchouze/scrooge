@@ -1669,7 +1669,12 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   // recent-first. This replaces the prior pure date-sort which interleaved
   // open / resolved / informational and made the queue hard to scan.
   const resolvedIds = new Set(resolved.map((r) => r.id));
-  const rawOwnerInbox = parseOwnerInbox(opts.sources.ownerInboxDir);
+  // Cap at 200 (was 25 default). Autonomous agent runs now produce dozens of
+  // deliverables per scheduler tick (per S8 Tier 1 substrate, PRs #185-#190);
+  // 25 dropped legitimate items within a single tick. The renderer adds
+  // "Show older" pagination on top of this cap so the visual feed stays
+  // scannable without losing audit-trail items.
+  const rawOwnerInbox = parseOwnerInbox(opts.sources.ownerInboxDir, 200);
   const ownerInboxFeed: OwnerInboxItem[] = rawOwnerInbox
     .map((item): OwnerInboxItem => {
       if (!item.decisionRequired || !item.decisionId) return item;
