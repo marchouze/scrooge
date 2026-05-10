@@ -342,8 +342,7 @@ function ownerInboxTags(item) {
   const haystack = `${item.filename || ""} ${item.title || ""} ${item.displayTitle || ""}`;
   const re = /\b([DWM]-[A-Z][A-Z0-9-]{2,})\b/g;
   const seen = new Set(tags);
-  let m;
-  while ((m = re.exec(haystack)) !== null) {
+  for (const m of haystack.matchAll(re)) {
     const id = m[1];
     if (!seen.has(id)) {
       tags.push(id);
