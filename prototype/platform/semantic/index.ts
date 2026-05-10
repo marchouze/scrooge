@@ -48,3 +48,30 @@ export {
   tier1CapitalRatio,
   totalCapitalRatio,
 } from "./capital-entries";
+
+export {
+  SLICE_3_RWA_ENTRIES,
+  creditRwa,
+  marketRwa,
+  operationalRwa,
+  riskWeight,
+  totalRwa,
+} from "./risk-weight-entries";
+
+export {
+  SLICE_5_MARKET_RISK_ENTRIES,
+  interestRateGeneralRisk,
+  interestRateSpecificRisk,
+  equityPositionRisk,
+  foreignExchangeRisk,
+  commodityRisk,
+  marketRiskRwa,
+} from "./market-risk-entries";
+
+export {
+  SLICE_5_OP_RISK_ENTRIES,
+  grossIncomeBusinessLine,
+  opRiskCapitalBia,
+  opRiskCapitalTsa,
+  opRiskRwa,
+} from "./op-risk-entries";
