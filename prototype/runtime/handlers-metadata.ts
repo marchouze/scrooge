@@ -79,6 +79,13 @@ function entry(
  */
 export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Vera", "overnight-recon", "scheduled", { cadenceHours: 24 }),
+  // Vera's weekly codebase quality review — distinct from overnight-recon.
+  // Runs the deterministic-checkable subset of code-quality heuristics
+  // (any-density, swallowed-errors, legacy-bypass-watch). LLM-judgment
+  // findings (severity classification, principle-violation interpretation)
+  // remain Scrooge-coordinated until handler-LLM-runtime lands.
+  // Authority: D-AGENT-RUNTIME-AUTHORIZE (S8 / fleet-rollout slice).
+  entry("Vera", "codebase-quality-review", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Atlas", "substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
   entry("Helena", "risk-appetite-watch", "scheduled", { cadenceHours: 24 }),
   entry("Devon", "operational-resilience-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
