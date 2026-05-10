@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-10T07:07:14.012Z",
+  "asOf": "2026-05-10T07:34:18.995Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -29,7 +29,7 @@
       "instrumentsAnalysed": 4,
       "proceduresPopulated": 18,
       "proceduresPlanned": 78,
-      "ceoDecisionsActioned": 6,
+      "ceoDecisionsActioned": 25,
       "directReports": 11,
       "openGovernanceSeats": 2
     }
@@ -140,494 +140,6 @@
   ],
   "decisionsOpen": [
     {
-      "id": "S3",
-      "title": "Thin human layer at licence-day — composition and timing",
-      "category": "second-order",
-      "owner": "Owen",
-      "trigger": "Owen drafts; agent's next governance-cycle run",
-      "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_governance-framework.md"
-      ],
-      "brief": {
-        "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
-        "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
-        "options": [
-          {
-            "label": "Marc covers maximum seats (interim)",
-            "description": "Marc serves as CEO + Chair + IO + MLRO + FIC CO + interim director. NEDs + Auditor are the only additional humans.",
-            "consequence": "Lowest human-headcount; concentrates fit-and-proper risk on Marc; SARB may push back on IO + MLRO concentration."
-          },
-          {
-            "label": "Marc + minimum independent layer",
-            "description": "Marc covers CEO. NEDs (2-3) cover Chair + AC chair + RC chair. Separate IO, separate MLRO + FIC CO, separate Auditor.",
-            "consequence": "5-7 additional humans. SARB-credible; cleaner fit-and-proper distribution."
-          },
-          {
-            "label": "Standard SARB-licensed bank composition",
-            "description": "Full Board (Chair + 3-4 NEDs + 1-2 EDs), separate CEO, CRO, CFO, CISO, IO, MLRO, FIC CO, Auditor, FAIS KIs.",
-            "consequence": "10-15 humans. Highest cost; safest licence-application posture; closest to a conventional bank."
-          },
-          {
-            "label": "Defer until SARB engagement",
-            "description": "Hold the decision until external counsel (S5) advises on minimum composition.",
-            "consequence": "Owen drafts alternatives; decision reopens after counsel engagement."
-          }
-        ],
-        "recommendation": {
-          "stance": "Marc + minimum independent layer.",
-          "reasoning": "SARB licence-application credibility requires independent IO and independent MLRO; Marc covering all four roles (CEO + IO + MLRO + Chair) concentrates fit-and-proper exposure and weakens the application. NEDs are required by Banks Act regardless. Going beyond the minimum independent layer is premature before counsel engages."
-        },
-        "dependencies": {
-          "gatedOn": [],
-          "gates": [
-            {
-              "ref": "ac-chair-search",
-              "title": "AC-chair search",
-              "status": "open"
-            },
-            {
-              "ref": "rc-chair-search",
-              "title": "RC-chair search",
-              "status": "open"
-            },
-            {
-              "ref": "board-formation",
-              "title": "Full Board formation",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Owen",
-            "role": "CoSec",
-            "position": "Drafter; runs the Board secretariat."
-          },
-          {
-            "name": "Marc",
-            "role": "CEO",
-            "position": "Decides timing and chairs the search."
-          },
-          {
-            "name": "Helena",
-            "role": "CRO",
-            "position": "Will be material in RC composition."
-          },
-          {
-            "name": "Camille",
-            "role": "CFO",
-            "position": "Will be material in AC composition."
-          },
-          {
-            "name": "Thandiwe",
-            "role": "CAE",
-            "position": "AC-chair will be Thandiwe's functional reporting line once a Board AC is constituted."
-          }
-        ],
-        "timeline": "Owen drafts roadmap (~3 weeks).",
-        "supportingDocs": [
-          {
-            "path": "Owner Inbox/2026-05-06_governance-framework.md",
-            "title": "Governance Framework — interim Board arrangement",
-            "summary": "Reserved matters; sub-committee charters; Interim Risk Forum + Interim Audit Forum running until Board exists."
-          },
-          {
-            "path": "Team/Owen.md",
-            "title": "Owen persona",
-            "summary": "Mandate; Companies Act fluency; Board-pathway custodianship."
-          },
-          {
-            "path": "Team/Iris.md",
-            "title": "Iris persona",
-            "summary": "POPIA s.56 IO substrate; designation requires natural person."
-          }
-        ]
-      },
-      "note": "AI-driven bank reframe (2026-05-07): statutory humans appear at licence-day in the minimum number SA law requires. Marc's interim coverage of multiple seats (CEO + Chair + IO + MLRO) is the default until SARB / Companies Act forces otherwise."
-    },
-    {
-      "id": "S5",
-      "title": "External legal counsel for SARB licence application",
-      "category": "second-order",
-      "owner": "Imani",
-      "trigger": "Imani recommends 2–3 firms with strengths-and-weaknesses notes",
-      "decisionForCEO": "Engage / when / which firm.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-06_next-decisions-proposal.md"
-      ],
-      "brief": {
-        "summary": "Major-firm external counsel is conventionally engaged 6–9 months ahead of SARB licence application. Imani recommends 2–3 firms with strengths-and-weaknesses notes.",
-        "background": "Imani is the internal legal-as-code engineer; she runs ECTA execution, master-agreement-as-code, clause libraries, and the legal-entity tree. SARB licence applications conventionally engage a major-firm partner alongside internal counsel for: application drafting (long-form regulatory submissions), regulator engagement and meetings, licence-condition negotiation, and post-grant licence-condition compliance setup. Engagement timing is typically 6–9 months ahead of lodgment. Indicative licence lodgment from today is 12–18 months out, so the engagement decision can wait ~6 months but Imani's recommendation paper can land ahead of the engagement decision.\n\nUnder the AI-driven-bank reframe (2026-05-07), this decision is real and unchanged in shape; engagement timing is gated on the licence-application clock starting, which itself is gated on substrate-complete (the new pre-licence go-live readiness gate).",
-        "options": [
-          {
-            "label": "Engage now",
-            "description": "Engage a partner firm immediately.",
-            "consequence": "Earliest start; some retainer cost during pre-application phase; firm becomes a deep partner ahead of application."
-          },
-          {
-            "label": "Engage 6 months pre-lodgment",
-            "description": "Standard timing.",
-            "consequence": "Conventional engagement; firm has time to draft and run regulator meetings; matches Imani's likely recommendation."
-          },
-          {
-            "label": "Engage 9 months pre-lodgment",
-            "description": "Conservative timing; firm has full window.",
-            "consequence": "Slightly more cost; full preparation runway."
-          },
-          {
-            "label": "No external counsel",
-            "description": "Run application via internal Imani only.",
-            "consequence": "Significantly higher application risk; not market-standard for SA banking licences."
-          }
-        ],
-        "recommendation": {
-          "stance": "Engage 6–9 months ahead of lodgment; let Imani's recommendation paper land first.",
-          "reasoning": "External counsel is essentially required for a credible SARB application. Timing 6–9 months ahead is conventional and well-justified. Decision can wait ~6 months; Imani's recommendation paper can land in the meantime."
-        },
-        "dependencies": {
-          "gatedOn": [
-            {
-              "ref": "licence-application-timing",
-              "title": "SARB licence-application sequencing (long-horizon)",
-              "status": "open"
-            }
-          ],
-          "gates": [
-            {
-              "ref": "licence-application-prep",
-              "title": "Formal licence-application preparation",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Imani",
-            "role": "Legal-as-code engineer",
-            "position": "Drafter; runs the recommendation paper."
-          },
-          {
-            "name": "Marc",
-            "role": "CEO",
-            "position": "Engagement decision."
-          },
-          {
-            "name": "Owen",
-            "role": "CoSec",
-            "position": "Governance interface; engagement letter signing pathway."
-          },
-          {
-            "name": "Camille",
-            "role": "CFO",
-            "position": "Cost envelope."
-          }
-        ],
-        "timeline": "Imani drafts when ready; not urgent.",
-        "supportingDocs": [
-          {
-            "path": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
-            "title": "Next-decisions proposal §9 (S5)",
-            "summary": "Framing of the external-counsel question."
-          },
-          {
-            "path": "Owner Inbox/2026-05-06_strategic-foundation.md",
-            "title": "Strategic foundation",
-            "summary": "Licence deferred; ~12–18 month indicative lodgment timeline informs the engagement decision."
-          },
-          {
-            "path": "Team/Imani.md",
-            "title": "Imani persona",
-            "summary": "Mandate boundaries — internal legal-as-code; external partner-firm relationship is Marc's call with her recommendation."
-          }
-        ]
-      }
-    },
-    {
-      "id": "S6",
-      "title": "API + cloud cost budget for the build phase",
-      "category": "near-term",
-      "owner": "Marc",
-      "trigger": "Marc sets directly; Camille tracks against actuals",
-      "decisionForCEO": "Set the monthly Anthropic API + Azure cloud cost cap for the build phase, and the trigger for revisiting it.",
-      "sourceDocs": [
-        "memory/project_ai_driven_bank.md"
-      ],
-      "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). The real cost is API + cloud + Marc's attention; this decision sets the dollar cap.",
-      "brief": {
-        "summary": "Under the AI-driven-bank reframe, the bank's real costs during build are Anthropic API spend and (when M8 cloud lift happens) Azure infrastructure. Marc sets the monthly cap; Camille tracks actuals against it.",
-        "background": "Real cost lines for the build phase: (1) Anthropic API tokens — billed monthly to Marc's Anthropic account; scales with agent activity, prompt-cache hit rate, and session count; (2) Azure cloud infrastructure — zero today (local Bun + sqlite); real after M8 lift; order-of-magnitude $X00s-$X,000s/month at the substrate scope. No payroll, no insurance, no rent, no professional fees during the build. The decision sets the monthly cap and the trigger for revisiting (e.g. cap hit two months in a row, or Atlas / Anya request budget for a specific build sub-phase).",
-        "options": [
-          {
-            "label": "Tight cap with monthly review",
-            "description": "Low monthly cap; review every month; expand as needed.",
-            "consequence": "Forces explicit decision each cycle; keeps budget conscious; may slow build."
-          },
-          {
-            "label": "Generous cap with quarterly review",
-            "description": "Higher monthly cap; review quarterly.",
-            "consequence": "Less friction; higher absolute spend; lower decision overhead."
-          },
-          {
-            "label": "Cap by sub-phase (M-phase aligned)",
-            "description": "Cap derived from Atlas's M-phase cost estimates; reset per M-phase.",
-            "consequence": "Aligns budget to engineering sequence; requires Atlas estimates to land first."
-          },
-          {
-            "label": "No formal cap; review on signal",
-            "description": "No pre-agreed cap; review when monthly bill triggers attention.",
-            "consequence": "Lowest overhead; weakest discipline; only suitable while spend is small."
-          }
-        ],
-        "recommendation": {
-          "stance": "Tight cap with monthly review during early build; transition to cap-by-sub-phase as Atlas's M-phase cost estimates land.",
-          "reasoning": "API spend is genuinely small today; monthly review creates the discipline of revisiting cost intentionally rather than letting it drift. As substrate work scopes up, M-phase-aligned caps give engineering predictability."
-        },
-        "dependencies": {
-          "gatedOn": [
-            {
-              "ref": "ai-driven-reframe",
-              "title": "AI-driven bank operating model",
-              "status": "resolved"
-            }
-          ],
-          "gates": [
-            {
-              "ref": "S7",
-              "title": "Substrate-completeness budget",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Marc",
-            "role": "CEO + sole shareholder of compute",
-            "position": "Decides cap."
-          },
-          {
-            "name": "Camille",
-            "role": "CFO",
-            "position": "Tracks actuals; surfaces breaches."
-          },
-          {
-            "name": "Atlas",
-            "role": "Platform architect",
-            "position": "Estimates substrate-build cost; proposes M-phase-aligned caps."
-          }
-        ],
-        "timeline": "Marc decides at next session; cap effective immediately.",
-        "supportingDocs": [
-          {
-            "path": "memory/project_ai_driven_bank.md",
-            "title": "Bank is AI-driven, not a simulation",
-            "summary": "Authoritative reframe (2026-05-07)."
-          },
-          {
-            "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-            "title": "Atlas — agent-runtime-substrate spec",
-            "summary": "Engineering substrate scope; informs cost estimates."
-          }
-        ]
-      }
-    },
-    {
-      "id": "S7",
-      "title": "Substrate-completeness budget — sessions / agent runs to substrate-complete",
-      "category": "near-term",
-      "owner": "Atlas + Anya",
-      "trigger": "Atlas + Anya draft against the agent-runtime-substrate spec",
-      "decisionForCEO": "Approve the substrate-completeness target measured in agent runs / sessions, and the scope/quality tradeoff.",
-      "sourceDocs": [
-        "memory/project_ai_driven_bank.md",
-        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-      ],
-      "note": "Replaces retired S1 under AI-driven-bank reframe (2026-05-07). Defines the build-phase end condition in agent-time units.",
-      "brief": {
-        "summary": "Build phase ends at the pre-licence go-live readiness gate (substrate-complete). Atlas + Anya draft a substrate-completeness budget: how many agent runs / sessions of focused engineering work are needed to reach the gate, broken down by domain.",
-        "background": "Under Principle 7 + the AI-driven-bank reframe, build-phase duration is measured in agent runs and Marc's session cadence, not weeks. Atlas + Anya's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md` is the input. The decision approves a scope-vs-quality tradeoff: e.g. minimum-viable substrate (event runtime + scheduler + recon harnesses) is X sessions; production-grade substrate (with full Vera audit-pipeline coverage and projection persistence) is X+Y sessions.",
-        "options": [
-          {
-            "label": "Minimum-viable substrate",
-            "description": "Smallest substrate that can run agents autonomously between sessions; defer projection persistence, ML platform, advanced detection.",
-            "consequence": "Earlier licence-application; more substrate gaps to close at licence-day."
-          },
-          {
-            "label": "Production-grade substrate",
-            "description": "Full substrate including projection persistence, ML platform, advanced detection, full Vera audit pipelines.",
-            "consequence": "Longer build phase; cleaner licence-application posture."
-          },
-          {
-            "label": "Phase-gated (minimum then production)",
-            "description": "Hit minimum-viable first; reassess at that gate before extending to production-grade.",
-            "consequence": "Optionality preserved; mid-phase decision required."
-          }
-        ],
-        "recommendation": {
-          "stance": "Phase-gated (minimum then production).",
-          "reasoning": "Reaching minimum-viable proves the model works; the reassessment gate is the right place to decide whether to extend or push to licence-application directly. Avoids upfront over-commitment."
-        },
-        "dependencies": {
-          "gatedOn": [
-            {
-              "ref": "S6",
-              "title": "API + cloud cost budget",
-              "status": "open"
-            },
-            {
-              "ref": "S8",
-              "title": "Agent-runtime-substrate brief approval",
-              "status": "open"
-            }
-          ],
-          "gates": [
-            {
-              "ref": "pre-licence-readiness",
-              "title": "Pre-licence go-live readiness gate",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Atlas",
-            "role": "Platform architect",
-            "position": "Substrate scope; effort estimate."
-          },
-          {
-            "name": "Anya",
-            "role": "Data engineer",
-            "position": "Projection / data-substrate scope."
-          },
-          {
-            "name": "Vera",
-            "role": "Internal audit engineer",
-            "position": "Audit-pipeline coverage requirements."
-          },
-          {
-            "name": "Marc",
-            "role": "CEO",
-            "position": "Approves scope-vs-quality tradeoff."
-          }
-        ],
-        "timeline": "Atlas + Anya draft against the substrate spec; Marc approves at next governance session.",
-        "supportingDocs": [
-          {
-            "path": "memory/project_ai_driven_bank.md",
-            "title": "Bank is AI-driven, not a simulation",
-            "summary": "Authoritative reframe."
-          },
-          {
-            "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-            "title": "Atlas — agent-runtime-substrate spec",
-            "summary": "The substrate scope that this budget sizes."
-          },
-          {
-            "path": "Team/Vera.md",
-            "title": "Vera persona",
-            "summary": "Substrate-gap inventory pipelines (#10-#15) gated on the runtime."
-          }
-        ]
-      }
-    },
-    {
-      "id": "S8",
-      "title": "Agent-runtime-substrate brief — approve scope",
-      "category": "near-term",
-      "owner": "Atlas + Anya",
-      "trigger": "Atlas's spec at `Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md`",
-      "decisionForCEO": "Approve the agent-runtime-substrate scope so engineering can begin.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
-      ],
-      "note": "Substrate is the binding constraint on autonomous agents actually running between sessions. Every persona's 'Gap to target state' closes when this lands.",
-      "brief": {
-        "summary": "Atlas has drafted the agent-runtime-substrate spec. Approval unblocks the engineering work that closes the 'Scrooge-coordinated runs' gap noted in every persona's operating spec. Vera's planned recon pipelines #10-#15 are gated on the same substrate.",
-        "background": "Per Principle 7, every persona is a standing autonomous agent that runs on its own cadence. Today the substrate is partial — agents are realised by Scrooge-coordinated in-session runs. The substrate that closes the gap: event-driven scheduler, AgentEscalation / AgentDecision / WorkstreamRegistered / RiskRaised event types, event-sourced workstream lifecycle (so dashboard-curated.json's inFlight + risks fields can be retired), and projection persistence. Atlas's spec at the linked path defines the scope; this decision approves it.",
-        "options": [
-          {
-            "label": "Approve as drafted",
-            "description": "Atlas's full scope.",
-            "consequence": "Maximum substrate coverage; longest build."
-          },
-          {
-            "label": "Approve with named cuts",
-            "description": "Approve scope minus specific items (e.g. defer ML platform).",
-            "consequence": "Faster substrate landing; named gaps to close later."
-          },
-          {
-            "label": "Request revision",
-            "description": "Substantive scope disagreement.",
-            "consequence": "Atlas re-drafts; one cycle."
-          },
-          {
-            "label": "Defer",
-            "description": "Hold pending S6 / S7 outcomes.",
-            "consequence": "Substrate work blocked until then."
-          }
-        ],
-        "recommendation": {
-          "stance": "Approve with named cuts: defer ML platform; defer advanced detection (deception, UBA); land minimum-viable runtime first.",
-          "reasoning": "Minimum-viable runtime is the binding constraint on every persona; the deferred items are not (Senna can keep operating against synthetic flows). Phase-gated approach is consistent with S7's recommended stance."
-        },
-        "dependencies": {
-          "gatedOn": [],
-          "gates": [
-            {
-              "ref": "agent-fleet-autonomous",
-              "title": "Agents run autonomously between sessions",
-              "status": "open"
-            }
-          ]
-        },
-        "stakeholders": [
-          {
-            "name": "Atlas",
-            "role": "Platform architect",
-            "position": "Drafter; lead engineer."
-          },
-          {
-            "name": "Anya",
-            "role": "Data engineer",
-            "position": "Co-owner of event-substrate seam."
-          },
-          {
-            "name": "Vera",
-            "role": "Internal audit engineer",
-            "position": "Pipelines #10-#15 gated on substrate."
-          },
-          {
-            "name": "Senna",
-            "role": "Security engineer",
-            "position": "Threat model on the substrate."
-          },
-          {
-            "name": "Marc",
-            "role": "CEO",
-            "position": "Approves scope."
-          }
-        ],
-        "timeline": "Marc decides at next session.",
-        "supportingDocs": [
-          {
-            "path": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
-            "title": "Atlas — agent-runtime-substrate spec",
-            "summary": "The drafted scope."
-          },
-          {
-            "path": "Team/Vera.md",
-            "title": "Vera persona",
-            "summary": "Pipelines #10-#15 (agent-spec integrity, mandate-agent reconciliation, substrate-gap inventory, escalation-channel discipline, agent-scope) — all substrate-gated."
-          },
-          {
-            "path": "memory/project_principle_7_autonomous.md",
-            "title": "Principle 7",
-            "summary": "Why the substrate is foundational."
-          }
-        ]
-      }
-    },
-    {
       "id": "D-REGULATORY-READINESS-GATE-PLAN",
       "title": "Regulatory-readiness gate plan — top-3 workstreams for the licence-application package",
       "category": "medium-term",
@@ -641,170 +153,186 @@
         "stance": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
         "reasoning": ""
       }
-    },
-    {
-      "id": "D-CI-GATE-INTEGRITY",
-      "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
-      "category": "near-term",
-      "owner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
-      "trigger": ">",
-      "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md"
-      ]
-    },
-    {
-      "id": "D-HIRE-SIX-SEATS-PACK",
-      "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
-      "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
-      "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
-      ],
-      "recommendation": {
-        "stance": "**Approve all six** role-brief recommendations as drafted.",
-        "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
-      }
-    },
-    {
-      "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
-      "title": "New Product Approval Policy v1.0",
-      "category": "near-term",
-      "owner": "Saskia (lead) · Helena · Camille · Zara",
-      "trigger": "Binding gate that any new product family, instrument type, currency, or material extension must clear before the franchise transacts; 8 lifecycle stages, 14 substantive due-diligence dimensions, BRC primary approval (CEO ratification interim), event-typed throughout.",
-      "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as drafted.",
-        "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
-      }
-    },
-    {
-      "id": "D-HIRE-NED-3",
-      "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "trigger": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
-      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as drafted.",
-        "reasoning": "Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat)."
-      }
-    },
-    {
-      "id": "D-HIRE-NED-2",
-      "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "trigger": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
-      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as drafted.",
-        "reasoning": "Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation."
-      }
-    },
-    {
-      "id": "D-HIRE-INDEPENDENT-CHAIR",
-      "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-      "trigger": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
-      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as drafted.",
-        "reasoning": "Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test."
-      }
-    },
-    {
-      "id": "D-HIRE-HUMAN-CRO",
-      "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-      "trigger": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
-      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input.",
-        "reasoning": "Open questions in §9 require CEO direction before vendor engagement."
-      }
-    },
-    {
-      "id": "D-HIRE-COMPLIANCE-LEAD",
-      "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "trigger": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
-      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md"
-      ],
-      "recommendation": {
-        "stance": "Approve as drafted.",
-        "reasoning": "Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search."
-      }
-    },
-    {
-      "id": "D-HIRE-COMPANY-SECRETARY",
-      "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
-      "category": "near-term",
-      "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "trigger": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
-      "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md"
-      ],
-      "recommendation": {
-        "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
-        "reasoning": ""
-      }
-    },
-    {
-      "id": "D-EVENT-STORE-SCALING",
-      "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-      "category": "near-term",
-      "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-      "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-      "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-      ],
-      "recommendation": {
-        "stance": "Approve the framing and the Azure target.",
-        "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-      }
-    },
-    {
-      "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-      "title": "Product-construction substrate — typed Product composition from CDM primitives",
-      "category": "near-term",
-      "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-      "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-      "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-      "sourceDocs": [
-        "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-      ],
-      "recommendation": {
-        "stance": "Approve.",
-        "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-      }
     }
   ],
   "decisionsResolved": [
+    {
+      "id": "D-CI-GATE-INTEGRITY",
+      "title": "D-CI-GATE-INTEGRITY closed — substrate-fix landed; enforcement enabled via repo-visibility shift",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Both halves of Vera's recommendation in place. Substrate-fix: Atlas PR #105 merged, bun run ci exit 0. Enforcement: branch protection enabled on main with ci as required check (strict mode), force-pushes/deletions blocked, enforce_admins false (single-CEO break-glass retained).",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "github is now public — chat-intake 2026-05-10"
+    },
+    {
+      "id": "D-CI-GITHUB-PLAN-UPGRADE-DEFER",
+      "title": "GitHub plan upgrade for branch-protection enforcement — defer (with reminder)",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Plan-upgrade half of D-CI-GATE-INTEGRITY deferred. Substrate-fix half (Atlas #105) proceeds. Operating posture: red CI blocks merge via agent-discipline until upgrade lands. SUPERSEDED same day by D-CI-GATE-INTEGRITY closure.",
+      "sourceDoc": "(unsourced)",
+      "action": "defer",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "Defer but remember need to upgrade — chat-intake 2026-05-10"
+    },
+    {
+      "id": "D-HIRE-COMPANY-SECRETARY",
+      "title": "Company Secretary (separate human, deputy-IO under POPIA Reg. 4) — approve role-brief; open active search",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Search through CGISA + specialist-exec-search; comp band Tier-2 SA bank CoSec all-in R3.0-R4.5m + 5-10% deputy-IO premium. Fractional pre-licence-day, full-time at licence-application lodgment.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-HIRE-COMPLIANCE-LEAD",
+      "title": "Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) — approve role-brief; open active search",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Triple-hat stands (workload-concentration not statutory-defect). Channels: CISA, FIC-accredited-MLRO, SARB alumni, specialist compliance-search. Indicative comp R2.4-R3.4m TGV.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-HIRE-NED-3",
+      "title": "NED #3 (non-strict-independent, AC member) — approve role-brief; open active search",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Primary candidate-class: SA-Reserve-Bank-alumni or recently-retired tier-1-bank-CRO/CFO/MLRO; secondary: deep CDD/financial-crime practitioner.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-HIRE-NED-2",
+      "title": "NED #2 (strict-independent, AC member) — approve role-brief; open active search",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Open immediately in parallel with Chair search; technology/cyber primary skills-axis bias from day one; final axis confirmation deferred until Chair shortlist substantially complete.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-HIRE-INDEPENDENT-CHAIR",
+      "title": "Independent Chair / AC Chair / S&E NED — approve role-brief; open active search",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Open active search via two SA Board-search firms in parallel; 4-6 month time-to-shortlist; Chair appointment ahead of NED #2 and NED #3; King IV substantive-independence test as binding gate.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-HIRE-HUMAN-CRO",
+      "title": "Human CRO (Priority-1) — approve role-brief; open active search",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Open executive-search engagement per role-brief §7 channels; Camille framing pass; SA-resident-only; conventional bank-CRO candidate class. Priority-1 first lodgment.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-HIRE-SIX-SEATS-PACK",
+      "title": "Approve all six thin-human-layer recruitment role-briefs as drafted; cross-cutting defaults stand",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "All six PAX role-briefs approved as drafted. Cross-cutting Q1-Q4 resolved at default. Nolan opens active search across all six channels.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "Yes — chat-intake 2026-05-10"
+    },
+    {
+      "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+      "title": "Product-construction substrate — typed Product layer + 12-event lifecycle family + policy-attestation seam",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Atlas+Kai+Saskia substrate adopted. Slices 1-3 authorised pre-M2 under Targeted budget. Q1-Q5 resolved per authors' recommendations.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "approve all 3 — chat-intake 2026-05-10"
+    },
+    {
+      "id": "D-EVENT-STORE-SCALING",
+      "title": "Event-store scaling design — adopt framing, Azure target, first three slices under Targeted budget",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Atlas's framing adopted: five-concern decomposition, Azure target architecture, snapshot+partition+tier strategy. Slices 1-3 authorised pre-M2 under Targeted budget. Q1-Q5 resolved per Atlas recommendation.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "approve all 3 — chat-intake 2026-05-10"
+    },
+    {
+      "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
+      "title": "New Product Approval Policy v1.0 — adopt",
+      "actionedAt": "2026-05-10T00:00:00.000Z",
+      "outcome": "Saskia's NPA Policy v1.0 transitions PLANNED to IN FORCE. CEO-interim primary approval until BRC constituted; BRC steady-state.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za",
+      "comment": "approve all 3 — chat-intake 2026-05-10"
+    },
+    {
+      "id": "D-M4-FX-SUB-DECISIONS",
+      "title": "M4 FX foundation — sub-decisions surfaced",
+      "actionedAt": "2026-05-09T12:00:00.000Z",
+      "outcome": "Approve M4 FX sub-decisions per Saskia+Kai pack.",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "D-S7-TARGETED-3-5-OPEN-QUESTIONS",
+      "title": "S7-Targeted #3 / #4 / #5 open questions — adjudication",
+      "actionedAt": "2026-05-08T12:00:00.000Z",
+      "outcome": "Approve all three author recommendation sets as drafted (Nadia validation v0, Rohan backtest v0, Saskia+Kai pre-trade gateway envelope v0).",
+      "sourceDoc": "(unsourced)",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S8",
+      "title": "Agent-runtime-substrate brief — approve scope",
+      "actionedAt": "2026-05-08T12:00:00.000Z",
+      "outcome": "Approve agent-runtime-substrate scope per Atlas spec (A0–A4 baseline).",
+      "sourceDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S7",
+      "title": "Substrate-completeness budget — sessions / agent runs to substrate-complete",
+      "actionedAt": "2026-05-08T12:00:00.000Z",
+      "outcome": "Approve Targeted budget envelope per Atlas substrate-completeness budget. Slices authorised pre-M2.",
+      "sourceDoc": "memory/project_ai_driven_bank.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S6",
+      "title": "API + cloud cost budget for the build phase",
+      "actionedAt": "2026-05-08T12:00:00.000Z",
+      "outcome": "Approve build-phase cost budget per Camille recommendation.",
+      "sourceDoc": "memory/project_ai_driven_bank.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S5",
+      "title": "External legal counsel for SARB licence application",
+      "actionedAt": "2026-05-08T12:00:00.000Z",
+      "outcome": "Approve external counsel engagement plan per Imani recommendation.",
+      "sourceDoc": "Owner Inbox/2026-05-06_next-decisions-proposal.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
+    {
+      "id": "S3",
+      "title": "Thin human layer at licence-day — composition and timing",
+      "actionedAt": "2026-05-08T12:00:00.000Z",
+      "outcome": "Approve thin-human-layer composition at licence-day per Owen+Imani recommendation. Refers downstream to D-THIN-HUMAN-LAYER-MINIMUM.",
+      "sourceDoc": "Owner Inbox/2026-05-06_governance-framework.md",
+      "action": "approve",
+      "actionedBy": "marc@tgv.co.za"
+    },
     {
       "id": "D1",
       "title": "Interim operating posture — build-only",
@@ -985,23 +513,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-HIRE-SIX-SEATS-PACK",
-              "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
-              "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
-              "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
-              ],
-              "recommendation": {
-                "stance": "**Approve all six** role-brief recommendations as drafted.",
-                "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-10",
@@ -1047,113 +559,7 @@
             }
           ],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-HIRE-SIX-SEATS-PACK",
-              "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
-              "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
-              "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
-              ],
-              "recommendation": {
-                "stance": "**Approve all six** role-brief recommendations as drafted.",
-                "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
-              }
-            },
-            {
-              "id": "D-HIRE-NED-3",
-              "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-              "trigger": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
-              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md"
-              ],
-              "recommendation": {
-                "stance": "Approve as drafted.",
-                "reasoning": "Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat)."
-              }
-            },
-            {
-              "id": "D-HIRE-NED-2",
-              "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-              "trigger": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
-              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md"
-              ],
-              "recommendation": {
-                "stance": "Approve as drafted.",
-                "reasoning": "Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation."
-              }
-            },
-            {
-              "id": "D-HIRE-INDEPENDENT-CHAIR",
-              "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-              "trigger": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
-              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md"
-              ],
-              "recommendation": {
-                "stance": "Approve as drafted.",
-                "reasoning": "Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test."
-              }
-            },
-            {
-              "id": "D-HIRE-HUMAN-CRO",
-              "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-              "trigger": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
-              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md"
-              ],
-              "recommendation": {
-                "stance": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input.",
-                "reasoning": "Open questions in §9 require CEO direction before vendor engagement."
-              }
-            },
-            {
-              "id": "D-HIRE-COMPLIANCE-LEAD",
-              "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-              "trigger": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
-              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md"
-              ],
-              "recommendation": {
-                "stance": "Approve as drafted.",
-                "reasoning": "Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search."
-              }
-            },
-            {
-              "id": "D-HIRE-COMPANY-SECRETARY",
-              "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
-              "category": "near-term",
-              "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-              "trigger": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
-              "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
-                "reasoning": ""
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-10",
@@ -1186,7 +592,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 8,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 15
     },
     {
@@ -1224,21 +630,6 @@
             "stance": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
             "reasoning": ""
           }
-        },
-        {
-          "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
-          "title": "New Product Approval Policy v1.0",
-          "category": "near-term",
-          "owner": "Saskia (lead) · Helena · Camille · Zara",
-          "trigger": "Binding gate that any new product family, instrument type, currency, or material extension must clear before the franchise transacts; 8 lifecycle stages, 14 substantive due-diligence dimensions, BRC primary approval (CEO ratification interim), event-typed throughout.",
-          "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
-          }
         }
       ],
       "recentlyResolvedDecisions": [],
@@ -1273,7 +664,7 @@
       "subordinates": [],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 5
     },
     {
@@ -1286,154 +677,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-CI-GATE-INTEGRITY",
-          "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
-          "category": "near-term",
-          "owner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
-          "trigger": ">",
-          "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md"
-          ]
-        },
-        {
-          "id": "D-HIRE-SIX-SEATS-PACK",
-          "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
-          "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
-          "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
-          ],
-          "recommendation": {
-            "stance": "**Approve all six** role-brief recommendations as drafted.",
-            "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
-          }
-        },
-        {
-          "id": "D-HIRE-NED-3",
-          "title": "PAX role-brief — NED #3 (AC member, non-strict-independent) (Priority-2, licence-day-bound)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-          "trigger": "Formal role-brief for the third NED (Audit Committee member) under D-THIN-HUMAN-LAYER-MINIMUM. The seat is deliberately non-strict-independent under Companies Act s.94(4)–(6) — the two-of-three independent-floor is satisfied by the Independent Chair (NED #1) and NED #2, freeing this seat to bring deep banking-regulatory or financial-crime practitioner depth that the strict-independence test would exclude.",
-          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_pax_role-brief_ned-3.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat)."
-          }
-        },
-        {
-          "id": "D-HIRE-NED-2",
-          "title": "PAX role-brief — NED #2 (AC member, strict-independent) (Priority-2, licence-day-bound)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-          "trigger": "Formal role-brief for the second independent Non-Executive Director — a strict-Companies-Act-s.94 substantive-independent NED sitting on the Audit Committee, deliberately scoped to *complement* the Independent Chair's skills profile rather than duplicate it. PAX recommends the seat be sourced primarily on a technology / cyber depth axis (with risk-modelling and transformation as substitutable second-best axes), with the precise axis confirmed once the Chair shortlist narrows so the AC's collective skills matrix balances against SARB PA's NED-independence-depth challenge under Owen §4.3.",
-          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_pax_role-brief_ned-2.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation."
-          }
-        },
-        {
-          "id": "D-HIRE-INDEPENDENT-CHAIR",
-          "title": "PAX role-brief — Independent Chair / AC Chair / S&E NED (Priority-2, licence-day-bound)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-          "trigger": "Formal role-brief for the single licence-day NED seat that simultaneously carries Board Chair, Audit Committee Chair, and the Companies Reg. 43 Social & Ethics independent-NED slot under the bank's \"minimum possible\" thin-human-layer composition. The seat is gated by King IV's *substantive* independence test read with Companies Act s.94(4)–(6), Banks Act s.60, and SARB Prudential Authority + BCBS Corporate Governance Principles 2015 expectation that the Board Chair of a regulated bank be substantively independent.",
-          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_pax_role-brief_independent-chair.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test."
-          }
-        },
-        {
-          "id": "D-HIRE-HUMAN-CRO",
-          "title": "PAX role-brief — Human CRO (Priority-1, licence-day-bound)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-          "trigger": "Formal role-brief for the Priority-1 separate human Chief Risk Officer authorised under D-THIN-HUMAN-LAYER-MINIMUM, sequenced to be appointed before SARB licence-application lodgment to resolve the Joint Standard 1 of 2024 operational-independence finding. Approves the search shape so Nolan (recruiter) may proceed to active search.",
-          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_pax_role-brief_human-cro.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input.",
-            "reasoning": "Open questions in §9 require CEO direction before vendor engagement."
-          }
-        },
-        {
-          "id": "D-HIRE-COMPLIANCE-LEAD",
-          "title": "PAX role-brief — Triple-hatted Compliance Lead (MLRO + FIC CO + POPIA IO) (Priority-2, licence-day-bound)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-          "trigger": "Formal role-brief for the Priority-2 triple-hatted Compliance Lead seat (MLRO under FIC s.43A, FIC Compliance Officer under FIC s.43B, POPIA Information Officer under POPIA s.56) — single human carrying the three statutory designations for Hoz Bank Limited (and Hoz Securities Limited under FIC Schedule 1 item 13) under D-THIN-HUMAN-LAYER-MINIMUM. Codifies mandate, fit-and-proper expectations, workload-concentration discipline, comp framing, search strategy, and timeline so Nolan (recruiter) may proceed to active search.",
-          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_pax_role-brief_compliance-lead.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search."
-          }
-        },
-        {
-          "id": "D-HIRE-COMPANY-SECRETARY",
-          "title": "PAX role-brief — Company Secretary (separate human, deputy-IO under POPIA Reg. 4) (Priority-2, licence-day-bound)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-          "trigger": "Formal role-brief for the Priority-2 separate-human Company Secretary under D-THIN-HUMAN-LAYER-MINIMUM. Statutory function under Companies Act ss.86–89 with substantive independence from CEO; deputy-IO designation under POPIA Reg. 4 placed on this seat per Mira (Compliance / RegTech engineer) + Zara (CCO) §4.2 split.",
-          "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_pax_role-brief_company-secretary.md"
-          ],
-          "recommendation": {
-            "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
-            "reasoning": ""
-          }
-        },
-        {
-          "id": "D-EVENT-STORE-SCALING",
-          "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-          "category": "near-term",
-          "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-          "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-          "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-          ],
-          "recommendation": {
-            "stance": "Approve the framing and the Azure target.",
-            "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-          }
-        },
-        {
-          "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-          "title": "Product-construction substrate — typed Product composition from CDM primitives",
-          "category": "near-term",
-          "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-          "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-          "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-          ],
-          "recommendation": {
-            "stance": "Approve.",
-            "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-          }
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1466,7 +710,7 @@
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 10,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 5
     },
     {
@@ -1479,38 +723,7 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-HIRE-SIX-SEATS-PACK",
-          "title": "CEO decision pack — D-HIRE × 6 (thin-human-layer recruitment, batched)",
-          "category": "near-term",
-          "owner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
-          "trigger": "One-pass adjudication of the six PAX (Role researcher) role-briefs lodged today under D-THIN-HUMAN-LAYER-MINIMUM. Six seats — Human CRO (P1), Independent Chair / AC Chair / S&E NED, NED #2 (strict-independent), NED #3 (non-strict-independent), Triple-hatted Compliance Lead, Company Secretary. Each sub-decision carries the role-brief's recommendation, the cross-brief sequencing implication, and a short list of CEO-direction items Nolan (Recruiter) needs back before opening active search.",
-          "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md"
-          ],
-          "recommendation": {
-            "stance": "**Approve all six** role-brief recommendations as drafted.",
-            "reasoning": "Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches."
-          }
-        },
-        {
-          "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
-          "title": "New Product Approval Policy v1.0",
-          "category": "near-term",
-          "owner": "Saskia (lead) · Helena · Camille · Zara",
-          "trigger": "Binding gate that any new product family, instrument type, currency, or material extension must clear before the franchise transacts; 8 lifecycle stages, 14 substantive due-diligence dimensions, BRC primary approval (CEO ratification interim), event-typed throughout.",
-          "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
-          }
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1543,7 +756,7 @@
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 5
     },
     {
@@ -1607,38 +820,7 @@
         }
       ],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
-        {
-          "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
-          "title": "New Product Approval Policy v1.0",
-          "category": "near-term",
-          "owner": "Saskia (lead) · Helena · Camille · Zara",
-          "trigger": "Binding gate that any new product family, instrument type, currency, or material extension must clear before the franchise transacts; 8 lifecycle stages, 14 substantive due-diligence dimensions, BRC primary approval (CEO ratification interim), event-typed throughout.",
-          "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
-          }
-        },
-        {
-          "id": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-          "title": "Product-construction substrate — typed Product composition from CDM primitives",
-          "category": "near-term",
-          "owner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-          "trigger": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-          "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md"
-          ],
-          "recommendation": {
-            "stance": "Approve.",
-            "reasoning": "Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits."
-          }
-        }
-      ],
+      "openDecisionsOwned": [],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
@@ -1671,7 +853,7 @@
       "subordinates": [],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 5
     },
     {
@@ -1684,121 +866,28 @@
       "hasOperatingSpec": true,
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
-      "openDecisionsOwned": [
+      "openDecisionsOwned": [],
+      "recentlyResolvedDecisions": [
         {
           "id": "S3",
           "title": "Thin human layer at licence-day — composition and timing",
-          "category": "second-order",
-          "owner": "Owen",
-          "trigger": "Owen drafts; agent's next governance-cycle run",
-          "decisionForCEO": "Decide which seats need real humans at licence-day (Board exec + NEDs, MLRO + FIC CO, IO, auditor, FAIS key individuals where applicable), who fills them, and how close to licence-grant they are appointed.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-06_governance-framework.md"
-          ],
-          "brief": {
-            "summary": "Banks Act + Companies Act + FIC + POPIA + FAIS together require a thin layer of real humans at licence-day. Owen drafts the composition (which seats, which humans, what cadence) for CEO approval. Replaces the prior 'when to start NED search' framing under the AI-driven-bank reframe.",
-            "background": "Under the AI-driven-bank operating model (2026-05-07), the bank's labour force is autonomous AI agents. Statutory humans are kept to the minimum the law requires. Realistically 5-10 humans at licence-day: Board exec + NEDs (Companies Act + Banks Act), CEO (Marc), MLRO + FIC Compliance Officer (FIC s.43A / s.43B), Information Officer (POPIA s.56), Auditor (Companies Act s.90 + Banks Act), and FAIS key individuals where Cat II/IIA mandate is sought. Marc currently covers CEO + interim Chair + interim IO + interim MLRO. Owen drafts which seats must have separate humans, candidate sourcing pathway, and timing relative to licence-application.",
-            "options": [
-              {
-                "label": "Marc covers maximum seats (interim)",
-                "description": "Marc serves as CEO + Chair + IO + MLRO + FIC CO + interim director. NEDs + Auditor are the only additional humans.",
-                "consequence": "Lowest human-headcount; concentrates fit-and-proper risk on Marc; SARB may push back on IO + MLRO concentration."
-              },
-              {
-                "label": "Marc + minimum independent layer",
-                "description": "Marc covers CEO. NEDs (2-3) cover Chair + AC chair + RC chair. Separate IO, separate MLRO + FIC CO, separate Auditor.",
-                "consequence": "5-7 additional humans. SARB-credible; cleaner fit-and-proper distribution."
-              },
-              {
-                "label": "Standard SARB-licensed bank composition",
-                "description": "Full Board (Chair + 3-4 NEDs + 1-2 EDs), separate CEO, CRO, CFO, CISO, IO, MLRO, FIC CO, Auditor, FAIS KIs.",
-                "consequence": "10-15 humans. Highest cost; safest licence-application posture; closest to a conventional bank."
-              },
-              {
-                "label": "Defer until SARB engagement",
-                "description": "Hold the decision until external counsel (S5) advises on minimum composition.",
-                "consequence": "Owen drafts alternatives; decision reopens after counsel engagement."
-              }
-            ],
-            "recommendation": {
-              "stance": "Marc + minimum independent layer.",
-              "reasoning": "SARB licence-application credibility requires independent IO and independent MLRO; Marc covering all four roles (CEO + IO + MLRO + Chair) concentrates fit-and-proper exposure and weakens the application. NEDs are required by Banks Act regardless. Going beyond the minimum independent layer is premature before counsel engages."
-            },
-            "dependencies": {
-              "gatedOn": [],
-              "gates": [
-                {
-                  "ref": "ac-chair-search",
-                  "title": "AC-chair search",
-                  "status": "open"
-                },
-                {
-                  "ref": "rc-chair-search",
-                  "title": "RC-chair search",
-                  "status": "open"
-                },
-                {
-                  "ref": "board-formation",
-                  "title": "Full Board formation",
-                  "status": "open"
-                }
-              ]
-            },
-            "stakeholders": [
-              {
-                "name": "Owen",
-                "role": "CoSec",
-                "position": "Drafter; runs the Board secretariat."
-              },
-              {
-                "name": "Marc",
-                "role": "CEO",
-                "position": "Decides timing and chairs the search."
-              },
-              {
-                "name": "Helena",
-                "role": "CRO",
-                "position": "Will be material in RC composition."
-              },
-              {
-                "name": "Camille",
-                "role": "CFO",
-                "position": "Will be material in AC composition."
-              },
-              {
-                "name": "Thandiwe",
-                "role": "CAE",
-                "position": "AC-chair will be Thandiwe's functional reporting line once a Board AC is constituted."
-              }
-            ],
-            "timeline": "Owen drafts roadmap (~3 weeks).",
-            "supportingDocs": [
-              {
-                "path": "Owner Inbox/2026-05-06_governance-framework.md",
-                "title": "Governance Framework — interim Board arrangement",
-                "summary": "Reserved matters; sub-committee charters; Interim Risk Forum + Interim Audit Forum running until Board exists."
-              },
-              {
-                "path": "Team/Owen.md",
-                "title": "Owen persona",
-                "summary": "Mandate; Companies Act fluency; Board-pathway custodianship."
-              },
-              {
-                "path": "Team/Iris.md",
-                "title": "Iris persona",
-                "summary": "POPIA s.56 IO substrate; designation requires natural person."
-              }
-            ]
-          },
-          "note": "AI-driven bank reframe (2026-05-07): statutory humans appear at licence-day in the minimum number SA law requires. Marc's interim coverage of multiple seats (CEO + Chair + IO + MLRO) is the default until SARB / Companies Act forces otherwise."
+          "actionedAt": "2026-05-08T12:00:00.000Z",
+          "outcome": "Approve thin-human-layer composition at licence-day per Owen+Imani recommendation. Refers downstream to D-THIN-HUMAN-LAYER-MINIMUM.",
+          "sourceDoc": "Owner Inbox/2026-05-06_governance-framework.md",
+          "action": "approve",
+          "actionedBy": "marc@tgv.co.za"
         }
       ],
-      "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
           "date": "2026-05-10",
           "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
           "title": "owen atlas · rms phase 1 slice 1 document store"
+        },
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-2-event-types.md",
+          "title": "owen atlas · rms phase 1 slice 2 event types"
         },
         {
           "date": "2026-05-09",
@@ -1814,18 +903,13 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md",
           "title": "owen · thin human layer composition final"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md",
-          "title": "owen atlas · records management substrate · phase 1 spec"
         }
       ],
       "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 5
     },
     {
@@ -1852,21 +936,6 @@
           "recommendation": {
             "stance": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
             "reasoning": ""
-          }
-        },
-        {
-          "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
-          "title": "New Product Approval Policy v1.0",
-          "category": "near-term",
-          "owner": "Saskia (lead) · Helena · Camille · Zara",
-          "trigger": "Binding gate that any new product family, instrument type, currency, or material extension must clear before the franchise transacts; 8 lifecycle stages, 14 substantive due-diligence dimensions, BRC primary approval (CEO ratification interim), event-typed throughout.",
-          "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md"
-          ],
-          "recommendation": {
-            "stance": "Approve as drafted.",
-            "reasoning": "Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation."
           }
         }
       ],
@@ -1902,7 +971,7 @@
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 2,
+      "totalOpenDecisions": 1,
       "totalRecentDeliverables": 5
     },
     {
@@ -1988,23 +1057,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-EVENT-STORE-SCALING",
-              "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-              "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-              "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the framing and the Azure target.",
-                "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-10",
@@ -2037,7 +1090,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 7
     },
     {
@@ -2103,7 +1156,7 @@
       "decisionId": "D-CI-GATE-INTEGRITY",
       "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
       "decisionOwner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_scrooge_project-status-roadmap.md",
@@ -2113,6 +1166,22 @@
       "decisionRequired": false,
       "author": "Scrooge (Chief of Staff)",
       "summary": "Per-workstream view of the bank build — substrate, governance, regulatory chain, markets franchise. Roadmap-leaning — brief done-anchors, fuller to-do queues with sequencing and owners. Refresh of the 2026-05-06 CEO status summary, scoped forward."
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-reporting-capability-m2-m3-build-plan.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-reporting-capability-m2-m3-build-plan.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. Canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-regulatory-readiness-gate-plan.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-regulatory-readiness-gate-plan.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-REGULATORY-READINESS-GATE-PLAN, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. Canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     },
     {
       "filename": "2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
@@ -2137,6 +1206,14 @@
       "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-HIRE-SIX-SEATS-PACK + six sub-decisions, 2026-05-10",
       "decisionRequired": false,
       "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` events emitted alongside this file (event-substrate gap noted; written direct under Principle 7 \"steady-state vs cur…"
+    },
+    {
+      "filename": "2026-05-10_scrooge_ceo-decision-record_d-fx-sales-trading-frontend.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-fx-sales-trading-frontend.md",
+      "date": "2026-05-10",
+      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-FX-SALES-TRADING-FRONTEND, 2026-05-10",
+      "decisionRequired": false,
+      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. Canonical authority is the `CeoDecision` event emitted alongside this file; this markdown is the human-readable mirror."
     },
     {
       "filename": "2026-05-10_scrooge_ceo-decision-record_d-event-store-scaling.md",
@@ -2174,7 +1251,7 @@
       "decisionForCEO": "Adjudicate the six recruitment sub-decisions. For each, either (a) approve the role-brief's recommendation as drafted, (b) override on a specific question, or (c) send back for re-scoping. Sub-decisions can be resolved together or independently — recommendation is approve-all-six-as-drafted with the four cross-cutting CEO-direction items resolved at the bottom of the pack.",
       "decisionRecommendation": "**Approve all six** role-brief recommendations as drafted. Each role-brief is internally consistent; cross-brief sequencing (Chair before NED #2/#3 skills-matrix call; CRO sequenced first as Priority-1; NED-search lead times running in parallel) resolves cleanly. The four cross-cutting CEO-direction items (comp ceiling, geography, non-traditional-backgrounds tolerance, CoSec full-time vs fractional pre-licence) are listed as a single block at the bottom; resolving those four unblocks all six searches.",
       "decisionOwner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (Recruiter) · Camille (CFO, governance — comp framing) · PAX (Role researcher)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_saskia_new-product-approval-policy.md",
@@ -2188,7 +1265,7 @@
       "decisionForCEO": "Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.",
       "decisionRecommendation": "Approve as drafted. Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation.",
       "decisionOwner": "Saskia (lead) · Helena · Camille · Zara",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_pax_role-brief_ned-3.md",
@@ -2202,7 +1279,7 @@
       "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
       "decisionRecommendation": "Approve as drafted. Recommend the seat be primarily targeted at SA-Reserve-Bank-alumni or recently-retired-tier-1-bank-CRO/CFO/MLRO depth (the candidate class the strict-independence test would exclude on look-back grounds), with a deep CDD / financial-crime practitioner as the secondary target. The non-strict-independence relaxation is the substantive feature of this seat — without it, the AC composition risks regulator-criticism on banking-regulatory shallowness at the three-NED floor (Owen's §4.3 retained caveat).",
       "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_pax_role-brief_ned-2.md",
@@ -2216,7 +1293,7 @@
       "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (recruiter) may proceed to active search.",
       "decisionRecommendation": "Approve as drafted. Open the search immediately so the 6–12-month NED-hunt lead time runs in parallel with the Independent Chair search; defer the *final* skills-axis selection (technology / cyber vs risk-modelling vs transformation) until the Chair shortlist is substantially complete, but bias the candidate funnel from day one toward technology / cyber given the bank's AI-driven posture and the Joint Standard 1 of 2024 §6–§7 board-oversight obligation.",
       "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_pax_role-brief_independent-chair.md",
@@ -2230,7 +1307,7 @@
       "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan (Recruiter) may proceed to active search.",
       "decisionRecommendation": "Approve as drafted. Open active search now via two SA Board-search firms in parallel; target a 4–6 month time-to-shortlist; sequence the Chair appointment ahead of NEDs #2 and #3 so the Chair contributes to the skills-matrix gap assessment for the remaining two seats; treat the King IV substantive-independence test as the binding go/no-go gate, not the Companies Act s.94 formal test.",
       "decisionOwner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_pax_role-brief_human-cro.md",
@@ -2244,7 +1321,7 @@
       "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
       "decisionRecommendation": "Approve as drafted — proceed to executive-search engagement on the channels in §7, with shortlist of 3–5 candidates against §3 must-haves; defer specific compensation numbers to Camille (CFO, governance) per the Nolan recruitment-scope §6 hand-off, with the indicative band shape in §6 here as the framing input. Open questions in §9 require CEO direction before vendor engagement.",
       "decisionOwner": "Marc (CEO) · Devon (COO, governance — recruitment process owner) · Nolan (recruiter)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_pax_role-brief_compliance-lead.md",
@@ -2258,7 +1335,7 @@
       "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
       "decisionRecommendation": "Approve as drafted. Triple-hat is workload-concentration not statutory-defect (Mira+Zara Q1 confirmed); SA Tier-2 / boutique-bank MLRO+IO comparator band stands; channels (CISA, FIC-accredited-MLRO networks, SARB alumni, specialist compliance-search firms) are conventional. Open questions §9 surface the only judgement calls Nolan needs back from the CEO before opening search.",
       "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
     },
     {
       "filename": "2026-05-10_pax_role-brief_company-secretary.md",
@@ -2272,7 +1349,16 @@
       "decisionForCEO": "Approve the role-brief, the search-strategy approach, and the indicative compensation framing so Nolan may proceed to active search.",
       "decisionRecommendation": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
       "decisionOwner": "Marc (CEO) · Devon (COO) · Nolan (recruiter)",
-      "decisionStatus": "open"
+      "decisionStatus": "resolved"
+    },
+    {
+      "filename": "2026-05-10_owen-atlas_rms-phase-1-slice-2-event-types.md",
+      "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-2-event-types.md",
+      "date": "2026-05-10",
+      "title": "RMS Phase 1 Slice 2 — seven event types + record-helpers (S8/RMS overlap disposed)",
+      "decisionRequired": false,
+      "author": "Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)",
+      "summary": "Second slice of D-RMS-PHASE-1 lands. Seven typed Zod payload schemas + `make<...>` constructors for the RMS event family (`AgentBriefIssued`, `AgentRunStarted`, `AgentRunCompleted`, `DecisionRequested`, `Feedback`, `BriefSuperseded`, `RecordFiled`); record-helpers module (`prototype/platform/records/`) that pair document-store puts with event appends; backwards-compatible `CeoDecision` extension surface. S8/RMS overlap disposed per Scrooge ruling — RMS owns records-of-agent-runs types, S8 keeps runtime primitives. 51 tests passing across the two new test files; CI green."
     },
     {
       "filename": "2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
@@ -2304,48 +1390,7 @@
       "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
       "decisionRecommendation": "Approve the framing and the Azure target. Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases.",
       "decisionOwner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-      "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
-      "path": "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
-      "date": "2026-05-10",
-      "title": "D-EVENT-STORE-SCALING Slice 3a — split runtime dashboard cache from committed seed; document shared-event-store env var",
-      "decisionRequired": false,
-      "author": "Atlas (Core banking platform architect, engineering)",
-      "summary": "Bounded substrate change closing two related gaps surfaced today — the dashboard server overwriting the committed `seeds/dashboard-state.json` cache on every 30s poll, and the per-worktree event store making already-actioned CEO decisions appear open in fresh worktrees. Server now writes to a gitignored runtime path; existing `BANK_EVENT_DB` env var documented as the shared-store seam."
-    },
-    {
-      "filename": "2026-05-10_atlas_d-event-store-scaling-slice-2-snapshot-substrate.md",
-      "path": "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-2-snapshot-substrate.md",
-      "date": "2026-05-10",
-      "title": "D-EVENT-STORE-SCALING Slice 2 — local snapshot substrate (snapshot + replayFromSnapshot APIs)",
-      "decisionRequired": false,
-      "author": "Atlas (Core banking platform architect, engineering)",
-      "summary": "Implements the local snapshot substrate authorised under D-EVENT-STORE-SCALING Slice 2 (CEO-approved 2026-05-10) — `eventStore.snapshot()` / `loadSnapshot()` / `listSnapshots()` / `replayFromSnapshot()` / `shouldSnapshot()` APIs behind the existing EventStore class, additive `snapshots` SQLite table, per-event-type cadence registry (Q1 hybrid 1000-events / 1-hour default, optional per-type override). M8 cloud lift swaps the implementation for Cosmos DB Core hot-tier without changing the API surface."
-    },
-    {
-      "filename": "2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
-      "path": "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
-      "date": "2026-05-10",
-      "title": "Product-construction substrate — typed Product composition from CDM primitives",
-      "decisionRequired": true,
-      "author": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority)",
-      "summary": "Typed Product layer that composes the CDM primitives in `prototype/platform/markets/cdm/` into a single canonical Product object per family (M1 listed equities, M2 bonds + repo, M3 OTC IRS, M4 FX swaps), wired to a 12-event product-lifecycle family and to a policy-attestation seam the New Product Approval Policy can attest against. Eight substrate slices, design only.",
-      "decisionId": "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-      "decisionForCEO": "Approve the product-construction substrate design — typed Product composition layer + 12-event product-lifecycle family + policy-attestation seam — and authorise the substrate slices in §6 ordering.",
-      "decisionRecommendation": "Approve. Authorise slices 1–3 (Product type, lifecycle event family, composition runtime) under the Targeted budget pre-M2; slices 4–8 sequence after the parallel-stream New Product Approval Policy lands and are paced by M-phase exits.",
-      "decisionOwner": "Atlas (substrate) · Kai (markets engineering) · Saskia (franchise authority) · Devon (governance — operational resilience)",
-      "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-09_zara_tcf-substrate-plan-v0.md",
-      "path": "Owner Inbox/2026-05-09_zara_tcf-substrate-plan-v0.md",
-      "date": "2026-05-09",
-      "title": "TCF substrate plan v0 — six outcomes mapped against the bank's institutional-only posture",
-      "decisionRequired": false,
-      "author": "Zara",
-      "summary": "Treating Customers Fairly substrate plan v0. Lists the six TCF outcomes precisely, identifies which apply at the bank's institutional-only / wholesale posture (and which do not, with citation rationale), specifies the substrate footprint TCF imposes on the engineering line (complaint-handling pipeline, advice-record substrate, product-suitability checks intersecting Saskia's NPA policy), and surfaces open questions and substrate gaps."
+      "decisionStatus": "resolved"
     }
   ],
   "policies": [
@@ -2386,29 +1431,7 @@
       "status": "EXISTS",
       "statusRaw": "`EXISTS` (approved A1)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-11",
-        "ORG-CD-08",
-        "ORG-PR(IV)-13",
-        "ORG-CY-02",
-        "ORG-GV-01",
-        "ORG-GV-03",
-        "ORG-GV-05",
-        "ORG-GV-10",
-        "ORG-GV-14",
-        "ORG-GV-15",
-        "ORG-GV-16",
-        "ORG-GV-19",
-        "ORG-TX-08",
-        "ORG-FMA-002",
-        "ORG-GV-CRO-INDEPENDENCE",
-        "ORG-GV-CFO-INDEPENDENCE",
-        "ORG-FC-11-GLOSS-CEO-MLRO-BAR",
-        "ORG-PR(IV)-13-GLOSS-DEPUTY-IO",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE",
-        "ORG-BNK-CGPS-CONS",
-        "ORG-GRP-PA-PARENT"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-1-risk-management-framework",
@@ -2427,18 +1450,7 @@
       "status": "DRAFTING",
       "statusRaw": "`DRAFTING` (in RAS-RAF)",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-24",
-        "ORG-PR-25",
-        "ORG-PR-26",
-        "ORG-PR-23",
-        "ORG-GV-21",
-        "ORG-AC-15",
-        "ORG-CS1-003",
-        "ORG-JS2-005",
-        "ORG-GV-CRO-INDEPENDENCE",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-1-combined-assurance-policy",
@@ -2514,10 +1526,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-09",
-        "ORG-PR-10"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-market-risk-policy",
@@ -2536,10 +1545,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-19",
-        "ORG-PR-20"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-liquidity-risk-management-policy",
@@ -2558,15 +1564,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-06",
-        "ORG-PR-07",
-        "ORG-PR-08",
-        "ORG-PR-14",
-        "ORG-PR-15",
-        "ORG-AC-13",
-        "ORG-BNK-ILAAP-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-irrbb-policy",
@@ -2585,9 +1583,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-11"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-counterparty-credit-risk-policy",
@@ -2606,9 +1602,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-16"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-operational-risk-policy",
@@ -2627,13 +1621,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-17",
-        "ORG-PR-24",
-        "ORG-PR-25",
-        "ORG-PR-26",
-        "ORG-PR-23"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-operational-resilience-policy",
@@ -2652,15 +1640,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-18",
-        "ORG-PR-22",
-        "ORG-PR-23",
-        "ORG-CY-05",
-        "ORG-CY-08",
-        "ORG-CS1-004",
-        "ORG-BNK-CYBER-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-model-risk-policy",
@@ -2679,10 +1659,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED` (B7 approved)",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-21",
-        "ORG-PR(IV)-10"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-stress-testing-policy",
@@ -2701,10 +1678,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-12",
-        "ORG-BNK-RECOVERY-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-icaap",
@@ -2723,12 +1697,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-01",
-        "ORG-PR-13",
-        "ORG-CS1-001",
-        "ORG-BNK-ICAAP-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-ilaap",
@@ -2747,10 +1716,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-14",
-        "ORG-BNK-ILAAP-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-climate-related-risk-policy",
@@ -2770,9 +1736,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED` (B9 approved)",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-22"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-2-reputational-risk-policy",
@@ -2867,12 +1831,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED` (B4 approved)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-08",
-        "ORG-FC-13",
-        "ORG-FC-14",
-        "ORG-FC-SANCTIONS-SCREENING"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-pep-policy",
@@ -2891,9 +1850,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-FC-03"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-kyc-cdd-edd-policy",
@@ -2912,16 +1869,7 @@
       "status": "DRAFTING",
       "statusRaw": "`DRAFTING` (in client-master design, D1 approved)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-02",
-        "ORG-FC-03",
-        "ORG-FC-04",
-        "ORG-FC-05",
-        "ORG-FC-06",
-        "ORG-FC-18",
-        "ORG-FC-19",
-        "ORG-FX-FIN-04"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-transaction-monitoring-policy",
@@ -2978,12 +1926,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-FC-15",
-        "ORG-FC-16",
-        "ORG-TX-06",
-        "ORG-TX-07"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-tipping-off-prevention-policy",
@@ -3022,9 +1965,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-CD-01"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-fais-policy-when-fsp-licence-carried",
@@ -3043,17 +1984,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CD-02",
-        "ORG-CD-03",
-        "ORG-CD-04",
-        "ORG-FAIS-KI",
-        "ORG-FAIS-RK-ADVICE",
-        "ORG-FAIS-RK-SUITABILITY",
-        "ORG-FAIS-RK-FEE-DISCLOSURE",
-        "ORG-FAIS-RK-COMPLAINT-HANDLING",
-        "ORG-FAIS-RK-GENERAL-CODE"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-market-abuse-surveillance-policy",
@@ -3072,9 +2003,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-MK-01"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-complaints-handling-policy",
@@ -3095,10 +2024,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CD-07",
-        "ORG-FAIS-RK-COMPLAINT-HANDLING"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-excon-compliance-policy",
@@ -3117,24 +2043,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-MK-08",
-        "ORG-EXCON-ODP-001",
-        "ORG-FX-FIN-01",
-        "ORG-FX-FIN-02",
-        "ORG-FX-FIN-03",
-        "ORG-FX-FIN-04",
-        "ORG-FX-FIN-05",
-        "ORG-FX-FIN-06",
-        "ORG-FX-FIN-07",
-        "ORG-FX-FIN-08",
-        "ORG-FX-FIN-09",
-        "ORG-FX-FIN-10",
-        "ORG-FX-FIN-11",
-        "ORG-FX-FIN-12",
-        "ORG-FX-FIN-13",
-        "ORG-FX-FIN-14"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-regulatory-change-management-policy",
@@ -3151,9 +2060,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CD-09"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-3-regulatory-engagement-policy",
@@ -3173,10 +2080,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CD-08",
-        "ORG-GRP-PA-PARENT"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-4-popia-privacy-policy",
@@ -3195,25 +2099,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR(IV)-01",
-        "ORG-PR(IV)-02",
-        "ORG-PR(IV)-04",
-        "ORG-PR(IV)-05",
-        "ORG-PR(IV)-06",
-        "ORG-PR(IV)-07",
-        "ORG-PR(IV)-08",
-        "ORG-PR(IV)-09",
-        "ORG-PR(IV)-10",
-        "ORG-PR(IV)-11",
-        "ORG-PR(IV)-12",
-        "ORG-PR(IV)-13",
-        "ORG-PR(IV)-14",
-        "ORG-PR(IV)-15",
-        "ORG-PR(IV)-16",
-        "ORG-EL-03",
-        "ORG-PR(IV)-13-GLOSS-DEPUTY-IO"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-4-data-retention-disposal-policy",
@@ -3232,9 +2118,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR(IV)-03"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-4-cross-border-transfer-policy",
@@ -3254,9 +2138,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR(IV)-15"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-4-paia-manual",
@@ -3275,10 +2157,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED` (E1 deferred)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR(IV)-16",
-        "ORG-PR(IV)-17"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-4-privacy-impact-assessment-policy",
@@ -3316,9 +2195,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR(IV)-05"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-5-information-security-policy",
@@ -3337,15 +2214,7 @@
       "status": "IN FORCE",
       "statusRaw": "`IN FORCE` (Round 2 bundle §1)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR(IV)-06",
-        "ORG-CY-01",
-        "ORG-CY-03",
-        "ORG-CY-09",
-        "ORG-CY-14",
-        "ORG-EL-03",
-        "ORG-BNK-CYBER-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-5-cyber-resilience-policy",
@@ -3364,15 +2233,7 @@
       "status": "IN FORCE",
       "statusRaw": "`IN FORCE` (Round 2 bundle §2; B6 approved)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-CY-01",
-        "ORG-CY-03",
-        "ORG-CY-04",
-        "ORG-CY-10",
-        "ORG-CY-11",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE",
-        "ORG-BNK-CYBER-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-5-access-control-policy",
@@ -3430,13 +2291,7 @@
       "status": "IN FORCE",
       "statusRaw": "`IN FORCE` (Round 2 bundle §3)",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR(IV)-07",
-        "ORG-CY-04",
-        "ORG-CY-05",
-        "ORG-CY-11",
-        "ORG-BNK-CYBER-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-5-secure-sdlc-policy",
@@ -3456,11 +2311,7 @@
       "status": "IN FORCE",
       "statusRaw": "**`IN FORCE`** (added 2026-05-06 end-of-day; bundle §9; procedure `secure-sdlc.md` populated)",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CY-12",
-        "ORG-CY-13",
-        "ORG-CY-14"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-5-data-classification-handling-policy",
@@ -3556,11 +2407,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-24",
-        "ORG-CY-06",
-        "ORG-CY-07"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-6-cloud-computing-policy",
@@ -3580,9 +2427,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CY-06"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-6-business-continuity-disaster-recovery-policy",
@@ -3642,16 +2487,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-05",
-        "ORG-PR(IV)-03",
-        "ORG-GV-21",
-        "ORG-TX-04",
-        "ORG-MK-15",
-        "ORG-MK-16",
-        "ORG-CS3-009",
-        "ORG-RM-01"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-6-it-general-controls-policy",
@@ -3708,17 +2544,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED` (B2 deferred — under refinement)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-01",
-        "ORG-PR-02",
-        "ORG-PR-03",
-        "ORG-PR-04",
-        "ORG-PR-05",
-        "ORG-PR-13",
-        "ORG-AC-13",
-        "ORG-CS1-001",
-        "ORG-BNK-ICAAP-CONS"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-7-capital-plan",
@@ -3756,22 +2582,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-GV-12",
-        "ORG-GV-16",
-        "ORG-AC-01",
-        "ORG-AC-04",
-        "ORG-AC-05",
-        "ORG-AC-06",
-        "ORG-AC-07",
-        "ORG-AC-08",
-        "ORG-AC-09",
-        "ORG-AC-10",
-        "ORG-AC-11",
-        "ORG-AC-12",
-        "ORG-AC-14",
-        "ORG-AC-15"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-7-financial-reporting-disclosure-policy",
@@ -3792,10 +2603,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-AC-04",
-        "ORG-AC-13"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-7-tax-policy",
@@ -3814,23 +2622,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-15",
-        "ORG-FC-16",
-        "ORG-AC-09",
-        "ORG-AC-12",
-        "ORG-TX-01",
-        "ORG-TX-02",
-        "ORG-TX-03",
-        "ORG-TX-04",
-        "ORG-TX-05",
-        "ORG-TX-06",
-        "ORG-TX-07",
-        "ORG-TX-09",
-        "ORG-MK-11",
-        "ORG-FX-FIN-03",
-        "ORG-FX-FIN-11"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-7-transfer-pricing-policy",
@@ -3849,9 +2641,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-TX-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-7-external-audit-engagement-policy",
@@ -3871,11 +2661,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-AC-14",
-        "ORG-AC-16",
-        "ORG-GRP-FINREP"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-7-provisioning-ifrs-9-ecl-policy",
@@ -3894,9 +2680,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-AC-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-8-funding-strategy-policy",
@@ -3915,13 +2699,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-08",
-        "ORG-PR-15",
-        "ORG-MK-07",
-        "ORG-MK-08",
-        "ORG-MK-13"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-8-hedge-accounting-policy",
@@ -3940,11 +2718,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-AC-03",
-        "ORG-MK-07",
-        "ORG-CS3-006"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-8-ftp-methodology-policy",
@@ -3981,13 +2755,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-PR-16",
-        "ORG-MK-06",
-        "ORG-MK-12",
-        "ORG-MK-13",
-        "ORG-JS2-003"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-8-capital-instrument-issuance-policy",
@@ -4045,10 +2813,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED` (B5 deferred — under refinement)",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-PR-20",
-        "ORG-MK-04"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-9-best-execution-policy",
@@ -4069,9 +2834,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-MK-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-9-voice-communications-recording-policy",
@@ -4092,9 +2855,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-MK-03"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-9-counterparty-onboarding-policy-markets",
@@ -4114,13 +2875,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-MK-06",
-        "ORG-MK-12",
-        "ORG-MK-13",
-        "ORG-MK-14",
-        "ORG-CS3-001"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-9-new-product-approval-policy",
@@ -4141,9 +2896,7 @@
       "status": "IN FORCE",
       "statusRaw": "**`IN FORCE`** (Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md; v1.0; D-NEW-PRODUCT-APPROVAL-POLICY)",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-FAIS-RK-SUITABILITY"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-10-customer-acceptance-policy",
@@ -4184,11 +2937,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CD-01",
-        "ORG-CD-06",
-        "ORG-FAIS-RK-FEE-DISCLOSURE"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-10-marketing-advertising-policy",
@@ -4229,11 +2978,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-CD-06",
-        "ORG-MK-07",
-        "ORG-FAIS-RK-FEE-DISCLOSURE"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-10-channel-conduct-policy",
@@ -4273,10 +3018,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-HR-05",
-        "ORG-HR-10"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-fit-and-proper-policy",
@@ -4296,23 +3038,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-11",
-        "ORG-CD-03",
-        "ORG-CY-02",
-        "ORG-GV-10",
-        "ORG-GV-11",
-        "ORG-HR-11",
-        "ORG-CS1-002",
-        "ORG-FAIS-KI",
-        "ORG-GV-DIRECTORS-MINIMUM",
-        "ORG-GV-CRO-INDEPENDENCE",
-        "ORG-GV-CFO-INDEPENDENCE",
-        "ORG-FC-11-GLOSS-CEO-MLRO-BAR",
-        "ORG-FC-MLRO-ALTERNATE",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE",
-        "ORG-GRP-PA-PARENT"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-recruitment-selection-policy",
@@ -4350,10 +3076,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-01",
-        "ORG-HR-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-grievance-policy",
@@ -4372,9 +3095,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-01"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-harassment-discrimination-policy",
@@ -4393,10 +3114,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-04",
-        "ORG-HR-06"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-health-safety-policy",
@@ -4415,9 +3133,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-09"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-leave-policy",
@@ -4436,9 +3152,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-03"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-performance-management-policy",
@@ -4474,10 +3188,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-04",
-        "ORG-HR-05"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-b-bbee-policy",
@@ -4496,9 +3207,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-08"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-11-skills-development-policy",
@@ -4517,9 +3226,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-HR-07"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-code-of-conduct",
@@ -4538,10 +3245,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-GV-02",
-        "ORG-WB-03"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-code-of-ethics",
@@ -4580,16 +3284,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-CD-05",
-        "ORG-GV-02",
-        "ORG-GV-12",
-        "ORG-MK-14",
-        "ORG-CS3-007",
-        "ORG-FAIS-RK-GENERAL-CODE",
-        "ORG-WB-04",
-        "ORG-GRP-RPT"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-related-party-transactions-policy",
@@ -4609,11 +3304,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-GV-12",
-        "ORG-AC-11",
-        "ORG-GRP-RPT"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-gifts-hospitality-entertainment-policy",
@@ -4632,9 +3323,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-WB-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-anti-bribery-corruption-policy",
@@ -4653,11 +3342,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-20",
-        "ORG-FC-22",
-        "ORG-WB-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-whistleblowing-policy",
@@ -4676,11 +3361,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-FC-20",
-        "ORG-GV-13",
-        "ORG-WB-01"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-12-insider-trading-personal-account-dealing-policy",
@@ -4758,9 +3439,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-EL-01"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-13-litigation-policy",
@@ -4811,10 +3490,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": false,
-      "linkedObligations": [
-        "ORG-EL-01",
-        "ORG-EL-02"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-14-internal-audit-charter",
@@ -4833,9 +3509,7 @@
       "status": "PLANNED",
       "statusRaw": "`PLANNED`",
       "mvp": true,
-      "linkedObligations": [
-        "ORG-GV-20"
-      ]
+      "linkedObligations": []
     },
     {
       "id": "pol-14-combined-assurance-policy",

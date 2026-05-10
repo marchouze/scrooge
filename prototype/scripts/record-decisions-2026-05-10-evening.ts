@@ -31,6 +31,16 @@ const ENTRIES = [
     sourceDoc: "Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md",
     asOf: "2026-05-10T07:25:00.000Z",
   },
+  {
+    decisionId: "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+    action: "approve" as const,
+    title: "Reporting Capability M2-M3 build plan — 8-slice decomposition",
+    outcome:
+      "Bea (Accounting & financial reporting engineer) + Atlas (Core banking platform architect)'s 8-slice Reporting Capability M2-M3 build plan approved as drafted. Slices 1-3 (~6 sessions) authorised for immediate build under the Targeted budget. Recommended answers to Q1-Q5 adopted in one go per the no-pause rule (Q1 rehearsal-grade with placeholders, Q2 per-entity sub-ledgers, Q3 close at M2 acceptance, Q4 climate-risk future-tranche, Q5 JSON-first). Substrate gaps in §9 acknowledged.",
+    comment: "approve — chat-intake 2026-05-10",
+    sourceDoc: "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md",
+    asOf: "2026-05-10T07:35:00.000Z",
+  },
 ];
 
 function main(): number {
