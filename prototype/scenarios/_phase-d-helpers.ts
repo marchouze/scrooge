@@ -60,10 +60,10 @@ import { join } from "node:path";
 import type { ClosePeriodResult } from "@platform/accounting/period-close";
 import type { Actor } from "@platform/core/types";
 import { LocalFsDocumentStore } from "@platform/document-store";
-import { type DocumentStore, type PutResult } from "@platform/document-store";
+import type { DocumentStore, PutResult } from "@platform/document-store";
 import { makeRecordFiled } from "@platform/event-store/event-types";
 import type { ProvenanceTag } from "@platform/event-store/provenance";
-import { EventStore } from "@platform/event-store/store";
+import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
 import {
   type AccountCapitalClassification,
@@ -93,7 +93,11 @@ import {
 export const PHASE_D_FORMS = ["ba-325", "ba-700", "ba-350", "ba-600"] as const;
 export type PhaseDForm = (typeof PHASE_D_FORMS)[number];
 
-export const PHASE_D_SOURCE_LINEAGE = "scenario:03-fx-end-to-end-rehearsal:phase-d";
+// Matches the registered `scenario-runner:<name>` pattern in
+// `prototype/platform/event-store/provenance-lineage.registry.ts` (the
+// regex disallows additional colons, so phase-d hangs off the name with a
+// dash, not a colon).
+export const PHASE_D_SOURCE_LINEAGE = "scenario-runner:03-fx-end-to-end-rehearsal-phase-d";
 
 // Fixed renderedAt timestamp — Phase D uses the period-end + 5min so two
 // runs over the same scenario produce byte-identical bytes (deterministic
@@ -178,11 +182,13 @@ export const BA_700_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassificati
 export const BA_700_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
 
 /**
- * Fixture RWA — R30m credit + R10m market + R5m operational = R45m total
- * (in cents: 4_500_000_00). With a synthetic R300m CET1 base (per the
- * fixture below in `phaseD_BA700_synthetic_cet1`), the resulting CET1
- * ratio is comfortably above the Reg 38(2) all-in 7% minimum. The source
- * label keeps the placeholder-origin obvious.
+ * Fixture RWA — R1.5bn credit + R1.0bn market + R500m operational =
+ * R3.0bn total (in minor units: 300_000_000_000). With a synthetic R300m
+ * CET1 base (per `BA_700_SYNTHETIC_CET1_ROW` below), the resulting CET1
+ * ratio = R300m / R3bn = 10.00% — comfortably above the Reg 38(2) all-in
+ * 7% minimum (4.5% base + 2.5% CCB) but below a "trivially compliant"
+ * threshold so the rehearsal shows a meaningful headline metric. The
+ * source label keeps the placeholder-origin obvious.
  *
  * Forward-link: the W2 Slice 3 RWA engine (PR #177 — `computeRwa`) produces
  * the same shape from typed `CreditExposure` / `TradingBookPosition` /
@@ -190,9 +196,9 @@ export const BA_700_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
  * input shape on `generateBa700Capital` is unchanged.
  */
 export const BA_700_FIXTURE_RWA: RwaDecomposition = {
-  creditRwaMinor: 3_000_000_00, // R30m
-  marketRwaMinor: 1_000_000_00, // R10m
-  operationalRwaMinor: 500_000_00, // R5m
+  creditRwaMinor: 1_500_000_000_00, // R1.5bn
+  marketRwaMinor: 1_000_000_000_00, // R1.0bn
+  operationalRwaMinor: 500_000_000_00, // R500m
   source: "fixture-rehearsal:phase-d",
 };
 
@@ -480,7 +486,9 @@ export function runPhaseD(args: {
   const writeResults: PhaseDWriteResult[] = [];
   for (const form of PHASE_D_FORMS) {
     const canonical = canonicalForForm(form, rendered);
-    writeResults.push(writePhaseDReport({ form, canonicalBytes: canonical, options: args.options }));
+    writeResults.push(
+      writePhaseDReport({ form, canonicalBytes: canonical, options: args.options }),
+    );
   }
   return { generated, rendered, writeResults };
 }
