@@ -5,6 +5,11 @@
 // On a CEO-decision action, the dashboard appends an event AND updates the
 // registry; the events outrank the registry on every reconciliation.
 //
+// Per D-EVENT-STORE-SCALING Slice 3b (2026-05-10) the default registry
+// path is the gitignored runtime cache under `.local/`; there is no
+// committed seed. `BANK_DASHBOARD_STATE` is preserved as an override
+// for backwards compatibility with anything that still passes it.
+//
 // Author: Atlas · Anya
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -16,7 +21,10 @@ import type {
   ResolvedDecision,
 } from "./types";
 
-const REGISTRY_PATH = process.env.BANK_DASHBOARD_STATE ?? "seeds/dashboard-state.json";
+const REGISTRY_PATH =
+  process.env.BANK_DASHBOARD_STATE ??
+  process.env.BANK_DASHBOARD_RUNTIME_STATE ??
+  ".local/dashboard-state.json";
 
 export function loadState(path: string = REGISTRY_PATH): DashboardState {
   if (!existsSync(path)) {
