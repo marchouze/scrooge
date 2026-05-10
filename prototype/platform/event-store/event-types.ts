@@ -4566,6 +4566,120 @@ export function makeTrialBalanceSnapshotted(args: {
 }
 
 // ---------------------------------------------------------------------------
+// RasLineCalibrated
+//
+// Records that a Risk Appetite Statement (RAS) line has had its
+// quantitative calibration ratified — i.e. moved from "framework declares
+// this line exists" to "framework declares this line exists AND the
+// numerical thresholds are signed off". The event lifts the matching
+// obligations-register row out of `PARTIAL` status.
+//
+// First instance: RAS B2 (CET1 management buffer ≥ +1.5pp above PA min +
+// Pillar 2A + capital conservation buffer) per `ORG-PR-04`. Lands under
+// W2 Slice 2 of `D-REGULATORY-READINESS-GATE-PLAN`.
+//
+// Idempotency: (entity, lineId) is unique per active calibration. A
+// recalibration emits a new event with `supersedesCalibrationEventId`
+// pointing at the prior calibration; the prior is not overwritten.
+// ---------------------------------------------------------------------------
+
+export const rasLineCalibratedPayloadSchema = z
+  .object({
+    /**
+     * RAS line identifier. Convention is `<section>` (e.g. `B2`, `B3`,
+     * `B8a-1`). Cross-references the RAS section that defines the line.
+     * Free-form to accommodate the RAS's own section numbering.
+     */
+    lineId: z.string().min(1),
+    /**
+     * RAS section reference, e.g. `RAS §B3`. Human-readable; the citation
+     * chain in `calibrationCitations` carries the strict citations.
+     */
+    rasSection: z.string().min(1),
+    /**
+     * Free-form one-line description of what was calibrated — included
+     * in the event so the audit trail is readable without resolving the
+     * citation chain. Example: "CET1 management buffer ≥ +1.5pp above
+     * PA min + Pillar 2A + capital conservation buffer".
+     */
+    calibrationDescription: z.string().min(1),
+    /**
+     * Strict citation references for the calibration. Includes the
+     * external standards (Banks Act, Reg 38, BCBS Basel III/IV), the
+     * RAS section, and the obligations-register row that the
+     * calibration lifts to IN FORCE. At least one citation is required
+     * (Principle 2).
+     */
+    calibrationCitations: z.array(z.string().min(1)).min(1),
+    /**
+     * Authoring source — the deliverable / record that documents the
+     * calibration. Path-style, e.g.
+     * `Owner Inbox/2026-05-10_helena-rohan-bea_w2-slice-2-ras-b2-calibration.md`.
+     */
+    calibrationSource: z.string().min(1),
+    /**
+     * Standing CEO authority under which the calibration is recorded.
+     * Convention: a `D-` decision id, e.g.
+     * `D-REGULATORY-READINESS-GATE-PLAN`. Per the no-pause rule
+     * (CLAUDE.md "Operating procedures"), downstream slices of an
+     * approved decision dispatch without per-item CEO confirmation.
+     */
+    standingAuthority: z.string().min(1),
+    /**
+     * Obligations-register row this calibration discharges. The
+     * calibration lifts the row from `PARTIAL` to `IN FORCE`.
+     */
+    obligationRowId: z.string().min(1),
+    /**
+     * Optional reference to a prior `RasLineCalibrated` event-id that
+     * this calibration supersedes. Present on recalibrations; absent
+     * on initial calibrations. Append-only audit chain — the prior
+     * calibration is not overwritten.
+     */
+    supersedesCalibrationEventId: z.string().min(1).optional(),
+    /**
+     * Optional structured calibration parameters, free-form per line.
+     * For RAS B2 this carries the calibration result (target ratio,
+     * trigger, escalate, fixture inputs). Renderers may use this to
+     * surface the numerical posture without re-running the calibration
+     * function.
+     */
+    calibrationParameters: z.record(z.string(), z.unknown()).optional(),
+  })
+  .superRefine((p, ctx) => {
+    if (p.supersedesCalibrationEventId !== undefined && p.supersedesCalibrationEventId === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "RasLineCalibrated.supersedesCalibrationEventId must be non-empty when set",
+        path: ["supersedesCalibrationEventId"],
+      });
+    }
+  });
+
+export type RasLineCalibratedPayload = z.infer<typeof rasLineCalibratedPayloadSchema>;
+
+export function makeRasLineCalibrated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RasLineCalibratedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RasLineCalibrated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: rasLineCalibratedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
 // ---------------------------------------------------------------------------
@@ -4651,6 +4765,10 @@ export const TYPED_EVENT_TYPES = [
   "AccountingPeriodOpened",
   "AccountingPeriodClosed",
   "TrialBalanceSnapshotted",
+  // Risk Appetite Statement calibration event — D-REGULATORY-READINESS-
+  // W2-SLICE-2 (under standing authority of D-REGULATORY-READINESS-GATE-
+  // PLAN, CEO-approved 2026-05-10). Pack §3 W2 Slice 2.
+  "RasLineCalibrated",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
