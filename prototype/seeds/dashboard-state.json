@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-10T07:31:12.203Z",
+  "asOf": "2026-05-10T07:35:25.066Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -789,18 +789,18 @@
       }
     },
     {
-      "id": "D-EVENT-STORE-SCALING",
-      "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-      "category": "near-term",
-      "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-      "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-      "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
+      "id": "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "title": "Reporting Capability M2-M3 — build proposal & slice plan",
+      "category": "medium-term",
+      "owner": "Bea (Accounting & financial reporting engineer) · Atlas (Core banking platform architect)",
+      "trigger": "Concrete slice plan for the reporting engine + projection layer authorised on 2026-05-06 (M2 prudential returns, M3 IFRS AFS skeleton). Eight slices; Slices 1-3 sized for the Targeted budget so they dispatch immediately on approval.",
+      "decisionForCEO": "Approve the M2-M3 reporting-capability slice plan + Slices 1-3 pre-M2 build authorisation",
       "sourceDocs": [
-        "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
+        "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md"
       ],
       "recommendation": {
-        "stance": "Approve the framing and the Azure target.",
-        "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
+        "stance": "Approve as drafted — Slices 1-3 (semantic-layer registry, period-close events, single-return generator harness) are pre-M2 substrate that lifts every downstream return; defaults answer the five open questions in line with the strategic foundation.",
+        "reasoning": ""
       }
     }
   ],
@@ -1402,25 +1402,15 @@
             "stance": "Approve the role-brief as drafted; authorise Nolan (Recruiter) to open the search through the CGISA + specialist-exec-search channel; confirm comp band Tier-2 SA bank CoSec all-in R3.0–R4.5m with a 5–10% deputy-IO premium; signal preference between part-time / fractional pre-licence-day vs full-time-from-day-one.",
             "reasoning": ""
           }
-        },
-        {
-          "id": "D-EVENT-STORE-SCALING",
-          "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-          "category": "near-term",
-          "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-          "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-          "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-          "sourceDocs": [
-            "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-          ],
-          "recommendation": {
-            "stance": "Approve the framing and the Azure target.",
-            "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-          }
         }
       ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md",
+          "title": "bea atlas · reporting capability m2 m3 build proposal"
+        },
         {
           "date": "2026-05-10",
           "path": "Owner Inbox/2026-05-10_rohan-anya_d-event-store-scaling-slice-3-consumer-adoption.md",
@@ -1440,18 +1430,13 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-completion.md",
           "title": "devon tomas · named correspondent pair completion"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md",
-          "title": "devon tomas · named correspondent pair proposal"
         }
       ],
       "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 9,
+      "totalOpenDecisions": 8,
       "totalRecentDeliverables": 5
     },
     {
@@ -1499,6 +1484,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md",
+          "title": "bea atlas · reporting capability m2 m3 build proposal"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_camille_api-cloud-cost-budget.md",
           "title": "camille · api cloud cost budget"
@@ -1517,14 +1507,9 @@
           "date": "2026-05-07",
           "path": "Owner Inbox/2026-05-07_camille_cfo-substrate-state.md",
           "title": "camille · cfo substrate state"
-        },
-        {
-          "date": "2026-05-07",
-          "path": "Owner Inbox/2026-05-07_camille_capital-plan-v1.md",
-          "title": "camille · capital plan v1"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
@@ -1973,23 +1958,7 @@
           "hasOperatingSpec": true,
           "activeWorkstreams": [],
           "recentlyCompletedWorkstreams": [],
-          "openDecisionsOwned": [
-            {
-              "id": "D-EVENT-STORE-SCALING",
-              "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
-              "category": "near-term",
-              "owner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
-              "trigger": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-              "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-              "sourceDocs": [
-                "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md"
-              ],
-              "recommendation": {
-                "stance": "Approve the framing and the Azure target.",
-                "reasoning": "Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases."
-              }
-            }
-          ],
+          "openDecisionsOwned": [],
           "recentDeliverables": [
             {
               "date": "2026-05-10",
@@ -2022,7 +1991,7 @@
       ],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 0,
       "totalRecentDeliverables": 7
     },
     {
@@ -2325,17 +2294,18 @@
       "decisionStatus": "open"
     },
     {
-      "filename": "2026-05-10_atlas_event-store-scaling-design.md",
-      "path": "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md",
+      "filename": "2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md",
+      "path": "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md",
       "date": "2026-05-10",
-      "title": "Event-store scaling design — snapshots, partitioning, archival, compaction",
+      "title": "Reporting Capability M2-M3 — build proposal & slice plan",
       "decisionRequired": true,
-      "author": "Atlas",
-      "summary": "Substantive engineering design for how the bank's event store scales from today's flat SQLite-backed `LocalEventStore` to the licence-day and Year-3 volumes, addressing the five named scaling concerns (as-of replay, recon scans, projection-rebuild SLA, compaction, partitioning) with an Azure target architecture (Event Hubs + Cosmos DB + Blob Cool/Archive), a snapshot substrate, retention metadata bound to SA + international citations, and an eight-slice substrate-sequencing plan.",
-      "decisionId": "D-EVENT-STORE-SCALING",
-      "decisionForCEO": "Approve the scaling-design framing — the five-concern decomposition, the Azure target architecture, the snapshot + partition + tier strategy — and authorise the substrate slices in §6 ordering.",
-      "decisionRecommendation": "Approve the framing and the Azure target. Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases.",
-      "decisionOwner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
+      "author": "Bea (Accounting & financial reporting engineer) · Atlas (Core banking platform architect)",
+      "summary": "Concrete slice plan for the reporting engine + projection layer authorised on 2026-05-06 (M2 prudential returns, M3 IFRS AFS skeleton). Eight slices; Slices 1-3 sized for the Targeted budget so they dispatch immediately on approval.",
+      "decisionId": "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "decisionCategory": "medium-term",
+      "decisionForCEO": "Approve the M2-M3 reporting-capability slice plan + Slices 1-3 pre-M2 build authorisation",
+      "decisionRecommendation": "Approve as drafted — Slices 1-3 (semantic-layer registry, period-close events, single-return generator harness) are pre-M2 substrate that lifts every downstream return; defaults answer the five open questions in line with the strategic foundation.",
+      "decisionOwner": "Bea (Accounting & financial reporting engineer) · Atlas (Core banking platform architect)",
       "decisionStatus": "open"
     }
   ],
