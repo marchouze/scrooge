@@ -137,6 +137,25 @@
   </div>
 </div>
 
+<!--
+  Owner Inbox inline-preview modal — read-only render of the markdown
+  body for an informational deliverable. Authored by Anya
+  (Data / analytics engineer, engineering) as part of the Owner Inbox
+  feed polish (2026-05-10). Decision-required items still route through
+  the briefModal above; this modal is additive and never replaces that
+  flow.
+-->
+<div class="modal oi-preview-modal" id="oiPreviewModal" hidden>
+  <div class="oi-preview-card">
+    <div class="oi-preview-head">
+      <h2 id="oiPreviewTitle">Owner Inbox preview</h2>
+      <button class="icon-btn" id="oiPreviewClose" aria-label="Close">×</button>
+    </div>
+    <div class="oi-preview-path muted small" id="oiPreviewPath"></div>
+    <div class="oi-preview-body" id="oiPreviewBody"></div>
+  </div>
+</div>
+
 <!-- Decision-action modal (final outcome capture) -->
 <div class="modal" id="modal" hidden>
   <div class="modal-card">
