@@ -6,19 +6,26 @@
 // canonical handler-metadata, derives a schedule registry, and emits
 // `ScheduledTrigger` / `SubstrateAlert` events on each tick.
 //
-// The cron expressions for scheduled handlers today live in the
-// `.github/workflows/agent-runtime-*.yml` files (the GH Actions
-// dispatch surface). Until those retire (per Atlas's spec philosophy
-// of substrate-replacement-without-loss; A2.2 dispatches via the bus),
-// we mirror them in a small map below. The map is the authoritative
-// source for the in-process scheduler; the workflow files remain the
-// authoritative source for GH Actions cron. Drift between the two is
-// itself a substrate-finding once Vera's pipeline picks it up
-// (substrate gap noted; not in this slice).
+// CRON CONSOLIDATION (2026-05-10):
+//   Cron expressions for scheduled handlers live in
+//   `runtime/handlers-metadata.ts` (the `cronExpression` field on each
+//   `HandlerMetadata` row). `SCHEDULER_CRON_MAP` is now a DERIVED
+//   projection of that metadata via `derivedCronMap()`. Adding a new
+//   scheduled handler requires editing exactly two authoring locations
+//   in the runtime: `handlers-metadata.ts` (add row with cronExpression)
+//   and `handler-callables.ts` (add callable). The GH Actions workflow
+//   YAML remains a third surface for the moment — `recon:cron-map-drift`
+//   asserts the workflow `schedule.cron` matches the metadata
+//   `cronExpression`. A future slice will template-generate the YAMLs
+//   from the metadata too.
+//
+// The export of `SCHEDULER_CRON_MAP` is preserved for back-compat with
+// callers (and for any external consumers); it is now a re-render of
+// the metadata-derived projection rather than a hand-maintained literal.
 //
 // Author: Atlas (A2.1)
 
-import { HANDLERS_METADATA } from "../../runtime/handlers-metadata";
+import { HANDLERS_METADATA, derivedCronMap } from "../../runtime/handlers-metadata";
 import { makeScheduledTrigger, makeSubstrateAlert } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
@@ -51,49 +58,20 @@ const DEFAULT_CITATIONS: readonly string[] = [
 ];
 
 /**
- * Mirror of the cron expressions in `.github/workflows/agent-runtime-*.yml`.
- * Keyed on the canonical `<lowercased-agent>:<trigger>` composite the
- * runtime's handler-metadata uses.
+ * Cron expressions for the in-process scheduler, derived from
+ * `HANDLERS_METADATA`'s `cronExpression` field. Post-consolidation
+ * (2026-05-10), this is no longer a hand-maintained literal — adding a
+ * new scheduled handler requires only adding the metadata row in
+ * `runtime/handlers-metadata.ts`.
  *
- * This map is the in-process scheduler's authoritative cron source;
- * the workflow files keep firing handlers in parallel during A2.1 (per
- * spec philosophy). A2.2's bus replaces the GH Actions dispatch.
+ * The export is preserved for back-compat with external callers /
+ * other modules that may import the symbol. Internal callers should
+ * prefer `derivedCronMap()` from the metadata module directly.
  *
- * Adding a new scheduled handler: append a row here AND the workflow
- * file. Vera's planned cross-source recon will assert the two stay
- * in sync.
+ * The `.github/workflows/agent-runtime-*.yml` files remain a parallel
+ * surface; `recon:cron-map-drift` asserts they agree with the metadata.
  */
-export const SCHEDULER_CRON_MAP: Readonly<Record<string, string>> = {
-  "vera:overnight-recon": "13 2 * * *",
-  // Weekly codebase-quality review — runs Saturday 03:23 UTC. Distinct
-  // from overnight-recon: deterministic code-quality recons over
-  // prototype/. Authority: D-AGENT-RUNTIME-AUTHORIZE.
-  "vera:codebase-quality-review": "23 3 * * SAT",
-  "anya:projection-drift": "17 3 * * *",
-  "scrooge:inbox-hygiene": "27 4 * * *",
-  "helena:risk-appetite-watch": "30 4 * * *",
-  "rohan:risk-run": "43 3 * * *",
-  "eitan:liquidity-snapshot": "53 6 * * *",
-  "atlas:substrate-state": "19 6 * * 1",
-  "devon:operational-resilience-snapshot": "23 5 * * MON",
-  "camille:financial-position-snapshot": "41 6 * * MON",
-  "zara:mlro-supervision": "30 5 * * MON",
-  "owen:governance-cycle-prep": "31 7 * * 2",
-  "thandiwe:audit-committee-prep": "47 7 * * 2",
-  "mira:obligations-snapshot": "29 7 * * 3",
-  "iris:popia-controls-snapshot": "51 7 * * 3",
-  "senna:security-substrate-state": "37 7 * * 4",
-  "rashida:cyber-resilience-snapshot": "49 7 * * 4",
-  "saskia:markets-readiness-snapshot": "33 5 * * MON",
-  "kai:m1-cdm-typescript-bindings": "27 6 * * MON",
-  "bea:accounting-readiness": "47 5 * * *",
-  "yael:tax-readiness": "7 6 * * THU",
-  "tomas:payments-readiness": "21 4 * * *",
-  "imani:legal-readiness": "9 7 * * 5",
-  "ravi:alm-readiness": "37 5 * * *",
-  "sade:agentops-readiness": "41 7 * * 5",
-  "pax:role-research-queue": "11 8 * * 5",
-};
+export const SCHEDULER_CRON_MAP: Readonly<Record<string, string>> = derivedCronMap();
 
 /**
  * Inactivity-SLA defaults per (agent, trigger). Parsed from the persona
