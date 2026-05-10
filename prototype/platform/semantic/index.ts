@@ -36,3 +36,15 @@ export {
   lcrCashInflows30D,
   liquidityCoverageRatio,
 } from "./liquidity-entries";
+
+export {
+  SLICE_4_CAPITAL_ENTRIES,
+  commonEquityTier1Capital,
+  additionalTier1Capital,
+  tier2Capital,
+  regulatoryCapitalDeductions,
+  riskWeightedAssets,
+  commonEquityTier1Ratio,
+  tier1CapitalRatio,
+  totalCapitalRatio,
+} from "./capital-entries";
