@@ -139,11 +139,11 @@ function makeFixture(): Fixture {
     [
       "# Obligations register",
       "",
-      "| ID | Citation | Requirement | Fulfilment policy | Owner | Status |",
-      "|---|---|---|---|---|---|",
-      "| ORG-PR-01 | Banks Act | Capital adequacy | Capital Mgmt | Camille | IN FORCE |",
-      "| ORG-PR-02 | Banks Act | Leverage | Capital Mgmt | Camille | IN FORCE |",
-      "| ORG-PR(IV)-01 | Banks Act | Pillar IV | Capital Mgmt | Camille | PARTIAL |",
+      "| ID | URN | Citation | Requirement | Fulfilment policy | Owner | Status | Entity scope | Applies-at |",
+      "|---|---|---|---|---|---|---|---|---|",
+      "| ORG-PR-01 | [TBD] | Banks Act | Capital adequacy | Capital Mgmt | Camille | IN FORCE | [TBD] | [TBD] |",
+      "| ORG-PR-02 | [TBD] | Banks Act | Leverage | Capital Mgmt | Camille | IN FORCE | [TBD] | [TBD] |",
+      "| ORG-PR(IV)-01 | [TBD] | Banks Act | Pillar IV | Capital Mgmt | Camille | PARTIAL | [TBD] | [TBD] |",
       "",
     ].join("\n"),
   );

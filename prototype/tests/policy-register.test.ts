@@ -140,10 +140,10 @@ function fixtureRegister(): { path: string; obligations: string } {
     [
       "# Obligations register",
       "",
-      "| ID | Citation | Requirement | Fulfilment policy | Owner | Status |",
-      "|---|---|---|---|---|---|",
-      "| ORG-PR-01 | Banks Act | Capital adequacy | Credit Risk Policy; RAS | Helena | IN FORCE |",
-      "| ORG-FC-01 | FIC Act | RMCP | Credit Risk Policy | Zara | IN FORCE |",
+      "| ID | URN | Citation | Requirement | Fulfilment policy | Owner | Status | Entity scope | Applies-at |",
+      "|---|---|---|---|---|---|---|---|---|",
+      "| ORG-PR-01 | [TBD] | Banks Act | Capital adequacy | Credit Risk Policy; RAS | Helena | IN FORCE | [TBD] | [TBD] |",
+      "| ORG-FC-01 | [TBD] | FIC Act | RMCP | Credit Risk Policy | Zara | IN FORCE | [TBD] | [TBD] |",
       "",
     ].join("\n"),
   );
