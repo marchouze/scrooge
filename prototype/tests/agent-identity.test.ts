@@ -28,10 +28,12 @@ import {
 } from "../platform/agent-identity/permission-policy";
 import type { AgentSpec } from "../platform/agent-runtime/spec-parser";
 import {
+  LEGACY_PRE_A1_EVENT_TYPES,
   PermissionGateDenied,
   VERA_URN,
   decideAppend,
   gateEventStore,
+  isGateEnabled,
 } from "../platform/event-store/permission-gate";
 import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
@@ -68,7 +70,7 @@ afterEach(() => {
     /* noop */
   }
   // biome-ignore lint/performance/noDelete: env-var cleanup needs delete to fully unset
-  delete process.env.BANK_PERMISSION_GATE_ENABLED;
+  delete process.env.BANK_PERMISSION_GATE_DISABLED;
 });
 
 describe("LocalAgentIdentityIssuer — issue / rotate", () => {
@@ -291,6 +293,43 @@ describe("LocalPermissionPolicyPublisher", () => {
   });
 });
 
+describe("permission gate — env-var defaults (T-01 secure-by-default)", () => {
+  it("defaults to enabled when no env-var set", () => {
+    // biome-ignore lint/performance/noDelete: env-var cleanup needs delete to fully unset
+    delete process.env.BANK_PERMISSION_GATE_DISABLED;
+    expect(isGateEnabled()).toBe(true);
+  });
+
+  it("disabled when BANK_PERMISSION_GATE_DISABLED=true", () => {
+    process.env.BANK_PERMISSION_GATE_DISABLED = "true";
+    expect(isGateEnabled()).toBe(false);
+    // biome-ignore lint/performance/noDelete: cleanup
+    delete process.env.BANK_PERMISSION_GATE_DISABLED;
+  });
+
+  it("enabled when BANK_PERMISSION_GATE_DISABLED is any non-true value", () => {
+    process.env.BANK_PERMISSION_GATE_DISABLED = "false";
+    expect(isGateEnabled()).toBe(true);
+    process.env.BANK_PERMISSION_GATE_DISABLED = "1";
+    expect(isGateEnabled()).toBe(true);
+    // biome-ignore lint/performance/noDelete: cleanup
+    delete process.env.BANK_PERMISSION_GATE_DISABLED;
+  });
+
+  it("forceEnabled wins over env disable (test override)", () => {
+    process.env.BANK_PERMISSION_GATE_DISABLED = "true";
+    expect(isGateEnabled(true)).toBe(true);
+    // biome-ignore lint/performance/noDelete: cleanup
+    delete process.env.BANK_PERMISSION_GATE_DISABLED;
+  });
+
+  it("forceDisabled wins over default-on (test override)", () => {
+    // biome-ignore lint/performance/noDelete: cleanup
+    delete process.env.BANK_PERMISSION_GATE_DISABLED;
+    expect(isGateEnabled(false, true)).toBe(false);
+  });
+});
+
 describe("permission gate — feature flag", () => {
   function buildEventFor(actorId: string, type: string): Event {
     return {
@@ -312,14 +351,14 @@ describe("permission gate — feature flag", () => {
     };
   }
 
-  it("when flag off, gate is no-op (append succeeds even without policy)", () => {
+  it("when flag off (forceDisabled), gate is no-op (append succeeds even without policy)", () => {
     // biome-ignore lint/performance/noDelete: env-var cleanup needs delete to fully unset
-    delete process.env.BANK_PERMISSION_GATE_ENABLED;
+    delete process.env.BANK_PERMISSION_GATE_DISABLED;
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     const wrapped = gateEventStore({
       store,
-      config: { policy: publisher, forceEnabled: false },
+      config: { policy: publisher, forceDisabled: true },
     });
     expect(() => wrapped.append(buildEventFor("agent:nobody", "AgentDecision"))).not.toThrow();
     store.close();
@@ -352,13 +391,126 @@ describe("permission gate — feature flag", () => {
     store.close();
   });
 
-  it("when flag on but no policy is published, blocks the append", () => {
+  it("when flag on, no policy, and event type NOT in legacy backfill, blocks the append", () => {
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     const wrapped = gateEventStore({
       store,
       config: { policy: publisher, forceEnabled: true },
     });
+    // Use a synthetic event type that won't be in LEGACY_PRE_A1_EVENT_TYPES.
+    // Cast through `any` for the test fixture — the permission gate
+    // operates on `event.type` as a string, so unknown types are valid
+    // for this assertion path.
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("FutureEventType")).toBe(false);
+    expect(() => wrapped.append(buildEventFor("agent:sample", "FutureEventType"))).toThrow(
+      PermissionGateDenied,
+    );
+    store.close();
+  });
+
+  it("when flag on, no policy, but event type IS in legacy backfill, append succeeds and emits low-severity SubstrateAlert (T-01 backfill)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    // AgentDecision is in LEGACY_PRE_A1_EVENT_TYPES per Atlas T-01 mitigation.
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("AgentDecision")).toBe(true);
+    expect(() => wrapped.append(buildEventFor("agent:legacy", "AgentDecision"))).not.toThrow();
+    // The default bypass-handler emits a SubstrateAlert per
+    // (agentUrn, eventType) pair. Replay confirms it landed.
+    const events = [...store.replay()];
+    const alerts = events.filter((e) => e.type === "SubstrateAlert");
+    expect(alerts).toHaveLength(1);
+    const alertPayload = alerts[0]?.payload as Record<string, unknown>;
+    expect(alertPayload.alertClass).toBe("integrity");
+    expect(alertPayload.severity).toBe("low");
+    expect(alertPayload.agentUrn).toBe("agent:legacy");
+    store.close();
+  });
+
+  it("legacy backfill alert is deduped per (agentUrn, eventType) pair within a process", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    wrapped.append(buildEventFor("agent:legacy2", "AgentDecision"));
+    wrapped.append(buildEventFor("agent:legacy2", "AgentDecision"));
+    wrapped.append(buildEventFor("agent:legacy2", "AgentDecision"));
+    const alerts = [...store.replay()].filter((e) => e.type === "SubstrateAlert");
+    expect(alerts).toHaveLength(1);
+    store.close();
+  });
+
+  it("legacy backfill alert fires once per distinct event type for the same actor", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    // AgentDecision and CeoDecision are both in the legacy backfill list
+    // and each carry valid payloads via the test fixture's overrides.
+    wrapped.append(buildEventFor("agent:legacy3", "AgentDecision"));
+    const ceoEvent: Event = {
+      event_id: "evt-ceo-legacy",
+      type: "CeoDecision",
+      as_of: "2026-05-08T00:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:legacy3" },
+      citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+      payload: {
+        decisionId: "D-T-LEGACY-FIXTURE",
+        action: "approve",
+        recordedAt: "2026-05-08T00:00:00.000Z",
+        recordedBy: "marc@tgv.co.za",
+      },
+    };
+    wrapped.append(ceoEvent);
+    const alerts = [...store.replay()].filter((e) => e.type === "SubstrateAlert");
+    expect(alerts).toHaveLength(2);
+    store.close();
+  });
+
+  it("legacy backfill bypass uses onLegacyBypass hook when provided (overrides default alert emission)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const bypasses: Array<{ type: string; agentUrn: string }> = [];
+    const wrapped = gateEventStore({
+      store,
+      config: {
+        policy: publisher,
+        forceEnabled: true,
+        onLegacyBypass: ({ event, agentUrn }) => {
+          bypasses.push({ type: event.type, agentUrn });
+        },
+      },
+    });
+    wrapped.append(buildEventFor("agent:legacy4", "AgentDecision"));
+    expect(bypasses).toHaveLength(1);
+    expect(bypasses[0]).toEqual({ type: "AgentDecision", agentUrn: "agent:legacy4" });
+    // No SubstrateAlert when hook overrides default behaviour.
+    const alerts = [...store.replay()].filter((e) => e.type === "SubstrateAlert");
+    expect(alerts).toHaveLength(0);
+    store.close();
+  });
+
+  it("legacy backfill does NOT bypass when actor HAS a published policy (policy is canonical)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    // Publish a policy that does NOT include AgentDecision. The actor
+    // having a policy means the backfill window is closed — out-of-list
+    // emit is a hard deny even if the type is on the legacy list.
+    publisher.publish(fakeSpec({ eventsEmitted: ["AgentEscalation"] }));
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("AgentDecision")).toBe(true);
     expect(() => wrapped.append(buildEventFor("agent:sample", "AgentDecision"))).toThrow(
       PermissionGateDenied,
     );
@@ -520,12 +672,12 @@ describe("decideAppend — pure decision function", () => {
     store.close();
   });
 
-  it("denies when no policy is published", () => {
+  it("denies when no policy is published AND event type not in legacy backfill", () => {
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     const event: Event = {
       event_id: "evt-y",
-      type: "AgentDecision",
+      type: "FutureEventType",
       as_of: "2026-05-08T00:00:00.000Z",
       entity: "BANK-ZA-001",
       actor: { type: "service", id: "agent:newbie" },
@@ -535,6 +687,27 @@ describe("decideAppend — pure decision function", () => {
     const decision = decideAppend({ event, policy: publisher });
     expect(decision.allowed).toBe(false);
     expect(decision.reason).toContain("no permission policy");
+    store.close();
+  });
+
+  it("allows with legacyBypass when no policy is published AND event type IS in legacy backfill", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const event: Event = {
+      event_id: "evt-z",
+      type: "AgentDecision",
+      as_of: "2026-05-08T00:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:newbie" },
+      citations: ["X"],
+      payload: {},
+    };
+    const decision = decideAppend({ event, policy: publisher });
+    expect(decision.allowed).toBe(true);
+    expect(decision.legacyBypass).toEqual({
+      agentUrn: "agent:newbie",
+      eventType: "AgentDecision",
+    });
     store.close();
   });
 });
