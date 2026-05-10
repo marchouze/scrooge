@@ -65,6 +65,10 @@ const DEFAULT_CITATIONS: readonly string[] = [
  */
 export const SCHEDULER_CRON_MAP: Readonly<Record<string, string>> = {
   "vera:overnight-recon": "13 2 * * *",
+  // Weekly codebase-quality review — runs Saturday 03:23 UTC. Distinct
+  // from overnight-recon: deterministic code-quality recons over
+  // prototype/. Authority: D-AGENT-RUNTIME-AUTHORIZE.
+  "vera:codebase-quality-review": "23 3 * * SAT",
   "anya:projection-drift": "17 3 * * *",
   "scrooge:inbox-hygiene": "27 4 * * *",
   "helena:risk-appetite-watch": "30 4 * * *",

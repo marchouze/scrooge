@@ -42,6 +42,7 @@
     "model-registry:list": "bun run scripts/model-registry-list.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
+    "agent:vera-codebase-quality-review": "bun run runtime/run.ts --agent Vera --trigger codebase-quality-review",
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "agent:helena-risk-appetite-watch": "bun run runtime/run.ts --agent Helena --trigger risk-appetite-watch",
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",

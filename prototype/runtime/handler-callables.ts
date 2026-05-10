@@ -46,6 +46,7 @@ import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-thre
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
+import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
 import yaelTaxReadiness from "./agents/yael-tax-readiness";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
@@ -53,6 +54,7 @@ import type { AgentRunHandler } from "./types";
 
 export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "vera:overnight-recon": veraOvernightRecon,
+  "vera:codebase-quality-review": veraCodebaseQualityReview,
   "atlas:substrate-state": atlasSubstrateState,
   "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
