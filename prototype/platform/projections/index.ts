@@ -14,3 +14,14 @@ export type {
 } from "./types";
 export { acceptAll, acceptType } from "./types";
 export { LocalProjector } from "./runtime";
+
+// D-DATA-PROVENANCE-SUBSTRATE Slice 2 — provenance filter surface.
+export type { ProvenanceFilter, ProvenanceMode } from "./filter";
+export {
+  defaultProvenanceFilter,
+  defaultProvenanceMode,
+  effectiveStreamKey,
+  eventMatchesProvenanceFilter,
+  provenanceFilterDigest,
+  setDefaultProvenanceModeOverride,
+} from "./filter";

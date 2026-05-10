@@ -22,7 +22,12 @@ import { describe, expect, it } from "bun:test";
 import { BANK_ZA_001, newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
-import { LocalProjector, acceptType } from "../platform/projections";
+import {
+  LocalProjector,
+  acceptType,
+  defaultProvenanceFilter,
+  effectiveStreamKey,
+} from "../platform/projections";
 import type { Projection } from "../platform/projections";
 
 function mk(overrides: Partial<Event> = {}): Event {
@@ -186,7 +191,11 @@ describe("LocalProjector.maybeSnapshot — cadence-driven persist", () => {
     expect(result.emitted).toBe(true);
     expect(result.reason).toBe("first-snapshot");
     expect(result.snapshot).toBeDefined();
-    expect(store.listSnapshots(STREAM).length).toBe(1);
+    // Slice 2 — runtime persists under effective stream key
+    // (base + provenance-filter digest). Inspect at the effective key.
+    expect(store.listSnapshots(effectiveStreamKey(STREAM, defaultProvenanceFilter())).length).toBe(
+      1,
+    );
     store.close();
   });
 
@@ -209,7 +218,9 @@ describe("LocalProjector.maybeSnapshot — cadence-driven persist", () => {
     const b = projector.maybeSnapshot(counter, opts);
     expect(b.emitted).toBe(false);
     expect(b.reason).toBe("below-thresholds");
-    expect(store.listSnapshots(STREAM).length).toBe(1);
+    expect(store.listSnapshots(effectiveStreamKey(STREAM, defaultProvenanceFilter())).length).toBe(
+      1,
+    );
     store.close();
   });
 

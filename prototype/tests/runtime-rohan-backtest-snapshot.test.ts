@@ -30,6 +30,7 @@ import {
   makeBacktestRequested,
 } from "../platform/event-store/event-types";
 import type { Event } from "../platform/event-store/types";
+import { effectiveStreamKey } from "../platform/projections";
 import rohanBacktestHarness from "../runtime/agents/rohan-backtest-harness";
 import type { AgentRunContext } from "../runtime/types";
 import { type BacktestEclFixture, allFixtures } from "./fixtures/backtest-ecl";
@@ -106,9 +107,15 @@ describe("runtime — Rohan backtest-harness — snapshot/naive equivalence", ()
   beforeEach(() => {
     // Default-on at session start; per-test overrides are local.
     process.env.BANK_BACKTEST_USE_SNAPSHOTS = "true";
+    // Slice 2 — fixtures use untagged events (legacy); pin the harness
+    // to `combined` mode so it consumes both production and simulated
+    // (untagged-treated-as-simulated) events. Production mode is the
+    // production-default per spec; tests override.
+    process.env.BANK_BACKTEST_PROVENANCE_MODE = "combined";
   });
   afterEach(() => {
     process.env.BANK_BACKTEST_USE_SNAPSHOTS = undefined;
+    process.env.BANK_BACKTEST_PROVENANCE_MODE = undefined;
   });
 
   function reEntity(fx: BacktestEclFixture, suffix: string): BacktestEclFixture {
@@ -152,7 +159,13 @@ describe("runtime — Rohan backtest-harness — snapshot/naive equivalence", ()
     const fx = allFixtures.find((f) => f.windowSignals.length > 0 || f.priorSignals.length > 0);
     if (!fx) throw new Error("expected at least one fixture with signals");
     const isolated = reEntity(fx, "PERSIST");
-    const streamKey = `${isolated.entity}|backtest/risk-raised-credit-critical`;
+    // Slice 2 — snapshots persist under the effective stream key
+    // (base + provenance-filter digest). Mirror the harness's filter
+    // here so listSnapshots resolves to the same physical row.
+    const streamKey = effectiveStreamKey(
+      `${isolated.entity}|backtest/risk-raised-credit-critical`,
+      { mode: "combined" },
+    );
 
     // First run: no snapshot exists → cadence fires `first-snapshot` →
     // a row is persisted.
@@ -173,7 +186,10 @@ describe("runtime — Rohan backtest-harness — snapshot/naive equivalence", ()
     const fx = allFixtures[0];
     if (!fx) throw new Error("expected at least one fixture");
     const isolated = reEntity(fx, "FLAGOFF");
-    const streamKey = `${isolated.entity}|backtest/risk-raised-credit-critical`;
+    const streamKey = effectiveStreamKey(
+      `${isolated.entity}|backtest/risk-raised-credit-critical`,
+      { mode: "combined" },
+    );
     await runOnce(isolated, false);
     expect(eventStore.listSnapshots(streamKey)).toHaveLength(0);
   });

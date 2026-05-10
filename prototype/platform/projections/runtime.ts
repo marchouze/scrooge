@@ -23,12 +23,29 @@
 // snapshot API surface; this runtime is a Slice-3 *consumer* of that
 // surface, not an extension.
 //
+// D-DATA-PROVENANCE-SUBSTRATE Slice 2 — projection-runtime mode selection.
+// Both `projectFromSnapshot()` and `maybeSnapshot()` now accept a
+// `provenanceFilter` (defaulting to `defaultProvenanceFilter()` from
+// the env var `BANK_PHASE`). The filter is applied to every event the
+// runtime folds into the projection state; the filter's structural
+// digest is included in the *effective* stream key the runtime passes
+// to the EventStore snapshot APIs, so cross-mode snapshots never
+// cross-contaminate. The base stream key the consumer supplies is
+// preserved for telemetry; the digest is appended via `effectiveStreamKey()`.
+//
 // Author: Atlas (Core banking platform architect, engineering — original)
-//   · Anya (Data / analytics engineer, engineering — Slice 3 snapshot consumer wiring)
+//   · Anya (Data / analytics engineer, engineering — Slice 3 snapshot consumer wiring;
+//     Slice 2 provenance filter)
 
 import type { EventStore, SnapshotRow } from "../event-store/store";
 import type { Event } from "../event-store/types";
 import { logger } from "../observability/logger";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  effectiveStreamKey,
+  eventMatchesProvenanceFilter,
+} from "./filter";
 import type {
   Projection,
   ProjectionReplayOpts,
@@ -87,16 +104,24 @@ export class LocalProjector implements Projector {
   projectFromSnapshot<S, E extends Event>(
     p: Projection<S, E>,
     opts: SnapshotProjectionOpts,
-  ): { state: S; snapshot?: SnapshotRow; deltaCount: number } {
+  ): { state: S; snapshot?: SnapshotRow; deltaCount: number; provenanceFilter: ProvenanceFilter } {
     if (!p.decodeSnapshot) {
       throw new Error(
         `projectFromSnapshot: projection '${p.name}' has no decodeSnapshot — cannot deserialise snapshot payload`,
       );
     }
-    const snap = this.store.loadSnapshot(opts.streamKey, opts.asOf);
+    // Slice 2 — resolve the provenance filter (env-derived default when
+    // omitted) and compute the effective stream key the snapshot APIs
+    // see. Cross-mode snapshots ride parallel `(stream_key, ...)` rows.
+    const provFilter: ProvenanceFilter = opts.provenanceFilter ?? defaultProvenanceFilter();
+    const effStream = effectiveStreamKey(opts.streamKey, provFilter);
+
+    const snap = this.store.loadSnapshot(effStream, opts.asOf);
     if (!snap) {
       // No snapshot — degrade to naive replay. Caller still gets {state}
-      // and a deltaCount that reflects "we read the whole log".
+      // and a deltaCount that reflects "we read the whole log". The
+      // provenance filter is applied to every event before the
+      // projection's own `accepts` predicate.
       let deltaCount = 0;
       let state: S = p.initial;
       for (const event of this.store.replay({
@@ -104,6 +129,7 @@ export class LocalProjector implements Projector {
         ...(opts.filter ?? {}),
       })) {
         deltaCount++;
+        if (!eventMatchesProvenanceFilter(event, provFilter)) continue;
         if (!p.accepts(event)) continue;
         state = p.reduce(state, event);
       }
@@ -111,25 +137,31 @@ export class LocalProjector implements Projector {
         {
           projection: p.name,
           streamKey: opts.streamKey,
+          effectiveStreamKey: effStream,
           asOf: opts.asOf,
           deltaCount,
+          provenanceMode: provFilter.mode,
           snapshot: null,
         },
         "projection materialised from naive replay (no snapshot)",
       );
-      return { state, deltaCount };
+      return { state, deltaCount, provenanceFilter: provFilter };
     }
 
-    // Snapshot path — decode + fold delta on top.
+    // Snapshot path — decode + fold delta on top. The provenance filter
+    // is applied to every delta event; the snapshot itself was computed
+    // under the same filter (effective-stream-key isolation guarantees
+    // it), so re-applying the predicate to the delta is sufficient.
     const seed = p.decodeSnapshot(snap.payload);
     let state: S = seed;
     let deltaCount = 0;
     for (const event of this.store.replayFromSnapshot({
-      streamKey: opts.streamKey,
+      streamKey: effStream,
       asOf: opts.asOf,
       ...(opts.filter ? { filter: opts.filter } : {}),
     })) {
       deltaCount++;
+      if (!eventMatchesProvenanceFilter(event, provFilter)) continue;
       if (!p.accepts(event)) continue;
       state = p.reduce(state, event);
     }
@@ -137,13 +169,15 @@ export class LocalProjector implements Projector {
       {
         projection: p.name,
         streamKey: opts.streamKey,
+        effectiveStreamKey: effStream,
         asOf: opts.asOf,
         snapshotUpto: snap.uptoSequence,
         deltaCount,
+        provenanceMode: provFilter.mode,
       },
       "projection materialised from snapshot + delta",
     );
-    return { state, snapshot: snap, deltaCount };
+    return { state, snapshot: snap, deltaCount, provenanceFilter: provFilter };
   }
 
   /**
@@ -168,8 +202,13 @@ export class LocalProjector implements Projector {
         `maybeSnapshot: projection '${p.name}' has no encodeSnapshot — cannot serialise state`,
       );
     }
+    // Slice 2 — the persisted snapshot is keyed under the effective
+    // stream key (base + provenance-filter digest) so a snapshot
+    // computed under one filter never serves a request under another.
+    const provFilter: ProvenanceFilter = opts.provenanceFilter ?? defaultProvenanceFilter();
+    const effStream = effectiveStreamKey(opts.streamKey, provFilter);
     const check = this.store.shouldSnapshot({
-      streamKey: opts.streamKey,
+      streamKey: effStream,
       ...(opts.eventType ? { eventType: opts.eventType } : {}),
     });
     if (!check.shouldSnapshot) {
@@ -177,7 +216,7 @@ export class LocalProjector implements Projector {
     }
     const payload = p.encodeSnapshot(opts.state);
     const row = this.store.snapshot({
-      streamKey: opts.streamKey,
+      streamKey: effStream,
       asOf: opts.asOf,
       uptoSequence: opts.uptoSequence,
       payload,
@@ -186,8 +225,10 @@ export class LocalProjector implements Projector {
       {
         projection: p.name,
         streamKey: opts.streamKey,
+        effectiveStreamKey: effStream,
         asOf: opts.asOf,
         uptoSequence: opts.uptoSequence,
+        provenanceMode: provFilter.mode,
         reason: check.reason,
       },
       "projection snapshot persisted",

@@ -78,6 +78,11 @@ import {
   makeRiskRaised,
 } from "../../platform/event-store/event-types";
 import type { Event } from "../../platform/event-store/types";
+import {
+  type ProvenanceFilter,
+  effectiveStreamKey,
+  eventMatchesProvenanceFilter,
+} from "../../platform/projections";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -254,6 +259,23 @@ function backtestStreamKey(entity: string): string {
   return `${entity}|backtest/risk-raised-credit-critical`;
 }
 
+/**
+ * D-DATA-PROVENANCE-SUBSTRATE Slice 2 — backtest-harness provenance
+ * filter. Backtests run on real risk events; the harness defaults to
+ * `production-only`. Operators can override via
+ * `BANK_BACKTEST_PROVENANCE_MODE=simulated-only|combined` for rehearsal
+ * runs. Override values outside the typed enum fall back to
+ * `production-only` rather than throwing — this is a side-channel
+ * configuration, not an API contract.
+ */
+function backtestProvenanceFilter(): ProvenanceFilter {
+  const raw = (process.env.BANK_BACKTEST_PROVENANCE_MODE ?? "").toLowerCase();
+  if (raw === "simulated-only" || raw === "combined") {
+    return { mode: raw };
+  }
+  return { mode: "production-only" };
+}
+
 function snapshotsEnabled(): boolean {
   // Default on — opt-out via env to support naive-replay regression runs
   // (Slice 3 exit criterion: byte-identical equivalence between paths).
@@ -298,7 +320,13 @@ function buildSignalProjection(
   asOf: string,
   useSnapshot: boolean,
 ): SignalProjection {
-  const streamKey = backtestStreamKey(entity);
+  // Slice 2 — the snapshot stream key includes the provenance-filter
+  // digest so a snapshot built under `production-only` never serves a
+  // request under any other mode. The filter is also applied to every
+  // delta event before the credit-critical predicate.
+  const provFilter = backtestProvenanceFilter();
+  const baseStreamKey = backtestStreamKey(entity);
+  const streamKey = effectiveStreamKey(baseStreamKey, provFilter);
   let entries: SignalEntry[] = [];
   let folded = 0;
 
@@ -313,6 +341,7 @@ function buildSignalProjection(
         asOf,
         filter: { entity, type: "RiskRaised" },
       })) {
+        if (!eventMatchesProvenanceFilter(e, provFilter)) continue;
         if (!isCreditCriticalSignal(e)) continue;
         entries.push({ eventId: e.event_id, asOf: e.as_of });
         folded++;
@@ -323,6 +352,7 @@ function buildSignalProjection(
   }
 
   for (const e of eventStore.replay({ type: "RiskRaised", entity, asOf })) {
+    if (!eventMatchesProvenanceFilter(e, provFilter)) continue;
     if (!isCreditCriticalSignal(e)) continue;
     entries.push({ eventId: e.event_id, asOf: e.as_of });
     folded++;
@@ -363,7 +393,10 @@ function runEclBacktest(req: BacktestRequestedPayload, entity: string): Backtest
   // on (streamKey, asOf, uptoSequence)). The store does not auto-snapshot
   // inside append(); Slice-3 consumers own this call.
   if (useSnap && projection.entries.length > 0) {
-    const streamKey = backtestStreamKey(entity);
+    // Slice 2 — snapshot under the same effective stream key
+    // (base + provenance-filter digest) used for the read.
+    const provFilter = backtestProvenanceFilter();
+    const streamKey = effectiveStreamKey(backtestStreamKey(entity), provFilter);
     const cadence = eventStore.shouldSnapshot({
       streamKey,
       eventType: "RiskRaised",
