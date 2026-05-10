@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-09T16:31:24.863Z",
+  "asOf": "2026-05-10T07:07:14.012Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -628,6 +628,21 @@
       }
     },
     {
+      "id": "D-REGULATORY-READINESS-GATE-PLAN",
+      "title": "Regulatory-readiness gate plan — top-3 workstreams for the licence-application package",
+      "category": "medium-term",
+      "owner": "Zara (CCO, governance) · Helena (CRO, governance)",
+      "trigger": "Triage of the regulatory-readiness frontier across seven candidate workstreams; recommendation to authorise three top-priority bundles (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, Joint Standard 1 cyber-resilience) with embedded slice plans and Slice 1-3 dispatch-ready briefs for pre-M2 build under the Targeted budget. Two further bundles (Operational Resilience under JS 2 of 2024 + BCBS 2021; Markets Conduct / FAIS / ODP under FMA + CS 1-3 of 2018 + JS 2 of 2020) filed as next-tranche workstreams with named proximate triggers.",
+      "decisionForCEO": "Approve the top-3 regulatory-readiness workstreams (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, JS 1 of 2024 cyber-resilience) + Slice 1-3 build authorisation pre-M2.",
+      "sourceDocs": [
+        "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md"
+      ],
+      "recommendation": {
+        "stance": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
+        "reasoning": ""
+      }
+    },
+    {
       "id": "D-CI-GATE-INTEGRITY",
       "title": "CI-gate integrity finding — pre-existing failures + merge-bypass pattern",
       "category": "near-term",
@@ -958,8 +973,8 @@
         },
         {
           "date": "2026-05-10",
-          "path": "Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-hire-six-seats-pack.md",
-          "title": "scrooge · ceo decision record · d hire six seats pack"
+          "path": "Owner Inbox/2026-05-10_scrooge_project-status-roadmap.md",
+          "title": "scrooge · project status roadmap"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -1196,6 +1211,21 @@
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [
         {
+          "id": "D-REGULATORY-READINESS-GATE-PLAN",
+          "title": "Regulatory-readiness gate plan — top-3 workstreams for the licence-application package",
+          "category": "medium-term",
+          "owner": "Zara (CCO, governance) · Helena (CRO, governance)",
+          "trigger": "Triage of the regulatory-readiness frontier across seven candidate workstreams; recommendation to authorise three top-priority bundles (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, Joint Standard 1 cyber-resilience) with embedded slice plans and Slice 1-3 dispatch-ready briefs for pre-M2 build under the Targeted budget. Two further bundles (Operational Resilience under JS 2 of 2024 + BCBS 2021; Markets Conduct / FAIS / ODP under FMA + CS 1-3 of 2018 + JS 2 of 2020) filed as next-tranche workstreams with named proximate triggers.",
+          "decisionForCEO": "Approve the top-3 regulatory-readiness workstreams (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, JS 1 of 2024 cyber-resilience) + Slice 1-3 build authorisation pre-M2.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
+            "reasoning": ""
+          }
+        },
+        {
           "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
           "title": "New Product Approval Policy v1.0",
           "category": "near-term",
@@ -1213,6 +1243,11 @@
       ],
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md",
+          "title": "zara helena · regulatory readiness gate plan"
+        },
         {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md",
@@ -1232,18 +1267,13 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_helena_risk-appetite-watch.md",
           "title": "helena · risk appetite watch"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_helena_cro-seat-fit-and-proper-criteria.md",
-          "title": "helena · cro seat fit and proper criteria"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 5
     },
     {
@@ -1766,6 +1796,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
+          "title": "owen atlas · rms phase 1 slice 1 document store"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen_governance-framework-fais-ki-steady-state.md",
           "title": "owen · governance framework fais ki steady state"
@@ -1784,14 +1819,9 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md",
           "title": "owen atlas · records management substrate · phase 1 spec"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
-          "title": "zara imani · fsp confirm a scope updates"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
@@ -1809,6 +1839,21 @@
       "activeWorkstreams": [],
       "recentlyCompletedWorkstreams": [],
       "openDecisionsOwned": [
+        {
+          "id": "D-REGULATORY-READINESS-GATE-PLAN",
+          "title": "Regulatory-readiness gate plan — top-3 workstreams for the licence-application package",
+          "category": "medium-term",
+          "owner": "Zara (CCO, governance) · Helena (CRO, governance)",
+          "trigger": "Triage of the regulatory-readiness frontier across seven candidate workstreams; recommendation to authorise three top-priority bundles (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, Joint Standard 1 cyber-resilience) with embedded slice plans and Slice 1-3 dispatch-ready briefs for pre-M2 build under the Targeted budget. Two further bundles (Operational Resilience under JS 2 of 2024 + BCBS 2021; Markets Conduct / FAIS / ODP under FMA + CS 1-3 of 2018 + JS 2 of 2020) filed as next-tranche workstreams with named proximate triggers.",
+          "decisionForCEO": "Approve the top-3 regulatory-readiness workstreams (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, JS 1 of 2024 cyber-resilience) + Slice 1-3 build authorisation pre-M2.",
+          "sourceDocs": [
+            "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md"
+          ],
+          "recommendation": {
+            "stance": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
+            "reasoning": ""
+          }
+        },
         {
           "id": "D-NEW-PRODUCT-APPROVAL-POLICY",
           "title": "New Product Approval Policy v1.0",
@@ -1828,6 +1873,16 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md",
+          "title": "zara helena · regulatory readiness gate plan"
+        },
+        {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_mira_obligations-register-v1.13-reconciliation.md",
+          "title": "mira · obligations register v1.13 reconciliation"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_mira_per-entity-register-scoping-v0.md",
           "title": "mira · per entity register scoping v0"
@@ -1841,23 +1896,13 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md",
           "title": "mira zara · concentration risk conduct confirmation"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_zara_fsp-application-path.md",
-          "title": "zara · fsp application path"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_mira_finsurv-urn-cluster-wave-1.md",
-          "title": "mira · finsurv urn cluster wave 1"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
-      "totalOpenDecisions": 1,
+      "totalOpenDecisions": 2,
       "totalRecentDeliverables": 5
     },
     {
@@ -1925,6 +1970,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_vera_retention-citation-coverage-finding.md",
+          "title": "vera · retention citation coverage finding"
+        },
+        {
           "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_thandiwe_audit-committee-prep.md",
           "title": "thandiwe · audit committee prep"
@@ -1958,6 +2008,11 @@
           "recentDeliverables": [
             {
               "date": "2026-05-10",
+              "path": "Owner Inbox/2026-05-10_vera_retention-citation-coverage-finding.md",
+              "title": "vera · retention citation coverage finding"
+            },
+            {
+              "date": "2026-05-10",
               "path": "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md",
               "title": "vera · ci gate integrity finding"
             },
@@ -1975,11 +2030,6 @@
               "date": "2026-05-07",
               "path": "Owner Inbox/2026-05-07_vera_agent-discipline-assurance-extension.md",
               "title": "vera · agent discipline assurance extension"
-            },
-            {
-              "date": "2026-05-07",
-              "path": "Owner Inbox/2026-05-07_vera_overnight-recon.md",
-              "title": "vera · overnight recon"
             }
           ],
           "lastActivityAt": "2026-05-10"
@@ -1988,7 +2038,7 @@
       "totalActive": 1,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 1,
-      "totalRecentDeliverables": 6
+      "totalRecentDeliverables": 7
     },
     {
       "name": "Rashida",
@@ -2019,6 +2069,30 @@
   ],
   "ownerInboxFeed": [
     {
+      "filename": "2026-05-10_zara-helena_regulatory-readiness-gate-plan.md",
+      "path": "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md",
+      "date": "2026-05-10",
+      "title": "Regulatory-readiness gate plan — top-3 workstreams for the licence-application package",
+      "decisionRequired": true,
+      "author": "Zara (Chief Compliance Officer, governance) + Helena (Chief Risk Officer, governance)",
+      "summary": "Triage of the regulatory-readiness frontier across seven candidate workstreams; recommendation to authorise three top-priority bundles (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, Joint Standard 1 cyber-resilience) with embedded slice plans and Slice 1-3 dispatch-ready briefs for pre-M2 build under the Targeted budget. Two further bundles (Operational Resilience under JS 2 of 2024 + BCBS 2021; Markets Conduct / FAIS / ODP under FMA + CS 1-3 of 2018 + JS 2 of 2020) filed as next-tranche workstreams with named proximate triggers.",
+      "decisionId": "D-REGULATORY-READINESS-GATE-PLAN",
+      "decisionCategory": "medium-term",
+      "decisionForCEO": "Approve the top-3 regulatory-readiness workstreams (AML/CFT-RMCP, ICAAP/ILAAP/Recovery, JS 1 of 2024 cyber-resilience) + Slice 1-3 build authorisation pre-M2.",
+      "decisionRecommendation": "Approve as drafted; routing — each workstream's Slice 1 dispatches immediately on CEO approval per the no-pause rule (CLAUDE.md \"Operating procedures\").",
+      "decisionOwner": "Zara (CCO, governance) · Helena (CRO, governance)",
+      "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_vera_retention-citation-coverage-finding.md",
+      "path": "Owner Inbox/2026-05-10_vera_retention-citation-coverage-finding.md",
+      "date": "2026-05-10",
+      "title": "Retention-citation-coverage recon — close 78 pre-existing warnings via URN-form anchor recognition",
+      "decisionRequired": false,
+      "author": "Vera (Internal audit / continuous-assurance engineer)",
+      "summary": "Extended the recon's prefix list to recognise urn:obligation:* / urn:policy:* citationRefs the substrate emits; warning count dropped from 78 to 3, with the residual 3 filed as a Mira (Compliance / RegTech engineer) follow-on."
+    },
+    {
       "filename": "2026-05-10_vera_ci-gate-integrity-finding.md",
       "path": "Owner Inbox/2026-05-10_vera_ci-gate-integrity-finding.md",
       "date": "2026-05-10",
@@ -2030,6 +2104,15 @@
       "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
       "decisionOwner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
       "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_scrooge_project-status-roadmap.md",
+      "path": "Owner Inbox/2026-05-10_scrooge_project-status-roadmap.md",
+      "date": "2026-05-10",
+      "title": "Project status & roadmap — what's done, what's still to do",
+      "decisionRequired": false,
+      "author": "Scrooge (Chief of Staff)",
+      "summary": "Per-workstream view of the bank build — substrate, governance, regulatory chain, markets franchise. Roadmap-leaning — brief done-anchors, fuller to-do queues with sequencing and owners. Refresh of the 2026-05-06 CEO status summary, scoped forward."
     },
     {
       "filename": "2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md",
@@ -2192,6 +2275,24 @@
       "decisionStatus": "open"
     },
     {
+      "filename": "2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
+      "path": "Owner Inbox/2026-05-10_owen-atlas_rms-phase-1-slice-1-document-store.md",
+      "date": "2026-05-10",
+      "title": "RMS Phase 1 Slice 1 — content-addressed document store + BLAKE3 hashing",
+      "decisionRequired": false,
+      "author": "Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)",
+      "summary": "First slice of D-RMS-PHASE-1 lands. Content-addressed document store with BLAKE3 hashing, sharded local-fs layout (`<root>/<algo>/<first-2>/<rest>`), `BANK_DOCUMENT_STORE_PATH` env var, integrity-on-read by default, 22 unit tests passing. Foundation for Slices 2–5; no event types or projections yet."
+    },
+    {
+      "filename": "2026-05-10_mira_obligations-register-v1.13-reconciliation.md",
+      "path": "Owner Inbox/2026-05-10_mira_obligations-register-v1.13-reconciliation.md",
+      "date": "2026-05-10",
+      "title": "Obligations register v1.13 — schema unification + header reconciliation (close P1 #1 + #2)",
+      "decisionRequired": false,
+      "author": "Mira (Compliance / RegTech engineer)",
+      "summary": "v1.13 of the obligations register reconciles header counters to actuals (232 obligations, 23 domain prefixes) and unifies the table schema to a single 9-column shape (ID, URN, Citation, Requirement, Fulfilment policy, Owner, Status, Entity scope, Applies-at), closing audit findings P1 #1 and P1 #2."
+    },
+    {
       "filename": "2026-05-10_atlas_event-store-scaling-design.md",
       "path": "Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md",
       "date": "2026-05-10",
@@ -2204,6 +2305,24 @@
       "decisionRecommendation": "Approve the framing and the Azure target. Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases.",
       "decisionOwner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
       "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
+      "path": "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
+      "date": "2026-05-10",
+      "title": "D-EVENT-STORE-SCALING Slice 3a — split runtime dashboard cache from committed seed; document shared-event-store env var",
+      "decisionRequired": false,
+      "author": "Atlas (Core banking platform architect, engineering)",
+      "summary": "Bounded substrate change closing two related gaps surfaced today — the dashboard server overwriting the committed `seeds/dashboard-state.json` cache on every 30s poll, and the per-worktree event store making already-actioned CEO decisions appear open in fresh worktrees. Server now writes to a gitignored runtime path; existing `BANK_EVENT_DB` env var documented as the shared-store seam."
+    },
+    {
+      "filename": "2026-05-10_atlas_d-event-store-scaling-slice-2-snapshot-substrate.md",
+      "path": "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-2-snapshot-substrate.md",
+      "date": "2026-05-10",
+      "title": "D-EVENT-STORE-SCALING Slice 2 — local snapshot substrate (snapshot + replayFromSnapshot APIs)",
+      "decisionRequired": false,
+      "author": "Atlas (Core banking platform architect, engineering)",
+      "summary": "Implements the local snapshot substrate authorised under D-EVENT-STORE-SCALING Slice 2 (CEO-approved 2026-05-10) — `eventStore.snapshot()` / `loadSnapshot()` / `listSnapshots()` / `replayFromSnapshot()` / `shouldSnapshot()` APIs behind the existing EventStore class, additive `snapshots` SQLite table, per-event-type cadence registry (Q1 hybrid 1000-events / 1-hour default, optional per-type override). M8 cloud lift swaps the implementation for Cosmos DB Core hot-tier without changing the API surface."
     },
     {
       "filename": "2026-05-10_atlas-kai-saskia_product-construction-substrate.md",
@@ -2227,65 +2346,6 @@
       "decisionRequired": false,
       "author": "Zara",
       "summary": "Treating Customers Fairly substrate plan v0. Lists the six TCF outcomes precisely, identifies which apply at the bank's institutional-only / wholesale posture (and which do not, with citation rationale), specifies the substrate footprint TCF imposes on the engineering line (complaint-handling pipeline, advice-record substrate, product-suitability checks intersecting Saskia's NPA policy), and surfaces open questions and substrate gaps."
-    },
-    {
-      "filename": "2026-05-09_zara_fsp-application-path.md",
-      "path": "Owner Inbox/2026-05-09_zara_fsp-application-path.md",
-      "date": "2026-05-09",
-      "title": "FSP application path under FAIS-KI clarification — open question for CEO",
-      "decisionRequired": false,
-      "author": "Zara",
-      "summary": "Surfaces the open question on whether the bank's institutional-only / wholesale posture requires an FSP licence under FAIS at all, frames the two possible postures and their triggers, recommends a PAX research dispatch on FSP-licence necessity, and confirms the interim posture (Marc as FAIS KI; Saskia steady-state)."
-    },
-    {
-      "filename": "2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
-      "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
-      "date": "2026-05-09",
-      "title": "D-FSP-LICENCE-NECESSITY confirm-A — scope updates across FSP-path, TCF substrate, and counsel-application papers",
-      "decisionRequired": false,
-      "author": "Zara (Chief Compliance Officer, governance) + Imani (Legal-as-code engineer)",
-      "summary": "Joint completion note recording the three scope-updates Zara and Imani applied to their prior PR-44 / PR-41 deliverables following the CEO's confirm-A-no-research resolution of D-FSP-LICENCE-NECESSITY (2026-05-09; PR #62). Closes the FSP-application-path paper as actioned, narrows TCF-4 from gated to load-bearing, and refines Imani's external-counsel scope from \"evaluate Posture A vs B\" to \"ratify Posture-A bundle + counterparty-eligibility evidence package\"."
-    },
-    {
-      "filename": "2026-05-09_vera_overnight-recon.md",
-      "path": "Owner Inbox/2026-05-09_vera_overnight-recon.md",
-      "date": "2026-05-09",
-      "title": "Vera — overnight recon, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop."
-    },
-    {
-      "filename": "2026-05-09_tomas_payments-readiness.md",
-      "path": "Owner Inbox/2026-05-09_tomas_payments-readiness.md",
-      "date": "2026-05-09",
-      "title": "Tomas — daily payments-readiness, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Tomas's daily payments-readiness attestation per `Team/Tomas.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Thirteenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQU…"
-    },
-    {
-      "filename": "2026-05-09_scrooge_testing-strategy-simulated-data.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_testing-strategy-simulated-data.md",
-      "date": "2026-05-09",
-      "title": "Testing strategy — simulated clients, transactions, and market data through licence-day",
-      "decisionRequired": false,
-      "author": "Scrooge (Chief of Staff / Orchestrator)",
-      "summary": "How the bank exercises every system capability end-to-end during build phase using synthetic data — clients, instruments, market data, transactions, regulator queries, audit evidence. The strategy distinguishes synthetic from real, prevents accidental commingling, and makes the build-phase rehearsal as substantively production-grade as the licence-day operation. Five layers of testing (unit / integration / scenario / recon / end-to-end), three classes of synthetic data (party / market / event), one boundary discipline (synthetic-only flag on every event during build phase)."
-    },
-    {
-      "filename": "2026-05-09_scrooge_inbox-hygiene.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_inbox-hygiene.md",
-      "date": "2026-05-09",
-      "title": "Scrooge — inbox hygiene, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Autonomous run of Scrooge's daily inbox-hygiene sweep per `Team/Scrooge.md` operating spec § Cadence and the standing rule at `feedback_team_inbox_hygiene.md`."
-    },
-    {
-      "filename": "2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md",
-      "path": "Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md",
-      "date": "2026-05-09",
-      "title": "Scrooge (Chief of Staff / Orchestrator) — CEO decision record: D-REGULATORY-PERIMETER, 2026-05-09",
-      "decisionRequired": false,
-      "summary": "Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The canonical authority is the `CeoDecision` event emitted alongside this file (event-substrate gap noted; written-direct under Principle 7 \"steady-state vs curr…"
     }
   ],
   "policies": [
@@ -2345,7 +2405,9 @@
         "ORG-GV-CFO-INDEPENDENCE",
         "ORG-FC-11-GLOSS-CEO-MLRO-BAR",
         "ORG-PR(IV)-13-GLOSS-DEPUTY-IO",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+        "ORG-CY-02-RECON-CRO-INDEPENDENCE",
+        "ORG-BNK-CGPS-CONS",
+        "ORG-GRP-PA-PARENT"
       ]
     },
     {
@@ -2502,7 +2564,8 @@
         "ORG-PR-08",
         "ORG-PR-14",
         "ORG-PR-15",
-        "ORG-AC-13"
+        "ORG-AC-13",
+        "ORG-BNK-ILAAP-CONS"
       ]
     },
     {
@@ -2595,7 +2658,8 @@
         "ORG-PR-23",
         "ORG-CY-05",
         "ORG-CY-08",
-        "ORG-CS1-004"
+        "ORG-CS1-004",
+        "ORG-BNK-CYBER-CONS"
       ]
     },
     {
@@ -2638,7 +2702,8 @@
       "statusRaw": "`PLANNED`",
       "mvp": false,
       "linkedObligations": [
-        "ORG-PR-12"
+        "ORG-PR-12",
+        "ORG-BNK-RECOVERY-CONS"
       ]
     },
     {
@@ -2661,7 +2726,8 @@
       "linkedObligations": [
         "ORG-PR-01",
         "ORG-PR-13",
-        "ORG-CS1-001"
+        "ORG-CS1-001",
+        "ORG-BNK-ICAAP-CONS"
       ]
     },
     {
@@ -2682,7 +2748,8 @@
       "statusRaw": "`PLANNED`",
       "mvp": true,
       "linkedObligations": [
-        "ORG-PR-14"
+        "ORG-PR-14",
+        "ORG-BNK-ILAAP-CONS"
       ]
     },
     {
@@ -2852,7 +2919,8 @@
         "ORG-FC-05",
         "ORG-FC-06",
         "ORG-FC-18",
-        "ORG-FC-19"
+        "ORG-FC-19",
+        "ORG-FX-FIN-04"
       ]
     },
     {
@@ -2978,7 +3046,13 @@
       "linkedObligations": [
         "ORG-CD-02",
         "ORG-CD-03",
-        "ORG-CD-04"
+        "ORG-CD-04",
+        "ORG-FAIS-KI",
+        "ORG-FAIS-RK-ADVICE",
+        "ORG-FAIS-RK-SUITABILITY",
+        "ORG-FAIS-RK-FEE-DISCLOSURE",
+        "ORG-FAIS-RK-COMPLAINT-HANDLING",
+        "ORG-FAIS-RK-GENERAL-CODE"
       ]
     },
     {
@@ -3022,7 +3096,8 @@
       "statusRaw": "`PLANNED`",
       "mvp": false,
       "linkedObligations": [
-        "ORG-CD-07"
+        "ORG-CD-07",
+        "ORG-FAIS-RK-COMPLAINT-HANDLING"
       ]
     },
     {
@@ -3044,7 +3119,21 @@
       "mvp": false,
       "linkedObligations": [
         "ORG-MK-08",
-        "ORG-EXCON-ODP-001"
+        "ORG-EXCON-ODP-001",
+        "ORG-FX-FIN-01",
+        "ORG-FX-FIN-02",
+        "ORG-FX-FIN-03",
+        "ORG-FX-FIN-04",
+        "ORG-FX-FIN-05",
+        "ORG-FX-FIN-06",
+        "ORG-FX-FIN-07",
+        "ORG-FX-FIN-08",
+        "ORG-FX-FIN-09",
+        "ORG-FX-FIN-10",
+        "ORG-FX-FIN-11",
+        "ORG-FX-FIN-12",
+        "ORG-FX-FIN-13",
+        "ORG-FX-FIN-14"
       ]
     },
     {
@@ -3085,7 +3174,8 @@
       "statusRaw": "`PLANNED`",
       "mvp": false,
       "linkedObligations": [
-        "ORG-CD-08"
+        "ORG-CD-08",
+        "ORG-GRP-PA-PARENT"
       ]
     },
     {
@@ -3253,7 +3343,8 @@
         "ORG-CY-03",
         "ORG-CY-09",
         "ORG-CY-14",
-        "ORG-EL-03"
+        "ORG-EL-03",
+        "ORG-BNK-CYBER-CONS"
       ]
     },
     {
@@ -3279,7 +3370,8 @@
         "ORG-CY-04",
         "ORG-CY-10",
         "ORG-CY-11",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+        "ORG-CY-02-RECON-CRO-INDEPENDENCE",
+        "ORG-BNK-CYBER-CONS"
       ]
     },
     {
@@ -3342,7 +3434,8 @@
         "ORG-PR(IV)-07",
         "ORG-CY-04",
         "ORG-CY-05",
-        "ORG-CY-11"
+        "ORG-CY-11",
+        "ORG-BNK-CYBER-CONS"
       ]
     },
     {
@@ -3554,7 +3647,10 @@
         "ORG-PR(IV)-03",
         "ORG-GV-21",
         "ORG-TX-04",
-        "ORG-CS3-009"
+        "ORG-MK-15",
+        "ORG-MK-16",
+        "ORG-CS3-009",
+        "ORG-RM-01"
       ]
     },
     {
@@ -3620,7 +3716,8 @@
         "ORG-PR-05",
         "ORG-PR-13",
         "ORG-AC-13",
-        "ORG-CS1-001"
+        "ORG-CS1-001",
+        "ORG-BNK-ICAAP-CONS"
       ]
     },
     {
@@ -3729,7 +3826,10 @@
         "ORG-TX-05",
         "ORG-TX-06",
         "ORG-TX-07",
-        "ORG-TX-09"
+        "ORG-TX-09",
+        "ORG-MK-11",
+        "ORG-FX-FIN-03",
+        "ORG-FX-FIN-11"
       ]
     },
     {
@@ -3773,7 +3873,8 @@
       "mvp": false,
       "linkedObligations": [
         "ORG-AC-14",
-        "ORG-AC-16"
+        "ORG-AC-16",
+        "ORG-GRP-FINREP"
       ]
     },
     {
@@ -3818,7 +3919,8 @@
         "ORG-PR-08",
         "ORG-PR-15",
         "ORG-MK-07",
-        "ORG-MK-08"
+        "ORG-MK-08",
+        "ORG-MK-13"
       ]
     },
     {
@@ -3882,6 +3984,8 @@
       "linkedObligations": [
         "ORG-PR-16",
         "ORG-MK-06",
+        "ORG-MK-12",
+        "ORG-MK-13",
         "ORG-JS2-003"
       ]
     },
@@ -4012,6 +4116,9 @@
       "mvp": false,
       "linkedObligations": [
         "ORG-MK-06",
+        "ORG-MK-12",
+        "ORG-MK-13",
+        "ORG-MK-14",
         "ORG-CS3-001"
       ]
     },
@@ -4034,7 +4141,9 @@
       "status": "IN FORCE",
       "statusRaw": "**`IN FORCE`** (Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md; v1.0; D-NEW-PRODUCT-APPROVAL-POLICY)",
       "mvp": false,
-      "linkedObligations": []
+      "linkedObligations": [
+        "ORG-FAIS-RK-SUITABILITY"
+      ]
     },
     {
       "id": "pol-10-customer-acceptance-policy",
@@ -4077,7 +4186,8 @@
       "mvp": false,
       "linkedObligations": [
         "ORG-CD-01",
-        "ORG-CD-06"
+        "ORG-CD-06",
+        "ORG-FAIS-RK-FEE-DISCLOSURE"
       ]
     },
     {
@@ -4121,7 +4231,8 @@
       "mvp": false,
       "linkedObligations": [
         "ORG-CD-06",
-        "ORG-MK-07"
+        "ORG-MK-07",
+        "ORG-FAIS-RK-FEE-DISCLOSURE"
       ]
     },
     {
@@ -4193,12 +4304,14 @@
         "ORG-GV-11",
         "ORG-HR-11",
         "ORG-CS1-002",
+        "ORG-FAIS-KI",
         "ORG-GV-DIRECTORS-MINIMUM",
         "ORG-GV-CRO-INDEPENDENCE",
         "ORG-GV-CFO-INDEPENDENCE",
         "ORG-FC-11-GLOSS-CEO-MLRO-BAR",
         "ORG-FC-MLRO-ALTERNATE",
-        "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+        "ORG-CY-02-RECON-CRO-INDEPENDENCE",
+        "ORG-GRP-PA-PARENT"
       ]
     },
     {
@@ -4471,8 +4584,11 @@
         "ORG-CD-05",
         "ORG-GV-02",
         "ORG-GV-12",
+        "ORG-MK-14",
         "ORG-CS3-007",
-        "ORG-WB-04"
+        "ORG-FAIS-RK-GENERAL-CODE",
+        "ORG-WB-04",
+        "ORG-GRP-RPT"
       ]
     },
     {
@@ -4495,7 +4611,8 @@
       "mvp": false,
       "linkedObligations": [
         "ORG-GV-12",
-        "ORG-AC-11"
+        "ORG-AC-11",
+        "ORG-GRP-RPT"
       ]
     },
     {
