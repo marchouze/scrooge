@@ -1,8 +1,8 @@
 // scenarios/03-fx-end-to-end-rehearsal.ts
 //
-// Phase A — first dry-run scenario wedge per
-// `Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md`
-// §2.1 (T0–T7) and §6 dispatch #A4. Standing authority:
+// Phase A + Phase B — first dry-run scenario per
+// `Owner Inbox/actioned/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md`
+// §2.1 (T0–T7), §2.2 (T8–T14) and §6 dispatch #A4. Standing authority:
 // `D-FIRST-DRY-RUN-SCENARIO` (CEO-approved 2026-05-10).
 //
 // CHOREOGRAPHY (Phase A — open accounts + execute one trade):
@@ -15,6 +15,24 @@
 //   T5  RfqRequested    — USD/ZAR spot, USD 5m                   (Saskia)
 //   T6  PricingModelEvaluated — synthetic mid 18.5000            (Rohan)
 //   T7  FxTradeExecuted — USD 5,000,000 vs ZAR 92,500,000 T+2    (Saskia)
+//
+// CHOREOGRAPHY (Phase B — settlement + sub-ledger + period close):
+//
+//   T7a SubLedgerPostingEmitted — trade-date booking               (Bea)
+//   T8  FxSettlementInstructed  — USD leg (pacs.009 stub)          (Tomas)
+//   T9  FxSettlementInstructed  — ZAR leg (pacs.009 stub)          (Tomas)
+//   T10 SubLedgerPostingEmitted — USD leg settlement true-up       (Bea)
+//        + AccountPostingRecorded   — USD nostro +5m               (Bea/Tomas)
+//   T11 SubLedgerPostingEmitted — ZAR leg settlement true-up       (Bea)
+//        + AccountPostingRecorded   — ZAR nostro -92.5m            (Bea/Tomas)
+//   T12 AccountingPeriodOpened   — LE-ZA-HOZ-BANK · 2026-Q1-M01    (Bea)
+//   T13 SubLedgerPostingEmitted  — synthetic FX revaluation row    (Bea)
+//        (RevaluationApplied family does not yet exist — sub-ledger
+//        posting is the closest existing event family; substrate gap
+//        surfaced in the decision record)
+//   T14 TrialBalanceSnapshotted + AccountingPeriodClosed           (Bea)
+//        — emitted by `closePeriod` orchestrator under
+//        D-REPORTING-CAPABILITY-M2-M3 Slice 2 (PR #170).
 //
 // PROVENANCE: every event carries
 //   { kind: 'simulated',
@@ -44,9 +62,11 @@
 //   - Saskia (Head of Global Markets, governance — owns trade-execution leg)
 //   - Kai (Trading systems engineer, engineering — owns FX CDM wiring)
 //   - Bea (Accounting & financial reporting engineer, engineering — owns
-//     capital / sub-ledger leg)
+//     capital / sub-ledger leg + Phase-B period close)
+//   - Tomas (Operations & payments engineer, engineering — reports to Devon
+//     COO; Phase-B settlement + payments leg)
 //
-// Run: `bun run scenario:dry-run-fx`
+// Run: `bun run scenario:dry-run-fx`  (runs Phase A + B end-to-end)
 
 import { unlinkSync } from "node:fs";
 
@@ -57,11 +77,12 @@ import {
   prospectRegistered,
   soundingOpened,
 } from "@domains/customer";
+import { closePeriod, openPeriod } from "@platform/accounting/period-close";
 import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
 import { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
-import { makeFxTradeExecuted } from "@platform/markets/cdm/fx";
+import { makeFxSettlementInstructed, makeFxTradeExecuted } from "@platform/markets/cdm/fx";
 import { logger } from "@platform/observability/logger";
 
 // ---------------------------------------------------------------------------
@@ -116,6 +137,16 @@ class SimulatedClock {
     this.current = new Date(
       this.current.getTime() + minutes * 60_000 + hours * 60 * 60_000 + days * 24 * 60 * 60_000,
     );
+  }
+
+  /** Advance by an arbitrary duration in milliseconds (Phase B helpers). */
+  advance(durationMs: number): void {
+    this.current = new Date(this.current.getTime() + durationMs);
+  }
+
+  /** Jump to a specific ISO timestamp (Phase B settlement-date / month-end). */
+  setTo(isoTimestamp: string): void {
+    this.current = new Date(isoTimestamp);
   }
 }
 
@@ -542,6 +573,592 @@ export function runPhaseA(opts: { dbPath: string; cleanup: boolean }): {
   return { ok: provenanceOk && total === phaseA.all.length, emitted: total, countsByType };
 }
 
+// ===========================================================================
+// PHASE B — settlement + sub-ledger + period close
+// ===========================================================================
+//
+// Per pack §2.2 (T8–T14) and §5 Phase B. Phase B extends the Phase-A event
+// stream with:
+//
+//   - sub-ledger trade-date posting (T7a — derived from T7 trade);
+//   - FxSettlementInstructed for the USD and ZAR legs (T8/T9 — Tomas);
+//   - sub-ledger settlement-date true-up postings + balance projection
+//     posting events for the USD nostro (+5m) and ZAR nostro (-92.5m)
+//     (T10/T11);
+//   - AccountingPeriodOpened for 2026-Q1-M01 (T12);
+//   - sub-ledger revaluation row (T13 — synthetic; the M2-territory
+//     `RevaluationApplied` event family is not yet built. We post a
+//     SubLedgerPostingEmitted with `postingType: "revaluation"` so the
+//     trial-balance fold sees the FX revaluation P&L line. Substrate gap
+//     surfaced in the decision record.);
+//   - TrialBalanceSnapshotted + AccountingPeriodClosed via the
+//     `closePeriod` orchestrator (T14 — the canonical Slice-2 close
+//     transaction emits two events).
+//
+// Substrate gaps surfaced (and named in the decision record):
+//
+//   1. **No FxSettlementSettled event family.** The CDM has
+//      `FxSettlementInstructed` but no settlement-confirmation event.
+//      Phase B's "ack received" semantics (pack §2.2 T10/T11) are
+//      represented today by appending the `SubLedgerPostingEmitted` true-up
+//      + a posting-convention-shaped `AccountPostingRecorded` event that
+//      the bank-account balance projection folds. When the
+//      settlement-confirmation event family lands (Tomas roadmap), the
+//      true-up + balance posting flow through that handler instead of
+//      direct-emission.
+//
+//   2. **No RevaluationApplied event family.** IAS-21 / IFRS-9 month-end
+//      FX revaluation is named in the pack as a future-M2 event type. The
+//      revaluation row is emitted today as a SubLedgerPostingEmitted with
+//      `postingType: "revaluation"`; the trial-balance fold treats it
+//      uniformly. Substrate gap routes to D-REPORTING-CAPABILITY-M2-M3
+//      Slice 6+ (revaluation engine) per pack §3.
+//
+//   3. **Posting-rules engine is implicit.** Trade-date and settlement-
+//      date postings are emitted scenario-direct (using the same
+//      double-entry shape as Bea's M1 IFRS handler emits for equity
+//      trades). Slice 2.5 (posting-rules engine) is the formal home;
+//      until it lands, the scenario hand-rolls the postings to the same
+//      schema. Per pack §3 gap #3.
+// ---------------------------------------------------------------------------
+
+// Phase-B chart-of-accounts leaves. M1 stub IDs (per Bea's M1 handler) until
+// the chart-of-accounts populates with FX-trading-book leaves (Bea Substrate
+// Gap §3, target M2). Convention: `ACC-<purpose>-stub` for stubs;
+// `ACC-NNNN-NNN` once the canonical chart populates.
+const ACC_USD_NOSTRO_STUB = "ACC-usd-nostro-stub";
+const ACC_ZAR_NOSTRO_STUB = "ACC-zar-nostro-stub";
+const ACC_FX_PENDING_STUB = "ACC-fx-pending-settlement-stub";
+const ACC_FX_REVALUATION_STUB = "ACC-fx-revaluation-pl-stub";
+const ACC_FX_POSITION_STUB = "ACC-fx-position-stub";
+
+// Settlement amounts derived from the Phase-A trade payload. Kept as
+// constants so the Phase-B test can independently assert the same numbers.
+export const TRADE_USD_NOTIONAL_MINOR = 5_000_000_00; // USD 5,000,000.00 in cents
+export const TRADE_ZAR_NOTIONAL_MINOR = 9_250_000_000_00; // ZAR 92,500,000.00 in cents
+
+// Month-end revaluation: spot moves USD/ZAR 18.5000 → 18.4500. The bank is
+// long USD 5m, so a 0.05 ZAR/USD downward move = -ZAR 250,000 P&L (in cents:
+// 25_000_000). Direction: USD position revalues down vs ZAR functional ccy.
+export const MONTH_END_USDZAR_RATE = 18.45;
+export const REVALUATION_PNL_ZAR_MINOR = Math.round(
+  TRADE_USD_NOTIONAL_MINOR * (MONTH_END_USDZAR_RATE - 18.5),
+); // = -25_000_000 (R-250k)
+
+// ---------------------------------------------------------------------------
+// Phase-B factories — settlement instruction, sub-ledger posting, balance
+// posting (convention-shape).
+// ---------------------------------------------------------------------------
+
+interface SubLedgerLeg {
+  readonly debit: string;
+  readonly credit: string;
+  readonly currency: string;
+  readonly amountMinor: number;
+  readonly memo: string;
+}
+
+function makeSubLedgerPosting(args: {
+  asOf: string;
+  actor: Actor;
+  citations: string[];
+  tradeId: string;
+  postingType: "trade-date-booking" | "settlement-confirmation" | "revaluation";
+  legs: readonly SubLedgerLeg[];
+  asOfDate: string;
+  sourceEventId: string;
+}): Event {
+  return {
+    event_id: newEventId(),
+    type: "SubLedgerPostingEmitted",
+    as_of: args.asOf,
+    entity: ENTITY,
+    actor: args.actor,
+    citations: args.citations,
+    payload: {
+      tradeId: args.tradeId,
+      postingType: args.postingType,
+      legs: [...args.legs],
+      asOfDate: args.asOfDate,
+      citations: args.citations,
+      sourceEventId: args.sourceEventId,
+    },
+    provenance: SCENARIO_PROVENANCE,
+  };
+}
+
+/**
+ * Account-posting convention event — the `accountBalanceProjection` folds
+ * any event whose payload carries `{accountId, cashAmountMinor, currency}`.
+ * Until the FxSettlementSettled event family lands (substrate gap #1
+ * above), Phase B emits these directly so the account-balance projection
+ * sees the post-settlement balances.
+ */
+function makeAccountPostingRecorded(args: {
+  asOf: string;
+  actor: Actor;
+  accountId: string;
+  cashAmountMinor: number;
+  currency: string;
+  basis: string;
+  citations: string[];
+}): Event {
+  return {
+    event_id: newEventId(),
+    type: "AccountPostingRecorded",
+    as_of: args.asOf,
+    entity: ENTITY,
+    actor: args.actor,
+    citations: args.citations,
+    payload: {
+      accountId: args.accountId,
+      cashAmountMinor: args.cashAmountMinor,
+      currency: args.currency,
+      basis: args.basis,
+    },
+    provenance: SCENARIO_PROVENANCE,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Phase-B builder — pure, returns event lists (T7a, T8–T13). T14 is emitted
+// by the `closePeriod` orchestrator at runtime in `runPhaseB` — it requires
+// a live event store to compute the trial balance.
+// ---------------------------------------------------------------------------
+
+export interface PhaseBPreCloseEvents {
+  readonly tradeDatePosting: Event;
+  readonly settlementInstructed: ReadonlyArray<Event>;
+  readonly settlementPostings: ReadonlyArray<Event>;
+  readonly accountBalanceUpdates: ReadonlyArray<Event>;
+  readonly accountingPeriodOpened: Event;
+  readonly revaluationPosting: Event;
+  /** All Phase-B events appended *before* the closePeriod orchestrator runs. */
+  readonly all: ReadonlyArray<Event>;
+}
+
+export function buildPhaseBPreCloseEvents(opts: {
+  /** The Phase-A trade event — required so Phase-B can reference its event_id. */
+  readonly trade: Event;
+  /** The Phase-A USD nostro accountId (for balance-posting target). */
+  readonly usdNostroAccountId: string;
+  /** The Phase-A ZAR nostro accountId. */
+  readonly zarNostroAccountId: string;
+}): PhaseBPreCloseEvents {
+  // Phase B starts at the same trade-date as Phase A's trade
+  // (2026-01-05); first event is the trade-date booking posting,
+  // immediately after T7. Then the clock advances to settlement-date
+  // (T+2 = 2026-01-07) for the settlement instructions and acks. Then
+  // it jumps to month-end (2026-01-31 17:00 SAST = 15:00 UTC) for the
+  // open-period / revaluation events. Period-close is emitted at
+  // 2026-01-31 17:02.
+  const clock = new SimulatedClock("2026-01-05T08:30:00.000Z");
+
+  const tomas: Actor = { type: "human", id: "tomas@bank.local" };
+  const bea: Actor = { type: "human", id: "bea@bank.local" };
+  const rohanModel: Actor = { type: "service", id: "fx-revaluation-model" };
+
+  // T7a — Trade-date booking posting. Two legs: long USD (debit FX position),
+  // short ZAR (credit FX position-ZAR). Sign convention matches Bea's M1
+  // handler: debit + amount, credit + amount; the sub-ledger fold treats
+  // debit positively.
+  const tradeId = "TRD-DRYRUN-001";
+  const tradeDatePosting = makeSubLedgerPosting({
+    asOf: clock.asOf(),
+    actor: bea,
+    citations: ["IFRS-9-§4.1.1", "IAS-1", "ORG-AC-01", "D-REPORTING-CAPABILITY-SLICE-2"],
+    tradeId,
+    postingType: "trade-date-booking",
+    legs: [
+      // Bank receives USD 5m (long position) — debit USD position
+      {
+        debit: ACC_FX_POSITION_STUB,
+        credit: ACC_FX_PENDING_STUB,
+        currency: "USD",
+        amountMinor: TRADE_USD_NOTIONAL_MINOR,
+        memo: `Trade-date FX-spot buy USD/ZAR ${tradeId}`,
+      },
+      // Bank pays ZAR 92.5m (short position) — credit ZAR pending
+      {
+        debit: ACC_FX_PENDING_STUB,
+        credit: ACC_FX_POSITION_STUB,
+        currency: "ZAR",
+        amountMinor: TRADE_ZAR_NOTIONAL_MINOR,
+        memo: `Trade-date FX-spot sell ZAR ${tradeId}`,
+      },
+    ],
+    asOfDate: "2026-01-05",
+    sourceEventId: opts.trade.event_id,
+  });
+
+  // Advance to T+2 = settlement date (2026-01-07 10:00 SAST = 08:00 UTC).
+  clock.setTo("2026-01-07T08:00:00.000Z");
+
+  // T8 — FxSettlementInstructed (USD leg).
+  const settlementUsdInstructed = makeFxSettlementInstructed({
+    asOf: clock.asOf(),
+    entity: ENTITY,
+    actor: tomas,
+    citations: ["D-FX-CLS-MEMBERSHIP", "ORG-MK-08-EXCON-AD-RULES", "ISDA-MASTER-2002"],
+    payload: {
+      tradeId: { scheme: "INTERNAL", value: tradeId },
+      legKind: "near",
+      settlementId: { scheme: "INTERNAL", value: `STL-${tradeId}-USD` },
+      settlementPath: "correspondent",
+      settlementForm: "physical",
+      correspondent: {
+        partyId: String(COUNTERPARTY_ID),
+        name: COUNTERPARTY_NAME,
+        role: "settlement-agent",
+        jurisdiction: "ZA",
+      },
+      counterparty: {
+        partyId: String(COUNTERPARTY_ID),
+        name: COUNTERPARTY_NAME,
+        role: "counterparty",
+        jurisdiction: "ZA",
+      },
+      // Bank receives USD (positive net cash from bank's perspective).
+      netCash: { currency: "USD", amountMinor: TRADE_USD_NOTIONAL_MINOR },
+      settlementDate: { iso: "2026-01-07", calendar: "JIHCAL" },
+      messageStandard: "ISO-20022-pacs.009",
+    },
+  });
+  // The CDM factory does not yet take a provenance arg; stamp it.
+  const settlementUsd: Event = { ...settlementUsdInstructed, provenance: SCENARIO_PROVENANCE };
+  clock.advance(60_000); // +1 minute
+
+  // T9 — FxSettlementInstructed (ZAR leg).
+  const settlementZarInstructed = makeFxSettlementInstructed({
+    asOf: clock.asOf(),
+    entity: ENTITY,
+    actor: tomas,
+    citations: ["D-FX-CLS-MEMBERSHIP", "ORG-MK-08-EXCON-AD-RULES", "ISDA-MASTER-2002"],
+    payload: {
+      tradeId: { scheme: "INTERNAL", value: tradeId },
+      legKind: "near",
+      settlementId: { scheme: "INTERNAL", value: `STL-${tradeId}-ZAR` },
+      settlementPath: "correspondent",
+      settlementForm: "physical",
+      correspondent: {
+        partyId: String(COUNTERPARTY_ID),
+        name: COUNTERPARTY_NAME,
+        role: "settlement-agent",
+        jurisdiction: "ZA",
+      },
+      counterparty: {
+        partyId: String(COUNTERPARTY_ID),
+        name: COUNTERPARTY_NAME,
+        role: "counterparty",
+        jurisdiction: "ZA",
+      },
+      // Bank pays ZAR (negative net cash from bank's perspective).
+      netCash: { currency: "ZAR", amountMinor: -TRADE_ZAR_NOTIONAL_MINOR },
+      settlementDate: { iso: "2026-01-07", calendar: "JIHCAL" },
+      messageStandard: "ISO-20022-pacs.009",
+    },
+  });
+  const settlementZar: Event = { ...settlementZarInstructed, provenance: SCENARIO_PROVENANCE };
+
+  // Advance to settlement-ack window (D+2 14:00 SAST = 12:00 UTC).
+  clock.setTo("2026-01-07T12:00:00.000Z");
+
+  // T10 — USD leg settlement true-up. Sub-ledger: debit USD nostro, credit
+  // FX-pending. AccountPostingRecorded: USD nostro +5m.
+  const settlementUsdPosting = makeSubLedgerPosting({
+    asOf: clock.asOf(),
+    actor: bea,
+    citations: ["IFRS-9-§4.1.1", "IAS-1", "ORG-AC-08", "D-REPORTING-CAPABILITY-SLICE-2"],
+    tradeId,
+    postingType: "settlement-confirmation",
+    legs: [
+      {
+        debit: ACC_USD_NOSTRO_STUB,
+        credit: ACC_FX_PENDING_STUB,
+        currency: "USD",
+        amountMinor: TRADE_USD_NOTIONAL_MINOR,
+        memo: `USD leg settlement ack — ${tradeId}`,
+      },
+    ],
+    asOfDate: "2026-01-07",
+    sourceEventId: settlementUsd.event_id,
+  });
+  const usdBalancePosting = makeAccountPostingRecorded({
+    asOf: clock.asOf(),
+    actor: tomas,
+    accountId: opts.usdNostroAccountId,
+    cashAmountMinor: TRADE_USD_NOTIONAL_MINOR,
+    currency: "USD",
+    basis: `fx-settlement-credit:${tradeId}:USD`,
+    citations: ["D-FX-CLS-MEMBERSHIP", "D-BANK-ACCOUNT-SUBSTRATE"],
+  });
+  clock.advance(60_000); // +1 minute
+
+  // T11 — ZAR leg settlement true-up. Sub-ledger: debit FX-pending, credit
+  // ZAR nostro. AccountPostingRecorded: ZAR nostro -92.5m.
+  const settlementZarPosting = makeSubLedgerPosting({
+    asOf: clock.asOf(),
+    actor: bea,
+    citations: ["IFRS-9-§4.1.1", "IAS-1", "ORG-AC-08", "D-REPORTING-CAPABILITY-SLICE-2"],
+    tradeId,
+    postingType: "settlement-confirmation",
+    legs: [
+      {
+        debit: ACC_FX_PENDING_STUB,
+        credit: ACC_ZAR_NOSTRO_STUB,
+        currency: "ZAR",
+        amountMinor: TRADE_ZAR_NOTIONAL_MINOR,
+        memo: `ZAR leg settlement ack — ${tradeId}`,
+      },
+    ],
+    asOfDate: "2026-01-07",
+    sourceEventId: settlementZar.event_id,
+  });
+  const zarBalancePosting = makeAccountPostingRecorded({
+    asOf: clock.asOf(),
+    actor: tomas,
+    accountId: opts.zarNostroAccountId,
+    cashAmountMinor: -TRADE_ZAR_NOTIONAL_MINOR,
+    currency: "ZAR",
+    basis: `fx-settlement-debit:${tradeId}:ZAR`,
+    citations: ["D-FX-CLS-MEMBERSHIP", "D-BANK-ACCOUNT-SUBSTRATE"],
+  });
+
+  // Advance to month-end close window (2026-01-31 17:00 SAST = 15:00 UTC).
+  clock.setTo("2026-01-31T15:00:00.000Z");
+
+  // T12 — AccountingPeriodOpened — emitted by the `closePeriod` orchestrator
+  // at runtime (it cannot be pure-built; openPeriod appends to the store).
+  // The builder constructs the canonical event shape so the test can assert
+  // the payload independently.
+  const accountingPeriodOpened: Event = {
+    event_id: newEventId(),
+    type: "AccountingPeriodOpened",
+    as_of: clock.asOf(),
+    entity: ENTITY,
+    actor: bea,
+    citations: ["IAS-1", "COMPANIES-ACT-71-2008-S24", "D-REPORTING-CAPABILITY-SLICE-2"],
+    payload: {
+      periodId: "2026-Q1-M01",
+      periodKind: "month",
+      periodStart: "2026-01-01T00:00:00.000Z",
+      periodEnd: "2026-01-31T23:59:59.999Z",
+      openedAt: clock.asOf(),
+      functionalCurrency: "ZAR",
+    },
+    provenance: SCENARIO_PROVENANCE,
+  };
+  clock.advance(60_000); // +1 minute
+
+  // T13 — Month-end FX revaluation. Spot 18.5000 → 18.4500 → ZAR 250k loss
+  // on the long USD position. Posted as SubLedgerPostingEmitted with
+  // `postingType: "revaluation"`. Sub-ledger leg in ZAR (functional ccy):
+  // debit revaluation-P&L (loss), credit FX-position-ZAR. Magnitude is the
+  // absolute value; the trial-balance fold reads sign from debit/credit.
+  const revaluationAmount = Math.abs(REVALUATION_PNL_ZAR_MINOR);
+  const revaluationPosting = makeSubLedgerPosting({
+    asOf: clock.asOf(),
+    actor: rohanModel,
+    citations: ["IFRS-9-FVTPL", "IAS-21-§23", "D-REPORTING-CAPABILITY-SLICE-2"],
+    tradeId,
+    postingType: "revaluation",
+    legs: [
+      {
+        debit: ACC_FX_REVALUATION_STUB,
+        credit: ACC_FX_POSITION_STUB,
+        currency: "ZAR",
+        amountMinor: revaluationAmount,
+        memo: `Month-end FX revaluation USD/ZAR 18.5000→${MONTH_END_USDZAR_RATE} on ${tradeId}`,
+      },
+    ],
+    asOfDate: "2026-01-31",
+    sourceEventId: opts.trade.event_id,
+  });
+
+  const settlementInstructed = [settlementUsd, settlementZar];
+  const settlementPostings = [settlementUsdPosting, settlementZarPosting];
+  const accountBalanceUpdates = [usdBalancePosting, zarBalancePosting];
+
+  const all: Event[] = [
+    tradeDatePosting,
+    settlementUsd,
+    settlementZar,
+    settlementUsdPosting,
+    usdBalancePosting,
+    settlementZarPosting,
+    zarBalancePosting,
+    accountingPeriodOpened,
+    revaluationPosting,
+  ];
+
+  return {
+    tradeDatePosting,
+    settlementInstructed,
+    settlementPostings,
+    accountBalanceUpdates,
+    accountingPeriodOpened,
+    revaluationPosting,
+    all,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Phase-B runner — appends Phase-A + Phase-B pre-close events to a fresh
+// event store, then invokes `closePeriod` (the canonical Slice-2
+// orchestrator) which emits `TrialBalanceSnapshotted` + `AccountingPeriodClosed`.
+// ---------------------------------------------------------------------------
+
+export interface PhaseBResult {
+  readonly ok: boolean;
+  /** Total events in the store after Phase A + Phase B (both pre-close + close). */
+  readonly emitted: number;
+  /** Phase B count only — the events appended after Phase A. */
+  readonly phaseBEmitted: number;
+  readonly countsByType: Record<string, number>;
+  /** Trial-balance snapshot hash (BLAKE3) when document store is supplied. */
+  readonly trialBalanceDocumentHash?: string;
+  /** Trial-balance row count post-close. */
+  readonly trialBalanceRowCount: number;
+}
+
+export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): PhaseBResult {
+  const phaseA = buildPhaseAEvents();
+
+  // Wipe and recreate per-run so the script is deterministic on repeat.
+  try {
+    unlinkSync(opts.dbPath);
+  } catch {
+    /* first run */
+  }
+
+  const store = new EventStore(opts.dbPath);
+  store.appendAll([...phaseA.all]);
+
+  // Extract account ids from Phase-A so Phase-B references match.
+  // Order in Phase A: [ZAR nostro, USD nostro, ZAR capital].
+  const zarAccountEvent = phaseA.accountsOpened[0];
+  const usdAccountEvent = phaseA.accountsOpened[1];
+  if (!zarAccountEvent || !usdAccountEvent) {
+    throw new Error("runPhaseAandB: Phase-A accountsOpened must include ZAR + USD nostros");
+  }
+  const usdAccountPayload = usdAccountEvent.payload as { accountId: string };
+  const zarAccountPayload = zarAccountEvent.payload as { accountId: string };
+
+  // Pre-close Phase-B events — built pure, then appended.
+  const phaseBPre = buildPhaseBPreCloseEvents({
+    trade: phaseA.trade,
+    usdNostroAccountId: usdAccountPayload.accountId,
+    zarNostroAccountId: zarAccountPayload.accountId,
+  });
+
+  // Open the period through the orchestrator (idempotent; emits
+  // AccountingPeriodOpened). The pre-built `accountingPeriodOpened` event
+  // is the same payload — we use the orchestrator at runtime so the close
+  // matches the open by event_id discipline.
+  const openedPayload = phaseBPre.accountingPeriodOpened.payload as Parameters<
+    typeof openPeriod
+  >[0]["payload"];
+
+  // Append the trade-date posting (T7a) before opening the period: it
+  // sits inside the Q1-M01 window by `as_of` so the trial-balance fold
+  // includes it.
+  store.append(phaseBPre.tradeDatePosting);
+
+  // Append the settlement instructions + true-ups + balance postings
+  // (T8–T11) in choreography order: USD instr, ZAR instr, USD ack +
+  // balance, ZAR ack + balance.
+  for (const e of phaseBPre.settlementInstructed) store.append(e);
+  for (let i = 0; i < phaseBPre.settlementPostings.length; i++) {
+    const posting = phaseBPre.settlementPostings[i];
+    const balance = phaseBPre.accountBalanceUpdates[i];
+    if (!posting || !balance) {
+      throw new Error("runPhaseAandB: settlement postings + balance updates must pair 1:1");
+    }
+    store.append(posting);
+    store.append(balance);
+  }
+
+  // T12 — open the period via the orchestrator.
+  const openResult = openPeriod({
+    eventStore: store,
+    entity: ENTITY,
+    actor: { type: "human", id: "bea@bank.local" },
+    citations: ["IAS-1", "COMPANIES-ACT-71-2008-S24", "D-REPORTING-CAPABILITY-SLICE-2"],
+    payload: openedPayload,
+    provenance: SCENARIO_PROVENANCE,
+  });
+
+  // T13 — append the revaluation posting *after* the period is open so
+  // the trial-balance fold sees it.
+  store.append(phaseBPre.revaluationPosting);
+
+  // T14 — close the period. The orchestrator emits
+  // TrialBalanceSnapshotted + AccountingPeriodClosed.
+  const closeResult = closePeriod({
+    eventStore: store,
+    entity: ENTITY,
+    periodId: "2026-Q1-M01",
+    closedAt: "2026-01-31T15:02:00.000Z",
+    actor: { type: "human", id: "bea@bank.local" },
+    citations: ["IAS-1", "COMPANIES-ACT-71-2008-S24", "D-REPORTING-CAPABILITY-SLICE-2"],
+    provenance: SCENARIO_PROVENANCE,
+    // documentStore omitted: the EvSS Slice-2 snapshot caches the trial
+    // balance regardless. The Phase-D BA-325 generator will read from the
+    // RMS document store when wired; for Phase B the snapshot is enough.
+  });
+
+  const total = store.count();
+  const allEvents: Event[] = [];
+  for (const e of store.replay({ entity: ENTITY })) allEvents.push(e);
+
+  // Provenance recon (assertion #6 from pack §2.6) — every event carries
+  // the scenario tag (this includes the orchestrator-emitted close events,
+  // which inherit our supplied provenance arg).
+  let provenanceOk = true;
+  for (const e of allEvents) {
+    if (
+      e.provenance?.kind !== "simulated" ||
+      e.provenance.scenario !== SCENARIO_ID ||
+      e.provenance.sourceLineage !== SOURCE_LINEAGE
+    ) {
+      provenanceOk = false;
+      break;
+    }
+  }
+
+  // The orchestrator may have emitted a no-op open (appended === false) if
+  // the period was already open from prior. In Phase-B we always open fresh
+  // so appended should be true.
+  const openAppendedOk = openResult.appended;
+
+  // Phase-B count = total - Phase-A count.
+  const phaseBEmitted = total - phaseA.all.length;
+
+  // Counts by type across the full store (Phase A + B).
+  const countsByType: Record<string, number> = {};
+  for (const e of allEvents) countsByType[e.type] = (countsByType[e.type] ?? 0) + 1;
+
+  store.close();
+  if (opts.cleanup) {
+    try {
+      unlinkSync(opts.dbPath);
+    } catch {
+      /* nothing to clean */
+    }
+  }
+
+  return {
+    ok: provenanceOk && openAppendedOk && total > phaseA.all.length,
+    emitted: total,
+    phaseBEmitted,
+    countsByType,
+    ...(closeResult.documentHash !== undefined
+      ? { trialBalanceDocumentHash: closeResult.documentHash }
+      : {}),
+    trialBalanceRowCount: closeResult.trialBalance.rows.length,
+  };
+}
+
 // Top-level invocation — `bun run scenarios/03-fx-end-to-end-rehearsal.ts`.
 // Bun executes the file body; we gate on import.meta.main so the test can
 // import the module without firing the runner.
@@ -550,20 +1167,22 @@ if (import.meta.main) {
     {
       scenario: SCENARIO_ID,
       sourceLineage: SOURCE_LINEAGE,
-      phase: "A",
+      phase: "A+B",
     },
-    "scenario 03 — Phase A FX end-to-end rehearsal — starting",
+    "scenario 03 — FX end-to-end rehearsal — Phase A + Phase B starting",
   );
 
-  const result = runPhaseA({
-    dbPath: ".local/scenario-03-phase-a.db",
+  const result = runPhaseAandB({
+    dbPath: ".local/scenario-03-phase-ab.db",
     cleanup: true,
   });
 
   logger.info(
     {
       emitted: result.emitted,
+      phaseBEmitted: result.phaseBEmitted,
       countsByType: result.countsByType,
+      trialBalanceRowCount: result.trialBalanceRowCount,
       provenance: {
         kind: SCENARIO_PROVENANCE.kind,
         scenario: SCENARIO_PROVENANCE.scenario,
@@ -571,7 +1190,7 @@ if (import.meta.main) {
       },
       ok: result.ok,
     },
-    result.ok ? "Phase A passed" : "Phase A failed",
+    result.ok ? "Phase A + B passed" : "Phase A + B failed",
   );
 
   process.exit(result.ok ? 0 : 1);
