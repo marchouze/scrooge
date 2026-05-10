@@ -19,20 +19,16 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type {
   AgentRunCompletedPayload,
   AgentRunStartedPayload,
   BriefSupersededPayload,
   RmsAgentRef,
 } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
-export type AgentRunsOutcome =
-  | "in-flight"
-  | "delivered"
-  | "blocked"
-  | "withdrawn";
+export type AgentRunsOutcome = "in-flight" | "delivered" | "blocked" | "withdrawn";
 
 export interface AgentRunsRegisterRow {
   readonly runId: string;
@@ -119,10 +115,7 @@ function applyCompleted(state: AgentRunsRegisterState, event: Event): AgentRunsR
   return { rows: next };
 }
 
-function applyBriefSuperseded(
-  state: AgentRunsRegisterState,
-  event: Event,
-): AgentRunsRegisterState {
+function applyBriefSuperseded(state: AgentRunsRegisterState, event: Event): AgentRunsRegisterState {
   const p = event.payload as BriefSupersededPayload;
   const briefId = p.originalBriefId;
   let mutated = false;

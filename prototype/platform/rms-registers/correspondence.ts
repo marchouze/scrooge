@@ -10,8 +10,8 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type { RecordFiledPayload } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
 export interface CorrespondenceRegisterRow {
@@ -93,10 +93,6 @@ export function correspondenceRegisterRows(
   state: CorrespondenceRegisterState,
 ): CorrespondenceRegisterRow[] {
   return Array.from(state.rows.values()).sort((a, b) =>
-    a.correspondenceAt < b.correspondenceAt
-      ? -1
-      : a.correspondenceAt > b.correspondenceAt
-        ? 1
-        : 0,
+    a.correspondenceAt < b.correspondenceAt ? -1 : a.correspondenceAt > b.correspondenceAt ? 1 : 0,
   );
 }

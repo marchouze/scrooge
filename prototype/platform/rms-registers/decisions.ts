@@ -22,15 +22,11 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type { DecisionRequestedPayload } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
-export type DecisionsRegisterStatus =
-  | "open"
-  | "resolved"
-  | "revision-requested"
-  | "superseded";
+export type DecisionsRegisterStatus = "open" | "resolved" | "revision-requested" | "superseded";
 
 /** The CeoDecision payload fields the register surfaces. */
 export interface DecisionsRegisterResolution {
@@ -110,10 +106,7 @@ function applyDecisionRequested(
   return { rows: next };
 }
 
-function applyCeoDecision(
-  state: DecisionsRegisterState,
-  event: Event,
-): DecisionsRegisterState {
+function applyCeoDecision(state: DecisionsRegisterState, event: Event): DecisionsRegisterState {
   const p = event.payload as Record<string, unknown>;
   const decisionId = typeof p.decisionId === "string" ? p.decisionId : "";
   if (!decisionId) return state;

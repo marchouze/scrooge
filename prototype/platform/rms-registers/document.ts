@@ -24,7 +24,6 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type {
   AgentBriefIssuedPayload,
   AgentRunCompletedPayload,
@@ -32,6 +31,7 @@ import type {
   FeedbackPayload,
   RecordFiledPayload,
 } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
 export interface DocumentRegisterRow {
@@ -95,11 +95,7 @@ function citationsFromEvent(event: Event): readonly string[] {
   }
 }
 
-function ensureRow(
-  state: DocumentRegisterState,
-  hash: string,
-  event: Event,
-): DocumentRegisterRow {
+function ensureRow(state: DocumentRegisterState, hash: string, event: Event): DocumentRegisterRow {
   const existing = state.rows.get(hash);
   if (existing) {
     if (existing.referencedByEventIds.includes(event.event_id)) return existing;

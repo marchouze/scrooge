@@ -13,8 +13,8 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type { FeedbackPayload } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
 export interface FeedbackRegisterRow {

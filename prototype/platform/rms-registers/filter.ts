@@ -50,9 +50,7 @@ export function* filterEventsByProvenance(
   filter: ProvenanceFilter,
 ): IterableIterator<Event> {
   const noFilter =
-    filter.kinds === undefined &&
-    filter.scenario === undefined &&
-    filter.variant === undefined;
+    filter.kinds === undefined && filter.scenario === undefined && filter.variant === undefined;
   if (noFilter) {
     yield* events;
     return;

@@ -26,13 +26,13 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type {
   AgentBriefIssuedPayload,
   AgentRunCompletedPayload,
   AgentRunStartedPayload,
   BriefSupersededPayload,
 } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
 export type WorkstreamsStatus = "active" | "complete" | "blocked";
@@ -40,13 +40,7 @@ export type WorkstreamsStatus = "active" | "complete" | "blocked";
 interface BriefStatusBucket {
   /** Per-brief outcome tracked inside the workstream. */
   readonly briefId: string;
-  readonly outcome:
-    | "issued"
-    | "in-flight"
-    | "delivered"
-    | "blocked"
-    | "withdrawn"
-    | "superseded";
+  readonly outcome: "issued" | "in-flight" | "delivered" | "blocked" | "withdrawn" | "superseded";
 }
 
 export interface WorkstreamsRegisterRow {
@@ -111,10 +105,7 @@ function setBriefOutcome(
   return next;
 }
 
-function applyIssued(
-  state: WorkstreamsRegisterState,
-  event: Event,
-): WorkstreamsRegisterState {
+function applyIssued(state: WorkstreamsRegisterState, event: Event): WorkstreamsRegisterState {
   const p = event.payload as AgentBriefIssuedPayload;
   const wsId = p.workstreamId;
   if (!wsId) return state;
@@ -149,10 +140,7 @@ function applyIssued(
   };
 }
 
-function applyRunStarted(
-  state: WorkstreamsRegisterState,
-  event: Event,
-): WorkstreamsRegisterState {
+function applyRunStarted(state: WorkstreamsRegisterState, event: Event): WorkstreamsRegisterState {
   const p = event.payload as AgentRunStartedPayload;
   const wsId = state.briefToWorkstream.get(p.briefId);
   if (!wsId) return state;
@@ -183,8 +171,7 @@ function applyRunCompleted(
   event: Event,
 ): WorkstreamsRegisterState {
   const p = event.payload as AgentRunCompletedPayload;
-  const wsId =
-    state.briefToWorkstream.get(p.briefId) ?? state.runToWorkstream.get(p.runId);
+  const wsId = state.briefToWorkstream.get(p.briefId) ?? state.runToWorkstream.get(p.runId);
   if (!wsId) return state;
   const existing = state.rows.get(wsId);
   if (!existing) return state;
@@ -199,11 +186,7 @@ function applyRunCompleted(
   const documentHashes = Array.from(hashSet);
 
   const briefOutcome: BriefStatusBucket["outcome"] =
-    p.outcome === "delivered"
-      ? "delivered"
-      : p.outcome === "blocked"
-        ? "blocked"
-        : "withdrawn";
+    p.outcome === "delivered" ? "delivered" : p.outcome === "blocked" ? "blocked" : "withdrawn";
   const buckets = setBriefOutcome(existing.briefOutcomes, p.briefId, briefOutcome);
 
   // Decision fan-out via followOnRoutes.
@@ -231,10 +214,7 @@ function applyRunCompleted(
   };
 }
 
-function applySuperseded(
-  state: WorkstreamsRegisterState,
-  event: Event,
-): WorkstreamsRegisterState {
+function applySuperseded(state: WorkstreamsRegisterState, event: Event): WorkstreamsRegisterState {
   const p = event.payload as BriefSupersededPayload;
   const wsId = state.briefToWorkstream.get(p.originalBriefId);
   if (!wsId) return state;
@@ -287,14 +267,8 @@ export const workstreamsRegisterProjection: Projection<WorkstreamsRegisterState,
   },
 };
 
-export function workstreamsRegisterRows(
-  state: WorkstreamsRegisterState,
-): WorkstreamsRegisterRow[] {
+export function workstreamsRegisterRows(state: WorkstreamsRegisterState): WorkstreamsRegisterRow[] {
   return Array.from(state.rows.values()).sort((a, b) =>
-    a.firstActivityAt < b.firstActivityAt
-      ? -1
-      : a.firstActivityAt > b.firstActivityAt
-        ? 1
-        : 0,
+    a.firstActivityAt < b.firstActivityAt ? -1 : a.firstActivityAt > b.firstActivityAt ? 1 : 0,
   );
 }

@@ -24,7 +24,6 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import type { Event } from "../event-store/types";
 import type {
   AgentBriefIssuedPayload,
   AgentRunCompletedPayload,
@@ -32,6 +31,7 @@ import type {
   BriefSupersededPayload,
   RmsAgentRef,
 } from "../event-store/event-types";
+import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
 
 export type BriefsRegisterStatus =
@@ -108,10 +108,7 @@ function applyIssued(state: BriefsRegisterState, event: Event): BriefsRegisterSt
   return { rows: next };
 }
 
-function applyRunStarted(
-  state: BriefsRegisterState,
-  event: Event,
-): BriefsRegisterState {
+function applyRunStarted(state: BriefsRegisterState, event: Event): BriefsRegisterState {
   const p = event.payload as AgentRunStartedPayload;
   const briefId = p.briefId;
   if (!briefId) return state;
@@ -142,7 +139,8 @@ function applyRunStarted(
       issuedTo: p.agent,
       issuedBy: p.agent,
       title: "(brief not yet seen)",
-      directiveDocumentHash: "blake3:0000000000000000000000000000000000000000000000000000000000000000",
+      directiveDocumentHash:
+        "blake3:0000000000000000000000000000000000000000000000000000000000000000",
       priority: "now",
       workstreamId: null,
       scheduledFor: null,
@@ -159,10 +157,7 @@ function applyRunStarted(
   return { rows: next };
 }
 
-function applyRunCompleted(
-  state: BriefsRegisterState,
-  event: Event,
-): BriefsRegisterState {
+function applyRunCompleted(state: BriefsRegisterState, event: Event): BriefsRegisterState {
   const p = event.payload as AgentRunCompletedPayload;
   const briefId = p.briefId;
   if (!briefId) return state;
@@ -202,10 +197,7 @@ function applyRunCompleted(
   return { rows: next };
 }
 
-function applySuperseded(
-  state: BriefsRegisterState,
-  event: Event,
-): BriefsRegisterState {
+function applySuperseded(state: BriefsRegisterState, event: Event): BriefsRegisterState {
   const p = event.payload as BriefSupersededPayload;
   const id = p.originalBriefId;
   if (!id) return state;
