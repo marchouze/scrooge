@@ -198,10 +198,8 @@ describe("scenarios/03-fx-end-to-end-rehearsal — runPhaseAandB end-to-end", ()
     // to the capital account. Phase B's two AccountPostingRecorded
     // events post USD +5m to USD nostro and ZAR -92.5m to ZAR nostro.
     const phaseA = buildPhaseAEvents();
-    const zarAccountId = (phaseA.accountsOpened[0]?.payload as { accountId: string })
-      .accountId;
-    const usdAccountId = (phaseA.accountsOpened[1]?.payload as { accountId: string })
-      .accountId;
+    const zarAccountId = (phaseA.accountsOpened[0]?.payload as { accountId: string }).accountId;
+    const usdAccountId = (phaseA.accountsOpened[1]?.payload as { accountId: string }).accountId;
     const phaseB = buildPhaseBPreCloseEvents({
       trade: phaseA.trade,
       usdNostroAccountId: usdAccountId,

@@ -71,16 +71,13 @@
 import { unlinkSync } from "node:fs";
 
 import {
-  closePeriod,
-  openPeriod,
-} from "@platform/accounting/period-close";
-import {
   counterpartyId,
   kycCompleted,
   mandateAssigned,
   prospectRegistered,
   soundingOpened,
 } from "@domains/customer";
+import { closePeriod, openPeriod } from "@platform/accounting/period-close";
 import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
 import { EventStore } from "@platform/event-store/store";
@@ -802,11 +799,7 @@ export function buildPhaseBPreCloseEvents(opts: {
     asOf: clock.asOf(),
     entity: ENTITY,
     actor: tomas,
-    citations: [
-      "D-FX-CLS-MEMBERSHIP",
-      "ORG-MK-08-EXCON-AD-RULES",
-      "ISDA-MASTER-2002",
-    ],
+    citations: ["D-FX-CLS-MEMBERSHIP", "ORG-MK-08-EXCON-AD-RULES", "ISDA-MASTER-2002"],
     payload: {
       tradeId: { scheme: "INTERNAL", value: tradeId },
       legKind: "near",
@@ -840,11 +833,7 @@ export function buildPhaseBPreCloseEvents(opts: {
     asOf: clock.asOf(),
     entity: ENTITY,
     actor: tomas,
-    citations: [
-      "D-FX-CLS-MEMBERSHIP",
-      "ORG-MK-08-EXCON-AD-RULES",
-      "ISDA-MASTER-2002",
-    ],
+    citations: ["D-FX-CLS-MEMBERSHIP", "ORG-MK-08-EXCON-AD-RULES", "ISDA-MASTER-2002"],
     payload: {
       tradeId: { scheme: "INTERNAL", value: tradeId },
       legKind: "near",
