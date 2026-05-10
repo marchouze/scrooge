@@ -50,15 +50,6 @@
 
 import { unlinkSync } from "node:fs";
 
-import { EventStore } from "@platform/event-store/store";
-import { logger } from "@platform/observability/logger";
-import {
-  type ProvenanceTag,
-  simulatedTag,
-} from "@platform/event-store/provenance";
-import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
-import type { Event } from "@platform/event-store/types";
-import { makeFxTradeExecuted } from "@platform/markets/cdm/fx";
 import {
   counterpartyId,
   kycCompleted,
@@ -66,6 +57,12 @@ import {
   prospectRegistered,
   soundingOpened,
 } from "@domains/customer";
+import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
+import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
+import { EventStore } from "@platform/event-store/store";
+import type { Event } from "@platform/event-store/types";
+import { makeFxTradeExecuted } from "@platform/markets/cdm/fx";
+import { logger } from "@platform/observability/logger";
 
 // ---------------------------------------------------------------------------
 // Constants — scenario id, lineage, entity, counterparty.
@@ -117,10 +114,7 @@ class SimulatedClock {
     days = 0,
   }: { minutes?: number; hours?: number; days?: number }): void {
     this.current = new Date(
-      this.current.getTime() +
-        minutes * 60_000 +
-        hours * 60 * 60_000 +
-        days * 24 * 60 * 60_000,
+      this.current.getTime() + minutes * 60_000 + hours * 60 * 60_000 + days * 24 * 60 * 60_000,
     );
   }
 }
@@ -344,10 +338,7 @@ export function buildPhaseAEvents(): PhaseAEvents {
   const accountZarNostro = makeAccountOpenedPlaceholder({
     asOf: clock.asOf(),
     actor: tomas,
-    citations: [
-      "ORG-BANKS-ACT-94-1990",
-      "INTERNAL-FINANCE-CHART-OF-ACCOUNTS",
-    ],
+    citations: ["ORG-BANKS-ACT-94-1990", "INTERNAL-FINANCE-CHART-OF-ACCOUNTS"],
     payload: {
       accountId: "ACC-ZAR-NOSTRO-001",
       accountKind: "nostro",
@@ -362,10 +353,7 @@ export function buildPhaseAEvents(): PhaseAEvents {
   const accountUsdNostro = makeAccountOpenedPlaceholder({
     asOf: clock.asOf(),
     actor: tomas,
-    citations: [
-      "ORG-BANKS-ACT-94-1990",
-      "INTERNAL-FINANCE-CHART-OF-ACCOUNTS",
-    ],
+    citations: ["ORG-BANKS-ACT-94-1990", "INTERNAL-FINANCE-CHART-OF-ACCOUNTS"],
     payload: {
       accountId: "ACC-USD-NOSTRO-001",
       accountKind: "nostro",
@@ -380,10 +368,7 @@ export function buildPhaseAEvents(): PhaseAEvents {
   const accountCapital = makeAccountOpenedPlaceholder({
     asOf: clock.asOf(),
     actor: tomas,
-    citations: [
-      "ORG-BANKS-ACT-94-1990",
-      "INTERNAL-FINANCE-CAPITAL-PLAN-V1",
-    ],
+    citations: ["ORG-BANKS-ACT-94-1990", "INTERNAL-FINANCE-CAPITAL-PLAN-V1"],
     payload: {
       accountId: "ACC-ZAR-CAPITAL-001",
       accountKind: "capital",

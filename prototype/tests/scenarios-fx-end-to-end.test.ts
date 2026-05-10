@@ -21,6 +21,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "bun:test";
 
+import { isRegisteredLineage } from "../platform/event-store/provenance-lineage.registry";
+import { fxTradeExecutedPayloadSchema } from "../platform/markets/cdm/fx";
 import {
   COUNTERPARTY_ID,
   ENTITY,
@@ -31,8 +33,6 @@ import {
   countByType,
   runPhaseA,
 } from "../scenarios/03-fx-end-to-end-rehearsal";
-import { fxTradeExecutedPayloadSchema } from "../platform/markets/cdm/fx";
-import { isRegisteredLineage } from "../platform/event-store/provenance-lineage.registry";
 
 describe("scenarios/03-fx-end-to-end-rehearsal — Phase A", () => {
   it("declares scenario constants per pack §2.1", () => {
@@ -103,10 +103,7 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase A", () => {
   });
 
   it("runs Phase A end-to-end against an isolated event store", () => {
-    const dbPath = join(
-      mkdtempSync(join(tmpdir(), "scenario-03-phase-a-")),
-      "event.db",
-    );
+    const dbPath = join(mkdtempSync(join(tmpdir(), "scenario-03-phase-a-")), "event.db");
     const result = runPhaseA({ dbPath, cleanup: true });
     expect(result.ok).toBe(true);
     expect(result.emitted).toBe(11);
