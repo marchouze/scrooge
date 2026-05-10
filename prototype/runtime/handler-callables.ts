@@ -41,6 +41,7 @@ import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-sn
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
+import scroogeOwnerInboxArchiver from "./agents/scrooge-owner-inbox-archiver";
 import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-threat-model";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
@@ -61,6 +62,7 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
   "scrooge:ceo-decision-record": scroogeCeoDecisionRecord,
   "scrooge:follow-on-router": scroogeFollowOnRouter,
+  "scrooge:owner-inbox-archiver": scroogeOwnerInboxArchiver,
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
   "rohan:risk-run": rohanRiskRun,
   "mira:obligations-snapshot": miraObligationsSnapshot,

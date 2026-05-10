@@ -148,6 +148,14 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Senna", "m1-trading-stack-threat-model", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
+  // D-OWNER-INBOX-AUTO-ARCHIVE — Scrooge's auto-archiver moves the source
+  // decision-required card from `Owner Inbox/` to `Owner Inbox/actioned/`
+  // and emits a typed `RecordFiled` event whenever a CeoDecision fires.
+  // Closes the half-automated CEO-decision-card lifecycle (Atlas + Owen,
+  // 2026-05-10).
+  entry("Scrooge", "owner-inbox-archiver", "event-driven", {
+    subscribesTo: ["CeoDecision"],
+  }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */
