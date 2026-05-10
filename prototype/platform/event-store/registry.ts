@@ -241,6 +241,54 @@ export const RETENTION_CONSERVATIVE_DEFAULT: RetentionMetadata = {
 };
 
 /**
+ * Per-event-type snapshot cadence. Authority: D-EVENT-STORE-SCALING
+ * (CEO-approved 2026-05-10) Slice 2; Q1 resolution — *hybrid: every K
+ * events OR every T time, tunable per stream*. Design brief
+ * `Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md` §4.2 +
+ * §7 Q1.
+ *
+ * Two thresholds; consumers that call
+ * `eventStore.shouldSnapshot({ streamKey, eventType })` snapshot when
+ * **either** is met (the scaling design rationale: K-only starves
+ * low-velocity streams of fresh snapshots; T-only burns RU/IO on
+ * high-velocity streams for redundant snapshots).
+ *
+ * The store does *not* auto-snapshot inside `append()` — Slice 3
+ * consumers own the projection state being snapshotted and call
+ * `snapshot()` after a fold update. The cadence rule is a hint; the
+ * consumer remains free to snapshot more / less aggressively.
+ *
+ * The field is **optional** on `EventTypeMetadata`. Rows without an
+ * explicit cadence resolve to `DEFAULT_SNAPSHOT_CADENCE` (1000 events,
+ * 24 hours). A Mira follow-on (Wave-5; routed via Slice 1 retention
+ * uplift) populates per-event-type cadence values where retention or
+ * read-amplification characteristics warrant tighter or looser
+ * cadence.
+ */
+export interface SnapshotCadence {
+  /** Snapshot when ≥ this many events have been appended since the
+   *  last snapshot for the affected stream. */
+  readonly everyKEvents: number;
+  /** Snapshot when ≥ this many seconds have elapsed since the last
+   *  snapshot. */
+  readonly everyTSeconds: number;
+}
+
+/**
+ * Default cadence — Q1 of the design brief: 1000 events / 1 hour. The
+ * scaling brief's §4.2 example (K=1000) is the events-floor; T = 1
+ * hour is the time-floor for low-velocity streams. Per-event-type
+ * tuning lands as Mira's follow-on classifies high-velocity types
+ * (e.g. `MarkToMarketObserved` at K=10,000) and low-velocity types
+ * (e.g. `AgentRegistered` at K=100). The store falls back here for
+ * any type lacking a `cadence` field, including unregistered types.
+ */
+export const DEFAULT_SNAPSHOT_CADENCE: SnapshotCadence = {
+  everyKEvents: 1000,
+  everyTSeconds: 60 * 60, // 1 hour
+};
+
+/**
  * Replay-fold rule the substrate's projections obey for this event type.
  * Mirrors A0 freeze §6 ("folding rules").
  */
@@ -295,6 +343,16 @@ export interface EventTypeMetadata {
    * `RETENTION_CONSERVATIVE_DEFAULT` and is a Mira follow-on to refine.
    */
   readonly retention: RetentionMetadata;
+  /**
+   * Per-type snapshot cadence. Authority: D-EVENT-STORE-SCALING
+   * (CEO-approved 2026-05-10) Slice 2 / Q1 resolution. **Optional** —
+   * unset rows resolve to `DEFAULT_SNAPSHOT_CADENCE` at lookup time.
+   * Mira (Compliance / RegTech engineer) follow-on populates per-type
+   * cadence values where retention / read-amplification justify
+   * tighter or looser thresholds; until then, every type rides the
+   * default.
+   */
+  readonly cadence?: SnapshotCadence;
   /**
    * Citation-set hint — a starter list of obligation URNs / governance
    * tokens the producer is expected to cite. Not enforced by this
