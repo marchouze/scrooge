@@ -49,6 +49,10 @@ import { randomBytes } from "node:crypto";
 
 import { eventStore } from "../platform/composition";
 import {
+  WorktreeBoundaryError,
+  createRunnerWorker,
+} from "../platform/agent-runtime/runner-worker";
+import {
   makeLegacyFanoutShadowed,
   makeSubstrateAgentRunCompleted,
   makeSubstrateAgentRunFailed,
@@ -143,6 +147,74 @@ const SUBSTRATE_LIFECYCLE_CITATIONS: readonly string[] = [
 
 /** Cap for SubstrateAgentRunFailed.errorMessage. Schema enforces 1024; we trim defensively. */
 const ERROR_MESSAGE_MAX_LEN = 1024;
+
+// ---------------------------------------------------------------------------
+// Worker isolation hook (S8 §3.4 — runner-worker primitive, PR #185).
+//
+// Every top-level `runAgent` invocation installs a `RunnerWorker` bound to
+// the worktree root. The primitive (a) chdirs into the worktree root,
+// (b) wraps `process.chdir` to throw `WorktreeBoundaryError` on any escape
+// to a path outside the root, and (c) shims `node:fs` *Sync helpers (CJS
+// view) for the same boundary check. This is the substrate fix for the
+// 2026-05-09 lost-work incidents (PR #74 / #76 / #77) where Scrooge-
+// dispatched agents `cd`'d to /Users/marc/code/Bank and committed
+// scaffold-files onto the wrong branch.
+//
+// Re-entrancy:
+//   - The bus-tick at the bottom of `runAgent` re-enters `runAgent` for
+//     event-driven dispatches; the scheduled-trigger consumer also routes
+//     through `runAgent`. Both nested calls expect the same worktree
+//     root the outer call is already bound to — the parent process is
+//     a single agent process today (the runner-worker primitive is the
+//     local-first stand-in for the M8 per-agent Container App Job).
+//   - We avoid stacking wrappers by tracking an in-process install
+//     counter: only the top-level `runAgent` installs, and only it
+//     disposes. Inner calls observe the counter > 0 and skip both.
+//   - On boundary escape we emit a typed `SubstrateAlert{alertClass:
+//     integrity, severity: high}` so Vera's recon catches accidental
+//     escapes even when the handler swallows the thrown error.
+// ---------------------------------------------------------------------------
+
+/**
+ * Process-scoped install depth. Top-level `runAgent` installs at depth 1;
+ * nested re-entries (bus-tick, scheduled-trigger consumer) observe depth > 0
+ * and skip install/dispose — they inherit the outer worker's binding.
+ */
+let runnerWorkerDepth = 0;
+
+const RUNNER_WORKER_ALERT_ACTOR: Actor = {
+  type: "service",
+  id: "agent:atlas:runner-worker",
+};
+
+function emitWorktreeBoundaryAlert(args: {
+  agent: string;
+  runId: string;
+  err: WorktreeBoundaryError;
+}): void {
+  try {
+    eventStore.append(
+      makeSubstrateAlert({
+        asOf: new Date().toISOString(),
+        entity: DEFAULT_ENTITY,
+        actor: RUNNER_WORKER_ALERT_ACTOR,
+        citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+        payload: {
+          alertId: `alert:integrity:worktree-boundary-${args.runId.replace(/[^a-z0-9]/gi, "").slice(0, 16).toLowerCase()}`,
+          alertClass: "integrity",
+          agentUrn: `agent:${args.agent.toLowerCase()}`,
+          details: `RunnerWorker boundary escape: agent="${args.agent}" runId="${args.runId}" attemptedPath="${args.err.attemptedPath}" worktreeRoot="${args.err.worktreeRoot}"`,
+          severity: "high",
+        },
+      }),
+    );
+  } catch (alertErr) {
+    logger.error(
+      { runId: args.runId, agent: args.agent, err: (alertErr as Error).message },
+      "runner-worker — SubstrateAlert(boundary) append failed",
+    );
+  }
+}
 
 /**
  * Mint a stable run id for the substrate-runner lifecycle. Format:
@@ -414,6 +486,38 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     sequenceAtStart: seqBefore,
   });
 
+  // Install the worker-isolation primitive (S8 §3.4) for the duration
+  // of the handler call. Top-level only — nested re-entries (bus-tick,
+  // scheduled-trigger consumer) inherit the outer install. The dispose
+  // handle is honoured even on handler-thrown error so the host process
+  // is never left with a stale wrapper. Boundary escapes route to a
+  // typed SubstrateAlert sink before re-throw.
+  const isOuter = runnerWorkerDepth === 0;
+  let workerDispose: (() => void) | undefined;
+  if (isOuter) {
+    const worker = createRunnerWorker({
+      worktreeRoot: repoRoot,
+      onBoundaryEscape: (err) =>
+        emitWorktreeBoundaryAlert({ agent: ctx.agent, runId, err }),
+    });
+    try {
+      const handle = worker.install();
+      workerDispose = handle.dispose;
+    } catch (err) {
+      // install() itself failed — most often because repoRoot is not an
+      // absolute path or doesn't exist. Log + continue: the worker is a
+      // defence-in-depth primitive, not a runtime gate. The handler will
+      // run without the boundary check, and Vera's substrate-state recon
+      // will surface the missing wrapping.
+      logger.error(
+        { runId, agent: ctx.agent, repoRoot, err: (err as Error).message },
+        "runner-worker — install() failed (handler will run unwrapped)",
+      );
+    }
+  }
+  if (isOuter) runnerWorkerDepth = 1;
+  else runnerWorkerDepth += 1;
+
   // Invoke the handler. Wrap in try/catch so a thrown error still emits
   // the closing `…Failed` lifecycle event before propagating.
   let result: AgentRunOutput;
@@ -427,10 +531,23 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
       agent: ctx.agent,
       failedAt: new Date().toISOString(),
       durationMs: ms,
-      errorClass: "exception",
+      errorClass: err instanceof WorktreeBoundaryError ? "structured" : "exception",
       errorMessage: truncateErrMsg((err as Error).message ?? "unknown"),
       sequenceAtFailure: seqAtFailure,
     });
+    // Restore the worker before re-throwing so the host process is never
+    // left with a stale chdir override.
+    runnerWorkerDepth = Math.max(0, runnerWorkerDepth - 1);
+    if (isOuter && workerDispose) {
+      try {
+        workerDispose();
+      } catch (disposeErr) {
+        logger.error(
+          { runId, agent: ctx.agent, err: (disposeErr as Error).message },
+          "runner-worker — dispose() failed during exception unwind",
+        );
+      }
+    }
     throw err;
   }
   const ms = Date.now() - t0;
@@ -681,6 +798,22 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
           "bus-tick (run-coupled) — SubstrateAlert append failed",
         );
       }
+    }
+  }
+
+  // Dispose the worker AFTER the bus-tick — the tick may re-enter
+  // runAgent for event-driven handlers, and those nested calls expect
+  // to inherit the parent's worktree binding. Only the top-level call
+  // disposes (inner re-entries see runnerWorkerDepth > 0).
+  runnerWorkerDepth = Math.max(0, runnerWorkerDepth - 1);
+  if (isOuter && workerDispose) {
+    try {
+      workerDispose();
+    } catch (disposeErr) {
+      logger.error(
+        { runId, agent: ctx.agent, err: (disposeErr as Error).message },
+        "runner-worker — dispose() failed at run completion",
+      );
     }
   }
 
