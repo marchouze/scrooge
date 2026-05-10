@@ -200,12 +200,26 @@ function renderTable(policies) {
   }
   sub.textContent = `${policies.length} of ${allPolicies.length}`;
   body.innerHTML = policies
-    .map(
-      (p) => `
+    .map((p) => {
+      // Primary source file for the per-row preview affordance — the
+      // first entry of `sourceFiles[]` (the canonical policy register
+      // itself, unless the row cites an explicit standalone document).
+      // Cmd-click / middle-click on the policy-name anchor falls
+      // through to /api/policy/:filename for normal navigation.
+      const primary = (p.sourceFiles ?? [])[0] ?? null;
+      const href = primary ? `/api/policy/${encodeURIComponent(primary)}` : "#";
+      const multi = (p.sourceFiles ?? []).length > 1;
+      const previewAttrs = primary
+        ? ` href="${esc(href)}" class="pol-preview-link" data-policy-id="${esc(p.id)}"`
+        : ` href="#" class="pol-preview-link pol-preview-link-disabled" data-policy-id="${esc(p.id)}" aria-disabled="true"`;
+      const multiTag = multi
+        ? `<span class="pol-badge" title="Policy cites multiple source files; pick from the modal" style="margin-left:6px;font-size:10.5px;">+${(p.sourceFiles ?? []).length - 1}</span>`
+        : "";
+      return `
     <tr class="pol-row" data-policy-id="${esc(p.id)}">
       <td class="col-name">
         ${p.mvp ? '<span class="pol-mvp" title="MVP — required for SARB licence application">★</span>' : ""}
-        <span class="pol-name">${esc(p.name)}</span>
+        <a${previewAttrs}><span class="pol-name">${esc(p.name)}</span></a>${multiTag}
       </td>
       <td class="col-domain">${esc(p.domain)}</td>
       <td class="col-owner">${esc(p.owner)}</td>
@@ -214,11 +228,19 @@ function renderTable(policies) {
       <td class="col-bind">${bindBadges(p.binds)}</td>
       <td class="col-status"><span class="pol-status ${statusClass(p.status)}">${esc(p.status)}</span></td>
       <td class="col-obligs">${p.linkedObligations.length}</td>
-    </tr>`,
-    )
+    </tr>`;
+    })
     .join("");
+  // Row click → drilldown overlay (existing behaviour). The preview-link
+  // anchor stops propagation so a primary-button click on the policy name
+  // opens the markdown preview instead.
   for (const tr of document.querySelectorAll("#policiesBody .pol-row")) {
-    tr.addEventListener("click", () => openDrill(tr.dataset.policyId));
+    tr.addEventListener("click", (e) => {
+      // If the click was on (or inside) the preview link, let the
+      // delegated preview handler take it — don't open the drilldown.
+      if (e.target.closest("a.pol-preview-link")) return;
+      openDrill(tr.dataset.policyId);
+    });
   }
 }
 
@@ -352,6 +374,232 @@ function closeDrill() {
 }
 
 // ---------------------------------------------------------------------------
+// Inline-preview modal — mirrors the procedures-page preview modal. Streams
+// /api/policy/:filename and renders with a tiny line-oriented markdown
+// formatter (same shape as `renderMarkdownLite` in procedures.js). No
+// third-party dep, no exec'd HTML. Anything fancier lands in the <pre>
+// fallback. If a policy cites multiple source files, the modal head shows
+// a small picker so the user can switch files without closing the overlay.
+// TODO: extract; see /api/markdown/:scope/:filename refactor.
+// ---------------------------------------------------------------------------
+
+let policyPreviewActive = null;
+
+async function openPolicyPreview(policyId, preferredFilename) {
+  const p = allPolicies.find((x) => x.id === policyId);
+  if (!p) return;
+  const sources = p.sourceFiles ?? [];
+  if (sources.length === 0) return;
+  const filename =
+    preferredFilename && sources.includes(preferredFilename) ? preferredFilename : sources[0];
+  policyPreviewActive = `${p.id}::${filename}`;
+
+  const modal = $("policyPreviewModal");
+  const titleEl = $("policyPreviewTitle");
+  const bodyEl = $("policyPreviewBody");
+  const pathEl = $("policyPreviewPath");
+  const pickerEl = $("policyPreviewSourcePicker");
+  if (!modal || !bodyEl) return;
+  if (titleEl) titleEl.textContent = p.name;
+  if (pathEl) pathEl.textContent = `Owner Inbox/${filename}`;
+
+  if (pickerEl) {
+    if (sources.length > 1) {
+      pickerEl.hidden = false;
+      const links = sources
+        .map(
+          (f) =>
+            `<a href="/api/policy/${encodeURIComponent(f)}" class="pol-preview-source-pick${f === filename ? " is-active" : ""}" data-source-file="${esc(f)}" data-policy-id="${esc(p.id)}"><code>${esc(f)}</code></a>`,
+        )
+        .join(" · ");
+      pickerEl.innerHTML = `<span class="muted" style="margin-right:6px;">Source:</span>${links}`;
+    } else {
+      pickerEl.hidden = true;
+      pickerEl.innerHTML = "";
+    }
+  }
+
+  bodyEl.innerHTML = `<div class="muted" style="padding: 24px;">Loading…</div>`;
+  modal.hidden = false;
+  try {
+    const r = await fetch(`/api/policy/${encodeURIComponent(filename)}`);
+    if (!r.ok) {
+      const errBody = await r.text();
+      throw new Error(`HTTP ${r.status}: ${errBody.slice(0, 240)}`);
+    }
+    const md = await r.text();
+    // Stale-modal guard: another preview was opened while we waited.
+    if (policyPreviewActive !== `${p.id}::${filename}`) return;
+    bodyEl.innerHTML = renderMarkdownLite(md);
+  } catch (err) {
+    if (policyPreviewActive !== `${p.id}::${filename}`) return;
+    bodyEl.innerHTML = `<div class="error" style="padding:14px;">Could not load preview: ${esc(err.message ?? err)}</div>`;
+  }
+}
+
+function closePolicyPreview() {
+  const modal = $("policyPreviewModal");
+  if (modal) modal.hidden = true;
+  policyPreviewActive = null;
+}
+
+function renderMarkdownLite(md) {
+  const src = String(md ?? "");
+  let body = src;
+  if (body.startsWith("---")) {
+    const end = body.indexOf("\n---", 3);
+    if (end !== -1) body = body.slice(end + 4);
+  }
+  const lines = body.split(/\r?\n/);
+  const out = [];
+  let inCode = false;
+  let codeBuf = [];
+  let inList = false;
+  let listType = null;
+  const closeList = () => {
+    if (inList) {
+      out.push(listType === "ol" ? "</ol>" : "</ul>");
+      inList = false;
+      listType = null;
+    }
+  };
+  const inlineFormat = (line) => {
+    let s = esc(line);
+    s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
+    s = s.replace(/\*\*([^*]+)\*\*/g, (_, t) => `<strong>${t}</strong>`);
+    s = s.replace(/(^|\W)\*([^*]+)\*(\W|$)/g, (_m, a, t, b) => `${a}<em>${t}</em>${b}`);
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, href) => {
+      const safe = /^(https?:|\/|\.\.?\/)/i.test(href) ? href : "#";
+      return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+    });
+    return s;
+  };
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    if (line.startsWith("```")) {
+      if (inCode) {
+        out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+        codeBuf = [];
+        inCode = false;
+      } else {
+        closeList();
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeBuf.push(line);
+      continue;
+    }
+    if (!line.trim()) {
+      closeList();
+      continue;
+    }
+    const h1 = line.match(/^# (.+)$/);
+    if (h1) {
+      closeList();
+      out.push(`<h2>${inlineFormat(h1[1])}</h2>`);
+      continue;
+    }
+    const h2 = line.match(/^## (.+)$/);
+    if (h2) {
+      closeList();
+      out.push(`<h3>${inlineFormat(h2[1])}</h3>`);
+      continue;
+    }
+    const h3 = line.match(/^### (.+)$/);
+    if (h3) {
+      closeList();
+      out.push(`<h4>${inlineFormat(h3[1])}</h4>`);
+      continue;
+    }
+    const ul = line.match(/^[-*]\s+(.+)$/);
+    if (ul) {
+      if (!inList || listType !== "ul") {
+        closeList();
+        out.push("<ul>");
+        inList = true;
+        listType = "ul";
+      }
+      out.push(`<li>${inlineFormat(ul[1])}</li>`);
+      continue;
+    }
+    const ol = line.match(/^\d+\.\s+(.+)$/);
+    if (ol) {
+      if (!inList || listType !== "ol") {
+        closeList();
+        out.push("<ol>");
+        inList = true;
+        listType = "ol";
+      }
+      out.push(`<li>${inlineFormat(ol[1])}</li>`);
+      continue;
+    }
+    if (line.startsWith("> ")) {
+      closeList();
+      out.push(`<blockquote>${inlineFormat(line.slice(2))}</blockquote>`);
+      continue;
+    }
+    closeList();
+    out.push(`<p>${inlineFormat(line)}</p>`);
+  }
+  if (inCode) {
+    out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+  }
+  closeList();
+  return out.join("\n");
+}
+
+function wirePreviewLinks() {
+  // One delegated listener on the table body. Preserves middle-click /
+  // cmd-click navigation (which doesn't fire `click` with default-prevented
+  // semantics) while intercepting the primary click to open the modal.
+  // Mirrors `wirePreviewLinks` in procedures.js.
+  const target = $("policiesBody");
+  if (target) {
+    target.addEventListener("click", (e) => {
+      const link = e.target.closest("a.pol-preview-link");
+      if (!link) return;
+      if (link.classList.contains("pol-preview-link-disabled")) {
+        e.preventDefault();
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openPolicyPreview(link.dataset.policyId);
+    });
+  }
+  // Source-picker links inside the modal head — same intercept rules.
+  const picker = $("policyPreviewSourcePicker");
+  if (picker) {
+    picker.addEventListener("click", (e) => {
+      const link = e.target.closest("a.pol-preview-source-pick");
+      if (!link) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+      e.preventDefault();
+      openPolicyPreview(link.dataset.policyId, link.dataset.sourceFile);
+    });
+  }
+}
+
+function wirePreviewModal() {
+  const closeBtn = $("policyPreviewClose");
+  if (closeBtn) closeBtn.addEventListener("click", closePolicyPreview);
+  const modal = $("policyPreviewModal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closePolicyPreview();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const m = $("policyPreviewModal");
+    if (m && !m.hidden) closePolicyPreview();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Obligation hydration — the /api/state response carries obligation IDs in
 // each policy's linkedObligations array; we also need each obligation's
 // citation / requirement / status text to populate the drilldown table.
@@ -418,6 +666,8 @@ function wireDrill() {
 
 wireFilters();
 wireDrill();
+wirePreviewLinks();
+wirePreviewModal();
 load();
 if (typeof window.registerPagePoll === "function") {
   window.registerPagePoll(load, 30_000);

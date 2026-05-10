@@ -683,6 +683,62 @@ function handleProcedureFetch(filename: string): Response {
   });
 }
 
+// Stream the raw markdown body for a single policy source file under
+// `Owner Inbox/` so the policies-page inline-preview modal can render it
+// without leaving the page. Mirrors `handleOwnerInboxFetch` and
+// `handleProcedureFetch` — same rejection pattern, same allow-list
+// discipline. Authored by Anya (Data / analytics engineer).
+//
+// Safety:
+//   • Filename must be exactly a basename (no `/`, no `..`).
+//   • Filename must end in `.md`.
+//   • Filename must be present in the live policy register's union of
+//     per-policy `sourceFiles[]` — the policy register itself is always
+//     in the union as the row-of-truth fallback, plus any explicit
+//     `Owner Inbox/...md` references on a policy's status / citation
+//     cell. A file under `Owner Inbox/` not cited by the register is
+//     not servable through this endpoint.
+//
+// Follow-on (do not ship in this PR): the three sibling endpoints
+// `/api/owner-inbox/:filename` (#192), `/api/procedure/:filename` (#198),
+// and this one collapse cleanly to a single `/api/markdown/:scope/:filename`
+// surface where each scope provides its own allow-list source. Worth
+// queueing once a fourth scope (Team / Principles / Persona-spec
+// preview) lands.
+function handlePolicyFetch(filename: string): Response {
+  if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
+    return jsonResponse({ error: "invalid filename" }, 400);
+  }
+  if (!filename.toLowerCase().endsWith(".md")) {
+    return jsonResponse({ error: "only .md files are previewable" }, 400);
+  }
+  // Allow-list check against the live policy library. Each Policy carries
+  // a `sourceFiles[]` derived from the register; the union of those lists
+  // bounds the surface. A request for any other `Owner Inbox/*.md` file
+  // is rejected — that surface is `/api/owner-inbox/:filename` (which
+  // has its own narrower allow-list).
+  const allowed = cachedState.policies.some((p) => p.sourceFiles.includes(filename));
+  if (!allowed) {
+    return jsonResponse({ error: `not in current policy register: ${filename}` }, 404);
+  }
+  const filePath = join(REPO_ROOT, "Owner Inbox", filename);
+  if (!existsSync(filePath)) {
+    return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
+  }
+  let content: string;
+  try {
+    content = readFileSync(filePath, "utf8");
+  } catch (err) {
+    return jsonResponse(
+      { error: `failed to read file: ${err instanceof Error ? err.message : String(err)}` },
+      500,
+    );
+  }
+  return new Response(content, {
+    headers: { "Content-Type": "text/markdown; charset=utf-8" },
+  });
+}
+
 function handleRmsRegister(register: string): Response {
   if (!isRmsRegisterKey(register)) {
     return jsonResponse(
@@ -785,6 +841,18 @@ const server = Bun.serve({
       const procMatch = url.pathname.match(/^\/api\/procedure\/(.+)$/);
       if (procMatch?.[1] && req.method === "GET") {
         return handleProcedureFetch(decodeURIComponent(procMatch[1]));
+      }
+    }
+    // Policy-source markdown body fetch for the policies-page inline-preview
+    // modal. Mirrors the Owner Inbox / procedure endpoints above; allow-list
+    // bound to the live policy register's per-policy `sourceFiles[]` union
+    // (every Policy carries the register itself plus any explicit
+    // `Owner Inbox/...md` reference from its status / citation cell).
+    // Authored by Anya (Data / analytics engineer); does not mutate state.
+    {
+      const polMatch = url.pathname.match(/^\/api\/policy\/(.+)$/);
+      if (polMatch?.[1] && req.method === "GET") {
+        return handlePolicyFetch(decodeURIComponent(polMatch[1]));
       }
     }
     // ---------- D-DATA-PROVENANCE-SUBSTRATE Slice 3 — output watermarking ----------

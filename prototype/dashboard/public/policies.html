@@ -144,6 +144,26 @@
   </div>
 </div>
 
+<!--
+  Policy-source inline-preview modal — read-only render of the markdown
+  body for the policy's source file (typically the policy register, or
+  a standalone authored policy / bundle if the row cites one). Mirrors
+  the Owner Inbox / procedures preview modal so the surface stays
+  consistent. Authored by Anya (Data / analytics engineer).
+  TODO: extract; see /api/markdown/:scope/:filename refactor.
+-->
+<div class="modal oi-preview-modal" id="policyPreviewModal" hidden>
+  <div class="oi-preview-card">
+    <div class="oi-preview-head">
+      <h2 id="policyPreviewTitle">Policy preview</h2>
+      <button class="icon-btn" id="policyPreviewClose" aria-label="Close">×</button>
+    </div>
+    <div class="oi-preview-path muted small" id="policyPreviewPath"></div>
+    <div id="policyPreviewSourcePicker" class="oi-preview-path small" hidden></div>
+    <div class="oi-preview-body" id="policyPreviewBody"></div>
+  </div>
+</div>
+
 <script src="/_refresh-controls.js"></script>
 <script src="/_failure-banner.js"></script>
 <script src="/provenance-badge.js"></script>
