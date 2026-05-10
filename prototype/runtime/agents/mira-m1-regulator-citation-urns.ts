@@ -411,13 +411,16 @@ const M1_URN_CATALOGUE: readonly RegulatorCitationUrn[] = [
   },
 
   // -------------------------------------------------------------------------
-  // Operational + cyber — Joint Standard 1 of 2024, Banks Act Reg 39.
+  // Operational + cyber — Joint Standard 2 of 2024 (cybersecurity), Banks Act Reg 39.
+  // (Renamed from JS 1/2024 to JS 2/2024 in register v1.15 — JS 1/2024 is
+  // Outsourcing by Insurers, not Cybersecurity. Per WS-JS-NUMBER-RECONCILIATION
+  // and ORG-CY-17 corrective umbrella row.)
   // -------------------------------------------------------------------------
   {
-    urn: "JOINT-STANDARD-1-2024-CYBER",
+    urn: "JOINT-STANDARD-2-2024-CYBER",
     tranche: "operational-cyber",
     regulator: "Prudential Authority + FSCA (joint)",
-    instrument: "Joint Standard 1 of 2024 — Cybersecurity and Cyber Resilience",
+    instrument: "Joint Standard 2 of 2024 — Cybersecurity and Cyber Resilience",
     section:
       "Full standard (governance, risk management, incident response, third-party, cyber-resilience testing)",
     asOfDate: "2024-05-17",

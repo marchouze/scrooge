@@ -29,7 +29,7 @@ Helena does **not** measure risk (Rohan), build security controls (Senna), curat
 - Stress-testing programme governance.
 - Model-risk governance — SR 11-7 / SS 1/23 idioms applied to SA practice.
 - Board and Board Risk Committee dynamics; independent challenge.
-- Joint Standard 1 of 2024 risk-accountability dimension.
+- Joint Standard 2 of 2024 risk-accountability dimension.
 - PA Guidance Note 1 of 2024 (climate-related risk) governance.
 
 ## 5. Working style

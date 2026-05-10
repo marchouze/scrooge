@@ -19,7 +19,7 @@ Outsourcing & Third-Party Risk Policy (planned — Devon; in `Procedures/_index.
 |---|---|
 | `[citation: TBC]` — SARB PA outsourcing directive (Banks Act regulations on outsourcing material business activities) | Pre-engagement due diligence on third parties performing material business activities; ongoing oversight; exit strategy. |
 | `[citation: TBC]` — SARB Directive 3 of 2018 (Cloud Computing and Offshoring of Data) | Material correspondent for cross-border functions notifiable to PA; due-diligence package required. See companion procedure `directive-3-pa-notification.md`. |
-| `[citation: TBC]` — Joint Standard 1 of 2024 (Cybersecurity & Cyber Resilience), third-party-risk extensions | Cyber + operational due diligence on material third parties; supply-chain security; IR cooperation. |
+| `[citation: TBC]` — Joint Standard 2 of 2024 (Cybersecurity & Cyber Resilience), third-party-risk extensions | Cyber + operational due diligence on material third parties; supply-chain security; IR cooperation. |
 | `[citation: TBC]` — POPIA s.21 (operator agreements) | Data-processing terms with any third party that processes personal information on behalf of the bank. |
 | `ORG-FIC-…` `[citation: TBC]` (FIC Act on third-party AML/CFT exposure) | Reputational + regulatory exposure to third party's own AML/CFT discipline. |
 
@@ -30,7 +30,7 @@ Confirm — before the bank engages a material third party (correspondent bank, 
 - Regulatory standing (no active enforcement action that materially impairs the service).
 - Financial viability (no near-term insolvency risk that would interrupt the service).
 - Operational resilience (BCP, DR, IBS impact-tolerance compatibility).
-- Cyber posture (Joint Standard 1 of 2024 third-party expectations).
+- Cyber posture (Joint Standard 2 of 2024 third-party expectations).
 - AML / CFT and sanctions discipline (the bank inherits reputational exposure).
 - Data protection (POPIA operator-agreement terms; cross-border transfer assessment if applicable).
 - Contractual exit conditions (the bank can change provider without strand of operations).
@@ -49,7 +49,7 @@ Materiality classification follows the `Owner Inbox/...` Outsourcing Policy mate
 | 2 | Regulatory standing check | Mira (Compliance / RegTech engineer) + Imani (Legal-as-code engineer) | `@platform/compliance/regulatory-screening` (`PLANNED`) | PA enforcement register; FSCA findings; equivalent foreign-regulator findings if applicable |
 | 3 | Financial viability check | Camille (Chief Financial Officer, governance) + Eitan (Treasurer, governance) | `@platform/treasury/counterparty-credit` (`PLANNED`) | Credit ratings; latest financial statements; concentration of bank's position with the third party |
 | 4 | Operational resilience check (BCP / DR / IBS impact tolerances) | Devon (Chief Operating Officer, governance) | `@platform/operations/resilience-assessment` (`PLANNED`) | Cross-references the bank's IBS impact-tolerance ladder; tests scenario alignment |
-| 5 | Cyber + InfoSec due diligence (Joint Standard 1 of 2024) | Senna (Security engineer) + Rashida (Chief Information Security Officer, governance) | `@platform/security/third-party-cyber-dd` (`PLANNED`) | Connectivity, credential isolation, key custody, IR cooperation, supply-chain posture |
+| 5 | Cyber + InfoSec due diligence (Joint Standard 2 of 2024) | Senna (Security engineer) + Rashida (Chief Information Security Officer, governance) | `@platform/security/third-party-cyber-dd` (`PLANNED`) | Connectivity, credential isolation, key custody, IR cooperation, supply-chain posture |
 | 6 | AML / CFT and sanctions exposure check | Mira (Compliance / RegTech engineer) — under Zara (Chief Compliance Officer, governance) | `@platform/compliance/sanctions-screening` (`PLANNED`) | Third party's own AML programme; sanctions lists; PEP screening |
 | 7 | Data protection due diligence (POPIA s.21 operator) | Iris (Information Officer, governance) | `@platform/privacy/operator-agreement-template` (`PLANNED`) | Operator-agreement terms; cross-border transfer s.72 assessment if applicable |
 | 8 | Contract negotiation (terms, indemnities, SLAs, exit conditions) | Imani (Legal-as-code engineer) | `@platform/legal/clause-library` (`POPULATED v0` — Imani v0 already on main) | ISDA-Master-class for FX correspondent; operational-SLAs; indemnities for settlement failures; exit triggers |

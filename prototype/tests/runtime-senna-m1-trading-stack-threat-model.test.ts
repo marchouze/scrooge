@@ -133,7 +133,7 @@ describe("runtime — senna:m1-trading-stack-threat-model", () => {
     expect(frameworks).toContain("ops-security");
   });
 
-  it("emissions carry the Joint Standard 1 of 2024 + POPIA s.19–22 citation chain", async () => {
+  it("emissions carry the Joint Standard 2 of 2024 + POPIA s.19–22 citation chain", async () => {
     // Find any ThreatModelDimensionRegistered event from the prior test.
     let observed: Event | undefined;
     for (const e of eventStore.replay({ type: "ThreatModelDimensionRegistered" })) {
@@ -142,7 +142,7 @@ describe("runtime — senna:m1-trading-stack-threat-model", () => {
     expect(observed).toBeDefined();
     expect(observed?.actor.id).toBe("agent:senna:m1-trading-stack-threat-model");
 
-    // Citation chain: Joint Standard 1 of 2024 binds at ORG-CY-01 / 03 /
+    // Citation chain: Joint Standard 2 of 2024 binds at ORG-CY-01 / 03 /
     // 05; POPIA s.19–22 at ORG-PR(IV)-06; governance line.
     expect(observed?.citations).toContain("ORG-CY-01");
     expect(observed?.citations).toContain("ORG-CY-03");

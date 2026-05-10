@@ -45,7 +45,7 @@ const DEFAULT_ACTOR: Actor = {
 
 const DEFAULT_CITATIONS: readonly string[] = [
   "GOV-FRAMEWORK-CEO-RESERVED",
-  "JOINT-STANDARD-1-2024",
+  "JOINT-STANDARD-2-2024",
   "ORG-CY-01",
 ];
 

@@ -2,7 +2,7 @@
 title: Recruitment scope — Human Chief Risk Officer (CRO)
 author: Nolan
 date: 2026-05-09
-summary: Priority-1 search for a separate human CRO to be appointed before SARB licence-application lodgment. Drives Joint Standard 1 of 2024 operational independence; resolves the JS-1-2024 finding identified in Mira+Zara's confirmation paper. Sequenced first of the six thin-human-layer hires.
+summary: Priority-1 search for a separate human CRO to be appointed before SARB licence-application lodgment. Drives Joint Standard 2 of 2024 operational independence; resolves the JS-2-2024 finding identified in Mira+Zara's confirmation paper. Sequenced first of the six thin-human-layer hires.
 seat: human-cro
 priority: 1
 cadence: appointed before SARB licence-application lodgment
@@ -20,7 +20,7 @@ decision-required: false
 
 ## 1. Why this seat exists
 
-The Joint Standard 1 of 2024 (PA / FSCA Cybersecurity and Cyber Resilience) read with BCBS Corporate Governance Principles for Banks (2015) treats CRO operational independence from the CEO as a **structural** expectation at licence-day, not a SARB-precedent challenge that can be answered by a post-licence hiring commitment. Mira+Zara's confirmation paper (`Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1) reads interim-CRO-as-CEO as a JS-1-2024 finding rather than a flagged risk — the CEO's adoption of that read is the substantive change in D-THIN-HUMAN-LAYER-MINIMUM relative to Owen+Imani's original five-human draft.
+The Joint Standard 2 of 2024 (PA / FSCA Cybersecurity and Cyber Resilience) read with BCBS Corporate Governance Principles for Banks (2015) treats CRO operational independence from the CEO as a **structural** expectation at licence-day, not a SARB-precedent challenge that can be answered by a post-licence hiring commitment. Mira+Zara's confirmation paper (`Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1) reads interim-CRO-as-CEO as a JS-2-2024 finding rather than a flagged risk — the CEO's adoption of that read is the substantive change in D-THIN-HUMAN-LAYER-MINIMUM relative to Owen+Imani's original five-human draft.
 
 The seat is the **human face** of the bank's prudential second-line. Helena (engineering CRO) and Rohan (risk engineer) carry the engineering load; the human CRO's outputs flow through Helena's substrate. The human seat is what SARB sees.
 
@@ -29,7 +29,7 @@ The seat is the **human face** of the bank's prudential second-line. Helena (eng
 | Source | Section / clause | Bearing on this seat |
 |---|---|---|
 | Banks Act 94 of 1990 | s.60 (Board composition; "sufficient size and composition" to discharge fiduciary duties) | The Board's risk-oversight discharge depends on a CRO present at risk-committee proceedings. [citation: TBC — exact PA fit-and-proper sub-instrument] |
-| Joint Standard 1 of 2024 (PA / FSCA Cybersecurity and Cyber Resilience) | §6 (responsible-person designation); §7 (operational independence) | CRO operational independence from the CEO is the binding constraint behind this hire. [register: ORG-GV-CRO-INDEPENDENCE — gap, Mira-owned closure] |
+| Joint Standard 2 of 2024 (PA / FSCA Cybersecurity and Cyber Resilience) | §6 (responsible-person designation); §7 (operational independence) | CRO operational independence from the CEO is the binding constraint behind this hire. [register: ORG-GV-CRO-INDEPENDENCE — gap, Mira-owned closure] |
 | BCBS Corporate Governance Principles for Banks (2015) | Principle 6 (risk-management function); Principle 8 (risk identification, monitoring, controlling) | Substantive independence reading — financially-dependent NEDs / merged executives are challenged. |
 | SARB Regulations Relating to Banks | Reg. 39 (internal-models for capital) | IRB / IMM / IMA approvals require a CRO function organisationally independent of model development. |
 | Banks Act s.70 (risk-management process and audit) | s.70(2A)(b) | The bank's risk-management process and audit framework discharge requires a named CRO. |
@@ -38,7 +38,7 @@ The seat is the **human face** of the bank's prudential second-line. Helena (eng
 
 **In scope:**
 
-- Named accountable person for the bank's risk-management function under Joint Standard 1 of 2024 §6 + Banks Act s.70.
+- Named accountable person for the bank's risk-management function under Joint Standard 2 of 2024 §6 + Banks Act s.70.
 - Chair of the Board Risk Committee (or its proxy — Interim Risk Forum until Board AC and BRC are constituted).
 - ICAAP / ILAAP signing authority for SARB Prudential Authority engagement (pre-application gate).
 - Risk Appetite Statement & Framework approval (CEO-approved today; CRO-approved at licence-day; Helena's engineering output flows into).
@@ -57,12 +57,12 @@ The seat is the **human face** of the bank's prudential second-line. Helena (eng
 
 ## 4. Fit-and-proper requirements
 
-The human CRO must satisfy SARB Prudential Authority fit-and-proper standards under the Banks Act + Regulations Relating to Banks read with Joint Standard 1 of 2024.
+The human CRO must satisfy SARB Prudential Authority fit-and-proper standards under the Banks Act + Regulations Relating to Banks read with Joint Standard 2 of 2024.
 
 | Requirement | Source |
 |---|---|
 | Banks Act + Regs Relating to Banks fit-and-proper for designated officers (CRO is a named designated officer in `_obligations-register.md` ORG-GV-11) | Banks Act 94 of 1990; PA fit-and-proper sub-instruments. [citation: TBC — exact PA fit-and-proper directive number] |
-| **Joint Standard 1 of 2024 operational-independence test** — CRO must be organisationally independent of the CEO; cannot be a CEO direct-report whose performance assessment is CEO-controlled in a way that compromises challenge. | Joint Standard 1 of 2024 §6–§7. [register: ORG-GV-CRO-INDEPENDENCE — Mira-owned closure] |
+| **Joint Standard 2 of 2024 operational-independence test** — CRO must be organisationally independent of the CEO; cannot be a CEO direct-report whose performance assessment is CEO-controlled in a way that compromises challenge. | Joint Standard 2 of 2024 §6–§7. [register: ORG-GV-CRO-INDEPENDENCE — Mira-owned closure] |
 | BCBS Corporate Governance Principles for Banks substantive-independence reading | BCBS Corp Gov Principles 2015 §3. |
 | Fit-and-proper file structure under ORG-GV-11 | `_obligations-register.md` ORG-GV-11. |
 | Appropriate banking-regulatory experience — minimum 10 years senior risk-management experience in a regulated bank or equivalent prudentially-regulated financial institution. [citation: TBC — convention, not statute] |
@@ -89,7 +89,7 @@ The human CRO must satisfy SARB Prudential Authority fit-and-proper standards un
 - Banks Act + PA fit-and-proper credible (no prior fit-and-proper findings; clean SARB engagement history).
 - Demonstrated independence from the CEO — performance-assessment structure must be governable by Board committee, not CEO.
 - IFRS 9 ECL governance experience (the bank's first capital-model is the credit-risk ECL).
-- Joint Standard 1 of 2024 fluent — operational independence, responsible-person designation.
+- Joint Standard 2 of 2024 fluent — operational independence, responsible-person designation.
 - BCBS Corporate Governance Principles 2015 fluent.
 - ICAAP / ILAAP signing experience.
 - South African resident (or willing-to-relocate before licence-application lodgment).
@@ -129,8 +129,8 @@ Per Principle 7, a fully-autonomous run of this recruitment scope would require:
 
 - `Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-thin-human-layer-minimum.md` — CEO decision approving the 6-human composition with separate human CRO before licence-application.
 - `Owner Inbox/2026-05-09_owen-imani_thin-human-layer-minimum-possible.md` §2.3, §3 (item 6), §4.1 — composition substrate.
-- `Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1 — JS-1-2024 finding that drives the priority-1 sequence.
-- Banks Act 94 of 1990; Joint Standard 1 of 2024; BCBS Corporate Governance Principles for Banks (2015); SARB Regs Relating to Banks Reg. 39.
+- `Owner Inbox/2026-05-09_mira-zara_concentration-risk-conduct-confirmation.md` §3.1 — JS-2-2024 finding that drives the priority-1 sequence.
+- Banks Act 94 of 1990; Joint Standard 2 of 2024; BCBS Corporate Governance Principles for Banks (2015); SARB Regs Relating to Banks Reg. 39.
 - `CLAUDE.md` — Principle 7 (autonomous by default); Operating model (statutory humans kept to the minimum the law requires).
 - `Team/Helena.md` — engineering CRO mandate; reporting interlock with the human CRO seat.
 

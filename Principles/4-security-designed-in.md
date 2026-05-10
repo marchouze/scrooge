@@ -10,4 +10,4 @@ Security is a foundational design constraint, not a layer added later.
 - **Operational security** — intrusion detection, log integrity, key rotation, incident response with rehearsed runbooks. Incidents are register-tracked under Principle 2.
 - **Customer security** — strong authentication (WebAuthn / FIDO2 by default), session-binding, transaction-signing for high-risk actions.
 - POPIA breach notification (Information Regulator and data subjects) is an automated workflow, not a runbook step.
-- Aligned with the Joint Standard on Cybersecurity and Cyber Resilience (PA / FSCA Joint Standard 1 of 2024), POPIA security safeguards (sections 19–22), and BCBS principles on operational and cyber risk.
+- Aligned with the Joint Standard on Cybersecurity and Cyber Resilience (PA / FSCA Joint Standard 2 of 2024), POPIA security safeguards (sections 19–22), and BCBS principles on operational and cyber risk.

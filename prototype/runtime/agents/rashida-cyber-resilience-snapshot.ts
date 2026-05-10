@@ -27,18 +27,18 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
 const EVENT_CITATIONS = [
-  "JOINT-STANDARD-1-2024",
+  "JOINT-STANDARD-2-2024",
   "POPIA-S19-22",
   "BANKS-ACT-94-1990",
   "BCBS-OP-CYBER",
 ];
 
 // Stable system prompt — KEEP BYTE-STABLE for prompt cache.
-const RASHIDA_NARRATIVE_SYSTEM = `You are Rashida Patel, the bank's Chief Information Security Officer — named accountable officer for cybersecurity under Joint Standard 1 of 2024 and operational-security counterpart to the Information Officer under POPIA s.19–22. Your operating spec is at \`Team/Rashida.md\`. You report directly to the CEO; Senna (engineer) reports to you.
+const RASHIDA_NARRATIVE_SYSTEM = `You are Rashida Patel, the bank's Chief Information Security Officer — named accountable officer for cybersecurity under Joint Standard 2 of 2024 and operational-security counterpart to the Information Officer under POPIA s.19–22. Your operating spec is at \`Team/Rashida.md\`. You report directly to the CEO; Senna (engineer) reports to you.
 
-You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly cyber-resilience snapshot — Senna's substrate-state events, obligations-register slice for Joint Standard 1 of 2024 and POPIA s.19–22, recent security-incident / threat-model-gate / key-rotation / SBOM-acceptance events.
+You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly cyber-resilience snapshot — Senna's substrate-state events, obligations-register slice for Joint Standard 2 of 2024 and POPIA s.19–22, recent security-incident / threat-model-gate / key-rotation / SBOM-acceptance events.
 
-Your voice is precise, threat-grounded, and unsentimental. You distinguish *rehearsed-readiness* (build-only posture; threat-model gate runs against synthetic flows) from *live* (post-licence). You name what's load-bearing on a control versus what is posture-only. You quote Joint Standard 1 of 2024 sub-paragraphs by reference where they bind, not in your own words.
+Your voice is precise, threat-grounded, and unsentimental. You distinguish *rehearsed-readiness* (build-only posture; threat-model gate runs against synthetic flows) from *live* (post-licence). You name what's load-bearing on a control versus what is posture-only. You quote Joint Standard 2 of 2024 sub-paragraphs by reference where they bind, not in your own words.
 
 Your task is to write a written narrative — one to three short paragraphs — that:
 
@@ -46,7 +46,7 @@ Your task is to write a written narrative — one to three short paragraphs — 
 - Picks the 1–3 most consequential observations: a Joint-Standard-1-of-2024 obligation whose fulfilment depends on substrate that is not yet built, an event-type the inventory expects to see but doesn't (e.g. zero \`KeyRotationPerformed\` when rotation policy says quarterly), a threat-model-gate decision that warrants escalation.
 - Names the next hardening step. Be concrete: a specific obligation to populate, a programme-map entry to refresh, a JS-1-of-2024 reportability rehearsal that is overdue. The pre-licence security-readiness gate (co-owned with Saskia and Devon) is the load-bearing pre-attestation surface.
 
-Cite Joint Standard 1 of 2024 cross-references and POPIA sections where they bind. The substrate inventory and obligations register are the canonical authoring locations; your narrative is interpretation, not new substance.
+Cite Joint Standard 2 of 2024 cross-references and POPIA sections where they bind. The substrate inventory and obligations register are the canonical authoring locations; your narrative is interpretation, not new substance.
 
 Do not include a markdown header for your section — the calling pipeline wraps your output under "## Rashida's narrative". Just produce the prose.
 
@@ -190,7 +190,7 @@ function buildNarrativeInput(ctx: AgentRunContext, d: CyberDigest): string {
   lines.push("");
   lines.push("obligations-register slice:");
   lines.push(`  - ORG-CY-* (cyber-and-information-security): ${d.cyberObligationsCount}`);
-  lines.push(`  - Joint Standard 1 of 2024 cited rows: ${d.jointStandardObligationsCount}`);
+  lines.push(`  - Joint Standard 2 of 2024 cited rows: ${d.jointStandardObligationsCount}`);
   lines.push(`  - POPIA s.19–22 cited rows: ${d.popiaSecurityObligationsCount}`);
   lines.push("");
   lines.push("security events (last 7 days):");
@@ -223,11 +223,11 @@ function buildReportMarkdown(
   lines.push(`# Rashida — cyber-resilience snapshot, ${date}`);
   lines.push("");
   lines.push(
-    "Autonomous run of Rashida's weekly cyber-resilience snapshot per `Team/Rashida.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Pre-attestation digest for the quarterly Joint Standard 1 of 2024 programme attestation and the second-line cyber opinion to AC.",
+    "Autonomous run of Rashida's weekly cyber-resilience snapshot per `Team/Rashida.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Pre-attestation digest for the quarterly Joint Standard 2 of 2024 programme attestation and the second-line cyber opinion to AC.",
   );
   lines.push("");
   lines.push(
-    `**Headline:** ${d.cyberObligationsCount} ORG-CY-* obligation${d.cyberObligationsCount === 1 ? "" : "s"} indexed (${d.jointStandardObligationsCount} citing Joint Standard 1 of 2024; ${d.popiaSecurityObligationsCount} citing POPIA s.19–22) · ${d.incidentsLast7d.length} \`SecurityIncidentRaised\` event${d.incidentsLast7d.length === 1 ? "" : "s"} in the last 7 days · ${d.threatModelGateDecisionsLast7d} threat-model gate decision${d.threatModelGateDecisionsLast7d === 1 ? "" : "s"}.`,
+    `**Headline:** ${d.cyberObligationsCount} ORG-CY-* obligation${d.cyberObligationsCount === 1 ? "" : "s"} indexed (${d.jointStandardObligationsCount} citing Joint Standard 2 of 2024; ${d.popiaSecurityObligationsCount} citing POPIA s.19–22) · ${d.incidentsLast7d.length} \`SecurityIncidentRaised\` event${d.incidentsLast7d.length === 1 ? "" : "s"} in the last 7 days · ${d.threatModelGateDecisionsLast7d} threat-model gate decision${d.threatModelGateDecisionsLast7d === 1 ? "" : "s"}.`,
   );
   lines.push("");
 
@@ -236,7 +236,7 @@ function buildReportMarkdown(
   lines.push("| Slice | Count |");
   lines.push("|---|---|");
   lines.push(`| ORG-CY-* (cyber & information security) | ${d.cyberObligationsCount} |`);
-  lines.push(`| Rows citing Joint Standard 1 of 2024 | ${d.jointStandardObligationsCount} |`);
+  lines.push(`| Rows citing Joint Standard 2 of 2024 | ${d.jointStandardObligationsCount} |`);
   lines.push(`| Rows citing POPIA s.19–22 | ${d.popiaSecurityObligationsCount} |`);
   lines.push("");
 
@@ -275,7 +275,7 @@ function buildReportMarkdown(
   lines.push("## Programme-readiness (build-phase)");
   lines.push("");
   lines.push(
-    "- **Joint Standard 1 of 2024 programme map** — drafted; PA / FSCA reporting cadence rehearsed against simulated endpoints (Rashida § Build-only context).",
+    "- **Joint Standard 2 of 2024 programme map** — drafted; PA / FSCA reporting cadence rehearsed against simulated endpoints (Rashida § Build-only context).",
   );
   lines.push("- **Threat-modelling gate** — operating; Senna runs; Rashida signs exceptions.");
   lines.push(
@@ -304,7 +304,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Read `Regulations/_obligations-register.md` for ORG-CY-* / Joint Standard 1 of 2024 / POPIA s.19–22 row counts. Replayed `SecuritySubstrateSnapshot`, `SecurityIncidentRaised`, `ThreatModelGateDecision`, `KeyRotationPerformed`, `SBOMAccepted`, `SBOMRejected`, `VendorSecurityReview`, `PersonalInformationCompromiseSuspected` from the host event store.",
+    "Read `Regulations/_obligations-register.md` for ORG-CY-* / Joint Standard 2 of 2024 / POPIA s.19–22 row counts. Replayed `SecuritySubstrateSnapshot`, `SecurityIncidentRaised`, `ThreatModelGateDecision`, `KeyRotationPerformed`, `SBOMAccepted`, `SBOMRejected`, `VendorSecurityReview`, `PersonalInformationCompromiseSuspected` from the host event store.",
   );
   lines.push("");
   return lines.join("\n");

@@ -63,7 +63,7 @@ The procedure is the HOW for policy §5; it does not author dimensional substanc
 | 10 | Dimension 9 — AML / sanctions / PEP attestation. Mira (with Zara) extends the CDD pathway, sanctions service coverage, PEP-detection gate, STR/CTR pathway. | Mira · Zara | `@platform/compliance/sanctions-screening`, `@platform/compliance/transaction-monitoring` | Cite `ORG-AML-*`, `ORG-SAN-*` [register: route to Mira for any newly required codes]. |
 | 11 | Dimension 10 — Model risk attestation. Nadia produces Tier-classification of every new pricing / risk / classification model. | Nadia | `@platform/model-risk/registry` (PLANNED) | Cite RAS § B7; SR 11-7 / SS 1/23 idiom. |
 | 12 | Dimension 11 — Legal documentation attestation. Imani produces master-agreement coverage attestation, ECTA execution path, dispute-resolution procedure, jurisdiction matrix. | Imani | `@platform/legal/clause-library` (PLANNED) | Cite `ORG-MK-06`, `ORG-CS3-001`, `ORG-CS3-004`. |
-| 13 | Dimension 12 — Information security attestation. Senna (with Rashida) produces threat model covering wire path, HSM key custody where signing introduced, zero-trust posture for new external integrations. | Senna · Rashida | `@platform/security/threat-model`, `@platform/secure-sdlc` | Cite `ORG-CY-*`; Joint Standard 1 of 2024. |
+| 13 | Dimension 12 — Information security attestation. Senna (with Rashida) produces threat model covering wire path, HSM key custody where signing introduced, zero-trust posture for new external integrations. | Senna · Rashida | `@platform/security/threat-model`, `@platform/secure-sdlc` | Cite `ORG-CY-*`; Joint Standard 2 of 2024. |
 | 14 | Dimension 13 — Privacy attestation. Iris produces POPIA classification, cross-border transfer determination, retention-schedule mapping. | Iris | `@platform/privacy/popia-register` (PLANNED) | Cite `ORG-PR-PRIV-*`. |
 | 15 | Dimension 14 — Tax attestation. Yael produces VAT / STT / FATCA / CRS / transfer-pricing / s.24J classification. | Yael | `@platform/tax/classification` (PLANNED) | Cite `ORG-TAX-*` [register: route to Mira]. |
 | 16 | Aggregation. The substrate aggregates the 14 attestations. Any `withheld` halts the cycle; Saskia decides redesign-and-re-enter at stage 2 or abandon. Where all dimensions are `cleared` or `cleared-with-conditions`, the cycle closes. | system | `@platform/markets/product-register` (PLANNED) | Per policy §4 stage 3. |
@@ -118,7 +118,7 @@ The procedure is the HOW for policy §5; it does not author dimensional substanc
 - **[register: ORG-MK-01..08]** — Markets domain.
 - **[register: ORG-PR-02..19]** — Prudential.
 - **[register: ORG-AML-*, ORG-SAN-*]** — AML / sanctions [route to Mira for any new codes].
-- **[register: ORG-CY-*]** — Cybersecurity (Joint Standard 1 of 2024).
+- **[register: ORG-CY-*]** — Cybersecurity (Joint Standard 2 of 2024).
 - **[register: ORG-CD-01..07]** — Conduct.
 - **[register: ORG-PR-PRIV-*]** — Privacy.
 - **[register: ORG-TAX-*]** — Tax [route to Mira].

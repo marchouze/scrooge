@@ -17,8 +17,8 @@ RAS B6 — four-tier severity model (CEO approved 2026-05-06).
 
 | Citation | Requirement |
 |---|---|
-| `ORG-CY-01` (Joint Standard 1 of 2024) | Maintain cybersecurity and cyber-resilience framework with named accountability. |
-| `ORG-CY-04` (Joint Standard 1 of 2024) | Incident reporting to PA / FSCA per stipulated timelines. |
+| `ORG-CY-01` (Joint Standard 2 of 2024) | Maintain cybersecurity and cyber-resilience framework with named accountability. |
+| `ORG-CY-04` (Joint Standard 2 of 2024) | Incident reporting to PA / FSCA per stipulated timelines. |
 | `ORG-CY-05` (Joint Standard + BCBS Operational Resilience) | Tested cyber-incident response with rehearsed runbooks. |
 | `ORG-CY-11` (RAS B6) | Cyber severity tiers T1–T4 with Regulator-notification thresholds at T3 / T4. |
 | `ORG-PR(IV)-07` (POPIA s.22) | Notify Information Regulator and data subjects of compromise (when PII involved). |
@@ -48,7 +48,7 @@ Each trigger emits an `IncidentDetected` event with severity hint.
 | 7 | If financial-crime indicators → invoke `str-filing.md`; preserve tipping-off discipline | `human` (Zara as MLRO) | (cross-procedure) | Restricted to MLRO investigation set. |
 | 8 | Eradication — remove the threat (patch, revoke, rotate keys, etc.) | `system` + `human` (IC) | `@platform/ir/eradication` (`PLANNED`) | Each remediation is a typed event with verification. |
 | 9 | Recovery — restore services per IBS impact tolerances | `system` + `human` | `@platform/ir/recovery` + `@platform/bcdr` (`PLANNED`) | RTO / RPO tracked against IBS targets. |
-| 10 | Regulator submissions (T3 / T4) per Joint Standard 1 of 2024 timelines | `human` (Senna for cyber; Iris for POPIA; Zara for FIC) | `@domains/regulator-engagement` (`PLANNED`) | Submission timestamps captured. |
+| 10 | Regulator submissions (T3 / T4) per Joint Standard 2 of 2024 timelines | `human` (Senna for cyber; Iris for POPIA; Zara for FIC) | `@domains/regulator-engagement` (`PLANNED`) | Submission timestamps captured. |
 | 11 | Post-incident review (PIR) within 14 days | `human` (IC chairs; affected domain leads attend) | `@platform/ir/pir` (`PLANNED`) | Lessons-learned events feed change management and policy updates. |
 | 12 | Close incident; update threat-intel; tune detection | `human` (IC) | `@platform/ir/closure` (`PLANNED`) | Event: `IncidentClosed { closure_reasons, lessons }`. |
 

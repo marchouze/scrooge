@@ -113,7 +113,7 @@
       "name": "Senna",
       "role": "Security engineer",
       "type": "engineering",
-      "expertise": "Threat modelling, zero-trust, HSM key management, secure SDLC, IR, POPIA breach workflow, Joint Standard 1 of 2024",
+      "expertise": "Threat modelling, zero-trust, HSM key management, secure SDLC, IR, POPIA breach workflow, Joint Standard 2 of 2024",
       "reportsTo": "Rashida"
     },
     {
@@ -198,7 +198,7 @@
       "name": "Rashida",
       "role": "Chief Information Security Officer",
       "type": "governance",
-      "expertise": "InfoSec / Cyber Resilience / IR policy ownership, Joint Standard 1 of 2024 programme, POPIA s.19–22 operational security, threat-model gate, cyber-resilience scenario testing, HSM key governance, supply-chain security, incident command",
+      "expertise": "InfoSec / Cyber Resilience / IR policy ownership, Joint Standard 2 of 2024 programme, POPIA s.19–22 operational security, threat-model gate, cyber-resilience scenario testing, HSM key governance, supply-chain security, incident command",
       "reportsTo": "CEO"
     }
   ],

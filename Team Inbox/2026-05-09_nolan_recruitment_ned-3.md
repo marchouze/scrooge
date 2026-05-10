@@ -72,7 +72,7 @@ Same as NED #2 scope §5, with: cannot chair AC; cannot hold MLRO-alternate role
 
 - Prior NED at a SARB-regulated bank.
 - Deep banking-regulatory experience (former PA / SARB official within the post-employment cooling-off window; former senior bank executive).
-- Technology / cyber depth (Joint Standard 1 of 2024 oversight).
+- Technology / cyber depth (Joint Standard 2 of 2024 oversight).
 - Treasury / liquidity expertise (the bank's funding posture is institutional wholesale).
 - Trading-bank exposure.
 - B-BBEE positive contribution.

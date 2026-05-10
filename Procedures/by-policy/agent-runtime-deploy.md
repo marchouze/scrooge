@@ -18,7 +18,7 @@
 
 | Citation | Requirement | Resolves via |
 |---|---|---|
-| `ORG-CY-*` (Joint Standard 1 of 2024 — cyber resilience) | Cyber-resilient operational substrate. | Substrate threat-model gate + signed builds + zero-trust agent identity. |
+| `ORG-CY-*` (Joint Standard 2 of 2024 — cyber resilience) | Cyber-resilient operational substrate. | Substrate threat-model gate + signed builds + zero-trust agent identity. |
 | `ORG-PR-18` | Operational Resilience — Important Business Services. | Substrate is itself an IBS once domain agents host on it. |
 | BCBS Operational Resilience (2021) (direct standard) | Identify IBS; impact tolerances; scenario testing. | A4 fleet-rollout adds the substrate to Devon's BCP / DR scope. |
 | PA Directive 3 of 2018 (post-M8) | Cloud-computing posture. | M8 cloud lift binds the substrate to PA-D3 evidence. |

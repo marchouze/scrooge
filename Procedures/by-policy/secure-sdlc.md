@@ -18,8 +18,8 @@
 
 | Citation | Requirement |
 |---|---|
-| `ORG-CY-01` (Joint Standard 1 of 2024) | Cybersecurity framework with named accountability (CISO holds; Senna engineers). |
-| `ORG-CY-03` (Joint Standard 1 of 2024) | Threat modelling, risk assessment, controls catalogue. |
+| `ORG-CY-01` (Joint Standard 2 of 2024) | Cybersecurity framework with named accountability (CISO holds; Senna engineers). |
+| `ORG-CY-03` (Joint Standard 2 of 2024) | Threat modelling, risk assessment, controls catalogue. |
 | `ORG-CY-09` (ISO/IEC 27001:2022) | Information-security management system aligned to ISO 27001. |
 | `ORG-CY-12` (NIST SSDF v1.1) | Secure software development lifecycle aligned to SSDF practice groups. |
 | `ORG-CY-13` (SLSA v1.0) | Build-provenance attestation, signed artefacts, hermetic builds; target Build Level 3. |
@@ -137,4 +137,4 @@ A `RepositoryWriteEvent` from the engineering workflow:
 - **Thandiwe (CAE)** consumes Vera's evidence for the third-line opinion to the (Interim) Audit Forum.
 - **Rashida (CISO)** consumes the same evidence for her second-line opinion to the (Interim) Risk Forum.
 - **Annual independent review** of the SDLC pipeline integrity (Rashida-commissioned; external partner credentialled to SLSA assessor framework).
-- **Joint Standard 1 of 2024 reporting** — SDLC pipeline status is part of Rashida's regulator-facing programme report (per role brief §3.2).
+- **Joint Standard 2 of 2024 reporting** — SDLC pipeline status is part of Rashida's regulator-facing programme report (per role brief §3.2).

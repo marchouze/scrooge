@@ -106,7 +106,7 @@ The triple-hat carries an embedded succession arrangement (Owen+Imani §4.2; Mir
 - FSCA conduct supervision experience (TCF, FSP licensing).
 - Sanctions-screening operational experience.
 - B-BBEE positive contribution.
-- Joint Standard 1 of 2024 fluency.
+- Joint Standard 2 of 2024 fluency.
 - Trading-bank exposure (institutional global-markets posture; STR / sanctions risk on counterparties).
 - Technology fluency — autonomous-by-default operating model; the seat oversees Mira's screening engine + Iris's POPIA substrate.
 

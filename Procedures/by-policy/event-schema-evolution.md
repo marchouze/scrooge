@@ -31,7 +31,7 @@ reconciliation-cadence: per-amendment (single cycle from `EventSchemaAmendmentPr
 | CLAUDE.md Principle 1 | Events are the only source of truth; "as-of" replay is a first-class capability. | This procedure protects replay correctness across schema versions. |
 | CLAUDE.md Principle 4 | Security designed-in; threat model on every new authoritative-state risk. | Step on threat-model gate where the amendment introduces new trust boundaries. |
 | BCBS 239 — Risk data aggregation and risk reporting | Data lineage / accuracy / completeness across changes. | Migration plan documents lineage from old to new schema. |
-| `ORG-CY-*` (Joint Standard 1 of 2024) | Cyber-resilient operational substrate. | Threat-model gate + signed builds. |
+| `ORG-CY-*` (Joint Standard 2 of 2024) | Cyber-resilient operational substrate. | Threat-model gate + signed builds. |
 | `ORG-PR-18` | Operational Resilience — Important Business Services. | Substrate is itself an IBS once domain agents host on it. |
 
 ## 3. Purpose
@@ -115,7 +115,7 @@ The procedure is invoked by [`new-product-due-diligence.md`](new-product-due-dil
 - **[principle: CLAUDE.md P2]** — atomic citation discipline; every amendment carries a motivation citation.
 - **[principle: CLAUDE.md P4]** — security designed-in; threat-model gate.
 - **[principle: CLAUDE.md P6]** — single-graph discipline; data-layer changes propagate cleanly upward to presentations.
-- **[register: ORG-CY-*]** — Cybersecurity (Joint Standard 1 of 2024).
+- **[register: ORG-CY-*]** — Cybersecurity (Joint Standard 2 of 2024).
 - **[register: ORG-PR-18]** — Operational Resilience.
 
 ## 12. Substrate gaps

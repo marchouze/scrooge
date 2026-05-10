@@ -93,7 +93,7 @@ The "minimum possible" composition collapses three bindings — Independent Chai
 - Banking-regulatory experience (prior in-house regulatory engagement; senior secondment or equivalent).
 - Trading-bank exposure (institutional global-markets posture).
 - B-BBEE positive contribution.
-- Joint Standard 1 of 2024 fluency for AC oversight of cybersecurity.
+- Joint Standard 2 of 2024 fluency for AC oversight of cybersecurity.
 
 **Automatic disqualifiers:**
 

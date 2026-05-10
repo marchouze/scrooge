@@ -112,7 +112,7 @@ function pickBind(citation: string): string {
 // ---------------------------------------------------------------------------
 
 const FAMILY_RULES: ReadonlyArray<readonly [string, RegExp]> = [
-  ["Joint Standard 1 of 2024", /Joint Standard 1 of 2024|JS\s*1[\s/]?2024/i],
+  ["Joint Standard 2 of 2024", /Joint Standard 2 of 2024|JS\s*2[\s/]?2024/i],
   ["Joint Standard 2 of 2020", /Joint Standard 2 of 2020|JS\s*2[\s/]?2020/i],
   ["Joint Standard", /Joint Standard|Joint Notice/i],
   ["Banks Act + Regs", /Banks Act|Reg\s*Banks|Regulations Relating to Banks/i],
