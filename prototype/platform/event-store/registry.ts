@@ -93,6 +93,7 @@ import {
   productVersionPublishedPayloadSchema,
   productWithheldPayloadSchema,
   productionUseRequestedPayloadSchema,
+  rasLineCalibratedPayloadSchema,
   recordFiledPayloadSchema,
   riskRaisedPayloadSchema,
   scheduledTriggerPayloadSchema,
@@ -1841,6 +1842,34 @@ const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+const RAS_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "RasLineCalibrated",
+    class: "governance",
+    payloadSchema: rasLineCalibratedPayloadSchema,
+    issuer: "Helena",
+    subscribers: ["Helena", "Camille", "Rohan", "Bea", "Mira", "Vera", "dashboard"],
+    // Each new calibration may supersede a prior; the supersedes-chain is
+    // the audit lineage. Active line is "the one no later event supersedes".
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-REGULATORY-READINESS-GATE-PLAN",
+      "D-REGULATORY-READINESS-W2-SLICE-2",
+      "BANKS-ACT-94-1990",
+      "REG-RELATING-TO-BANKS-REG-38",
+      "BCBS-BASEL-III-IV-CAPITAL-BUFFERS",
+      "RAS-FRAMEWORK-2026-05-06-B3",
+      "ORG-PR-04",
+    ],
+    // Risk-appetite calibration is a CRO-ratified governance event under
+    // Banks Act § 60+ + BCBS Corporate Governance Principle 6 — director-
+    // decision retention class (7y, hot-cool-archive).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md §3 W2 Slice 2; D-REGULATORY-READINESS-W2-SLICE-2",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -1857,6 +1886,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...RMS_EVENT_TYPES,
   ...BANK_ACCOUNT_EVENT_TYPES,
   ...PERIOD_CLOSE_EVENT_TYPES,
+  ...RAS_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
