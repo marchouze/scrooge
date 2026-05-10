@@ -141,6 +141,16 @@ class SimulatedClock {
       this.current.getTime() + minutes * 60_000 + hours * 60 * 60_000 + days * 24 * 60 * 60_000,
     );
   }
+
+  /** Advance by an arbitrary duration in milliseconds (Phase B helpers). */
+  advance(durationMs: number): void {
+    this.current = new Date(this.current.getTime() + durationMs);
+  }
+
+  /** Jump to a specific ISO timestamp (Phase B settlement-date / month-end). */
+  setTo(isoTimestamp: string): void {
+    this.current = new Date(isoTimestamp);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -634,8 +644,9 @@ export const TRADE_ZAR_NOTIONAL_MINOR = 9_250_000_000_00; // ZAR 92,500,000.00 i
 // long USD 5m, so a 0.05 ZAR/USD downward move = -ZAR 250,000 P&L (in cents:
 // 25_000_000). Direction: USD position revalues down vs ZAR functional ccy.
 export const MONTH_END_USDZAR_RATE = 18.45;
-export const REVALUATION_PNL_ZAR_MINOR =
-  TRADE_USD_NOTIONAL_MINOR * (MONTH_END_USDZAR_RATE - 18.5); // = -25_000_000 (R-250k)
+export const REVALUATION_PNL_ZAR_MINOR = Math.round(
+  TRADE_USD_NOTIONAL_MINOR * (MONTH_END_USDZAR_RATE - 18.5),
+); // = -25_000_000 (R-250k)
 
 // ---------------------------------------------------------------------------
 // Phase-B factories — settlement instruction, sub-ledger posting, balance
@@ -1035,8 +1046,14 @@ export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): Phase
   store.appendAll([...phaseA.all]);
 
   // Extract account ids from Phase-A so Phase-B references match.
-  const usdAccountPayload = phaseA.accountsOpened[1].payload as { accountId: string };
-  const zarAccountPayload = phaseA.accountsOpened[0].payload as { accountId: string };
+  // Order in Phase A: [ZAR nostro, USD nostro, ZAR capital].
+  const zarAccountEvent = phaseA.accountsOpened[0];
+  const usdAccountEvent = phaseA.accountsOpened[1];
+  if (!zarAccountEvent || !usdAccountEvent) {
+    throw new Error("runPhaseAandB: Phase-A accountsOpened must include ZAR + USD nostros");
+  }
+  const usdAccountPayload = usdAccountEvent.payload as { accountId: string };
+  const zarAccountPayload = zarAccountEvent.payload as { accountId: string };
 
   // Pre-close Phase-B events — built pure, then appended.
   const phaseBPre = buildPhaseBPreCloseEvents({
@@ -1059,12 +1076,18 @@ export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): Phase
   store.append(phaseBPre.tradeDatePosting);
 
   // Append the settlement instructions + true-ups + balance postings
-  // (T8–T11).
+  // (T8–T11) in choreography order: USD instr, ZAR instr, USD ack +
+  // balance, ZAR ack + balance.
   for (const e of phaseBPre.settlementInstructed) store.append(e);
-  store.append(phaseBPre.settlementPostings[0]);
-  store.append(phaseBPre.accountBalanceUpdates[0]);
-  store.append(phaseBPre.settlementPostings[1]);
-  store.append(phaseBPre.accountBalanceUpdates[1]);
+  for (let i = 0; i < phaseBPre.settlementPostings.length; i++) {
+    const posting = phaseBPre.settlementPostings[i];
+    const balance = phaseBPre.accountBalanceUpdates[i];
+    if (!posting || !balance) {
+      throw new Error("runPhaseAandB: settlement postings + balance updates must pair 1:1");
+    }
+    store.append(posting);
+    store.append(balance);
+  }
 
   // T12 — open the period via the orchestrator.
   const openResult = openPeriod({
