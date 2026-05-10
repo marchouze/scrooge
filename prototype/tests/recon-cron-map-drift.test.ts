@@ -115,7 +115,7 @@ on:
         (v) =>
           v.severity === "fail" &&
           v.subject === "bea:accounting-readiness" &&
-          v.message.includes("SCHEDULER_CRON_MAP has no"),
+          v.message.includes("HANDLERS_METADATA has no"),
       ),
     ).toBe(true);
   });
@@ -204,6 +204,56 @@ on:
     });
     expect(r.ok).toBe(false);
     expect(r.violations.some((v) => v.severity === "fail")).toBe(true);
+  });
+
+  it("flags a scheduled HandlerMetadata row with no cronExpression", () => {
+    // Post cron-consolidation: every kind:"scheduled" row must declare a
+    // cronExpression. A row that omits it cannot be fired by the
+    // in-process scheduler — silent under-firing.
+    const r = cronMapDrift({
+      handlersMetadata: [
+        {
+          agent: "Phantom",
+          trigger: "missing-cron",
+          kind: "scheduled" as const,
+          cadenceHours: 24,
+          key: "phantom:missing-cron",
+          // cronExpression deliberately absent
+        },
+      ],
+      workflowFiles: {},
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "fail" &&
+          v.subject === "phantom:missing-cron" &&
+          v.message.includes("no cronExpression"),
+      ),
+    ).toBe(true);
+  });
+
+  it("derives cron map from supplied handlersMetadata (synthetic test path)", () => {
+    // Supplying handlersMetadata with cronExpression should produce the
+    // same green result as the equivalent cronMap override would.
+    const r = cronMapDrift({
+      handlersMetadata: [
+        {
+          agent: "Vera",
+          trigger: "overnight-recon",
+          kind: "scheduled" as const,
+          cadenceHours: 24,
+          cronExpression: "13 2 * * *",
+          key: "vera:overnight-recon",
+        },
+      ],
+      workflowFiles: {
+        "agent-runtime-vera-overnight-recon.yml": WF_DAILY_VERA,
+      },
+    });
+    expect(r.violations.filter((v) => v.severity === "fail")).toEqual([]);
+    expect(r.ok).toBe(true);
   });
 });
 

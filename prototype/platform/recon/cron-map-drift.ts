@@ -2,14 +2,16 @@
 //
 // Continuous-controls pipeline: cron-map drift integrity (Vera Wave-4 #12).
 //
-// A2.1's local scheduler embeds a `SCHEDULER_CRON_MAP` in
-// `prototype/platform/scheduler/scheduler.ts` that mirrors the cron
-// expressions declared in each `.github/workflows/agent-runtime-*.yml`.
-// Two parallel sources of truth — the in-process scheduler emits
-// `ScheduledTrigger` events on the cron map's cadence; GH Actions fires
-// the workflow on the YAML's cadence. If the two diverge, the substrate
-// silently delivers events at a different time than the workflow runs,
-// double-firing or under-firing handlers.
+// Post cron-consolidation (2026-05-10): cron expressions are
+// authoritatively declared in `runtime/handlers-metadata.ts` (the
+// `cronExpression` field on each `HandlerMetadata` row). The
+// `SCHEDULER_CRON_MAP` export in `platform/scheduler/scheduler.ts` is
+// now a derived projection of that metadata. The
+// `.github/workflows/agent-runtime-*.yml` files remain a parallel
+// surface — GH Actions fires the workflow on the YAML's cadence; the
+// in-process scheduler fires on the metadata's cadence. If the two
+// diverge, the substrate silently delivers events at a different time
+// than the workflow runs, double-firing or under-firing handlers.
 //
 // This pipeline asserts the two stay in sync and surfaces any divergence
 // as a finding. Per Atlas's runtime spec philosophy (substrate-replacement-
@@ -19,39 +21,50 @@
 //
 // What this pipeline asserts:
 //
-//   1. For every key in `SCHEDULER_CRON_MAP`, find the corresponding
-//      workflow file at `.github/workflows/agent-runtime-<lowercased-
-//      agent>-<trigger>.yml`. Parse its `schedule.cron`. Assert the
-//      two cron expressions match (normalised via `parseCron` so that
-//      equivalent shapes — `MON` vs `1`, `0 2 * * *` vs `0 2 * * 0,1,2,3,4,5,6`
-//      — are recognised as identical).
-//   2. For every workflow file with a `schedule.cron`, find its match
-//      in `SCHEDULER_CRON_MAP`. Workflow files with a schedule but no
-//      cron-map entry are findings — the GH Actions cron will fire
-//      while the in-process scheduler stays silent.
-//   3. Workflow files that are `workflow_dispatch`-only (no `schedule:`
-//      block, e.g. `mira:citation-gate`) are exempt from #1 — they are
+//   1. Every `kind: "scheduled"` row in `HANDLERS_METADATA` MUST
+//      declare a `cronExpression`. Scheduled handlers without a cron
+//      cannot be fired by the in-process scheduler — silent under-firing.
+//   2. For every metadata row with a `cronExpression`, find the
+//      corresponding workflow file at
+//      `.github/workflows/agent-runtime-<lowercased-agent>-<trigger>.yml`.
+//      Parse its `schedule.cron`. Assert the two cron expressions match
+//      (normalised via `parseCron` so equivalent shapes — `MON` vs `1`,
+//      `0 2 * * *` vs `0 2 * * 0,1,2,3,4,5,6` — are recognised as
+//      identical).
+//   3. For every workflow file with a `schedule.cron`, find a matching
+//      metadata row with `kind: "scheduled"` and a `cronExpression`.
+//      Workflow files with a schedule but no metadata entry are findings
+//      — the GH Actions cron will fire while the in-process scheduler
+//      stays silent.
+//   4. Workflow files that are `workflow_dispatch`-only (no `schedule:`
+//      block, e.g. `mira:citation-gate`) are exempt from #2 — they are
 //      on-request and have no cron. The pipeline notes them but does
 //      not flag them as findings.
 //
-// Independence note: this pipeline parses `scheduler.ts` as **text** and
-// does not import the scheduler module. The runtime scheduler has
-// side-effecting imports (event-store, observability) we don't want
-// pulled into a CI-time recon. Parsing the source is robust to the
-// "what shape is the canonical cron source" question — if the map
-// changes shape (e.g. moves to a derive-from-spec function), this
-// pipeline notes the substrate gap rather than crashing.
+// Source of truth — the recon imports `HANDLERS_METADATA` directly from
+// `runtime/handlers-metadata.ts`. That module is side-effect-free
+// (types + a static array; no event-store, no logger). For substrate-
+// shape resilience, the recon also retains the `extractCronMapFromSource`
+// text-parser as a synthetic-test seam (callers can override the cron
+// map directly via `opts.cronMap`).
 //
-// P6 — upward chain (single-graph discipline: cron-map and workflow-cron
-// reconcile to the same cadence claim). P7 — autonomous-by-default
-// (the scheduler is the substrate that fires agents; if it drifts from
-// the workflow surface, agent autonomy depends on which surface fired).
+// P6 — upward chain (single-graph discipline: metadata, in-process
+// scheduler, and workflow-cron reconcile to the same cadence claim).
+// P7 — autonomous-by-default (the scheduler is the substrate that
+// fires agents; if it drifts from the workflow surface, agent autonomy
+// depends on which surface fired).
 //
 // Author: Vera
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
+import {
+  HANDLERS_METADATA,
+  type HandlerMetadata,
+  derivedCronMap,
+  scheduledHandlersMissingCron,
+} from "../../runtime/handlers-metadata";
 import { parseCron } from "../scheduler/cron-parse";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -72,15 +85,26 @@ const WORKFLOW_PREFIX = "agent-runtime-";
 const WORKFLOW_SUFFIX = ".yml";
 
 export interface RunOpts {
-  /** Override the cron-map source file (default: scheduler.ts). */
+  /**
+   * Override the cron-map source file (default: scheduler.ts). Retained
+   * for substrate-shape-stability tests; the live recon now reads from
+   * `HANDLERS_METADATA` directly.
+   */
   schedulerPath?: string;
   /** Override the workflows directory. */
   workflowsDir?: string;
   /**
    * Override the cron map directly (for synthetic tests). When supplied,
-   * `schedulerPath` is ignored.
+   * `schedulerPath` is ignored AND the metadata-derived map is bypassed
+   * — useful for hermetic synthetic-mismatch tests.
    */
   cronMap?: Readonly<Record<string, string>>;
+  /**
+   * Override the handler metadata directly (for synthetic tests of the
+   * "missing cronExpression" assertion). When supplied, the live
+   * `HANDLERS_METADATA` is bypassed.
+   */
+  handlersMetadata?: readonly HandlerMetadata[];
   /**
    * Override the workflow file inputs directly (for synthetic tests).
    * When supplied, `workflowsDir` is ignored. Keyed by filename
@@ -287,37 +311,96 @@ export function run(opts: RunOpts = {}): ReconResult {
   const result = emptyResult("cron-map-drift-integrity");
   const violations: ReconViolation[] = [];
 
-  // 1) Resolve the cron map.
+  // ---------------------------------------------------------------------
+  // Stage 0 — Resolve the canonical metadata + cron map.
+  //
+  // Three sources, in order of preference:
+  //   (a) opts.cronMap — synthetic test override; bypasses metadata.
+  //   (b) opts.handlersMetadata — synthetic test override; the cron map
+  //       is derived from it via the same projection used in production.
+  //   (c) Live HANDLERS_METADATA from runtime/handlers-metadata.ts.
+  //
+  // Stage 0a — assert every scheduled metadata row has a cronExpression.
+  // This is the new assertion that closes the "scheduled handler with
+  // no cron" silent-under-firing failure mode. Skipped when the caller
+  // overrides `cronMap` directly (no metadata to assert against).
+  // ---------------------------------------------------------------------
+
   let cronMap: Readonly<Record<string, string>> | undefined;
+  let metadataForCronAssertion: readonly HandlerMetadata[] | undefined;
+
   if (opts.cronMap) {
     cronMap = opts.cronMap;
+    // No metadata to assert against — caller bypassed the metadata layer.
+  } else if (opts.handlersMetadata) {
+    metadataForCronAssertion = opts.handlersMetadata;
+    cronMap = derivedCronMapFromMetadata(opts.handlersMetadata);
   } else {
+    metadataForCronAssertion = HANDLERS_METADATA;
+    cronMap = derivedCronMap();
+  }
+
+  // Stage 0b — assert every scheduled metadata row declares a cron.
+  if (metadataForCronAssertion) {
+    const missing =
+      metadataForCronAssertion === HANDLERS_METADATA
+        ? scheduledHandlersMissingCron()
+        : metadataForCronAssertion.filter(
+            (h) => h.kind === "scheduled" && h.cronExpression === undefined,
+          );
+    for (const h of missing) {
+      result.asserted++;
+      violations.push({
+        subject: h.key,
+        message: `HandlerMetadata row "${h.key}" has kind "scheduled" but no cronExpression. The in-process scheduler cannot fire it — silent under-firing. Add a cronExpression in runtime/handlers-metadata.ts.`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Stage 0c — substrate-shape stability fallback for the legacy
+  // "scheduler module not present / SCHEDULER_CRON_MAP missing" case.
+  // Retained so the recon surfaces a substrate-shape finding rather than
+  // crashing if scheduler.ts is renamed / removed mid-refactor.
+  // ---------------------------------------------------------------------
+  if (!opts.cronMap && !opts.handlersMetadata) {
     const path = opts.schedulerPath ?? DEFAULT_SCHEDULER_PATH;
     if (!existsSync(path)) {
       violations.push({
         subject: path,
-        message: `Scheduler module not found at ${path}; cannot extract SCHEDULER_CRON_MAP.`,
+        message: `Scheduler module not found at ${path}; cannot verify SCHEDULER_CRON_MAP export shape.`,
         severity: "fail",
       });
       result.violations = violations;
       result.ok = false;
       return result;
     }
-    cronMap = extractCronMapFromSource(readFileSync(path, "utf8"));
-    if (!cronMap) {
-      violations.push({
-        subject: path,
-        message:
-          "Could not extract SCHEDULER_CRON_MAP from scheduler.ts. Either the export was renamed or the canonical cron source moved (substrate-shape change). Update this recon to follow the new shape.",
-        severity: "fail",
-      });
-      result.violations = violations;
-      result.ok = false;
-      return result;
+    // We don't strictly need the source-extracted map (we have the live
+    // metadata-derived one), but if `extractCronMapFromSource` fails
+    // entirely AND we explicitly pointed at a synthetic schedulerPath,
+    // surface the substrate-shape finding to keep the legacy test for
+    // "shape moved" green. The live path uses the metadata-derived map
+    // unconditionally.
+    if (opts.schedulerPath) {
+      const extracted = extractCronMapFromSource(readFileSync(path, "utf8"));
+      if (!extracted) {
+        violations.push({
+          subject: path,
+          message:
+            "Could not extract SCHEDULER_CRON_MAP from scheduler.ts. Either the export was renamed or the canonical cron source moved (substrate-shape change). Update this recon to follow the new shape.",
+          severity: "fail",
+        });
+        result.violations = violations;
+        result.ok = false;
+        return result;
+      }
     }
   }
 
-  // 2) Resolve the workflow files.
+  // ---------------------------------------------------------------------
+  // Stage 1 — Resolve workflow files; compare metadata cron vs YAML cron.
+  // ---------------------------------------------------------------------
   const workflowFiles =
     opts.workflowFiles ?? loadWorkflowFiles(opts.workflowsDir ?? DEFAULT_WORKFLOWS_DIR);
   const schedules = collectWorkflowSchedules(workflowFiles);
@@ -326,13 +409,13 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   // Assertion 1: every cron-map entry must have a matching workflow with
   // a `schedule.cron` that matches.
-  for (const [key, mapCron] of Object.entries(cronMap)) {
+  for (const [key, mapCron] of Object.entries(cronMap ?? {})) {
     result.asserted++;
     const wf = schedulesByKey.get(key);
     if (!wf) {
       violations.push({
         subject: key,
-        message: `SCHEDULER_CRON_MAP declares "${key}" → "${mapCron}" but no matching workflow file at .github/workflows/agent-runtime-${key.replace(":", "-")}.yml. The in-process scheduler will fire but no GH Actions cron is registered.`,
+        message: `HANDLERS_METADATA declares "${key}" → "${mapCron}" but no matching workflow file at .github/workflows/agent-runtime-${key.replace(":", "-")}.yml. The in-process scheduler will fire but no GH Actions cron is registered.`,
         severity: "fail",
       });
       continue;
@@ -340,7 +423,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (wf.cron === undefined) {
       violations.push({
         subject: key,
-        message: `SCHEDULER_CRON_MAP declares "${key}" → "${mapCron}" but workflow ${wf.file} has no schedule.cron block (workflow_dispatch-only). Either remove the cron-map entry or add a schedule to the workflow.`,
+        message: `HANDLERS_METADATA declares "${key}" → "${mapCron}" but workflow ${wf.file} has no schedule.cron block (workflow_dispatch-only). Either remove the cronExpression from metadata or add a schedule to the workflow.`,
         severity: "fail",
       });
       continue;
@@ -348,7 +431,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!cronsEquivalent(mapCron, wf.cron)) {
       violations.push({
         subject: key,
-        message: `Cron drift: SCHEDULER_CRON_MAP says "${mapCron}", workflow ${wf.file} says "${wf.cron}". The in-process scheduler and GH Actions will fire on different cadences.`,
+        message: `Cron drift: HANDLERS_METADATA says "${mapCron}", workflow ${wf.file} says "${wf.cron}". The in-process scheduler and GH Actions will fire on different cadences.`,
         severity: "fail",
       });
     }
@@ -363,10 +446,10 @@ export function run(opts: RunOpts = {}): ReconResult {
       // workflow_dispatch-only — exempt by spec.
       continue;
     }
-    if (!(wf.key in cronMap)) {
+    if (!cronMap || !(wf.key in cronMap)) {
       violations.push({
         subject: wf.key,
-        message: `Workflow ${wf.file} declares schedule.cron "${wf.cron}" but SCHEDULER_CRON_MAP has no "${wf.key}" entry. GH Actions will fire while the in-process scheduler stays silent — substrate divergence.`,
+        message: `Workflow ${wf.file} declares schedule.cron "${wf.cron}" but HANDLERS_METADATA has no "${wf.key}" scheduled row with cronExpression. GH Actions will fire while the in-process scheduler stays silent — substrate divergence.`,
         severity: "fail",
       });
     }
@@ -375,6 +458,24 @@ export function run(opts: RunOpts = {}): ReconResult {
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
   return result;
+}
+
+/**
+ * Same projection as `derivedCronMap()` in handlers-metadata, but
+ * applied to a caller-supplied metadata array. Kept inline (rather than
+ * exported from handlers-metadata) because it's only meaningful for
+ * synthetic-test overrides — production reads `derivedCronMap()`.
+ */
+function derivedCronMapFromMetadata(
+  metadata: readonly HandlerMetadata[],
+): Readonly<Record<string, string>> {
+  const out: Record<string, string> = {};
+  for (const h of metadata) {
+    if (h.kind === "scheduled" && h.cronExpression !== undefined) {
+      out[h.key] = h.cronExpression;
+    }
+  }
+  return out;
 }
 
 if (import.meta.main) {

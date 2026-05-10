@@ -3,8 +3,8 @@
 // A1 — canonical handler-metadata registry.
 //
 // The single authoring location for the (agent, trigger) pairs the
-// runtime knows about, with their kind / cadence / subscription
-// metadata. Closes the drift Marc surfaced when asking why fleet
+// runtime knows about, with their kind / cadence / subscription /
+// cron metadata. Closes the drift Marc surfaced when asking why fleet
 // health was out of date — there were three diverging copies of this
 // list:
 //
@@ -17,16 +17,35 @@
 // anya:projection-refresh) — the dashboard kept claiming agents were
 // stale that were on a different cadence than its hardcoded map said.
 //
-// After A1: this file is canonical. `runtime/run.ts` owns the map from
-// (agent, trigger) → handler callable; the metadata array here is what
-// every other consumer reads. The handler-callable map lives in
-// run.ts to keep this module free of runtime side-effects (the
-// dashboard imports it; the dashboard must NOT pull in composition.ts
-// or the EventStore).
+// After A1: this file is canonical. `runtime/handler-callables.ts`
+// owns the map from (agent, trigger) → handler callable; the metadata
+// array here is what every other consumer reads. The handler-callable
+// map lives separately to keep this module free of runtime side-effects
+// (the dashboard imports it; the dashboard must NOT pull in
+// composition.ts or the EventStore).
 //
-// Adding a new handler: add a metadata row here AND the handler
-// callable in run.ts under the same key. Vera's planned Wave-4 #11
-// recon pipeline will assert the two stay in sync.
+// CRON CONSOLIDATION (post-PR #193):
+//   Adding a new scheduled handler used to require touching FOUR
+//   authoring locations: this file, `handler-callables.ts`,
+//   `SCHEDULER_CRON_MAP` in `platform/scheduler/scheduler.ts`, and
+//   `.github/workflows/agent-runtime-<agent>-<trigger>.yml`. The
+//   `cronExpression` field below collapses (this file ↔ scheduler.ts)
+//   into a single source of truth — `SCHEDULER_CRON_MAP` is now a
+//   derived projection (`derivedCronMap()`). The workflow YAML
+//   remains an independent surface for now; `recon:cron-map-drift`
+//   asserts they agree, and a future slice will template-generate
+//   the YAMLs from this metadata too.
+//
+// Adding a new handler:
+//   - Add a metadata row here. For `kind: "scheduled"`, supply a
+//     `cronExpression` (and `cadenceHours`). For `event-driven`,
+//     supply `subscribesTo`. For `on-request`, no extras needed.
+//   - Add the callable in `handler-callables.ts` under the same key.
+//   - For scheduled handlers, also add the workflow YAML at
+//     `.github/workflows/agent-runtime-<agent>-<trigger>.yml` with
+//     a `schedule.cron` matching `cronExpression`.
+//   - Vera's `recon:runtime-handler-sync` and `recon:cron-map-drift`
+//     assert these stay in sync.
 //
 // Author: Atlas
 
@@ -52,6 +71,17 @@ export interface HandlerMetadata {
    * run appends an event whose type intersects this set.
    */
   readonly subscribesTo?: readonly string[];
+  /**
+   * For `scheduled` handlers: the 5-field cron expression the
+   * in-process scheduler and the GH Actions workflow both fire on.
+   * MUST be present for `kind: "scheduled"` rows; `recon:cron-map-drift`
+   * asserts this. Undefined for `event-driven` and `on-request`.
+   *
+   * The mirrored authoritative source for GH Actions is the
+   * corresponding `.github/workflows/agent-runtime-<agent>-<trigger>.yml`
+   * file's `schedule.cron`. Both must match — the recon asserts.
+   */
+  readonly cronExpression?: string;
   /** Composite key — `<lowercased-agent>:<trigger>`. Computed for convenience. */
   readonly key: string;
 }
@@ -60,7 +90,11 @@ function entry(
   agent: string,
   trigger: string,
   kind: TriggerKind,
-  extras: { cadenceHours?: number; subscribesTo?: readonly string[] } = {},
+  extras: {
+    cadenceHours?: number;
+    subscribesTo?: readonly string[];
+    cronExpression?: string;
+  } = {},
 ): HandlerMetadata {
   return {
     agent,
@@ -68,6 +102,7 @@ function entry(
     kind,
     ...(extras.cadenceHours !== undefined ? { cadenceHours: extras.cadenceHours } : {}),
     ...(extras.subscribesTo !== undefined ? { subscribesTo: extras.subscribesTo } : {}),
+    ...(extras.cronExpression !== undefined ? { cronExpression: extras.cronExpression } : {}),
     key: `${agent.toLowerCase()}:${trigger}`,
   };
 }
@@ -78,19 +113,40 @@ function entry(
  * consumers sort their own views.
  */
 export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
-  entry("Vera", "overnight-recon", "scheduled", { cadenceHours: 24 }),
+  entry("Vera", "overnight-recon", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "13 2 * * *",
+  }),
   // Vera's weekly codebase quality review — distinct from overnight-recon.
   // Runs the deterministic-checkable subset of code-quality heuristics
   // (any-density, swallowed-errors, legacy-bypass-watch). LLM-judgment
   // findings (severity classification, principle-violation interpretation)
   // remain Scrooge-coordinated until handler-LLM-runtime lands.
   // Authority: D-AGENT-RUNTIME-AUTHORIZE (S8 / fleet-rollout slice).
-  entry("Vera", "codebase-quality-review", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Atlas", "substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Helena", "risk-appetite-watch", "scheduled", { cadenceHours: 24 }),
-  entry("Devon", "operational-resilience-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Camille", "financial-position-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Anya", "projection-drift", "scheduled", { cadenceHours: 24 }),
+  entry("Vera", "codebase-quality-review", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "23 3 * * SAT",
+  }),
+  entry("Atlas", "substrate-state", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "19 6 * * 1",
+  }),
+  entry("Helena", "risk-appetite-watch", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "30 4 * * *",
+  }),
+  entry("Devon", "operational-resilience-snapshot", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "23 5 * * MON",
+  }),
+  entry("Camille", "financial-position-snapshot", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "41 6 * * MON",
+  }),
+  entry("Anya", "projection-drift", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "17 3 * * *",
+  }),
   entry("Anya", "projection-refresh", "event-driven", {
     subscribesTo: [
       "SubstrateStateSnapshot",
@@ -99,33 +155,90 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
       "CeoDecision",
     ],
   }),
-  entry("Scrooge", "inbox-hygiene", "scheduled", { cadenceHours: 24 }),
+  entry("Scrooge", "inbox-hygiene", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "27 4 * * *",
+  }),
   entry("Scrooge", "ceo-decision-record", "on-request"),
   entry("Scrooge", "follow-on-router", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
-  entry("Owen", "governance-cycle-prep", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Rohan", "risk-run", "scheduled", { cadenceHours: 24 }),
-  entry("Mira", "obligations-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Owen", "governance-cycle-prep", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "31 7 * * 2",
+  }),
+  entry("Rohan", "risk-run", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "43 3 * * *",
+  }),
+  entry("Mira", "obligations-snapshot", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "29 7 * * 3",
+  }),
   entry("Mira", "citation-gate", "on-request"),
-  entry("Senna", "security-substrate-state", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Zara", "mlro-supervision", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Thandiwe", "audit-committee-prep", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Rashida", "cyber-resilience-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Iris", "popia-controls-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Eitan", "liquidity-snapshot", "scheduled", { cadenceHours: 24 }),
-  entry("Saskia", "markets-readiness-snapshot", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Kai", "m1-cdm-typescript-bindings", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Senna", "security-substrate-state", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "37 7 * * 4",
+  }),
+  entry("Zara", "mlro-supervision", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "30 5 * * MON",
+  }),
+  entry("Thandiwe", "audit-committee-prep", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "47 7 * * 2",
+  }),
+  entry("Rashida", "cyber-resilience-snapshot", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "49 7 * * 4",
+  }),
+  entry("Iris", "popia-controls-snapshot", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "51 7 * * 3",
+  }),
+  entry("Eitan", "liquidity-snapshot", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "53 6 * * *",
+  }),
+  entry("Saskia", "markets-readiness-snapshot", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "33 5 * * MON",
+  }),
+  entry("Kai", "m1-cdm-typescript-bindings", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "27 6 * * MON",
+  }),
   entry("Kai", "pre-trade-gateway-aggregator", "event-driven", {
     subscribesTo: ["OrderProposed"],
   }),
-  entry("Bea", "accounting-readiness", "scheduled", { cadenceHours: 24 }),
-  entry("Yael", "tax-readiness", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Tomas", "payments-readiness", "scheduled", { cadenceHours: 24 }),
-  entry("Imani", "legal-readiness", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("Ravi", "alm-readiness", "scheduled", { cadenceHours: 24 }),
-  entry("Sade", "agentops-readiness", "scheduled", { cadenceHours: 24 * 7 }),
-  entry("PAX", "role-research-queue", "scheduled", { cadenceHours: 24 * 7 }),
+  entry("Bea", "accounting-readiness", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "47 5 * * *",
+  }),
+  entry("Yael", "tax-readiness", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "7 6 * * THU",
+  }),
+  entry("Tomas", "payments-readiness", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "21 4 * * *",
+  }),
+  entry("Imani", "legal-readiness", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "9 7 * * 5",
+  }),
+  entry("Ravi", "alm-readiness", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "37 5 * * *",
+  }),
+  entry("Sade", "agentops-readiness", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "41 7 * * 5",
+  }),
+  entry("PAX", "role-research-queue", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "11 8 * * 5",
+  }),
   // S7-Targeted #4 — Rohan's backtest harness (v0). Event-driven on
   // `BacktestRequested`; emits `BacktestRun`. Tier-1 IFRS 9 ECL only.
   // Added at the end of the array to minimise file-clash with Saskia+Kai's
@@ -178,4 +291,36 @@ export function lookupHandler(key: string): HandlerMetadata | undefined {
 /** All registered keys, useful for error messages. */
 export function handlerKeys(): readonly string[] {
   return HANDLERS_METADATA.map((h) => h.key);
+}
+
+/**
+ * Derived projection of `(scheduled handlers) → cron expression`.
+ *
+ * This is the post-consolidation canonical source for cron expressions.
+ * The historic `SCHEDULER_CRON_MAP` literal in
+ * `platform/scheduler/scheduler.ts` is now derived from this function;
+ * the runtime / scheduler / GH Actions surfaces all reconcile back here.
+ *
+ * Filters to `kind: "scheduled"` rows that have a `cronExpression` set.
+ * A scheduled row WITHOUT a cronExpression is a substrate finding —
+ * `recon:cron-map-drift` asserts every scheduled row has one.
+ */
+export function derivedCronMap(): Readonly<Record<string, string>> {
+  const out: Record<string, string> = {};
+  for (const h of HANDLERS_METADATA) {
+    if (h.kind === "scheduled" && h.cronExpression !== undefined) {
+      out[h.key] = h.cronExpression;
+    }
+  }
+  return out;
+}
+
+/**
+ * `kind: "scheduled"` handlers that are missing a `cronExpression`.
+ * Empty when the registry is well-formed; populated when a scheduled
+ * row was added without supplying the cron — `recon:cron-map-drift`
+ * surfaces these as findings.
+ */
+export function scheduledHandlersMissingCron(): readonly HandlerMetadata[] {
+  return HANDLERS_METADATA.filter((h) => h.kind === "scheduled" && h.cronExpression === undefined);
 }
