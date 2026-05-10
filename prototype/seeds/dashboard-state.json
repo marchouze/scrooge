@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-10T07:24:21.738Z",
+  "asOf": "2026-05-10T07:31:12.203Z",
   "bankName": "Hoz",
   "bank": {
     "name": "The Bank",
@@ -1249,6 +1249,11 @@
           "title": "zara helena · regulatory readiness gate plan"
         },
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_rohan-anya_d-event-store-scaling-slice-3-consumer-adoption.md",
+          "title": "rohan anya · d event store scaling slice 3 consumer adoption"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md",
           "title": "rohan · backtest harness v0 scoping"
@@ -1262,11 +1267,6 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_helena-rohan_ras-pa-lookthrough-reframe.md",
           "title": "helena rohan · ras pa lookthrough reframe"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_helena_risk-appetite-watch.md",
-          "title": "helena · risk appetite watch"
         }
       ],
       "lastActivityAt": "2026-05-10",
@@ -1422,6 +1422,11 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_rohan-anya_d-event-store-scaling-slice-3-consumer-adoption.md",
+          "title": "rohan anya · d event store scaling slice 3 consumer adoption"
+        },
+        {
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_devon-tomas_hoz-domain-registration-plan.md",
           "title": "devon tomas · hoz domain registration plan"
@@ -1440,14 +1445,9 @@
           "date": "2026-05-09",
           "path": "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md",
           "title": "devon tomas · named correspondent pair proposal"
-        },
-        {
-          "date": "2026-05-09",
-          "path": "Owner Inbox/2026-05-09_zara-imani_fsp-confirm-a-scope-updates.md",
-          "title": "zara imani · fsp confirm a scope updates"
         }
       ],
-      "lastActivityAt": "2026-05-09",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
@@ -2039,17 +2039,22 @@
       "recentlyResolvedDecisions": [],
       "recentDeliverables": [
         {
+          "date": "2026-05-10",
+          "path": "Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md",
+          "title": "senna rashida · agent runtime substrate threat model"
+        },
+        {
           "date": "2026-05-08",
           "path": "Owner Inbox/2026-05-08_rashida_cyber-resilience-snapshot.md",
           "title": "rashida · cyber resilience snapshot"
         }
       ],
-      "lastActivityAt": "2026-05-08",
+      "lastActivityAt": "2026-05-10",
       "subordinates": [],
       "totalActive": 0,
       "totalRecentlyCompleted": 0,
       "totalOpenDecisions": 0,
-      "totalRecentDeliverables": 1
+      "totalRecentDeliverables": 2
     }
   ],
   "ownerInboxFeed": [
@@ -2089,6 +2094,15 @@
       "decisionForCEO": "choose remediation path — (i) fix the four failures and re-establish green main; (ii) flip repo public OR upgrade to GitHub Pro to enable branch protection; (iii) build a self-hosted pre-merge enforcer; or (iv) formally accept-with-deferral under a Principle-2 citation",
       "decisionOwner": "Atlas (Core banking platform architect) + Devon (COO, governance — operational resilience)",
       "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md",
+      "path": "Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md",
+      "date": "2026-05-10",
+      "title": "Agent-runtime substrate — threat model (impersonation, escalation bypass, capability creep, +9 others)",
+      "decisionRequired": false,
+      "author": "Senna (Security engineer, engineering), Rashida (Chief Information Security Officer, governance)",
+      "summary": "Twelve threats catalogued across the A0–A3 substrate; 1 Critical (permission-gate default-off), 5 High, 4 Medium, 2 Low. Top mitigations route to Atlas (substrate code), Owen (procedure), Vera (recon)."
     },
     {
       "filename": "2026-05-10_scrooge_project-status-roadmap.md",
@@ -2174,6 +2188,15 @@
       "decisionRecommendation": "Approve as drafted. Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation.",
       "decisionOwner": "Saskia (lead) · Helena · Camille · Zara",
       "decisionStatus": "open"
+    },
+    {
+      "filename": "2026-05-10_rohan-anya_d-event-store-scaling-slice-3-consumer-adoption.md",
+      "path": "Owner Inbox/2026-05-10_rohan-anya_d-event-store-scaling-slice-3-consumer-adoption.md",
+      "date": "2026-05-10",
+      "title": "D-EVENT-STORE-SCALING Slice 3 — consumer adoption (backtest harness + projection runtime)",
+      "decisionRequired": false,
+      "author": "Rohan (Risk engineer, engineering — reports to Helena CRO) · Anya (Data / analytics engineer, engineering — reports to Devon COO)",
+      "summary": "Two consumers wired onto the Slice-2 snapshot APIs — Rohan's backtest harness (per-prediction-point as-of replay collapsed to a single per-entity projection with snapshot persistence) and Anya's projection runtime (projectFromSnapshot + maybeSnapshot APIs added behind the existing Projector interface). Equivalence between snapshot-replay and naive-replay is asserted on every fixture; feature flag BANK_BACKTEST_USE_SNAPSHOTS gates the backtest path for regression runs. Slice 3a (runtime cache split) already shipped under PR #138; Vera recon + dashboard projection migration remain as follow-on slices."
     },
     {
       "filename": "2026-05-10_pax_role-brief_ned-3.md",
@@ -2314,24 +2337,6 @@
       "decisionRecommendation": "Approve the framing and the Azure target. Authorise the first three slices (retention metadata in registry; local snapshot substrate; consumer adoption) under the Targeted budget pre-M2 — these are the load-bearing pieces; the rest land in their named M-phases.",
       "decisionOwner": "Atlas (substrate) · Devon (governance — operational resilience) · Anya (data engineering co-curator) · Rohan (consumer-side — backtest harness) · Vera (consumer-side — recon pipelines) · Mira (regulatory retention citations)",
       "decisionStatus": "open"
-    },
-    {
-      "filename": "2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
-      "path": "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md",
-      "date": "2026-05-10",
-      "title": "D-EVENT-STORE-SCALING Slice 3a — split runtime dashboard cache from committed seed; document shared-event-store env var",
-      "decisionRequired": false,
-      "author": "Atlas (Core banking platform architect, engineering)",
-      "summary": "Bounded substrate change closing two related gaps surfaced today — the dashboard server overwriting the committed `seeds/dashboard-state.json` cache on every 30s poll, and the per-worktree event store making already-actioned CEO decisions appear open in fresh worktrees. Server now writes to a gitignored runtime path; existing `BANK_EVENT_DB` env var documented as the shared-store seam."
-    },
-    {
-      "filename": "2026-05-10_atlas_d-event-store-scaling-slice-2-snapshot-substrate.md",
-      "path": "Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-2-snapshot-substrate.md",
-      "date": "2026-05-10",
-      "title": "D-EVENT-STORE-SCALING Slice 2 — local snapshot substrate (snapshot + replayFromSnapshot APIs)",
-      "decisionRequired": false,
-      "author": "Atlas (Core banking platform architect, engineering)",
-      "summary": "Implements the local snapshot substrate authorised under D-EVENT-STORE-SCALING Slice 2 (CEO-approved 2026-05-10) — `eventStore.snapshot()` / `loadSnapshot()` / `listSnapshots()` / `replayFromSnapshot()` / `shouldSnapshot()` APIs behind the existing EventStore class, additive `snapshots` SQLite table, per-event-type cadence registry (Q1 hybrid 1000-events / 1-hour default, optional per-type override). M8 cloud lift swaps the implementation for Cosmos DB Core hot-tier without changing the API surface."
     }
   ],
   "policies": [
