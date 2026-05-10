@@ -147,10 +147,10 @@ export interface RenderBa325Options {
  * `renderedAt`.
  */
 export function renderBa325ToJson(output: Ba325Output, opts: RenderBa325Options): Ba325Render {
-  const lcrRatio =
-    Number.isFinite(output.lcrRatio) ? output.lcrRatio.toFixed(4) : "infinity";
-  const lcrPercent =
-    Number.isFinite(output.lcrRatio) ? `${(output.lcrRatio * 100).toFixed(2)}%` : "infinity";
+  const lcrRatio = Number.isFinite(output.lcrRatio) ? output.lcrRatio.toFixed(4) : "infinity";
+  const lcrPercent = Number.isFinite(output.lcrRatio)
+    ? `${(output.lcrRatio * 100).toFixed(2)}%`
+    : "infinity";
 
   const meta: Ba325Render["meta"] = {
     form: output.meta.form,
@@ -216,7 +216,10 @@ function sortKeys(value: unknown): unknown {
  * One-shot helper: render + canonicalise. Returns the canonical JSON
  * string (UTF-8 bytes by `new TextEncoder().encode(...)`).
  */
-export function renderBa325Canonical(output: Ba325Output, opts: RenderBa325Options): {
+export function renderBa325Canonical(
+  output: Ba325Output,
+  opts: RenderBa325Options,
+): {
   readonly render: Ba325Render;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;

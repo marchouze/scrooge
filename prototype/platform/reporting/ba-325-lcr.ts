@@ -471,7 +471,8 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     // when the balance is on the credit side of an HQLA-classified row.
     if (c.hqlaLevel) {
       const stockMinor = Math.abs(row.amountMinor);
-      const note = row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
+      const note =
+        row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
       const lineItem: Ba325LineItem = {
         lineId: `${c.hqlaLevel}.${row.leafAccountId}`,
         lineLabel: c.subCategory ?? `HQLA ${c.hqlaLevel} — ${row.leafAccountId}`,
@@ -568,7 +569,8 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   // outflows) means the bank has no stress to cover — render as
   // Number.POSITIVE_INFINITY so the consumer sees the absence loudly.
   // The compliance flag treats infinite LCR as compliant.
-  const lcrRatio = netCashOutflows > 0 ? caps.totalStockMinor / netCashOutflows : Number.POSITIVE_INFINITY;
+  const lcrRatio =
+    netCashOutflows > 0 ? caps.totalStockMinor / netCashOutflows : Number.POSITIVE_INFINITY;
   const lcrCompliant = lcrRatio >= 1.0;
 
   const placeholders: string[] = [];
