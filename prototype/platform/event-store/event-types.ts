@@ -4263,12 +4263,7 @@ export function makeBankAccountClosed(args: {
  * quarterly attestation + annual audited AFS"). Quarterly and annual are
  * regulatory-significant (BA-return cadence + AFS); monthly is internal.
  */
-export const accountingPeriodKindSchema = z.enum([
-  "month",
-  "quarter",
-  "half-year",
-  "year",
-]);
+export const accountingPeriodKindSchema = z.enum(["month", "quarter", "half-year", "year"]);
 
 export type AccountingPeriodKind = z.infer<typeof accountingPeriodKindSchema>;
 
@@ -4458,10 +4453,18 @@ export function makeAccountingPeriodClosed(args: {
 // ---------------------------------------------------------------------------
 
 export const trialBalanceSnapshotRowSchema = z.object({
-  /** GL leaf account ID — `ACC-NNNN-NNN`. */
-  leafAccountId: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/, {
+  /**
+   * GL leaf account ID. Strict form is `ACC-NNNN-NNN` per
+   * `chart-of-accounts.schema.json`; the slice-2 substrate also accepts
+   * legacy M1 stub forms (`ACC-<slug>`) since the M1 sub-ledger
+   * postings emitted before chart-of-accounts is fully populated use
+   * `ACC-equity-position-stub` etc. (per Bea M1 substrate-gap §3, chart
+   * population lands at M2). The trial-balance recon at semantic-layer
+   * resolution time enforces the strict form on the GL-projection side.
+   */
+  leafAccountId: z.string().regex(/^ACC-[A-Za-z0-9-]+$/, {
     message:
-      "TrialBalanceSnapshotted.row.leafAccountId must match `ACC-NNNN-NNN` per chart-of-accounts.schema.json",
+      "TrialBalanceSnapshotted.row.leafAccountId must start with `ACC-` (chart-of-accounts leaf or M1 stub form)",
   }),
   /** ISO 4217 currency this row sits in (Principle 5 — every row has a currency). */
   currency: z.string().length(3),
