@@ -15,7 +15,7 @@
 // Author: Owen (handler) · Atlas (runtime substrate).
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
@@ -52,7 +52,18 @@ interface DashboardSlice {
 }
 
 function readDashboard(repoRoot: string): DashboardSlice {
-  const path = resolve(repoRoot, "prototype", "seeds", "dashboard-state.json");
+  // D-EVENT-STORE-SCALING Slice 3a (2026-05-10): prefer the runtime cache
+  // (live state if a dashboard or anya:projection-refresh has materialised
+  // it), fall back to the committed seed (the recon baseline; always
+  // present in a clean checkout). Either is acceptable for Owen — the
+  // runtime cache shows live "right now"; the seed shows the curated
+  // baseline that CI vouches for.
+  const runtimeRaw = process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
+  const runtimePath = isAbsolute(runtimeRaw)
+    ? runtimeRaw
+    : resolve(repoRoot, "prototype", runtimeRaw);
+  const seedPath = resolve(repoRoot, "prototype", "seeds", "dashboard-state.json");
+  const path = existsSync(runtimePath) ? runtimePath : seedPath;
   if (!existsSync(path)) {
     return { reachable: false, decisionsOpen: [], openSeats: [] };
   }
@@ -237,7 +248,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Read `prototype/seeds/dashboard-state.json` for open decisions + seats; replayed `CeoDecision` events from the host event store for the last 7 days.",
+    "Read the dashboard state (runtime cache `prototype/.local/dashboard-state.json` if present, falling back to the committed seed `prototype/seeds/dashboard-state.json`) for open decisions + seats; replayed `CeoDecision` events from the host event store for the last 7 days.",
   );
   lines.push("");
   return lines.join("\n");

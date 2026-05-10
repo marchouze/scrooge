@@ -16,7 +16,22 @@ make dashboard            # or: bun run dashboard
 
 Then open `http://localhost:3010`.
 
-The dashboard reads from `seeds/dashboard-state.json`. To reset to first-load state, restore that file from git.
+**State paths (D-EVENT-STORE-SCALING Slice 3a, 2026-05-10).** The dashboard server uses two distinct paths:
+
+| Path | Env var | Role |
+|---|---|---|
+| `seeds/dashboard-state.json` | `BANK_DASHBOARD_STATE` | **Read-only seed** — committed baseline that the recon harness asserts canonical-source derivation can still reproduce. The server never writes here. |
+| `.local/dashboard-state.json` | `BANK_DASHBOARD_RUNTIME_STATE` | **Live runtime cache** — re-derived on every poll / mutation / fs.watch tick. Lives under `.local/` (gitignored), so running `make dashboard` never makes `git status` dirty. |
+
+To reset the seed to first-load state, restore it from git. To clear the runtime cache, `rm .local/dashboard-state.json` (it is regenerated on next derive).
+
+**Sharing a single event store across worktrees.** By default each `.claude/worktrees/<id>/prototype/.local/event.db` is per-worktree, so CeoDecision events recorded in one worktree are invisible in another. Set `BANK_EVENT_DB` to a shared absolute path to share state:
+
+```sh
+export BANK_EVENT_DB="$HOME/.local/share/bank/event.db"
+```
+
+All worktrees that inherit this env var will see the same decision history and the dashboard will reflect a consistent open/resolved posture.
 
 ## What you see
 
