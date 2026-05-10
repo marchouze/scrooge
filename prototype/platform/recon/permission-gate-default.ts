@@ -248,7 +248,8 @@ function readReferencedTypes(prototypeDir: string): Set<string> {
   const out = new Set<string>();
   // Single combined regex: capture every `"TypeName"` immediately
   // following one of the contexts above.
-  const re = /(?:type\s*:|type\s*===|type\s*==|replay\s*\(\s*\{\s*type\s*:)\s*"([A-Z][A-Za-z0-9]*)"/g;
+  const re =
+    /(?:type\s*:|type\s*===|type\s*==|replay\s*\(\s*\{\s*type\s*:)\s*"([A-Z][A-Za-z0-9]*)"/g;
   for (const rel of files) {
     // Skip the recon module and gate-source: their string literals are
     // *catalogue* entries, not real references.
@@ -319,8 +320,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   // typo / retired type — not a build-phase tolerated envelope-only event.
   // ---------------------------------------------------------------------
   const eventTypesPath = resolve(prototypeDir, "platform/event-store/event-types.ts");
-  const factoryNames =
-    opts.knownEventTypes ?? new Set([...readMakeFactoryNames(eventTypesPath)]);
+  const factoryNames = opts.knownEventTypes ?? new Set([...readMakeFactoryNames(eventTypesPath)]);
   const referencedTypes = readReferencedTypes(prototypeDir);
   const subscribedTypes = readSubscribedTypes();
   for (const type of legacy) {

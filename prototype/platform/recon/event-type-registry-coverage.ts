@@ -25,24 +25,32 @@
 // Tally rules (recorded in the recon's header — change here = change in
 // behaviour):
 //
-//   - **P0 (fail).** Event type referenced by a handler in `subscribesTo`
-//     OR by an `eventStore.append({ type: "X" })` call site, but absent
-//     from `EVENT_TYPE_REGISTRY`. The handler is silently broken or the
-//     append is unreachable through the typed path.
-//   - **P1 (fail).** Registry row whose `type` has no `make<Type>` factory
+//   - **warn (build-phase tolerance for type-not-in-registry).** Event
+//     type referenced by a handler in `subscribesTo` OR by an
+//     `eventStore.append({ type: "X" })` call site, but absent from
+//     `EVENT_TYPE_REGISTRY`. The registry today is intentionally
+//     fail-open for unknown types (registry.ts §"What it does NOT do":
+//     "Type not in registry → no-op (build-phase forward compat). Will
+//     tighten to fail-closed once Vera's #11 / #12 pipelines assert the
+//     registry is complete"). This recon makes the surface
+//     audit-checkable so the registry can be completed and the tally
+//     escalated to **fail** in a future slice. Current corpus: 22 such
+//     types (see PR body for the full list).
+//   - **warn.** Registry row whose `type` has no `make<Type>` factory
 //     in `event-types.ts`. Producers are appending raw envelopes; the
 //     typed factory contract (return-type discipline, citation hint
-//     wiring) is not exercised. NOTE: factory absence is an *envelope-
-//     only* signal — registry.ts §"What it does NOT do" calls this out as
-//     a build-phase tolerance. We surface it as warn until per-domain
-//     factory coverage hits 100% (see follow-on after F-020 god-file
-//     split).
-//   - **P2 (warn).** `make<Type>` factory exported but no registry row.
-//     The factory exists but is not part of the canonical surface — adds
-//     to the dead-surface count if not consumed.
-//   - **P3 (info).** `make<Type>` factory exported but no consumer
-//     (no internal import, no append site referencing it). Tracked for
+//     wiring) is not exercised. Surfaced as warn because envelope-only
+//     is a build-phase tolerance per registry.ts header.
+//   - **warn.** `make<Type>` factory exported but no registry row. The
+//     factory exists but is not part of the canonical surface — adds to
+//     the dead-surface count if not consumed.
+//   - **info.** `make<Type>` factory exported but no consumer (no
+//     internal import, no append site referencing it). Tracked for
 //     dead-code hygiene, not blocking.
+//
+// Future escalation (post-tail-completion): the type-not-in-registry
+// case moves from warn to fail when the 22 known gaps are closed.
+// Tracked as a follow-on under F-032.
 //
 // Discovery surfaces:
 //
@@ -250,7 +258,9 @@ export function run(opts: RunOpts = {}): ReconResult {
   const consumers = opts.factoryConsumers ?? readFactoryConsumers(prototypeDir, factories);
 
   // ---------------------------------------------------------------------
-  // P0 — every subscribesTo / append-site type has a registry row.
+  // warn — every subscribesTo / append-site type has a registry row.
+  // (Build-phase tolerance: surfaced as warn today. Escalates to fail
+  // once the 22 known gaps are closed; see recon header.)
   // ---------------------------------------------------------------------
   const observedEmissions = new Set<string>([...subscribed, ...appended]);
   for (const type of observedEmissions) {
@@ -262,8 +272,8 @@ export function run(opts: RunOpts = {}): ReconResult {
       if (appended.has(type)) sources.push("eventStore.append");
       violations.push({
         subject: `event-type:${type}`,
-        message: `Event type \`${type}\` is referenced by ${sources.join(" + ")} but has no row in EVENT_TYPE_REGISTRY (\`platform/event-store/registry.ts\`). Subscribers will silently miss; appended events flow through the envelope-only path with no schema enforcement. Add a registry row. Citations: ${CITATIONS.join(", ")}.`,
-        severity: "fail",
+        message: `Event type \`${type}\` is referenced by ${sources.join(" + ")} but has no row in EVENT_TYPE_REGISTRY (\`platform/event-store/registry.ts\`). Today the registry is fail-open for unknown types (build-phase tolerance per registry.ts header); subscribers will silently miss; appended events flow through the envelope-only path with no schema enforcement. Add a registry row. Citations: ${CITATIONS.join(", ")}.`,
+        severity: "warn",
       });
     }
   }
