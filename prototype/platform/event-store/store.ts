@@ -138,11 +138,7 @@ export interface ReplayFromSnapshotOpts {
  */
 export interface SnapshotCadenceCheck {
   readonly shouldSnapshot: boolean;
-  readonly reason:
-    | "first-snapshot"
-    | "events-threshold"
-    | "time-threshold"
-    | "below-thresholds";
+  readonly reason: "first-snapshot" | "events-threshold" | "time-threshold" | "below-thresholds";
   /** Cadence inputs the decision was based on (debugging aid). */
   readonly cadence: SnapshotCadence;
   /** Events appended to the stream since `lastSnapshot` (or sequence-1
@@ -294,12 +290,7 @@ export class EventStore {
          VALUES (?, ?, ?, ?)
          RETURNING id, stream_key, as_of, upto_sequence, payload, recorded_at`,
       )
-      .get(
-        opts.streamKey,
-        opts.asOf,
-        opts.uptoSequence,
-        opts.payload,
-      ) as SnapshotRowShape;
+      .get(opts.streamKey, opts.asOf, opts.uptoSequence, opts.payload) as SnapshotRowShape;
     return rowToSnapshot(inserted);
   }
 
@@ -418,9 +409,7 @@ export class EventStore {
     }
 
     const lastRow =
-      "uptoSequence" in last
-        ? (last as SnapshotRow)
-        : rowToSnapshot(last as SnapshotRowShape);
+      "uptoSequence" in last ? (last as SnapshotRow) : rowToSnapshot(last as SnapshotRowShape);
 
     const eventsSince = this.countEventsSince(args.streamKey, lastRow.uptoSequence);
     const secondsSince = secondsBetween(lastRow.recordedAt, now);
