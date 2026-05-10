@@ -1,0 +1,8 @@
+# RMS document store — content-addressed binary store
+#
+# This directory is the local-fs root for `LocalFsDocumentStore`
+# (`prototype/platform/document-store/local-fs.ts`). Stored documents are
+# gitignored; this `.gitkeep` preserves the directory only.
+#
+# Spec: Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §4
+# Standing authority: D-RMS-PHASE-1 → D-RMS-PHASE-1-SLICE-1.
