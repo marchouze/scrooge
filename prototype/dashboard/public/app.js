@@ -355,11 +355,27 @@ function ownerInboxTags(item) {
 // Look up the agent role (e.g. "Internal audit engineer") for an author
 // name from state.agents. The data layer is the single source — no
 // hardcoded name → role table. Returns undefined if no match.
+//
+// Authoring convention varies: some files set `author: Linnea`; others
+// `author: Linnea (Brand & design lead)`; still others `author: Mira +
+// Zara` (joint authorship). Strip parenthetical role suffixes and split
+// on `+` / `,` / `&` / `and` so any single name matched against the
+// roster lights up the chip with the canonical role.
+function ownerInboxAuthorName(author) {
+  if (!author) return undefined;
+  // Take everything up to the first parenthetical or separator.
+  const stripped = author.replace(/\s*\([^)]*\)/g, "").trim();
+  const first = stripped.split(/\s*(?:\+|,|&|\band\b)\s*/i)[0]?.trim();
+  return first || undefined;
+}
+function ownerInboxAuthorDisplayName(author) {
+  return ownerInboxAuthorName(author) || author;
+}
 function ownerInboxAuthorRole(author) {
   if (!author || !lastState?.agents?.length) return undefined;
-  // The author field is a bare first name (e.g. "Vera"); state.agents
-  // uses the same form. Match case-insensitively for safety.
-  const n = author.toLowerCase();
+  const primary = ownerInboxAuthorName(author);
+  if (!primary) return undefined;
+  const n = primary.toLowerCase();
   const hit = lastState.agents.find((a) => (a.name || "").toLowerCase() === n);
   return hit?.role;
 }
@@ -382,8 +398,9 @@ function renderOwnerInboxRow(i, density) {
     : "";
   const titleHtml = `<b>${esc(ownerInboxDisplayTitle(i))}</b>`;
   const role = ownerInboxAuthorRole(i.author);
+  const authorDisplay = ownerInboxAuthorDisplayName(i.author);
   const authorChipHtml = i.author
-    ? `<span class="oi-author-chip"><span class="oi-author-name">${esc(i.author)}</span>${role ? `<span class="oi-author-role">${esc(role)}</span>` : ""}</span>`
+    ? `<span class="oi-author-chip" title="${esc(i.author)}"><span class="oi-author-name">${esc(authorDisplay)}</span>${role ? `<span class="oi-author-role">${esc(role)}</span>` : ""}</span>`
     : "";
   const actionHtml =
     group === "decision-open" && i.decisionId
