@@ -17,9 +17,9 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import {
   type DocumentHash,
   DocumentIntegrityError,
@@ -219,6 +219,80 @@ describe("LocalFsDocumentStore", () => {
 
     it("rejects wrong-length blake3 hex", () => {
       expect(() => parseHash("blake3:abcd")).toThrow(/expected 64 hex chars/);
+    });
+  });
+
+  describe("default-root resolution (regression: prototype/prototype/ leak)", () => {
+    // The bug: `LocalFsDocumentStore` previously resolved its default
+    // root via `resolve(process.cwd(), "prototype/data/documents")`. From
+    // a `bun test` invocation whose cwd is already `prototype/`, that
+    // produces `<cwd>/prototype/data/documents/` — i.e. a stray
+    // `prototype/prototype/...` tree in the worktree root. The fix
+    // anchors the default on the repo root (CLAUDE.md walk-up).
+    //
+    // This test asserts the default-root path:
+    //   (a) is absolute,
+    //   (b) ends with exactly `/prototype/data/documents` — not
+    //       `/prototype/prototype/data/documents`,
+    //   (c) does not start with `<cwd>/prototype` when cwd is already
+    //       inside a `prototype/` directory,
+    //   (d) instantiating the default store and resolving a path does
+    //       NOT create a `prototype/prototype/` directory in cwd.
+    it("default root is repo-root-anchored, not cwd-relative", () => {
+      const previous = process.env.BANK_DOCUMENT_STORE_PATH;
+      try {
+        process.env.BANK_DOCUMENT_STORE_PATH = undefined;
+        const def = new LocalFsDocumentStore();
+        const root = def.rootPath();
+
+        // (a) absolute
+        expect(root.startsWith("/")).toBe(true);
+
+        // (b) ends with the expected suffix exactly once
+        expect(root.endsWith("/prototype/data/documents")).toBe(true);
+        expect(root.includes("/prototype/prototype/")).toBe(false);
+
+        // (c) does not double the prototype segment when cwd is
+        //     `prototype/` (which is the canonical bun test cwd)
+        const cwd = process.cwd();
+        if (cwd.endsWith("/prototype")) {
+          expect(root).not.toBe(`${cwd}/prototype/data/documents`);
+        }
+      } finally {
+        if (previous === undefined) {
+          process.env.BANK_DOCUMENT_STORE_PATH = undefined;
+        } else {
+          process.env.BANK_DOCUMENT_STORE_PATH = previous;
+        }
+      }
+    });
+
+    it("constructing the default store does not create a prototype/prototype/ tree in cwd", () => {
+      // Tripwire — even if `rootPath()` lies, an actual put would have
+      // expressed the leak. We don't `put` here (that would touch the
+      // real shared store); we only assert that no `prototype/prototype/`
+      // segment exists in cwd after construction. Pre-existing artefacts
+      // would already have been cleaned by the e2e suite's afterAll.
+      const previous = process.env.BANK_DOCUMENT_STORE_PATH;
+      try {
+        process.env.BANK_DOCUMENT_STORE_PATH = undefined;
+        // Construction is the riskiest step (could `mkdirSync` early on
+        // a buggy implementation).
+        new LocalFsDocumentStore();
+        const leakRoot = resolve(process.cwd(), "prototype", "data", "documents");
+        // Only flag if cwd ends in `prototype/` AND the doubled path was
+        // newly created. The check guards against false positives in
+        // alternative invocation cwds.
+        if (process.cwd().endsWith("/prototype")) {
+          expect(existsSync(leakRoot)).toBe(false);
+        }
+      } finally {
+        if (previous === undefined) {
+          process.env.BANK_DOCUMENT_STORE_PATH = undefined;
+        } else {
+          process.env.BANK_DOCUMENT_STORE_PATH = previous;
+        }
+      }
     });
   });
 
