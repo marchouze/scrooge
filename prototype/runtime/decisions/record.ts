@@ -17,6 +17,7 @@
 import { eventStore } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeDecisionComment } from "../../platform/event-store/event-types";
+import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
 import type { Event } from "../../platform/event-store/types";
 
 /** Valid CEO actions. Mirrors `dashboard/types.ts` DecisionAction. */
@@ -102,6 +103,12 @@ export function recordCeoDecision(
         : {}),
       recordedVia: input.recordedVia ?? "unknown",
     },
+    // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — CEO decisions are real
+    // architectural commitments with binding force; tagged production
+    // (Q-PROV-NEW-2 carve-out per the spec). The store also auto-applies
+    // this carve-out at append time if absent, but setting it explicitly
+    // here keeps the audit trail self-describing.
+    provenance: PRODUCTION_CARVE_OUTS.CeoDecision,
   };
 
   eventStore.append(event);
@@ -156,7 +163,14 @@ export function recordDecisionComment(
     },
   });
 
-  eventStore.append(event);
+  // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — DecisionComment events live in the
+  // CEO-decision audit trail; tag production with the same `ceo-decision-record`
+  // lineage as the parent CeoDecision they thread under.
+  const eventWithProvenance: Event = {
+    ...event,
+    provenance: PRODUCTION_CARVE_OUTS.CeoDecision,
+  };
+  eventStore.append(eventWithProvenance);
 
   return { event, eventId: event.event_id };
 }
