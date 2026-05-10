@@ -56,8 +56,7 @@ export const STATIC_LINEAGE_REGISTRY: readonly ProvenanceLineageEntry[] = [
   {
     value: "synthetic-bank-seed",
     issuer: "Atlas",
-    description:
-      "Synthetic event-store seed corpus used to bootstrap the bank's local demo state.",
+    description: "Synthetic event-store seed corpus used to bootstrap the bank's local demo state.",
   },
   {
     value: "scenario-runner",

@@ -24,9 +24,9 @@ import { dirname } from "node:path";
 
 import { Database } from "bun:sqlite";
 import {
+  type ProvenanceTag,
   defaultProvenanceFor,
   isProvenanceSubstrateActive,
-  type ProvenanceTag,
   provenanceTagSchema,
 } from "./provenance";
 import {
@@ -305,7 +305,7 @@ export class EventStore {
       // tag without going through `provenanceTagSchema.parse`. The cost
       // is one extra Zod parse per append; the value is that the
       // cross-axis rules cannot be bypassed by skipping the helper.
-      return provenanceTagSchema.parse(e.provenance) as ProvenanceTag;
+      return provenanceTagSchema.parse(e.provenance);
     }
     if (!isProvenanceSubstrateActive()) {
       return undefined;
@@ -317,8 +317,7 @@ export class EventStore {
     // either be a carve-out type or be hard-rejected.
     if (carveOut.sourceLineage === "pre-substrate-backfill") {
       throw new Error(
-        `D-DATA-PROVENANCE-SUBSTRATE: append rejected — event type "${e.type}" requires an explicit provenance tag (no carve-out applies). ` +
-          `See Owner Inbox/2026-05-10_atlas-anya_d-data-provenance-substrate-build-spec.md §4.1.`,
+        `D-DATA-PROVENANCE-SUBSTRATE: append rejected — event type "${e.type}" requires an explicit provenance tag (no carve-out applies). See Owner Inbox/2026-05-10_atlas-anya_d-data-provenance-substrate-build-spec.md §4.1.`,
       );
     }
     return carveOut;
@@ -365,9 +364,7 @@ export class EventStore {
         actor: { type: row.actor_type as Event["actor"]["type"], id: row.actor_id },
         citations: JSON.parse(row.citations) as string[],
         payload: JSON.parse(row.payload) as Record<string, unknown>,
-        ...(row.provenance
-          ? { provenance: JSON.parse(row.provenance) as ProvenanceTag }
-          : {}),
+        ...(row.provenance ? { provenance: JSON.parse(row.provenance) as ProvenanceTag } : {}),
       };
     }
   }

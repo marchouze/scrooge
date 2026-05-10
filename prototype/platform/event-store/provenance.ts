@@ -59,18 +59,14 @@ export type ProvenanceKind = "production" | "simulated";
  * once `provenance-substrate-active` flips true (Slice 6 backfill
  * runs first; flag flips when canonical seeds are tagged). Immutable
  * — set at append time, never mutated thereafter.
+ *
+ * The type is the Zod-inferred shape (declared below the schema) so
+ * the same object can be Zod-parsed and assigned to `Event['provenance']`
+ * without casting. Branded primitives (ScenarioId / VariantId /
+ * SourceLineageRef) are exposed above for callers that want
+ * compile-time discrimination at construction; the on-the-wire JSON
+ * is always plain strings.
  */
-export interface ProvenanceTag {
-  readonly kind: ProvenanceKind;
-  /** Required iff kind === "simulated"; rejected for kind === "production". */
-  readonly scenario?: ScenarioId;
-  /** Optional for both kinds. */
-  readonly variant?: VariantId;
-  /** Mandatory for both kinds; substrate enforces non-empty. */
-  readonly sourceLineage: SourceLineageRef;
-  /** Free-form extensibility (e.g. ["sandbox", "popia-synthetic-id-range"]). */
-  readonly tags?: ReadonlyArray<string>;
-}
 
 // ---------------------------------------------------------------------------
 // Zod schema — enforces §4.1 cross-axis rules at append time.
@@ -92,19 +88,23 @@ export const provenanceTagSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["scenario"],
-        message: "ProvenanceTag: kind 'production' must not carry a scenario (production is not scenario-bound)",
+        message:
+          "ProvenanceTag: kind 'production' must not carry a scenario (production is not scenario-bound)",
       });
     }
     if (tag.kind === "simulated" && tag.scenario === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["scenario"],
-        message: "ProvenanceTag: kind 'simulated' requires scenario (every simulated event must declare its scenario)",
+        message:
+          "ProvenanceTag: kind 'simulated' requires scenario (every simulated event must declare its scenario)",
       });
     }
   });
 
-export type ProvenanceTagShape = z.infer<typeof provenanceTagSchema>;
+export type ProvenanceTag = z.infer<typeof provenanceTagSchema>;
+/** @deprecated alias for backwards compatibility — use `ProvenanceTag`. */
+export type ProvenanceTagShape = ProvenanceTag;
 
 // ---------------------------------------------------------------------------
 // Helpers — typed constructors so callers never hand-roll the brand.
@@ -130,9 +130,9 @@ export function productionTag(args: {
 }): ProvenanceTag {
   return {
     kind: "production",
-    sourceLineage: args.sourceLineage as SourceLineageRef,
-    ...(args.variant !== undefined ? { variant: args.variant as VariantId } : {}),
-    ...(args.tags !== undefined ? { tags: args.tags } : {}),
+    sourceLineage: args.sourceLineage,
+    ...(args.variant !== undefined ? { variant: args.variant } : {}),
+    ...(args.tags !== undefined ? { tags: [...args.tags] } : {}),
   };
 }
 
@@ -145,10 +145,10 @@ export function simulatedTag(args: {
 }): ProvenanceTag {
   return {
     kind: "simulated",
-    scenario: args.scenario as ScenarioId,
-    sourceLineage: args.sourceLineage as SourceLineageRef,
-    ...(args.variant !== undefined ? { variant: args.variant as VariantId } : {}),
-    ...(args.tags !== undefined ? { tags: args.tags } : {}),
+    scenario: args.scenario,
+    sourceLineage: args.sourceLineage,
+    ...(args.variant !== undefined ? { variant: args.variant } : {}),
+    ...(args.tags !== undefined ? { tags: [...args.tags] } : {}),
   };
 }
 
@@ -169,11 +169,11 @@ export function simulatedTag(args: {
 export const PRODUCTION_CARVE_OUTS: Readonly<Record<string, ProvenanceTag>> = {
   CeoDecision: {
     kind: "production",
-    sourceLineage: "ceo-decision-record" as SourceLineageRef,
+    sourceLineage: "ceo-decision-record",
   },
   AgentBriefIssued: {
     kind: "production",
-    sourceLineage: "agent-brief" as SourceLineageRef,
+    sourceLineage: "agent-brief",
   },
 };
 
@@ -184,8 +184,8 @@ export const PRODUCTION_CARVE_OUTS: Readonly<Record<string, ProvenanceTag>> = {
  */
 export const PRE_SUBSTRATE_BACKFILL_TAG: ProvenanceTag = {
   kind: "simulated",
-  scenario: "pre-substrate-build-phase" as ScenarioId,
-  sourceLineage: "pre-substrate-backfill" as SourceLineageRef,
+  scenario: "pre-substrate-build-phase",
+  sourceLineage: "pre-substrate-backfill",
 };
 
 /**
