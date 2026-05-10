@@ -56,6 +56,7 @@ import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
 import { defaultProvenanceFilter } from "../platform/projections";
+import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordCeoDecisionResult,
   type RecordDecisionCommentResult,
@@ -127,6 +128,21 @@ let cachedState: DashboardState = bootDerive();
 
 function bootDerive(): DashboardState {
   try {
+    // Backfill any CeoDecision events that exist as on-disk decision
+    // records in `Owner Inbox/` but are missing from the event store.
+    // The local sqlite store is gitignored and per-worktree, so a fresh
+    // worktree starts with zero CeoDecision events even when 30+
+    // records sit on disk. Without this, every decision-required
+    // proposal in the Owner Inbox stays "open" in the dashboard even
+    // when the matching `_ceo-decision-record_*.md` is right next to
+    // it. Idempotent — skips ids already in the store.
+    const ceoBackfill = backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
+    if (ceoBackfill.emitted.length > 0) {
+      logger.info(
+        { emitted: ceoBackfill.emitted.length, skipped: ceoBackfill.skipped.length },
+        "dashboard boot — backfilled CeoDecision events from on-disk records",
+      );
+    }
     bootFleetRegistration();
     const s = deriveState({ sources: SOURCES, events: EVENTS });
     ensureRuntimeDir(RUNTIME_STATE_PATH);

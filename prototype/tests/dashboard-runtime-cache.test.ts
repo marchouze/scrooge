@@ -18,7 +18,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { type Subprocess, spawn } from "bun";
@@ -38,6 +38,7 @@ let eventDbPath: string;
 let serverProcess: Subprocess | undefined;
 let serverPort: number;
 let testDecisionId: string | undefined;
+let injectedDecisionFile: string | undefined;
 let seedExistedBefore: boolean;
 
 async function findFreePort(): Promise<number> {
@@ -83,6 +84,37 @@ beforeAll(async () => {
   // post-assertion is "never created or modified by the server".
   seedExistedBefore = existsSync(SEED_PATH);
 
+  // Inject a synthetic open-decision file into the real Owner Inbox so the
+  // /api/decide test has something to action. After Atlas's fix to derive
+  // resolved decisions from on-disk decision-records, the live repo has
+  // zero open decisions in steady state — every recorded one is resolved
+  // by its corresponding `_ceo-decision-record_*.md` companion. The
+  // injected file is unique-suffixed and cleaned up in afterAll.
+  testDecisionId = `D-RUNTIME-CACHE-TEST-${Date.now()}`;
+  injectedDecisionFile = resolve(
+    REPO_ROOT,
+    "Owner Inbox",
+    `2026-05-10_runtime-cache-test_${testDecisionId.toLowerCase()}.md`,
+  );
+  writeFileSync(
+    injectedDecisionFile,
+    [
+      "---",
+      `title: Runtime-cache integration test fixture (${testDecisionId})`,
+      "author: dashboard-runtime-cache.test.ts",
+      "date: 2026-05-10",
+      "summary: Synthetic decision-required item used by the runtime-cache integration test. Cleaned up in afterAll.",
+      "decision-required: true",
+      `decision-id: ${testDecisionId}`,
+      "decision-category: pacing",
+      "decision-for-ceo: Resolve to exercise the /api/decide handler.",
+      "decision-recommendation: Approve.",
+      "---",
+      "",
+      `# Test fixture: ${testDecisionId}`,
+    ].join("\n"),
+  );
+
   serverPort = await findFreePort();
 
   serverProcess = spawn({
@@ -105,15 +137,16 @@ beforeAll(async () => {
 
   await waitForServer(serverPort);
 
-  // Pull an open decision id from the live state so the test is robust
-  // to source-derivation evolution.
+  // Confirm the injected decision shows up in live state so the
+  // /api/decide POST has something to resolve.
   const r = await fetch(`http://127.0.0.1:${serverPort}/api/state`);
   const live = (await r.json()) as DashboardState;
-  const candidate = live.decisionsOpen.find((d: OpenDecision) => Boolean(d.id));
+  const candidate = live.decisionsOpen.find((d: OpenDecision) => d.id === testDecisionId);
   if (!candidate) {
-    throw new Error("no open decisions available in live state; cannot run /api/decide test");
+    throw new Error(
+      `injected decision ${testDecisionId} did not surface in live state; check Owner Inbox parser`,
+    );
   }
-  testDecisionId = candidate.id;
 });
 
 afterAll(async () => {
@@ -127,6 +160,9 @@ afterAll(async () => {
   }
   if (tmpDir && existsSync(tmpDir)) {
     rmSync(tmpDir, { recursive: true, force: true });
+  }
+  if (injectedDecisionFile && existsSync(injectedDecisionFile)) {
+    rmSync(injectedDecisionFile, { force: true });
   }
 });
 
