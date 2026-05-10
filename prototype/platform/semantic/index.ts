@@ -57,3 +57,21 @@ export {
   riskWeight,
   totalRwa,
 } from "./risk-weight-entries";
+
+export {
+  SLICE_5_MARKET_RISK_ENTRIES,
+  interestRateGeneralRisk,
+  interestRateSpecificRisk,
+  equityPositionRisk,
+  foreignExchangeRisk,
+  commodityRisk,
+  marketRiskRwa,
+} from "./market-risk-entries";
+
+export {
+  SLICE_5_OP_RISK_ENTRIES,
+  grossIncomeBusinessLine,
+  opRiskCapitalBia,
+  opRiskCapitalTsa,
+  opRiskRwa,
+} from "./op-risk-entries";
