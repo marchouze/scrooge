@@ -2,8 +2,8 @@
 //
 // Pure derivation of the bank-dashboard state from canonical sources.
 //
-// Per Principle 1, the persisted `seeds/dashboard-state.json` is a *cache* —
-// every field on it must be reproducible from canonical inputs:
+// Per Principle 1, the dashboard registry is a *cache* — every field on it
+// must be reproducible from canonical inputs:
 //
 //   • CLAUDE.md                                — principles, top-of-house roster
 //   • Owner Inbox/2026-05-06_policy-register.md — policies count
@@ -20,8 +20,11 @@
 //
 // `deriveState()` is pure and synchronous: given the input paths and an event
 // reader, it produces a full DashboardState. The server wraps this in a
-// debounced watcher; the recon harness compares the output to the persisted
-// file and reports drift.
+// debounced watcher and writes the result to the runtime cache under
+// `.local/dashboard-state.json` (gitignored). Per D-EVENT-STORE-SCALING
+// Slice 3b (2026-05-10) there is no committed cache file; the recon harness
+// runs `deriveState()` at recon time and asserts internal consistency of
+// the projection rather than comparing against a stored cache.
 //
 // Author: Atlas · Anya
 

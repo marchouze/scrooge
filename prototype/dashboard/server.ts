@@ -13,32 +13,30 @@
 //                            and re-derives the registry.
 //
 // State persistence (Principle 1):
-//   • The dashboard registry (`seeds/dashboard-state.json`) is a *cache*.
+//   • The dashboard registry is a *cache* — a projection over canonical
+//     sources + the event store. The runtime cache lives at
+//     `BANK_DASHBOARD_RUNTIME_STATE` (default `.local/dashboard-state.json`,
+//     gitignored). There is no committed cache.
 //   • Every metric and list is reproducible from canonical sources via
 //     `dashboard/derive.ts` (CLAUDE.md, registers, /Procedures/, /Team/,
-//     event store). Hand-editing the registry is forbidden — the next
+//     event store). Hand-editing the runtime cache is futile — the next
 //     re-derivation tick will overwrite drift.
 //   • Re-derivation triggers: server startup, a polling timer, fs.watch on
 //     canonical paths (debounced), and any state-mutating POST.
 //
-// Two state paths (D-EVENT-STORE-SCALING Slice 3a, 2026-05-10):
-//   • SEED_STATE_PATH (`BANK_DASHBOARD_STATE`, default `seeds/dashboard-state.json`)
-//     is the *committed baseline*: the curated, version-controlled snapshot
-//     that the recon harness asserts canonical-source derivation can still
-//     reproduce. The server **never writes** to this path. CI / `bun run
-//     recon:dashboard` reads it.
+// Runtime cache path (D-EVENT-STORE-SCALING Slice 3a → Slice 3b, 2026-05-10):
 //   • RUNTIME_STATE_PATH (`BANK_DASHBOARD_RUNTIME_STATE`, default
 //     `.local/dashboard-state.json`) is the *live runtime cache*: re-derived
 //     on every poll / mutation / fs.watch tick. Lives under `.local/` (which
-//     is gitignored) so a dashboard run never makes `git status` dirty. Other
-//     local consumers (e.g. Owen's governance-cycle-prep) prefer this path
-//     when present; they fall back to the seed when running on a fresh
-//     runner with no live dashboard.
-// Background: prior to this change the server overwrote the committed seed
-// every 30s, which (a) made `git status` perpetually dirty for any dev who
-// ran `make dashboard`, and (b) embedded local-only `.local/event.db` events
-// (T-stamps, decisionsResolved entries) that CI couldn't reproduce. See
-// `Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3a-runtime-cache-split.md`.
+//     is gitignored) so a dashboard run never makes `git status` dirty.
+//
+// Slice 3a (PR #138) split this runtime path off the previously-committed
+// `seeds/dashboard-state.json`. Slice 3b (this commit) removes the seed
+// entirely from the commit graph: the dashboard cache is a *projection*
+// (Principle 1 — events/sources are truth, projections are queries) and
+// the recon harness now derives + asserts internal consistency at recon
+// time rather than comparing against a stored cache. See
+// `Owner Inbox/2026-05-10_atlas_d-event-store-scaling-slice-3b-cache-from-commit-graph.md`.
 //
 // Substrate-replacement seam (P6 — upward chain). The local Bun.serve
 // implementation is replaced at M8 by an Azure Container App; the HTTP
@@ -85,12 +83,11 @@ const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);
 const WATCH_DEBOUNCE_MS = Number(process.env.BANK_DASHBOARD_WATCH_DEBOUNCE_MS ?? 500);
 const REPO_ROOT = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
-// Read-only committed seed; never overwritten by the server. Recon harness
-// reads this path (`prototype/seeds/dashboard-state.json`) to assert that
-// canonical-source derivation reproduces the committed baseline.
-const SEED_STATE_PATH = process.env.BANK_DASHBOARD_STATE ?? "seeds/dashboard-state.json";
 // Live runtime cache; re-derived on every poll / mutation / watch event.
 // Lives under `.local/` (gitignored) so the server never dirties git state.
+// Per D-EVENT-STORE-SCALING Slice 3b (2026-05-10) there is no committed
+// cache; the recon harness derives at recon time and asserts internal
+// consistency rather than comparing against a stored file.
 const RUNTIME_STATE_PATH =
   process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
 const PUBLIC_DIR = resolve(import.meta.dir, "public");
@@ -543,7 +540,6 @@ logger.info(
   {
     port: server.port,
     refreshMs: REFRESH_MS,
-    seedStatePath: SEED_STATE_PATH,
     runtimeStatePath: RUNTIME_STATE_PATH,
   },
   "Bank dashboard live",

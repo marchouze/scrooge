@@ -16,14 +16,15 @@ make dashboard            # or: bun run dashboard
 
 Then open `http://localhost:3010`.
 
-**State paths (D-EVENT-STORE-SCALING Slice 3a, 2026-05-10).** The dashboard server uses two distinct paths:
+**State paths (D-EVENT-STORE-SCALING Slice 3a → 3b, 2026-05-10).** The dashboard server uses a single runtime cache:
 
 | Path | Env var | Role |
 |---|---|---|
-| `seeds/dashboard-state.json` | `BANK_DASHBOARD_STATE` | **Read-only seed** — committed baseline that the recon harness asserts canonical-source derivation can still reproduce. The server never writes here. |
 | `.local/dashboard-state.json` | `BANK_DASHBOARD_RUNTIME_STATE` | **Live runtime cache** — re-derived on every poll / mutation / fs.watch tick. Lives under `.local/` (gitignored), so running `make dashboard` never makes `git status` dirty. |
 
-To reset the seed to first-load state, restore it from git. To clear the runtime cache, `rm .local/dashboard-state.json` (it is regenerated on next derive).
+There is **no committed cache file**. The dashboard projection is, by definition, a query over canonical sources + the event store (Principle 1). Slice 3a (PR #138) split the runtime cache off the previously-committed `seeds/dashboard-state.json`; Slice 3b removed the seed from the commit graph entirely. The recon harness now derives + asserts internal consistency of the projection at recon time rather than comparing against a stored cache.
+
+To clear the runtime cache, `rm .local/dashboard-state.json` (it is regenerated on next derive). For an ad-hoc snapshot without booting the server, `bun run scripts/regen-dashboard-cache.ts` writes the current derivation to the runtime path.
 
 **Sharing a single event store across worktrees.** By default each `.claude/worktrees/<id>/prototype/.local/event.db` is per-worktree, so CeoDecision events recorded in one worktree are invisible in another. Set `BANK_EVENT_DB` to a shared absolute path to share state:
 
@@ -59,7 +60,7 @@ The dashboard re-fetches and re-renders.
 | Element | Local (M1) | Cloud (M8) |
 |---|---|---|
 | HTTP server | `Bun.serve` on `localhost:3010` | Azure Container App + Front Door / API Management |
-| State registry | `seeds/dashboard-state.json` | Cosmos DB / Postgres projection |
+| State registry | `.local/dashboard-state.json` (gitignored) | Cosmos DB / Postgres projection |
 | Decision events | SQLite event store | Cloud event substrate |
 | Identity | None enforced (single-user localhost) — `LOCAL_ONLY` | Azure Entra ID + WebAuthn for the CEO seat |
 | Live refresh | Polling every 8s | SSE / SignalR push when projection updates |

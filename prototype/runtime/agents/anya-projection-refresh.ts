@@ -14,11 +14,12 @@
 // overridable via `BANK_DASHBOARD_RUNTIME_STATE`).
 //
 // As of D-EVENT-STORE-SCALING Slice 3a (2026-05-10) this handler writes
-// only to the runtime path — never to the committed seed at
-// `prototype/seeds/dashboard-state.json`. The seed is the recon-baseline
-// that CI asserts canonical-source derivation can still reproduce; if a
-// runner needed to overwrite it the recon would oscillate. Anya's job is
-// to keep the *runtime* cache fresh.
+// only to the runtime path. Slice 3b (same day) removes the committed seed
+// `prototype/seeds/dashboard-state.json` from the commit graph entirely —
+// the dashboard cache is a *projection* (Principle 1) and the recon
+// harness now derives + asserts internal consistency at recon time rather
+// than comparing against a stored cache. Anya's job is to keep the
+// *runtime* cache fresh for the dashboard server's reads.
 //
 // Trigger kind: event-driven. Fans out from any parent run that appends
 // one of the subscribed event types. The runtime takes care of
