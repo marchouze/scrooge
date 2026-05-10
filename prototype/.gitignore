@@ -11,3 +11,9 @@ node_modules/
 dist/
 build/
 .tsbuildinfo
+
+# RMS document store — content-addressed binary store; bytes are local
+# substrate, never committed (cloud target is Azure Blob + Managed-HSM
+# envelope per spec §4.1). The .gitkeep below preserves the dir itself.
+data/documents/*
+!data/documents/.gitkeep
