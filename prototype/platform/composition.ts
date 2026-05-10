@@ -52,9 +52,12 @@ const rawEventStore = new EventStore(dbPath);
 // blocked by the gate.
 const permissionPolicy = new LocalPermissionPolicyPublisher({ eventStore: rawEventStore });
 
-// Gate is feature-flagged — A1.2 lands the substrate; the flip-on-day
-// is M8 cloud lift per Atlas spec §3.1. Default off keeps existing
-// event flows untouched.
+// Gate is **on by default** as of T-01 (Senna+Rashida threat model
+// 2026-05-10). To disable for local debugging, set
+// `BANK_PERMISSION_GATE_DISABLED=true`. The pre-A1 backfill allow-list
+// in `permission-gate.ts` softens the flip for actors whose policy is
+// not yet published — each bypass emits a low-severity `SubstrateAlert`
+// (alertClass: integrity) that Vera's recon drives to zero.
 export const eventStore = gateEventStore({
   store: rawEventStore,
   config: {
@@ -65,6 +68,13 @@ export const eventStore = gateEventStore({
         "permission-gate — denied",
       );
     },
+    // Note: no `onLegacyBypass` override. The default in
+    // `permission-gate.ts` emits a low-severity `SubstrateAlert`
+    // (alertClass: integrity) per (agentUrn, eventType) bypass — that's
+    // the canonical record-of-bypass that Vera's recon drives to zero.
+    // We deliberately don't add a logger.warn here: the SubstrateAlert
+    // is the typed record (Principle 1); a parallel logger call would
+    // be prose-without-event drift.
   },
 });
 
