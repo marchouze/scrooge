@@ -313,8 +313,7 @@ export const riskWeightedAssets: SemanticEntry = {
   units: "money-minor",
   dimensions: ["currency"],
   projection: "rwa",
-  formula:
-    "sum(CreditRwa) + sum(MarketRwa) + sum(OperationalRwa) where {entity, asOf=asOfQuery}",
+  formula: "sum(CreditRwa) + sum(MarketRwa) + sum(OperationalRwa) where {entity, asOf=asOfQuery}",
   regulatoryCells: [
     {
       form: "BA 700",
@@ -369,8 +368,7 @@ export const commonEquityTier1Ratio: SemanticEntry = {
   units: "ratio",
   dimensions: ["currency"],
   projection: "capital-stack",
-  formula:
-    "CommonEquityTier1Capital / RiskWeightedAssets",
+  formula: "CommonEquityTier1Capital / RiskWeightedAssets",
   regulatoryCells: [
     {
       form: "BA 700",
@@ -415,8 +413,7 @@ export const tier1CapitalRatio: SemanticEntry = {
   units: "ratio",
   dimensions: ["currency"],
   projection: "capital-stack",
-  formula:
-    "(CommonEquityTier1Capital + AdditionalTier1Capital) / RiskWeightedAssets",
+  formula: "(CommonEquityTier1Capital + AdditionalTier1Capital) / RiskWeightedAssets",
   regulatoryCells: [
     {
       form: "BA 700",

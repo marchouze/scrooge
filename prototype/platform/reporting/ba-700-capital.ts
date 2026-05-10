@@ -471,7 +471,11 @@ export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
       `BA 700 generator: functionalCurrency must be ISO-4217 (3 chars), got '${input.functionalCurrency}'`,
     );
   }
-  if (input.rwa.creditRwaMinor < 0 || input.rwa.marketRwaMinor < 0 || input.rwa.operationalRwaMinor < 0) {
+  if (
+    input.rwa.creditRwaMinor < 0 ||
+    input.rwa.marketRwaMinor < 0 ||
+    input.rwa.operationalRwaMinor < 0
+  ) {
     throw new Ba700GeneratorError(
       `BA 700 generator: RWA components must be non-negative; got credit=${input.rwa.creditRwaMinor}, market=${input.rwa.marketRwaMinor}, operational=${input.rwa.operationalRwaMinor}`,
     );
@@ -513,9 +517,7 @@ export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
     if (!c) continue;
     const stockMinor = Math.abs(row.amountMinor);
     const note =
-      row.amountMinor > 0
-        ? "warning: capital-classified account has debit balance"
-        : undefined;
+      row.amountMinor > 0 ? "warning: capital-classified account has debit balance" : undefined;
     const lineItem: Ba700LineItem = {
       lineId: `${c.capitalTier}.${row.leafAccountId}`,
       lineLabel: c.subCategory ?? `Capital ${c.capitalTier.toUpperCase()} — ${row.leafAccountId}`,
@@ -547,8 +549,7 @@ export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
 
   // Stable iteration — sort by (deductionTier, category).
   const sortedDeductions = [...input.deductions].sort((a, b) => {
-    if (a.deductionTier !== b.deductionTier)
-      return a.deductionTier < b.deductionTier ? -1 : 1;
+    if (a.deductionTier !== b.deductionTier) return a.deductionTier < b.deductionTier ? -1 : 1;
     return a.category < b.category ? -1 : a.category > b.category ? 1 : 0;
   });
 
@@ -740,8 +741,7 @@ function fingerprintClassifications(
 
 function fingerprintDeductions(deductions: readonly RegulatoryDeduction[]): string {
   const sorted = [...deductions].sort((a, b) => {
-    if (a.deductionTier !== b.deductionTier)
-      return a.deductionTier < b.deductionTier ? -1 : 1;
+    if (a.deductionTier !== b.deductionTier) return a.deductionTier < b.deductionTier ? -1 : 1;
     return a.category < b.category ? -1 : a.category > b.category ? 1 : 0;
   });
   return JSON.stringify(sorted);
