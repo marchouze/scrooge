@@ -24,7 +24,7 @@
 //
 // Author: Rohan
 
-import { describe, expect, it } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -48,6 +48,17 @@ import {
 
 const SCHEDULER_ACTOR = { type: "service" as const, id: "substrate:scheduler" } as const;
 const REQUEST_CITATIONS = ["SR-11-7-2011", "SS-1-23-2023", "BANKS-ACT-94-1990", "ORG-PR-21"];
+
+// D-DATA-PROVENANCE-SUBSTRATE Slice 2 — fixtures are untagged-legacy
+// events; pin the harness to `combined` mode so it consumes them. The
+// production-default semantic is correct in production code; tests
+// override.
+beforeAll(() => {
+  process.env.BANK_BACKTEST_PROVENANCE_MODE = "combined";
+});
+afterAll(() => {
+  process.env.BANK_BACKTEST_PROVENANCE_MODE = undefined;
+});
 
 function makeContext(overrides: Partial<AgentRunContext> = {}): AgentRunContext {
   const repoRoot = join(import.meta.dir, "..", "..");
