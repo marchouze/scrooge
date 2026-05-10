@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
   "files": {
-    "ignore": ["seeds/dashboard-state.json"]
+    "ignore": []
   },
   "organizeImports": { "enabled": true },
   "linter": {

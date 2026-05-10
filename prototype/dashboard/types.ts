@@ -168,14 +168,43 @@ export interface AgentDeliverable {
 //
 // Frontmatter is optional; files without it are parsed from filename
 // (date + slug) plus the body's first H1 and Author line.
+// Presentation classification for grouping in the Owner Inbox feed.
+// Derived in `parseOwnerInboxFile` from filename hints; never authored.
+//
+// - "decision-pack"   → a CEO decision pack proposing a decision (e.g.
+//                       `*_ceo-decision-pack_*.md`).
+// - "decision-record" → an audit record of a CEO-stated decision
+//                       (e.g. `*_ceo-decision-record_*.md`).
+// - "deliverable"     → any other Owner-Inbox deliverable (default).
+export type OwnerInboxKind = "decision-pack" | "decision-record" | "deliverable";
+
+// Status group used by the renderer to group rows. Derived in `deriveState`
+// from `decisionRequired` × `decisionStatus`. Never authored.
+//
+// - "decision-open"     → decisionRequired and not yet actioned via CeoDecision.
+// - "decision-resolved" → decisionRequired and a CeoDecision event closed it.
+// - "informational"     → not decisionRequired (records, briefs, deliverables).
+export type OwnerInboxGroup = "decision-open" | "decision-resolved" | "informational";
+
 export interface OwnerInboxItem {
   filename: string; // basename, e.g. "2026-05-07_vera_agent-discipline-assurance-extension.md"
   path: string; // repo-relative, e.g. "Owner Inbox/<filename>"
   date: string; // YYYY-MM-DD parsed from filename or frontmatter
-  title: string;
+  title: string; // raw title — preserved for audit / graph linkage
+  // Short, scannable title rendered in tile / list views. Derived from
+  // `title` + `kind`: e.g. for a `ceo-decision-record` item, the verbose
+  // "Scrooge (Chief of Staff / Orchestrator) — CEO decision record:
+  // D-FOO, 2026-05-10" collapses to "Decision record · D-FOO".
+  // Equal to `title` when no shortening rule applies. Always populated.
+  displayTitle: string;
+  kind: OwnerInboxKind; // presentation classification (filename-derived)
   author?: string;
   summary?: string;
   decisionRequired: boolean;
+  // Status group used by the renderer for sorting / grouping. Derived in
+  // `deriveState` (open / resolved comes from the CeoDecision event stream;
+  // informational items have decisionRequired === false).
+  group: OwnerInboxGroup;
   // Fields below are populated only when decisionRequired is true.
   decisionId?: string;
   decisionStatus?: "open" | "resolved"; // resolved iff a CeoDecision event exists for decisionId

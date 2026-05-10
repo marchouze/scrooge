@@ -1,0 +1,180 @@
+/* dashboard/public/markets/fx/desk.css
+ *
+ * FX desk — Slice 1 page styles. Layered on top of `_shell.css` and
+ * `_brand.css`. Only the FX-namespaced surfaces are styled here; the
+ * shell chrome (header, sidebar, refresh button) is reused as-is.
+ *
+ * Author: Kai (Trading systems engineer, engineering — reports to Saskia,
+ *         Head of Global Markets) · Atlas (Core banking platform
+ *         architect, engineering — UI shell)
+ */
+
+/* Substrate-mode banner — pinned full-width above the shell layout.
+ * Linnea brand-warning yellow (per `_brand.css` token mapping). The
+ * detail span is muted so the headline reads first. Banner copy is
+ * the canonical string per pack §3 J7. */
+.fx-mode-banner {
+  background: var(--brand-warn-bg, #fff8d6);
+  color: var(--brand-warn-fg, #5a4400);
+  border-bottom: 1px solid var(--brand-warn-border, #d9bf3f);
+  padding: 0.6rem 1.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 1.4;
+}
+.fx-mode-banner strong {
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.fx-mode-banner-detail {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--brand-warn-fg, #5a4400);
+  opacity: 0.85;
+  font-size: 0.82rem;
+}
+.fx-mode-banner a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Counterparty summary chip — a single bold integer + label, rendered
+ * above the table so the eligibility-pass count reads at a glance. */
+.fx-cp-summary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  margin: 0.5rem 0 1rem;
+  background: var(--surface-subtle, #f4f4f6);
+  border: 1px solid var(--surface-border, #dfe0e6);
+  border-radius: 6px;
+}
+.fx-cp-count {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--brand-fg, #1a1a1f);
+}
+.fx-cp-count-label {
+  font-size: 0.85rem;
+  color: var(--text-muted, #5f5f6b);
+}
+
+/* Counterparties table — minimal, semantic; reuses brand text colours. */
+.fx-cp-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+.fx-cp-table th,
+.fx-cp-table td {
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--surface-border, #dfe0e6);
+  vertical-align: top;
+}
+.fx-cp-table th {
+  font-weight: 600;
+  color: var(--text-muted, #5f5f6b);
+  background: var(--surface-subtle, #f4f4f6);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+.fx-cp-table td.fx-cp-empty {
+  color: var(--text-muted, #5f5f6b);
+  text-align: center;
+  font-style: italic;
+  padding: 1.2rem;
+}
+.fx-cp-outcome-pass {
+  color: var(--brand-success-fg, #1f6f3a);
+  font-weight: 600;
+}
+.fx-cp-id {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--text-muted, #5f5f6b);
+  display: block;
+  margin-top: 0.2rem;
+}
+.fx-cp-evidence {
+  font-size: 0.8rem;
+  color: var(--text-muted, #5f5f6b);
+}
+.fx-cp-evidence li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fx-cp-note {
+  font-size: 0.85rem;
+  color: var(--text-muted, #5f5f6b);
+  margin: 0.5rem 0 1.5rem;
+}
+
+/* Workflow placeholders — soft-bordered cards in a flex grid. */
+.fx-placeholders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.fx-placeholder {
+  background: var(--surface-subtle, #f4f4f6);
+  border: 1px dashed var(--surface-border, #c8c9d0);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.fx-placeholder.is-placeholder {
+  opacity: 0.85;
+}
+.fx-placeholder h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.fx-placeholder p {
+  margin: 0 0 0.6rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--text-muted, #5f5f6b);
+}
+.fx-placeholder-flag {
+  display: inline-block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #5f5f6b);
+  background: var(--surface, #fff);
+  border: 1px solid var(--surface-border, #dfe0e6);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.fx-substrate-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.fx-substrate-list code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
