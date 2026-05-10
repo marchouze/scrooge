@@ -35,3 +35,38 @@ export {
   renderBa325ToJson,
   type RenderBa325Options,
 } from "./ba-325-render";
+
+// ---------------------------------------------------------------------------
+// Slice 4 — BA 700 Capital Adequacy Return
+// ---------------------------------------------------------------------------
+
+export {
+  type AccountCapitalClassification,
+  type Ba700CapitalStackSection,
+  type Ba700CapitalTierSection,
+  type Ba700GeneratorInput,
+  Ba700GeneratorError,
+  type Ba700LineItem,
+  type Ba700Output,
+  type Ba700RatiosSection,
+  type Ba700RwaSection,
+  type BufferRequirements,
+  BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
+  BA_700_BANK_ENTITIES,
+  type CapitalTier,
+  computeRequiredMinimums,
+  generateBa700Capital,
+  type RegulatoryDeduction,
+  type RwaDecomposition,
+} from "./ba-700-capital";
+
+export {
+  Ba700RenderSchema,
+  type Ba700Render,
+  BA_700_SCHEMA_URL,
+  BA_700_RENDERER_VERSION,
+  canonicaliseBa700,
+  renderBa700Canonical,
+  renderBa700ToJson,
+  type RenderBa700Options,
+} from "./ba-700-render";
