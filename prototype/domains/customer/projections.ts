@@ -8,6 +8,7 @@
 
 import type { Event } from "@platform/event-store/types";
 import { type Projection, acceptType } from "@platform/projections";
+import type { PartyId } from "../party";
 import {
   CUSTOMER_EVENT_TYPES,
   type CounterpartyId,
@@ -112,7 +113,8 @@ export const isdaTracker: Projection<IsdaTracker, Event> = {
 // ---------------- Authorised-signatory book ----------------
 
 export interface SignatoryEntry {
-  personId: string;
+  /** Party URN of the natural person. D-PARTY-REGISTER PR 4. */
+  personId: PartyId;
   scope: "signatory" | "authorised-trader" | "both";
   evidenceRef: string;
 }
@@ -126,7 +128,7 @@ export const signatoryBook: Projection<SignatoryBook, Event> = {
   reduce: (state, e) => {
     const id = e.payload.counterpartyId as string;
     const entry: SignatoryEntry = {
-      personId: e.payload.personId as string,
+      personId: e.payload.personId as PartyId,
       scope: e.payload.scope as SignatoryEntry["scope"],
       evidenceRef: e.payload.evidenceRef as string,
     };

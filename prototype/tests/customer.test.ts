@@ -28,6 +28,7 @@ import {
   signatoryBook,
   soundingOpened,
 } from "../domains/customer";
+import type { PartyId } from "../domains/party";
 
 const human = { type: "human" as const, id: "niko@bank.local" };
 const compliance = { type: "human" as const, id: "mira@bank.local" };
@@ -68,7 +69,7 @@ describe("@domains/customer onboarding", () => {
           pep: false,
           sanctionsClear: true,
           jurisdictionalRiskScore: "low",
-          reviewerId: "mira",
+          reviewerId: "mira" as PartyId,
         },
         fic,
       ),
@@ -158,7 +159,7 @@ describe("@domains/customer onboarding", () => {
     const cp = counterpartyId("CP-T4");
     store.append(
       authorisedSignatoryAdded(
-        { counterpartyId: cp, personId: "p1", scope: "signatory", evidenceRef: "ev1" },
+        { counterpartyId: cp, personId: "p1" as PartyId, scope: "signatory", evidenceRef: "ev1" },
         cite,
       ),
     );
@@ -166,7 +167,7 @@ describe("@domains/customer onboarding", () => {
       authorisedSignatoryAdded(
         {
           counterpartyId: cp,
-          personId: "p2",
+          personId: "p2" as PartyId,
           scope: "authorised-trader",
           evidenceRef: "ev2",
         },
@@ -175,7 +176,7 @@ describe("@domains/customer onboarding", () => {
     );
     const book = projector(store).build(signatoryBook);
     expect(book[cp]).toHaveLength(2);
-    expect(book[cp]?.[0]?.personId).toBe("p1");
+    expect(book[cp]?.[0]?.personId).toBe("p1" as PartyId);
     store.close();
   });
 

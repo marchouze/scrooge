@@ -130,6 +130,11 @@ export interface RunOpts {
   appendedTypes?: ReadonlySet<string>;
   /** Override factory consumers for tests. */
   factoryConsumers?: ReadonlySet<string>;
+  /**
+   * Override deprecated-type map for tests.
+   * Maps deprecated event type name → supersededBy (or undefined if none set).
+   */
+  deprecatedTypes?: ReadonlyMap<string, string | undefined>;
 }
 
 function listTsFiles(dir: string, base: string, out: string[]): void {
@@ -302,6 +307,29 @@ function gatherRegistryTypes(): Set<string> {
   return new Set(arr.map((r) => r.type));
 }
 
+function gatherDeprecatedTypes(): Map<string, string | undefined> {
+  // Returns a map of deprecated event type names to their `supersededBy` value
+  // (if any). Used by the deprecated-emission recon check (D-PARTY-REGISTER PR 4,
+  // 2026-05-11) to assert no new `eventStore.append` call sites emit a deprecated
+  // type. Authority: D-PARTY-REGISTER; citations: P1-EVENTS-AS-TRUTH.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const reg = require("../event-store/registry") as {
+    EVENT_TYPE_REGISTRY?: ReadonlyArray<{
+      type: string;
+      status?: string;
+      supersededBy?: string;
+    }>;
+  };
+  const arr = reg.EVENT_TYPE_REGISTRY ?? [];
+  const out = new Map<string, string | undefined>();
+  for (const r of arr) {
+    if (r.status === "deprecated") {
+      out.set(r.type, r.supersededBy);
+    }
+  }
+  return out;
+}
+
 function gatherSubscribedTypes(): Set<string> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const meta = require("../../runtime/handlers-metadata") as {
@@ -325,6 +353,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   const subscribed = opts.subscribedTypes ?? gatherSubscribedTypes();
   const appended = opts.appendedTypes ?? readAppendSiteTypes(prototypeDir);
   const consumers = opts.factoryConsumers ?? readFactoryConsumers(prototypeDir, factories);
+  const deprecated = opts.deprecatedTypes ?? gatherDeprecatedTypes();
 
   // ---------------------------------------------------------------------
   // warn — every subscribesTo / append-site type has a registry row.
@@ -393,6 +422,32 @@ export function run(opts: RunOpts = {}): ReconResult {
         subject: `event-type:${type}`,
         message: `\`make${type}\` factory exported in \`event-types.ts\` but no consumer found via grep. Either dead code (remove) or the consumer is dynamic / out-of-tree (annotate the factory with \`/* @consumed-by: <module> */\`). Citations: ${CITATIONS.join(", ")}.`,
         severity: "info",
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // P4 — no new eventStore.append call sites emit a deprecated type.
+  //
+  // Deprecated types are still present in the registry for backward
+  // compat (Principle 1 / append-only log); however any *new* emission
+  // of a deprecated type is a bug — the emitter should be migrated to
+  // the superseding type. This check is fail-level, not warn, because
+  // deprecated types carry an explicit migration path (`supersededBy`).
+  //
+  // Authority: D-PARTY-REGISTER (CEO-approved 2026-05-11, PR 4).
+  // Citations: P1-EVENTS-AS-TRUTH, D-PARTY-REGISTER.
+  // ---------------------------------------------------------------------
+  for (const [type, supersededBy] of deprecated) {
+    result.asserted++;
+    if (appended.has(type)) {
+      const migration = supersededBy
+        ? ` Migrate to \`${supersededBy}\`.`
+        : " Check the registry for the replacement type.";
+      violations.push({
+        subject: `event-type:${type}`,
+        message: `Event type \`${type}\` is marked \`status: "deprecated"\` in EVENT_TYPE_REGISTRY but has a live \`eventStore.append\` call site.${migration} Authority: D-PARTY-REGISTER (2026-05-11). Citations: P1-EVENTS-AS-TRUTH, ${CITATIONS.join(", ")}.`,
+        severity: "fail",
       });
     }
   }

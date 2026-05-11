@@ -353,11 +353,37 @@ export type ReplayFold =
    * compute current-state. e.g. RiskRaised, AuditFinding. */
   | "append-only-audit";
 
+/**
+ * Lifecycle status for a registered event type.
+ *
+ *   - "active"     — the current canonical type; producers should emit it.
+ *   - "deprecated" — superseded by a newer type (see `supersededBy`); the
+ *                    append path still accepts the type for backward compat
+ *                    but no new code should emit it. Vera's
+ *                    `event-type-registry-coverage` recon asserts that no
+ *                    new `eventStore.append` call sites reference a
+ *                    deprecated type. Authority: D-PARTY-REGISTER (2026-05-11).
+ */
+export type EventTypeStatus = "active" | "deprecated";
+
 export interface EventTypeMetadata {
   /** Canonical type name. Matches the `event.type` literal at append. */
   readonly type: string;
   /** Class — agent-runtime substrate or markets lifecycle. Mirrors A0 §4 / §5. */
   readonly class: "runtime" | "markets" | "governance" | "audit";
+  /**
+   * Lifecycle status. Defaults to `"active"` when absent (all rows authored
+   * before D-PARTY-REGISTER PR 4 omit this field; the `lookupEventType`
+   * helper normalises the absence to `"active"` so callers may always
+   * compare `status === "deprecated"` without an undefined guard).
+   */
+  readonly status?: EventTypeStatus;
+  /**
+   * The event type that supersedes this one. Set when `status === "deprecated"`.
+   * Carries the canonical type name of the replacement; callers and producers
+   * should migrate to that type. Omit for active rows.
+   */
+  readonly supersededBy?: string;
   /**
    * Zod schema for the payload, when one exists. When undefined the
    * append path validates only the envelope (event_id / type / as_of /
@@ -470,11 +496,19 @@ const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRegistered",
     class: "runtime",
+    // Deprecated by D-PARTY-REGISTER (CEO-approved 2026-05-11, PR 4).
+    // The unified Party event family — PartyRegistered{kind: "agent"} —
+    // supersedes this type. Existing historical events remain in the log
+    // (Principle 1 / append-only); no new emissions should use this type.
+    // Backfill of historical AgentRegistered events into PartyRegistered
+    // events lands in D-PARTY-REGISTER PR 2 (Imani — Legal-as-code engineer).
+    status: "deprecated",
+    supersededBy: "PartyRegistered",
     payloadSchema: agentRegisteredPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Vera", "Anya", "Iris"],
     replay: "latest-wins-per-key",
-    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01"],
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01", "D-PARTY-REGISTER"],
     // Agent-registration is governance: who is empowered to act for the
     // bank. 7y to match Companies Act director/officer-decision norms.
     retention: RETENTION_GOVERNANCE_7Y,
@@ -1488,6 +1522,14 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "LegalEntityRegistered",
     class: "governance",
+    // Deprecated by D-PARTY-REGISTER (CEO-approved 2026-05-11, PR 4).
+    // The unified Party event family — PartyRegistered{kind: "legal-entity"} —
+    // supersedes this type. Existing historical events remain in the log
+    // (Principle 1 / append-only); no new emissions should use this type.
+    // Backfill of historical LegalEntityRegistered events into PartyRegistered
+    // events lands in D-PARTY-REGISTER PR 2 (Imani — Legal-as-code engineer).
+    status: "deprecated",
+    supersededBy: "PartyRegistered",
     payloadSchema: legalEntityRegisteredPayloadSchema,
     issuer: "Imani",
     subscribers: ["Owen", "Mira", "Bea", "Yael", "Helena", "Anya", "dashboard", "Vera"],
@@ -1498,6 +1540,7 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "FAIS-ACT-37-2002",
       "JSE-RULES",
       "GOV-FRAMEWORK-CEO-RESERVED",
+      "D-PARTY-REGISTER",
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source:
@@ -2330,9 +2373,18 @@ const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
  * Look up a type's registered metadata. Returns undefined for types
  * that aren't in the registry (which is fine in build phase — the
  * envelope-only path still validates and appends them).
+ *
+ * The returned record normalises `status` to `"active"` when the row
+ * was authored before the `status` field was introduced (D-PARTY-REGISTER
+ * PR 4, 2026-05-11) so callers can always compare
+ * `meta.status === "deprecated"` without an undefined guard.
  */
-export function lookupEventType(type: string): EventTypeMetadata | undefined {
-  return REGISTRY_BY_TYPE.get(type);
+export function lookupEventType(
+  type: string,
+): (EventTypeMetadata & { status: EventTypeStatus }) | undefined {
+  const meta = REGISTRY_BY_TYPE.get(type);
+  if (!meta) return undefined;
+  return { ...meta, status: meta.status ?? "active" };
 }
 
 /**

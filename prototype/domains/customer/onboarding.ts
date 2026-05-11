@@ -9,6 +9,7 @@
 
 import { newEventId, nowUtc } from "@platform/core/types";
 import type { Actor, Event } from "@platform/event-store/types";
+import type { PartyId } from "../party";
 import {
   type ActivationPayload,
   type AuthorisedSignatoryPayload,
@@ -69,7 +70,7 @@ export function authorisedSignatoryAdded(p: AuthorisedSignatoryPayload, opts: Ma
 }
 
 export function authorisedSignatoryRemoved(
-  p: { counterpartyId: CounterpartyId; personId: string; reason: string },
+  p: { counterpartyId: CounterpartyId; personId: PartyId; reason: string },
   opts: MakeOpts,
 ): Event {
   return base(CUSTOMER_EVENT_TYPES[6], { ...p }, opts);
