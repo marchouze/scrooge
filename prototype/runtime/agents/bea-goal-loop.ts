@@ -130,9 +130,7 @@ export const beaGoalDeriver: GoalDeriver = async (
 
   // Build procedure citations — use coverage-gap form per §3.4 contract.
   // The procedure file may not have step anchors yet (pre-backfill).
-  const procedureEntry = spec.procedureSteps.find(
-    (s) => s.procedurePath === BEA_PROCEDURE_PATH,
-  );
+  const procedureEntry = spec.procedureSteps.find((s) => s.procedurePath === BEA_PROCEDURE_PATH);
   const stepId =
     procedureEntry && procedureEntry.stepIds.length > 0
       ? (procedureEntry.stepIds[0] ?? BEA_PROCEDURE_STEP_ID)
@@ -160,8 +158,7 @@ export const beaGoalDeriver: GoalDeriver = async (
   // phase the reconciliation goal fires more frequently to validate the
   // pipeline end-to-end.
   const lastRecon = lastSubLedgerReconciledMs();
-  const needsRecon =
-    lastRecon === undefined || Date.now() - lastRecon > TWENTY_FOUR_HOURS_MS;
+  const needsRecon = lastRecon === undefined || Date.now() - lastRecon > TWENTY_FOUR_HOURS_MS;
 
   if (needsRecon) {
     if (!validateGoal(SUBLEDGER_RECON_GOAL)) return null;
@@ -283,12 +280,8 @@ export const beaGoalDeriver: GoalDeriver = async (
   logger.info(
     {
       agentUrn: args.agent.urn,
-      lastReconAgo: lastRecon
-        ? `${Math.round((Date.now() - lastRecon) / 60_000)}min`
-        : "never",
-      lastCloseAgo: lastClose
-        ? `${Math.round((Date.now() - lastClose) / 60_000)}min`
-        : "never",
+      lastReconAgo: lastRecon ? `${Math.round((Date.now() - lastRecon) / 60_000)}min` : "never",
+      lastCloseAgo: lastClose ? `${Math.round((Date.now() - lastClose) / 60_000)}min` : "never",
       lastSnapshotAgo: lastSnapshot
         ? `${Math.round((Date.now() - lastSnapshot) / 60_000)}min`
         : "never",
