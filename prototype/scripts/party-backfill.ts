@@ -140,7 +140,7 @@ const CEO_SEAT_RELATIONSHIP_CITATIONS = [
 // record can land as a deliberate re-emission rather than colliding
 // with v1 by accident.
 export const MARC_CEO_SEED_ID = "seed:ceo-marc:v1";
-export const MARC_PARTY_URN: PartyId = `urn:party:natural-person:marc`;
+export const MARC_PARTY_URN: PartyId = "urn:party:natural-person:marc";
 // Top-of-house roster labels that resolve to Marc in PR 3. These are
 // the literal string values that appear in `reportsTo` for the 10
 // governance / chief-of-staff personas; on registration they each
@@ -683,7 +683,11 @@ function backfillAgents(
     // PR 3 — if the persona's `reportsTo` is a top-of-house label
     // ("CEO" / "Marc") and the founding CEO seat is registered, route
     // the edge to Marc's natural-person Party.
-    if (!toPartyId && topOfHousePartyId && TOP_OF_HOUSE_LABELS.has(persona.reportsTo.toLowerCase())) {
+    if (
+      !toPartyId &&
+      topOfHousePartyId &&
+      TOP_OF_HOUSE_LABELS.has(persona.reportsTo.toLowerCase())
+    ) {
       toPartyId = topOfHousePartyId;
     }
     if (!toPartyId) continue;
@@ -865,9 +869,9 @@ interface CeoSeatStepResult {
  * legal-entity-tree seed naming.
  */
 const HOZ_ENTITY_PARTY_URNS: readonly PartyId[] = [
-  `urn:party:legal-entity:hoz-group`,
-  `urn:party:legal-entity:hoz-bank`,
-  `urn:party:legal-entity:hoz-securities`,
+  "urn:party:legal-entity:hoz-group",
+  "urn:party:legal-entity:hoz-bank",
+  "urn:party:legal-entity:hoz-securities",
 ];
 
 function backfillCeoSeat(

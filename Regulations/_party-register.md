@@ -63,14 +63,16 @@ URL-safe. Examples:
 | Legal entity | 3 |
 | Counterparty | 0 |
 | Agent | 27 |
-| Natural person | 0 |
-| **Total** | **30** |
+| Natural person | 1 |
+| **Total** | **31** |
 
-The 0 counts for counterparty + natural person are the build-phase
-default (per CLAUDE.md "Build phase vs licence-day" — no real customers
-yet; signatory natural persons activate when a counterparty progresses
-past KYC). PR 3 of D-PARTY-REGISTER mints Marc as the first
-natural-person Party (CEO seat), at which point the count becomes ≥ 1.
+The 0 counts for counterparty are the build-phase default (per CLAUDE.md
+"Build phase vs licence-day" — no real customers yet). The
+natural-person count is **1** as of PR 3 of D-PARTY-REGISTER (Marc as
+the founding CEO seat); subsequent natural persons land at licence-day
+when the statutory human roster (directors, MLRO, CISO, CAE, auditor)
+is appointed and signatory natural persons land per `signatory-of`
+edges as counterparties progress past KYC.
 
 ### Legal-entity Parties
 
@@ -102,9 +104,10 @@ on dashboard boot
 ([`prototype/scripts/register-fleet.ts`](../prototype/scripts/register-fleet.ts)).
 
 The `reports-to` edges across the workforce are in the relationships
-register. Edges where the source persona reports to a non-Party label
-("CEO", "Marc") do not currently resolve in the graph; they activate in
-PR 3 when the natural-person CEO seat is registered.
+register. As of PR 3, all 27 personas resolve up the chain to Marc's
+natural-person Party — top-of-house personas whose roster `reportsTo`
+is "CEO" / "Marc" emit a direct edge into Marc; the remaining 17
+personas resolve via in-fleet edges to a top-of-house persona.
 
 ### Counterparty Parties
 
@@ -118,16 +121,37 @@ current lifecycle status). When the first sounding lands, the row appears.
 
 ### Natural-person Parties
 
-Empty at v0 — pre-licence-day data scope per CLAUDE.md "Build phase vs
-licence-day". The first natural-person Party will be Marc (CEO seat,
-PR 3). Subsequent natural-person Parties land as:
+As of PR 3, the founding **CEO seat** is registered. Subsequent
+natural-person Parties land as the build phase advances and at
+licence-day per CLAUDE.md "Build phase vs licence-day".
+
+| Party URN | Display name | Legal name | Purpose roles | Jurisdictions / tax residencies | Source |
+|---|---|---|---|---|---|
+| `urn:party:natural-person:marc` | Marc | Marc Hou | `ceo` | ZA / ZA | Founding CEO seat (PR 3) — see [`prototype/scripts/party-backfill.ts`](../prototype/scripts/party-backfill.ts) `backfillCeoSeat` step (`MARC_CEO_SEED_ID = "seed:ceo-marc:v1"`). |
+
+Per CLAUDE.md identity (`Owner: Marc (marc@tgv.co.za)`) and the
+`marchouze` git identity memory. Citations on the registration event:
+Companies Act 71 of 2008 § 66 (board / CEO statutory director slot),
+Banks Act 94 of 1990 § 60 + Reg 36 (controlling-company governance),
+D-LEGAL-ENTITY-TREE-V0 (CEO seat sits across all three Hoz entities
+under the shared-board v0 model), D-PARTY-REGISTER, POPIA Act 4 of
+2013 s.19–22.
+
+Subsequent natural-person Parties land as:
 
 - Directors as fit-and-proper assessments clear (per Owen, Company
   Secretary).
 - Signatories on any counterparty that progresses past KYC (auto-minted
   by the substrate from `AuthorisedSignatoryAdded` events).
-- The human CEO / MLRO / Information Officer / CAE / auditor at
-  licence-day (statutory humans only).
+- The human MLRO / Information Officer / CAE / CISO / auditor at
+  licence-day (statutory humans only — Marc remains CEO).
+
+PII discipline (Principle 4 + POPIA s.19–22) — Marc's record carries
+only minimisation-safe fields (`displayName`, `legalName`,
+`nationalities`, `taxResidencies`, `purposeRoles`); `dobHashRef` and
+`piiDocumentRef` are unset pre-licence-day. The full PII bundle (DOB,
+ID number, residential address, source-of-funds documentation)
+registers via the BLAKE3 document store at licence-day.
 
 PII discipline (Principle 4 + POPIA s.19–22): natural-person events
 carry only minimisation-safe fields (`displayName`, `legalName`,
@@ -158,12 +182,14 @@ Per Principle 7 (substrate-gap inventory transparency).
 
 | # | Gap | Owner(s) | Trigger |
 |---|---|---|---|
-| 1 | First natural-person Party — Marc as CEO seat | Imani + Owen | PR 3 of D-PARTY-REGISTER (queues behind PR 2) |
+| 1 | ~~First natural-person Party — Marc as CEO seat~~ | Imani + Owen | **CLOSED PR 3** — `urn:party:natural-person:marc` registered with `purposeRoles: ["ceo"]`; backfill step `backfillCeoSeat` keyed by `MARC_CEO_SEED_ID = "seed:ceo-marc:v1"`. |
 | 2 | Field-tightening on `customer/types.ts` (`personId: string` → `PartyId`); deprecation flags on legacy registration event types | Atlas | PR 4 of D-PARTY-REGISTER |
 | 3 | `BeneficialOwnerChainAsserted` worked example (FIC Act s.21B UBO chain through to natural-person) | Imani + Mira (Compliance / RegTech engineer; reports to Zara, Chief Compliance Officer, governance) | PR 5 of D-PARTY-REGISTER |
-| 4 | Top-of-house `reports-to` edges (e.g. Devon → CEO; Owen → CEO) — currently labelled "CEO" / "Marc" in the roster, not a Party URN; resolve when PR 3 activates the CEO seat | Imani + Owen | PR 3 |
+| 4 | ~~Top-of-house `reports-to` edges (e.g. Devon → CEO; Owen → CEO)~~ | Imani + Owen | **CLOSED PR 3** — 10 top-of-house personas now emit `reports-to` edges into Marc's natural-person Party via the agent-step's `topOfHousePartyId` resolution. |
 | 5 | `Party*` event types not yet in any agent's `eventEmitAllowList` — backfill runs as `system` actor by design (substrate-side seed-loader, not autonomous-agent emit). When agents start emitting Party events directly (post-PR 4), their permission policies need extending. | Atlas + Senna (Security engineer) | PR 4 / PR 5 |
 | 6 | Deprecated event types (`LegalEntityRegistered` / `agentRegistered` / `CounterpartySoundingOpened` / `…ProspectRegistered` / `AuthorisedSignatoryAdded` / `…Removed` / `CounterpartyActivated` / `CounterpartyOffboarded`) need `status: "deprecated"` in the registry so Vera catches new emissions | Atlas | PR 4 of D-PARTY-REGISTER |
+| 7 | Marc's PII bundle (DOB, ID number, residential address, source-of-funds documentation) registers via the BLAKE3 document store with `piiDocumentRef` + `dobHashRef` populated | Imani + Iris (Information Officer, governance) | Licence-day |
+| 8 | `purposeRoles` enum should grow a dedicated `ceo-seat` value distinct from licence-day `ceo` to surface the build-phase founding seat in audit views (currently both collapse to `ceo`) | Atlas + Imani | Wave-5 / PR 4+ |
 
 ## Citation chain
 
