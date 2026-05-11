@@ -248,13 +248,7 @@ function scanObligations(opts: RunOpts): {
     if (!m?.[1]) {
       violations.push({
         subject: `${subjectBase}:line-${i + 1}:${id}`,
-        message:
-          `Obligation row \`${id}\` is missing the \`riskTaxonomy\` field. ` +
-          "Expected behaviour: annotate the row with `riskTaxonomy: RT-<code>` " +
-          "drawn from the canonical register at `Regulations/_risk-taxonomy.md` " +
-          "(typed enum at `prototype/platform/risk/taxonomy.ts`). Backfill is " +
-          "scoped to Mira (Compliance / RegTech engineer) under standing " +
-          "register-curator mandate. Recon mode is advisory in v1.",
+        message: `Obligation row \`${id}\` is missing the \`riskTaxonomy\` field. Expected behaviour: annotate the row with \`riskTaxonomy: RT-<code>\` drawn from the canonical register at \`Regulations/_risk-taxonomy.md\` (typed enum at \`prototype/platform/risk/taxonomy.ts\`). Backfill is scoped to Mira (Compliance / RegTech engineer) under standing register-curator mandate. Recon mode is advisory in v1.`,
         severity: "warn",
       });
       continue;
@@ -263,9 +257,7 @@ function scanObligations(opts: RunOpts): {
     if (codes.length === 0) {
       violations.push({
         subject: `${subjectBase}:line-${i + 1}:${id}`,
-        message:
-          `Obligation row \`${id}\` declares \`riskTaxonomy\` but the value parsed empty. ` +
-          "Use `riskTaxonomy: RT-<code>` (single) or `riskTaxonomy: [RT-X, RT-Y]` (multi).",
+        message: `Obligation row \`${id}\` declares \`riskTaxonomy\` but the value parsed empty. Use \`riskTaxonomy: RT-<code>\` (single) or \`riskTaxonomy: [RT-X, RT-Y]\` (multi).`,
         severity: "warn",
       });
       continue;
@@ -274,11 +266,7 @@ function scanObligations(opts: RunOpts): {
       if (!VALID_CODES.has(code)) {
         violations.push({
           subject: `${subjectBase}:line-${i + 1}:${id}`,
-          message:
-            `Obligation row \`${id}\` declares \`riskTaxonomy: ${code}\` — code not in ` +
-            "canonical register at `Regulations/_risk-taxonomy.md` (94 codes: 11 L1 + 56 L2 + 27 L3). " +
-            "Replace with a valid `RiskTaxonomyCode` or, if no fit, propose a taxonomy " +
-            "amendment via the Board-gated process in register §9.",
+          message: `Obligation row \`${id}\` declares \`riskTaxonomy: ${code}\` — code not in canonical register at \`Regulations/_risk-taxonomy.md\` (94 codes: 11 L1 + 56 L2 + 27 L3). Replace with a valid \`RiskTaxonomyCode\` or, if no fit, propose a taxonomy amendment via the Board-gated process in register §9.`,
           severity: "warn",
         });
       }
@@ -323,12 +311,7 @@ function scanRas(opts: RunOpts): {
     if (!m?.[1]) {
       violations.push({
         subject: `${subjectBase}:line-${cur.idx + 1}:${cur.label}`,
-        message:
-          `RAS line \`${cur.label}\` is missing the \`riskTaxonomy\` annotation. ` +
-          "Expected behaviour: add `riskTaxonomy: RT-<code>` (or array) to the " +
-          "line's body, drawn from `Regulations/_risk-taxonomy.md`. Backfill " +
-          "owner: Helena (Chief Risk Officer, governance) + Rohan (Risk engineer). " +
-          "Recon mode is advisory in v1.",
+        message: `RAS line \`${cur.label}\` is missing the \`riskTaxonomy\` annotation. Expected behaviour: add \`riskTaxonomy: RT-<code>\` (or array) to the line's body, drawn from \`Regulations/_risk-taxonomy.md\`. Backfill owner: Helena (Chief Risk Officer, governance) + Rohan (Risk engineer). Recon mode is advisory in v1.`,
         severity: "warn",
       });
       continue;
@@ -338,10 +321,7 @@ function scanRas(opts: RunOpts): {
       if (!VALID_CODES.has(code)) {
         violations.push({
           subject: `${subjectBase}:line-${cur.idx + 1}:${cur.label}`,
-          message:
-            `RAS line \`${cur.label}\` declares \`riskTaxonomy: ${code}\` — code not in ` +
-            "canonical register at `Regulations/_risk-taxonomy.md`. Replace with a valid " +
-            "`RiskTaxonomyCode` or propose a taxonomy amendment.",
+          message: `RAS line \`${cur.label}\` declares \`riskTaxonomy: ${code}\` — code not in canonical register at \`Regulations/_risk-taxonomy.md\`. Replace with a valid \`RiskTaxonomyCode\` or propose a taxonomy amendment.`,
           severity: "warn",
         });
       }
@@ -376,7 +356,7 @@ function scanPolicies(opts: RunOpts): {
       violations.push({
         subject,
         message:
-          `Policy / charter / mandate file is missing the \`riskTaxonomy\` field in frontmatter. ` +
+          "Policy / charter / mandate file is missing the `riskTaxonomy` field in frontmatter. " +
           "Expected behaviour: add `riskTaxonomy: RT-<code>` (or array for multi-risk policies) " +
           "to the document's YAML frontmatter, drawn from `Regulations/_risk-taxonomy.md`. " +
           "Backfill owner: the policy's stated `author:` seat. Recon mode is advisory in v1.",
@@ -399,10 +379,7 @@ function scanPolicies(opts: RunOpts): {
       if (!VALID_CODES.has(code)) {
         violations.push({
           subject: `${subject}:line-${hit.lineNumber}`,
-          message:
-            `Policy declares \`riskTaxonomy: ${code}\` — code not in canonical register ` +
-            "at `Regulations/_risk-taxonomy.md`. Replace with a valid `RiskTaxonomyCode` " +
-            "or propose a taxonomy amendment via the Board-gated process in register §9.",
+          message: `Policy declares \`riskTaxonomy: ${code}\` — code not in canonical register at \`Regulations/_risk-taxonomy.md\`. Replace with a valid \`RiskTaxonomyCode\` or propose a taxonomy amendment via the Board-gated process in register §9.`,
           severity: "warn",
         });
       }
