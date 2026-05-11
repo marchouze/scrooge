@@ -96,15 +96,7 @@ export const feedbackPayloadSchema = z.object({
   ]),
   intakeAt: z.string().min(1),
   subject: z.object({
-    kind: z.enum([
-      "decision",
-      "brief",
-      "run",
-      "register",
-      "policy",
-      "principle",
-      "operating-rule",
-    ]),
+    kind: z.enum(["decision", "brief", "run", "register", "policy", "principle", "operating-rule"]),
     ref: z.string().min(1),
   }),
   body: z.string().min(1),
