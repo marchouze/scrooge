@@ -1,0 +1,416 @@
+{
+  "$schema": "Regulations/_party-register.md",
+  "asOf": "2026-05-11",
+  "source": "D-PARTY-REGISTER PR 3 (CEO-approved 2026-05-11) — Marc CEO seat live",
+  "totals": {
+    "legal-entity": 3,
+    "counterparty": 0,
+    "agent": 27,
+    "natural-person": 1
+  },
+  "partiesByKind": {
+    "natural-person": [
+      {
+        "partyId": "urn:party:natural-person:marc",
+        "displayName": "Marc",
+        "legalName": "Marc Hou",
+        "jurisdictions": ["ZA"],
+        "taxResidencies": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "natural-person",
+          "nationalities": ["ZA"],
+          "purposeRoles": ["ceo"]
+        },
+        "registeredAt": "2026-05-11T00:00:00.000Z"
+      }
+    ],
+    "legal-entity": [
+      {
+        "partyId": "urn:party:legal-entity:hoz-bank",
+        "displayName": "Hoz Bank Limited",
+        "legalName": "Hoz Bank Limited",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": "urn:party:legal-entity:hoz-group",
+          "primaryRegulator": "PA",
+          "regimeAnchor": [
+            "Banks Act 94 of 1990 (s.7 banking licence)",
+            "Joint Standards",
+            "BCBS principles as applied by PA",
+            "FAIS Act 37 of 2002 (where applicable per D-FSP-LICENCE-NECESSITY)"
+          ]
+        },
+        "registeredAt": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:hoz-group",
+        "displayName": "Hoz Group Limited",
+        "legalName": "Hoz Group Limited",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "none-companies-act-only",
+          "regimeAnchor": [
+            "Companies Act 71 of 2008",
+            "Banks Act 94 of 1990 § 60 (consolidated-supervision look-through, not separate licence)"
+          ]
+        },
+        "registeredAt": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:hoz-securities",
+        "displayName": "Hoz Securities Limited",
+        "legalName": "Hoz Securities Limited",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": "urn:party:legal-entity:hoz-group",
+          "primaryRegulator": "JSE",
+          "regimeAnchor": [
+            "JSE Listings Requirements",
+            "JSE Equities + Bonds Membership Rules",
+            "STRATE Participant Rules",
+            "FAIS Act 37 of 2002 (secondary, FSCA conduct standards)"
+          ]
+        },
+        "registeredAt": "2026-05-11T00:00:00.000Z"
+      }
+    ],
+    "counterparty": [],
+    "agent": [
+      {
+        "partyId": "urn:party:agent:anya",
+        "displayName": "Anya",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Anya.md",
+          "mandate": "Data / analytics engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.675Z"
+      },
+      {
+        "partyId": "urn:party:agent:atlas",
+        "displayName": "Atlas",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Atlas.md",
+          "mandate": "Core banking platform architect"
+        },
+        "registeredAt": "2026-05-11T05:22:35.655Z"
+      },
+      {
+        "partyId": "urn:party:agent:bea",
+        "displayName": "Bea",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Bea.md",
+          "mandate": "Accounting & financial reporting engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.656Z"
+      },
+      {
+        "partyId": "urn:party:agent:camille",
+        "displayName": "Camille",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Camille.md",
+          "mandate": "Chief Financial Officer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.684Z"
+      },
+      {
+        "partyId": "urn:party:agent:devon",
+        "displayName": "Devon",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Devon.md",
+          "mandate": "Chief Operating Officer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.683Z"
+      },
+      {
+        "partyId": "urn:party:agent:eitan",
+        "displayName": "Eitan",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Eitan.md",
+          "mandate": "Treasurer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.685Z"
+      },
+      {
+        "partyId": "urn:party:agent:helena",
+        "displayName": "Helena",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Helena.md",
+          "mandate": "Chief Risk Officer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.677Z"
+      },
+      {
+        "partyId": "urn:party:agent:imani",
+        "displayName": "Imani",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Imani.md",
+          "mandate": "Legal-as-code engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.666Z"
+      },
+      {
+        "partyId": "urn:party:agent:iris",
+        "displayName": "Iris",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Iris.md",
+          "mandate": "Information Officer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.681Z"
+      },
+      {
+        "partyId": "urn:party:agent:kai",
+        "displayName": "Kai",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Kai.md",
+          "mandate": "Trading systems engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.660Z"
+      },
+      {
+        "partyId": "urn:party:agent:mira",
+        "displayName": "Mira",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Mira.md",
+          "mandate": "Compliance / RegTech engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.658Z"
+      },
+      {
+        "partyId": "urn:party:agent:nadia",
+        "displayName": "Nadia",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Nadia.md",
+          "mandate": "Independent-validation engineer (second line)"
+        },
+        "registeredAt": "2026-05-11T05:22:35.663Z"
+      },
+      {
+        "partyId": "urn:party:agent:niko",
+        "displayName": "Niko",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Niko.md",
+          "mandate": "Sales / CRM engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.669Z"
+      },
+      {
+        "partyId": "urn:party:agent:nolan",
+        "displayName": "Nolan",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Nolan.md",
+          "mandate": "Recruiter"
+        },
+        "registeredAt": "2026-05-11T05:22:35.653Z"
+      },
+      {
+        "partyId": "urn:party:agent:owen",
+        "displayName": "Owen",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Owen.md",
+          "mandate": "Company Secretary"
+        },
+        "registeredAt": "2026-05-11T05:22:35.678Z"
+      },
+      {
+        "partyId": "urn:party:agent:pax",
+        "displayName": "PAX",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/PAX.md",
+          "mandate": "Role researcher"
+        },
+        "registeredAt": "2026-05-11T05:22:35.649Z"
+      },
+      {
+        "partyId": "urn:party:agent:rashida",
+        "displayName": "Rashida",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Rashida.md",
+          "mandate": "Chief Information Security Officer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.690Z"
+      },
+      {
+        "partyId": "urn:party:agent:ravi",
+        "displayName": "Ravi",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Ravi.md",
+          "mandate": "Treasury / ALM engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.674Z"
+      },
+      {
+        "partyId": "urn:party:agent:rohan",
+        "displayName": "Rohan",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Rohan.md",
+          "mandate": "Risk engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.661Z"
+      },
+      {
+        "partyId": "urn:party:agent:sade",
+        "displayName": "Sade",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Sade.md",
+          "mandate": "HR systems engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.667Z"
+      },
+      {
+        "partyId": "urn:party:agent:saskia",
+        "displayName": "Saskia",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Saskia.md",
+          "mandate": "Head of Global Markets"
+        },
+        "registeredAt": "2026-05-11T05:22:35.687Z"
+      },
+      {
+        "partyId": "urn:party:agent:senna",
+        "displayName": "Senna",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Senna.md",
+          "mandate": "Security engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.673Z"
+      },
+      {
+        "partyId": "urn:party:agent:thandiwe",
+        "displayName": "Thandiwe",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Thandiwe.md",
+          "mandate": "Chief Audit Executive"
+        },
+        "registeredAt": "2026-05-11T05:22:35.688Z"
+      },
+      {
+        "partyId": "urn:party:agent:tomas",
+        "displayName": "Tomas",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Tomas.md",
+          "mandate": "Operations & payments engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.664Z"
+      },
+      {
+        "partyId": "urn:party:agent:vera",
+        "displayName": "Vera",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Vera.md",
+          "mandate": "Internal audit / continuous-assurance engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.671Z"
+      },
+      {
+        "partyId": "urn:party:agent:yael",
+        "displayName": "Yael",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Yael.md",
+          "mandate": "Tax engineer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.670Z"
+      },
+      {
+        "partyId": "urn:party:agent:zara",
+        "displayName": "Zara",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "agent",
+          "personaSpecPath": "Team/Zara.md",
+          "mandate": "Chief Compliance Officer"
+        },
+        "registeredAt": "2026-05-11T05:22:35.680Z"
+      }
+    ]
+  }
+}

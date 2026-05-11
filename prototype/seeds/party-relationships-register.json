@@ -1,0 +1,401 @@
+{
+  "$schema": "Regulations/_party-relationships-register.md",
+  "asOf": "2026-05-11",
+  "source": "D-PARTY-REGISTER PR 3 + D-PARTY-RELATIONSHIP-KINDS-V0",
+  "totals": {
+    "live": 32,
+    "byKind": {
+      "acts-on-behalf-of": 3,
+      "parent-of": 2,
+      "reports-to": 27
+    }
+  },
+  "edgesByKind": {
+    "acts-on-behalf-of": [
+      {
+        "relationshipId": "relationship:acts-on-behalf-of:urn:party:natural-person:marc->urn:party:legal-entity:hoz-bank",
+        "fromPartyId": "urn:party:natural-person:marc",
+        "toPartyId": "urn:party:legal-entity:hoz-bank",
+        "kind": "acts-on-behalf-of",
+        "scopeJson": {
+          "source": "ceo-seat-seed",
+          "seedId": "seed:ceo-marc:v1",
+          "shareBoardModel": "D-LEGAL-ENTITY-TREE-V0 v0 shared-board"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:acts-on-behalf-of:urn:party:natural-person:marc->urn:party:legal-entity:hoz-group",
+        "fromPartyId": "urn:party:natural-person:marc",
+        "toPartyId": "urn:party:legal-entity:hoz-group",
+        "kind": "acts-on-behalf-of",
+        "scopeJson": {
+          "source": "ceo-seat-seed",
+          "seedId": "seed:ceo-marc:v1",
+          "shareBoardModel": "D-LEGAL-ENTITY-TREE-V0 v0 shared-board"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:acts-on-behalf-of:urn:party:natural-person:marc->urn:party:legal-entity:hoz-securities",
+        "fromPartyId": "urn:party:natural-person:marc",
+        "toPartyId": "urn:party:legal-entity:hoz-securities",
+        "kind": "acts-on-behalf-of",
+        "scopeJson": {
+          "source": "ceo-seat-seed",
+          "seedId": "seed:ceo-marc:v1",
+          "shareBoardModel": "D-LEGAL-ENTITY-TREE-V0 v0 shared-board"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      }
+    ],
+    "parent-of": [
+      {
+        "relationshipId": "relationship:parent-of:urn:party:legal-entity:hoz-group->urn:party:legal-entity:hoz-bank",
+        "fromPartyId": "urn:party:legal-entity:hoz-group",
+        "toPartyId": "urn:party:legal-entity:hoz-bank",
+        "kind": "parent-of",
+        "scopeJson": {
+          "source": "legal-entity-tree-seed"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:parent-of:urn:party:legal-entity:hoz-group->urn:party:legal-entity:hoz-securities",
+        "fromPartyId": "urn:party:legal-entity:hoz-group",
+        "toPartyId": "urn:party:legal-entity:hoz-securities",
+        "kind": "parent-of",
+        "scopeJson": {
+          "source": "legal-entity-tree-seed"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      }
+    ],
+    "reports-to": [
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:anya->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:anya",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Anya",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:atlas->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:atlas",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Atlas",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:bea->urn:party:agent:camille",
+        "fromPartyId": "urn:party:agent:bea",
+        "toPartyId": "urn:party:agent:camille",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Bea",
+          "reportsToLabel": "Camille"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:camille->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:camille",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Camille",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:devon->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:devon",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Devon",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:eitan->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:eitan",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Eitan",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:helena->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:helena",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Helena",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:imani->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:imani",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Imani",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:iris->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:iris",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Iris",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:kai->urn:party:agent:saskia",
+        "fromPartyId": "urn:party:agent:kai",
+        "toPartyId": "urn:party:agent:saskia",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Kai",
+          "reportsToLabel": "Saskia"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:mira->urn:party:agent:zara",
+        "fromPartyId": "urn:party:agent:mira",
+        "toPartyId": "urn:party:agent:zara",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Mira",
+          "reportsToLabel": "Zara"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:nadia->urn:party:agent:helena",
+        "fromPartyId": "urn:party:agent:nadia",
+        "toPartyId": "urn:party:agent:helena",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Nadia",
+          "reportsToLabel": "Helena"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:niko->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:niko",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Niko",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:nolan->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:nolan",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Nolan",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:owen->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:owen",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Owen",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:pax->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:pax",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "PAX",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:rashida->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:rashida",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Rashida",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:ravi->urn:party:agent:eitan",
+        "fromPartyId": "urn:party:agent:ravi",
+        "toPartyId": "urn:party:agent:eitan",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Ravi",
+          "reportsToLabel": "Eitan"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:rohan->urn:party:agent:helena",
+        "fromPartyId": "urn:party:agent:rohan",
+        "toPartyId": "urn:party:agent:helena",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Rohan",
+          "reportsToLabel": "Helena"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:sade->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:sade",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Sade",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:saskia->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:saskia",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Saskia",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:senna->urn:party:agent:rashida",
+        "fromPartyId": "urn:party:agent:senna",
+        "toPartyId": "urn:party:agent:rashida",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Senna",
+          "reportsToLabel": "Rashida"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:thandiwe->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:thandiwe",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Thandiwe",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:tomas->urn:party:agent:devon",
+        "fromPartyId": "urn:party:agent:tomas",
+        "toPartyId": "urn:party:agent:devon",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Tomas",
+          "reportsToLabel": "Devon"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:vera->urn:party:agent:thandiwe",
+        "fromPartyId": "urn:party:agent:vera",
+        "toPartyId": "urn:party:agent:thandiwe",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Vera",
+          "reportsToLabel": "Thandiwe"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:yael->urn:party:agent:camille",
+        "fromPartyId": "urn:party:agent:yael",
+        "toPartyId": "urn:party:agent:camille",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Yael",
+          "reportsToLabel": "Camille"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      },
+      {
+        "relationshipId": "relationship:reports-to:urn:party:agent:zara->urn:party:natural-person:marc",
+        "fromPartyId": "urn:party:agent:zara",
+        "toPartyId": "urn:party:natural-person:marc",
+        "kind": "reports-to",
+        "scopeJson": {
+          "source": "team-roster",
+          "persona": "Zara",
+          "reportsToLabel": "CEO"
+        },
+        "effectiveFrom": "2026-05-11T00:00:00.000Z"
+      }
+    ]
+  }
+}

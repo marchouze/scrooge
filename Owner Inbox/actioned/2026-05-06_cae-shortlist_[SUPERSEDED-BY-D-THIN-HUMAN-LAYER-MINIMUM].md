@@ -1,3 +1,19 @@
+---
+title: Chief Audit Executive — shortlist
+author: Nolan
+date: 2026-05-06
+summary: Real-CAE-hire shortlist + recommendation. Superseded — build-phase pause on real employees beyond statutory minimum; CAE seat is engineering-fronted by Vera (CAE) until licence-day.
+decision-required: false
+superseded-by:
+  - decision-id: D-THIN-HUMAN-LAYER-MINIMUM
+    decision-date: 2026-05-08
+    note: "Licence-day human layer is six-humans-plus-Marc-plus-audit-firm; CAE seat is not in the licence-day human roster. Real CAE hire activates only if/when the law requires (currently engineering-fronted)."
+  - reference: project_ai_driven_bank.md
+    note: "Build-phase has no real employees beyond statutory minimum (memory project_ai_driven_bank set 2026-05-07). The CAE-hire framing in this shortlist pre-dates that operating-model commitment."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Chief Audit Executive — shortlist
 
 **Author:** Nolan (Recruiter)

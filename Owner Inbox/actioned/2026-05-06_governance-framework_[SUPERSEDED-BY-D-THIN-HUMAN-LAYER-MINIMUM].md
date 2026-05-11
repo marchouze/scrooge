@@ -1,3 +1,25 @@
+---
+title: Governance framework (initial)
+author: Helena, Owen, Zara, Iris, Imani
+date: 2026-05-06
+summary: First-pass governance framework. Superseded — the licence-day composition + legal-entity tree + FSP-licence-necessity confirmation now sit in their own canonical CeoDecision records and Owen's final-composition paper.
+decision-required: false
+superseded-by:
+  - decision-id: D-THIN-HUMAN-LAYER-MINIMUM
+    decision-date: 2026-05-08
+    note: "Licence-day human-layer composition is now the six-humans-plus-Marc-plus-audit-firm composition codified in 2026-05-09_owen_thin-human-layer-composition-final.md."
+  - decision-id: D-LEGAL-ENTITY-TREE-V0
+    decision-date: 2026-05-09
+    note: "Legal-entity dimension (Hoz Group / Hoz Bank / Hoz Securities) is now its own CeoDecision record + typed register in prototype/platform/legal/_legal-entity-tree.md."
+  - decision-id: D-FSP-LICENCE-NECESSITY
+    decision-date: 2026-05-09
+    note: "FAIS KI scope-gate is closed under D-FSP-LICENCE-NECESSITY confirm-A; no longer the pending question framed in the original framework."
+  - reference: Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md
+    note: "Owen's final composition paper is the canonical governance-composition record today."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Governance framework
 
 **Author:** Helena (CRO — lead)

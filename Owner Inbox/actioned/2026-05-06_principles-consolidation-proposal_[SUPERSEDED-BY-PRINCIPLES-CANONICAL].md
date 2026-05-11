@@ -1,3 +1,20 @@
+---
+title: Proposal — consolidate Principles 2, 6 and 7 into a single Traceability principle
+author: Scrooge
+date: 2026-05-06
+summary: Original proposal to consolidate three principles into one. Superseded — only old P6 + old P7 were consolidated (into current P6); P2 stayed separate; a new P7 (autonomous-by-default) was added on 2026-05-07.
+decision-required: false
+superseded-by:
+  - reference: Principles/1-events-are-truth.md
+    note: "Canonical principle files at Principles/1..7-*.md are the source of truth for principle text and numbering."
+  - reference: Principles/6-single-graph-discipline.md
+    note: "Old P6 + old P7 were consolidated into current P6 (single-graph discipline) on 2026-05-06; P2 (citation discipline) stayed as a separate principle, contrary to this proposal."
+  - reference: Principles/7-autonomous-by-default.md
+    note: "A new P7 (autonomous-by-default) was added on 2026-05-07 — see CLAUDE.md `Principle-numbering history` note."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Proposal — consolidate Principles 2, 6 and 7 into a single Traceability principle
 
 **Author:** Scrooge (Chief of Staff)

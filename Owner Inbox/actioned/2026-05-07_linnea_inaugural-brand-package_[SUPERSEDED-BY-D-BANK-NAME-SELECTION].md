@@ -2,13 +2,23 @@
 title: Inaugural brand package — name longlist, logo concepts, palette, typography, voice
 author: Linnea
 date: 2026-05-07
-summary: First run of the Linnea standing agent. Bank-name longlist with regulatory + IP + linguistic + market-positioning analysis; three logo concept directions; primary/secondary/neutral colour palette with WCAG AA-compliant contrast; typography system with open-licensed fonts; voice and tone principles; one-pager overall feel.
-decision-required: true
+summary: First run of the Linnea standing agent. Bank-name longlist (now resolved to Hoz under D-BANK-NAME-SELECTION revised); brand-application v3/v3-2 supersede the inaugural package's logo / palette / typography sections.
+decision-required: false
 decision-id: D-BANK-NAME-SELECTION
 decision-category: near-term
 decision-for-ceo: Choose the bank's name from the shortlist in §1 (or request additional candidates / different positioning).
 decision-recommendation: My top-three shortlist with rationale appears at the end of §1; a single recommendation appears in §1.7. Pick from the shortlist or send back with feedback.
 decision-owner: Linnea
+superseded-by:
+  - decision-id: D-BANK-NAME-SELECTION
+    decision-date: 2026-05-09
+    note: "D-BANK-NAME-SELECTION resolved to Hoz (revised — see 2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md). The Lucet recommendation in §1 is internally superseded by the v2 analysis pointer already noted at the head of §1."
+  - reference: Owner Inbox/2026-05-09_linnea_hoz-brand-application-v3.md
+    note: "Hoz brand application v3 supersedes the inaugural-package logo / palette / typography sections."
+  - reference: Owner Inbox/2026-05-09_linnea_hoz-sub-brand-application-v3-2.md
+    note: "Hoz sub-brand application v3.2 (Hoz Bank / Hoz Securities lockups, per D-LEGAL-ENTITY-TREE-V0) supersedes the single-entity brand framing here."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
 ---
 
 # Inaugural brand package
