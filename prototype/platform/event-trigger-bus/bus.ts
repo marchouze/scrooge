@@ -30,7 +30,7 @@ import type {
   SubscriptionEntry,
   SubscriptionsResult,
   TickResult,
-} from "./index";
+} from "./types";
 
 const DEFAULT_ENTITY = "BANK-ZA-001";
 const DEFAULT_ACTOR: Actor = {

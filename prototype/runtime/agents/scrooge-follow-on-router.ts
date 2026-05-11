@@ -48,10 +48,18 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
-import { HANDLER_CALLABLES } from "../handler-callables";
 import { lookupHandler } from "../handlers-metadata";
-import type { AgentRunContext, AgentRunOutput } from "../types";
+import type { AgentRunContext, AgentRunHandler, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
+
+// HANDLER_CALLABLES is injected via `createHandler` to break the
+// mutual import cycle:
+//   handler-callables.ts → scrooge-follow-on-router.ts
+//   scrooge-follow-on-router.ts → handler-callables.ts  ← cycle
+// The composition root (handler-callables.ts) calls createHandler()
+// after constructing the map; the router receives it via closure.
+// F-019 fix — Atlas (Core banking platform architect, engineering).
+type CallableMap = Readonly<Record<string, AgentRunHandler>>;
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
 
@@ -67,6 +75,7 @@ async function dispatchOne(
   parentCtx: AgentRunContext,
   route: string,
   decisionId: string,
+  callables: CallableMap,
 ): Promise<RouteOutcome> {
   // Route format: `agent:<lowercased-agent>:<trigger>` per A0 §4 #1's
   // identity convention. Strip the leading `agent:` and use the rest as
@@ -88,7 +97,7 @@ async function dispatchOne(
       reason: `No runtime handler registered for ${key}. Substrate gap: target needs to become a registered handler before auto-fire.`,
     };
   }
-  const callable = HANDLER_CALLABLES[key];
+  const callable = callables[key];
   if (!callable) {
     return {
       route,
@@ -161,7 +170,18 @@ function buildAuditMarkdown(
   return lines.join("\n");
 }
 
-const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
+/**
+ * Create the scrooge:follow-on-router handler with an injected callable map.
+ * Called from handler-callables.ts after the map is built to break the
+ * mutual import cycle (F-019).
+ */
+export function createHandler(callables: CallableMap): AgentRunHandler {
+  return async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
+    return runHandler(ctx, callables);
+  };
+}
+
+const runHandler = async (ctx: AgentRunContext, callables: CallableMap): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
   const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision");
 
@@ -208,7 +228,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
     const routeOutcomes: RouteOutcome[] = [];
     for (const route of followOnRoutes) {
-      const outcome = await dispatchOne(ctx, route, decisionId);
+      const outcome = await dispatchOne(ctx, route, decisionId, callables);
       routeOutcomes.push(outcome);
 
       // Emit an AgentEscalation for unresolved routes so the substrate
@@ -275,4 +295,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   };
 };
 
-export default handler;
+// Default export: a handler with an empty stub map.
+// handler-callables.ts calls createHandler(HANDLER_CALLABLES) and
+// registers the result instead of using this default, so in production
+// the callable map is always populated.  The default here keeps the
+// module shape consistent with all other agent handlers.
+export default createHandler({});

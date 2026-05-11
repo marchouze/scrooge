@@ -48,80 +48,18 @@
 //     implementation in composition.ts.
 //
 // Author: Atlas (A2.2)
+//
+// Interface definitions live in ./types.ts (extracted to break the
+// barrel → implementation → barrel cycle; F-019 fix). Re-exported here
+// for back-compat with existing callers.
 
-/**
- * One row of the bus's subscription registry. Derived from the canonical
- * handler-metadata registry on `syncSubscriptions()`.
- */
-export interface SubscriptionEntry {
-  /** Composite handler key from `runtime/handlers-metadata.ts`. */
-  readonly handlerKey: string;
-  /** Persona name as it appears in /Team/<Name>.md. */
-  readonly agent: string;
-  /** Trigger id — second half of the handler key. */
-  readonly triggerId: string;
-  /** Event types this handler subscribes to. */
-  readonly eventTypes: readonly string[];
-}
-
-export interface SubscriptionsResult {
-  readonly entries: readonly SubscriptionEntry[];
-  readonly count: number;
-}
-
-/**
- * One dispatch the bus performed on this tick. Mirrors the audit-trail
- * `BusDispatched` event so callers can observe activity without
- * re-reading the event store.
- */
-export interface DispatchResult {
-  readonly eventId: string;
-  readonly eventType: string;
-  readonly handlerKey: string;
-  readonly outcome: "ok" | "failed";
-  /** Failure reason when `outcome === "failed"`; undefined on success. */
-  readonly failureReason?: string;
-}
-
-export interface TickResult {
-  /** Dispatches performed in this tick (already-dispatched pairs are skipped silently). */
-  readonly dispatches: readonly DispatchResult[];
-  /** Number of source events the tick walked. */
-  readonly considered: number;
-  /**
-   * The new cursor — pass back to the next `tick()` to continue. By
-   * convention this is the highest sequence number processed plus one,
-   * so re-passing it picks up only newly-appended events.
-   */
-  readonly nextCursor: number;
-}
-
-export interface EventTriggerBus {
-  /**
-   * Derive subscriptions from the canonical handler-metadata registry.
-   * Idempotent — re-running with no metadata changes yields the same
-   * registry.
-   */
-  syncSubscriptions(): SubscriptionsResult;
-
-  /**
-   * Single tick — for any event in the store with sequence ≥ `fromSequence`,
-   * look up subscribers via the metadata registry and invoke them via
-   * the runtime's `runAgent()`. Skips (eventId, handlerKey) pairs already
-   * recorded as `BusDispatched`. Subscriber failures are isolated and
-   * surfaced via `SubstrateAlert{alertClass: "integrity"}`.
-   *
-   * Returns a new cursor; pass to the next tick to process only new
-   * events.
-   */
-  tick(fromSequence: number, now: Date): Promise<TickResult>;
-
-  /**
-   * List subscribers for a given event type. Pure — does not touch the
-   * store.
-   */
-  subscribersOf(eventType: string): readonly SubscriptionEntry[];
-}
+export type {
+  DispatchResult,
+  EventTriggerBus,
+  SubscriptionEntry,
+  SubscriptionsResult,
+  TickResult,
+} from "./types";
 
 export { LocalEventTriggerBus, defaultBusSource, inMemoryBusSource } from "./bus";
 export type { BusRunner, BusRunnerResult, BusSource, LocalEventTriggerBusConfig } from "./bus";
