@@ -91,6 +91,7 @@ import veraOvernightRecon from "./agents/vera-overnight-recon";
 import yaelEventTriage from "./agents/yael-event-triage";
 import yaelTaxReadiness from "./agents/yael-tax-readiness";
 import zaraEventTriage from "./agents/zara-event-triage";
+import zaraGoalLoop from "./agents/zara-goal-loop";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
 
@@ -134,6 +135,8 @@ const _map: Record<string, AgentRunHandler> = {
   "mira:goal-loop": miraGoalLoop,
   "senna:security-substrate-state": sennaSecuritySubstrateState,
   "zara:mlro-supervision": zaraMlroSupervision,
+  // zara:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "zara:goal-loop": zaraGoalLoop,
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
   // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.

@@ -208,6 +208,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "30 5 * * MON",
   }),
+  // zara:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Zara", "goal-loop", "on-request"),
   entry("Thandiwe", "audit-committee-prep", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "47 7 * * 2",
