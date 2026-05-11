@@ -456,12 +456,39 @@ function renderMarkdownLite(md) {
   let codeBuf = [];
   let inList = false;
   let listType = null;
+  let inTable = false;
+  let tableRows = [];
   const closeList = () => {
     if (inList) {
       out.push(listType === "ol" ? "</ol>" : "</ul>");
       inList = false;
       listType = null;
     }
+  };
+  const isTableSep = (r) => /^\|[\s\-:| ]+\|$/.test(r);
+  const parseTableCells = (r) => r.split("|").slice(1, -1).map((c) => c.trim());
+  const closeTable = () => {
+    if (!inTable || tableRows.length === 0) { inTable = false; tableRows = []; return; }
+    const sepIdx = tableRows.findIndex((r) => isTableSep(r));
+    const headRows = sepIdx === -1 ? [] : tableRows.slice(0, sepIdx);
+    const bodyRows = sepIdx === -1 ? tableRows : tableRows.slice(sepIdx + 1);
+    let html = '<div class="md-table-wrap"><table>';
+    if (headRows.length > 0) {
+      html += "<thead>";
+      for (const r of headRows)
+        html += "<tr>" + parseTableCells(r).map((c) => `<th>${inlineFormat(c)}</th>`).join("") + "</tr>";
+      html += "</thead>";
+    }
+    if (bodyRows.length > 0) {
+      html += "<tbody>";
+      for (const r of bodyRows)
+        html += "<tr>" + parseTableCells(r).map((c) => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
+      html += "</tbody>";
+    }
+    html += "</table></div>";
+    out.push(html);
+    inTable = false;
+    tableRows = [];
   };
   const inlineFormat = (line) => {
     let s = esc(line);
@@ -483,6 +510,7 @@ function renderMarkdownLite(md) {
         inCode = false;
       } else {
         closeList();
+        closeTable();
         inCode = true;
       }
       continue;
@@ -493,30 +521,31 @@ function renderMarkdownLite(md) {
     }
     if (!line.trim()) {
       closeList();
+      closeTable();
       continue;
     }
     const h1 = line.match(/^# (.+)$/);
     if (h1) {
-      closeList();
+      closeList(); closeTable();
       out.push(`<h2>${inlineFormat(h1[1])}</h2>`);
       continue;
     }
     const h2 = line.match(/^## (.+)$/);
     if (h2) {
-      closeList();
+      closeList(); closeTable();
       out.push(`<h3>${inlineFormat(h2[1])}</h3>`);
       continue;
     }
     const h3 = line.match(/^### (.+)$/);
     if (h3) {
-      closeList();
+      closeList(); closeTable();
       out.push(`<h4>${inlineFormat(h3[1])}</h4>`);
       continue;
     }
     const ul = line.match(/^[-*]\s+(.+)$/);
     if (ul) {
       if (!inList || listType !== "ul") {
-        closeList();
+        closeList(); closeTable();
         out.push("<ul>");
         inList = true;
         listType = "ul";
@@ -527,7 +556,7 @@ function renderMarkdownLite(md) {
     const ol = line.match(/^\d+\.\s+(.+)$/);
     if (ol) {
       if (!inList || listType !== "ol") {
-        closeList();
+        closeList(); closeTable();
         out.push("<ol>");
         inList = true;
         listType = "ol";
@@ -536,17 +565,24 @@ function renderMarkdownLite(md) {
       continue;
     }
     if (line.startsWith("> ")) {
-      closeList();
+      closeList(); closeTable();
       out.push(`<blockquote>${inlineFormat(line.slice(2))}</blockquote>`);
       continue;
     }
-    closeList();
+    if (line.startsWith("|")) {
+      closeList();
+      inTable = true;
+      tableRows.push(line);
+      continue;
+    }
+    closeList(); closeTable();
     out.push(`<p>${inlineFormat(line)}</p>`);
   }
   if (inCode) {
     out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
   }
   closeList();
+  closeTable();
   return out.join("\n");
 }
 

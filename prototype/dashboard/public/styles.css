@@ -1567,6 +1567,33 @@ main {
   color: var(--accent);
   text-decoration: underline;
 }
+.md-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 14px 0;
+}
+.md-table-wrap table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.md-table-wrap th,
+.md-table-wrap td {
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.md-table-wrap th {
+  background: var(--bg-soft, rgba(0, 0, 0, 0.05));
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.md-table-wrap tbody tr:nth-child(even) td {
+  background: var(--bg-soft, rgba(0, 0, 0, 0.025));
+}
 
 /* ---------- Top-bar nav link (used on /agents.html) ---------- */
 .nav-link {
