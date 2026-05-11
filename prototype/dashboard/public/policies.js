@@ -383,16 +383,70 @@ function closeDrill() {
 // TODO: extract; see /api/markdown/:scope/:filename refactor.
 // ---------------------------------------------------------------------------
 
+const POLICY_REGISTER_BASENAME = "2026-05-06_policy-register.md";
+
 let policyPreviewActive = null;
+
+// Returns the explicit source files for a policy (excluding the fallback register).
+function explicitSourceFiles(p) {
+  return (p.sourceFiles ?? []).filter((f) => f !== POLICY_REGISTER_BASENAME);
+}
+
+// Render a readable policy card from in-memory data — used when no
+// dedicated markdown document exists for the policy.
+function renderPolicyCard(p) {
+  const obligs = p.linkedObligations ?? [];
+  const rows = [
+    ["Domain", esc(p.domain)],
+    ["Owner", esc(p.owner || "—")],
+    ["Approval", esc(p.approval || "—")],
+    ["Cadence", esc(p.cadence || "—")],
+    ["Citation", `<code>${esc(p.citation || "—")}</code>`],
+    ["Status", esc(p.statusRaw || p.status || "—")],
+    [
+      "Sources",
+      (p.sources ?? []).length
+        ? (p.sources ?? [])
+            .map((s) => `<span class="pol-badge pol-source-${s.toLowerCase()}">${esc(s)}</span>`)
+            .join(" ")
+        : "—",
+    ],
+    [
+      "Bind",
+      (p.binds ?? []).length
+        ? (p.binds ?? [])
+            .map((b) => `<span class="pol-badge pol-bind-${b.toLowerCase()}">${esc(b)}</span>`)
+            .join(" ")
+        : "—",
+    ],
+    ["MVP", p.mvp ? "★ Yes" : "No"],
+    ["Obligations", obligs.length ? String(obligs.length) : "None linked"],
+  ];
+  const metaRows = rows
+    .map(
+      ([k, v]) =>
+        `<tr><th style="width:110px;text-align:left;padding:5px 12px 5px 0;color:var(--text-muted);font-weight:500;white-space:nowrap;vertical-align:top;">${k}</th><td style="padding:5px 0;">${v}</td></tr>`,
+    )
+    .join("");
+  let obliguBlock = "";
+  if (obligs.length) {
+    const items = obligs
+      .map(
+        (id) => `<li style="margin:2px 0;font-family:var(--mono);font-size:12px;">${esc(id)}</li>`,
+      )
+      .join("");
+    obliguBlock = `<div style="margin-top:18px;"><strong style="font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Linked obligations</strong><ul style="margin:6px 0 0 1.2em;padding:0;">${items}</ul></div>`;
+  }
+  return `<div style="padding:4px 0 12px;">
+    <table style="border-collapse:collapse;width:100%;font-size:13.5px;">${metaRows}</table>
+    ${obliguBlock}
+    <p style="margin-top:20px;font-size:12px;color:var(--text-muted);">No standalone policy document on file. Full register: <a href="/api/policy/${encodeURIComponent(POLICY_REGISTER_BASENAME)}" target="_blank" rel="noopener">${esc(POLICY_REGISTER_BASENAME)}</a></p>
+  </div>`;
+}
 
 async function openPolicyPreview(policyId, preferredFilename) {
   const p = allPolicies.find((x) => x.id === policyId);
   if (!p) return;
-  const sources = p.sourceFiles ?? [];
-  if (sources.length === 0) return;
-  const filename =
-    preferredFilename && sources.includes(preferredFilename) ? preferredFilename : sources[0];
-  policyPreviewActive = `${p.id}::${filename}`;
 
   const modal = $("policyPreviewModal");
   const titleEl = $("policyPreviewTitle");
@@ -401,6 +455,27 @@ async function openPolicyPreview(policyId, preferredFilename) {
   const pickerEl = $("policyPreviewSourcePicker");
   if (!modal || !bodyEl) return;
   if (titleEl) titleEl.textContent = p.name;
+
+  // Explicit files are those beyond the fallback register. If there are none,
+  // skip the fetch and render the policy card directly from in-memory data.
+  const explicit = explicitSourceFiles(p);
+  if (explicit.length === 0 && !preferredFilename) {
+    if (pathEl) pathEl.textContent = "Synthesised from policy register";
+    if (pickerEl) {
+      pickerEl.hidden = true;
+      pickerEl.innerHTML = "";
+    }
+    bodyEl.innerHTML = renderPolicyCard(p);
+    modal.hidden = false;
+    return;
+  }
+
+  const sources = explicit.length ? explicit : (p.sourceFiles ?? []);
+  const filename =
+    preferredFilename && sources.includes(preferredFilename) ? preferredFilename : sources[0];
+  if (!filename) return;
+  policyPreviewActive = `${p.id}::${filename}`;
+
   if (pathEl) pathEl.textContent = `Owner Inbox/${filename}`;
 
   if (pickerEl) {
@@ -428,7 +503,6 @@ async function openPolicyPreview(policyId, preferredFilename) {
       throw new Error(`HTTP ${r.status}: ${errBody.slice(0, 240)}`);
     }
     const md = await r.text();
-    // Stale-modal guard: another preview was opened while we waited.
     if (policyPreviewActive !== `${p.id}::${filename}`) return;
     bodyEl.innerHTML = renderMarkdownLite(md);
   } catch (err) {
