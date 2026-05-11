@@ -415,6 +415,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     ],
   }),
 
+  // saskia:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Saskia", "goal-loop", "on-request"),
+
   // Saskia — Head of Global Markets; markets/franchise events.
   entry("Saskia", "event-triage", "event-driven", {
     subscribesTo: [

@@ -70,6 +70,7 @@ import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import sadeEventTriage from "./agents/sade-event-triage";
 import saskiaEventTriage from "./agents/saskia-event-triage";
+import saskiaGoalLoop from "./agents/saskia-goal-loop";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeEventTriage from "./agents/scrooge-event-triage";
