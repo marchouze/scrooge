@@ -4,6 +4,7 @@ author: Camille (Chief Financial Officer, governance) + Eitan (Treasurer, govern
 date: 2026-05-11
 summary: Standalone Liquidity Risk Management Policy covering LCR, NSFR, intraday liquidity, Contingency Funding Plan, ILAAP governance, and stress-testing. Closes obligations ORG-PR-06 through ORG-PR-08, ORG-PR-14, ORG-PR-15, ORG-PR-36, ORG-PR-38, ORG-PR-43. LICENCE-BIND.
 decision-required: false
+riskTaxonomy: RT-LQ
 ---
 
 # Liquidity Risk Management Policy v1

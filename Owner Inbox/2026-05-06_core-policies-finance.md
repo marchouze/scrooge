@@ -1,3 +1,13 @@
+---
+riskTaxonomy:
+  - RT-CR
+  - RT-LQ
+  - RT-LQ.FN
+  - RT-IRRBB
+  - RT-ST.EV
+  - RT-LR.RC
+---
+
 # Core policies — Finance, accounting, tax, treasury
 
 **Authors:** Camille (CFO — lead, finance); Eitan (Treasurer — lead, treasury); Bea, Yael, Ravi (engineering)

@@ -4,6 +4,10 @@ author: Helena (Chief Risk Officer, governance) + Camille (Chief Financial Offic
 date: 2026-05-11
 summary: Standalone Recovery and Resolution Planning Policy establishing the bank's recovery planning framework, early-warning indicator regime, recovery option inventory, and governance pathway. Implements PA D1/2015, Banks Act ss.60-72, and FSB Key Attributes. Closes obligations ORG-PR-30, ORG-PR-35, ORG-BNK-RECOVERY-CONS. LICENCE-BIND.
 decision-required: false
+riskTaxonomy:
+  - RT-CR
+  - RT-LQ
+  - RT-ST
 ---
 
 # Recovery and Resolution Planning Policy v1

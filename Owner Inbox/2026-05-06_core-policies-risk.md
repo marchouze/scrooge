@@ -1,3 +1,13 @@
+---
+riskTaxonomy:
+  - RT-CR
+  - RT-MK
+  - RT-LQ
+  - RT-OP
+  - RT-OP.RE
+  - RT-OP.MD
+---
+
 # Core policies — Risk
 
 **Author:** Helena (CRO — lead) · Rohan (engineering)

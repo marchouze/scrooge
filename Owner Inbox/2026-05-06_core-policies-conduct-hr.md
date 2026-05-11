@@ -1,3 +1,13 @@
+---
+riskTaxonomy:
+  - RT-CD
+  - RT-CD.CI
+  - RT-CD.MA
+  - RT-FC.BC
+  - RT-OP.PE
+  - RT-ST.GV
+---
+
 # Core policies — Conduct, ethics, HR
 
 **Authors:** Owen (CoSec — lead, conduct & ethics); Sade (HCM — lead, HR; future CHRO governance)

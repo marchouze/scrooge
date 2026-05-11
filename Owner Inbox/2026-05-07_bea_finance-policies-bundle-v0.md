@@ -4,6 +4,10 @@ author: Bea
 date: 2026-05-07
 summary: Two stub policies (Accounting Policies (IFRS); Financial Reporting & Disclosure) at v0.1. Anchors the keystone Reg→Policy→Procedure→Capability chain for Bea's accounting substrate. Both were `PLANNED` in the policy register; this stub moves them to `STUB` so the chain reconciles. Full AC-approved policies follow at policy-cycle cadence.
 decision-required: false
+riskTaxonomy:
+  - RT-LR.RC
+  - RT-ST.EV
+  - RT-OP.MD
 ---
 
 # Finance-policies bundle v0 — stubs

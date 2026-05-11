@@ -4,6 +4,9 @@ author: Imani
 date: 2026-05-07
 summary: Two stub policies (Contracting; Document Execution / ECTA) at v0.1. Anchors the first end-to-end Reg→Policy→Procedure→Capability chain for the legal substrate. Both were `PLANNED` in the policy register; this stub moves them to `STUB` so the chain reconciles. Full BRC-approved policies follow at policy-cycle cadence.
 decision-required: false
+riskTaxonomy:
+  - RT-LR.CT
+  - RT-OP.LE
 ---
 
 # Legal-policies bundle v0 — stubs

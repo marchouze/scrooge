@@ -4,6 +4,7 @@ author: Iris (Information Officer, governance) + Zara (Compliance / legal-as-cod
 date: 2026-05-11
 summary: Standalone Privacy Policy implementing POPIA 4/2013 and Joint Standard 2 of 2024 for Hoz Bank. Covers lawful basis for processing, data subject rights, Information Officer designation, data breach notification, retention schedules, and cross-border transfer controls. Closes 17 ORG-PR(IV)-series obligations. CORPORATE-BIND (binds now).
 decision-required: false
+riskTaxonomy: RT-LR.DP
 ---
 
 # POPIA Privacy Policy v1

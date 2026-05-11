@@ -4,6 +4,10 @@ author: Camille (Chief Financial Officer, governance) + Helena (Chief Risk Offic
 date: 2026-05-11
 summary: Standalone Capital Management Policy covering CET1/AT1/T2 structure, capital targets, RAS B1/B2 anchoring, ICAAP governance, Pillar 2A add-ons, capital conservation and countercyclical buffers, stress-testing cadence, and distribution controls. Closes obligations ORG-PR-01 through ORG-PR-05, ORG-PR-13, ORG-PR-37, ORG-PR-44. LICENCE-BIND.
 decision-required: false
+riskTaxonomy:
+  - RT-CR
+  - RT-LQ
+  - RT-ST
 ---
 
 # Capital Management Policy v1
