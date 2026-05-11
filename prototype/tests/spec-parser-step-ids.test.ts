@@ -18,10 +18,10 @@
 //
 // Author: Atlas (Core banking platform architect)
 
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import {
   type ProcedureCitation,
@@ -36,9 +36,7 @@ import {
 /** Minimal valid persona spec for use in parseSpecContent tests. */
 function makeValidSpec(procedurePaths: string[]): string {
   const proceduresBullets =
-    procedurePaths.length === 0
-      ? "- none."
-      : procedurePaths.map((p) => `- \`${p}\``).join("\n");
+    procedurePaths.length === 0 ? "- none." : procedurePaths.map((p) => `- \`${p}\``).join("\n");
 
   return `# Test — Step-ID test persona
 
