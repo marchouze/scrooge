@@ -96,6 +96,7 @@
     "agent:owen-goal-loop": "bun run runtime/run.ts --agent Owen --trigger goal-loop",
     "agent:helena-goal-loop": "bun run runtime/run.ts --agent Helena --trigger goal-loop",
     "agent:rohan-goal-loop": "bun run runtime/run.ts --agent Rohan --trigger goal-loop",
+    "agent:helena-goal-loop": "bun run runtime/run.ts --agent Helena --trigger goal-loop",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
