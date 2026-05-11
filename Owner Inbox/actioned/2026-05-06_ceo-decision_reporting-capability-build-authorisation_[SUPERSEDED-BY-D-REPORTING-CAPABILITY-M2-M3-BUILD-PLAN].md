@@ -1,3 +1,17 @@
+---
+title: CEO decision — reporting-capability build: AUTHORISED (initial)
+author: Scrooge
+date: 2026-05-06
+summary: Initial CEO authorisation for the reporting-capability build. Superseded — D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN is the current canonical build-plan decision; old naming pattern no longer canonical.
+decision-required: false
+superseded-by:
+  - decision-id: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
+    decision-date: 2026-05-10
+    note: "M2-M3 build plan (with proper D-id) supersedes this old-naming initial authorisation. Canonical CeoDecision record at 2026-05-10_scrooge_ceo-decision-record_d-reporting-capability-m2-m3-build-plan.md."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # CEO decision — reporting-capability build: AUTHORISED
 
 **Author:** Scrooge (Chief of Staff) — capture of CEO decision

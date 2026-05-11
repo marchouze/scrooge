@@ -1,3 +1,23 @@
+---
+title: Local prototype — plan
+author: Atlas
+date: 2026-05-05
+summary: Initial local-prototype plan. Superseded — the substrate now spans M1+ markets, RMS, provenance, agent-runtime, scenario clock, and the prototype is well past the v0.1 plan here.
+decision-required: false
+superseded-by:
+  - decision-id: D-EVENT-STORE-SCALING
+    decision-date: 2026-05-10
+    note: "Event-store substrate scaling is the current governing decision; the local-prototype plan here is overtaken."
+  - decision-id: D-RMS-PHASE-1
+    decision-date: 2026-05-09
+    note: "Records substrate sets the document-store + register shape today, beyond the prototype plan here."
+  - decision-id: D-DATA-PROVENANCE-SUBSTRATE
+    decision-date: 2026-05-10
+    note: "Provenance substrate sets the citation / attestation shape; the plan here pre-dates it."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Local prototype — plan
 
 **Author:** Atlas

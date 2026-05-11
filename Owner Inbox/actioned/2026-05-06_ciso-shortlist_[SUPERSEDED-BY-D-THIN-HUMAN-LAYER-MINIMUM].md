@@ -1,3 +1,19 @@
+---
+title: Chief Information Security Officer — shortlist
+author: Nolan
+date: 2026-05-06
+summary: "Real-CISO-hire shortlist + recommendation. Superseded — build-phase pause on real employees beyond statutory minimum; CISO seat is engineering-fronted by Senna until licence-day."
+decision-required: false
+superseded-by:
+  - decision-id: D-THIN-HUMAN-LAYER-MINIMUM
+    decision-date: 2026-05-08
+    note: "Licence-day human roster does not include a separate CISO seat; CISO function sits with Senna (engineering) until/unless law requires."
+  - reference: project_ai_driven_bank.md
+    note: "Build-phase has no real employees beyond statutory minimum."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Chief Information Security Officer — shortlist
 
 **Author:** Nolan (Recruiter)

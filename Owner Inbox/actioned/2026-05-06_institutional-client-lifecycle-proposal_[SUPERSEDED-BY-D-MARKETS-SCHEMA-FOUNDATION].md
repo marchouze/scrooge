@@ -1,3 +1,17 @@
+---
+title: Institutional client lifecycle — design proposal
+author: Niko
+date: 2026-05-06
+summary: Nine-stage lifecycle proposal for institutional counterparties. Superseded — the customer domain now ships as code.
+decision-required: false
+superseded-by:
+  - decision-id: D-MARKETS-SCHEMA-FOUNDATION
+    decision-date: 2026-05-07
+    note: "Counterparty event family at prototype/domains/customer/types.ts is the canonical lifecycle (M1 substrate). The markdown design is no longer the canonical authoring location."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Institutional client lifecycle — design proposal
 
 **Author:** Niko (Sales / CRM engineer; reports to Devon, COO)
