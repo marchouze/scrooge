@@ -22,49 +22,71 @@ The bank operates under a **zero-tolerance** appetite for: regulatory breach, fi
 ## A2. Appetite by risk category
 
 ### Credit risk
+*`riskTaxonomy: RT-CR`*
+
 - Appetite for **measured** lending activity, primarily SA, with concentration limits per single name, sector, and geography.
 - IFRS 9 ECL stage migrations within calibrated tolerances; significant unexpected migration triggers RAS review.
 - Counterparty credit (markets) appetite calibrated to the trading franchise; dispatched via Helena's policy and operated by Saskia / Eitan.
 
 ### Market risk
+*`riskTaxonomy: RT-MK`*
+
 - Appetite for **client-driven and franchise** market-making in FX, rates, money markets initially; expansion subject to BRC approval.
 - VaR, sensitivities, and concentration limits set by Helena, operated by Saskia.
 - No proprietary risk-taking outside warehoused franchise hedge positions.
 
 ### Liquidity and funding risk
+*`riskTaxonomy: RT-LQ`*
+
 - Appetite for stable, **textured funding**: wholesale + deposit + capital, no thin reliance on any single counterparty or tenor.
 - LCR target buffer **above PA-set minimum** (target buffer set in RAF §B3).
 - NSFR target buffer **above PA-set minimum** (target buffer set in RAF §B3).
 - Intraday liquidity discipline at SAMOS-funding scale; zero-tolerance for end-of-day overdraft except under contingency-funding plan.
 
 ### IRRBB
+*`riskTaxonomy: RT-IRRBB`*
+
 - Appetite calibrated to a **conservative** EVE and NII sensitivity profile relative to capital and earnings.
 - Hedging is the default; un-hedged behavioural assumptions documented and BRC-approved.
 
 ### Operational and cyber risk
+*`riskTaxonomy: RT-OP` (cyber clauses tag `RT-OP.CY`; resilience clause tags `RT-OP.RE`; settlement-processing clause tags `RT-OP.PA`)*
+
 - Appetite for **operational disruption tolerable but recoverable within stated impact tolerances** (set per BCBS Operational Resilience principles).
 - Zero-tolerance for: avoidable material data breach; settlement failure caused by internal action; payments outage outside resilience windows.
 - Cyber: aligned with Joint Standard 1 of 2024; severity tiers (RAF §B6).
 
 ### Conduct risk
+*`riskTaxonomy: RT-CD`*
+
 - **Zero appetite** for treating customers unfairly, mis-selling, fee opacity, conflicts of interest unmanaged, or market abuse.
 
 ### Financial-crime / AML / sanctions risk
+*`riskTaxonomy: RT-FC` (sanctions-specific clauses tag `RT-FC.SA`; AML clauses tag `RT-FC.ML`)*
+
 - **Zero appetite** for facilitating financial crime; entering into sanctioned-entity relationships; or onboarding without satisfying CDD.
 - Calibrated appetite for residual financial-crime risk after controls (typology-based — see RAF §B5).
 
 ### Legal and regulatory risk
+*`riskTaxonomy: RT-LR`*
+
 - Zero appetite for known regulatory breach.
 - Calibrated appetite for legal-positions uncertainty in evolving areas (e.g., COFI, climate disclosure) provided positions are documented, register-linked, and reviewed.
 
 ### Strategic and reputational risk
+*`riskTaxonomy: RT-ST` (strategic) + `RT-RP` (reputational) — decomposed per register §6 mapping rules: the strategic-alignment clause anchors at `RT-ST`; the reputation-as-leading-indicator clause anchors at `RT-RP` as the second-order shadow axis across all first-order nodes.*
+
 - Risk-taking aligned to strategy; no off-strategy adventures; reputation is treated as a leading indicator of all other risks.
 
 ### Model risk
+*`riskTaxonomy: RT-OP.MD` (per-tier sub-classification at level 3: `RT-OP.MD.T1` / `RT-OP.MD.T2` / `RT-OP.MD.T3` per model)*
+
 - Appetite for modelled decisioning provided models are tier-classified, validated, monitored, and challenged (RAF §B7).
 - Tier-1 models (regulatory capital, IFRS 9 ECL, AML) have stricter validation; tier-3 (operational analytics) lighter touch.
 
 ### Climate risk
+*`riskTaxonomy: RT-CL` (transverse risk per register §3 — manifests through `RT-CR`, `RT-MK`, `RT-OP`, `RT-LQ`, `RT-ST`, `RT-RP`; per-exposure tagging at level 2: `RT-CL.PH` / `RT-CL.TR` / `RT-CL.LI` / `RT-CL.NA` / `RT-CL.SO`)*
+
 - Aligned with PA Guidance Note 1 of 2024.
 - Climate dispatched through credit, operational, strategic, and conduct lenses.
 - Initial appetite: **assess**, **disclose**, **avoid clearly inconsistent exposures**.
@@ -174,6 +196,9 @@ Rohan develops; an **independent validation function** reports to Helena. Valida
 - Sovereign / government concentration: SA government acceptable; other-sovereign caps per BRC.
 
 ## B8a. Defaults — FX-settlement & correspondent-bank concentration (B-cluster)
+
+*`riskTaxonomy: RT-OP.PA` for all five lines (operational payments-and-settlement processing; per register §4.5 — loss from failed or mis-routed payments and settlements in the operational pipeline, distinct from `RT-CR.SL` Herstatt settlement-credit risk). Secondary axes noted per line in the table: `RT-OP.TP.MS` (third-party-market-services concentration) on L-B8a-1 / L-B8a-2 / L-B8a-5; `RT-OP.RE` (operational-resilience readiness) on L-B8a-4; `RT-CR.SL.FX` (Herstatt-credit) attaches at incident time only if a settlement actually fails. Reconciliation with §B8 counterparty-credit `RT-CR.CP` / `RT-CR.CC` is preserved by the "Reconciliation with §B8" paragraph in the body.*
+
 
 > *Added 2026-05-09 by Helena (CRO, governance lead) and Rohan (Risk engineer) under decision **D-RAS-B-CLUSTER-CONCENTRATION-LINES** (proposed; CEO ratification pending), derived downward (Principle 6) from CEO decision **D-FX-CORRESPONDENT-PAIR-NAMING** (approved 2026-05-09; record at `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fx-correspondent-pair-naming.md`). The structural posture — single primary correspondent + single live backup, no direct CLS / SAMOS membership during the build phase — comes from the operating-model memory `project_indirect_participant_posture.md`. The appetite lines below are calibrated **at** that posture, not above it: they exist to detect drift away from the named-pair design (e.g., a third unsanctioned correspondent emerging, or the backup atrophying so the bank slips to 100% single-counterparty in non-test conditions), so that Vera (Internal-audit / continuous-assurance engineer) raises a continuous-controls finding rather than the figure being silently normalised.*
 
@@ -298,18 +323,18 @@ These are recorded on the **obligations register** (`Regulations/_obligations-re
 
 ## Appendix — Specific defaults set today (decision log)
 
-For convenient reference by other teams:
+For convenient reference by other teams. Each line tags at level 2 per `Regulations/_risk-taxonomy.md` §8 (RAS line tagging convention). Where a line spans two terminal nodes, the dominant binding constraint is named first and the secondary noted; per register §6 mapping rules, true dual-classification is prohibited and decomposition is performed at the event-tag layer.
 
-1. **Continuous-KYC default:** two-tier (restrict-on-review for medium-confidence; restrict-immediately for high-confidence). [§B5]
-2. **LCR buffer floor:** PA minimum + 20pp normal; +10pp management trigger; +5pp escalation. [§B3]
-3. **NSFR buffer floor:** PA minimum + 15pp normal; +8pp trigger; +3pp escalation. [§B3]
-4. **CET1 management buffer:** 1.5pp above all PA-set minima + Pillar 2A + capital conservation buffer. [§B3]
-5. **Sanctions:** zero appetite; production override = signed Zara event with register-linked exception. [§B5]
-6. **Model risk tiers:** three-tier; Tier 1 = independent validation pre-deployment + annual revalidation. [§B7]
-7. **Cyber severity:** four-tier with Regulator-notification thresholds at T3/T4. [§B6]
-8. **Sector concentration:** ≤25% without BRC approval. [§B2]
-9. **Trading mandate:** client-driven and franchise market-making; no proprietary risk-taking outside franchise hedges. [§A2 Market]
-10. **Climate:** assess, disclose, avoid clearly inconsistent exposures (initial). [§A2 Climate]
-11. **B-cluster FX-settlement concentration (CEO ratification pending — D-RAS-B-CLUSTER-CONCENTRATION-LINES, 2026-05-09):** single-counterparty intraday FX-settlement notional ≤ 97% steady-state / ≤ 99% switch-test window; top-2 cumulative observational at 100% by design (drift below 100% = `Critical` breach signalling unsanctioned third correspondent); switch-test window override; backup-readiness ≤ 100 days; reserve-correspondents active-but-dormant. Calibrated at the named-pair structural posture (D-FX-CORRESPONDENT-PAIR-NAMING) so drift away from the design fires Vera continuous-controls findings. [§B8a]
+1. **Continuous-KYC default:** two-tier (restrict-on-review for medium-confidence; restrict-immediately for high-confidence). [§B5] · *`riskTaxonomy: RT-FC.ML`* (money-laundering is the dominant trigger framing; secondary `RT-FC.SA` attaches at incident-tag time for sanctions-triggered restrictions).
+2. **LCR buffer floor:** PA minimum + 20pp normal; +10pp management trigger; +5pp escalation. [§B3] · *`riskTaxonomy: RT-LQ.FN`* (funding-liquidity ratio; per register §8 explicit example).
+3. **NSFR buffer floor:** PA minimum + 15pp normal; +8pp trigger; +3pp escalation. [§B3] · *`riskTaxonomy: RT-LQ.FN`* (per register §8 explicit example).
+4. **CET1 management buffer:** 1.5pp above all PA-set minima + Pillar 2A + capital conservation buffer. [§B3] · *`riskTaxonomy: RT-CR.OB`* (capital floor frames Pillar 1 obligor-default loss-absorption under Banks Act §72 + Reg 23; secondary `RT-MK` / `RT-OP` Pillar-1 components captured downstream at the per-component RWA-event layer per Bea's RWA engine spec, not at the RAS line).
+5. **Sanctions:** zero appetite; production override = signed Zara event with register-linked exception. [§B5] · *`riskTaxonomy: RT-FC.SA`* (direct match — sanctions are level 2 under financial-crime risk).
+6. **Model risk tiers:** three-tier; Tier 1 = independent validation pre-deployment + annual revalidation. [§B7] · *`riskTaxonomy: RT-OP.MD`* (level-3 `RT-OP.MD.T1` / `RT-OP.MD.T2` / `RT-OP.MD.T3` applies per model).
+7. **Cyber severity:** four-tier with Regulator-notification thresholds at T3/T4. [§B6] · *`riskTaxonomy: RT-OP.CY`* (level-3 `RT-OP.CY.CF` / `.IN` / `.AV` / `.RS` applies per incident).
+8. **Sector concentration:** ≤25% without BRC approval. [§B2] · *`riskTaxonomy: RT-CR.CC`* (direct match — per register §8 explicit example).
+9. **Trading mandate:** client-driven and franchise market-making; no proprietary risk-taking outside franchise hedges. [§A2 Market] · *`riskTaxonomy: RT-MK`* (level 1; the mandate spans multiple level-2 nodes — `RT-MK.IR` / `.FX` / `.EQ` / `.CS` — so the stable classification is level-1. Per-desk VaR limits placeholder under RAS B5 / `2026-05-11_kai-helena-devon_trading-mandate-v1.md` will tag at level 2 when calibrated.)
+10. **Climate:** assess, disclose, avoid clearly inconsistent exposures (initial). [§A2 Climate] · *`riskTaxonomy: RT-CL`* (level 1; transverse-risk classification per register §3; per-exposure tagging at level 2 — `RT-CL.PH` / `RT-CL.TR` — attaches at exposure / incident event time).
+11. **B-cluster FX-settlement concentration (CEO ratification pending — D-RAS-B-CLUSTER-CONCENTRATION-LINES, 2026-05-09):** single-counterparty intraday FX-settlement notional ≤ 97% steady-state / ≤ 99% switch-test window; top-2 cumulative observational at 100% by design (drift below 100% = `Critical` breach signalling unsanctioned third correspondent); switch-test window override; backup-readiness ≤ 100 days; reserve-correspondents active-but-dormant. Calibrated at the named-pair structural posture (D-FX-CORRESPONDENT-PAIR-NAMING) so drift away from the design fires Vera continuous-controls findings. [§B8a] · *`riskTaxonomy: RT-OP.PA`* (operational payments-and-settlement processing concentration; per register §4.5 — distinct from `RT-CR.SL` Herstatt settlement-credit risk. Secondary `RT-OP.TP.MS` (third-party-market-services) shadow on lines L-B8a-1 / -2 / -5; `RT-OP.RE` (operational-resilience) shadow on L-B8a-4; `RT-CR.SL.FX` attaches at incident-tag time only if a settlement actually fails. §B8 counterparty-credit concentration `RT-CR.CP` / `RT-CR.CC` is separately scored — see "Reconciliation with §B8" in the §B8a body.)
 
 These are the **operational defaults** other teams can now build against. They are policy-layer decisions; standards (limit code) and processes (workflows) derive from them; presentations (board packs) summarise them.
