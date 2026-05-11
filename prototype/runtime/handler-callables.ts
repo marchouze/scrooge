@@ -13,42 +13,75 @@
 //
 // Author: Atlas
 
+import anyaEventTriage from "./agents/anya-event-triage";
 import anyaM1ProjectionRuntimeMapping from "./agents/anya-m1-projection-runtime-mapping";
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
+import atlasEventTriage from "./agents/atlas-event-triage";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
 import beaAccountingReadiness from "./agents/bea-accounting-readiness";
+import beaEventTriage from "./agents/bea-event-triage";
 import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
+import camilleEventTriage from "./agents/camille-event-triage";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
+import devonEventTriage from "./agents/devon-event-triage";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
+import eitanEventTriage from "./agents/eitan-event-triage";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
+import helenaEventTriage from "./agents/helena-event-triage";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
+import imaniEventTriage from "./agents/imani-event-triage";
 import imaniLegalReadiness from "./agents/imani-legal-readiness";
+import irisEventTriage from "./agents/iris-event-triage";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
+import kaiEventTriage from "./agents/kai-event-triage";
 import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
 import kaiPreTradeGatewayAggregator from "./agents/kai-pre-trade-gateway-aggregator";
+import linneaEventTriage from "./agents/linnea-event-triage";
+import linneaOpsCycle from "./agents/linnea-ops-cycle";
 import miraCitationGate from "./agents/mira-citation-gate";
+import miraEventTriage from "./agents/mira-event-triage";
 import miraM1RegulatorCitationUrns from "./agents/mira-m1-regulator-citation-urns";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
+import nadiaEventTriage from "./agents/nadia-event-triage";
+import nadiaValidationCycle from "./agents/nadia-validation-cycle";
+import nikoClientLifecycle from "./agents/niko-client-lifecycle";
+import nikoEventTriage from "./agents/niko-event-triage";
+import nolanEventTriage from "./agents/nolan-event-triage";
+import nolanHiringCycle from "./agents/nolan-hiring-cycle";
+import owenEventTriage from "./agents/owen-event-triage";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
+import paxEventTriage from "./agents/pax-event-triage";
 import paxRoleResearchQueue from "./agents/pax-role-research-queue";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
+import rashidaEventTriage from "./agents/rashida-event-triage";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
+import raviEventTriage from "./agents/ravi-event-triage";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
+import rohanEventTriage from "./agents/rohan-event-triage";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
+import sadeEventTriage from "./agents/sade-event-triage";
+import saskiaEventTriage from "./agents/saskia-event-triage";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
+import scroogeEventTriage from "./agents/scrooge-event-triage";
 import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import scroogeOwnerInboxArchiver from "./agents/scrooge-owner-inbox-archiver";
+import sennaEventTriage from "./agents/senna-event-triage";
 import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-threat-model";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
+import thandiweEventTriage from "./agents/thandiwe-event-triage";
+import tomasEventTriage from "./agents/tomas-event-triage";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
 import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
+import veraEventTriage from "./agents/vera-event-triage";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
+import yaelEventTriage from "./agents/yael-event-triage";
 import yaelTaxReadiness from "./agents/yael-tax-readiness";
+import zaraEventTriage from "./agents/zara-event-triage";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
 
@@ -90,4 +123,38 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
   "mira:m1-regulator-citation-urns": miraM1RegulatorCitationUrns,
   "senna:m1-trading-stack-threat-model": sennaM1TradingStackThreatModel,
+  // Slice 2b — per-persona event-triage stubs.
+  "rashida:event-triage": rashidaEventTriage,
+  "rohan:event-triage": rohanEventTriage,
+  "kai:event-triage": kaiEventTriage,
+  "nadia:event-triage": nadiaEventTriage,
+  "nadia:validation-cycle": nadiaValidationCycle,
+  "owen:event-triage": owenEventTriage,
+  "ravi:event-triage": raviEventTriage,
+  "sade:event-triage": sadeEventTriage,
+  "saskia:event-triage": saskiaEventTriage,
+  "thandiwe:event-triage": thandiweEventTriage,
+  "bea:event-triage": beaEventTriage,
+  "devon:event-triage": devonEventTriage,
+  "eitan:event-triage": eitanEventTriage,
+  "iris:event-triage": irisEventTriage,
+  "mira:event-triage": miraEventTriage,
+  "tomas:event-triage": tomasEventTriage,
+  "zara:event-triage": zaraEventTriage,
+  "camille:event-triage": camilleEventTriage,
+  "imani:event-triage": imaniEventTriage,
+  "niko:event-triage": nikoEventTriage,
+  "niko:client-lifecycle": nikoClientLifecycle,
+  "senna:event-triage": sennaEventTriage,
+  "helena:event-triage": helenaEventTriage,
+  "scrooge:event-triage": scroogeEventTriage,
+  "yael:event-triage": yaelEventTriage,
+  "linnea:event-triage": linneaEventTriage,
+  "linnea:ops-cycle": linneaOpsCycle,
+  "nolan:event-triage": nolanEventTriage,
+  "nolan:hiring-cycle": nolanHiringCycle,
+  "anya:event-triage": anyaEventTriage,
+  "atlas:event-triage": atlasEventTriage,
+  "pax:event-triage": paxEventTriage,
+  "vera:event-triage": veraEventTriage,
 };

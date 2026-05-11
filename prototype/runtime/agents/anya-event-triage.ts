@@ -19,11 +19,7 @@
 import { logger } from "../../platform/composition";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
-const SUBSCRIBED_EVENTS = [
-  "EventSchemaPublished",
-  "ObligationRegistered",
-  "PolicyChange",
-] as const;
+const SUBSCRIBED_EVENTS = ["EventSchemaPublished", "ObligationRegistered", "PolicyChange"] as const;
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
