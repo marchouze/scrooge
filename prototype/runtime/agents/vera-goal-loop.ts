@@ -70,8 +70,7 @@ const VERA_SPEC_PATH = resolve(
 // "Classify pipeline result `ok` / `warn` / `fail`" is the primary in-scope
 // decision that covers both the overnight-recon and the goal-loop-capability
 // check — it is Vera's broadest audit-execution goal.
-const VERA_PIPELINE_CLASSIFY_GOAL =
-  "Classify pipeline result `ok` / `warn` / `fail`" as const;
+const VERA_PIPELINE_CLASSIFY_GOAL = "Classify pipeline result `ok` / `warn` / `fail`" as const;
 
 // Coverage-gap procedure path + step-ID form per _step-id-convention.md §5.
 const VERA_PROCEDURE_PATH = "Procedures/by-policy/findings-tracking.md";
@@ -145,9 +144,7 @@ export const veraGoalDeriver: GoalDeriver = async (
 
   // Build procedure citations — use coverage-gap form per §3.4 contract.
   // The procedure file may not have step anchors yet (pre-backfill).
-  const procedureEntry = spec.procedureSteps.find(
-    (s) => s.procedurePath === VERA_PROCEDURE_PATH,
-  );
+  const procedureEntry = spec.procedureSteps.find((s) => s.procedurePath === VERA_PROCEDURE_PATH);
   const stepId =
     procedureEntry && procedureEntry.stepIds.length > 0
       ? (procedureEntry.stepIds[0] ?? VERA_PROCEDURE_STEP_ID)
@@ -169,7 +166,7 @@ export const veraGoalDeriver: GoalDeriver = async (
 
   const mandateCitations = [
     {
-      section: "9-decisions-in-scope",
+      section: "9-decisions-in-scope" as const,
       rowKey: VERA_PIPELINE_CLASSIFY_GOAL,
       specHash,
     },
@@ -201,16 +198,10 @@ export const veraGoalDeriver: GoalDeriver = async (
     return {
       kind: "decision",
       chosen: VERA_PIPELINE_CLASSIFY_GOAL,
-      rationale:
-        `Open fail-severity audit findings detected (worldState.auditFindingsForMe.length=${worldState.auditFindingsForMe.length}). ` +
-        "Vera's §10 escalation policy requires fail findings to be routed to Thandiwe (CAE) within 1h. " +
-        "Running overnight-recon to produce a current ReconResult + AuditFinding event stream for escalation.",
+      rationale: `Open fail-severity audit findings detected (worldState.auditFindingsForMe.length=${worldState.auditFindingsForMe.length}). Vera's §10 escalation policy requires fail findings to be routed to Thandiwe (CAE) within 1h. Running overnight-recon to produce a current ReconResult + AuditFinding event stream for escalation.`,
       mandateCitations,
       procedureCitations,
-      plannedEvents: [
-        { type: "ReconResult" },
-        { type: "AuditFinding" },
-      ],
+      plannedEvents: [{ type: "ReconResult" }, { type: "AuditFinding" }],
     };
   }
 
@@ -236,16 +227,10 @@ export const veraGoalDeriver: GoalDeriver = async (
     return {
       kind: "decision",
       chosen: VERA_PIPELINE_CLASSIFY_GOAL,
-      rationale:
-        `No overnight recon ReconResult in the last 24h (last seen: ${lastOvernightMs ? new Date(lastOvernightMs).toISOString() : "never"}). ` +
-        "Vera's §6 inactivity SLA requires pipelines to produce a ReconResult at least every 24h. " +
-        "Selecting pipeline-classify goal to trigger the vera:overnight-recon handler.",
+      rationale: `No overnight recon ReconResult in the last 24h (last seen: ${lastOvernightMs ? new Date(lastOvernightMs).toISOString() : "never"}). Vera's §6 inactivity SLA requires pipelines to produce a ReconResult at least every 24h. Selecting pipeline-classify goal to trigger the vera:overnight-recon handler.`,
       mandateCitations,
       procedureCitations,
-      plannedEvents: [
-        { type: "ReconResult" },
-        { type: "AuditFinding" },
-      ],
+      plannedEvents: [{ type: "ReconResult" }, { type: "AuditFinding" }],
     };
   }
 
@@ -271,15 +256,10 @@ export const veraGoalDeriver: GoalDeriver = async (
     return {
       kind: "decision",
       chosen: VERA_PIPELINE_CLASSIFY_GOAL,
-      rationale:
-        `No ReconResult for ${GOAL_LOOP_CAPABILITY_PIPELINE} in the last 24h (last seen: ${lastGoalLoopCapabilityMs ? new Date(lastGoalLoopCapabilityMs).toISOString() : "never"}). ` +
-        "Vera Wave-5 goal-loop-capability recon must produce a ReconResult at least every 24h. " +
-        "Running overnight-recon (which includes all pipelines) to refresh the goal-loop-capability trace.",
+      rationale: `No ReconResult for ${GOAL_LOOP_CAPABILITY_PIPELINE} in the last 24h (last seen: ${lastGoalLoopCapabilityMs ? new Date(lastGoalLoopCapabilityMs).toISOString() : "never"}). Vera Wave-5 goal-loop-capability recon must produce a ReconResult at least every 24h. Running overnight-recon (which includes all pipelines) to refresh the goal-loop-capability trace.`,
       mandateCitations,
       procedureCitations,
-      plannedEvents: [
-        { type: "ReconResult" },
-      ],
+      plannedEvents: [{ type: "ReconResult" }],
     };
   }
 

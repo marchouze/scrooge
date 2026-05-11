@@ -112,6 +112,7 @@ const _map: Record<string, AgentRunHandler> = {
   // "scrooge:follow-on-router" inserted below after createHandler()
   "scrooge:owner-inbox-archiver": scroogeOwnerInboxArchiver,
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
+  "owen:goal-loop": owenGoalLoop,
   "rohan:risk-run": rohanRiskRun,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
