@@ -8,8 +8,6 @@
 name: Rashida cyber-resilience snapshot
 
 on:
-  schedule:
-    - cron: "49 7 * * 4"
   workflow_dispatch: {}
 
 permissions:

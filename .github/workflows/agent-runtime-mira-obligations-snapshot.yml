@@ -6,10 +6,6 @@
 name: Mira obligations snapshot
 
 on:
-  schedule:
-    # Wed 07:29 UTC — off-the-hour to dodge GH Actions cron drops
-    # observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "29 7 * * 3"
   workflow_dispatch: {}
 
 permissions:

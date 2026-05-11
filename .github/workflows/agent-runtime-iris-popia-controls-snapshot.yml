@@ -8,8 +8,6 @@
 name: Iris POPIA controls snapshot
 
 on:
-  schedule:
-    - cron: "51 7 * * 3"
   workflow_dispatch: {}
 
 permissions:

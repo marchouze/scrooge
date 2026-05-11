@@ -9,9 +9,6 @@
 name: Linnea ops cycle
 
 on:
-  schedule:
-    # Tue 08:29 UTC — weekly, off-the-hour to avoid GH Actions cron drops.
-    - cron: "29 8 * * TUE"
   workflow_dispatch: {}
 
 permissions:

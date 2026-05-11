@@ -12,10 +12,6 @@
 name: Ravi ALM readiness
 
 on:
-  schedule:
-    # 05:37 UTC daily — off-the-hour, between Devon Mon and Zara Mon's
-    # weekly slots; avoids the on-the-hour GH Actions cron drops.
-    - cron: "37 5 * * *"
   workflow_dispatch: {}
 
 permissions:

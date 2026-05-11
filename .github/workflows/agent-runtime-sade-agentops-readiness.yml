@@ -9,8 +9,6 @@
 name: Sade AgentOps readiness
 
 on:
-  schedule:
-    - cron: "41 7 * * 5"
   workflow_dispatch: {}
 
 permissions:

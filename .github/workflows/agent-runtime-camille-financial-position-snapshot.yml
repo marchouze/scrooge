@@ -9,10 +9,6 @@
 name: Camille financial-position snapshot
 
 on:
-  schedule:
-    # Mon 06:41 UTC — weekly, off-the-hour to dodge GH Actions cron
-    # drops observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "41 6 * * MON"
   workflow_dispatch: {}
 
 permissions:

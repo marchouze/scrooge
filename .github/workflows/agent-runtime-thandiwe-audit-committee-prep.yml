@@ -8,8 +8,6 @@
 name: Thandiwe audit-committee prep
 
 on:
-  schedule:
-    - cron: "47 7 * * 2"
   workflow_dispatch: {}
 
 permissions:
