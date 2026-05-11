@@ -466,9 +466,17 @@ function renderMarkdownLite(md) {
     }
   };
   const isTableSep = (r) => /^\|[\s\-:| ]+\|$/.test(r);
-  const parseTableCells = (r) => r.split("|").slice(1, -1).map((c) => c.trim());
+  const parseTableCells = (r) =>
+    r
+      .split("|")
+      .slice(1, -1)
+      .map((c) => c.trim());
   const closeTable = () => {
-    if (!inTable || tableRows.length === 0) { inTable = false; tableRows = []; return; }
+    if (!inTable || tableRows.length === 0) {
+      inTable = false;
+      tableRows = [];
+      return;
+    }
     const sepIdx = tableRows.findIndex((r) => isTableSep(r));
     const headRows = sepIdx === -1 ? [] : tableRows.slice(0, sepIdx);
     const bodyRows = sepIdx === -1 ? tableRows : tableRows.slice(sepIdx + 1);
@@ -476,13 +484,17 @@ function renderMarkdownLite(md) {
     if (headRows.length > 0) {
       html += "<thead>";
       for (const r of headRows)
-        html += "<tr>" + parseTableCells(r).map((c) => `<th>${inlineFormat(c)}</th>`).join("") + "</tr>";
+        html += `<tr>${parseTableCells(r)
+          .map((c) => `<th>${inlineFormat(c)}</th>`)
+          .join("")}</tr>`;
       html += "</thead>";
     }
     if (bodyRows.length > 0) {
       html += "<tbody>";
       for (const r of bodyRows)
-        html += "<tr>" + parseTableCells(r).map((c) => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
+        html += `<tr>${parseTableCells(r)
+          .map((c) => `<td>${inlineFormat(c)}</td>`)
+          .join("")}</tr>`;
       html += "</tbody>";
     }
     html += "</table></div>";
@@ -526,26 +538,30 @@ function renderMarkdownLite(md) {
     }
     const h1 = line.match(/^# (.+)$/);
     if (h1) {
-      closeList(); closeTable();
+      closeList();
+      closeTable();
       out.push(`<h2>${inlineFormat(h1[1])}</h2>`);
       continue;
     }
     const h2 = line.match(/^## (.+)$/);
     if (h2) {
-      closeList(); closeTable();
+      closeList();
+      closeTable();
       out.push(`<h3>${inlineFormat(h2[1])}</h3>`);
       continue;
     }
     const h3 = line.match(/^### (.+)$/);
     if (h3) {
-      closeList(); closeTable();
+      closeList();
+      closeTable();
       out.push(`<h4>${inlineFormat(h3[1])}</h4>`);
       continue;
     }
     const ul = line.match(/^[-*]\s+(.+)$/);
     if (ul) {
       if (!inList || listType !== "ul") {
-        closeList(); closeTable();
+        closeList();
+        closeTable();
         out.push("<ul>");
         inList = true;
         listType = "ul";
@@ -556,7 +572,8 @@ function renderMarkdownLite(md) {
     const ol = line.match(/^\d+\.\s+(.+)$/);
     if (ol) {
       if (!inList || listType !== "ol") {
-        closeList(); closeTable();
+        closeList();
+        closeTable();
         out.push("<ol>");
         inList = true;
         listType = "ol";
@@ -565,7 +582,8 @@ function renderMarkdownLite(md) {
       continue;
     }
     if (line.startsWith("> ")) {
-      closeList(); closeTable();
+      closeList();
+      closeTable();
       out.push(`<blockquote>${inlineFormat(line.slice(2))}</blockquote>`);
       continue;
     }
@@ -575,7 +593,8 @@ function renderMarkdownLite(md) {
       tableRows.push(line);
       continue;
     }
-    closeList(); closeTable();
+    closeList();
+    closeTable();
     out.push(`<p>${inlineFormat(line)}</p>`);
   }
   if (inCode) {
