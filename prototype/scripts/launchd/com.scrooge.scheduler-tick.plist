@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  com.scrooge.scheduler-tick.plist
+  ================================
+
+  macOS LaunchAgent that drives `bun run scheduler:tick` every 60s.
+
+  Slice 1 of D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11).
+  Closes Gap 1 (no daemon) and bundles the Gap 2 build-phase
+  persistent-host fixture: launchd survives terminal close and
+  dashboard-process death.
+
+  Author: Atlas (Core banking platform architect; substrate)
+  Co-routed: Devon (Chief Operating Officer, governance — operational
+  accountability), Senna (Security engineer — logging surface review).
+
+  This file is a TEMPLATE. The companion install.sh substitutes the
+  literal tokens `__BUN_PATH__`, `__WORKING_DIRECTORY__`, and
+  `__LOG_DIR__` with absolute paths derived at install time, then
+  writes the rendered plist to ~/Library/LaunchAgents/.
+
+  NOT FOR PRODUCTION. This is a build-phase fixture per the CEO
+  decision; production-grade always-on is deferred to the Azure
+  migration workstream.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.scrooge.scheduler-tick</string>
+
+    <!--
+      ProgramArguments: invoke bun directly with the scheduler-tick
+      script. We run `bun run scripts/scheduler-tick.ts` rather than
+      `bun run scheduler:tick` to avoid a package.json lookup +
+      sub-shell layer; the npm-script form requires `bun` to find
+      `package.json` via its CWD-walk, which is fine but adds latency.
+    -->
+    <key>ProgramArguments</key>
+    <array>
+      <string>__BUN_PATH__</string>
+      <string>run</string>
+      <string>scripts/scheduler-tick.ts</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__WORKING_DIRECTORY__</string>
+
+    <!--
+      StartInterval: fire every 60 seconds. launchd guarantees a
+      single in-flight invocation per Label, so if a tick takes
+      longer than 60s the next one is delayed (not stacked).
+    -->
+    <key>StartInterval</key>
+    <integer>60</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!--
+      KeepAlive: false. We are interval-driven, not always-on. Setting
+      KeepAlive=true would respawn the process on every exit, which
+      would defeat the StartInterval pacing.
+    -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!--
+      Be a good neighbour. The scheduler-tick is short-lived but we
+      don't want it pre-empting Marc's foreground work.
+    -->
+    <key>Nice</key>
+    <integer>5</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <!--
+      Logging surface (Senna review).
+        - Single rotating file under ~/Library/Logs/scrooge/.
+        - launchd does NOT rotate. Acceptable build-phase risk; if
+          the file grows unbounded (e.g. parse-failure flood) Marc
+          can `bash uninstall.sh && rm` and reinstall.
+        - Path is parameterised so the install script can expand
+          $HOME at install time (launchd does not expand env vars
+          in StandardOutPath / StandardErrorPath strings).
+        - Per Senna: the scheduler-tick logs do NOT contain
+          credentials. They contain agent URNs, trigger IDs,
+          firings, dispatch outcomes, and parse-failure reasons
+          (URN + reason string). Anything more sensitive (signing
+          keys, bearer tokens) is held by sub-modules behind the
+          identity issuer and never reaches this stdout surface.
+    -->
+    <key>StandardOutPath</key>
+    <string>__LOG_DIR__/scheduler-tick.log</string>
+    <key>StandardErrorPath</key>
+    <string>__LOG_DIR__/scheduler-tick.log</string>
+
+    <!--
+      EnvironmentVariables.
+        - PATH carries the standard bin dirs so `bun` resolves any
+          subprocess tools (git, etc.) it needs.
+        - BANK_EVENT_DB and BANK_PERMISSION_GATE_ENABLED can be set
+          at install time by editing this file before bootstrap, OR
+          left blank to fall through to the runtime defaults. We do
+          NOT hardcode credentials here — anything secret belongs
+          in a .env.local sourced by bun via its own loader.
+    -->
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!--
+      Throttling. macOS will refuse to relaunch a job more often
+      than ThrottleInterval seconds; default is 10. We set 30 to
+      give the tick some breathing room if it crashes hot.
+    -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+  </dict>
+</plist>
