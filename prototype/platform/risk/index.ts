@@ -108,3 +108,17 @@ export {
   IcaapNarrativeDataError,
   buildIcaapNarrativeData,
 } from "./icaap-narrative-data";
+
+// Canonical Risk Taxonomy v1 — typed mirror of
+// `Regulations/_risk-taxonomy.md` (Helena CRO + Rohan Risk engineer).
+// Eleven level-1 risk types + 56 level-2 + 27 level-3 nodes. Every
+// policy, obligation, RAS line, control, incident, finding maps to
+// exactly one terminal node (Principle 2 — single-graph discipline).
+export {
+  RISK_TAXONOMY,
+  RISK_TAXONOMY_CODES,
+  type RiskTaxonomyCode,
+  type RiskTaxonomyNode,
+  getRiskTaxonomyNode,
+  isTerminal,
+} from "./taxonomy";
