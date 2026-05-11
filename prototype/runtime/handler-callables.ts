@@ -28,6 +28,7 @@ import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-ru
 import camilleEventTriage from "./agents/camille-event-triage";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
 import devonEventTriage from "./agents/devon-event-triage";
+import devonGoalLoop from "./agents/devon-goal-loop";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import eitanEventTriage from "./agents/eitan-event-triage";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
@@ -70,6 +71,7 @@ import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import sadeEventTriage from "./agents/sade-event-triage";
 import saskiaEventTriage from "./agents/saskia-event-triage";
+import saskiaGoalLoop from "./agents/saskia-goal-loop";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeEventTriage from "./agents/scrooge-event-triage";
@@ -111,6 +113,9 @@ const _map: Record<string, AgentRunHandler> = {
   // Cohort-3 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   "helena:goal-loop": helenaGoalLoop,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
+  // devon:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "devon:goal-loop": devonGoalLoop,
   "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
   // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.

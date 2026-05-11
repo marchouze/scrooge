@@ -53,6 +53,7 @@
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "agent:helena-risk-appetite-watch": "bun run runtime/run.ts --agent Helena --trigger risk-appetite-watch",
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",
+    "agent:devon-goal-loop": "bun run runtime/run.ts --agent Devon --trigger goal-loop",
     "agent:camille-financial-position-snapshot": "bun run runtime/run.ts --agent Camille --trigger financial-position-snapshot",
     "agent:rohan-risk-run": "bun run runtime/run.ts --agent Rohan --trigger risk-run",
     "agent:anya-goal-loop": "bun run runtime/run.ts --agent Anya --trigger goal-loop",
