@@ -1,4 +1,4 @@
-# Principle 7 — Autonomous by default; humans oversee the residual
+# Principle 6 — Autonomous by default; humans oversee the residual
 
 The bank is an autonomous AI-run institution. Every persona — engineering and governance — is a standing autonomous agent that runs on its own cadence and discharges its mandate. Human involvement (Marc as CEO; future human overseers) is reserved for the residual set of decisions and actions that an agent cannot make on its own.
 
