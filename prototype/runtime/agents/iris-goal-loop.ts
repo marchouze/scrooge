@@ -70,11 +70,9 @@ const IRIS_SPEC_PATH = resolve(
 // const IRIS_EVENTS_EMITTED     = [ ... ] — see Team/Iris.md §11
 
 // Iris's procedure paths (§13).
-const IRIS_BREACH_NOTIFICATION_PROCEDURE_PATH =
-  "Procedures/by-policy/popia-breach-notification.md";
+const IRIS_BREACH_NOTIFICATION_PROCEDURE_PATH = "Procedures/by-policy/popia-breach-notification.md";
 const IRIS_DSAR_PROCEDURE_PATH = "Procedures/by-policy/popia-dsar.md";
-const IRIS_RETENTION_SCHEDULE_PROCEDURE_PATH =
-  "Procedures/by-policy/retention-schedule-cycle.md";
+const IRIS_RETENTION_SCHEDULE_PROCEDURE_PATH = "Procedures/by-policy/retention-schedule-cycle.md";
 // Coverage-gap step-ID form per _step-id-convention.md §5.
 const IRIS_BREACH_STEP_ID = "popia-breach-notification:step-1";
 const IRIS_DSAR_STEP_ID = "popia-dsar:step-1";
@@ -85,8 +83,7 @@ const IRIS_RETENTION_STEP_ID = "retention-schedule-cycle:step-1";
 // is the standing-duty trigger for register maintenance).
 const POPIA_CONTROLS_SNAPSHOT_GOAL = "Approve / refuse a new processing purpose" as const;
 // Rule 2 — Breach notification / DSAR dispatch.
-const BREACH_NOTIFICATION_GOAL =
-  "Sign Information-Regulator notifications under s.22" as const;
+const BREACH_NOTIFICATION_GOAL = "Sign Information-Regulator notifications under s.22" as const;
 const DSR_RESPONSE_GOAL = "DSAR disposition (grant / partial / refuse)" as const;
 // Rule 3 — Retention schedule review.
 const RETENTION_SCHEDULE_GOAL = "Approve retention-schedule changes" as const;
@@ -244,10 +241,7 @@ export const irisGoalDeriver: GoalDeriver = async (
         },
       ],
       procedureCitations: [
-        buildProcedureCitation(
-          IRIS_BREACH_NOTIFICATION_PROCEDURE_PATH,
-          IRIS_BREACH_STEP_ID,
-        ),
+        buildProcedureCitation(IRIS_BREACH_NOTIFICATION_PROCEDURE_PATH, IRIS_BREACH_STEP_ID),
       ],
       plannedEvents: [
         {
@@ -292,9 +286,7 @@ export const irisGoalDeriver: GoalDeriver = async (
           specHash,
         },
       ],
-      procedureCitations: [
-        buildProcedureCitation(IRIS_DSAR_PROCEDURE_PATH, IRIS_DSAR_STEP_ID),
-      ],
+      procedureCitations: [buildProcedureCitation(IRIS_DSAR_PROCEDURE_PATH, IRIS_DSAR_STEP_ID)],
       plannedEvents: [
         {
           type: "DSARClosed",
@@ -349,9 +341,7 @@ export const irisGoalDeriver: GoalDeriver = async (
           specHash,
         },
       ],
-      procedureCitations: [
-        buildProcedureCitation(IRIS_DSAR_PROCEDURE_PATH, IRIS_DSAR_STEP_ID),
-      ],
+      procedureCitations: [buildProcedureCitation(IRIS_DSAR_PROCEDURE_PATH, IRIS_DSAR_STEP_ID)],
       plannedEvents: [
         {
           type: "POPIAControlsSnapshot",
@@ -463,9 +453,7 @@ export const irisGoalDeriver: GoalDeriver = async (
           specHash,
         },
       ],
-      procedureCitations: [
-        buildProcedureCitation(IRIS_DSAR_PROCEDURE_PATH, IRIS_DSAR_STEP_ID),
-      ],
+      procedureCitations: [buildProcedureCitation(IRIS_DSAR_PROCEDURE_PATH, IRIS_DSAR_STEP_ID)],
       plannedEvents: [
         {
           type: "ProcessingPurposeApproved",
