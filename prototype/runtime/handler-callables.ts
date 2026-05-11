@@ -27,18 +27,24 @@ import beaGoalLoop from "./agents/bea-goal-loop";
 import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
 import camilleEventTriage from "./agents/camille-event-triage";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
+import camilleGoalLoop from "./agents/camille-goal-loop";
 import devonEventTriage from "./agents/devon-event-triage";
+import devonGoalLoop from "./agents/devon-goal-loop";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import eitanEventTriage from "./agents/eitan-event-triage";
+import eitanGoalLoop from "./agents/eitan-goal-loop";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
 import helenaEventTriage from "./agents/helena-event-triage";
 import helenaGoalLoop from "./agents/helena-goal-loop";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import imaniEventTriage from "./agents/imani-event-triage";
+import imaniGoalLoop from "./agents/imani-goal-loop";
 import imaniLegalReadiness from "./agents/imani-legal-readiness";
 import irisEventTriage from "./agents/iris-event-triage";
+import irisGoalLoop from "./agents/iris-goal-loop";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import kaiEventTriage from "./agents/kai-event-triage";
+import kaiGoalLoop from "./agents/kai-goal-loop";
 import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
 import kaiPreTradeGatewayAggregator from "./agents/kai-pre-trade-gateway-aggregator";
 import linneaEventTriage from "./agents/linnea-event-triage";
@@ -61,8 +67,10 @@ import paxEventTriage from "./agents/pax-event-triage";
 import paxRoleResearchQueue from "./agents/pax-role-research-queue";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
 import rashidaEventTriage from "./agents/rashida-event-triage";
+import rashidaGoalLoop from "./agents/rashida-goal-loop";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import raviEventTriage from "./agents/ravi-event-triage";
+import raviGoalLoop from "./agents/ravi-goal-loop";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
 import rohanEventTriage from "./agents/rohan-event-triage";
 import rohanGoalLoop from "./agents/rohan-goal-loop";
@@ -70,6 +78,7 @@ import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import sadeEventTriage from "./agents/sade-event-triage";
 import saskiaEventTriage from "./agents/saskia-event-triage";
+import saskiaGoalLoop from "./agents/saskia-goal-loop";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeEventTriage from "./agents/scrooge-event-triage";
@@ -77,12 +86,14 @@ import { createHandler as createScroogeFollowOnRouter } from "./agents/scrooge-f
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import scroogeOwnerInboxArchiver from "./agents/scrooge-owner-inbox-archiver";
 import sennaEventTriage from "./agents/senna-event-triage";
+import sennaGoalLoop from "./agents/senna-goal-loop";
 import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-threat-model";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
 import thandiweEventTriage from "./agents/thandiwe-event-triage";
 import thandiweGoalLoop from "./agents/thandiwe-goal-loop";
 import tomasEventTriage from "./agents/tomas-event-triage";
+import tomasGoalLoop from "./agents/tomas-goal-loop";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
 import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
 import veraEventTriage from "./agents/vera-event-triage";
@@ -91,6 +102,7 @@ import veraOvernightRecon from "./agents/vera-overnight-recon";
 import yaelEventTriage from "./agents/yael-event-triage";
 import yaelTaxReadiness from "./agents/yael-tax-readiness";
 import zaraEventTriage from "./agents/zara-event-triage";
+import zaraGoalLoop from "./agents/zara-goal-loop";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
 
@@ -138,6 +150,20 @@ const _map: Record<string, AgentRunHandler> = {
   // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   "thandiwe:goal-loop": thandiweGoalLoop,
+  // cohort-3 goal-loops (batch 2) — no cron; shadow mode (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "zara:goal-loop": zaraGoalLoop,
+  "eitan:goal-loop": eitanGoalLoop,
+  "camille:goal-loop": camilleGoalLoop,
+  "iris:goal-loop": irisGoalLoop,
+  "rashida:goal-loop": rashidaGoalLoop,
+  "senna:goal-loop": sennaGoalLoop,
+  "kai:goal-loop": kaiGoalLoop,
+  "tomas:goal-loop": tomasGoalLoop,
+  "ravi:goal-loop": raviGoalLoop,
+  "imani:goal-loop": imaniGoalLoop,
+  "devon:goal-loop": devonGoalLoop,
+  "saskia:goal-loop": saskiaGoalLoop,
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
