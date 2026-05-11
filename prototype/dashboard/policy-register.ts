@@ -7,7 +7,7 @@
 // Per CLAUDE.md Principle 1: this is a pure projection over canonical source.
 // The register is the truth; we re-derive on every dashboard tick — no cache.
 //
-// Per Principle 6 (the upward chain): every policy carries the source
+// Per Principle 2 (the upward chain): every policy carries the source
 // authority it implements (REGULATORY / OBJECTIVE) and the bind state of
 // the underlying obligation (CORPORATE / LICENCE / COMMENCEMENT /
 // CONDITIONAL). Both classifications fall out of the citation text plus

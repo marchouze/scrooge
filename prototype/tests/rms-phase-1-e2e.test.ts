@@ -59,7 +59,7 @@ import { recordCeoDecision } from "../runtime/decisions/record";
 import type { AgentRunContext } from "../runtime/types";
 
 // ---------------------------------------------------------------------------
-// Identity discipline (Principle 7) — name + position pairs.
+// Identity discipline (Principle 6) — name + position pairs.
 // ---------------------------------------------------------------------------
 
 const SCROOGE_REF = {

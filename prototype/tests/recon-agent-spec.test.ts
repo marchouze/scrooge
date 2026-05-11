@@ -24,7 +24,7 @@ describe("agent-spec-integrity pipeline", () => {
     expect(typeof r.asserted).toBe("number");
     expect(r.asserted).toBeGreaterThanOrEqual(27);
     expect(Array.isArray(r.violations)).toBe(true);
-    // The live state must be green per Principle 7 ("persona files default
+    // The live state must be green per Principle 6 ("persona files default
     // to agent-spec form"). If this assertion fails it is a *real* finding
     // — investigate the persona file rather than weaken the test.
     expect(r.ok).toBe(true);

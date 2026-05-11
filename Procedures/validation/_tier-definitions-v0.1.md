@@ -23,8 +23,8 @@ owner: Nadia (Independent model-validation engineer)
 - **BCBS *Corporate Governance Principles for Banks*** (2015 rev. 2024) Principles 6 + 8. Referenced via `ORG-GV-10` and `ORG-GV-18`.
 - **Banks Act 94 of 1990 § 70(2A)(b)** — risk-management process and audit. `[citation: TBC — route to Mira for explicit sub-clause register row]`
 - **CLAUDE.md Principle 2** — every action traces to a source; placeholders flagged `[citation: TBC]` resolve before publication of substantive Tier-N methodology pages.
-- **CLAUDE.md Principle 6** — single-graph discipline; this file sits between RAS § B7 (appetite layer) and the per-tier methodology pages (substance layer).
-- **CLAUDE.md Principle 7** — autonomous by default; the default actor at every tier-classification step is `agent:nadia`; escalation to `agent:helena` (CRO) per `Team/Nadia.md` §10.
+- **CLAUDE.md Principle 2** — single-graph discipline; this file sits between RAS § B7 (appetite layer) and the per-tier methodology pages (substance layer).
+- **CLAUDE.md Principle 6** — autonomous by default; the default actor at every tier-classification step is `agent:nadia`; escalation to `agent:helena` (CRO) per `Team/Nadia.md` §10.
 
 **Slice scope.** This file is Slice A of the validation-methodology library v0 per `Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md` §7.1. Slice B (model-spec contract co-authored with Rohan) and Slice C (Tier-1 methodology v0.1) are the immediate successors. This file does **not** author per-tier methodology content; it locks the structural definitions that those slices build on.
 
@@ -195,7 +195,7 @@ This definition tracks SR 11-7's definition of "model" (any quantitative method,
 ### 4.2 Out of scope (not a "model" for tier purposes)
 
 - **Pure data-transformation pipelines.** ETL / ELT; format conversion; record-de-duplication driven by exact-match keys; aggregation queries (SUM, COUNT, AVG over the event store with no statistical inference). These are **data engineering**, not models. Anya's data-contracts catalogue governs them.
-- **Reporting layouts.** A BA-return formatter that maps named quantities into the regulator's XML schema is not a model — it is a renderer (Principle 6 downward). The named quantities themselves are model outputs (where applicable) and are validated as Tier-1 candidates.
+- **Reporting layouts.** A BA-return formatter that maps named quantities into the regulator's XML schema is not a model — it is a renderer (Principle 2 downward). The named quantities themselves are model outputs (where applicable) and are validated as Tier-1 candidates.
 - **Static configuration.** Threshold tables hand-set by Helena's policy-approval that the rule engine reads — the table is a policy artefact, not a model; the rule engine that consumes the table is the model.
 - **Software bugs.** A coding error in a validated model is a software defect, not a model risk; remediation routes through Atlas's defect-remediation process, not Nadia's revalidation cycle. (A defect *discovered through validation* may still trigger a `ValidationFindingRaised` event under Nadia's discipline — the validation discipline catches the bug; the bug fix is engineering's.)
 
@@ -211,7 +211,7 @@ This definition tracks SR 11-7's definition of "model" (any quantitative method,
 
 ## 5. Procedure-pair binding
 
-Per CLAUDE.md Principle 6, this file sits in the upward chain Reg → Policy → Procedure → System Capability:
+Per CLAUDE.md Principle 2, this file sits in the upward chain Reg → Policy → Procedure → System Capability:
 
 - **Regulation** — SR 11-7; SS 1/23; BCBS CG-Principles; Banks Act § 70(2A)(b); Reg 39; FIC Act ss.21–28; IFRS 9 §5.5.
 - **Policy** — Model Risk Policy (`PLANNED` per `Owner Inbox/2026-05-06_policy-register.md`); RAS § B7 binds in the interim.
@@ -270,8 +270,8 @@ Gaps 1, 2, 4 are the load-bearing dependencies for substantive methodology autho
 - **Decision record** — `Owner Inbox/2026-05-08_scrooge_ceo-decision-record_d-s7-targeted-3-5-open-questions.md` (sub-decision A approved as drafted).
 - **Scoping brief** — `Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md` §1, §4, §7.1 (Slice A scope; tier examples; sequencing).
 - **CLAUDE.md Principle 2** — every action traces to a source; placeholders flagged `[citation: TBC]` resolve before publication of dependent slices (C / E / F).
-- **CLAUDE.md Principle 6** — single-graph discipline; Slice A is the structural anchor of the upward chain Reg → Policy → Procedure → System Capability for model validation.
-- **CLAUDE.md Principle 7** — autonomous by default; the default actor at every classification step is `agent:nadia`; escalation channel typed to `agent:helena` per `Team/Nadia.md` §10.
+- **CLAUDE.md Principle 2** — single-graph discipline; Slice A is the structural anchor of the upward chain Reg → Policy → Procedure → System Capability for model validation.
+- **CLAUDE.md Principle 6** — autonomous by default; the default actor at every classification step is `agent:nadia`; escalation channel typed to `agent:helena` per `Team/Nadia.md` §10.
 
 ---
 

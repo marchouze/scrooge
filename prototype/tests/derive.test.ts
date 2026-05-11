@@ -47,7 +47,7 @@ function makeFixture(): Fixture {
 
   // CLAUDE.md fixture — narrates the structure but the canonical
   // principle and roster data live in /Principles/ and Team/_team-roster.json
-  // respectively (Principle 6 single-graph discipline). The CLAUDE.md prose
+  // respectively (Principle 2 single-graph discipline). The CLAUDE.md prose
   // is read for `openSeatStatusFor` per-seat status fall-through only.
   writeFileSync(
     join(root, "CLAUDE.md"),

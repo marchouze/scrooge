@@ -16,7 +16,7 @@
 // surfaced directly from the register's dedicated columns rather than
 // derived.
 //
-// Per CLAUDE.md Principle 6: this is a read-only projection over the
+// Per CLAUDE.md Principle 2: this is a read-only projection over the
 // canonical obligations register. The register file is the single citable
 // source; this view is a query-time shape-shift, not authored content.
 //
@@ -49,7 +49,7 @@ interface ObligationDetail {
    * Policy names parsed from the Fulfilment column. Each entry is the
    * normalised policy name (semicolon-split, "Policy" qualifier kept as
    * authored) — the obligations dashboard cross-references these against
-   * the policy register to detect citation-chain gaps under Principle 6.
+   * the policy register to detect citation-chain gaps under Principle 2.
    */
   linkedPolicies: string[];
   /**

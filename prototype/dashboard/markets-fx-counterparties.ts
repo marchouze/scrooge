@@ -10,7 +10,7 @@
 // Surface: GET /api/markets/fx/counterparties (wired in dashboard/server.ts).
 // Consumed by `dashboard/public/markets/fx/desk.html` Slice 1 picker.
 //
-// Authority chain (Principle 6 upward):
+// Authority chain (Principle 2 upward):
 //   - D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 1.
 //   - D-FSP-LICENCE-NECESSITY confirm-A → FAIS Posture A (PR #62, #70).
 //   - FAIS Act 37/2002 + Subordinate Legislation s.45 (institutional /

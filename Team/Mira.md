@@ -141,5 +141,5 @@ Mira drafts STR / CTR filings; Zara as MLRO signs. The drafter / signer split is
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
-| v1.0 | 2026-05-07 | Mira (via Scrooge) | Upgraded to agent operating spec under Principle 7. Reports-to corrected to Zara (CCO) per top-of-house structure. |
+| v1.0 | 2026-05-07 | Mira (via Scrooge) | Upgraded to agent operating spec under Principle 6. Reports-to corrected to Zara (CCO) per top-of-house structure. |
 | v1.1 | 2026-05-08 | Mira | Added `mira:m1-regulator-citation-urns` event-driven handler under D-MARKETS-SCHEMA-FOUNDATION (markets-foundation proposal §8 + brief 2026-05-07). Registers the M1 regulator-citation URN tranche (market-infrastructure / OTC anchors / accounting / prudential / operational+cyber / AML+privacy / reporting). Emits `ObligationRegistered` + `M1CitationTrancheRegistered`. Trigger row added to §7; deliverable + event types added to §11; change log entry here. |

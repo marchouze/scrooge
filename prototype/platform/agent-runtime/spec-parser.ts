@@ -451,7 +451,7 @@ export function parseSpecContent(
     return { ok: false, reason: `${personaName}: §1 missing **Reports to:** bullet` };
   }
 
-  // Operating-spec sections are required (Principle 7 — character
+  // Operating-spec sections are required (Principle 6 — character
   // sheets are findings until upgraded). We require §6, §7, §9, §11,
   // §12; §10 and §13 may legitimately be empty for some agents
   // (count = 0 / no procedures yet) but the *headings* must be present

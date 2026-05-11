@@ -394,7 +394,7 @@ export interface DecisionDrillDown {
 
 /**
  * Source classification — which kind of upstream authority a policy
- * implements. Per CLAUDE.md Principle 6: "(Regulation OR Bank Objective)
+ * implements. Per CLAUDE.md Principle 2: "(Regulation OR Bank Objective)
  * → Policy → Procedure → System Capability". A policy may carry both
  * sources (e.g. Capital Management Policy implements Banks Act regulatory
  * minima AND the bank's own RAS B2 internal buffer).

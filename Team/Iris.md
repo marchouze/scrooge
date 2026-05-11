@@ -155,6 +155,6 @@ POPIA co-governance with Zara (RMCP / FIC seam) and with Rashida (s.19–22 secu
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from IO hire confirmation. |
-| v0.2 | 2026-05-07 | Iris (via Scrooge) | Operating-spec stub added under Principle 7. |
+| v0.2 | 2026-05-07 | Iris (via Scrooge) | Operating-spec stub added under Principle 6. |
 | v1.0 | 2026-05-07 | Iris (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated per CEO directive 2026-05-07. |
 | v1.1 | 2026-05-09 | Iris (via Scrooge) | Vera Wave-4 #10 cross-link recon closure: §12 capability bullets annotated with `(planned)` / `[substrate-gap: ...]` markers (6 findings); §13 adds landed `popia-io-designation.md` (PR #91, PROC-PRIV-IO-DSG-01); §11 references authored briefs. |

@@ -400,7 +400,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   // Universe of personas to walk = union of both surfaces. A persona
   // present in metadata but absent from /Team/ is itself a finding (the
-  // handler has no operating spec — Principle 7 violation), but
+  // handler has no operating spec — Principle 6 violation), but
   // `recon:runtime-handler-sync` already asserts that, so we don't
   // double-emit here.
   const personas = new Set<string>();
@@ -470,7 +470,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         if (!declared) {
           violations.push({
             subject: `${persona}:handler:${handler.trigger}:${eventType}`,
-            message: `Handler ${handler.key} (kind: "${handler.kind}") subscribes to \`${eventType}\` but persona ${persona}'s §7 table declares no row for it. The handler fires on an event the agent's mandate doesn't authorise — Principle 7 documentation drift. Either add a §7 row OR retire the subscription. Citations: ${CITATIONS.join(", ")}.`,
+            message: `Handler ${handler.key} (kind: "${handler.kind}") subscribes to \`${eventType}\` but persona ${persona}'s §7 table declares no row for it. The handler fires on an event the agent's mandate doesn't authorise — Principle 6 documentation drift. Either add a §7 row OR retire the subscription. Citations: ${CITATIONS.join(", ")}.`,
             severity: "info",
           });
         }

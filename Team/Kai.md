@@ -154,6 +154,6 @@ The surveillance feed is **emitted to Mira** but Mira consumes it read-only — 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
-| v0.5 | 2026-05-07 | Kai (via Scrooge) | Partial agent-spec sketch added under Principle 7. |
+| v0.5 | 2026-05-07 | Kai (via Scrooge) | Partial agent-spec sketch added under Principle 6. |
 | v1.0 | 2026-05-07 | Kai (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained; Sections 6–17 expanded substantively. Reports-to corrected to Saskia (Head of Global Markets) per top-of-house structure. References A0 event-schema freeze and Saskia / Kai trading-system architecture both authored 2026-05-07. |
 | v1.1 | 2026-05-09 | Kai (via Scrooge) | Closed Vera (Internal audit / continuous-assurance engineer) Wave-4 #10 cross-link findings: §12 capabilities `oms-ems`, `fix-gateway`, `market-data`, `pre-trade-gateway`, `surveillance-feed`, `best-execution` annotated `[substrate-gap: ...]` with cross-references to §16 and the canonical authoring briefs. Added two newly-landed §12 entries — `@platform/markets/products` and `@platform/markets/cdm` (Atlas + Kai Slices 1–3 of D-PRODUCT-CONSTRUCTION-SUBSTRATE; PRs #113 / #114 / #115; Anya's semantic-layer entries via PR #109). |

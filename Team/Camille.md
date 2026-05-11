@@ -149,4 +149,4 @@ Camille is the first-line executive for finance; Helena (CRO, second line) chall
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CFO hire confirmation. |
-| v1.0 | 2026-05-07 | Camille (via Scrooge) | Upgraded to agent operating spec under Principle 7; declared monthly close as cadence anchor; named Bea + Yael as primary escalation sources; sections 6–17 added; sections 1–5 preserved. |
+| v1.0 | 2026-05-07 | Camille (via Scrooge) | Upgraded to agent operating spec under Principle 6; declared monthly close as cadence anchor; named Bea + Yael as primary escalation sources; sections 6–17 added; sections 1–5 preserved. |

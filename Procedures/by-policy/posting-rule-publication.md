@@ -67,7 +67,7 @@ In the build phase the procedure runs against synthetic event types Atlas's A0 s
 ## 8. Manual steps
 
 - **Step 5 (validator)** is hand-validated today against the JSON schema; the runtime validator is Bea Substrate Gap § (Posting-rule validator, M2 with the close engine). Tracked exception under Principle 3.
-- **Step 8 (event emission)** runs through Scrooge today (Principle 7 in-session run); it lands on Atlas's A2 (event-trigger bus) when the runtime substrate is live.
+- **Step 8 (event emission)** runs through Scrooge today (Principle 6 in-session run); it lands on Atlas's A2 (event-trigger bus) when the runtime substrate is live.
 
 ## 9. Failure modes and escalation
 

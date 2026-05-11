@@ -117,7 +117,7 @@ export type CdmComposition = z.infer<typeof cdmCompositionSchema>;
 
 // ---------------------------------------------------------------------------
 // Risk profile — populated dimension by dimension by the per-dimension
-// agent attestations (per Principle 7 + Q2 resolution).
+// agent attestations (per Principle 6 + Q2 resolution).
 // ---------------------------------------------------------------------------
 
 export const marketRiskDimensionSchema = z.enum([

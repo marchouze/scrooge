@@ -65,7 +65,7 @@
 //
 // P2 — citation discipline. Findings carry typed citations:
 //   - `P1-EVENTS-AS-TRUTH` (Principle 1)
-//   - `P6-SINGLE-GRAPH-DISCIPLINE` (Principle 6)
+//   - `P6-SINGLE-GRAPH-DISCIPLINE` (Principle 2)
 //   - `Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md` (A0 freeze)
 //   - `Owner Inbox/2026-05-10_vera_codebase-quality-review.md` (F-032)
 //

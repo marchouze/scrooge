@@ -1,7 +1,7 @@
 // runtime/types.ts
 //
 // Agent runtime contract. The runtime executes a persona's operating spec
-// without a human in the loop. Per CLAUDE.md Principle 7 (Autonomous by
+// without a human in the loop. Per CLAUDE.md Principle 6 (Autonomous by
 // default), every persona is a standing agent that runs on its own cadence
 // and discharges its mandate; this is the substrate that turns the spec
 // into actual runs.

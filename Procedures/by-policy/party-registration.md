@@ -57,7 +57,7 @@ One of the four kind-specific triggers:
 
 ## 5. Steps
 
-Per Principle 7, the default actor in every step is an agent. Steps
+Per Principle 6, the default actor in every step is an agent. Steps
 that are by definition CEO-authored (e.g. the founding CEO-seat
 registration) carry P2 citations to the relevant CEO decision.
 

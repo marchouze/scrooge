@@ -33,7 +33,7 @@
 // dual-render keeps this implicit (mode-aware reads layer in once the
 // dashboard exposes a mode-toggle UI in Phase 2 §11.3).
 //
-// Substrate gaps surfaced (declared, not hidden — Principle 7):
+// Substrate gaps surfaced (declared, not hidden — Principle 6):
 //
 //   1. **Slice 5 — end-to-end round-trip.** This module reads the
 //      register projections; demonstrating the full chain

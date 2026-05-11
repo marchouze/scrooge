@@ -156,4 +156,4 @@ Owen is the statutory Company Secretary; the role is structurally independent of
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from Company Secretary hire confirmation. |
-| v1.0 | 2026-05-07 | Owen (via Scrooge) | Upgraded to agent operating spec under Principle 7; named canonical-source registry curation; declared Audit Forum chairmanship as registered interim conflict; sections 6–17 added; sections 1–5 preserved. |
+| v1.0 | 2026-05-07 | Owen (via Scrooge) | Upgraded to agent operating spec under Principle 6; named canonical-source registry curation; declared Audit Forum chairmanship as registered interim conflict; sections 6–17 added; sections 1–5 preserved. |

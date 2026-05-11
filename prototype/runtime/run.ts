@@ -19,7 +19,7 @@
 //   - D-AGENT-RUNTIME-AUTHORIZE (resolved 2026-05-07; A0–A3 substrate)
 //   - Principle 1 (events as truth — BusDispatched is the canonical
 //     dispatch record; LegacyFanoutShadowed is Phase-1 evidence)
-//   - Principle 7 (autonomous by default — bus runs unattended)
+//   - Principle 6 (autonomous by default — bus runs unattended)
 // Source-of-truth spec:
 //   Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md
 //

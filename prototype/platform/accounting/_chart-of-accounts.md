@@ -2,7 +2,7 @@
 
 **Owner:** Bea (with Atlas — substrate) · **Status:** v0 — substrate live, content sparse · **Authored:** 2026-05-07
 
-The chart of accounts is the typed, citation-bearing register of every general-ledger account the bank holds postings against. Per Principle 1, balances are queries over the event log; the chart is the *mapping* from event flows to GL accounts that those queries dispatch against. Per Principle 6, every account anchors to an IFRS reference and (where applicable) a BA-return cell so the upward chain `IFRS / Banks Act → Accounting Policies → Posting rule → Account` reconciles.
+The chart of accounts is the typed, citation-bearing register of every general-ledger account the bank holds postings against. Per Principle 1, balances are queries over the event log; the chart is the *mapping* from event flows to GL accounts that those queries dispatch against. Per Principle 2, every account anchors to an IFRS reference and (where applicable) a BA-return cell so the upward chain `IFRS / Banks Act → Accounting Policies → Posting rule → Account` reconciles.
 
 The canonical typed form is one JSON object per account, validating against [`chart-of-accounts.schema.json`](chart-of-accounts.schema.json). At v0, accounts are co-located in this markdown for readability; once the close engine substrate lands (Bea Substrate Gap §3, target M2), each account migrates to its own typed file with append-only versioning.
 
@@ -10,7 +10,7 @@ The canonical typed form is one JSON object per account, validating against [`ch
 
 - **Principle 1 (events are truth).** Posting rules dispatch event flows to accounts; the chart is what the dispatch resolves against. Aggregations (trial balance, balance sheet, BA returns) are queries that fold events into accounts via posting rules.
 - **Principle 5 (multi-everything from day one).** Every account declares its `currencies` array and `entityScope` array. There is no default currency; a posting rule that does not yield a currency for a posting fails by construction.
-- **Principle 6 (single graph, no orphans).** Every account carries citations: an IFRS reference (classification), a regulation ID (where applicable), and a `baReturnLines` array tying postings to the BA forms they roll up to.
+- **Principle 2 (single graph, no orphans).** Every account carries citations: an IFRS reference (classification), a regulation ID (where applicable), and a `baReturnLines` array tying postings to the BA forms they roll up to.
 
 ## Coverage today
 
