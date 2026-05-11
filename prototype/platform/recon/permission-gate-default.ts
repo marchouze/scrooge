@@ -128,6 +128,9 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation gate runs as a CI / pre-commit script that walks the store
   // outside the runtime; it is read-only and never appends.
   "platform/citation/gate.ts",
+  // Supersession annotation integrity recon — read-only replay of CeoDecision
+  // events; wrapping the read path with the gate is a no-op.
+  "platform/recon/supersession-annotation-integrity.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
