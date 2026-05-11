@@ -499,8 +499,19 @@ export const agentRegisteredPayloadSchema = z.object({
   triggerCount: z.number().int().nonnegative(),
   /** Number of decision rows the agent declares in §9 (its authority surface). */
   decisionsInScopeCount: z.number().int().nonnegative(),
+  /**
+   * First-column row labels from §9's decisions-in-scope table. The goal-loop
+   * validates `AgentGoalSelected.mandateCitations` against this closed set.
+   */
+  decisionsInScope: z.array(z.string().min(1)),
   /** Number of escalation rows the agent declares in §10. */
   decisionsEscalateCount: z.number().int().nonnegative(),
+  /**
+   * First-column row labels from §10's escalation table. The goal-loop
+   * validates an escalation class against this closed set before emitting
+   * `AgentGoalEscalation` (T-05 threat-model mitigation).
+   */
+  escalationClasses: z.array(z.string().min(1)),
   /**
    * `@platform/<x>` capability tokens parsed from §12. Used by Atlas's
    * permission-policy generator (A2) to derive capability allow-lists,

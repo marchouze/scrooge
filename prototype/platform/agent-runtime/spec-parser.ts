@@ -58,8 +58,24 @@ export interface AgentSpec {
   readonly triggerSubscriptions: readonly string[];
   /** Number of in-scope decision rows in §9's table. */
   readonly decisionsInScopeCount: number;
+  /**
+   * Row labels (first column) of §9's decisions-in-scope table.
+   * Consumed by `AgentGoalSelected.mandateCitations` validation and the
+   * goal-loop recon pipeline. Empty array when §9 is absent or has no
+   * data rows (both treated as "no decisions in scope" — parser still
+   * requires the heading to be present per operating-spec rules).
+   */
+  readonly decisionsInScope: readonly string[];
   /** Number of escalation rows in §10's table. */
   readonly decisionsEscalateCount: number;
+  /**
+   * Row labels (first column) of §10's escalation table.
+   * Consumed by the goal-loop before emitting `AgentGoalEscalation` — the
+   * loop checks the requested escalation class exists in this closed set.
+   * T-05 threat-model mitigation (agent-runtime-substrate-threat-model §T-05).
+   * Empty array when §10 is absent or has no data rows.
+   */
+  readonly escalationClasses: readonly string[];
   /** `@platform/<x>` tokens parsed from §12 bullets. */
   readonly systemCapabilities: readonly string[];
   /** Typed event names parsed from §11's "Events emitted:" entry. */
@@ -171,6 +187,52 @@ function countTableDataRows(section: string | undefined): number {
     break;
   }
   return dataRows;
+}
+
+/**
+ * Extract the first-column cell text from every data row of the first
+ * markdown table inside `section`. Returns the raw cell text trimmed of
+ * leading/trailing whitespace and backtick markers.
+ *
+ * Used to surface §9 (decisions-in-scope) and §10 (escalation classes) row
+ * labels as closed-set string lists. Handles absent sections and sections
+ * with no table gracefully by returning an empty array.
+ *
+ * Label extraction strips enclosing backticks (`...`) if present so callers
+ * receive clean label strings regardless of persona authoring style.
+ */
+function extractTableFirstColumnLabels(section: string | undefined): string[] {
+  if (!section) return [];
+  const lines = section.split(/\r?\n/);
+  let separatorSeen = false;
+  const labels: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!separatorSeen) {
+      // Detect the separator row; header comes just before.
+      if (/^\|\s*[-:]+(\s*\|\s*[-:]+)+\s*\|?\s*$/.test(trimmed)) {
+        separatorSeen = true;
+        continue;
+      }
+      continue;
+    }
+    // Past the separator — collect data rows.
+    if (trimmed.startsWith("|")) {
+      // Slice the first column. Row shape: `| col1 | col2 | ...`
+      const stripped = trimmed.replace(/^\|/, "");
+      const firstCol = (stripped.split("|")[0] ?? "").trim();
+      // Strip surrounding backticks when present (some specs write
+      // `Decision label` in the first column).
+      const label = firstCol.replace(/^`(.+)`$/, "$1").trim();
+      if (label !== "") {
+        labels.push(label);
+      }
+      continue;
+    }
+    // Blank or non-pipe line ends the table.
+    break;
+  }
+  return labels;
 }
 
 /**
@@ -495,7 +557,9 @@ export function parseSpecContent(
     triggerCount: countTableDataRows(triggers),
     triggerSubscriptions: extractTriggerSubscriptions(triggers),
     decisionsInScopeCount: countTableDataRows(decisionsInScope),
+    decisionsInScope: extractTableFirstColumnLabels(decisionsInScope),
     decisionsEscalateCount: countTableDataRows(decisionsEscalate),
+    escalationClasses: extractTableFirstColumnLabels(decisionsEscalate),
     systemCapabilities: extractCapabilities(capabilities),
     eventsEmitted: extractEventsEmitted(outputs),
     proceduresOwned: extractProcedures(procedures),
