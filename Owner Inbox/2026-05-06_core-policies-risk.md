@@ -18,7 +18,7 @@ The RMF sets out *how* the bank identifies, measures, manages, monitors, and rep
 
 ### Principles
 - Risk is an explicit category of decision-making at every level — appetite (Board), policy (CRO), limits (BRC), execution (first line), assurance (third line).
-- The risk taxonomy is canonical: credit, market, liquidity & funding, IRRBB, operational (incl. cyber, third-party, model), conduct, financial crime, legal, regulatory, strategic, reputational, climate.
+- Risk taxonomy is canonical at [`Regulations/_risk-taxonomy.md`](../Regulations/_risk-taxonomy.md) — eleven level-1 categories covering credit, market, liquidity & funding, IRRBB, operational, conduct, financial crime, legal & regulatory, strategic, reputational, and climate. Each policy in this bundle and each RAS line tags at the narrowest stable node per register §6 mapping rules (Principle 2 single-graph discipline).
 - Every risk has a named **owner** (first line), a named **second-line challenger**, and a position in the obligations register.
 - Risk identification is continuous; emerging-risk register is a standing BRC item.
 - Measurement is event-sourced (P1) with as-of replay; no parallel risk ledgers.
@@ -254,3 +254,11 @@ Failure to execute a planned stress test is reportable to BRC; failure of a seve
 | 8 | Stress Testing Policy | **Ready ✓** |
 
 All eight policies are pre-board-reviewed and ready. Each will appear as a Board-route decision in the next decision pack for CEO approval (on behalf of CEO + interim NEDs).
+
+---
+
+## Change log
+
+| Date | Author | Change |
+|---|---|---|
+| 2026-05-11 | Helena (Chief Risk Officer, governance) | Replaced inline risk-category list in §1 RMF Principles with a citation to canonical register `Regulations/_risk-taxonomy.md` (Principle 2 single-graph discipline). |
