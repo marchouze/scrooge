@@ -71,6 +71,7 @@ import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } f
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
+import { buildOnboardingView } from "./onboarding-view";
 import {
   POPIA_S71_NOTICE,
   buildDecisionDrillDown,
@@ -992,6 +993,18 @@ const server = Bun.serve({
       const summary = buildPartyTileSummary(projection);
       return jsonResponse({
         ...summary,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/onboarding" && req.method === "GET") {
+      // Onboarding orchestrator — Slice 1. Folds the 12 customer event types
+      // into per-counterparty lifecycle phases (21 phases). Read-only;
+      // no caching (event volume is small in build phase).
+      // Authority: D-PARTY-REGISTER (CEO-approved 2026-05-11);
+      //            AML-CFT-POLICY-V1 (PR #261); TRADING-MANDATE-V1 (PR #256).
+      // pageProvenance: event-derived → simulated-only in build phase.
+      return jsonResponse({
+        ...buildOnboardingView(eventStore),
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
