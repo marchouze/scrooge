@@ -1,3 +1,13 @@
+---
+riskTaxonomy:
+  - RT-OP.CY
+  - RT-OP.TP
+  - RT-OP.TP.CL
+  - RT-OP.RE
+  - RT-OP.TE
+  - RT-OP.PR
+---
+
 # Core policies — Information security, cyber, operations
 
 **Authors:** Senna (interim CISO function, with Devon as accountable executive); Devon (COO — operations lead); Atlas (platform engineering)

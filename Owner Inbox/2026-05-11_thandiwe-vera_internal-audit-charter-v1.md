@@ -4,6 +4,7 @@ author: Thandiwe (Chief Audit Executive, governance) + Vera (Internal audit engi
 date: 2026-05-11
 summary: Standalone Internal Audit Charter establishing the mandate, independence, authority, scope, and responsibilities of the internal audit function. Implements IIA IPPF Standards, BCBS 223 (Internal Audit of Banks), and Banks Act Audit Committee requirements. Third-line independence is non-negotiable. Closes obligations ORG-GV-20 and ORG-GV-07. LICENCE-BIND.
 decision-required: false
+riskTaxonomy: RT-ST.GV
 ---
 
 # Internal Audit Charter — Hoz Bank

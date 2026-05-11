@@ -4,6 +4,10 @@ author: Niko (with Zara on policy substance)
 date: 2026-05-07
 summary: Two stub policies (FAIS Policy; Customer Treatment Policy / TCF) at v0.1 anchoring the keystone Reg→Policy→Procedure→Capability chain on Niko's substrate. Both were `PLANNED` (FAIS Policy is FSP-conditional); this stub moves them to `STUB` so the chain reconciles. Niko's seat remains operationally paused until licence-day.
 decision-required: false
+riskTaxonomy:
+  - RT-CD
+  - RT-CD.CC
+  - RT-CD.TC
 ---
 
 # Conduct-policies bundle v0 — stubs

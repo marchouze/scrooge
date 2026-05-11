@@ -4,6 +4,7 @@ author: Rohan
 date: 2026-05-07
 summary: Stub Provisioning / IFRS 9 ECL Policy at v0.1 anchoring the keystone Reg→Policy→Procedure→Capability chain on Rohan's risk substrate. The Risk Appetite Statement (Helena, EXISTS) is reused unchanged. One stub policy was `PLANNED`; this stub moves it to `STUB`.
 decision-required: false
+riskTaxonomy: RT-CR
 ---
 
 # Risk-policies bundle v0 — stub

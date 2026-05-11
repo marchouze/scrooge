@@ -1,3 +1,13 @@
+---
+riskTaxonomy:
+  - RT-FC
+  - RT-FC.ML
+  - RT-FC.SA
+  - RT-CD
+  - RT-CD.TC
+  - RT-LR.DP
+---
+
 # Core policies — Compliance, financial crime, and privacy
 
 **Authors:** Zara (CCO — lead, compliance); Iris (IO — lead, privacy); Mira (engineering)
