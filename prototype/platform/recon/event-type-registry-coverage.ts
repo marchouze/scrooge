@@ -446,11 +446,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         : " Check the registry for the replacement type.";
       violations.push({
         subject: `event-type:${type}`,
-        message:
-          `Event type \`${type}\` is marked \`status: "deprecated"\` in EVENT_TYPE_REGISTRY but has a live \`eventStore.append\` call site.` +
-          migration +
-          ` Authority: D-PARTY-REGISTER (2026-05-11).` +
-          ` Citations: P1-EVENTS-AS-TRUTH, ${CITATIONS.join(", ")}.`,
+        message: `Event type \`${type}\` is marked \`status: "deprecated"\` in EVENT_TYPE_REGISTRY but has a live \`eventStore.append\` call site.${migration} Authority: D-PARTY-REGISTER (2026-05-11). Citations: P1-EVENTS-AS-TRUTH, ${CITATIONS.join(", ")}.`,
         severity: "fail",
       });
     }

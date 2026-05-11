@@ -13,7 +13,6 @@ import { EventStore } from "@platform/event-store/store";
 import { logger } from "@platform/observability/logger";
 import { LocalProjector } from "@platform/projections";
 
-import type { PartyId } from "@domains/party";
 import {
   authorisedSignatoryAdded,
   counterpartyId,
@@ -27,6 +26,7 @@ import {
   signatoryBook,
   soundingOpened,
 } from "@domains/customer";
+import type { PartyId } from "@domains/party";
 
 const dbPath = ".local/scenario-onboard.db";
 try {

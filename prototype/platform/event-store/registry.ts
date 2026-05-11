@@ -2379,7 +2379,9 @@ const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
  * PR 4, 2026-05-11) so callers can always compare
  * `meta.status === "deprecated"` without an undefined guard.
  */
-export function lookupEventType(type: string): (EventTypeMetadata & { status: EventTypeStatus }) | undefined {
+export function lookupEventType(
+  type: string,
+): (EventTypeMetadata & { status: EventTypeStatus }) | undefined {
   const meta = REGISTRY_BY_TYPE.get(type);
   if (!meta) return undefined;
   return { ...meta, status: meta.status ?? "active" };
