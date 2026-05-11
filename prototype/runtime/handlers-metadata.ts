@@ -155,6 +155,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "41 6 * * MON",
   }),
+  // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Anya", "goal-loop", "on-request"),
   entry("Anya", "projection-drift", "scheduled", {
     cadenceHours: 24,
     cronExpression: "17 3 * * *",
@@ -203,6 +206,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "47 7 * * 2",
   }),
+  // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Thandiwe", "goal-loop", "on-request"),
   entry("Rashida", "cyber-resilience-snapshot", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "49 7 * * 4",

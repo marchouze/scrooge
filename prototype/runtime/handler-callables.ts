@@ -14,6 +14,7 @@
 // Author: Atlas
 
 import anyaEventTriage from "./agents/anya-event-triage";
+import anyaGoalLoop from "./agents/anya-goal-loop";
 import anyaM1ProjectionRuntimeMapping from "./agents/anya-m1-projection-runtime-mapping";
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
@@ -63,6 +64,7 @@ import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import raviEventTriage from "./agents/ravi-event-triage";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
 import rohanEventTriage from "./agents/rohan-event-triage";
+import rohanGoalLoop from "./agents/rohan-goal-loop";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import sadeEventTriage from "./agents/sade-event-triage";
@@ -78,6 +80,7 @@ import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-thre
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
 import thandiweEventTriage from "./agents/thandiwe-event-triage";
+import thandiweGoalLoop from "./agents/thandiwe-goal-loop";
 import tomasEventTriage from "./agents/tomas-event-triage";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
 import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
@@ -105,6 +108,9 @@ const _map: Record<string, AgentRunHandler> = {
   "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
   "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
+  // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "anya:goal-loop": anyaGoalLoop,
   "anya:projection-drift": anyaProjectionDrift,
   "anya:projection-refresh": anyaProjectionRefresh,
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
@@ -114,6 +120,9 @@ const _map: Record<string, AgentRunHandler> = {
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
   "owen:goal-loop": owenGoalLoop,
   "rohan:risk-run": rohanRiskRun,
+  // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "rohan:goal-loop": rohanGoalLoop,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
   // mira:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
@@ -122,6 +131,9 @@ const _map: Record<string, AgentRunHandler> = {
   "senna:security-substrate-state": sennaSecuritySubstrateState,
   "zara:mlro-supervision": zaraMlroSupervision,
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
+  // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "thandiwe:goal-loop": thandiweGoalLoop,
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
