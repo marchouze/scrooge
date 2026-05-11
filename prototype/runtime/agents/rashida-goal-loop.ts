@@ -66,12 +66,10 @@ const RASHIDA_SPEC_PATH = resolve(
 
 const GOAL_SIGN_SECOND_LINE_CYBER_OPINION =
   "Sign the second-line cyber opinion to AC / Risk Forum" as const;
-const GOAL_SIGN_INCIDENT_SEVERITY_RATING =
-  "Sign `SecurityIncident` severity rating" as const;
+const GOAL_SIGN_INCIDENT_SEVERITY_RATING = "Sign `SecurityIncident` severity rating" as const;
 const GOAL_SIGN_THREAT_MODEL_GATE_EXCEPTIONS =
   "Sign / refuse threat-model-gate exceptions" as const;
-const GOAL_SIGN_KEY_ROTATION_CADENCE =
-  "Sign / refuse key-rotation cadence amendments" as const;
+const GOAL_SIGN_KEY_ROTATION_CADENCE = "Sign / refuse key-rotation cadence amendments" as const;
 
 // ---------------------------------------------------------------------------
 // Procedure paths (§13 of Rashida's spec)
@@ -234,7 +232,8 @@ export const rashidaGoalDeriver: GoalDeriver = async (
   // -------------------------------------------------------------------------
 
   const lastSnapshot = lastCyberResilienceSnapshotMs();
-  const needsSnapshot = lastSnapshot === undefined || Date.now() - lastSnapshot > TWENTY_FOUR_HOURS_MS;
+  const needsSnapshot =
+    lastSnapshot === undefined || Date.now() - lastSnapshot > TWENTY_FOUR_HOURS_MS;
 
   if (needsSnapshot) {
     if (!inClosedSet(GOAL_SIGN_SECOND_LINE_CYBER_OPINION)) return null;
