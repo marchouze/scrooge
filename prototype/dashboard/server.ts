@@ -55,6 +55,7 @@ import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
+import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { defaultProvenanceFilter } from "../platform/projections";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
@@ -63,6 +64,7 @@ import {
   recordCeoDecision,
   recordDecisionComment,
 } from "../runtime/decisions/record";
+import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
@@ -150,6 +152,10 @@ function bootDerive(): DashboardState {
       );
     }
     bootFleetRegistration();
+    // D-PARTY-REGISTER PR 2 — backfill the unified Party graph from
+    // existing legal-entity / counterparty / agent / signatory streams.
+    // Idempotent (keyed by source-event id); re-boot is a no-op.
+    bootPartyBackfill();
     const s = deriveState({ sources: SOURCES, events: EVENTS });
     ensureRuntimeDir(RUNTIME_STATE_PATH);
     saveState(s, RUNTIME_STATE_PATH);
@@ -228,6 +234,55 @@ function bootFleetRegistration(): void {
       { err: (e as Error).message },
       "fleet-rollout: roster read or driver failure; boot continues",
     );
+  }
+}
+
+/**
+ * D-PARTY-REGISTER PR 2 — boot-time idempotent backfill into the unified
+ * Party event family. Reads legal-entity seeds, the existing
+ * CounterpartySoundingOpened / CounterpartyProspectRegistered stream
+ * (folded for current lifecycle), the AgentRegistered stream (27
+ * personas), the Team/_team-roster.json reports-to graph, and the
+ * AuthorisedSignatoryAdded stream. Emits PartyRegistered +
+ * PartyRelationshipAsserted + PartyClassified events tagged with
+ * `backfillSourceEventId` so a second boot is a strict no-op.
+ *
+ * Failure mode: like fleet-rollout, a backfill failure logs but does
+ * not throw — the dashboard's primary responsibility (rendering cached
+ * state) continues. The next boot retries cleanly.
+ */
+function bootPartyBackfill(): void {
+  if (process.env.BANK_DASHBOARD_PARTY_BACKFILL_DISABLED === "true") return;
+  try {
+    const summary = runPartyBackfill(eventStore);
+    const totalEmitted =
+      summary.legalEntityPartiesEmitted +
+      summary.counterpartyPartiesEmitted +
+      summary.agentPartiesEmitted +
+      summary.naturalPersonPartiesEmitted +
+      summary.relationshipsEmitted +
+      summary.classificationsEmitted;
+    if (totalEmitted === 0) {
+      logger.debug(
+        { skipped: summary.skipped },
+        "party-backfill: idempotent boot; no events emitted",
+      );
+      return;
+    }
+    logger.info(
+      {
+        legalEntities: summary.legalEntityPartiesEmitted,
+        counterparties: summary.counterpartyPartiesEmitted,
+        agents: summary.agentPartiesEmitted,
+        naturalPersons: summary.naturalPersonPartiesEmitted,
+        relationships: summary.relationshipsEmitted,
+        classifications: summary.classificationsEmitted,
+        skipped: summary.skipped,
+      },
+      "dashboard boot — backfilled Party events into unified graph",
+    );
+  } catch (e) {
+    logger.error({ err: (e as Error).message }, "party-backfill failed; boot continues");
   }
 }
 
@@ -926,6 +981,18 @@ const server = Bun.serve({
         byAgent: groupByAgent(result.runs, 5),
         all: result.runs,
         pageProvenance: productionReferencePageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/party" && req.method === "GET") {
+      // D-PARTY-REGISTER PR 2 — Party tile read-side. Folds the unified
+      // Party event family (10 event types in domains/party/) and
+      // returns the four kind sub-counts + relationships sub-count.
+      // pageProvenance: event-derived → simulated-only in build phase.
+      const projection = buildPartyProjection(eventStore, cachedState.asOf);
+      const summary = buildPartyTileSummary(projection);
+      return jsonResponse({
+        ...summary,
+        pageProvenance: eventDerivedPageProvenance(),
       });
     }
     if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
