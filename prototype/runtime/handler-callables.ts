@@ -36,6 +36,7 @@ import helenaEventTriage from "./agents/helena-event-triage";
 import helenaGoalLoop from "./agents/helena-goal-loop";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import imaniEventTriage from "./agents/imani-event-triage";
+import imaniGoalLoop from "./agents/imani-goal-loop";
 import imaniLegalReadiness from "./agents/imani-legal-readiness";
 import irisEventTriage from "./agents/iris-event-triage";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
@@ -156,6 +157,8 @@ const _map: Record<string, AgentRunHandler> = {
   "yael:tax-readiness": yaelTaxReadiness,
   "tomas:payments-readiness": tomasPaymentsReadiness,
   "imani:legal-readiness": imaniLegalReadiness,
+  // imani:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "imani:goal-loop": imaniGoalLoop,
   "ravi:alm-readiness": raviAlmReadiness,
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,

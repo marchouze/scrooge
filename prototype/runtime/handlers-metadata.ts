@@ -156,6 +156,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   }),
   // devon:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   entry("Devon", "goal-loop", "on-request"),
+  // imani:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Imani", "goal-loop", "on-request"),
   entry("Camille", "financial-position-snapshot", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "41 6 * * MON",
@@ -416,9 +418,6 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
       "DisciplinaryActionRequested",
     ],
   }),
-
-  // saskia:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Saskia", "goal-loop", "on-request"),
 
   // Saskia — Head of Global Markets; markets/franchise events.
   entry("Saskia", "event-triage", "event-driven", {

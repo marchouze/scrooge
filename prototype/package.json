@@ -80,6 +80,7 @@
     "agent:yael-tax-readiness": "bun run runtime/run.ts --agent Yael --trigger tax-readiness",
     "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",
     "agent:imani-legal-readiness": "bun run runtime/run.ts --agent Imani --trigger legal-readiness",
+    "agent:imani-goal-loop": "bun run runtime/run.ts --agent Imani --trigger goal-loop",
     "agent:ravi-alm-readiness": "bun run runtime/run.ts --agent Ravi --trigger alm-readiness",
     "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",
     "agent:pax-role-research-queue": "bun run runtime/run.ts --agent PAX --trigger role-research-queue",
