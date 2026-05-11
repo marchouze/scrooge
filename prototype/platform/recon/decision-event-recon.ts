@@ -71,6 +71,7 @@ export interface RunOpts {
 
 interface RegistryShape {
   decisionsResolved: { id: string; title: string; actionedAt: string }[];
+  decisionsOpenIds: string[];
 }
 
 interface EventDecisionInfo {
@@ -136,6 +137,7 @@ function loadDerivedRegistry(opts: RunOpts): {
           title: r.title,
           actionedAt: r.actionedAt,
         })),
+        decisionsOpenIds: opts.state.decisionsOpen.map((d) => d.id),
       },
       eventDecisionIds,
       reopenedIds,
@@ -191,6 +193,7 @@ function loadDerivedRegistry(opts: RunOpts): {
         title: r.title,
         actionedAt: r.actionedAt,
       })),
+      decisionsOpenIds: derived.decisionsOpen.map((d) => d.id),
     },
     eventDecisionIds: info.allIds,
     reopenedIds: info.reopenedIds,
@@ -229,7 +232,21 @@ export function run(opts: RunOpts = {}): ReconResult {
       });
     }
   }
-  const knownIds = new Set(dashboardDecisions.map((d) => d.id));
+  // Every CeoDecision event in the store must surface somewhere in the
+  // derived projection. Resolved actions (approve / modify / defer) put
+  // the decision in `decisionsResolved`. The `request-revision` action
+  // reopens the decision — it remains in the event store as the audit
+  // trail of the CEO's "send it back" call, and surfaces in
+  // `decisionsOpen` (either via the curated open list, the Owner-Inbox
+  // lifted entry, or — when those are unavailable, e.g. the spec file
+  // is past the Owner-Inbox parse cap — via the event-synthesized
+  // fallback added by `reduceCeoDecisions` on 2026-05-11).
+  //
+  // Treat the union of open and resolved as the set of "known" ids.
+  const knownIds = new Set<string>([
+    ...dashboardDecisions.map((d) => d.id),
+    ...registry.decisionsOpenIds,
+  ]);
   for (const id of eventDecisionIds) {
     result.asserted++;
     // Decision IDs whose latest CeoDecision event is `request-revision`
@@ -242,7 +259,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!knownIds.has(id)) {
       violations.push({
         subject: id,
-        message: `Event store has CeoDecision ${id} but derived decisionsResolved does not surface it`,
+        message: `Event store has CeoDecision ${id} but derived decisionsResolved/decisionsOpen does not surface it (expected the projection to carry every event as either resolved or reopened — see reduceCeoDecisions in dashboard/derive.ts)`,
         severity: "fail",
       });
     }

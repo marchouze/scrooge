@@ -414,6 +414,75 @@ describe("deriveState — event reductions", () => {
     expect(b?.completedAt).toBe("2026-05-06");
     expect(b?.outcomeNote).toBe("latest");
   });
+
+  // Regression: Vera FAIL on the inaugural autonomous overnight recon
+  // (2026-05-11) — `D-MARKETS-CAPITAL-TIME-SHAPE` had a CeoDecision event
+  // in the store with `action=request-revision`, but the decision did
+  // not appear in `decisionsResolved` (correct — request-revision is a
+  // reopen, not a resolution) and *also* did not appear in
+  // `decisionsOpen` because the source Owner-Inbox spec file
+  // (`2026-05-07_saskia_markets-franchise-design-proposal.md`) was older
+  // than the Owner-Inbox parse cap (200 items) and got dropped.
+  //
+  // Expected behaviour after the fix: `reduceCeoDecisions` synthesises a
+  // fallback OpenDecision from the event payload whenever a reopened
+  // decision has no curated/owner-inbox source, so the decision-event
+  // recon's invariant ("every CeoDecision event surfaces in the derived
+  // projection") holds without depending on Owner-Inbox visibility.
+  it("surfaces a reopened decision (request-revision) in decisionsOpen even when the source file is outside other inputs", () => {
+    const f = makeFixture();
+    const state = deriveState({
+      sources: f.sources,
+      events: f.setEvents([
+        {
+          decisionId: "D-MARKETS-CAPITAL-TIME-SHAPE",
+          title: "Markets franchise design — proposal",
+          action: "request-revision",
+          outcome: "Decision genuinely open — awaiting CEO call on §8 split.",
+          actor: "agent:scrooge",
+          asOf: "2026-05-07T13:51:16.781Z",
+          comment: "Audit-trail correction.",
+        },
+      ]),
+    });
+    const open = state.decisionsOpen.find((d) => d.id === "D-MARKETS-CAPITAL-TIME-SHAPE");
+    const resolved = state.decisionsResolved.find((d) => d.id === "D-MARKETS-CAPITAL-TIME-SHAPE");
+    // Reopened — must be in open, not resolved.
+    expect(resolved).toBeUndefined();
+    expect(open).toBeDefined();
+    expect(open?.title).toBe("Markets franchise design — proposal");
+    expect(open?.trigger).toContain("request-revision");
+    // Audit-trail comment carries through as a note so the CEO sees why
+    // the decision was reopened.
+    expect(open?.note).toBe("Audit-trail correction.");
+  });
+
+  it("prefers a curated OpenDecision over the event-synthesised fallback when both exist", () => {
+    // When the curated `decisionsOpen` (or an Owner-Inbox-lifted entry)
+    // already carries the reopened id, the projection should use that
+    // richer entry rather than the event-derived placeholder. The fixture
+    // ships `TEST-OPEN` as a curated open decision; emitting a
+    // request-revision event for it must not produce a duplicate.
+    const f = makeFixture();
+    const state = deriveState({
+      sources: f.sources,
+      events: f.setEvents([
+        {
+          decisionId: "TEST-OPEN",
+          title: "Different title from event",
+          action: "request-revision",
+          outcome: "Sent back.",
+          actor: "marc@tgv.co.za",
+          asOf: "2026-05-06T11:00:00.000Z",
+        },
+      ]),
+    });
+    const matches = state.decisionsOpen.filter((d) => d.id === "TEST-OPEN");
+    expect(matches).toHaveLength(1);
+    // Curated entry wins — the title is the curated one, not the event's.
+    expect(matches[0]?.title).toBe("Open decision");
+    expect(matches[0]?.owner).toBe("Test");
+  });
 });
 
 describe("deriveState — per-agent mini-dashboards", () => {

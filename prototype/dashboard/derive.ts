@@ -577,7 +577,11 @@ function reduceCeoDecisions(
   events: readonly CeoDecisionEventSummary[],
   open: readonly OpenDecision[],
   seed: readonly ResolvedDecision[],
-): { resolved: ResolvedDecision[]; remainingOpen: OpenDecision[] } {
+): {
+  resolved: ResolvedDecision[];
+  remainingOpen: OpenDecision[];
+  reopenedFromEvents: OpenDecision[];
+} {
   // Latest event per decisionId wins (handles re-action / correction).
   const latest = new Map<string, CeoDecisionEventSummary>();
   for (const e of events) {
@@ -591,10 +595,23 @@ function reduceCeoDecisions(
   // not ready / Scrooge defaulted in error". The decision returns to
   // open in the dashboard. The corresponding CeoDecision event still
   // lives in the audit log.
+  //
+  // Reopened decisions ordinarily re-surface in `decisionsOpen` via the
+  // curated `open` list or via Owner-Inbox parsing (`decision-required:
+  // true` frontmatter). When neither carries the decision — e.g. the
+  // spec file is older than the Owner-Inbox parse cap (Vera FAIL on
+  // D-MARKETS-CAPITAL-TIME-SHAPE, 2026-05-11) — we synthesize a fallback
+  // OpenDecision from the latest event payload so the decision-event
+  // recon still has a derivation entry to bind to. Without this
+  // fallback the recon reports "Event store has CeoDecision X but
+  // derived decisionsResolved does not surface it" even though the
+  // semantics (reopened, awaiting CEO action) are correct.
   const reopenedIds = new Set<string>();
+  const reopenedEvents: CeoDecisionEventSummary[] = [];
   for (const e of latest.values()) {
     if (e.action === "request-revision") {
       reopenedIds.add(e.decisionId);
+      reopenedEvents.push(e);
       continue;
     }
     const original = open.find((d) => d.id === e.decisionId);
@@ -620,7 +637,26 @@ function reduceCeoDecisions(
 
   const resolvedIds = new Set(resolved.map((r) => r.id));
   const remainingOpen = open.filter((d) => !resolvedIds.has(d.id));
-  return { resolved, remainingOpen };
+
+  // Synthesize OpenDecision fallbacks for reopened ids that the caller's
+  // other sources (curated open, Owner-Inbox-lifted) do not already
+  // carry. The caller filters by id against the combined open list, so
+  // emitting candidates here is safe even when redundant.
+  const remainingOpenIds = new Set(remainingOpen.map((d) => d.id));
+  const reopenedFromEvents: OpenDecision[] = reopenedEvents
+    .filter((e) => !remainingOpenIds.has(e.decisionId))
+    .map((e) => ({
+      id: e.decisionId,
+      title: e.title || e.decisionId,
+      category: "near-term",
+      owner: "(reopened)",
+      trigger: `CeoDecision event with action=request-revision at ${e.asOf}`,
+      decisionForCEO: e.outcome || `Decision ${e.decisionId} reopened — awaiting CEO action`,
+      sourceDocs: [],
+      ...(e.comment ? { note: e.comment } : {}),
+    }));
+
+  return { resolved, remainingOpen, reopenedFromEvents };
 }
 
 function reduceInFlight(
@@ -1651,7 +1687,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     if (arr) arr.sort((a, b) => (a.asOf < b.asOf ? -1 : 1));
   }
 
-  const { resolved, remainingOpen } = reduceCeoDecisions(
+  const { resolved, remainingOpen, reopenedFromEvents } = reduceCeoDecisions(
     ceoEvents,
     curated.decisionsOpen,
     curated.decisionsResolvedSeed,
@@ -1716,9 +1752,19 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     });
   }
 
+  // Dedupe: prefer curated open and Owner-Inbox-lifted entries over the
+  // event-synthesized fallback (the latter has no human-authored
+  // `decisionForCEO` / `recommendation`).
+  const knownOpenIds = new Set<string>([
+    ...remainingOpen.map((d) => d.id),
+    ...ownerInboxOpenDecisions.map((d) => d.id),
+  ]);
+  const reopenedFallback = reopenedFromEvents.filter((d) => !knownOpenIds.has(d.id));
+
   const decisionsOpenAll = [
     ...remainingOpen,
     ...ownerInboxOpenDecisions,
+    ...reopenedFallback,
     ...escalationOpenDecisions,
   ];
 
