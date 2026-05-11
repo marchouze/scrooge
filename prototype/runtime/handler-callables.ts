@@ -76,6 +76,7 @@ import { createHandler as createScroogeFollowOnRouter } from "./agents/scrooge-f
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import scroogeOwnerInboxArchiver from "./agents/scrooge-owner-inbox-archiver";
 import sennaEventTriage from "./agents/senna-event-triage";
+import sennaGoalLoop from "./agents/senna-goal-loop";
 import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-threat-model";
 import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
 import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
@@ -129,6 +130,9 @@ const _map: Record<string, AgentRunHandler> = {
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   "mira:goal-loop": miraGoalLoop,
   "senna:security-substrate-state": sennaSecuritySubstrateState,
+  // senna:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "senna:goal-loop": sennaGoalLoop,
   "zara:mlro-supervision": zaraMlroSupervision,
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
   // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).

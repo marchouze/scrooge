@@ -62,6 +62,7 @@
     "agent:owen-governance-cycle-prep": "bun run runtime/run.ts --agent Owen --trigger governance-cycle-prep",
     "agent:mira-obligations-snapshot": "bun run runtime/run.ts --agent Mira --trigger obligations-snapshot",
     "agent:senna-security-substrate-state": "bun run runtime/run.ts --agent Senna --trigger security-substrate-state",
+    "agent:senna-goal-loop": "bun run runtime/run.ts --agent Senna --trigger goal-loop",
     "agent:mira-citation-gate": "bun run runtime/run.ts --agent Mira --trigger citation-gate",
     "agent:mira-goal-loop": "bun run runtime/run.ts --agent Mira --trigger goal-loop",
     "agent:anya-projection-refresh": "bun run runtime/run.ts --agent Anya --trigger projection-refresh",

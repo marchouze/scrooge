@@ -201,6 +201,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "37 7 * * 4",
   }),
+  // senna:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Senna", "goal-loop", "on-request"),
   entry("Zara", "mlro-supervision", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "30 5 * * MON",
