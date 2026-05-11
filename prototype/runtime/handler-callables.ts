@@ -30,6 +30,7 @@ import camilleFinancialPositionSnapshot from "./agents/camille-financial-positio
 import devonEventTriage from "./agents/devon-event-triage";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
 import eitanEventTriage from "./agents/eitan-event-triage";
+import eitanGoalLoop from "./agents/eitan-goal-loop";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
 import helenaEventTriage from "./agents/helena-event-triage";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
@@ -137,6 +138,9 @@ const _map: Record<string, AgentRunHandler> = {
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
+  // eitan:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "eitan:goal-loop": eitanGoalLoop,
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
   "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,
   "kai:pre-trade-gateway-aggregator": kaiPreTradeGatewayAggregator,
