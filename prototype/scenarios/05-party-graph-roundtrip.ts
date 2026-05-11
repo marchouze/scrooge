@@ -3,6 +3,10 @@
 // D-PARTY-REGISTER PR 2 (CEO-approved 2026-05-11) — runnable end-to-end
 // round-trip demo for the unified Party event family.
 //
+// PR 3 (CEO-approved 2026-05-11) extends the scenario with the founding
+// CEO seat (Marc), the 10 top-of-house `reports-to` resolutions, and
+// the 3 `acts-on-behalf-of` edges from Marc to the Hoz entities.
+//
 // What this scenario asserts:
 //   1. The boot-time Party backfill emits the three legal-entity Parties
 //      (hoz-group, hoz-bank, hoz-securities) with two `parent-of` edges
@@ -10,12 +14,20 @@
 //   2. The 27 in-house agent Parties (one per persona in
 //      Team/_team-roster.json) are emitted with `reports-to` edges
 //      following the canonical roster.
-//   3. A signatory natural-person Party can be minted by registering
+//   3. PR 3 — Marc's natural-person Party is emitted with
+//      `purposeRoles: ["ceo"]` and the URN `urn:party:natural-person:marc`.
+//   4. PR 3 — top-of-house personas (Devon, Helena, Owen, Zara, Iris,
+//      Camille, Eitan, Saskia, Thandiwe, Rashida — 10 total) all have
+//      `reports-to` edges into Marc; walking from any of the 27 personas
+//      terminates at Marc's Party (not at a string label).
+//   5. PR 3 — three `acts-on-behalf-of` edges from Marc to the three
+//      Hoz legal-entity Parties (hoz-group, hoz-bank, hoz-securities).
+//   6. A signatory natural-person Party can be minted by registering
 //      Jane Doe with a `signatory-of` edge to a freshly-registered
 //      sample counterparty Party.
-//   4. The backfill is idempotent — a second run produces zero new
-//      events.
-//   5. Graph queries: walking the `reports-to` chain from any agent
+//   7. The backfill is idempotent — a second run produces zero new
+//      events (PR 3 included).
+//   8. Graph queries: walking the `reports-to` chain from any agent
 //      converges; the `signatory-of` query for Acme returns Jane.
 //
 // Run:
@@ -136,14 +148,25 @@ ok(
   backfill1.agentPartiesEmitted >= 27,
   `got=${backfill1.agentPartiesEmitted}`,
 );
-// 2 parent-of edges + reports-to edges per persona whose `reportsTo`
-// resolves to another *agent* persona (top-of-house entries point at
-// "CEO" / "Marc" — not yet a Party in PR 2; the natural-person CEO seat
-// activates in PR 3, at which point the top-of-house edges resolve).
+// PR 3 — relationship totals after this PR:
+//   - 2 parent-of (entity → entity)
+//   - 17 reports-to (in-fleet)
+//   - 10 reports-to (top-of-house personas → Marc, activated in PR 3)
+//   - 3 acts-on-behalf-of (Marc → 3 Hoz entities, activated in PR 3)
+//   = 32 total
 ok(
-  "at least 2 parent-of + ~17 reports-to relationships emitted (top-of-house edges activate in PR 3)",
-  backfill1.relationshipsEmitted >= 19,
+  "≥ 32 relationships emitted (2 parent-of + 17 in-fleet reports-to + 10 top-of-house reports-to + 3 acts-on-behalf-of in PR 3)",
+  backfill1.relationshipsEmitted >= 32,
   `got=${backfill1.relationshipsEmitted}`,
+);
+// PR 3 — Marc's natural-person Party emitted as part of the CEO-seat
+// step. naturalPersonPartiesEmitted increments by 1 for Marc; the
+// signatory-mint step from existing AuthorisedSignatoryAdded events
+// adds further natural-persons in non-empty stores.
+ok(
+  "≥ 1 natural-person Party emitted (Marc as founding CEO seat)",
+  backfill1.naturalPersonPartiesEmitted >= 1,
+  `got=${backfill1.naturalPersonPartiesEmitted}`,
 );
 
 // ---------------------------------------------------------------------------
@@ -178,13 +201,86 @@ ok(
 );
 
 // reports-to chain — from a known persona, walk the chain. PAX reports
-// to Devon; if the roster is intact, the chain should have ≥ 2 hops.
+// to Devon; PR 3 resolves Devon → Marc, so the chain should have 3
+// hops (PAX → Devon → Marc).
 const paxPartyId = partyId("agent", "pax");
 const paxChain = walkReportsToChain(proj1, paxPartyId);
 ok(
   "reports-to chain from PAX has at least 2 hops",
   paxChain.length >= 2,
   `chain=${paxChain.join(" → ")}`,
+);
+
+// ---------------------------------------------------------------------------
+// Step 3.5 — PR 3 — Marc CEO-seat assertions
+// ---------------------------------------------------------------------------
+
+section("Step 3.5 — PR 3 — Marc as founding CEO seat");
+const marcPartyId = partyId("natural-person", "marc");
+const marcRecord = proj1.parties.get(marcPartyId);
+ok(
+  "Marc's natural-person Party present at urn:party:natural-person:marc",
+  marcRecord !== undefined,
+  `partyId=${marcRecord?.partyId ?? "missing"}`,
+);
+ok(
+  "Marc's purposeRoles include 'ceo'",
+  marcRecord?.kindAttributes.kind === "natural-person" &&
+    marcRecord.kindAttributes.purposeRoles.includes("ceo"),
+  `purposeRoles=${
+    marcRecord?.kindAttributes.kind === "natural-person"
+      ? marcRecord.kindAttributes.purposeRoles.join(",")
+      : "n/a"
+  }`,
+);
+ok(
+  "Marc's displayName is 'Marc'",
+  marcRecord?.displayName === "Marc",
+  `displayName=${marcRecord?.displayName ?? "missing"}`,
+);
+
+// Top-of-house reports-to resolution: walking from any of the 10
+// governance personas (or Scrooge / CoS) terminates at Marc's Party.
+// Spot-check one (Devon) and the inherited chain (PAX → Devon → Marc).
+const devonChain = walkReportsToChain(proj1, partyId("agent", "devon"));
+ok(
+  "walking reports-to from Devon terminates at Marc",
+  devonChain[devonChain.length - 1] === marcPartyId,
+  `chain=${devonChain.join(" → ")}`,
+);
+ok(
+  "walking reports-to from PAX terminates at Marc (multi-hop)",
+  paxChain[paxChain.length - 1] === marcPartyId,
+  `chain=${paxChain.join(" → ")}`,
+);
+
+// Acts-on-behalf-of — Marc points at the 3 Hoz entities.
+const marcActsOnBehalfOf = queryRelationships(proj1, {
+  from: marcPartyId,
+  kind: "acts-on-behalf-of",
+});
+ok(
+  "Marc has exactly 3 acts-on-behalf-of edges (one per Hoz entity)",
+  marcActsOnBehalfOf.length === 3,
+  `count=${marcActsOnBehalfOf.length}`,
+);
+const actsOnBehalfTargets = new Set(marcActsOnBehalfOf.map((e) => e.toPartyId));
+const expectedHozEntities = [
+  partyId("legal-entity", "hoz-group"),
+  partyId("legal-entity", "hoz-bank"),
+  partyId("legal-entity", "hoz-securities"),
+];
+ok(
+  "Marc acts-on-behalf-of all three Hoz entities",
+  expectedHozEntities.every((urn) => actsOnBehalfTargets.has(urn)),
+  `targets=${[...actsOnBehalfTargets].join(",")}`,
+);
+
+// Total live relationships after PR 3 should be ≥ 32 in the projection.
+ok(
+  "projection live-relationships count ≥ 32 (PR 2: 19 → PR 3: 32)",
+  proj1.relationships.live.length >= 32,
+  `live=${proj1.relationships.live.length}`,
 );
 
 // ---------------------------------------------------------------------------
