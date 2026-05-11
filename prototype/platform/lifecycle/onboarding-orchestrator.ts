@@ -145,7 +145,8 @@ export interface OnboardingBoardView {
 
 interface MutableState {
   counterpartyId: string;
-  phase: OnboardingPhase;
+  /** Current phase. `null` before the first phase-advancing event. */
+  phase: OnboardingPhase | null;
   lastEventType: string;
   lastAdvancedAt: string;
   eventCount: number;
@@ -157,6 +158,8 @@ interface MutableState {
  * the current phase. Returns true if the phase advanced.
  *
  * Special case: `"offboarded"` always wins (terminal override).
+ * When the current phase is `null` (no prior phase-advancing event), any
+ * candidate unconditionally advances (sets the initial phase).
  * `MandateRevoked` is handled separately in the fold and regresses to
  * `"mandate-scoped"` regardless of ordering.
  */
@@ -171,7 +174,9 @@ function tryAdvancePhase(state: MutableState, candidate: OnboardingPhase, asOf: 
     }
     return false;
   }
-  if (phaseIndex(candidate) > phaseIndex(state.phase)) {
+  // `null` current phase means no prior phase advance — any candidate wins.
+  const currentIndex = state.phase === null ? -1 : phaseIndex(state.phase);
+  if (phaseIndex(candidate) > currentIndex) {
     state.phase = candidate;
     state.lastAdvancedAt = asOf;
     state.history.push({ phase: candidate, asOf });
@@ -219,14 +224,11 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
       return "activated";
     case "CounterpartyOffboarded":
       return "offboarded";
-    // The following event types are not phase advances:
-    case "MandateRevised":
-    // MandateRevised keeps the current phase; the mandate is updated in
-    // place. Authority: TRADING-MANDATE-V1.
-    case "AuthorisedSignatoryRemoved":
-    // AuthorisedSignatoryRemoved is not a phase advance; the phase stays
-    // at "signatories-registered" or wherever it currently sits.
     default:
+      // MandateRevised: keeps the current phase; the mandate is updated in
+      // place. Authority: TRADING-MANDATE-V1.
+      // AuthorisedSignatoryRemoved: not a phase advance; the phase stays
+      // at "signatories-registered" or wherever it currently sits.
       return null;
   }
 }
@@ -262,19 +264,22 @@ export function derivePhaseFromEvents(
     const counterpartyId = typeof payload.counterpartyId === "string" ? payload.counterpartyId : "";
     if (!counterpartyId) continue;
 
-    // Initialise state for first-seen counterparties.
-    if (!byCounterparty.has(counterpartyId)) {
-      byCounterparty.set(counterpartyId, {
+    // Initialise state for first-seen counterparties. Phase starts as `null`
+    // so that the first phase-advancing event unconditionally sets it
+    // (including `SoundingOpened` → `"sounding"`). See `tryAdvancePhase`.
+    let state = byCounterparty.get(counterpartyId);
+    if (state === undefined) {
+      state = {
         counterpartyId,
-        phase: "sounding",
+        phase: null,
         lastEventType: ev.type,
         lastAdvancedAt: ev.as_of,
         eventCount: 0,
         history: [],
-      });
+      };
+      byCounterparty.set(counterpartyId, state);
     }
 
-    const state = byCounterparty.get(counterpartyId)!;
     state.eventCount += 1;
 
     const candidate = eventToPhaseCandidate(ev.type);
@@ -287,19 +292,12 @@ export function derivePhaseFromEvents(
     if (candidate === "REVOKE") {
       // MandateRevoked regression: force-set to "mandate-scoped" regardless
       // of current phase ordering. Authority: TRADING-MANDATE-V1.
-      if (!state.history.some((h) => h.phase === "mandate-scoped")) {
-        // First appearance of this phase — push to history.
-        state.phase = "mandate-scoped";
-        state.lastEventType = ev.type;
-        state.lastAdvancedAt = ev.as_of;
-        state.history.push({ phase: "mandate-scoped", asOf: ev.as_of });
-      } else {
-        // Already appeared; update the most recent phase and timestamp.
-        state.phase = "mandate-scoped";
-        state.lastEventType = ev.type;
-        state.lastAdvancedAt = ev.as_of;
-        state.history.push({ phase: "mandate-scoped", asOf: ev.as_of });
-      }
+      // (If phase is null — no prior phase-advancing event — still regress
+      // to mandate-scoped so the event is not silently dropped.)
+      state.phase = "mandate-scoped";
+      state.lastEventType = ev.type;
+      state.lastAdvancedAt = ev.as_of;
+      state.history.push({ phase: "mandate-scoped", asOf: ev.as_of });
       continue;
     }
 
@@ -310,16 +308,20 @@ export function derivePhaseFromEvents(
     }
   }
 
-  // Freeze into read-only shape.
+  // Freeze into read-only shape. If a counterparty has only non-phase-advance
+  // events (e.g. only MandateRevised or AuthorisedSignatoryRemoved — highly
+  // unlikely in practice), the phase stays `null`; we resolve that to
+  // `"sounding"` as a safe default.
   const result = new Map<string, CounterpartyOnboardingState>();
   for (const [id, s] of byCounterparty) {
+    const phase: OnboardingPhase = s.phase ?? "sounding";
     result.set(id, {
       counterpartyId: s.counterpartyId,
-      phase: s.phase,
+      phase,
       lastEventType: s.lastEventType,
       lastAdvancedAt: s.lastAdvancedAt,
       eventCount: s.eventCount,
-      isTerminal: s.phase === "activated" || s.phase === "offboarded",
+      isTerminal: phase === "activated" || phase === "offboarded",
       history: [...s.history],
     });
   }

@@ -69,9 +69,9 @@ import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
-import { buildOnboardingView } from "./onboarding-view";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
+import { buildOnboardingView } from "./onboarding-view";
 import {
   POPIA_S71_NOTICE,
   buildDecisionDrillDown,

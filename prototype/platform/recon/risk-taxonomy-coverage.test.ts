@@ -187,8 +187,9 @@ describe("risk-taxonomy-coverage recon (Vera Wave-5, advisory v1)", () => {
     if (!existsSync(RAS_PATH)) return;
     const r = run({ scopes: ["ras"] });
     expect(r.asserted).toBeGreaterThan(0);
-    // Most B-lines lack the annotation; some may be backfilled over time.
-    // Assert at least one finding exists and the count never exceeds total.
+    // Most B-lines lack the annotation (advisory/warn severity). Some may
+    // already carry valid codes — violations.length ≤ asserted.
+    // Assert at least one finding exists; count must not exceed total.
     expect(r.violations.length).toBeGreaterThan(0);
     expect(r.violations.length).toBeLessThanOrEqual(r.asserted);
     expect(r.violations.every((v) => v.severity === "warn")).toBe(true);
