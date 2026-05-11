@@ -50,7 +50,7 @@
 //     CeoDecision event still emits — the markdown is a human-readable
 //     mirror, not the canonical authority (Principle 1).
 //   - This prevents the handler from clobbering detailed records Scrooge
-//     writes directly in chat under the Principle 7 "steady-state vs
+//     writes directly in chat under the Principle 6 "steady-state vs
 //     current substrate" fallback. Before this change, invoking the
 //     handler to backfill a missing event would erase the substantive
 //     hand-written content with a brief stub.
@@ -198,7 +198,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     const filepath = resolve(ctx.ownerInboxDir, filename);
     // Skip the auto-generated stub if a hand-written record already exists
     // for this (date, decisionId) pair. Scrooge often writes detailed
-    // records directly in chat under the Principle 7 "steady-state vs
+    // records directly in chat under the Principle 6 "steady-state vs
     // current substrate" fallback; clobbering them with a brief stub
     // erases the substantive content. The event still emits — the
     // markdown is a human-readable mirror, not the canonical authority.

@@ -5,7 +5,7 @@
 // Asserts that every persona file under `/Team/<Name>.md` (excluding files
 // whose basename starts with `_`) is in canonical agent-spec form per the
 // 17-section template at `Team/_agent-spec-template.md`. CLAUDE.md
-// Principle 7 ("Persona files default to agent-spec form") makes this
+// Principle 6 ("Persona files default to agent-spec form") makes this
 // non-optional: without §6–§17, the agent-runtime registry can't parse
 // the spec, the permission-policy generator has no decisions/capabilities
 // to derive policy from, and Vera's downstream pipelines have no

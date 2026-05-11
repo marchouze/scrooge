@@ -104,7 +104,7 @@
 //   - Principle 2 — every assertion cites D-A22-RETIRE-LEGACY or one
 //     of its predecessors; violations reference the spec section that
 //     names the assertion.
-//   - Principle 7 — autonomous-by-default; the audit must verify the
+//   - Principle 6 — autonomous-by-default; the audit must verify the
 //     autonomous fan-out itself, not just the procedure that owns it.
 //
 // Procedure binding (P6 — upward chain): this pipeline is the

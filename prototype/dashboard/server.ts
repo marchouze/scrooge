@@ -710,7 +710,7 @@ function handleProcedureFetch(filename: string): Response {
     return jsonResponse({ error: "only .md files are previewable" }, 400);
   }
   // Allow-list check against the live procedures index. The index is the
-  // canonical source for the policy → procedure mapping (Principle 6); we
+  // canonical source for the policy → procedure mapping (Principle 2); we
   // never serve a `Procedures/by-policy/<file>.md` that the index does
   // not cite, even if the file exists on disk.
   const view = getProceduresIndex(REPO_ROOT);
@@ -956,9 +956,9 @@ const server = Bun.serve({
       // its H2 domain section, enriched per-row with frontmatter parsed
       // from the per-procedure file under `Procedures/by-policy/`. Surfaces
       // the "no orphans" count (rows whose cited file does not exist) per
-      // Principle 6. Parsed live; small enough not to cache.
+      // Principle 2. Parsed live; small enough not to cache.
       // pageProvenance: null — procedures are markdown authored as the
-      // canonical source per Principle 6 upward chain. No data surface
+      // canonical source per Principle 2 upward chain. No data surface
       // → no badge. The /procedures.html page can declare its own
       // `data-provenance-content="none"` if it consumes this and renders
       // nothing else, OR mount the badge with the null mode (suppress).

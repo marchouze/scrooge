@@ -153,4 +153,4 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from Treasurer hire confirmation. |
-| v1.0 | 2026-05-07 | Eitan (via Scrooge) | Upgraded to agent operating spec under Principle 7; sections 6–17 added; sections 1–5 preserved. |
+| v1.0 | 2026-05-07 | Eitan (via Scrooge) | Upgraded to agent operating spec under Principle 6; sections 6–17 added; sections 1–5 preserved. |

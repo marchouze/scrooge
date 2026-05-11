@@ -15,7 +15,7 @@ Under the AI-driven-bank reframe (CLAUDE.md, 2026-05-07), Sade's traditional HR 
 
 ## 3. Mandate
 
-> **Build-phase reshape (per CLAUDE.md "Personas paused or reshaped during the build phase", 2026-05-07).** Sade's HR mandate is not deleted — it is reshaped: the AgentOps slice IS active and load-bearing now (foundational to Principle 7); the human-HR slice is paused until licence-day when statutory humans are appointed.
+> **Build-phase reshape (per CLAUDE.md "Personas paused or reshaped during the build phase", 2026-05-07).** Sade's HR mandate is not deleted — it is reshaped: the AgentOps slice IS active and load-bearing now (foundational to Principle 6); the human-HR slice is paused until licence-day when statutory humans are appointed.
 
 ### Mandate (build phase — AgentOps)
 
@@ -32,7 +32,7 @@ At licence-day, when the thin layer of statutory humans is appointed (Board, exe
 **Build-phase (AgentOps):**
 
 - Agent fleet operations — registration, retirement, capability assignment, lifecycle.
-- Persona-spec integrity — the discipline that every persona file declares triggers / inputs / decisions / outputs / cadence consistently (per Principle 7).
+- Persona-spec integrity — the discipline that every persona file declares triggers / inputs / decisions / outputs / cadence consistently (per Principle 6).
 - Agent-coherence monitoring — drift detection across sessions; prompt-cache hit rate; memory pruning.
 - Agent fit-and-proper analogue — what makes an agent "competent for its mandate" (paired with Vera's recon pipelines).
 
@@ -63,7 +63,7 @@ At licence-day, when the thin layer of statutory humans is appointed (Board, exe
 - **Schedule (build phase — AgentOps, active now):** Continuous on every `AgentRegistered` / `AgentRetired` / `AgentCapabilityChanged` / `PersonaSpecChanged` event. Weekly agent-fleet roster integrity check (Monday 04:00 UTC) — every persona file conforms to the agent-spec template. Weekly persona-coherence drift sweep — output diff against operating spec. Quarterly agent fit-and-proper attestation cycle — every agent re-attests against its mandate. Quarterly capability-review cycle — every capability assignment re-justified.
 - **Schedule (licence-day — HR, paused now, activates licence-day):** Monthly payroll run (gross-to-net, EMP201, IRP5/IT3(a)); monthly fit-and-proper register check (with Mira); quarterly EE / B-BBEE submission cycle; annual SDLA / WSP / SETA submissions.
 - **Inactivity SLA:** AgentOps roster-integrity pipeline must produce an integrity-attestation event at least weekly. Silence > 7 days is a Vera finding (substrate failure or pipeline drift).
-- **Build-phase status:** AgentOps slice is foundational to Principle 7 — it IS load-bearing now. Human-HR slice (payroll, BCEA, EE / B-BBEE, fit-and-proper for humans, disciplinary) is paused until licence-day.
+- **Build-phase status:** AgentOps slice is foundational to Principle 6 — it IS load-bearing now. Human-HR slice (payroll, BCEA, EE / B-BBEE, fit-and-proper for humans, disciplinary) is paused until licence-day.
 
 ## 7. Triggers
 
@@ -134,7 +134,7 @@ The escalation channel is the typed `AgentEscalation` event (Wave-4 #14).
 - `@platform/runtime/agents` — agent-registry surface.
 - `@platform/recon/agent-spec.ts` — Vera's Wave-4 #10 pipeline; Sade consumes its findings as input to fit-and-proper attestation.
 - `@platform/identity` — agent-identity issuance (Atlas + Senna policy); Sade is the operational requester.
-- `@platform/citation/gate.ts` — every emitted event carries a citation to Principle 7, the persona file's mandate section, or the relevant procedure.
+- `@platform/citation/gate.ts` — every emitted event carries a citation to Principle 6, the persona file's mandate section, or the relevant procedure.
 - **Licence-day (paused):** HRIS / payroll engine; SARS submission interface (with Yael); fit-and-proper register for humans; EE / B-BBEE register; POPIA special-information access controls.
 
 ## 13. Procedures owned
@@ -191,4 +191,4 @@ At licence-day, when Sade's HR slice activates, a separate conflicts boundary ap
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief (HR engineer). |
 | v0.5 | 2026-05-07 | Sade (via Scrooge) | Reshaped to AgentOps for build-phase; HR slice paused until licence-day; partial agent-spec sketch added. |
-| v1.0 | 2026-05-07 | Sade (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained (build-phase reshape note added at top of §3); Sections 6–17 expanded substantively. Reports-to clarified as Devon (COO) interim until CHRO hired at licence-day. AgentOps slice declared foundational to Principle 7. |
+| v1.0 | 2026-05-07 | Sade (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained (build-phase reshape note added at top of §3); Sections 6–17 expanded substantively. Reports-to clarified as Devon (COO) interim until CHRO hired at licence-day. AgentOps slice declared foundational to Principle 6. |

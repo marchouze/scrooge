@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Define the procedure by which the CEO reviews and records executive decisions in a structured, citable, event-sourced way. Replaces ad-hoc decision capture in chat or email. Implements the atomic citation discipline (Principle 2) and the upward-chain integrity rule (Principle 6) for executive decisions.
+Define the procedure by which the CEO reviews and records executive decisions in a structured, citable, event-sourced way. Replaces ad-hoc decision capture in chat or email. Implements the atomic citation discipline (Principle 2) and the upward-chain integrity rule (Principle 2) for executive decisions.
 
 ## Trigger
 
@@ -39,14 +39,14 @@ The procedure is performed correctly when:
 - No decision is taken outside this procedure; manual decision capture (chat, email, side-conversation) is a tracked exception under Principle 3.
 
 Bidirectional reconciliation:
-- Given a `CeoDecision` event → resolve to a registry entry → resolve to a source document → resolve to a policy or proposal layer → resolve to the regulator instrument creating the obligation (Principle 6, upward chain).
+- Given a `CeoDecision` event → resolve to a registry entry → resolve to a source document → resolve to a policy or proposal layer → resolve to the regulator instrument creating the obligation (Principle 2, upward chain).
 - Given an obligation in the register → resolve to a policy that discharges it → resolve to a decision that approved that policy → resolve to a `CeoDecision` event with citation.
 
 ## Evidence / artefacts produced
 
 - `CeoDecision` events in the event store (canonical record).
 - Registry updates in `seeds/dashboard-state.json` (cache, reproducible from events).
-- Decision-record markdown in `Owner Inbox/` (human-readable presentation; per Principle 6, generated downward from the decision events at status-summary regeneration time).
+- Decision-record markdown in `Owner Inbox/` (human-readable presentation; per Principle 2, generated downward from the decision events at status-summary regeneration time).
 
 ## Citations
 

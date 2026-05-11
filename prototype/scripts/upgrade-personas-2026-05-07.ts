@@ -41,7 +41,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Anya as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07): every persona is an autonomous agent that runs on an ongoing basis. Target state; current substrate is Scrooge-coordinated runs against this spec while the agent runtime is built out.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07): every persona is an autonomous agent that runs on an ongoing basis. Target state; current substrate is Scrooge-coordinated runs against this spec while the agent runtime is built out.*
 
 ### Triggers
 
@@ -114,7 +114,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Bea as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -173,7 +173,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Camille as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Camille is a governance seat — the agent oversees engineers (Bea, Yael, Ravi-via-treasury-seam) rather than building substrate herself.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Camille is a governance seat — the agent oversees engineers (Bea, Yael, Ravi-via-treasury-seam) rather than building substrate herself.*
 
 ### Triggers
 
@@ -242,7 +242,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Devon as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Devon is the governance seat for operations and engineering — the agent oversees a wide engineering bench while holding named accountability for operational and (until CISO bedded) cyber resilience.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Devon is the governance seat for operations and engineering — the agent oversees a wide engineering bench while holding named accountability for operational and (until CISO bedded) cyber resilience.*
 
 ### Triggers
 
@@ -312,7 +312,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Eitan as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -377,7 +377,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Imani as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -436,7 +436,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Iris as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -498,7 +498,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Kai as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -558,7 +558,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Niko as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -617,7 +617,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Nolan as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -674,7 +674,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Owen as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -735,7 +735,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — PAX as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -793,7 +793,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Rashida as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Rashida arrived in seat 2026-05-06; her first-90-days posture and working relationships sit above this section.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Rashida arrived in seat 2026-05-06; her first-90-days posture and working relationships sit above this section.*
 
 ### Triggers
 
@@ -858,7 +858,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Ravi as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Ravi reports to Eitan (Treasurer) and runs the engine Eitan governs.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Ravi reports to Eitan (Treasurer) and runs the engine Eitan governs.*
 
 ### Triggers
 
@@ -918,7 +918,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Rohan as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Rohan reports to Helena (CRO).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Rohan reports to Helena (CRO).*
 
 ### Triggers
 
@@ -979,7 +979,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Sade as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Sade reports through Devon (interim) until a CHRO is hired.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Sade reports through Devon (interim) until a CHRO is hired.*
 
 ### Triggers
 
@@ -1036,7 +1036,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Senna as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Senna reports to Rashida (CISO) from 2026-05-06 — engineering line. Senna engineers the substrate Rashida governs.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Senna reports to Rashida (CISO) from 2026-05-06 — engineering line. Senna engineers the substrate Rashida governs.*
 
 ### Triggers
 
@@ -1098,7 +1098,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Thandiwe as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Thandiwe arrived in seat 2026-05-06; her first-90-days posture and working relationships sit above this section.*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Thandiwe arrived in seat 2026-05-06; her first-90-days posture and working relationships sit above this section.*
 
 ### Triggers
 
@@ -1167,7 +1167,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Tomas as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 
@@ -1227,7 +1227,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Yael as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07). Yael reports to Camille (CFO).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07). Yael reports to Camille (CFO).*
 
 ### Triggers
 
@@ -1288,7 +1288,7 @@ const SPECS: Spec[] = [
 
 ## Operating spec — Zara as a standing autonomous agent
 
-> *Per CLAUDE.md Principle 7 (set 2026-05-07).*
+> *Per CLAUDE.md Principle 6 (set 2026-05-07).*
 
 ### Triggers
 

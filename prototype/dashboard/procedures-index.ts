@@ -16,7 +16,7 @@
 // authored procedures (id, title, owner, policy-parent, status,
 // last-reviewed, reconciliation-cadence) to enrich each row.
 //
-// Per CLAUDE.md Principle 6 — single citable graph: this is a read-only
+// Per CLAUDE.md Principle 2 — single citable graph: this is a read-only
 // projection over the canonical procedures index + procedure files. No
 // authored content lives here. The procedures-index file is the single
 // citable source for the policy → procedure mapping; per-procedure files

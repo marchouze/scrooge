@@ -159,6 +159,6 @@ Imani's interim governance home is Devon (COO). At licence-day, when a General C
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
-| v0.5 | 2026-05-07 | Imani (via Scrooge) | Partial agent-spec sketch added under Principle 7; build-phase scope split (active vs paused) introduced. |
+| v0.5 | 2026-05-07 | Imani (via Scrooge) | Partial agent-spec sketch added under Principle 6; build-phase scope split (active vs paused) introduced. |
 | v1.0 | 2026-05-07 | Imani (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained (build-phase scope split preserved verbatim); Sections 6–17 expanded substantively. Reports-to clarified as Devon (COO) interim until General Counsel hired. |
 | v1.1 | 2026-05-07 | Imani (via Scrooge) | Clause library v0 and legal-entity tree v0 substrates landed at `prototype/platform/legal/_clause-library.md` and `prototype/platform/legal/_legal-entity-tree.md` (with JSON schemas). Procedure `counterparty-governing-law-clause-adoption.md` populated as keystone of first end-to-end Reg→Policy→Procedure→Capability chain demonstration. Two stub policies (Contracting; Document Execution) bundled at `Owner Inbox/2026-05-07_imani_legal-policies-bundle-v0.md`. Substrate Gap §1 (clause-library DSL) status updated: markdown+schema substrate live; DSL still planned for M1. Substrate Gap §4 (legal-entity tree as live registry) status updated: markdown+schema substrate live; query API still planned for M1. |

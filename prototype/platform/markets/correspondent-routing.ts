@@ -7,7 +7,7 @@
 // resolution is what the FX settlement event family records on every
 // `FxSettlementInstructed` payload's `correspondent` field — surfaced on
 // the event (not in metadata) per Principle 1 (events as truth) and
-// Principle 6 (downstream presentations derive from data).
+// Principle 2 (downstream presentations derive from data).
 //
 // The projection is reproducible from the canonical event log:
 //   - The configuration source-of-truth is a typed seed at

@@ -159,5 +159,5 @@ Saskia is the first-line executive for sales and trading; Helena (CRO, second li
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from Head of Global Markets hire confirmation. |
-| v0.5 | 2026-05-07 | Saskia (via Scrooge) | Added agent operating spec under Principle 7 (initial). |
+| v0.5 | 2026-05-07 | Saskia (via Scrooge) | Added agent operating spec under Principle 6 (initial). |
 | v1.0 | 2026-05-07 | Saskia (via Scrooge) | Reformatted to canonical agent-spec template; sections 6–17 normalised; sections 1–5 preserved; named Strate / JSE connectivity as substrate gap. |

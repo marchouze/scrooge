@@ -134,4 +134,4 @@ Active conflicts register entries (as of 2026-05-07):
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
-| v1.0 | 2026-05-07 | Vera (via Scrooge) | Upgraded to agent operating spec under Principle 7. Sections 1–5 retained from v0.1; Sections 6–17 added. |
+| v1.0 | 2026-05-07 | Vera (via Scrooge) | Upgraded to agent operating spec under Principle 6. Sections 1–5 retained from v0.1; Sections 6–17 added. |

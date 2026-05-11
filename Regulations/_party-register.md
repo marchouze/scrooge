@@ -33,7 +33,7 @@ log via the 10 Party event types
 `PartyDeclassified`, `PartyScreeningCompleted`,
 `PartyRelationshipAsserted`, `PartyRelationshipChanged`,
 `PartyRelationshipRevoked`, `BeneficialOwnerChainAsserted`,
-`PartyDeactivated`). Per Principle 6 every actor — human, organisation,
+`PartyDeactivated`). Per Principle 2 every actor — human, organisation,
 artificial — sits in one citable graph; the Party register is the
 identity-axis projection of that graph.
 
@@ -178,7 +178,7 @@ exist yet.
 
 ## Substrate gaps surfaced
 
-Per Principle 7 (substrate-gap inventory transparency).
+Per Principle 6 (substrate-gap inventory transparency).
 
 | # | Gap | Owner(s) | Trigger |
 |---|---|---|---|
@@ -195,8 +195,8 @@ Per Principle 7 (substrate-gap inventory transparency).
 
 - **Principle 1** ([`CLAUDE.md`](../CLAUDE.md)) — events as source of truth; the Party graph is materialised in the event log.
 - **Principle 5** ([`CLAUDE.md`](../CLAUDE.md)) — multi-jurisdiction from day one.
-- **Principle 6** ([`CLAUDE.md`](../CLAUDE.md)) — single-graph discipline; the Party register is the identity-axis projection.
-- **Principle 7** ([`CLAUDE.md`](../CLAUDE.md)) — autonomous-by-default; agent Parties are first-class.
+- **Principle 2** ([`CLAUDE.md`](../CLAUDE.md)) — single-graph discipline; the Party register is the identity-axis projection.
+- **Principle 6** ([`CLAUDE.md`](../CLAUDE.md)) — autonomous-by-default; agent Parties are first-class.
 - **D-PARTY-REGISTER** ([`Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md`](../Owner%20Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md)).
 - **D-PARTY-RELATIONSHIP-KINDS-V0** ([`Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md`](../Owner%20Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md)).
 - **D-PARTY-REGISTER-CORRECTION** ([`Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register-correction.md`](../Owner%20Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register-correction.md)).

@@ -46,7 +46,7 @@ Operationalise the FIC Act submission obligations the bank carries as an account
 | 2 | Triage: triple-hatted lead reviews the trigger payload | `agent` (triple-hatted compliance lead) | `@domains/compliance/triage-queue` (`PLANNED`) | Default actor is the agent-spec for the compliance lead; human-in-the-loop only when judgement required (recorded under P2). |
 | 3 | Investigation case opened; evidence preserved (event chain, customer record, transaction lineage) | `service` + `agent` | `@platform/case/financial-crime` (`PLANNED`) | Case ID linked to all downstream events; tipping-off rules applied (no disclosure to customer or front-line beyond MLRO investigation set). |
 | 4 | Decision: file (STR / CTR), close (no further action), or refer (sanctions resolution; cross-border MLAT) | `agent` (triple-hatted lead); `human` (the appointed lead at licence-day) for STR-file and sanctions-resolve calls | `@domains/compliance/case-decision` (`PLANNED`) | Decision is a typed event with reasoning. CEO is *not* in the decision path for STR filing — the second-line independence from CEO is the structural reason for the CEO-MLRO bar (Q3, Mira-Zara confirmation paper). |
-| 5 | If file: generate FIC submission (goAML / FIC portal payload) from event log | `service` | `@domains/compliance/fic-submission-generator` (`PLANNED`) | Payload is *generated* under Principle 6, not assembled. |
+| 5 | If file: generate FIC submission (goAML / FIC portal payload) from event log | `service` | `@domains/compliance/fic-submission-generator` (`PLANNED`) | Payload is *generated* under Principle 2, not assembled. |
 | 6 | Submit to FIC via goAML / portal | `agent` (triple-hatted lead's automated submitter); fallback `human` (lead) if portal API unavailable | `@domains/compliance/fic-portal-submission` (`PLANNED`) | Submission timestamp + FIC reference number recorded as event. |
 | 7 | Sanctions hit resolution: escalate freezing / asset-immobilisation actions to Tomas's settlement substrate where mandated | `agent` (compliance lead) → `service` (Tomas) | `@domains/compliance/sanctions-action` (`PLANNED`) | Freezing action is a typed event with regulatory citation. |
 | 8 | RMCP review run: ingest material-change events, refresh risk-rating thresholds, regenerate the RMCP document | `service` + `agent` review | `@domains/compliance/rmcp-generator` (`PLANNED`) | RMCP is generated from policy + register state; never hand-authored. |
@@ -84,7 +84,7 @@ Operationalise the FIC Act submission obligations the bank carries as an account
 
 ## 8. Manual steps
 
-Per Principle 7 (autonomous-by-default), the default actor at every step is an agent. The following human-in-the-loop steps are registered exceptions with their P2 citation:
+Per Principle 6 (autonomous-by-default), the default actor at every step is an agent. The following human-in-the-loop steps are registered exceptions with their P2 citation:
 
 - **Step 4 (STR file decision)** — human triple-hatted lead at licence-day. Citation: FIC Act s.43A — MLRO is a named accountable human; STR filing is a statutory accountability that cannot be delegated to an unsupervised agent action [citation: `ORG-FC-11`].
 - **Step 4 (sanctions-resolve call)** — human triple-hatted lead. Citation: FIC Public Compliance Communications on sanctions — escalation and resolution requires named human accountability [citation: `ORG-FC-SANCTIONS-SCREENING`, gap row owned by Mira].
@@ -106,7 +106,7 @@ These are reviewed periodically for whether automation has caught up; agents tha
 
 ## 10. Escalation channel to the CEO
 
-Per Principle 7, every agent has a typed escalation channel to a named human overseer (today: Marc, via Scrooge). For this procedure:
+Per Principle 6, every agent has a typed escalation channel to a named human overseer (today: Marc, via Scrooge). For this procedure:
 
 - **Routine escalations** (MLRO judgement on STR-file vs no-file) stay within the triple-hatted lead's scoped authority — they do *not* escalate to CEO. The structural reason: CEO-MLRO merger is barred per FIC published RMCP guidance + supervisory precedent [citation: `ORG-FC-11`, gloss-hardening row owned by Mira].
 - **Operational escalations** (portal outage, MLRO unavailable, sanctions list ambiguity, RMCP material-change requiring policy revision) → Marc as CEO via Scrooge, with the AC-Chair NED copied as MLRO-alternate.
@@ -126,7 +126,7 @@ Per Principle 7, every agent has a typed escalation channel to a named human ove
 
 ## 12. Substrate gaps
 
-Per Principle 7's "steady-state vs current substrate" discipline:
+Per Principle 6's "steady-state vs current substrate" discipline:
 
 - **Substrate gap S-1:** transaction-monitoring engine (Mira) — currently `PLANNED`. STR triggers are spec-only.
 - **Substrate gap S-2:** FIC portal integration / goAML payload generator — currently `PLANNED`.

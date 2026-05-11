@@ -159,6 +159,6 @@ The MLRO designation creates a within-seat conflict surface: Zara is both the po
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CCO hire confirmation. |
-| v0.2 | 2026-05-07 | Zara (via Scrooge) | Operating-spec stub added under Principle 7. |
+| v0.2 | 2026-05-07 | Zara (via Scrooge) | Operating-spec stub added under Principle 6. |
 | v1.0 | 2026-05-07 | Zara (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated per CEO directive 2026-05-07. |
 | v1.1 | 2026-05-09 | Zara (via Scrooge) | § 12 capabilities annotated with `(planned)` + `[substrate-gap: ...]` markers per Vera Wave-4 #10 cross-link recon (PR #117). Closes 6 findings against Zara: `@platform/screening`, `@platform/transaction-monitoring`, `@platform/fic-interface`, `@platform/rmcp-register`, `@platform/fais-conduct-monitoring`, `@platform/regulator-correspondence`. No substantive change to mandate or authority surface — annotation only. |

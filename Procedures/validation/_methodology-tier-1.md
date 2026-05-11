@@ -247,8 +247,8 @@ Full citation chain (binds every section unless a section names additional citat
 - **FIC GN 7** — risk-based approach guidance. Cited via `ORG-FC-03` / `ORG-FC-06`.
 - **FATF Mutual Evaluation Reports (SA)** — grey-listing remediation context. Cited via `ORG-FC-21`.
 - **CLAUDE.md Principle 2** — every action traces to a source. Placeholders flagged `[register: route to Mira]` above resolve before methodology publication; no invented citations.
-- **CLAUDE.md Principle 6** — single-graph discipline. Procedure-pair binding (cycle ↔ methodology) and the typed-event hand-offs realise the upward chain Reg → Policy → Procedure → System Capability.
-- **CLAUDE.md Principle 7** — autonomous by default. The default actor at every step of this methodology is `agent:nadia`; human-in-the-loop steps are limited to the named escalation channels (§ 7).
+- **CLAUDE.md Principle 2** — single-graph discipline. Procedure-pair binding (cycle ↔ methodology) and the typed-event hand-offs realise the upward chain Reg → Policy → Procedure → System Capability.
+- **CLAUDE.md Principle 6** — autonomous by default. The default actor at every step of this methodology is `agent:nadia`; human-in-the-loop steps are limited to the named escalation channels (§ 7).
 
 ---
 

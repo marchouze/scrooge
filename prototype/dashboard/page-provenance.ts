@@ -28,7 +28,7 @@
 //     surface — the page either renders the prose directly or the
 //     consumer treats the absence of `pageProvenance` as "skip badge").
 //     Example: `/api/procedures` (procedures are markdown authored as
-//     canonical source per Principle 6 upward chain; not a projection
+//     canonical source per Principle 2 upward chain; not a projection
 //     over events).
 //
 //   • Endpoints that mix both (substrate-gaps surfaces both
@@ -93,12 +93,12 @@ export function productionReferencePageProvenance(): PageProvenance {
 
 /**
  * No-data signal — the endpoint returns prose-only content (markdown
- * authored as the canonical source per Principle 6 upward chain).
+ * authored as the canonical source per Principle 2 upward chain).
  * The front-end badge auto-mounter treats `null` the same as a page
  * declaring `data-provenance-content="none"`.
  *
  * Use for: /api/procedures (authored markdown registers — not events,
- * not regulator reference data, but authoring under Principle 6).
+ * not regulator reference data, but authoring under Principle 2).
  */
 export function proseAuthoredPageProvenance(): PageProvenance {
   return null;

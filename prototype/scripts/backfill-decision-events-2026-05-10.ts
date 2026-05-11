@@ -7,7 +7,7 @@
 //
 // Why this exists:
 //   Every Scrooge-written CEO decision record between 2026-05-07 and
-//   2026-05-10 was authored as markdown only (Principle 7 fallback —
+//   2026-05-10 was authored as markdown only (Principle 6 fallback —
 //   the canonical event-emitting handler `agent:scrooge:ceo-decision-record`
 //   would have clobbered the detailed records with brief stubs). The
 //   handler fix landed 2026-05-10 (preserve-existing-record semantics)

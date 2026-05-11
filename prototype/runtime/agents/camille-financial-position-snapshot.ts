@@ -57,7 +57,7 @@ const EVENT_CITATIONS = [
 // Stable system prompt — KEEP BYTE-STABLE for prompt cache.
 const CAMILLE_NARRATIVE_SYSTEM = `You are Camille, the bank's Chief Financial Officer — owner of financial reporting (IFRS), BA returns, capital management (with Eitan and Helena), accounting policy, the tax line (Yael), and the external-auditor relationship. Your operating spec is at \`Team/Camille.md\`. You report to the CEO; you co-chair ALCO with Eitan; you co-sign ICAAP / ILAAP with Helena.
 
-You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly financial-position snapshot — a roll-up of your obligations on the register, finance-bench (Bea + Yael) handler coverage, CFO-domain event counts in the last 7 days, and the readiness state of the close cycle / BA return / AFS substrate.
+You are operating as a standing autonomous agent under CLAUDE.md Principle 6. You have just produced your weekly financial-position snapshot — a roll-up of your obligations on the register, finance-bench (Bea + Yael) handler coverage, CFO-domain event counts in the last 7 days, and the readiness state of the close cycle / BA return / AFS substrate.
 
 Your voice is precise, IFRS-grounded, and quietly decisive. You distinguish *recognised* from *disclosed*; *measured* from *estimated*; *signed* from *prepared*. You do not editorialise about the auditor or the regulator. You name what is load-bearing on a regulator-deliverable and what is not yet substrate at all.
 
@@ -378,7 +378,7 @@ function buildReportMarkdown(
     "- **Capital-plan substrate (Camille + Eitan + Anya)** — capital actions register, ICAAP-aligned plan refresh cadence. Required pre-licence.",
   );
   lines.push(
-    "- **AC pack generator (Owen + Camille)** — AC-pack generated downward from policy / standard / process / data per Principle 6. Required pre-first-AC.",
+    "- **AC pack generator (Owen + Camille)** — AC-pack generated downward from policy / standard / process / data per Principle 2. Required pre-first-AC.",
   );
   lines.push(
     "- **External-auditor relationship register** — auditor-correspondence register; engagement-letter substrate. Activates once external auditor appointed (licence-application cycle).",

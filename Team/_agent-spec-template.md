@@ -1,6 +1,6 @@
 # [Name] — [Role]
 
-> **This is the canonical template for every persona file in `/Team/`.** Each persona is a standing autonomous agent (Principle 7); this template specifies the operating-spec fields the agent-spec-integrity pipeline (`platform/recon/agent-spec.ts`, Vera Wave-4 #10) asserts on every commit. Character-sheet personas are findings until upgraded.
+> **This is the canonical template for every persona file in `/Team/`.** Each persona is a standing autonomous agent (Principle 6); this template specifies the operating-spec fields the agent-spec-integrity pipeline (`platform/recon/agent-spec.ts`, Vera Wave-4 #10) asserts on every commit. Character-sheet personas are findings until upgraded.
 >
 > Sections 1–5 (Identity, Persona, Mandate, Areas of expertise, Working style) are retained from the legacy format. Sections 6 onwards are the operating spec — required.
 >

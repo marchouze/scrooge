@@ -94,7 +94,7 @@ outputs:
     - field: <output-field-name>
       type: <type>                     # number | enum<...> | record<...>
       semanticLayerEntry: <anya-entry> # cite Anya's semantic-layer entry id; required for
-                                       # every named quantity (Principle 6 — single graph)
+                                       # every named quantity (Principle 2 — single graph)
   downstreamConsumers:                 # list of typed consumers
     - consumer: <agent-or-system>      # e.g. agent:bea (ECL accounting), agent:ravi (LCR),
                                        #      capability:pre-trade-gateway
@@ -171,7 +171,7 @@ The BCBS 239 conformance assertion is non-negotiable. `Team/Nadia.md` §4 names 
 
 #### 3. `outputs`
 
-Schema is typed; every named quantity has a semantic-layer entry under Anya (`Team/Anya.md` §11; Principle 6 — single graph). Downstream consumers are typed by binding class — `regulatory | accounting | operational | advisory` — because the binding class drives the tier (a regulatory or accounting binding lifts the tier to 1; advisory caps at 3).
+Schema is typed; every named quantity has a semantic-layer entry under Anya (`Team/Anya.md` §11; Principle 2 — single graph). Downstream consumers are typed by binding class — `regulatory | accounting | operational | advisory` — because the binding class drives the tier (a regulatory or accounting binding lifts the tier to 1; advisory caps at 3).
 
 #### 4. `methodology`
 
@@ -230,9 +230,9 @@ Below the frontmatter, the per-model spec body has the following section heading
 - **SS 1/23 Principle 4 — model documentation and version control.** *Model Risk Management Principles for Banks*, Bank of England PRA, 2023. Frontmatter contract is the documentation-and-version-control discipline made operational. Citation registration `[citation: route to Mira]` — pending obligations-register entry per `Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md` §5.5.
 - **RAS § B7 — three-tier model risk classification.** `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` lines 136–144. Tier values in `frontmatter.tier` resolve to this register row.
 - **Banks Act 94 of 1990 § 70(2A)(b).** Risk-management process and audit. Citation registration `[citation: route to Mira]` — pending obligations-register entry per `Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md` §5.5.
-- **CLAUDE.md Principle 6 — single-graph discipline.** Every named quantity in `outputs.schema[].field` resolves to an Anya semantic-layer entry; every consumer in `deploymentScope.authorisedConsumers[].consumer` resolves to a typed agent or system capability; every citation in `citations[]` resolves to a register row. No orphans.
+- **CLAUDE.md Principle 2 — single-graph discipline.** Every named quantity in `outputs.schema[].field` resolves to an Anya semantic-layer entry; every consumer in `deploymentScope.authorisedConsumers[].consumer` resolves to a typed agent or system capability; every citation in `citations[]` resolves to a register row. No orphans.
 - **CLAUDE.md Principle 2 — every action traces to a source.** The `citations` frontmatter field is the per-spec citation register; placeholders are permitted at draft time and resolved before publication. No invented citations.
-- **CLAUDE.md Principle 7 — autonomous by default.** The submitter (`submittedBy`) is an agent by default (`agent:<name>`). Human submitters (`human:<email>`) are the registered exception per Principle 7's typed-actor rule.
+- **CLAUDE.md Principle 6 — autonomous by default.** The submitter (`submittedBy`) is an agent by default (`agent:<name>`). Human submitters (`human:<email>`) are the registered exception per Principle 6's typed-actor rule.
 
 Event-store binding: `prototype/platform/event-store/event-types.ts` — `modelSubmittedPayloadSchema` (line 1046) and the `methodologyHash` field (line 1066) reference this template.
 
