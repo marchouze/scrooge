@@ -55,6 +55,7 @@
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",
     "agent:camille-financial-position-snapshot": "bun run runtime/run.ts --agent Camille --trigger financial-position-snapshot",
     "agent:rohan-risk-run": "bun run runtime/run.ts --agent Rohan --trigger risk-run",
+    "agent:anya-goal-loop": "bun run runtime/run.ts --agent Anya --trigger goal-loop",
     "agent:anya-projection-drift": "bun run runtime/run.ts --agent Anya --trigger projection-drift",
     "agent:scrooge-inbox-hygiene": "bun run runtime/run.ts --agent Scrooge --trigger inbox-hygiene",
     "agent:scrooge-ceo-decision-record": "bun run runtime/run.ts --agent Scrooge --trigger ceo-decision-record",
@@ -66,6 +67,7 @@
     "agent:anya-projection-refresh": "bun run runtime/run.ts --agent Anya --trigger projection-refresh",
     "agent:zara-mlro-supervision": "bun run runtime/run.ts --agent Zara --trigger mlro-supervision",
     "agent:thandiwe-audit-committee-prep": "bun run runtime/run.ts --agent Thandiwe --trigger audit-committee-prep",
+    "agent:thandiwe-goal-loop": "bun run runtime/run.ts --agent Thandiwe --trigger goal-loop",
     "agent:rashida-cyber-resilience-snapshot": "bun run runtime/run.ts --agent Rashida --trigger cyber-resilience-snapshot",
     "agent:iris-popia-controls-snapshot": "bun run runtime/run.ts --agent Iris --trigger popia-controls-snapshot",
     "agent:eitan-liquidity-snapshot": "bun run runtime/run.ts --agent Eitan --trigger liquidity-snapshot",
@@ -92,6 +94,7 @@
     "agent:bea-goal-loop": "bun run runtime/run.ts --agent Bea --trigger goal-loop",
     "agent:vera-goal-loop": "bun run runtime/run.ts --agent Vera --trigger goal-loop",
     "agent:owen-goal-loop": "bun run runtime/run.ts --agent Owen --trigger goal-loop",
+    "agent:helena-goal-loop": "bun run runtime/run.ts --agent Helena --trigger goal-loop",
     "agent:rohan-goal-loop": "bun run runtime/run.ts --agent Rohan --trigger goal-loop",
     "reset": "rm -rf .local && mkdir -p .local"
   },
