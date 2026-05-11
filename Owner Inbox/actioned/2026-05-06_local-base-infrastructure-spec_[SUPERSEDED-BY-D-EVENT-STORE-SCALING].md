@@ -1,3 +1,23 @@
+---
+title: Local base infrastructure — specification
+author: Atlas
+date: 2026-05-06
+summary: Local-build-first base-infrastructure spec. Superseded — the substrate has been built and matured well past this spec; current shape is set by D-EVENT-STORE-SCALING + D-RMS-PHASE-1 + D-DATA-PROVENANCE-SUBSTRATE.
+decision-required: false
+superseded-by:
+  - decision-id: D-EVENT-STORE-SCALING
+    decision-date: 2026-05-10
+    note: "Event-store substrate is now governed by the D-EVENT-STORE-SCALING decision and its slices (snapshot substrate, runtime-cache split, cache-from-commit-graph)."
+  - decision-id: D-RMS-PHASE-1
+    decision-date: 2026-05-09
+    note: "Records substrate (replacing inboxes) is set by the RMS Phase 1 spec; the inbox-shape framing in this spec is overtaken."
+  - decision-id: D-DATA-PROVENANCE-SUBSTRATE
+    decision-date: 2026-05-10
+    note: "Data-provenance substrate sets the citation/attestation shape for the local environment, beyond what this spec sketches."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Local base infrastructure — specification
 
 **Author:** Atlas (core banking platform architect — lead)

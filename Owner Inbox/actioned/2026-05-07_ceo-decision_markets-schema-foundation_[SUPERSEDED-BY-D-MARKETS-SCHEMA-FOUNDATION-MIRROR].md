@@ -4,6 +4,11 @@ author: Marc · Scrooge (record)
 date: 2026-05-07
 summary: ISDA CDM adopted as the canonical schema foundation for the global-markets trading system. M1–M5 build sequence authorised. M6/M7 deferred to franchise-pull; M8 cloud lift deferred to post-licence.
 decision-required: false
+superseded-by:
+  - reference: Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-markets-schema-foundation.md
+    note: "Old `ceo-decision_<slug>` naming pattern superseded by the canonical `scrooge_ceo-decision-record_d-<id>.md` mirror. The CeoDecision event is canonical (Principle 1)."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
 ---
 
 # CEO decision — D-MARKETS-SCHEMA-FOUNDATION (approved)
