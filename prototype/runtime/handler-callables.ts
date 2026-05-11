@@ -63,6 +63,7 @@ import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import raviEventTriage from "./agents/ravi-event-triage";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
 import rohanEventTriage from "./agents/rohan-event-triage";
+import rohanGoalLoop from "./agents/rohan-goal-loop";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
 import sadeEventTriage from "./agents/sade-event-triage";
@@ -114,6 +115,9 @@ const _map: Record<string, AgentRunHandler> = {
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
   "owen:goal-loop": owenGoalLoop,
   "rohan:risk-run": rohanRiskRun,
+  // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "rohan:goal-loop": rohanGoalLoop,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
   // mira:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
