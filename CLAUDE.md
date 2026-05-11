@@ -146,3 +146,5 @@ The Records Management Substrate (per `D-RMS-PHASE-1`, CEO-approved 2026-05-09) 
 - **Pre-Phase-1 (current):** legacy `Owner Inbox/` (deliverables for the CEO; decision-required items lifted to dashboard) and `Team Inbox/` (briefs routed to agents) remain in use under the events-first authoring rule above.
 - **Phase 1 (dual-render):** RMS registers (Decisions, Correspondence, Records-of-agent-runs, Document, Feedback, Briefs / dispatches, Workstreams) co-exist with the legacy folders; new authoring routes through events.
 - **Phase 4 (archive):** legacy folders move to `archive/`; RMS registers are sole canonical.
+
+The Party register at `Regulations/_party-register.md` (per `D-PARTY-REGISTER`, CEO-approved 2026-05-11) is the eighth standing register alongside RMS Phase 1's seven — the unified identity axis across all four actor kinds (natural-person, legal-entity, counterparty, agent).
