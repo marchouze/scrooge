@@ -83,6 +83,7 @@ import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
 import thandiweEventTriage from "./agents/thandiwe-event-triage";
 import thandiweGoalLoop from "./agents/thandiwe-goal-loop";
 import tomasEventTriage from "./agents/tomas-event-triage";
+import tomasGoalLoop from "./agents/tomas-goal-loop";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
 import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
 import veraEventTriage from "./agents/vera-event-triage";
@@ -147,6 +148,7 @@ const _map: Record<string, AgentRunHandler> = {
   "bea:accounting-readiness": beaAccountingReadiness,
   "yael:tax-readiness": yaelTaxReadiness,
   "tomas:payments-readiness": tomasPaymentsReadiness,
+  "tomas:goal-loop": tomasGoalLoop,
   "imani:legal-readiness": imaniLegalReadiness,
   "ravi:alm-readiness": raviAlmReadiness,
   "sade:agentops-readiness": sadeAgentopsReadiness,

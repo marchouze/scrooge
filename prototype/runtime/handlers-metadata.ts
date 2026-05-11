@@ -250,6 +250,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "21 4 * * *",
   }),
+  // tomas:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Tomas", "goal-loop", "on-request"),
   entry("Imani", "legal-readiness", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "9 7 * * 5",
