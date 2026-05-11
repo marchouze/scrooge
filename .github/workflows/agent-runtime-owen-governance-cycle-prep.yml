@@ -6,10 +6,6 @@
 name: Owen governance-cycle prep
 
 on:
-  schedule:
-    # Tue 07:31 UTC — off-the-hour to dodge GH Actions cron drops
-    # observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "31 7 * * 2"
   workflow_dispatch: {}
 
 permissions:

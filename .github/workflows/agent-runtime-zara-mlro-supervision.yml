@@ -9,8 +9,6 @@
 name: Zara MLRO supervision
 
 on:
-  schedule:
-    - cron: "30 5 * * MON"
   workflow_dispatch: {}
 
 permissions:

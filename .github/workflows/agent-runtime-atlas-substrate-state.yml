@@ -12,11 +12,6 @@
 name: Atlas substrate-state
 
 on:
-  schedule:
-    # Mondays at 06:19 UTC — substrate-state read out at the start of
-    # the working week. Off-the-hour to dodge GH Actions cron-drop
-    # behaviour observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "19 6 * * 1"
   workflow_dispatch: {}
 
 permissions:

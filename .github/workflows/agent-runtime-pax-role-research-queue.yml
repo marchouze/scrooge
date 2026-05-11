@@ -9,8 +9,6 @@
 name: PAX role-research queue
 
 on:
-  schedule:
-    - cron: "11 8 * * 5"
   workflow_dispatch: {}
 
 permissions:
