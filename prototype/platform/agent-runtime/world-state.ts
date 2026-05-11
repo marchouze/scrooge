@@ -153,7 +153,11 @@ export interface AgentWorldStateReader {
 const REGISTER_TYPE_MAP: Record<RegisterName, readonly string[]> = {
   decisions: ["CeoDecision", "AgentDecision"],
   correspondence: ["AgentBriefIssued", "BriefSuperseded"],
-  "agent-runs": ["SubstrateAgentRunStarted", "SubstrateAgentRunCompleted", "SubstrateAgentRunFailed"],
+  "agent-runs": [
+    "SubstrateAgentRunStarted",
+    "SubstrateAgentRunCompleted",
+    "SubstrateAgentRunFailed",
+  ],
   documents: ["RecordFiled"],
   feedback: ["Feedback"],
   briefs: ["AgentBriefIssued", "BriefSuperseded"],
@@ -308,7 +312,9 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
       });
     }
 
-    const snapshotHash = sha256(canonicaliseSnapshot({ registerName, asOf, rowIds: rows.map((r) => r.id) }));
+    const snapshotHash = sha256(
+      canonicaliseSnapshot({ registerName, asOf, rowIds: rows.map((r) => r.id) }),
+    );
     return Object.freeze({
       name: registerName,
       asOf,
@@ -370,11 +376,12 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
         const id = String(p.escalationId ?? "");
         const existing = escalationMap.get(id);
         if (existing) escalationMap.set(id, { ...existing, status: "overdue" });
-        continue;
       }
     }
 
-    return [...escalationMap.values()].filter((v) => v.status === "open" || v.status === "acknowledged" || v.status === "overdue");
+    return [...escalationMap.values()].filter(
+      (v) => v.status === "open" || v.status === "acknowledged" || v.status === "overdue",
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -441,7 +448,7 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
         const deliverable = p.deliverable ? String(p.deliverable) : undefined;
         completedMap.set(runId, {
           completedAt: String(p.completedAt ?? e.as_of),
-          outcome: Boolean(p.ok) ? "ok" : "failed",
+          outcome: p.ok ? "ok" : "failed",
           eventsEmitted: Number(p.eventsEmitted ?? 0),
           ...(deliverable !== undefined ? { deliverable } : {}),
         });

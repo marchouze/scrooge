@@ -30,15 +30,15 @@
 //
 // Author: Atlas (Core banking platform architect) · Vera Wave-5
 
-import { eventStore } from "../../platform/composition";
-import { parseSpecFile } from "../agent-runtime/spec-parser";
 import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { eventStore } from "../../platform/composition";
+import { parseSpecFile } from "../agent-runtime/spec-parser";
 import type { ReconResult, ReconViolation } from "./types";
 
 const PIPELINE = "recon:goal-loop-capability";
 const WARN_THRESHOLD_DEFER_RATIO_HIGH = 0.95; // ≥ 95% defer = under-implemented
-const WARN_THRESHOLD_DEFER_RATIO_ZERO = 0.0;  // 0% defer = over-eager (only warn when ≥ 5 runs)
+const WARN_THRESHOLD_DEFER_RATIO_ZERO = 0.0; // 0% defer = over-eager (only warn when ≥ 5 runs)
 const MIN_RUNS_FOR_RATIO_CHECK = 5;
 const CADENCE_FLOOR_MS = 60_000; // 1 minute floor
 
@@ -142,7 +142,15 @@ export function run(): ReconResult {
   // Load spec files to validate goal-shape and allow-list discipline.
   const repoRoot = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..", "..", "..");
   const teamDir = resolve(repoRoot, "Team");
-  const specByUrn = new Map<string, { decisionsInScope: string[]; eventsEmitted: string[]; proceduresOwned: string[]; escalationClasses: string[] }>();
+  const specByUrn = new Map<
+    string,
+    {
+      decisionsInScope: string[];
+      eventsEmitted: string[];
+      proceduresOwned: string[];
+      escalationClasses: string[];
+    }
+  >();
   if (existsSync(teamDir)) {
     for (const f of readdirSync(teamDir)) {
       if (!f.endsWith(".md") || f.startsWith("_")) continue;
@@ -197,7 +205,8 @@ export function run(): ReconResult {
     if (sel.mandateCitations.length === 0) {
       violations.push({
         subject: `AgentGoalSelected.iterationId=${iterationId} (agent=${sel.agentUrn})`,
-        message: "P2 violation: AgentGoalSelected has empty mandateCitations. At least one required.",
+        message:
+          "P2 violation: AgentGoalSelected has empty mandateCitations. At least one required.",
         severity: "fail",
       });
     }

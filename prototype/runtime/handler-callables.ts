@@ -18,6 +18,7 @@ import anyaM1ProjectionRuntimeMapping from "./agents/anya-m1-projection-runtime-
 import anyaProjectionDrift from "./agents/anya-projection-drift";
 import anyaProjectionRefresh from "./agents/anya-projection-refresh";
 import atlasEventTriage from "./agents/atlas-event-triage";
+import atlasGoalLoop from "./agents/atlas-goal-loop";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
 import beaAccountingReadiness from "./agents/bea-accounting-readiness";
 import beaEventTriage from "./agents/bea-event-triage";
@@ -94,6 +95,7 @@ const _map: Record<string, AgentRunHandler> = {
   "vera:overnight-recon": veraOvernightRecon,
   "vera:codebase-quality-review": veraCodebaseQualityReview,
   "atlas:substrate-state": atlasSubstrateState,
+  "atlas:goal-loop": atlasGoalLoop,
   "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
   "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,

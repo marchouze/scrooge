@@ -18,16 +18,16 @@
 // Author: Atlas (Core banking platform architect)
 
 import { createHash } from "node:crypto";
-import type { EventStore } from "../event-store/store";
 import {
   makeAgentGoalDeferred,
   makeAgentGoalEvaluated,
   makeAgentGoalSelected,
 } from "../event-store/event-types";
+import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
+import type { AgentUrn } from "./registry";
 import type { AgentSpec } from "./spec-parser";
 import type { AgentRunSummary, WorldStateSnapshot } from "./world-state";
-import type { AgentUrn } from "./registry";
 
 // ---------------------------------------------------------------------------
 // Public types — re-exported for consumers (run.ts, per-persona goal derivers)
@@ -178,9 +178,23 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
     if (lastIterationMs !== undefined && Date.now() - lastIterationMs < CADENCE_FLOOR_MS) {
       const deferredMs = CADENCE_FLOOR_MS - (Date.now() - lastIterationMs);
       const retryAfter = new Date(Date.now() + deferredMs).toISOString();
-      this.emitGoalEvaluated(iterationId, asOf, args, candidates, undefined, "cadence: too soon since last iteration");
+      this.emitGoalEvaluated(
+        iterationId,
+        asOf,
+        args,
+        candidates,
+        undefined,
+        "cadence: too soon since last iteration",
+      );
       eventsEmitted++;
-      this.emitGoalDeferred(iterationId, asOf, args, "cadence: too soon since last iteration", retryAfter, []);
+      this.emitGoalDeferred(
+        iterationId,
+        asOf,
+        args,
+        "cadence: too soon since last iteration",
+        retryAfter,
+        [],
+      );
       eventsEmitted++;
       return { outcome: null, eventsEmitted, iterationId };
     }
@@ -215,7 +229,14 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
     // Escalation outcome → emit GoalEvaluated + AgentEscalation.
     // ------------------------------------------------------------------
     if (outcome.kind === "escalation") {
-      this.emitGoalEvaluated(iterationId, asOf, args, candidates, undefined, "escalation: " + outcome.question);
+      this.emitGoalEvaluated(
+        iterationId,
+        asOf,
+        args,
+        candidates,
+        undefined,
+        `escalation: ${outcome.question}`,
+      );
       eventsEmitted++;
       // AgentEscalation emission happens via the existing event type —
       // the wrapper records the intent; the handler wires the actual
@@ -383,7 +404,14 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
             iterationId,
             reason: reason.slice(0, 2000),
             ...(retryAfter ? { retryAfter } : {}),
-            ...(consideredAndRejected.length > 0 ? { consideredAndRejected: consideredAndRejected.map((x) => ({ label: x.label, rejectionReason: x.rejectionReason })) } : {}),
+            ...(consideredAndRejected.length > 0
+              ? {
+                  consideredAndRejected: consideredAndRejected.map((x) => ({
+                    label: x.label,
+                    rejectionReason: x.rejectionReason,
+                  })),
+                }
+              : {}),
           },
         }),
       );
@@ -445,7 +473,7 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
       const p = e.payload as Record<string, unknown>;
       if (String(p.agentUrn ?? "") !== agentUrn) continue;
       const t = new Date(e.as_of).getTime();
-      if (!isNaN(t) && (latest === undefined || t > latest)) {
+      if (!Number.isNaN(t) && (latest === undefined || t > latest)) {
         latest = t;
       }
     }

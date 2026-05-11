@@ -131,6 +131,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "19 6 * * 1",
   }),
+  // atlas:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Atlas", "goal-loop", "on-request"),
   entry("Helena", "risk-appetite-watch", "scheduled", {
     cadenceHours: 24,
     cronExpression: "30 4 * * *",
