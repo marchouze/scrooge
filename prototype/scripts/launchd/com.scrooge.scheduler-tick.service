@@ -1,0 +1,52 @@
+# com.scrooge.scheduler-tick.service
+#
+# systemd user unit — Linux equivalent of the macOS LaunchAgent.
+#
+# Slice 1 of D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11).
+# Pair with com.scrooge.scheduler-tick.timer (the timer drives the
+# 60-second cadence; this unit is the one-shot work).
+#
+# Author: Atlas (Core banking platform architect; substrate)
+#
+# Install (template — adjust ExecStart and WorkingDirectory):
+#   mkdir -p ~/.config/systemd/user
+#   sed \
+#     -e "s|__BUN_PATH__|$(command -v bun)|g" \
+#     -e "s|__WORKING_DIRECTORY__|$(pwd)/prototype|g" \
+#     com.scrooge.scheduler-tick.service \
+#     > ~/.config/systemd/user/com.scrooge.scheduler-tick.service
+#   cp com.scrooge.scheduler-tick.timer \
+#     ~/.config/systemd/user/com.scrooge.scheduler-tick.timer
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now com.scrooge.scheduler-tick.timer
+#
+# Logs land in the user journal:
+#   journalctl --user -u com.scrooge.scheduler-tick.service -f
+
+[Unit]
+Description=Scrooge scheduler-tick (D-AGENT-AUTONOMY-OPERATIONAL Slice 1)
+Documentation=file://%h/.config/systemd/user/com.scrooge.scheduler-tick.service
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__WORKING_DIRECTORY__
+ExecStart=__BUN_PATH__ run scripts/scheduler-tick.ts
+Nice=5
+# StandardOutput / StandardError default to journal — preferred over a
+# raw log file because journald rotates and is queryable. If a flat
+# log file is wanted, change to `append:%h/.local/share/scrooge/...`.
+StandardOutput=journal
+StandardError=journal
+# No credentials in the environment by default. If the user wants to
+# pass BANK_EVENT_DB or similar, drop a ~/.config/systemd/user/
+# com.scrooge.scheduler-tick.service.d/override.conf with [Service]
+# Environment=BANK_EVENT_DB=/path lines.
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+[Install]
+# A oneshot Service is not normally enabled directly — the .timer
+# pulls it. WantedBy=default.target lets the user run a one-off via
+# `systemctl --user start com.scrooge.scheduler-tick.service` if they
+# want to test outside the timer.
+WantedBy=default.target

@@ -1,0 +1,31 @@
+# com.scrooge.scheduler-tick.timer
+#
+# systemd user timer — fires the .service every 60 seconds.
+# Companion to com.scrooge.scheduler-tick.service.
+#
+# Slice 1 of D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11).
+#
+# Author: Atlas (Core banking platform architect; substrate)
+
+[Unit]
+Description=Scrooge scheduler-tick — every 60s (D-AGENT-AUTONOMY-OPERATIONAL Slice 1)
+Documentation=file://%h/.config/systemd/user/com.scrooge.scheduler-tick.service
+
+[Timer]
+# OnBootSec: first fire 30s after the user manager starts.
+OnBootSec=30s
+# OnUnitActiveSec: re-fire 60s after the *last* successful run
+# completes. This is "cadence after success", not "cadence between
+# starts" — so a slow tick will not stack.
+OnUnitActiveSec=60s
+Unit=com.scrooge.scheduler-tick.service
+# Persistent: catch up if the laptop was sleeping when a tick was due.
+# We do NOT want this for cadence-driven work (we'd just trigger a
+# storm at wake) so leave it false.
+Persistent=false
+# Accuracy: don't pin to wall-clock seconds; allow 5s of jitter so
+# many timers can coalesce.
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target
