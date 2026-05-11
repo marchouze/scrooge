@@ -76,10 +76,8 @@ const MIRA_OBLIGATIONS_STEP_ID = "kyc-onboarding:step-1";
 const MIRA_MONITORING_STEP_ID = "sanctions-screening:step-1";
 
 // Goal labels — must match Team/Mira.md §9 first-column row labels exactly (T-NEW).
-const OBLIGATIONS_REVIEW_GOAL =
-  "Register-entry approval" as const;
-const OPEN_FINDINGS_GOAL =
-  "Obligation impact assessment on existing controls" as const;
+const OBLIGATIONS_REVIEW_GOAL = "Register-entry approval" as const;
+const OPEN_FINDINGS_GOAL = "Obligation impact assessment on existing controls" as const;
 const TRANSACTION_MONITORING_GOAL =
   "Transaction-monitoring alert disposition (close / escalate)" as const;
 
