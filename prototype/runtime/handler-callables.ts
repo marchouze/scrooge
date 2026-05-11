@@ -62,6 +62,7 @@ import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-sn
 import rashidaEventTriage from "./agents/rashida-event-triage";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import raviEventTriage from "./agents/ravi-event-triage";
+import raviGoalLoop from "./agents/ravi-goal-loop";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
 import rohanEventTriage from "./agents/rohan-event-triage";
 import rohanGoalLoop from "./agents/rohan-goal-loop";
@@ -145,6 +146,9 @@ const _map: Record<string, AgentRunHandler> = {
   "tomas:payments-readiness": tomasPaymentsReadiness,
   "imani:legal-readiness": imaniLegalReadiness,
   "ravi:alm-readiness": raviAlmReadiness,
+  // ravi:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "ravi:goal-loop": raviGoalLoop,
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "pax:role-research-queue": paxRoleResearchQueue,
   "rohan:backtest-harness": rohanBacktestHarness,

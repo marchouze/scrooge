@@ -255,6 +255,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "37 5 * * *",
   }),
+  // ravi:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Ravi", "goal-loop", "on-request"),
   entry("Sade", "agentops-readiness", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "41 7 * * 5",
