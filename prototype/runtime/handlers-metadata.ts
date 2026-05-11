@@ -147,6 +147,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "30 4 * * *",
   }),
+  // helena:goal-loop — no cron; shadow mode for first cohort ticks (on-request only).
+  // Cohort-3 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Helena", "goal-loop", "on-request"),
   entry("Devon", "operational-resilience-snapshot", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "23 5 * * MON",

@@ -32,6 +32,7 @@ import devonOperationalResilienceSnapshot from "./agents/devon-operational-resil
 import eitanEventTriage from "./agents/eitan-event-triage";
 import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
 import helenaEventTriage from "./agents/helena-event-triage";
+import helenaGoalLoop from "./agents/helena-goal-loop";
 import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import imaniEventTriage from "./agents/imani-event-triage";
 import imaniLegalReadiness from "./agents/imani-legal-readiness";
@@ -106,6 +107,9 @@ const _map: Record<string, AgentRunHandler> = {
   "atlas:goal-loop": atlasGoalLoop,
   "bea:goal-loop": beaGoalLoop,
   "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
+  // helena:goal-loop — no cron; shadow mode for first cohort ticks (on-request only).
+  // Cohort-3 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "helena:goal-loop": helenaGoalLoop,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
   "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
   // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
