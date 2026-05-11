@@ -134,4 +134,59 @@ describe("decision-event-reconciliation pipeline", () => {
       ),
     ).toBe(true);
   });
+
+  it("does not flag a request-revision event as missing from decisionsResolved", () => {
+    // A CeoDecision with action=request-revision intentionally keeps the
+    // decision OUT of decisionsResolved (it reopens the decision). The
+    // recon must not treat this as a missing-from-resolved violation.
+    // This is the D-MARKETS-CAPITAL-TIME-SHAPE pattern: Scrooge's
+    // correction event with request-revision reopens the decision.
+    const r = decisionRecon({
+      state: fixtureState([]),
+      eventDecisionIds: new Set<string>(["D-MARKETS-CAPITAL-TIME-SHAPE"]),
+      reopenedDecisionIds: new Set<string>(["D-MARKETS-CAPITAL-TIME-SHAPE"]),
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations.filter((v) => v.severity === "fail")).toEqual([]);
+    // The decision IS asserted (counted) but not flagged.
+    expect(r.asserted).toBeGreaterThanOrEqual(1);
+  });
+
+  it("flags a non-revision event that is missing from decisionsResolved", () => {
+    // An event whose latest action is NOT request-revision should still
+    // be flagged if it does not appear in decisionsResolved.
+    const r = decisionRecon({
+      state: fixtureState([]),
+      eventDecisionIds: new Set<string>(["D-SOME-APPROVED"]),
+      reopenedDecisionIds: new Set<string>(),
+    });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.severity === "fail" && v.subject === "D-SOME-APPROVED")).toBe(
+      true,
+    );
+  });
+
+  it("handles mixed resolved + reopened decisions correctly", () => {
+    // D-APPROVED is resolved and in the event store — should pass.
+    // D-REOPENED is in the event store but reopened — should pass.
+    // D-ORPHAN is in the event store but neither resolved nor reopened — should fail.
+    const r = decisionRecon({
+      state: fixtureState([
+        {
+          id: "D-APPROVED",
+          title: "Approved decision",
+          actionedAt: "2026-05-07T14:00:00.000Z",
+          outcome: "approved",
+          sourceDoc: "(unsourced)",
+        },
+      ]),
+      eventDecisionIds: new Set<string>(["D-APPROVED", "D-REOPENED", "D-ORPHAN"]),
+      reopenedDecisionIds: new Set<string>(["D-REOPENED"]),
+    });
+    expect(r.ok).toBe(false);
+    // Only D-ORPHAN should fail
+    const fails = r.violations.filter((v) => v.severity === "fail");
+    expect(fails.length).toBe(1);
+    expect(fails[0]?.subject).toBe("D-ORPHAN");
+  });
 });

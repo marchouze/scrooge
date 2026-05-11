@@ -60,35 +60,75 @@ export interface RunOpts {
    * is not, the recon walks `dbPath` if it exists, else assumes empty.
    */
   eventDecisionIds?: ReadonlySet<string>;
+  /**
+   * Optional set of decision IDs whose latest CeoDecision event is
+   * `request-revision`. These are intentionally reopened and do NOT
+   * surface in `decisionsResolved`. Used by tests; production runs
+   * derive this from the event store.
+   */
+  reopenedDecisionIds?: ReadonlySet<string>;
 }
 
 interface RegistryShape {
   decisionsResolved: { id: string; title: string; actionedAt: string }[];
 }
 
-function readEventDecisionIds(dbPath: string): Set<string> {
-  const ids = new Set<string>();
-  if (!existsSync(dbPath)) return ids;
+interface EventDecisionInfo {
+  /** All decision IDs that have at least one CeoDecision event. */
+  allIds: Set<string>;
+  /** Decision IDs whose *latest* CeoDecision event (by as_of) is
+   *  `request-revision`. These are intentionally reopened and do NOT
+   *  surface in `decisionsResolved` — the projection puts them back
+   *  into the open set. The recon must not flag them as missing from
+   *  the resolved projection. */
+  reopenedIds: Set<string>;
+}
+
+function readEventDecisionInfo(dbPath: string): EventDecisionInfo {
+  const allIds = new Set<string>();
+  const reopenedIds = new Set<string>();
+  if (!existsSync(dbPath)) return { allIds, reopenedIds };
   const store = new EventStore(dbPath);
+  // Track the latest event per decision ID (by as_of) so we can
+  // determine if the final action is `request-revision`.
+  const latest = new Map<string, { asOf: string; action: string }>();
   for (const e of store.replay({ type: "CeoDecision" })) {
-    const id = (e.payload as { decisionId?: string }).decisionId;
-    if (id) ids.add(id);
+    const p = e.payload as { decisionId?: string; action?: string };
+    const id = p.decisionId;
+    if (!id) continue;
+    allIds.add(id);
+    const prev = latest.get(id);
+    if (!prev || prev.asOf <= e.as_of) {
+      latest.set(id, { asOf: e.as_of, action: String(p.action ?? "approve") });
+    }
+  }
+  for (const [id, info] of latest) {
+    if (info.action === "request-revision") reopenedIds.add(id);
   }
   store.close();
-  return ids;
+  return { allIds, reopenedIds };
 }
 
 function loadDerivedRegistry(opts: RunOpts): {
   registry?: RegistryShape;
   eventDecisionIds: Set<string>;
+  reopenedIds: Set<string>;
   setupViolations: ReconViolation[];
 } {
   const setupViolations: ReconViolation[] = [];
 
   if (opts.state) {
-    const eventDecisionIds = new Set(
-      opts.eventDecisionIds ?? readEventDecisionIds(opts.dbPath ?? DEFAULT_DB),
-    );
+    // Test path — accept injected sets or fall back to scanning the DB.
+    let eventDecisionIds: Set<string>;
+    let reopenedIds: Set<string>;
+    if (opts.eventDecisionIds) {
+      eventDecisionIds = new Set(opts.eventDecisionIds);
+      reopenedIds = new Set(opts.reopenedDecisionIds ?? []);
+    } else {
+      const info = readEventDecisionInfo(opts.dbPath ?? DEFAULT_DB);
+      eventDecisionIds = info.allIds;
+      reopenedIds = info.reopenedIds;
+    }
     return {
       registry: {
         decisionsResolved: opts.state.decisionsResolved.map((r) => ({
@@ -98,6 +138,7 @@ function loadDerivedRegistry(opts: RunOpts): {
         })),
       },
       eventDecisionIds,
+      reopenedIds,
       setupViolations,
     };
   }
@@ -112,11 +153,11 @@ function loadDerivedRegistry(opts: RunOpts): {
         severity: "fail",
       });
     }
-    return { eventDecisionIds: new Set(), setupViolations };
+    return { eventDecisionIds: new Set(), reopenedIds: new Set(), setupViolations };
   }
 
   const dbPath = opts.dbPath ?? DEFAULT_DB;
-  const eventDecisionIds = readEventDecisionIds(dbPath);
+  const info = readEventDecisionInfo(dbPath);
   const events = (() => {
     if (!existsSync(dbPath)) {
       return {
@@ -141,7 +182,7 @@ function loadDerivedRegistry(opts: RunOpts): {
       message: `Derivation threw: ${(e as Error).message}`,
       severity: "fail",
     });
-    return { eventDecisionIds, setupViolations };
+    return { eventDecisionIds: info.allIds, reopenedIds: info.reopenedIds, setupViolations };
   }
   return {
     registry: {
@@ -151,7 +192,8 @@ function loadDerivedRegistry(opts: RunOpts): {
         actionedAt: r.actionedAt,
       })),
     },
-    eventDecisionIds,
+    eventDecisionIds: info.allIds,
+    reopenedIds: info.reopenedIds,
     setupViolations,
   };
 }
@@ -160,7 +202,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   const result = emptyResult("decision-event-reconciliation");
   const violations: ReconViolation[] = [];
 
-  const { registry, eventDecisionIds, setupViolations } = loadDerivedRegistry(opts);
+  const { registry, eventDecisionIds, reopenedIds, setupViolations } = loadDerivedRegistry(opts);
   if (setupViolations.length || !registry) {
     result.violations = setupViolations;
     result.ok = setupViolations.every((v) => v.severity !== "fail");
@@ -190,6 +232,13 @@ export function run(opts: RunOpts = {}): ReconResult {
   const knownIds = new Set(dashboardDecisions.map((d) => d.id));
   for (const id of eventDecisionIds) {
     result.asserted++;
+    // Decision IDs whose latest CeoDecision event is `request-revision`
+    // are intentionally reopened — the projection moves them back to
+    // `decisionsOpen`, so they correctly do NOT appear in
+    // `decisionsResolved`. This matches the `reduceCeoDecisions` logic
+    // in `dashboard/derive.ts` (lines 593-599). Flagging them as
+    // missing from the resolved set would be a false positive.
+    if (reopenedIds.has(id)) continue;
     if (!knownIds.has(id)) {
       violations.push({
         subject: id,
