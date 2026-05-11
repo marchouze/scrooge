@@ -4865,6 +4865,81 @@ export function makeRasLineCalibrated(args: {
   });
 }
 
+// ===========================================================================
+// --- Party (D-PARTY-REGISTER) ---
+//
+// PR 1 of D-PARTY-REGISTER (CEO-approved 2026-05-11). The unified Party
+// event family lives in its own domain at `prototype/domains/party/` —
+// schemas and factories are authored there to keep this god-file from
+// growing further (F-020). We re-export them here for two reasons:
+//   1. Registry consumers (`registry.ts`) import schemas from this module
+//      by convention; preserving that surface keeps the wiring uniform.
+//   2. The recon at `platform/recon/event-type-registry-coverage.ts`
+//      scans `event-types.ts` plus sibling `event-types-*.ts` for
+//      `make<Type>` factory definitions; re-exporting the factories from
+//      here keeps the recon symmetric without bypassing the per-domain
+//      authoring location.
+//
+// Out of scope for PR 1: backfill (PR 2, Imani — Legal-as-code engineer);
+// party-projection read-model (PR 2); register markdown (PR 2); customer
+// field-tightening (PR 4); deprecation flags on legacy registration event
+// types (PR 4).
+// ===========================================================================
+
+export type {
+  AgentAttrs as PartyAgentAttrs,
+  BeneficialOwnerChainAssertedPayload,
+  CounterpartyAttrs as PartyCounterpartyAttrs,
+  KindAttributes as PartyKindAttributes,
+  LegalEntityAttrs as PartyLegalEntityAttrs,
+  NaturalPersonAttrs as PartyNaturalPersonAttrs,
+  PartyAttributeChangedPayload,
+  PartyClassifiedPayload,
+  PartyDeactivatedPayload,
+  PartyDeclassifiedPayload,
+  PartyEventType,
+  PartyId,
+  PartyKind,
+  PartyRegisteredPayload,
+  PartyRelationshipAssertedPayload,
+  PartyRelationshipChangedPayload,
+  PartyRelationshipRevokedPayload,
+  PartyScreeningCompletedPayload,
+  RelationshipKind,
+} from "../../domains/party";
+
+export {
+  PARTY_EVENT_TYPES,
+  PARTY_KINDS,
+  RELATIONSHIP_KINDS,
+  RELATIONSHIP_KIND_CONSTRAINTS,
+  beneficialOwnerChainAssertedPayloadSchema,
+  kindAttributesSchema,
+  makeBeneficialOwnerChainAsserted,
+  makePartyAttributeChanged,
+  makePartyClassified,
+  makePartyDeactivated,
+  makePartyDeclassified,
+  makePartyRegistered,
+  makePartyRelationshipAsserted,
+  makePartyRelationshipChanged,
+  makePartyRelationshipRevoked,
+  makePartyScreeningCompleted,
+  partyAttributeChangedPayloadSchema,
+  partyClassifiedPayloadSchema,
+  partyDeactivatedPayloadSchema,
+  partyDeclassifiedPayloadSchema,
+  partyId,
+  partyIdSchema,
+  partyKindSchema,
+  partyRegisteredPayloadSchema,
+  partyRelationshipAssertedPayloadSchema,
+  partyRelationshipChangedPayloadSchema,
+  partyRelationshipRevokedPayloadSchema,
+  partyScreeningCompletedPayloadSchema,
+  relationshipKindSchema,
+} from "../../domains/party";
+
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Add to this when a new typed event is defined.
@@ -4955,6 +5030,21 @@ export const TYPED_EVENT_TYPES = [
   // W2-SLICE-2 (under standing authority of D-REGULATORY-READINESS-GATE-
   // PLAN, CEO-approved 2026-05-10). Pack §3 W2 Slice 2.
   "RasLineCalibrated",
+  // Party event family — D-PARTY-REGISTER + D-PARTY-RELATIONSHIP-KINDS-V0
+  // (both CEO-approved 2026-05-11). Schemas + factories live in
+  // `prototype/domains/party/`; re-exported above. PR 1 of D-PARTY-REGISTER
+  // — substrate only (backfill / projection / register markdown land in
+  // PR 2 with Imani — Legal-as-code engineer).
+  "PartyRegistered",
+  "PartyAttributeChanged",
+  "PartyClassified",
+  "PartyDeclassified",
+  "PartyScreeningCompleted",
+  "PartyRelationshipAsserted",
+  "PartyRelationshipChanged",
+  "PartyRelationshipRevoked",
+  "BeneficialOwnerChainAsserted",
+  "PartyDeactivated",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

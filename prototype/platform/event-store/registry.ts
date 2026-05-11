@@ -36,6 +36,18 @@
 import type { z } from "zod";
 
 import {
+  beneficialOwnerChainAssertedPayloadSchema,
+  partyAttributeChangedPayloadSchema,
+  partyClassifiedPayloadSchema,
+  partyDeactivatedPayloadSchema,
+  partyDeclassifiedPayloadSchema,
+  partyRegisteredPayloadSchema,
+  partyRelationshipAssertedPayloadSchema,
+  partyRelationshipChangedPayloadSchema,
+  partyRelationshipRevokedPayloadSchema,
+  partyScreeningCompletedPayloadSchema,
+} from "../../domains/party";
+import {
   equityCorporateActionAppliedPayloadSchema,
   equitySettlementInstructedPayloadSchema,
   equityTradeBookedPayloadSchema,
@@ -1524,6 +1536,229 @@ const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// ===========================================================================
+// Party event family — D-PARTY-REGISTER + D-PARTY-RELATIONSHIP-KINDS-V0
+// (both CEO-approved 2026-05-11). PR 1 of D-PARTY-REGISTER ships the
+// substrate only — these 10 rows close 10 of the 14 remaining F-032
+// event-type registry-coverage gaps. Backfill from existing legal-entity /
+// counterparty / agent events into Party events lands in PR 2 (Imani —
+// Legal-as-code engineer). Until PR 2 lands, the `subscribers` arrays are
+// empty (no consumer projection yet); the registry rows still register the
+// types so the typed payload contract is enforced at append time.
+//
+// `issuer` field: today the only producer is Atlas (the substrate path —
+// initial seed-loader / synthetic emit during PR 1 testing). When PR 2's
+// backfill + projection lands, the issuer matrix expands:
+//   - PartyRegistered{kind: "legal-entity"}  → backfilled by Imani
+//   - PartyRegistered{kind: "counterparty"}  → backfilled by Imani; Niko
+//                                              from licence-day (customer
+//                                              onboarding paused per
+//                                              buildPhaseStatus)
+//   - PartyRegistered{kind: "agent"}         → backfilled by Imani / Atlas
+//   - PartyRegistered{kind: "natural-person"} → Niko from licence-day;
+//                                              Owen for directors / key-
+//                                              individuals; Sade's HR slice
+//                                              from licence-day
+//   - PartyRelationship*                     → emitted by the producer of
+//                                              the relationship event
+//                                              (Imani for org-tree edges,
+//                                              Owen for governance edges,
+//                                              Atlas for agent-runtime
+//                                              edges)
+//
+// Retention: identity-axis events are governance — Companies Act director
+// & officer record retention (s.24 + s.66) + Banks Act fit-and-proper
+// records + FIC Act s.22 CDD records (5y). PartyRegistered + the
+// PartyRelationship* family use `RETENTION_GOVERNANCE_7Y`;
+// PartyScreeningCompleted + BeneficialOwnerChainAsserted use
+// `RETENTION_FIC_5Y` (FIC Act s.22 minimum); PartyDeactivated uses
+// `RETENTION_GOVERNANCE_7Y` (terminal lifecycle event for governance
+// records).
+// ===========================================================================
+
+const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
+  {
+    type: "PartyRegistered",
+    class: "governance",
+    payloadSchema: partyRegisteredPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "BANKS-ACT-94-1990",
+      "COMPANIES-ACT-71-2008",
+      "FIC-ACT-38-2001",
+      "POPIA-ACT-4-2013",
+      "FAIS-ACT-37-2002",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/types.ts; domains/party/schemas.ts",
+  },
+  {
+    type: "PartyAttributeChanged",
+    class: "governance",
+    payloadSchema: partyAttributeChangedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "cumulative-fold",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "COMPANIES-ACT-71-2008",
+      "POPIA-ACT-4-2013",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+  },
+  {
+    type: "PartyClassified",
+    class: "governance",
+    payloadSchema: partyClassifiedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "cumulative-fold",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "FIC-ACT-38-2001",
+      "FAIS-ACT-37-2002",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+  },
+  {
+    type: "PartyDeclassified",
+    class: "governance",
+    payloadSchema: partyDeclassifiedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "pair-coupled",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "FIC-ACT-38-2001",
+      "FAIS-ACT-37-2002",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+  },
+  {
+    type: "PartyScreeningCompleted",
+    class: "governance",
+    payloadSchema: partyScreeningCompletedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "FIC-ACT-38-2001",
+      "ORG-FC-05",
+      "BANKS-ACT-94-1990",
+      "FAIS-ACT-37-2002",
+    ],
+    // Screening evidence is a CDD record under FIC Act s.22 — 5y floor.
+    retention: RETENTION_FIC_5Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+  },
+  {
+    type: "PartyRelationshipAsserted",
+    class: "governance",
+    payloadSchema: partyRelationshipAssertedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "D-PARTY-RELATIONSHIP-KINDS-V0",
+      "COMPANIES-ACT-71-2008-S69",
+      "FIC-ACT-38-2001-S21B",
+      "FAIS-ACT-37-2002",
+      "BANKS-ACT-94-1990",
+      "IAS-24",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts (RELATIONSHIP_KIND_CONSTRAINTS)",
+  },
+  {
+    type: "PartyRelationshipChanged",
+    class: "governance",
+    payloadSchema: partyRelationshipChangedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "cumulative-fold",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "D-PARTY-RELATIONSHIP-KINDS-V0",
+      "COMPANIES-ACT-71-2008",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts",
+  },
+  {
+    type: "PartyRelationshipRevoked",
+    class: "governance",
+    payloadSchema: partyRelationshipRevokedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "pair-coupled",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "D-PARTY-RELATIONSHIP-KINDS-V0",
+      "COMPANIES-ACT-71-2008",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts",
+  },
+  {
+    type: "BeneficialOwnerChainAsserted",
+    class: "governance",
+    payloadSchema: beneficialOwnerChainAssertedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "FIC-ACT-38-2001-S21B",
+      "ORG-FC-05",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    // UBO chain evidence is a FIC Act s.21B / s.22 CDD record — 5y floor.
+    retention: RETENTION_FIC_5Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts (chain-shape enforcement)",
+  },
+  {
+    type: "PartyDeactivated",
+    class: "governance",
+    payloadSchema: partyDeactivatedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: [],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "D-PARTY-REGISTER",
+      "COMPANIES-ACT-71-2008",
+      "POPIA-ACT-4-2013",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+  },
+];
+
 // Product-lifecycle event family — D-PRODUCT-CONSTRUCTION-SUBSTRATE
 // (CEO approved 2026-05-10) Slice 2. Twelve events governing a Product
 // from proposal through retirement (source brief §4). All twelve are
@@ -2078,6 +2313,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...GOVERNANCE_EVENT_TYPES,
   ...AUDIT_EVENT_TYPES,
   ...LEGAL_ENTITY_EVENT_TYPES,
+  ...PARTY_EVENT_TYPES_REGISTRY,
   ...PRODUCT_LIFECYCLE_EVENT_TYPES,
   ...RMS_EVENT_TYPES,
   ...BANK_ACCOUNT_EVENT_TYPES,

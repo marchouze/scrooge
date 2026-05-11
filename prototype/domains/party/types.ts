@@ -226,11 +226,7 @@ export interface AgentAttrs {
  * outer `PartyRegisteredPayload.kind` exactly — the schema enforces
  * the binding via `z.discriminatedUnion`.
  */
-export type KindAttributes =
-  | NaturalPersonAttrs
-  | LegalEntityAttrs
-  | CounterpartyAttrs
-  | AgentAttrs;
+export type KindAttributes = NaturalPersonAttrs | LegalEntityAttrs | CounterpartyAttrs | AgentAttrs;
 
 // ===========================================================================
 // Relationship kinds (D-PARTY-RELATIONSHIP-KINDS-V0)

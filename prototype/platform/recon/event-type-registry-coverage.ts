@@ -176,6 +176,27 @@ function readFactoryNames(prototypeDir: string): Set<string> {
       if (name.endsWith(".ts")) scanPaths.push(resolve(cdmDir, name));
     }
   }
+  // Domain-local factories (per-domain home for new event families).
+  // Today: `domains/party/factories.ts` (D-PARTY-REGISTER PR 1, 2026-05-11).
+  // Pattern matches the existing F-020 split intent — `make<Type>` factories
+  // may live in any sibling `event-types-*.ts` under `platform/event-store/`
+  // OR in domain-local modules.
+  const domainsDir = resolve(prototypeDir, "domains");
+  if (existsSync(domainsDir)) {
+    for (const domain of readdirSync(domainsDir)) {
+      const domainSub = resolve(domainsDir, domain);
+      let domainStat: ReturnType<typeof statSync>;
+      try {
+        domainStat = statSync(domainSub);
+      } catch {
+        continue;
+      }
+      if (!domainStat.isDirectory()) continue;
+      for (const name of readdirSync(domainSub)) {
+        if (name.endsWith(".ts")) scanPaths.push(resolve(domainSub, name));
+      }
+    }
+  }
   for (const path of scanPaths) {
     let source: string;
     try {
@@ -241,6 +262,12 @@ function readFactoryConsumers(prototypeDir: string, factories: ReadonlySet<strin
       return true;
     if (rel.startsWith("platform/markets/cdm/") && (rel.endsWith(".ts") || rel.endsWith(".tsx")))
       return true;
+    // Domain-local factory homes (D-PARTY-REGISTER PR 1; mirrors the
+    // markets-cdm exclusion above so factory definitions in
+    // `domains/<x>/factories.ts` don't self-count as consumers). Scoped
+    // to `factories.ts` files only — other files under `domains/<x>/`
+    // (e.g. projections, README, wrappers) remain consumer-eligible.
+    if (rel.startsWith("domains/") && rel.endsWith("/factories.ts")) return true;
     return false;
   };
   for (const rel of files) {

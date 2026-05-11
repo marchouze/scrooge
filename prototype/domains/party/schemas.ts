@@ -91,8 +91,7 @@ export const relationshipKindSchema = z.enum(RELATIONSHIP_KINDS);
  * citations).
  */
 const citationsSchema = z.array(z.string().min(1)).min(1, {
-  message:
-    "Party events must carry at least one purpose-specific citation in the payload (P2).",
+  message: "Party events must carry at least one purpose-specific citation in the payload (P2).",
 });
 
 // ===========================================================================
@@ -457,8 +456,7 @@ export const beneficialOwnerChainAssertedPayloadSchema = z
     if (p.chain[0] !== p.rootCounterpartyPartyId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          "BeneficialOwnerChainAsserted.chain[0] must equal rootCounterpartyPartyId.",
+        message: "BeneficialOwnerChainAsserted.chain[0] must equal rootCounterpartyPartyId.",
         path: ["chain", 0],
       });
     }
