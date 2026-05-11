@@ -81,6 +81,10 @@
     "agent:bea-m1-ifrs-classification-rules": "bun run runtime/run.ts --agent Bea --trigger m1-ifrs-classification-rules",
     "agent:mira-m1-regulator-citation-urns": "bun run runtime/run.ts --agent Mira --trigger m1-regulator-citation-urns",
     "agent:senna-m1-trading-stack-threat-model": "bun run runtime/run.ts --agent Senna --trigger m1-trading-stack-threat-model",
+    "agent:nadia-validation-cycle": "bun run runtime/run.ts --agent Nadia --trigger validation-cycle",
+    "agent:niko-client-lifecycle": "bun run runtime/run.ts --agent Niko --trigger client-lifecycle",
+    "agent:linnea-ops-cycle": "bun run runtime/run.ts --agent Linnea --trigger ops-cycle",
+    "agent:nolan-hiring-cycle": "bun run runtime/run.ts --agent Nolan --trigger hiring-cycle",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {

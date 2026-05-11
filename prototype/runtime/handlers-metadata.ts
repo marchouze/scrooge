@@ -276,6 +276,360 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Scrooge", "owner-inbox-archiver", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
+
+  // -------------------------------------------------------------------------
+  // Slice 2b — per-persona event-triage stubs.
+  //
+  // Each entry below closes ≥1 `specWithoutHandler` violation surfaced by
+  // `recon:trigger-spec-handler-symmetry` (Slice 2a, PR #212). The handler
+  // files are minimal stubs (log + acknowledge); full implementations are
+  // roadmap items per D-AGENT-AUTONOMY-OPERATIONAL.
+  // -------------------------------------------------------------------------
+
+  // Rashida — CISO; security-domain events (9 event types → 1 handler).
+  entry("Rashida", "event-triage", "event-driven", {
+    subscribesTo: [
+      "SecurityIncidentRaised",
+      "ThreatModelExceptionRequested",
+      "ThreatModelGateDecision",
+      "KeyCeremonyScheduled",
+      "SBOMAcceptanceRequired",
+      "VendorSecurityReview",
+      "RegulatorCyberInquiry",
+      "PersonalInformationCompromiseSuspected",
+      "AgentEscalation",
+    ],
+  }),
+
+  // Rohan — Risk engineer; risk/market events.
+  entry("Rohan", "event-triage", "event-driven", {
+    subscribesTo: [
+      "TradeBooked",
+      "PositionAdjusted",
+      "CollateralUpdated",
+      "LimitBreachProposed",
+      "LimitBreachActioned",
+      "ModelDriftDetected",
+      "PolicyChange",
+      "PortfolioReclassification",
+    ],
+  }),
+
+  // Kai — Trading systems engineer; order/market-data events.
+  entry("Kai", "event-triage", "event-driven", {
+    subscribesTo: [
+      "OrderSubmitted",
+      "OrderFilled",
+      "PreTradeGatewayBlock",
+      "OrderRoutingAnomaly",
+      "SurveillanceFeedGap",
+      "MarketDataOutage",
+      "ExchangeRuleChange",
+    ],
+  }),
+
+  // Nadia — Model validation engineer; model-lifecycle events.
+  entry("Nadia", "event-triage", "event-driven", {
+    subscribesTo: [
+      "ModelRegistered",
+      "ProductionUseRequested",
+      "MethodologyChangeRequested",
+      "BacktestTriggered",
+      "ModelDriftDetected",
+      "ValidationFindingRaised",
+      "RiskPolicyChange",
+    ],
+  }),
+  // Nadia — scheduled validation-cycle (closes `scheduled-coverage` violation).
+  entry("Nadia", "validation-cycle", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "17 7 * * THU",
+  }),
+
+  // Owen — Company Secretary; corporate-governance events.
+  entry("Owen", "event-triage", "event-driven", {
+    subscribesTo: [
+      "ResolutionRequired",
+      "ConflictDeclared",
+      "RelatedPartyTransactionProposed",
+      "WhistleblowingDisclosure",
+      "PAIARequest",
+      "MOIChangeProposed",
+      "SupervisoryLetterReceived",
+      "AgentEscalation",
+    ],
+  }),
+
+  // Ravi — Treasury/ALM engineer; balance-sheet/treasury events.
+  entry("Ravi", "event-triage", "event-driven", {
+    subscribesTo: [
+      "TradePosted",
+      "FundingDrawn",
+      "DepositReceived",
+      "SAMOSFundingShortfall",
+      "HQLACompositionDrift",
+      "IRRBBExcursion",
+      "FXPositionBreach",
+      "HedgeIneffective",
+    ],
+  }),
+
+  // Sade — AgentOps/HR engineer; agent-lifecycle and HR events.
+  entry("Sade", "event-triage", "event-driven", {
+    subscribesTo: [
+      "AgentRegistered",
+      "AgentRetired",
+      "AgentCapabilityChanged",
+      "PersonaSpecChanged",
+      "HireConfirmed",
+      "Termination",
+      "LeaveGranted",
+      "DisciplinaryActionRequested",
+    ],
+  }),
+
+  // Saskia — Head of Global Markets; markets/franchise events.
+  entry("Saskia", "event-triage", "event-driven", {
+    subscribesTo: [
+      "DealerMandateBreach",
+      "SurveillanceAlert",
+      "CurveSourceAnomaly",
+      "CounterpartyEvent",
+      "RASCalibrationChange",
+      "LicenceGranted",
+      "CEODecision",
+      "AgentEscalation",
+    ],
+  }),
+
+  // Thandiwe — CAE; audit/oversight events.
+  entry("Thandiwe", "event-triage", "event-driven", {
+    subscribesTo: [
+      "AuditFinding",
+      "AuditIssueOpened",
+      "AuditIssueClosed",
+      "AgentEscalation",
+      "WhistleblowingDisclosure",
+      "ExternalAuditorInquiry",
+      "AppetiteBreach",
+    ],
+  }),
+
+  // Bea — Accountant/IFRS engineer; accounting/financial events.
+  entry("Bea", "event-triage", "event-driven", {
+    subscribesTo: [
+      "TradePosted",
+      "FundingDrawn",
+      "PaymentSettled",
+      "AccrualBooked",
+      "IFRS9ECLPublished",
+      "TaxClassificationPublished",
+      "RestatementProposed",
+    ],
+  }),
+
+  // Devon — Operational Resilience engineer; resilience/incident events.
+  entry("Devon", "event-triage", "event-driven", {
+    subscribesTo: [
+      "IncidentRaised",
+      "SLOBudgetBurn",
+      "CapacityBreach",
+      "ChangeApprovalRequested",
+      "AgentEscalation",
+      "ResilienceTestResult",
+      "AuditFinding",
+    ],
+  }),
+
+  // Eitan — Liquidity/Capital engineer; liquidity/capital events.
+  entry("Eitan", "event-triage", "event-driven", {
+    subscribesTo: [
+      "IRRBBExcursion",
+      "FXPositionBreach",
+      "LCRRatioProjection",
+      "NSFRRatioProjection",
+      "CapitalActionTrigger",
+      "AgentEscalation",
+      "PolicyChange",
+    ],
+  }),
+
+  // Iris — POPIA/Privacy engineer; data-protection events.
+  entry("Iris", "event-triage", "event-driven", {
+    subscribesTo: [
+      "PersonalInformationCompromiseSuspected",
+      "DSARReceived",
+      "NewProcessingPurposeProposed",
+      "ConsentWithdrawn",
+      "CrossBorderTransferRequested",
+      "InformationRegulatorInquiry",
+      "AgentEscalation",
+    ],
+  }),
+
+  // Mira — Compliance/AML/FICA engineer; compliance/AML events.
+  entry("Mira", "event-triage", "event-driven", {
+    subscribesTo: [
+      "ClientCandidateRegistered",
+      "TransactionPosted",
+      "SanctionsListPublished",
+      "PepListPublished",
+      "AdverseMediaPublished",
+      "RegulatoryInstrumentUpdate",
+      "AlertOpened",
+    ],
+  }),
+
+  // Tomas — Payments engineer; payment/settlement events.
+  entry("Tomas", "event-triage", "event-driven", {
+    subscribesTo: [
+      "SettlementInstructionReceived",
+      "PaymentInitiated",
+      "ReconciliationBreak",
+      "CutOffBreach",
+      "SchemeRuleChange",
+      "CSPAttestationDue",
+      "SanctionsHoldRaised",
+    ],
+  }),
+
+  // Zara — MLRO/FIC Compliance Officer; AML/FICA events.
+  entry("Zara", "event-triage", "event-driven", {
+    subscribesTo: [
+      "STRCandidate",
+      "SanctionsHit",
+      "PEPMatchExceedsThreshold",
+      "FAISConductBreachSuspected",
+      "RegulatorInquiry",
+      "PolicyChange",
+      "AgentEscalation",
+    ],
+  }),
+
+  // Camille — CFO/Financial Controller; financial/audit events.
+  entry("Camille", "event-triage", "event-driven", {
+    subscribesTo: [
+      "RestatementProposed",
+      "CapitalEvent",
+      "MaterialIFRSClassificationChange",
+      "AgentEscalation",
+      "AuditFinding",
+      "RegulatorRequest",
+    ],
+  }),
+
+  // Imani — Legal/ISDA/contract engineer; legal/contract events.
+  entry("Imani", "event-triage", "event-driven", {
+    subscribesTo: [
+      "ContractDraftRequested",
+      "ClauseChangeProposed",
+      "SignatureRequested",
+      "ECTAExceptionFlagged",
+      "LegalEntityChange",
+      "ObligationRegistered",
+    ],
+  }),
+
+  // Niko — Client lifecycle engineer (paused until licence-day); client events.
+  entry("Niko", "event-triage", "event-driven", {
+    subscribesTo: [
+      "LeadCaptured",
+      "SuitabilityAssessmentRequired",
+      "AdviceRecordRequested",
+      "OnboardingHandoffPending",
+      "ConsentWithdrawn",
+    ],
+  }),
+  // Niko — scheduled client-lifecycle cycle (closes `scheduled-coverage`).
+  entry("Niko", "client-lifecycle", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "23 8 * * MON",
+  }),
+
+  // Senna — DevSecOps/security substrate engineer; DevSecOps events.
+  entry("Senna", "event-triage", "event-driven", {
+    subscribesTo: [
+      "MergeRequested",
+      "SecurityIncidentRaised",
+      "KeyRotationDue",
+      "DependencyVulnDetected",
+      "SuspiciousAuthEvent",
+      "SBOMRequired",
+    ],
+  }),
+
+  // Helena — CRO; risk-governance events.
+  entry("Helena", "event-triage", "event-driven", {
+    subscribesTo: [
+      "AppetiteBreach",
+      "ModelRiskDecisionRequired",
+      "SupervisoryLetterReceived",
+      "IcaapIlaapInputReady",
+      "RiskPolicyChangeProposal",
+    ],
+  }),
+
+  // Scrooge — Chief of Staff; orchestration-relevant events.
+  entry("Scrooge", "event-triage", "event-driven", {
+    subscribesTo: [
+      "AgentEscalation",
+      "WorkstreamCompleted",
+      "WorkstreamRegistered",
+      "HireConfirmed",
+      "MandateGapDetected",
+    ],
+  }),
+
+  // Yael — Tax engineer; tax events.
+  entry("Yael", "event-triage", "event-driven", {
+    subscribesTo: [
+      "SARSGuidanceUpdate",
+      "IFRS9ECLChange",
+      "InterEntityTransactionProposed",
+      "ClientCandidateRegistered",
+      "ClientReviewTriggered",
+    ],
+  }),
+
+  // Linnea — COO/Operations engineer; operations-relevant events.
+  entry("Linnea", "event-triage", "event-driven", {
+    subscribesTo: ["CeoDecision", "WorkstreamRegistered", "AgentEscalation"],
+  }),
+  // Linnea — scheduled ops-cycle (closes `scheduled-coverage`).
+  entry("Linnea", "ops-cycle", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "29 8 * * TUE",
+  }),
+
+  // Nolan — HR/Hiring engineer; hiring/mandate events.
+  entry("Nolan", "event-triage", "event-driven", {
+    subscribesTo: ["RoleBriefDelivered", "MandateGapDetected", "WorkstreamRegistered"],
+  }),
+  // Nolan — scheduled hiring-cycle (closes `scheduled-coverage`).
+  entry("Nolan", "hiring-cycle", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "53 8 * * FRI",
+  }),
+
+  // Anya — projection/schema engineer; additional schema/obligation events.
+  entry("Anya", "event-triage", "event-driven", {
+    subscribesTo: ["EventSchemaPublished", "ObligationRegistered", "PolicyChange"],
+  }),
+
+  // Atlas — Core banking platform architect; platform-architecture events.
+  entry("Atlas", "event-triage", "event-driven", {
+    subscribesTo: ["EventSchemaProposal", "IdentityPermissionChangeProposal", "SubstrateAlert"],
+  }),
+
+  // PAX — Research assistant; role-research and mandate-gap events.
+  entry("PAX", "event-triage", "event-driven", {
+    subscribesTo: ["RoleResearchRequested", "MandateGapDetected", "AgentEscalation"],
+  }),
+
+  // Vera — Internal audit engineer; CEO-decision audit trail events.
+  entry("Vera", "event-triage", "event-driven", {
+    subscribesTo: ["CeoDecision"],
+  }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */
