@@ -27,7 +27,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Risk Appetite Statement (RAS) | Helena | Board | Annual | Banks Act; BCBS Corporate Governance Principles for Banks | `EXISTS` (Owner Inbox/RAS-RAF, approved B1) |
+| ★ Risk Appetite Statement (RAS) | Helena | Board | Annual | Banks Act; BCBS Corporate Governance Principles for Banks | `EXISTS` (Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md, approved B1) |
 | ★ Governance Framework (constitutional / meta-policy) | Helena + Owen | Board | Annual | Banks Act; King IV; Companies Act 71 of 2008 | `EXISTS` (approved A1) |
 | Risk Management Framework | Helena | Board | Annual | BCBS; Banks Act | `DRAFTING` (in RAS-RAF) |
 | Combined Assurance Policy | Owen + future CAE | AC | Annual | King IV; IIA IPPF | `PLANNED` |
