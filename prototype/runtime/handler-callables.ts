@@ -36,6 +36,7 @@ import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
 import imaniEventTriage from "./agents/imani-event-triage";
 import imaniLegalReadiness from "./agents/imani-legal-readiness";
 import irisEventTriage from "./agents/iris-event-triage";
+import irisGoalLoop from "./agents/iris-goal-loop";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import kaiEventTriage from "./agents/kai-event-triage";
 import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
@@ -136,6 +137,9 @@ const _map: Record<string, AgentRunHandler> = {
   "thandiwe:goal-loop": thandiweGoalLoop,
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
+  // iris:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "iris:goal-loop": irisGoalLoop,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
   "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,

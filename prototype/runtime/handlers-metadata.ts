@@ -220,6 +220,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "51 7 * * 3",
   }),
+  // iris:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Iris", "goal-loop", "on-request"),
   entry("Eitan", "liquidity-snapshot", "scheduled", {
     cadenceHours: 24,
     cronExpression: "53 6 * * *",
