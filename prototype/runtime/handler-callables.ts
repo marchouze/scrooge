@@ -66,7 +66,7 @@ import saskiaEventTriage from "./agents/saskia-event-triage";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
 import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
 import scroogeEventTriage from "./agents/scrooge-event-triage";
-import scroogeFollowOnRouter from "./agents/scrooge-follow-on-router";
+import { createHandler as createScroogeFollowOnRouter } from "./agents/scrooge-follow-on-router";
 import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
 import scroogeOwnerInboxArchiver from "./agents/scrooge-owner-inbox-archiver";
 import sennaEventTriage from "./agents/senna-event-triage";
@@ -85,7 +85,12 @@ import zaraEventTriage from "./agents/zara-event-triage";
 import zaraMlroSupervision from "./agents/zara-mlro-supervision";
 import type { AgentRunHandler } from "./types";
 
-export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
+// Two-phase init to break the cycle between handler-callables.ts and
+// scrooge-follow-on-router.ts (F-019):
+//   1. Build the map without the follow-on-router entry.
+//   2. Create the router with the map injected, then insert it.
+// The map is mutable during init, Readonly<> after export.
+const _map: Record<string, AgentRunHandler> = {
   "vera:overnight-recon": veraOvernightRecon,
   "vera:codebase-quality-review": veraCodebaseQualityReview,
   "atlas:substrate-state": atlasSubstrateState,
@@ -96,7 +101,7 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "anya:projection-refresh": anyaProjectionRefresh,
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
   "scrooge:ceo-decision-record": scroogeCeoDecisionRecord,
-  "scrooge:follow-on-router": scroogeFollowOnRouter,
+  // "scrooge:follow-on-router" inserted below after createHandler()
   "scrooge:owner-inbox-archiver": scroogeOwnerInboxArchiver,
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
   "rohan:risk-run": rohanRiskRun,
@@ -158,3 +163,9 @@ export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = {
   "pax:event-triage": paxEventTriage,
   "vera:event-triage": veraEventTriage,
 };
+
+// Phase 2: inject the map into the follow-on-router so it can look up
+// callables without importing handler-callables.ts directly (F-019 fix).
+_map["scrooge:follow-on-router"] = createScroogeFollowOnRouter(_map);
+
+export const HANDLER_CALLABLES: Readonly<Record<string, AgentRunHandler>> = _map;

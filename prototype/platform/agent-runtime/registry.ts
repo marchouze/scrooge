@@ -163,6 +163,11 @@ function payloadToSpec(payload: Record<string, unknown>): AgentSpec {
     proceduresOwned: Array.isArray(payload.proceduresOwned)
       ? (payload.proceduresOwned as string[]).map(String)
       : [],
+    // `procedureSteps` is not carried in the `AgentRegistered` payload —
+    // step IDs are derived from procedure files at parse time and are not
+    // persisted in the event store (they follow the procedure file, not the
+    // agent spec). Callers that need step IDs should re-parse the spec file.
+    procedureSteps: [],
     specVersion: String(payload.specVersion ?? "v1.0"),
     specHash: String(payload.specHash ?? ""),
     sourcePath: "",

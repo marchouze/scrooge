@@ -54,6 +54,7 @@ function fakeSpec(overrides: Partial<AgentSpec> = {}): AgentSpec {
     systemCapabilities: ["@platform/event-store", "@platform/observability"],
     eventsEmitted: ["AgentDecision", "AgentEscalation"],
     proceduresOwned: [],
+    procedureSteps: [],
     specVersion: "v1.0",
     specHash: "a".repeat(64),
     sourcePath: "/tmp/Sample.md",

@@ -14,7 +14,10 @@
 //   - System capabilities called (§12) — `@platform/<x>` tokens parsed
 //     from the bullet list. Used by the permission-policy generator
 //     (A2 work) and by Vera Wave-5 capability-creep recon.
-//   - Procedures owned (§13) — `Procedures/...` paths.
+//   - Procedures owned (§13) — `Procedures/...` paths + step IDs
+//     extracted from each procedure file's §5 Steps table inline anchors
+//     per `Procedures/_step-id-convention.md` (D-AGENT-AUTONOMY-OPERATIONAL
+//     Slice 3 prerequisite).
 //   - Spec version (§17) — first row of the change log; falls back to
 //     `v1.0` when the table is missing or unparseable.
 //
@@ -28,11 +31,63 @@
 // non-zero, or escalate. We don't throw; the registry sync needs to
 // surface every parse failure rather than abort on the first.
 //
-// Author: Atlas (A1.1 — registry substrate)
+// Author: Atlas (A1.1 — registry substrate; §13 step-ID extension —
+// D-AGENT-AUTONOMY-OPERATIONAL Slice 3 prerequisite)
 
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { basename } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
+
+/**
+ * A procedure-step entry in `AgentSpec.procedureSteps`.
+ *
+ * Per `Procedures/_step-id-convention.md` (D-AGENT-AUTONOMY-OPERATIONAL
+ * Slice 3 prerequisite): step IDs are extracted from the procedure file's
+ * `§ 5. Steps` table inline anchors (`<a id="step-N">`). Files without
+ * anchors (pre-backfill coverage-gap status) return an empty `stepIds`
+ * array — not an error condition.
+ */
+export interface ProcedureStepEntry {
+  /** Procedure file path relative to the repo root (e.g. `Procedures/by-policy/kyc-onboarding.md`). */
+  readonly procedurePath: string;
+  /**
+   * Fully-qualified step IDs found in this procedure file.
+   * Form: `<slug>:<step-key>` (e.g. `kyc-onboarding:step-3`).
+   * Empty array when the file has no step anchors (coverage-gap) or
+   * when the file cannot be read (logged as a warning; not fatal).
+   */
+  readonly stepIds: readonly string[];
+}
+
+/**
+ * A typed citation to a specific step within a procedure. Used by the
+ * goal-loop substrate to cite which procedure step authorises an agent
+ * action. Per Owen's step-ID convention (D-AGENT-AUTONOMY-OPERATIONAL).
+ *
+ * `stepId` is optional until backfill of all cohort-1 procedure files is
+ * complete. Goal-loop enforcement (permission-gate) rejects citations with
+ * `stepId === ""` — callers must either provide a valid step ID or omit
+ * the field entirely.
+ */
+export interface ProcedureCitation {
+  /**
+   * Procedure file path relative to the repo root.
+   * E.g. `Procedures/by-policy/kyc-onboarding.md`
+   */
+  readonly procedurePath: string;
+  /**
+   * Step identifier — fully-qualified form `<slug>:<step-key>` where
+   * `<slug>` is the basename of `procedurePath` without `.md`.
+   * E.g. `kyc-onboarding:step-3`
+   *
+   * Optional until backfill of all cohort-1 procedure files is complete.
+   * MUST NOT be the empty string; omit entirely when a step ID cannot yet
+   * be cited (coverage-gap).
+   */
+  readonly stepId?: string;
+  /** SHA-256 of the procedure file at parse time. */
+  readonly procedureHash: string;
+}
 
 export interface AgentSpec {
   /** Persona name as it appears on `/Team/<Name>.md` (mixed-case). */
@@ -82,6 +137,17 @@ export interface AgentSpec {
   readonly eventsEmitted: readonly string[];
   /** Procedure paths parsed from §13 bullets. */
   readonly proceduresOwned: readonly string[];
+  /**
+   * Per-procedure step-ID entries parsed from §13. For each procedure
+   * path in `proceduresOwned`, this field contains the corresponding
+   * `stepIds` extracted from that procedure file's §5 Steps table inline
+   * anchors (per `Procedures/_step-id-convention.md`). Files without
+   * anchors return `stepIds: []` — coverage-gap, not an error.
+   *
+   * The index aligns 1-to-1 with `proceduresOwned`: `procedureSteps[i]`
+   * corresponds to `proceduresOwned[i]`.
+   */
+  readonly procedureSteps: readonly ProcedureStepEntry[];
   /** Spec version from §17's first change-log row, or `v1.0` default. */
   readonly specVersion: string;
   /** SHA-256 hex digest of the file's raw contents at parse time. */
@@ -414,6 +480,102 @@ function extractProcedures(section: string | undefined): string[] {
 }
 
 /**
+ * Regex that matches inline step-ID anchors in a procedure file's §5
+ * Steps table. Per `Procedures/_step-id-convention.md`:
+ *
+ *   `<a id="step-3">3</a>` — standard numeric step.
+ *   `<a id="step-8a">8a</a>` — branching step.
+ *
+ * We capture only the `id` attribute value; the anchor text (the
+ * row-number column) is ignored. The regex is intentionally permissive
+ * on whitespace around the `id=` attribute (the convention allows
+ * `<a id="step-1">` with no extra spaces, but future tooling may
+ * emit whitespace between attributes).
+ */
+const STEP_ID_RE = /<a\s+id="(step-[a-z0-9][a-z0-9-]*)"\s*>/g;
+
+/**
+ * Derive the fully-qualified step ID from a procedure path and an
+ * anchor `id` value. Strips the directory prefix and `.md` extension
+ * from `procedurePath` to produce the slug, then concatenates:
+ *
+ *   makeStepId("Procedures/by-policy/kyc-onboarding.md", "step-3")
+ *   // → "kyc-onboarding:step-3"
+ *
+ * Per Owen's step-ID convention (D-AGENT-AUTONOMY-OPERATIONAL).
+ */
+export function makeStepId(procedurePath: string, anchorId: string): string {
+  const slug = procedurePath.replace(/^.*\//, "").replace(/\.md$/i, "");
+  return `${slug}:${anchorId}`;
+}
+
+/**
+ * Extract all step IDs from a procedure file at `absolutePath`. Returns
+ * an empty array when:
+ *   - the file doesn't exist (pre-backfill coverage-gap — not an error).
+ *   - the file has no `<a id="step-...">` anchors (pre-backfill).
+ *   - the file cannot be read (logs a warning; not fatal — registry must
+ *     not abort on missing procedure files during the backfill window).
+ *
+ * Duplicate anchor IDs within a single file are deduplicated in input
+ * order (the convention forbids duplicates; we handle them defensively).
+ *
+ * @param absolutePath - Resolved absolute path to the procedure `.md` file.
+ * @param procedurePath - Repo-relative path (used to construct step IDs).
+ */
+function extractStepIdsFromFile(absolutePath: string, procedurePath: string): string[] {
+  if (!existsSync(absolutePath)) {
+    // Coverage-gap: file exists in §13 but hasn't been created or
+    // backfilled yet. Silent — the step-ID convention §5 backfill plan
+    // acknowledges this state.
+    return [];
+  }
+  let content: string;
+  try {
+    content = readFileSync(absolutePath, "utf8");
+  } catch (e) {
+    // IO error — warn and treat as empty. The registry sync surfaces
+    // every parse failure independently; we don't throw here.
+    console.warn(
+      `[spec-parser] warning: could not read procedure file "${absolutePath}": ${(e as Error).message}`,
+    );
+    return [];
+  }
+  const stepIds: string[] = [];
+  const seen = new Set<string>();
+  // Reset regex lastIndex to be safe when reusing the literal.
+  STEP_ID_RE.lastIndex = 0;
+  for (const m of content.matchAll(STEP_ID_RE)) {
+    const anchorId = m[1];
+    if (!anchorId) continue;
+    const stepId = makeStepId(procedurePath, anchorId);
+    if (!seen.has(stepId)) {
+      seen.add(stepId);
+      stepIds.push(stepId);
+    }
+  }
+  return stepIds;
+}
+
+/**
+ * Resolve a repo-relative procedure path to an absolute path, using
+ * the agent spec file's location as the anchor point.
+ *
+ * Agent spec files live at `<repoRoot>/Team/<Name>.md`. The repo root
+ * is therefore two levels up from the spec file: `dirname(dirname(sourcePath))`.
+ * Procedure paths are repo-relative (e.g. `Procedures/by-policy/kyc-onboarding.md`).
+ *
+ * Callers that provide synthetic `sourcePath` values (e.g. `/tmp/Test.md`)
+ * still get a resolved path — it just won't exist on disk, which is
+ * handled gracefully by `extractStepIdsFromFile`.
+ */
+function resolveProcedurePath(sourcePath: string, procedurePath: string): string {
+  // Team/<Name>.md → go up two levels to reach repo root.
+  const repoRoot = dirname(dirname(sourcePath));
+  return resolve(repoRoot, procedurePath);
+}
+
+/**
  * Extract the spec version from §17's change log. The change log is a
  * markdown table whose first data row carries the latest version (the
  * persona convention is newest-last in some files, newest-first in
@@ -548,6 +710,18 @@ export function parseSpecContent(
   const procedures = extractSection(content, 13, "Procedures owned");
   const changeLog = extractSection(content, 17, "Change log");
 
+  const proceduresOwned = extractProcedures(procedures);
+
+  // §13 step-ID extraction: for each procedure path, resolve to an
+  // absolute path and extract step anchors per the step-ID convention.
+  // Missing files and files with no anchors return stepIds: [] (not an
+  // error — the backfill window is acknowledged in _step-id-convention.md §5).
+  const procedureSteps: ProcedureStepEntry[] = proceduresOwned.map((procedurePath) => {
+    const absolutePath = resolveProcedurePath(sourcePath, procedurePath);
+    const stepIds = extractStepIdsFromFile(absolutePath, procedurePath);
+    return { procedurePath, stepIds };
+  });
+
   const spec: AgentSpec = {
     personaName,
     agentUrn: `agent:${personaName.toLowerCase()}`,
@@ -562,7 +736,8 @@ export function parseSpecContent(
     escalationClasses: extractTableFirstColumnLabels(decisionsEscalate),
     systemCapabilities: extractCapabilities(capabilities),
     eventsEmitted: extractEventsEmitted(outputs),
-    proceduresOwned: extractProcedures(procedures),
+    proceduresOwned,
+    procedureSteps,
     specVersion: extractSpecVersion(changeLog),
     specHash: hashSpec(content),
     sourcePath,
