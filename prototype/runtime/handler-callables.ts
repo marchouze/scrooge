@@ -22,6 +22,7 @@ import atlasGoalLoop from "./agents/atlas-goal-loop";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
 import beaAccountingReadiness from "./agents/bea-accounting-readiness";
 import beaEventTriage from "./agents/bea-event-triage";
+import beaGoalLoop from "./agents/bea-goal-loop";
 import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
 import camilleEventTriage from "./agents/camille-event-triage";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
@@ -96,6 +97,7 @@ const _map: Record<string, AgentRunHandler> = {
   "vera:codebase-quality-review": veraCodebaseQualityReview,
   "atlas:substrate-state": atlasSubstrateState,
   "atlas:goal-loop": atlasGoalLoop,
+  "bea:goal-loop": beaGoalLoop,
   "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
   "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
   "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
