@@ -27,6 +27,7 @@ import beaGoalLoop from "./agents/bea-goal-loop";
 import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
 import camilleEventTriage from "./agents/camille-event-triage";
 import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
+import camilleGoalLoop from "./agents/camille-goal-loop";
 import devonEventTriage from "./agents/devon-event-triage";
 import devonGoalLoop from "./agents/devon-goal-loop";
 import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
@@ -118,6 +119,9 @@ const _map: Record<string, AgentRunHandler> = {
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   "devon:goal-loop": devonGoalLoop,
   "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
+  // camille:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "camille:goal-loop": camilleGoalLoop,
   // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   "anya:goal-loop": anyaGoalLoop,

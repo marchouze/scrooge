@@ -55,6 +55,7 @@
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",
     "agent:devon-goal-loop": "bun run runtime/run.ts --agent Devon --trigger goal-loop",
     "agent:camille-financial-position-snapshot": "bun run runtime/run.ts --agent Camille --trigger financial-position-snapshot",
+    "agent:camille-goal-loop": "bun run runtime/run.ts --agent Camille --trigger goal-loop",
     "agent:rohan-risk-run": "bun run runtime/run.ts --agent Rohan --trigger risk-run",
     "agent:anya-goal-loop": "bun run runtime/run.ts --agent Anya --trigger goal-loop",
     "agent:anya-projection-drift": "bun run runtime/run.ts --agent Anya --trigger projection-drift",
