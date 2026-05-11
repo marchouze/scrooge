@@ -5056,6 +5056,191 @@ export const TYPED_EVENT_TYPES = [
   "PartyRelationshipRevoked",
   "BeneficialOwnerChainAsserted",
   "PartyDeactivated",
+  // Goal-loop planning-trace event family — D-AGENT-AUTONOMY-OPERATIONAL
+  // (CEO-approved 2026-05-11) Slice 3. Three planning-trace event shapes
+  // emitted at every goal-loop iteration, joining the existing
+  // AgentDecision / AgentEscalation event families (they do not replace them).
+  // Spec: Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3.
+  "AgentGoalEvaluated",
+  "AgentGoalSelected",
+  "AgentGoalDeferred",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// AgentGoalEvaluated
+//
+// Emitted at the START of every goal-loop iteration, regardless of outcome.
+// Pairs with exactly one of: AgentGoalSelected, AgentGoalDeferred, or an
+// AgentEscalation raised in the same iteration. The `iterationId` (ULID-
+// shaped) is the pairing key Vera Wave-5 recon uses to assert the pairing
+// invariant.
+//
+// Spec: Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3.
+// Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
+// ---------------------------------------------------------------------------
+
+export const agentGoalEvaluatedPayloadSchema = z.object({
+  /** URN of the agent running the goal loop. */
+  agentUrn: z.string().min(1),
+  /** Unique per goal-loop invocation. Form: `iter:<ts36>:<rand12>`. */
+  iterationId: z.string().min(1),
+  /** SHA-256 hex of the world-state snapshot consumed by this iteration. */
+  worldStateSnapshotHash: z.string().min(1),
+  /** Number of recent runs visible to the deriver. */
+  recentRunCount: z.number().int().nonnegative(),
+  /** Candidates the deriver evaluated before selecting / deferring. */
+  candidateGoals: z.array(
+    z.object({
+      label: z.string(),
+      mandateRowKey: z.string(),
+      weight: z.number().optional(),
+    }),
+  ),
+  /** The goal that was chosen, if any (absent when deferring). */
+  chosen: z.string().optional(),
+  /** Why the deriver chose / deferred. Max 2000 chars. */
+  reason: z.string().max(2000),
+});
+export type AgentGoalEvaluatedPayload = z.infer<typeof agentGoalEvaluatedPayloadSchema>;
+
+export function makeAgentGoalEvaluated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentGoalEvaluatedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentGoalEvaluated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentGoalEvaluatedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AgentGoalSelected
+//
+// Emitted when the deriver has chosen a goal and all validations pass:
+//   - chosen goal is in the spec's closed-set §9 / §11 / §13 row labels (T-NEW).
+//   - mandateCitations is non-empty (P2).
+//   - procedureCitations is non-empty (P2).
+//   - planned event types ⊆ agent's eventAppendAllowList (permission-gate pre-check).
+//
+// Does NOT mean the planned events have been emitted — those are emitted by
+// the persona's run-handler once the goal is approved/executed.
+//
+// Spec: Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3.
+// Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
+// ---------------------------------------------------------------------------
+
+export const agentGoalSelectedPayloadSchema = z.object({
+  agentUrn: z.string().min(1),
+  /** Matches the `iterationId` of the paired AgentGoalEvaluated. */
+  iterationId: z.string().min(1),
+  /** The chosen goal — matches AgentGoalEvaluated.chosen. */
+  goal: z.string().min(1),
+  /** P2 — at least one mandate citation required. */
+  mandateCitations: z
+    .array(
+      z.object({
+        section: z.enum(["9-decisions-in-scope", "11-outputs", "13-procedures-owned"]),
+        rowKey: z.string().min(1),
+        specHash: z.string().min(1),
+      }),
+    )
+    .min(1, "P2 violation: AgentGoalSelected requires at least one mandate citation"),
+  /** P2 — at least one procedure citation required. */
+  procedureCitations: z
+    .array(
+      z.object({
+        procedurePath: z.string().min(1),
+        stepId: z.string().min(1),
+        procedureHash: z.string().min(1),
+      }),
+    )
+    .min(1, "P2 violation: AgentGoalSelected requires at least one procedure citation"),
+  /** Event types the agent intends to emit if its goal is executed. */
+  plannedEvents: z.array(
+    z.object({
+      type: z.string().min(1),
+      payloadPreview: z.record(z.unknown()).optional(),
+    }),
+  ),
+});
+export type AgentGoalSelectedPayload = z.infer<typeof agentGoalSelectedPayloadSchema>;
+
+export function makeAgentGoalSelected(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentGoalSelectedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentGoalSelected",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentGoalSelectedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AgentGoalDeferred
+//
+// Emitted when no goal is justified (safe default), when the goal-loop
+// deriver throws, when a goal fails a validation check, or when the cadence
+// floor is not yet met. Pairs with an AgentGoalEvaluated via `iterationId`.
+//
+// Spec: Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3.
+// Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
+// ---------------------------------------------------------------------------
+
+export const agentGoalDeferredPayloadSchema = z.object({
+  agentUrn: z.string().min(1),
+  /** Matches the `iterationId` of the paired AgentGoalEvaluated. */
+  iterationId: z.string().min(1),
+  /** Why no action was taken. Max 2000 chars. */
+  reason: z.string().max(2000),
+  /** Optional ISO-8601 instant after which the agent should retry. */
+  retryAfter: z.string().optional(),
+  /** Goals the deriver considered but rejected (for Vera Wave-5 defer-ratio sanity). */
+  consideredAndRejected: z
+    .array(
+      z.object({
+        label: z.string(),
+        rejectionReason: z.string(),
+      }),
+    )
+    .optional(),
+});
+export type AgentGoalDeferredPayload = z.infer<typeof agentGoalDeferredPayloadSchema>;
+
+export function makeAgentGoalDeferred(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentGoalDeferredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentGoalDeferred",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentGoalDeferredPayloadSchema.parse(args.payload),
+  });
+}

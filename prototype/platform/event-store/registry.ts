@@ -62,6 +62,9 @@ import {
   agentBriefIssuedPayloadSchema,
   agentDecisionPayloadSchema,
   agentEscalationAcknowledgedPayloadSchema,
+  agentGoalDeferredPayloadSchema,
+  agentGoalEvaluatedPayloadSchema,
+  agentGoalSelectedPayloadSchema,
   agentEscalationDecidedPayloadSchema,
   agentEscalationDelegatedPayloadSchema,
   agentEscalationOverduePayloadSchema,
@@ -2344,6 +2347,56 @@ const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Goal-loop planning-trace event types
+//
+// Three new planning-trace event shapes emitted at every goal-loop iteration.
+// Spec: Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3.
+// Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
+//   - AgentGoalEvaluated — always emitted; audit start of each iteration.
+//   - AgentGoalSelected  — emitted when the deriver selects a goal (P2 citations).
+//   - AgentGoalDeferred  — emitted when no action is justified (safe default).
+// ---------------------------------------------------------------------------
+
+const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "AgentGoalEvaluated",
+    class: "runtime",
+    payloadSchema: agentGoalEvaluatedPayloadSchema,
+    issuer: "Atlas",            // goal-loop runner is an Atlas substrate component
+    subscribers: ["Vera", "Atlas"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
+  },
+  {
+    type: "AgentGoalSelected",
+    class: "runtime",
+    payloadSchema: agentGoalSelectedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Vera", "Atlas", "Anya"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
+  },
+  {
+    type: "AgentGoalDeferred",
+    class: "runtime",
+    payloadSchema: agentGoalDeferredPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Vera", "Atlas"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -2363,6 +2416,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...PERIOD_CLOSE_EVENT_TYPES,
   ...RAS_EVENT_TYPES,
   ...READINESS_SNAPSHOT_EVENT_TYPES,
+  ...GOAL_LOOP_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
