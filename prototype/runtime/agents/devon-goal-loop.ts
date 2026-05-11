@@ -370,7 +370,8 @@ export const devonGoalDeriver: GoalDeriver = async (
 
   const lastSubstrateSnapshot = lastSubstrateStateSnapshotMs();
   const needsSubstrateHealthCheck =
-    lastSubstrateSnapshot === undefined || Date.now() - lastSubstrateSnapshot > FORTY_EIGHT_HOURS_MS;
+    lastSubstrateSnapshot === undefined ||
+    Date.now() - lastSubstrateSnapshot > FORTY_EIGHT_HOURS_MS;
 
   if (needsSubstrateHealthCheck) {
     if (!validateGoal(SUBSTRATE_HEALTH_GOAL)) return null;
