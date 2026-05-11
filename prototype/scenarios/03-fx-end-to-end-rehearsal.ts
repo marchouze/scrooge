@@ -77,6 +77,7 @@ import {
   prospectRegistered,
   soundingOpened,
 } from "@domains/customer";
+import type { PartyId } from "@domains/party";
 import { closePeriod, openPeriod } from "@platform/accounting/period-close";
 import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
@@ -317,7 +318,7 @@ function counterpartyReplayEvents(opts: {
           pep: false,
           sanctionsClear: true,
           jurisdictionalRiskScore: "low",
-          reviewerId: "mira@bank.local",
+          reviewerId: "mira@bank.local" as PartyId, // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 2
         },
         { actor: opts.mira, citations: ["FIC-S21", "FIC-GN7-RBA"] },
       ),
