@@ -42,7 +42,7 @@ import type {
   Scheduler,
   SyncResult,
   TickResult,
-} from "./index";
+} from "./types";
 
 const DEFAULT_ENTITY = "BANK-ZA-001";
 const DEFAULT_JURISDICTION = "ZA";
