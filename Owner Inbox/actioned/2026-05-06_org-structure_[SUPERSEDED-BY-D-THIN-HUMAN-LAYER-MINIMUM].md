@@ -1,3 +1,22 @@
+---
+title: Organisational structure — current state
+author: Sade
+date: 2026-05-06
+summary: Roster, reporting tree, and seat counts as at 2026-05-06. Superseded — Team/_team-roster.json is the canonical roster source today.
+decision-required: false
+superseded-by:
+  - reference: Team/_team-roster.json
+    note: "Canonical team roster lives in Team/_team-roster.json (per CLAUDE.md `Team structure`). Renders elsewhere derive from that file; drift is a Vera finding."
+  - decision-id: D-THIN-HUMAN-LAYER-MINIMUM
+    decision-date: 2026-05-08
+    note: "Licence-day human-layer roster is now the six-humans-plus-Marc-plus-audit-firm composition. The 26-seat structure here pre-dates the build-phase pause on real employees beyond statutory minimum (memory: project_ai_driven_bank)."
+  - decision-id: D-LEGAL-ENTITY-TREE-V0
+    decision-date: 2026-05-09
+    note: "Legal-entity dimension is now a typed register in prototype/platform/legal/_legal-entity-tree.md, not the prose listing here."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Organisational structure — current state
 
 **Author:** Sade (HCM)
