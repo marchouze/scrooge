@@ -73,8 +73,10 @@ const SECURITY_SUBSTRATE_STATE_GOAL =
 // Candidate 2: security finding remediation goal.
 const SECURITY_FINDING_REMEDIATION_GOAL = "Approve detection-rule changes within standard" as const;
 // Candidate 3: zero-trust policy review goal — closest §9 equivalent in build phase.
+// Key-rotation cadence enforcement is the primary zero-trust mechanism (identity
+// freshness, credential revocation, HSM rotation) in the current substrate.
 const ZERO_TRUST_POLICY_REVIEW_GOAL =
-  "Approve secure-SDLC pipeline configuration changes" as const;
+  "Set / vary secret-rotation cadence within standing policy" as const;
 // Candidate 4: threat-model gate goal for new design PRs.
 const THREAT_MODEL_GATE_GOAL =
   "Threat-model gate at engineering level — refuse / approve / exception-pending" as const;
@@ -367,7 +369,7 @@ export const sennaGoalDeriver: GoalDeriver = async (
     return {
       kind: "decision",
       chosen: ZERO_TRUST_POLICY_REVIEW_GOAL,
-      rationale: `No ZeroTrustPolicyReview event in the last 7 days (last seen: ${lastZeroTrustReview ? new Date(lastZeroTrustReview).toISOString() : "never"}). In build phase the secure-SDLC pipeline configuration goal is the §9 equivalent for zero-trust policy review: it validates the enforcement pipeline (zero-trust identity, least-privilege, defence-in-depth gates) that feeds the zero-trust posture. Selecting zero-trust-policy-review goal to trigger the senna:security-substrate-state handler.`,
+      rationale: `No ZeroTrustPolicyReview event in the last 7 days (last seen: ${lastZeroTrustReview ? new Date(lastZeroTrustReview).toISOString() : "never"}). In build phase the secret-rotation cadence goal is the §9 equivalent for zero-trust policy review: HSM-backed key rotation is the primary identity-freshness / credential-revocation mechanism; reviewing rotation cadence is how Senna enforces the zero-trust posture in the current substrate. Selecting zero-trust-policy-review goal to trigger the senna:security-substrate-state handler and emit a KeyRotationPolicySet review.`,
       mandateCitations: [
         {
           section: "9-decisions-in-scope",
@@ -384,7 +386,7 @@ export const sennaGoalDeriver: GoalDeriver = async (
       ],
       plannedEvents: [
         {
-          type: "SecuritySubstrateSnapshot",
+          type: "KeyRotationPolicySet",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "senna-goal-loop",
