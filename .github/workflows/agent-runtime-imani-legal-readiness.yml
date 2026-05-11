@@ -8,8 +8,6 @@
 name: Imani legal readiness
 
 on:
-  schedule:
-    - cron: "9 7 * * 5"
   workflow_dispatch: {}
 
 permissions:

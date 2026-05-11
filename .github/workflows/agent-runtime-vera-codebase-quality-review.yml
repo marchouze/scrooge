@@ -19,9 +19,6 @@
 name: Vera codebase quality review
 
 on:
-  schedule:
-    # 03:23 UTC Saturday. Out of the way of overnight-recon (02:13 daily).
-    - cron: "23 3 * * SAT"
   workflow_dispatch: {}
 
 permissions:

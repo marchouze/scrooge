@@ -9,10 +9,6 @@
 name: Saskia markets-readiness snapshot
 
 on:
-  schedule:
-    # Mon 05:33 UTC — weekly, off-the-hour to dodge GH Actions cron
-    # drops observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "33 5 * * MON"
   workflow_dispatch: {}
 
 permissions:

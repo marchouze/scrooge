@@ -8,11 +8,6 @@
 name: Scrooge inbox hygiene
 
 on:
-  schedule:
-    # 04:27 UTC daily — off-the-hour to dodge GH Actions cron drops
-    # observed 2026-05-08 (04:00 was silently skipped on consecutive
-    # nights). A2.1 scheduler closes the dependency.
-    - cron: "27 4 * * *"
   workflow_dispatch: {}
 
 permissions:

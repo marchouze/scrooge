@@ -9,9 +9,6 @@
 name: Nadia validation cycle
 
 on:
-  schedule:
-    # Thu 07:17 UTC — weekly, off-the-hour to avoid GH Actions cron drops.
-    - cron: "17 7 * * THU"
   workflow_dispatch: {}
 
 permissions:

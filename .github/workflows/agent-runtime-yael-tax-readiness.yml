@@ -11,11 +11,6 @@
 name: Yael tax readiness
 
 on:
-  schedule:
-    # Thu 06:07 UTC — weekly, off-the-hour to dodge GH Actions cron drops
-    # observed 2026-05-08; A2.1 scheduler closes permanently. Slot picked
-    # to avoid collisions with the existing fleet schedule.
-    - cron: "7 6 * * THU"
   workflow_dispatch: {}
 
 permissions:

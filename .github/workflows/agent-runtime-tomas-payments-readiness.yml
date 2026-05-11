@@ -12,10 +12,6 @@
 name: Tomas payments readiness
 
 on:
-  schedule:
-    # 04:21 UTC daily — off-the-hour to dodge GH Actions cron drops
-    # observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "21 4 * * *"
   workflow_dispatch: {}
 
 permissions:
