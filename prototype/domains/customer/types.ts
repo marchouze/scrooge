@@ -6,10 +6,14 @@
 // P2 — every event carries citations (registry entries cited at emission).
 // P5 — multi-entity-ready: every counterparty is held under a typed legal
 //      entity ("BANK-ZA-001" today; the entity field is non-optional).
+// D-PARTY-REGISTER (CEO-approved 2026-05-11, PR 4): `personId` and
+//      `reviewerId` are tightened from plain `string` to `PartyId` so that
+//      all identity-axis foreign keys carry the Party URN discipline.
 //
 // Author: Niko · Anya (event shape review)
 
 import type { LegalEntity } from "@platform/core/types";
+import type { PartyId } from "../party";
 
 export type CounterpartyId = string & { readonly __counterparty: unique symbol };
 export type AgreementType = "ISDA" | "GMRA" | "CSA" | "GMSLA" | "Account-Mandate";
@@ -51,7 +55,8 @@ export interface KycCompletedPayload {
   pep: boolean;
   sanctionsClear: boolean;
   jurisdictionalRiskScore: "low" | "medium" | "high";
-  reviewerId: string;
+  /** Party URN of the reviewing agent or human. D-PARTY-REGISTER PR 4. */
+  reviewerId: PartyId;
 }
 
 export interface DocumentationPayload {
@@ -63,7 +68,8 @@ export interface DocumentationPayload {
 
 export interface AuthorisedSignatoryPayload {
   counterpartyId: CounterpartyId;
-  personId: string;
+  /** Party URN of the natural person being authorised. D-PARTY-REGISTER PR 4. */
+  personId: PartyId;
   scope: "signatory" | "authorised-trader" | "both";
   evidenceRef: string;
 }
