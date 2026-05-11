@@ -536,3 +536,131 @@ export function makeAgentRunCompleted(args: {
     payload: agentRunCompletedPayloadSchema.parse(args.payload),
   });
 }
+
+// ---------------------------------------------------------------------------
+// AgentGoalEvaluated / AgentGoalSelected / AgentGoalDeferred
+//
+// Planning-trace event types emitted at every goal-loop iteration.
+// Added from D-AGENT-AUTONOMY-OPERATIONAL Slice 3 (PR #226, 2026-05-11).
+// ---------------------------------------------------------------------------
+
+export const agentGoalEvaluatedPayloadSchema = z.object({
+  agentUrn: z.string().min(1),
+  iterationId: z.string().min(1),
+  worldStateSnapshotHash: z.string().min(1),
+  recentRunCount: z.number().int().nonnegative(),
+  candidateGoals: z.array(
+    z.object({
+      label: z.string(),
+      mandateRowKey: z.string(),
+      weight: z.number().optional(),
+    }),
+  ),
+  chosen: z.string().optional(),
+  reason: z.string().max(2000),
+});
+export type AgentGoalEvaluatedPayload = z.infer<typeof agentGoalEvaluatedPayloadSchema>;
+
+export function makeAgentGoalEvaluated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentGoalEvaluatedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentGoalEvaluated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentGoalEvaluatedPayloadSchema.parse(args.payload),
+  });
+}
+
+export const agentGoalSelectedPayloadSchema = z.object({
+  agentUrn: z.string().min(1),
+  iterationId: z.string().min(1),
+  goal: z.string().min(1),
+  mandateCitations: z
+    .array(
+      z.object({
+        section: z.enum(["9-decisions-in-scope", "11-outputs", "13-procedures-owned"]),
+        rowKey: z.string().min(1),
+        specHash: z.string().min(1),
+      }),
+    )
+    .min(1, "P2 violation: AgentGoalSelected requires at least one mandate citation"),
+  procedureCitations: z
+    .array(
+      z.object({
+        procedurePath: z.string().min(1),
+        stepId: z.string().min(1),
+        procedureHash: z.string().min(1),
+      }),
+    )
+    .min(1, "P2 violation: AgentGoalSelected requires at least one procedure citation"),
+  plannedEvents: z.array(
+    z.object({
+      type: z.string().min(1),
+      payloadPreview: z.record(z.unknown()).optional(),
+    }),
+  ),
+});
+export type AgentGoalSelectedPayload = z.infer<typeof agentGoalSelectedPayloadSchema>;
+
+export function makeAgentGoalSelected(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentGoalSelectedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentGoalSelected",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentGoalSelectedPayloadSchema.parse(args.payload),
+  });
+}
+
+export const agentGoalDeferredPayloadSchema = z.object({
+  agentUrn: z.string().min(1),
+  iterationId: z.string().min(1),
+  reason: z.string().max(2000),
+  retryAfter: z.string().optional(),
+  consideredAndRejected: z
+    .array(
+      z.object({
+        label: z.string(),
+        rejectionReason: z.string(),
+      }),
+    )
+    .optional(),
+});
+export type AgentGoalDeferredPayload = z.infer<typeof agentGoalDeferredPayloadSchema>;
+
+export function makeAgentGoalDeferred(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AgentGoalDeferredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AgentGoalDeferred",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: agentGoalDeferredPayloadSchema.parse(args.payload),
+  });
+}

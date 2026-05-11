@@ -199,6 +199,10 @@ export const TYPED_EVENT_TYPES = [
   "PartyRelationshipRevoked",
   "BeneficialOwnerChainAsserted",
   "PartyDeactivated",
+  // Goal-loop planning-trace events — D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "AgentGoalEvaluated",
+  "AgentGoalSelected",
+  "AgentGoalDeferred",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
