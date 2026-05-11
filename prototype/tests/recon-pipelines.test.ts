@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { DashboardState, ResolvedDecision } from "../dashboard/types";
+import type { DashboardState, OpenDecision, ResolvedDecision } from "../dashboard/types";
 import { run as decisionRecon } from "../platform/recon/decision-event-recon";
 import { run as mandateOwnership } from "../platform/recon/mandate-ownership";
 
@@ -34,14 +34,18 @@ describe("mandate-ownership pipeline", () => {
   });
 });
 
-// Minimal `state` fixture: only `decisionsResolved` matters for the
-// decision-event-recon tests. Cast through `unknown` because the rest of
-// the DashboardState shape is irrelevant to this pipeline.
-function fixtureState(decisionsResolved: ResolvedDecision[]): DashboardState {
+// Minimal `state` fixture: `decisionsResolved` and `decisionsOpen`
+// matter for the decision-event-recon tests (the recon accepts events
+// surfacing in either projection list). Cast through `unknown` because
+// the rest of the DashboardState shape is irrelevant to this pipeline.
+function fixtureState(
+  decisionsResolved: ResolvedDecision[],
+  decisionsOpen: OpenDecision[] = [],
+): DashboardState {
   return {
     asOf: "2026-05-10T00:00:00.000Z",
     decisionsResolved,
-    decisionsOpen: [],
+    decisionsOpen,
     inFlight: [],
     principles: [],
     directReports: [],
@@ -122,7 +126,7 @@ describe("decision-event-reconciliation pipeline", () => {
     ).toBe(true);
   });
 
-  it("flags an event-store entry that has no derived decisionsResolved", () => {
+  it("flags an event-store entry that has no derived decisionsResolved or decisionsOpen", () => {
     const r = decisionRecon({
       state: fixtureState([]),
       eventDecisionIds: new Set<string>(["ORPHAN-1"]),
@@ -136,11 +140,6 @@ describe("decision-event-reconciliation pipeline", () => {
   });
 
   it("does not flag a request-revision event as missing from decisionsResolved", () => {
-    // A CeoDecision with action=request-revision intentionally keeps the
-    // decision OUT of decisionsResolved (it reopens the decision). The
-    // recon must not treat this as a missing-from-resolved violation.
-    // This is the D-MARKETS-CAPITAL-TIME-SHAPE pattern: Scrooge's
-    // correction event with request-revision reopens the decision.
     const r = decisionRecon({
       state: fixtureState([]),
       eventDecisionIds: new Set<string>(["D-MARKETS-CAPITAL-TIME-SHAPE"]),
@@ -148,13 +147,10 @@ describe("decision-event-reconciliation pipeline", () => {
     });
     expect(r.ok).toBe(true);
     expect(r.violations.filter((v) => v.severity === "fail")).toEqual([]);
-    // The decision IS asserted (counted) but not flagged.
     expect(r.asserted).toBeGreaterThanOrEqual(1);
   });
 
   it("flags a non-revision event that is missing from decisionsResolved", () => {
-    // An event whose latest action is NOT request-revision should still
-    // be flagged if it does not appear in decisionsResolved.
     const r = decisionRecon({
       state: fixtureState([]),
       eventDecisionIds: new Set<string>(["D-SOME-APPROVED"]),
@@ -167,9 +163,6 @@ describe("decision-event-reconciliation pipeline", () => {
   });
 
   it("handles mixed resolved + reopened decisions correctly", () => {
-    // D-APPROVED is resolved and in the event store — should pass.
-    // D-REOPENED is in the event store but reopened — should pass.
-    // D-ORPHAN is in the event store but neither resolved nor reopened — should fail.
     const r = decisionRecon({
       state: fixtureState([
         {
@@ -184,9 +177,30 @@ describe("decision-event-reconciliation pipeline", () => {
       reopenedDecisionIds: new Set<string>(["D-REOPENED"]),
     });
     expect(r.ok).toBe(false);
-    // Only D-ORPHAN should fail
     const fails = r.violations.filter((v) => v.severity === "fail");
     expect(fails.length).toBe(1);
     expect(fails[0]?.subject).toBe("D-ORPHAN");
+  });
+
+  it("accepts an event surfaced via decisionsOpen (reopened by request-revision)", () => {
+    const r = decisionRecon({
+      state: fixtureState(
+        [],
+        [
+          {
+            id: "D-MARKETS-CAPITAL-TIME-SHAPE",
+            title: "Markets franchise design — proposal",
+            category: "near-term",
+            owner: "(reopened)",
+            trigger: "CeoDecision event with action=request-revision",
+            decisionForCEO: "Awaiting CEO call on §8 split.",
+            sourceDocs: [],
+          },
+        ],
+      ),
+      eventDecisionIds: new Set<string>(["D-MARKETS-CAPITAL-TIME-SHAPE"]),
+    });
+    expect(r.violations.filter((v) => v.severity === "fail")).toEqual([]);
+    expect(r.ok).toBe(true);
   });
 });
