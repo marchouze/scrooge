@@ -181,7 +181,10 @@ export function createHandler(callables: CallableMap): AgentRunHandler {
   };
 }
 
-const runHandler = async (ctx: AgentRunContext, callables: CallableMap): Promise<AgentRunOutput> => {
+const runHandler = async (
+  ctx: AgentRunContext,
+  callables: CallableMap,
+): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
   const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision");
 
