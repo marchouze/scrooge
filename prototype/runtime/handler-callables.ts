@@ -42,6 +42,7 @@ import linneaEventTriage from "./agents/linnea-event-triage";
 import linneaOpsCycle from "./agents/linnea-ops-cycle";
 import miraCitationGate from "./agents/mira-citation-gate";
 import miraEventTriage from "./agents/mira-event-triage";
+import miraGoalLoop from "./agents/mira-goal-loop";
 import miraM1RegulatorCitationUrns from "./agents/mira-m1-regulator-citation-urns";
 import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
 import nadiaEventTriage from "./agents/nadia-event-triage";
@@ -109,6 +110,9 @@ const _map: Record<string, AgentRunHandler> = {
   "rohan:risk-run": rohanRiskRun,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
+  // mira:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "mira:goal-loop": miraGoalLoop,
   "senna:security-substrate-state": sennaSecuritySubstrateState,
   "zara:mlro-supervision": zaraMlroSupervision,
   "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
