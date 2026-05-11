@@ -91,7 +91,8 @@ const SASKIA_PROCEDURE_STEP_ID = "markets-readiness:step-1";
 // Saskia's next spec-upgrade cycle.
 const MARKETS_READINESS_GOAL = "Triage of surveillance alerts up to mid-severity" as const;
 const DESK_STATE_REVIEW_GOAL = "Triage of surveillance alerts up to mid-severity" as const;
-const BEST_EXECUTION_GOAL = "Update of dealer-mandate working numbers within RAS-calibrated envelope" as const;
+const BEST_EXECUTION_GOAL =
+  "Update of dealer-mandate working numbers within RAS-calibrated envelope" as const;
 const FRANCHISE_POSTURE_GOAL = "Quarterly franchise-posture report production" as const;
 
 // ---------------------------------------------------------------------------
@@ -192,9 +193,7 @@ export const saskiaGoalDeriver: GoalDeriver = async (
   const specHash = spec.specHash;
 
   // Build procedure citations — use coverage-gap form per §3.4 contract.
-  const procedureEntry = spec.procedureSteps.find(
-    (s) => s.procedurePath === SASKIA_PROCEDURE_PATH,
-  );
+  const procedureEntry = spec.procedureSteps.find((s) => s.procedurePath === SASKIA_PROCEDURE_PATH);
   const stepId =
     procedureEntry && procedureEntry.stepIds.length > 0
       ? (procedureEntry.stepIds[0] ?? SASKIA_PROCEDURE_STEP_ID)
