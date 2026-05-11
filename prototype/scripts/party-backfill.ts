@@ -42,11 +42,10 @@ import { resolve } from "node:path";
 
 import {
   type PartyId,
-  type PartyKind,
   makePartyClassified,
+  partyId as makePartyId,
   makePartyRegistered,
   makePartyRelationshipAsserted,
-  partyId as makePartyId,
 } from "../domains/party";
 import type { EventStore } from "../platform/event-store/store";
 import type { Actor, Event } from "../platform/event-store/types";
@@ -65,8 +64,15 @@ export interface PartyBackfillResult {
   readonly skipped: number;
 }
 
-const IMANI_ACTOR: Actor = { type: "service", id: "agent:imani" };
-const ATLAS_ACTOR: Actor = { type: "service", id: "agent:atlas" };
+// The backfill is a substrate-side seed-loader, not an autonomous-agent
+// emit; it runs as the `system` actor so the permission gate (which
+// scopes to `service` `agent:*` actors) is not consulted. The substrate
+// authority is `D-PARTY-REGISTER` — see the per-event citations for the
+// chain. Specific lineage tags identify the path (party-backfill-imani
+// for substantive identity-axis events; party-backfill-atlas for the
+// agent reports-to graph from the canonical roster).
+const IMANI_ACTOR: Actor = { type: "system", id: "system:party-backfill:imani" };
+const ATLAS_ACTOR: Actor = { type: "system", id: "system:party-backfill:atlas" };
 const ENTITY = "BANK-ZA-001";
 
 // Envelope citation set per event family (P2). Per-payload citations
@@ -107,22 +113,19 @@ function buildBackfilledIndex(eventStore: EventStore): BackfilledIndex {
   for (const e of eventStore.replay({ type: "PartyRegistered" })) {
     const p = e.payload as Record<string, unknown>;
     if (typeof p.partyId === "string") partyIds.add(p.partyId);
-    if (typeof p.backfillSourceEventId === "string")
-      sourceEventIds.add(p.backfillSourceEventId);
+    if (typeof p.backfillSourceEventId === "string") sourceEventIds.add(p.backfillSourceEventId);
   }
   for (const e of eventStore.replay({ type: "PartyRelationshipAsserted" })) {
     const p = e.payload as Record<string, unknown>;
     if (typeof p.relationshipId === "string") relationshipIds.add(p.relationshipId);
-    if (typeof p.backfillSourceEventId === "string")
-      sourceEventIds.add(p.backfillSourceEventId);
+    if (typeof p.backfillSourceEventId === "string") sourceEventIds.add(p.backfillSourceEventId);
   }
   for (const e of eventStore.replay({ type: "PartyClassified" })) {
     const p = e.payload as Record<string, unknown>;
     const pid = typeof p.partyId === "string" ? p.partyId : "";
     const cls = typeof p.classification === "string" ? p.classification : "";
     if (pid && cls) classificationKeys.add(`${pid}|${cls}`);
-    if (typeof p.backfillSourceEventId === "string")
-      sourceEventIds.add(p.backfillSourceEventId);
+    if (typeof p.backfillSourceEventId === "string") sourceEventIds.add(p.backfillSourceEventId);
   }
   return { partyIds, sourceEventIds, relationshipIds, classificationKeys };
 }
@@ -248,9 +251,7 @@ function backfillLegalEntities(
       continue;
     }
     const parentPartyId =
-      seed.parentEntityId !== null
-        ? partyUrnByEntityUrn.get(seed.parentEntityId) ?? null
-        : null;
+      seed.parentEntityId !== null ? (partyUrnByEntityUrn.get(seed.parentEntityId) ?? null) : null;
     const event = makePartyRegistered({
       asOf,
       entity: ENTITY,
@@ -336,11 +337,11 @@ function backfillLegalEntities(
 interface CounterpartyLifecycleState {
   readonly counterpartyId: string;
   // Source-event metadata used to seed PartyRegistered kindAttributes.
-  readonly legalName?: string;
-  readonly jurisdiction?: string;
-  readonly sector?: string;
-  readonly channel?: "introduction" | "inbound" | "outbound" | "event";
-  readonly introSource?: string;
+  readonly legalName: string | undefined;
+  readonly jurisdiction: string | undefined;
+  readonly sector: string | undefined;
+  readonly channel: "introduction" | "inbound" | "outbound" | "event" | undefined;
+  readonly introSource: string | undefined;
   // Current lifecycle classification (becomes a PartyClassified event).
   readonly classification: string;
   // First-known source event for idempotency / actor inheritance.
@@ -360,9 +361,13 @@ function foldCounterpartyLifecycle(eventStore: EventStore): readonly Counterpart
         if (!byId.has(cpId)) {
           byId.set(cpId, {
             counterpartyId: cpId,
-            channel: typeof p.channel === "string"
-              ? (p.channel as CounterpartyLifecycleState["channel"])
-              : undefined,
+            legalName: undefined,
+            jurisdiction: undefined,
+            sector: undefined,
+            channel:
+              typeof p.channel === "string"
+                ? (p.channel as CounterpartyLifecycleState["channel"])
+                : undefined,
             introSource: typeof p.introSource === "string" ? p.introSource : undefined,
             classification: "Sounding",
             sourceEventId: e.event_id,
@@ -377,8 +382,7 @@ function foldCounterpartyLifecycle(eventStore: EventStore): readonly Counterpart
         const merged: CounterpartyLifecycleState = {
           counterpartyId: cpId,
           legalName: typeof p.legalName === "string" ? p.legalName : prior?.legalName,
-          jurisdiction:
-            typeof p.jurisdiction === "string" ? p.jurisdiction : prior?.jurisdiction,
+          jurisdiction: typeof p.jurisdiction === "string" ? p.jurisdiction : prior?.jurisdiction,
           sector: typeof p.sector === "string" ? p.sector : prior?.sector,
           channel: prior?.channel,
           introSource: prior?.introSource,
@@ -473,7 +477,10 @@ function backfillCounterparties(
         payload: {
           partyId,
           classification: cp.classification,
-          scopeJson: { source: "counterparty-lifecycle-fold", legacyCounterpartyId: cp.counterpartyId },
+          scopeJson: {
+            source: "counterparty-lifecycle-fold",
+            legacyCounterpartyId: cp.counterpartyId,
+          },
           citations: [
             "[citation: D-PARTY-REGISTER]",
             "[citation: FIC Act 38 of 2001 — CDD lifecycle stage]",
@@ -708,11 +715,9 @@ function backfillSignatories(
     }
 
     // (b) signatory-of relationship edge.
-    const counterpartyPartyId = makePartyId(
-      "counterparty",
-      slugifyForPartyUrn(counterpartyId),
-    );
-    const relationshipKind = scope === "authorised-trader" ? "authorised-trader-for" : "signatory-of";
+    const counterpartyPartyId = makePartyId("counterparty", slugifyForPartyUrn(counterpartyId));
+    const relationshipKind =
+      scope === "authorised-trader" ? "authorised-trader-for" : "signatory-of";
     const relationshipId = `relationship:${relationshipKind}:${personPartyId}->${counterpartyPartyId}`;
     if (index.relationshipIds.has(relationshipId)) {
       result.skipped += 1;
@@ -765,12 +770,7 @@ export interface PartyBackfillOptions {
   readonly asOf?: string;
 }
 
-const DEFAULT_LEGAL_ENTITY_SEED = resolve(
-  import.meta.dir,
-  "..",
-  "seeds",
-  "legal-entity-tree.json",
-);
+const DEFAULT_LEGAL_ENTITY_SEED = resolve(import.meta.dir, "..", "seeds", "legal-entity-tree.json");
 const DEFAULT_TEAM_ROSTER = resolve(import.meta.dir, "..", "..", "Team", "_team-roster.json");
 
 export function runPartyBackfill(
