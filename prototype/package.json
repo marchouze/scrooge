@@ -74,6 +74,7 @@
     "agent:saskia-markets-readiness-snapshot": "bun run runtime/run.ts --agent Saskia --trigger markets-readiness-snapshot",
     "agent:kai-m1-cdm-typescript-bindings": "bun run runtime/run.ts --agent Kai --trigger m1-cdm-typescript-bindings",
     "agent:kai-pre-trade-gateway-aggregator": "bun run runtime/run.ts --agent Kai --trigger pre-trade-gateway-aggregator",
+    "agent:kai-goal-loop": "bun run runtime/run.ts --agent Kai --trigger goal-loop",
     "agent:bea-accounting-readiness": "bun run runtime/run.ts --agent Bea --trigger accounting-readiness",
     "agent:yael-tax-readiness": "bun run runtime/run.ts --agent Yael --trigger tax-readiness",
     "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",

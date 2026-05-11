@@ -39,6 +39,7 @@ import imaniLegalReadiness from "./agents/imani-legal-readiness";
 import irisEventTriage from "./agents/iris-event-triage";
 import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
 import kaiEventTriage from "./agents/kai-event-triage";
+import kaiGoalLoop from "./agents/kai-goal-loop";
 import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
 import kaiPreTradeGatewayAggregator from "./agents/kai-pre-trade-gateway-aggregator";
 import linneaEventTriage from "./agents/linnea-event-triage";
@@ -144,6 +145,9 @@ const _map: Record<string, AgentRunHandler> = {
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
   "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,
   "kai:pre-trade-gateway-aggregator": kaiPreTradeGatewayAggregator,
+  // kai:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "kai:goal-loop": kaiGoalLoop,
   "bea:accounting-readiness": beaAccountingReadiness,
   "yael:tax-readiness": yaelTaxReadiness,
   "tomas:payments-readiness": tomasPaymentsReadiness,
