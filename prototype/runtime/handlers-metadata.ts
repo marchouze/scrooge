@@ -179,6 +179,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cronExpression: "29 7 * * 3",
   }),
   entry("Mira", "citation-gate", "on-request"),
+  // mira:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Mira", "goal-loop", "on-request"),
   entry("Senna", "security-substrate-state", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "37 7 * * 4",
