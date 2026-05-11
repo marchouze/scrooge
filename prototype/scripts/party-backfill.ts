@@ -5,6 +5,13 @@
 // streams into the unified Party event family (PartyRegistered +
 // PartyRelationshipAsserted + PartyClassified).
 //
+// PR 3 (CEO-approved 2026-05-11) extends the backfill with the founding
+// CEO seat (Marc as the first natural-person Party), resolves the 10
+// top-of-house `reports-to` edges that PR 2 left unresolved (personas
+// whose `reportsTo` field is "CEO" or "Marc" — the literal string
+// labels), and records Marc's `acts-on-behalf-of` edges to the three
+// Hoz legal-entity Parties.
+//
 // Backfill discipline (per feedback_phase0_record_to_event_backfill.md):
 //   - idempotent: keyed by source-event id (Party events are tagged with
 //     `payload.backfillSourceEventId` and `payload.backfillSourceType`);
@@ -25,6 +32,10 @@
 //   4. AuthorisedSignatoryAdded
 //      → mint a natural-person Party (if not yet known) +
 //        PartyRelationshipAsserted{kind: "signatory-of"}.
+//   5. PR 3 — Marc as founding CEO seat
+//      → PartyRegistered{kind: "natural-person", purposeRoles: ["ceo"]}
+//        + reports-to edges from the 10 top-of-house personas to Marc
+//        + 3 acts-on-behalf-of edges from Marc to the Hoz entities.
 //
 // PII discipline (Principle 4 + POPIA s.19-22): natural-person Parties
 // minted from AuthorisedSignatoryAdded events carry empty/placeholder
@@ -64,6 +75,18 @@ export interface PartyBackfillResult {
   readonly skipped: number;
 }
 
+/**
+ * PR 3 — descriptors for the founding-CEO seat backfill step. Surfaced
+ * as a sub-result so dashboard tiles + the scenario can assert the
+ * "Marc is the founding natural-person Party" axis specifically without
+ * loading the full result envelope.
+ */
+export interface CeoSeatBackfillResult {
+  readonly partyEmitted: number; // 0 or 1 (idempotent-per-seed)
+  readonly reportsToEdgesEmitted: number; // 0..10
+  readonly actsOnBehalfOfEdgesEmitted: number; // 0..3
+}
+
 // The backfill is a substrate-side seed-loader, not an autonomous-agent
 // emit; it runs as the `system` actor so the permission gate (which
 // scopes to `service` `agent:*` actors) is not consulted. The substrate
@@ -91,6 +114,38 @@ const NATURAL_PERSON_CITATIONS = [
   "COMPANIES-ACT-71-2008-S66",
 ];
 const RELATIONSHIP_CITATIONS = ["D-PARTY-RELATIONSHIP-KINDS-V0", "D-PARTY-REGISTER"];
+
+// PR 3 — CEO-seat envelope citations (per plan + D-PARTY-REGISTER):
+// Companies Act § 66 (board / CEO is statutory director slot), Banks
+// Act § 60 + Reg 36 (controlling-company governance — director roster
+// anchors here at licence-day), D-LEGAL-ENTITY-TREE-V0 (CEO seat sits
+// across all three Hoz entities under the shared-board v0 model),
+// D-PARTY-REGISTER (substrate authority).
+const CEO_SEAT_CITATIONS = [
+  "D-PARTY-REGISTER",
+  "D-LEGAL-ENTITY-TREE-V0",
+  "COMPANIES-ACT-71-2008-S66",
+  "BANKS-ACT-94-1990-S60",
+  "POPIA-ACT-4-2013",
+];
+const CEO_SEAT_RELATIONSHIP_CITATIONS = [
+  "D-PARTY-RELATIONSHIP-KINDS-V0",
+  "D-PARTY-REGISTER",
+  "D-LEGAL-ENTITY-TREE-V0",
+  "D-THIN-HUMAN-LAYER-MINIMUM",
+];
+
+// Stable seed source-id for Marc's CEO-seat registration (PR 3). The
+// seed is versioned (`v1`) so a future re-cut of the founding-CEO
+// record can land as a deliberate re-emission rather than colliding
+// with v1 by accident.
+export const MARC_CEO_SEED_ID = "seed:ceo-marc:v1";
+export const MARC_PARTY_URN: PartyId = `urn:party:natural-person:marc`;
+// Top-of-house roster labels that resolve to Marc in PR 3. These are
+// the literal string values that appear in `reportsTo` for the 10
+// governance / chief-of-staff personas; on registration they each
+// emit a `reports-to` edge into Marc's CEO seat.
+export const TOP_OF_HOUSE_LABELS: ReadonlySet<string> = new Set(["ceo", "marc"]);
 
 // ---------------------------------------------------------------------------
 // Idempotency — fold existing Party events to discover which
@@ -525,6 +580,15 @@ function backfillAgents(
   },
   asOf: string,
   rosterPath: string | undefined,
+  /**
+   * PR 3 — optional Party URN that the literal `reportsTo` strings
+   * "CEO" / "Marc" should resolve to. When provided (Marc's CEO-seat
+   * Party exists in the index), top-of-house personas emit a
+   * `reports-to` edge into this Party. When undefined (legacy boot
+   * without the CEO seat), top-of-house labels stay unresolved as in
+   * PR 2.
+   */
+  topOfHousePartyId?: PartyId,
 ): void {
   // Build a roster map by persona name (case-insensitive).
   let roster: TeamRoster | undefined;
@@ -614,8 +678,15 @@ function backfillAgents(
   for (const persona of roster.personas) {
     if (!persona.reportsTo) continue;
     const fromPartyId = partyUrnByPersonaName.get(persona.name.toLowerCase());
-    const toPartyId = partyUrnByPersonaName.get(persona.reportsTo.toLowerCase());
-    if (!fromPartyId || !toPartyId) continue;
+    if (!fromPartyId) continue;
+    let toPartyId = partyUrnByPersonaName.get(persona.reportsTo.toLowerCase());
+    // PR 3 — if the persona's `reportsTo` is a top-of-house label
+    // ("CEO" / "Marc") and the founding CEO seat is registered, route
+    // the edge to Marc's natural-person Party.
+    if (!toPartyId && topOfHousePartyId && TOP_OF_HOUSE_LABELS.has(persona.reportsTo.toLowerCase())) {
+      toPartyId = topOfHousePartyId;
+    }
+    if (!toPartyId) continue;
     const relationshipId = `relationship:reports-to:${fromPartyId}->${toPartyId}`;
     if (index.relationshipIds.has(relationshipId)) {
       result.skipped += 1;
@@ -758,6 +829,162 @@ function backfillSignatories(
 }
 
 // ---------------------------------------------------------------------------
+// 5 — PR 3 — Marc as the founding CEO seat (first natural-person Party)
+//      → PartyRegistered{kind: "natural-person", purposeRoles: ["ceo"]}
+//      + acts-on-behalf-of edges from Marc to the 3 Hoz legal-entity
+//        Parties (per D-LEGAL-ENTITY-TREE-V0 shared-board v0 model).
+//
+//      The reports-to edges from the 10 top-of-house personas INTO Marc
+//      are emitted in the agent-backfill step (step 3) when its
+//      `topOfHousePartyId` parameter resolves to Marc's URN.
+//
+//      Citations: Companies Act § 66 (board / CEO is statutory
+//      director slot), Banks Act § 60 + Reg 36 (controlling-company
+//      governance), D-LEGAL-ENTITY-TREE-V0, D-PARTY-REGISTER.
+//
+//      Idempotency: keyed by `MARC_CEO_SEED_ID`; second invocation is a
+//      no-op.
+//
+//      Build-phase scope (per CLAUDE.md "Build phase vs licence-day"):
+//      Marc is the standing founding CEO during the build phase. The
+//      licence-day human roster (statutory directors, MLRO, CISO, CAE,
+//      auditor) gets registered separately when those appointments
+//      clear — see Imani / Owen agent-runs at the licence-day gate.
+// ---------------------------------------------------------------------------
+
+interface CeoSeatStepResult {
+  partyEmitted: number;
+  reportsToEdgesEmitted: number;
+  actsOnBehalfOfEdgesEmitted: number;
+}
+
+/**
+ * Hoz legal-entity Party URNs Marc acts on behalf of (per
+ * D-LEGAL-ENTITY-TREE-V0 shared-board v0 model — the founding CEO sits
+ * across all three entities). Slugs are stable and match the
+ * legal-entity-tree seed naming.
+ */
+const HOZ_ENTITY_PARTY_URNS: readonly PartyId[] = [
+  `urn:party:legal-entity:hoz-group`,
+  `urn:party:legal-entity:hoz-bank`,
+  `urn:party:legal-entity:hoz-securities`,
+];
+
+function backfillCeoSeat(
+  eventStore: EventStore,
+  index: BackfilledIndex,
+  result: {
+    naturalPersonPartiesEmitted: number;
+    relationshipsEmitted: number;
+    skipped: number;
+  },
+  asOf: string,
+): CeoSeatStepResult {
+  const stepResult: CeoSeatStepResult = {
+    partyEmitted: 0,
+    reportsToEdgesEmitted: 0,
+    actsOnBehalfOfEdgesEmitted: 0,
+  };
+
+  // (a) Marc's natural-person Party. Idempotent via MARC_CEO_SEED_ID.
+  if (!index.partyIds.has(MARC_PARTY_URN) && !index.sourceEventIds.has(MARC_CEO_SEED_ID)) {
+    const event = makePartyRegistered({
+      asOf,
+      entity: ENTITY,
+      actor: IMANI_ACTOR,
+      citations: [...CEO_SEAT_CITATIONS],
+      payload: {
+        partyId: MARC_PARTY_URN,
+        kind: "natural-person",
+        displayName: "Marc",
+        legalName: "Marc Hou",
+        jurisdictions: ["ZA"],
+        taxResidencies: ["ZA"],
+        kindAttributes: {
+          kind: "natural-person",
+          nationalities: ["ZA"],
+          // `ceo` is the closest enum value in
+          // naturalPersonAttrsSchema.purposeRoles for the founding
+          // build-phase CEO seat (the spec brief used "ceo-seat" but
+          // the v0 enum is closed at `ceo`).
+          purposeRoles: ["ceo"],
+          // PII placeholders — dobHashRef and piiDocumentRef stay unset
+          // pre-licence-day (build-phase data scope per CLAUDE.md).
+          // Substrate gap: CEO PII bundle registers at licence-day.
+        },
+        citations: [
+          "[citation: D-PARTY-REGISTER]",
+          "[citation: D-LEGAL-ENTITY-TREE-V0 — shared-board v0 founding-CEO seat]",
+          "[citation: Companies Act 71 of 2008 § 66 — board / CEO statutory director]",
+          "[citation: Banks Act 94 of 1990 § 60 + Reg 36 — controlling-company governance director-roster]",
+          "[citation: POPIA Act 4 of 2013 s.19-22 minimum-necessary]",
+          "[citation: CLAUDE.md identity — Owner: Marc (marc@tgv.co.za)]",
+        ],
+      },
+    });
+    appendWithBackfillTag(eventStore, event, MARC_CEO_SEED_ID, "ceo-seat-seed");
+    index.partyIds.add(MARC_PARTY_URN);
+    index.sourceEventIds.add(MARC_CEO_SEED_ID);
+    result.naturalPersonPartiesEmitted += 1;
+    stepResult.partyEmitted = 1;
+  } else {
+    result.skipped += 1;
+  }
+
+  // (b) acts-on-behalf-of edges from Marc to the 3 Hoz entities.
+  for (const entityPartyId of HOZ_ENTITY_PARTY_URNS) {
+    // Only emit if the entity Party exists in the index (i.e. the
+    // legal-entity step ran first). If not, surface that gap by
+    // skipping silently — re-running the backfill once seeds are
+    // present will close the gap.
+    if (!index.partyIds.has(entityPartyId)) {
+      result.skipped += 1;
+      continue;
+    }
+    const relationshipId = `relationship:acts-on-behalf-of:${MARC_PARTY_URN}->${entityPartyId}`;
+    if (index.relationshipIds.has(relationshipId)) {
+      result.skipped += 1;
+      continue;
+    }
+    const edgeEvent = makePartyRelationshipAsserted({
+      asOf,
+      entity: ENTITY,
+      actor: IMANI_ACTOR,
+      citations: [...CEO_SEAT_RELATIONSHIP_CITATIONS],
+      payload: {
+        relationshipId,
+        fromPartyId: MARC_PARTY_URN,
+        toPartyId: entityPartyId,
+        kind: "acts-on-behalf-of",
+        scopeJson: {
+          source: "ceo-seat-seed",
+          seedId: MARC_CEO_SEED_ID,
+          shareBoardModel: "D-LEGAL-ENTITY-TREE-V0 v0 shared-board",
+        },
+        effectiveFrom: asOf,
+        citations: [
+          "[citation: D-PARTY-RELATIONSHIP-KINDS-V0]",
+          "[citation: D-LEGAL-ENTITY-TREE-V0 — shared-board v0 model]",
+          "[citation: Companies Act 71 of 2008 § 66 — director / CEO authority]",
+          "[citation: CLAUDE.md identity — Owner: Marc (marc@tgv.co.za)]",
+        ],
+      },
+    });
+    appendWithBackfillTag(
+      eventStore,
+      edgeEvent,
+      `${MARC_CEO_SEED_ID}:acts-on-behalf-of:${entityPartyId}`,
+      "ceo-seat-seed",
+    );
+    index.relationshipIds.add(relationshipId);
+    result.relationshipsEmitted += 1;
+    stepResult.actsOnBehalfOfEdgesEmitted += 1;
+  }
+
+  return stepResult;
+}
+
+// ---------------------------------------------------------------------------
 // Public entry point
 // ---------------------------------------------------------------------------
 
@@ -806,10 +1033,27 @@ export function runPartyBackfill(
   // 2 — Counterparties (from existing event stream).
   backfillCounterparties(eventStore, index, result, asOf);
 
-  // 3 — Agents (from existing AgentRegistered stream + Team/_team-roster.json).
-  backfillAgents(eventStore, index, result, asOf, opts.teamRosterPath ?? DEFAULT_TEAM_ROSTER);
+  // 3 — PR 3 — Marc as the founding CEO seat. Runs BEFORE the agent
+  // step so the agent step's reports-to resolution can route
+  // top-of-house labels ("CEO" / "Marc") into Marc's natural-person
+  // Party. Also emits the 3 acts-on-behalf-of edges from Marc to the
+  // Hoz entities (which exist in the index from step 1).
+  backfillCeoSeat(eventStore, index, result, asOf);
 
-  // 4 — Signatories (from existing AuthorisedSignatoryAdded stream).
+  // 4 — Agents (from existing AgentRegistered stream + Team/_team-roster.json).
+  // PR 3 — pass Marc's URN so top-of-house personas (Devon, Helena,
+  // Owen, Zara, Iris, Camille, Eitan, Saskia, Thandiwe, Rashida — 10
+  // total) get reports-to edges into Marc's Party.
+  backfillAgents(
+    eventStore,
+    index,
+    result,
+    asOf,
+    opts.teamRosterPath ?? DEFAULT_TEAM_ROSTER,
+    MARC_PARTY_URN,
+  );
+
+  // 5 — Signatories (from existing AuthorisedSignatoryAdded stream).
   backfillSignatories(eventStore, index, result, asOf);
 
   return result;
