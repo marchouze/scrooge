@@ -25,7 +25,7 @@
       title: "Obligations",
       blurb:
         "Mira's register — every obligation linked to a citation, fulfilment policy, and owner.",
-      href: "/policies.html#obligations",
+      href: "/obligations.html",
     },
     {
       id: "policies",
