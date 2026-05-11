@@ -17,13 +17,6 @@
 name: Vera overnight recon
 
 on:
-  schedule:
-    # 02:13 UTC daily (matches Vera spec § 6 inactivity SLA: pipelines
-    # must produce a ReconResult event at least every 24h). Minute
-    # offset is deliberate — GH Actions delays / drops on-the-hour cron
-    # slots under load (observed 2026-05-08); A2.1 scheduler closes
-    # the dependency permanently.
-    - cron: "13 2 * * *"
   workflow_dispatch: {}
 
 permissions:

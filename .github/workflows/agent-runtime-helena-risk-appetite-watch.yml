@@ -9,8 +9,6 @@
 name: Helena risk-appetite watch
 
 on:
-  schedule:
-    - cron: "30 4 * * *"
   workflow_dispatch: {}
 
 permissions:

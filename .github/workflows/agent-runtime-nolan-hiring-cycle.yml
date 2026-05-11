@@ -9,10 +9,6 @@
 name: Nolan hiring cycle
 
 on:
-  schedule:
-    # Fri 08:53 UTC — weekly, off-the-hour to avoid GH Actions cron drops.
-    # Aligns with PAX's role-research-queue cadence (PAX runs Fri 08:11).
-    - cron: "53 8 * * FRI"
   workflow_dispatch: {}
 
 permissions:

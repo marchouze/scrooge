@@ -6,10 +6,6 @@
 name: Senna security substrate state
 
 on:
-  schedule:
-    # Thu 07:37 UTC — off-the-hour to dodge GH Actions cron drops
-    # observed 2026-05-08; A2.1 scheduler closes permanently.
-    - cron: "37 7 * * 4"
   workflow_dispatch: {}
 
 permissions:

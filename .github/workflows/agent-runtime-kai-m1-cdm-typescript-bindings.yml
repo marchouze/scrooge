@@ -11,11 +11,6 @@
 name: Kai m1-cdm-typescript-bindings
 
 on:
-  schedule:
-    # Mon 06:27 UTC — weekly, off-the-hour to dodge GH Actions cron
-    # drops; sits in the markets-cluster slot adjacent to Saskia
-    # (33 5 MON) and Camille (41 6 MON).
-    - cron: "27 6 * * MON"
   workflow_dispatch: {}
 
 permissions:

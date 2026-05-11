@@ -9,8 +9,6 @@
 name: Eitan liquidity snapshot
 
 on:
-  schedule:
-    - cron: "53 6 * * *"
   workflow_dispatch: {}
 
 permissions:

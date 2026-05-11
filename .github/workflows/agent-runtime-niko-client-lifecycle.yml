@@ -13,9 +13,6 @@
 name: Niko client lifecycle
 
 on:
-  schedule:
-    # Mon 08:23 UTC — weekly, off-the-hour to avoid GH Actions cron drops.
-    - cron: "23 8 * * MON"
   workflow_dispatch: {}
 
 permissions:
