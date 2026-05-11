@@ -60,6 +60,7 @@ import paxEventTriage from "./agents/pax-event-triage";
 import paxRoleResearchQueue from "./agents/pax-role-research-queue";
 import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
 import rashidaEventTriage from "./agents/rashida-event-triage";
+import rashidaGoalLoop from "./agents/rashida-goal-loop";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import raviEventTriage from "./agents/ravi-event-triage";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
@@ -134,6 +135,8 @@ const _map: Record<string, AgentRunHandler> = {
   // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   "thandiwe:goal-loop": thandiweGoalLoop,
+  // rashida:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "rashida:goal-loop": rashidaGoalLoop,
   "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,

@@ -212,6 +212,8 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   entry("Thandiwe", "goal-loop", "on-request"),
+  // rashida:goal-loop — no cron; shadow mode for cohort-3 (on-request only). Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Rashida", "goal-loop", "on-request"),
   entry("Rashida", "cyber-resilience-snapshot", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "49 7 * * 4",
