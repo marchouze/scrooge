@@ -183,6 +183,9 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "43 3 * * *",
   }),
+  // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Rohan", "goal-loop", "on-request"),
   entry("Mira", "obligations-snapshot", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "29 7 * * 3",
