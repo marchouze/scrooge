@@ -96,6 +96,18 @@
     "agent:owen-goal-loop": "bun run runtime/run.ts --agent Owen --trigger goal-loop",
     "agent:helena-goal-loop": "bun run runtime/run.ts --agent Helena --trigger goal-loop",
     "agent:rohan-goal-loop": "bun run runtime/run.ts --agent Rohan --trigger goal-loop",
+    "agent:zara-goal-loop": "bun run runtime/run.ts --agent Zara --trigger goal-loop",
+    "agent:eitan-goal-loop": "bun run runtime/run.ts --agent Eitan --trigger goal-loop",
+    "agent:camille-goal-loop": "bun run runtime/run.ts --agent Camille --trigger goal-loop",
+    "agent:iris-goal-loop": "bun run runtime/run.ts --agent Iris --trigger goal-loop",
+    "agent:rashida-goal-loop": "bun run runtime/run.ts --agent Rashida --trigger goal-loop",
+    "agent:senna-goal-loop": "bun run runtime/run.ts --agent Senna --trigger goal-loop",
+    "agent:kai-goal-loop": "bun run runtime/run.ts --agent Kai --trigger goal-loop",
+    "agent:tomas-goal-loop": "bun run runtime/run.ts --agent Tomas --trigger goal-loop",
+    "agent:ravi-goal-loop": "bun run runtime/run.ts --agent Ravi --trigger goal-loop",
+    "agent:imani-goal-loop": "bun run runtime/run.ts --agent Imani --trigger goal-loop",
+    "agent:devon-goal-loop": "bun run runtime/run.ts --agent Devon --trigger goal-loop",
+    "agent:saskia-goal-loop": "bun run runtime/run.ts --agent Saskia --trigger goal-loop",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
