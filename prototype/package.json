@@ -89,6 +89,8 @@
     "agent:nolan-hiring-cycle": "bun run runtime/run.ts --agent Nolan --trigger hiring-cycle",
     "agent:atlas-goal-loop": "bun run runtime/run.ts --agent Atlas --trigger goal-loop",
     "agent:bea-goal-loop": "bun run runtime/run.ts --agent Bea --trigger goal-loop",
+    "agent:vera-goal-loop": "bun run runtime/run.ts --agent Vera --trigger goal-loop",
+    "agent:owen-goal-loop": "bun run runtime/run.ts --agent Owen --trigger goal-loop",
     "reset": "rm -rf .local && mkdir -p .local"
   },
   "devDependencies": {
