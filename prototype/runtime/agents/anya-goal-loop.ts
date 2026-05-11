@@ -118,9 +118,7 @@ export const anyaGoalDeriver: GoalDeriver = async (
 
   // Build procedure citations — use coverage-gap form per §3.4 contract.
   // The procedure file may not have step anchors yet (pre-backfill).
-  const procedureEntry = spec.procedureSteps.find(
-    (s) => s.procedurePath === ANYA_PROCEDURE_PATH,
-  );
+  const procedureEntry = spec.procedureSteps.find((s) => s.procedurePath === ANYA_PROCEDURE_PATH);
   const stepId =
     procedureEntry && procedureEntry.stepIds.length > 0
       ? (procedureEntry.stepIds[0] ?? ANYA_PROCEDURE_STEP_ID)
@@ -233,8 +231,7 @@ export const anyaGoalDeriver: GoalDeriver = async (
   // health proxy: if no snapshot in 7 days the semantic layer is considered
   // stale and a full drift sweep is warranted.
   const needsSemanticLayerProxy =
-    lastProjectionSnapshot === undefined ||
-    Date.now() - lastProjectionSnapshot > SEVEN_DAYS_MS;
+    lastProjectionSnapshot === undefined || Date.now() - lastProjectionSnapshot > SEVEN_DAYS_MS;
 
   if (needsSemanticLayerProxy) {
     if (!validateGoal(PROJECTION_CACHE_GOAL)) return null;
