@@ -53,6 +53,7 @@ import nikoEventTriage from "./agents/niko-event-triage";
 import nolanEventTriage from "./agents/nolan-event-triage";
 import nolanHiringCycle from "./agents/nolan-hiring-cycle";
 import owenEventTriage from "./agents/owen-event-triage";
+import owenGoalLoop from "./agents/owen-goal-loop";
 import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
 import paxEventTriage from "./agents/pax-event-triage";
 import paxRoleResearchQueue from "./agents/pax-role-research-queue";
@@ -81,6 +82,7 @@ import tomasEventTriage from "./agents/tomas-event-triage";
 import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
 import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
 import veraEventTriage from "./agents/vera-event-triage";
+import veraGoalLoop from "./agents/vera-goal-loop";
 import veraOvernightRecon from "./agents/vera-overnight-recon";
 import yaelEventTriage from "./agents/yael-event-triage";
 import yaelTaxReadiness from "./agents/yael-tax-readiness";
@@ -96,6 +98,7 @@ import type { AgentRunHandler } from "./types";
 const _map: Record<string, AgentRunHandler> = {
   "vera:overnight-recon": veraOvernightRecon,
   "vera:codebase-quality-review": veraCodebaseQualityReview,
+  "vera:goal-loop": veraGoalLoop,
   "atlas:substrate-state": atlasSubstrateState,
   "atlas:goal-loop": atlasGoalLoop,
   "bea:goal-loop": beaGoalLoop,
@@ -109,6 +112,7 @@ const _map: Record<string, AgentRunHandler> = {
   // "scrooge:follow-on-router" inserted below after createHandler()
   "scrooge:owner-inbox-archiver": scroogeOwnerInboxArchiver,
   "owen:governance-cycle-prep": owenGovernanceCyclePrep,
+  "owen:goal-loop": owenGoalLoop,
   "rohan:risk-run": rohanRiskRun,
   "mira:obligations-snapshot": miraObligationsSnapshot,
   "mira:citation-gate": miraCitationGate,
