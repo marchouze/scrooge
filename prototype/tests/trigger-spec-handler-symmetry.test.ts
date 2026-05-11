@@ -13,14 +13,14 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { HandlerMetadata } from "../runtime/handlers-metadata";
 import {
+  type SpecTrigger,
   buildBreakdown,
   extractEventTypes,
   parseTriggersSection,
   run as triggerSpecHandlerSymmetry,
-  type SpecTrigger,
 } from "../platform/recon/trigger-spec-handler-symmetry";
+import type { HandlerMetadata } from "../runtime/handlers-metadata";
 
 // ---------------------------------------------------------------------
 // Fixture: a minimal persona-spec body with §7 + a few §8 lines so the
@@ -94,7 +94,7 @@ describe("§7 table parser", () => {
     const triggers = parseTriggersSection("Anya", FIXTURE_ANYA_BODY);
     const multi = triggers.find((t) => t.eventTypes.includes("WorkstreamRegistered"));
     expect(multi).toBeDefined();
-    expect(multi?.eventTypes.sort()).toEqual(
+    expect([...(multi?.eventTypes ?? [])].sort()).toEqual(
       ["WorkstreamCompleted", "WorkstreamRegistered"].sort(),
     );
   });
@@ -194,9 +194,7 @@ describe("diff — spec → handler", () => {
       handlersMetadata: [],
     });
     // Three scheduled spec rows → ONE finding (de-duped at persona level).
-    const scheduledFindings = r.violations.filter((v) =>
-      v.subject.endsWith(":scheduled-coverage"),
-    );
+    const scheduledFindings = r.violations.filter((v) => v.subject.endsWith(":scheduled-coverage"));
     expect(scheduledFindings.length).toBe(1);
     expect(scheduledFindings[0]?.severity).toBe("warn");
   });
@@ -205,9 +203,7 @@ describe("diff — spec → handler", () => {
 describe("diff — handler → spec", () => {
   it("flags a handler subscribing to an event the spec doesn't declare (info)", () => {
     const r = triggerSpecHandlerSymmetry({
-      specTriggers: [
-        specRow("Mira", "Quarter-end RMCP attestation", "scheduled"),
-      ],
+      specTriggers: [specRow("Mira", "Quarter-end RMCP attestation", "scheduled")],
       handlersMetadata: [
         handler("Mira", "obligations-snapshot", "scheduled", { cronExpression: "0 0 * * *" }),
         handler("Mira", "phantom-handler", "event-driven", {
@@ -217,9 +213,7 @@ describe("diff — handler → spec", () => {
     });
     const handlerWithoutSpec = r.violations.filter((v) => v.severity === "info");
     expect(handlerWithoutSpec.length).toBeGreaterThanOrEqual(1);
-    expect(
-      handlerWithoutSpec.some((v) => v.message.includes("UndeclaredEvent")),
-    ).toBe(true);
+    expect(handlerWithoutSpec.some((v) => v.message.includes("UndeclaredEvent"))).toBe(true);
   });
 
   it("flags a scheduled handler with no scheduled §7 row (info, de-duped)", () => {
@@ -260,8 +254,8 @@ describe("buildBreakdown", () => {
     expect(breakdown.specWithoutHandler).toBe(3);
     expect(breakdown.handlerWithoutSpec).toBe(0);
     expect(breakdown.total).toBe(3);
-    expect(breakdown.perPersonaSpecWithoutHandler["Vera"]).toBe(2);
-    expect(breakdown.perPersonaSpecWithoutHandler["Atlas"]).toBe(1);
+    expect(breakdown.perPersonaSpecWithoutHandler.Vera).toBe(2);
+    expect(breakdown.perPersonaSpecWithoutHandler.Atlas).toBe(1);
   });
 });
 

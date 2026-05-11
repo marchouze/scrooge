@@ -407,12 +407,9 @@ export function run(opts: RunOpts = {}): ReconResult {
   for (const p of specIndex.keys()) personas.add(p);
   for (const p of handlerIndex.keys()) personas.add(p);
 
-  let specWithoutHandler = 0;
-  let handlerWithoutSpec = 0;
-  const perPersonaSpecWithoutHandler: Record<string, number> = {};
-
   // ---------------------------------------------------------------------
   // Direction 1 — spec → handler.
+  // (Counts derived from `violations` post-hoc by `buildBreakdown`.)
   // ---------------------------------------------------------------------
   for (const persona of [...personas].sort()) {
     const spec = specIndex.get(persona);
@@ -426,9 +423,6 @@ export function run(opts: RunOpts = {}): ReconResult {
         result.asserted++;
         const subscribed = idx?.subscribedEvents.has(eventType) ?? false;
         if (!subscribed) {
-          specWithoutHandler++;
-          perPersonaSpecWithoutHandler[persona] =
-            (perPersonaSpecWithoutHandler[persona] ?? 0) + 1;
           violations.push({
             subject: `${persona}:event-driven:${eventType}`,
             message: `Persona ${persona}'s §7 declares event-driven trigger \`${eventType}\` but no \`HANDLERS_METADATA\` row for agent "${persona}" subscribes to it. Permission-policy derivation will authorise an eventSubscribeAllowList row with no consumer; the bus has nothing to dispatch to. Add a handler in \`runtime/handlers-metadata.ts\` (kind: "event-driven", subscribesTo includes "${eventType}") or downgrade the spec row to \`[deferred]\`. Citations: ${CITATIONS.join(", ")}.`,
@@ -446,9 +440,6 @@ export function run(opts: RunOpts = {}): ReconResult {
       result.asserted++;
       const hasScheduled = (idx?.scheduledCount ?? 0) > 0;
       if (!hasScheduled) {
-        specWithoutHandler++;
-        perPersonaSpecWithoutHandler[persona] =
-          (perPersonaSpecWithoutHandler[persona] ?? 0) + 1;
         const scheduledRowsPreview = spec.rows
           .filter((r) => r.kind === "scheduled")
           .slice(0, 3)
@@ -477,7 +468,6 @@ export function run(opts: RunOpts = {}): ReconResult {
         result.asserted++;
         const declared = spec?.declaredEvents.has(eventType) ?? false;
         if (!declared) {
-          handlerWithoutSpec++;
           violations.push({
             subject: `${persona}:handler:${handler.trigger}:${eventType}`,
             message: `Handler ${handler.key} (kind: "${handler.kind}") subscribes to \`${eventType}\` but persona ${persona}'s §7 table declares no row for it. The handler fires on an event the agent's mandate doesn't authorise — Principle 7 documentation drift. Either add a §7 row OR retire the subscription. Citations: ${CITATIONS.join(", ")}.`,
@@ -492,7 +482,6 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (idx.scheduledCount > 0) {
       result.asserted++;
       if (!spec?.hasScheduledRow) {
-        handlerWithoutSpec++;
         const handlersPreview = idx.handlers
           .filter((h) => h.kind === "scheduled")
           .slice(0, 3)
