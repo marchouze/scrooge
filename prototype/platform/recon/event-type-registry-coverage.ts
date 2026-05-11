@@ -158,10 +158,11 @@ function listTsFiles(dir: string, base: string, out: string[]): void {
 
 function readFactoryNames(prototypeDir: string): Set<string> {
   // F-020 split: factories were originally all in `event-types.ts`. As that
-  // file is broken up by domain (Atlas, post-F-020), factories may live in
+  // file is broken up by domain (Atlas, F-020 landed), factories now live in
+  // per-domain modules under `platform/event-store/event-types/` as well as
   // any sibling `event-types-*.ts` under `platform/event-store/` or in
   // domain-local modules such as `platform/markets/cdm/equity.ts`. The
-  // recon scans both surfaces so a moved-but-not-deleted factory is still
+  // recon scans all surfaces so a moved-but-not-deleted factory is still
   // discoverable.
   const out = new Set<string>();
   const re = /^export\s+function\s+make([A-Z][A-Za-z0-9]*)\s*\(/gm;
@@ -171,6 +172,14 @@ function readFactoryNames(prototypeDir: string): Set<string> {
     for (const name of readdirSync(eventStoreDir)) {
       if (name === "event-types.ts" || name.startsWith("event-types-")) {
         if (name.endsWith(".ts")) scanPaths.push(resolve(eventStoreDir, name));
+      }
+    }
+    // F-020 per-domain split: all per-domain modules live under
+    // `platform/event-store/event-types/`. Scan every .ts in that subdir.
+    const eventTypesSplitDir = resolve(eventStoreDir, "event-types");
+    if (existsSync(eventTypesSplitDir)) {
+      for (const name of readdirSync(eventTypesSplitDir)) {
+        if (name.endsWith(".ts")) scanPaths.push(resolve(eventTypesSplitDir, name));
       }
     }
   }
@@ -262,6 +271,13 @@ function readFactoryConsumers(prototypeDir: string, factories: ReadonlySet<strin
     if (rel === "platform/event-store/event-types.ts") return true;
     if (
       rel.startsWith("platform/event-store/event-types-") &&
+      (rel.endsWith(".ts") || rel.endsWith(".tsx"))
+    )
+      return true;
+    // F-020 per-domain split: per-domain modules under event-types/ are
+    // factory-defining files and must not self-count as consumers.
+    if (
+      rel.startsWith("platform/event-store/event-types/") &&
       (rel.endsWith(".ts") || rel.endsWith(".tsx"))
     )
       return true;
