@@ -6,7 +6,7 @@
 // PartyRegistered event with kind-specific kindAttributes.
 //
 // Standing authority: Standing CEO authority over substrate architecture
-// (Principles 1, 2, 5, 6 in CLAUDE.md). Closes the Principle 6 orphan that
+// (Principles 1, 2, 5, 6 in CLAUDE.md). Closes the Principle 2 orphan that
 // natural-person free-string references currently create.
 //
 // Run once; idempotent (skips ids already recorded).

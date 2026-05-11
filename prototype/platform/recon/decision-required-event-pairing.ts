@@ -101,7 +101,7 @@ interface RecordSummary {
 
 function gatherRecords(ownerInboxDir: string): RecordSummary[] {
   // Reuse the dashboard's parser — same regex, same fallbacks, same
-  // "actioned/" subdirectory scan. Diverging would be a Principle 6
+  // "actioned/" subdirectory scan. Diverging would be a Principle 2
   // violation (two parsers for the same canonical surface).
   const summaries = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
   // We need the source filename for diagnostics; the dashboard's helper

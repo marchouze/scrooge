@@ -35,7 +35,7 @@
 //
 // What this handler does NOT do (deferred per brief "Out of scope"):
 //   - Procedure-side citations — those land per-procedure as Owen + domain
-//     leads write each procedure under Principle 6's downward chain.
+//     leads write each procedure under Principle 2's downward chain.
 //   - Policy-side citations — those land in the policy register against
 //     each policy.
 //   - URN-to-consumer reconciliation — the brief asks that "every URN

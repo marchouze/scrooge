@@ -89,13 +89,13 @@ Per the spec partner § 4 — the new Vera (Internal-audit / continuous-assuranc
 
 ## 8. Manual steps
 
-- **Camille (CFO governance) sign-off (Step 8)** is a human-judgment step captured as a typed event. Per Principle 7, the human-actor exception is registered: CFO sign-off of financial statements is a regulatory expectation that cannot be agent-default within the foreseeable build-phase horizon.
+- **Camille (CFO governance) sign-off (Step 8)** is a human-judgment step captured as a typed event. Per Principle 6, the human-actor exception is registered: CFO sign-off of financial statements is a regulatory expectation that cannot be agent-default within the foreseeable build-phase horizon.
 - **External-counsel ratification of `[citation: TBC]` section refs** (Companies Act, Banks Act, IFRS / IAS sub-paragraphs) is a manual step routed to Imani (Legal-as-code engineer) at licence-application gate — Principle 2 citation discipline.
 - **External auditor walkthrough** of the annual consolidation cycle is a future cadence step at audit-engagement (post-CAE substrate; auditor is appointed at licence-application moment per CLAUDE.md operating model).
 
 ## 9. Substrate gaps (named, not built in this PR)
 
-Per Principle 7 substrate-gap-naming discipline. v0 substrate scaffolds without v1 engineering — gaps queued behind named owners. (Mirrors the spec partner § 5.)
+Per Principle 6 substrate-gap-naming discipline. v0 substrate scaffolds without v1 engineering — gaps queued behind named owners. (Mirrors the spec partner § 5.)
 
 1. **Per-entity ledger separation in the event store.** `entityId` field on every accounting event; per-entity ledger views as queries filtered by `entityId`. Cross-references Atlas's `LegalEntityRegistered` family on `claude/atlas-legal-entity-event-family-v0`. **Owner: Atlas + Bea — v1.**
 2. **Inter-company elimination event types** (`IntraGroupTransactionMatched`, `IntraGroupBalanceEliminated` with sub-types per the elimination taxonomy, `MinorityInterestComputed`) added to `prototype/platform/event-store/event-types.ts`. **Owner: Atlas + Bea — v1.**
@@ -109,7 +109,7 @@ Per Principle 7 substrate-gap-naming discipline. v0 substrate scaffolds without 
 | Failure mode | Detection | Escalation |
 |---|---|---|
 | Recon-harness finding (any of the five §6 assertions fails) | `consolidation-recon` query | Bea + Camille within close-cycle SLA; sign-off blocked |
-| Camille withholds sign-off (Step 8) | Sign-off event not emitted by sign-off SLA | CEO (Marc, today via Scrooge) — escalation channel per Principle 7 |
+| Camille withholds sign-off (Step 8) | Sign-off event not emitted by sign-off SLA | CEO (Marc, today via Scrooge) — escalation channel per Principle 6 |
 | Group composition change not reflected in scope | Atlas `LegalEntityRegistered` / `LegalEntityDeregistered` event without consolidation-scope refresh | Bea + Atlas; consolidation engine re-evaluates IFRS 10 control |
 | Citation drift (`[citation: TBC]` persisting past licence-application gate) | Mira (Compliance / RegTech engineer) obligations-register query | Mira + Imani (Legal-as-code engineer); Principle 2 violation |
 | BA-return parity mismatch (assertion 5) | Recon-harness finding | Bea + Camille + Eitan (Treasurer, governance) — capital / liquidity reporting consequence |

@@ -294,7 +294,7 @@ export function makeAgentEscalationOverdue(args: {
 // (i.e. autonomously). Distinct from CeoDecision (which records a human
 // decision). Vera pipeline #15 reconciles AgentDecision events to the
 // agent's declared decision-scope: an AgentDecision outside scope is a
-// reportable finding (procedure violation under Principle 6).
+// reportable finding (procedure violation under Principle 2).
 // ---------------------------------------------------------------------------
 
 export const agentDecisionPayloadSchema = z.object({
@@ -462,7 +462,7 @@ export function makeRiskRaised(args: {
 //
 // Emitted when Atlas's registry component validates a `/Team/<Name>.md`
 // agent operating spec and admits the agent into the runtime fleet
-// (Principle 7; Atlas substrate spec §3.1, §4 row #1). The runtime's
+// (Principle 6; Atlas substrate spec §3.1, §4 row #1). The runtime's
 // authoritative state is the event log — `AgentRegistry.list()` and
 // `lookup()` are queries that fold this stream.
 //
@@ -3693,7 +3693,7 @@ export function makeAgentRunStarted(args: {
 // RMS-3 — AgentRunCompleted
 //
 // Closes the run lifecycle. Records the deliverable document hashes, the
-// substrate gaps the run surfaced (Principle 7 — surface, do not hide),
+// substrate gaps the run surfaced (Principle 6 — surface, do not hide),
 // citations, and any follow-on routes the agent fans out (downstream briefs,
 // decisions, register updates). Reduces into Records-of-agent-runs (closes
 // the row); each `deliverableDocumentHash` becomes a Document Register row;
@@ -3726,7 +3726,7 @@ export const agentRunCompletedPayloadSchema = z.object({
   /** BLAKE3 hashes of the run's deliverable documents. May be empty for `withdrawn`. */
   deliverableDocumentHashes: z.array(documentHashSchema),
   /**
-   * Substrate gaps the run surfaced (Principle 7 — surface gaps, do not hide).
+   * Substrate gaps the run surfaced (Principle 6 — surface gaps, do not hide).
    * Free-form sentences naming what blocked a fully-autonomous run.
    */
   substrateGapsSurfaced: z.array(z.string().min(1)),
@@ -4162,7 +4162,7 @@ export type BankAccountType = z.infer<typeof bankAccountTypeSchema>;
  * A single chart-of-accounts mapping anchored to the GL leaf account ID
  * (`ACC-NNNN-NNN`) defined in `prototype/platform/accounting/_chart-of-
  * accounts.md`. Stored as a typed reference rather than denormalised
- * (Principle 6 — single graph; account-master cites the leaf, never copies
+ * (Principle 2 — single graph; account-master cites the leaf, never copies
  * its classification fields). Downstream consumers resolve the leaf via
  * Anya's semantic-layer registry (see PR #156 — `Balance` /
  * `CashAndBalancesAtSARB` entries' `formula` strings cite this same leaf).

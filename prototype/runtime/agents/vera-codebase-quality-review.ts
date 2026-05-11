@@ -9,7 +9,7 @@
 // -------------------------------------------------------------
 // When Marc asks for a codebase quality review, today such reviews fire
 // as Scrooge-coordinated in-session dispatches with a bespoke prompt
-// (Principle 7 fallback). That cost falls on Scrooge every week. This
+// (Principle 6 fallback). That cost falls on Scrooge every week. This
 // handler removes the per-dispatch cost for the deterministic-checkable
 // subset (any-density, swallowed-errors, legacy-bypass-watch) — i.e.
 // the "is the codebase eroding" mechanical signals.
@@ -25,7 +25,7 @@
 // ---------
 //   - GOV-FRAMEWORK-CAE-INDEPENDENCE — Vera's mandate authority
 //   - D-AGENT-RUNTIME-AUTHORIZE       — the slice's authorising decision (S8)
-//   - Principle 7 (autonomous by default)
+//   - Principle 6 (autonomous by default)
 //
 // Author: Atlas (Core banking platform architect, engineering — runtime
 // plumbing) · Vera (Internal audit engineer, third-line — recon substance)

@@ -143,7 +143,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!personaFileExists(m.agent, teamDir)) {
       violations.push({
         subject: m.key,
-        message: `Metadata agent "${m.agent}" has no persona file at Team/${m.agent}.md. Runtime handlers must own a real persona (Principle 7 — every step has a named, accountable owner).`,
+        message: `Metadata agent "${m.agent}" has no persona file at Team/${m.agent}.md. Runtime handlers must own a real persona (Principle 6 — every step has a named, accountable owner).`,
         severity: "fail",
       });
     }

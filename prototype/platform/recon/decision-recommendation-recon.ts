@@ -6,7 +6,7 @@
 // Rationale (Marc, 2026-05-07): an agent that raises a decision for the CEO
 // always has a view — silent options-lists hide the agent's analysis behind
 // a generic prompt, force the CEO to do the synthesis the agent already did,
-// and quietly violate Principle 7 (autonomous-by-default; humans oversee
+// and quietly violate Principle 6 (autonomous-by-default; humans oversee
 // the *residual*). A missing recommendation on an open decision is therefore
 // a controls finding, not a UI quirk.
 //

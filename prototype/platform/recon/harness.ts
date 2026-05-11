@@ -4,7 +4,7 @@
 // round-trip a synthetic event stream with deterministic results.
 //
 // Future: GL trial balance ↔ event-derived balance ↔ sub-ledger projection
-// must reconcile to zero on every CI run (Principle 1, Principle 6).
+// must reconcile to zero on every CI run (Principle 1, Principle 2).
 //
 // Author: Anya (data / analytics engineer) · Atlas (platform plumbing)
 

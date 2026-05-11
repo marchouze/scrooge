@@ -10,7 +10,7 @@ The canonical typed form is one JSON object per rule, validating against [`posti
 
 - **Principle 1 (events are truth).** A balance is `sum over events of (postings produced by the matched rule for that event)`. The rule register is what makes that fold deterministic and replayable as-of any date.
 - **Principle 2 (citations).** Every rule cites the IFRS reference, regulation ID, and policy that justify the posting choice.
-- **Principle 6 (no orphans).** Every event type that flows postable financial change must have at least one rule. Vera's planned recon asserts no postable event type is silently dropped.
+- **Principle 2 (no orphans).** Every event type that flows postable financial change must have at least one rule. Vera's planned recon asserts no postable event type is silently dropped.
 
 ## Coverage today
 

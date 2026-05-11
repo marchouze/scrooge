@@ -175,7 +175,7 @@ table is a Vera finding (recon pipeline to land — see substrate gaps).
 
 ## Substrate gaps surfaced
 
-Per Principle 7.
+Per Principle 6.
 
 | # | Gap | Owner(s) | Trigger |
 |---|---|---|---|
@@ -188,7 +188,7 @@ Per Principle 7.
 ## Citation chain
 
 - **Principle 1** ([`CLAUDE.md`](../CLAUDE.md)) — events as source of truth; the relationships register is a projection.
-- **Principle 6** ([`CLAUDE.md`](../CLAUDE.md)) — single-graph discipline; edges are first-class citizens of the citable graph.
+- **Principle 2** ([`CLAUDE.md`](../CLAUDE.md)) — single-graph discipline; edges are first-class citizens of the citable graph.
 - **D-PARTY-REGISTER** ([`Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md`](../Owner%20Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md)).
 - **D-PARTY-RELATIONSHIP-KINDS-V0** ([`Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md`](../Owner%20Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md)).
 - **D-PARTY-REGISTER-CORRECTION** ([`Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register-correction.md`](../Owner%20Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register-correction.md)).

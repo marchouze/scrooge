@@ -74,8 +74,8 @@ export interface SourcePaths {
   readonly proceduresIndex: string;
   readonly curated: string;
   readonly teamDir: string; // /Team — persona files
-  readonly teamRoster: string; // /Team/_team-roster.json — canonical roster (Principle 6)
-  readonly principlesDir: string; // /Principles — one file per principle (Principle 6 single-graph)
+  readonly teamRoster: string; // /Team/_team-roster.json — canonical roster (Principle 2)
+  readonly principlesDir: string; // /Principles — one file per principle (Principle 2 single-graph)
   readonly ownerInboxDir: string; // /Owner Inbox — deliverables
   readonly bankNameRegister: string; // /Regulations/_bank-name.md — canonical bank-name register
 }
@@ -374,7 +374,7 @@ function readLines(path: string): string[] {
 // source: /Principles/<n>-<slug>.md — one file per principle. The file's
 // `# Principle N — <title>` heading carries the canonical title; the first
 // non-empty paragraph below the heading is the summary. The Principles
-// directory is the single source of truth (Principle 6 single-graph
+// directory is the single source of truth (Principle 2 single-graph
 // discipline); CLAUDE.md renders pointers but does not own the text.
 function parsePrinciples(principlesDir: string): readonly Principle[] {
   if (!existsSync(principlesDir)) return [];
@@ -496,7 +496,7 @@ function procedureStats(proceduresIndex: string): ProcStats {
 }
 
 // source: Team/_team-roster.json `topOfHouse` block. The roster JSON is
-// the single source of truth (Principle 6 single-graph discipline);
+// the single source of truth (Principle 2 single-graph discipline);
 // CLAUDE.md narrates around it but does not own the data. CLAUDE.md text
 // is also read for `openSeatStatusFor` to surface per-seat status notes.
 function parseTopOfHouse(
@@ -1330,7 +1330,7 @@ function resolvedDecisionsForAgent(
 
 // ---------------------------------------------------------------------------
 // Agent roster — walks /Team/*.md so engineering agents (not just CEO direct
-// reports) appear on the agents page. Per Principle 6 (presentations derive
+// reports) appear on the agents page. Per Principle 2 (presentations derive
 // from data), the page renders whatever the canonical /Team/ directory holds;
 // the directReports list from CLAUDE.md is used to flag governance seats.
 // ---------------------------------------------------------------------------
@@ -1434,7 +1434,7 @@ interface DeriveAgentsInput {
 
 // ---------------------------------------------------------------------------
 // Reports-to mapping — parsed from CLAUDE.md "Engineering vs governance"
-// paragraph + the Vera CAE-line statement. Per Principle 7 (autonomous
+// paragraph + the Vera CAE-line statement. Per Principle 6 (autonomous
 // agents) and the CEO directive of 2026-05-07: every direct-report rolls up
 // the duties of those reporting to them.
 // ---------------------------------------------------------------------------
@@ -1753,7 +1753,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     .sort((a, b) => (a.asOf < b.asOf ? 1 : -1))
     .slice(0, 50);
 
-  // Canonical bank-name register (Principle 6 downward derivation): prefer
+  // Canonical bank-name register (Principle 2 downward derivation): prefer
   // /Regulations/_bank-name.md; fall through to the curated seed if the
   // register is unreadable. Drift between the two is a Vera Wave-4 #16
   // prose-duplication finding.

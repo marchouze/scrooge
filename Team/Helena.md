@@ -146,4 +146,4 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CRO hire confirmation. |
-| v1.0 | 2026-05-07 | Helena (via Scrooge) | Upgraded to agent operating spec under Principle 7. |
+| v1.0 | 2026-05-07 | Helena (via Scrooge) | Upgraded to agent operating spec under Principle 6. |

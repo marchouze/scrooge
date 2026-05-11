@@ -72,8 +72,8 @@ decision-recommendation: Approve A0 schema-freeze immediately; sequence A1–A3 
 ## Why this convention exists
 
 - **Single source of truth.** The dashboard is *derived*, never hand-edited (`feedback_dashboard_always_derived`). Frontmatter is the canonical input for the Owner Inbox feed and decision lifts.
-- **Principle 6 (downward).** The dashboard is a query over Owner Inbox + the event store; nothing about a deliverable is authored at the dashboard layer.
-- **Principle 7 (autonomous by default).** Agent-authored deliverables that need human discretion are surfaced through this channel; the CEO sees them where work happens, not in chat.
+- **Principle 2 (downward).** The dashboard is a query over Owner Inbox + the event store; nothing about a deliverable is authored at the dashboard layer.
+- **Principle 6 (autonomous by default).** Agent-authored deliverables that need human discretion are surfaced through this channel; the CEO sees them where work happens, not in chat.
 - **Audit-friendliness.** Frontmatter gives Vera's pipelines a typed handle on every deliverable — title, author, decision-required state, decision-id — without parsing prose.
 
 ## Coverage

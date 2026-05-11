@@ -145,4 +145,4 @@ Devon is the first-line executive for operations and engineering; Helena (CRO, s
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from COO hire confirmation. |
-| v1.0 | 2026-05-07 | Devon (via Scrooge) | Upgraded to agent operating spec under Principle 7; sections 6–17 added; sections 1–5 preserved with minimal copy-edits for template alignment. |
+| v1.0 | 2026-05-07 | Devon (via Scrooge) | Upgraded to agent operating spec under Principle 6; sections 6–17 added; sections 1–5 preserved with minimal copy-edits for template alignment. |

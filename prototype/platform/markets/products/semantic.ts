@@ -8,7 +8,7 @@
 // (the source brief; D-PRODUCT-CONSTRUCTION-SUBSTRATE).
 // Per Principle 2, every named quantity carries a citation chain
 // (event-payload → projection rule → presentation field).
-// Per Principle 6, no orphan: every entry resolves bidirectionally to
+// Per Principle 2, no orphan: every entry resolves bidirectionally to
 // the source brief, the parallel-stream policy proposal
 // (D-NEW-PRODUCT-APPROVAL-POLICY) and the Product Register projection.
 //
@@ -393,7 +393,7 @@ export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[
     id: "product-dimension-attestation",
     name: "Product dimension attestation",
     definition:
-      "Typed attestation by the responsible agent that a single due-diligence dimension is cleared for a product version. Per Q2 resolution, the per-dimension agent emits its own attestation (Principle 7); per Q3 resolution, attestations are typed events with `result` distinguishing design vs implementation. A `ProductApproved` event cannot validly fire until all 14 `ProductDimensionAttested` events have landed for the same `productId @ version` (source brief §5(d)); Vera's slice-8 recon asserts this discipline.",
+      "Typed attestation by the responsible agent that a single due-diligence dimension is cleared for a product version. Per Q2 resolution, the per-dimension agent emits its own attestation (Principle 6); per Q3 resolution, attestations are typed events with `result` distinguishing design vs implementation. A `ProductApproved` event cannot validly fire until all 14 `ProductDimensionAttested` events have landed for the same `productId @ version` (source brief §5(d)); Vera's slice-8 recon asserts this discipline.",
     cdmPrimitive:
       "ProductDimensionAttested { productId, version, dimension, result, attestedBy, attestedAt, citationChain }",
     projectionRule:

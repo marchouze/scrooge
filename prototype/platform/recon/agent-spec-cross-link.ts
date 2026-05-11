@@ -7,7 +7,7 @@
 // that each /Team/<Name>.md carries §6–§17 with substantive bodies. This
 // pipeline asserts the next layer up: that the *cross-references* in
 // those sections resolve into the single citable graph mandated by
-// Principle 6 (no orphans; every reference is a typed citation that
+// Principle 2 (no orphans; every reference is a typed citation that
 // resolves to a real artefact, not a prose mention). It is the upward
 // half of "every persona is structurally available to the
 // policy / procedure / regulation reconciliation graph".
@@ -140,7 +140,7 @@ function extractSection(content: string, num: number, label: string): string | u
 
 /**
  * Parse the team roster. Canonical source is `Team/_team-roster.json`
- * (Principle 6 single-graph discipline — the JSON is authoritative;
+ * (Principle 2 single-graph discipline — the JSON is authoritative;
  * CLAUDE.md and the dashboard are renders). Returns the lower-cased
  * name set. Used as the resolution table for §10 escalation targets.
  */

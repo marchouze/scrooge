@@ -5,7 +5,7 @@
 // Layer 1 of the prevention strategy agreed with Marc on 2026-05-07 after the
 // Devon.md / Camille.md drift incident (persona Mandate paragraphs enumerated
 // direct reports in prose; the prose went stale; the dashboard's parseMandate
-// rendered the stale prose; Principle 6 was thereby violated despite the
+// rendered the stale prose; Principle 2 was thereby violated despite the
 // derivation engine working correctly).
 //
 // The general failure mode this pipeline targets:

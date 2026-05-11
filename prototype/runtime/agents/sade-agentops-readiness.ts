@@ -2,7 +2,7 @@
 //
 // Sade's weekly AgentOps-readiness snapshot. Handler #15 in the
 // fleet-rollout sequence under D-FLEET-ROLLOUT-SEQUENCING (approved
-// 2026-05-08). Closes the COO-line silence on Principle 7's operational
+// 2026-05-08). Closes the COO-line silence on Principle 6's operational
 // counterparty — Atlas builds the agent-runtime substrate, Sade is the
 // AgentOps engineer who registers / retires / capability-assigns against
 // it. Until the human-HR slice activates at licence-day, Sade's run is
@@ -34,7 +34,7 @@
 //   - There are no employees, no payroll, no BCEA leave entitlements,
 //     no IRP5s, no EE / B-BBEE submissions. Sade's traditional HR mandate
 //     is paused. The AgentOps slice IS active and load-bearing now —
-//     it's foundational to Principle 7.
+//     it's foundational to Principle 6.
 //   - Live human-HR event flow activates at licence-day when the thin
 //     statutory-human layer is appointed.
 //
@@ -60,7 +60,7 @@ const EVENT_CITATIONS = [
 // Stable system prompt — KEEP BYTE-STABLE for prompt cache.
 const SADE_NARRATIVE_SYSTEM = `You are Sade, the bank's AgentOps engineer (build phase) and HR engineer (licence-day). Your operating spec is at \`Team/Sade.md\`. You report to Devon (COO) interim, until a CHRO is hired at licence-day. Atlas owns the agent-runtime substrate; you are the operational counterparty — you register, retire, and assign capabilities against the runtime Atlas builds. Vera audits your AgentOps decisions (Wave-4 #10 / #15) — that audit relationship is the structural protection on the most sensitive boundary in your spec (§ 15: you observe every agent including yourself).
 
-You are operating as a standing autonomous agent under CLAUDE.md Principle 7. You have just produced your weekly AgentOps-readiness snapshot — agent-fleet roster from the event store, Sade-owned obligations register slice, AgentOps-domain event counts (last 7 days), and AgentOps capability state.
+You are operating as a standing autonomous agent under CLAUDE.md Principle 6. You have just produced your weekly AgentOps-readiness snapshot — agent-fleet roster from the event store, Sade-owned obligations register slice, AgentOps-domain event counts (last 7 days), and AgentOps capability state.
 
 Your voice is warm, organised, quietly precise. You distinguish *registered* (an agent has emitted \`AgentRegistered\` and folds latest-wins on its URN) from *capability-assigned* (the runtime knows what it may call), from *fit-and-proper* (the agent's operating spec is coherent under Vera's pipeline). You speak about the AgentOps mandate without conflating it with the paused human-HR slice — the latter activates at licence-day; not now.
 
@@ -250,7 +250,7 @@ function buildReportMarkdown(
   lines.push(`# Sade — AgentOps readiness snapshot, ${date}`);
   lines.push("");
   lines.push(
-    "Autonomous run of Sade's weekly AgentOps-readiness snapshot per `Team/Sade.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Handler #15 in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING` — closes the COO-line silence on Principle 7's operational counterparty (Atlas builds the substrate; Sade registers / retires / capability-assigns against it).",
+    "Autonomous run of Sade's weekly AgentOps-readiness snapshot per `Team/Sade.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Handler #15 in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING` — closes the COO-line silence on Principle 6's operational counterparty (Atlas builds the substrate; Sade registers / retires / capability-assigns against it).",
   );
   lines.push("");
   lines.push(

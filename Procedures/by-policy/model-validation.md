@@ -21,7 +21,7 @@
 | RAS B7 (CEO approved) | Internal three-tier model-risk regime per SR 11-7 idiom. | Cycle cadence dispatch on tier; model-registry production-eligibility flag. |
 | SR 11-7 (US Federal Reserve / OCC) — used as reference | Independent validation, effective challenge, ongoing monitoring. | Methodology authority (Nadia); cycle outcome (Helena). |
 | SS 1/23 (PRA — UK) — used as reference | Model-risk management principles aligned to SR 11-7. | Methodology authority (Nadia). |
-| BCBS Corporate Governance Principles for Banks (2015) Principle 6 | Risk function independent; CRO accountable for the framework. | CRO ownership of cycle outcome per §4. |
+| BCBS Corporate Governance Principles for Banks (2015) Principle 2 | Risk function independent; CRO accountable for the framework. | CRO ownership of cycle outcome per §4. |
 | Banks Act 94 of 1990 § 70(2A)(b) [citation: TBC — exact subsection pending Mira register row per `D-S7-TARGETED-3-5-OPEN-QUESTIONS` sub-decision A.5] | Risk-management framework — model-risk subset. | Cycle is the operative procedure under the framework. |
 | Regulations Relating to Banks Reg 39 [citation: TBC — Reg 39 cross-reference pending Mira register row] | Risk-management framework requirements. | Cycle integrates into the RMF. |
 

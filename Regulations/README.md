@@ -8,7 +8,7 @@
 
 The regulatory library is the **canonical store** of every regulator instrument, standard, and code that creates an obligation on the bank, together with structured analysis showing where each obligation is fulfilled in the bank's policy stack.
 
-It is the operational expression of **Principle 2** (every action traces to a source) and the substrate for **Principle 6** (where presentations summarise from, going up the layered hierarchy).
+It is the operational expression of **Principle 2** (every action traces to a source) and the substrate for **Principle 2** (where presentations summarise from, going up the layered hierarchy).
 
 ## What lives here
 

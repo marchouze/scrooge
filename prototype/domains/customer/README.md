@@ -29,7 +29,7 @@ domains/customer/
 8. **Continuous KYC** — Mira's recurring + signal-driven re-evaluation.
 9. **Off-boarding** — symmetric end of lifecycle.
 
-## Procedures backed by this module (Principle 6 — upward chain)
+## Procedures backed by this module (Principle 2 — upward chain)
 
 - `Procedures/by-policy/kyc-onboarding.md` — invoked at stage 3 (existing).
 - `Procedures/by-policy/sanctions-screening.md` — invoked at stage 3 (existing).
@@ -53,6 +53,6 @@ domains/customer/
 - It does not assign mandates (Saskia's franchise design owns the mandate-assignment authority within Helena's RAS).
 - It does not store PII; counterparty data is held by reference + minimal demographic fields. Per the build-only posture, all data is `SIMULATED`.
 
-## Substrate-replacement seam (Principle 6 — upward chain)
+## Substrate-replacement seam (Principle 2 — upward chain)
 
 This module imports only `@platform/*` interfaces (`@platform/event-store`, `@platform/projections`, `@platform/identity`). The cloud lift (M8) swaps the substrates without touching this module.

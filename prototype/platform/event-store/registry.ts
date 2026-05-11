@@ -2245,7 +2245,7 @@ const RAS_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "ORG-PR-04",
     ],
     // Risk-appetite calibration is a CRO-ratified governance event under
-    // Banks Act § 60+ + BCBS Corporate Governance Principle 6 — director-
+    // Banks Act § 60+ + BCBS Corporate Governance Principle 2 — director-
     // decision retention class (7y, hot-cool-archive).
     retention: RETENTION_GOVERNANCE_7Y,
     source:

@@ -9,7 +9,7 @@
 //   • WorkstreamCompleted — WS-CISO-RECRUITMENT     (Rashida hired & in seat)
 //   • WorkstreamCompleted — WS-IA-CHARTER           (charter + plan approved)
 //   • CeoDecision         — D10 autonomous-agents   (operating-model rule;
-//                                                    new Principle 7)
+//                                                    new Principle 6)
 //
 // Idempotency: event IDs are deterministic (event_id derived from a fixed
 // seed string per backfill row). Re-running the script is a no-op because
@@ -29,7 +29,7 @@ interface BackfillRow {
 
 // The agent-rule decision: Marc set this on 2026-05-07 — bank is run by
 // autonomous agents, humans oversee the residual. Captured in
-// `feedback_synchronous_delegation.md` (memory) and as the new Principle 7
+// `feedback_synchronous_delegation.md` (memory) and as the new Principle 6
 // in `CLAUDE.md`. Source-of-truth event, so the dashboard reflects it.
 const AS_OF = "2026-05-07T05:35:00.000Z";
 
@@ -92,7 +92,7 @@ const ROWS: BackfillRow[] = [
   },
   {
     description:
-      "D10 autonomous-agents — operating-model rule; new Principle 7 (Autonomous by default)",
+      "D10 autonomous-agents — operating-model rule; new Principle 6 (Autonomous by default)",
     event: {
       event_id: "evt-backfill-2026-05-07-d10-autonomous-agents",
       type: "CeoDecision",
@@ -105,7 +105,7 @@ const ROWS: BackfillRow[] = [
         title: "Autonomous-agent operating model — personas as standing agents",
         action: "approve",
         outcome:
-          "Approved. Bank operates as an autonomous AI-run institution: every persona is a standing agent that runs on its own cadence; humans (CEO; future overseers) supervise the residual set of decisions and actions agents cannot make on their own. New Principle 7 (Autonomous by default; humans oversee the residual). CLAUDE.md and Team/Saskia.md updated; remaining /Team/ files to be upgraded to operating-spec form as a roadmap item.",
+          "Approved. Bank operates as an autonomous AI-run institution: every persona is a standing agent that runs on its own cadence; humans (CEO; future overseers) supervise the residual set of decisions and actions agents cannot make on their own. New Principle 6 (Autonomous by default; humans oversee the residual). CLAUDE.md and Team/Saskia.md updated; remaining /Team/ files to be upgraded to operating-spec form as a roadmap item.",
         comment:
           "Supersedes the earlier same-day 'delegation is synchronous' rule. Memory: feedback_synchronous_delegation.md.",
       },

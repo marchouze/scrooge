@@ -115,7 +115,7 @@ contracts are executed.
 
 ## Substrate gaps surfaced
 
-Per Principle 7 (substrate-gap inventory transparency).
+Per Principle 6 (substrate-gap inventory transparency).
 
 | # | Gap | Owner(s) | Trigger |
 |---|---|---|---|
@@ -128,7 +128,7 @@ Per Principle 7 (substrate-gap inventory transparency).
 
 - **Principle 1** (`CLAUDE.md`) — events as source of truth; entity tree is materialised in the event log.
 - **Principle 5** (`CLAUDE.md`) — multi-entity from day one.
-- **Principle 6** (`CLAUDE.md`) — single-graph discipline; this is a *standard*-layer artefact deriving downward from regulation + the v0 spec.
+- **Principle 2** (`CLAUDE.md`) — single-graph discipline; this is a *standard*-layer artefact deriving downward from regulation + the v0 spec.
 - **D-LEGAL-ENTITY-TREE-V0** (`Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md`, PR #82).
 - **D-REGULATORY-PERIMETER** (`Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md`, PR #85).
 - **Imani + Owen joint v0 spec** (`Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md`).

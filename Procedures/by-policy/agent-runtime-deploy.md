@@ -25,7 +25,7 @@
 
 ## 3. Purpose
 
-Govern every change to the agent-runtime substrate — the platform on which every persona in `/Team/` runs as a standing autonomous agent (Principle 7). Without this procedure, substrate changes happen ad-hoc; with it, every change is threat-modelled, audit-visible, and reproducible.
+Govern every change to the agent-runtime substrate — the platform on which every persona in `/Team/` runs as a standing autonomous agent (Principle 6). Without this procedure, substrate changes happen ad-hoc; with it, every change is threat-modelled, audit-visible, and reproducible.
 
 In the build phase the procedure runs against the local-first substrate (per the implementation sequence in CLAUDE.md Principle 3). At licence-day with the cloud lift (M8), the same procedure runs against the Azure deployment without architectural change — the steps adapt where they reference local-vs-cloud primitives.
 

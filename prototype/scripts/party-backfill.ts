@@ -648,7 +648,7 @@ function backfillAgents(
           },
           citations: [
             "[citation: D-PARTY-REGISTER]",
-            "[citation: Principle 7 — autonomous-by-default]",
+            "[citation: Principle 6 — autonomous-by-default]",
             ...(reportsToLabel
               ? [`[citation: reports-to label from AgentRegistered payload: ${reportsToLabel}]`]
               : []),

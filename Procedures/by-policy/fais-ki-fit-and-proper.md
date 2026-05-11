@@ -140,7 +140,7 @@ The five Determination of Fit and Proper Requirements 2017 dimensions, each with
 
 - **Sworn declarations** (1.2, 4.1, 5.3) are signed by the candidate; ECTA Schedule 1 does not exclude these from electronic signature, so they're handled through the bank's e-signing pipeline (Imani's substrate). Treated as digitised events at point of signing.
 - **External-counsel ratification of the [citation: TBC] section refs** is a manual step (counsel reads the FSCA Determination and confirms the section anchors), justified under Principle 2 (legal interpretation requires human judgment); routed to Imani at licence-application gate.
-- **Zara's review (6.2)** and **Owen's ratification (6.3)** are human-judgment steps captured as typed events. Per Principle 7, the human-actor exception is registered: governance-line approval of fit-and-proper assessments is a regulatory-judgement step that cannot be agent-default until the regulator accepts agent-issued fit-and-proper attestations (not foreseeable in the build-phase horizon).
+- **Zara's review (6.2)** and **Owen's ratification (6.3)** are human-judgment steps captured as typed events. Per Principle 6, the human-actor exception is registered: governance-line approval of fit-and-proper assessments is a regulatory-judgement step that cannot be agent-default until the regulator accepts agent-issued fit-and-proper attestations (not foreseeable in the build-phase horizon).
 
 ## 9. Failure modes and escalation
 
@@ -155,7 +155,7 @@ The five Determination of Fit and Proper Requirements 2017 dimensions, each with
 
 ## 10. Substrate gaps (named, not built in this PR)
 
-Per CLAUDE.md "Steady-state vs current substrate" and Principle 7 substrate-gap-naming discipline. This procedure deliberately scaffolds without the underlying engineering substrate — the substrate is queued behind named owners.
+Per CLAUDE.md "Steady-state vs current substrate" and Principle 6 substrate-gap-naming discipline. This procedure deliberately scaffolds without the underlying engineering substrate — the substrate is queued behind named owners.
 
 1. **Five typed dimension events + the composite event** need adding to `prototype/platform/event-store/event-types.ts`: `BackgroundCheckCompleted`, `CompetenceAttestationFiled`, `OperationalAbilityAssessed`, `FinancialSoundnessAttested`, `OversightStructureRecorded`, `FaisKiFitAndProperFileApproved`. **Owner: Atlas (Core banking platform architect)** — v1 substrate follow-on.
 2. **Substrate-side TypeScript module** at `prototype/platform/officers/fais-ki-fit-and-proper.ts` — five-dimension orchestrator that subscribes to input feeds, emits the dimension events, and computes the composite-approval reconciliation. **Owner: Atlas + Sade joint follow-on.**
