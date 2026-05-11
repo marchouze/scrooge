@@ -142,6 +142,9 @@ const _map: Record<string, AgentRunHandler> = {
   "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
   "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
   "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
+  // saskia:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  "saskia:goal-loop": saskiaGoalLoop,
   "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,
   "kai:pre-trade-gateway-aggregator": kaiPreTradeGatewayAggregator,
   "bea:accounting-readiness": beaAccountingReadiness,
