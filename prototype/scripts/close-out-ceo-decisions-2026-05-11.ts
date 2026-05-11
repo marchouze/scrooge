@@ -174,10 +174,7 @@ function main(): number {
     } catch (e) {
       const msg = (e as Error).message;
       failures.push({ label: "#1 D-PRINCIPLES-P2-P6-MERGE", err: msg });
-      logger.error(
-        { decisionId: PRINCIPLES_ENTRY.decisionId, err: msg },
-        "#1 failed",
-      );
+      logger.error({ decisionId: PRINCIPLES_ENTRY.decisionId, err: msg }, "#1 failed");
     }
   }
 
