@@ -25,6 +25,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import type { RiskTaxonomyCode } from "../platform/risk/taxonomy";
 import { classifyBinds, classifySources } from "./policy-register";
 
 interface ObligationDetail {
@@ -62,6 +63,14 @@ interface ObligationDetail {
    * source-family rule).
    */
   gaps: string[];
+  /**
+   * Risk-taxonomy classification — one terminal-or-near-terminal code from
+   * `Regulations/_risk-taxonomy.md` (typed at `@platform/risk/taxonomy`).
+   * Read from the 10th column of the register (`Risk taxonomy`); empty
+   * string when the cell is missing or `[TBD]` (transitional state until
+   * Vera Wave-5 `taxonomy-coverage` recon lands).
+   */
+  riskTaxonomy: RiskTaxonomyCode | "";
 }
 
 interface ObligationsView {
@@ -196,8 +205,11 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     const m = raw.match(TABLE_ROW);
     if (!m) continue;
     const cells = (m[1] ?? "").split("|").map((c) => c.trim());
-    // Nine-column register (v1.13+):
-    //   ID | URN | Citation | Requirement | Fulfilment | Owner | Status | Entity scope | Applies-at
+    // Ten-column register (v1.17+ Risk taxonomy backfill):
+    //   ID | URN | Citation | Requirement | Fulfilment | Owner | Status |
+    //   Entity scope | Applies-at | Risk taxonomy
+    // Tolerates the nine-column shape (pre-backfill rows) — riskTaxonomy
+    // falls back to "" when the 10th cell is absent.
     if (cells.length < 9) continue;
     const id = cells[0] ?? "";
     if (!/^ORG-/i.test(id)) continue;
@@ -209,6 +221,14 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     const bind = pickBind(citation);
     const linkedPolicies = parseLinkedPolicies(fulfilment);
     const gaps = detectGaps({ fulfilment, owner, family });
+    const taxonomyRaw = (cells[9] ?? "").trim();
+    // Accept any cell whose content matches the taxonomy code pattern; the
+    // typed enum gate is the recon harness's job (Vera Wave-5). At parse
+    // time we only validate the surface shape and clear `[TBD]` to "".
+    const riskTaxonomy: RiskTaxonomyCode | "" =
+      taxonomyRaw && /^RT-[A-Z]+(\.[A-Z0-9]+){0,2}$/.test(taxonomyRaw)
+        ? (taxonomyRaw as RiskTaxonomyCode)
+        : "";
 
     out[id] = {
       id,
@@ -222,6 +242,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
       family,
       linkedPolicies,
       gaps,
+      riskTaxonomy,
     };
 
     familyCounts[family] = (familyCounts[family] ?? 0) + 1;
