@@ -4,6 +4,11 @@ author: Marc · Scrooge (record)
 date: 2026-05-07
 summary: PAX role brief for a brand & design standing agent approved as drafted. Nolan to draft the persona spec under the agent-spec template; the new agent's first run produces the inaugural brand package (name longlist for the bank, three logo concepts, colour palette, typography, voice & tone, overall feel).
 decision-required: false
+superseded-by:
+  - reference: Owner Inbox/2026-05-07_scrooge_ceo-decision-record_d-brand-design-hire.md
+    note: "Old `ceo-decision_<slug>` naming pattern superseded by the canonical `scrooge_ceo-decision-record_d-<id>.md` mirror with proper provenance header. The CeoDecision event is the canonical record (Principle 1)."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
 ---
 
 # CEO decision — D-BRAND-DESIGN-HIRE (approved)

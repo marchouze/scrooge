@@ -4,6 +4,18 @@ from: Atlas (lead) · Anya (projection runtime) · Vera (recon)
 date: 2026-05-06
 status: delivered
 re: ensure dashboard is continuously kept up to date
+title: Dashboard — continuous derivation now live
+author: Atlas, Anya, Vera
+summary: First derivation runtime — committed cache + drift recon. Superseded — committed-cache-in-commit-graph is now the anti-pattern; cache is regenerated from commit graph.
+decision-required: false
+superseded-by:
+  - decision-id: D-EVENT-STORE-SCALING
+    decision-date: 2026-05-10
+    note: "D-EVENT-STORE-SCALING-SLICE-3B (cache-from-commit-graph) supersedes the committed-seeds/dashboard-state.json approach here. The cache is now regenerated, not stored in the commit graph."
+  - reference: feedback_cache_in_commit_graph_anti_pattern.md
+    note: "Memory feedback_cache_in_commit_graph_anti_pattern (set 2026-05-10) codifies the anti-pattern: derived projections checked into git create N² merge friction; fix is gitignore + recon-derives-fresh (PR #157)."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
 ---
 
 # Dashboard — continuous derivation now live

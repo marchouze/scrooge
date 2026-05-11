@@ -1,3 +1,29 @@
+---
+title: Reporting & analysis capability — specification
+author: Anya
+date: 2026-05-06
+summary: Original M-phase reporting-capability spec. Superseded — D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN + slices 2-6 are the canonical build plan today.
+decision-required: false
+superseded-by:
+  - decision-id: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
+    decision-date: 2026-05-10
+    note: "M2-M3 build plan + slices 2-6 (period-close, BA-325 LCR, BA-700, BA-350-600 XML, IFRS statements) supersede the M-phase framing here."
+  - decision-id: D-REPORTING-CAPABILITY-SLICE-2
+    decision-date: 2026-05-10
+    note: "Period-close slice landed."
+  - decision-id: D-REPORTING-CAPABILITY-SLICE-3
+    decision-date: 2026-05-10
+    note: "BA-325 LCR slice landed."
+  - decision-id: D-REPORTING-CAPABILITY-SLICE-4
+    decision-date: 2026-05-10
+    note: "BA-700 slice landed."
+  - decision-id: D-REPORTING-CAPABILITY-SLICE-6
+    decision-date: 2026-05-10
+    note: "IFRS statements slice landed."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Reporting & analysis capability — specification
 
 **Author:** Anya (data / analytics engineer — lead)

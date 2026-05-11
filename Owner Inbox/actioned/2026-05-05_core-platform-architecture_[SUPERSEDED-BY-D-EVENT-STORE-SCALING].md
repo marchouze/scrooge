@@ -1,3 +1,23 @@
+---
+title: Core platform architecture — initial design
+author: Atlas
+date: 2026-05-05
+summary: v0.1 spine document for the core platform. Superseded — D-EVENT-STORE-SCALING + D-RMS-PHASE-1 + D-DATA-PROVENANCE-SUBSTRATE + D-AGENT-RUNTIME-AUTHORIZE materially update the architecture set here.
+decision-required: false
+superseded-by:
+  - decision-id: D-EVENT-STORE-SCALING
+    decision-date: 2026-05-10
+    note: "Event-store substrate (snapshot substrate, runtime-cache split, cache-from-commit-graph slices) supersedes the v0.1 event-store framing here."
+  - decision-id: D-RMS-PHASE-1
+    decision-date: 2026-05-09
+    note: "Records Management Substrate Phase 1 (BLAKE3 doc store + 7 typed events + 7 projection registers) sets the records architecture today."
+  - decision-id: D-DATA-PROVENANCE-SUBSTRATE
+    decision-date: 2026-05-10
+    note: "Provenance substrate sets citation + attestation primitives at platform layer, beyond this v0.1."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Core platform architecture — initial design
 
 **Author:** Atlas

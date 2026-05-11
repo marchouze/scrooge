@@ -5,13 +5,19 @@ asOf: 2026-05-07T11:25:00.000Z
 title: Role brief — Brand & design lead
 author: PAX
 date: 2026-05-07
-summary: First-run role research for a brand & design standing-agent. The bank still has no name; visual identity, naming, voice, and templates are load-bearing on regulator engagement, customer-facing materials at licence-day, and counterparty trust. Reporting line proposed under Devon (COO) with Zara/Owen/Imani/Iris hard sign-offs in their lanes.
-decision-required: true
+summary: First-run role research for a brand & design standing-agent. Decision D-BRAND-DESIGN-HIRE approved 2026-05-07; Linnea hired; v3/v3-2 brand-application work has shipped.
+decision-required: false
 decision-id: D-BRAND-DESIGN-HIRE
 decision-category: near-term
 decision-for-ceo: Approve hire of a brand & design agent. If approved, Nolan drafts the persona spec and the new agent's first run produces the inaugural brand package.
 decision-recommendation: Approve. Naming is gating customer-facing materials, dashboard skin, regulator decks, and Saskia's pitchbook templates; the role is structurally distinct from marketing/PR/UX so it has no natural home elsewhere.
 decision-owner: PAX
+superseded-by:
+  - decision-id: D-BRAND-DESIGN-HIRE
+    decision-date: 2026-05-07
+    note: "Decision D-BRAND-DESIGN-HIRE approved 2026-05-07; brief moved to actioned per inbox-hygiene rule. Linnea hired; first-run brand package shipped at 2026-05-07_linnea_inaugural-brand-package.md and v3/v3-2 follow-ons under D-BANK-NAME-SELECTION (revised → Hoz)."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
 ---
 
 # PAX — role brief: Brand & design lead

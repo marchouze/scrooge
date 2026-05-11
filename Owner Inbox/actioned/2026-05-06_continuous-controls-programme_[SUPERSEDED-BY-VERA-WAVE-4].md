@@ -1,3 +1,18 @@
+---
+title: Continuous-controls assurance programme — design + first wave
+author: Vera
+date: 2026-05-06
+summary: Design + first-wave (#3, #4) recon pipelines. Superseded — Vera's Wave-4 recon harness has shipped #5–#16+ pipelines and the agent-discipline-assurance extension is operational.
+decision-required: false
+superseded-by:
+  - reference: prototype/platform/recon/
+    note: "Vera's Wave-4 recon pipelines + agent-discipline-assurance-extension are live in prototype/platform/recon/. The pipeline catalogue here (waves 1-3) is no longer the canonical state; the recon directory + bun run ci output are."
+  - reference: feedback_canonical_source_registry.md
+    note: "The canonical-source-registry rule (Owen, 2026-05-07; enforced by @platform/recon/prose-duplication.ts Wave-4 #16, live) supersedes the pipeline-catalogue framing here."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Continuous-controls assurance programme — design + first wave
 
 **Author:** Vera (Internal audit / continuous-assurance engineer)

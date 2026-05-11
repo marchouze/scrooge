@@ -1,3 +1,19 @@
+---
+title: Client master and continuous KYC — design
+author: Mira, Anya, Imani
+date: 2026-05-06
+summary: Design for the client-master projection and continuous-KYC event family. Superseded — counterparty event family is now the canonical lifecycle in code.
+decision-required: false
+superseded-by:
+  - decision-id: D-MARKETS-SCHEMA-FOUNDATION
+    decision-date: 2026-05-07
+    note: "Counterparty event family at prototype/domains/customer/types.ts is the canonical lifecycle and projection shape, not the markdown design here."
+  - reference: prototype/domains/customer/types.ts
+    note: "In-flight Party-register substrate (Imani, 2026-05-11) further unifies counterparty / natural-person / agent / legal-entity registers under one Party event family; that work supersedes this design's separate-projection model."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Client master and continuous KYC — design
 
 **Authors:** Mira (lead — KYC pipeline), Anya (lead — client master as projection), Imani (legal-entity taxonomy)

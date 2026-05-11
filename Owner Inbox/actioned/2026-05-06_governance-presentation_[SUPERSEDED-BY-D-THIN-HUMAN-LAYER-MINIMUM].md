@@ -1,3 +1,22 @@
+---
+title: Governance of the bank — current state (presentation)
+author: Owen
+date: 2026-05-06
+summary: 2-page presentation rendering of the 2026-05-06 governance position. Superseded by Owen's final-composition paper and the licence-day decisions.
+decision-required: false
+superseded-by:
+  - decision-id: D-THIN-HUMAN-LAYER-MINIMUM
+    decision-date: 2026-05-08
+    note: "Licence-day human-layer composition is now codified in 2026-05-09_owen_thin-human-layer-composition-final.md."
+  - decision-id: D-LEGAL-ENTITY-TREE-V0
+    decision-date: 2026-05-09
+    note: "Legal-entity tree (Hoz Group / Hoz Bank / Hoz Securities) supersedes the single-entity framing in this presentation."
+  - reference: Owner Inbox/2026-05-09_owen_thin-human-layer-composition-final.md
+    note: "Final composition paper is the canonical governance-composition record."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # Governance of the bank — current state
 
 **Author:** Owen (Company Secretary)

@@ -1,3 +1,19 @@
+---
+title: CISO hire confirmation — Rashida Patel
+author: Nolan
+date: 2026-05-06
+summary: "Real-CISO hire confirmation (Rashida). Superseded — build-phase pause on real employees; CISO function sits with Senna (engineering-fronted) until licence-day."
+decision-required: false
+superseded-by:
+  - decision-id: D-THIN-HUMAN-LAYER-MINIMUM
+    decision-date: 2026-05-08
+    note: "Licence-day human roster does not include a separate CISO seat."
+  - reference: project_ai_driven_bank.md
+    note: "Build-phase has no real employees beyond statutory minimum."
+superseded-on: 2026-05-11
+superseded-by-author: Owen (Company Secretary, governance) — sweep authorised by CEO 2026-05-11
+---
+
 # CISO hire confirmation — Rashida Patel
 
 **Author:** Nolan (Recruiter)
