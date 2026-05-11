@@ -147,7 +147,13 @@ function payloadToSpec(payload: Record<string, unknown>): AgentSpec {
     // canonical subscribe list read the policy.
     triggerSubscriptions: [],
     decisionsInScopeCount: Number(payload.decisionsInScopeCount ?? 0),
+    decisionsInScope: Array.isArray(payload.decisionsInScope)
+      ? (payload.decisionsInScope as string[]).map(String)
+      : [],
     decisionsEscalateCount: Number(payload.decisionsEscalateCount ?? 0),
+    escalationClasses: Array.isArray(payload.escalationClasses)
+      ? (payload.escalationClasses as string[]).map(String)
+      : [],
     systemCapabilities: Array.isArray(payload.systemCapabilities)
       ? (payload.systemCapabilities as string[]).map(String)
       : [],
@@ -207,7 +213,9 @@ export class LocalAgentRegistry implements AgentRegistry {
           cadenceMode: spec.cadenceMode,
           triggerCount: spec.triggerCount,
           decisionsInScopeCount: spec.decisionsInScopeCount,
+          decisionsInScope: [...spec.decisionsInScope],
           decisionsEscalateCount: spec.decisionsEscalateCount,
+          escalationClasses: [...spec.escalationClasses],
           systemCapabilities: [...spec.systemCapabilities],
           eventsEmitted: [...spec.eventsEmitted],
           proceduresOwned: [...spec.proceduresOwned],

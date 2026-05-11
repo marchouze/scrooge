@@ -123,7 +123,9 @@ describe("spec-parser", () => {
     expect(s.cadenceMode).toBe("Scheduled.");
     expect(s.triggerCount).toBe(3);
     expect(s.decisionsInScopeCount).toBe(2);
+    expect(s.decisionsInScope).toEqual(["Approve A", "Approve B"]);
     expect(s.decisionsEscalateCount).toBe(1);
+    expect(s.escalationClasses).toEqual(["Escalate X"]);
     expect(s.systemCapabilities).toEqual(["@platform/event-store", "@platform/observability"]);
     expect(s.eventsEmitted).toEqual(["ApprovedA", "ApprovedB", "AgentEscalation"]);
     expect(s.proceduresOwned).toEqual(["Procedures/by-policy/test-procedure-a.md"]);
