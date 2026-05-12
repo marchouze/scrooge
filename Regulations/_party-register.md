@@ -12,8 +12,8 @@ proposal: /Users/marc/.claude/plans/the-business-needs-um-bright-boot.md
 # Party register
 
 Canonical, citable list of every Party the bank deals with — the single
-identity axis across all four actor kinds (`natural-person`,
-`legal-entity`, `counterparty`, `agent`). Each Party is born by a
+identity axis across all three intrinsic actor kinds (`natural-person`,
+`legal-entity`, `agent`). Each Party is born by a
 `PartyRegistered` event in the unified Party event family
 ([`prototype/domains/party/`](../prototype/domains/party/types.ts)) and
 projected into a typed read-model by the Party projection
@@ -46,11 +46,19 @@ and reference Party URNs as foreign keys.
 ## URN scheme
 
 Stable surface key: `urn:party:<kind>:<slug>` where `<kind>` is one of
-`natural-person | legal-entity | counterparty | agent` and `<slug>` is
-URL-safe. Examples:
+`natural-person | legal-entity | agent` and `<slug>` is URL-safe.
+
+Note: `"counterparty"` is **not** a kind — it describes a *relationship* between
+two Parties (the bank's trading/business relationship with an external organisation),
+not what the actor intrinsically is. Institutional clients (asset managers, banks,
+broker-dealers) register as `legal-entity`; the counterparty relationship is
+recorded as a `PartyRelationshipAsserted` edge. Per D-PARTY-REGISTER correction
+(CEO-approved 2026-05-12).
+
+Examples:
 
 - `urn:party:legal-entity:hoz-bank`
-- `urn:party:counterparty:acme-am` (worked example, scenario only at v0)
+- `urn:party:legal-entity:acme-am` (institutional client — counterparty is a relationship edge, not a kind)
 - `urn:party:agent:scrooge`
 - `urn:party:natural-person:np-<8-hex>` (deterministic-hash slug for PII discipline)
 
@@ -61,18 +69,20 @@ URL-safe. Examples:
 | Kind | Count |
 |---|---:|
 | Legal entity | 3 |
-| Counterparty | 0 |
 | Agent | 27 |
 | Natural person | 1 |
 | **Total** | **31** |
 
-The 0 counts for counterparty are the build-phase default (per CLAUDE.md
-"Build phase vs licence-day" — no real customers yet). The
-natural-person count is **1** as of PR 3 of D-PARTY-REGISTER (Marc as
+`"counterparty"` is not a kind — it is a relationship (D-PARTY-REGISTER correction,
+CEO-approved 2026-05-12). Institutional clients register as `legal-entity` with a
+`counterparty-of` relationship edge. The legal-entity count of 3 covers the bank's
+own entities (Hoz Group, Hoz Bank, Hoz Securities); institutional clients at v0 are
+zero (build-phase, no real customers yet per CLAUDE.md "Build phase vs licence-day").
+The natural-person count is **1** as of PR 3 of D-PARTY-REGISTER (Marc as
 the founding CEO seat); subsequent natural persons land at licence-day
 when the statutory human roster (directors, MLRO, CISO, CAE, auditor)
 is appointed and signatory natural persons land per `signatory-of`
-edges as counterparties progress past KYC.
+edges as institutional clients progress past KYC.
 
 ### Legal-entity Parties
 
@@ -109,15 +119,18 @@ natural-person Party — top-of-house personas whose roster `reportsTo`
 is "CEO" / "Marc" emit a direct edge into Marc; the remaining 17
 personas resolve via in-fleet edges to a top-of-house persona.
 
-### Counterparty Parties
+### Institutional counterparty Parties (registered as `legal-entity`)
 
-Empty at v0 — counterparty lifecycle activates at licence-day per Niko
-(Customer onboarding engineer)'s `buildPhaseStatus`. The substrate path
-is wired (the backfill folds
-`CounterpartySoundingOpened` / `CounterpartyProspectRegistered` /
-`CounterpartyActivated` / `CounterpartyOffboarded` into
-`PartyRegistered{kind: "counterparty"}` + `PartyClassified` for the
-current lifecycle status). When the first sounding lands, the row appears.
+Empty at v0 — institutional client lifecycle activates at licence-day per Niko
+(Customer onboarding engineer)'s `buildPhaseStatus`. When institutional clients
+are onboarded they register as `PartyRegistered{kind: "legal-entity"}` with a
+`counterparty-of` `PartyRelationshipAsserted` edge to Hoz Bank. The legacy
+backfill path (`CounterpartySoundingOpened` / `CounterpartyProspectRegistered` /
+`CounterpartyActivated` / `CounterpartyOffboarded`) folds into
+`PartyRegistered{kind: "legal-entity"}` + `PartyClassified` for the current
+lifecycle status. When the first institutional client lands, the row appears
+in the legal-entity table with a `counterparty-of` edge in the relationships
+register.
 
 ### Natural-person Parties
 
@@ -169,9 +182,11 @@ ISO 3166-1 alpha-2 codes per Party.
 ## By classification
 
 `PartyClassified` events project into per-Party classification sets.
-Counterparty lifecycle status (`Sounding`, `Prospect`, `KycPassed`,
-`Active`, `Offboarded`) is a classification, not a kind change — the
-kind stays `counterparty` for the Party's lifetime.
+Institutional counterparty lifecycle status (`Sounding`, `Prospect`, `KycPassed`,
+`Active`, `Offboarded`) is a classification, not a kind — the Party's kind stays
+`legal-entity` for its lifetime. The `counterparty-of` relationship edge records
+the business relationship; the `PartyClassified` events track the onboarding
+lifecycle stage.
 
 At v0 there are no active classifications because no counterparties
 exist yet.

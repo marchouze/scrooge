@@ -4,7 +4,6 @@
   "source": "D-PARTY-REGISTER PR 3 (CEO-approved 2026-05-11) — Marc CEO seat live",
   "totals": {
     "legal-entity": 3,
-    "counterparty": 0,
     "agent": 27,
     "natural-person": 1
   },
@@ -85,7 +84,6 @@
         "registeredAt": "2026-05-11T00:00:00.000Z"
       }
     ],
-    "counterparty": [],
     "agent": [
       {
         "partyId": "urn:party:agent:anya",

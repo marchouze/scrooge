@@ -19,12 +19,19 @@
 // ===========================================================================
 
 /**
- * The four actor kinds the bank deals with. The kind is **intrinsic** —
- * "what is this actor?" — and stable for the lifetime of the Party. The
- * role an actor plays toward another Party (signatory-of, director-of,
- * acts-on-behalf-of, …) is a **relationship edge**, not a change of kind.
+ * The three intrinsic actor kinds the bank deals with. The kind is
+ * **intrinsic** — "what is this actor?" — and stable for the lifetime of
+ * the Party. The role an actor plays toward another Party (signatory-of,
+ * director-of, acts-on-behalf-of, counterparty-of, …) is a **relationship
+ * edge**, not a change of kind.
+ *
+ * Note: "counterparty" is NOT a kind — it describes a *relationship*
+ * between two Parties (the bank's trading/business relationship with an
+ * external organisation). Institutional clients are registered as
+ * `"legal-entity"` with a `counterparty-of` relationship edge to Hoz Bank.
+ * Per D-PARTY-REGISTER correction (CEO-approved 2026-05-12).
  */
-export type PartyKind = "natural-person" | "legal-entity" | "counterparty" | "agent";
+export type PartyKind = "natural-person" | "legal-entity" | "agent";
 
 /**
  * The closed enum at value-level — used by schemas + the constraint
@@ -33,7 +40,6 @@ export type PartyKind = "natural-person" | "legal-entity" | "counterparty" | "ag
 export const PARTY_KINDS = [
   "natural-person",
   "legal-entity",
-  "counterparty",
   "agent",
 ] as const satisfies readonly PartyKind[];
 
@@ -45,7 +51,7 @@ export const PARTY_KINDS = [
  * Examples:
  *   - `urn:party:natural-person:marc-houze`
  *   - `urn:party:legal-entity:hoz-bank-limited`
- *   - `urn:party:counterparty:acme-am`
+ *   - `urn:party:legal-entity:acme-am` (institutional client — counterparty is a relationship, not a kind)
  *   - `urn:party:agent:scrooge`
  *
  * The schema-side validator in `./schemas.ts` enforces both the URN
@@ -171,28 +177,6 @@ export interface LegalEntityAttrs {
 }
 
 /**
- * Kind-attributes for a `PartyKind = "counterparty"` registration.
- *
- * Counterparties are organisations the bank *transacts with*. The
- * lifecycle status (`Sounding`, `Prospect`, `KycPassed`, …) becomes a
- * `PartyClassified` classification rather than a kind change.
- */
-export interface CounterpartyAttrs {
-  readonly kind: "counterparty";
-  /** Industry / sector classification — free-form at v0; tightened later. */
-  readonly sector: string;
-  /** Acquisition channel. */
-  readonly channel: "introduction" | "inbound" | "outbound" | "event";
-  /** Free-form intro source (RM name, event name, etc.). */
-  readonly introSource?: string;
-  /**
-   * Initial classification at registration. Subsequent classifications
-   * are `PartyClassified` events.
-   */
-  readonly classification?: string;
-}
-
-/**
  * Kind-attributes for a `PartyKind = "agent"` registration.
  *
  * Both in-house agents (the 27 personas under `Team/`) and external
@@ -226,7 +210,7 @@ export interface AgentAttrs {
  * outer `PartyRegisteredPayload.kind` exactly — the schema enforces
  * the binding via `z.discriminatedUnion`.
  */
-export type KindAttributes = NaturalPersonAttrs | LegalEntityAttrs | CounterpartyAttrs | AgentAttrs;
+export type KindAttributes = NaturalPersonAttrs | LegalEntityAttrs | AgentAttrs;
 
 // ===========================================================================
 // Relationship kinds (D-PARTY-RELATIONSHIP-KINDS-V0)
@@ -254,7 +238,7 @@ export const RELATIONSHIP_KINDS = [
   "employee-of",
   "contractor-of",
   // Governance / control
-  // (source: natural-person; target: legal-entity OR counterparty)
+  // (source: natural-person; target: legal-entity — includes institutional counterparties registered as legal-entity)
   "director-of",
   "ubo-of",
   // Service / commercial
@@ -427,7 +411,8 @@ export interface PartyRelationshipRevokedPayload {
  * through intermediate counterparties / legal-entities to the
  * piercing-point natural person.
  *
- * The `chain` array starts with the root counterparty and ends at the
+ * The `chain` array starts with the root legal-entity (institutional
+ * counterparty registered as `legal-entity` kind) and ends at the
  * natural-person UBO. `piercedToNaturalPersonAt` is the index in
  * `chain` of the first natural-person Party (typically the last entry).
  */

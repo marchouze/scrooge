@@ -25,8 +25,11 @@
 //   1. LegalEntityRegistered + seeds/legal-entity-tree.json
 //      → PartyRegistered{kind: "legal-entity"} + parent-of edges.
 //   2. CounterpartySoundingOpened / CounterpartyProspectRegistered
-//      → PartyRegistered{kind: "counterparty"} + PartyClassified
+//      → PartyRegistered{kind: "legal-entity"} + PartyClassified
 //        (lifecycle status as classification).
+//        Institutional counterparties register as `legal-entity` per
+//        D-PARTY-REGISTER correction (2026-05-12) — "counterparty" is a
+//        relationship, not an intrinsic PartyKind.
 //   3. AgentRegistered (27 personas) + Team/_team-roster.json
 //      → PartyRegistered{kind: "agent"} + reports-to edges.
 //   4. AuthorisedSignatoryAdded
@@ -487,7 +490,9 @@ function backfillCounterparties(
   const cps = foldCounterpartyLifecycle(eventStore);
   for (const cp of cps) {
     const slug = slugifyForPartyUrn(cp.counterpartyId);
-    const partyId = makePartyId("counterparty", slug);
+    // Institutional counterparties register as `legal-entity` per D-PARTY-REGISTER
+    // correction (2026-05-12): "counterparty" is a relationship, not an intrinsic kind.
+    const partyId = makePartyId("legal-entity", slug);
     if (!index.partyIds.has(partyId)) {
       const event = makePartyRegistered({
         asOf: cp.firstAsOf,
@@ -496,16 +501,21 @@ function backfillCounterparties(
         citations: [...COUNTERPARTY_CITATIONS],
         payload: {
           partyId,
-          kind: "counterparty",
+          kind: "legal-entity",
           displayName: cp.legalName ?? cp.counterpartyId,
           ...(cp.legalName ? { legalName: cp.legalName } : {}),
           jurisdictions: cp.jurisdiction ? [cp.jurisdiction.slice(0, 2).toUpperCase()] : ["ZA"],
           kindAttributes: {
-            kind: "counterparty",
-            sector: cp.sector ?? "unknown",
-            channel: cp.channel ?? "inbound",
-            ...(cp.introSource ? { introSource: cp.introSource } : {}),
-            classification: cp.classification,
+            kind: "legal-entity",
+            // Institutional counterparties default to Pty (private company) at v0;
+            // corrected via PartyAttributeChanged once registration docs are on file.
+            entityForm: "Pty" as const,
+            parentPartyId: null,
+            primaryRegulator: "other" as const,
+            regimeAnchor: [
+              cp.sector ? `sector: ${cp.sector}` : "institutional-counterparty",
+              "[citation: FIC Act 38 of 2001 s.21 customer due diligence]",
+            ],
           },
           citations: [
             "[citation: D-PARTY-REGISTER]",
@@ -790,7 +800,9 @@ function backfillSignatories(
     }
 
     // (b) signatory-of relationship edge.
-    const counterpartyPartyId = makePartyId("counterparty", slugifyForPartyUrn(counterpartyId));
+    // Institutional counterparties register as `legal-entity` per D-PARTY-REGISTER
+    // correction (2026-05-12).
+    const counterpartyPartyId = makePartyId("legal-entity", slugifyForPartyUrn(counterpartyId));
     const relationshipKind =
       scope === "authorised-trader" ? "authorised-trader-for" : "signatory-of";
     const relationshipId = `relationship:${relationshipKind}:${personPartyId}->${counterpartyPartyId}`;
