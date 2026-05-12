@@ -1,5 +1,15 @@
 ---
+policy-id: trading-mandate
 title: Trading Mandate v1
+version: "1"
+status: IN FORCE
+owner: Saskia (Head of Markets, governance)
+effective-from: "2026-05-11"
+citations:
+  - Banks Act 94 of 1990
+  - Financial Markets Act 19 of 2012
+  - BCBS Market Risk (FRTB — D352, D457)
+  - D-POLICY-DOCUMENT-HOME
 author: Kai (Structured rates trader, markets) + Helena (Chief Risk Officer, governance) + Devon (COO, governance)
 date: 2026-05-11
 summary: Standalone Trading Mandate defining the bank's permissible trading activities, desk structure, product scope (JSE bonds/equities, OTC IRD, FX spot/forward), client-driven mandate (no proprietary), position limits, booking model, and FX settlement risk framework. RAS B5 deferred pending refinement. Closes obligations ORG-PR-19, ORG-PR-20, ORG-MK-01, ORG-MK-04, ORG-PR-48, ORG-MK-09. LICENCE-BIND.

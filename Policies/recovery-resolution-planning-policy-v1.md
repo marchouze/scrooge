@@ -1,5 +1,15 @@
 ---
+policy-id: recovery-resolution-planning-policy
 title: Recovery and Resolution Planning Policy v1
+version: "1"
+status: IN FORCE
+owner: Helena (Chief Risk Officer, governance)
+effective-from: "2026-05-11"
+citations:
+  - PA D1/2015 (Recovery and Resolution Plans)
+  - Banks Act 94 of 1990 ss.60-72
+  - FSB Key Attributes of Effective Resolution Regimes (2014)
+  - D-POLICY-DOCUMENT-HOME
 author: Helena (Chief Risk Officer, governance) + Camille (Chief Financial Officer, governance) + Owen (Company Secretary, governance)
 date: 2026-05-11
 summary: Standalone Recovery and Resolution Planning Policy establishing the bank's recovery planning framework, early-warning indicator regime, recovery option inventory, and governance pathway. Implements PA D1/2015, Banks Act ss.60-72, and FSB Key Attributes. Closes obligations ORG-PR-30, ORG-PR-35, ORG-BNK-RECOVERY-CONS. LICENCE-BIND.

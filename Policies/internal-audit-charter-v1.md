@@ -1,5 +1,15 @@
 ---
+policy-id: internal-audit-charter
 title: Internal Audit Charter v1
+version: "1"
+status: IN FORCE
+owner: Thandiwe (Chief Audit Executive, governance)
+effective-from: "2026-05-11"
+citations:
+  - IIA IPPF Standards (2024)
+  - BCBS 223 (Internal Audit of Banks)
+  - Banks Act 94 of 1990
+  - D-POLICY-DOCUMENT-HOME
 author: Thandiwe (Chief Audit Executive, governance) + Vera (Internal audit engineer)
 date: 2026-05-11
 summary: Standalone Internal Audit Charter establishing the mandate, independence, authority, scope, and responsibilities of the internal audit function. Implements IIA IPPF Standards, BCBS 223 (Internal Audit of Banks), and Banks Act Audit Committee requirements. Third-line independence is non-negotiable. Closes obligations ORG-GV-20 and ORG-GV-07. LICENCE-BIND.

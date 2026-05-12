@@ -1,5 +1,16 @@
 ---
+policy-id: liquidity-risk-management-policy
 title: Liquidity Risk Management Policy v1
+version: "1"
+status: IN FORCE
+owner: Helena (Chief Risk Officer, governance)
+effective-from: "2026-05-11"
+citations:
+  - BCBS D295 (LCR)
+  - BCBS D335 (NSFR)
+  - BCBS 144 (liquidity risk monitoring tools)
+  - PA D6/2015 (LCR)
+  - D-POLICY-DOCUMENT-HOME
 author: Camille (Chief Financial Officer, governance) + Eitan (Treasurer, governance) + Helena (Chief Risk Officer, governance)
 date: 2026-05-11
 summary: Standalone Liquidity Risk Management Policy covering LCR, NSFR, intraday liquidity, Contingency Funding Plan, ILAAP governance, and stress-testing. Closes obligations ORG-PR-06 through ORG-PR-08, ORG-PR-14, ORG-PR-15, ORG-PR-36, ORG-PR-38, ORG-PR-43. LICENCE-BIND.

@@ -12,7 +12,7 @@ Every finalised, versioned policy document — policies, charters, mandates, and
 ## Naming convention
 
 ```
-<kebab-case-policy-name>-v<version>.md
+<PolicyID>-v<version>.md
 ```
 
 Examples:
@@ -21,6 +21,24 @@ Examples:
 - `internal-audit-charter-v1.md`
 
 Drop the date prefix and author that `Owner Inbox/` filenames carry — those are inbox-routing artefacts, not canonical names.
+
+## Required YAML frontmatter
+
+Every `Policies/*.md` document must carry the following YAML frontmatter fields:
+
+```yaml
+---
+policy-id: <kebab-case-policy-id>           # e.g. liquidity-risk-management-policy
+title: <Human-readable title>                # e.g. Liquidity Risk Management Policy v1
+version: "<n>"                               # e.g. "1"
+status: IN FORCE | DRAFT | SUPERSEDED       # lifecycle status
+owner: <Name (Role, seat)>                   # e.g. Helena (Chief Risk Officer, governance)
+effective-from: "YYYY-MM-DD"                 # ISO date
+citations:                                   # one or more regulatory or decision citations
+  - <citation 1>
+  - D-POLICY-DOCUMENT-HOME                  # always include the authorising decision
+---
+```
 
 ## Event binding
 

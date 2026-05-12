@@ -1,3 +1,5 @@
+> As of 2026-05-12 (D-POLICY-DOCUMENT-HOME), all policies live in `Policies/`. This register is a historical index; `Policies/` is the canonical home.
+
 # Policy register — required policies for the bank
 
 > **Status update — 2026-05-06.** The CEO has approved (Round 2 decision pack, all 7 items): the **41 core policies** across the five bundles (Risk · Compliance & Privacy · InfoSec & Ops · Finance & Treasury · Conduct & HR), the **IFRS 9** hedge-accounting election (F1), and **this register itself** as the bank's authoritative policy taxonomy. Status of those policies transitions from `PLANNED` / `DRAFTING` to **`IN FORCE`** as of today's date; statuses in the tables below are read against this update. Carry-forward refinements remain on B2 (capital / liquidity buffers), B5 (trading mandate), and the POPIA IO designation lodgment.

@@ -1,5 +1,14 @@
 ---
+policy-id: capital-management-policy
 title: Capital Management Policy v1
+version: "1"
+status: IN FORCE
+owner: Camille (Chief Financial Officer, governance)
+effective-from: "2026-05-11"
+citations:
+  - Banks Act 94 of 1990
+  - BCBS Basel III/IV
+  - D-POLICY-DOCUMENT-HOME
 author: Camille (Chief Financial Officer, governance) + Helena (Chief Risk Officer, governance)
 date: 2026-05-11
 summary: Standalone Capital Management Policy covering CET1/AT1/T2 structure, capital targets, RAS B1/B2 anchoring, ICAAP governance, Pillar 2A add-ons, capital conservation and countercyclical buffers, stress-testing cadence, and distribution controls. Closes obligations ORG-PR-01 through ORG-PR-05, ORG-PR-13, ORG-PR-37, ORG-PR-44. LICENCE-BIND.
