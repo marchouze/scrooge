@@ -260,9 +260,33 @@ export const workstreamsRegisterProjection: Projection<WorkstreamsRegisterState,
       briefToWorkstream: z.array(z.tuple([z.string(), z.string()])),
       runToWorkstream: z.array(z.tuple([z.string(), z.string()])),
     });
-    const result = SnapshotSchema.safeParse(JSON.parse(payload));
+    let raw: unknown;
+    try {
+      raw = JSON.parse(payload);
+    } catch (err) {
+      console.error(
+        JSON.stringify({
+          level: "error",
+          service: "bank-prototype",
+          pipeline: "rms.workstreams",
+          msg: "decodeSnapshot: JSON.parse failed — degrading to empty state (F-007)",
+          error: String(err),
+        }),
+      );
+      return workstreamsRegisterInitial;
+    }
+    const result = SnapshotSchema.safeParse(raw);
     if (!result.success) {
-      throw new Error(`decodeSnapshot: invalid payload — ${result.error.message}`);
+      console.error(
+        JSON.stringify({
+          level: "error",
+          service: "bank-prototype",
+          pipeline: "rms.workstreams",
+          msg: "decodeSnapshot: Zod validation failed — degrading to empty state (F-007)",
+          error: result.error.message,
+        }),
+      );
+      return workstreamsRegisterInitial;
     }
     const parsed = result.data as unknown as {
       rows: Array<[string, WorkstreamsRegisterRow]>;
