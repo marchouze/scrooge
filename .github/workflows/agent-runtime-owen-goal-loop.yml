@@ -15,8 +15,6 @@
 name: Owen goal-loop
 
 on:
-  schedule:
-    - cron: "0 7 * * *"
   workflow_dispatch: {}
 
 permissions:
