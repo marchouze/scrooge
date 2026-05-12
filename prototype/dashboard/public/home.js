@@ -50,6 +50,13 @@
       href: "/activity.html",
     },
     {
+      id: "events",
+      category: "dashboards",
+      title: "Event store",
+      blurb: "Browse, filter, and inspect every typed event in the local store — paginated, searchable by type, entity, or payload.",
+      href: "/events.html",
+    },
+    {
       id: "agents",
       category: "dashboards",
       title: "Agents",

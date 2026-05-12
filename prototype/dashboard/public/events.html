@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event store · Hoz</title>
+  <meta name="description" content="Browse and search the local event store — all typed events in sequence order.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .ev-toolbar {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+    .ev-toolbar input,
+    .ev-toolbar select {
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.6rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface);
+      color: var(--color-text);
+      min-width: 0;
+    }
+    .ev-toolbar input[type="search"] { flex: 1 1 180px; }
+    .ev-toolbar select { flex: 0 0 auto; }
+    .ev-toolbar .ev-count {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+    .ev-table-wrap { overflow-x: auto; }
+    .ev-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .ev-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--color-border);
+      font-weight: 600;
+      white-space: nowrap;
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ev-table td {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid var(--color-border-subtle, var(--color-border));
+      vertical-align: top;
+    }
+    .ev-table tr:hover td { background: var(--color-surface-hover, rgba(0,0,0,0.03)); }
+    .ev-table tr.ev-selected td { background: var(--color-accent-subtle, #eef4ff); }
+    .ev-seq { color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.75rem; }
+    .ev-type { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500; color: var(--color-accent, #2563eb); }
+    .ev-id { font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-text-muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ev-as-of { font-family: var(--font-mono); font-size: 0.78rem; white-space: nowrap; }
+    .ev-entity { font-size: 0.78rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ev-actor { font-size: 0.78rem; color: var(--color-text-muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ev-prov {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.1em 0.4em;
+      border-radius: 9999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      white-space: nowrap;
+    }
+    .ev-prov.prod { background: #dcfce7; color: #15803d; }
+    .ev-prov.sim { background: #fef9c3; color: #92400e; }
+    .ev-prov.none { background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+
+    /* Detail panel */
+    .ev-detail {
+      margin-top: var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: var(--color-surface);
+      overflow: hidden;
+    }
+    .ev-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      background: var(--color-surface-raised, #f8fafc);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .ev-detail-header h3 { margin: 0; font-size: 0.85rem; font-family: var(--font-mono); }
+    .ev-detail-close { cursor: pointer; background: none; border: none; font-size: 1rem; color: var(--color-text-muted); padding: 0 0.25rem; }
+    .ev-detail-body { padding: 1rem; }
+    .ev-detail pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--color-text);
+    }
+
+    /* Pagination */
+    .ev-pagination {
+      display: flex;
+      gap: var(--space-1);
+      align-items: center;
+      margin-top: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .ev-pagination button {
+      font: inherit;
+      font-size: 0.82rem;
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface);
+      cursor: pointer;
+      color: var(--color-text);
+    }
+    .ev-pagination button:disabled { opacity: 0.4; cursor: default; }
+    .ev-pagination button.active { background: var(--color-accent, #2563eb); color: #fff; border-color: var(--color-accent, #2563eb); }
+    .ev-pagination .ev-page-info { font-size: 0.8rem; color: var(--color-text-muted); margin: 0 var(--space-1); }
+
+    .ev-empty { padding: 2rem; text-align: center; color: var(--color-text-muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+      </a>
+      <div class="shell-meta">
+        <span class="shell-meta-label">Event store</span>
+      </div>
+      <div class="shell-actions">
+        <button class="shell-refresh-btn" id="refresh-btn" aria-label="Refresh event list">↻</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Page sections">
+      <ul class="shell-sidebar-nav">
+        <li><a href="#browser" data-shell-nav="sidebar:browser">Browser</a></li>
+        <li><a href="#detail" data-shell-nav="sidebar:detail">Event detail</a></li>
+      </ul>
+    </nav>
+
+    <main class="shell-main" id="shell-main">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">Event store</h1>
+        <p class="shell-page-desc">
+          All typed events in the local store, newest-last.
+          <span id="store-count-badge"></span>
+        </p>
+      </div>
+
+      <div data-provenance-badge></div>
+
+      <section id="browser">
+        <div class="ev-toolbar">
+          <input type="search" id="search-input" placeholder="Search event_id or payload…" autocomplete="off">
+          <select id="type-select">
+            <option value="">All types</option>
+          </select>
+          <button id="clear-btn" style="font:inherit;font-size:0.82rem;padding:0.35rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);cursor:pointer;">Clear</button>
+          <span class="ev-count" id="result-count"></span>
+        </div>
+
+        <div class="ev-table-wrap">
+          <table class="ev-table" aria-label="Events">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>as_of</th>
+                <th>Entity</th>
+                <th>Actor</th>
+                <th>Provenance</th>
+                <th>event_id</th>
+              </tr>
+            </thead>
+            <tbody id="ev-tbody">
+              <tr><td colspan="7" class="ev-empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ev-pagination" id="pagination"></div>
+      </section>
+
+      <section id="detail">
+        <div class="ev-detail" id="ev-detail" style="display:none">
+          <div class="ev-detail-header">
+            <h3 id="ev-detail-type">—</h3>
+            <button class="ev-detail-close" id="ev-detail-close" aria-label="Close detail">✕</button>
+          </div>
+          <div class="ev-detail-body">
+            <pre id="ev-detail-json"></pre>
+          </div>
+        </div>
+        <p id="ev-detail-hint" style="color:var(--color-text-muted);font-size:0.85rem;">Click any row to see full event JSON.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="/_shell.js"></script>
+  <script src="/_refresh-controls.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/events.js"></script>
+</body>
+</html>

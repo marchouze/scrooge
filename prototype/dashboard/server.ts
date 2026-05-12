@@ -1119,6 +1119,80 @@ const server = Bun.serve({
       // Authority: D-FX-SALES-TRADING-FRONTEND-SLICE-2.
       return handleFxTrade(req);
     }
+    if (url.pathname === "/api/events" && req.method === "GET") {
+      // Event store browser — paginated, filterable by type / entity / search.
+      // Query params:
+      //   ?page=N       — 1-based page (default 1)
+      //   ?limit=N      — page size 1–200 (default 50)
+      //   ?type=X       — exact event type filter
+      //   ?entity=X     — exact entity filter
+      //   ?search=X     — substring match on event_id or payload JSON
+      // pageProvenance: production (real event log, not simulated data).
+      const page = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
+      const limit = Math.min(200, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "50", 10) || 50));
+      const typeFilter = url.searchParams.get("type") ?? "";
+      const entityFilter = url.searchParams.get("entity") ?? "";
+      const search = (url.searchParams.get("search") ?? "").toLowerCase();
+
+      const replayOpts: { type?: string; entity?: string } = {};
+      if (typeFilter) replayOpts.type = typeFilter;
+      if (entityFilter) replayOpts.entity = entityFilter;
+
+      const allEvents: Array<{
+        sequence: number;
+        event_id: string;
+        type: string;
+        as_of: string;
+        entity: string;
+        actor: unknown;
+        provenance: unknown;
+        payload: unknown;
+      }> = [];
+
+      let seq = 0;
+      for (const ev of eventStore.replay(replayOpts)) {
+        seq++;
+        if (search) {
+          const haystack = `${ev.event_id} ${JSON.stringify(ev.payload)}`.toLowerCase();
+          if (!haystack.includes(search)) continue;
+        }
+        allEvents.push({
+          sequence: seq,
+          event_id: ev.event_id,
+          type: ev.type,
+          as_of: ev.as_of,
+          entity: ev.entity,
+          actor: ev.actor,
+          provenance: ev.provenance ?? null,
+          payload: ev.payload,
+        });
+      }
+
+      const total = allEvents.length;
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      const safePage = Math.min(page, totalPages);
+      const offset = (safePage - 1) * limit;
+      const rows = allEvents.slice(offset, offset + limit);
+
+      // Distinct type list for filter dropdown (from full unfiltered store).
+      const allTypes = new Set<string>();
+      if (!typeFilter && !entityFilter && !search) {
+        for (const ev of eventStore.replay()) allTypes.add(ev.type);
+      }
+
+      return jsonResponse({
+        total,
+        page: safePage,
+        limit,
+        totalPages,
+        typeFilter,
+        entityFilter,
+        search,
+        events: rows,
+        storeCount: eventStore.count(),
+        pageProvenance: { mode: "production-only" },
+      });
+    }
     if (url.pathname === "/api/refresh" && req.method === "POST") {
       refresh("api-refresh");
       return jsonResponse({ ok: true, asOf: cachedState.asOf });
