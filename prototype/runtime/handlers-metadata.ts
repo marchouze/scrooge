@@ -317,6 +317,15 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Anya", "m1-projection-runtime-mapping", "event-driven", {
     subscribesTo: ["CeoDecision", "CdmBindingsRegenerated"],
   }),
+  // B-1 — Bea FX posting engine. Subscribes to FX lifecycle events and
+  // emits SubLedgerPostingEmitted for each posting rule:
+  //   PR-FX-001 (FxTradeExecuted → trade-booking)
+  //   PR-FX-002 (FxPositionRevalued → revaluation)
+  //   PR-FX-003 (FxSettlementConfirmed → settlement)
+  // Authority: D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12).
+  entry("Bea", "fx-posting-engine", "event-driven", {
+    subscribesTo: ["FxTradeExecuted", "FxPositionRevalued", "FxSettlementConfirmed"],
+  }),
   // M1 — Bea IFRS-9 classification rules.
   entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
     subscribesTo: [

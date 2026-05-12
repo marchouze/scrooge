@@ -36,7 +36,7 @@ category: asset-cash-equivalents
 side: debit
 ifrsClassification: amortised-cost
 currencies: [ZAR]
-entityScope: [LE-ZA-BANKNEWCO]
+entityScope: [LE-ZA-HOZ-BANK]
 baReturnLines:
   - form: "BA 100"
     line: "Total qualifying capital and reserve funds — supporting cash element (memo)"

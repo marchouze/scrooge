@@ -23,6 +23,7 @@ import atlasGoalLoop from "./agents/atlas-goal-loop";
 import atlasSubstrateState from "./agents/atlas-substrate-state";
 import beaAccountingReadiness from "./agents/bea-accounting-readiness";
 import beaEventTriage from "./agents/bea-event-triage";
+import beaFxPostingEngine from "./agents/bea-fx-posting-engine";
 import beaGoalLoop from "./agents/bea-goal-loop";
 import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
 import camilleEventTriage from "./agents/camille-event-triage";
@@ -171,6 +172,7 @@ const _map: Record<string, AgentRunHandler> = {
   "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,
   "kai:pre-trade-gateway-aggregator": kaiPreTradeGatewayAggregator,
   "bea:accounting-readiness": beaAccountingReadiness,
+  "bea:fx-posting-engine": beaFxPostingEngine,
   "yael:tax-readiness": yaelTaxReadiness,
   "tomas:payments-readiness": tomasPaymentsReadiness,
   "imani:legal-readiness": imaniLegalReadiness,
