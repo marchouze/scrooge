@@ -1,15 +1,18 @@
 // audit.js — Audit & Recon department view.
 //
 // Pulls /api/state and /api/substrate-gaps. Renders:
-//   - Finding counts by severity (P1/P2/P3) from state.auditFindings
-//   - Recon pipeline status from state.reconPipelines
-//   - Substrate gaps table from /api/substrate-gaps
+//   - Finding counts by severity (P1/P2/P3) from state.findings array
+//     (AuditFinding events) — also checks state.auditFindings for legacy shape.
+//   - Open findings table with source, description, severity, and date.
+//   - Recon pipeline status from state.reconPipelines.
+//   - Substrate gaps table from /api/substrate-gaps.
 //
 // Falls back gracefully when fields absent (build-phase placeholder —
 // typed AuditFinding event is Wave-4 work).
 //
 // Author: Atlas (Core banking platform architect) — under CEO directive
 // 2026-05-12 (intranet scaffold).
+// Improved: Noa (Intranet Product Owner & UI Architect) — 2026-05-12.
 
 (() => {
   // Known recon pipelines for display even when state doesn't enumerate them.
@@ -119,6 +122,46 @@
 </p>`;
   }
 
+  function renderFindingsTable(findings) {
+    if (!findings.length) {
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No AuditFinding events in the event store. Vera Wave-4 recon pipelines and Mira citation gate emit these events; typed AuditFinding event registry is Wave-4 work.</p>`;
+    }
+    const sorted = findings.slice().sort((a, b) => (a.asOf < b.asOf ? 1 : -1));
+    const rows = sorted
+      .slice(0, 25)
+      .map((f) => {
+        const sev = (f.severity || "").toLowerCase();
+        const sevStatus =
+          sev === "critical" || sev === "high"
+            ? "flagged"
+            : sev === "medium"
+              ? "pending"
+              : "unknown";
+        const when = f.asOf ? `${new Date(f.asOf).toISOString().slice(0, 10)}` : "–";
+        const principle = f.principle
+          ? `<br><span style="font-size:var(--type-caption);color:var(--neutral-stone)">P${f.principle}</span>`
+          : "";
+        return `<tr>
+  <td><code style="font-size:var(--type-caption)">${f.id || "–"}</code></td>
+  <td style="max-width:300px">${f.description || "–"}${principle}</td>
+  <td><span class="status-badge" data-status="${sevStatus}">${f.severity || "–"}</span></td>
+  <td style="font-size:var(--type-caption);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.source || "–"}</td>
+  <td style="font-size:var(--type-caption);white-space:nowrap">${when}</td>
+</tr>`;
+      })
+      .join("");
+
+    return `<div class="dept-table-wrap">
+  <table class="dept-table" aria-label="Open audit findings">
+    <thead><tr><th>ID</th><th>Description</th><th>Severity</th><th>Source</th><th>Date</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>
+<p style="margin-top:var(--space-3);font-size:var(--type-small)">
+  Showing ${Math.min(sorted.length, 25)} of ${findings.length} findings, most recent first.
+</p>`;
+  }
+
   async function load() {
     const [state, substrateGaps] = await Promise.all([
       window.bankShell
@@ -138,25 +181,52 @@
     }
 
     // --- Finding counts -------------------------------------------
-    const findings = state?.auditFindings ?? {};
-    const p1 = findings.p1 ?? findings.P1 ?? findings.critical ?? 0;
-    const p2 = findings.p2 ?? findings.P2 ?? findings.high ?? 0;
-    const p3 = findings.p3 ?? findings.P3 ?? findings.advisory ?? 0;
-    const total =
-      (typeof p1 === "number" ? p1 : 0) +
-      (typeof p2 === "number" ? p2 : 0) +
-      (typeof p3 === "number" ? p3 : 0);
+    // Prefer the typed state.findings array (AuditFinding events, derive.ts).
+    // Fall back to state.auditFindings object shape for legacy compatibility.
+    const findingsArr = Array.isArray(state?.findings) ? state.findings : [];
+
+    let p1 = 0;
+    let p2 = 0;
+    let p3 = 0;
+
+    if (findingsArr.length > 0) {
+      // Count from the event-derived array: map severity strings to P1/P2/P3.
+      for (const f of findingsArr) {
+        const sev = (f.severity || "").toLowerCase();
+        if (sev === "critical" || sev === "high") p1++;
+        else if (sev === "medium") p2++;
+        else p3++;
+      }
+    } else {
+      // Legacy fallback: state.auditFindings keyed object.
+      const legacyFindings = state?.auditFindings ?? {};
+      p1 = legacyFindings.p1 ?? legacyFindings.P1 ?? legacyFindings.critical ?? 0;
+      p2 = legacyFindings.p2 ?? legacyFindings.P2 ?? legacyFindings.high ?? 0;
+      p3 = legacyFindings.p3 ?? legacyFindings.P3 ?? legacyFindings.advisory ?? 0;
+    }
+
+    const total = p1 + p2 + p3;
     const gapCount = substrateGaps?.gaps?.length ?? 0;
+    const openDecisions = state?.decisionsOpen?.length ?? 0;
 
     setMetric("audit-p1", String(p1 || "–"), p1 > 0 ? "error" : "muted");
     setMetric("audit-p2", String(p2 || "–"), p2 > 0 ? "warn" : "muted");
     setMetric("audit-p3", String(p3 || "–"), p3 > 0 ? "warn" : "muted");
     setMetric("audit-total", String(total || "–"), total > 0 ? "warn" : "muted");
     setMetric("audit-gaps", String(gapCount), gapCount > 0 ? "warn" : "muted");
+    setMetric(
+      "audit-open-decisions",
+      String(openDecisions),
+      openDecisions > 0 ? "warn" : "success",
+    );
 
     const asOf = state?.asOf;
     const tickStr = asOf ? `${new Date(asOf).toISOString().slice(0, 16).replace("T", " ")}Z` : "–";
     setMetric("audit-last-tick", tickStr, "muted");
+
+    // --- Open findings table -------------------------------------
+    const findingsTableEl = document.getElementById("audit-findings-body");
+    if (findingsTableEl) findingsTableEl.innerHTML = renderFindingsTable(findingsArr);
 
     // --- Recon pipelines -----------------------------------------
     document.getElementById("audit-recon-body").innerHTML = renderReconPipelines(
