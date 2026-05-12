@@ -254,9 +254,33 @@ export const briefsRegisterProjection: Projection<BriefsRegisterState, Event> = 
     const SnapshotSchema = z.object({
       rows: z.array(z.tuple([z.string(), z.record(z.unknown())])),
     });
-    const result = SnapshotSchema.safeParse(JSON.parse(payload));
+    let raw: unknown;
+    try {
+      raw = JSON.parse(payload);
+    } catch (err) {
+      console.error(
+        JSON.stringify({
+          level: "error",
+          service: "bank-prototype",
+          pipeline: "rms.briefs-dispatches",
+          msg: "decodeSnapshot: JSON.parse failed — degrading to empty state (F-007)",
+          error: String(err),
+        }),
+      );
+      return briefsRegisterInitial;
+    }
+    const result = SnapshotSchema.safeParse(raw);
     if (!result.success) {
-      throw new Error(`decodeSnapshot: invalid payload — ${result.error.message}`);
+      console.error(
+        JSON.stringify({
+          level: "error",
+          service: "bank-prototype",
+          pipeline: "rms.briefs-dispatches",
+          msg: "decodeSnapshot: Zod validation failed — degrading to empty state (F-007)",
+          error: result.error.message,
+        }),
+      );
+      return briefsRegisterInitial;
     }
     const parsed = result.data as unknown as { rows: Array<[string, BriefsRegisterRow]> };
     return { rows: new Map(parsed.rows) };
