@@ -72,7 +72,7 @@ export interface CounterpartiesView {
  */
 export function buildCounterpartiesView(
   store: Pick<EventStore, "replay">,
-  nowIso: string = new Date().toISOString(),
+  nowIso: string = new Date().toISOString(), // wall-clock: default; pass nowIso for deterministic scenarios
 ): CounterpartiesView {
   // Per-counterparty latest-wins fold. We accumulate three separate
   // "latest-of" pointers and reconcile at the end so the breach signal is

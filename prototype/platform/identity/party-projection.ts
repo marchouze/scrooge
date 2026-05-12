@@ -343,7 +343,7 @@ export function buildPartyProjection(eventStore: EventStore, asOf?: string): Par
     parties: frozenParties,
     relationships: { all: allEdges, live: liveEdges },
     beneficialOwnerChains,
-    asOf: asOf ?? new Date().toISOString(),
+    asOf: asOf ?? new Date().toISOString(), // wall-clock: default when asOf not supplied by caller
   };
 }
 

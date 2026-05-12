@@ -305,7 +305,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
-  const now = opts.now ?? new Date().toISOString();
+  const now = opts.now ?? new Date().toISOString(); // wall-clock: default when no clock injected; callers should inject for deterministic tests
   const gatingWindowMs = opts.gatingWindowMs ?? GATING_WINDOW_MS;
   const earliestMs = streams.earliestAsOf ? Date.parse(streams.earliestAsOf) : Number.NaN;
   const nowMs = Date.parse(now);

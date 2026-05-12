@@ -135,7 +135,7 @@ export function run(): ReconResult {
       ok: true,
       asserted: 1,
       violations: [],
-      asOf: new Date().toISOString(),
+      asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
     };
   }
 
@@ -322,6 +322,6 @@ export function run(): ReconResult {
     ok,
     asserted,
     violations,
-    asOf: new Date().toISOString(),
+    asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
   };
 }

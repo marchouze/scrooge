@@ -398,7 +398,7 @@ export function derivePhaseFromEvents(
  */
 export function buildOnboardingBoardView(
   store: Pick<EventStore, "replay">,
-  nowIso: string = new Date().toISOString(),
+  nowIso: string = new Date().toISOString(), // wall-clock: default; pass nowIso for deterministic scenarios
 ): OnboardingBoardView {
   // Replay all customer event types in a single pass. The `replay()` method
   // on `EventStore` accepts a `ReplayOpts` filter; we do not filter by type

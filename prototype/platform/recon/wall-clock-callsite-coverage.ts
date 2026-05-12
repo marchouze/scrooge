@@ -49,7 +49,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // below applied (excluding tests, scenarios, scripts, config, and approved
 // boundary files).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 128;
+const KNOWN_VIOLATIONS_SNAPSHOT = 46;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
@@ -79,6 +79,17 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // is the correct API for monotonic TTL arithmetic. The cache does not
   // affect event provenance or Principle 1 correctness.
   "dashboard/substrate-gaps.ts",
+  // Agent goal-loop deriving functions: all Date.now() calls here are
+  // elapsed-time staleness checks — comparing real wall-clock time against
+  // stored event timestamps to determine if an agent run is overdue.
+  // These are genuinely wall-clock: "has 24h really elapsed since I last
+  // ran?" is a physical-time question, not a scenario-time question. The
+  // ScenarioClock abstraction applies to event `asOf` timestamps, not to
+  // run-cadence decisions.
+  "runtime/agents/",
+  // Backtest harness: wall-clock elapsed timing for benchmark performance
+  // measurements. Not event timestamps.
+  "runtime/agents/rohan-backtest-harness.ts",
 ];
 
 // Directories to skip entirely when walking prototype/.

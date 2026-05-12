@@ -214,7 +214,7 @@ export function run(opts: DocumentRegistrationRunOpts = {}): ReconResult {
       ok: true,
       asserted: policyFiles.length,
       violations: infoViolations,
-      asOf: new Date().toISOString(),
+      asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
     };
   }
 
@@ -273,7 +273,7 @@ export function run(opts: DocumentRegistrationRunOpts = {}): ReconResult {
     ok: !hasFailures,
     asserted,
     violations,
-    asOf: new Date().toISOString(),
+    asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
   };
 }
 

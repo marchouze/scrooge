@@ -25,6 +25,7 @@ import {
 } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
+import { type ScenarioClock, WallClock } from "../scenario-clock";
 import type { AgentUrn } from "./registry";
 import type { AgentSpec } from "./spec-parser";
 import type { AgentRunSummary, WorldStateSnapshot } from "./world-state";
@@ -123,7 +124,7 @@ export interface AgentGoalLoopRunner {
 function mintIterationId(): string {
   // Simple ULID-shaped ID (timestamp + random). We avoid a full ULID library
   // dependency and instead use a stable format: `iter:<ts>:<rand>`.
-  const ts = Date.now().toString(36).padStart(10, "0");
+  const ts = Date.now().toString(36).padStart(10, "0"); // wall-clock: unique ID entropy; not an event timestamp
   const rand = createHash("sha256")
     .update(`${ts}:${Math.random()}`, "utf8")
     .digest("hex")
@@ -152,11 +153,18 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
   private readonly eventStore: EventStore;
   private readonly entity: string;
   private readonly actor: Actor;
+  private readonly clock: ScenarioClock;
 
-  constructor(opts: { eventStore: EventStore; entity?: string; actor?: Actor }) {
+  constructor(opts: {
+    eventStore: EventStore;
+    entity?: string;
+    actor?: Actor;
+    clock?: ScenarioClock;
+  }) {
     this.eventStore = opts.eventStore;
     this.entity = opts.entity ?? DEFAULT_ENTITY;
     this.actor = opts.actor ?? GOAL_LOOP_ACTOR;
+    this.clock = opts.clock ?? new WallClock();
   }
 
   async runWithGoal(
@@ -165,7 +173,7 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
     candidates: readonly GoalCandidate[] = [],
   ): Promise<GoalLoopResult> {
     const iterationId = mintIterationId();
-    const asOf = new Date().toISOString();
+    const asOf = this.clock.now();
     let eventsEmitted = 0;
 
     // ------------------------------------------------------------------
@@ -176,8 +184,9 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
     const CADENCE_FLOOR_MS = 60_000; // 1-minute floor for cohort-1
     const lastIterationMs = this.findLastGoalEvaluatedMs(args.agent.urn);
     if (lastIterationMs !== undefined && Date.now() - lastIterationMs < CADENCE_FLOOR_MS) {
-      const deferredMs = CADENCE_FLOOR_MS - (Date.now() - lastIterationMs);
-      const retryAfter = new Date(Date.now() + deferredMs).toISOString();
+      // wall-clock: real elapsed time since last iteration
+      const deferredMs = CADENCE_FLOOR_MS - (Date.now() - lastIterationMs); // wall-clock: elapsed-ms arithmetic for cadence floor
+      const retryAfter = new Date(Date.now() + deferredMs).toISOString(); // wall-clock: real retry timestamp for cadence backoff
       this.emitGoalEvaluated(
         iterationId,
         asOf,

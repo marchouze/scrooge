@@ -514,6 +514,7 @@ export class LocalModelRegistry implements ModelRegistry {
   }
 
   productionEligible(now: Date = new Date()): readonly ModelView[] {
+    // wall-clock: default; inject now for deterministic scenarios
     const all = this.list();
     return all.filter((v) => {
       if (v.validationStatus !== "approved") return false;
