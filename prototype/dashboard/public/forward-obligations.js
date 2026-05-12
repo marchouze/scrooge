@@ -19,7 +19,7 @@
   let activeView = "planning";
   let activeHorizon = DEFAULT_HORIZON;
   let pollTimer = null;
-  let lastData = null;
+  let _lastData = null;
 
   // ---------------------------------------------------------------------------
   // Fetch
@@ -44,7 +44,20 @@
     if (!iso) return "";
     // YYYY-MM-DD → "12 May 2026"
     const [y, m, d] = iso.split("-");
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return `${Number(d)} ${months[Number(m) - 1]} ${y}`;
   }
 
@@ -62,7 +75,7 @@
       "regulatory-filing": "Regulatory",
       "trade-settlement": "Trade settlement",
       "policy-review": "Policy review",
-      "manual": "Manual",
+      manual: "Manual",
     };
     return `<span class="src-badge ${source}">${labels[source] || source}</span>`;
   }
@@ -80,10 +93,10 @@
   }
 
   const BUCKET_LABELS = {
-    "today": "Today",
+    today: "Today",
     "this-week": "This week",
     "this-month": "This month",
-    "later": "Later in horizon",
+    later: "Later in horizon",
   };
 
   // ---------------------------------------------------------------------------
@@ -124,14 +137,14 @@
       { num: sourceCounts["regulatory-filing"] ?? 0, lbl: "Regulatory filings" },
       { num: sourceCounts["trade-settlement"] ?? 0, lbl: "Trade settlements" },
       { num: sourceCounts["policy-review"] ?? 0, lbl: "Policy reviews" },
-      { num: sourceCounts["manual"] ?? 0, lbl: "Manual items" },
+      { num: sourceCounts.manual ?? 0, lbl: "Manual items" },
     ];
 
     // View-specific summary
     if (viewName === "planning" && data.data?.bucketCounts) {
       const bc = data.data.bucketCounts;
       cards.push({ num: bc.today ?? 0, lbl: "Due today" });
-      cards.push({ num: (bc["this-week"] ?? 0), lbl: "Due this week" });
+      cards.push({ num: bc["this-week"] ?? 0, lbl: "Due this week" });
     }
     if (viewName === "liquidity" && data.data?.cashflowItemCount !== undefined) {
       cards.push({ num: data.data.cashflowItemCount, lbl: "Cashflow items" });
@@ -194,7 +207,7 @@
 
       for (const row of rows) {
         const ref = row.relatedRef
-          ? `<code title="${row.relatedRef}">${row.relatedRef.length > 24 ? row.relatedRef.slice(0, 22) + "…" : row.relatedRef}</code>`
+          ? `<code title="${row.relatedRef}">${row.relatedRef.length > 24 ? `${row.relatedRef.slice(0, 22)}…` : row.relatedRef}</code>`
           : `<span style="color:#bbb">—</span>`;
         const desc = row.description ? ` title="${escapeHtml(row.description)}"` : "";
         html += `<tr${desc}>
@@ -239,7 +252,7 @@
 
     for (let i = 0; i < ld.buckets.length; i++) {
       const b = ld.buckets[i];
-      const rowId = `liq-row-${i}`;
+      const _rowId = `liq-row-${i}`;
       const itemsId = `liq-items-${i}`;
       html += `<tbody>
         <tr class="fo-liq-date-row" onclick="toggleLiqItems('${itemsId}')">
@@ -263,7 +276,7 @@
         </tr>`;
       }
 
-      html += `</tbody>`;
+      html += "</tbody>";
     }
 
     html += `</table></div>
@@ -275,7 +288,7 @@
   }
 
   // Global toggle helper for liquidity drill-down.
-  window.toggleLiqItems = function (id) {
+  window.toggleLiqItems = (id) => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle("open");
   };
@@ -303,7 +316,7 @@
 
     try {
       const data = await fetchView(activeView, activeHorizon);
-      lastData = data;
+      _lastData = data;
 
       // Render tabs (uses availableViews from server to stay in sync).
       if (data.availableViews) {

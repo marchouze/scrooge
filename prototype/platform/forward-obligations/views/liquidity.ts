@@ -110,11 +110,12 @@ export const liquidityView: ForwardObligationView<LiquidityViewOutput> = {
       }));
 
     // Total net flow in the primary currency only (for the summary tile).
-    const totalNetFlow = Math.round(
-      buckets
-        .filter((b) => b.currency === primaryCurrency)
-        .reduce((sum, b) => sum + b.netFlow, 0) * 100,
-    ) / 100;
+    const totalNetFlow =
+      Math.round(
+        buckets
+          .filter((b) => b.currency === primaryCurrency)
+          .reduce((sum, b) => sum + b.netFlow, 0) * 100,
+      ) / 100;
 
     return {
       buckets,

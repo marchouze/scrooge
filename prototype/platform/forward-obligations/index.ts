@@ -46,9 +46,9 @@ export { planningView } from "./views/planning";
 // specific output type they need.
 // ---------------------------------------------------------------------------
 
+import type { ForwardObligationView } from "./types";
 import { liquidityView } from "./views/liquidity";
 import { planningView } from "./views/planning";
-import type { ForwardObligationView } from "./types";
 
 // biome-ignore lint/suspicious/noExplicitAny: view registry intentionally holds mixed output types
 export const VIEWS: Record<string, ForwardObligationView<any>> = {

@@ -34,10 +34,7 @@ function deriveBucket(dueDate: string, asOf: string): PlanningBucket {
   if (due <= sevenDaysOut) return "this-week";
 
   // "this-month": same calendar year + month
-  if (
-    due.getUTCFullYear() === base.getUTCFullYear() &&
-    due.getUTCMonth() === base.getUTCMonth()
-  ) {
+  if (due.getUTCFullYear() === base.getUTCFullYear() && due.getUTCMonth() === base.getUTCMonth()) {
     return "this-month";
   }
 
@@ -68,8 +65,8 @@ export const planningView: ForwardObligationView<PlanningViewOutput> = {
         certainty: ob.certainty,
         source: ob.source,
         bucket,
-        relatedRef: ob.relatedRef,
-        description: ob.description,
+        ...(ob.relatedRef !== undefined ? { relatedRef: ob.relatedRef } : {}),
+        ...(ob.description !== undefined ? { description: ob.description } : {}),
       });
     }
 

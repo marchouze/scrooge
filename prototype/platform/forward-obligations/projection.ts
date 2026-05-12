@@ -22,13 +22,7 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import type { EventStore } from "../event-store/store";
-import {
-  addBusinessDays,
-  buildSeedObligations,
-  nextBusinessDay,
-  nextMonthlyDate,
-  nextQuarterEnd,
-} from "./seed";
+import { addBusinessDays, buildSeedObligations, nextMonthlyDate, nextQuarterEnd } from "./seed";
 import type { ForwardObligation, HorizonOpts } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -42,9 +36,11 @@ export function resolveHorizon(
   opts?: Partial<HorizonOpts>,
 ): { from: string; to: string } {
   if (opts?.kind === "range") {
-    return { from: opts.from, to: opts.to };
+    const from = opts.from ?? asOf.slice(0, 10);
+    const to = opts.to ?? addBusinessDays(asOf.slice(0, 10), DEFAULT_HORIZON_DAYS);
+    return { from, to };
   }
-  const days = opts?.kind === "days" ? opts.days : DEFAULT_HORIZON_DAYS;
+  const days = opts?.kind === "days" && opts.days !== undefined ? opts.days : DEFAULT_HORIZON_DAYS;
   return {
     from: asOf.slice(0, 10),
     to: addBusinessDays(asOf.slice(0, 10), days),
@@ -62,13 +58,6 @@ function toIsoDate(d: Date): string {
 function isWeekend(d: Date): boolean {
   const day = d.getUTCDay();
   return day === 0 || day === 6;
-}
-
-/** Advance date by N calendar days and return ISO date string. */
-function addCalendarDays(dateStr: string, n: number): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return toIsoDate(d);
 }
 
 /** True if isoDate is within [from, to] inclusive. */
@@ -153,11 +142,7 @@ const REGULATORY_RETURN_SPECS: RegulatoryReturnSpec[] = [
   },
 ];
 
-function generateRegulatoryFilings(
-  from: string,
-  to: string,
-  asOf: string,
-): ForwardObligation[] {
+function generateRegulatoryFilings(from: string, to: string, asOf: string): ForwardObligation[] {
   const results: ForwardObligation[] = [];
 
   for (const spec of REGULATORY_RETURN_SPECS) {
@@ -308,12 +293,9 @@ function generateTradeSettlements(
         dueDate: settlementDate,
         certainty: "probable",
         owner: "Tomas (Operations & payments engineer, engineering)",
-        cashflow,
+        ...(cashflow !== undefined ? { cashflow } : {}),
         relatedRef: tradeId,
-        description:
-          `Settlement of ${payload.productTaxonomy ?? "FX"} trade ${tradeId} ` +
-          `(${side} side, ${legKind} leg). Counterparty: ${counterpartyId}. ` +
-          "Settlement via correspondent bank per D-FX-CLS-MEMBERSHIP.",
+        description: `Settlement of ${payload.productTaxonomy ?? "FX"} trade ${tradeId} (${side} side, ${legKind} leg). Counterparty: ${counterpartyId}. Settlement via correspondent bank per D-FX-CLS-MEMBERSHIP.`,
       });
     }
   }
@@ -399,9 +381,9 @@ function generateManualItems(
       dueDate: p.dueDate,
       certainty,
       owner: p.owner ?? event.actor.id,
-      cashflow,
-      relatedRef: p.relatedRef,
-      description: p.description,
+      ...(cashflow !== undefined ? { cashflow } : {}),
+      ...(p.relatedRef !== undefined ? { relatedRef: p.relatedRef } : {}),
+      ...(p.description !== undefined ? { description: p.description } : {}),
     });
   }
 

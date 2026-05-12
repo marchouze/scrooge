@@ -55,6 +55,13 @@ import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
+import {
+  DEFAULT_HORIZON_DAYS,
+  VIEWS,
+  VIEW_NAMES,
+  buildForwardObligations,
+  type resolveHorizon,
+} from "../platform/forward-obligations";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { defaultProvenanceFilter } from "../platform/projections";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
@@ -70,13 +77,6 @@ import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
-import {
-  DEFAULT_HORIZON_DAYS,
-  VIEW_NAMES,
-  VIEWS,
-  buildForwardObligations,
-  resolveHorizon,
-} from "../platform/forward-obligations";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
 import {
@@ -1062,7 +1062,10 @@ const server = Bun.serve({
           url.searchParams.get("horizon") ?? String(DEFAULT_HORIZON_DAYS),
           10,
         );
-        horizonOpts = { kind: "days", days: Number.isFinite(horizonDays) ? horizonDays : DEFAULT_HORIZON_DAYS };
+        horizonOpts = {
+          kind: "days",
+          days: Number.isFinite(horizonDays) ? horizonDays : DEFAULT_HORIZON_DAYS,
+        };
       }
 
       const result = buildForwardObligations({
