@@ -371,7 +371,11 @@ async function handleDecide(req: Request): Promise<Response> {
     return jsonResponse({ error: `Decision not found: ${body.decisionId}` }, 404);
   }
 
-  const actor = "marc@tgv.co.za"; // single-user local; identity seam at M+
+  // Actor from request body (for automated/agent calls); fall back to CEO for dashboard UI.
+  const actor =
+    typeof body.actor === "string" && body.actor.trim().length > 0
+      ? body.actor.trim()
+      : "marc@tgv.co.za";
 
   // Route through the canonical CEO-decision recorder. This is the same
   // function the runtime handler `agent:scrooge:ceo-decision-record`
@@ -428,10 +432,12 @@ async function handleComment(req: Request): Promise<Response> {
     return jsonResponse({ error: "decisionId and body are required" }, 400);
   }
 
-  // Single-user-local actor binding — mirrors handleDecide. Real
-  // identity seam is deferred substrate work.
-  const actorId = "marc@tgv.co.za";
-  const author = "Marc";
+  const actorId =
+    typeof body.actorId === "string" && body.actorId.trim().length > 0
+      ? body.actorId.trim()
+      : "marc@tgv.co.za";
+  const author =
+    typeof body.author === "string" && body.author.trim().length > 0 ? body.author.trim() : "Marc";
 
   let result: RecordDecisionCommentResult;
   try {
@@ -533,7 +539,10 @@ async function handleStartWorkstream(req: Request): Promise<Response> {
     return jsonResponse({ error: `In-flight item already active: ${body.id}` }, 409);
   }
 
-  const actor = "marc@tgv.co.za";
+  const actor =
+    typeof body.actor === "string" && body.actor.trim().length > 0
+      ? body.actor.trim()
+      : "marc@tgv.co.za";
   const event: Event = {
     event_id: newEventId(),
     type: "WorkstreamStarted",
@@ -575,7 +584,10 @@ async function handleCompleteWorkstream(req: Request): Promise<Response> {
     return jsonResponse({ error: `In-flight item not active: ${body.id}` }, 409);
   }
 
-  const actor = "marc@tgv.co.za";
+  const actor =
+    typeof body.actor === "string" && body.actor.trim().length > 0
+      ? body.actor.trim()
+      : "marc@tgv.co.za";
   const event: Event = {
     event_id: newEventId(),
     type: "WorkstreamCompleted",
