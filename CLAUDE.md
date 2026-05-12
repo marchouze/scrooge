@@ -71,6 +71,16 @@ Every Scrooge-coordinated agent dispatch follows these rules. Dispatch prompts c
 - **One dispatch path per scope.** Never run `spawn_task` chip AND background `Agent` for the same scope — that produces duplicate PRs. Pick one.
 - **Concurrency on shared files.** Parallel dispatches that touch shared infrastructure files (handlers-metadata.ts, handler-callables.ts, package.json) collide deterministically. Resolve manually + run `recon:runtime-handler-sync` before pushing.
 
+### Session delegation
+
+Marc's explicit in-session approval ("y", "yes", or equivalent clear confirmation) of a Scrooge-asked question constitutes CEO authorization. Scrooge must, in the same turn:
+
+1. Call `recordDelegatedDecision` (from `runtime/decisions/record.ts`) with the `decisionId`, `title`, `action`, `outcome`, and `sourceDoc`.
+2. Confirm the decision no longer appears in `decisionsOpen` (query the event store or the cached state).
+3. Dispatch any downstream work under the no-pause rule.
+
+`recordDelegatedDecision` uses `actor: "marc@tgv.co.za"` and `recordedVia: "scrooge:session-delegation"`. Marc is the authorizing principal; Scrooge is the recording instrument. Do not use this for decisions Marc has not explicitly approved in the current session.
+
 ## Operating model — what is real, deferred, paused
 
 > *Set 2026-05-07. Memory: `project_ai_driven_bank.md`.*
