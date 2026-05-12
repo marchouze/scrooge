@@ -37,6 +37,7 @@
 import * as ctor from "../domains/customer/onboarding";
 import type { MakeOpts } from "../domains/customer/onboarding";
 import { DEFAULT_ENTITY, counterpartyId } from "../domains/customer/types";
+import type { PartyId } from "../domains/party";
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { simulatedTag } from "../platform/event-store/provenance";
@@ -80,11 +81,10 @@ function opts(asOf: string): MakeOpts {
 // Party URNs (synthetic — not registered in the live Party store)
 // ---------------------------------------------------------------------------
 
-type PartyId = string & { readonly __partyId: unique symbol };
-const REVIEWER_NIKO = "urn:party:agent:niko-client-lifecycle" as PartyId;
-const SIGNATORY_MERIDIAN_1 = "urn:party:natural-person:synthetic-signatory-meridian-001" as PartyId;
-const SIGNATORY_MERIDIAN_2 = "urn:party:natural-person:synthetic-signatory-meridian-002" as PartyId;
-const SIGNATORY_SOUTHERN_1 = "urn:party:natural-person:synthetic-signatory-southern-001" as PartyId;
+const REVIEWER_NIKO: PartyId = "urn:party:agent:niko-client-lifecycle";
+const SIGNATORY_MERIDIAN_1: PartyId = "urn:party:natural-person:synthetic-signatory-meridian-001";
+const SIGNATORY_MERIDIAN_2: PartyId = "urn:party:natural-person:synthetic-signatory-meridian-002";
+const SIGNATORY_SOUTHERN_1: PartyId = "urn:party:natural-person:synthetic-signatory-southern-001";
 
 // ---------------------------------------------------------------------------
 // Raw event builder for Slice 2 types (not yet in CUSTOMER_EVENT_TYPES)
@@ -247,14 +247,17 @@ function buildScenarioA(): Event[] {
   );
 
   // Phase 9 — eligibility-screened (2026-03-15)
+  // Payload conforms to counterpartyEligibilityScreenedPayloadSchema in registry.
   events.push(
     rawSlice2Event(
       "CounterpartyEligibilityScreened",
       {
         counterpartyId: cp,
-        outcome: "eligible",
-        screenedBy: REVIEWER_NIKO,
-        procedureRef: "PROC-CRM-CIE-01",
+        screeningId: "CIE-MC-2026-001",
+        criteria: ["FAIS-s45-institutional-investor", "PROC-CRM-CIE-01-institutional-test"],
+        outcome: "institutional-eligible",
+        evidenceRefs: ["BOARD-CERT-MC-2026-001", "FINANCIAL-STATEMENTS-MC-2025"],
+        asOf: "2026-03-15T10:00:00Z",
       },
       "2026-03-15T10:00:00Z",
     ),
@@ -588,14 +591,17 @@ function buildScenarioC(): Event[] {
   );
 
   // Phase 9 — eligibility-screened (2026-03-19)
+  // Payload conforms to counterpartyEligibilityScreenedPayloadSchema in registry.
   events.push(
     rawSlice2Event(
       "CounterpartyEligibilityScreened",
       {
         counterpartyId: cp,
-        outcome: "eligible",
-        screenedBy: REVIEWER_NIKO,
-        procedureRef: "PROC-CRM-CIE-01",
+        screeningId: "CIE-SC-2026-001",
+        criteria: ["FAIS-s45-institutional-investor", "PROC-CRM-CIE-01-institutional-test"],
+        outcome: "institutional-eligible",
+        evidenceRefs: ["BOARD-CERT-SC-2026-001", "FINANCIAL-STATEMENTS-SC-2025"],
+        asOf: "2026-03-19T10:00:00Z",
       },
       "2026-03-19T10:00:00Z",
     ),

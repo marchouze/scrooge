@@ -26,6 +26,7 @@ import { describe, expect, it } from "bun:test";
 import * as ctor from "@domains/customer/onboarding";
 import type { MakeOpts } from "@domains/customer/onboarding";
 import { DEFAULT_ENTITY, counterpartyId } from "@domains/customer/types";
+import type { PartyId } from "@domains/party";
 import { newEventId } from "@platform/core/types";
 import type { Event } from "@platform/event-store/types";
 import { derivePhaseFromEvents } from "@platform/lifecycle/onboarding-orchestrator";
@@ -46,10 +47,9 @@ function opts(asOf: string): MakeOpts {
   return { actor: ACTOR, citations: CITATIONS, asOf };
 }
 
-type PartyId = string & { readonly __partyId: unique symbol };
-const REVIEWER = "urn:party:agent:niko-client-lifecycle" as PartyId;
-const SIGNATORY_1 = "urn:party:natural-person:synthetic-signatory-001" as PartyId;
-const SIGNATORY_2 = "urn:party:natural-person:synthetic-signatory-002" as PartyId;
+const REVIEWER: PartyId = "urn:party:agent:niko-client-lifecycle";
+const SIGNATORY_1: PartyId = "urn:party:natural-person:synthetic-signatory-001";
+const SIGNATORY_2: PartyId = "urn:party:natural-person:synthetic-signatory-002";
 
 const CP_MERIDIAN = counterpartyId("cp:synthetic:meridian-capital");
 const CP_APEX = counterpartyId("cp:synthetic:apex-trading");
@@ -135,7 +135,14 @@ function scenarioAEvents(): Event[] {
     // Phase 9 — eligibility-screened
     slice2Event(
       "CounterpartyEligibilityScreened",
-      { counterpartyId: cp, outcome: "eligible" },
+      {
+        counterpartyId: cp,
+        screeningId: "CIE-MC-2026-001",
+        criteria: ["FAIS-s45-institutional-investor"],
+        outcome: "institutional-eligible",
+        evidenceRefs: ["BOARD-CERT-MC-2026-001"],
+        asOf: "2026-03-15T10:00:00Z",
+      },
       "2026-03-15T10:00:00Z",
     ),
     // Phase 10 — credit-assessed [Slice 2]
@@ -297,7 +304,14 @@ function scenarioCEvents(): Event[] {
     // Phase 9 — eligibility-screened
     slice2Event(
       "CounterpartyEligibilityScreened",
-      { counterpartyId: cp, outcome: "eligible" },
+      {
+        counterpartyId: cp,
+        screeningId: "CIE-SC-2026-001",
+        criteria: ["FAIS-s45-institutional-investor"],
+        outcome: "institutional-eligible",
+        evidenceRefs: ["BOARD-CERT-SC-2026-001"],
+        asOf: "2026-03-19T10:00:00Z",
+      },
       "2026-03-19T10:00:00Z",
     ),
     // Phase 10 — credit-assessed [Slice 2]
