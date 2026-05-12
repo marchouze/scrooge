@@ -123,10 +123,7 @@ export function counterpartyFaisClassified(
 }
 
 /** BeneficialOwnerResolved — UBO chain resolved at bo-resolved gate. */
-export function beneficialOwnerResolved(
-  p: BeneficialOwnerResolvedPayload,
-  opts: MakeOpts,
-): Event {
+export function beneficialOwnerResolved(p: BeneficialOwnerResolvedPayload, opts: MakeOpts): Event {
   return base(CUSTOMER_EVENT_TYPES[13], { ...p }, opts);
 }
 

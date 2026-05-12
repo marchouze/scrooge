@@ -135,6 +135,12 @@ import {
   validationMethodologyPublishedPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
+import { cdmBindingsRegeneratedPayloadSchema } from "./event-types-cdm";
+import {
+  accountingReadinessSnapshotPayloadSchema,
+  agentOpsReadinessSnapshotPayloadSchema,
+  mlroAttestationPayloadSchema,
+} from "./event-types-readiness-snapshots";
 import {
   accountsSetupCompletedPayloadSchema,
   beneficialOwnerResolvedPayloadSchema,
@@ -144,12 +150,6 @@ import {
   popiaConsentRecordedPayloadSchema,
   sanctionsClearancePassedPayloadSchema,
 } from "./event-types/customer";
-import { cdmBindingsRegeneratedPayloadSchema } from "./event-types-cdm";
-import {
-  accountingReadinessSnapshotPayloadSchema,
-  agentOpsReadinessSnapshotPayloadSchema,
-  mlroAttestationPayloadSchema,
-} from "./event-types-readiness-snapshots";
 
 /**
  * Archival-tier policy per event type. Mirrors §4.2 of the event-store
@@ -2462,11 +2462,7 @@ const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Niko",
     subscribers: ["Zara", "Mira", "Imani", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "FIC-ACT-38-2001",
-      "AML-CFT-POLICY-V1",
-      "ORG-FC-05",
-    ],
+    citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1", "ORG-FC-05"],
     // UBO chain is a FIC Act s.22 CDD record — 5y minimum floor.
     retention: RETENTION_FIC_5Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
@@ -2478,12 +2474,7 @@ const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Zara",
     subscribers: ["Niko", "Mira", "Helena", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "FIC-ACT-38-2001",
-      "AML-CFT-POLICY-V1",
-      "ORG-FC-05",
-      "ORG-FC-06",
-    ],
+    citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1", "ORG-FC-05", "ORG-FC-06"],
     // Sanctions screening record: FIC Act s.28A + FAFT Recommendation 6 —
     // treated as governance-grade 7y for audit-trail integrity.
     retention: RETENTION_GOVERNANCE_7Y,
@@ -2496,10 +2487,7 @@ const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Niko",
     subscribers: ["Zara", "Yael", "Mira", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "FIC-ACT-38-2001",
-      "ORG-FC-05",
-    ],
+    citationsHint: ["FIC-ACT-38-2001", "ORG-FC-05"],
     // FATCA/CRS tax-residency record: FIC Act s.22 floor + OECD CRS
     // reporting obligations — governance-grade 7y.
     retention: RETENTION_GOVERNANCE_7Y,
@@ -2512,10 +2500,7 @@ const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Niko",
     subscribers: ["Iris", "Mira", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "POPIA-S11",
-      "ORG-PP-01",
-    ],
+    citationsHint: ["POPIA-S11", "ORG-PP-01"],
     // POPIA processing consent: governance-grade 7y for audit-trail
     // integrity (POPIA s.14 right of access; deletion challenge window).
     retention: RETENTION_GOVERNANCE_7Y,
@@ -2528,11 +2513,7 @@ const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Niko",
     subscribers: ["Helena", "Camille", "Saskia", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "TRADING-MANDATE-V1",
-      "RAS-FRAMEWORK-2026-05-06-B3",
-      "RT-CR.CP",
-    ],
+    citationsHint: ["TRADING-MANDATE-V1", "RAS-FRAMEWORK-2026-05-06-B3", "RT-CR.CP"],
     // Credit-assessment record: governance-grade 7y (Banks Act / RAS
     // director-decision retention; RT-CR.CP audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
@@ -2545,10 +2526,7 @@ const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Niko",
     subscribers: ["Tomas", "Bea", "Saskia", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "TRADING-MANDATE-V1",
-      "ORG-OP-01",
-    ],
+    citationsHint: ["TRADING-MANDATE-V1", "ORG-OP-01"],
     // Account-setup record: governance-grade 7y (accounting-records
     // retention under Companies Act s.24).
     retention: RETENTION_GOVERNANCE_7Y,

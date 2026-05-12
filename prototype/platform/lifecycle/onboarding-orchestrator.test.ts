@@ -387,7 +387,11 @@ describe("Slice 2 — new phase event types", () => {
         {
           counterpartyId: CP1,
           beneficialOwners: [
-            { partyId: "urn:party:natural-person:prs-001", ownershipPct: 51, controlBasis: "equity" },
+            {
+              partyId: "urn:party:natural-person:prs-001",
+              ownershipPct: 51,
+              controlBasis: "equity",
+            },
           ],
           resolvedAt: "2026-05-12T09:30:00Z",
           resolvedBy: "agent:niko:client-lifecycle",
@@ -411,7 +415,11 @@ describe("Slice 2 — new phase event types", () => {
         {
           counterpartyId: CP1,
           beneficialOwners: [
-            { partyId: "urn:party:natural-person:prs-001", ownershipPct: 100, controlBasis: "equity" },
+            {
+              partyId: "urn:party:natural-person:prs-001",
+              ownershipPct: 100,
+              controlBasis: "equity",
+            },
           ],
           resolvedAt: "2026-05-12T08:30:00Z",
           resolvedBy: "agent:niko:client-lifecycle",
@@ -605,7 +613,11 @@ describe("Slice 2 — new phase event types", () => {
         {
           counterpartyId: CP1,
           beneficialOwners: [
-            { partyId: "urn:party:natural-person:prs-001", ownershipPct: 100, controlBasis: "equity" },
+            {
+              partyId: "urn:party:natural-person:prs-001",
+              ownershipPct: 100,
+              controlBasis: "equity",
+            },
           ],
           resolvedAt: "2026-05-12T09:15:00Z",
           resolvedBy: "agent:niko:client-lifecycle",
@@ -680,9 +692,7 @@ describe("Slice 2 — new phase event types", () => {
       accountsSetupCompleted(
         {
           counterpartyId: CP1,
-          accounts: [
-            { accountId: "ACC-CP1-ZAR-001", currency: "ZAR", accountType: "settlement" },
-          ],
+          accounts: [{ accountId: "ACC-CP1-ZAR-001", currency: "ZAR", accountType: "settlement" }],
           setupAt: "2026-05-12T13:00:00Z",
           setupBy: "agent:niko:client-lifecycle",
         },
