@@ -88,6 +88,7 @@ import {
 } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event, ProvenanceTag } from "../event-store/types";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 
 // ---------------------------------------------------------------------------
 // Stream-key convention
@@ -263,10 +264,15 @@ export function computeTrialBalance(args: ComputeTrialBalanceArgs): TrialBalance
   const balances = new Map<string, { account: string; currency: string; amount: number }>();
   let uptoSequence = 0;
 
+  // Provenance filter: exclude simulated events from production trial-balance
+  // computation. Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+  const provenanceFilter = defaultProvenanceFilter();
+
   for (const e of args.eventStore.replay({
     entity: args.entity,
     type: "SubLedgerPostingEmitted",
   })) {
+    if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
     if (e.as_of < args.periodStart || e.as_of > args.periodEnd) continue;
     const payload = e.payload as unknown as { legs?: readonly SubLedgerLeg[] };
     if (!payload.legs) continue;

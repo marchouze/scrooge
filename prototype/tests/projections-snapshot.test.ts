@@ -17,7 +17,7 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { BANK_ZA_001, newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
@@ -27,6 +27,7 @@ import {
   acceptType,
   defaultProvenanceFilter,
   effectiveStreamKey,
+  setDefaultProvenanceModeOverride,
 } from "../platform/projections";
 import type { Projection } from "../platform/projections";
 
@@ -58,6 +59,15 @@ const counter: Projection<CounterState, Event> = {
   encodeSnapshot: (s) => JSON.stringify(s),
   decodeSnapshot: (p) => JSON.parse(p) as CounterState,
 };
+
+// ---------------------------------------------------------------------------
+// Provenance override — test events are untagged (treated as simulated).
+// D-PROVENANCE-FILTER-ENFORCEMENT changed the default to production-only so
+// unit tests that seed untagged fixture events must opt into combined mode.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 describe("LocalProjector.projectFromSnapshot — equivalence with naive build", () => {
   it("with no snapshot present, projectFromSnapshot equals naive build (graceful degradation)", () => {

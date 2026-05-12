@@ -8,15 +8,19 @@
 // mode for the page that called it. This test boots the real
 // dashboard server (build phase + licence-day variants) and asserts:
 //
-//   • /api/state         → pageProvenance.mode = "simulated-only" in build
-//                                              = "production-only" at licence-day
+//   • /api/state         → pageProvenance.mode = "production-only" (always)
 //   • /api/obligations   → pageProvenance.mode = "production-only" (constant)
-//   • /api/escalations   → pageProvenance.mode = "simulated-only" in build
-//   • /api/fleet         → pageProvenance.mode = "simulated-only" in build
+//   • /api/escalations   → pageProvenance.mode = "production-only" (always)
+//   • /api/fleet         → pageProvenance.mode = "production-only" (always)
 //   • /api/agent-runs    → pageProvenance.mode = "production-only" (constant)
 //   • /api/substrate-gaps → pageProvenance.mode = "production-only" (constant)
 //   • /api/procedures    → pageProvenance = null (authored markdown, no data)
-//   • /api/rms           → pageProvenance.mode = "simulated-only" in build
+//   • /api/rms           → pageProvenance.mode = "production-only" (always)
+//
+// D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12): the default
+// provenance mode is now always production-only, regardless of BANK_PHASE.
+// All event-derived endpoints therefore resolve to production-only at every
+// phase. The BANK_PHASE-driven simulated-only default was removed.
 //
 // Bug context: Marc 2026-05-10 flagged that the dashboard was painting
 // "Simulated data" on every page (including prose / production-data
@@ -129,11 +133,11 @@ describe("pageProvenance — build phase", () => {
     await teardown(booted);
   });
 
-  it("/api/state attaches pageProvenance.mode='simulated-only' in build", async () => {
+  it("/api/state attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/state");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("simulated-only");
+    expect(body.pageProvenance?.mode).toBe("production-only");
   });
 
   it("/api/obligations attaches pageProvenance.mode='production-only' (constant)", async () => {
@@ -143,18 +147,18 @@ describe("pageProvenance — build phase", () => {
     expect(body.pageProvenance?.mode).toBe("production-only");
   });
 
-  it("/api/escalations attaches pageProvenance.mode='simulated-only' in build", async () => {
+  it("/api/escalations attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/escalations");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("simulated-only");
+    expect(body.pageProvenance?.mode).toBe("production-only");
   });
 
-  it("/api/fleet attaches pageProvenance.mode='simulated-only' in build", async () => {
+  it("/api/fleet attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/fleet");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("simulated-only");
+    expect(body.pageProvenance?.mode).toBe("production-only");
   });
 
   it("/api/agent-runs attaches pageProvenance.mode='production-only' (CI runs are real)", async () => {
@@ -180,11 +184,11 @@ describe("pageProvenance — build phase", () => {
     expect(body.pageProvenance).toBeNull();
   });
 
-  it("/api/rms attaches pageProvenance.mode='simulated-only' in build (RMS folds events)", async () => {
+  it("/api/rms attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/rms");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("simulated-only");
+    expect(body.pageProvenance?.mode).toBe("production-only");
   });
 });
 

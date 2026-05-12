@@ -40,6 +40,7 @@
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import { fxPositionsToBa350Input } from "./ba-350-fx-adapter";
 import { generateBa350MarketRisk } from "./ba-350-market-risk";
 import type {
@@ -127,6 +128,10 @@ export function generateBa350MarketRiskFromEvents(
   eventStore: EventStore,
   input: Ba350FromEventsInput,
 ): Ba350Output {
+  // Provenance filter: exclude simulated events from production projections.
+  // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+  const provenanceFilter = defaultProvenanceFilter();
+
   // ---- Step 1: replay FxTradeExecuted for the entity within the window. ----
   const tradedPayloads: FxTradeExecutedPayload[] = [];
   const tradeEventIds: string[] = [];
@@ -136,6 +141,7 @@ export function generateBa350MarketRiskFromEvents(
     type: "FxTradeExecuted",
     asOf: input.periodEnd,
   })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     // Include trades from the beginning of time up to period end.
     // We want all open positions as of period end, not just trades within
     // the window (a trade from a prior period may still be open).
@@ -151,6 +157,7 @@ export function generateBa350MarketRiskFromEvents(
     type: "FxSettlementConfirmed",
     asOf: input.periodEnd,
   })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as { tradeId: string };
     if (p.tradeId) settledTradeIds.add(p.tradeId);
   }

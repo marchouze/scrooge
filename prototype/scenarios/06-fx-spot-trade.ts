@@ -335,7 +335,23 @@ export function runFxSpotScenario(opts: {
 
 // Top-level invocation — gated on import.meta.main so the test can import
 // the module without firing the runner.
+//
+// BANK_SCENARIO_SHARED=1 opt-in (D-PROVENANCE-FILTER-ENFORCEMENT):
+// When this env var is set, the scenario runner switches the default
+// provenance mode to "combined" so any BA generators invoked can fold
+// the scenario's simulated events alongside production events.
+// This flag is for scenario dry-run invocations only — CI tests set
+// the override via beforeEach() and do not need this flag.
 if (import.meta.main) {
+  if (process.env.BANK_SCENARIO_SHARED === "1") {
+    const { setDefaultProvenanceModeOverride } = await import("../platform/projections");
+    setDefaultProvenanceModeOverride("combined");
+    logger.info(
+      { BANK_SCENARIO_SHARED: "1", provenanceMode: "combined" },
+      "scenario 06 — BANK_SCENARIO_SHARED=1 → provenance mode set to combined",
+    );
+  }
+
   logger.info(
     {
       scenario: SCENARIO_ID,

@@ -344,17 +344,19 @@ describe("Slice 2 — snapshot-key filter digest isolation", () => {
 // Env-derived default
 // ---------------------------------------------------------------------------
 
-describe("Slice 2 — BANK_PHASE-derived default mode", () => {
-  it("BANK_PHASE unset defaults to simulated-only (current build phase)", () => {
+// D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12): default is always
+// production-only. BANK_PHASE env var no longer changes the default.
+describe("Slice 2 — default mode (D-PROVENANCE-FILTER-ENFORCEMENT)", () => {
+  it("default is always production-only regardless of BANK_PHASE", () => {
     // biome-ignore lint/performance/noDelete: process.env requires delete to unset
     delete process.env.BANK_PHASE;
-    expect(defaultProvenanceMode()).toBe("simulated-only");
-    expect(defaultProvenanceFilter()).toEqual({ mode: "simulated-only" });
+    expect(defaultProvenanceMode()).toBe("production-only");
+    expect(defaultProvenanceFilter()).toEqual({ mode: "production-only" });
   });
 
-  it("BANK_PHASE=build → simulated-only", () => {
+  it("BANK_PHASE=build → still production-only (env var no longer changes default)", () => {
     process.env.BANK_PHASE = "build";
-    expect(defaultProvenanceMode()).toBe("simulated-only");
+    expect(defaultProvenanceMode()).toBe("production-only");
   });
 
   it("BANK_PHASE=licence-day → production-only", () => {
@@ -367,16 +369,20 @@ describe("Slice 2 — BANK_PHASE-derived default mode", () => {
     expect(defaultProvenanceMode()).toBe("production-only");
   });
 
-  it("explicit override wins over env var", () => {
-    process.env.BANK_PHASE = "build";
+  it("explicit override wins over default", () => {
     setDefaultProvenanceModeOverride("combined");
     expect(defaultProvenanceMode()).toBe("combined");
     setDefaultProvenanceModeOverride(undefined);
-    expect(defaultProvenanceMode()).toBe("simulated-only");
+    expect(defaultProvenanceMode()).toBe("production-only");
   });
 
-  it("filter omitted from opts → runtime applies env default", () => {
-    process.env.BANK_PHASE = "licence-day";
+  it("simulated-only override lets tests see simulated events", () => {
+    setDefaultProvenanceModeOverride("simulated-only");
+    expect(defaultProvenanceMode()).toBe("simulated-only");
+    setDefaultProvenanceModeOverride(undefined);
+  });
+
+  it("filter omitted from opts → runtime applies production-only default", () => {
     const store = new EventStore();
     for (let i = 0; i < 3; i++) store.append(mk(PROD));
     for (let i = 0; i < 4; i++) store.append(mk(SIM_BASE));

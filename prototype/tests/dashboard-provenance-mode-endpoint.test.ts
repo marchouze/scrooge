@@ -106,6 +106,8 @@ async function teardown(b: BootedServer | undefined): Promise<void> {
   if (existsSync(b.tmpDir)) rmSync(b.tmpDir, { recursive: true, force: true });
 }
 
+// D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12): default is always
+// production-only regardless of BANK_PHASE. Updated from simulated-only.
 describe("/api/provenance/mode — build phase (default)", () => {
   let booted: BootedServer | undefined;
 
@@ -117,7 +119,7 @@ describe("/api/provenance/mode — build phase (default)", () => {
     await teardown(booted);
   });
 
-  it("returns the env-derived simulated-only filter", async () => {
+  it("returns production-only filter (BANK_PHASE no longer changes default)", async () => {
     if (!booted) throw new Error("server not booted");
     const r = await fetch(`http://127.0.0.1:${booted.port}/api/provenance/mode`);
     expect(r.ok).toBe(true);
@@ -129,7 +131,7 @@ describe("/api/provenance/mode — build phase (default)", () => {
     };
     expect(body.bankPhase).toBe("build");
     expect(body.filter).toBeDefined();
-    expect(body.filter.mode).toBe("simulated-only");
+    expect(body.filter.mode).toBe("production-only");
     expect(body.sliceAuthority).toBe("D-DATA-PROVENANCE-SUBSTRATE-SLICE-3");
     expect(typeof body.asOf).toBe("string");
     // ISO-8601-ish — Date constructor must accept it.
