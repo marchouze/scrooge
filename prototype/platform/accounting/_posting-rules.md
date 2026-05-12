@@ -8,7 +8,7 @@ The canonical typed form is one JSON object per rule, validating against [`posti
 
 ## Why this exists
 
-- **Principle 1 (events are truth).** A balance is `sum over events of (postings produced by the matched rule for that event)`. The rule register is what makes that fold deterministic and replayable as-of any date.
+- **Principle 1 (events are truth).** The GL trial balance is `fold(SubLedgerPostingEmitted)` — a projection, never stored state. `SubLedgerPostingEmitted` is a derived event (formal accounting recognition); it is single-purpose and serves only the accounting domain. Risk, liquidity, and regulatory-capital projections fold primary trade/settlement events directly and must not route through the GL. The posting-rule register is what makes the accounting fold deterministic and replayable as-of any date.
 - **Principle 2 (citations).** Every rule cites the IFRS reference, regulation ID, and policy that justify the posting choice.
 - **Principle 2 (no orphans).** Every event type that flows postable financial change must have at least one rule. Vera's planned recon asserts no postable event type is silently dropped.
 
