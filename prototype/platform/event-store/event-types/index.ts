@@ -53,7 +53,6 @@ export * from "./accounting";
 export type {
   AgentAttrs as PartyAgentAttrs,
   BeneficialOwnerChainAssertedPayload,
-  CounterpartyAttrs as PartyCounterpartyAttrs,
   KindAttributes as PartyKindAttributes,
   LegalEntityAttrs as PartyLegalEntityAttrs,
   NaturalPersonAttrs as PartyNaturalPersonAttrs,
