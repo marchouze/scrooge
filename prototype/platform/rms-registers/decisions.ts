@@ -22,6 +22,7 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
+import { z } from "zod";
 import type { DecisionRequestedPayload } from "../event-store/event-types";
 import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
@@ -204,9 +205,14 @@ export const decisionsRegisterProjection: Projection<DecisionsRegisterState, Eve
     });
   },
   decodeSnapshot(payload) {
-    const parsed = JSON.parse(payload) as {
-      rows: Array<[string, DecisionsRegisterRow]>;
-    };
+    const SnapshotSchema = z.object({
+      rows: z.array(z.tuple([z.string(), z.record(z.unknown())])),
+    });
+    const result = SnapshotSchema.safeParse(JSON.parse(payload));
+    if (!result.success) {
+      throw new Error(`decodeSnapshot: invalid payload — ${result.error.message}`);
+    }
+    const parsed = result.data as unknown as { rows: Array<[string, DecisionsRegisterRow]> };
     return { rows: new Map(parsed.rows) };
   },
 };
