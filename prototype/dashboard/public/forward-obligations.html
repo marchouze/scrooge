@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forward obligations · Bank operations dashboard</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  /* -------- Tab switcher -------- */
+  .fo-tabs {
+    display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px;
+  }
+  .fo-tab-btn {
+    padding: 9px 20px; border: none; background: none; cursor: pointer;
+    font-size: 13.5px; color: #666; border-bottom: 3px solid transparent;
+    margin-bottom: -2px; font-weight: 500; transition: color 0.15s;
+  }
+  .fo-tab-btn:hover { color: #222; }
+  .fo-tab-btn.active { color: #1a6fb8; border-bottom-color: #1a6fb8; }
+
+  /* -------- Horizon selector -------- */
+  .fo-toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 18px;
+  }
+  .fo-horizon-label { font-size: 12px; color: #666; }
+  .fo-horizon-btn {
+    padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px;
+    background: #fff; font-size: 12.5px; cursor: pointer; color: #444;
+    transition: background 0.1s;
+  }
+  .fo-horizon-btn:hover { background: #f5f5f5; }
+  .fo-horizon-btn.active { background: #1a6fb8; color: #fff; border-color: #1a6fb8; }
+
+  /* -------- Summary cards -------- */
+  .fo-summary {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px; margin-bottom: 20px;
+  }
+  .fo-card {
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 6px;
+    padding: 10px 14px;
+  }
+  .fo-card-num { font-size: 24px; font-weight: 600; line-height: 1.1; }
+  .fo-card-lbl { font-size: 11.5px; color: #666; margin-top: 4px; }
+
+  /* -------- Planning table -------- */
+  .fo-table-wrap { overflow-x: auto; }
+  table.fo-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+  }
+  table.fo-table th, table.fo-table td {
+    border-bottom: 1px solid #eee; padding: 6px 10px;
+    vertical-align: top; text-align: left;
+  }
+  table.fo-table th {
+    background: #fafafa; font-weight: 600; color: #444; white-space: nowrap;
+  }
+  table.fo-table tr:hover { background: #fafcff; }
+  table.fo-table code {
+    font-size: 11.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px;
+  }
+
+  /* -------- Certainty badges -------- */
+  .cert-badge {
+    display: inline-block; padding: 1px 7px; border-radius: 3px;
+    font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .cert-certain  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+  .cert-probable { background: #fff8e1; color: #7c5e00; border: 1px solid #ffe082; }
+  .cert-estimated { background: #f5f5f5; color: #666; border: 1px solid #e0e0e0; }
+
+  /* -------- Bucket section headers in planning -------- */
+  .fo-bucket-header {
+    background: #f7f7f7; font-size: 11.5px; font-weight: 700;
+    color: #555; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .fo-bucket-header td { padding: 5px 10px !important; }
+
+  /* -------- Source badges -------- */
+  .src-badge {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 10.5px; white-space: nowrap;
+    background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5;
+  }
+  .src-badge.trade-settlement { background: #fff3e0; color: #7c4000; border-color: #ffe0b2; }
+  .src-badge.regulatory-filing { background: #e8f5e9; color: #2e6b34; border-color: #bce0c0; }
+  .src-badge.policy-review { background: #f3e5f5; color: #5c2b7c; border-color: #e1bee7; }
+  .src-badge.manual { background: #fce4ec; color: #7d1e3c; border-color: #f8bbd9; }
+
+  /* -------- Liquidity view -------- */
+  .fo-liq-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .fo-liq-table th, .fo-liq-table td {
+    border-bottom: 1px solid #eee; padding: 6px 10px; vertical-align: top; text-align: left;
+  }
+  .fo-liq-table th { background: #fafafa; font-weight: 600; color: #444; }
+  .fo-liq-table tr.fo-liq-date-row { cursor: pointer; }
+  .fo-liq-table tr.fo-liq-date-row:hover { background: #fafcff; }
+
+  .flow-positive { color: #2e7d32; font-weight: 600; }
+  .flow-negative { color: #c62828; font-weight: 600; }
+  .flow-zero { color: #999; }
+
+  .fo-liq-items { display: none; }
+  .fo-liq-items.open { display: table-row-group; }
+  .fo-liq-items td {
+    background: #fafcff; font-size: 11.5px; padding-left: 28px !important;
+    color: #555;
+  }
+
+  /* -------- Empty state -------- */
+  .fo-empty {
+    padding: 40px 24px; text-align: center;
+    color: #666; font-size: 14px; line-height: 1.6;
+  }
+  .fo-empty strong { display: block; font-size: 16px; margin-bottom: 8px; color: #333; }
+
+  /* -------- Error state -------- */
+  .fo-error {
+    padding: 16px; background: #fff3f3; border: 1px solid #f5c6cb;
+    border-radius: 6px; color: #721c24; font-size: 13px;
+  }
+
+  /* -------- Loading -------- */
+  .fo-loading { color: #999; font-size: 13px; padding: 20px 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Forward obligations</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/forward-obligations?view=planning&horizon=30"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/obligations.html">Obligations</a>
+      <a class="nav-link" href="/policies.html">Policies</a>
+    </div>
+  </div>
+</header>
+
+<main class="page-body">
+  <h1 class="page-title">Forward obligations</h1>
+  <p class="page-subtitle">
+    Multi-source derived view of future events — regulatory filings, trade settlements,
+    policy reviews. Projection folds across the event log and obligations register.
+  </p>
+
+  <!-- Horizon selector -->
+  <div class="fo-toolbar">
+    <span class="fo-horizon-label">Horizon:</span>
+    <button class="fo-horizon-btn" data-horizon="30">30 days</button>
+    <button class="fo-horizon-btn active" data-horizon="90">90 days</button>
+    <button class="fo-horizon-btn" data-horizon="180">180 days</button>
+    <button class="fo-horizon-btn" data-horizon="365">1 year</button>
+  </div>
+
+  <!-- Tab switcher (populated dynamically from view list) -->
+  <nav class="fo-tabs" id="fo-tabs" aria-label="View tabs"></nav>
+
+  <!-- Summary cards -->
+  <div class="fo-summary" id="fo-summary"></div>
+
+  <!-- Main content area — swapped by tab -->
+  <div id="fo-content">
+    <p class="fo-loading">Loading…</p>
+  </div>
+
+  <!-- Last updated -->
+  <p id="fo-last-updated" style="font-size:11px;color:#aaa;margin-top:16px;"></p>
+</main>
+
+<script src="/provenance-badge.js"></script>
+<script src="/forward-obligations.js"></script>
+</body>
+</html>

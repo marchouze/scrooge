@@ -55,6 +55,13 @@ import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import type { Event } from "../platform/event-store/types";
+import {
+  DEFAULT_HORIZON_DAYS,
+  VIEWS,
+  VIEW_NAMES,
+  buildForwardObligations,
+  type resolveHorizon,
+} from "../platform/forward-obligations";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { defaultProvenanceFilter } from "../platform/projections";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
@@ -1017,6 +1024,68 @@ const server = Bun.serve({
       // pageProvenance: event-derived → simulated-only in build phase.
       return jsonResponse({
         ...buildOnboardingView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/forward-obligations" && req.method === "GET") {
+      // Forward Obligations projection — multi-source derived view of future events.
+      //
+      // Query params:
+      //   ?view=planning   — Planning view (what action / by whom / by when).
+      //   ?view=liquidity  — Liquidity view (net cashflow by date, probability-weighted).
+      //   ?horizon=30      — Horizon in days from today (default 90).
+      //   ?from=YYYY-MM-DD — Explicit window start (overrides horizon).
+      //   ?to=YYYY-MM-DD   — Explicit window end (overrides horizon).
+      //
+      // Authority: CEO design brief 2026-05-12.
+      // pageProvenance: event-derived → simulated-only in build phase.
+      const viewName = url.searchParams.get("view") ?? "planning";
+      const view = VIEWS[viewName];
+      if (!view) {
+        return jsonResponse(
+          {
+            error: `unknown view: ${viewName}`,
+            validViews: VIEW_NAMES,
+          },
+          400,
+        );
+      }
+
+      const asOf = nowUtc().slice(0, 10);
+      let horizonOpts: Parameters<typeof resolveHorizon>[1];
+      const fromParam = url.searchParams.get("from");
+      const toParam = url.searchParams.get("to");
+      if (fromParam && toParam) {
+        horizonOpts = { kind: "range", from: fromParam, to: toParam };
+      } else {
+        const horizonDays = Number.parseInt(
+          url.searchParams.get("horizon") ?? String(DEFAULT_HORIZON_DAYS),
+          10,
+        );
+        horizonOpts = {
+          kind: "days",
+          days: Number.isFinite(horizonDays) ? horizonDays : DEFAULT_HORIZON_DAYS,
+        };
+      }
+
+      const result = buildForwardObligations({
+        store: eventStore,
+        asOf,
+        horizon: horizonOpts,
+      });
+
+      const output = view.fold(result.obligations, asOf);
+
+      return jsonResponse({
+        asOf: result.asOf,
+        from: result.from,
+        to: result.to,
+        view: viewName,
+        viewLabel: view.label,
+        availableViews: VIEW_NAMES,
+        sourceCounts: result.sourceCounts,
+        totalCount: result.obligations.length,
+        data: output,
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
