@@ -4,6 +4,7 @@ decisionId: D-POLICY-DOCUMENT-HOME
 title: Canonical home for policy documents
 author: Owen (Company Secretary)
 date: 2026-05-12
+riskTaxonomy: RT-LR.RC
 ---
 
 # D-POLICY-DOCUMENT-HOME — Canonical home for policy documents

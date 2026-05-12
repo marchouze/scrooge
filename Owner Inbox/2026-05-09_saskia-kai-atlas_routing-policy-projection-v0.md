@@ -4,6 +4,7 @@ author: Saskia (Head of Global Markets, governance) + Kai (Trading-systems engin
 date: 2026-05-09
 summary: Routing-policy projection for the FX correspondent-pair (Standard Bank ZA primary; FirstRand-RMB ZA backup) with switch-test-live-traffic override mechanism, plus typed SwitchTestActivated / SwitchTestEnded / SwitchTestReport event family. Closes the D-FX-CORRESPONDENT-PAIR-NAMING substrate gap surfaced by Devon + Tomas in PR #58.
 decision-required: false
+riskTaxonomy: [RT-OP.PA, RT-OP.TP.MS]
 ---
 
 # Correspondent routing-policy projection v0

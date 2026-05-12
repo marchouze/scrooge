@@ -10,6 +10,7 @@ decision-category: governance-foundational
 decision-owner: Saskia (lead) · Helena · Camille · Zara
 decision-for-ceo: Approve the New Product Approval Policy v1.0 for transition from PLANNED → IN FORCE in the policy register. BRC will own ongoing review on the on-product cadence; CEO ratifies first-product attestations until BRC is constituted.
 decision-recommendation: Approve as drafted. Policy operationalises BCBS new-product-approval guidance + FSCA Conduct Standards 1–3 of 2018 + the bank's strategic-foundation institutional-only constraint; binds at next product attestation.
+riskTaxonomy: [RT-OP, RT-CD.CC, RT-ST.EX]
 ---
 
 # New Product Approval Policy v1.0

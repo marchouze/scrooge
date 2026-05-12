@@ -4,6 +4,7 @@ author: Owen (Company Secretary, governance)
 date: 2026-05-11
 summary: Backfill of the `riskTaxonomy` YAML frontmatter field across the 10 standalone v1 policies merged 2026-05-11 and the 10 pre-existing core-policy and v0 bundles in Owner Inbox. Codes drawn exclusively from the canonical Risk Taxonomy v1 (`Regulations/_risk-taxonomy.md`); no new codes invented. Closes the policy-frontmatter line of the §9 gap log in the taxonomy register. Surfaces three taxonomy gaps for Helena's next-tick consideration.
 decision-required: false
+riskTaxonomy: RT-LR.RC
 ---
 
 # Policy frontmatter — riskTaxonomy backfill (v1)

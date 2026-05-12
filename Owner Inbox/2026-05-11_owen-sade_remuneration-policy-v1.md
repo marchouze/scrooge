@@ -4,10 +4,7 @@ author: Owen (Company Secretary, governance) + Sade (AgentOps, operations)
 date: 2026-05-11
 summary: Standalone Remuneration Policy covering the bank's approach to remuneration for directors, executives, key individuals, and Material Risk Takers. Implements King IV, Banks Act, and BCBS Sound Compensation Practices (deferral, malus, clawback). Addresses the thin-human-layer composition at licence-day. Closes obligations ORG-HR-10, ORG-GV-08, ORG-GV-11. LICENCE-BIND.
 decision-required: false
-riskTaxonomy:
-  - RT-CD
-  - RT-OP.PE
-  - RT-ST.GV
+riskTaxonomy: [RT-CD, RT-OP.PE, RT-ST.GV]
 ---
 
 # Remuneration Policy — Hoz Bank

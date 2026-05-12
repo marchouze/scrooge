@@ -4,10 +4,7 @@ author: Mira (Compliance / RegTech engineer) + Zara (Compliance / legal-as-code 
 date: 2026-05-11
 summary: Standalone AML/CFT Policy covering the bank's anti-money-laundering and counter-financing-of-terrorism governance, obligations framework, transaction monitoring, sanctions screening, suspicious activity escalation, and FATF-aligned risk-based approach. Closes obligations ORG-FC-02 through ORG-FC-06, ORG-FC-13, ORG-FC-14, ORG-FC-17, ORG-FC-18, ORG-FC-19. LICENCE-BIND.
 decision-required: false
-riskTaxonomy:
-  - RT-FC.ML
-  - RT-FC.TF
-  - RT-FC.SA
+riskTaxonomy: [RT-FC.ML, RT-FC.TF, RT-FC.SA]
 ---
 
 # AML/CFT Policy v1

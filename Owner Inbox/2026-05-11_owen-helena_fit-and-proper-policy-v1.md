@@ -4,9 +4,7 @@ author: Owen (Company Secretary, governance) + Helena (Chief Risk Officer, gover
 date: 2026-05-11
 summary: Standalone Fit-and-Proper Policy covering competence, integrity, and solvency criteria for directors, executives, key individuals, and designated officers. Implements PA D7/2022, Banks Act, and FAIS Fit & Proper Determination 2017. Maps the thin-human-layer composition (6 humans at licence-day) to per-seat F&P criteria. Closes obligations ORG-GV-10, ORG-GV-11, ORG-GV-CRO-INDEPENDENCE, ORG-GV-CFO-INDEPENDENCE, ORG-GV-DIRECTORS-MINIMUM, ORG-PR-42, ORG-FAIS-KI, ORG-FC-11, ORG-CS1-002. LICENCE-BIND.
 decision-required: false
-riskTaxonomy:
-  - RT-OP.PE
-  - RT-ST.GV
+riskTaxonomy: [RT-OP.PE, RT-ST.GV]
 ---
 
 # Fit-and-Proper Policy v1

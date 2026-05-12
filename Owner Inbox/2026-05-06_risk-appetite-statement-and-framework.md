@@ -124,6 +124,8 @@ This RAS therefore binds at the **bank-entity level**. The risk appetite — eve
 
 ## B1. Operational limits and KRIs
 
+*`riskTaxonomy: RT-OP`*
+
 The RAS cascades into **operational limits and KRIs** which the platform enforces in real time. Limits are not documents; they are coded events.
 
 Structure:
@@ -142,11 +144,15 @@ Live limit values are queries over the event log + RAS-in-force. Breaches are ev
 
 ## B2. Defaults — credit & concentration
 
+*`riskTaxonomy: RT-CR.CC`*
+
 - Single-name large-exposure limit aligned to BCBS large-exposures framework, capped below regulatory ceiling.
 - Sector concentration: no sector >25% of exposure without BRC approval.
 - Geographic concentration: SA majority by design; cross-border exposure capped per RAS multiplier.
 
 ## B3. Defaults — liquidity and capital buffers
+
+*`riskTaxonomy: RT-LQ.FN`*
 
 - **LCR buffer:** target operate at **120% of PA minimum** in normal conditions; trigger management action below 110%; mandatory BRC escalation below 105%.
 - **NSFR buffer:** target operate at **115% of PA minimum**; trigger at 108%; escalate at 103%.
@@ -156,11 +162,15 @@ Live limit values are queries over the event log + RAS-in-force. Breaches are ev
 
 ## B4. Defaults — market risk
 
+*`riskTaxonomy: RT-MK`*
+
 - VaR limits per desk (initially: FX, rates, money markets) calibrated against franchise size; reviewed monthly until stable, then quarterly.
 - Stress losses capped at a fraction of capital buffer.
 - Position concentration and tenor concentration limits per asset class.
 
 ## B5. Defaults — financial-crime / sanctions
+
+*`riskTaxonomy: RT-FC`*
 
 - **Sanctions matching:** all true-positive matches blocked end-to-end pre-execution. Any production override is a Zara-signed event with concurrence, and a register-linked exception.
 - **PEP / EDD onboarding:** documented EDD before activation.
@@ -168,6 +178,8 @@ Live limit values are queries over the event log + RAS-in-force. Breaches are ev
 - **STR filing:** Zara's judgement, no internal override.
 
 ## B6. Defaults — cyber-incident severity tiers
+
+*`riskTaxonomy: RT-OP.CY`*
 
 Aligned with Joint Standard 1 of 2024 and Senna's IR programme.
 
@@ -182,6 +194,8 @@ Decision criteria coded; uplift always permitted; downgrade requires CRO concurr
 
 ## B7. Defaults — model risk tiers
 
+*`riskTaxonomy: RT-OP.MD`*
+
 | Tier | Examples | Validation |
 |---|---|---|
 | Tier 1 | Regulatory capital RWA models; IFRS 9 ECL; AML monitoring core models | Independent validation pre-deployment; annual revalidation; monitoring continuous |
@@ -191,6 +205,8 @@ Decision criteria coded; uplift always permitted; downgrade requires CRO concurr
 Rohan develops; an **independent validation function** reports to Helena. Validators do not also build (segregation).
 
 ## B8. Defaults — concentration & counterparty (markets)
+
+*`riskTaxonomy: RT-CR.CP`*
 
 - Per-counterparty exposure caps; netted under enforceable ISDA / GMRA where Imani's opinions support netting.
 - Sovereign / government concentration: SA government acceptable; other-sovereign caps per BRC.
@@ -222,6 +238,8 @@ The lines apply to **intraday FX-settlement notional routed through corresponden
 
 ## B9. Breach event taxonomy
 
+*`riskTaxonomy: RT-OP.PR`*
+
 ```
 LimitBreach { limit_id, threshold_value, observed_value, severity, owner,
               detected_at, citation, escalation_path }
@@ -237,11 +255,15 @@ For each breach severity:
 
 ## B10. Review and update cadence
 
+*`riskTaxonomy: RT-LR.RC`*
+
 - **RAS:** Annual board approval; ad-hoc updates only on material change (new product, new entity, new jurisdiction, material loss, regulatory change). Each update is a versioned event with a register citation.
 - **Limits / KRIs:** Reviewed quarterly by BRC; live recalibration permitted within RAS bounds.
 - **Defaults set here (§§B5–B7):** Reviewed at least annually by BRC and after any material incident.
 
 ## B11. Reporting
+
+*`riskTaxonomy: RT-LR.RC`*
 
 - **Board RAS pack** — generated quarterly. Standing items: RAS coverage, breaches, near-misses, emerging risks. (P6 — generated, not assembled.)
 - **BRC pack** — generated monthly. Standing items: limits dashboard, breach summary, KRI heatmap, regulatory-engagement log, model-risk inventory, climate-risk progress.
@@ -249,6 +271,8 @@ For each breach severity:
 - All packs are **summarised derivations** of the live limit and event data — Principle 6.
 
 ## B12. Governance over the RAS / RAF
+
+*`riskTaxonomy: RT-ST.GV`*
 
 - Helena owns the RAS / RAF as a policy artefact.
 - Owen runs the Board pathway.
@@ -258,9 +282,13 @@ For each breach severity:
 
 ## B13. Co-dependence with the Governance Framework
 
+*`riskTaxonomy: RT-ST.GV`*
+
 This RAS / RAF is intentionally co-tabled with the **governance framework** (`Owner Inbox/2026-05-06_governance-framework.md`). The governance framework provides the *structures* (Board, BRC, AC, ALCO, S&E, RemCo, NomCo, three lines of defence). This RAS / RAF provides the *content* those structures govern. Approvals must be congruent; changes to one require review of the other.
 
 ## B14. PA look-through framing in RAS / ICAAP / ILAAP
+
+*`riskTaxonomy: RT-LR.RC`*
 
 > *Added 2026-05-09 by Helena (Chief Risk Officer, governance) + Rohan (Risk engineer) under CEO decision `D-REGULATORY-PERIMETER` (record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md` / PR #85). Companion to §A4. Substrate gap #5 from the decision record ("PA look-through framing in RAS / ICAAP / ILAAP — Helena + Rohan substrate work; v1") is closed at the framing layer; the consolidated-basis metric **computation** is the v1 substrate task.*
 
@@ -269,6 +297,8 @@ The SARB Prudential Authority's consolidated-supervision regime under **Banks Ac
 Operationally, this means: for each prudential metric the PA assesses on a consolidated basis, the bank reports the metric **at two scopes** — entity-level (`Hoz Bank Limited` stand-alone) and consolidated-basis (`Hoz Bank Limited` + `Hoz Securities Limited` + any future consolidated entity, with IFRS 10 consolidation eliminations and IAS 27 minority-interest treatment where applicable). The **appetite line is set at the entity level** (per §A4); the **consolidated view is monitored** as part of the PA look-through dialogue, but is not itself a separate RAS line. If the consolidated view drifts in a direction the PA flags or the BRC views as material, the response is either (a) a tightening of the entity-level appetite line under §B10 review cadence, or (b) a structural change at the subsidiary level (e.g. capping Hoz Securities Limited's balance-sheet usage) — never the creation of a parallel group-RAS line.
 
 ### B14.1 Capital metrics
+
+*`riskTaxonomy: RT-CR`*
 
 For each capital metric the bank reports both entity-level and consolidated-basis figures:
 
@@ -283,6 +313,8 @@ The PA assesses both scopes; the appetite line is entity-level (the consolidated
 
 ### B14.2 Liquidity metrics
 
+*`riskTaxonomy: RT-LQ`*
+
 | Metric | Entity-level appetite line | Consolidated-basis monitoring | Citation |
 |---|---|---|---|
 | **LCR** | RAS §B3 — 120% of PA minimum normal; 110% trigger; 105% escalate. **Set at `Hoz Bank Limited`.** | Consolidated LCR aggregating HQLA and net cash outflows across `Hoz Bank Limited` + consolidated subsidiaries with restricted-cash adjustments per BCBS LCR §50 et seq. `[citation: TBC — exact BCBS LCR paragraph for consolidated treatment]`; reported alongside entity LCR in ALCO pack §B11. | Regs Relating to Banks LCR provisions `[citation: TBC]`; BCBS LCR consolidated-treatment paragraphs `[citation: TBC]` |
@@ -290,6 +322,8 @@ The PA assesses both scopes; the appetite line is entity-level (the consolidated
 | **IRRBB** | RAS §A2 IRRBB — conservative EVE and NII sensitivity profile relative to capital and earnings. **Set at `Hoz Bank Limited`.** Hedging is the default. | IRRBB on a consolidated banking-book basis where Hoz Securities Limited carries banking-book exposures (in practice unlikely under the institutional-trading mandate; trading-book exposures stay outside IRRBB and inside market-risk warehouse). | BCBS Standards on IRRBB `[citation: TBC — exact paragraph for consolidated banking-book scope]` |
 
 ### B14.3 Concentration metrics
+
+*`riskTaxonomy: RT-CR.CC`*
 
 | Metric | Entity-level appetite line | Consolidated-basis monitoring | Citation |
 |---|---|---|---|
@@ -300,6 +334,8 @@ The PA assesses both scopes; the appetite line is entity-level (the consolidated
 The B-cluster lines are explicitly **entity-level** by design under §A4 — the named-pair posture is a `Hoz Bank Limited` operating-model choice, not a group-level discipline.
 
 ### B14.4 Other consolidated-basis programmes the PA assesses (not appetite-bound)
+
+*`riskTaxonomy: RT-LR.RC`*
 
 Some PA expectations are consolidated-basis programmes that are **not** appetite-line metrics — they are governance-and-reporting deliverables the bank produces on a consolidated basis as part of the PA look-through dialogue. These include:
 
