@@ -75,8 +75,7 @@ function parseFrontmatter(content: string): Frontmatter {
 
   // decision-required: true  (exact boolean true)
   const drMatch = fm.match(/^decision-required:\s*(.+?)\s*$/im);
-  const decisionRequired =
-    drMatch?.[1]?.trim().toLowerCase() === "true";
+  const decisionRequired = drMatch?.[1]?.trim().toLowerCase() === "true";
 
   // decision-id: D-SOME-ID
   const diMatch = fm.match(/^decision-id:\s*(.+?)\s*$/im);
@@ -201,17 +200,13 @@ export function run(opts: RunOpts = {}): ReconResult {
   // Scan actioned files — these MUST have terminal CeoDecision events.
   // -----------------------------------------------------------------------
   const actionedFiles = scanDir(actionedDir);
-  const actionedWithDecision = actionedFiles.filter(
-    (f) => f.frontmatter.decisionRequired,
-  );
+  const actionedWithDecision = actionedFiles.filter((f) => f.frontmatter.decisionRequired);
 
   // -----------------------------------------------------------------------
   // Scan open Owner Inbox — these are EXPECTED to lack events (INFO only).
   // -----------------------------------------------------------------------
   const openFiles = scanDir(inboxRoot);
-  const openWithDecision = openFiles.filter(
-    (f) => f.frontmatter.decisionRequired,
-  );
+  const openWithDecision = openFiles.filter((f) => f.frontmatter.decisionRequired);
 
   // -----------------------------------------------------------------------
   // Clean-bench guard: if the event store is empty and there are actioned
@@ -221,8 +216,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   // worktree) has not been seeded and cannot be judged against an empty
   // store.
   // -----------------------------------------------------------------------
-  const storeEmpty =
-    opts.forceEmptyStore ?? isStoreEmpty(opts.terminalIds);
+  const storeEmpty = opts.forceEmptyStore ?? isStoreEmpty(opts.terminalIds);
 
   if (storeEmpty) {
     const actionedCount = actionedWithDecision.length;
@@ -230,13 +224,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (actionedCount > 0 || openCount > 0) {
       violations.push({
         subject: `${PIPELINE}:store-empty`,
-        message:
-          `Event store is empty — decision-pairing not asserted on clean bench. ` +
-          `${actionedCount} actioned decision-required file(s) and ` +
-          `${openCount} open decision-required file(s) present. ` +
-          `Run the boot-time backfill (runtime/decisions/backfill-from-records.ts) ` +
-          `to populate the store before asserting pairing. ` +
-          `Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
+        message: `Event store is empty — decision-pairing not asserted on clean bench. ${actionedCount} actioned decision-required file(s) and ${openCount} open decision-required file(s) present. Run the boot-time backfill (runtime/decisions/backfill-from-records.ts) to populate the store before asserting pairing. Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
         severity: "info",
       });
     }
@@ -263,12 +251,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       // Common for older files that predate the decision-id convention.
       violations.push({
         subject: f.basename,
-        message:
-          `"${f.basename}" has \`decision-required: true\` but no \`decision-id\` ` +
-          `field in its YAML frontmatter. Cannot assert CeoDecision event ` +
-          `pairing without a decision-id. Add \`decision-id: D-<ID>\` to the ` +
-          `frontmatter, or confirm this decision pre-dates the convention and ` +
-          `does not require event pairing. Finding: F-033.`,
+        message: `"${f.basename}" has \`decision-required: true\` but no \`decision-id\` field in its YAML frontmatter. Cannot assert CeoDecision event pairing without a decision-id. Add \`decision-id: D-<ID>\` to the frontmatter, or confirm this decision pre-dates the convention and does not require event pairing. Finding: F-033.`,
         severity: "info",
       });
       continue;
@@ -278,17 +261,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!terminal.has(decisionId)) {
       violations.push({
         subject: decisionId,
-        message:
-          `"${f.basename}" is actioned (moved to actioned/) with ` +
-          `\`decision-required: true\` and \`decision-id: ${decisionId}\` ` +
-          `but no terminal \`CeoDecision\` event exists in the event store ` +
-          `for decisionId="${decisionId}" with action ∈ {approve, reject}. ` +
-          `A decision actioned in markdown without a corresponding event ` +
-          `violates Principle 1 (events are the only source of truth). ` +
-          `Remediation: emit a CeoDecision(approve|reject) event for ` +
-          `\`${decisionId}\` via \`recordDelegatedDecision\` or the ` +
-          `decision-backfill script. ` +
-          `Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
+        message: `"${f.basename}" is actioned (moved to actioned/) with \`decision-required: true\` and \`decision-id: ${decisionId}\` but no terminal \`CeoDecision\` event exists in the event store for decisionId="${decisionId}" with action ∈ {approve, reject}. A decision actioned in markdown without a corresponding event violates Principle 1 (events are the only source of truth). Remediation: emit a CeoDecision(approve|reject) event for \`${decisionId}\` via \`recordDelegatedDecision\` or the decision-backfill script. Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
         severity: "fail",
       });
     }
@@ -302,12 +275,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     const { decisionId } = f.frontmatter;
     violations.push({
       subject: decisionId ?? f.basename,
-      message:
-        `OPEN decision: "${f.basename}"` +
-        (decisionId ? ` (decision-id: ${decisionId})` : " (no decision-id)") +
-        ` is in Owner Inbox/ (not actioned) with \`decision-required: true\`. ` +
-        `No CeoDecision event expected yet. Open-decision count: ` +
-        `${openWithDecision.length}.`,
+      message: `OPEN decision: "${f.basename}"${decisionId ? ` (decision-id: ${decisionId})` : " (no decision-id)"} is in Owner Inbox/ (not actioned) with \`decision-required: true\`. No CeoDecision event expected yet. Open-decision count: ${openWithDecision.length}.`,
       severity: "info",
     });
   }
@@ -319,10 +287,10 @@ export function run(opts: RunOpts = {}): ReconResult {
   result.ok = violations.every((v) => v.severity !== "fail");
 
   // Attach summary fields expected by the JSON output consumer.
-  (result as ReconResult & { open?: number; advisories?: number }).open =
-    openCount;
-  (result as ReconResult & { open?: number; advisories?: number }).advisories =
-    violations.filter((v) => v.severity === "info").length;
+  (result as ReconResult & { open?: number; advisories?: number }).open = openCount;
+  (result as ReconResult & { open?: number; advisories?: number }).advisories = violations.filter(
+    (v) => v.severity === "info",
+  ).length;
 
   void violationCount; // used via result.ok
   return result;
