@@ -49,6 +49,7 @@ import { randomBytes } from "node:crypto";
 
 import { WorktreeBoundaryError, createRunnerWorker } from "../platform/agent-runtime/runner-worker";
 import { eventStore } from "../platform/composition";
+import { newEventId } from "../platform/core/types";
 import {
   makeLegacyFanoutShadowed,
   makeSubstrateAgentRunCompleted,
@@ -266,11 +267,30 @@ function emitSubstrateRunStarted(payload: {
         },
       }),
     );
-  } catch (err) {
-    logger.error(
-      { runId: payload.runId, agent: payload.agent, err: (err as Error).message },
-      "substrate-runner — SubstrateAgentRunStarted append failed (non-fatal)",
-    );
+  } catch (telemetryErr) {
+    try {
+      eventStore.append(
+        makeSubstrateAlert({
+          asOf: new Date().toISOString(),
+          entity: DEFAULT_ENTITY,
+          actor: SUBSTRATE_RUNNER_ACTOR,
+          citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+          payload: {
+            alertId: `alert:integrity:lifecycle-telemetry-${newEventId()}`,
+            alertClass: "integrity",
+            agentUrn: `agent:${payload.agent.toLowerCase()}`,
+            details: `lifecycle telemetry append failed (SubstrateAgentRunStarted): ${(telemetryErr as Error).message}`,
+            severity: "high",
+          },
+        }),
+      );
+    } catch {
+      // last resort: log only — cannot emit to broken store
+      logger.error(
+        { runId: payload.runId, agent: payload.agent, err: (telemetryErr as Error).message },
+        "lifecycle telemetry append failed and SubstrateAlert also failed",
+      );
+    }
   }
 }
 
@@ -309,11 +329,30 @@ function emitSubstrateRunCompleted(payload: {
         },
       }),
     );
-  } catch (err) {
-    logger.error(
-      { runId: payload.runId, agent: payload.agent, err: (err as Error).message },
-      "substrate-runner — SubstrateAgentRunCompleted append failed (non-fatal)",
-    );
+  } catch (telemetryErr) {
+    try {
+      eventStore.append(
+        makeSubstrateAlert({
+          asOf: new Date().toISOString(),
+          entity: DEFAULT_ENTITY,
+          actor: SUBSTRATE_RUNNER_ACTOR,
+          citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+          payload: {
+            alertId: `alert:integrity:lifecycle-telemetry-${newEventId()}`,
+            alertClass: "integrity",
+            agentUrn: `agent:${payload.agent.toLowerCase()}`,
+            details: `lifecycle telemetry append failed (SubstrateAgentRunCompleted): ${(telemetryErr as Error).message}`,
+            severity: "high",
+          },
+        }),
+      );
+    } catch {
+      // last resort: log only — cannot emit to broken store
+      logger.error(
+        { runId: payload.runId, agent: payload.agent, err: (telemetryErr as Error).message },
+        "lifecycle telemetry append failed and SubstrateAlert also failed",
+      );
+    }
   }
 }
 
@@ -344,11 +383,30 @@ function emitSubstrateRunFailed(payload: {
         },
       }),
     );
-  } catch (err) {
-    logger.error(
-      { runId: payload.runId, agent: payload.agent, err: (err as Error).message },
-      "substrate-runner — SubstrateAgentRunFailed append failed (non-fatal)",
-    );
+  } catch (telemetryErr) {
+    try {
+      eventStore.append(
+        makeSubstrateAlert({
+          asOf: new Date().toISOString(),
+          entity: DEFAULT_ENTITY,
+          actor: SUBSTRATE_RUNNER_ACTOR,
+          citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
+          payload: {
+            alertId: `alert:integrity:lifecycle-telemetry-${newEventId()}`,
+            alertClass: "integrity",
+            agentUrn: `agent:${payload.agent.toLowerCase()}`,
+            details: `lifecycle telemetry append failed (SubstrateAgentRunFailed): ${(telemetryErr as Error).message}`,
+            severity: "high",
+          },
+        }),
+      );
+    } catch {
+      // last resort: log only — cannot emit to broken store
+      logger.error(
+        { runId: payload.runId, agent: payload.agent, err: (telemetryErr as Error).message },
+        "lifecycle telemetry append failed and SubstrateAlert also failed",
+      );
+    }
   }
 }
 
@@ -847,7 +905,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
             actor: BUS_TICK_ACTOR,
             citations: [...PHASE_1_CITATIONS],
             payload: {
-              alertId: `alert:integrity:bus-tick-${Date.now()}`,
+              alertId: `alert:integrity:bus-tick-${newEventId()}`,
               alertClass: "integrity",
               agentUrn: BUS_TICK_ACTOR.id,
               details: `bus tick failed inside runAgent: parent=${ctx.agent}:${ctx.trigger.id} reason=${errMsg}`,

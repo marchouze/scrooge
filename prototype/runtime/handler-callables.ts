@@ -112,6 +112,10 @@ import type { AgentRunHandler } from "./types";
 //   1. Build the map without the follow-on-router entry.
 //   2. Create the router with the map injected, then insert it.
 // The map is mutable during init, Readonly<> after export.
+//
+// F-019 resolved: `bunx madge --circular --extensions ts runtime/` reports
+// "No circular dependency found!" — the two-phase init achieved the goal.
+// Use `bun run check:circular` (package.json) to verify at any time.
 const _map: Record<string, AgentRunHandler> = {
   "vera:overnight-recon": veraOvernightRecon,
   "vera:codebase-quality-review": veraCodebaseQualityReview,

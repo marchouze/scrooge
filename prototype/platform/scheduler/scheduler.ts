@@ -322,7 +322,11 @@ export class LocalScheduler implements Scheduler {
         let fireAt: Date;
         try {
           fireAt = nextFireAfter(entry.parsed, cursor);
-        } catch (_e) {
+        } catch (err) {
+          logger.warn(
+            { agentUrn: entry.agentUrn, err: (err as Error).message },
+            "scheduler: nextFireAfter threw — skipping trigger",
+          );
           break;
         }
         if (fireAt > now) break;
