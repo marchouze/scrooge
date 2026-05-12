@@ -34,10 +34,10 @@ const CP2 = counterpartyId("CP-TEST-002");
 const CP3 = counterpartyId("CP-TEST-003");
 
 // Reviewer/person Party URNs for typed payloads.
-const REVIEWER_ID = "party:natural-person:PRS-REVIEWER-001" as Parameters<
+const REVIEWER_ID = "urn:party:natural-person:prs-reviewer-001" as Parameters<
   typeof ctor.kycCompleted
 >[0]["reviewerId"];
-const PERSON_ID = "party:natural-person:PRS-SIGNATORY-001" as Parameters<
+const PERSON_ID = "urn:party:natural-person:prs-signatory-001" as Parameters<
   typeof ctor.authorisedSignatoryAdded
 >[0]["personId"];
 

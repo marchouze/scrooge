@@ -318,7 +318,7 @@ function counterpartyReplayEvents(opts: {
           pep: false,
           sanctionsClear: true,
           jurisdictionalRiskScore: "low",
-          reviewerId: "mira@bank.local" as PartyId, // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 2
+          reviewerId: "urn:party:natural-person:mira-compliance" as PartyId, // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
         },
         { actor: opts.mira, citations: ["FIC-S21", "FIC-GN7-RBA"] },
       ),

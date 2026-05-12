@@ -72,9 +72,8 @@ store.append(
       pep: false,
       sanctionsClear: true,
       jurisdictionalRiskScore: "low",
-      // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 2
-      // backfill will supply a proper urn:party:natural-person:... URN.
-      reviewerId: "mira@bank.local" as PartyId,
+      // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
+      reviewerId: "urn:party:natural-person:mira-compliance" as PartyId,
     },
     { actor: compliance, citations: ["FIC-S21", "FIC-GN7-RBA"] },
   ),
@@ -106,9 +105,8 @@ store.append(
   authorisedSignatoryAdded(
     {
       counterpartyId: cpId,
-      // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 2
-      // backfill will supply a proper urn:party:natural-person:... URN.
-      personId: "person-001" as PartyId,
+      // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
+      personId: "urn:party:natural-person:signatory-acme-001" as PartyId,
       scope: "signatory",
       evidenceRef: "synthetic-resolution-001",
     },
@@ -119,9 +117,8 @@ store.append(
   authorisedSignatoryAdded(
     {
       counterpartyId: cpId,
-      // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 2
-      // backfill will supply a proper urn:party:natural-person:... URN.
-      personId: "person-002" as PartyId,
+      // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
+      personId: "urn:party:natural-person:signatory-acme-002" as PartyId,
       scope: "authorised-trader",
       evidenceRef: "synthetic-resolution-002",
     },
