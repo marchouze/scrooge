@@ -513,7 +513,8 @@ export class LocalModelRegistry implements ModelRegistry {
     return views.sort((a, b) => a.modelId.localeCompare(b.modelId));
   }
 
-  productionEligible(now: Date = new Date()): readonly ModelView[] { // wall-clock: default; inject now for deterministic scenarios
+  productionEligible(now: Date = new Date()): readonly ModelView[] {
+    // wall-clock: default; inject now for deterministic scenarios
     const all = this.list();
     return all.filter((v) => {
       if (v.validationStatus !== "approved") return false;

@@ -25,7 +25,7 @@
 import { createHash } from "node:crypto";
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
-import { WallClock, type ScenarioClock } from "../scenario-clock";
+import { type ScenarioClock, WallClock } from "../scenario-clock";
 import type { AgentUrn } from "./registry";
 
 // ---------------------------------------------------------------------------
