@@ -323,10 +323,39 @@ export class LocalScheduler implements Scheduler {
         try {
           fireAt = nextFireAfter(entry.parsed, cursor);
         } catch (err) {
-          logger.warn(
-            { agentUrn: entry.agentUrn, err: (err as Error).message },
-            "scheduler: nextFireAfter threw — skipping trigger",
+          const errMsg = (err as Error).message;
+          // Log at error level (not warn) — a broken cron expression means
+          // the agent's trigger will never fire until the expression is fixed.
+          // F-014: emit a SubstrateAlert so Vera's recon pipeline surfaces
+          // the breakage; the scheduler loop continues to the next entry.
+          logger.error(
+            { agentUrn: entry.agentUrn, cronExpression: entry.cronExpression, err: errMsg },
+            "scheduler: nextFireAfter threw — skipping entry and emitting SubstrateAlert",
           );
+          const alertId =
+            `alert:scheduler:next-fire-error:${entry.agentUrn}:${entry.triggerId}`.toLowerCase();
+          try {
+            this.eventStore.append(
+              makeSubstrateAlert({
+                asOf: now.toISOString(),
+                entity: this.entity,
+                actor: this.actor,
+                citations: [...this.citations],
+                payload: {
+                  alertId,
+                  alertClass: "integrity",
+                  agentUrn: entry.agentUrn,
+                  details: `Scheduler nextFireAfter error for ${entry.agentUrn}:${entry.triggerId} (cron: ${entry.cronExpression}): ${errMsg}. Entry skipped; scheduler loop continues.`,
+                  severity: "high",
+                },
+              }),
+            );
+          } catch (alertErr) {
+            logger.error(
+              { agentUrn: entry.agentUrn, err: (alertErr as Error).message },
+              "scheduler: SubstrateAlert append failed after nextFireAfter error",
+            );
+          }
           break;
         }
         if (fireAt > now) break;

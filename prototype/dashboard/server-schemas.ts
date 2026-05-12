@@ -74,3 +74,33 @@ export const CompleteWorkstreamBodySchema = z
   .strict();
 
 export type CompleteWorkstreamBody = z.infer<typeof CompleteWorkstreamBodySchema>;
+
+// ---------------------------------------------------------------------------
+// /api/markets/fx/quote  →  RfqInput (quote-only, no trade event emitted)
+// /api/markets/fx/trade  →  RfqInput (emits FxTradeExecuted event)
+//
+// Both endpoints accept the same shape. The Zod schema replaces the
+// manual validateRfqInput() guard that was the sole parse layer
+// (F-029 — Vera codebase-quality-review 2026-05-10). Downstream
+// emitTrade / quoteOnly still call validateRfqInput internally for
+// business-logic constraints (eligible currency pair, notional > 0,
+// counterparty eligibility) after the structural parse passes here.
+// ---------------------------------------------------------------------------
+
+const CURRENCY_PAIR_RE = /^[A-Z]{3}\/[A-Z]{3}$/;
+const VALUE_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export const RfqBodySchema = z
+  .object({
+    counterpartyId: z.string().min(1),
+    currencyPair: z
+      .string()
+      .regex(CURRENCY_PAIR_RE, "currencyPair must match BASE/QUOTE (3-letter ISO codes)"),
+    side: z.enum(["buy", "sell"]),
+    notional: z.number().finite().positive(),
+    valueDate: z.string().regex(VALUE_DATE_RE, "valueDate must be ISO YYYY-MM-DD"),
+    rfqId: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type RfqBody = z.infer<typeof RfqBodySchema>;
