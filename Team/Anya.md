@@ -55,6 +55,7 @@ Anya does **not** produce the events (Atlas), write postings (Bea), evaluate KYC
 | `CeoDecision` event | Event store | Projection refresh within 60 seconds |
 | `EventSchemaPublished` event | Event store (Atlas) | Schema-registry sync + downstream projection compatibility check within 1 working day |
 | `ObligationRegistered` / `PolicyChange` events affecting a regulatory mart | Event store (Mira / Owen) | Mart-definition impact note within 5 working days |
+| `CdmBindingsRegenerated` event | Event store (Atlas) | Regenerate M1 projection runtime CDM bindings within 60 seconds |
 | Inbound projection / mart request — any governance head | Owner Inbox / direct ask | Within published cadence; ad-hoc within 2 working days |
 
 ## 8. Inputs

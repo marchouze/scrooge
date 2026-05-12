@@ -47,6 +47,7 @@ Senna does **not** write compliance controls (Mira), build platform primitives (
 
 | Trigger | Source | Response SLA |
 |---|---|---|
+| `CeoDecision` event | Event store (Scrooge) | Re-evaluate threat model on CEO decisions affecting the M1 trading stack within 1 working day |
 | `MergeRequested` event | Source-control substrate | Threat-model gate decision within 1 working day |
 | `SecurityIncidentRaised` event | Detection pipeline | Triage within 15 minutes; IR command within 1h |
 | `KeyRotationDue` event | Key-rotation scheduler | Rotation performed and `KeyRotationPerformed` event emitted within standing-policy window |

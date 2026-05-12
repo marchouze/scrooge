@@ -52,6 +52,11 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 | `IFRS9ECLPublished` event | Event store (Rohan) | ECL stage / overlay reflected in close within 1 working day |
 | `TaxClassificationPublished` event | Event store (Yael) | Deferred-tax posting within 1 working day |
 | `RestatementProposed` event | Event store | Restatement-handling procedure invoked within 1 working day |
+| `CeoDecision` event | Event store (Scrooge) | Re-evaluate IFRS classification on new CEO decisions affecting product scope within 1 working day |
+| `CdmBindingsRegenerated` event | Event store (Atlas) | Re-evaluate IFRS classification when CDM bindings change within 60 seconds |
+| `EquityTradeBooked` event | Event store (Kai) | Classify booked equity trade under IFRS 9 within 60 seconds |
+| `EquitySettlementInstructed` event | Event store (Kai / Tomas) | Update IFRS classification on settlement instruction within 60 seconds |
+| `EquityCorporateActionApplied` event | Event store (Ravi / Kai) | Re-classify equity position on corporate action within 1 working day |
 | Inbound query — Camille / external auditor | Owner Inbox / direct ask | Within 2 working days |
 
 ## 8. Inputs
