@@ -117,6 +117,38 @@ export function recordCeoDecision(
 }
 
 // ---------------------------------------------------------------------------
+// Session-delegation path — Scrooge records Marc's in-session approval.
+// ---------------------------------------------------------------------------
+
+/**
+ * Record a CEO decision delegated through Scrooge in-session.
+ * Marc's explicit "y" / approval in a Scrooge session = CEO authorization.
+ * Uses marc@tgv.co.za as the actor (Marc is the authorizing principal;
+ * Scrooge is the recording instrument). Never use for decisions Marc
+ * has not explicitly approved in the current session.
+ *
+ * The `recordedVia` field defaults to "scrooge:session-delegation" and
+ * is preserved in the event payload for audit trail clarity. Callers may
+ * override it (e.g. "scrooge:session-delegation:cli") but must not
+ * substitute a non-human actor.
+ */
+export function recordDelegatedDecision(
+  params: Omit<RecordCeoDecisionInput, "actor" | "recordedVia"> & {
+    readonly recordedVia?: string;
+  },
+  asOf?: string,
+): RecordCeoDecisionResult {
+  return recordCeoDecision(
+    {
+      ...params,
+      actor: "marc@tgv.co.za",
+      recordedVia: params.recordedVia ?? "scrooge:session-delegation",
+    },
+    asOf ?? new Date().toISOString(),
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Decision comments — append-only thread on a decisionId.
 // ---------------------------------------------------------------------------
 
