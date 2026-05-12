@@ -169,6 +169,18 @@ function parseFrontmatter(content: string): Frontmatter | null {
 // Decision ID extraction.
 // ---------------------------------------------------------------------------
 
+// Validate that a candidate decision ID is well-formed:
+//   • At least 5 characters long
+//   • Does not end with a hyphen (filters template placeholders like `D-RT-`)
+// This guard prevents body-text scanner hits on template strings such as
+// `D-RT-<slug>` (where the regex captures just `D-RT-`) from appearing as
+// actionable findings.
+function isWellFormedDecisionId(id: string): boolean {
+  if (id.length < 5) return false;
+  if (id.endsWith("-")) return false;
+  return true;
+}
+
 /**
  * Extract the first decision ID from the file content and filename.
  * Priority: (a) frontmatter `decisionId`, (b) first D-XXX in body text,
@@ -183,19 +195,26 @@ function extractDecisionId(
   if (fm?.decisionId) {
     // Normalise — strip backticks, whitespace.
     const cleaned = fm.decisionId.replace(/^`|`$/g, "").trim().toUpperCase();
-    if (/^D-[A-Z][A-Z0-9-]+$/.test(cleaned)) return cleaned;
+    if (/^D-[A-Z][A-Z0-9-]+$/.test(cleaned) && isWellFormedDecisionId(cleaned)) return cleaned;
   }
 
   // (b) First D-XXX match in body text (after frontmatter).
   const bodyStart = fm ? fm.endLine + 1 : 0;
   const bodyLines = content.split(/\r?\n/).slice(bodyStart).join("\n");
   DECISION_ID_RE.lastIndex = 0;
-  const bodyMatch = DECISION_ID_RE.exec(bodyLines);
-  if (bodyMatch?.[1]) return bodyMatch[1].toUpperCase();
+  let bodyMatch = DECISION_ID_RE.exec(bodyLines);
+  while (bodyMatch) {
+    const candidate = bodyMatch[1]?.toUpperCase();
+    if (candidate && isWellFormedDecisionId(candidate)) return candidate;
+    bodyMatch = DECISION_ID_RE.exec(bodyLines);
+  }
 
   // (c) Filename.
   const fnMatch = filename.match(FILENAME_ID_RE);
-  if (fnMatch?.[1]) return fnMatch[1].toUpperCase();
+  if (fnMatch?.[1]) {
+    const candidate = fnMatch[1].toUpperCase();
+    if (isWellFormedDecisionId(candidate)) return candidate;
+  }
 
   return null;
 }

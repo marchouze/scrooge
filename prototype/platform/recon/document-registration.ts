@@ -92,7 +92,10 @@ function eventStoreIsEmpty(opts: DocumentRegistrationRunOpts): boolean {
     // Synthetic mode: treat the supplied overrides as the universe.
     return false;
   }
-  for (const _e of eventStore.replay()) {
+  // Scoped to DocumentRegistered events only — `CeoDecision` events emitted
+  // by the boot-time `backfill:decisions` step must not trigger the hard-fail
+  // posture before `backfill-document-registered-2026-05-12.ts` has run.
+  for (const _e of eventStore.replay({ type: "DocumentRegistered" })) {
     return false;
   }
   return true;

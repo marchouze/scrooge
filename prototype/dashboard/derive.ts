@@ -968,6 +968,25 @@ function resolutionIdFromRecordFilename(filename: string): string | null {
 //   - Multi-id record:    `- **Decision IDs resolved:** \`D-A\` + \`D-B\` + ...`
 //   - Title-only fallback (filename slug used when both lines are absent).
 const RECORD_FILENAME_RE = /_ceo-decision-record_/i;
+
+// Matches `decision-id: D-FOO` frontmatter line (the canonical field).
+const FM_DECISION_ID_RE = /^decision-id\s*:\s*(.+?)\s*$/im;
+// Matches `maps-to-decision-id: D-BAR` frontmatter line.
+// Used by agent-authored deliverables that implement a previously-approved CEO
+// decision (e.g. thin-human-layer implementation slices). The recon does NOT
+// check this key; the backfill emits events for both the explicit `decision-id`
+// AND the `maps-to-decision-id` so neither path is missed.
+const FM_MAPS_TO_DECISION_ID_RE = /^maps-to-decision-id\s*:\s*(.+?)\s*$/im;
+
+// Validate that a candidate decision ID is well-formed:
+//   • At least 5 characters long
+//   • Starts with D- or S- followed by an alphanumeric character
+//   • Does not end with a hyphen (malformed placeholder guard)
+function isValidDecisionId(id: string): boolean {
+  if (id.length < 5) return false;
+  if (id.endsWith("-")) return false;
+  return /^(?:D|S)-[A-Z0-9]/i.test(id);
+}
 const DECISION_ID_LINE_RE = /\*\*Decision ID(?:s resolved)?:\*\*\s*(.+?)\s*$/i;
 const ALL_DIDS_RE = /`((?:D|S)-[A-Z0-9][A-Z0-9-]*)`/g;
 const ACTION_LINE_RE = /\*\*Action:\*\*\s*(.+?)\s*$/i;
@@ -1060,6 +1079,134 @@ export function synthesizeCeoDecisionsFromRecords(
     }
   }
   return out;
+}
+
+// Body-text decision ID pattern — e.g. D-RMS-PHASE-1, D-AGENT-RUNTIME-AUTHORIZE.
+// Starts with D- followed by an uppercase letter, then uppercase letters,
+// digits, and hyphens. Used to mirror the decision-record-event-symmetry
+// recon's `extractDecisionId` step (b) so the backfill covers the same
+// set of IDs the recon asserts against.
+const BODY_DECISION_ID_RE = /\b(D-[A-Z][A-Z0-9-]+)/;
+
+// Scan ALL Owner Inbox `.md` files (not just `_ceo-decision-record_*`) and
+// emit a `CeoDecisionEventSummary` for every closed decision they reference.
+// Mirrors the three-step ID-extraction logic of the
+// `decision-record-event-symmetry` recon pipeline so the backfill resolves
+// exactly the set of IDs the recon would otherwise warn about:
+//
+//   (a) Frontmatter `decision-id` or `maps-to-decision-id` key (explicit).
+//   (b) First `D-XXX` match in the file body (same as the recon's step b).
+//   (c) `D-XXX` slug extracted from the filename (same as the recon's step c).
+//
+// Only files where `decision-required` is explicitly `false` are considered.
+// IDs that fail `isValidDecisionId` (too short, trailing hyphen, etc.) are
+// skipped — this filters out template placeholders like `D-RT-` and
+// `D-RT-<slug>`.
+//
+// De-duplication (by decisionId, latest-asOf wins) is applied before
+// returning. The caller (`backfillCeoDecisionsFromRecords`) also dedupes
+// against the live event store, so there is no risk of double-emission.
+export function synthesizeCeoDecisionsFromOwnerInboxFrontmatter(
+  ownerInboxDir: string,
+): CeoDecisionEventSummary[] {
+  if (!existsSync(ownerInboxDir)) return [];
+  const byId = new Map<string, CeoDecisionEventSummary>();
+  const EXCLUDED = new Set(["_frontmatter-convention.md", "_styles.css"]);
+  for (const filename of readdirSync(ownerInboxDir)) {
+    if (filename.startsWith(".") || filename.startsWith("_")) continue;
+    if (!filename.toLowerCase().endsWith(".md")) continue;
+    if (EXCLUDED.has(filename)) continue;
+    // Already covered by synthesizeCeoDecisionsFromRecords — skip to avoid
+    // double-counting (the record-file path carries richer metadata).
+    if (RECORD_FILENAME_RE.test(filename)) continue;
+    const full = join(ownerInboxDir, filename);
+    try {
+      if (!statSync(full).isFile()) continue;
+    } catch {
+      continue;
+    }
+    const content = readFileSync(full, "utf8");
+    const fmMatch = content.match(FRONTMATTER_RE);
+    if (!fmMatch?.[1]) continue;
+    const fmBlock = fmMatch[1];
+
+    // Must have decision-required: false (string or boolean, explicit).
+    const drMatch = fmBlock.match(/^decision-required\s*:\s*(.+?)\s*$/im);
+    if (!drMatch?.[1]) continue;
+    const drVal = drMatch[1].trim().toLowerCase();
+    if (drVal !== "false") continue;
+
+    // Pull title and asOf — used for all candidate IDs from this file.
+    const titleMatch = fmBlock.match(/^title\s*:\s*(.+?)\s*$/im);
+    const title = titleMatch?.[1]?.trim() ?? filename;
+    const date = fileDate(filename);
+    const asOf = date ? `${date}T00:00:00.000Z` : "";
+    if (!asOf) continue;
+
+    // Collect all candidate IDs this file "owns" so the backfill covers the
+    // same set the recon asserts against. Three extraction paths mirror the
+    // recon's `extractDecisionId` logic; the `maps-to-decision-id` path is
+    // a bonus the recon doesn't check (but is semantically load-bearing for
+    // implementation slices and confirmation papers).
+    const candidates = new Set<string>();
+
+    // Step (a) — frontmatter `decision-id` key (mirrors recon step a).
+    const didMatch = fmBlock.match(FM_DECISION_ID_RE);
+    if (didMatch?.[1]) {
+      const id = didMatch[1].trim().toUpperCase();
+      if (isValidDecisionId(id)) candidates.add(id);
+    }
+
+    // Step (b) — first D-XXX in body text (mirrors recon step b).
+    // Only runs when step (a) yields nothing (same priority as the recon).
+    if (candidates.size === 0) {
+      const bodyStart = fmMatch[0].length;
+      const body = content.slice(bodyStart);
+      const bodyMatch = body.match(BODY_DECISION_ID_RE);
+      if (bodyMatch?.[1]) {
+        const id = bodyMatch[1].toUpperCase();
+        if (isValidDecisionId(id)) candidates.add(id);
+      }
+    }
+
+    // Step (c) — D-XXX slug in filename (mirrors recon step c).
+    // Only runs when steps (a) and (b) yield nothing.
+    if (candidates.size === 0) {
+      const fnMatch = filename.match(/_(d-[a-z][a-z0-9-]+)(?:\.md)?$/i);
+      if (fnMatch?.[1]) {
+        const id = fnMatch[1].toUpperCase();
+        if (isValidDecisionId(id)) candidates.add(id);
+      }
+    }
+
+    // Bonus: `maps-to-decision-id` frontmatter key — the recon doesn't check
+    // this, but implementation slices reference the parent decision here and
+    // the backfill should ensure those parent decisions have events too.
+    const mapsMatch = fmBlock.match(FM_MAPS_TO_DECISION_ID_RE);
+    if (mapsMatch?.[1]) {
+      const id = mapsMatch[1].trim().toUpperCase();
+      if (isValidDecisionId(id)) candidates.add(id);
+    }
+
+    if (candidates.size === 0) continue;
+
+    // De-duplicate: keep the latest asOf when multiple files reference
+    // the same decision ID.
+    for (const rawId of candidates) {
+      const prev = byId.get(rawId);
+      if (!prev || prev.asOf <= asOf) {
+        byId.set(rawId, {
+          decisionId: rawId,
+          title,
+          action: "approve",
+          outcome: "(approved — backfilled from owner-inbox record)",
+          actor: "marc@tgv.co.za",
+          asOf,
+        });
+      }
+    }
+  }
+  return Array.from(byId.values());
 }
 
 // Build a short, scannable title for the Owner Inbox feed. Verbose
