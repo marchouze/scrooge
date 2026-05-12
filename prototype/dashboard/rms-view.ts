@@ -58,7 +58,8 @@
 
 import type { EventStore } from "../platform/event-store/store";
 import { LocalProjector } from "../platform/projections";
-import { defaultProvenanceFilter, effectiveStreamKey } from "../platform/projections/filter";
+import { effectiveStreamKey } from "../platform/projections/filter";
+import type { ProvenanceFilter } from "../platform/projections/filter";
 import {
   type AgentRunsRegisterRow,
   type BriefsRegisterRow,
@@ -254,13 +255,20 @@ export interface RmsRegistersFold {
 // Stable base stream keys for the snapshot-enabled projections.
 const DECISIONS_STREAM_KEY = "dashboard:decisionsRegister";
 
+// RMS registers fold ALL events (both production and simulated) — these are
+// audit-log projections, not filtered reporting views. The `combined` mode
+// matches the original `projector.build()` behaviour which had no provenance
+// filtering. Snapshots are keyed under the `combined` digest so they are
+// isolated from any `production-only` or `simulated-only` snapshots.
+const RMS_PROV_FILTER: ProvenanceFilter = { mode: "combined" };
+
 export function buildRmsRegistersFold(
   store: EventStore,
   now: () => string = () => new Date().toISOString(),
 ): RmsRegistersFold {
   const projector = new LocalProjector(store);
   const asOf = now();
-  const provFilter = defaultProvenanceFilter();
+  const provFilter = RMS_PROV_FILTER;
   const effDecisionsKey = effectiveStreamKey(DECISIONS_STREAM_KEY, provFilter);
 
   // F-027: decisions projection — snapshot-aware path.
