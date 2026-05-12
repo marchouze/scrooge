@@ -60,6 +60,54 @@ const BUILD_PHASE_DEFAULT_IFRS_CLASSIFICATIONS: readonly IfrsAccountClassificati
     lineLabel: "Cash and balances at SARB",
     cashFlowClass: "operating",
   },
+  // FX Trading Receivables (assets)
+  {
+    leafAccountId: "ACC-2100-001",
+    accountClass: "asset",
+    lineLabel: "FX trading receivable — ZAR",
+    cashFlowClass: "operating",
+  },
+  {
+    leafAccountId: "ACC-2100-002",
+    accountClass: "asset",
+    lineLabel: "FX trading receivable — USD",
+    cashFlowClass: "operating",
+  },
+  // FX Trading Payables (liabilities)
+  {
+    leafAccountId: "ACC-2100-003",
+    accountClass: "liability",
+    lineLabel: "FX trading payable — ZAR",
+    cashFlowClass: "operating",
+  },
+  {
+    leafAccountId: "ACC-2100-004",
+    accountClass: "liability",
+    lineLabel: "FX trading payable — USD",
+    cashFlowClass: "operating",
+  },
+  // FX P&L (income statement)
+  { leafAccountId: "ACC-2100-005", accountClass: "income", lineLabel: "Unrealised FX P&L — FVTPL" },
+  { leafAccountId: "ACC-2100-006", accountClass: "income", lineLabel: "Realised FX P&L" },
+  // Nostro and settlement suspense (assets)
+  {
+    leafAccountId: "ACC-1100-002",
+    accountClass: "asset",
+    lineLabel: "Nostro — USD correspondent",
+    cashFlowClass: "operating",
+  },
+  {
+    leafAccountId: "ACC-1100-004",
+    accountClass: "asset",
+    lineLabel: "Settlement suspense — ZAR",
+    cashFlowClass: "operating",
+  },
+  {
+    leafAccountId: "ACC-1100-005",
+    accountClass: "asset",
+    lineLabel: "Settlement suspense — USD",
+    cashFlowClass: "operating",
+  },
   {
     leafAccountId: "ACC-equity-position-stub",
     accountClass: "equity",
