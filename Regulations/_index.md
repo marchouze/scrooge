@@ -31,9 +31,10 @@
 
 | Instrument | File | Status | Source |
 |---|---|---|---|
-| FAIS Act 37 of 2002 | FSCA/fais-act.md | STUB | fsca.co.za |
-| FAIS General Code of Conduct | FSCA/fais-general-code-of-conduct.md | STUB | fsca.co.za |
-| FAIS Conflict of Interest Code | FSCA/fais-conflict-of-interest-code.md | STUB | fsca.co.za |
+| FAIS Act 37 of 2002 | FSCA/fais-act.md | **POPULATED** | gov.za (a37-020.pdf) |
+| FAIS General Code of Conduct (BN 80/2003) | FSCA/fais-general-code-of-conduct.md | **POPULATED** | faisombud.co.za |
+| FAIS Fit and Proper Requirements (BN 194/2017) | FSCA/fais-fit-and-proper.md | PARTIAL *(BN 194 PDF auth-gated; analysis from FAIS Act s.8(1) + secondary refs)* | fsca.co.za |
+| FAIS Conflict of Interest Code (BN 58/2010) | FSCA/fais-conflict-of-interest-code.md | STUB *(BN 58 PDF auth-gated; baseline from GCC s.3(1)(b))* | fsca.co.za |
 | FSCA Conduct Standards (TCF) | FSCA/fsca-conduct-standards.md | STUB | fsca.co.za |
 | Financial Sector Regulation Act 9 of 2017 | FSCA/fsr-act.md | STUB | treasury.gov.za |
 | Conduct of Financial Institutions (COFI) Bill | FSCA/cofi-bill.md | STUB *(in Parliament — track)* | treasury.gov.za |
@@ -144,7 +145,7 @@
 
 ## Status summary
 
-- **POPULATED:** 4 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024) — exemplars demonstrating the analysis pattern.
+- **POPULATED:** 6 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC) — as at 2026-05-12.
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 
