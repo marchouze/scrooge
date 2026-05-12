@@ -102,14 +102,14 @@ import {
   selectRegisterView,
   summariseFold,
 } from "./rms-view";
+import {
+  CommentBodySchema,
+  CompleteWorkstreamBodySchema,
+  DecideBodySchema,
+  StartWorkstreamBodySchema,
+} from "./server-schemas";
 import { getSubstrateGapsView } from "./substrate-gaps";
-import type {
-  CompleteWorkstreamRequestBody,
-  DashboardState,
-  DecisionAction,
-  DecisionRequestBody,
-  StartWorkstreamRequestBody,
-} from "./types";
+import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);
@@ -123,7 +123,6 @@ const REPO_ROOT = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "
 const RUNTIME_STATE_PATH =
   process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
 const PUBLIC_DIR = resolve(import.meta.dir, "public");
-const VALID_ACTIONS: readonly DecisionAction[] = ["approve", "defer", "modify", "request-revision"];
 
 const SOURCES = (() => {
   const base = defaultSourcePaths(REPO_ROOT);
@@ -355,24 +354,18 @@ function jsonResponse(data: unknown, status = 200): Response {
   });
 }
 
-function isValidAction(action: string): action is DecisionAction {
-  return (VALID_ACTIONS as readonly string[]).includes(action);
-}
-
 async function handleDecide(req: Request): Promise<Response> {
-  let body: DecisionRequestBody & { followOnRoutes?: string[] };
+  let raw: unknown;
   try {
-    body = (await req.json()) as DecisionRequestBody & { followOnRoutes?: string[] };
+    raw = await req.json();
   } catch {
     return jsonResponse({ error: "invalid JSON body" }, 400);
   }
-
-  if (!body.decisionId || !body.action || !body.outcome) {
-    return jsonResponse({ error: "decisionId, action, and outcome are required" }, 400);
+  const parsed = DecideBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
   }
-  if (!isValidAction(body.action)) {
-    return jsonResponse({ error: `action must be one of ${VALID_ACTIONS.join(", ")}` }, 400);
-  }
+  const body = parsed.data;
 
   const open = cachedState.decisionsOpen.find((d) => d.id === body.decisionId);
   if (!open) {
@@ -472,15 +465,17 @@ async function handleDecide(req: Request): Promise<Response> {
 }
 
 async function handleComment(req: Request): Promise<Response> {
-  let body: { decisionId?: string; body?: string; inReplyToEventId?: string };
+  let raw: unknown;
   try {
-    body = (await req.json()) as { decisionId?: string; body?: string; inReplyToEventId?: string };
+    raw = await req.json();
   } catch {
     return jsonResponse({ error: "invalid JSON body" }, 400);
   }
-  if (!body.decisionId || !body.body) {
-    return jsonResponse({ error: "decisionId and body are required" }, 400);
+  const parsed = CommentBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
   }
+  const body = parsed.data;
 
   const actorId =
     typeof body.actorId === "string" && body.actorId.trim().length > 0
@@ -571,15 +566,17 @@ async function handleFxTrade(req: Request): Promise<Response> {
 }
 
 async function handleStartWorkstream(req: Request): Promise<Response> {
-  let body: StartWorkstreamRequestBody;
+  let raw: unknown;
   try {
-    body = (await req.json()) as StartWorkstreamRequestBody;
+    raw = await req.json();
   } catch {
     return jsonResponse({ error: "invalid JSON body" }, 400);
   }
-  if (!body.id) {
-    return jsonResponse({ error: "id is required" }, 400);
+  const parsed = StartWorkstreamBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
   }
+  const body = parsed.data;
 
   const item = cachedState.inFlight.find((i) => i.id === body.id);
   if (!item) {
@@ -616,15 +613,17 @@ async function handleStartWorkstream(req: Request): Promise<Response> {
 }
 
 async function handleCompleteWorkstream(req: Request): Promise<Response> {
-  let body: CompleteWorkstreamRequestBody;
+  let raw: unknown;
   try {
-    body = (await req.json()) as CompleteWorkstreamRequestBody;
+    raw = await req.json();
   } catch {
     return jsonResponse({ error: "invalid JSON body" }, 400);
   }
-  if (!body.id) {
-    return jsonResponse({ error: "id is required" }, 400);
+  const parsed = CompleteWorkstreamBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
   }
+  const body = parsed.data;
 
   const item = cachedState.inFlight.find((i) => i.id === body.id);
   if (!item) {
