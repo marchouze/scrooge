@@ -14,11 +14,10 @@
 //   - Principle 5 — multi-axis envelope dimensions are first-class typed
 //     primitives (provenance is structurally similar to currency / entity)
 //
-// Default mode (per pack §5.2 + Marc's resolution to question #4):
-//   - `BANK_PHASE === "build"`  → `simulated-only`
-//   - any other phase           → `production-only`
-//   The default flips automatically at `BANK_PHASE` change without code
-//   change — the env var is read at filter-construction time, not hard-coded.
+// Default mode (per D-PROVENANCE-FILTER-ENFORCEMENT, CEO-approved 2026-05-12):
+//   Always `production-only`. Test / scenario data is tagged `kind:simulated`
+//   and excluded from all projections by default. Callers must explicitly opt
+//   into `simulated-only` or `combined` to see simulated events.
 //
 // Snapshot-key strategy: a filter digest is included in the effective
 // stream key the runtime passes to the EventStore snapshot APIs. A
@@ -83,20 +82,24 @@ export interface ProvenanceFilter {
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the default `ProvenanceMode` from the runtime environment.
+ * Resolve the default `ProvenanceMode` for the current environment.
  *
- * Rules (per pack §5.2 + Marc's resolution to open question #4):
- *   - `BANK_PHASE === "build"`     → `simulated-only`
- *   - `BANK_PHASE === "licence-day"` → `production-only`
- *   - `BANK_PHASE === "live"`      → `production-only`
- *   - unset / unknown              → `simulated-only` (we are still in
- *                                    the build phase as of 2026-05-10;
- *                                    flips by env-var change at
- *                                    licence-day, no code change needed)
+ * Rules (per D-PROVENANCE-FILTER-ENFORCEMENT, CEO-approved 2026-05-12):
+ *   `production-only` is the permanent default. Test / scenario data is
+ *   tagged `kind:simulated` and excluded unless the caller explicitly opts
+ *   into `combined` or `simulated-only` mode.
+ *
+ * The previous `BANK_PHASE`-derived `simulated-only` default pre-dated
+ * the test-in-prod pattern: with simulated events tagged in the shared
+ * store, the production projections must default to production-only so
+ * that scenario runs do not pollute reporting figures.
  *
  * Process-local override hook: `setDefaultProvenanceModeOverride()` lets
  * tests pin the default without mutating the env var. The override
  * always wins when set.
+ *
+ * Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12,
+ * event 52c83d18-8bab-4d10-bd6c-f52cc2a23887).
  */
 let DEFAULT_MODE_OVERRIDE: ProvenanceMode | undefined;
 
@@ -106,10 +109,10 @@ export function setDefaultProvenanceModeOverride(value: ProvenanceMode | undefin
 
 export function defaultProvenanceMode(): ProvenanceMode {
   if (DEFAULT_MODE_OVERRIDE !== undefined) return DEFAULT_MODE_OVERRIDE;
-  const phase = process.env.BANK_PHASE;
-  if (phase === "licence-day" || phase === "live") return "production-only";
-  // build / unset / unknown → simulated-only (current build-phase default).
-  return "simulated-only";
+  // production-only is the permanent default: simulated events are
+  // tagged and excluded unless the caller explicitly opts into combined.
+  // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+  return "production-only";
 }
 
 /**

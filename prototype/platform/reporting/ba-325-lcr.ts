@@ -102,6 +102,10 @@ import type { FxSettlementConfirmedPayload } from "../event-store/event-types/fx
 import type { EventStore } from "../event-store/store";
 import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
 import type { Identifier } from "../markets/cdm/primitives";
+import {
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../projections/filter";
 
 /** Normalise a tradeId that may be either a plain string or a CDM Identifier object. */
 function normaliseTradeId(tradeId: string | Identifier): string {
@@ -515,8 +519,13 @@ function foldSettlementCashFlows(args: {
   const { eventStore, entity, periodStart, periodEnd } = args;
   const flows: SettlementCashFlow[] = [];
 
+  // Provenance filter: exclude simulated events from production projections.
+  // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+  const provenanceFilter = defaultProvenanceFilter();
+
   // Fold FxSettlementInstructed — expected cash flows.
   for (const event of eventStore.replay({ entity, asOf: periodEnd })) {
+    if (!eventMatchesProvenanceFilter(event, provenanceFilter)) continue;
     if (event.as_of < periodStart) continue;
     if (event.type !== "FxSettlementInstructed" && event.type !== "FxSettlementConfirmed") continue;
 

@@ -35,6 +35,10 @@
 //   + Camille (CFO, finance — capital-stack methodology)
 
 import type { EventStore } from "../event-store/store";
+import {
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../projections/filter";
 import type {
   AccountCapitalClassification,
   RegulatoryDeduction,
@@ -133,6 +137,10 @@ function foldCapitalAccountBalances(
   // Accumulate debit/credit totals per (accountId, currency).
   const balances = new Map<string, number>(); // key: `${accountId}:${currency}`
 
+  // Provenance filter: exclude simulated events from production projections.
+  // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+  const provenanceFilter = defaultProvenanceFilter();
+
   // ---- Fold SubLedgerPostingEmitted events --------------------------------
   // Each posting carries balanced legs (debits = credits per currency).
   // We extract legs that touch capital-classified accounts.
@@ -141,6 +149,7 @@ function foldCapitalAccountBalances(
     type: "SubLedgerPostingEmitted",
     asOf,
   })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const payload = ev.payload as {
       legs?: Array<{
         accountId?: string;
@@ -172,6 +181,7 @@ function foldCapitalAccountBalances(
     type: "CapitalContributionRecorded",
     asOf,
   })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const payload = ev.payload as {
       accountId?: string;
       currency?: string;
