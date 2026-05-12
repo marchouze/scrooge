@@ -19,9 +19,9 @@
 //         Thandiwe (Chief Audit Executive, governance); administratively
 //         through the CEO).
 
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { run } from "./decision-record-event-symmetry";
 
@@ -105,24 +105,18 @@ describe("decision-record-event-symmetry recon (Vera Wave-6, advisory mode)", ()
 
   it("(b) closed record WITHOUT backing event → warn finding in advisory mode", () => {
     writeInboxFile("2026-05-12_test_decision.md", closedRecord("D-TEST-BETA"));
+    // Provide a non-empty event store (a different decision ID) so the pipeline
+    // does not take the empty-store / fresh-runner path. D-TEST-BETA is absent.
     const r = run({
-      ownerInboxDir: tmpDir,
-      eventDecisionIds: new Set(), // no events
-      forceEmptyStore: false, // not empty-store posture; just no match
-    });
-    // forceEmptyStore=false but eventDecisionIds is empty — the pipeline
-    // computes storeEmpty from eventDecisionIds.size === 0, so we need
-    // to simulate a non-empty store with a different ID.
-    const r2 = run({
       ownerInboxDir: tmpDir,
       eventDecisionIds: new Set(["D-SOME-OTHER-DECISION"]),
     });
-    expect(r2.asserted).toBe(1);
-    const warns = r2.violations.filter((v) => v.severity === "warn");
+    expect(r.asserted).toBe(1);
+    const warns = r.violations.filter((v) => v.severity === "warn");
     expect(warns.length).toBe(1);
     expect(warns[0]?.message).toContain("D-TEST-BETA");
     expect(warns[0]?.message).toContain("no backing `CeoDecision` event");
-    expect(r2.ok).toBe(true); // advisory — ok stays true
+    expect(r.ok).toBe(true); // advisory — ok stays true
   });
 
   it("(c) open record → info note, no warn/fail", () => {

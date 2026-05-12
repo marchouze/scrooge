@@ -55,8 +55,8 @@
 //         Thandiwe (Chief Audit Executive, governance); administratively
 //         through the CEO).
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -128,8 +128,8 @@ const DEFAULT_DB_PATH = resolve(REPO_ROOT, "prototype/.local/event.db");
 // ---------------------------------------------------------------------------
 
 interface Frontmatter {
-  decisionId?: string;
-  decisionRequired?: boolean | null;
+  decisionId: string | undefined;
+  decisionRequired: boolean | null;
   /** Raw frontmatter text block (between the --- delimiters). */
   raw: string;
   /** Line index where the closing --- was found (0-based). */
@@ -263,7 +263,9 @@ function readEventDecisionIds(dbPath: string): Set<string> {
   // interferes with test fixtures that don't have a live store).
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require("../event-store/store") as {
-    EventStore: new (path: string) => {
+    EventStore: new (
+      path: string,
+    ) => {
       replay: (filter?: { type?: string }) => Iterable<{
         as_of?: string;
         payload?: Record<string, unknown>;
@@ -324,10 +326,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       // Still open — no CeoDecision event expected yet.
       violations.push({
         subject,
-        message:
-          `Decision \`${rec.decisionId}\` is still open (\`decision-required: true\`) — ` +
-          `no \`CeoDecision\` event expected until the CEO acts on it. ` +
-          `File: \`Owner Inbox/${rec.filename}\`.`,
+        message: `Decision \`${rec.decisionId}\` is still open (\`decision-required: true\`) — no \`CeoDecision\` event expected until the CEO acts on it. File: \`Owner Inbox/${rec.filename}\`.`,
         severity: "info",
       });
       continue;
@@ -337,13 +336,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (storeEmpty) {
       violations.push({
         subject,
-        message:
-          `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\`) but the ` +
-          `event store at \`${dbPath}\` has zero \`CeoDecision\` events (fresh-runner / ` +
-          `new worktree posture). The boot-time backfill at ` +
-          `\`runtime/decisions/backfill-from-records.ts\` populates the store on first ` +
-          `dashboard-server start. Symmetry not asserted. Citations: P1-EVENTS-AS-TRUTH, ` +
-          `GOV-FRAMEWORK-CEO-RESERVED.`,
+        message: `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\`) but the event store at \`${dbPath}\` has zero \`CeoDecision\` events (fresh-runner / new worktree posture). The boot-time backfill at \`runtime/decisions/backfill-from-records.ts\` populates the store on first dashboard-server start. Symmetry not asserted. Citations: P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED.`,
         severity: "info",
       });
       continue;
@@ -353,15 +346,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       const severity = mode === "enforcing" ? "fail" : "warn";
       violations.push({
         subject,
-        message:
-          `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\` in ` +
-          `\`Owner Inbox/${rec.filename}\`) but has no backing \`CeoDecision\` event in ` +
-          `the event store. Principle 1 requires the event log to be the canonical ` +
-          `record — a decision that exists only in markdown is a ghost record. ` +
-          `Fix: emit a \`CeoDecision\` event for \`${rec.decisionId}\` via the boot-time ` +
-          `backfill or a targeted \`recordCeoDecision\` call. Citations: ` +
-          `P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED, ` +
-          `\`Procedures/by-policy/ceo-decision-review.md\`.`,
+        message: `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\` in \`Owner Inbox/${rec.filename}\`) but has no backing \`CeoDecision\` event in the event store. Principle 1 requires the event log to be the canonical record — a decision that exists only in markdown is a ghost record. Fix: emit a \`CeoDecision\` event for \`${rec.decisionId}\` via the boot-time backfill or a targeted \`recordCeoDecision\` call. Citations: P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED, \`Procedures/by-policy/ceo-decision-review.md\`.`,
         severity,
       });
     }
