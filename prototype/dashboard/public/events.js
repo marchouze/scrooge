@@ -4,7 +4,7 @@
 (() => {
   const PAGE_SIZE = 50;
 
-  let state = {
+  const state = {
     page: 1,
     limit: PAGE_SIZE,
     type: "",
@@ -29,16 +29,19 @@
   const refreshBtn = document.getElementById("refresh-btn");
 
   function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+    return String(s ?? "").replace(
+      /[&<>"']/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
     );
   }
 
   function provBadge(prov) {
     if (!prov) return `<span class="ev-prov none">—</span>`;
     const mode = prov.scenario ?? prov.mode ?? String(prov);
-    if (mode.startsWith("production")) return `<span class="ev-prov prod" title="${esc(JSON.stringify(prov))}">prod</span>`;
-    if (mode.startsWith("simulated") || mode.includes("dry-run")) return `<span class="ev-prov sim" title="${esc(JSON.stringify(prov))}">sim</span>`;
+    if (mode.startsWith("production"))
+      return `<span class="ev-prov prod" title="${esc(JSON.stringify(prov))}">prod</span>`;
+    if (mode.startsWith("simulated") || mode.includes("dry-run"))
+      return `<span class="ev-prov sim" title="${esc(JSON.stringify(prov))}">sim</span>`;
     return `<span class="ev-prov" title="${esc(JSON.stringify(prov))}">${esc(mode.slice(0, 12))}</span>`;
   }
 
@@ -133,11 +136,18 @@
   }
 
   function renderPagination(current, total) {
-    if (total <= 1) { pagination.innerHTML = ""; return; }
+    if (total <= 1) {
+      pagination.innerHTML = "";
+      return;
+    }
 
-    const pages = [];
+    const _pages = [];
     // Always show first, last, current ±2
-    const visible = new Set([1, total, current - 2, current - 1, current, current + 1, current + 2].filter(p => p >= 1 && p <= total));
+    const visible = new Set(
+      [1, total, current - 2, current - 1, current, current + 1, current + 2].filter(
+        (p) => p >= 1 && p <= total,
+      ),
+    );
     const sorted = [...visible].sort((a, b) => a - b);
 
     let html = `<button id="pg-prev" ${current === 1 ? "disabled" : ""}>← Prev</button>`;
@@ -151,10 +161,19 @@
     html += `<span class="ev-page-info">page ${current} of ${total}</span>`;
     pagination.innerHTML = html;
 
-    pagination.querySelector("#pg-prev")?.addEventListener("click", () => { state.page--; load(); });
-    pagination.querySelector("#pg-next")?.addEventListener("click", () => { state.page++; load(); });
+    pagination.querySelector("#pg-prev")?.addEventListener("click", () => {
+      state.page--;
+      load();
+    });
+    pagination.querySelector("#pg-next")?.addEventListener("click", () => {
+      state.page++;
+      load();
+    });
     for (const btn of pagination.querySelectorAll(".pg-num")) {
-      btn.addEventListener("click", () => { state.page = Number(btn.dataset.page); load(); });
+      btn.addEventListener("click", () => {
+        state.page = Number(btn.dataset.page);
+        load();
+      });
     }
   }
 
@@ -166,28 +185,22 @@
     detailPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  // ---- Type dropdown: fetch distinct types ----
-  async function loadTypes() {
-    // Load without filters to get full type list (small store — feasible)
-    try {
-      const res = await fetch("/api/events?limit=1&page=1", { headers: { Accept: "application/json" } });
-      if (!res.ok) return;
-      // Types aren't returned yet — we'll populate from the first full load below
-    } catch { /* ignore */ }
-  }
-
   // Populate type dropdown from first full load
   function populateTypeDropdown(events) {
     if (typeSelect.options.length > 1) return; // already populated
-    const types = [...new Set(events.map(e => e.type))].sort();
+    const _types = [...new Set(events.map((e) => e.type))].sort();
     // Since we're paginated we can't see all types from one page — do a background fetch
     fetch("/api/events?limit=200&page=1", { headers: { Accept: "application/json" } })
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         // Collect from all pages would need iteration; approximate with first 200
-        const allTypes = [...new Set(d.events.map(e => e.type))].sort();
-        typeSelect.innerHTML = `<option value="">All types (${allTypes.length}+)</option>` +
-          allTypes.map(t => `<option value="${esc(t)}"${state.type === t ? " selected" : ""}>${esc(t)}</option>`).join("");
+        const allTypes = [...new Set(d.events.map((e) => e.type))].sort();
+        typeSelect.innerHTML = `<option value="">All types (${allTypes.length}+)</option>${allTypes
+          .map(
+            (t) =>
+              `<option value="${esc(t)}"${state.type === t ? " selected" : ""}>${esc(t)}</option>`,
+          )
+          .join("")}`;
       })
       .catch(() => {});
   }

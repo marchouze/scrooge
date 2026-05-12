@@ -192,8 +192,16 @@ function buildScenarioA(): Event[] {
       {
         counterpartyId: cp,
         beneficialOwners: [
-          { partyId: "cp:synthetic:meridian-holdings-sa", ownershipPct: 60, controlBasis: "direct-shareholding" },
-          { partyId: "cp:synthetic:vantage-investment-trust", ownershipPct: 40, controlBasis: "trust-beneficiary" },
+          {
+            partyId: "cp:synthetic:meridian-holdings-sa",
+            ownershipPct: 60,
+            controlBasis: "direct-shareholding",
+          },
+          {
+            partyId: "cp:synthetic:vantage-investment-trust",
+            ownershipPct: 40,
+            controlBasis: "trust-beneficiary",
+          },
         ],
         resolvedAt: "2026-03-10T10:00:00Z",
         resolvedBy: REVIEWER_NIKO,
@@ -537,7 +545,11 @@ function buildScenarioC(): Event[] {
       {
         counterpartyId: cp,
         beneficialOwners: [
-          { partyId: "cp:synthetic:southern-cross-holdings", ownershipPct: 100, controlBasis: "direct-shareholding" },
+          {
+            partyId: "cp:synthetic:southern-cross-holdings",
+            ownershipPct: 100,
+            controlBasis: "direct-shareholding",
+          },
         ],
         resolvedAt: "2026-03-14T10:00:00Z",
         resolvedBy: REVIEWER_NIKO,

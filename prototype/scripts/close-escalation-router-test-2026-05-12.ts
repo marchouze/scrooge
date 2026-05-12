@@ -37,7 +37,10 @@ function main(): number {
   for (const e of eventStore.replay({ type: "AgentEscalationDecided" })) {
     const p = e.payload as Record<string, unknown>;
     if (p.escalationId === ESCALATION_ID) {
-      logger.info({ escalationId: ESCALATION_ID, eventId: e.event_id }, "skipped — already decided");
+      logger.info(
+        { escalationId: ESCALATION_ID, eventId: e.event_id },
+        "skipped — already decided",
+      );
       return 0;
     }
   }
@@ -59,7 +62,10 @@ function main(): number {
 
   try {
     eventStore.append(event);
-    logger.info({ escalationId: ESCALATION_ID, eventId: EVENT_ID }, "emitted — escalation now decided");
+    logger.info(
+      { escalationId: ESCALATION_ID, eventId: EVENT_ID },
+      "emitted — escalation now decided",
+    );
     return 0;
   } catch (e) {
     const msg = (e as Error).message;
