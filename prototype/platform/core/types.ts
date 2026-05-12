@@ -21,7 +21,7 @@ export const GBP = "GBP" as Currency;
 // Every event, account, position, and contract belongs to a specific legal
 // entity in a versioned legal-entity tree.
 export type LegalEntity = Brand<string, "LegalEntity">;
-export const BANK_ZA_001 = "BANK-ZA-001" as LegalEntity;
+export const BANK_ZA_001 = "LE-ZA-HOZ-BANK" as LegalEntity;
 
 // ---------- Jurisdiction ----------
 export type Jurisdiction = Brand<string, "Jurisdiction">;
