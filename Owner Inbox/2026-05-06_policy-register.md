@@ -40,7 +40,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 |---|---|---|---|---|---|
 | ★ Credit Risk Policy | Helena | BRC | Annual | Banks Act; BCBS large-exposures framework | `PLANNED` |
 | ★ Market Risk Policy | Helena | BRC | Annual | BCBS Market Risk (FRTB / D352, D457) | `PLANNED` |
-| ★ Liquidity Risk Management Policy | Helena + Eitan | BRC | Annual | BCBS D295 / D335 / BCBS 144 | `PLANNED` |
+| ★ Liquidity Risk Management Policy | Helena + Eitan | BRC | Annual | BCBS D295 / D335 / BCBS 144 | `IN FORCE` (v1: Owner Inbox/2026-05-11_camille-eitan-helena_liquidity-risk-management-policy-v1.md) |
 | IRRBB Policy | Helena + Eitan | BRC | Annual | BCBS D368 | `PLANNED` |
 | Counterparty Credit Risk Policy | Helena + Saskia | BRC | Annual | BCBS large-exposures framework | `PLANNED` |
 | ★ Operational Risk Policy | Helena + Devon | BRC | Annual | BCBS Operational Risk (rev. 2021) | `PLANNED` |
@@ -57,8 +57,8 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Risk Management & Compliance Programme (RMCP) | Zara | BRC + Board | Annual | FIC Act s.42 | `PLANNED` |
-| ★ AML / CFT Policy | Zara | BRC | Annual | FIC Act 38 of 2001; FATF Recs | `PLANNED` |
+| ★ Risk Management & Compliance Programme (RMCP) | Zara | BRC + Board | Annual | FIC Act s.42 | `IN FORCE` (v1: Owner Inbox/2026-05-11_mira-zara_rmcp-v1.md) |
+| ★ AML / CFT Policy | Zara | BRC | Annual | FIC Act 38 of 2001; FATF Recs | `IN FORCE` (v1: Owner Inbox/2026-05-11_mira-zara_aml-cft-policy-v1.md) |
 | ★ Sanctions Policy | Zara | BRC | Annual | UN; OFAC; EU; UK HMT; POCDATARA / DTI list | `PLANNED` (B4 approved) |
 | PEP Policy | Zara | BRC | Annual | FIC Guidance Note 7 (RBA); FATF Rec. 12 | `PLANNED` |
 | ★ KYC / CDD / EDD Policy | Zara (with Mira) | BRC | Annual | FIC Act ss.21–21H | `DRAFTING` (in client-master design, D1 approved) |
@@ -78,7 +78,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ POPIA / Privacy Policy | Iris | BRC + S&E | Annual | POPIA 4 of 2013 | `PLANNED` |
+| ★ POPIA / Privacy Policy | Iris | BRC + S&E | Annual | POPIA 4 of 2013 | `IN FORCE` (v1: Owner Inbox/2026-05-11_iris-zara_popia-privacy-policy-v1.md) |
 | Data Retention & Disposal Policy | Iris (with Owen) | BRC | Annual | POPIA s.14; legal-records retention | `PLANNED` |
 | Cross-Border Transfer Policy | Iris | BRC | Annual | POPIA s.72; SARB Directive 3 of 2018 | `PLANNED` |
 | ★ PAIA Manual | Iris (with Owen) | Information Officer signs | On change | PAIA Act 2 of 2000 | `PLANNED` (E1 deferred) |
@@ -116,7 +116,8 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Capital Management Policy | Camille | Board (via BRC) | Annual | Banks Act; BCBS Basel III/IV | `PLANNED` (B2 deferred — under refinement) |
+| ★ Capital Management Policy | Camille | Board (via BRC) | Annual | Banks Act; BCBS Basel III/IV | `IN FORCE` (v1: Owner Inbox/2026-05-11_camille-helena_capital-management-policy-v1.md) |
+| ★ Recovery & Resolution Planning Policy | Helena + Camille + Owen | Board | Annual | PA D1/2015; Banks Act ss.60-72; FSB Key Attributes | `IN FORCE` (v1: Owner Inbox/2026-05-11_helena-camille_recovery-resolution-planning-policy-v1.md) |
 | ★ Capital Plan | Camille | Board | Annual | Banks Act; PA | `PLANNED` |
 | ★ Accounting Policies (IFRS) | Camille (with Bea) | AC + Board | Annual | IFRS 9 / 7 / 13 / 15 / 16; IAS 1 / 12 / 21 | `PLANNED` |
 | Financial Reporting & Disclosure Policy | Camille (with Bea) | AC + Board | Annual | Banks Act; IFRS; JSE LR (if listed) | `PLANNED` |
@@ -140,7 +141,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Trading Mandate | Saskia (with Helena) | Board | Annual | Banks Act; FMA; BCBS market risk | `PLANNED` (B5 deferred — under refinement) |
+| ★ Trading Mandate | Saskia (with Helena) | Board | Annual | Banks Act; FMA; BCBS market risk | `IN FORCE` (v1: Owner Inbox/2026-05-11_kai-helena-devon_trading-mandate-v1.md) |
 | Best Execution Policy | Saskia | BRC | Annual | FAIS; FMA; FSCA conduct standards | `PLANNED` |
 | Voice & Communications Recording Policy | Saskia (with Senna, Iris, Sade) | BRC | Annual | FMA Ch. X; POPIA; FAIS | `PLANNED` |
 | Counterparty Onboarding Policy (markets) | Saskia (with Zara, Imani) | BRC | Annual | FIC Act; FATCA; ISDA | `PLANNED` |
@@ -160,8 +161,8 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Remuneration Policy | Sade (interim) / future CHRO + Helena | RemCo + Board | Annual | King IV; Banks Act; BCBS Compensation principles | `PLANNED` |
-| ★ Fit-and-Proper Policy | Sade (with Owen, Helena) | NomCo | Annual | PA / FSCA fit-and-proper standards | `PLANNED` |
+| ★ Remuneration Policy | Sade (interim) / future CHRO + Helena | RemCo + Board | Annual | King IV; Banks Act; BCBS Compensation principles | `IN FORCE` (v1: Owner Inbox/2026-05-11_owen-sade_remuneration-policy-v1.md) |
+| ★ Fit-and-Proper Policy | Sade (with Owen, Helena) | NomCo | Annual | PA / FSCA fit-and-proper standards | `IN FORCE` (v1: Owner Inbox/2026-05-11_owen-helena_fit-and-proper-policy-v1.md) |
 | Recruitment & Selection Policy | Sade | RemCo | Biennial | Employment Equity Act | `PLANNED` |
 | Disciplinary Policy | Sade | RemCo | Biennial | Labour Relations Act | `PLANNED` |
 | Grievance Policy | Sade | RemCo | Biennial | Labour Relations Act | `PLANNED` |
@@ -201,7 +202,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Internal Audit Charter | Future CAE (with Vera) | AC + Board | Annual | IIA IPPF; BCBS 223 | `PLANNED` |
+| ★ Internal Audit Charter | Thandiwe (with Vera) | AC + Board | Annual | IIA IPPF; BCBS 223 | `IN FORCE` (v1: Owner Inbox/2026-05-11_thandiwe-vera_internal-audit-charter-v1.md) |
 | Combined Assurance Policy | Future CAE (with Owen) | AC | Annual | King IV; IIA | `PLANNED` |
 | External Audit Independence Policy | Camille + future CAE | AC + Board | Annual | IRBA; Companies Act | `PLANNED` |
 
