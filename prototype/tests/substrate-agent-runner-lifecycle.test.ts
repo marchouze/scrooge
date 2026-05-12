@@ -293,7 +293,13 @@ describe("Substrate-runner lifecycle — permission-gate compatibility", () => {
     }
   });
 
-  it("substrate-runner actor is rejected for an unrelated event type when no policy is published and the type is not on the legacy list", () => {
+  it("substrate-runner actor is ALLOWED for a non-privileged event type with no policy (Option C allow-by-default)", () => {
+    // D-T-01 Option C (CEO-approved 2026-05-12): internal service agents
+    // (actor.type === "service", actor.id starts with "agent:") are
+    // allow-by-default for non-privileged event types. The previous
+    // deny-by-default posture for unrecognised types has been replaced by
+    // a scoped relaxation that blocks only PRIVILEGED_EVENT_TYPES without
+    // an explicit allow-list entry. This unblocks the goal-loop cohort.
     const tmp = new EventStore(":memory:");
     try {
       const policy = new LocalPermissionPolicyPublisher({ eventStore: tmp });
@@ -307,7 +313,9 @@ describe("Substrate-runner lifecycle — permission-gate compatibility", () => {
         payload: {},
       };
       const decision = decideAppend({ event: fakeEvent, policy });
-      expect(decision.allowed).toBe(false);
+      // Non-privileged + no legacy entry + no policy → Option C allow-by-default
+      expect(decision.allowed).toBe(true);
+      expect(decision.legacyBypass).toBeUndefined();
     } finally {
       tmp.close();
     }

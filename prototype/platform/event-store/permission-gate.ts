@@ -55,6 +55,41 @@ import type { Event } from "./types";
 export const VERA_URN = "agent:vera";
 
 /**
+ * Privileged event types — always require an explicit allow-list entry
+ * regardless of actor class.
+ *
+ * D-T-01-PERMISSION-GATE-SECURE-DEFAULT Option C (CEO-approved 2026-05-12):
+ *   Internal service agents (`actor.type === "service"`, `actor.id` starts
+ *   with `agent:`) are allow-by-default for all event types EXCEPT the
+ *   types in this set. Emitting a privileged type without an explicit
+ *   policy allow-list entry is always denied — these types directly mutate
+ *   governance, identity, or security state and must remain tightly
+ *   controlled regardless of the broader relaxation for operational types.
+ *
+ * Extending this set requires a CEO decision (the set is a security
+ * boundary, not operational scaffolding). Vera's recon asserts the set is
+ * non-empty and contains at minimum `CeoDecision` and
+ * `IdentityPermissionChanged`.
+ */
+export const PRIVILEGED_EVENT_TYPES: ReadonlySet<string> = new Set([
+  // Governance mutations — direct CEO-level decisions; must never be emitted
+  // by an autonomous agent without an explicit policy entry.
+  "CeoDecision",
+  // Identity / permission mutations — changing who can do what is a
+  // security-state mutation; explicit policy required.
+  "IdentityPermissionChanged",
+  // Permission policy publication — controls the gate itself; if an agent
+  // could freely emit this, it could grant itself or others arbitrary access.
+  "PermissionPolicyPublished",
+  // Key rotation — identity key changes are security-state mutations.
+  "IdentityKeyRotated",
+  // Security incidents raised at the infrastructure level — not operational
+  // findings (those are RiskRaised / ReconViolation), but security-control
+  // lifecycle events.
+  "SecurityGateRegistered",
+] as const);
+
+/**
  * Legacy pre-A1-vintage event types. The gate skips enforcement for
  * events of these types when the actor's policy lookup fails (no
  * `PermissionPolicyPublished` yet). This is the one-time backfill
@@ -412,12 +447,30 @@ export function isGateEnabled(forceEnabled?: boolean, forceDisabled?: boolean): 
  * here: writes outside the policy allow-list still deny — only *reads*
  * are unconstrained for Vera, and reads don't go through `append`.
  *
- * Backfill behaviour: when the actor has no published policy AND the
- * event type is in `LEGACY_PRE_A1_EVENT_TYPES`, the decision is
- * `allowed: true` with `legacyBypass` populated so the caller can
- * record the bypass via `SubstrateAlert`. The bypass does NOT apply
- * when the actor has a policy but the type is missing from it — that
- * remains a hard deny (the policy is the canonical statement).
+ * D-T-01 Option C evaluation order (CEO-approved 2026-05-12):
+ *
+ *   1. Non-agent actors (human, system, or service without `agent:` prefix):
+ *      allowed unconditionally — they go through dashboard / runtime auth.
+ *
+ *   2. Privileged event type (`PRIVILEGED_EVENT_TYPES`):
+ *      always requires explicit policy allow-list entry, regardless of actor.
+ *      → If policy exists and type is listed: allowed.
+ *      → If policy exists and type is NOT listed: denied.
+ *      → If no policy: falls through to legacy-backfill check first, then denied.
+ *
+ *   3. Internal service agent (type=service, id=agent:*) emitting a
+ *      NON-privileged type:
+ *      → If policy exists and type is listed: allowed.
+ *      → If policy exists and type is NOT listed: allowed-by-default
+ *        (Option C relaxation — operational events don't need explicit entries).
+ *      → If no policy: legacy-backfill check, then allowed-by-default.
+ *
+ * Backfill behaviour (unchanged): when the actor has no published policy
+ * AND the event type is in `LEGACY_PRE_A1_EVENT_TYPES`, the decision is
+ * `allowed: true` with `legacyBypass` populated so the caller can record
+ * the bypass via `SubstrateAlert`. For privileged types this bypass is
+ * still active during the migration window (preserves backward compatibility
+ * for legacy actors that emitted CeoDecision before T-01 landed).
  */
 export function decideAppend(args: {
   event: Event;
@@ -433,25 +486,51 @@ export function decideAppend(args: {
     return { allowed: true };
   }
   const urn = actor.id;
+  const eventType = args.event.type;
+  const isPrivileged = PRIVILEGED_EVENT_TYPES.has(eventType);
   const policy = args.policy.lookup(urn);
+
   if (!policy) {
-    if (LEGACY_PRE_A1_EVENT_TYPES.has(args.event.type)) {
+    // No published policy for this actor.
+    if (LEGACY_PRE_A1_EVENT_TYPES.has(eventType)) {
+      // Legacy backfill window: allow with bypass alert regardless of
+      // whether the type is privileged (preserves backward compatibility
+      // for pre-T-01 history).
       return {
         allowed: true,
-        legacyBypass: { agentUrn: urn, eventType: args.event.type },
+        legacyBypass: { agentUrn: urn, eventType },
       };
     }
+    if (isPrivileged) {
+      // Privileged type with no policy and not in legacy backfill: deny.
+      return {
+        allowed: false,
+        reason: `${urn} attempted to emit privileged type ${eventType} without a published permission policy (PRIVILEGED_EVENT_TYPES requires explicit allow-list entry)`,
+      };
+    }
+    // Non-privileged type with no policy: Option C allow-by-default.
+    return { allowed: true };
+  }
+
+  // Policy exists. Check the allow-list.
+  if (policy.eventEmitAllowList.includes(eventType)) {
+    return { allowed: true };
+  }
+
+  // Type not on allow-list.
+  if (isPrivileged) {
+    // Privileged types always require explicit listing — deny even for
+    // Option C internal agents.
     return {
       allowed: false,
-      reason: `no permission policy published for ${urn}`,
+      reason: `${urn} not allowed to emit privileged type ${eventType} — add to eventEmitAllowList in the agent spec (PRIVILEGED_EVENT_TYPES: ${[...PRIVILEGED_EVENT_TYPES].join(", ")})`,
     };
   }
-  if (!policy.eventEmitAllowList.includes(args.event.type)) {
-    return {
-      allowed: false,
-      reason: `${urn} not allowed to emit ${args.event.type} (allow-list: ${policy.eventEmitAllowList.join(", ") || "<empty>"})`,
-    };
-  }
+
+  // Non-privileged type not on allow-list for an internal service agent:
+  // Option C allow-by-default. The policy's listed types are additive
+  // (explicit entries remain valid); unlisted non-privileged types are
+  // permitted for operational autonomy.
   return { allowed: true };
 }
 
