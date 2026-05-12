@@ -29,6 +29,7 @@ import {
 import type { AgentSpec } from "../platform/agent-runtime/spec-parser";
 import {
   LEGACY_PRE_A1_EVENT_TYPES,
+  PRIVILEGED_EVENT_TYPES,
   PermissionGateDenied,
   VERA_URN,
   decideAppend,
@@ -368,7 +369,9 @@ describe("permission gate — feature flag", () => {
     store.close();
   });
 
-  it("when flag on, blocks an event type outside the allow-list", () => {
+  it("when flag on, allows a non-privileged type outside the allow-list (Option C allow-by-default)", () => {
+    // D-T-01 Option C: internal service agents (agent:*) are allowed to emit
+    // non-privileged event types even without an explicit allow-list entry.
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     publisher.publish(fakeSpec({ eventsEmitted: ["AgentDecision"] }));
@@ -376,10 +379,49 @@ describe("permission gate — feature flag", () => {
       store,
       config: { policy: publisher, forceEnabled: true },
     });
-    // Out-of-allow-list type:
-    expect(() => wrapped.append(buildEventFor("agent:sample", "TradeExecuted"))).toThrow(
-      PermissionGateDenied,
+    // TradeExecuted is NOT in PRIVILEGED_EVENT_TYPES, so Option C allows it:
+    expect(PRIVILEGED_EVENT_TYPES.has("TradeExecuted")).toBe(false);
+    expect(() => wrapped.append(buildEventFor("agent:sample", "TradeExecuted"))).not.toThrow();
+    store.close();
+  });
+
+  it("when flag on, blocks a PRIVILEGED type outside the allow-list (Option C deny-list)", () => {
+    // D-T-01 Option C: privileged types (CeoDecision, IdentityPermissionChanged, etc.)
+    // always require an explicit allow-list entry regardless of actor class.
+    // The policy must be published for the SAME actor that's attempting the emit.
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    // Publish a policy for agent:scrooge that does NOT include CeoDecision:
+    publisher.publish(
+      fakeSpec({
+        agentUrn: "agent:scrooge",
+        personaName: "Scrooge",
+        eventsEmitted: ["AgentBriefIssued", "WorkstreamRegistered"],
+        specHash: "a1b2c3d4".repeat(8),
+      }),
     );
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    // CeoDecision is in PRIVILEGED_EVENT_TYPES — must be denied even though
+    // agent:scrooge has a published policy (just not for CeoDecision):
+    expect(PRIVILEGED_EVENT_TYPES.has("CeoDecision")).toBe(true);
+    const ceoEvent: Event = {
+      event_id: "evt-ceo-blocked",
+      type: "CeoDecision",
+      as_of: "2026-05-08T00:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:scrooge" },
+      citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+      payload: {
+        decisionId: "D-TEST-01",
+        action: "approve",
+        recordedAt: "2026-05-08T00:00:00.000Z",
+        recordedBy: "marc@tgv.co.za",
+      },
+    };
+    expect(() => wrapped.append(ceoEvent)).toThrow(PermissionGateDenied);
     store.close();
   });
 
@@ -395,21 +437,38 @@ describe("permission gate — feature flag", () => {
     store.close();
   });
 
-  it("when flag on, no policy, and event type NOT in legacy backfill, blocks the append", () => {
+  it("when flag on, no policy, and event type NOT in legacy backfill and NOT privileged, allows the append (Option C allow-by-default)", () => {
+    // D-T-01 Option C: internal service agents are allow-by-default for
+    // non-privileged types, even when there's no published policy and the
+    // type isn't in the legacy backfill list.
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     const wrapped = gateEventStore({
       store,
       config: { policy: publisher, forceEnabled: true },
     });
-    // Use a synthetic event type that won't be in LEGACY_PRE_A1_EVENT_TYPES.
-    // Cast through `any` for the test fixture — the permission gate
-    // operates on `event.type` as a string, so unknown types are valid
-    // for this assertion path.
-    expect(LEGACY_PRE_A1_EVENT_TYPES.has("FutureEventType")).toBe(false);
-    expect(() => wrapped.append(buildEventFor("agent:sample", "FutureEventType"))).toThrow(
-      PermissionGateDenied,
-    );
+    const newOpType = "OperationalStatusUpdated";
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has(newOpType)).toBe(false);
+    expect(PRIVILEGED_EVENT_TYPES.has(newOpType)).toBe(false);
+    expect(() => wrapped.append(buildEventFor("agent:sample", newOpType))).not.toThrow();
+    store.close();
+  });
+
+  it("when flag on, no policy, and event type NOT in legacy backfill and IS privileged, blocks the append", () => {
+    // D-T-01 Option C: privileged types without a published policy (and not in
+    // legacy backfill) are still denied. IdentityPermissionChanged is a good
+    // example — it's NOT in the legacy backfill list.
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("IdentityPermissionChanged")).toBe(false);
+    expect(PRIVILEGED_EVENT_TYPES.has("IdentityPermissionChanged")).toBe(true);
+    expect(() =>
+      wrapped.append(buildEventFor("agent:sample", "IdentityPermissionChanged")),
+    ).toThrow(PermissionGateDenied);
     store.close();
   });
 
@@ -503,25 +562,64 @@ describe("permission gate — feature flag", () => {
     store.close();
   });
 
-  it("legacy backfill does NOT bypass when actor HAS a published policy (policy is canonical)", () => {
+  it("legacy backfill does NOT bypass when actor HAS a published policy (policy is canonical for privileged types)", () => {
+    // D-T-01 Option C: for PRIVILEGED types, having a policy that doesn't
+    // list the type is still a hard deny. For NON-PRIVILEGED types the
+    // policy's allow-list is no longer the gate (allow-by-default applies).
+    // This test verifies that a privileged type (CeoDecision) published in
+    // the legacy list remains denied once the actor has a policy.
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
-    // Publish a policy that does NOT include AgentDecision. The actor
-    // having a policy means the backfill window is closed — out-of-list
-    // emit is a hard deny even if the type is on the legacy list.
     publisher.publish(fakeSpec({ eventsEmitted: ["AgentEscalation"] }));
     const wrapped = gateEventStore({
       store,
       config: { policy: publisher, forceEnabled: true },
     });
-    expect(LEGACY_PRE_A1_EVENT_TYPES.has("AgentDecision")).toBe(true);
-    expect(() => wrapped.append(buildEventFor("agent:sample", "AgentDecision"))).toThrow(
-      PermissionGateDenied,
-    );
+    // CeoDecision IS in the legacy list AND is privileged — with a policy
+    // that doesn't include it, it must be denied.
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("CeoDecision")).toBe(true);
+    expect(PRIVILEGED_EVENT_TYPES.has("CeoDecision")).toBe(true);
+    const ceoEvent: Event = {
+      event_id: "evt-ceo-policy-deny",
+      type: "CeoDecision",
+      as_of: "2026-05-08T00:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:sample" },
+      citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+      payload: {
+        decisionId: "D-LEGACY-TEST",
+        action: "approve",
+        recordedAt: "2026-05-08T00:00:00.000Z",
+        recordedBy: "marc@tgv.co.za",
+      },
+    };
+    expect(() => wrapped.append(ceoEvent)).toThrow(PermissionGateDenied);
     store.close();
   });
 
-  it("calls onDeny hook with the denied event and reason", () => {
+  it("legacy backfill does NOT bypass non-privileged type when actor HAS a published policy (allow-by-default)", () => {
+    // D-T-01 Option C: once an actor has a policy, non-privileged types not on
+    // the allow-list are allowed (no hard deny). This is the key Option C
+    // relaxation that unblocks the goal loop.
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    publisher.publish(fakeSpec({ eventsEmitted: ["AgentEscalation"] }));
+    const wrapped = gateEventStore({
+      store,
+      config: { policy: publisher, forceEnabled: true },
+    });
+    // AgentDecision IS in the legacy list but is NOT privileged — with a policy
+    // that doesn't include it, Option C allow-by-default means it's allowed.
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("AgentDecision")).toBe(true);
+    expect(PRIVILEGED_EVENT_TYPES.has("AgentDecision")).toBe(false);
+    expect(() => wrapped.append(buildEventFor("agent:sample", "AgentDecision"))).not.toThrow();
+    store.close();
+  });
+
+  it("calls onDeny hook with the denied event and reason (privileged type not on allow-list)", () => {
+    // Under Option C, non-privileged types are allow-by-default; onDeny only
+    // fires for privileged types denied explicitly. Use IdentityPermissionChanged
+    // as a representative privileged type.
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     publisher.publish(fakeSpec({ eventsEmitted: ["AgentDecision"] }));
@@ -536,14 +634,16 @@ describe("permission gate — feature flag", () => {
         },
       },
     });
+    // IdentityPermissionChanged is a PRIVILEGED type — requires explicit allow-list
+    expect(PRIVILEGED_EVENT_TYPES.has("IdentityPermissionChanged")).toBe(true);
     try {
-      wrapped.append(buildEventFor("agent:sample", "TradeExecuted"));
+      wrapped.append(buildEventFor("agent:sample", "IdentityPermissionChanged"));
     } catch {
       /* expected */
     }
     expect(denials).toHaveLength(1);
-    expect(denials[0]?.type).toBe("TradeExecuted");
-    expect(denials[0]?.reason).toContain("not allowed to emit TradeExecuted");
+    expect(denials[0]?.type).toBe("IdentityPermissionChanged");
+    expect(denials[0]?.reason).toContain("privileged type");
     store.close();
   });
 
@@ -598,7 +698,12 @@ describe("permission gate — Vera carve-out", () => {
     // are unconstrained.
   });
 
-  it("Vera writes outside her allow-list still blocked (asymmetric carve-out)", () => {
+  it("Vera writes of PRIVILEGED types outside her allow-list still blocked (asymmetric carve-out)", () => {
+    // D-T-01 Option C: the read carve-out for Vera is asymmetric — reads are
+    // unconstrained; writes of PRIVILEGED types outside her policy are denied.
+    // Non-privileged types are now allow-by-default under Option C (even for Vera),
+    // but privileged types (CeoDecision, IdentityPermissionChanged, etc.) remain
+    // hard-deny without an explicit allow-list entry.
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
     publisher.publish(
@@ -613,16 +718,19 @@ describe("permission gate — Vera carve-out", () => {
       store,
       config: { policy: publisher, forceEnabled: true },
     });
-    const veraOutOfScope: Event = {
-      event_id: "evt-vera-1",
-      type: "TradeExecuted",
+    // IdentityPermissionChanged is privileged — Vera must not emit it without
+    // explicit allow-list entry.
+    expect(PRIVILEGED_EVENT_TYPES.has("IdentityPermissionChanged")).toBe(true);
+    const veraPrivilegedAttempt: Event = {
+      event_id: "evt-vera-privileged-1",
+      type: "IdentityPermissionChanged",
       as_of: "2026-05-08T00:00:00.000Z",
       entity: "BANK-ZA-001",
       actor: { type: "service", id: VERA_URN },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
       payload: {},
     };
-    expect(() => wrapped.append(veraOutOfScope)).toThrow(PermissionGateDenied);
+    expect(() => wrapped.append(veraPrivilegedAttempt)).toThrow(PermissionGateDenied);
   });
 
   it("Vera writes inside her allow-list succeed", () => {
@@ -676,12 +784,37 @@ describe("decideAppend — pure decision function", () => {
     store.close();
   });
 
-  it("denies when no policy is published AND event type not in legacy backfill", () => {
+  it("allows when no policy is published AND event type not in legacy backfill (Option C allow-by-default for non-privileged)", () => {
+    // D-T-01 Option C: no policy + not in legacy backfill + not privileged → allowed.
     const store = new EventStore();
     const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    const newOpType = "OperationalStatusUpdated";
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has(newOpType)).toBe(false);
+    expect(PRIVILEGED_EVENT_TYPES.has(newOpType)).toBe(false);
     const event: Event = {
       event_id: "evt-y",
-      type: "FutureEventType",
+      type: newOpType,
+      as_of: "2026-05-08T00:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:newbie" },
+      citations: ["X"],
+      payload: {},
+    };
+    const decision = decideAppend({ event, policy: publisher });
+    expect(decision.allowed).toBe(true);
+    expect(decision.legacyBypass).toBeUndefined();
+    store.close();
+  });
+
+  it("denies when no policy is published AND event type not in legacy backfill AND is privileged", () => {
+    // D-T-01 Option C: no policy + not in legacy backfill + IS privileged → denied.
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("IdentityPermissionChanged")).toBe(false);
+    expect(PRIVILEGED_EVENT_TYPES.has("IdentityPermissionChanged")).toBe(true);
+    const event: Event = {
+      event_id: "evt-y-priv",
+      type: "IdentityPermissionChanged",
       as_of: "2026-05-08T00:00:00.000Z",
       entity: "BANK-ZA-001",
       actor: { type: "service", id: "agent:newbie" },
@@ -690,7 +823,7 @@ describe("decideAppend — pure decision function", () => {
     };
     const decision = decideAppend({ event, policy: publisher });
     expect(decision.allowed).toBe(false);
-    expect(decision.reason).toContain("no permission policy");
+    expect(decision.reason).toContain("privileged type");
     store.close();
   });
 
@@ -712,6 +845,146 @@ describe("decideAppend — pure decision function", () => {
       agentUrn: "agent:newbie",
       eventType: "AgentDecision",
     });
+    store.close();
+  });
+
+  // D-T-01 Option C: allow-by-default for non-privileged types, no policy
+  it("allows non-privileged type with no policy (Option C allow-by-default)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    // RiskRaised is not in LEGACY_PRE_A1_EVENT_TYPES and not in PRIVILEGED_EVENT_TYPES
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has("RiskRaised")).toBe(true); // it IS in the legacy list
+    // This test also verifies the path when NOT in legacy (use a truly new type)
+    expect(PRIVILEGED_EVENT_TYPES.has("RiskRaised")).toBe(false);
+    const decision = decideAppend({
+      event: {
+        event_id: "evt-rr",
+        type: "RiskRaised",
+        as_of: "2026-05-08T00:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas" },
+        citations: ["X"],
+        payload: {},
+      },
+      policy: publisher,
+    });
+    // RiskRaised is in legacy list, so it gets legacy bypass (also allowed)
+    expect(decision.allowed).toBe(true);
+    store.close();
+  });
+
+  it("allows truly-new non-privileged type with no policy (Option C pure allow-by-default, no legacy)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    // A synthetic future type: not in legacy, not privileged
+    const newType = "OperationalStatusUpdated";
+    expect(LEGACY_PRE_A1_EVENT_TYPES.has(newType)).toBe(false);
+    expect(PRIVILEGED_EVENT_TYPES.has(newType)).toBe(false);
+    const decision = decideAppend({
+      event: {
+        event_id: "evt-new-op",
+        type: newType,
+        as_of: "2026-05-08T00:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas" },
+        citations: ["X"],
+        payload: {},
+      },
+      policy: publisher,
+    });
+    expect(decision.allowed).toBe(true);
+    expect(decision.legacyBypass).toBeUndefined();
+    store.close();
+  });
+
+  it("denies privileged type (CeoDecision) for agent:scrooge with no policy (Option C deny-list)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    // CeoDecision IS in LEGACY_PRE_A1_EVENT_TYPES, so pre-Option-C it would have been allowed
+    // via legacy bypass. Under Option C, privileged types still go through the legacy
+    // bypass path for backward compatibility, but this tests what happens post-migration
+    // (when the actor has a policy).
+    // Publish a policy for agent:scrooge that does NOT include CeoDecision:
+    publisher.publish(
+      fakeSpec({
+        agentUrn: "agent:scrooge",
+        personaName: "Scrooge",
+        eventsEmitted: ["AgentBriefIssued", "WorkstreamRegistered"],
+        specHash: "e".repeat(64),
+      }),
+    );
+    const decision = decideAppend({
+      event: {
+        event_id: "evt-ceo-scrooge",
+        type: "CeoDecision",
+        as_of: "2026-05-08T00:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:scrooge" },
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+        payload: {
+          decisionId: "D-TEST-SCROOGE",
+          action: "approve",
+          recordedAt: "2026-05-08T00:00:00.000Z",
+          recordedBy: "marc@tgv.co.za",
+        },
+      },
+      policy: publisher,
+    });
+    expect(decision.allowed).toBe(false);
+    expect(decision.reason).toContain("privileged type CeoDecision");
+    store.close();
+  });
+
+  it("goal-loop unblock: agent:atlas can emit RiskRaised with no policy (via legacy bypass)", () => {
+    // Pre-condition for the goal-loop unblock: RiskRaised is in LEGACY list.
+    // Post-migration (once policy published): non-privileged allow-by-default kicks in.
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    expect(PRIVILEGED_EVENT_TYPES.has("RiskRaised")).toBe(false);
+    const decision = decideAppend({
+      event: {
+        event_id: "evt-rr-atlas",
+        type: "RiskRaised",
+        as_of: "2026-05-08T00:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas" },
+        citations: ["X"],
+        payload: {},
+      },
+      policy: publisher,
+    });
+    expect(decision.allowed).toBe(true);
+    store.close();
+  });
+
+  it("goal-loop unblock: agent:atlas can emit WorkstreamRegistered without explicit allow-list entry (Option C)", () => {
+    const store = new EventStore();
+    const publisher = new LocalPermissionPolicyPublisher({ eventStore: store });
+    // Publish a policy for atlas that does NOT include WorkstreamRegistered
+    publisher.publish(
+      fakeSpec({
+        agentUrn: "agent:atlas",
+        personaName: "Atlas",
+        eventsEmitted: ["AgentRunStarted", "AgentRunCompleted"],
+        specHash: "f".repeat(64),
+      }),
+    );
+    expect(PRIVILEGED_EVENT_TYPES.has("WorkstreamRegistered")).toBe(false);
+    const decision = decideAppend({
+      event: {
+        event_id: "evt-ws-atlas",
+        type: "WorkstreamRegistered",
+        as_of: "2026-05-08T00:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:atlas" },
+        citations: ["X"],
+        payload: {},
+      },
+      policy: publisher,
+    });
+    // Option C: non-privileged type, policy exists but type not listed → allow-by-default
+    expect(decision.allowed).toBe(true);
+    expect(decision.legacyBypass).toBeUndefined();
     store.close();
   });
 });

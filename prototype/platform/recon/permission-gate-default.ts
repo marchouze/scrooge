@@ -63,7 +63,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { LEGACY_PRE_A1_EVENT_TYPES } from "../event-store/permission-gate";
+import { LEGACY_PRE_A1_EVENT_TYPES, PRIVILEGED_EVENT_TYPES } from "../event-store/permission-gate";
 import { lookupEventType } from "../event-store/registry";
 import { BASELINE_COUNT } from "./code-quality/legacy-bypass-watch";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -106,6 +106,11 @@ export interface RunOpts {
   appendedAgentActors?: ReadonlyArray<{ agentUrn: string; hasPolicy: boolean }>;
   /** Construction sites override (skip filesystem scan in tests). */
   constructionSites?: ReadonlyArray<ConstructionSite>;
+  /**
+   * Override PRIVILEGED_EVENT_TYPES for tests. Allows asserting the
+   * Option C invariants against synthetic sets without touching production.
+   */
+  privilegedEventTypes?: ReadonlySet<string>;
 }
 
 // Files / directories where a raw `new EventStore(...)` is expected and
@@ -295,6 +300,54 @@ export function run(opts: RunOpts = {}): ReconResult {
   const prototypeDir = opts.prototypeDir ?? PROTOTYPE_DIR;
   const legacy = opts.legacyBypass ?? LEGACY_PRE_A1_EVENT_TYPES;
   const baseline = opts.baseline ?? BASELINE_COUNT;
+
+  // ---------------------------------------------------------------------
+  // Assertion 0: PRIVILEGED_EVENT_TYPES integrity (D-T-01 Option C invariants).
+  //
+  //   a. The set is non-empty.
+  //   b. It contains at minimum `CeoDecision` and `IdentityPermissionChanged`
+  //      (these are the baseline governance/identity invariants cited in
+  //      D-T-01-PERMISSION-GATE-SECURE-DEFAULT).
+  //   c. Internal service agents (agent:* with no policy, non-privileged
+  //      types) should NOT appear to be blocked by the privileged list for
+  //      operational event types. We verify this by confirming that the two
+  //      representative goal-loop types (`RiskRaised`, `WorkstreamRegistered`)
+  //      are NOT in PRIVILEGED_EVENT_TYPES.
+  // ---------------------------------------------------------------------
+  const privileged = opts.privilegedEventTypes ?? PRIVILEGED_EVENT_TYPES;
+
+  result.asserted++;
+  if (privileged.size === 0) {
+    violations.push({
+      subject: "privileged-types:non-empty",
+      message: `PRIVILEGED_EVENT_TYPES is empty. It must contain at minimum CeoDecision and IdentityPermissionChanged per D-T-01 Option C. Citations: ${CITATIONS.join(", ")}.`,
+      severity: "fail",
+    });
+  }
+
+  for (const required of ["CeoDecision", "IdentityPermissionChanged"] as const) {
+    result.asserted++;
+    if (!privileged.has(required)) {
+      violations.push({
+        subject: `privileged-types:required:${required}`,
+        message: `PRIVILEGED_EVENT_TYPES must contain "${required}" — this type directly mutates governance/identity state and always requires an explicit allow-list entry (D-T-01 Option C). Citations: ${CITATIONS.join(", ")}.`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // Goal-loop operational types must NOT be in the privileged set — if they
+  // were, the allow-by-default relaxation would not unblock them.
+  for (const goalLoopType of ["RiskRaised", "WorkstreamRegistered"] as const) {
+    result.asserted++;
+    if (privileged.has(goalLoopType)) {
+      violations.push({
+        subject: `privileged-types:goal-loop-blocked:${goalLoopType}`,
+        message: `"${goalLoopType}" is in PRIVILEGED_EVENT_TYPES — this would block internal agents from emitting it without an explicit allow-list entry, preventing the D-T-01 Option C goal-loop unblock. Remove it from PRIVILEGED_EVENT_TYPES. Citations: ${CITATIONS.join(", ")}.`,
+        severity: "fail",
+      });
+    }
+  }
 
   // ---------------------------------------------------------------------
   // Assertion 1: every EventStore construction site is gated, OR sits in a

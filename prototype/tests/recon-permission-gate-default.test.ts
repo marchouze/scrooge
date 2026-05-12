@@ -7,6 +7,8 @@
 // - Catches: raw EventStore construction site outside the carve-out list.
 // - Catches: legacy-bypass list growth past the baseline.
 // - Catches: agent-keyed actor appending without a policy.
+// - D-T-01 Option C: PRIVILEGED_EVENT_TYPES non-empty + required entries present.
+// - D-T-01 Option C: Goal-loop operational types NOT blocked by privileged set.
 //
 // Author: Vera (Internal audit engineer, third-line)
 
@@ -167,6 +169,107 @@ describe("permission-gate-default recon (F-031)", () => {
           v.severity === "info" &&
           v.subject === "actor:agent:substrate-runner" &&
           v.message.includes("Accepted today"),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("permission-gate-default recon — D-T-01 Option C (PRIVILEGED_EVENT_TYPES)", () => {
+  const baseOpts = {
+    legacyBypass: new Set<string>(),
+    knownEventTypes: new Set<string>(),
+    appendedAgentActors: [] as Array<{ agentUrn: string; hasPolicy: boolean }>,
+    constructionSites: [] as Array<{ file: string; line: number; source: string }>,
+    baseline: 0,
+  };
+
+  it("passes when PRIVILEGED_EVENT_TYPES contains at minimum CeoDecision and IdentityPermissionChanged", () => {
+    const r = run({
+      ...baseOpts,
+      privilegedEventTypes: new Set([
+        "CeoDecision",
+        "IdentityPermissionChanged",
+        "PermissionPolicyPublished",
+      ]),
+    });
+    const fails = r.violations.filter((v) => v.severity === "fail");
+    expect(fails).toEqual([]);
+    expect(r.ok).toBe(true);
+  });
+
+  it("fails when PRIVILEGED_EVENT_TYPES is empty", () => {
+    const r = run({
+      ...baseOpts,
+      privilegedEventTypes: new Set<string>(),
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "fail" &&
+          v.subject === "privileged-types:non-empty" &&
+          v.message.includes("is empty"),
+      ),
+    ).toBe(true);
+  });
+
+  it("fails when CeoDecision is missing from PRIVILEGED_EVENT_TYPES", () => {
+    const r = run({
+      ...baseOpts,
+      privilegedEventTypes: new Set(["IdentityPermissionChanged"]),
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) => v.severity === "fail" && v.subject === "privileged-types:required:CeoDecision",
+      ),
+    ).toBe(true);
+  });
+
+  it("fails when IdentityPermissionChanged is missing from PRIVILEGED_EVENT_TYPES", () => {
+    const r = run({
+      ...baseOpts,
+      privilegedEventTypes: new Set(["CeoDecision"]),
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "fail" &&
+          v.subject === "privileged-types:required:IdentityPermissionChanged",
+      ),
+    ).toBe(true);
+  });
+
+  it("fails when a goal-loop operational type (RiskRaised) is in PRIVILEGED_EVENT_TYPES", () => {
+    const r = run({
+      ...baseOpts,
+      privilegedEventTypes: new Set(["CeoDecision", "IdentityPermissionChanged", "RiskRaised"]),
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "fail" && v.subject === "privileged-types:goal-loop-blocked:RiskRaised",
+      ),
+    ).toBe(true);
+  });
+
+  it("fails when a goal-loop operational type (WorkstreamRegistered) is in PRIVILEGED_EVENT_TYPES", () => {
+    const r = run({
+      ...baseOpts,
+      privilegedEventTypes: new Set([
+        "CeoDecision",
+        "IdentityPermissionChanged",
+        "WorkstreamRegistered",
+      ]),
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "fail" &&
+          v.subject === "privileged-types:goal-loop-blocked:WorkstreamRegistered",
       ),
     ).toBe(true);
   });
