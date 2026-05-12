@@ -222,11 +222,26 @@ export interface TrialBalance {
   readonly uptoSequence: number;
 }
 
-interface SubLedgerLeg {
+// Two on-disk leg formats exist:
+//   v1 (legacy, scenario 03): { debit: string, credit: string, currency, amountMinor }
+//   v2 (fx-accounting.ts):    { accountId: string, debitCredit: "debit"|"credit", currency, amountMinor }
+// computeTrialBalance handles both.
+type SubLedgerLegV1 = {
   readonly debit: string;
   readonly credit: string;
   readonly currency: string;
   readonly amountMinor: number;
+};
+type SubLedgerLegV2 = {
+  readonly accountId: string;
+  readonly debitCredit: "debit" | "credit";
+  readonly currency: string;
+  readonly amountMinor: number;
+};
+type SubLedgerLeg = SubLedgerLegV1 | SubLedgerLegV2;
+
+function isLegV2(leg: SubLedgerLeg): leg is SubLedgerLegV2 {
+  return "accountId" in leg;
 }
 
 /**
@@ -256,24 +271,26 @@ export function computeTrialBalance(args: ComputeTrialBalanceArgs): TrialBalance
     const payload = e.payload as unknown as { legs?: readonly SubLedgerLeg[] };
     if (!payload.legs) continue;
     for (const leg of payload.legs) {
-      // Debit leg
-      const debitKey = `${leg.debit}|${leg.currency}`;
-      const debitRow = balances.get(debitKey) ?? {
-        account: leg.debit,
-        currency: leg.currency,
-        amount: 0,
-      };
-      debitRow.amount += leg.amountMinor;
-      balances.set(debitKey, debitRow);
-      // Credit leg
-      const creditKey = `${leg.credit}|${leg.currency}`;
-      const creditRow = balances.get(creditKey) ?? {
-        account: leg.credit,
-        currency: leg.currency,
-        amount: 0,
-      };
-      creditRow.amount -= leg.amountMinor;
-      balances.set(creditKey, creditRow);
+      if (isLegV2(leg)) {
+        const key = `${leg.accountId}|${leg.currency}`;
+        const row = balances.get(key) ?? {
+          account: leg.accountId,
+          currency: leg.currency,
+          amount: 0,
+        };
+        row.amount += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+        balances.set(key, row);
+      } else {
+        // v1 format: one entry covers debit account (+) and credit account (-)
+        const dk = `${leg.debit}|${leg.currency}`;
+        const dr = balances.get(dk) ?? { account: leg.debit, currency: leg.currency, amount: 0 };
+        dr.amount += leg.amountMinor;
+        balances.set(dk, dr);
+        const ck = `${leg.credit}|${leg.currency}`;
+        const cr = balances.get(ck) ?? { account: leg.credit, currency: leg.currency, amount: 0 };
+        cr.amount -= leg.amountMinor;
+        balances.set(ck, cr);
+      }
     }
     // The store doesn't surface sequence on Event; we fold by count of
     // SubLedgerPostingEmitted events. Slice 5 stream-partitioning will

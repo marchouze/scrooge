@@ -12,7 +12,7 @@
 //
 // Author: Niko · Anya (event shape review)
 
-import type { LegalEntity } from "@platform/core/types";
+import { BANK_ZA_001, type LegalEntity } from "@platform/core/types";
 import type { PartyId } from "../party";
 
 export type CounterpartyId = string & { readonly __counterparty: unique symbol };
@@ -222,4 +222,4 @@ export function counterpartyId(s: string): CounterpartyId {
 }
 
 /** Default entity used during the build phase. P5 — multi-entity-ready. */
-export const DEFAULT_ENTITY: LegalEntity = "BANK-ZA-001" as LegalEntity;
+export const DEFAULT_ENTITY: LegalEntity = BANK_ZA_001;
