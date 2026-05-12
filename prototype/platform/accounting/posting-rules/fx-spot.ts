@@ -35,12 +35,12 @@
 // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
 //   engineer, engineering)
 
-import type { FxLeg, FxTradeExecutedPayload } from "../../markets/cdm/fx";
-import type { SubLedgerLeg } from "../fx-accounting-types";
 import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
 } from "../../event-store/event-types/fx-accounting";
+import type { FxLeg, FxTradeExecutedPayload } from "../../markets/cdm/fx";
+import type { SubLedgerLeg } from "../fx-accounting-types";
 
 // ---------------------------------------------------------------------------
 // Account ID constants — chart-of-accounts leaf IDs

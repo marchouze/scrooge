@@ -22,11 +22,11 @@
 // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
 //   engineer, engineering)
 
-import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
 } from "../event-store/event-types/fx-accounting";
+import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 
 // ---------------------------------------------------------------------------
 // Calculator 1 — FX Position Calculator
@@ -57,13 +57,13 @@ export interface FxPositionResult {
 /**
  * Compute net open positions per currency pair.
  *
- * @param trades - Array of FxTradeExecuted payloads with their event IDs
- * @param settledTradeIds - Set of trade IDs for which FxSettlementConfirmed has been received
+ * @param trades - Array of FxTradeExecuted payloads (tradeId may be string or Identifier)
+ * @param settledTradeIds - Set of trade ID strings for which FxSettlementConfirmed has been received
  * @param zarRates - Map from currency code → ZAR rate (units of ZAR per 1 minor unit of currency)
  * @param asOf - ISO 8601 as-of timestamp for the snapshot
  */
 export function fxPositionCalculator(args: {
-  readonly trades: ReadonlyArray<{ tradeId: string } & FxTradeExecutedPayload>;
+  readonly trades: ReadonlyArray<FxTradeExecutedPayload>;
   readonly settledTradeIds: ReadonlySet<string>;
   readonly zarRates: ReadonlyMap<string, number>;
   readonly asOf: string;
@@ -80,11 +80,8 @@ export function fxPositionCalculator(args: {
   >();
 
   for (const trade of args.trades) {
-    // tradeId may be a string (from calc input) or an Identifier object { scheme, value }
-    const tradeIdStr =
-      typeof trade.tradeId === "string"
-        ? trade.tradeId
-        : (trade.tradeId as { value: string }).value;
+    // FxTradeExecutedPayload.tradeId is an Identifier { scheme, value }
+    const tradeIdStr = trade.tradeId.value;
     if (args.settledTradeIds.has(tradeIdStr)) continue; // settled — not open
 
     const pairKey = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
@@ -164,7 +161,7 @@ export interface UnrealisedPnlResult {
  * @param currentRates - Current spot rates (map from currency → ZAR rate)
  */
 export function unrealisedPnlCalculator(args: {
-  readonly trades: ReadonlyArray<{ tradeId: string } & FxTradeExecutedPayload>;
+  readonly trades: ReadonlyArray<FxTradeExecutedPayload>;
   readonly settledTradeIds: ReadonlySet<string>;
   readonly latestRevaluations: ReadonlyMap<string, FxPositionRevaluedPayload>;
   readonly currentRates: ReadonlyMap<string, number>;
@@ -172,7 +169,8 @@ export function unrealisedPnlCalculator(args: {
   const results: UnrealisedPnlResult[] = [];
 
   for (const trade of args.trades) {
-    if (args.settledTradeIds.has(trade.tradeId)) continue;
+    const tradeIdStr = trade.tradeId.value;
+    if (args.settledTradeIds.has(tradeIdStr)) continue;
 
     const nearLeg = trade.legs.find((l) => l.legKind === "near");
     if (!nearLeg) continue;
@@ -182,20 +180,19 @@ export function unrealisedPnlCalculator(args: {
     const pairKey = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
 
     // Use latest revaluation rate if available, else fall back to current rate map
-    const revaluation = args.latestRevaluations.get(trade.tradeId);
-    const currentRate = revaluation?.revalRate ?? args.currentRates.get(trade.currencyPair.base) ?? bookRate;
+    const revaluation = args.latestRevaluations.get(tradeIdStr);
+    const currentRate =
+      revaluation?.revalRate ?? args.currentRates.get(trade.currencyPair.base) ?? bookRate;
 
     // P&L = (currentRate - bookRate) × notional
     // For a "buy" trade: bank is long base, short quote
     // Gain when base appreciates (currentRate > bookRate means base worth more ZAR)
     const isBuy = trade.side === "buy";
     const rateDelta = currentRate - bookRate;
-    const pnlMinor = Math.round(
-      (isBuy ? 1 : -1) * rateDelta * Math.abs(notionalBaseMinor),
-    );
+    const pnlMinor = Math.round((isBuy ? 1 : -1) * rateDelta * Math.abs(notionalBaseMinor));
 
     results.push({
-      tradeId: trade.tradeId,
+      tradeId: tradeIdStr,
       currencyPair: pairKey,
       bookRate,
       currentRate,

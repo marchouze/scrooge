@@ -26,33 +26,27 @@ import {
   FX_ACCOUNTING_EVENT_TYPES,
   fxPositionRevaluedPayloadSchema,
   fxSettlementConfirmedPayloadSchema,
-  subLedgerPostingEmittedPayloadSchema,
   makeFxPositionRevalued,
-  makeFxSettlementConfirmed,
-  makeSubLedgerPostingEmitted,
+  subLedgerPostingEmittedPayloadSchema,
 } from "../platform/event-store/event-types/fx-accounting";
 
 import {
-  fxTradeBookingJournals,
+  FX_ACCOUNTS,
   fxRevaluationJournals,
   fxSettlementJournals,
-  FX_ACCOUNTS,
+  fxTradeBookingJournals,
 } from "../platform/accounting/posting-rules/fx-spot";
 
 import {
   fxPositionCalculator,
-  unrealisedPnlCalculator,
-  realisedPnlCalculator,
   fxRwaCalculator,
+  realisedPnlCalculator,
+  unrealisedPnlCalculator,
 } from "../platform/accounting/fx-calculators";
 
-import {
-  fxPositionsToBa350Input,
-} from "../platform/reporting/ba-350-fx-adapter";
+import { fxPositionsToBa350Input } from "../platform/reporting/ba-350-fx-adapter";
 
-import {
-  generateBa350MarketRisk,
-} from "../platform/reporting/ba-350-market-risk";
+import { generateBa350MarketRisk } from "../platform/reporting/ba-350-market-risk";
 
 import {
   fxSubLedgerProjection,
@@ -65,7 +59,7 @@ import {
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION", "[citation: TBC]"];
-const ACTOR = { id: "agent:bea", role: "agent" as const };
+const ACTOR = { id: "agent:bea", type: "service" as const };
 
 const BASE_TRADE_PAYLOAD = {
   tradeId: { scheme: "INTERNAL", value: "FX-TEST-001" },
@@ -143,8 +137,18 @@ describe("FX accounting event types", () => {
       sourceEventId: "evt-001",
       postingType: "trade-booking" as const,
       legs: [
-        { accountId: "ACC-2100-001", debitCredit: "debit" as const, amountMinor: 100, currency: "ZAR" },
-        { accountId: "ACC-2100-003", debitCredit: "credit" as const, amountMinor: 50, currency: "ZAR" }, // mismatch
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "debit" as const,
+          amountMinor: 100,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-003",
+          debitCredit: "credit" as const,
+          amountMinor: 50,
+          currency: "ZAR",
+        }, // mismatch
       ],
       postedAt: "2026-05-12T08:00:00.000Z",
     };
@@ -156,8 +160,18 @@ describe("FX accounting event types", () => {
       sourceEventId: "evt-001",
       postingType: "trade-booking" as const,
       legs: [
-        { accountId: "ACC-2100-001", debitCredit: "debit" as const, amountMinor: 100, currency: "ZAR" },
-        { accountId: "ACC-2100-003", debitCredit: "credit" as const, amountMinor: 100, currency: "ZAR" },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "debit" as const,
+          amountMinor: 100,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-003",
+          debitCredit: "credit" as const,
+          amountMinor: 100,
+          currency: "ZAR",
+        },
       ],
       postedAt: "2026-05-12T08:00:00.000Z",
     };
@@ -199,7 +213,7 @@ describe("FX posting rules — balance invariant (debits = credits per currency)
       else t.credit += leg.amountMinor;
       totals.set(leg.currency, t);
     }
-    for (const [ccy, t] of totals.entries()) {
+    for (const [, t] of totals.entries()) {
       expect(t.debit).toBe(t.credit); // balance assertion
     }
   }
@@ -286,7 +300,7 @@ describe("FX posting rules — balance invariant (debits = credits per currency)
       currencyPair: "ZAR/USD",
       legKind: "near",
       settledBaseCurrencyMinor: -1_900_000_000, // bank paid ZAR
-      settledQuoteCurrencyMinor: 100_000_000,   // bank received USD
+      settledQuoteCurrencyMinor: 100_000_000, // bank received USD
       settledAt: "2026-05-14T10:00:00.000Z",
       nostroAccountBase: "ACC-1100-001",
       nostroAccountQuote: "ACC-1100-002",
@@ -317,15 +331,12 @@ describe("FX posting rules — balance invariant (debits = credits per currency)
 
 describe("FX round-trip — book, revalue, settle → net zero open-position balance", () => {
   it("after settlement, no open positions remain for the settled trade", () => {
-    const tradeId = "FX-ROUNDTRIP-001";
-    const settledIds = new Set([tradeId]);
-
-    // Use plain string tradeId to match settledIds lookup
+    // tradeId.value is what goes into settledTradeIds
     const trade = {
-      tradeId,
       ...BASE_TRADE_PAYLOAD,
-      tradeId: tradeId, // override the object with a string
+      tradeId: { scheme: "INTERNAL", value: "FX-ROUNDTRIP-001" },
     };
+    const settledIds = new Set([trade.tradeId.value]);
 
     const positions = fxPositionCalculator({
       trades: [trade],
@@ -339,12 +350,11 @@ describe("FX round-trip — book, revalue, settle → net zero open-position bal
   });
 
   it("before settlement, position shows as open", () => {
-    const tradeId = "FX-ROUNDTRIP-002";
     const openIds = new Set<string>(); // no settlements
 
     const trade = {
-      tradeId,
       ...BASE_TRADE_PAYLOAD,
+      tradeId: { scheme: "INTERNAL", value: "FX-ROUNDTRIP-002" },
     };
 
     const positions = fxPositionCalculator({
@@ -365,8 +375,10 @@ describe("FX round-trip — book, revalue, settle → net zero open-position bal
 
 describe("fxPositionCalculator", () => {
   it("computes net long for a single buy trade", () => {
-    const tradeId = "FX-POS-001";
-    const trade = { tradeId, ...BASE_TRADE_PAYLOAD };
+    const trade = {
+      ...BASE_TRADE_PAYLOAD,
+      tradeId: { scheme: "INTERNAL", value: "FX-POS-001" },
+    };
 
     const result = fxPositionCalculator({
       trades: [trade],
@@ -383,13 +395,14 @@ describe("fxPositionCalculator", () => {
   });
 
   it("excludes settled trades", () => {
-    const tradeId = "FX-POS-002";
-    // Use plain string tradeId to match settledIds lookup
-    const trade = { ...BASE_TRADE_PAYLOAD, tradeId };
+    const trade = {
+      ...BASE_TRADE_PAYLOAD,
+      tradeId: { scheme: "INTERNAL", value: "FX-POS-002" },
+    };
 
     const result = fxPositionCalculator({
       trades: [trade],
-      settledTradeIds: new Set([tradeId]),
+      settledTradeIds: new Set([trade.tradeId.value]),
       zarRates: new Map([["USD", 0.01]]),
       asOf: "2026-05-14T10:00:00.000Z",
     });
@@ -400,8 +413,10 @@ describe("fxPositionCalculator", () => {
 
 describe("unrealisedPnlCalculator", () => {
   it("computes zero P&L when current rate equals book rate", () => {
-    const tradeId = "FX-UNREAL-001";
-    const trade = { tradeId, ...BASE_TRADE_PAYLOAD };
+    const trade = {
+      ...BASE_TRADE_PAYLOAD,
+      tradeId: { scheme: "INTERNAL", value: "FX-UNREAL-001" },
+    };
 
     const result = unrealisedPnlCalculator({
       trades: [trade],
@@ -415,8 +430,10 @@ describe("unrealisedPnlCalculator", () => {
   });
 
   it("computes positive P&L when USD appreciates (buy trade)", () => {
-    const tradeId = "FX-UNREAL-002";
-    const trade = { tradeId, ...BASE_TRADE_PAYLOAD }; // buy USD at 19.0
+    const trade = {
+      ...BASE_TRADE_PAYLOAD,
+      tradeId: { scheme: "INTERNAL", value: "FX-UNREAL-002" },
+    }; // buy USD at 19.0
 
     const result = unrealisedPnlCalculator({
       trades: [trade],
@@ -459,7 +476,7 @@ describe("realisedPnlCalculator", () => {
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
       settledBaseCurrencyMinor: -1_900_000_000, // paid ZAR 19m
-      settledQuoteCurrencyMinor: 100_000_000,   // received USD 1m
+      settledQuoteCurrencyMinor: 100_000_000, // received USD 1m
       settledAt: "2026-05-14T10:00:00.000Z",
       nostroAccountBase: "ACC-1100-001",
       nostroAccountQuote: "ACC-1100-002",
@@ -633,7 +650,10 @@ describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
       payload: BASE_TRADE_PAYLOAD,
     };
 
-    const state = fxSubLedgerProjection.reduce(subLedgerInitial, event as Parameters<typeof fxSubLedgerProjection.reduce>[1]);
+    const state = fxSubLedgerProjection.reduce(
+      subLedgerInitial,
+      event as Parameters<typeof fxSubLedgerProjection.reduce>[1],
+    );
     expect(state.rows.length).toBeGreaterThan(0);
 
     const legKinds = state.rows.map((r) => r.legKind);
@@ -661,7 +681,10 @@ describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
       },
     };
 
-    const state = fxSubLedgerProjection.reduce(subLedgerInitial, event as Parameters<typeof fxSubLedgerProjection.reduce>[1]);
+    const state = fxSubLedgerProjection.reduce(
+      subLedgerInitial,
+      event as Parameters<typeof fxSubLedgerProjection.reduce>[1],
+    );
     const revalRows = state.rows.filter((r) => r.legKind === "fx-revaluation");
     expect(revalRows.length).toBeGreaterThan(0);
   });
@@ -687,7 +710,10 @@ describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
       },
     };
 
-    const state = fxSubLedgerProjection.reduce(subLedgerInitial, event as Parameters<typeof fxSubLedgerProjection.reduce>[1]);
+    const state = fxSubLedgerProjection.reduce(
+      subLedgerInitial,
+      event as Parameters<typeof fxSubLedgerProjection.reduce>[1],
+    );
     const settleRows = state.rows.filter(
       (r) => r.legKind === "fx-settlement-receive" || r.legKind === "fx-settlement-deliver",
     );
@@ -695,9 +721,25 @@ describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
   });
 
   it("projection accepts only FX event types", () => {
-    expect(fxSubLedgerProjection.accepts({ type: "FxTradeExecuted" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(true);
-    expect(fxSubLedgerProjection.accepts({ type: "FxPositionRevalued" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(true);
-    expect(fxSubLedgerProjection.accepts({ type: "FxSettlementConfirmed" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(true);
-    expect(fxSubLedgerProjection.accepts({ type: "EquityTradeBooked" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(false);
+    expect(
+      fxSubLedgerProjection.accepts({ type: "FxTradeExecuted" } as Parameters<
+        typeof fxSubLedgerProjection.accepts
+      >[0]),
+    ).toBe(true);
+    expect(
+      fxSubLedgerProjection.accepts({ type: "FxPositionRevalued" } as Parameters<
+        typeof fxSubLedgerProjection.accepts
+      >[0]),
+    ).toBe(true);
+    expect(
+      fxSubLedgerProjection.accepts({ type: "FxSettlementConfirmed" } as Parameters<
+        typeof fxSubLedgerProjection.accepts
+      >[0]),
+    ).toBe(true);
+    expect(
+      fxSubLedgerProjection.accepts({ type: "EquityTradeBooked" } as Parameters<
+        typeof fxSubLedgerProjection.accepts
+      >[0]),
+    ).toBe(false);
   });
 });

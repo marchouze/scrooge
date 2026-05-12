@@ -22,6 +22,17 @@
 //   Bea (Accounting & financial reporting engineer, engineering) per
 //   D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12).
 
+import {
+  fxRevaluationJournals,
+  fxSettlementJournals,
+  fxTradeBookingJournals,
+} from "../../accounting/posting-rules/fx-spot";
+import type {
+  FxPositionRevaluedPayload,
+  FxSettlementConfirmedPayload,
+} from "../../event-store/event-types/fx-accounting";
+import type { Event } from "../../event-store/types";
+import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
 import type { Projection } from "../types";
 import type {
   EquityCorporateActionAppliedEvent,
@@ -29,14 +40,6 @@ import type {
   EquitySettlementInstructedEvent,
   EquityTradeBookedEvent,
 } from "./types";
-import type { FxPositionRevaluedPayload, FxSettlementConfirmedPayload } from "../../event-store/event-types/fx-accounting";
-import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
-import type { Event } from "../../event-store/types";
-import {
-  fxTradeBookingJournals,
-  fxRevaluationJournals,
-  fxSettlementJournals,
-} from "../../accounting/posting-rules/fx-spot";
 
 export type SubLedgerLegKind =
   /** The trade-booking leg — recognises the financial-instrument acquisition / disposal. */

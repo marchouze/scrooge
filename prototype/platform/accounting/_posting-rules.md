@@ -89,3 +89,113 @@ Adding or revising a posting rule follows the keystone procedure `Procedures/by-
 6. Emit `PostingRulePublished { ruleId, version, eventType, citationChain }`.
 
 Vera's planned posting-rule recon (Wave-4 candidate) asserts: (a) every postable event type has at least one matched rule; (b) every rule's accounts resolve and are in-force; (c) postings balance per currency per entity; (d) every rule's citation chain resolves.
+
+---
+
+## FX Spot posting rules — added 2026-05-12
+
+**Authority:** D-MARKETS-SCHEMA-FOUNDATION + D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12)  
+**Implementation:** `prototype/platform/accounting/posting-rules/fx-spot.ts`  
+**Spec:** `Owner Inbox/2026-05-12_camille-bea_fx-accounting-spec-v1.md §C`
+
+### PR-FX-001 — FX Trade Booking (FxTradeExecuted)
+
+```yaml
+id: PR-FX-001
+name: "FX Spot trade booking — initial FVTPL recognition"
+eventType: "FxTradeExecuted"
+preconditions:
+  - "event.payload.productTaxonomy == 'FX-spot'"
+  - "event.payload.bookType == 'trading'"
+postingLogic: "fxTradeBookingJournals(event.payload) — see fx-spot.ts"
+postings:
+  description: |
+    For each near leg:
+    - Pay currency: Dr payableAccount(payCcy) / Cr receivableAccount(payCcy)
+    - Receive currency: Dr receivableAccount(receiveCcy) / Cr payableAccount(receiveCcy)
+    Each sub-entry balances in its currency. Net P&L = 0 at inception (mid-market).
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.1.1 — recognise at trade date (entity becomes party to contractual provisions)"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §B3.1.3 — trade-date accounting"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.1.1 — initial measurement at fair value"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+approval:
+  approver: Camille (CFO, finance)
+  approvedOn: "2026-05-12"
+  decisionRef: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### PR-FX-002 — FX Daily Revaluation (FxPositionRevalued)
+
+```yaml
+id: PR-FX-002
+name: "FX Spot daily FVTPL revaluation — unrealised P&L"
+eventType: "FxPositionRevalued"
+preconditions:
+  - "event.payload.unrealisedPnlZarMinor != 0"
+postingLogic: "fxRevaluationJournals(event.payload) — see fx-spot.ts"
+postings:
+  description: |
+    Gain (unrealisedPnlZarMinor > 0):
+      Dr ACC-2100-001 FX Trading Receivable — ZAR
+      Cr ACC-2100-005 Unrealised FX P&L — FVTPL
+    Loss (unrealisedPnlZarMinor < 0):
+      Dr ACC-2100-005 Unrealised FX P&L — FVTPL
+      Cr ACC-2100-001 FX Trading Receivable — ZAR
+    Zero delta: no posting.
+    All entries in ZAR (functional currency). FVTPL — no OCI.
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.7.1 — changes in fair value of FVTPL instruments in P&L"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate monetary items at closing rate; exchange differences to P&L"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+approval:
+  approver: Camille (CFO, finance)
+  approvedOn: "2026-05-12"
+  decisionRef: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### PR-FX-003 — FX Settlement (FxSettlementConfirmed)
+
+```yaml
+id: PR-FX-003
+name: "FX Spot settlement — derecognition and nostro recognition"
+eventType: "FxSettlementConfirmed"
+preconditions:
+  - "event.payload.legKind == 'near'"
+postingLogic: "fxSettlementJournals(event.payload) — see fx-spot.ts"
+postings:
+  description: |
+    (i) Base currency leg: Dr/Cr nostroAccountBase ↔ receivable/payable(baseCcy)
+    (ii) Quote currency leg: Dr/Cr nostroAccountQuote ↔ payable/receivable(quoteCcy)
+    (iii) Realised P&L residual (if any): Dr/Cr nostroZAR ↔ ACC-2100-006 Realised FX P&L
+    Each sub-entry balances in its currency. Derecognises FVTPL asset/liability.
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.2.3 — derecognise financial asset when contractual rights expire"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.3.1 — derecognise financial liability when extinguished"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.7.1 — any residual fair-value change at settlement to P&L"
+  - type: regulation
+    regulationId: D-FX-CLS-MEMBERSHIP
+    note: "Settlement path is correspondent-bank CLS; confirmation triggers derecognition."
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+approval:
+  approver: Camille (CFO, finance)
+  approvedOn: "2026-05-12"
+  decisionRef: D-MARKETS-CAPITAL-TIME-SHAPE
+```
