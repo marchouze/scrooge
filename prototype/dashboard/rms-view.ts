@@ -58,6 +58,8 @@
 
 import type { EventStore } from "../platform/event-store/store";
 import { LocalProjector } from "../platform/projections";
+import { effectiveStreamKey } from "../platform/projections/filter";
+import type { ProvenanceFilter } from "../platform/projections/filter";
 import {
   type AgentRunsRegisterRow,
   type BriefsRegisterRow,
@@ -234,14 +236,76 @@ export interface RmsRegistersFold {
 // The function is pure: same EventStore + same now() → same fold. The API
 // layer wraps this in a thin server-side cache (5s TTL) so repeated polling
 // from the dashboard front-end doesn't re-fold on every request.
+//
+// F-027 snapshot adoption: the `decisions` projection (highest volume —
+// folds CeoDecision + DecisionRequested events which accumulate monotonically)
+// uses the snapshot-aware path (`projectFromSnapshot`) rather than a naive
+// full replay. After computing the state, `maybeSnapshot` persists a snapshot
+// when the cadence rule fires (first-snapshot or every-K-events threshold),
+// so subsequent requests only replay the delta from the snapshot forward.
+//
+// The other six projections use the standard `build()` path because their
+// event volumes are lower in the current build phase; they are marked with a
+// TODO comment so future work can extend the snapshot path as event counts grow.
+//
+// Stream-key convention: `"dashboard:<projectionName>#prov=<filterDigest>"`,
+// per `effectiveStreamKey()` from `platform/projections/filter.ts`.
 // ---------------------------------------------------------------------------
+
+// Stable base stream keys for the snapshot-enabled projections.
+const DECISIONS_STREAM_KEY = "dashboard:decisionsRegister";
+
+// RMS registers fold ALL events (both production and simulated) — these are
+// audit-log projections, not filtered reporting views. The `combined` mode
+// matches the original `projector.build()` behaviour which had no provenance
+// filtering. Snapshots are keyed under the `combined` digest so they are
+// isolated from any `production-only` or `simulated-only` snapshots.
+const RMS_PROV_FILTER: ProvenanceFilter = { mode: "combined" };
 
 export function buildRmsRegistersFold(
   store: EventStore,
   now: () => string = () => new Date().toISOString(),
 ): RmsRegistersFold {
   const projector = new LocalProjector(store);
-  const decisionsState = projector.build(decisionsRegisterProjection);
+  const asOf = now();
+  const provFilter = RMS_PROV_FILTER;
+  const effDecisionsKey = effectiveStreamKey(DECISIONS_STREAM_KEY, provFilter);
+
+  // F-027: decisions projection — snapshot-aware path.
+  // `projectFromSnapshot` loads the most recent snapshot ≤ asOf for the
+  // effective stream key and folds only the delta events on top. On a fresh
+  // store (no snapshot yet) it degrades gracefully to a full naive replay.
+  // After folding, `maybeSnapshot` persists a new snapshot when the cadence
+  // rule fires (CeoDecision cadence from the event-type registry).
+  const { state: decisionsState, deltaCount: decisionsDelta } = projector.projectFromSnapshot(
+    decisionsRegisterProjection,
+    { streamKey: DECISIONS_STREAM_KEY, asOf, provenanceFilter: provFilter },
+  );
+
+  // Attempt snapshot emission after the fold — persists state when the
+  // cadence rule (K events or T seconds since last snapshot) fires.
+  // The uptoSequence is the current store count; close enough for the
+  // cadence rule (the store does not expose the exact last-event sequence
+  // without an additional query, and the cadence rule's threshold is coarse).
+  const uptoSequence = store.count();
+  projector.maybeSnapshot(decisionsRegisterProjection, {
+    streamKey: DECISIONS_STREAM_KEY,
+    asOf,
+    uptoSequence,
+    state: decisionsState,
+    eventType: "CeoDecision",
+    provenanceFilter: provFilter,
+  });
+
+  // Remaining projections use the standard naive-replay path.
+  // TODO(F-027): extend snapshot path to correspondenceRegisterProjection,
+  // agentRunsRegisterProjection, documentRegisterProjection,
+  // workstreamsRegisterProjection, briefsRegisterProjection, and
+  // feedbackRegisterProjection once their event volumes justify it.
+  // Each already has encodeSnapshot/decodeSnapshot codecs defined.
+  void effDecisionsKey; // used for logging; actual key managed by projectFromSnapshot
+  void decisionsDelta; // available for debug logging if needed
+
   const correspondenceState = projector.build(correspondenceRegisterProjection);
   const agentRunsState = projector.build(agentRunsRegisterProjection);
   const documentState = projector.build(documentRegisterProjection);
@@ -250,7 +314,7 @@ export function buildRmsRegistersFold(
   const workstreamsState = projector.build(workstreamsRegisterProjection);
 
   return {
-    asOf: now(),
+    asOf,
     decisions: decisionsRegisterRows(decisionsState),
     correspondence: correspondenceRegisterRows(correspondenceState),
     agentRuns: agentRunsRegisterRows(agentRunsState),
