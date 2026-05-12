@@ -60,6 +60,16 @@
             <p class="dept-metric-sub">/api/obligations</p>
           </div>
           <div class="dept-metric">
+            <p class="dept-metric-label">Policies</p>
+            <p class="dept-metric-value" id="cmp-policies" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Policy register</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Open decisions</p>
+            <p class="dept-metric-value" id="cmp-open-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">CEO queue</p>
+          </div>
+          <div class="dept-metric">
             <p class="dept-metric-label">Empty source</p>
             <p class="dept-metric-value" id="cmp-empty-src" data-tone="muted">–</p>
             <p class="dept-metric-sub">Curation gap</p>
@@ -111,6 +121,22 @@
         </p>
         <div id="cmp-register-body">
           <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading top obligations…</p>
+        </div>
+      </section>
+
+      <!-- Open compliance decisions -->
+      <section aria-labelledby="cmp-decisions-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cmp-decisions-head">Compliance decisions</h2>
+          <span class="shell-category-kind">Linked</span>
+        </div>
+        <p class="shell-category-blurb">
+          Open CEO decisions tagged to compliance, POPIA, FIC, FATCA/CRS, or AML domains.
+          Zara (CCO, governance) and Mira (Compliance / RegTech engineer) own the compliance domain decisions;
+          Iris (Information Officer, governance) owns POPIA decisions.
+        </p>
+        <div id="cmp-decisions-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
         </div>
       </section>
 

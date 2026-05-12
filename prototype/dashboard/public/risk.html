@@ -49,6 +49,38 @@
         </p>
       </div>
 
+      <!-- Summary metrics -->
+      <section aria-labelledby="risk-summary-head">
+        <h2 class="shell-category-title" id="risk-summary-head" style="margin-bottom:var(--space-4)">Summary</h2>
+        <div class="dept-metrics" id="risk-summary-metrics">
+          <div class="dept-metric">
+            <p class="dept-metric-label">High / critical findings</p>
+            <p class="dept-metric-value" id="risk-findings-high" data-tone="muted">–</p>
+            <p class="dept-metric-sub">AuditFinding events</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Medium findings</p>
+            <p class="dept-metric-value" id="risk-findings-medium" data-tone="muted">–</p>
+            <p class="dept-metric-sub">AuditFinding events</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Total findings</p>
+            <p class="dept-metric-value" id="risk-findings-total" data-tone="muted">–</p>
+            <p class="dept-metric-sub">All severities</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Open decisions</p>
+            <p class="dept-metric-value" id="risk-open-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">CEO queue</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Resolved decisions</p>
+            <p class="dept-metric-value" id="risk-resolved-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Actioned</p>
+          </div>
+        </div>
+      </section>
+
       <!-- RAS cluster traffic lights -->
       <section aria-labelledby="risk-ras-head" style="margin-bottom:var(--space-12)">
         <div class="shell-category-head">
@@ -104,6 +136,22 @@
           CEO decisions tagged with risk-related domains. Open in the decisions register to approve, defer, or modify.
         </p>
         <div id="risk-decisions-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Recent findings -->
+      <section aria-labelledby="risk-findings-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="risk-findings-head">Recent findings</h2>
+          <span class="shell-category-kind">AuditFinding events</span>
+        </div>
+        <p class="shell-category-blurb">
+          Latest AuditFinding events from the event store — Vera (Internal audit engineer) recon pipelines and
+          Mira (Compliance / RegTech engineer) citation gate. Full view at
+          <a href="/audit.html" style="color:var(--accent-ink)">Audit &amp; Recon →</a>
+        </p>
+        <div id="risk-findings-body">
           <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
         </div>
       </section>
