@@ -485,6 +485,286 @@ body {
   text-decoration: underline;
 }
 
+/* ---------------- Department sidebar nav --------------------- */
+/* Full intranet nav tree — department groups with nested page links.
+ * CSS-only collapsible: the <details>/<summary> pattern, zero JS.
+ * Active state is set by _shell.js via `.is-active` on the <a>. */
+
+.shell-dept-nav {
+  font-size: var(--type-small);
+}
+
+.shell-dept-group {
+  margin-bottom: var(--space-1);
+  border: none;
+  padding: 0;
+}
+
+.shell-dept-group[open] > .shell-dept-label {
+  color: var(--brand-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.shell-dept-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  list-style: none;
+  font-size: var(--type-caption);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--neutral-graphite);
+  user-select: none;
+  transition: background var(--motion-duration-fast) var(--motion-easing);
+}
+
+/* Remove default marker in all browsers */
+.shell-dept-label::-webkit-details-marker {
+  display: none;
+}
+.shell-dept-label::marker {
+  content: "";
+}
+
+.shell-dept-label:hover {
+  background: var(--neutral-mist);
+}
+
+.shell-dept-chevron {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: transform var(--motion-duration-fast) var(--motion-easing);
+  color: var(--neutral-stone);
+}
+
+.shell-dept-group[open] .shell-dept-chevron {
+  transform: rotate(90deg);
+}
+
+.shell-dept-pages {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0 0 0 var(--space-3);
+}
+
+.shell-dept-pages li {
+  margin: 0;
+}
+
+.shell-dept-pages a {
+  display: block;
+  padding: var(--space-1) var(--space-3);
+  color: var(--neutral-graphite);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-size: var(--type-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-dept-pages a:hover,
+.shell-dept-pages a:focus {
+  background: var(--neutral-mist);
+  color: var(--brand-primary);
+  outline: none;
+}
+
+.shell-dept-pages a.is-active {
+  background: var(--neutral-mist);
+  color: var(--brand-primary);
+  font-weight: var(--weight-medium);
+}
+
+/* ---- Metric card grid (used by new dept pages) -------------- */
+
+.dept-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.dept-metric {
+  background: #ffffff;
+  border: var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.dept-metric-value {
+  font-family: var(--font-mono);
+  font-size: var(--type-h3);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--brand-primary);
+  line-height: 1.1;
+  margin: 0 0 var(--space-2);
+}
+
+.dept-metric-value[data-tone="warn"] {
+  color: var(--semantic-warning);
+}
+.dept-metric-value[data-tone="error"] {
+  color: var(--semantic-error);
+}
+.dept-metric-value[data-tone="success"] {
+  color: var(--semantic-success);
+}
+.dept-metric-value[data-tone="muted"] {
+  color: var(--neutral-stone);
+}
+
+.dept-metric-label {
+  font-size: var(--type-caption);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--neutral-graphite);
+  margin: 0 0 var(--space-1);
+}
+
+.dept-metric-sub {
+  font-size: var(--type-caption);
+  color: var(--neutral-stone);
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+/* ---- Traffic-light indicator -------------------------------- */
+
+.tl-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-subtle);
+}
+
+.tl-row:last-child {
+  border-bottom: none;
+}
+
+.tl-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--neutral-stone);
+}
+
+.tl-dot[data-tone="green"] {
+  background: var(--semantic-success);
+}
+.tl-dot[data-tone="amber"] {
+  background: var(--semantic-warning);
+}
+.tl-dot[data-tone="red"] {
+  background: var(--semantic-error);
+}
+
+.tl-label {
+  font-size: var(--type-small);
+  color: var(--neutral-graphite);
+  flex: 1;
+}
+
+.tl-value {
+  font-family: var(--font-mono);
+  font-size: var(--type-small);
+  color: var(--neutral-graphite);
+}
+
+/* ---- Data table (shared dept style) ------------------------- */
+
+.dept-table-wrap {
+  overflow-x: auto;
+}
+
+.dept-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-small);
+}
+
+.dept-table th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 2px solid var(--neutral-mist);
+  font-size: var(--type-caption);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--neutral-graphite);
+  white-space: nowrap;
+}
+
+.dept-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-subtle);
+  vertical-align: top;
+}
+
+.dept-table tr:hover td {
+  background: var(--neutral-mist);
+}
+
+.dept-table code {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption);
+  background: var(--neutral-mist);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Status badge ------------------------------------------- */
+
+.status-badge {
+  display: inline-block;
+  font-size: var(--type-caption);
+  font-family: var(--font-mono);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.status-badge[data-status="met"] {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.status-badge[data-status="pending"] {
+  background: #fef9c3;
+  color: #92400e;
+  border-color: #fde68a;
+}
+.status-badge[data-status="flagged"] {
+  background: #fce7f3;
+  color: #9d174d;
+  border-color: #fbcfe8;
+}
+.status-badge[data-status="pass"] {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.status-badge[data-status="fail"] {
+  background: #fce7f3;
+  color: #9d174d;
+  border-color: #fbcfe8;
+}
+.status-badge[data-status="unknown"] {
+  background: var(--neutral-mist);
+  color: var(--neutral-stone);
+}
+
 /* ---------------- Responsive --------------------------------- */
 
 @media (max-width: 920px) {

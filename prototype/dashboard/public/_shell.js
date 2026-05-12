@@ -161,6 +161,110 @@
     }
   }
 
+  // ---------------- Department nav tree ---------------------
+  // Full intranet structure. Rendered into any element with
+  // [data-shell-dept-nav]. Active page highlighted by URL match.
+  // Pages that don't exist yet are rendered as plain text
+  // (placeholder: true) so the nav is complete without dead links.
+
+  const DEPT_NAV = [
+    {
+      dept: "Executive",
+      pages: [
+        { label: "Home / Dashboard", href: "/home.html" },
+        { label: "Decisions", href: "/index.html#decisionsOpen" },
+      ],
+    },
+    {
+      dept: "Finance",
+      pages: [{ label: "Capital & Liquidity", href: "/finance.html" }],
+    },
+    {
+      dept: "Risk",
+      pages: [{ label: "Risk Watch", href: "/risk.html" }],
+    },
+    {
+      dept: "Markets & Trading",
+      pages: [
+        { label: "FX Markets", href: "/markets/fx/desk.html" },
+        { label: "Onboarding", href: "/onboarding.html" },
+      ],
+    },
+    {
+      dept: "Compliance & Legal",
+      pages: [{ label: "Obligations & Compliance", href: "/compliance.html" }],
+    },
+    {
+      dept: "Operations",
+      pages: [{ label: "Ops Dashboard", href: "/ops.html" }],
+    },
+    {
+      dept: "Platform",
+      pages: [
+        { label: "Event Store", href: "/events.html" },
+        { label: "Agent Runs", href: "/agents.html" },
+      ],
+    },
+    {
+      dept: "Audit",
+      pages: [{ label: "Audit & Recon", href: "/audit.html" }],
+    },
+  ];
+
+  // Determine if a given href is the "current" page. Handles both
+  // exact match and hash-less match.
+  function isActivePage(href) {
+    const loc = window.location;
+    const currentPath = loc.pathname;
+    // Strip any hash from the candidate href before comparing path.
+    const hrefPath = href.split("#")[0] || href;
+    if (hrefPath === currentPath) return true;
+    // /home.html matches "/" (index redirect)
+    if (currentPath === "/" && hrefPath === "/home.html") return true;
+    return false;
+  }
+
+  // Determine which department group should be open by default (the
+  // one that contains the active page).
+  function activeDept() {
+    for (const group of DEPT_NAV) {
+      if (group.pages.some((p) => isActivePage(p.href))) return group.dept;
+    }
+    return null;
+  }
+
+  function renderDeptNav() {
+    const targets = document.querySelectorAll("[data-shell-dept-nav]");
+    if (!targets.length) return;
+
+    const currentDept = activeDept();
+
+    const html = DEPT_NAV.map((group) => {
+      const isOpen = group.dept === currentDept;
+      const pages = group.pages
+        .map((p) => {
+          const active = isActivePage(p.href);
+          const cls = active ? ' class="is-active"' : "";
+          return `<li><a href="${p.href}"${cls} data-shell-nav="dept:${p.label.replace(/\s+/g, "-").toLowerCase()}">${p.label}</a></li>`;
+        })
+        .join("");
+
+      return `<details class="shell-dept-group"${isOpen ? " open" : ""}>
+  <summary class="shell-dept-label">
+    ${group.dept}
+    <svg class="shell-dept-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="4,2 8,6 4,10"/>
+    </svg>
+  </summary>
+  <ul class="shell-dept-pages">${pages}</ul>
+</details>`;
+    }).join("\n");
+
+    for (const el of targets) {
+      el.innerHTML = `<nav class="shell-dept-nav" aria-label="Department navigation">${html}</nav>`;
+    }
+  }
+
   // ---------------- Nav-click instrumentation ---------------
   function instrumentNav() {
     document.addEventListener("click", (ev) => {
@@ -208,10 +312,12 @@
   window.bankShell.render = {
     identity: renderIdentity,
     asOf: renderAsOf,
+    deptNav: renderDeptNav,
   };
 
   document.addEventListener("DOMContentLoaded", () => {
     renderIdentity();
+    renderDeptNav();
     instrumentNav();
     instrumentRefresh();
     auditLog("shell.page.load", { title: document.title });

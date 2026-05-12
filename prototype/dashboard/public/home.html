@@ -50,8 +50,12 @@
 
   <div class="shell-layout">
     <nav class="shell-sidebar" aria-label="Section navigation">
-      <h2>Sections</h2>
+      <!-- Department nav tree — rendered by _shell.js into [data-shell-dept-nav] -->
+      <div data-shell-dept-nav></div>
+
+      <h2 style="margin-top:var(--space-6)">On this page</h2>
       <ul>
+        <li><a href="#intranet" data-shell-nav="sidebar:intranet">Intranet</a></li>
         <li><a href="#dashboards" data-shell-nav="sidebar:dashboards">Dashboards</a></li>
         <li><a href="#reports" data-shell-nav="sidebar:reports">Reports</a></li>
         <li><a href="#decisions" data-shell-nav="sidebar:decisions">Decisions</a></li>
@@ -76,6 +80,37 @@
           the canonical sources — events, registers, procedures.
         </p>
       </div>
+
+      <!-- ============= INTRANET QUICK-LINKS ============= -->
+      <section class="shell-category" id="intranet" aria-labelledby="cat-intranet">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-intranet">Intranet</h2>
+          <span class="shell-category-kind" data-kind="live">Departments</span>
+        </div>
+        <p class="shell-category-blurb">Each department's operational view — data from the event store and canonical registers.</p>
+        <div class="shell-tiles">
+          <a class="shell-tile" href="/finance.html" data-shell-nav="tile:finance">
+            <div class="shell-tile-head"><h3 class="shell-tile-title">Capital &amp; Liquidity</h3></div>
+            <p class="shell-tile-blurb">Camille (CFO) — Tier 1 capital, LCR, NSFR, total assets. BA-325 / BA-700 return fields.</p>
+          </a>
+          <a class="shell-tile" href="/risk.html" data-shell-nav="tile:risk">
+            <div class="shell-tile-head"><h3 class="shell-tile-title">Risk Watch</h3></div>
+            <p class="shell-tile-blurb">Helena (CRO) — RAS cluster status B1–B5, stress-test results, limit utilisations.</p>
+          </a>
+          <a class="shell-tile" href="/compliance.html" data-shell-nav="tile:compliance">
+            <div class="shell-tile-head"><h3 class="shell-tile-title">Obligations &amp; Compliance</h3></div>
+            <p class="shell-tile-blurb">Mira (Compliance / RegTech) — obligations by status, POPIA, FATCA/CRS, FIC indicators.</p>
+          </a>
+          <a class="shell-tile" href="/ops.html" data-shell-nav="tile:ops">
+            <div class="shell-tile-head"><h3 class="shell-tile-title">Ops Dashboard</h3></div>
+            <p class="shell-tile-blurb">Devon (COO) — settlement/clearing status, system health, recent operational events.</p>
+          </a>
+          <a class="shell-tile" href="/audit.html" data-shell-nav="tile:audit">
+            <div class="shell-tile-head"><h3 class="shell-tile-title">Audit &amp; Recon</h3></div>
+            <p class="shell-tile-blurb">Thandiwe (CAE) / Vera — open findings by severity P1–P3, recon pipeline status.</p>
+          </a>
+        </div>
+      </section>
 
       <!-- ============= DASHBOARDS (live) ============= -->
       <section class="shell-category" id="dashboards" aria-labelledby="cat-dashboards">
