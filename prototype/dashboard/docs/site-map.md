@@ -37,6 +37,8 @@ actual file tree is a Vera finding.
 | `obligations.html` | `/obligations.html` | Obligations · Bank operations dashboard | Compliance / Legal | Mira (Compliance / RegTech engineer) | Covered — full obligations register | Compliance & Legal |
 | `onboarding.html` | `/onboarding.html` | Onboarding · Bank operations dashboard | Operations | Niko (CRM engineer — paused, licence-day) | Scaffolded — uses legacy `styles.css`; build-phase placeholder | Markets & Trading |
 | `forward-obligations.html` | `/forward-obligations.html` | Forward obligations · Bank operations dashboard | Compliance / Legal | Mira / Zara (CCO, governance) | Covered — forward-looking obligations calendar view | Compliance & Legal |
+| `agentops.html` | `/agentops.html` | AgentOps · Hoz | AgentOps | Sade (HR systems engineer / AgentOps, engineering) | Covered — fleet health metrics, agent roster table, active workstreams, substrate gaps | AgentOps |
+| `party.html` | `/party.html` | Party Register · Hoz | Governance | Owen (Company Secretary, governance) | Covered — registry summary tiles, party table with kind filter, relationship graph summary, recent PartyRegistered events | Governance |
 
 ---
 
@@ -54,24 +56,20 @@ Target departments per PAX role brief (§3 §2). Coverage assessed 2026-05-12.
 | Operations | **Scaffolded** | `ops.html` | Improved in this PR. Primary widget: settlement-system status + fleet health. Primary data source: `/api/state`, `/api/events`, `/api/fleet`, `/api/substrate-gaps`. Primary user action: monitor settlement and agent fleet health. |
 | Platform Engineering | **Covered** | `events.html`, `health.html`, `rms.html`, `agents.html`, `activity.html`, `architecture.html` | Most pages functional; `agents.html`, `activity.html`, `architecture.html` use legacy shell. |
 | Internal Audit | **Scaffolded** | `audit.html` | Improved in this PR. Primary widget: findings by severity P1/P2/P3. Primary data source: `/api/state → findings`, `/api/substrate-gaps`. Primary user action: review open findings and recon pipeline status. |
-| AgentOps | **Missing** | — | No dedicated page. Spec: primary widget = agent lifecycle register (registered / active / paused / retired agents); primary data source = `/api/fleet` + agent registry; primary user action = trigger agent registration or retirement. Sade (HR systems engineer, reshaped to AgentOps) is the primary persona. |
-| Party / Identity | **Missing** | — | No dedicated page. Spec: primary widget = party register table (natural-person, legal-entity, counterparty, agent); primary data source = `/api/rms/parties` (Party register, D-PARTY-REGISTER); primary user action = inspect a party's event history. Owen (Company Secretary, governance) is the primary persona. |
+| AgentOps | **Covered** | `agentops.html` | Fleet health metrics (total / active / idle / handlers / gaps), agent roster table (name, role, type, workstream, last-activity), active workstreams table, substrate gaps table. Data: `/api/state → agents + inFlight`, `/api/fleet`, `/api/substrate-gaps`. |
+| Party / Identity | **Covered** | `party.html` | Registry summary tiles (by kind + relationships), party table with kind filter (all / natural-person / legal-entity / counterparty / agent), relationship graph summary (kind → count), last 10 PartyRegistered events. Data: `/api/party`, `/api/events?type=PartyRegistered`. |
 
-### Missing-page specs
+### Completed-page notes
 
-**AgentOps (`/agentops.html`)**
-- Purpose: Sade (AgentOps, engineering) — agent lifecycle operations dashboard.
-- Primary widget: tabbed view — Active / Paused / Retired agents; per-agent status card with last-tick timestamp.
-- Data source: `/api/fleet` + `/api/state → agents` array.
-- Required API: `/api/fleet` already exists; per-agent retirement/registration actions need `POST /api/agent/retire` (Atlas task).
-- Acceptance criteria: all 27 roster agents visible; pause/active state derivable from agent registry events; no dead links.
+**AgentOps (`/agentops.html`)** — built 2026-05-12.
+- Fleet health metrics, agent roster table (all 27 personas), active workstreams, substrate gaps.
+- Data: `/api/state → agents + inFlight`, `/api/fleet`, `/api/substrate-gaps`.
+- Roadmap item: `POST /api/agent/retire` (Atlas task) — UI shows current state but cannot mutate.
 
-**Party / Identity (`/party.html`)**
-- Purpose: Owen (Company Secretary, governance) — unified party register view.
-- Primary widget: searchable party table; four actor-kind filters (natural-person, legal-entity, counterparty, agent).
-- Data source: RMS Party register projected from event log (D-PARTY-REGISTER, approved 2026-05-11).
-- Required API: `/api/rms/parties` — raise IntranetEngineeringRequest to Atlas if not yet exposed.
-- Acceptance criteria: founding CEO party (Marc) visible; all legal-entity counterparties from existing events linked; party drill-down to event history.
+**Party / Identity (`/party.html`)** — built 2026-05-12.
+- Registry summary tiles, party table with kind filter, relationship graph summary, recent registrations.
+- Data: `/api/party` (PartyTileSummary), `/api/events?type=PartyRegistered`, `/api/events?type=PartyRelationshipAsserted`.
+- Roadmap item: per-party drill-down to event history (raise IntranetEngineeringRequest to Atlas).
 
 ---
 
@@ -88,14 +86,16 @@ current structure; Noa recommends adding AgentOps and Party/Identity groups when
 | Markets & Trading | `markets/fx/desk.html`, `onboarding.html` | FX desk only; bonds/equities and IRD desks are roadmap |
 | Compliance & Legal | `compliance.html`, `obligations.html`, `forward-obligations.html`, `policies.html` | Richest department coverage |
 | Operations | `ops.html`, `procedures.html` | Procedures index added to this group |
+| AgentOps | `agentops.html` | New group added 2026-05-12; Sade (HR systems engineer / AgentOps, engineering) |
+| Governance | `party.html` | New group added 2026-05-12; Owen (Company Secretary, governance); decisions.html and policies.html recommended additions |
 | Platform | `events.html`, `health.html`, `rms.html`, `agents.html`, `activity.html`, `architecture.html` | Platform engineering + audit tooling |
 | Audit | `audit.html` | Separate group for third-line independence (Thandiwe / Vera) |
 
-**Recommended additions to `_shell.js → DEPT_NAV`:**
-1. Add `AgentOps` group with `agentops.html` (when built).
-2. Add `Party / Identity` group with `party.html` (when built).
-3. Move `procedures.html` from unlisted to the Operations group in the sidebar.
-4. Add `rms.html` to a "Records & Governance" sub-group once the register set expands.
+**`_shell.js → DEPT_NAV` status (2026-05-12):**
+1. `AgentOps` group with `agentops.html` — **added**.
+2. `Governance` group with `party.html` — **added**.
+3. `procedures.html` — in Operations group sidebar (linked from ops.html; dedicated sidebar entry is a roadmap item).
+4. `rms.html` — candidate for the Governance group alongside `party.html` once register set expands.
 
 ---
 

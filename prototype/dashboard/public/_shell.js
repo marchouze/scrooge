@@ -199,6 +199,14 @@
       pages: [{ label: "Ops Dashboard", href: "/ops.html" }],
     },
     {
+      dept: "AgentOps",
+      pages: [{ label: "AgentOps", href: "/agentops.html" }],
+    },
+    {
+      dept: "Governance",
+      pages: [{ label: "Party Register", href: "/party.html" }],
+    },
+    {
       dept: "Platform",
       pages: [
         { label: "Event Store", href: "/events.html" },
