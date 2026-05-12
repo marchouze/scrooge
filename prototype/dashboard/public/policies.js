@@ -362,7 +362,7 @@ function openDrill(policyId) {
         const linkedProcs = (allProcedures ?? []).filter(
           (r) =>
             r.policyParent?.trim().toLowerCase() === p.name?.trim().toLowerCase() &&
-            r.procedureFile
+            r.procedureFile,
         );
         if (linkedProcs.length === 0) {
           return '<p class="muted">No procedures authored under this policy yet.</p>';
@@ -826,9 +826,7 @@ async function load() {
     const params = new URLSearchParams(location.search);
     const targetPolicy = params.get("policy");
     if (targetPolicy) {
-      const match = allPolicies.find(
-        (p) => p.name === targetPolicy || p.id === targetPolicy
-      );
+      const match = allPolicies.find((p) => p.name === targetPolicy || p.id === targetPolicy);
       if (match) openDrill(match.id);
     }
   } catch (e) {
