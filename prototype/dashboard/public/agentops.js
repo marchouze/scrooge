@@ -31,15 +31,6 @@
     }
   }
 
-  function fmtDateTime(iso) {
-    if (!iso) return "–";
-    try {
-      return new Date(iso).toISOString().slice(0, 16).replace("T", " ") + "Z";
-    } catch {
-      return String(iso);
-    }
-  }
-
   function escHtml(s) {
     return String(s ?? "")
       .replace(/&/g, "&amp;")
@@ -65,7 +56,7 @@
 
     // Build a lookup: agent name → active workstream(s)
     const activeByAgent = new Map();
-    for (const w of (inFlight || [])) {
+    for (const w of inFlight || []) {
       if (w.active) {
         const owner = w.owner || "";
         if (!activeByAgent.has(owner)) activeByAgent.set(owner, []);
@@ -80,13 +71,19 @@
         const name = escHtml(agent.name || "–");
         const role = escHtml(agent.role || "–");
         const type = agent.type || "–";
-        const typeBadge = type === "Governance"
-          ? `<span class="status-badge" data-status="active">Gov</span>`
-          : `<span class="status-badge" data-status="pending">Eng</span>`;
+        const typeBadge =
+          type === "Governance"
+            ? `<span class="status-badge" data-status="active">Gov</span>`
+            : `<span class="status-badge" data-status="pending">Eng</span>`;
 
         const agentWorkstreams = activeByAgent.get(agent.name) || [];
         const workstreamCell = agentWorkstreams.length
-          ? agentWorkstreams.map((w) => `<span style="font-size:var(--type-caption);color:var(--accent-ink)">${escHtml(w.what || w.id || "active")}</span>`).join("<br>")
+          ? agentWorkstreams
+              .map(
+                (w) =>
+                  `<span style="font-size:var(--type-caption);color:var(--accent-ink)">${escHtml(w.what || w.id || "active")}</span>`,
+              )
+              .join("<br>")
           : `<span style="color:var(--neutral-stone);font-size:var(--type-caption)">idle</span>`;
 
         const lastActivity = agent.lastActivityAt
@@ -126,20 +123,22 @@
       return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No active workstreams. Workstreams become active after a <code>WorkstreamStarted</code> event.</p>`;
     }
 
-    const rows = active.map((w) => {
-      const id = escHtml(w.id || "–");
-      const what = escHtml(w.what || "–");
-      const owner = escHtml(w.owner || "–");
-      const started = fmtDate(w.startedAt);
-      const due = escHtml(w.due || "–");
-      return `<tr>
+    const rows = active
+      .map((w) => {
+        const id = escHtml(w.id || "–");
+        const what = escHtml(w.what || "–");
+        const owner = escHtml(w.owner || "–");
+        const started = fmtDate(w.startedAt);
+        const due = escHtml(w.due || "–");
+        return `<tr>
   <td><code style="font-size:var(--type-caption)">${id}</code></td>
   <td style="max-width:280px">${what}</td>
   <td style="font-size:var(--type-caption)">${owner}</td>
   <td style="font-family:var(--font-mono);font-size:var(--type-caption);white-space:nowrap">${started}</td>
   <td style="font-size:var(--type-caption);white-space:nowrap">${due}</td>
 </tr>`;
-    }).join("");
+      })
+      .join("");
 
     return `<div class="dept-table-wrap">
   <table class="dept-table" aria-label="Active workstreams">
@@ -158,24 +157,28 @@
       return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No substrate gaps found in <code>/api/substrate-gaps</code>. <a href="/health.html" style="color:var(--accent-ink)">Health view →</a></p>`;
     }
 
-    const rows = gaps.slice(0, 30).map((g) => {
-      const id = escHtml(g.id ?? "–");
-      const title = escHtml(g.title ?? g.description ?? "–");
-      const severity = escHtml(g.severity ?? g.priority ?? "–");
-      const owner = escHtml(g.owner ?? "–");
-      const sevLower = String(g.severity ?? g.priority ?? "").toLowerCase();
-      const sevStatus = sevLower.startsWith("p1") || sevLower === "critical" || sevLower === "high"
-        ? "flagged"
-        : sevLower.startsWith("p2") || sevLower === "medium"
-          ? "pending"
-          : "unknown";
-      return `<tr>
+    const rows = gaps
+      .slice(0, 30)
+      .map((g) => {
+        const id = escHtml(g.id ?? "–");
+        const title = escHtml(g.title ?? g.description ?? "–");
+        const severity = escHtml(g.severity ?? g.priority ?? "–");
+        const owner = escHtml(g.owner ?? "–");
+        const sevLower = String(g.severity ?? g.priority ?? "").toLowerCase();
+        const sevStatus =
+          sevLower.startsWith("p1") || sevLower === "critical" || sevLower === "high"
+            ? "flagged"
+            : sevLower.startsWith("p2") || sevLower === "medium"
+              ? "pending"
+              : "unknown";
+        return `<tr>
   <td><code style="font-size:var(--type-caption)">${id}</code></td>
   <td style="max-width:320px">${title}</td>
   <td><span class="status-badge" data-status="${sevStatus}">${severity}</span></td>
   <td style="font-size:var(--type-caption)">${owner}</td>
 </tr>`;
-    }).join("");
+      })
+      .join("");
 
     return `<div class="dept-table-wrap">
   <table class="dept-table" aria-label="Substrate gaps">
@@ -224,10 +227,26 @@
     const idleCount = agents.length - activeAgentCount;
 
     // Fleet health metrics
-    setMetric("agentops-total", String(agents.length || "–"), agents.length > 0 ? "default" : "muted");
-    setMetric("agentops-active", String(activeAgentCount), activeAgentCount > 0 ? "success" : "muted");
-    setMetric("agentops-idle", String(idleCount), idleCount === agents.length ? "muted" : "default");
-    setMetric("agentops-handlers", String(fleetHandlers.length || "–"), fleetHandlers.length > 0 ? "default" : "muted");
+    setMetric(
+      "agentops-total",
+      String(agents.length || "–"),
+      agents.length > 0 ? "default" : "muted",
+    );
+    setMetric(
+      "agentops-active",
+      String(activeAgentCount),
+      activeAgentCount > 0 ? "success" : "muted",
+    );
+    setMetric(
+      "agentops-idle",
+      String(idleCount),
+      idleCount === agents.length ? "muted" : "default",
+    );
+    setMetric(
+      "agentops-handlers",
+      String(fleetHandlers.length || "–"),
+      fleetHandlers.length > 0 ? "default" : "muted",
+    );
     setMetric("agentops-gaps", String(gapCount), gapCount > 0 ? "warn" : "muted");
 
     // Roster table
