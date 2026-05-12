@@ -78,7 +78,12 @@
           <div class="dept-metric">
             <p class="dept-metric-label">Agent fleet</p>
             <p class="dept-metric-value" id="ops-fleet" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Total / status</p>
+            <p class="dept-metric-sub">Total / RAG status</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Active workstreams</p>
+            <p class="dept-metric-value" id="ops-workstreams" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Active / total</p>
           </div>
           <div class="dept-metric">
             <p class="dept-metric-label">Open escalations</p>
@@ -86,10 +91,31 @@
             <p class="dept-metric-sub">Awaiting CEO action</p>
           </div>
           <div class="dept-metric">
+            <p class="dept-metric-label">Open decisions</p>
+            <p class="dept-metric-value" id="ops-open-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">CEO queue</p>
+          </div>
+          <div class="dept-metric">
             <p class="dept-metric-label">Substrate gaps</p>
             <p class="dept-metric-value" id="ops-gaps" data-tone="muted">–</p>
             <p class="dept-metric-sub">Atlas inventory</p>
           </div>
+        </div>
+      </section>
+
+      <!-- Active workstreams -->
+      <section aria-labelledby="ops-workstreams-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="ops-workstreams-head">Active workstreams</h2>
+          <span class="shell-category-kind">Live</span>
+        </div>
+        <p class="shell-category-blurb">
+          In-flight workstreams from <code>/api/state</code> → <code>inFlight</code>.
+          Each row is a <code>WorkstreamStarted</code> event that has not yet received a
+          <code>WorkstreamCompleted</code> event. Devon (COO, governance) owns workstream oversight.
+        </p>
+        <div id="ops-workstreams-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
         </div>
       </section>
 

@@ -81,10 +81,32 @@
             <p class="dept-metric-sub">Atlas inventory</p>
           </div>
           <div class="dept-metric">
+            <p class="dept-metric-label">Open decisions</p>
+            <p class="dept-metric-value" id="audit-open-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">CEO queue</p>
+          </div>
+          <div class="dept-metric">
             <p class="dept-metric-label">Last recon tick</p>
             <p class="dept-metric-value" id="audit-last-tick" data-tone="muted" style="font-size:var(--type-small)">–</p>
             <p class="dept-metric-sub">Derivation as-of</p>
           </div>
+        </div>
+      </section>
+
+      <!-- Open findings table -->
+      <section aria-labelledby="audit-findings-table-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="audit-findings-table-head">Open findings</h2>
+          <span class="shell-category-kind">AuditFinding events</span>
+        </div>
+        <p class="shell-category-blurb">
+          AuditFinding events from the event store — most recent first. Severity mapping:
+          critical/high = P1, medium = P2, low/info = P3.
+          Vera (Internal audit engineer) recon pipelines and Mira (Compliance / RegTech engineer)
+          citation gate are the primary sources.
+        </p>
+        <div id="audit-findings-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
         </div>
       </section>
 

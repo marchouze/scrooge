@@ -49,9 +49,39 @@
         </p>
       </div>
 
-      <!-- Key metrics -->
+      <!-- Summary metrics -->
+      <section aria-labelledby="finance-summary-head">
+        <h2 class="shell-category-title" id="finance-summary-head" style="margin-bottom:var(--space-4)">Summary</h2>
+        <div class="dept-metrics" id="finance-summary-metrics">
+          <div class="dept-metric">
+            <p class="dept-metric-label">Open decisions</p>
+            <p class="dept-metric-value" id="fm-open-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">All departments</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Decisions resolved</p>
+            <p class="dept-metric-value" id="fm-resolved-decisions" data-tone="muted">–</p>
+            <p class="dept-metric-sub">CEO-actioned</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Policies</p>
+            <p class="dept-metric-value" id="fm-policies" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Policy register</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Obligations</p>
+            <p class="dept-metric-value" id="fm-obligations" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Obligations register</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key metrics (BA-325 / BA-700 — pipeline-dependent) -->
       <section aria-labelledby="finance-metrics-head">
-        <h2 class="shell-category-title" id="finance-metrics-head" style="margin-bottom:var(--space-4)">Key metrics</h2>
+        <h2 class="shell-category-title" id="finance-metrics-head" style="margin-bottom:var(--space-4)">
+          Live capital &amp; liquidity metrics
+          <span style="font-size:var(--type-small);font-weight:var(--weight-regular);color:var(--neutral-stone);margin-left:var(--space-3)">BA-325 / BA-700 pipeline — build-phase</span>
+        </h2>
         <div class="dept-metrics" id="finance-metrics">
           <div class="dept-metric">
             <p class="dept-metric-label">Tier 1 Capital</p>
@@ -86,13 +116,29 @@
         </div>
       </section>
 
+      <!-- CEO-approved capital plan -->
+      <section aria-labelledby="finance-cap-plan-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="finance-cap-plan-head">CEO-approved capital plan</h2>
+          <span class="shell-category-kind">Decision-derived</span>
+        </div>
+        <p class="shell-category-blurb">
+          Capital allocation approved by CEO (Marc) — capital-time-shape directive 2026-05-12.
+          These are the standing working inputs for the design book and RWA sizing until the ICAAP is filed.
+          Camille (CFO, finance) and Helena (Chief Risk Officer, governance) co-ordinate ICAAP / ILAAP confirmation.
+        </p>
+        <div id="finance-cap-plan-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
       <!-- Capital positions table -->
       <section aria-labelledby="finance-cap-head" style="margin-bottom:var(--space-12)">
         <div class="shell-category-head">
           <h2 class="shell-category-title" id="finance-cap-head">Capital positions</h2>
-          <span class="shell-category-kind">Live</span>
+          <span class="shell-category-kind">Live (build-phase)</span>
         </div>
-        <p class="shell-category-blurb">From <code>/api/state</code> → <code>capitalPositions</code>. Awaiting full BA-325 derivation pipeline (Camille / Bea — M-phase).</p>
+        <p class="shell-category-blurb">From <code>/api/state</code> → <code>capitalPositions</code>. Awaiting full BA-325 derivation pipeline (Camille + Bea — M-phase).</p>
         <div id="finance-cap-body">
           <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
         </div>
@@ -102,10 +148,25 @@
       <section aria-labelledby="finance-liq-head" style="margin-bottom:var(--space-12)">
         <div class="shell-category-head">
           <h2 class="shell-category-title" id="finance-liq-head">Liquidity metrics</h2>
-          <span class="shell-category-kind">Live</span>
+          <span class="shell-category-kind">Live (build-phase)</span>
         </div>
-        <p class="shell-category-blurb">From <code>/api/state</code> → <code>liquidityMetrics</code>. BA-700 return fields.</p>
+        <p class="shell-category-blurb">From <code>/api/state</code> → <code>liquidityMetrics</code>. BA-700 return fields. LCR and NSFR derivation pipeline deferred to M-phase.</p>
         <div id="finance-liq-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Finance-related open decisions -->
+      <section aria-labelledby="finance-decisions-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="finance-decisions-head">Finance-related decisions</h2>
+          <span class="shell-category-kind">Linked</span>
+        </div>
+        <p class="shell-category-blurb">
+          Open CEO decisions tagged to finance, capital, liquidity, or budget domains.
+          <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all decisions →</a>
+        </p>
+        <div id="finance-decisions-body">
           <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
         </div>
       </section>
@@ -113,9 +174,10 @@
       <aside class="shell-callout" aria-labelledby="finance-gaps">
         <h3 id="finance-gaps">Build-phase substrate gaps</h3>
         <ul>
-          <li>BA-325 capital adequacy return pipeline — Camille (CFO) + Bea (Financial accountant) derivation under M-phase; numbers shown are placeholders until the pipeline lands.</li>
-          <li>BA-700 liquidity return — same pipeline dependency.</li>
-          <li>Real capital is a licence-day item (R300m target); build-phase figures are rehearsal state only.</li>
+          <li>BA-325 capital adequacy return pipeline — Camille (CFO) + Bea (Accounting &amp; financial reporting engineer) derivation under M-phase; live capital ratios are not yet derived.</li>
+          <li>BA-700 liquidity return — same pipeline dependency. LCR / NSFR shown as "–" until the Bea + Rohan sub-ledger and liquidity derivation land.</li>
+          <li>Real capital is a licence-day item (R300m target); the capital plan figures above are CEO-approved working inputs, not a live balance sheet.</li>
+          <li>ICAAP / ILAAP confirmation — Helena (CRO) RWA sizing and ~R125m ILAAP buffer confirmation pending (co-ordination brief dispatched 2026-05-12).</li>
         </ul>
       </aside>
     </main>
