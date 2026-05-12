@@ -54,6 +54,7 @@ import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permi
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
+import { makeAgentEscalationDecided } from "../platform/event-store/event-types";
 import type { Event } from "../platform/event-store/types";
 import {
   DEFAULT_HORIZON_DAYS,
@@ -411,6 +412,32 @@ async function handleDecide(req: Request): Promise<Response> {
     );
   } catch (e) {
     return jsonResponse({ error: (e as Error).message }, 400);
+  }
+
+  // If this decisionId matches an open escalation, also emit AgentEscalationDecided
+  // so the escalation channel folds it to "decided" (preventing ghost-open state).
+  const openEscalations = listEscalations(eventStore, new Set<string>());
+  const matchedEscalation = openEscalations.find(
+    (e) => e.escalationId === body.decisionId && e.status !== "decided",
+  );
+  if (matchedEscalation) {
+    const decidedEvent = makeAgentEscalationDecided({
+      asOf: nowUtc(),
+      entity: "BANK-ZA-001",
+      actor: { type: "human", id: actor },
+      citations: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-04"],
+      payload: {
+        escalationId: matchedEscalation.escalationId,
+        decidedBy: actor,
+        chosenOption: body.outcome,
+        rationale: body.comment ?? body.outcome,
+      },
+    });
+    eventStore.append(decidedEvent);
+    logger.info(
+      { escalationId: matchedEscalation.escalationId, eventId: decidedEvent.event_id },
+      "AgentEscalationDecided emitted to close ghost-open escalation",
+    );
   }
 
   refresh("decide");

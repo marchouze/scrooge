@@ -13,6 +13,8 @@
 //
 // Author: Scrooge (orchestration) · Marc (decision actor).
 
+import { eventStore } from "../platform/composition";
+import { makeAgentEscalationDecided } from "../platform/event-store/event-types";
 import { recordCeoDecision } from "../runtime/decisions/record";
 
 const asOf = new Date().toISOString();
@@ -64,40 +66,89 @@ const FIXTURES: readonly string[] = [
   "escalation:scrooge:unresolved-route:D-TEST-FOLLOW-ON-ROUTER-APPROVE:agent:atlas:nonexistent-trigger-for-test",
 ];
 
+/** Append an event, skipping silently if its deterministic event_id already exists. */
+function appendIdempotent(event: Parameters<typeof eventStore.append>[0]): boolean {
+  try {
+    eventStore.append(event);
+    return true;
+  } catch (e) {
+    const msg = (e as Error).message ?? "";
+    if (msg.includes("UNIQUE constraint") || msg.includes("UNIQUE")) return false;
+    throw e;
+  }
+}
+
 let count = 0;
 
 for (const r of REAL) {
+  const outcome = `Approved as recommended. Build the missing handler. Substantive work brief staged at \`${r.briefPath}\`; ${r.owner} owns the implementation under the M1 build sequence authorised in D-MARKETS-SCHEMA-FOUNDATION. Handler registers in \`runtime/handlers-metadata.ts\` + \`runtime/handler-callables.ts\` once code lands; chain auto-fires on the next D-MARKETS-SCHEMA-FOUNDATION-class CEO approval.`;
   const result = recordCeoDecision(
     {
       decisionId: r.escalationId,
       action: "approve",
       title: `Build the missing handler — ${r.owner} M1 routed`,
-      outcome: `Approved as recommended. Build the missing handler. Substantive work brief staged at \`${r.briefPath}\`; ${r.owner} owns the implementation under the M1 build sequence authorised in D-MARKETS-SCHEMA-FOUNDATION. Handler registers in \`runtime/handlers-metadata.ts\` + \`runtime/handler-callables.ts\` once code lands; chain auto-fires on the next D-MARKETS-SCHEMA-FOUNDATION-class CEO approval.`,
+      outcome,
       actor: ACTOR,
       sourceDoc: r.briefPath,
       recordedVia: RECORDED_VIA,
     },
     asOf,
   );
-  console.log(`Resolved (real)   ${r.escalationId} → event ${result.eventId}`);
+  console.log(`Resolved (real)   ${r.escalationId} → CeoDecision ${result.eventId}`);
+
+  // Deterministic event_id so re-runs are idempotent.
+  const decidedEventId = `decided:${r.escalationId}`;
+  const decidedEvent = makeAgentEscalationDecided({
+    asOf,
+    entity: "BANK-ZA-001",
+    actor: { type: "human", id: ACTOR },
+    citations: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-04"],
+    payload: {
+      escalationId: r.escalationId,
+      decidedBy: ACTOR,
+      chosenOption: outcome,
+      rationale: outcome,
+    },
+    eventId: decidedEventId,
+  });
+  const emitted = appendIdempotent(decidedEvent);
+  console.log(`  └─ AgentEscalationDecided ${emitted ? "emitted" : "already present"} → ${decidedEventId}`);
   count++;
 }
 
 for (const id of FIXTURES) {
+  const outcome =
+    "Struck. This escalation was emitted by an ad-hoc router test run with a synthetic decisionId, not a real CEO follow-on. The substrate fix in `prototype/runtime/agents/scrooge-follow-on-router.ts` (TEST_FIXTURE_DECISION_RE / TEST_FIXTURE_ROUTE_RE guard, 2026-05-07) prevents future test-fixture decisions from polluting the production event log even when run with `dryRun: false`. No work to follow up.";
   const result = recordCeoDecision(
     {
       decisionId: id,
       action: "approve",
       title: "Test fixture struck — synthetic router escalation",
-      outcome:
-        "Struck. This escalation was emitted by an ad-hoc router test run with a synthetic decisionId, not a real CEO follow-on. The substrate fix in `prototype/runtime/agents/scrooge-follow-on-router.ts` (TEST_FIXTURE_DECISION_RE / TEST_FIXTURE_ROUTE_RE guard, 2026-05-07) prevents future test-fixture decisions from polluting the production event log even when run with `dryRun: false`. No work to follow up.",
+      outcome,
       actor: ACTOR,
       sourceDoc: "(synthetic test fixture)",
       recordedVia: RECORDED_VIA,
     },
     asOf,
   );
-  console.log(`Resolved (fixture) ${id} → event ${result.eventId}`);
+  console.log(`Resolved (fixture) ${id} → CeoDecision ${result.eventId}`);
+
+  const decidedEventId = `decided:${id}`;
+  const decidedEvent = makeAgentEscalationDecided({
+    asOf,
+    entity: "BANK-ZA-001",
+    actor: { type: "human", id: ACTOR },
+    citations: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-04"],
+    payload: {
+      escalationId: id,
+      decidedBy: ACTOR,
+      chosenOption: outcome,
+      rationale: outcome,
+    },
+    eventId: decidedEventId,
+  });
+  const emitted = appendIdempotent(decidedEvent);
+  console.log(`  └─ AgentEscalationDecided ${emitted ? "emitted" : "already present"} → ${decidedEventId}`);
   count++;
 }
 
