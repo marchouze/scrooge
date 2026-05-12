@@ -2,14 +2,17 @@
 title: Markets franchise design — proposal
 author: Saskia
 date: 2026-05-07
-summary: First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. The §8 question on capital time-shape (R300m franchise-build vs deferred-deployment) is the principal CEO call.
-decision-required: true
+revised: 2026-05-12
+summary: First-run franchise design from the Saskia standing agent — JSE bonds + JSE equities + OTC IRD, market-making/agency hybrid, direct JSE membership track. Decision D-MARKETS-CAPITAL-TIME-SHAPE approved 2026-05-12; §6.1 capital table updated to reflect CEO-approved figures.
+decision-required: false
 decision-id: D-MARKETS-CAPITAL-TIME-SHAPE
+decision-status: approved
+decision-approved: 2026-05-12
 decision-category: near-term
-decision-owner: Saskia (with Helena, Camille, Eitan)
-decision-for-ceo: Approve the working franchise-build / deferred-deployment split for the R300m envelope, or set a different split. Saskia §8 is the substantive question; the working split is in §8 of the body.
-decision-recommendation: Approve the §6.1 working split — ~R45m build CapEx, ~R75m/yr OpEx run-rate, ~R150m design-book capital, balance to liquidity buffer at Eitan's discretion — as the desk's working view, with Camille + Eitan to reshape and Helena to challenge through the paper ICAAP / ILAAP run.
+decision-owner: Saskia (with Helena (Chief Risk Officer, governance), Camille (CFO, governance), Eitan (Treasurer, treasury))
 ---
+
+**Revised 2026-05-12** — §6.1 capital table updated to reflect CEO-approved time-shape under D-MARKETS-CAPITAL-TIME-SHAPE. Prior working estimates superseded. Standing working assumptions for franchise design and RWA sizing: R150m trading-book capital (Standardised Approach) and ~R125m liquidity buffer / ILAAP. Build CapEx envelope confirmed at R5m over the build phase, reflecting AI-driven posture (no dealing-room buildout, no physical infrastructure beyond cloud and market-data feeds). See §6.1 CapEx note for implications.
 
 # Markets franchise design — proposal
 
@@ -202,16 +205,24 @@ These are the engineering items the franchise stands on. They are agent-owned (K
 
 ## 6. Capital, funding, collateral
 
-### 6.1 R300m envelope — proposed working split (the §8 question for the CEO)
+### 6.1 Capital time-shape — CEO-approved figures (D-MARKETS-CAPITAL-TIME-SHAPE, 2026-05-12)
 
-| Bucket | Proposed allocation | Rationale |
+> **Status:** CEO-approved 2026-05-12 under D-MARKETS-CAPITAL-TIME-SHAPE. The table below replaces the prior working-estimate split. Prior working estimates (R45m CapEx, R75m/yr OpEx, R150m design-book capital, balance to Eitan) are superseded; the approved figures govern.
+
+| Bucket | Approved allocation | Notes |
 |---|---|---|
-| Build CapEx (technology, infrastructure, JSE-membership readiness, market-data, vendor) | ~R45m over the build phase | Hardware-light, software-heavy; mostly people + cloud + market-data + audit + legal |
-| OpEx (people across the franchise + supporting engineering) | ~R75m / year run-rate at full build-phase headcount | Headcount detail in Sade's substrate; figure here is order-of-magnitude |
-| Capital backing the design book on go-live | ~R150m | Sized to support the trading-book RWA implied by §2.2 envelopes under SA-CCR + Standardised Approach market-risk + a credit-RWA budget for repo |
-| Liquidity buffer / operating capital | Balance | At Eitan's discretion; covers ILAAP run-up |
+| Build CapEx (technology, cloud, market-data feeds, JSE-membership readiness, vendor) | R5m over the build phase | **Reflects AI-driven posture:** no dealing-room buildout, no physical infrastructure. Cloud + market-data subscriptions + JSE membership application fees + external legal/audit for licence application. See CapEx note below. |
+| Capital backing trading book at go-live | R150m | Sized to support the trading-book RWA implied by §2.2 envelopes under SA-CCR + Standardised Approach market-risk + credit-RWA budget for repo. **Standing working assumption for Saskia's franchise design and Rohan's RWA sizing.** |
+| Liquidity buffer / ILAAP | ~R125m | ILAAP-calibrated. **Standing working assumption for Eitan's ILAAP build and Anya's ALM projections.** At Eitan's discretion within the ~R125m envelope. |
 
-These numbers are my desk's working view, not a committed allocation. Camille and Eitan will reshape; Helena will challenge; the §8 question is the resulting split.
+**Standing working assumptions confirmed by this decision:**
+- R150m trading-book capital is Saskia's standing input for franchise design, desk sizing, and RWA calibration under the Standardised Approach (no IMA at outset).
+- ~R125m liquidity buffer / ILAAP is Eitan's standing input for ILAAP build and ALM projections.
+- These figures feed into Helena's (Chief Risk Officer, governance) RAS calibration per §2.2 and Camille's (CFO, governance) capital plan.
+
+**CapEx note — R5m envelope:**
+
+**OVERRUN FLAG:** The prior working estimate of ~R45m build CapEx is superseded and does not fit within the approved R5m envelope. The R5m envelope is consistent with the bank's AI-driven operating posture — no dealing-room buildout, no proprietary hardware, no physical infrastructure beyond cloud services and market-data feeds. Build-phase spend is: (a) cloud compute and storage for the prototype substrate; (b) market-data subscriptions (JSE Real-Time Data, JSE Bond Market data, ZARONIA feeds from SARB, Bloomberg/Refinitiv for curve construction); (c) JSE membership application costs; (d) external legal counsel and audit fees required for the licence application; (e) ISDA/GMRA template negotiation costs. All people costs (AI agent substrate, Marc as CEO) are excluded from CapEx as the AI-driven posture does not carry a traditional headcount cost base. Camille (CFO, governance) should confirm that the prior ~R45m estimate is withdrawn and that the R5m envelope governs the build-phase capital plan.
 
 ### 6.2 Standardised Approach market-risk RWA
 
@@ -264,7 +275,7 @@ Per-dealer mandate covering: products, currencies, tenor, sensitivities, single-
 
 ## 8. Open questions for the CEO
 
-1. **Time-shape of the build envelope.** Confirm or adjust the proposed split in §6.1 — particularly the build-CapEx + OpEx line versus the deferred-deployment capital line.
+1. **Time-shape of the build envelope.** ~~Confirm or adjust the proposed split in §6.1 — particularly the build-CapEx + OpEx line versus the deferred-deployment capital line.~~ **RESOLVED 2026-05-12 under D-MARKETS-CAPITAL-TIME-SHAPE.** Approved figures: R150m trading-book capital; ~R125m liquidity buffer / ILAAP; R5m build CapEx. See §6.1.
 2. **Phase-2 expansion appetite.** Confirm that **cross-currency, swaptions, securities lending, AltX, and broader market-making** are deliberately deferred to a phase-2 review (post-licence, after first-year live operation), not to a "soon" track.
 3. **Soft-franchise visibility.** During the build phase, do you want institutional counterparties to know the bank exists and is preparing? My recommendation is yes (calibrated, MOU-led, no commercial commitments). The alternative is silent build, which materially increases franchise-launch risk.
 4. **Equity market-making timing.** Confirm agency-only at outset on equities. Phase-2 review of market-making is the working assumption; flagging because some shareholder views may differ.
@@ -338,9 +349,27 @@ This proposal is the agent's first scheduled run. Without further prompt, on its
 - **Weekly:** ingest new obligations-register entries (Mira), updated curve data (Anya), dealer-mandate-breach events (Rohan), surveillance-register changes (Mira); refresh the §2.2 envelopes with current sensitivities; emit a desk-state event.
 - **Monthly:** run the soft-franchise pipeline review with Niko + Imani; refresh the counterparty list and the negotiations-in-principle status; emit a pipeline-state event.
 - **Quarterly:** refresh the corporate-issuer inclusion list against Helena's credit framework; refresh the §2 posture against any phase-2 questions answered; refresh §10 against industry-body and conference calendars.
-- **On trigger:** licence-grant event lights up the pre-licence readiness gate (§9); a Helena-initiated RAS calibration event lights up the §2.2 ratification cycle; a CEO-decision event on §8 questions feeds back into the proposal as a versioned update.
+- **On trigger:** licence-grant event lights up the pre-licence readiness gate (§9); a Helena-initiated RAS calibration event lights up the §2.2 ratification cycle; a CEO-decision event on §8 questions feeds back into the proposal as a versioned update. **D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12) has now closed §8 question 1 — §6.1 updated accordingly (this revision).**
 - **Escalation:** any §8-class question that arises mid-cycle is surfaced to Marc through Scrooge before the next scheduled report.
 
 Companion update: `Team/Saskia.md` is amended in the same turn to specify these triggers, decisions, escalations, outputs, and the system capabilities the agent calls.
 
-—Saskia (standing-agent first run, 2026-05-07)
+---
+
+## Revision note (2026-05-12)
+
+**Author of revision:** Saskia (Head of Global Markets, trading)
+
+**Trigger:** D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12) — downstream action per `Team Inbox/actioned/2026-05-12_scrooge_saskia_capital-time-shape-approved.md`.
+
+**Changes made:**
+- §6.1 capital table revised from working estimates to CEO-approved figures (R150m trading book; ~R125m ILAAP; R5m CapEx).
+- `decision-required: false` set in frontmatter; decision now resolved.
+- Standing working assumptions noted explicitly for Rohan (RWA sizing), Eitan (ILAAP), Camille (capital plan), and Helena (RAS calibration).
+- **OVERRUN FLAG** raised on prior R45m CapEx estimate vs R5m approved envelope — Camille to confirm withdrawal.
+- §8 question 1 marked RESOLVED.
+- Build plan otherwise consistent with R5m CapEx envelope given AI-driven posture (no dealing-room buildout, no physical infrastructure).
+
+**Agent-run event substrate note:** `MarketsReadinessSnapshot` event type is registered in the platform permission-gate (`prototype/platform/event-store/permission-gate.ts`) and the runtime handler exists at `prototype/runtime/agents/saskia-markets-readiness-snapshot.ts`. The runtime handler emits a `MarketsReadinessSnapshot` event on its weekly scheduled tick. This document revision is a document-authoring action; the runtime handler will emit the next `MarketsReadinessSnapshot` event on its next scheduled tick, at which point `m1FranchiseDesignProposalPresent` will reflect the updated file. No substrate gap on event type.
+
+—Saskia (standing-agent first run, 2026-05-07; revised 2026-05-12 per D-MARKETS-CAPITAL-TIME-SHAPE)
