@@ -1,6 +1,6 @@
 ---
 decision-required: true
-decisionId: D-POLICY-DOCUMENT-HOME
+decision-id: D-POLICY-DOCUMENT-HOME
 title: Canonical home for policy documents
 author: Owen (Company Secretary)
 date: 2026-05-12

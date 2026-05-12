@@ -831,6 +831,7 @@ function parseFrontmatter(content: string): { fm: OwnerInboxFrontmatter; body: s
         fm.decisionRequired = value.toLowerCase() === "true";
         break;
       case "decision-id":
+      case "decisionid": // camelCase alias (Owen policy-document-home-decision used this)
         fm.decisionId = value;
         break;
       case "decision-category":
