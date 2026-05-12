@@ -47,6 +47,28 @@ import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
 
 // ---------------------------------------------------------------------------
+// Slice 2 event types (planned — Atlas will add these to CUSTOMER_EVENT_TYPES
+// once the Slice 2 domain types land). The orchestrator pre-registers them
+// here so that rehearsal events emitted now fold correctly into phases once
+// Slice 2 merges. When Slice 2 lands, move these into CUSTOMER_EVENT_TYPES
+// and delete this constant.
+//   Substrate gap: [substrate-gap: planned, Slice 2]
+// ---------------------------------------------------------------------------
+const SLICE2_EVENT_TYPES: readonly string[] = [
+  "CounterpartyFaisClassified", // → fais-categorised   (Phase 3)
+  "BeneficialOwnerResolved", // → bo-resolved        (Phase 5)
+  "SanctionsClearancePassed", // → sanctions-cleared  (Phase 6)
+  "FatcaCrsClassified", // → fatca-crs-classified (Phase 7)
+  "PopiaConsentRecorded", // → popia-recorded     (Phase 8)
+  "CreditAssessmentCompleted", // → credit-assessed    (Phase 10)
+  "AccountsSetupCompleted", // → accounts-setup     (Phase 16)
+  "CounterpartyMonitoringStarted", // → monitoring       (Phase 18)
+  "KycRefreshDue", // → kyc-refresh-due    (Phase 19)
+  "CounterpartyEligibilityRevalidated", // → eligibility-revalidated (Phase 20)
+  "CounterpartyEligibilityScreened", // → eligibility-screened    (Phase 9, from CRM domain)
+] as const;
+
+// ---------------------------------------------------------------------------
 // Phase type
 // ---------------------------------------------------------------------------
 
@@ -250,6 +272,39 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
       return "activated";
     case "CounterpartyOffboarded":
       return "offboarded";
+    // ------------------------------------------------------------------
+    // Slice 2 event types — pre-registered so rehearsal events fold
+    // correctly before Atlas's Slice 2 domain types land. When Slice 2
+    // merges, these cases remain valid (the event types are identical).
+    // Substrate gap: [substrate-gap: planned, Slice 2]
+    // ------------------------------------------------------------------
+    case "CounterpartyFaisClassified":
+      return "fais-categorised";
+    case "BeneficialOwnerResolved":
+      return "bo-resolved";
+    case "SanctionsClearancePassed":
+      return "sanctions-cleared";
+    case "FatcaCrsClassified":
+      return "fatca-crs-classified";
+    case "PopiaConsentRecorded":
+      return "popia-recorded";
+    case "CreditAssessmentCompleted":
+      return "credit-assessed";
+    case "AccountsSetupCompleted":
+      return "accounts-setup";
+    case "CounterpartyMonitoringStarted":
+      return "monitoring";
+    case "KycRefreshDue":
+      return "kyc-refresh-due";
+    case "CounterpartyEligibilityRevalidated":
+      return "eligibility-revalidated";
+    // ------------------------------------------------------------------
+    // CounterpartyEligibilityScreened maps to "eligibility-screened"
+    // (from the CRM domain — already in the registry; wired here now
+    // that Slice 2 bridges make it reachable in sequence).
+    // ------------------------------------------------------------------
+    case "CounterpartyEligibilityScreened":
+      return "eligibility-screened";
     default:
       // MandateRevised: keeps the current phase; the mandate is updated in
       // place. Authority: TRADING-MANDATE-V1.
@@ -279,7 +334,7 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
 export function derivePhaseFromEvents(
   events: Iterable<Event>,
 ): Map<string, CounterpartyOnboardingState> {
-  const customerEventSet = new Set<string>(CUSTOMER_EVENT_TYPES);
+  const customerEventSet = new Set<string>([...CUSTOMER_EVENT_TYPES, ...SLICE2_EVENT_TYPES]);
   const byCounterparty = new Map<string, MutableState>();
 
   for (const ev of events) {
