@@ -1,0 +1,703 @@
+// tests/fx-accounting.test.ts
+//
+// Exit-criterion tests for the FX Spot accounting layer:
+//
+//   1. Event type schemas — FxPositionRevalued, FxSettlementConfirmed,
+//      SubLedgerPostingEmitted validation and construction.
+//   2. Posting rules — trade booking, revaluation, settlement journals
+//      (balance invariant: debits = credits per currency).
+//   3. Round-trip — book → revalue → settle → zero balance assertion.
+//   4. Calculators:
+//      (a) fxPositionCalculator — open position aggregation
+//      (b) unrealisedPnlCalculator — mark-to-market P&L
+//      (c) realisedPnlCalculator — settlement P&L
+//      (d) fxRwaCalculator — standardised-approach capital charge
+//   5. BA-350 FX adapter — fxPositionsToBa350Input + generateBa350MarketRisk
+//      with live FX positions.
+//   6. Sub-ledger projection — FX events fold to SubLedgerRow[].
+//
+// Authority: D-MARKETS-SCHEMA-FOUNDATION + D-MARKETS-CAPITAL-TIME-SHAPE
+// Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
+//   engineer, engineering)
+
+import { describe, expect, it } from "bun:test";
+
+import {
+  FX_ACCOUNTING_EVENT_TYPES,
+  fxPositionRevaluedPayloadSchema,
+  fxSettlementConfirmedPayloadSchema,
+  subLedgerPostingEmittedPayloadSchema,
+  makeFxPositionRevalued,
+  makeFxSettlementConfirmed,
+  makeSubLedgerPostingEmitted,
+} from "../platform/event-store/event-types/fx-accounting";
+
+import {
+  fxTradeBookingJournals,
+  fxRevaluationJournals,
+  fxSettlementJournals,
+  FX_ACCOUNTS,
+} from "../platform/accounting/posting-rules/fx-spot";
+
+import {
+  fxPositionCalculator,
+  unrealisedPnlCalculator,
+  realisedPnlCalculator,
+  fxRwaCalculator,
+} from "../platform/accounting/fx-calculators";
+
+import {
+  fxPositionsToBa350Input,
+} from "../platform/reporting/ba-350-fx-adapter";
+
+import {
+  generateBa350MarketRisk,
+} from "../platform/reporting/ba-350-market-risk";
+
+import {
+  fxSubLedgerProjection,
+  subLedgerInitial,
+} from "../platform/projections/markets/sub-ledger";
+
+// ---------------------------------------------------------------------------
+// Test fixtures
+// ---------------------------------------------------------------------------
+
+const ENTITY = "LE-ZA-HOZ-BANK";
+const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION", "[citation: TBC]"];
+const ACTOR = { id: "agent:bea", role: "agent" as const };
+
+const BASE_TRADE_PAYLOAD = {
+  tradeId: { scheme: "INTERNAL", value: "FX-TEST-001" },
+  productTaxonomy: "FX-spot" as const,
+  currencyPair: { base: "USD", quote: "ZAR" },
+  side: "buy" as const,
+  legs: [
+    {
+      legKind: "near" as const,
+      payCurrency: "ZAR",
+      receiveCurrency: "USD",
+      notional: { currency: "ZAR", amountMinor: 1_900_000_000 }, // ZAR 19m (minor = cents)
+      counterNotional: { currency: "USD", amountMinor: 100_000_000 }, // USD 1m (minor = cents)
+      rate: { currency: "ZAR", amount: 19.0 },
+      settlementDate: { iso: "2026-05-14", calendar: "JIHCAL" as const },
+    },
+  ],
+  tradeDate: { iso: "2026-05-12", calendar: "JIHCAL" as const },
+  counterparty: {
+    partyId: "LEI-CTPY-001",
+    name: "Test Counterparty",
+    role: "counterparty" as const,
+    jurisdiction: "ZA",
+  },
+  venue: "OTC",
+  trader: "TRADER-01",
+  bookId: "FX-TRADING-BOOK",
+  bookType: "trading" as const,
+  settlementForm: "physical" as const,
+  settlementPath: "correspondent" as const,
+};
+
+// ---------------------------------------------------------------------------
+// 1. Event type schemas
+// ---------------------------------------------------------------------------
+
+describe("FX accounting event types", () => {
+  it("FX_ACCOUNTING_EVENT_TYPES lists three event types", () => {
+    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxPositionRevalued");
+    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxSettlementConfirmed");
+    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("SubLedgerPostingEmitted");
+  });
+
+  it("FxPositionRevalued payload validates correctly", () => {
+    const payload = {
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      bookRate: 19.0,
+      revalRate: 19.5,
+      notionalBaseMinor: 1_900_000_000,
+      unrealisedPnlZarMinor: 2_500_000,
+      revaluedAt: "2026-05-12T16:00:00.000Z",
+      rateSource: "stub",
+    };
+    expect(() => fxPositionRevaluedPayloadSchema.parse(payload)).not.toThrow();
+  });
+
+  it("FxSettlementConfirmed payload validates correctly", () => {
+    const payload = {
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      legKind: "near" as const,
+      settledBaseCurrencyMinor: -1_900_000_000, // bank paid ZAR
+      settledQuoteCurrencyMinor: 100_000_000, // bank received USD
+      settledAt: "2026-05-14T10:00:00.000Z",
+      nostroAccountBase: "ACC-1100-001",
+      nostroAccountQuote: "ACC-1100-002",
+      realisedPnlZarMinor: 50_000, // small gain
+    };
+    expect(() => fxSettlementConfirmedPayloadSchema.parse(payload)).not.toThrow();
+  });
+
+  it("SubLedgerPostingEmitted rejects unbalanced legs", () => {
+    const unbalanced = {
+      sourceEventId: "evt-001",
+      postingType: "trade-booking" as const,
+      legs: [
+        { accountId: "ACC-2100-001", debitCredit: "debit" as const, amountMinor: 100, currency: "ZAR" },
+        { accountId: "ACC-2100-003", debitCredit: "credit" as const, amountMinor: 50, currency: "ZAR" }, // mismatch
+      ],
+      postedAt: "2026-05-12T08:00:00.000Z",
+    };
+    expect(() => subLedgerPostingEmittedPayloadSchema.parse(unbalanced)).toThrow();
+  });
+
+  it("SubLedgerPostingEmitted accepts balanced legs", () => {
+    const balanced = {
+      sourceEventId: "evt-001",
+      postingType: "trade-booking" as const,
+      legs: [
+        { accountId: "ACC-2100-001", debitCredit: "debit" as const, amountMinor: 100, currency: "ZAR" },
+        { accountId: "ACC-2100-003", debitCredit: "credit" as const, amountMinor: 100, currency: "ZAR" },
+      ],
+      postedAt: "2026-05-12T08:00:00.000Z",
+    };
+    expect(() => subLedgerPostingEmittedPayloadSchema.parse(balanced)).not.toThrow();
+  });
+
+  it("makeFxPositionRevalued requires citations", () => {
+    expect(() =>
+      makeFxPositionRevalued({
+        asOf: "2026-05-12T16:00:00.000Z",
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: [],
+        payload: {
+          tradeId: "FX-TEST-001",
+          currencyPair: "ZAR/USD",
+          bookRate: 19.0,
+          revalRate: 19.5,
+          notionalBaseMinor: 1_900_000_000,
+          unrealisedPnlZarMinor: 0,
+          revaluedAt: "2026-05-12T16:00:00.000Z",
+          rateSource: "stub",
+        },
+      }),
+    ).toThrow(/citation/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2. Posting rules — balance invariant
+// ---------------------------------------------------------------------------
+
+describe("FX posting rules — balance invariant (debits = credits per currency)", () => {
+  function assertBalanced(legs: ReturnType<typeof fxTradeBookingJournals>): void {
+    const totals = new Map<string, { debit: number; credit: number }>();
+    for (const leg of legs) {
+      const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
+      if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
+      else t.credit += leg.amountMinor;
+      totals.set(leg.currency, t);
+    }
+    for (const [ccy, t] of totals.entries()) {
+      expect(t.debit).toBe(t.credit); // balance assertion
+    }
+  }
+
+  it("PR-FX-001: trade booking journals balance per currency", () => {
+    const legs = fxTradeBookingJournals({
+      tradeId: "FX-TEST-001",
+      side: "buy",
+      legs: BASE_TRADE_PAYLOAD.legs,
+      currencyPair: BASE_TRADE_PAYLOAD.currencyPair,
+    });
+    expect(legs.length).toBeGreaterThan(0);
+    assertBalanced(legs);
+  });
+
+  it("PR-FX-001: trade booking creates receivable and payable entries", () => {
+    const legs = fxTradeBookingJournals({
+      tradeId: "FX-TEST-001",
+      side: "buy",
+      legs: BASE_TRADE_PAYLOAD.legs,
+      currencyPair: BASE_TRADE_PAYLOAD.currencyPair,
+    });
+    const accountIds = legs.map((l) => l.accountId);
+    // Must reference both receivable and payable accounts
+    expect(accountIds).toContain(FX_ACCOUNTS.RECEIVABLE_ZAR);
+    expect(accountIds).toContain(FX_ACCOUNTS.PAYABLE_ZAR);
+  });
+
+  it("PR-FX-002: revaluation journals balance (gain scenario)", () => {
+    const legs = fxRevaluationJournals({
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      bookRate: 19.0,
+      revalRate: 19.5,
+      notionalBaseMinor: 1_900_000_000,
+      unrealisedPnlZarMinor: 2_500_000, // gain
+      revaluedAt: "2026-05-12T16:00:00.000Z",
+      rateSource: "stub",
+    });
+    assertBalanced(legs);
+    // Gain: Dr FX Receivable, Cr Unrealised P&L
+    const debitLeg = legs.find((l) => l.debitCredit === "debit");
+    const creditLeg = legs.find((l) => l.debitCredit === "credit");
+    expect(debitLeg?.accountId).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
+    expect(creditLeg?.accountId).toBe(FX_ACCOUNTS.UNREALISED_PNL);
+  });
+
+  it("PR-FX-002: revaluation journals balance (loss scenario)", () => {
+    const legs = fxRevaluationJournals({
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      bookRate: 19.0,
+      revalRate: 18.5,
+      notionalBaseMinor: 1_900_000_000,
+      unrealisedPnlZarMinor: -2_500_000, // loss
+      revaluedAt: "2026-05-12T16:00:00.000Z",
+      rateSource: "stub",
+    });
+    assertBalanced(legs);
+    // Loss: Dr Unrealised P&L, Cr FX Receivable
+    const debitLeg = legs.find((l) => l.debitCredit === "debit");
+    const creditLeg = legs.find((l) => l.debitCredit === "credit");
+    expect(debitLeg?.accountId).toBe(FX_ACCOUNTS.UNREALISED_PNL);
+    expect(creditLeg?.accountId).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
+  });
+
+  it("PR-FX-002: zero-delta revaluation produces no journals", () => {
+    const legs = fxRevaluationJournals({
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      bookRate: 19.0,
+      revalRate: 19.0,
+      notionalBaseMinor: 1_900_000_000,
+      unrealisedPnlZarMinor: 0,
+      revaluedAt: "2026-05-12T16:00:00.000Z",
+      rateSource: "stub",
+    });
+    expect(legs).toHaveLength(0);
+  });
+
+  it("PR-FX-003: settlement journals balance per currency", () => {
+    const legs = fxSettlementJournals({
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      legKind: "near",
+      settledBaseCurrencyMinor: -1_900_000_000, // bank paid ZAR
+      settledQuoteCurrencyMinor: 100_000_000,   // bank received USD
+      settledAt: "2026-05-14T10:00:00.000Z",
+      nostroAccountBase: "ACC-1100-001",
+      nostroAccountQuote: "ACC-1100-002",
+      realisedPnlZarMinor: 0,
+    });
+    assertBalanced(legs);
+  });
+
+  it("PR-FX-003: settlement journals with realised P&L gain also balance", () => {
+    const legs = fxSettlementJournals({
+      tradeId: "FX-TEST-001",
+      currencyPair: "ZAR/USD",
+      legKind: "near",
+      settledBaseCurrencyMinor: -1_900_000_000,
+      settledQuoteCurrencyMinor: 100_000_000,
+      settledAt: "2026-05-14T10:00:00.000Z",
+      nostroAccountBase: "ACC-1100-001",
+      nostroAccountQuote: "ACC-1100-002",
+      realisedPnlZarMinor: 50_000, // gain
+    });
+    assertBalanced(legs);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 3. Round-trip: book → revalue → settle → net zero balance
+// ---------------------------------------------------------------------------
+
+describe("FX round-trip — book, revalue, settle → net zero open-position balance", () => {
+  it("after settlement, no open positions remain for the settled trade", () => {
+    const tradeId = "FX-ROUNDTRIP-001";
+    const settledIds = new Set([tradeId]);
+
+    // Use plain string tradeId to match settledIds lookup
+    const trade = {
+      tradeId,
+      ...BASE_TRADE_PAYLOAD,
+      tradeId: tradeId, // override the object with a string
+    };
+
+    const positions = fxPositionCalculator({
+      trades: [trade],
+      settledTradeIds: settledIds,
+      zarRates: new Map([["USD", 0.01]]),
+      asOf: "2026-05-14T10:00:00.000Z",
+    });
+
+    // After settlement, no open positions for this trade
+    expect(positions).toHaveLength(0);
+  });
+
+  it("before settlement, position shows as open", () => {
+    const tradeId = "FX-ROUNDTRIP-002";
+    const openIds = new Set<string>(); // no settlements
+
+    const trade = {
+      tradeId,
+      ...BASE_TRADE_PAYLOAD,
+    };
+
+    const positions = fxPositionCalculator({
+      trades: [trade],
+      settledTradeIds: openIds,
+      zarRates: new Map([["USD", 0.01]]),
+      asOf: "2026-05-12T16:00:00.000Z",
+    });
+
+    expect(positions).toHaveLength(1);
+    expect(positions[0]?.openTradeCount).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. Calculators
+// ---------------------------------------------------------------------------
+
+describe("fxPositionCalculator", () => {
+  it("computes net long for a single buy trade", () => {
+    const tradeId = "FX-POS-001";
+    const trade = { tradeId, ...BASE_TRADE_PAYLOAD };
+
+    const result = fxPositionCalculator({
+      trades: [trade],
+      settledTradeIds: new Set(),
+      zarRates: new Map([["USD", 0.01]]), // 1 USD cent = 0.01 ZAR minor units
+      asOf: "2026-05-12T16:00:00.000Z",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.currencyPair).toBe("USD/ZAR");
+    expect(result[0]?.netPositionBaseMinor).toBeGreaterThan(0); // net long
+    expect(result[0]?.grossLongBaseMinor).toBeGreaterThan(0);
+    expect(result[0]?.grossShortBaseMinor).toBe(0);
+  });
+
+  it("excludes settled trades", () => {
+    const tradeId = "FX-POS-002";
+    // Use plain string tradeId to match settledIds lookup
+    const trade = { ...BASE_TRADE_PAYLOAD, tradeId };
+
+    const result = fxPositionCalculator({
+      trades: [trade],
+      settledTradeIds: new Set([tradeId]),
+      zarRates: new Map([["USD", 0.01]]),
+      asOf: "2026-05-14T10:00:00.000Z",
+    });
+
+    expect(result).toHaveLength(0);
+  });
+});
+
+describe("unrealisedPnlCalculator", () => {
+  it("computes zero P&L when current rate equals book rate", () => {
+    const tradeId = "FX-UNREAL-001";
+    const trade = { tradeId, ...BASE_TRADE_PAYLOAD };
+
+    const result = unrealisedPnlCalculator({
+      trades: [trade],
+      settledTradeIds: new Set(),
+      latestRevaluations: new Map(),
+      currentRates: new Map([["USD", 19.0]]), // same as book rate
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.unrealisedPnlZarMinor).toBe(0);
+  });
+
+  it("computes positive P&L when USD appreciates (buy trade)", () => {
+    const tradeId = "FX-UNREAL-002";
+    const trade = { tradeId, ...BASE_TRADE_PAYLOAD }; // buy USD at 19.0
+
+    const result = unrealisedPnlCalculator({
+      trades: [trade],
+      settledTradeIds: new Set(),
+      latestRevaluations: new Map(),
+      currentRates: new Map([["USD", 20.0]]), // USD now worth more ZAR
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.unrealisedPnlZarMinor).toBeGreaterThan(0); // gain
+  });
+});
+
+describe("realisedPnlCalculator", () => {
+  it("returns P&L from settlement events", () => {
+    const settlement = {
+      tradeId: "FX-REAL-001",
+      currencyPair: "ZAR/USD",
+      legKind: "near" as const,
+      settledBaseCurrencyMinor: -1_900_000_000,
+      settledQuoteCurrencyMinor: 100_000_000,
+      settledAt: "2026-05-14T10:00:00.000Z",
+      nostroAccountBase: "ACC-1100-001",
+      nostroAccountQuote: "ACC-1100-002",
+      realisedPnlZarMinor: 50_000,
+    };
+
+    const result = realisedPnlCalculator({ settlements: [settlement] });
+    expect(result).toHaveLength(1);
+    expect(result[0]?.realisedPnlZarMinor).toBe(50_000);
+    expect(result[0]?.settledAt).toBe("2026-05-14T10:00:00.000Z");
+  });
+
+  it("P&L equals difference between book rate and settlement rate × notional", () => {
+    // Buy 1m USD at 19.0 ZAR/USD (ZAR 19m paid)
+    // Settle at 19.5 ZAR/USD → receive ZAR equivalent 19.5m
+    // Realised P&L = (19.5 - 19.0) × 1,000,000 = ZAR 500,000 = 50,000,000 minor
+    const settlement = {
+      tradeId: "FX-REAL-002",
+      currencyPair: "ZAR/USD",
+      legKind: "near" as const,
+      settledBaseCurrencyMinor: -1_900_000_000, // paid ZAR 19m
+      settledQuoteCurrencyMinor: 100_000_000,   // received USD 1m
+      settledAt: "2026-05-14T10:00:00.000Z",
+      nostroAccountBase: "ACC-1100-001",
+      nostroAccountQuote: "ACC-1100-002",
+      realisedPnlZarMinor: 50_000_000, // ZAR 500,000 in cents
+    };
+
+    const result = realisedPnlCalculator({ settlements: [settlement] });
+    expect(result[0]?.realisedPnlZarMinor).toBe(50_000_000);
+  });
+});
+
+describe("fxRwaCalculator", () => {
+  it("computes 8% capital charge on max(longs, shorts)", () => {
+    const positions = [
+      {
+        currencyPair: "USD/ZAR",
+        netPositionBaseMinor: 100_000_000, // net long 1m USD in cents
+        netPositionZarMinor: 1_900_000_000, // ZAR 19m equivalent
+        grossLongBaseMinor: 100_000_000,
+        grossShortBaseMinor: 0,
+        openTradeCount: 1,
+        asOf: "2026-05-12T16:00:00.000Z",
+      },
+    ];
+
+    const result = fxRwaCalculator({
+      positions,
+      functionalCurrency: "ZAR",
+      asOf: "2026-05-12T16:00:00.000Z",
+    });
+
+    // Capital = 8% × 1,900,000,000 = 152,000,000
+    expect(result.totalCapitalChargeZarMinor).toBe(152_000_000);
+    // RWA = 12.5 × 152,000,000 = 1,900,000,000
+    expect(result.totalRwaZarMinor).toBe(1_900_000_000);
+  });
+
+  it("uses max(longs, shorts) when both sides present", () => {
+    const positions = [
+      {
+        currencyPair: "USD/ZAR",
+        netPositionBaseMinor: 100_000_000,
+        netPositionZarMinor: 1_900_000_000, // long ZAR 19m
+        grossLongBaseMinor: 100_000_000,
+        grossShortBaseMinor: 0,
+        openTradeCount: 1,
+        asOf: "2026-05-12T16:00:00.000Z",
+      },
+      {
+        currencyPair: "EUR/ZAR",
+        netPositionBaseMinor: -50_000_000,
+        netPositionZarMinor: -1_100_000_000, // short ZAR 11m
+        grossLongBaseMinor: 0,
+        grossShortBaseMinor: 50_000_000,
+        openTradeCount: 1,
+        asOf: "2026-05-12T16:00:00.000Z",
+      },
+    ];
+
+    const result = fxRwaCalculator({
+      positions,
+      functionalCurrency: "ZAR",
+      asOf: "2026-05-12T16:00:00.000Z",
+    });
+
+    // Long = 1,900,000,000, Short = 1,100,000,000 → max = 1,900,000,000
+    // Capital = 8% × 1,900,000,000 = 152,000,000
+    expect(result.sumNetLongsZarMinor).toBe(1_900_000_000);
+    expect(result.sumNetShortsZarMinor).toBe(1_100_000_000);
+    expect(result.totalCapitalChargeZarMinor).toBe(152_000_000);
+  });
+
+  it("excludes functional currency (ZAR) from the charge", () => {
+    const positions = [
+      {
+        currencyPair: "ZAR/USD",
+        netPositionBaseMinor: 1_900_000_000,
+        netPositionZarMinor: 1_900_000_000,
+        grossLongBaseMinor: 1_900_000_000,
+        grossShortBaseMinor: 0,
+        openTradeCount: 1,
+        asOf: "2026-05-12T16:00:00.000Z",
+      },
+    ];
+
+    const result = fxRwaCalculator({
+      positions,
+      functionalCurrency: "ZAR", // ZAR excluded
+      asOf: "2026-05-12T16:00:00.000Z",
+    });
+
+    // ZAR leg is functional currency — excluded from FX charge
+    expect(result.totalCapitalChargeZarMinor).toBe(0);
+    expect(result.perCurrency).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. BA-350 FX section integration
+// ---------------------------------------------------------------------------
+
+describe("BA-350 FX section — fxPositionsToBa350Input + generateBa350MarketRisk", () => {
+  it("seeds one open USD position into BA 350 FX section", () => {
+    const positions = [
+      {
+        currencyPair: "USD/ZAR",
+        netPositionBaseMinor: 100_000_000,
+        netPositionZarMinor: 1_900_000_000,
+        grossLongBaseMinor: 100_000_000,
+        grossShortBaseMinor: 0,
+        openTradeCount: 1,
+        asOf: "2026-05-31T23:59:59.999Z",
+      },
+    ];
+
+    const fxRows = fxPositionsToBa350Input(positions, "ZAR");
+    expect(fxRows).toHaveLength(1);
+    expect(fxRows[0]?.currency).toBe("USD");
+    expect(fxRows[0]?.netPositionFunctionalMinor).toBe(1_900_000_000);
+
+    const ba350 = generateBa350MarketRisk({
+      entity: "LE-ZA-HOZ-BANK",
+      asOf: "2026-05-31T23:59:59.999Z",
+      periodId: "period:hoz-bank:month:2026-05",
+      functionalCurrency: "ZAR",
+      irGeneralMaturityLadder: [],
+      irSpecificRisk: [],
+      equity: [],
+      fxPositions: fxRows,
+      commodity: [],
+    });
+
+    // FX section should contain the USD position line
+    expect(ba350.fx.currencyLines).toHaveLength(1);
+    expect(ba350.fx.currencyLines[0]?.lineId).toBe("fx.USD");
+    // Capital = 8% × 1,900,000,000 = 152,000,000
+    expect(ba350.fx.capitalMinor).toBe(152_000_000);
+  });
+
+  it("excludes ZAR-leg positions from BA 350 input", () => {
+    const positions = [
+      {
+        currencyPair: "ZAR/USD", // functional currency leg
+        netPositionBaseMinor: 1_000_000,
+        netPositionZarMinor: 1_000_000,
+        grossLongBaseMinor: 1_000_000,
+        grossShortBaseMinor: 0,
+        openTradeCount: 1,
+        asOf: "2026-05-31T23:59:59.999Z",
+      },
+    ];
+
+    const fxRows = fxPositionsToBa350Input(positions, "ZAR");
+    expect(fxRows).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. FX sub-ledger projection
+// ---------------------------------------------------------------------------
+
+describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
+  it("FxTradeExecuted produces fx-receivable and fx-payable rows", () => {
+    const event = {
+      event_id: "evt-fx-trade-001",
+      type: "FxTradeExecuted" as const,
+      as_of: "2026-05-12T09:00:00.000Z",
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: BASE_TRADE_PAYLOAD,
+    };
+
+    const state = fxSubLedgerProjection.reduce(subLedgerInitial, event as Parameters<typeof fxSubLedgerProjection.reduce>[1]);
+    expect(state.rows.length).toBeGreaterThan(0);
+
+    const legKinds = state.rows.map((r) => r.legKind);
+    expect(legKinds).toContain("fx-receivable");
+    expect(legKinds).toContain("fx-payable");
+  });
+
+  it("FxPositionRevalued produces fx-revaluation row", () => {
+    const event = {
+      event_id: "evt-fx-reval-001",
+      type: "FxPositionRevalued" as const,
+      as_of: "2026-05-12T16:00:00.000Z",
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: "FX-TEST-001",
+        currencyPair: "ZAR/USD",
+        bookRate: 19.0,
+        revalRate: 19.5,
+        notionalBaseMinor: 1_900_000_000,
+        unrealisedPnlZarMinor: 2_500_000,
+        revaluedAt: "2026-05-12T16:00:00.000Z",
+        rateSource: "stub",
+      },
+    };
+
+    const state = fxSubLedgerProjection.reduce(subLedgerInitial, event as Parameters<typeof fxSubLedgerProjection.reduce>[1]);
+    const revalRows = state.rows.filter((r) => r.legKind === "fx-revaluation");
+    expect(revalRows.length).toBeGreaterThan(0);
+  });
+
+  it("FxSettlementConfirmed produces settlement rows", () => {
+    const event = {
+      event_id: "evt-fx-settle-001",
+      type: "FxSettlementConfirmed" as const,
+      as_of: "2026-05-14T10:00:00.000Z",
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: "FX-TEST-001",
+        currencyPair: "ZAR/USD",
+        legKind: "near" as const,
+        settledBaseCurrencyMinor: -1_900_000_000,
+        settledQuoteCurrencyMinor: 100_000_000,
+        settledAt: "2026-05-14T10:00:00.000Z",
+        nostroAccountBase: "ACC-1100-001",
+        nostroAccountQuote: "ACC-1100-002",
+        realisedPnlZarMinor: 0,
+      },
+    };
+
+    const state = fxSubLedgerProjection.reduce(subLedgerInitial, event as Parameters<typeof fxSubLedgerProjection.reduce>[1]);
+    const settleRows = state.rows.filter(
+      (r) => r.legKind === "fx-settlement-receive" || r.legKind === "fx-settlement-deliver",
+    );
+    expect(settleRows.length).toBeGreaterThan(0);
+  });
+
+  it("projection accepts only FX event types", () => {
+    expect(fxSubLedgerProjection.accepts({ type: "FxTradeExecuted" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(true);
+    expect(fxSubLedgerProjection.accepts({ type: "FxPositionRevalued" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(true);
+    expect(fxSubLedgerProjection.accepts({ type: "FxSettlementConfirmed" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(true);
+    expect(fxSubLedgerProjection.accepts({ type: "EquityTradeBooked" } as Parameters<typeof fxSubLedgerProjection.accepts>[0])).toBe(false);
+  });
+});

@@ -1,20 +1,26 @@
 // platform/projections/markets/sub-ledger.ts
 //
-// Sub-ledger projection — M1 equity slice. Materialises typed accounting
-// entries that Bea's IFRS classifier consumes without bespoke plumbing.
-// Each row is the raw posting candidate keyed by (sourceEventId, leg);
-// classification (HFT / FVTPL / FVOCI / amortised cost) is Bea's
-// downstream call — this projection is the typed input to that call.
+// Sub-ledger projection — M1 equity slice + FX Spot extension.
 //
-// P1 — derived from the equity event log.
-// P2 — every row inherits the source event's citations; sub-ledger
-//      rules trace back through the projectionRule field of the
-//      semantic-layer entries.
+// Materialises typed accounting entries that Bea's IFRS classifier consumes
+// without bespoke plumbing. Each row is the raw posting candidate keyed by
+// (sourceEventId, leg); classification (HFT / FVTPL / FVOCI / amortised
+// cost) is Bea's downstream call — this projection is the typed input.
+//
+// FX extension added in this slice:
+//   - FxTradeExecuted  → "fx-receivable" + "fx-payable" legs
+//   - FxPositionRevalued → "fx-revaluation" leg
+//   - FxSettlementConfirmed → "fx-settlement-receive" + "fx-settlement-deliver" legs
+//
+// P1 — derived from the event log.
+// P2 — every row inherits the source event's citations.
 // P5 — entity + currency on every row.
-// P6 — the projection is the typed contract Bea consumes; the data
-//      contract is the row shape itself.
+// P6 — the projection is the typed contract Bea consumes.
 //
-// Author: Anya · M1 per D-MARKETS-SCHEMA-FOUNDATION.
+// Authors: Anya (Data / analytics engineer, engineering) · M1 equity per
+//   D-MARKETS-SCHEMA-FOUNDATION. FX extension: Camille (CFO, finance) +
+//   Bea (Accounting & financial reporting engineer, engineering) per
+//   D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12).
 
 import type { Projection } from "../types";
 import type {
@@ -23,6 +29,14 @@ import type {
   EquitySettlementInstructedEvent,
   EquityTradeBookedEvent,
 } from "./types";
+import type { FxPositionRevaluedPayload, FxSettlementConfirmedPayload } from "../../event-store/event-types/fx-accounting";
+import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
+import type { Event } from "../../event-store/types";
+import {
+  fxTradeBookingJournals,
+  fxRevaluationJournals,
+  fxSettlementJournals,
+} from "../../accounting/posting-rules/fx-spot";
 
 export type SubLedgerLegKind =
   /** The trade-booking leg — recognises the financial-instrument acquisition / disposal. */
@@ -33,7 +47,18 @@ export type SubLedgerLegKind =
   /** Quantity-only leg of a corporate action (split / consolidation / scrip). */
   | "ca-ratio"
   /** Settlement leg — net cash + net quantity exchanged at the CSD. */
-  | "settlement-net";
+  | "settlement-net"
+  // FX Spot legs
+  /** FX trading receivable — initial recognition on FxTradeExecuted. */
+  | "fx-receivable"
+  /** FX trading payable — initial recognition on FxTradeExecuted. */
+  | "fx-payable"
+  /** Daily FVTPL revaluation leg — FxPositionRevalued. */
+  | "fx-revaluation"
+  /** Settlement receive leg — cash arrives at nostro on FxSettlementConfirmed. */
+  | "fx-settlement-receive"
+  /** Settlement deliver leg — cash leaves nostro on FxSettlementConfirmed. */
+  | "fx-settlement-deliver";
 
 export interface SubLedgerRow {
   /** Primary key — (sourceEventId, legKind) uniquely identifies a row. */
@@ -183,6 +208,127 @@ export const subLedgerProjection: Projection<SubLedgerState, EquityLifecycleEven
         return applyCorporateAction(state, event);
       case "EquitySettlementInstructed":
         return applySettlementInstructed(state, event);
+    }
+  },
+};
+
+// ---------------------------------------------------------------------------
+// FX sub-ledger projection — extends the equity projection with FX Spot
+// lifecycle events. Separate projection instance so equity and FX can be
+// composed independently by callers.
+//
+// Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
+//   engineer, engineering) per D-MARKETS-CAPITAL-TIME-SHAPE.
+// ---------------------------------------------------------------------------
+
+export type FxSubLedgerEvent = Event & {
+  type: "FxTradeExecuted" | "FxPositionRevalued" | "FxSettlementConfirmed";
+};
+
+function isFxSubLedgerEvent(event: { type: string }): event is FxSubLedgerEvent {
+  return (
+    event.type === "FxTradeExecuted" ||
+    event.type === "FxPositionRevalued" ||
+    event.type === "FxSettlementConfirmed"
+  );
+}
+
+function applyFxTradeExecuted(state: SubLedgerState, e: Event): SubLedgerState {
+  const p = e.payload as unknown as FxTradeExecutedPayload & { tradeId: string };
+  const tradeId = p.tradeId ?? e.event_id;
+  const journals = fxTradeBookingJournals({
+    tradeId: typeof tradeId === "string" ? tradeId : (tradeId as { value: string }).value,
+    side: p.side,
+    legs: p.legs,
+    currencyPair: p.currencyPair,
+  });
+
+  let next = state;
+  // Each journal leg maps to a sub-ledger row.
+  // Group legs by currency: debit legs → "fx-receivable", credit legs → "fx-payable".
+  for (const leg of journals) {
+    const legKind: SubLedgerLegKind = leg.debitCredit === "debit" ? "fx-receivable" : "fx-payable";
+    const cashAmountMinor = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+    next = appendIfFresh(next, {
+      sourceEventId: e.event_id,
+      legKind,
+      entity: e.entity,
+      asOf: e.as_of,
+      instrumentId: typeof tradeId === "string" ? tradeId : (tradeId as { value: string }).value,
+      bookId: p.bookId ?? null,
+      currency: leg.currency,
+      cashAmountMinor,
+      quantityAmount: null,
+      externalRef: typeof tradeId === "string" ? tradeId : (tradeId as { value: string }).value,
+      citations: e.citations,
+    });
+  }
+  return next;
+}
+
+function applyFxPositionRevalued(state: SubLedgerState, e: Event): SubLedgerState {
+  const p = e.payload as unknown as FxPositionRevaluedPayload;
+  const journals = fxRevaluationJournals(p);
+
+  let next = state;
+  for (const leg of journals) {
+    const cashAmountMinor = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+    next = appendIfFresh(next, {
+      sourceEventId: e.event_id,
+      legKind: "fx-revaluation",
+      entity: e.entity,
+      asOf: e.as_of,
+      instrumentId: p.tradeId,
+      bookId: null,
+      currency: leg.currency,
+      cashAmountMinor,
+      quantityAmount: null,
+      externalRef: p.tradeId,
+      citations: e.citations,
+    });
+  }
+  return next;
+}
+
+function applyFxSettlementConfirmed(state: SubLedgerState, e: Event): SubLedgerState {
+  const p = e.payload as unknown as FxSettlementConfirmedPayload;
+  const journals = fxSettlementJournals(p);
+
+  let next = state;
+  for (const leg of journals) {
+    // Settlement legs: nostro debits = receive, nostro credits = deliver
+    const legKind: SubLedgerLegKind =
+      leg.debitCredit === "debit" ? "fx-settlement-receive" : "fx-settlement-deliver";
+    const cashAmountMinor = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+    next = appendIfFresh(next, {
+      sourceEventId: e.event_id,
+      legKind,
+      entity: e.entity,
+      asOf: e.as_of,
+      instrumentId: p.tradeId,
+      bookId: null,
+      currency: leg.currency,
+      cashAmountMinor,
+      quantityAmount: null,
+      externalRef: p.tradeId,
+      citations: e.citations,
+    });
+  }
+  return next;
+}
+
+export const fxSubLedgerProjection: Projection<SubLedgerState, FxSubLedgerEvent> = {
+  name: "markets.fx-sub-ledger",
+  initial: subLedgerInitial,
+  accepts: (e): e is FxSubLedgerEvent => isFxSubLedgerEvent(e),
+  reduce(state, event) {
+    switch (event.type) {
+      case "FxTradeExecuted":
+        return applyFxTradeExecuted(state, event);
+      case "FxPositionRevalued":
+        return applyFxPositionRevalued(state, event);
+      case "FxSettlementConfirmed":
+        return applyFxSettlementConfirmed(state, event);
     }
   },
 };
