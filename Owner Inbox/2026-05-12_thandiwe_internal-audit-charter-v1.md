@@ -4,6 +4,7 @@ author: Thandiwe (Chief Audit Executive, governance)
 date: 2026-05-12
 decision-required: false
 status: "Submitted to Interim Audit Forum for sign-off"
+riskTaxonomy: RT-ST.GV
 citations:
   - "[citation: IIA International Standards for the Professional Practice of Internal Auditing (IPPF)]"
   - "[citation: BCBS 223 — Internal Audit Function in Banks]"
