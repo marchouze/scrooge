@@ -135,6 +135,25 @@ export {
   fxPositionSummaryNote,
 } from "./ba-350-fx-adapter";
 
+// ---------------------------------------------------------------------------
+// P1-compliant events-first entry points (C-2 / C-3 fixes).
+//
+// These adapters fold primary trade events directly from the event store,
+// bypassing the trial-balance projection. Callers with EventStore access
+// should prefer these paths.
+// Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba350FromEventsInput,
+  generateBa350MarketRiskFromEvents,
+} from "./ba-350-events-adapter";
+
+export {
+  type Ba700FromEventsInput,
+  generateBa700CapitalFromEvents,
+} from "./ba-700-events-adapter";
+
 export {
   BA_600_NAMESPACE,
   BA_600_REQUIRED_ELEMENTS,

@@ -41,6 +41,12 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration).
 
+// P1 fix note (C-2): the events-first entry point for BA 350 lives at
+// `ba-350-events-adapter.ts` → `generateBa350MarketRiskFromEvents()`. Callers
+// that have access to an EventStore should prefer that path to derive FX
+// positions directly from FxTradeExecuted events rather than from the trial
+// balance. Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
@@ -129,7 +135,16 @@ export interface Ba350GeneratorInput {
    * v0 carries; supply directly).
    */
   readonly irGeneralDisallowancesMinor?: number;
-  /** Optional citation — chains BA 350 back to a TrialBalanceSnapshotted event. */
+  /**
+   * Optional citation — chains BA 350 back to a TrialBalanceSnapshotted event.
+   *
+   * @deprecated — P1 violation (C-2): FX positions should be derived from
+   * FxTradeExecuted primary trade events, not from the trial balance.
+   * Use `generateBa350MarketRiskFromEvents()` from `ba-350-events-adapter.ts`
+   * when an EventStore is available. This field is retained for backward
+   * compatibility. Authority: Principles/1-events-are-truth.md,
+   * D-MARKETS-CAPITAL-TIME-SHAPE.
+   */
   readonly trialBalanceSnapshotEventId?: string;
 }
 

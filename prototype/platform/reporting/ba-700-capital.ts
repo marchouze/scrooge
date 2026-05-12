@@ -81,6 +81,11 @@
 
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
+// P1 fix note (C-3): the events-first entry point for BA 700 lives at
+// `ba-700-events-adapter.ts` → `generateBa700CapitalFromEvents()`. Callers
+// that have access to an EventStore should prefer that path.
+// Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
@@ -224,7 +229,18 @@ export interface Ba700GeneratorInput {
   readonly periodId: string;
   /** ISO 4217 functional currency from `AccountingPeriodOpened.functionalCurrency`. */
   readonly functionalCurrency: string;
-  /** Trial-balance rows from `TrialBalanceSnapshotted.rows` / `closePeriod` result. */
+  /**
+   * Trial-balance rows from `TrialBalanceSnapshotted.rows` / `closePeriod` result.
+   *
+   * @deprecated — P1 violation (C-3): the trial balance is a *projection* of
+   * posting events, not a primary event. Capital positions exist in the event
+   * stream (SubLedgerPostingEmitted, CapitalContributionRecorded) before a
+   * TrialBalanceSnapshotted event is produced by the period-close orchestration.
+   * Use `generateBa700CapitalFromEvents()` from `ba-700-events-adapter.ts` when
+   * an EventStore is available. This field is retained for backward compatibility
+   * with tests and for callers that do not have direct EventStore access.
+   * Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+   */
   readonly trialBalance: readonly TrialBalanceSnapshotRow[];
   /** Per-account capital-tier classification. Accounts without an entry are not capital-stack-relevant. */
   readonly classifications: readonly AccountCapitalClassification[];

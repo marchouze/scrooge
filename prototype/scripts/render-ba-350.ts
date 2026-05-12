@@ -25,6 +25,11 @@
 // positions everywhere — exercises the engine + emits a correct
 // `0` capital).
 //
+// P1 note (C-2): this script accepts caller-supplied FX position fixtures.
+// The P1-compliant entry point that folds FxTradeExecuted events directly is
+// `generateBa350MarketRiskFromEvents()` in `ba-350-events-adapter.ts`.
+// Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+//
 // This script is rehearsal-grade. The production form (Slice 7) emits a
 // `ReportGenerated` event that hashes the rendered bytes into the RMS
 // document store.

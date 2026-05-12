@@ -1333,6 +1333,13 @@ export function runPhaseAandBandD(opts: {
     functionalCurrency: openedPayload.functionalCurrency,
     trialBalance: closeResult.trialBalance.rows,
     trialBalanceSnapshotEventId: closeResult.trialBalanceSnapshotEvent.event_id,
+    // P1-compliant events-first path (C-2 / C-3 fix): pass the event store +
+    // period window so BA 700 folds SubLedgerPostingEmitted +
+    // CapitalContributionRecorded events directly.
+    // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+    eventStore: store,
+    periodStart: openedPayload.periodStart,
+    periodEnd: openedPayload.periodEnd,
   };
 
   const phaseDOut = runPhaseD({
