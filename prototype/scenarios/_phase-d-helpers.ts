@@ -81,6 +81,7 @@ import {
   generateBa350MarketRisk,
   generateBa600OpRisk,
   generateBa700Capital,
+  generateBa700CapitalFromEvents,
   renderBa325Canonical,
   renderBa700Canonical,
   renderSarbXml,
@@ -113,8 +114,27 @@ export interface PhaseDInputs {
   readonly asOf: string;
   readonly periodId: string;
   readonly functionalCurrency: string;
+  /**
+   * Trial-balance rows — used for BA 325 (LCR) and as the fallback for
+   * BA 700 capital stock when `eventStore` is not supplied.
+   *
+   * @deprecated for BA 700 — use `eventStore` + `periodStart`/`periodEnd`
+   * for the P1-compliant path (C-3 fix). Authority: Principles/1-events-are-truth.md.
+   */
   readonly trialBalance: ClosePeriodResult["trialBalance"]["rows"];
   readonly trialBalanceSnapshotEventId?: string;
+  /**
+   * Event store for the P1-compliant events-first paths (C-2 / C-3).
+   * When supplied, BA 700 capital stock is folded from SubLedgerPostingEmitted
+   * and CapitalContributionRecorded events directly (bypassing the trial balance).
+   */
+  readonly eventStore?: EventStore;
+  /**
+   * Accounting-period window — required when `eventStore` is supplied.
+   * Used to scope the event replay for BA 700 (periodEnd) and BA 350 (periodEnd).
+   */
+  readonly periodStart?: string;
+  readonly periodEnd?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -168,10 +188,20 @@ export const BA_325_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassifica
 // ---------------------------------------------------------------------------
 
 export const BA_700_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
-  // Note: this account is intentionally *not* in the post-close TB —
-  // the generator's projection over the TB simply emits 0 for it. The
-  // capital stack is then carried via the synthetic deduction-shape RWA
-  // input below (the rehearsal compromise — substrate gap #1).
+  // P1-compliant path (C-3 fix): classify the account that actually appears
+  // in Phase A's CapitalContributionRecorded event (ACC-ZAR-CAPITAL-001).
+  // The events-first adapter (`generateBa700CapitalFromEvents`) folds the
+  // CapitalContributionRecorded event with this accountId to derive capital stock.
+  // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+  {
+    leafAccountId: "ACC-ZAR-CAPITAL-001",
+    capitalTier: "cet1",
+    subCategory: "cet1.paid-up-ordinary-shares",
+  },
+  // Legacy stub account — kept for backward compatibility with the deprecated
+  // trial-balance fallback path. The events-first path will yield 0 for this
+  // account (no events reference it); the CapitalContributionRecorded events
+  // use ACC-ZAR-CAPITAL-001 above.
   {
     leafAccountId: "ACC-equity-paid-up-capital-stub",
     capitalTier: "cet1",
@@ -271,24 +301,43 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
       : {}),
   });
 
-  // BA 700 — augment the trial balance with a synthetic CET1-equity row so
-  // the capital-stack projection is non-trivially populated. Substrate gap
-  // §1 above; real CET1 derivation comes from chart-of-accounts capitalTier
-  // field at Reporting Slice 6+.
-  const augmentedTb = [...inputs.trialBalance, BA_700_SYNTHETIC_CET1_ROW];
-  const ba700 = generateBa700Capital({
-    entity: inputs.entity,
-    asOf: inputs.asOf,
-    periodId: inputs.periodId,
-    functionalCurrency: inputs.functionalCurrency,
-    trialBalance: augmentedTb,
-    classifications: BA_700_FIXTURE_CLASSIFICATIONS,
-    deductions: BA_700_FIXTURE_DEDUCTIONS,
-    rwa: BA_700_FIXTURE_RWA,
-    ...(inputs.trialBalanceSnapshotEventId
-      ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
-      : {}),
-  });
+  // BA 700 — P1-compliant path (C-3 fix): fold SubLedgerPostingEmitted +
+  // CapitalContributionRecorded events directly when eventStore is available.
+  // Falls back to augmented-trial-balance path (deprecated) when not.
+  // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+  let ba700: Ba700Output;
+  if (inputs.eventStore && inputs.periodStart && inputs.periodEnd) {
+    ba700 = generateBa700CapitalFromEvents(inputs.eventStore, {
+      entity: inputs.entity,
+      asOf: inputs.asOf,
+      periodId: inputs.periodId,
+      functionalCurrency: inputs.functionalCurrency,
+      periodStart: inputs.periodStart,
+      periodEnd: inputs.periodEnd,
+      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_700_FIXTURE_DEDUCTIONS,
+      rwa: BA_700_FIXTURE_RWA,
+    });
+  } else {
+    // Deprecated fallback: augment the trial balance with a synthetic CET1-equity
+    // row so the capital-stack projection is non-trivially populated.
+    // Substrate gap §1 above; real CET1 derivation comes from chart-of-accounts
+    // capitalTier field at Reporting Slice 6+.
+    const augmentedTb = [...inputs.trialBalance, BA_700_SYNTHETIC_CET1_ROW];
+    ba700 = generateBa700Capital({
+      entity: inputs.entity,
+      asOf: inputs.asOf,
+      periodId: inputs.periodId,
+      functionalCurrency: inputs.functionalCurrency,
+      trialBalance: augmentedTb,
+      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_700_FIXTURE_DEDUCTIONS,
+      rwa: BA_700_FIXTURE_RWA,
+      ...(inputs.trialBalanceSnapshotEventId
+        ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
+        : {}),
+    });
+  }
 
   const ba350 = generateBa350MarketRisk({
     entity: inputs.entity,

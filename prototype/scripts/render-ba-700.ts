@@ -7,24 +7,28 @@
 //       --entity LE-ZA-HOZ-BANK \
 //       --as-of 2026-05-31T23:59:59.999Z \
 //       --period-id period:hoz-bank:month:2026-05 \
+//       --period-start 2026-05-01T00:00:00.000Z \
+//       --period-end 2026-05-31T23:59:59.999Z \
 //       [--functional-currency ZAR] \
 //       [--classifications path/to/classifications.json] \
 //       [--deductions path/to/deductions.json] \
 //       [--rwa path/to/rwa.json] \
 //       [--out path/to/ba-700.json]
 //
-// What it does:
+// What it does (P1-compliant path per C-3 fix):
 //   1. Replays the event store for the entity.
-//   2. Resolves the trial balance for the period via `periodAuditChain`
-//      (most-recent `TrialBalanceSnapshotted`) or, when no close exists,
-//      ad-hoc compute from `SubLedgerPostingEmitted` over the supplied
-//      window.
+//   2. Folds SubLedgerPostingEmitted + CapitalContributionRecorded events
+//      directly to derive capital account balances (no trial-balance routing).
 //   3. Loads per-account capital classifications, regulatory deductions,
 //      and RWA decomposition from `--classifications` / `--deductions` /
 //      `--rwa` JSON files. Each defaults to a built-in build-phase fixture.
 //   4. Generates the BA 700 projection.
 //   5. Renders to canonical JSON (deterministic, schema-validated).
 //   6. Writes to stdout (default) or `--out`.
+//
+// P1 fix (C-3): this script now uses `generateBa700CapitalFromEvents()` which
+// folds primary posting events directly, bypassing the trial-balance routing.
+// Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
 //
 // This script is rehearsal-grade. The production form (Slice 5) emits a
 // `ReportGenerated` event that hashes the rendered bytes into the RMS
@@ -33,19 +37,17 @@
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO) + Atlas (Core banking platform architect,
-//   engineering — substrate consult) + Anya (Data / analytics engineer,
+//   engineering — P1-fix C-3) + Anya (Data / analytics engineer,
 //   engineering — reports to Devon COO; semantic-layer integration).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
   type AccountCapitalClassification,
-  type Ba700GeneratorInput,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  generateBa700Capital,
+  generateBa700CapitalFromEvents,
   renderBa700Canonical,
 } from "../platform/reporting";
 
@@ -89,12 +91,12 @@ interface CliArgs {
   readonly asOf: string;
   readonly periodId: string;
   readonly functionalCurrency: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
   readonly classificationsPath?: string;
   readonly deductionsPath?: string;
   readonly rwaPath?: string;
   readonly outPath?: string;
-  readonly periodStart?: string;
-  readonly periodEnd?: string;
 }
 
 function parseArgs(argv: readonly string[]): CliArgs {
@@ -105,9 +107,11 @@ function parseArgs(argv: readonly string[]): CliArgs {
   const entity = get("--entity");
   const asOf = get("--as-of");
   const periodId = get("--period-id");
-  if (!entity || !asOf || !periodId) {
+  const periodStart = get("--period-start");
+  const periodEnd = get("--period-end");
+  if (!entity || !asOf || !periodId || !periodStart || !periodEnd) {
     throw new Error(
-      "render-ba-700: --entity, --as-of, --period-id are required. See script header for usage.",
+      "render-ba-700: --entity, --as-of, --period-id, --period-start, --period-end are required. See script header for usage.",
     );
   }
   const functionalCurrency = get("--functional-currency") ?? "ZAR";
@@ -115,19 +119,17 @@ function parseArgs(argv: readonly string[]): CliArgs {
   const deductionsPath = get("--deductions");
   const rwaPath = get("--rwa");
   const outPath = get("--out");
-  const periodStart = get("--period-start");
-  const periodEnd = get("--period-end");
   return {
     entity,
     asOf,
     periodId,
     functionalCurrency,
+    periodStart,
+    periodEnd,
     ...(classificationsPath ? { classificationsPath } : {}),
     ...(deductionsPath ? { deductionsPath } : {}),
     ...(rwaPath ? { rwaPath } : {}),
     ...(outPath ? { outPath } : {}),
-    ...(periodStart ? { periodStart } : {}),
-    ...(periodEnd ? { periodEnd } : {}),
   };
 }
 
@@ -141,44 +143,7 @@ function loadJson<T>(path: string, label: string): T {
 }
 
 // ---------------------------------------------------------------------------
-// Trial-balance discovery — mirror of render-ba-325.ts
-// ---------------------------------------------------------------------------
-
-interface TrialBalanceResolution {
-  readonly rows: Ba700GeneratorInput["trialBalance"];
-  readonly trialBalanceSnapshotEventId?: string;
-}
-
-function resolveTrialBalance(args: CliArgs): TrialBalanceResolution {
-  const chain = periodAuditChain({
-    eventStore,
-    entity: args.entity,
-    periodId: args.periodId,
-  });
-  for (let i = chain.length - 1; i >= 0; i--) {
-    const e = chain[i];
-    if (e && e.type === "TrialBalanceSnapshotted") {
-      const p = e.payload as { rows: Ba700GeneratorInput["trialBalance"] };
-      return { rows: p.rows, trialBalanceSnapshotEventId: e.event_id };
-    }
-  }
-
-  if (!args.periodStart || !args.periodEnd) {
-    throw new Error(
-      `render-ba-700: no TrialBalanceSnapshotted for (entity=${args.entity}, periodId=${args.periodId}); supply --period-start + --period-end for ad-hoc compute, or run the period-close orchestration first.`,
-    );
-  }
-  const tb = computeTrialBalance({
-    eventStore,
-    entity: args.entity,
-    periodStart: args.periodStart,
-    periodEnd: args.periodEnd,
-  });
-  return { rows: tb.rows };
-}
-
-// ---------------------------------------------------------------------------
-// main
+// main — P1-compliant path: fold primary events directly (C-3 fix).
 // ---------------------------------------------------------------------------
 
 function main(argv: readonly string[]): number {
@@ -192,19 +157,19 @@ function main(argv: readonly string[]): number {
   const rwa = args.rwaPath
     ? loadJson<RwaDecomposition>(args.rwaPath, "rwa")
     : BUILD_PHASE_DEFAULT_RWA;
-  const tb = resolveTrialBalance(args);
-  const output = generateBa700Capital({
+
+  // P1-compliant: fold SubLedgerPostingEmitted + CapitalContributionRecorded
+  // events directly — no trial-balance routing.
+  const output = generateBa700CapitalFromEvents(eventStore, {
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,
     functionalCurrency: args.functionalCurrency,
-    trialBalance: tb.rows,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
     classifications,
     deductions,
     rwa,
-    ...(tb.trialBalanceSnapshotEventId
-      ? { trialBalanceSnapshotEventId: tb.trialBalanceSnapshotEventId }
-      : {}),
   });
   const { canonicalJson } = renderBa700Canonical(output, {
     renderedAt: new Date().toISOString(),
