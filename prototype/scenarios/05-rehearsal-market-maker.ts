@@ -79,9 +79,8 @@ store.append(
       pep: false,
       sanctionsClear: true,
       jurisdictionalRiskScore: "low",
-      // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 4
-      // backfill will supply a proper urn:party:natural-person:... URN.
-      reviewerId: "mira@bank.local" as PartyId,
+      // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
+      reviewerId: "urn:party:natural-person:mira-compliance" as PartyId,
     },
     { actor: compliance, citations: ["AML-CFT-POLICY-V1", "FIC-ACT-38-2001"] },
   ),

@@ -83,9 +83,8 @@ store.append(
       pep: false,
       sanctionsClear: true,
       jurisdictionalRiskScore: "medium",
-      // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 4
-      // backfill will supply a proper urn:party:natural-person:... URN.
-      reviewerId: "mira@bank.local" as PartyId,
+      // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
+      reviewerId: "urn:party:natural-person:mira-compliance" as PartyId,
     },
     { actor: compliance, citations: ["AML-CFT-POLICY-V1", "FIC-ACT-38-2001"] },
   ),
@@ -117,9 +116,8 @@ store.append(
   authorisedSignatoryAdded(
     {
       counterpartyId: cpId,
-      // Synthetic fixture: legacy string cast to PartyId. D-PARTY-REGISTER PR 4
-      // backfill will supply a proper urn:party:natural-person:... URN.
-      personId: "SYN-PERSON-HF-001" as PartyId,
+      // Synthetic fixture URN — D-PARTY-REGISTER PR 4 tightening.
+      personId: "urn:party:natural-person:signatory-hf-001" as PartyId,
       scope: "both",
       evidenceRef: "REHEARSAL-KYC-REF",
     },

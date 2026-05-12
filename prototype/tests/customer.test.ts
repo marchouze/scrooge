@@ -69,7 +69,7 @@ describe("@domains/customer onboarding", () => {
           pep: false,
           sanctionsClear: true,
           jurisdictionalRiskScore: "low",
-          reviewerId: "mira" as PartyId,
+          reviewerId: "urn:party:natural-person:mira-compliance" as PartyId,
         },
         fic,
       ),
@@ -159,7 +159,7 @@ describe("@domains/customer onboarding", () => {
     const cp = counterpartyId("CP-T4");
     store.append(
       authorisedSignatoryAdded(
-        { counterpartyId: cp, personId: "p1" as PartyId, scope: "signatory", evidenceRef: "ev1" },
+        { counterpartyId: cp, personId: "urn:party:natural-person:signatory-001" as PartyId, scope: "signatory", evidenceRef: "ev1" },
         cite,
       ),
     );
@@ -167,7 +167,7 @@ describe("@domains/customer onboarding", () => {
       authorisedSignatoryAdded(
         {
           counterpartyId: cp,
-          personId: "p2" as PartyId,
+          personId: "urn:party:natural-person:signatory-002" as PartyId,
           scope: "authorised-trader",
           evidenceRef: "ev2",
         },
@@ -176,7 +176,7 @@ describe("@domains/customer onboarding", () => {
     );
     const book = projector(store).build(signatoryBook);
     expect(book[cp]).toHaveLength(2);
-    expect(book[cp]?.[0]?.personId).toBe("p1" as PartyId);
+    expect(book[cp]?.[0]?.personId).toBe("urn:party:natural-person:signatory-001" as PartyId);
     store.close();
   });
 
