@@ -89,3 +89,315 @@ Adding or revising an account is a four-step procedure:
 4. **Emit** — `ChartAccountPublished { accountId, version, citationChain }` event lands in the event store; downstream (posting-rule register, BA-return generator, reconciliation harness) re-resolve.
 
 Vera's planned chart-of-accounts recon (Wave-4 candidate) asserts: (a) every account YAML parses and validates; (b) every BA-return line referenced exists in the BA-form schema; (c) every IFRS / regulation citation resolves.
+
+---
+
+## FX Spot accounts — added 2026-05-12
+
+**Authority:** D-MARKETS-SCHEMA-FOUNDATION + D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12)  
+**Approved by:** Camille (CFO, finance) · Bea (Accounting & financial reporting engineer, engineering)  
+**Spec:** `Owner Inbox/2026-05-12_camille-bea_fx-accounting-spec-v1.md`
+
+### ACC-2100-001 — FX Trading Receivable — ZAR
+
+```yaml
+id: ACC-2100-001
+name: "FX Trading Receivable — ZAR"
+category: asset-trading
+side: debit
+ifrsClassification: fvtpl
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Trading assets (Item 3)"
+    side: positive
+    note: "FX Spot trading receivable in ZAR — FVTPL asset. Recognised at trade date per IFRS 9 B3.1.3."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.5 — mandatory FVTPL (FX instruments cannot pass SPPI; held-for-trading)"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.7.1 — changes in fair value recognised in profit or loss (FVTPL)"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §B3.1.3 — trade-date recognition of trading assets"
+  - type: ifrs
+    ifrsRef: "IAS 1 §54 — separate balance-sheet line for trading assets"
+  - type: regulation
+    regulationId: D-MARKETS-SCHEMA-FOUNDATION
+    note: "FX Spot product in scope from M4."
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+    note: "Capital-time shape approval — FX accounting treatment."
+  - type: policy
+    policyRef: "Accounting Policies (IFRS) v0.1 (STUB)"
+    section: "§5 FVTPL trading instruments"
+```
+
+### ACC-2100-002 — FX Trading Receivable — USD
+
+```yaml
+id: ACC-2100-002
+name: "FX Trading Receivable — USD"
+category: asset-trading
+side: debit
+ifrsClassification: fvtpl
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Trading assets (Item 3)"
+    side: positive
+    note: "FX Spot trading receivable in USD — FVTPL asset. USD amounts translated to ZAR at closing rate for BA 300."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.5 — mandatory FVTPL"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.7.1 — FVTPL P&L"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — monetary items retranslated at closing rate"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### ACC-2100-003 — FX Trading Payable — ZAR
+
+```yaml
+id: ACC-2100-003
+name: "FX Trading Payable — ZAR"
+category: liability-trading
+side: credit
+ifrsClassification: fvtpl
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Trading liabilities (Item 18)"
+    side: positive
+    note: "FX Spot trading payable in ZAR — FVTPL liability. Obligation to deliver ZAR at settlement."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.2.1 — financial liability at FVTPL (held-for-trading)"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.7.1 — FVTPL P&L"
+  - type: ifrs
+    ifrsRef: "IAS 1 §54 — separate balance-sheet line for trading liabilities"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### ACC-2100-004 — FX Trading Payable — USD
+
+```yaml
+id: ACC-2100-004
+name: "FX Trading Payable — USD"
+category: liability-trading
+side: credit
+ifrsClassification: fvtpl
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Trading liabilities (Item 18)"
+    side: positive
+    note: "FX Spot trading payable in USD — FVTPL liability. Obligation to deliver USD at settlement."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.2.1 — financial liability at FVTPL"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — monetary items retranslated at closing rate"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### ACC-2100-005 — Unrealised FX P&L — FVTPL
+
+```yaml
+id: ACC-2100-005
+name: "Unrealised FX P&L — FVTPL"
+category: income-trading
+side: credit
+ifrsClassification: fvtpl
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Net trading income (Item 22)"
+    side: positive
+    note: "Unrealised FX mark-to-market P&L. Included in net trading income for BA 300."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.7.1 — changes in FVTPL fair value in profit or loss"
+  - type: ifrs
+    ifrsRef: "IAS 1 §85 — net trading income presentation"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+  - type: policy
+    policyRef: "Accounting Policies (IFRS) v0.1 (STUB)"
+    section: "§5.3 FVTPL income presentation — no OCI for trading book"
+```
+
+### ACC-2100-006 — Realised FX P&L
+
+```yaml
+id: ACC-2100-006
+name: "Realised FX P&L"
+category: income-trading
+side: credit
+ifrsClassification: fvtpl
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Net trading income (Item 22)"
+    side: positive
+    note: "Realised FX P&L crystallised on settlement. Includes bid/offer spread and intraday rate residual."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.2.3 — derecognition on settlement (contractual rights expire)"
+  - type: ifrs
+    ifrsRef: "IAS 1 §85 — net trading income presentation"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### ACC-1100-002 — Nostro — USD (Correspondent)
+
+```yaml
+id: ACC-1100-002
+name: "Nostro — USD (correspondent bank)"
+category: asset-cash-equivalents
+side: debit
+ifrsClassification: amortised-cost
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Cash and balances at banks (Item 1 / Item 2)"
+    side: positive
+    note: "USD nostro at correspondent bank. Foreign-currency cash equivalent."
+  - form: "BA 325"
+    line: "Highly Liquid Assets — foreign-currency central-bank reserves or nostro (LCR)"
+    side: positive
+    note: "Eligible for HQLA classification subject to haircut and operational requirements per BA 325."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.2 — amortised-cost classification (held-to-collect; SPPI cash flows: principal and interest on demand/overnight)"
+  - type: ifrs
+    ifrsRef: "IAS 21 §21 — initial recognition at spot rate"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate monetary item at closing rate; exchange difference to P&L"
+  - type: regulation
+    regulationId: D-FX-CLS-MEMBERSHIP
+    note: "Correspondent-bank settlement account; primary USD nostro per D-FX-CLS-MEMBERSHIP routing."
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### ACC-1100-003 — Nostro — EUR (Correspondent)
+
+```yaml
+id: ACC-1100-003
+name: "Nostro — EUR (correspondent bank)"
+category: asset-cash-equivalents
+side: debit
+ifrsClassification: amortised-cost
+currencies: [EUR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Cash and balances at banks (Item 1 / Item 2)"
+    side: positive
+    note: "EUR nostro at correspondent bank."
+  - form: "BA 325"
+    line: "Highly Liquid Assets — foreign-currency nostro (LCR)"
+    side: positive
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.2 — amortised-cost classification"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate at closing rate"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+### ACC-1100-004 — FX Settlement Suspense — ZAR
+
+```yaml
+id: ACC-1100-004
+name: "FX Settlement Suspense — ZAR"
+category: asset-suspense
+side: debit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other assets / suspense (Item 30 or similar)"
+    side: positive
+    note: "ZAR suspense account for FX settlement in-transit. Cleared same-day on SAMOS confirmation. Should net to zero at period-end."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §B3.1.3 — trade-date settlement mechanics; suspense accounts bridge trade-date and settlement-date entries"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+  - type: policy
+    policyRef: "Accounting Policies (IFRS) v0.1 (STUB)"
+    section: "§3.4 Suspense accounts — must clear within 2 business days"
+```
+
+### ACC-1100-005 — FX Settlement Suspense — USD
+
+```yaml
+id: ACC-1100-005
+name: "FX Settlement Suspense — USD"
+category: asset-suspense
+side: debit
+ifrsClassification: amortised-cost
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other assets / suspense"
+    side: positive
+    note: "USD suspense account for FX settlement in-transit. Cleared on correspondent confirmation. Should net to zero at period-end."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §B3.1.3 — settlement suspense mechanics"
+  - type: regulation
+    regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
+```
+
+---
+
+## Coverage update (post-FX-Spot slice)
+
+| GL family | In v1 | Gap (target slice) |
+|---|---|---|
+| Assets — cash & SARB balances | `ACC-1100-001` (ZAR SARB), `ACC-1100-002` (USD nostro), `ACC-1100-003` (EUR nostro), `ACC-1100-004/005` (settlement suspense) | GBP/JPY/CHF nostros; cash-in-transit |
+| Assets — trading (FX FVTPL) | `ACC-2100-001` (ZAR receivable), `ACC-2100-002` (USD receivable) | EUR/GBP/JPY receivables; IRD receivables |
+| Liabilities — trading (FX FVTPL) | `ACC-2100-003` (ZAR payable), `ACC-2100-004` (USD payable) | EUR/GBP/JPY payables; IRD payables |
+| Income | `ACC-2100-005` (Unrealised FX P&L), `ACC-2100-006` (Realised FX P&L) | Interest income; fee income; other trading income |
+| Assets — investments / bonds | — | Government bonds (HQLA L1); JSE equities |
+| Liabilities — deposits / funding | — | Wholesale funding; sponsor-bank settlement |
+| Equity | — | Share capital; retained earnings |
+| Expenses | — | Anthropic API spend; cloud spend |

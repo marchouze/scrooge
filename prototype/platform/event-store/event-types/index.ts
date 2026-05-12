@@ -30,6 +30,8 @@
 //   - rms.ts            — DecisionRequested, Feedback, BriefSuperseded,
 //                         RecordFiled, CeoDecisionRmsExtended
 //   - accounting.ts     — BankAccount*, AccountingPeriod*, TrialBalanceSnapshotted
+//   - fx-accounting.ts  — FxPositionRevalued, FxSettlementConfirmed,
+//                         SubLedgerPostingEmitted (FX accounting lifecycle)
 //
 // Party domain lives in prototype/domains/party/ (its own domain package);
 // re-exported directly here as before.
@@ -46,6 +48,7 @@ export * from "./rms";
 export * from "./accounting";
 // Slice 2 — institutional counterparty onboarding lifecycle (7 new phase events).
 export * from "./customer";
+export * from "./fx-accounting";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -217,6 +220,12 @@ export const TYPED_EVENT_TYPES = [
   "PopiaConsentRecorded",
   "CreditAssessmentCompleted",
   "AccountsSetupCompleted",
+  // FX accounting event family — D-MARKETS-SCHEMA-FOUNDATION +
+  // D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12).
+  // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting engineer).
+  "FxPositionRevalued",
+  "FxSettlementConfirmed",
+  "SubLedgerPostingEmitted",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

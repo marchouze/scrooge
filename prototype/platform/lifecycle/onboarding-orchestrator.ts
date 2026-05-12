@@ -41,9 +41,8 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { CUSTOMER_EVENT_TYPES } from "@domains/customer/types";
-// Slice 2 event types (CounterpartyFaisClassified … AccountsSetupCompleted)
-// are now in CUSTOMER_EVENT_TYPES (indices 12–18 per PR #XXX). The fold
-// below maps them to their phases via eventToPhaseCandidate.
+// Slice 2 event types are in CUSTOMER_EVENT_TYPES (indices 12–18); the
+// fold below maps them to their respective phases via eventToPhaseCandidate.
 import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
 

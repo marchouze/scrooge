@@ -126,6 +126,15 @@ export {
   ba350ToXmlPayload,
 } from "./ba-350-xml-adapter";
 
+// ---------------------------------------------------------------------------
+// FX adapter — bridges fxPositionCalculator output to BA 350 FxPositionRow[]
+// ---------------------------------------------------------------------------
+
+export {
+  fxPositionsToBa350Input,
+  fxPositionSummaryNote,
+} from "./ba-350-fx-adapter";
+
 export {
   BA_600_NAMESPACE,
   BA_600_REQUIRED_ELEMENTS,
