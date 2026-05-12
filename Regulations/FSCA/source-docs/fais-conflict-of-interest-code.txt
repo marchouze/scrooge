@@ -1,0 +1,49 @@
+[DOCUMENT NOT RETRIEVED]
+Source: https://www.fsca.co.za/Legislation/Pages/FAIS-Codes-and-Notices.aspx
+Source (alt): Board Notice 58 of 2010, published in Government Gazette 33152, 18 May 2010
+Action required: Manual download from FSCA website and place PDF at:
+  Regulations/FSCA/source-docs/fais-conflict-of-interest-code.pdf
+
+Key contents of this document (for analysis purposes — sourced from knowledge of
+the instrument and cross-references in the existing obligations register):
+
+The Conflict of Interest (CoI) Code (Board Notice 58 of 2010) — "Notice on
+Determination under Section 3A of the Financial Advisory and Intermediary Services Act,
+2002 (Act No. 37 of 2002) — Conflict of Interest" sets requirements for FSPs and their
+representatives on managing conflicts of interest.
+
+Key provisions:
+
+1. DEFINITIONS — "Conflict of interest" means any situation in which a provider or
+   a representative has an actual or potential interest that may, in rendering a financial
+   service to a client, influence the objective exercise of that provider's or
+   representative's obligations to that client or prevent the provider or representative
+   from rendering an unbiased and fair financial service to that client, or that may
+   reasonably be perceived to have such effect.
+
+2. CONFLICT OF INTEREST MANAGEMENT POLICY — Every FSP must have and
+   maintain a written conflict-of-interest management policy. The policy must set out
+   how conflicts of interest are identified, assessed, monitored, managed, and disclosed.
+
+3. DISCLOSURE — Where a conflict of interest exists or may exist, the FSP or
+   representative must disclose the conflict of interest to the client before providing the
+   financial service, and the client must be afforded a reasonable opportunity to decide
+   whether to continue with the transaction.
+
+4. CONSEQUENCES — An FSP may not act in a manner which conflicts with the
+   client's interests and with its obligations under the Act.
+
+5. RECORD-KEEPING — Records of identified conflicts, disclosures made to clients,
+   and measures taken to manage conflicts must be maintained.
+
+6. REGISTER OF FINANCIAL INTERESTS — FSPs and representatives must maintain
+   a register of financial interests received from or given to other FSPs, product
+   suppliers, or representatives.
+
+Relevance for Hoz Securities Limited:
+- As a Category I/II FSP, Hoz Securities Limited is subject to the CoI Code.
+- The bank's Conflicts of Interest Policy (Domain L, ORG-WB-04) is the fulfilment
+  policy for this obligation.
+- Institutional counterparty trading creates inherent conflict of interest situations
+  (principal vs agent; proprietary vs customer flow) — the CoI Code requires these
+  to be systematically identified, managed, and disclosed.

@@ -1,0 +1,52 @@
+[DOCUMENT NOT RETRIEVED]
+Source: https://www.fsca.co.za/Legislation/Documents/Fit%20and%20Proper%20Requirements.pdf
+Source (alt): Board Notice 194 of 2017, published in Government Gazette 41341, 15 December 2017
+Source (alt): https://www.fsca.co.za/Legislation/Pages/FAIS-Codes-and-Notices.aspx
+Action required: Manual download from FSCA website and place PDF at:
+  Regulations/FSCA/source-docs/fais-fit-and-proper-2017.pdf
+
+Key contents of this document (for analysis purposes — sourced from secondary references
+in the existing procedure files and Sade's fit-and-proper template at
+Owner Inbox/2026-05-09_sade_fais-ki-fit-and-proper-template.md):
+
+The Determination of Fit and Proper Requirements 2017 (Board Notice 194 of 2017)
+replaced Board Notice 106 of 2008. It sets requirements under FAIS Act s.8(1) for:
+
+1. HONESTY AND INTEGRITY — Personal character qualities; criminal record;
+   civil judgments; regulatory sanctions; disclosure obligations on change of
+   circumstances.
+
+2. COMPETENCE — Qualifications (per product sub-categories in Schedule 1);
+   Experience (class of business experience); Regulatory examinations (RE1 for KIs,
+   RE5 for representatives); Class of Business examinations.
+
+3. OPERATIONAL ABILITY — Ability to fulfil responsibilities imposed by FAIS Act;
+   capacity to oversee representatives; ability to comply with General Code.
+
+4. FINANCIAL SOUNDNESS — Solvency; no unrehabilitated insolvency; no debt
+   administration/review; maintenance of continuous financial soundness.
+
+5. CPD (CONTINUING PROFESSIONAL DEVELOPMENT) — Ongoing CPD obligation
+   post-qualification; minimum CPD hours per year (typically 12–16 CPD points
+   per cycle depending on category).
+
+For Category I and II FSPs:
+- Category I: Advice on structured products, shares, bonds, money market, forex,
+  derivatives (non-complex). Minimum qualification at NQF4 equivalent.
+  Experience: minimum 1 year per sub-category before rendering financial services
+  without supervision.
+- Category II (Discretionary FSP): Manages investments on discretionary basis.
+  Higher qualification and experience requirements. NQF5 equivalent minimum.
+  Experience: minimum 3 years.
+
+Key Individual requirements are additive to representative requirements — KIs must
+satisfy all five dimensions across the full scope of the FSP licence categories.
+
+Regulatory examinations:
+- RE 1 (Key Individuals): FSPs authorised in categories I, II, IIA, III, IV must have
+  at least one KI who has passed RE 1. Exemptions available in limited circumstances.
+- RE 5 (Representatives): All representatives must pass RE 5 (or have an exemption
+  under the transitional provisions). RE 5 tests the Act, Codes, and ethics.
+
+Note: As of 2017, the phased-in implementation of the new Determination allowed
+legacy KIs and reps to transition from BN 106 of 2008 requirements.
