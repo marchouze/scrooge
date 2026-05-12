@@ -41,31 +41,23 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { CUSTOMER_EVENT_TYPES } from "@domains/customer/types";
-// Slice 2 event types are in CUSTOMER_EVENT_TYPES (indices 12–18); the
-// fold below maps them to their respective phases via eventToPhaseCandidate.
+// Slice 2 event types (CounterpartyFaisClassified … AccountsSetupCompleted)
+// are now in CUSTOMER_EVENT_TYPES (indices 12–18 per PR #XXX). The fold
+// below maps them to their phases via eventToPhaseCandidate.
 import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
 
 // ---------------------------------------------------------------------------
-// Slice 2 event types (planned — Atlas will add these to CUSTOMER_EVENT_TYPES
-// once the Slice 2 domain types land). The orchestrator pre-registers them
-// here so that rehearsal events emitted now fold correctly into phases once
-// Slice 2 merges. When Slice 2 lands, move these into CUSTOMER_EVENT_TYPES
-// and delete this constant.
-//   Substrate gap: [substrate-gap: planned, Slice 2]
+// Post-activation + eligibility event types not yet in CUSTOMER_EVENT_TYPES.
+// These are emitted by the rehearsal script and fold here once the event
+// store replays them. When they land in CUSTOMER_EVENT_TYPES, delete this.
+//   Substrate gap: [substrate-gap: planned, Slice 2 follow-on]
 // ---------------------------------------------------------------------------
 const SLICE2_EVENT_TYPES: readonly string[] = [
-  "CounterpartyFaisClassified", // → fais-categorised   (Phase 3)
-  "BeneficialOwnerResolved", // → bo-resolved        (Phase 5)
-  "SanctionsClearancePassed", // → sanctions-cleared  (Phase 6)
-  "FatcaCrsClassified", // → fatca-crs-classified (Phase 7)
-  "PopiaConsentRecorded", // → popia-recorded     (Phase 8)
-  "CreditAssessmentCompleted", // → credit-assessed    (Phase 10)
-  "AccountsSetupCompleted", // → accounts-setup     (Phase 16)
-  "CounterpartyMonitoringStarted", // → monitoring       (Phase 18)
-  "KycRefreshDue", // → kyc-refresh-due    (Phase 19)
+  "CounterpartyMonitoringStarted", // → monitoring              (Phase 18)
+  "KycRefreshDue", // → kyc-refresh-due         (Phase 19)
   "CounterpartyEligibilityRevalidated", // → eligibility-revalidated (Phase 20)
-  "CounterpartyEligibilityScreened", // → eligibility-screened    (Phase 9, from CRM domain)
+  "CounterpartyEligibilityScreened", // → eligibility-screened   (Phase 9, CRM domain)
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -273,25 +265,8 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
     case "CounterpartyOffboarded":
       return "offboarded";
     // ------------------------------------------------------------------
-    // Slice 2 event types — pre-registered so rehearsal events fold
-    // correctly before Atlas's Slice 2 domain types land. When Slice 2
-    // merges, these cases remain valid (the event types are identical).
-    // Substrate gap: [substrate-gap: planned, Slice 2]
+    // Post-activation phases (Slice 2 monitoring cycle)
     // ------------------------------------------------------------------
-    case "CounterpartyFaisClassified":
-      return "fais-categorised";
-    case "BeneficialOwnerResolved":
-      return "bo-resolved";
-    case "SanctionsClearancePassed":
-      return "sanctions-cleared";
-    case "FatcaCrsClassified":
-      return "fatca-crs-classified";
-    case "PopiaConsentRecorded":
-      return "popia-recorded";
-    case "CreditAssessmentCompleted":
-      return "credit-assessed";
-    case "AccountsSetupCompleted":
-      return "accounts-setup";
     case "CounterpartyMonitoringStarted":
       return "monitoring";
     case "KycRefreshDue":
@@ -300,8 +275,8 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
       return "eligibility-revalidated";
     // ------------------------------------------------------------------
     // CounterpartyEligibilityScreened maps to "eligibility-screened"
-    // (from the CRM domain — already in the registry; wired here now
-    // that Slice 2 bridges make it reachable in sequence).
+    // (from the CRM domain — already in the registry; wired here for
+    // the 21-phase ordering).
     // ------------------------------------------------------------------
     case "CounterpartyEligibilityScreened":
       return "eligibility-screened";
