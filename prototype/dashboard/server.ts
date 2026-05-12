@@ -1172,7 +1172,10 @@ const server = Bun.serve({
       //   ?search=X     — substring match on event_id or payload JSON
       // pageProvenance: production (real event log, not simulated data).
       const page = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
-      const limit = Math.min(200, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "50", 10) || 50));
+      const limit = Math.min(
+        200,
+        Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "50", 10) || 50),
+      );
       const typeFilter = url.searchParams.get("type") ?? "";
       const entityFilter = url.searchParams.get("entity") ?? "";
       const search = (url.searchParams.get("search") ?? "").toLowerCase();
