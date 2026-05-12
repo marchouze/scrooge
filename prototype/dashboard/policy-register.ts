@@ -16,7 +16,7 @@
 // Author: Anya (data)
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { basename } from "node:path";
 
 import type { Policy, PolicyBind, PolicySource, PolicyStatus } from "./types";
 

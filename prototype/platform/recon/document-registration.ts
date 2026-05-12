@@ -50,8 +50,8 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { hashContent } from "../document-store/hash";
 import { eventStore } from "../composition";
+import { hashContent } from "../document-store/hash";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "document-registration";
@@ -201,10 +201,7 @@ export function run(opts: DocumentRegistrationRunOpts = {}): ReconResult {
     if (registeredHash === undefined) {
       violations.push({
         subject: repoRelPath,
-        message:
-          `No DocumentRegistered event found for ${repoRelPath}. ` +
-          `Run \`bun run scripts/backfill-document-registered-2026-05-12.ts\` ` +
-          `to emit the missing event, then re-run CI.`,
+        message: `No DocumentRegistered event found for ${repoRelPath}. Run \`bun run scripts/backfill-document-registered-2026-05-12.ts\` to emit the missing event, then re-run CI.`,
         severity: failSeverity,
       });
       continue;
@@ -213,11 +210,7 @@ export function run(opts: DocumentRegistrationRunOpts = {}): ReconResult {
     if (registeredHash !== currentHash) {
       violations.push({
         subject: repoRelPath,
-        message:
-          `DocumentRegistered event exists for ${repoRelPath} but its ` +
-          `contentHash (${registeredHash}) does not match the current file ` +
-          `hash (${currentHash}). The file was changed after the event was ` +
-          `emitted — emit a new DocumentRegistered event for the updated content.`,
+        message: `DocumentRegistered event exists for ${repoRelPath} but its contentHash (${registeredHash}) does not match the current file hash (${currentHash}). The file was changed after the event was emitted — emit a new DocumentRegistered event for the updated content.`,
         severity: failSeverity,
       });
     }

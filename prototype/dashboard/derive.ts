@@ -1651,7 +1651,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const policies: readonly Policy[] = parsePolicyRegister({
     path: opts.sources.policyRegister,
     obligationsRegister: opts.sources.obligationsRegister,
-    policiesDir: opts.sources.policiesDir,
+    ...(opts.sources.policiesDir !== undefined ? { policiesDir: opts.sources.policiesDir } : {}),
   });
   const obligations = countObligations(opts.sources.obligationsRegister);
   const regs = regulationStats(opts.sources.regulationsIndex);

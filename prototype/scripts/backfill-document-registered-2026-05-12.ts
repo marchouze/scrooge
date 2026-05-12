@@ -20,12 +20,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BANK_ZA_001, newEventId, nowUtc } from "../platform/core/types";
-import { hashContent } from "../platform/document-store/hash";
 import { eventStore } from "../platform/composition";
+import { BANK_ZA_001, newEventId } from "../platform/core/types";
+import { hashContent } from "../platform/document-store/hash";
 import {
-  makeDocumentRegistered,
   type DocumentRegisteredPayload,
+  makeDocumentRegistered,
 } from "../platform/event-store/event-types/governance";
 import { logger } from "../platform/observability/logger";
 
