@@ -319,7 +319,8 @@
    *   4. **Top-level filter object** — forward-compat shape.
    */
   async function fetchFilter(endpoint) {
-    const rawUrl = typeof endpoint === "string" && endpoint.length > 0 ? endpoint : FALLBACK_ENDPOINT;
+    const rawUrl =
+      typeof endpoint === "string" && endpoint.length > 0 ? endpoint : FALLBACK_ENDPOINT;
     // Append limit when fetching an events endpoint so we get a
     // representative sample, not just the first page.
     const url = withLimit(rawUrl, 200);
