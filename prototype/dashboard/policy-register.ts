@@ -15,8 +15,8 @@
 //
 // Author: Anya (data)
 
-import { existsSync, readFileSync } from "node:fs";
-import { basename } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { basename, resolve } from "node:path";
 
 import type { Policy, PolicyBind, PolicySource, PolicyStatus } from "./types";
 
@@ -35,6 +35,11 @@ const POLICY_REGISTER_BASENAME = "2026-05-06_policy-register.md";
 // `Procedures/by-policy/`, not `Owner Inbox/`).
 const OWNER_INBOX_MD_REF = /Owner\s+Inbox\/([A-Za-z0-9._-]+\.md)/g;
 
+// Match `Policies/<name>.md` references appearing inline in any cell —
+// the canonical Policies/ home introduced by D-POLICY-DOCUMENT-HOME
+// Option C (CEO-approved 2026-05-12).
+const POLICIES_MD_REF = /Policies\/([A-Za-z0-9._-]+\.md)/g;
+
 function extractOwnerInboxPolicyFiles(...cells: string[]): string[] {
   const out = new Set<string>();
   for (const cell of cells) {
@@ -46,8 +51,45 @@ function extractOwnerInboxPolicyFiles(...cells: string[]): string[] {
       // basename suitable for the `/api/policy/:filename` allow-list.
       out.add(basename(name));
     }
+    for (const m of cell.matchAll(POLICIES_MD_REF)) {
+      const name = m[1];
+      if (!name) continue;
+      out.add(basename(name));
+    }
   }
   return Array.from(out);
+}
+
+/**
+ * List all `.md` files in `Policies/` (D-POLICY-DOCUMENT-HOME Option C).
+ * Returns basenames only. Returns `[]` if the directory does not exist.
+ */
+function listPoliciesDirFiles(policiesDir: string): string[] {
+  if (!existsSync(policiesDir)) return [];
+  try {
+    return readdirSync(policiesDir)
+      .filter((f) => f.endsWith(".md") && f !== "README.md")
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Loosely match a `Policies/` filename stem against a policy name slug.
+ * E.g. `liquidity-risk-management-policy-v1` matches `liquidity-risk-management-policy`.
+ * We check whether the policy slug is a prefix of the filename stem (ignoring
+ * trailing version markers like `-v1`, `-v2`, etc.).
+ */
+function policyFileStemMatchesSlug(stem: string, slug: string): boolean {
+  // Strip trailing `-v<n>` or `-v<n>.<m>` version suffix from the stem.
+  const stemWithoutVersion = stem.replace(/-v\d+(\.\d+)*$/, "");
+  // Strip trailing `-policy` from the stem (so `liquidity-risk-management-policy`
+  // matches `liquidity-risk-management`) — many policy slugs don't carry the
+  // `-policy` suffix that the filename does.
+  const slugNorm = slug.replace(/-policy$/, "");
+  const stemNorm = stemWithoutVersion.replace(/-policy$/, "");
+  return stemNorm === slugNorm || stemNorm.startsWith(slugNorm) || slugNorm.startsWith(stemNorm);
 }
 
 // ---------------------------------------------------------------------------
@@ -507,6 +549,18 @@ export interface ParsePolicyRegisterOpts {
    * If omitted (or the file is missing), every policy gets `linkedObligations: []`.
    */
   readonly obligationsRegister?: string;
+  /**
+   * Path to the canonical `Policies/` directory (D-POLICY-DOCUMENT-HOME
+   * Option C, CEO-approved 2026-05-12). When supplied, any `.md` file in
+   * that directory whose basename (without path prefix) matches a token in
+   * a policy row's citation or status cell is added to `sourceFiles[]`.
+   *
+   * Also, any `Policies/*.md` file whose kebab-stem loosely matches a
+   * policy's slugified name is included in `sourceFiles[]` so the policy
+   * page can surface the canonical Policies/ document alongside the
+   * Owner Inbox/ original.
+   */
+  readonly policiesDir?: string;
 }
 
 export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
@@ -514,6 +568,10 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
   const linkIdx = opts.obligationsRegister
     ? buildLinkedObligationsIndex(opts.obligationsRegister)
     : new Map<string, string[]>();
+
+  // Pre-load the list of Policies/ files so we can cross-reference them
+  // for each policy row (D-POLICY-DOCUMENT-HOME Option C, 2026-05-12).
+  const policiesDirFiles = opts.policiesDir ? listPoliciesDirFiles(opts.policiesDir) : [];
 
   const out: Policy[] = [];
   for (const row of rows) {
@@ -527,11 +585,23 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
     const id = policyId(row.domainNumber, name);
     const linkedObligations = linkIdx.get(normalisePolicyName(name)) ?? [];
 
-    // Per-policy source files: any `Owner Inbox/<name>.md` reference in
-    // the citation or status cell, plus the policy register itself as
-    // the canonical fallback. De-duped, register first so the default
-    // preview lands on the row-of-truth.
+    // Per-policy source files: any `Owner Inbox/<name>.md` or `Policies/<name>.md`
+    // reference in the citation or status cell, plus the policy register itself
+    // as the canonical fallback. De-duped, register first so the default preview
+    // lands on the row-of-truth.
     const explicit = extractOwnerInboxPolicyFiles(citation ?? "", statusCell ?? "");
+
+    // Additionally scan Policies/ for files whose stem loosely matches this
+    // policy's slug — picks up the canonical Policies/ copy even when the
+    // policy register row does not yet reference it inline.
+    const slug = slugify(name);
+    for (const f of policiesDirFiles) {
+      const stem = f.replace(/\.md$/, "");
+      if (policyFileStemMatchesSlug(stem, slug) && !explicit.includes(f)) {
+        explicit.push(f);
+      }
+    }
+
     const sourceFiles = [
       POLICY_REGISTER_BASENAME,
       ...explicit.filter((f) => f !== POLICY_REGISTER_BASENAME),

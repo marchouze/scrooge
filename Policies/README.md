@@ -1,0 +1,62 @@
+# Policies — canonical policy document store
+
+> **Authority:** D-POLICY-DOCUMENT-HOME Option C, CEO-approved 2026-05-12.
+> **Owner:** Owen (Company Secretary, governance)
+
+This directory is the canonical home for all bank policy documents.
+
+## What belongs here
+
+Every finalised, versioned policy document — policies, charters, mandates, and frameworks approved by the CEO or Board. Draft working documents should remain in `Owner Inbox/` until approved.
+
+## Naming convention
+
+```
+<kebab-case-policy-name>-v<version>.md
+```
+
+Examples:
+- `liquidity-risk-management-policy-v1.md`
+- `aml-cft-policy-v2.md`
+- `internal-audit-charter-v1.md`
+
+Drop the date prefix and author that `Owner Inbox/` filenames carry — those are inbox-routing artefacts, not canonical names.
+
+## Event binding
+
+Every file in this directory has a corresponding `DocumentRegistered` event in the event store (Principle 1 — events are the only source of truth). The `document-registration` recon pipeline (`bun run recon:document-registration` from `prototype/`) enforces this:
+
+- CI fails if a `Policies/*.md` file exists without a matching `DocumentRegistered` event.
+- The event carries a BLAKE3 content hash — any change to a file produces a hash mismatch, requiring a new event.
+
+## Do NOT author policies here
+
+Do not author new policy documents by creating files here directly. The correct workflow is:
+
+1. Author in `Owner Inbox/` (inbox-pattern, per pre-Phase-1 operating procedure).
+2. CEO/Board approves.
+3. Copy the approved file to `Policies/` with the simplified naming convention.
+4. Run `bun run scripts/backfill-document-registered-<date>.ts` to emit the `DocumentRegistered` event for the new file.
+5. `bun run ci` must pass (the `document-registration` recon checks hash coverage).
+
+The `Owner Inbox/` original is retained as the historical inbox record. It is not deleted.
+
+## Policy register
+
+The master policy register lives at `Owner Inbox/2026-05-06_policy-register.md`. Each row's status cell now references the canonical `Policies/` path for approved policies.
+
+## Event schema
+
+```typescript
+DocumentRegisteredPayload {
+  documentId: string      // e.g. "policy:liquidity-risk-management:v1"
+  title: string
+  kind: "policy" | "charter" | "procedure" | "report" | "other"
+  filePath: string        // canonical path e.g. "Policies/liquidity-risk-management-policy-v1.md"
+  contentHash: string     // "blake3:<hex>"
+  version: string         // "1.0.0"
+  authors: string[]       // agent URNs or email
+  registeredAt: string    // ISO timestamp
+  supersedes?: string     // documentId of prior version
+}
+```

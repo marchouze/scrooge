@@ -8,6 +8,7 @@
 //   agent.ts          — AgentEscalation family, AgentDecision,
 //                       AgentRegistered, SubstrateAgentRun*, RMS agent-runs,
 //                       AgentGoalEvaluated, AgentGoalSelected, AgentGoalDeferred
+//   governance.ts     — DocumentRegistered (D-POLICY-DOCUMENT-HOME Option C)
 //   platform.ts       — WorkstreamRegistered, DecisionComment,
 //                       ScheduledTrigger, SubstrateAlert, IdentityKeyRotated,
 //                       PermissionPolicyPublished, BusDispatched,

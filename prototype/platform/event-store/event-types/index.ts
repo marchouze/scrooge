@@ -35,6 +35,7 @@
 // re-exported directly here as before.
 
 export * from "./agent";
+export * from "./governance";
 export * from "./platform";
 export * from "./risk";
 export * from "./model-risk";
@@ -202,6 +203,10 @@ export const TYPED_EVENT_TYPES = [
   "AgentGoalEvaluated",
   "AgentGoalSelected",
   "AgentGoalDeferred",
+  // Governance document-lifecycle events — D-POLICY-DOCUMENT-HOME Option C
+  // (CEO-approved 2026-05-12). Emitted by the document-registration recon
+  // pipeline when a Policies/*.md file is first registered.
+  "DocumentRegistered",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
