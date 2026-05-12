@@ -21,6 +21,15 @@
 //   - FX accounting: FxPositionRevalued, FxSettlementConfirmed
 
 import {
+  equityCorporateActionAppliedPayloadSchema,
+  equitySettlementInstructedPayloadSchema,
+  equityTradeBookedPayloadSchema,
+} from "../../markets/cdm/equity";
+import {
+  fxSettlementInstructedPayloadSchema,
+  fxTradeExecutedPayloadSchema,
+} from "../../markets/cdm/fx";
+import {
   accountingPeriodClosedPayloadSchema,
   accountingPeriodOpenedPayloadSchema,
   bankAccountClosedPayloadSchema,
@@ -40,15 +49,6 @@ import {
   switchTestReportPayloadSchema,
   trialBalanceSnapshottedPayloadSchema,
 } from "../event-types";
-import {
-  equityCorporateActionAppliedPayloadSchema,
-  equitySettlementInstructedPayloadSchema,
-  equityTradeBookedPayloadSchema,
-} from "../../markets/cdm/equity";
-import {
-  fxSettlementInstructedPayloadSchema,
-  fxTradeExecutedPayloadSchema,
-} from "../../markets/cdm/fx";
 import { cdmBindingsRegeneratedPayloadSchema } from "../event-types-cdm";
 import {
   accountsSetupCompletedPayloadSchema,
@@ -60,11 +60,11 @@ import {
   sanctionsClearancePassedPayloadSchema,
 } from "../event-types/customer";
 import {
+  type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
   RETENTION_FIC_5Y,
   RETENTION_GOVERNANCE_7Y,
   RETENTION_JSE_TRADE_7Y,
-  type EventTypeMetadata,
 } from "./types";
 
 // Markets lifecycle event types from A0 §5. Today only TradeExecuted

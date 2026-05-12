@@ -80,7 +80,7 @@ import {
 } from "./markets";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { GOAL_LOOP_EVENT_TYPES, RUNTIME_EVENT_TYPES } from "./runtime";
-import { type EventTypeMetadata, type EventTypeStatus } from "./types";
+import type { EventTypeMetadata, EventTypeStatus } from "./types";
 
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split

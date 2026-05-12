@@ -68,12 +68,12 @@ import {
   mlroAttestationPayloadSchema,
 } from "../event-types-readiness-snapshots";
 import {
+  type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
   RETENTION_BANKING_5Y,
   RETENTION_FIC_5Y,
   RETENTION_GOVERNANCE_7Y,
   RETENTION_RUNTIME_1Y,
-  type EventTypeMetadata,
 } from "./types";
 
 // Governance / audit / observation event types currently in flight.

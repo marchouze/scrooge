@@ -26,7 +26,7 @@ import {
   validationFindingRaisedPayloadSchema,
   validationMethodologyPublishedPayloadSchema,
 } from "../event-types";
-import { RETENTION_GOVERNANCE_7Y, type EventTypeMetadata } from "./types";
+import { type EventTypeMetadata, RETENTION_GOVERNANCE_7Y } from "./types";
 
 // Model-registry event types. The skeleton lives in
 // `platform/model-registry/registry.ts`; co-curated by Rohan (submits)

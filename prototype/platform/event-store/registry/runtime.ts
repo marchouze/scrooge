@@ -38,11 +38,7 @@ import {
   substrateAlertPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "../event-types";
-import {
-  RETENTION_GOVERNANCE_7Y,
-  RETENTION_RUNTIME_1Y,
-  type EventTypeMetadata,
-} from "./types";
+import { type EventTypeMetadata, RETENTION_GOVERNANCE_7Y, RETENTION_RUNTIME_1Y } from "./types";
 
 export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   // The four typed events that already have Zod schemas.
@@ -391,4 +387,3 @@ export const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
   },
 ];
-
