@@ -54,6 +54,7 @@ import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permi
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
+import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
 import type { Event } from "../platform/event-store/types";
 import {
   DEFAULT_HORIZON_DAYS,
@@ -411,6 +412,48 @@ async function handleDecide(req: Request): Promise<Response> {
     );
   } catch (e) {
     return jsonResponse({ error: (e as Error).message }, 400);
+  }
+
+  // If this decisionId is also an open escalation ID, emit the terminal
+  // AgentEscalationDecided event so the escalation channel folds it as
+  // "decided". The escalation channel only processes AgentEscalationDecided
+  // (not CeoDecision) for terminal state — without this the escalation
+  // stays ghost-open even though a CeoDecision was recorded against it.
+  const resolvedIds = new Set(
+    [...eventStore.replay({ type: "CeoDecision" })]
+      .map((e) => String((e.payload as Record<string, unknown>).decisionId ?? ""))
+      .filter(Boolean),
+  );
+  const openEscalations = listEscalations(eventStore, resolvedIds);
+  const matchingEscalation = openEscalations.find(
+    (esc) => esc.escalationId === body.decisionId && esc.status !== "decided",
+  );
+  if (matchingEscalation) {
+    try {
+      const escalationEvent = makeAgentEscalationDecided({
+        asOf: nowUtc(),
+        entity: matchingEscalation.entity ?? "BANK-ZA-001",
+        actor: { type: "human", id: actor },
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+        eventId: `evt-escalation-decided-${newEventId()}`,
+        payload: {
+          escalationId: body.decisionId,
+          decidedBy: actor,
+          chosenOption: body.action,
+          rationale: body.outcome,
+        },
+      });
+      eventStore.append(escalationEvent);
+      logger.info(
+        { escalationId: body.decisionId, escalationEventId: escalationEvent.event_id },
+        "co-emitted AgentEscalationDecided alongside CeoDecision",
+      );
+    } catch (escalationErr) {
+      logger.warn(
+        { escalationId: body.decisionId, err: (escalationErr as Error).message },
+        "failed to co-emit AgentEscalationDecided — escalation may remain ghost-open",
+      );
+    }
   }
 
   refresh("decide");
