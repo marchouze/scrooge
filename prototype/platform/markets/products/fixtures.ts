@@ -408,9 +408,28 @@ export const M4_FX_SPOT_FIXTURE: Product = {
         "Zara (AML engineer) conduct/AML gate: deferred to pre-go-live; FinSurv category declared (ORG-EXCON-ODP-001) as design anchor",
       ],
     },
+    {
+      policy: "D-NEW-PRODUCT-APPROVAL-POLICY",
+      version: "1.0.0",
+      attestedAt: "2026-05-12T00:00:00.000Z",
+      attestedBy: "agent:Nadia,agent:Imani,agent:Devon",
+      gatesCleared: ["model-risk", "legal-documentation", "operational-readiness"],
+      conditions: [
+        "Execute ISDA Master Agreement with each institutional counterparty before first trade",
+        "Obtain AD mandate letter from SARB before intermediating on own account",
+        "Configure FinSurv per-trade reporting pipeline",
+        "Execute CSA with each counterparty where IM/VM obligations apply",
+        "Deploy SWIFT integration for correspondent settlement",
+        "Integrate live market data feed (Reuters/Bloomberg) for FX rate sourcing",
+        "Finalise BCP runbook covering FX Spot trading and settlement",
+        "Confirm DTCC/SAFE reporting obligations and deploy pipeline",
+        "Execute correspondent bank agreements with Standard Bank (primary) and FirstRand/RMB (backup)",
+      ],
+    },
   ],
-  // Design-attestation only; advances to "due-diligence" when pre-go-live
-  // gates (Nadia, Senna, Imani, Devon, Zara) are cleared at commencement-of-trading.
+  // Pre-go-live attestations landed (Nadia model-risk, Imani legal-documentation,
+  // Devon operational-readiness — 2026-05-12). Remaining gates: Senna security,
+  // Zara conduct/AML. Advances to "due-diligence" when all gates are cleared.
   lifecycle: "conceptualised",
   citations: [
     "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
