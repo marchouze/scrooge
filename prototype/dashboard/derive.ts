@@ -1788,7 +1788,7 @@ export function deriveAgents(input: DeriveAgentsInput): AgentMiniDashboard[] {
 // ---------------------------------------------------------------------------
 
 export function deriveState(opts: DeriveOpts): DashboardState {
-  const now = opts.now ?? (() => new Date().toISOString());
+  const now = opts.now ?? (() => new Date().toISOString()); // wall-clock: default; inject opts.now for deterministic scenarios
   const curated = readCurated(opts.sources.curated);
 
   const principles = parsePrinciples(opts.sources.principlesDir);

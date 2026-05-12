@@ -28,6 +28,6 @@ export function emptyResult(pipeline: string): ReconResult {
     ok: true,
     asserted: 0,
     violations: [],
-    asOf: new Date().toISOString(),
+    asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
   };
 }

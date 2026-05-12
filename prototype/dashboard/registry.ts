@@ -49,7 +49,7 @@ export function applyDecision(
   outcome: string,
   actor: string,
   comment?: string,
-  now: () => string = () => new Date().toISOString(),
+  now: () => string = () => new Date().toISOString(), // wall-clock: default; inject now for deterministic scenarios
 ): { next: DashboardState; resolved: ResolvedDecision; original: OpenDecision } {
   const original = state.decisionsOpen.find((d) => d.id === decisionId);
   if (!original) {
@@ -89,7 +89,7 @@ export function applyDecision(
 export function startWorkstream(
   state: DashboardState,
   id: string,
-  now: () => string = () => new Date().toISOString(),
+  now: () => string = () => new Date().toISOString(), // wall-clock: default; inject now for deterministic scenarios
 ): { next: DashboardState; item: InFlightItem } {
   const idx = state.inFlight.findIndex((i) => i.id === id);
   if (idx < 0) {

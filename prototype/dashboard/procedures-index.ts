@@ -253,7 +253,7 @@ export function getProceduresIndex(repoRoot: string): ProceduresIndexView {
 
   if (!existsSync(indexPath)) {
     return {
-      asOf: new Date().toISOString(),
+      asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
       count: 0,
       statusCounts,
       orphanCount: 0,
@@ -344,7 +344,7 @@ export function getProceduresIndex(repoRoot: string): ProceduresIndexView {
   const nonEmpty = groups.filter((g) => g.rows.length > 0);
 
   return {
-    asOf: new Date().toISOString(),
+    asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
     count: total,
     statusCounts,
     orphanCount,

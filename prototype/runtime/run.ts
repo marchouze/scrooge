@@ -48,7 +48,7 @@ import { resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 
 import { WorktreeBoundaryError, createRunnerWorker } from "../platform/agent-runtime/runner-worker";
-import { eventStore } from "../platform/composition";
+import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import {
   makeLegacyFanoutShadowed,
@@ -193,7 +193,7 @@ function emitWorktreeBoundaryAlert(args: {
   try {
     eventStore.append(
       makeSubstrateAlert({
-        asOf: new Date().toISOString(),
+        asOf: new Date().toISOString(), // wall-clock: boundary-escape alert fired outside the composition clock scope
         entity: DEFAULT_ENTITY,
         actor: RUNNER_WORKER_ALERT_ACTOR,
         citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
@@ -271,7 +271,7 @@ function emitSubstrateRunStarted(payload: {
     try {
       eventStore.append(
         makeSubstrateAlert({
-          asOf: new Date().toISOString(),
+          asOf: new Date().toISOString(), // wall-clock: error-fallback SubstrateAlert; clock unavailable in catch scope
           entity: DEFAULT_ENTITY,
           actor: SUBSTRATE_RUNNER_ACTOR,
           citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
@@ -333,7 +333,7 @@ function emitSubstrateRunCompleted(payload: {
     try {
       eventStore.append(
         makeSubstrateAlert({
-          asOf: new Date().toISOString(),
+          asOf: new Date().toISOString(), // wall-clock: error-fallback SubstrateAlert; clock unavailable in catch scope
           entity: DEFAULT_ENTITY,
           actor: SUBSTRATE_RUNNER_ACTOR,
           citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
@@ -387,7 +387,7 @@ function emitSubstrateRunFailed(payload: {
     try {
       eventStore.append(
         makeSubstrateAlert({
-          asOf: new Date().toISOString(),
+          asOf: new Date().toISOString(), // wall-clock: error-fallback SubstrateAlert; clock unavailable in catch scope
           entity: DEFAULT_ENTITY,
           actor: SUBSTRATE_RUNNER_ACTOR,
           citations: [...SUBSTRATE_LIFECYCLE_CITATIONS],
@@ -535,7 +535,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   }
 
   const repoRoot = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
-  const startedAt = new Date().toISOString();
+  const startedAt = clock.now();
   const runId = mintRunId(opts.agent, startedAt);
   const ctx: AgentRunContext = {
     agent: opts.agent,
@@ -557,7 +557,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     },
     "agent run started",
   );
-  const t0 = Date.now();
+  const t0 = Date.now(); // wall-clock: elapsed-time measurement for run duration
   // Capture the event-store sequence pointer before the run so we can
   // observe what new event types this run appended (for event-driven
   // fan-out below).
@@ -655,12 +655,12 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   try {
     result = await entry.handler(ctx);
   } catch (err) {
-    const ms = Date.now() - t0;
+    const ms = Date.now() - t0; // wall-clock: elapsed-time for run duration
     const seqAtFailure = eventStore.count();
     emitSubstrateRunFailed({
       runId,
       agent: ctx.agent,
-      failedAt: new Date().toISOString(),
+      failedAt: new Date().toISOString(), // wall-clock: real failure timestamp for run lifecycle
       durationMs: ms,
       errorClass: err instanceof WorktreeBoundaryError ? "structured" : "exception",
       errorMessage: truncateErrMsg((err as Error).message ?? "unknown"),
@@ -671,7 +671,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     restoreWorker();
     throw err;
   }
-  const ms = Date.now() - t0;
+  const ms = Date.now() - t0; // wall-clock: elapsed-time for run duration
   const seqAtCompletion = eventStore.count();
   // Count the run's own emissions of decision / escalation events so the
   // closing payload carries the per-run tallies (Atlas spec §3.4 — "count
@@ -682,7 +682,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   emitSubstrateRunCompleted({
     runId,
     agent: ctx.agent,
-    completedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(), // wall-clock: real completion timestamp for run lifecycle
     durationMs: ms,
     ok: result.ok,
     eventsEmitted: Math.max(0, seqAtCompletion - seqBefore),
@@ -754,7 +754,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
             try {
               eventStore.append(
                 makeLegacyFanoutShadowed({
-                  asOf: new Date().toISOString(),
+                  asOf: clock.now(),
                   entity: DEFAULT_ENTITY,
                   actor: SHADOW_ACTOR,
                   citations: [...PHASE_1_CITATIONS],
@@ -792,7 +792,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
             id: tTrigger,
             triggeringEvents: matchedEvents,
           },
-          asOf: new Date().toISOString(),
+          asOf: clock.now(),
           repoRoot,
           ownerInboxDir: resolve(repoRoot, "Owner Inbox"),
           dryRun: ctx.dryRun,
@@ -900,7 +900,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
       try {
         eventStore.append(
           makeSubstrateAlert({
-            asOf: new Date().toISOString(),
+            asOf: new Date().toISOString(), // wall-clock: bus-tick error SubstrateAlert; clock unavailable in catch scope
             entity: DEFAULT_ENTITY,
             actor: BUS_TICK_ACTOR,
             citations: [...PHASE_1_CITATIONS],

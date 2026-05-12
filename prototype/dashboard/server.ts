@@ -697,7 +697,7 @@ function invalidateRmsFold(): void {
 }
 
 function getRmsFold(): ReturnType<typeof buildRmsRegistersFold> {
-  const now = Date.now();
+  const now = Date.now(); // wall-clock: TTL cache elapsed-time check
   if (rmsFoldCache && now - rmsFoldCacheAt < RMS_FOLD_CACHE_TTL_MS) {
     return rmsFoldCache;
   }
