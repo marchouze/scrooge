@@ -106,6 +106,7 @@ import {
   CommentBodySchema,
   CompleteWorkstreamBodySchema,
   DecideBodySchema,
+  RfqBodySchema,
   StartWorkstreamBodySchema,
 } from "./server-schemas";
 import { getSubstrateGapsView } from "./substrate-gaps";
@@ -516,13 +517,17 @@ async function handleComment(req: Request): Promise<Response> {
 // ---------------------------------------------------------------------------
 
 async function handleFxQuote(req: Request): Promise<Response> {
-  let body: unknown;
+  let raw: unknown;
   try {
-    body = await req.json();
+    raw = await req.json();
   } catch {
     return jsonResponse({ status: "rejected", reason: "invalid JSON body" }, 400);
   }
-  const result = quoteOnly(body as RfqInput);
+  const parsed = RfqBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
+  }
+  const result = quoteOnly(parsed.data as RfqInput);
   if (result.status === "rejected") {
     return jsonResponse(result, 400);
   }
@@ -530,18 +535,22 @@ async function handleFxQuote(req: Request): Promise<Response> {
 }
 
 async function handleFxTrade(req: Request): Promise<Response> {
-  let body: unknown;
+  let raw: unknown;
   try {
-    body = await req.json();
+    raw = await req.json();
   } catch {
     return jsonResponse({ status: "rejected", reason: "invalid JSON body" }, 400);
+  }
+  const parsed = RfqBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
   }
 
   let result: TradeEmitResult;
   try {
     result = emitTrade({
       store: eventStore,
-      input: body as RfqInput,
+      input: parsed.data as RfqInput,
       asOf: nowUtc(),
     });
   } catch (e) {
