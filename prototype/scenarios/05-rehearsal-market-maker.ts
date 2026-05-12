@@ -121,7 +121,6 @@ const summary = {
 
 logger.info(summary, ok ? "Rehearsal MM scenario passed" : "Rehearsal MM scenario failed");
 
-// biome-ignore lint/suspicious/noConsole: scenario summary is intentional
 console.log(
   `\n✓ CP-SYN-MM-001 (Volta Market Making) → target phase: offboarded | events: 4 | status: ${cp?.status}\n`,
 );

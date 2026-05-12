@@ -188,7 +188,6 @@ const summary = {
 
 logger.info(summary, ok ? "Rehearsal AM scenario passed" : "Rehearsal AM scenario failed");
 
-// biome-ignore lint/suspicious/noConsole: scenario summary is intentional
 console.log(
   `\n✓ CP-SYN-AM-001 (Helios Asset Management) → target phase: activated | events: 8 | status: ${cp?.status}\n`,
 );

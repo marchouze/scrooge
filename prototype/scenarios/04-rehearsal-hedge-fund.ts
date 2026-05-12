@@ -173,7 +173,6 @@ const summary = {
 
 logger.info(summary, ok ? "Rehearsal HF scenario passed" : "Rehearsal HF scenario failed");
 
-// biome-ignore lint/suspicious/noConsole: scenario summary is intentional
 console.log(
   `\n✓ CP-SYN-HF-001 (Meridian Opportunities Fund) → target phase: mandate-assigned | events: 7 | status: ${cp?.status}\n`,
 );
