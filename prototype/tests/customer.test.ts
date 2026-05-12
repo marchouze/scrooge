@@ -159,7 +159,12 @@ describe("@domains/customer onboarding", () => {
     const cp = counterpartyId("CP-T4");
     store.append(
       authorisedSignatoryAdded(
-        { counterpartyId: cp, personId: "urn:party:natural-person:signatory-001" as PartyId, scope: "signatory", evidenceRef: "ev1" },
+        {
+          counterpartyId: cp,
+          personId: "urn:party:natural-person:signatory-001" as PartyId,
+          scope: "signatory",
+          evidenceRef: "ev1",
+        },
         cite,
       ),
     );
