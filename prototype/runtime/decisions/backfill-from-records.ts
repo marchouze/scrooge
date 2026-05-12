@@ -23,8 +23,14 @@
 //
 // Author: Atlas (substrate)
 
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
+
 import type { CeoDecisionEventSummary } from "../../dashboard/derive";
-import { synthesizeCeoDecisionsFromRecords } from "../../dashboard/derive";
+import {
+  synthesizeCeoDecisionsFromOwnerInboxFrontmatter,
+  synthesizeCeoDecisionsFromRecords,
+} from "../../dashboard/derive";
 import { newEventId } from "../../platform/core/types";
 import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
 import type { EventStore } from "../../platform/event-store/store";
@@ -80,11 +86,32 @@ export function backfillCeoDecisionsFromRecords(
   ownerInboxDir: string,
   eventStore: EventStore,
 ): BackfillResult {
+  // Gather candidates from both sources:
+  //   1. `*_ceo-decision-record_*.md` files (existing path).
+  //   2. All other Owner Inbox `.md` files with `decision-id` or
+  //      `maps-to-decision-id` + `decision-required: false` frontmatter
+  //      (new path — covers the ~27 "ghost" records the symmetry recon warned about).
   const fromRecords = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
+  const fromFrontmatter = synthesizeCeoDecisionsFromOwnerInboxFrontmatter(ownerInboxDir);
+
+  // Combine all candidates. For a given decisionId there may be multiple
+  // asOf stamps (re-actions). `synthesizeCeoDecisionsFromRecords` emits one
+  // entry per (id, asOf) tuple; `synthesizeCeoDecisionsFromOwnerInboxFrontmatter`
+  // keeps only the latest asOf per id. Each (id, asOf) pair is checked
+  // against the live store's dedup key before writing.
+  // Decision-record files carry richer metadata (explicit Action, Outcome,
+  // Actor lines) so they are appended last; the dedup key comparison means
+  // if both paths produce the same (id, asOf) pair, the record-file version
+  // lands and the frontmatter version is skipped as already-present.
+  const allCandidates: CeoDecisionEventSummary[] = [
+    ...fromFrontmatter,
+    ...fromRecords,
+  ];
+
   const existing = existingDecisionKeys(eventStore);
   const emitted: string[] = [];
   const skipped: string[] = [];
-  for (const summary of fromRecords) {
+  for (const summary of allCandidates) {
     const key = dedupKey(summary.decisionId, summary.asOf);
     if (existing.has(key)) {
       skipped.push(summary.decisionId);
@@ -95,4 +122,47 @@ export function backfillCeoDecisionsFromRecords(
     emitted.push(summary.decisionId);
   }
   return { emitted, skipped };
+}
+
+// ---------------------------------------------------------------------------
+// CLI entry point — `bun run backfill:decisions`
+// ---------------------------------------------------------------------------
+
+if (import.meta.main) {
+  function findRepoRoot(start: string): string {
+    let dir = start;
+    for (let i = 0; i < 8; i++) {
+      if (existsSync(resolve(dir, "CLAUDE.md"))) return dir;
+      dir = resolve(dir, "..");
+    }
+    throw new Error("Cannot locate repo root (CLAUDE.md not found by walking up)");
+  }
+
+  const repoRoot = findRepoRoot(import.meta.dir);
+  const ownerInboxDir = join(repoRoot, "Owner Inbox");
+  const dbPath = join(repoRoot, "prototype", ".local", "event.db");
+
+  // Dynamically import EventStore to avoid top-level DB open side-effect
+  // when this module is imported by the dashboard server (which manages its
+  // own store lifetime).
+  const { EventStore } = await import("../../platform/event-store/store");
+  const store = new EventStore(dbPath);
+
+  try {
+    const result = backfillCeoDecisionsFromRecords(ownerInboxDir, store);
+    console.log(
+      JSON.stringify({
+        level: "info",
+        time: new Date().toISOString(),
+        service: "bank-prototype",
+        pipeline: "backfill:decisions",
+        emitted: result.emitted.length,
+        skipped: result.skipped.length,
+        emittedIds: result.emitted,
+        msg: `backfill:decisions: emitted ${result.emitted.length} CeoDecision event(s), skipped ${result.skipped.length} already-present`,
+      }),
+    );
+  } finally {
+    store.close();
+  }
 }
