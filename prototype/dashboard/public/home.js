@@ -73,7 +73,8 @@
       id: "onboarding",
       category: "dashboards",
       title: "Onboarding",
-      blurb: "Niko's counterparty-onboarding pipeline — 21-phase lifecycle from sounding to activated.",
+      blurb:
+        "Niko's counterparty-onboarding pipeline — 21-phase lifecycle from sounding to activated.",
       href: "/onboarding.html",
     },
 
@@ -306,7 +307,8 @@
       id: "cmp-kyc",
       category: "compliance",
       title: "KYC / onboarding",
-      blurb: "Counterparty-onboarding pipeline — 21-phase lifecycle, CDD, sanctions, FATCA/CRS, POPIA.",
+      blurb:
+        "Counterparty-onboarding pipeline — 21-phase lifecycle, CDD, sanctions, FATCA/CRS, POPIA.",
       href: "/onboarding.html",
     },
     {
@@ -505,22 +507,23 @@
 
     // Parallel fetch — five existing endpoints + the RMS catalogue
     // (Slice 4) + onboarding pipeline (PR #272). One round-trip wall-clock per tick.
-    const [state, obligations, substrateGaps, fleet, escalations, rms, onboarding] = await Promise.all([
-      window.bankShell.fetch.state(),
-      window.bankShell.fetch.obligations(),
-      window.bankShell.fetch.substrateGaps(),
-      window.bankShell.fetch.fleet(),
-      window.bankShell.fetch.escalations(),
-      // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
-      // refreshed; falling through to a plain fetch keeps Slice 4 self-
-      // contained.
-      fetch("/api/rms", { headers: { Accept: "application/json" } })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-      fetch("/api/onboarding", { headers: { Accept: "application/json" } })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-    ]);
+    const [state, obligations, substrateGaps, fleet, escalations, rms, onboarding] =
+      await Promise.all([
+        window.bankShell.fetch.state(),
+        window.bankShell.fetch.obligations(),
+        window.bankShell.fetch.substrateGaps(),
+        window.bankShell.fetch.fleet(),
+        window.bankShell.fetch.escalations(),
+        // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
+        // refreshed; falling through to a plain fetch keeps Slice 4 self-
+        // contained.
+        fetch("/api/rms", { headers: { Accept: "application/json" } })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+        fetch("/api/onboarding", { headers: { Accept: "application/json" } })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+      ]);
 
     if (window.bankShell.render && state && state.asOf) {
       window.bankShell.render.asOf(state.asOf);

@@ -57,13 +57,6 @@ const PHASE_ORDER = [
   "offboarded",
 ];
 
-const TERMINAL_PHASES = new Set(["activated", "offboarded"]);
-
-function phaseIndex(phase) {
-  const i = PHASE_ORDER.indexOf(phase);
-  return i === -1 ? 999 : i;
-}
-
 function phaseClass(phase) {
   if (phase === "activated") return "ob-phase ob-phase-activated";
   if (phase === "offboarded") return "ob-phase ob-phase-offboarded";
