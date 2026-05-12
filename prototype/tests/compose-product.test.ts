@@ -25,6 +25,7 @@ import { composeFromProduct, composeProduct } from "../platform/markets/products
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
+  M4_FX_SPOT_FIXTURE,
 } from "../platform/markets/products/fixtures";
 
 describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 — composeProduct runtime", () => {
@@ -197,6 +198,48 @@ describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 3 — composeProduct runtime", 
     // produces the same fingerprint (composition identity is independent
     // of entity-scope, per the `composition-fingerprint` semantic entry).
     expect(template.fingerprint).toMatch(/^pt-v1-[0-9a-f]{8}-len\d+$/);
+  });
+
+  // ---------------------------------------------------------------------------
+  // M4 FX Spot — composition runtime tests.
+  // Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE · D-NEW-PRODUCT-APPROVAL-POLICY
+  // Author: Kai (trading systems engineer, engineering) +
+  //         Saskia (Head of Global Markets, governance).
+  // ---------------------------------------------------------------------------
+
+  it("M4 FX Spot fixture composes deterministically through the single-path runtime (Q1)", () => {
+    const t1 = composeFromProduct(M4_FX_SPOT_FIXTURE);
+    const t2 = composeFromProduct(M4_FX_SPOT_FIXTURE);
+    expect(t1.fingerprint).toBe(t2.fingerprint);
+    expect(t1.primitives.length).toBe(M4_FX_SPOT_FIXTURE.cdmComposition.primitives.length);
+    expect(t1.extensions.length).toBe(M4_FX_SPOT_FIXTURE.cdmComposition.extensions.length);
+  });
+
+  it("M4 FX Spot composition result is a valid ProductTemplate (envelope check)", () => {
+    const t = composeFromProduct(M4_FX_SPOT_FIXTURE);
+    expect(t.primitives.every((p) => typeof p.address === "string")).toBe(true);
+    expect(t.extensions.every((e) => typeof e.citationUrn === "string")).toBe(true);
+    expect(t.compositionRule.length).toBeGreaterThan(0);
+    expect(t.fingerprint).toMatch(/^pt-v1-[0-9a-f]{8}-len\d+$/);
+  });
+
+  it("M4 FX Spot fixture family and lifecycle are correct on composeFromProduct source", () => {
+    // The composition runtime derives from the Product; assert the source remains correct.
+    expect(M4_FX_SPOT_FIXTURE.family).toBe("fx");
+    expect(M4_FX_SPOT_FIXTURE.lifecycle).toBe("conceptualised");
+  });
+
+  it("M4 FX Spot produces a DIFFERENT fingerprint from M1 (different compositions)", () => {
+    const tM1 = composeFromProduct(M1_JSE_EQUITY_CASH_FIXTURE);
+    const tM4 = composeFromProduct(M4_FX_SPOT_FIXTURE);
+    expect(tM1.fingerprint).not.toBe(tM4.fingerprint);
+  });
+
+  it("M4 composeFromProduct carries ORG-EXCON-ODP-001 + ORG-MK-08 extensions", () => {
+    const t = composeFromProduct(M4_FX_SPOT_FIXTURE);
+    const citationUrns = t.extensions.map((e) => e.citationUrn);
+    expect(citationUrns).toContain("ORG-EXCON-ODP-001");
+    expect(citationUrns).toContain("ORG-MK-08");
   });
 
   it("two Products with same composition but different multi-X yield identical fingerprints", () => {
