@@ -1,5 +1,15 @@
 ---
+policy-id: remuneration-policy
 title: Remuneration Policy v1
+version: "1"
+status: IN FORCE
+owner: Owen (Company Secretary, governance)
+effective-from: "2026-05-11"
+citations:
+  - King IV Principle 14
+  - Banks Act 94 of 1990
+  - BCBS Sound Compensation Practices (2010)
+  - D-POLICY-DOCUMENT-HOME
 author: Owen (Company Secretary, governance) + Sade (AgentOps, operations)
 date: 2026-05-11
 summary: Standalone Remuneration Policy covering the bank's approach to remuneration for directors, executives, key individuals, and Material Risk Takers. Implements King IV, Banks Act, and BCBS Sound Compensation Practices (deferral, malus, clawback). Addresses the thin-human-layer composition at licence-day. Closes obligations ORG-HR-10, ORG-GV-08, ORG-GV-11. LICENCE-BIND.

@@ -1,5 +1,14 @@
 ---
+policy-id: aml-cft-policy
 title: AML/CFT Policy v1
+version: "1"
+status: IN FORCE
+owner: Zara (Chief Compliance Officer, governance)
+effective-from: "2026-05-11"
+citations:
+  - FIC Act 38 of 2001 ss.28, 28A, 29, 42
+  - FATF Recommendations (2012, updated 2024)
+  - D-POLICY-DOCUMENT-HOME
 author: Mira (Compliance / RegTech engineer) + Zara (Compliance / legal-as-code engineer)
 date: 2026-05-11
 summary: Standalone AML/CFT Policy covering the bank's anti-money-laundering and counter-financing-of-terrorism governance, obligations framework, transaction monitoring, sanctions screening, suspicious activity escalation, and FATF-aligned risk-based approach. Closes obligations ORG-FC-02 through ORG-FC-06, ORG-FC-13, ORG-FC-14, ORG-FC-17, ORG-FC-18, ORG-FC-19. LICENCE-BIND.

@@ -1,5 +1,15 @@
 ---
+policy-id: popia-privacy-policy
 title: POPIA Privacy Policy v1
+version: "1"
+status: IN FORCE
+owner: Iris (Information Officer, governance)
+effective-from: "2026-05-11"
+citations:
+  - POPIA 4 of 2013
+  - Joint Standard 2 of 2024 (PA/FSCA)
+  - PAIA Act 2 of 2000
+  - D-POLICY-DOCUMENT-HOME
 author: Iris (Information Officer, governance) + Zara (Compliance / legal-as-code engineer)
 date: 2026-05-11
 summary: Standalone Privacy Policy implementing POPIA 4/2013 and Joint Standard 2 of 2024 for Hoz Bank. Covers lawful basis for processing, data subject rights, Information Officer designation, data breach notification, retention schedules, and cross-border transfer controls. Closes 17 ORG-PR(IV)-series obligations. CORPORATE-BIND (binds now).
