@@ -69,6 +69,14 @@
       blurb: "Recon-pipeline conclusions, last derivation tick, build status.",
       href: "/health.html",
     },
+    {
+      id: "onboarding",
+      category: "dashboards",
+      title: "Onboarding",
+      blurb:
+        "Niko's counterparty-onboarding pipeline — 21-phase lifecycle from sounding to activated.",
+      href: "/onboarding.html",
+    },
 
     // -------- Reports (as-of-date) --------
     {
@@ -299,10 +307,9 @@
       id: "cmp-kyc",
       category: "compliance",
       title: "KYC / onboarding",
-      blurb: "Customer-onboarding workflow, FAIS-compliant advice records.",
-      href: "#",
-      placeholder: true,
-      flag: "Niko activates at licence-day",
+      blurb:
+        "Counterparty-onboarding pipeline — 21-phase lifecycle, CDD, sanctions, FATCA/CRS, POPIA.",
+      href: "/onboarding.html",
     },
     {
       id: "cmp-conduct",
@@ -357,7 +364,7 @@
     return typeof n === "number" && Number.isFinite(n) ? n : 0;
   }
 
-  function deriveCounts(state, obligations, substrateGaps, fleet, escalations) {
+  function deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding) {
     const counts = {};
 
     if (state) {
@@ -470,6 +477,23 @@
       counts["sub-escalations"] = counts.escalations;
     }
 
+    if (onboarding) {
+      const total = safeNum(onboarding.totalCounterparties);
+      const active = safeNum(onboarding.activeCounterparties);
+      const inProgress = safeNum(onboarding.inProgressCounterparties);
+      const tone = total === 0 ? "muted" : active > 0 ? "success" : "default";
+      counts.onboarding = {
+        text: String(total),
+        tone,
+        aria: `${total} counterparties; ${active} active; ${inProgress} in progress`,
+        meta: [
+          { label: `${active} active`, tone: active > 0 ? "default" : "muted" },
+          { label: `${inProgress} in progress`, tone: "muted" },
+        ],
+      };
+      counts["cmp-kyc"] = counts.onboarding;
+    }
+
     return counts;
   }
 
@@ -482,20 +506,24 @@
     if (!window.bankShell) return;
 
     // Parallel fetch — five existing endpoints + the RMS catalogue
-    // (Slice 4). One round-trip wall-clock per tick.
-    const [state, obligations, substrateGaps, fleet, escalations, rms] = await Promise.all([
-      window.bankShell.fetch.state(),
-      window.bankShell.fetch.obligations(),
-      window.bankShell.fetch.substrateGaps(),
-      window.bankShell.fetch.fleet(),
-      window.bankShell.fetch.escalations(),
-      // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
-      // refreshed; falling through to a plain fetch keeps Slice 4 self-
-      // contained.
-      fetch("/api/rms", { headers: { Accept: "application/json" } })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-    ]);
+    // (Slice 4) + onboarding pipeline (PR #272). One round-trip wall-clock per tick.
+    const [state, obligations, substrateGaps, fleet, escalations, rms, onboarding] =
+      await Promise.all([
+        window.bankShell.fetch.state(),
+        window.bankShell.fetch.obligations(),
+        window.bankShell.fetch.substrateGaps(),
+        window.bankShell.fetch.fleet(),
+        window.bankShell.fetch.escalations(),
+        // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
+        // refreshed; falling through to a plain fetch keeps Slice 4 self-
+        // contained.
+        fetch("/api/rms", { headers: { Accept: "application/json" } })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+        fetch("/api/onboarding", { headers: { Accept: "application/json" } })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+      ]);
 
     if (window.bankShell.render && state && state.asOf) {
       window.bankShell.render.asOf(state.asOf);
@@ -503,7 +531,7 @@
       window.bankShell.render.asOf(null);
     }
 
-    const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations);
+    const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding);
     if (rms?.counts) {
       const total =
         safeNum(rms.counts.decisions) +
