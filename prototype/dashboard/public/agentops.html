@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentOps · Hoz</title>
+  <meta name="description" content="AgentOps department view — fleet health, agent lifecycle status, active workstreams, substrate gaps. Primary persona: Sade (HR systems engineer / AgentOps, engineering).">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+        <span class="shell-wordmark-suffix">AgentOps</span>
+      </a>
+      <div class="shell-meta">
+        <span data-provenance-badge="page-top" data-provenance-source="/api/state" aria-label="Provenance badge"></span>
+        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh data">Refresh</button>
+        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Department navigation">
+      <div data-shell-dept-nav></div>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">AgentOps</h1>
+        <p class="shell-page-lede">
+          Sade (HR systems engineer / AgentOps, engineering) — autonomous agent fleet health,
+          lifecycle status (registered / active / paused / retired), active workstreams, and
+          substrate gaps. Principle 6: bank is AI-run; all personas are standing autonomous
+          agents. Sade owns agent registration, retirement, capability assignment, and the
+          agent fit-and-proper analogue.
+        </p>
+      </div>
+
+      <!-- Fleet health summary -->
+      <section aria-labelledby="agentops-fleet-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="agentops-fleet-head">Fleet health</h2>
+          <span class="shell-category-kind">Live</span>
+        </div>
+        <p class="shell-category-blurb">
+          Fleet metrics from <code>/api/state</code> → <code>agents</code> and
+          <code>/api/fleet</code> (handler registry). Active = agent has an in-flight
+          workstream. Substrate-gap count from <code>/api/substrate-gaps</code>.
+        </p>
+        <div class="dept-metrics" id="agentops-fleet-metrics">
+          <div class="dept-metric">
+            <p class="dept-metric-label">Total agents</p>
+            <p class="dept-metric-value" id="agentops-total" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Registered personas</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Active</p>
+            <p class="dept-metric-value" id="agentops-active" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Has in-flight workstream</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Idle</p>
+            <p class="dept-metric-value" id="agentops-idle" data-tone="muted">–</p>
+            <p class="dept-metric-sub">No current workstream</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Fleet handlers</p>
+            <p class="dept-metric-value" id="agentops-handlers" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Registered handler triggers</p>
+          </div>
+          <div class="dept-metric">
+            <p class="dept-metric-label">Substrate gaps</p>
+            <p class="dept-metric-value" id="agentops-gaps" data-tone="muted">–</p>
+            <p class="dept-metric-sub">Atlas inventory</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agent roster table -->
+      <section aria-labelledby="agentops-roster-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="agentops-roster-head">Agent roster</h2>
+          <span class="shell-category-kind">state.agents</span>
+        </div>
+        <p class="shell-category-blurb">
+          All agents from <code>/api/state → agents</code>. Columns: name, role, type
+          (governance / functional), active workstream (if any), last-activity date.
+          Build-phase status shown where the agent's slice is paused or reshaped.
+        </p>
+        <div id="agentops-roster-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Active workstreams -->
+      <section aria-labelledby="agentops-workstreams-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="agentops-workstreams-head">Active workstreams</h2>
+          <span class="shell-category-kind">state.inFlight</span>
+        </div>
+        <p class="shell-category-blurb">
+          In-flight workstreams where <code>active === true</code>, from
+          <code>/api/state → inFlight</code>. A workstream is active after a
+          <code>WorkstreamStarted</code> event and until <code>WorkstreamCompleted</code>.
+        </p>
+        <div id="agentops-workstreams-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Substrate gaps -->
+      <section aria-labelledby="agentops-substrate-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="agentops-substrate-head">Substrate gaps</h2>
+          <span class="shell-category-kind">/api/substrate-gaps</span>
+        </div>
+        <p class="shell-category-blurb">
+          Atlas (Core banking platform architect) substrate gap inventory. Each gap is something
+          the runtime cannot yet do autonomously — Principle 6 blockers. Sade owns the
+          agent-operational subset (registration, retirement, capability assignment).
+        </p>
+        <div id="agentops-substrate-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <aside class="shell-callout" aria-labelledby="agentops-buildphase-note">
+        <h3 id="agentops-buildphase-note">Build-phase substrate gaps</h3>
+        <ul>
+          <li>Agent lifecycle events — <code>AgentRetired</code> / <code>AgentPaused</code> event types are roadmap items; today all fleet entries derive from <code>AgentRegistered</code> events (S8) + handler-metadata static registry.</li>
+          <li>Per-agent retirement/registration actions — <code>POST /api/agent/retire</code> is an Atlas task (roadmap item in substrate gaps); the UI shows the current state but cannot mutate it yet.</li>
+          <li>Human-HR slice — Sade's employment-contracts, payroll, and IRP5 slice activates at licence-day. Build-phase focus is agent registration, capability assignment, and fit-and-proper analogue.</li>
+          <li>Fleet view at <a href="/fleet.html" style="color:var(--accent-ink)">fleet.html</a> shows the handler-trigger level; this AgentOps page shows the persona level.</li>
+        </ul>
+      </aside>
+    </main>
+  </div>
+
+  <footer class="shell-footer" role="contentinfo">
+    AgentOps · Hoz ·
+    data from <a href="/api/state">/api/state</a> · <a href="/api/fleet">/api/fleet</a> · <a href="/api/substrate-gaps">/api/substrate-gaps</a> ·
+    Sade (HR systems engineer / AgentOps, engineering) · Principle 6.
+  </footer>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  <script src="/agentops.js"></script>
+</body>
+</html>
