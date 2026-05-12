@@ -179,7 +179,7 @@ export async function getAgentRuns(): Promise<{
   cacheAgeMs: number;
   error?: string;
 }> {
-  const now = Date.now();
+  const now = Date.now(); // wall-clock: TTL cache elapsed-time check
   // F-002: cursor-keyed invalidation. The cache is valid iff the event-store
   // count hasn't changed since the last fetch. This replaces the previous
   // TTL-based check, which could both serve stale data (TTL not yet expired
@@ -198,14 +198,14 @@ export async function getAgentRuns(): Promise<{
     const runs = await inflight;
     return {
       runs,
-      fetchedAt: cache?.fetchedAt ?? Date.now(),
-      cacheAgeMs: cache ? Date.now() - cache.fetchedAt : 0,
+      fetchedAt: cache?.fetchedAt ?? Date.now(), // wall-clock: cache TTL tracking
+      cacheAgeMs: cache ? Date.now() - cache.fetchedAt : 0, // wall-clock: cache TTL tracking
     };
   }
   inflight = (async () => {
     try {
       const runs = await fetchFromGh();
-      cache = { storeCount: currentCount, fetchedAt: Date.now(), runs };
+      cache = { storeCount: currentCount, fetchedAt: Date.now(), runs }; // wall-clock: cache TTL tracking
       logger.debug({ runs: runs.length, storeCount: currentCount }, "agent-runs cache refreshed");
       return runs;
     } catch (e) {
@@ -215,7 +215,7 @@ export async function getAgentRuns(): Promise<{
       const prev = cache;
       cache = {
         storeCount: currentCount,
-        fetchedAt: Date.now(),
+        fetchedAt: Date.now(), // wall-clock: cache TTL tracking
         runs: prev?.runs ?? [],
         error: err,
       };
@@ -227,7 +227,7 @@ export async function getAgentRuns(): Promise<{
   const runs = await inflight;
   return {
     runs,
-    fetchedAt: cache?.fetchedAt ?? Date.now(),
+    fetchedAt: cache?.fetchedAt ?? Date.now(), // wall-clock: cache TTL tracking
     cacheAgeMs: 0,
     ...(cache?.error ? { error: cache.error } : {}),
   };

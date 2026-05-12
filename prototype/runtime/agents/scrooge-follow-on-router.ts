@@ -46,7 +46,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { eventStore, logger } from "../../platform/composition";
+import { clock, eventStore, logger } from "../../platform/composition";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
 import { lookupHandler } from "../handlers-metadata";
 import type { AgentRunContext, AgentRunHandler, AgentRunOutput } from "../types";
@@ -109,7 +109,7 @@ async function dispatchOne(
   const tCtx: AgentRunContext = {
     agent: meta.agent,
     trigger: { kind: meta.kind, id: meta.trigger },
-    asOf: new Date().toISOString(),
+    asOf: clock.now(),
     repoRoot: parentCtx.repoRoot,
     ownerInboxDir: parentCtx.ownerInboxDir,
     dryRun: parentCtx.dryRun,

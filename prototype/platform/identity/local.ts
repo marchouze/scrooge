@@ -94,7 +94,7 @@ export class LocalAuthenticator implements Authenticator {
       false,
       ["sign", "verify"],
     );
-    this.now = opts.now ?? (() => Math.floor(Date.now() / 1000));
+    this.now = opts.now ?? (() => Math.floor(Date.now() / 1000)); // wall-clock: default; inject opts.now for deterministic scenarios
   }
 
   async issue(principal: Principal, opts: IssueOpts = {}): Promise<string> {

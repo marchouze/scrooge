@@ -25,6 +25,7 @@
 import { createHash } from "node:crypto";
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
+import { WallClock, type ScenarioClock } from "../scenario-clock";
 import type { AgentUrn } from "./registry";
 
 // ---------------------------------------------------------------------------
@@ -197,10 +198,12 @@ function sha256(data: string): string {
 export class LocalAgentWorldStateReader implements AgentWorldStateReader {
   private readonly eventStore: EventStore;
   private readonly entity: string;
+  private readonly clock: ScenarioClock;
 
-  constructor(opts: { eventStore: EventStore; entity?: string }) {
+  constructor(opts: { eventStore: EventStore; entity?: string; clock?: ScenarioClock }) {
     this.eventStore = opts.eventStore;
     this.entity = opts.entity ?? "BANK-ZA-001";
+    this.clock = opts.clock ?? new WallClock();
   }
 
   // -------------------------------------------------------------------------
@@ -208,7 +211,7 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
   // -------------------------------------------------------------------------
 
   snapshot(agentUrn: AgentUrn): WorldStateSnapshot {
-    const takenAt = new Date().toISOString();
+    const takenAt = this.clock.now();
     const recentEvents = this.readEventsSince(agentUrn, undefined).slice(-100); // cap at last 100
     const registers = this.buildAllRegisters(takenAt);
     const openEscalationsAddressedToMe = this.readOpenEscalationsAddressedToMe(agentUrn);
@@ -297,7 +300,7 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
   // -------------------------------------------------------------------------
 
   readRegister(registerName: RegisterName): Register {
-    const asOf = new Date().toISOString();
+    const asOf = this.clock.now();
     const typeFilter = REGISTER_TYPE_MAP[registerName];
     const rows: RegisterRow[] = [];
 

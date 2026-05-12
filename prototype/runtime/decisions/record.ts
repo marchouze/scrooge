@@ -14,7 +14,7 @@
 //
 // Author: Atlas (substrate) · Scrooge (handler caller)
 
-import { eventStore } from "../../platform/composition";
+import { clock, eventStore } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeDecisionComment } from "../../platform/event-store/event-types";
 import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
@@ -144,7 +144,7 @@ export function recordDelegatedDecision(
       actor: "marc@tgv.co.za",
       recordedVia: params.recordedVia ?? "scrooge:session-delegation",
     },
-    asOf ?? new Date().toISOString(),
+    asOf ?? clock.now(),
   );
 }
 

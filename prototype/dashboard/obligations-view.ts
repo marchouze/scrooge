@@ -192,7 +192,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
   const statusCounts: Record<string, number> = {};
   if (!existsSync(path)) {
     return {
-      asOf: new Date().toISOString(),
+      asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
       count: 0,
       byId: {},
       familyCounts,
@@ -252,7 +252,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     statusCounts[statusKey] = (statusCounts[statusKey] ?? 0) + 1;
   }
   return {
-    asOf: new Date().toISOString(),
+    asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
     count: Object.keys(out).length,
     byId: out,
     familyCounts,

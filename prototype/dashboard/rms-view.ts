@@ -264,7 +264,7 @@ const RMS_PROV_FILTER: ProvenanceFilter = { mode: "combined" };
 
 export function buildRmsRegistersFold(
   store: EventStore,
-  now: () => string = () => new Date().toISOString(),
+  now: () => string = () => new Date().toISOString(), // wall-clock: default; inject now for deterministic scenarios
 ): RmsRegistersFold {
   const projector = new LocalProjector(store);
   const asOf = now();

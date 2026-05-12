@@ -190,7 +190,7 @@ export class LocalAgentRegistry implements AgentRegistry {
     this.entity = config.entity ?? DEFAULT_ENTITY;
     this.actor = config.actor ?? DEFAULT_ACTOR;
     this.citations = config.citations ?? DEFAULT_CITATIONS;
-    this.now = config.now ?? (() => new Date().toISOString());
+    this.now = config.now ?? (() => new Date().toISOString()); // wall-clock: default; inject config.now for deterministic scenarios
   }
 
   register(spec: AgentSpec): RegistrationResult {

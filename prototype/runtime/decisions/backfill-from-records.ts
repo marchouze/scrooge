@@ -150,7 +150,7 @@ if (import.meta.main) {
     console.log(
       JSON.stringify({
         level: "info",
-        time: new Date().toISOString(),
+        time: new Date().toISOString(), // wall-clock: structured log timestamp
         service: "bank-prototype",
         pipeline: "backfill:decisions",
         emitted: result.emitted.length,
