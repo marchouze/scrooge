@@ -186,6 +186,7 @@
   }
 
   // Populate type dropdown from first full load
+  // ---- Type dropdown: populate from first full load ----
   function populateTypeDropdown(events) {
     if (typeSelect.options.length > 1) return; // already populated
     const _types = [...new Set(events.map((e) => e.type))].sort();
