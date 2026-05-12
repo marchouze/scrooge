@@ -78,6 +78,7 @@ export interface SourcePaths {
   readonly principlesDir: string; // /Principles — one file per principle (Principle 2 single-graph)
   readonly ownerInboxDir: string; // /Owner Inbox — deliverables
   readonly bankNameRegister: string; // /Regulations/_bank-name.md — canonical bank-name register
+  readonly policiesDir?: string; // /Policies — canonical policy document store (D-POLICY-DOCUMENT-HOME)
 }
 
 export interface CeoDecisionEventSummary {
@@ -175,6 +176,7 @@ export function defaultSourcePaths(repoRoot: string): SourcePaths {
     principlesDir: join(repoRoot, "Principles"),
     ownerInboxDir: join(repoRoot, "Owner Inbox"),
     bankNameRegister: join(repoRoot, "Regulations", "_bank-name.md"),
+    policiesDir: join(repoRoot, "Policies"),
   };
 }
 
@@ -1649,6 +1651,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   const policies: readonly Policy[] = parsePolicyRegister({
     path: opts.sources.policyRegister,
     obligationsRegister: opts.sources.obligationsRegister,
+    ...(opts.sources.policiesDir !== undefined ? { policiesDir: opts.sources.policiesDir } : {}),
   });
   const obligations = countObligations(opts.sources.obligationsRegister);
   const regs = regulationStats(opts.sources.regulationsIndex);

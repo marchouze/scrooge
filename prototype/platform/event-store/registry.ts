@@ -85,6 +85,7 @@ import {
   counterpartyEligibilityScreenedPayloadSchema,
   decisionCommentPayloadSchema,
   decisionRequestedPayloadSchema,
+  documentRegisteredPayloadSchema,
   feedbackPayloadSchema,
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
@@ -1285,6 +1286,22 @@ const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
+  },
+  // D-POLICY-DOCUMENT-HOME Option C (CEO-approved 2026-05-12).
+  // Emitted once per versioned policy/charter/procedure/report registered in
+  // Policies/. The document-registration recon pipeline enforces CI coverage.
+  {
+    type: "DocumentRegistered",
+    class: "governance",
+    payloadSchema: documentRegisteredPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Owen", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-POLICY-DOCUMENT-HOME", "GOV-FRAMEWORK-CEO-RESERVED"],
+    // Policy documents must be retained for the audit lifecycle: minimum 7y
+    // matches the Companies Act / BCBS-239 governance record floor.
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/recon/document-registration.ts",
   },
 ];
 
