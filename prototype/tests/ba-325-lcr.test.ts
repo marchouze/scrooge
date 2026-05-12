@@ -4,40 +4,43 @@
 // for the BA 325 (LCR) generator + JSON renderer + per-account
 // classification map + per-entity isolation + cap arithmetic.
 //
+// P1-fix (2026-05-12): cash flows now folded from FxSettlementInstructed /
+// FxSettlementConfirmed events in the event store (Principle 1 compliant).
+// Tests updated to pass an event store + period window. Previously the tests
+// passed account-level outflow/inflow rows; those are now replaced by
+// settlement events.
+//
 // Asserts:
-//   1. End-to-end:
-//        synthetic SubLedgerPostingEmitted events
-//          → openPeriod → closePeriod (Slice 2)
-//          → generateBa325Lcr (Slice 3)
-//          → renderBa325ToJson (Slice 3)
-//        produces a known LCR computed from the synthetic stocks.
+//   1. Semantic entries register with the SemanticRegistry.
 //   2. Per-entity isolation: LE-ZA-HOZ-SECURITIES rejected.
 //   3. HQLA cap arithmetic — closed-form, three regimes.
-//   4. Inflow cap binding — gross inflows > 75% of outflows ⇒ capped at 75%.
-//   5. Net-outflow floor binding — net < 25% of outflows ⇒ floor binds.
+//   4. Inflow-cap binding — FxSettlementInstructed inflows > 75% of outflows.
+//   5. Net-outflow floor binding — net < 25% of outflows.
 //   6. Provenance passthrough — TrialBalanceSnapshotted.event_id flows
 //      into Ba325Output.meta.trialBalanceSnapshotEventId.
 //   7. Determinism — same generator output ⇒ byte-identical canonical JSON.
 //   8. Schema validation — rendered output validates against Ba325RenderSchema.
 //   9. Divide-by-zero — zero outflows ⇒ lcrRatio = Infinity, render encodes "infinity".
 //  10. Liquidity-classification semantic entries register with the SemanticRegistry.
+//  11. Deprecated outflow/inflow account entries produce a placeholder warning.
 //
 // Authority: D-REPORTING-CAPABILITY-SLICE-3 (under standing approval of
 //   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, CEO-approved 2026-05-10).
-// Source spec: Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-
-//   build-proposal.md §6 Slice 3.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping owner) · Eitan (Treasurer,
 //   governance — reports to Camille CFO; LCR methodology owner) · Anya
 //   (Data / analytics engineer, engineering — reports to Devon COO;
-//   semantic-layer integration).
+//   semantic-layer integration) · Atlas (Core banking platform architect,
+//   engineering — P1 fix).
 
 import { describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
+import { makeFxSettlementConfirmed } from "../platform/event-store/event-types/fx-accounting";
 import { EventStore } from "../platform/event-store/store";
+import { makeFxSettlementInstructed } from "../platform/markets/cdm/fx";
 import {
   type AccountLiquidityClassification,
   BA_325_BANK_ENTITIES,
@@ -82,7 +85,19 @@ const PERIOD_OPEN = {
   functionalCurrency: "ZAR",
 };
 
-// Helper: append a posting (mirrors the period-close test helper).
+const PERIOD_START = "2026-05-01T00:00:00.000Z";
+const PERIOD_END = "2026-05-31T23:59:59.999Z";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Create a fresh in-memory event store for each test. */
+function makeStore(): EventStore {
+  return new EventStore(":memory:");
+}
+
+/** Helper: append a posting (mirrors the period-close test helper). */
 function appendPosting(
   store: EventStore,
   args: {
@@ -111,6 +126,88 @@ function appendPosting(
       citations: ["D-REPORTING-CAPABILITY-SLICE-3"],
     },
   });
+}
+
+/**
+ * Append a ZAR FxSettlementInstructed event representing a cash outflow
+ * (bank pays ZAR — negative netCash from bank's perspective).
+ */
+function appendSettlementOutflow(
+  store: EventStore,
+  args: { entity: string; asOf: string; amountMinor: number; tradeId: string },
+): void {
+  store.append(
+    makeFxSettlementInstructed({
+      asOf: args.asOf,
+      entity: args.entity,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: { scheme: "INTERNAL", value: args.tradeId },
+        legKind: "near",
+        settlementId: { scheme: "INTERNAL", value: `STL-${args.tradeId}-OUT` },
+        settlementPath: "correspondent",
+        settlementForm: "physical",
+        correspondent: {
+          partyId: "CP-001",
+          name: "Test Correspondent",
+          role: "settlement-agent",
+          jurisdiction: "ZA",
+        },
+        counterparty: {
+          partyId: "CP-001",
+          name: "Test Counterparty",
+          role: "counterparty",
+          jurisdiction: "ZA",
+        },
+        // Negative = bank pays (outflow).
+        netCash: { currency: "ZAR", amountMinor: -args.amountMinor },
+        settlementDate: { iso: "2026-05-05", calendar: "JIHCAL" },
+        messageStandard: "ISO-20022-pacs.009",
+      },
+    }),
+  );
+}
+
+/**
+ * Append a ZAR FxSettlementInstructed event representing a cash inflow
+ * (bank receives ZAR — positive netCash from bank's perspective).
+ */
+function appendSettlementInflow(
+  store: EventStore,
+  args: { entity: string; asOf: string; amountMinor: number; tradeId: string },
+): void {
+  store.append(
+    makeFxSettlementInstructed({
+      asOf: args.asOf,
+      entity: args.entity,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: { scheme: "INTERNAL", value: args.tradeId },
+        legKind: "near",
+        settlementId: { scheme: "INTERNAL", value: `STL-${args.tradeId}-IN` },
+        settlementPath: "correspondent",
+        settlementForm: "physical",
+        correspondent: {
+          partyId: "CP-001",
+          name: "Test Correspondent",
+          role: "settlement-agent",
+          jurisdiction: "ZA",
+        },
+        counterparty: {
+          partyId: "CP-001",
+          name: "Test Counterparty",
+          role: "counterparty",
+          jurisdiction: "ZA",
+        },
+        // Positive = bank receives (inflow).
+        netCash: { currency: "ZAR", amountMinor: args.amountMinor },
+        settlementDate: { iso: "2026-05-05", calendar: "JIHCAL" },
+        messageStandard: "ISO-20022-pacs.009",
+      },
+    }),
+  );
 }
 
 // =====================================================================
@@ -169,12 +266,16 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — per-entity isolation", () => {
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
+    const store = makeStore();
     expect(() =>
       generateBa325Lcr({
         entity: ENTITY_SECURITIES,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
         functionalCurrency: "ZAR",
+        eventStore: store,
+        periodStart: PERIOD_START,
+        periodEnd: PERIOD_END,
         trialBalance: [],
         classifications: [],
       }),
@@ -182,12 +283,16 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — per-entity isolation", () => {
   });
 
   it("rejects an invalid functional currency", () => {
+    const store = makeStore();
     expect(() =>
       generateBa325Lcr({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
         functionalCurrency: "ZARS",
+        eventStore: store,
+        periodStart: PERIOD_START,
+        periodEnd: PERIOD_END,
         trialBalance: [],
         classifications: [],
       }),
@@ -259,7 +364,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — applyHqlaCaps", () => {
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA 325)", () => {
-  function setupClose(): {
+  function setupStore(): {
     store: EventStore;
     trialBalanceSnapshotEventId: string;
     rows: ReadonlyArray<{
@@ -279,13 +384,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       payload: PERIOD_OPEN,
     });
 
-    // 2) Append synthetic postings:
-    //    - 1,000,000 cents into ACC-1100-001 (cash at SARB) from
-    //      ACC-equity-position-stub (capital).
-    //    - 200,000 cents into ACC-1100-001 from a customer-deposit
-    //      liability stub (liability/credit balance).
-    //    - 50,000 cents from ACC-1100-001 into a corporate-bond stub
-    //      (Level-2A asset).
+    // 2) Append synthetic postings for HQLA stock:
+    //    - 1,000,000 cents into ACC-1100-001 (cash at SARB) from equity.
+    //    - 200,000 cents into ACC-1100-001 from a customer-deposit stub.
+    //    - 50,000 cents from ACC-1100-001 into a corporate-bond stub (Level-2A).
     //    - 10,000 cents from ACC-1100-001 into a Level-2B equity stub.
     appendPosting(store, {
       entity: ENTITY_BANK,
@@ -336,7 +438,16 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       ],
     });
 
-    // 3) Close the period.
+    // 3) Append a FxSettlementInstructed outflow — 50,000 ZAR (bank pays).
+    //    This is the cash-flow denominator input per P1 fix.
+    appendSettlementOutflow(store, {
+      entity: ENTITY_BANK,
+      asOf: "2026-05-20T10:00:00.000Z",
+      amountMinor: 50_000,
+      tradeId: "TRADE-E2E-001",
+    });
+
+    // 4) Close the period.
     const close = closePeriod({
       eventStore: store,
       entity: ENTITY_BANK,
@@ -353,7 +464,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
   }
 
   it("computes a known BA 325 from synthetic events; LCR ≥ 100% with substantial Level-1 stock", () => {
-    const { trialBalanceSnapshotEventId, rows } = setupClose();
+    const { store, trialBalanceSnapshotEventId, rows } = setupStore();
     const classifications: AccountLiquidityClassification[] = [
       { leafAccountId: "ACC-1100-001", hqlaLevel: "level-1", subCategory: "level-1.cash-at-sarb" },
       {
@@ -367,12 +478,6 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
         assetSpecificFactor: 0.5,
         subCategory: "level-2b.equity",
       },
-      // Customer-deposit stub: 25% retail-stable run-off (BCBS D295 §75 illustrative).
-      {
-        leafAccountId: "ACC-customer-deposit-stub",
-        outflowRunOffRate: 0.25,
-        subCategory: "outflows.retail-stable",
-      },
     ];
 
     const out = generateBa325Lcr({
@@ -380,21 +485,27 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications,
       trialBalanceSnapshotEventId,
     });
 
     // Trial-balance side: ACC-1100-001 net = +1,000,000 + 200,000 − 50,000 − 10,000 = 1,140,000
-    // Level-1 stock should be 1,140,000.
     expect(out.hqla.level1.stockMinor).toBe(1_140_000);
     expect(out.hqla.level2A.stockMinor).toBe(50_000);
     expect(out.hqla.level2B.stockMinor).toBeGreaterThan(0);
 
-    // Outflows: 200,000 × 0.25 = 50,000.
+    // Outflows: 50,000 from FxSettlementInstructed (bank pays ZAR).
     expect(out.cashFlows.outflows.grossMinor).toBe(50_000);
 
-    // Net cash outflows: floor binds (no inflows; 200000*.25=50000 vs 25%*50000=12500 ⇒ takes 50000).
+    // No inflows in this scenario.
+    expect(out.cashFlows.inflows.grossMinor).toBe(0);
+
+    // Net cash outflows: no inflows so preFloor = 50k; floor = ceil(0.25*50k) = 12.5k → 13k;
+    // preFloor (50k) > floor (13k) → floor not binding → netCashOutflows = 50k.
     expect(out.cashFlows.netCashOutflowsMinor).toBe(50_000);
 
     // LCR = 1,140,000-plus-some / 50,000 ≫ 1
@@ -404,19 +515,23 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
     // Provenance chain.
     expect(out.meta.trialBalanceSnapshotEventId).toBe(trialBalanceSnapshotEventId);
 
-    // Citations include the regulatory anchors.
+    // Citations include the regulatory anchors + P1-fix citations.
     expect(out.citations).toContain("Banks Act 94 of 1990 §70");
     expect(out.citations).toContain("Regulations Relating to Banks Reg 26");
     expect(out.citations).toContain("BCBS D295");
+    expect(out.citations).toContain("Principles/1-events-are-truth.md");
   });
 
   it("renders to canonical JSON validating against Ba325RenderSchema", () => {
-    const { trialBalanceSnapshotEventId, rows } = setupClose();
+    const { store, trialBalanceSnapshotEventId, rows } = setupStore();
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications: [
         {
@@ -435,20 +550,18 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
     expect(render.$schema).toBe(BA_325_SCHEMA_URL);
     expect(render.meta.rendererVersion).toBe("v0.1");
     expect(render.meta.renderedAt).toBe(renderedAt);
-
-    // No outflows in this scenario ⇒ infinity LCR.
-    expect(render.lcrRatio).toBe("infinity");
-    expect(render.lcrPercent).toBe("infinity");
-    expect(render.lcrCompliant).toBe(true);
   });
 
   it("canonicalisation is deterministic (byte-identical across runs)", () => {
-    const { trialBalanceSnapshotEventId, rows } = setupClose();
+    const { store, trialBalanceSnapshotEventId, rows } = setupStore();
     const input = {
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" as const }],
       trialBalanceSnapshotEventId,
@@ -464,12 +577,15 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
   });
 
   it("placeholders array is populated per Q1 (rehearsal-grade)", () => {
-    const { rows } = setupClose();
+    const { store, rows } = setupStore();
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
     });
@@ -479,52 +595,68 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
 });
 
 // =====================================================================
-// 5. Inflow-cap + net-outflow-floor binding.
+// 5. Inflow-cap + net-outflow-floor binding — via FxSettlement events.
 // =====================================================================
 
-describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors", () => {
-  function tinyTbWith(args: {
+describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix: event-sourced flows)", () => {
+  /**
+   * Build a store with:
+   * - HQLA Level-1 stock from ACC-1100-001.
+   * - FxSettlementInstructed outflow event for `outflowMinor` ZAR.
+   * - FxSettlementInstructed inflow event for `inflowMinor` ZAR (if > 0).
+   */
+  function storeWithFlows(args: {
     outflowMinor: number;
     inflowMinor: number;
     cashMinor?: number;
   }): {
+    store: EventStore;
     rows: Array<{ leafAccountId: string; currency: string; amountMinor: number }>;
     classifications: AccountLiquidityClassification[];
   } {
+    const store = makeStore();
+
+    // Outflow event.
+    if (args.outflowMinor > 0) {
+      appendSettlementOutflow(store, {
+        entity: ENTITY_BANK,
+        asOf: "2026-05-10T10:00:00.000Z",
+        amountMinor: args.outflowMinor,
+        tradeId: "TRADE-OUT-001",
+      });
+    }
+
+    // Inflow event.
+    if (args.inflowMinor > 0) {
+      appendSettlementInflow(store, {
+        entity: ENTITY_BANK,
+        asOf: "2026-05-10T10:00:00.000Z",
+        amountMinor: args.inflowMinor,
+        tradeId: "TRADE-IN-001",
+      });
+    }
+
+    const cashMinor = args.cashMinor ?? 100_000;
     return {
-      rows: [
-        { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: args.cashMinor ?? 100_000 },
-        {
-          leafAccountId: "ACC-customer-deposit-stub",
-          currency: "ZAR",
-          amountMinor: -args.outflowMinor,
-        },
-        ...(args.inflowMinor > 0
-          ? [
-              {
-                leafAccountId: "ACC-loan-asset-stub",
-                currency: "ZAR",
-                amountMinor: args.inflowMinor,
-              },
-            ]
-          : []),
-      ],
-      classifications: [
-        { leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" as const },
-        // 100% run-off — the deposit balance equals the outflow contribution.
-        { leafAccountId: "ACC-customer-deposit-stub", outflowRunOffRate: 1.0 },
-        { leafAccountId: "ACC-loan-asset-stub", inflowRate: 1.0 },
-      ],
+      store,
+      rows: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: cashMinor }],
+      classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" as const }],
     };
   }
 
   it("inflow-cap binds when gross inflows > 75% × gross outflows", () => {
-    const { rows, classifications } = tinyTbWith({ outflowMinor: 100_000, inflowMinor: 90_000 });
+    const { store, rows, classifications } = storeWithFlows({
+      outflowMinor: 100_000,
+      inflowMinor: 90_000,
+    });
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications,
     });
@@ -537,12 +669,18 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors", () =>
   });
 
   it("inflow-cap does not bind when gross inflows ≤ 75% × gross outflows", () => {
-    const { rows, classifications } = tinyTbWith({ outflowMinor: 100_000, inflowMinor: 50_000 });
+    const { store, rows, classifications } = storeWithFlows({
+      outflowMinor: 100_000,
+      inflowMinor: 50_000,
+    });
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications,
     });
@@ -553,14 +691,20 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors", () =>
     expect(out.cashFlows.netCashOutflowFloorBindingIndicator).toBe(false);
   });
 
-  it("net-outflow floor binds when capped-net < 25% × gross outflows", () => {
-    // Inflow cap binds at 75% AND inflows > outflows ⇒ net = 25k floor binds.
-    const { rows, classifications } = tinyTbWith({ outflowMinor: 100_000, inflowMinor: 200_000 });
+  it("net-outflow floor — inflow cap binds + inflows > outflows", () => {
+    // Inflow cap binds at 75% AND inflows > outflows ⇒ net = 25k floor binds check.
+    const { store, rows, classifications } = storeWithFlows({
+      outflowMinor: 100_000,
+      inflowMinor: 200_000,
+    });
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: rows,
       classifications,
     });
@@ -571,11 +715,15 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors", () =>
   });
 
   it("zero outflows ⇒ infinite LCR; render encodes 'infinity'", () => {
+    const store = makeStore();
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 100_000 }],
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
     });
@@ -585,6 +733,49 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors", () =>
     expect(r.lcrRatio).toBe("infinity");
     expect(r.lcrPercent).toBe("infinity");
   });
+
+  it("FxSettlementConfirmed events also contribute to cash flows", () => {
+    // Append a FxSettlementConfirmed with a ZAR inflow and a USD outflow.
+    // Only ZAR (functional ccy) leg should count; USD should be a placeholder.
+    const store = makeStore();
+    store.append(
+      makeFxSettlementConfirmed({
+        asOf: "2026-05-10T12:00:00.000Z",
+        entity: ENTITY_BANK,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: "TRADE-CONF-001",
+          currencyPair: "ZAR/USD",
+          legKind: "near",
+          // Bank receives ZAR 50,000 (+), pays USD 2,778 (−).
+          settledBaseCurrencyMinor: 50_000, // ZAR inflow
+          settledQuoteCurrencyMinor: -2_778, // USD outflow (non-functional)
+          settledAt: "2026-05-10T12:00:00.000Z",
+          nostroAccountBase: "ACC-1100-001",
+          nostroAccountQuote: "ACC-1200-001",
+          realisedPnlZarMinor: 0,
+        },
+      }),
+    );
+
+    const out = generateBa325Lcr({
+      entity: ENTITY_BANK,
+      asOf: "2026-05-31T23:59:59.999Z",
+      periodId: "x",
+      functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 100_000 }],
+      classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
+    });
+
+    // ZAR leg counted as inflow; USD leg flagged as placeholder.
+    expect(out.cashFlows.inflows.grossMinor).toBe(50_000);
+    expect(out.cashFlows.outflows.grossMinor).toBe(0); // USD not counted
+    expect(out.placeholders.some((p) => p.includes("foreign-currency"))).toBe(true);
+  });
 });
 
 // =====================================================================
@@ -593,11 +784,15 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors", () =>
 
 describe("D-REPORTING-CAPABILITY-SLICE-3 — canonicaliser determinism", () => {
   it("sorts object keys lexically; identical inputs ⇒ identical bytes", () => {
+    const store = makeStore();
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
       functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
       trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 }],
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
     });
@@ -618,47 +813,67 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — canonicaliser determinism", () => {
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-3 — generator boundary errors", () => {
-  it("rejects duplicate classifications for the same account", () => {
+  it("rejects duplicate HQLA classifications for the same account", () => {
+    const store = makeStore();
     expect(() =>
       generateBa325Lcr({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
         functionalCurrency: "ZAR",
+        eventStore: store,
+        periodStart: PERIOD_START,
+        periodEnd: PERIOD_END,
         trialBalance: [],
         classifications: [
           { leafAccountId: "ACC-X", hqlaLevel: "level-1" },
-          { leafAccountId: "ACC-X", outflowRunOffRate: 0.5 },
+          { leafAccountId: "ACC-X", hqlaLevel: "level-2a" },
         ],
       }),
     ).toThrow(/duplicate classification/);
   });
 
-  it("rejects out-of-range run-off rate", () => {
-    expect(() =>
-      generateBa325Lcr({
-        entity: ENTITY_BANK,
-        asOf: "2026-05-31T23:59:59.999Z",
-        periodId: "x",
-        functionalCurrency: "ZAR",
-        trialBalance: [{ leafAccountId: "ACC-X", currency: "ZAR", amountMinor: -100 }],
-        classifications: [{ leafAccountId: "ACC-X", outflowRunOffRate: 1.5 }],
-      }),
-    ).toThrow(/outflowRunOffRate.*\[0,1\]/);
-  });
-
   it("rejects out-of-range Level-2B asset-specific factor", () => {
+    const store = makeStore();
     expect(() =>
       generateBa325Lcr({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
         functionalCurrency: "ZAR",
+        eventStore: store,
+        periodStart: PERIOD_START,
+        periodEnd: PERIOD_END,
         trialBalance: [{ leafAccountId: "ACC-X", currency: "ZAR", amountMinor: 100 }],
         classifications: [
           { leafAccountId: "ACC-X", hqlaLevel: "level-2b", assetSpecificFactor: 1.5 },
         ],
       }),
     ).toThrow(/assetSpecificFactor.*\[0,1\]/);
+  });
+
+  it("deprecated outflow/inflow entries produce a placeholder warning (not a throw)", () => {
+    // Outflow/inflow account entries are now deprecated per P1 fix.
+    // Generator should not throw but should surface a placeholder.
+    const store = makeStore();
+    const out = generateBa325Lcr({
+      entity: ENTITY_BANK,
+      asOf: "2026-05-31T23:59:59.999Z",
+      periodId: "x",
+      functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [{ leafAccountId: "ACC-X", currency: "ZAR", amountMinor: -100 }],
+      classifications: [
+        { leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" },
+        // Deprecated outflow entry — should be ignored.
+        { leafAccountId: "ACC-X", outflowRunOffRate: 0.25 },
+      ],
+    });
+    // Deprecated entry does not contribute to outflows (events only now).
+    expect(out.cashFlows.outflows.grossMinor).toBe(0);
+    // Placeholder warning is surfaced.
+    expect(out.placeholders.some((p) => p.includes("P1-fix deprecation"))).toBe(true);
   });
 });

@@ -6,21 +6,47 @@
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), pack §6 Slice 3.
 //
-// This module is a *pure projection* over the period-close
-// `TrialBalance` (Slice 2) plus an explicit liquidity-classification
-// map. No event side-effects; no document-store writes; no event-store
-// reads. Callers (the CLI wrapper at `prototype/scripts/render-ba-325.ts`,
-// downstream `ReportGenerated` event emitters in Slice 5) compose the
-// inputs and consume the output.
+// ## Principle 1 fix — events-first cash-flow derivation
 //
-// Pipeline (per pack §3.1 — repeated here for orientation):
+// Previously this module accepted a `TrialBalance` as the sole input and
+// derived both HQLA stock *and* cash flows from GL account balances. That
+// is a P1 violation: cash-flow metrics must be folded from the primary
+// settlement events (`FxSettlementInstructed`, `FxSettlementConfirmed`),
+// not from the posting-engine's GL output. The GL trial balance is the
+// *right* source for HQLA stock (account balances are balance-sheet
+// positions); it is the *wrong* source for the LCR denominator because:
+//   (a) if no `SubLedgerPostingEmitted` exists yet (e.g. right after trade
+//       execution, before the posting engine runs) the GL would show zero
+//       cash flows even though `FxSettlementInstructed` events exist; and
+//   (b) routing through the GL couples the LCR projection to the posting
+//       engine's timing and creates a wrong dependency chain.
+//
+// Fixed architecture (per `Principles/1-events-are-truth.md` table entry
+// updated 2026-05-12):
+//
+//   Cash-flow source  →  FxSettlementInstructed / FxSettlementConfirmed
+//   HQLA stock source →  TrialBalance (account balances; still correct —
+//                         balances ARE queries over events via period-close)
+//
+// The generator now requires:
+//   eventStore  — replayed for FxSettlementInstructed + FxSettlementConfirmed
+//   periodStart / periodEnd — event window (as_of bounds)
+//   trialBalance — kept for HQLA stock derivation (account balances)
+//   classifications — restricted to HQLA-only entries; outflow/inflow
+//                     account entries are deprecated (cash flows now
+//                     come from events, not account classifications)
+//
+// Citations:
+//   Principles/1-events-are-truth.md (updated 2026-05-12)
+//   D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//
+// ## Pipeline (per pack §3.1 — updated):
 //
 //   EVENT LOG          (Principle 1 — sole truth)
-//      → PROJECTION RUNTIME    — folds events into balances
-//      → PERIOD CLOSE          — Slice 2 — snapshots the trial balance
-//      → SEMANTIC LAYER        — Slice 1 + Slice 3 liquidity entries
-//      → BA 325 PROJECTION     — this module — pure function
-//      → RENDER + STORE        — `ba-325-render.ts` + RMS doc store
+//      → FxSettlementInstructed / FxSettlementConfirmed   ← cash-flow fold
+//      → PROJECTION RUNTIME  — period-close → trial balance ← HQLA stock
+//      → BA 325 PROJECTION   — this module — pure function
+//      → RENDER + STORE      — `ba-325-render.ts` + RMS doc store
 //
 // Computation per BCBS D295 + Regulations Relating to Banks Reg 26:
 //
@@ -28,13 +54,6 @@
 //        Level1
 //      + min(0.85 * Level2A_raw, 0.40 * stockHQLA)
 //      + min(factor * Level2B_raw, 0.15 * stockHQLA)
-//
-//   The cap arithmetic is iterative (each cap is on `stockHQLA`, which
-//   includes the capped contributions). For the standard case with no
-//   binding cap, Level1 + 0.85*L2A + factor*L2B is the answer; when a
-//   cap binds the iteration converges in two passes. We compute by
-//   solving the closed-form (standard BCBS QIS approach) — see
-//   `applyHqlaCaps` for the algebra.
 //
 //   netCashOutflows = max(grossOutflows − min(grossInflows, 0.75 *
 //                          grossOutflows),
@@ -56,20 +75,39 @@
 //     schema mapping. Until then the map lives at the call site.
 //   - **liquidity-projection** is named on the Slice-3 semantic entries
 //     (see `liquidity-entries.ts`) but the executable form is Slice 6
-//     territory — at v0 the generator computes from the trial balance
-//     directly using the supplied classification map.
+//     territory.
 //   - **BCBS 248 intraday liquidity monitoring** is a separate operational
 //     lens that does not feed BA 325 directly; cited in the entries for
 //     completeness, not consumed here.
+//   - **Multi-currency cash flows** — the event fold converts foreign-
+//     currency netCash to the functional currency using the rate encoded
+//     in the settlement event's `netCash`. For FxSettlementInstructed
+//     the netCash is the settlement-currency amount (ZAR for ZAR/USD =
+//     already functional); for FxSettlementConfirmed the two legs are
+//     reported in their respective currencies. Slice-6+ will add a
+//     FX-rate enrichment step; the build-phase generator uses the as-
+//     booked amounts and flags non-functional-currency amounts as
+//     placeholders.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping owner)
 //   + Eitan (Treasurer, governance — reports to Camille CFO; LCR
 //   methodology owner)
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
-//   semantic-layer integration).
+//   semantic-layer integration)
+//   + Atlas (Core banking platform architect, engineering — P1 fix).
 
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
+import type { FxSettlementConfirmedPayload } from "../event-store/event-types/fx-accounting";
+import type { EventStore } from "../event-store/store";
+import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
+import type { Identifier } from "../markets/cdm/primitives";
+
+/** Normalise a tradeId that may be either a plain string or a CDM Identifier object. */
+function normaliseTradeId(tradeId: string | Identifier): string {
+  if (typeof tradeId === "string") return tradeId;
+  return `${tradeId.scheme}:${tradeId.value}`;
+}
 
 // ---------------------------------------------------------------------------
 // Inputs
@@ -83,13 +121,14 @@ import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
 
 /**
- * Per-leaf-account liquidity classification for the BA 325 generator. The
- * three optional fields are mutually exclusive — an account is either
- * HQLA stock (`hqlaLevel`), or a liability that drives stressed outflows
- * (`outflowCategory`), or an asset that drives stressed inflows
- * (`inflowCategory`). Most accounts are none of these (e.g. equity,
- * non-financial assets, accrued expenses) and are simply omitted from
- * the map.
+ * Per-leaf-account liquidity classification for the BA 325 generator.
+ *
+ * Post P1-fix: `outflowRunOffRate` and `inflowRate` entries are
+ * **deprecated** — cash flows now come from `FxSettlementInstructed` /
+ * `FxSettlementConfirmed` events folded directly from the event store.
+ * Entries with only `outflowRunOffRate` or `inflowRate` set are silently
+ * ignored by the generator (a deprecation warning is added to
+ * `Ba325Output.placeholders`). Only `hqlaLevel` entries are processed.
  *
  * The Level-2B `assetSpecificFactor` lets the call site pass a per-asset
  * factor (50% lower bound; 25% RMBS) per BCBS D295 §54. Unspecified
@@ -101,21 +140,31 @@ export interface AccountLiquidityClassification {
   readonly hqlaLevel?: HqlaLevel;
   /** Required when hqlaLevel === "level-2b"; ignored otherwise. */
   readonly assetSpecificFactor?: number;
-  /** Stressed run-off rate (0..1) for outflow accounts (liabilities). */
+  /**
+   * @deprecated Cash flows now derived from FxSettlement events (P1 fix).
+   * Entries with outflowRunOffRate are ignored; a placeholder is surfaced.
+   */
   readonly outflowRunOffRate?: number;
-  /** Stressed inflow rate (0..1) for inflow accounts (assets). */
+  /**
+   * @deprecated Cash flows now derived from FxSettlement events (P1 fix).
+   * Entries with inflowRate are ignored; a placeholder is surfaced.
+   */
   readonly inflowRate?: number;
   /** Free-form sub-category label for line-by-line BA 325 render. */
   readonly subCategory?: string;
 }
 
 /**
- * The complete generator input. The trial balance comes from Slice 2's
- * `TrialBalanceSnapshotted` payload (or directly from `closePeriod`'s
- * return value). The classification map covers the subset of accounts the
- * generator should treat as HQLA / outflow / inflow. The currency to
- * render in is the entity's functional currency from
- * `AccountingPeriodOpened.functionalCurrency`.
+ * The complete generator input. Cash flows are folded from the event store
+ * directly (`FxSettlementInstructed` and `FxSettlementConfirmed` events
+ * within the period window). The trial balance is used only for HQLA stock
+ * classification (account balances are the correct source for stock metrics).
+ *
+ * Principle 1 compliance: cash-flow inputs route through primary settlement
+ * events, not through the GL trial balance. See module header for rationale.
+ *
+ * Citations: Principles/1-events-are-truth.md (updated 2026-05-12);
+ *            D-MARKETS-SCHEMA-FOUNDATION.
  */
 export interface Ba325GeneratorInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). The generator throws on non-bank entities. */
@@ -126,9 +175,26 @@ export interface Ba325GeneratorInput {
   readonly periodId: string;
   /** ISO 4217 functional currency from `AccountingPeriodOpened.functionalCurrency`. */
   readonly functionalCurrency: string;
-  /** Trial-balance rows from `TrialBalanceSnapshotted.rows` / `closePeriod` result. */
+  /**
+   * Event store — replayed to fold `FxSettlementInstructed` and
+   * `FxSettlementConfirmed` events for the cash-flow denominator section.
+   * Required for P1-compliant operation.
+   *
+   * Citation: Principles/1-events-are-truth.md; D-MARKETS-SCHEMA-FOUNDATION.
+   */
+  readonly eventStore: EventStore;
+  /**
+   * ISO 8601 — start of the 30-day stress window. Events with `as_of >=
+   * periodStart` and `as_of <= periodEnd` are included in the cash-flow fold.
+   */
+  readonly periodStart: string;
+  /**
+   * ISO 8601 — end of the 30-day stress window (typically = `asOf`).
+   */
+  readonly periodEnd: string;
+  /** Trial-balance rows from `TrialBalanceSnapshotted.rows` / `closePeriod` result. Used for HQLA stock only. */
   readonly trialBalance: readonly TrialBalanceSnapshotRow[];
-  /** Per-account liquidity classification. Accounts without an entry are not LCR-relevant. */
+  /** Per-account liquidity classification. Only HQLA entries are active; outflow/inflow entries are deprecated. */
   readonly classifications: readonly AccountLiquidityClassification[];
   /**
    * Optional: cite the source `TrialBalanceSnapshotted.event_id` so the
@@ -158,11 +224,11 @@ export interface Ba325LineItem {
   readonly lineLabel: string;
   readonly amountMinor: number;
   readonly currency: string;
-  /** Line provenance — which trial-balance rows fed this line. */
+  /** Line provenance — which trial-balance rows or event IDs fed this line. */
   readonly contributingAccounts: readonly string[];
   /** Sub-category classifier (e.g. "level-1.central-bank-reserves"). */
   readonly subCategory?: string;
-  /** Free-form note (e.g. cap-binding indicator). */
+  /** Free-form note (e.g. cap-binding indicator, source event). */
   readonly note?: string;
 }
 
@@ -196,9 +262,11 @@ export interface Ba325HqlaSection {
 }
 
 /**
- * The cash-flow section. Outflows + inflows per category, then the
- * post-cap inflow value, then net cash outflows = max(outflows − min(75% ×
- * outflows, inflows), 25% × outflows).
+ * The cash-flow section. Outflows + inflows folded directly from
+ * `FxSettlementInstructed` and `FxSettlementConfirmed` events within
+ * the period window (Principle 1 compliant; not routed through GL).
+ *
+ * Citation: Principles/1-events-are-truth.md (updated 2026-05-12).
  */
 export interface Ba325CashFlowSection {
   readonly outflows: {
@@ -393,32 +461,143 @@ export function applyHqlaCaps(args: {
 }
 
 // ---------------------------------------------------------------------------
+// Cash-flow fold — Principle 1 compliant event replay
+// ---------------------------------------------------------------------------
+
+/**
+ * Intermediate representation of a single cash-flow line derived from a
+ * settlement event. Used internally before bucketing into the outflow /
+ * inflow sections.
+ */
+interface SettlementCashFlow {
+  readonly eventId: string;
+  readonly eventType: "FxSettlementInstructed" | "FxSettlementConfirmed";
+  readonly tradeId: string;
+  /** Amount in the settlement currency (minor units). Positive = inflow; negative = outflow. */
+  readonly amountMinor: number;
+  readonly currency: string;
+  readonly asOf: string;
+}
+
+/**
+ * Fold `FxSettlementInstructed` and `FxSettlementConfirmed` events from the
+ * event store for the given entity + period window.
+ *
+ * **Principle 1 citation**: cash-flow inputs for the LCR denominator are
+ * derived here — directly from the primary settlement events — not from the
+ * GL trial balance.
+ *
+ * Per `Principles/1-events-are-truth.md` (updated 2026-05-12):
+ * > BA-325 LCR (liquidity coverage) | cash-flow events
+ * > (`FxSettlementInstructed`, `FxSettlementConfirmed`) | trial balance
+ *
+ * Event-fold semantics:
+ * - `FxSettlementInstructed.netCash` represents the expected cash leg of
+ *   the settlement. Per BCBS D295 §31: settlement instructions within the
+ *   30-day stress window are the primary contractual cash-flow input.
+ *   `netCash.amountMinor > 0` → bank receives (inflow);
+ *   `netCash.amountMinor < 0` → bank pays (outflow).
+ * - `FxSettlementConfirmed` carries the settled base and quote legs.
+ *   Each leg is reported in its own currency. Both legs are included;
+ *   foreign-currency amounts are flagged as placeholders pending a
+ *   rate-enrichment step (Slice-6+).
+ *
+ * The period window filter is applied on `event.as_of` (the business-time
+ * the settlement was instructed / confirmed), which is the LCR-relevant
+ * timestamp (not the `recorded_at` wall-clock).
+ */
+function foldSettlementCashFlows(args: {
+  readonly eventStore: EventStore;
+  readonly entity: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+}): readonly SettlementCashFlow[] {
+  const { eventStore, entity, periodStart, periodEnd } = args;
+  const flows: SettlementCashFlow[] = [];
+
+  // Fold FxSettlementInstructed — expected cash flows.
+  for (const event of eventStore.replay({ entity, asOf: periodEnd })) {
+    if (event.as_of < periodStart) continue;
+    if (event.type !== "FxSettlementInstructed" && event.type !== "FxSettlementConfirmed") continue;
+
+    if (event.type === "FxSettlementInstructed") {
+      const payload = event.payload as FxSettlementInstructedPayload;
+      flows.push({
+        eventId: event.event_id,
+        eventType: "FxSettlementInstructed",
+        tradeId: normaliseTradeId(payload.tradeId as string | Identifier),
+        amountMinor: payload.netCash.amountMinor,
+        currency: payload.netCash.currency,
+        asOf: event.as_of,
+      });
+    } else if (event.type === "FxSettlementConfirmed") {
+      const payload = event.payload as FxSettlementConfirmedPayload;
+      // Base leg.
+      if (payload.settledBaseCurrencyMinor !== 0) {
+        flows.push({
+          eventId: event.event_id,
+          eventType: "FxSettlementConfirmed",
+          tradeId: normaliseTradeId(payload.tradeId),
+          amountMinor: payload.settledBaseCurrencyMinor,
+          currency: payload.currencyPair.split("/")[0] ?? "ZZZ",
+          asOf: event.as_of,
+        });
+      }
+      // Quote leg.
+      if (payload.settledQuoteCurrencyMinor !== 0) {
+        flows.push({
+          eventId: event.event_id,
+          eventType: "FxSettlementConfirmed",
+          tradeId: normaliseTradeId(payload.tradeId),
+          amountMinor: payload.settledQuoteCurrencyMinor,
+          currency: payload.currencyPair.split("/")[1] ?? "ZZZ",
+          asOf: event.as_of,
+        });
+      }
+    }
+  }
+
+  return flows;
+}
+
+// ---------------------------------------------------------------------------
 // Generator
 // ---------------------------------------------------------------------------
 
 /**
- * Generate the BA 325 (LCR) projection from a trial balance + a per-account
- * liquidity classification map. Pure function; deterministic.
+ * Generate the BA 325 (LCR) projection.
+ *
+ * **Principle 1 compliant** (post P1-fix 2026-05-12):
+ * - Cash flows (LCR denominator) are folded directly from
+ *   `FxSettlementInstructed` and `FxSettlementConfirmed` events in the
+ *   event store. This is the authoritative source per
+ *   `Principles/1-events-are-truth.md`.
+ * - HQLA stock (LCR numerator) is derived from the trial-balance rows,
+ *   which are themselves a projection over the event log.
  *
  * The classification map identifies accounts as HQLA stock (level-1 / 2A /
- * 2B), as liabilities driving outflows (with run-off rate), or as assets
- * driving inflows (with inflow rate). Trial-balance accounts not in the
- * map are simply ignored by the generator (most chart-of-accounts rows
- * are not LCR-relevant).
+ * 2B). Outflow/inflow account entries are deprecated and ignored (cash flows
+ * come from events now). Trial-balance accounts not in the HQLA map are
+ * ignored.
  *
- * Sign convention reminder from Slice 2: trial-balance `amountMinor` is
- * positive for debit balances (assets), negative for credit balances
- * (liabilities). The generator applies absolute value when contributing
- * to LCR sub-totals — the LCR is a stock-and-flow concept, not a P&L
- * concept; HQLA stock is always reported as a positive number, and
- * outflow categories aggregate the magnitude of the liability balance
- * times the run-off rate.
+ * Sign convention — trial-balance:
+ * `amountMinor` is positive for debit balances (assets), negative for
+ * credit balances (liabilities). HQLA stock uses absolute value.
  *
- * Multi-currency note: the function works in `functionalCurrency` only.
- * Cross-currency LCR is a Slice-6+ concern (the Reg 26(13) per-currency
- * LCR requirement requires a per-currency projection; build-phase scope
- * is the consolidated functional-currency LCR per the strategic-foundation
- * single-branch posture).
+ * Sign convention — settlement events:
+ * `netCash.amountMinor > 0` = bank receives (inflow);
+ * `netCash.amountMinor < 0` = bank pays (outflow).
+ *
+ * Multi-currency note: the generator works in `functionalCurrency` only.
+ * Foreign-currency settlement legs are included in the fold and flagged as
+ * placeholders; a rate-enrichment step (Slice-6+) will convert them. Until
+ * then, only functional-currency legs are counted in the denominator —
+ * foreign-currency legs are surfaced in placeholders.
+ *
+ * Citations:
+ *   Principles/1-events-are-truth.md (updated 2026-05-12);
+ *   D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
+ *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10).
  */
 export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   assertBankEntity(input.entity);
@@ -429,10 +608,30 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   }
 
   const ccy = input.functionalCurrency;
+  const placeholders: string[] = [];
 
-  // Index classifications by account for O(1) lookup.
+  // -------------------------------------------------------------------------
+  // Deprecation warning for outflow/inflow account entries.
+  // -------------------------------------------------------------------------
+  const hasDeprecatedEntries = input.classifications.some(
+    (c) => c.outflowRunOffRate !== undefined || c.inflowRate !== undefined,
+  );
+  if (hasDeprecatedEntries) {
+    placeholders.push(
+      "[P1-fix deprecation: outflowRunOffRate / inflowRate entries in classifications are ignored; " +
+        "cash flows are now derived from FxSettlementInstructed / FxSettlementConfirmed events " +
+        "per Principles/1-events-are-truth.md (updated 2026-05-12)]",
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // HQLA stock — derived from trial balance (account balances).
+  // -------------------------------------------------------------------------
+
+  // Index HQLA classifications by account for O(1) lookup.
   const classMap = new Map<string, AccountLiquidityClassification>();
   for (const c of input.classifications) {
+    if (!c.hqlaLevel) continue; // Skip deprecated outflow/inflow entries.
     if (classMap.has(c.leafAccountId)) {
       throw new Ba325GeneratorError(
         `BA 325 generator: duplicate classification for account '${c.leafAccountId}'`,
@@ -444,18 +643,13 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   // Filter trial balance to the functional currency.
   const tbInCurrency = input.trialBalance.filter((r) => r.currency === ccy);
 
-  // Bucket trial-balance rows.
   const level1Lines: Ba325LineItem[] = [];
   const level2ALines: Ba325LineItem[] = [];
   const level2BLines: Ba325LineItem[] = [];
-  const outflowLines: Ba325LineItem[] = [];
-  const inflowLines: Ba325LineItem[] = [];
 
   let level1Stock = 0;
   let level2AStock = 0;
   let level2BRawWeighted = 0; // factor-weighted before cap
-  let grossOutflows = 0;
-  let grossInflows = 0;
 
   // Stable iteration order — sort by leafAccountId.
   const sorted = [...tbInCurrency].sort((a, b) =>
@@ -469,86 +663,114 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     // HQLA — debit-side accounts (assets); take absolute value to be
     // robust against sign convention drift, but flag a generator note
     // when the balance is on the credit side of an HQLA-classified row.
-    if (c.hqlaLevel) {
-      const stockMinor = Math.abs(row.amountMinor);
-      const note =
-        row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
-      const lineItem: Ba325LineItem = {
-        lineId: `${c.hqlaLevel}.${row.leafAccountId}`,
-        lineLabel: c.subCategory ?? `HQLA ${c.hqlaLevel} — ${row.leafAccountId}`,
-        amountMinor: stockMinor,
-        currency: ccy,
-        contributingAccounts: [row.leafAccountId],
-        ...(c.subCategory ? { subCategory: c.subCategory } : {}),
-        ...(note ? { note } : {}),
-      };
-      if (c.hqlaLevel === "level-1") {
-        level1Lines.push(lineItem);
-        level1Stock += stockMinor;
-      } else if (c.hqlaLevel === "level-2a") {
-        level2ALines.push(lineItem);
-        level2AStock += stockMinor;
-      } else {
-        const factor = c.assetSpecificFactor ?? 0.5;
-        if (factor < 0 || factor > 1) {
-          throw new Ba325GeneratorError(
-            `BA 325 generator: assetSpecificFactor on '${row.leafAccountId}' must be in [0,1], got ${factor}`,
-          );
-        }
-        level2BLines.push({
-          ...lineItem,
-          note: `${lineItem.note ?? ""}${lineItem.note ? "; " : ""}assetSpecificFactor=${factor}`.trim(),
-        });
-        level2BRawWeighted += stockMinor * factor;
-      }
-      continue;
-    }
-
-    // Outflows — liabilities; sign-convention-tolerant absolute value.
-    if (c.outflowRunOffRate !== undefined) {
-      if (c.outflowRunOffRate < 0 || c.outflowRunOffRate > 1) {
+    const stockMinor = Math.abs(row.amountMinor);
+    const note =
+      row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
+    const lineItem: Ba325LineItem = {
+      lineId: `${c.hqlaLevel}.${row.leafAccountId}`,
+      lineLabel: c.subCategory ?? `HQLA ${c.hqlaLevel} — ${row.leafAccountId}`,
+      amountMinor: stockMinor,
+      currency: ccy,
+      contributingAccounts: [row.leafAccountId],
+      ...(c.subCategory ? { subCategory: c.subCategory } : {}),
+      ...(note ? { note } : {}),
+    };
+    if (c.hqlaLevel === "level-1") {
+      level1Lines.push(lineItem);
+      level1Stock += stockMinor;
+    } else if (c.hqlaLevel === "level-2a") {
+      level2ALines.push(lineItem);
+      level2AStock += stockMinor;
+    } else {
+      const factor = c.assetSpecificFactor ?? 0.5;
+      if (factor < 0 || factor > 1) {
         throw new Ba325GeneratorError(
-          `BA 325 generator: outflowRunOffRate on '${row.leafAccountId}' must be in [0,1], got ${c.outflowRunOffRate}`,
+          `BA 325 generator: assetSpecificFactor on '${row.leafAccountId}' must be in [0,1], got ${factor}`,
         );
       }
-      const balanceMinor = Math.abs(row.amountMinor);
-      const contributionMinor = Math.round(balanceMinor * c.outflowRunOffRate);
-      outflowLines.push({
-        lineId: `outflow.${row.leafAccountId}`,
-        lineLabel: c.subCategory ?? `Outflow — ${row.leafAccountId}`,
-        amountMinor: contributionMinor,
-        currency: ccy,
-        contributingAccounts: [row.leafAccountId],
-        ...(c.subCategory ? { subCategory: c.subCategory } : {}),
-        note: `balance=${balanceMinor} runOffRate=${c.outflowRunOffRate}`,
+      level2BLines.push({
+        ...lineItem,
+        note: `${lineItem.note ?? ""}${lineItem.note ? "; " : ""}assetSpecificFactor=${factor}`.trim(),
       });
-      grossOutflows += contributionMinor;
-      continue;
-    }
-
-    // Inflows — asset cash receipts.
-    if (c.inflowRate !== undefined) {
-      if (c.inflowRate < 0 || c.inflowRate > 1) {
-        throw new Ba325GeneratorError(
-          `BA 325 generator: inflowRate on '${row.leafAccountId}' must be in [0,1], got ${c.inflowRate}`,
-        );
-      }
-      const balanceMinor = Math.abs(row.amountMinor);
-      const contributionMinor = Math.round(balanceMinor * c.inflowRate);
-      inflowLines.push({
-        lineId: `inflow.${row.leafAccountId}`,
-        lineLabel: c.subCategory ?? `Inflow — ${row.leafAccountId}`,
-        amountMinor: contributionMinor,
-        currency: ccy,
-        contributingAccounts: [row.leafAccountId],
-        ...(c.subCategory ? { subCategory: c.subCategory } : {}),
-        note: `balance=${balanceMinor} inflowRate=${c.inflowRate}`,
-      });
-      grossInflows += contributionMinor;
+      level2BRawWeighted += stockMinor * factor;
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Cash flows — folded from FxSettlement events (Principle 1 compliant).
+  // -------------------------------------------------------------------------
+
+  const rawFlows = foldSettlementCashFlows({
+    eventStore: input.eventStore,
+    entity: input.entity,
+    periodStart: input.periodStart,
+    periodEnd: input.periodEnd,
+  });
+
+  const outflowLines: Ba325LineItem[] = [];
+  const inflowLines: Ba325LineItem[] = [];
+  let grossOutflows = 0;
+  let grossInflows = 0;
+  let hasForeignCurrencyFlow = false;
+
+  // Group flows by (tradeId, eventType) for cleaner line items.
+  const flowByKey = new Map<string, { flows: SettlementCashFlow[]; totalMinor: number }>();
+  for (const flow of rawFlows) {
+    // Only count functional-currency legs in the numerics; others flagged.
+    if (flow.currency !== ccy) {
+      hasForeignCurrencyFlow = true;
+      continue;
+    }
+    const key = `${flow.eventType}:${flow.tradeId}:${flow.currency}`;
+    const entry = flowByKey.get(key) ?? { flows: [], totalMinor: 0 };
+    entry.flows.push(flow);
+    entry.totalMinor += flow.amountMinor;
+    flowByKey.set(key, entry);
+  }
+
+  for (const [key, entry] of flowByKey) {
+    const { totalMinor, flows } = entry;
+    if (totalMinor === 0) continue;
+
+    const eventIds = [...new Set(flows.map((f) => f.eventId))];
+    const firstFlow = flows[0];
+    if (!firstFlow) continue;
+
+    const lineId = `cashflow.${key}`;
+    const lineLabel = `${firstFlow.eventType} — trade ${firstFlow.tradeId}`;
+    const absAmount = Math.abs(totalMinor);
+
+    const lineItem: Ba325LineItem = {
+      lineId,
+      lineLabel,
+      amountMinor: absAmount,
+      currency: ccy,
+      contributingAccounts: eventIds,
+      note: `source=event; eventIds=${eventIds.join(",")}; raw=${totalMinor}`,
+    };
+
+    if (totalMinor < 0) {
+      // Outflow — bank pays.
+      outflowLines.push(lineItem);
+      grossOutflows += absAmount;
+    } else {
+      // Inflow — bank receives.
+      inflowLines.push(lineItem);
+      grossInflows += absAmount;
+    }
+  }
+
+  if (hasForeignCurrencyFlow) {
+    placeholders.push(
+      "[citation: TBC — foreign-currency settlement legs excluded from LCR denominator pending " +
+        "rate-enrichment step (Slice-6+); only ZAR-denominated legs counted. " +
+        "Per Reg 26(13) per-currency LCR; build-phase scope is consolidated functional-currency LCR.]",
+    );
+  }
+
+  // -------------------------------------------------------------------------
   // Apply HQLA caps.
+  // -------------------------------------------------------------------------
   const level2APreCap = Math.round(0.85 * level2AStock);
   const caps = applyHqlaCaps({
     level1Minor: level1Stock,
@@ -556,7 +778,9 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     level2BRawMinor: Math.round(level2BRawWeighted),
   });
 
+  // -------------------------------------------------------------------------
   // Net cash outflows: post-inflow-cap, post-floor.
+  // -------------------------------------------------------------------------
   const inflowCap = Math.floor(0.75 * grossOutflows);
   const cappedInflows = Math.min(grossInflows, inflowCap);
   const inflowCapBinding = grossInflows > inflowCap;
@@ -565,16 +789,18 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   const netCashOutflows = Math.max(preFloorNetOutflows, floor);
   const floorBinding = preFloorNetOutflows < floor;
 
+  // -------------------------------------------------------------------------
   // LCR ratio. Per BCBS D295 §22 / Reg 26(2): division by zero (no
-  // outflows) means the bank has no stress to cover — render as
-  // Number.POSITIVE_INFINITY so the consumer sees the absence loudly.
-  // The compliance flag treats infinite LCR as compliant.
+  // outflows) means the bank has no stress to cover.
+  // -------------------------------------------------------------------------
   const lcrRatio =
     netCashOutflows > 0 ? caps.totalStockMinor / netCashOutflows : Number.POSITIVE_INFINITY;
   const lcrCompliant = lcrRatio >= 1.0;
 
-  const placeholders: string[] = [];
-  if (input.classifications.some((c) => c.subCategory === undefined)) {
+  // -------------------------------------------------------------------------
+  // Placeholders.
+  // -------------------------------------------------------------------------
+  if (input.classifications.some((c) => c.hqlaLevel && c.subCategory === undefined)) {
     placeholders.push(
       "[citation: TBC — classification subCategory missing for one or more accounts; Mira's WS-INSTRUMENT-ANALYSES will resolve to SARB-published BA 325 line labels]",
     );
@@ -635,6 +861,8 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     lcrRatio,
     lcrCompliant,
     citations: [
+      "Principles/1-events-are-truth.md",
+      "D-MARKETS-SCHEMA-FOUNDATION",
       "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
       "D-REPORTING-CAPABILITY-SLICE-3",
       "Banks Act 94 of 1990 §70",

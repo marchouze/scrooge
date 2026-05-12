@@ -124,17 +124,20 @@ export interface PhaseDInputs {
   readonly trialBalance: ClosePeriodResult["trialBalance"]["rows"];
   readonly trialBalanceSnapshotEventId?: string;
   /**
-   * Event store for the P1-compliant events-first paths (C-2 / C-3).
-   * When supplied, BA 700 capital stock is folded from SubLedgerPostingEmitted
-   * and CapitalContributionRecorded events directly (bypassing the trial balance).
+   * Event store — required for all P1-compliant BA return paths (C-1/C-2/C-3):
+   * BA 325 folds FxSettlementInstructed/FxSettlementConfirmed; BA 700 folds
+   * SubLedgerPostingEmitted + CapitalContributionRecorded; BA 350 folds
+   * FxTradeExecuted. Authority: Principles/1-events-are-truth.md.
    */
-  readonly eventStore?: EventStore;
+  readonly eventStore: EventStore;
   /**
-   * Accounting-period window — required when `eventStore` is supplied.
-   * Used to scope the event replay for BA 700 (periodEnd) and BA 350 (periodEnd).
+   * ISO 8601 — start of the accounting/stress window for all event folds.
    */
-  readonly periodStart?: string;
-  readonly periodEnd?: string;
+  readonly periodStart: string;
+  /**
+   * ISO 8601 — end of the window (typically = asOf).
+   */
+  readonly periodEnd: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,11 +292,17 @@ export interface PhaseDGenerated {
 }
 
 export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
+  // P1-compliant: cash flows folded from FxSettlement events in the event
+  // store; trial balance used for HQLA stock only.
+  // Citation: Principles/1-events-are-truth.md (updated 2026-05-12).
   const ba325 = generateBa325Lcr({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
     functionalCurrency: inputs.functionalCurrency,
+    eventStore: inputs.eventStore,
+    periodStart: inputs.periodStart,
+    periodEnd: inputs.periodEnd,
     trialBalance: inputs.trialBalance,
     classifications: BA_325_FIXTURE_CLASSIFICATIONS,
     ...(inputs.trialBalanceSnapshotEventId
