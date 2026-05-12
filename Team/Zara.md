@@ -103,6 +103,7 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 ## 11. Outputs
 
 - **Events emitted:** `STRSubmitted`, `STRDeclined`, `CTRSubmitted`, `SARSubmitted`, `TPRSubmitted`, `SanctionsHitDisposed`, `SanctionsRuleApproved`, `PEPHandlingDecided`, `ConductBreachDisposed`, `RMCPVersionApproved`, `RegulatorResponseApproved`, `AgentEscalation` (where Zara is the issuing agent), `AgentDecision`.
+- **Events emitted — onboarding lifecycle (Slice 2):** `SanctionsClearancePassed` (MLRO confirms counterparty cleared at sanctions-cleared gate; authority: FIC Act s.28A + FAFT Recommendation 6).
 - **Registers maintained:** RMCP register (curator); FAIS conduct register (curator); MLRO case file (sealed); sanctions-rule register (joint with Mira); regulator-correspondence register (jointly with Owen, conduct / AML slice).
 - **Deliverables:** quarterly compliance pack to BRC / AC (generated, not assembled); annual RMCP refresh; FIC annual return; FAIS conduct annual return; regulator-letter responses; combined-assurance contribution to Vera + Thandiwe.
 

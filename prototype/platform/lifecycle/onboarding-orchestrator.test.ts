@@ -19,6 +19,20 @@ import type { Event } from "@platform/event-store/types";
 import { buildOnboardingBoardView, derivePhaseFromEvents } from "./onboarding-orchestrator";
 
 // ---------------------------------------------------------------------------
+// Slice 2 imports
+// ---------------------------------------------------------------------------
+
+import {
+  accountsSetupCompleted,
+  beneficialOwnerResolved,
+  counterpartyFaisClassified,
+  creditAssessmentCompleted,
+  fatcaCrsClassified,
+  popiaConsentRecorded,
+  sanctionsClearancePassed,
+} from "@domains/customer/onboarding";
+
+// ---------------------------------------------------------------------------
 // Shared test fixtures
 // ---------------------------------------------------------------------------
 
@@ -311,6 +325,386 @@ describe("derivePhaseFromEvents()", () => {
     expect(s1.counterpartyId).toBe(CP1);
     expect(s2.counterpartyId).toBe(CP2);
     expect(s3.counterpartyId).toBe(CP3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 2 — 7 new phase transition tests
+// ---------------------------------------------------------------------------
+
+describe("Slice 2 — new phase event types", () => {
+  it("TC-S2-1: CounterpartyFaisClassified → phase is 'fais-categorised'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      ctor.prospectRegistered(
+        {
+          counterpartyId: CP1,
+          legalName: "Acme Capital (Pty) Ltd",
+          jurisdiction: "ZA",
+          sector: "Asset Management",
+        },
+        opts("2026-05-12T08:01:00Z"),
+      ),
+      counterpartyFaisClassified(
+        {
+          counterpartyId: CP1,
+          faisCategory: "professional-client",
+          classifiedAt: "2026-05-12T08:05:00Z",
+          classifiedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T08:05:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("fais-categorised");
+    expect(state.eventCount).toBe(3);
+    expect(state.history.at(-1)?.phase).toBe("fais-categorised");
+  });
+
+  it("TC-S2-2: BeneficialOwnerResolved → phase is 'bo-resolved'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      ctor.kycCompleted(
+        {
+          counterpartyId: CP1,
+          tier: "Tier-1",
+          pep: false,
+          sanctionsClear: true,
+          jurisdictionalRiskScore: "low",
+          reviewerId: REVIEWER_ID,
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+      beneficialOwnerResolved(
+        {
+          counterpartyId: CP1,
+          beneficialOwners: [
+            { partyId: "urn:party:natural-person:prs-001", ownershipPct: 51, controlBasis: "equity" },
+          ],
+          resolvedAt: "2026-05-12T09:30:00Z",
+          resolvedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:30:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("bo-resolved");
+  });
+
+  it("TC-S2-3: SanctionsClearancePassed → phase is 'sanctions-cleared'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      beneficialOwnerResolved(
+        {
+          counterpartyId: CP1,
+          beneficialOwners: [
+            { partyId: "urn:party:natural-person:prs-001", ownershipPct: 100, controlBasis: "equity" },
+          ],
+          resolvedAt: "2026-05-12T08:30:00Z",
+          resolvedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T08:30:00Z"),
+      ),
+      sanctionsClearancePassed(
+        {
+          counterpartyId: CP1,
+          screeningProvider: "WorldCheck",
+          screeningRef: "WC-2026-001",
+          clearedAt: "2026-05-12T09:00:00Z",
+          screenedBy: "agent:zara:mlro-supervision",
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("sanctions-cleared");
+  });
+
+  it("TC-S2-4: FatcaCrsClassified → phase is 'fatca-crs-classified'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      sanctionsClearancePassed(
+        {
+          counterpartyId: CP1,
+          screeningProvider: "WorldCheck",
+          screeningRef: "WC-2026-002",
+          clearedAt: "2026-05-12T08:30:00Z",
+          screenedBy: "agent:zara:mlro-supervision",
+        },
+        opts("2026-05-12T08:30:00Z"),
+      ),
+      fatcaCrsClassified(
+        {
+          counterpartyId: CP1,
+          fatcaStatus: "non-us-person",
+          crsResidency: "ZA",
+          classifiedAt: "2026-05-12T09:00:00Z",
+          classifiedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("fatca-crs-classified");
+  });
+
+  it("TC-S2-5: PopiaConsentRecorded → phase is 'popia-recorded'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      fatcaCrsClassified(
+        {
+          counterpartyId: CP1,
+          fatcaStatus: "non-us-person",
+          crsResidency: "ZA",
+          classifiedAt: "2026-05-12T08:30:00Z",
+          classifiedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T08:30:00Z"),
+      ),
+      popiaConsentRecorded(
+        {
+          counterpartyId: CP1,
+          consentScope: ["credit-assessment", "market-data-sharing"],
+          recordedAt: "2026-05-12T09:00:00Z",
+          recordedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("popia-recorded");
+  });
+
+  it("TC-S2-6: CreditAssessmentCompleted → phase is 'credit-assessed'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      popiaConsentRecorded(
+        {
+          counterpartyId: CP1,
+          consentScope: ["credit-assessment"],
+          recordedAt: "2026-05-12T08:30:00Z",
+          recordedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T08:30:00Z"),
+      ),
+      creditAssessmentCompleted(
+        {
+          counterpartyId: CP1,
+          creditGrade: "A",
+          exposureLimitZar: 500_000_000_00, // R500m in cents
+          assessedAt: "2026-05-12T09:00:00Z",
+          assessedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("credit-assessed");
+  });
+
+  it("TC-S2-7: AccountsSetupCompleted → phase is 'accounts-setup'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      ctor.mandateAssigned(
+        {
+          counterpartyId: CP1,
+          products: ["IRS"],
+          limits: { notional: 100_000_000 },
+          rasReference: "RAS-2026-CP1",
+        },
+        opts("2026-05-12T08:30:00Z"),
+      ),
+      accountsSetupCompleted(
+        {
+          counterpartyId: CP1,
+          accounts: [
+            { accountId: "ACC-CP1-ZAR-001", currency: "ZAR", accountType: "settlement" },
+            { accountId: "ACC-CP1-USD-001", currency: "USD", accountType: "nostro" },
+          ],
+          setupAt: "2026-05-12T09:00:00Z",
+          setupBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("accounts-setup");
+  });
+
+  it("TC-S2-8: full 21-phase happy path including all Slice 2 events → phase is 'activated'", () => {
+    const events: Event[] = [
+      ctor.soundingOpened(
+        { counterpartyId: CP1, channel: "inbound" },
+        opts("2026-05-12T08:00:00Z"),
+      ),
+      ctor.prospectRegistered(
+        {
+          counterpartyId: CP1,
+          legalName: "Acme Capital (Pty) Ltd",
+          jurisdiction: "ZA",
+          sector: "Asset Management",
+        },
+        opts("2026-05-12T08:01:00Z"),
+      ),
+      counterpartyFaisClassified(
+        {
+          counterpartyId: CP1,
+          faisCategory: "professional-client",
+          classifiedAt: "2026-05-12T08:05:00Z",
+          classifiedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T08:05:00Z"),
+      ),
+      ctor.kycCompleted(
+        {
+          counterpartyId: CP1,
+          tier: "Tier-1",
+          pep: false,
+          sanctionsClear: true,
+          jurisdictionalRiskScore: "low",
+          reviewerId: REVIEWER_ID,
+        },
+        opts("2026-05-12T09:00:00Z"),
+      ),
+      beneficialOwnerResolved(
+        {
+          counterpartyId: CP1,
+          beneficialOwners: [
+            { partyId: "urn:party:natural-person:prs-001", ownershipPct: 100, controlBasis: "equity" },
+          ],
+          resolvedAt: "2026-05-12T09:15:00Z",
+          resolvedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:15:00Z"),
+      ),
+      sanctionsClearancePassed(
+        {
+          counterpartyId: CP1,
+          screeningProvider: "WorldCheck",
+          screeningRef: "WC-2026-003",
+          clearedAt: "2026-05-12T09:30:00Z",
+          screenedBy: "agent:zara:mlro-supervision",
+        },
+        opts("2026-05-12T09:30:00Z"),
+      ),
+      fatcaCrsClassified(
+        {
+          counterpartyId: CP1,
+          fatcaStatus: "non-us-person",
+          crsResidency: "ZA",
+          classifiedAt: "2026-05-12T09:45:00Z",
+          classifiedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T09:45:00Z"),
+      ),
+      popiaConsentRecorded(
+        {
+          counterpartyId: CP1,
+          consentScope: ["credit-assessment", "market-data-sharing", "regulatory-reporting"],
+          recordedAt: "2026-05-12T10:00:00Z",
+          recordedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T10:00:00Z"),
+      ),
+      creditAssessmentCompleted(
+        {
+          counterpartyId: CP1,
+          creditGrade: "A",
+          exposureLimitZar: 500_000_000_00,
+          assessedAt: "2026-05-12T10:30:00Z",
+          assessedBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T10:30:00Z"),
+      ),
+      ctor.documentationDrafted(
+        { counterpartyId: CP1, agreementType: "ISDA", version: "2002-MA" },
+        opts("2026-05-12T11:00:00Z"),
+      ),
+      ctor.documentationReadyToExecute(
+        { counterpartyId: CP1, agreementType: "ISDA", version: "2002-MA" },
+        opts("2026-05-12T11:30:00Z"),
+      ),
+      ctor.authorisedSignatoryAdded(
+        {
+          counterpartyId: CP1,
+          personId: PERSON_ID,
+          scope: "signatory",
+          evidenceRef: "BOARD-RESOLUTION-2026-001",
+        },
+        opts("2026-05-12T12:00:00Z"),
+      ),
+      ctor.mandateAssigned(
+        {
+          counterpartyId: CP1,
+          products: ["IRS", "CCS"],
+          limits: { notional: 500_000_000 },
+          rasReference: "RAS-2026-CP1",
+        },
+        opts("2026-05-12T12:30:00Z"),
+      ),
+      accountsSetupCompleted(
+        {
+          counterpartyId: CP1,
+          accounts: [
+            { accountId: "ACC-CP1-ZAR-001", currency: "ZAR", accountType: "settlement" },
+          ],
+          setupAt: "2026-05-12T13:00:00Z",
+          setupBy: "agent:niko:client-lifecycle",
+        },
+        opts("2026-05-12T13:00:00Z"),
+      ),
+      ctor.counterpartyActivated(
+        { counterpartyId: CP1, configSwitchEventId: "EVT-CONFIG-002" },
+        opts("2026-05-12T14:00:00Z"),
+      ),
+    ];
+    const result = derivePhaseFromEvents(events);
+    const state = result.get(CP1);
+    if (state === undefined) throw new Error("Expected state for CP1");
+    expect(state.phase).toBe("activated");
+    expect(state.isTerminal).toBe(true);
+    // Full path includes all Slice 1 + Slice 2 phases: sounding, prospect-registered,
+    // fais-categorised, cdd-initiated, bo-resolved, sanctions-cleared,
+    // fatca-crs-classified, popia-recorded, credit-assessed, documentation-drafted,
+    // documentation-ready, signatories-registered, mandate-assigned, accounts-setup,
+    // activated — 15 phase advances.
+    expect(state.history.length).toBeGreaterThanOrEqual(15);
+    expect(state.history.at(-1)?.phase).toBe("activated");
   });
 });
 

@@ -135,6 +135,15 @@ import {
   validationMethodologyPublishedPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "./event-types";
+import {
+  accountsSetupCompletedPayloadSchema,
+  beneficialOwnerResolvedPayloadSchema,
+  counterpartyFaisClassifiedPayloadSchema,
+  creditAssessmentCompletedPayloadSchema,
+  fatcaCrsClassifiedPayloadSchema,
+  popiaConsentRecordedPayloadSchema,
+  sanctionsClearancePassedPayloadSchema,
+} from "./event-types/customer";
 import { cdmBindingsRegeneratedPayloadSchema } from "./event-types-cdm";
 import {
   accountingReadinessSnapshotPayloadSchema,
@@ -2414,6 +2423,139 @@ const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Customer lifecycle event types — Onboarding Slice 2
+//
+// 7 new phase event types completing the 21-phase institutional counterparty
+// onboarding model. KYC/CDD records have long retention under FIC Act
+// s.22 (5 years minimum); FAIS + POPIA records mirror that floor;
+// credit-assessment and account-setup records treated as governance
+// retention (7 years) for audit-trail integrity.
+//
+// Authority: FAIS-ACT-37-2002, FIC-ACT-38-2001, AML-CFT-POLICY-V1,
+//            POPIA-S11, RT-CR.CP, TRADING-MANDATE-V1
+// Issuer: Niko (Client lifecycle, sales) primary;
+//         Zara (MLRO) for SanctionsClearancePassed.
+// ---------------------------------------------------------------------------
+
+const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "CounterpartyFaisClassified",
+    class: "markets",
+    payloadSchema: counterpartyFaisClassifiedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Zara", "Mira", "Imani", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "FAIS-ACT-37-2002",
+      "urn:obligation:bank:fais:general-code-of-conduct:v1",
+      "ORG-CD-01",
+    ],
+    // FAIS classification record: 5y per FIC Act s.22 CDD-equivalent floor.
+    retention: RETENTION_FIC_5Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  {
+    type: "BeneficialOwnerResolved",
+    class: "markets",
+    payloadSchema: beneficialOwnerResolvedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Zara", "Mira", "Imani", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "FIC-ACT-38-2001",
+      "AML-CFT-POLICY-V1",
+      "ORG-FC-05",
+    ],
+    // UBO chain is a FIC Act s.22 CDD record — 5y minimum floor.
+    retention: RETENTION_FIC_5Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  {
+    type: "SanctionsClearancePassed",
+    class: "markets",
+    payloadSchema: sanctionsClearancePassedPayloadSchema,
+    issuer: "Zara",
+    subscribers: ["Niko", "Mira", "Helena", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "FIC-ACT-38-2001",
+      "AML-CFT-POLICY-V1",
+      "ORG-FC-05",
+      "ORG-FC-06",
+    ],
+    // Sanctions screening record: FIC Act s.28A + FAFT Recommendation 6 —
+    // treated as governance-grade 7y for audit-trail integrity.
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  {
+    type: "FatcaCrsClassified",
+    class: "markets",
+    payloadSchema: fatcaCrsClassifiedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Zara", "Yael", "Mira", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "FIC-ACT-38-2001",
+      "ORG-FC-05",
+    ],
+    // FATCA/CRS tax-residency record: FIC Act s.22 floor + OECD CRS
+    // reporting obligations — governance-grade 7y.
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  {
+    type: "PopiaConsentRecorded",
+    class: "markets",
+    payloadSchema: popiaConsentRecordedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Iris", "Mira", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "POPIA-S11",
+      "ORG-PP-01",
+    ],
+    // POPIA processing consent: governance-grade 7y for audit-trail
+    // integrity (POPIA s.14 right of access; deletion challenge window).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  {
+    type: "CreditAssessmentCompleted",
+    class: "markets",
+    payloadSchema: creditAssessmentCompletedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Helena", "Camille", "Saskia", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "TRADING-MANDATE-V1",
+      "RAS-FRAMEWORK-2026-05-06-B3",
+      "RT-CR.CP",
+    ],
+    // Credit-assessment record: governance-grade 7y (Banks Act / RAS
+    // director-decision retention; RT-CR.CP audit trail).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  {
+    type: "AccountsSetupCompleted",
+    class: "markets",
+    payloadSchema: accountsSetupCompletedPayloadSchema,
+    issuer: "Niko",
+    subscribers: ["Tomas", "Bea", "Saskia", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "TRADING-MANDATE-V1",
+      "ORG-OP-01",
+    ],
+    // Account-setup record: governance-grade 7y (accounting-records
+    // retention under Companies Act s.24).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+];
+
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
  * above for readability; the consumer-facing surface is this combined
@@ -2434,6 +2576,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...RAS_EVENT_TYPES,
   ...READINESS_SNAPSHOT_EVENT_TYPES,
   ...GOAL_LOOP_EVENT_TYPES,
+  ...CUSTOMER_LIFECYCLE_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

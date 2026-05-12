@@ -44,6 +44,8 @@ export * from "./legal-entity";
 export * from "./product";
 export * from "./rms";
 export * from "./accounting";
+// Slice 2 — institutional counterparty onboarding lifecycle (7 new phase events).
+export * from "./customer";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -207,6 +209,14 @@ export const TYPED_EVENT_TYPES = [
   // (CEO-approved 2026-05-12). Emitted by the document-registration recon
   // pipeline when a Policies/*.md file is first registered.
   "DocumentRegistered",
+  // Onboarding Slice 2 — 7 new counterparty lifecycle phase events.
+  "CounterpartyFaisClassified",
+  "BeneficialOwnerResolved",
+  "SanctionsClearancePassed",
+  "FatcaCrsClassified",
+  "PopiaConsentRecorded",
+  "CreditAssessmentCompleted",
+  "AccountsSetupCompleted",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

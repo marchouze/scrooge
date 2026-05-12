@@ -92,6 +92,105 @@ export interface OffboardPayload {
   finalSettlementHash?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Slice 2 — 7 new phase event types
+// Authority: D-LIFECYCLE-SLICE-2 (onboarding Slice 2 dispatch)
+// Author: Atlas (Core banking platform architect, engineering)
+// ---------------------------------------------------------------------------
+
+/**
+ * FAIS categorisation — records the client category assigned under
+ * FAIS Act 37 of 2002 s.45 and General Code of Conduct s.2(1).
+ * Emitted by Niko (Client lifecycle, sales) at the fais-categorised gate.
+ */
+export interface CounterpartyFaisClassifiedPayload {
+  counterpartyId: CounterpartyId;
+  faisCategory: "professional-client" | "retail-client" | "market-counterparty";
+  classifiedAt: string; // ISO timestamp
+  classifiedBy: string; // agent URN or PartyId
+}
+
+/**
+ * Beneficial-ownership resolution — records the natural-person UBO
+ * chain for a counterparty per FIC Act 38/2001 s.21B.
+ * Emitted by Niko after UBO resolution is complete.
+ */
+export interface BeneficialOwnerResolvedPayload {
+  counterpartyId: CounterpartyId;
+  beneficialOwners: ReadonlyArray<{
+    partyId: string;
+    ownershipPct: number;
+    controlBasis: string;
+  }>;
+  resolvedAt: string; // ISO timestamp
+  resolvedBy: string; // agent URN or PartyId
+}
+
+/**
+ * Sanctions clearance — records that the counterparty passed sanctions
+ * screening per FIC Act 38/2001 s.28A and FAFT Recommendations.
+ * Emitted by Zara (MLRO) after the screening provider confirms clear.
+ */
+export interface SanctionsClearancePassedPayload {
+  counterpartyId: CounterpartyId;
+  screeningProvider: string;
+  screeningRef: string;
+  clearedAt: string; // ISO timestamp
+  screenedBy: string; // agent URN of Zara or delegated service
+}
+
+/**
+ * FATCA / CRS classification — records tax-residency status for
+ * FATCA (IRS IRC §1471–1474) and CRS (OECD Common Reporting Standard)
+ * purposes. Emitted by Niko at the fatca-crs-classified gate.
+ */
+export interface FatcaCrsClassifiedPayload {
+  counterpartyId: CounterpartyId;
+  fatcaStatus: "us-person" | "non-us-person" | "exempt";
+  crsResidency: string; // ISO 3166-1 alpha-2 country code
+  classifiedAt: string; // ISO timestamp
+  classifiedBy: string; // agent URN or PartyId
+}
+
+/**
+ * POPIA consent recorded — records the counterparty's processing-consent
+ * scope under POPIA s.11. Emitted by Niko at the popia-recorded gate.
+ */
+export interface PopiaConsentRecordedPayload {
+  counterpartyId: CounterpartyId;
+  consentScope: string[]; // e.g. ["credit-assessment", "market-data-sharing"]
+  recordedAt: string; // ISO timestamp
+  recordedBy: string; // agent URN or PartyId
+}
+
+/**
+ * Credit assessment completed — records the internal credit grade and
+ * exposure limit for the counterparty. Emitted by Niko (or the credit
+ * desk) at the credit-assessed gate. Authority: RT-CR.CP.
+ */
+export interface CreditAssessmentCompletedPayload {
+  counterpartyId: CounterpartyId;
+  creditGrade: string; // e.g. "A", "BBB+", "Sub-IG"
+  exposureLimitZar: number; // ZAR minor units
+  assessedAt: string; // ISO timestamp
+  assessedBy: string; // agent URN or PartyId
+}
+
+/**
+ * Accounts setup completed — records the settlement / nostro accounts
+ * opened for the counterparty. Emitted by Niko at the accounts-setup gate.
+ */
+export interface AccountsSetupCompletedPayload {
+  counterpartyId: CounterpartyId;
+  accounts: ReadonlyArray<{
+    accountId: string;
+    currency: string; // ISO 4217
+    accountType: string; // e.g. "settlement", "nostro", "collateral"
+  }>;
+  setupAt: string; // ISO timestamp
+  setupBy: string; // agent URN or PartyId
+}
+
 export const CUSTOMER_EVENT_TYPES = [
   "CounterpartySoundingOpened",
   "CounterpartyProspectRegistered",
@@ -105,6 +204,14 @@ export const CUSTOMER_EVENT_TYPES = [
   "MandateRevoked",
   "CounterpartyActivated",
   "CounterpartyOffboarded",
+  // Slice 2 — 7 new phase event types
+  "CounterpartyFaisClassified",
+  "BeneficialOwnerResolved",
+  "SanctionsClearancePassed",
+  "FatcaCrsClassified",
+  "PopiaConsentRecorded",
+  "CreditAssessmentCompleted",
+  "AccountsSetupCompleted",
 ] as const;
 
 export type CustomerEventType = (typeof CUSTOMER_EVENT_TYPES)[number];
