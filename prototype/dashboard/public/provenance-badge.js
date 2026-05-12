@@ -216,6 +216,83 @@
   // Fetch
   // ------------------------------------------------------------------
 
+  // ------------------------------------------------------------------
+  // Events-array mode derivation (Slice 3 hardening)
+  // ------------------------------------------------------------------
+
+  /**
+   * Derive a ProvenanceMode by inspecting the `provenance.kind` field on
+   * each event in an array. Returns one of four outcomes:
+   *   - "empty"           → 0 events; badge shows neutral "No event data"
+   *   - "production-only" → all events have kind === "production"
+   *   - "simulated-only"  → all events have kind === "simulated"
+   *   - "combined"        → mix of production + simulated events
+   *
+   * Any event missing provenance or with an unrecognised kind is treated
+   * as "simulated" (conservative: err on the side of surfacing the warning).
+   */
+  function deriveFilterFromEvents(events) {
+    if (!Array.isArray(events) || events.length === 0) {
+      return { mode: "empty" };
+    }
+    let hasProd = false;
+    let hasSim = false;
+    for (const ev of events) {
+      const kind = ev?.provenance?.kind;
+      if (kind === "production") {
+        hasProd = true;
+      } else {
+        // "simulated" or missing/unknown → treat as simulated
+        hasSim = true;
+      }
+      if (hasProd && hasSim) break; // short-circuit
+    }
+    if (hasProd && hasSim) return { mode: "combined" };
+    if (hasProd) return { mode: "production-only" };
+    return { mode: "simulated-only" };
+  }
+
+  /**
+   * Append `limit=200` to a URL that doesn't already carry a `limit`
+   * parameter. The badge needs a representative sample (not just page 1)
+   * to correctly classify mixed stores.
+   */
+  function withLimit(url, limitVal) {
+    if (!url || url.includes("limit=")) return url;
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}limit=${limitVal || 200}`;
+  }
+
+  // ------------------------------------------------------------------
+  // Renderer additions for the two-state hardened modes
+  // ------------------------------------------------------------------
+
+  /**
+   * Render a "no event data" neutral badge for an empty event store.
+   * Kept separate from the main render() path so callers can distinguish
+   * between "unknown filter" (error state) and "explicitly empty store".
+   */
+  function renderEmpty() {
+    const root = document.createElement("span");
+    root.className = "provenance-badge provenance-badge-page-top prov-badge prov-none";
+    root.setAttribute("data-mode", "empty");
+    root.setAttribute("role", "status");
+    root.setAttribute("aria-label", "No event data in store");
+    root.setAttribute("title", "Event store is empty — no provenance to report");
+
+    const dot = document.createElement("span");
+    dot.className = "provenance-badge-dot";
+    dot.setAttribute("aria-hidden", "true");
+    root.appendChild(dot);
+
+    const label = document.createElement("span");
+    label.className = "provenance-badge-label";
+    label.textContent = "No event data";
+    root.appendChild(label);
+
+    return root;
+  }
+
   /**
    * Fetch the resolved filter from a page-scoped endpoint, or
    * `/api/provenance/mode` when no endpoint is given. On success the
@@ -223,35 +300,60 @@
    * On failure caches `null` and returns `null`; the badge renders an
    * explicit error state rather than disappearing.
    *
-   * Page-scoped responses must include a `pageProvenance` field that is
-   * either a `ProvenanceFilter` or `null` (null → no data was queried,
-   * caller should suppress the badge). The fallback endpoint
-   * `/api/provenance/mode` returns the resolved filter at the top level
-   * (or under a `filter` key) and is treated as a always-non-null
-   * env-derived default.
+   * Response shape resolution (priority order):
+   *   1. **Events array** — if the response body contains an `events`
+   *      array, the badge derives the mode directly by inspecting
+   *      `provenance.kind` on each event (hardened Slice 3 path). A
+   *      `limit=200` query param is appended to the fetch URL so the
+   *      badge sees a representative sample, not just page 1.
+   *      Four outcomes: "production-only", "simulated-only", "combined",
+   *      or "empty" (zero events — neutral badge, not an error).
+   *
+   *   2. **Page-scoped `pageProvenance`** — `{ pageProvenance: <filter|null> }`
+   *      (Slice 3.5). `null` → endpoint explicitly says "no data, suppress
+   *      badge". This is distinct from a failed fetch.
+   *
+   *   3. **Top-level `{ filter: <filter> }`** — `/api/provenance/mode`
+   *      (Slice 3 original fallback endpoint).
+   *
+   *   4. **Top-level filter object** — forward-compat shape.
    */
   async function fetchFilter(endpoint) {
-    const url = typeof endpoint === "string" && endpoint.length > 0 ? endpoint : FALLBACK_ENDPOINT;
+    const rawUrl =
+      typeof endpoint === "string" && endpoint.length > 0 ? endpoint : FALLBACK_ENDPOINT;
+    // Append limit when fetching an events endpoint so we get a
+    // representative sample, not just the first page.
+    const url = withLimit(rawUrl, 200);
     try {
       const res = await fetch(url, { headers: { Accept: "application/json" } });
       if (!res.ok) throw new Error(`status ${res.status}`);
       const body = await res.json();
-      // Three response shapes are accepted, in priority order:
-      //   1. Page-scoped `{ pageProvenance: <filter|null>, ... }` (Slice 3.5).
-      //      pageProvenance present + null → endpoint explicitly says
-      //      "no data, suppress badge". This is distinct from a failed
-      //      fetch.
-      //   2. Top-level `{ filter: <filter>, ... }` (`/api/provenance/mode`,
-      //      Slice 3 original).
-      //   3. The resolved filter at the top level (forward-compat).
+
+      // Shape 1 — events array (hardened path: derive mode from data).
+      if (body && Array.isArray(body.events)) {
+        const derived = deriveFilterFromEvents(body.events);
+        if (derived.mode === "empty") {
+          // Store is empty — show the neutral badge, not an error.
+          cached = derived;
+          suppressed = false;
+          return cached;
+        }
+        cached = derived;
+        suppressed = false;
+        return cached;
+      }
+
+      // Shape 2 — page-scoped pageProvenance field (Slice 3.5).
       let filter = null;
       let explicitNull = false;
       if (body && Object.prototype.hasOwnProperty.call(body, "pageProvenance")) {
         filter = body.pageProvenance;
         explicitNull = filter === null;
       } else if (body?.filter) {
+        // Shape 3 — /api/provenance/mode top-level { filter } object.
         filter = body.filter;
       } else {
+        // Shape 4 — forward-compat top-level filter object.
         filter = body;
       }
       if (explicitNull) {
@@ -341,10 +443,14 @@
     if (markers.length > 0) {
       for (const el of markers) {
         const placement = el.getAttribute("data-provenance-badge") || "page-top";
-        const node =
-          cached === null
-            ? renderError(decl.endpoint || FALLBACK_ENDPOINT)
-            : render(cached, { placement });
+        let node;
+        if (cached === null) {
+          node = renderError(decl.endpoint || FALLBACK_ENDPOINT);
+        } else if (cached.mode === "empty") {
+          node = renderEmpty();
+        } else {
+          node = render(cached, { placement });
+        }
         // Marker was an empty span in markup — replace its children only;
         // do not re-create the marker itself (preserves layout siblings).
         el.replaceChildren(node);
@@ -362,10 +468,14 @@
       document.querySelector("header") ||
       document.body;
     if (!fallback) return;
-    const node =
-      cached === null
-        ? renderError(decl.endpoint || FALLBACK_ENDPOINT)
-        : render(cached, { placement: "page-top" });
+    let node;
+    if (cached === null) {
+      node = renderError(decl.endpoint || FALLBACK_ENDPOINT);
+    } else if (cached.mode === "empty") {
+      node = renderEmpty();
+    } else {
+      node = render(cached, { placement: "page-top" });
+    }
     // Place at the start so the badge is the first thing the eye reaches.
     fallback.insertBefore(node, fallback.firstChild);
   }
@@ -377,10 +487,13 @@
   window.provenanceBadge = {
     render,
     renderError,
+    renderEmpty,
     mount,
     fetch: fetchFilter,
     autoMount,
     describe, // exposed for tests
+    deriveFilterFromEvents, // exposed for tests
+    withLimit, // exposed for tests
     readPageDeclaration, // exposed for tests
     isSuppressed: () => suppressed, // exposed for tests
   };
