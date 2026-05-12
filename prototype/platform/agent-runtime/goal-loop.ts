@@ -25,7 +25,7 @@ import {
 } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
-import { WallClock, type ScenarioClock } from "../scenario-clock";
+import { type ScenarioClock, WallClock } from "../scenario-clock";
 import type { AgentUrn } from "./registry";
 import type { AgentSpec } from "./spec-parser";
 import type { AgentRunSummary, WorldStateSnapshot } from "./world-state";
@@ -155,7 +155,12 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
   private readonly actor: Actor;
   private readonly clock: ScenarioClock;
 
-  constructor(opts: { eventStore: EventStore; entity?: string; actor?: Actor; clock?: ScenarioClock }) {
+  constructor(opts: {
+    eventStore: EventStore;
+    entity?: string;
+    actor?: Actor;
+    clock?: ScenarioClock;
+  }) {
     this.eventStore = opts.eventStore;
     this.entity = opts.entity ?? DEFAULT_ENTITY;
     this.actor = opts.actor ?? GOAL_LOOP_ACTOR;
@@ -178,7 +183,8 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
     // ------------------------------------------------------------------
     const CADENCE_FLOOR_MS = 60_000; // 1-minute floor for cohort-1
     const lastIterationMs = this.findLastGoalEvaluatedMs(args.agent.urn);
-    if (lastIterationMs !== undefined && Date.now() - lastIterationMs < CADENCE_FLOOR_MS) { // wall-clock: real elapsed time since last iteration
+    if (lastIterationMs !== undefined && Date.now() - lastIterationMs < CADENCE_FLOOR_MS) {
+      // wall-clock: real elapsed time since last iteration
       const deferredMs = CADENCE_FLOOR_MS - (Date.now() - lastIterationMs); // wall-clock: elapsed-ms arithmetic for cadence floor
       const retryAfter = new Date(Date.now() + deferredMs).toISOString(); // wall-clock: real retry timestamp for cadence backoff
       this.emitGoalEvaluated(
