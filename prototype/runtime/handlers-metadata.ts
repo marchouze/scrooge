@@ -131,18 +131,36 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "19 6 * * 1",
   }),
-  // atlas:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Atlas", "goal-loop", "on-request"),
-  // bea:goal-loop — no cron; shadow mode until cohort validation passes (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3 (cohort-2).
-  entry("Bea", "goal-loop", "on-request"),
-  // vera:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
-  // Cohort-2 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Vera", "goal-loop", "on-request"),
-  // owen:goal-loop — no cron; shadow mode for cohort-2 (on-request only).
-  // Cohort-2 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Owen", "goal-loop", "on-request"),
+  // atlas:goal-loop — hourly tick; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  // Tracks slow-moving substrate state; handler runs in dryRun=true (shadow) until
+  // 2 successful ticks have been observed per spec §4.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  entry("Atlas", "goal-loop", "scheduled", {
+    cadenceHours: 1,
+    cronExpression: "0 * * * *",
+  }),
+  // bea:goal-loop — daily 06:00 UTC; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  // Tracks regulatory filing schedule and accounting readiness.
+  // Handler runs in dryRun=true (shadow) for first 2 ticks per spec §4.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  entry("Bea", "goal-loop", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 6 * * *",
+  }),
+  // vera:goal-loop — event-driven only; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  // Fires on AuditFinding / ReconResult events; no cron trigger.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  entry("Vera", "goal-loop", "event-driven", {
+    subscribesTo: ["AuditFinding", "ReconResult"],
+  }),
+  // owen:goal-loop — daily 07:00 UTC; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  // Tracks governance cycle, decisions, and briefs.
+  // Handler runs in dryRun=true (shadow) for first 2 ticks per spec §4.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  entry("Owen", "goal-loop", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 7 * * *",
+  }),
   entry("Helena", "risk-appetite-watch", "scheduled", {
     cadenceHours: 24,
     cronExpression: "30 4 * * *",
@@ -197,9 +215,17 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cronExpression: "29 7 * * 3",
   }),
   entry("Mira", "citation-gate", "on-request"),
-  // mira:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Mira", "goal-loop", "on-request"),
+  // mira:goal-loop — event-driven only; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  // Fires on regulatory obligation events; no cron trigger.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
+  entry("Mira", "goal-loop", "event-driven", {
+    subscribesTo: [
+      "RegulatoryInstrumentUpdate",
+      "ObligationRegistered",
+      "SanctionsListPublished",
+      "PepListPublished",
+    ],
+  }),
   entry("Senna", "security-substrate-state", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "37 7 * * 4",
