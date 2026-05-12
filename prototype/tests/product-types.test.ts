@@ -10,17 +10,20 @@
 //     / currency / jurisdiction is rejected.
 //   - URN form on productId is enforced.
 //   - Citations are non-empty (Principle 2 anchor).
+//   - M4 FX Spot fixture passes the full productSchema parse.
 //
 // Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE (CEO approved 2026-05-10).
 // Source brief: Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §2
+// M4 authority: D-NEW-PRODUCT-APPROVAL-POLICY (CEO approved 2026-05-10).
 //
-// Author: Atlas + Kai.
+// Author: Atlas + Kai (trading systems engineer, engineering).
 
 import { describe, expect, it } from "bun:test";
 
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
+  M4_FX_SPOT_FIXTURE,
 } from "../platform/markets/products/fixtures";
 import { parseProduct, productSchema } from "../platform/markets/products/types";
 
@@ -94,5 +97,121 @@ describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 1 — typed Product layer", () 
   it("accepts a Product with empty policyAttestations at conceptualisation", () => {
     expect(() => parseProduct(M1_JSE_EQUITY_CASH_FIXTURE)).not.toThrow();
     expect(M1_JSE_EQUITY_CASH_FIXTURE.policyAttestations).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M4 FX Spot — product-type round-trip + NPA gate assertions.
+//
+// Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE · D-NEW-PRODUCT-APPROVAL-POLICY
+// Author: Kai (trading systems engineer, engineering) +
+//         Saskia (Head of Global Markets, governance).
+// ---------------------------------------------------------------------------
+
+describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE M4 — FX Spot product type", () => {
+  it("M4 FX Spot fixture passes productSchema Zod parse", () => {
+    const parsed = parseProduct(M4_FX_SPOT_FIXTURE);
+    expect(parsed.productId).toBe("prd:bank:fx:fx-spot-zar-usd");
+    expect(parsed.family).toBe("fx");
+    expect(parsed.lifecycle).toBe("conceptualised");
+  });
+
+  it("M4 fixture family is 'fx' (M4 phase placement per source brief §10)", () => {
+    expect(M4_FX_SPOT_FIXTURE.family).toBe("fx");
+  });
+
+  it("M4 fixture lifecycle is 'conceptualised' (design-attestation only)", () => {
+    // lifecycle advances to 'due-diligence' only when the five pre-go-live
+    // NPA gates (Nadia, Senna, Imani, Devon, Zara) are cleared at
+    // commencement-of-trading per project_product_lifecycle_npa_vs_engineering.md
+    expect(M4_FX_SPOT_FIXTURE.lifecycle).toBe("conceptualised");
+  });
+
+  it("M4 fixture has exactly 6 CDM primitives per §4.1 FX Spot composition", () => {
+    expect(M4_FX_SPOT_FIXTURE.cdmComposition.primitives.length).toBe(6);
+  });
+
+  it("M4 fixture has exactly 2 extensions (FinSurv category + SARB ZAR Fixing Rate)", () => {
+    expect(M4_FX_SPOT_FIXTURE.cdmComposition.extensions.length).toBe(2);
+    const urns = M4_FX_SPOT_FIXTURE.cdmComposition.extensions.map((e) => e.citationUrn);
+    expect(urns).toContain("ORG-EXCON-ODP-001");
+    expect(urns).toContain("ORG-MK-08");
+  });
+
+  it("M4 fixture lifecycle event family contains all 6 required FX Spot events", () => {
+    const expected = [
+      "FxTradeExecuted",
+      "PrincipalPayment",
+      "FxSettlementInstructed",
+      "SettlementConfirmed",
+      "TradeReportSubmitted",
+      "TradeMatured",
+    ];
+    expect(M4_FX_SPOT_FIXTURE.lifecycleEventFamily).toEqual(expected);
+  });
+
+  it("M4 riskProfile is correct for FX Spot: delta-only, principal-on-settlement, tier-1", () => {
+    const rp = M4_FX_SPOT_FIXTURE.riskProfile;
+    expect(rp.marketRiskDimensions).toEqual(["delta"]);
+    expect(rp.creditRiskShape).toBe("principal-on-settlement");
+    expect(rp.liquidityClassification).toBe("non-hqla");
+    expect(rp.modelRiskTier).toBe("tier-1");
+  });
+
+  it("M4 accountingClassification: FVTPL + level-1 + monetary IAS 21", () => {
+    const ac = M4_FX_SPOT_FIXTURE.accountingClassification;
+    expect(ac.ifrs9Family).toBe("fvtpl");
+    expect(ac.ifrs13FairValueHierarchy).toBe("level-1");
+    expect(ac.ias21FxTreatment).toBe("monetary");
+  });
+
+  it("M4 policyAttestation clears 8 NPA gates (design-attestation)", () => {
+    const att = M4_FX_SPOT_FIXTURE.policyAttestations[0];
+    expect(att).toBeDefined();
+    if (!att) return; // type narrowing
+    expect(att.policy).toBe("D-NEW-PRODUCT-APPROVAL-POLICY");
+    expect(att.gatesCleared.length).toBe(8);
+    expect(att.gatesCleared).toContain("trading-mandate-alignment");
+    expect(att.gatesCleared).toContain("finsurv-category-declared");
+    expect(att.gatesCleared).toContain("settlement-path-declared");
+  });
+
+  it("M4 policyAttestation defers 5 pre-go-live gates", () => {
+    const att = M4_FX_SPOT_FIXTURE.policyAttestations[0];
+    expect(att).toBeDefined();
+    if (!att) return; // type narrowing
+    // 5 conditions = 5 deferred gates
+    expect(att.conditions.length).toBe(5);
+  });
+
+  it("M4 citations carry all 8 authority references (Principle 2 chain)", () => {
+    const required = [
+      "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+      "D-NEW-PRODUCT-APPROVAL-POLICY",
+      "D-MARKETS-SCHEMA-FOUNDATION",
+      "D-FX-BOOK-BOUNDARY",
+      "D-FX-CLS-MEMBERSHIP",
+      "D-FX-AD-STATUS",
+      "ORG-EXCON-ODP-001",
+      "ORG-MK-08",
+    ];
+    for (const cit of required) {
+      expect(M4_FX_SPOT_FIXTURE.citations).toContain(cit);
+    }
+  });
+
+  it("M4 fixture multi-X discipline: ZAR/ZA/LE-BANK-SA (Principle 5)", () => {
+    expect(M4_FX_SPOT_FIXTURE.currency).toBe("ZAR");
+    expect(M4_FX_SPOT_FIXTURE.jurisdiction).toBe("ZA");
+    expect(M4_FX_SPOT_FIXTURE.legalEntityId).toBe("LE-BANK-SA");
+  });
+
+  it("M4 fixture round-trips through productSchema without mutation", () => {
+    const parsed = productSchema.parse(M4_FX_SPOT_FIXTURE);
+    expect(parsed.productId).toBe(M4_FX_SPOT_FIXTURE.productId);
+    expect(parsed.version).toBe(M4_FX_SPOT_FIXTURE.version);
+    expect(parsed.cdmComposition.primitives.length).toBe(
+      M4_FX_SPOT_FIXTURE.cdmComposition.primitives.length,
+    );
   });
 });
