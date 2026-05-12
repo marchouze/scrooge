@@ -38,8 +38,8 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 ## 6. Cadence
 
 - **Mode:** Hybrid — event-driven (continuous postings); scheduled for close cycles, BA-return cycles, and auditor packs.
-- **Schedule:** Continuous on every postable product event. Daily close at the bank's accounting cut-off (17:00 SAST UTC+2). Weekly sub-ledger drift check Monday 06:00 UTC. Monthly auditor-pack snapshot at month-end +1 working day. Quarterly BA-return generation cycle at quarter-end +5 working days. Annual statutory AFS cycle at FY-end + 60 days.
-- **Inactivity SLA:** Daily close must produce a `CloseCycleCompleted` event by 22:00 UTC. Weekly drift check must produce a `SubLedgerDriftChecked` event every 7 days. A quiet posting pipeline > 1h during business hours is itself a finding.
+- **Schedule:** Continuous on every postable product event. Daily close at the bank's accounting cut-off (17:00 SAST UTC+2). Daily suspense-account monitoring (ACC-1100-004, ACC-1100-005) — flag immediately if any item is outstanding > 2 business days. Weekly sub-ledger drift check Monday 06:00 UTC. Monthly balance sheet substantiation at period-end (triggered by `AccountingPeriodClosed` event or scheduler fallback at period-end + 1 working day) → emits `BalanceSheetSubstantiationCompleted`. Monthly auditor-pack snapshot at month-end +1 working day. Quarterly BA-return generation cycle at quarter-end +5 working days (gated on clean `BalanceSheetSubstantiationCompleted` for the period). Annual statutory AFS cycle at FY-end + 60 days.
+- **Inactivity SLA:** Daily close must produce a `CloseCycleCompleted` event by 22:00 UTC. Monthly substantiation must produce `BalanceSheetSubstantiationCompleted` within 2 agent ticks of `AccountingPeriodClosed`. Weekly drift check must produce a `SubLedgerDriftChecked` event every 7 days. A quiet posting pipeline > 1h during business hours is itself a finding.
 
 ## 7. Triggers
 
@@ -90,9 +90,9 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 
 ## 11. Outputs
 
-- **Events emitted:** `PostingRulePublished`, `IFRSClassificationAssigned`, `IfrsClassificationApplied` (M1 — listed equities; per `D-MARKETS-SCHEMA-FOUNDATION`), `SubLedgerPostingEmitted` (M1), `FVHierarchyAssigned`, `JournalEntryPosted`, `SubLedgerReconciled`, `CloseCycleCompleted`, `BAReturnCellMapped`, `BAReturnGenerated`, `AuditPackReady`, `RestatementBooked`, `AgentEscalation`, `AgentDecision`.
+- **Events emitted:** `PostingRulePublished`, `IFRSClassificationAssigned`, `IfrsClassificationApplied` (M1 — listed equities; per `D-MARKETS-SCHEMA-FOUNDATION`), `SubLedgerPostingEmitted` (M1), `FVHierarchyAssigned`, `JournalEntryPosted`, `SubLedgerReconciled`, `CloseCycleCompleted`, `BalanceSheetSubstantiationCompleted` (monthly — per PROC-FIN-BSS-01), `BAReturnCellMapped`, `BAReturnGenerated`, `AuditPackReady`, `RestatementBooked`, `AgentEscalation`, `AgentDecision`.
 - **Registers maintained:** chart of accounts; posting-rule register; IFRS-classification register; FV-hierarchy register; BA-return cell-map register.
-- **Deliverables:** daily close report (Owner Inbox); monthly auditor pack (queries, not assemblies); quarterly BA-return packs (BA 100, BA 200, BA 300, BA 700); annual statutory AFS; XBRL pack.
+- **Deliverables:** daily close report (Owner Inbox); monthly balance sheet substantiation working paper (Owner Inbox — `YYYY-MM-DD_bea_balance-sheet-substantiation-<periodId>.md`); monthly auditor pack (queries, not assemblies); quarterly BA-return packs (BA 100, BA 200, BA 300, BA 700); annual statutory AFS; XBRL pack.
 
 ## 12. System capabilities called
 

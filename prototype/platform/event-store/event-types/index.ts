@@ -188,6 +188,8 @@ export const TYPED_EVENT_TYPES = [
   "AccountingPeriodOpened",
   "AccountingPeriodClosed",
   "TrialBalanceSnapshotted",
+  // Balance sheet substantiation — PROC-FIN-BSS-01.
+  "BalanceSheetSubstantiationCompleted",
   // Risk Appetite Statement calibration event.
   "RasLineCalibrated",
   // Substrate agent-run lifecycle (S8 primitives).

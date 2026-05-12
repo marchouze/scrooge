@@ -106,7 +106,8 @@
 | Capital Management | `capital-instrument-issuance.md` | Camille + Eitan | PLANNED |
 | Accounting Policies (IFRS) v0.1 (STUB) + Financial Reporting & Disclosure v0.1 (STUB) | [`posting-rule-publication.md`](by-policy/posting-rule-publication.md) | Bea · Atlas | **POPULATED** |
 | Accounting Policies (IFRS) — IFRS 10 consolidation policy (planned by Camille; sub-policy of Accounting Policies (IFRS) v0.1 STUB + Financial Reporting & Disclosure v0.1 STUB) | [`ifrs10-consolidation-cycle.md`](by-policy/ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01 — three-entity group consolidation per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER) | Bea · Camille (governance sign-off) | **STUB** |
-| Accounting Policies (IFRS) | `month-end-close.md` | Camille (Bea) | PLANNED |
+| Accounting Policies (IFRS) | [`balance-sheet-substantiation.md`](by-policy/balance-sheet-substantiation.md) (PROC-FIN-BSS-01 — monthly per-account source-event trace + CFO sign-off + `BalanceSheetSubstantiationCompleted` event) | Bea (Camille sign-off) | **DRAFT v1.0** |
+| Accounting Policies (IFRS) | `month-end-close.md` (broader period-close orchestration — balance sheet substantiation is a named step within it; see PROC-FIN-BSS-01) | Camille (Bea) | PLANNED |
 | Accounting Policies (IFRS) | `ba-return-generation.md` | Bea | PLANNED |
 | Provisioning / IFRS 9 ECL Policy v0.1 (STUB) + RAS (in-force) | [`ecl-stage-projection-refresh.md`](by-policy/ecl-stage-projection-refresh.md) | Rohan · Bea | **POPULATED** |
 | IFRS 9 ECL | `ecl-staging-cycle.md` | Helena (Bea) | PLANNED |
@@ -210,8 +211,9 @@
 | Status | Count | Note |
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
+| **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
 | PLANNED | ~64 | Drafting queue under domain leads, coordinated by Owen |
-| **Total identified procedures** | **~80** across 14 domains |
+| **Total identified procedures** | **~81** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
 

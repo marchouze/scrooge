@@ -338,3 +338,81 @@ export function makeTrialBalanceSnapshotted(args: {
     ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
+
+// ---------------------------------------------------------------------------
+// BalanceSheetSubstantiationCompleted
+// ---------------------------------------------------------------------------
+//
+// Emitted by Bea (Accounting & financial reporting engineer) at the end of each
+// monthly balance sheet substantiation run.  Every AccountingPeriodClosed must
+// be followed within 2 agent ticks by this event (Vera-enforced).
+//
+// Authority: PROC-FIN-BSS-01 (balance-sheet-substantiation.md)
+// Source regulations: ORG-AC-13; IAS 1 §29–§31; Companies Act 71/2008 §§28–30
+// Authors: Bea (Accounting & financial reporting engineer, engineering)
+
+export const substantiationExceptionKindSchema = z.enum([
+  "timing-difference",
+  "substrate-gap",
+  "unexplained",
+]);
+
+export type SubstantiationExceptionKind = z.infer<typeof substantiationExceptionKindSchema>;
+
+export const substantiationExceptionSchema = z.object({
+  accountId: z.string().regex(/^ACC-[0-9A-Za-z-]+$/, {
+    message: "substantiationException.accountId must match `ACC-...` per chart-of-accounts",
+  }),
+  exceptionKind: substantiationExceptionKindSchema,
+  description: z.string().min(1),
+});
+
+export type SubstantiationException = z.infer<typeof substantiationExceptionSchema>;
+
+export const balanceSheetSubstantiationCompletedPayloadSchema = z.object({
+  /** e.g. "period:hoz-bank:month:2026-05" */
+  periodId: z.string().min(1),
+  /** Legal entity identifier — e.g. "LE-ZA-HOZ-BANK" */
+  entity: z.string().min(1),
+  /** ISO 8601 timestamp at which substantiation was run */
+  asOf: z.string().min(1),
+  /** Total number of GL accounts substantiated in this run */
+  accountsSubstantiated: z.number().int().nonnegative(),
+  /** Number of accounts that had at least one open exception */
+  accountsWithExceptions: z.number().int().nonnegative(),
+  /**
+   * Open exceptions at time of completion.
+   * A clean run has an empty array.
+   * "unexplained" exceptions must be zero for the BA-return submission gate to pass.
+   */
+  exceptionsOpen: z.array(substantiationExceptionSchema),
+  /** Actor ID of the approver — Camille's agent ID, or "system:bea:auto-approve" */
+  approvedBy: z.string().min(1),
+  /** "auto" = clean run, no material exceptions; "human-in-loop" = CFO reviewed exceptions */
+  approvalMode: z.enum(["auto", "human-in-loop"]),
+});
+
+export type BalanceSheetSubstantiationCompletedPayload = z.infer<
+  typeof balanceSheetSubstantiationCompletedPayloadSchema
+>;
+
+export function makeBalanceSheetSubstantiationCompleted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BalanceSheetSubstantiationCompletedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BalanceSheetSubstantiationCompleted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: balanceSheetSubstantiationCompletedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
