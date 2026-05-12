@@ -24,7 +24,11 @@
 
 import type { EventStore } from "@platform/event-store/store";
 import { getSeedObligations } from "./seed";
-import type { ForwardObligation, ForwardObligationsBoardView, ForwardObligationStatus } from "./types";
+import type {
+  ForwardObligation,
+  ForwardObligationStatus,
+  ForwardObligationsBoardView,
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // Internal fold state
@@ -137,7 +141,9 @@ export function projectForwardObligations(
       if (!p.id) continue;
       // Upsert — events can add new entries or overwrite seed entries.
       const existing = map.get(p.id);
-      const citations = Array.isArray(p.citations) ? (p.citations as string[]) : ["P1-EVENTS-ARE-TRUTH"];
+      const citations = Array.isArray(p.citations)
+        ? (p.citations as string[])
+        : ["P1-EVENTS-ARE-TRUTH"];
       map.set(p.id, {
         id: p.id,
         kind: (p.kind as MutableObligation["kind"]) ?? existing?.kind ?? "ad-hoc",
@@ -194,7 +200,9 @@ export function projectForwardObligations(
       status: entry.status,
       citations: entry.citations,
       ...(entry.recurrence !== undefined && { recurrence: entry.recurrence }),
-      ...(entry.obligationSourceId !== undefined && { obligationSourceId: entry.obligationSourceId }),
+      ...(entry.obligationSourceId !== undefined && {
+        obligationSourceId: entry.obligationSourceId,
+      }),
       ...(entry.tradeRef !== undefined && { tradeRef: entry.tradeRef }),
       ...(entry.notes !== undefined && { notes: entry.notes }),
     };

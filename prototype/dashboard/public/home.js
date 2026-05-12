@@ -372,7 +372,15 @@
     return typeof n === "number" && Number.isFinite(n) ? n : 0;
   }
 
-  function deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding, forwardObligations) {
+  function deriveCounts(
+    state,
+    obligations,
+    substrateGaps,
+    fleet,
+    escalations,
+    onboarding,
+    forwardObligations,
+  ) {
     const counts = {};
 
     if (state) {
@@ -502,7 +510,7 @@
       counts["cmp-kyc"] = counts.onboarding;
     }
 
-    if (forwardObligations && forwardObligations.summary) {
+    if (forwardObligations?.summary) {
       const s = forwardObligations.summary;
       const total = safeNum(s.total);
       const overdue = safeNum(s.overdue);
@@ -533,26 +541,34 @@
     // Parallel fetch — five existing endpoints + the RMS catalogue
     // (Slice 4) + onboarding pipeline (PR #272) + forward-obligations
     // register (Slice 1). One round-trip wall-clock per tick.
-    const [state, obligations, substrateGaps, fleet, escalations, rms, onboarding, forwardObligations] =
-      await Promise.all([
-        window.bankShell.fetch.state(),
-        window.bankShell.fetch.obligations(),
-        window.bankShell.fetch.substrateGaps(),
-        window.bankShell.fetch.fleet(),
-        window.bankShell.fetch.escalations(),
-        // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
-        // refreshed; falling through to a plain fetch keeps Slice 4 self-
-        // contained.
-        fetch("/api/rms", { headers: { Accept: "application/json" } })
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null),
-        fetch("/api/onboarding", { headers: { Accept: "application/json" } })
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null),
-        fetch("/api/forward-obligations", { headers: { Accept: "application/json" } })
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null),
-      ]);
+    const [
+      state,
+      obligations,
+      substrateGaps,
+      fleet,
+      escalations,
+      rms,
+      onboarding,
+      forwardObligations,
+    ] = await Promise.all([
+      window.bankShell.fetch.state(),
+      window.bankShell.fetch.obligations(),
+      window.bankShell.fetch.substrateGaps(),
+      window.bankShell.fetch.fleet(),
+      window.bankShell.fetch.escalations(),
+      // Inline fetch — `bankShell.fetch.rms()` lands when `_shell.js` is
+      // refreshed; falling through to a plain fetch keeps Slice 4 self-
+      // contained.
+      fetch("/api/rms", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetch("/api/onboarding", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetch("/api/forward-obligations", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ]);
 
     if (window.bankShell.render && state && state.asOf) {
       window.bankShell.render.asOf(state.asOf);
@@ -560,7 +576,15 @@
       window.bankShell.render.asOf(null);
     }
 
-    const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding, forwardObligations);
+    const counts = deriveCounts(
+      state,
+      obligations,
+      substrateGaps,
+      fleet,
+      escalations,
+      onboarding,
+      forwardObligations,
+    );
     if (rms?.counts) {
       const total =
         safeNum(rms.counts.decisions) +

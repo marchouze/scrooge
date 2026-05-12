@@ -68,9 +68,9 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { getForwardObligationsView } from "./forward-obligations-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
-import { getForwardObligationsView } from "./forward-obligations-view";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
 import {

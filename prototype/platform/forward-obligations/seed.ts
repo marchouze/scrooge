@@ -233,7 +233,8 @@ export function getSeedObligations(): ForwardObligation[] {
       responsibleAgent: "agent:zara",
       status: "pending",
       citations: FIC_CITATIONS,
-      notes: "Accountable institution annual compliance report to FIC; STR / CTR summaries included",
+      notes:
+        "Accountable institution annual compliance report to FIC; STR / CTR summaries included",
     },
 
     // -----------------------------------------------------------------------
