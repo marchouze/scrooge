@@ -7,13 +7,15 @@
 //       --entity LE-ZA-HOZ-BANK \
 //       --as-of 2026-05-31T23:59:59.999Z \
 //       --period-id period:hoz-bank:month:2026-05 \
+//       --period-start 2026-05-01T00:00:00.000Z \
+//       --period-end   2026-05-31T23:59:59.999Z \
 //       [--functional-currency ZAR] \
 //       [--classifications path/to/classifications.json] \
 //       [--out path/to/ba-325.json]
 //
 // What it does:
-//   1. Replays the event store for the entity.
-//   2. Computes the trial balance over the period.
+//   1. Opens the event store for the entity.
+//   2. Computes the trial balance over the period (for HQLA stock).
 //      (If the period is closed, it uses the closed trial balance via
 //      `periodAuditChain` to find the most-recent
 //      `TrialBalanceSnapshotted`. Otherwise it computes ad-hoc from
@@ -22,9 +24,16 @@
 //      `--classifications` (JSON array of `AccountLiquidityClassification`).
 //      Defaults to a built-in build-phase fixture (see
 //      `BUILD_PHASE_DEFAULT_CLASSIFICATIONS` below).
-//   4. Generates the BA 325 projection.
+//   4. Generates the BA 325 projection — cash flows folded directly from
+//      FxSettlementInstructed / FxSettlementConfirmed events in the event
+//      store (Principle 1 compliant; not routed through GL).
 //   5. Renders to canonical JSON.
 //   6. Writes to stdout (default) or `--out`.
+//
+// P1 compliance note: --period-start and --period-end are required for the
+// event-fold window. The generator replays FxSettlementInstructed and
+// FxSettlementConfirmed events with as_of in [periodStart, periodEnd] to
+// derive the LCR cash-flow denominator directly.
 //
 // This script is rehearsal-grade. The production form (Slice 5) emits a
 // `ReportGenerated` event that hashes the rendered bytes into the RMS
@@ -33,7 +42,8 @@
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO) + Eitan (Treasurer, governance) + Anya (Data /
-//   analytics engineer, engineering).
+//   analytics engineer, engineering) + Atlas (Core banking platform
+//   architect, engineering — P1 fix).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -69,10 +79,10 @@ interface CliArgs {
   readonly asOf: string;
   readonly periodId: string;
   readonly functionalCurrency: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
   readonly classificationsPath?: string;
   readonly outPath?: string;
-  readonly periodStart?: string;
-  readonly periodEnd?: string;
 }
 
 function parseArgs(argv: readonly string[]): CliArgs {
@@ -83,25 +93,30 @@ function parseArgs(argv: readonly string[]): CliArgs {
   const entity = get("--entity");
   const asOf = get("--as-of");
   const periodId = get("--period-id");
+  const periodStart = get("--period-start");
+  const periodEnd = get("--period-end");
   if (!entity || !asOf || !periodId) {
     throw new Error(
       "render-ba-325: --entity, --as-of, --period-id are required. See script header for usage.",
     );
   }
+  if (!periodStart || !periodEnd) {
+    throw new Error(
+      "render-ba-325: --period-start and --period-end are required for P1-compliant event folding. See script header for usage.",
+    );
+  }
   const functionalCurrency = get("--functional-currency") ?? "ZAR";
   const classificationsPath = get("--classifications");
   const outPath = get("--out");
-  const periodStart = get("--period-start");
-  const periodEnd = get("--period-end");
   return {
     entity,
     asOf,
     periodId,
     functionalCurrency,
+    periodStart,
+    periodEnd,
     ...(classificationsPath ? { classificationsPath } : {}),
     ...(outPath ? { outPath } : {}),
-    ...(periodStart ? { periodStart } : {}),
-    ...(periodEnd ? { periodEnd } : {}),
   };
 }
 
@@ -115,7 +130,7 @@ function loadClassifications(path: string): readonly AccountLiquidityClassificat
 }
 
 // ---------------------------------------------------------------------------
-// Trial-balance discovery
+// Trial-balance discovery (used for HQLA stock only).
 // ---------------------------------------------------------------------------
 
 interface TrialBalanceResolution {
@@ -138,13 +153,8 @@ function resolveTrialBalance(args: CliArgs): TrialBalanceResolution {
     }
   }
 
-  // Fallback: ad-hoc compute from the supplied window. Useful for
+  // Fallback: ad-hoc compute from the period window. Useful for
   // pre-close rehearsal runs.
-  if (!args.periodStart || !args.periodEnd) {
-    throw new Error(
-      `render-ba-325: no TrialBalanceSnapshotted for (entity=${args.entity}, periodId=${args.periodId}); supply --period-start + --period-end for ad-hoc compute, or run the period-close orchestration first.`,
-    );
-  }
   const tb = computeTrialBalance({
     eventStore,
     entity: args.entity,
@@ -164,11 +174,16 @@ function main(argv: readonly string[]): number {
     ? loadClassifications(args.classificationsPath)
     : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
   const tb = resolveTrialBalance(args);
+  // P1-compliant: pass the event store + period window so cash flows are
+  // folded from FxSettlementInstructed / FxSettlementConfirmed events.
   const output = generateBa325Lcr({
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,
     functionalCurrency: args.functionalCurrency,
+    eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
     trialBalance: tb.rows,
     classifications,
     ...(tb.trialBalanceSnapshotEventId
