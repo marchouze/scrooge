@@ -127,6 +127,80 @@
   margin: 0 0 8px;
 }
 
+/* ============================================================
+ * Hardened state aliases — Slice 3 hardening (four explicit states)
+ *
+ * These .prov-* classes complement the existing [data-mode=*] selectors.
+ * They are applied by renderEmpty() and by the badge JS when deriving mode
+ * directly from the events array. They follow the same colour conventions
+ * as the [data-mode=*] rules above.
+ *
+ *   .prov-prod   → green  (all production events)          = production-only
+ *   .prov-mixed  → amber  (production + simulated mix)      = combined
+ *   .prov-sim    → yellow (all simulated events)            = simulated-only
+ *   .prov-none   → muted  (empty store — no events at all)  = empty
+ * ============================================================ */
+
+.prov-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: "IBM Plex Sans", "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-style: solid;
+  border-width: 1px;
+}
+
+/* Green — all production */
+.prov-badge.prov-prod {
+  background: #e6f7ec;
+  color: #126a32;
+  border-color: #2c9b54;
+  border-style: solid;
+}
+
+/* Amber — mixed production + simulated (warning tone) */
+.prov-badge.prov-mixed {
+  background: #fff1e0;
+  color: #7a3d00;
+  border-color: #e06800;
+  border-style: solid;
+}
+
+/* Yellow — all simulated */
+.prov-badge.prov-sim {
+  background: #fff4d6;
+  color: #6b4a00;
+  border-color: #d49500;
+  border-style: dashed;
+  border-width: 1px;
+}
+
+/* Muted — empty store (neutral, not an error) */
+.prov-badge.prov-none {
+  background: var(--color-surface, #f8f8f8);
+  color: var(--color-text-muted, #888);
+  border-color: var(--color-border, #d0d0d0);
+  border-style: dotted;
+}
+
+/* Print / PDF — .prov-badge mirrors the .provenance-badge print rule */
+@media print {
+  .prov-badge {
+    color: black !important;
+    background: transparent !important;
+    border-color: black !important;
+  }
+}
+
 /* ---------------- Print / PDF watermarking -------------- */
 /* Per pack §6.1 + §6.3, "rendered artefacts" includes printed PDFs
  * (when reporting templates land — see substrate gap §11). For the
