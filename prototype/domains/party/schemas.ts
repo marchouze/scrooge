@@ -56,7 +56,7 @@ export const partyKindSchema = z.enum(PARTY_KINDS);
 
 /**
  * `PartyId` schema. Validates both the `urn:party:<kind>:<slug>` shape
- * AND that `<kind>` matches one of the four `PartyKind` values. The
+ * AND that `<kind>` matches one of the three `PartyKind` values. The
  * `<slug>` is constrained to URL-safe chars (lower-case alphanumerics,
  * hyphens, dots, underscores) — anything else (including additional
  * `:`s) is rejected so parsing the URN back into its parts is
@@ -65,8 +65,8 @@ export const partyKindSchema = z.enum(PARTY_KINDS);
 export const partyIdSchema = z
   .string()
   .regex(
-    /^urn:party:(natural-person|legal-entity|counterparty|agent):[a-z0-9][a-z0-9._-]*$/,
-    "partyId must match `urn:party:<kind>:<slug>` where <kind> is one of natural-person|legal-entity|counterparty|agent and <slug> is a URL-safe identifier",
+    /^urn:party:(natural-person|legal-entity|agent):[a-z0-9][a-z0-9._-]*$/,
+    "partyId must match `urn:party:<kind>:<slug>` where <kind> is one of natural-person|legal-entity|agent and <slug> is a URL-safe identifier",
   )
   .transform((s) => s as PartyId);
 
@@ -137,14 +137,6 @@ const legalEntityAttrsSchema = z.object({
     .min(1, { message: "legal-entity must declare at least one regime anchor" }),
 });
 
-const counterpartyAttrsSchema = z.object({
-  kind: z.literal("counterparty"),
-  sector: z.string().min(1),
-  channel: z.enum(["introduction", "inbound", "outbound", "event"]),
-  introSource: z.string().min(1).optional(),
-  classification: z.string().min(1).optional(),
-});
-
 const agentAttrsSchema = z.object({
   kind: z.literal("agent"),
   personaSpecPath: z.string().min(1).nullable(),
@@ -160,7 +152,6 @@ const agentAttrsSchema = z.object({
 export const kindAttributesSchema = z.discriminatedUnion("kind", [
   naturalPersonAttrsSchema,
   legalEntityAttrsSchema,
-  counterpartyAttrsSchema,
   agentAttrsSchema,
 ]);
 
@@ -197,61 +188,61 @@ export const RELATIONSHIP_KIND_CONSTRAINTS: Readonly<
   // --- Authority / representation (source: natural-person OR agent; target: any party) ---
   "acts-on-behalf-of": {
     allowedSourceKinds: ["natural-person", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "signatory-of": {
     allowedSourceKinds: ["natural-person", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "authorised-trader-for": {
     allowedSourceKinds: ["natural-person", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "key-individual-of": {
     allowedSourceKinds: ["natural-person", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "employee-of": {
     allowedSourceKinds: ["natural-person", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "contractor-of": {
     allowedSourceKinds: ["natural-person", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   // --- Governance / control (source: natural-person; target: legal-entity OR counterparty) ---
   "director-of": {
     allowedSourceKinds: ["natural-person"],
-    allowedTargetKinds: ["legal-entity", "counterparty"],
+    allowedTargetKinds: ["legal-entity"],
   },
   "ubo-of": {
     allowedSourceKinds: ["natural-person"],
-    allowedTargetKinds: ["legal-entity", "counterparty"],
+    allowedTargetKinds: ["legal-entity"],
   },
   // --- Service / commercial (source: any party; target: any party) ---
   "sponsor-bank-for": {
-    allowedSourceKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedSourceKinds: ["natural-person", "legal-entity", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "correspondent-bank-for": {
-    allowedSourceKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedSourceKinds: ["natural-person", "legal-entity", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "intermediary-for": {
-    allowedSourceKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedSourceKinds: ["natural-person", "legal-entity", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "external-counsel-to": {
-    allowedSourceKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedSourceKinds: ["natural-person", "legal-entity", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "auditor-of": {
-    allowedSourceKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedSourceKinds: ["natural-person", "legal-entity", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   "intra-group-counterparty-of": {
-    allowedSourceKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
-    allowedTargetKinds: ["natural-person", "legal-entity", "counterparty", "agent"],
+    allowedSourceKinds: ["natural-person", "legal-entity", "agent"],
+    allowedTargetKinds: ["natural-person", "legal-entity", "agent"],
   },
   // --- Org structure (source: legal-entity; target: legal-entity) ---
   "parent-of": {
@@ -443,12 +434,14 @@ export const beneficialOwnerChainAssertedPayloadSchema = z
     citations: citationsSchema,
   })
   .superRefine((p, ctx) => {
-    // Root must be a counterparty.
+    // Root must be a legal-entity (institutional counterparties register as
+    // legal-entity; "counterparty" was removed from PartyKind per
+    // D-PARTY-REGISTER correction 2026-05-12 — kind is intrinsic, not relational).
     const rootKind = partyIdKind(p.rootCounterpartyPartyId);
-    if (rootKind !== "counterparty") {
+    if (rootKind !== "legal-entity") {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `BeneficialOwnerChainAsserted.rootCounterpartyPartyId must be a counterparty Party (got \`${rootKind}\`).`,
+        message: `BeneficialOwnerChainAsserted.rootCounterpartyPartyId must be a legal-entity Party (institutional counterparties register as legal-entity; got \`${rootKind}\`).`,
         path: ["rootCounterpartyPartyId"],
       });
     }

@@ -288,8 +288,12 @@ ok(
 // person + a signatory-of edge.
 // ---------------------------------------------------------------------------
 
-section("Step 4 — register Acme + Jane Doe + signatory-of edge");
-const acmePartyId: PartyId = partyId("counterparty", "acme-am");
+// Step 4 — register Acme as a legal-entity Party (institutional counterparty).
+// Note: "counterparty" is a relationship, not an intrinsic kind (D-PARTY-REGISTER
+// correction 2026-05-12). Acme is registered as `legal-entity`; the counterparty-of
+// relationship edge would be asserted separately via PartyRelationshipAsserted.
+section("Step 4 — register Acme (legal-entity) + Jane Doe + signatory-of edge");
+const acmePartyId: PartyId = partyId("legal-entity", "acme-am");
 eventStore.append(
   makePartyRegistered({
     asOf: new Date().toISOString(),
@@ -298,16 +302,19 @@ eventStore.append(
     citations: ["D-PARTY-REGISTER", "FIC-ACT-38-2001"],
     payload: {
       partyId: acmePartyId,
-      kind: "counterparty",
+      kind: "legal-entity",
       displayName: "Acme Asset Management",
       legalName: "Acme Asset Management (Pty) Ltd",
       jurisdictions: ["ZA"],
       kindAttributes: {
-        kind: "counterparty",
-        sector: "asset-management",
-        channel: "introduction",
-        introSource: "scenario-05",
-        classification: "Sounding",
+        kind: "legal-entity",
+        entityForm: "Pty",
+        parentPartyId: null,
+        primaryRegulator: "other",
+        regimeAnchor: [
+          "sector: asset-management",
+          "[citation: FIC Act 38 of 2001 s.21 customer due diligence]",
+        ],
       },
       citations: [
         "[citation: D-PARTY-REGISTER]",
@@ -366,9 +373,9 @@ eventStore.append(
 const proj2 = buildPartyProjection(eventStore);
 const counts2 = countPartiesByKind(proj2);
 ok(
-  "Acme counterparty Party present after manual emit",
+  "Acme legal-entity Party present after manual emit",
   proj2.parties.has(acmePartyId),
-  `counterparty count=${counts2.counterparty}`,
+  `legal-entity count=${counts2["legal-entity"]}`,
 );
 ok(
   "Jane Doe natural-person Party present after manual emit",
