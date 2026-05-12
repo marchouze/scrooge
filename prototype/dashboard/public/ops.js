@@ -1,11 +1,12 @@
 // ops.js — Operations department view.
 //
-// Pulls /api/state for fleet/escalations/gaps and /api/events for
+// Pulls /api/state for fleet/escalations/gaps/workstreams and /api/events for
 // recent operational events. Shows settlement status, system health
-// metrics, and an event feed.
+// metrics, active workstreams count, and an event feed.
 //
 // Author: Atlas (Core banking platform architect) — under CEO directive
 // 2026-05-12 (intranet scaffold).
+// Improved: Noa (Intranet Product Owner & UI Architect) — 2026-05-12.
 
 (() => {
   // Settlement / clearing systems shown in the ops panel.
@@ -119,12 +120,17 @@
     document.getElementById("ops-settlement-body").innerHTML = renderSettlement(state || {});
 
     // --- Health metrics -------------------------------------------
-    const fleetList = Array.isArray(fleet?.fleet) ? fleet.fleet : [];
+    // Fleet: prefer /api/fleet; fall back to state.agents array
+    const fleetList = Array.isArray(fleet?.fleet)
+      ? fleet.fleet
+      : Array.isArray(state?.agents)
+        ? state.agents
+        : [];
     const fleetTotal = fleetList.length;
     let red = 0;
     let amber = 0;
     for (const a of fleetList) {
-      const s = (a.status || "").toLowerCase();
+      const s = (a.status || a.ragStatus || "").toLowerCase();
       if (s === "red" || s === "blocked" || s === "blocking") red++;
       else if (s === "amber" || s === "warn") amber++;
     }
@@ -142,6 +148,58 @@
 
     const gapCount = substrateGaps?.gaps?.length ?? 0;
     setMetric("ops-gaps", String(gapCount), gapCount > 0 ? "warn" : "muted");
+
+    // Active workstreams from state.inFlight
+    const inFlight = Array.isArray(state?.inFlight) ? state.inFlight : [];
+    const activeWorkstreams = inFlight.filter((w) => w.active === true);
+    const totalWorkstreams = inFlight.length;
+    const workstreamsText =
+      totalWorkstreams > 0 ? `${activeWorkstreams.length} / ${totalWorkstreams}` : "–";
+    setMetric(
+      "ops-workstreams",
+      workstreamsText,
+      activeWorkstreams.length > 0 ? "default" : "muted",
+    );
+
+    // Open decisions count
+    const openDecisions = state?.decisionsOpen?.length ?? 0;
+    setMetric("ops-open-decisions", String(openDecisions), openDecisions > 0 ? "warn" : "success");
+
+    // --- Active workstreams table ----------------------------------
+    const workstreamsEl = document.getElementById("ops-workstreams-body");
+    if (workstreamsEl) {
+      if (!activeWorkstreams.length) {
+        workstreamsEl.innerHTML = `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No active workstreams.</p>`;
+      } else {
+        const rows = activeWorkstreams
+          .map((w) => {
+            const id = w.id || "–";
+            const what = w.what || "–";
+            const owner = w.owner || "–";
+            const due = w.due || "–";
+            const started = w.startedAt
+              ? `${new Date(w.startedAt).toISOString().slice(0, 10)}`
+              : "–";
+            return `<tr>
+  <td><code style="font-size:var(--type-caption)">${id}</code></td>
+  <td style="max-width:260px">${what}</td>
+  <td style="font-size:var(--type-caption)">${owner}</td>
+  <td style="font-size:var(--type-caption);white-space:nowrap">${started}</td>
+  <td style="font-size:var(--type-caption);white-space:nowrap">${due}</td>
+</tr>`;
+          })
+          .join("");
+        workstreamsEl.innerHTML = `<div class="dept-table-wrap">
+  <table class="dept-table" aria-label="Active workstreams">
+    <thead><tr><th>ID</th><th>Workstream</th><th>Owner</th><th>Started</th><th>Due</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>
+<p style="margin-top:var(--space-3);font-size:var(--type-small)">
+  ${activeWorkstreams.length} active of ${totalWorkstreams} total workstreams.
+</p>`;
+      }
+    }
 
     // --- Recent events --------------------------------------------
     const events = Array.isArray(eventsResp?.events)

@@ -1,11 +1,13 @@
 // compliance.js — Obligations & Compliance department view.
 //
 // Pulls /api/obligations for the full register plus /api/state for
-// compliance-indicator fields. Shows summary metrics, traffic-light
-// indicators for POPIA / FATCA-CRS / FIC, and top obligations table.
+// compliance-indicator fields and the policy count.
+// Shows summary metrics, traffic-light indicators for POPIA / FATCA-CRS / FIC,
+// top obligations table, and open compliance decisions.
 //
 // Author: Atlas (Core banking platform architect) — under CEO directive
 // 2026-05-12 (intranet scaffold).
+// Improved: Noa (Intranet Product Owner & UI Architect) — 2026-05-12.
 
 (() => {
   // Key regulatory frameworks shown as traffic-light indicators.
@@ -142,9 +144,19 @@
       }
     }
 
+    // Policy count and open decisions from state
+    const policiesCount = state?.bank?.metrics?.policies ?? 0;
+    const openDecisionsCount = state?.decisionsOpen?.length ?? 0;
+
     setMetric("cmp-total", String(total), total > 0 ? "default" : "muted");
     setMetric("cmp-empty-src", String(emptySource), emptySource > 0 ? "warn" : "success");
     setMetric("cmp-unclassified", String(unclassified), unclassified > 0 ? "warn" : "success");
+    setMetric("cmp-policies", String(policiesCount), policiesCount > 0 ? "default" : "muted");
+    setMetric(
+      "cmp-open-decisions",
+      String(openDecisionsCount),
+      openDecisionsCount > 0 ? "warn" : "success",
+    );
 
     // Framework statuses from state (placeholder until pipeline lands)
     const popia = state?.popiaStatus ?? null;
@@ -167,11 +179,63 @@
     setMetric("cmp-fatca", indStatus(fatca), indTone(fatca));
     setMetric("cmp-fic", indStatus(fic), indTone(fic));
 
-    // --- Compliance indicators ---------------------------------------
+    // --- Compliance indicators ----------------------------------------
     document.getElementById("cmp-indicators-body").innerHTML = renderIndicators(state || {});
 
-    // --- Top obligations table --------------------------------------
+    // --- Top obligations table ----------------------------------------
     document.getElementById("cmp-register-body").innerHTML = renderTopObligations(obligations);
+
+    // --- Open compliance decisions ------------------------------------
+    const complianceDecisionsEl = document.getElementById("cmp-decisions-body");
+    if (complianceDecisionsEl) {
+      const complianceDecisions = (state?.decisionsOpen || []).filter((d) => {
+        const id = (d.id || "").toUpperCase();
+        const title = (d.title || "").toLowerCase();
+        return (
+          id.includes("POPIA") ||
+          id.includes("FIC") ||
+          id.includes("FATCA") ||
+          id.includes("COMPLIANCE") ||
+          id.includes("MIRA") ||
+          id.includes("ZARA") ||
+          id.includes("IRIS") ||
+          title.includes("compliance") ||
+          title.includes("popia") ||
+          title.includes("fic") ||
+          title.includes("fatca") ||
+          title.includes("sanctions") ||
+          title.includes("aml") ||
+          title.includes("information officer") ||
+          title.includes("obligations")
+        );
+      });
+
+      if (!complianceDecisions.length) {
+        complianceDecisionsEl.innerHTML = `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No open compliance-tagged decisions. <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all decisions →</a></p>`;
+      } else {
+        const rows = complianceDecisions
+          .map((d) => {
+            const id = d.id || "–";
+            const title = d.title || "–";
+            const category = d.category || "–";
+            return `<tr>
+  <td><code style="font-size:var(--type-caption)">${id}</code></td>
+  <td>${title}</td>
+  <td><span class="status-badge" data-status="pending">${category}</span></td>
+</tr>`;
+          })
+          .join("");
+        complianceDecisionsEl.innerHTML = `<div class="dept-table-wrap">
+  <table class="dept-table" aria-label="Compliance-related open decisions">
+    <thead><tr><th>ID</th><th>Title</th><th>Category</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>
+<p style="margin-top:var(--space-3);font-size:var(--type-small)">
+  <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all open decisions →</a>
+</p>`;
+      }
+    }
   }
 
   window.bankCompliance = { load };
