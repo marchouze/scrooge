@@ -436,10 +436,7 @@ async function handleComment(req: Request): Promise<Response> {
     typeof body.actorId === "string" && body.actorId.trim().length > 0
       ? body.actorId.trim()
       : "marc@tgv.co.za";
-  const author =
-    typeof body.author === "string" && body.author.trim().length > 0
-      ? body.author.trim()
-      : "Marc";
+  const author = typeof body.author === "string" && body.author.trim().length > 0 ? body.author.trim() : "Marc";
 
   let result: RecordDecisionCommentResult;
   try {
