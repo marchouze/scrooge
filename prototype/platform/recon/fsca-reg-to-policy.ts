@@ -49,7 +49,7 @@
 //   Vera (Internal audit engineer, engineering — functionally to Thandiwe CAE;
 //         administratively through the CEO)
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { logger } from "../observability/logger";
@@ -90,8 +90,6 @@ function findRepoRoot(start: string): string {
 }
 
 const REPO_ROOT = findRepoRoot(import.meta.dir);
-const OBLIGATIONS_PATH = resolve(REPO_ROOT, "Regulations/_obligations-register.md");
-const POLICIES_DIR = resolve(REPO_ROOT, "Policies");
 
 // ---------------------------------------------------------------------------
 // FSCA-source detection
@@ -136,7 +134,7 @@ function isInactiveStatus(status: string): boolean {
  */
 const POLICY_NAME_ALIASES: Readonly<Record<string, string>> = {
   "risk management framework": "risk-management-and-compliance-policy",
-  "rmcp": "risk-management-and-compliance-policy",
+  rmcp: "risk-management-and-compliance-policy",
   "aml / cft policy": "aml-cft-policy",
   "aml/cft policy": "aml-cft-policy",
   "aml-cft policy": "aml-cft-policy",
@@ -147,11 +145,11 @@ const POLICY_NAME_ALIASES: Readonly<Record<string, string>> = {
   "liquidity risk management policy": "liquidity-risk-management-policy",
   "capital management policy": "capital-management-policy",
   "trading mandate": "trading-mandate",
-  "icaap": "capital-management-policy",
-  "ilaap": "liquidity-risk-management-policy",
+  icaap: "capital-management-policy",
+  ilaap: "liquidity-risk-management-policy",
   "records management policy": "internal-audit-charter",
   "internal audit charter": "internal-audit-charter",
-  "popia": "popia-privacy-policy",
+  popia: "popia-privacy-policy",
   "popia / data protection policy": "popia-privacy-policy",
   "popia/data protection policy": "popia-privacy-policy",
   "remuneration policy": "remuneration-policy",
@@ -209,7 +207,10 @@ function policyFileExists(name: string, policiesIndex: Set<string>): boolean {
   const aliasKey = Object.keys(POLICY_NAME_ALIASES).find((k) => k === normalized);
   if (aliasKey) {
     const stem = POLICY_NAME_ALIASES[aliasKey];
-    if (policiesIndex.has(`${stem}-v1.md`) || [...policiesIndex].some((f) => f.startsWith(`${stem}`))) {
+    if (
+      policiesIndex.has(`${stem}-v1.md`) ||
+      [...policiesIndex].some((f) => f.startsWith(`${stem}`))
+    ) {
       return true;
     }
   }
@@ -233,7 +234,10 @@ function policyFileExists(name: string, policiesIndex: Set<string>): boolean {
   const normalizedStripped = normalized.replace(/[\s-]/g, "");
   for (const file of policiesIndex) {
     const fileStripped = file.replace(/[-v0-9.md]/g, "").replace(/\s/g, "");
-    if (fileStripped === normalizedStripped || fileStripped.startsWith(normalizedStripped.slice(0, Math.min(12, normalizedStripped.length)))) {
+    if (
+      fileStripped === normalizedStripped ||
+      fileStripped.startsWith(normalizedStripped.slice(0, Math.min(12, normalizedStripped.length)))
+    ) {
       return true;
     }
   }
@@ -321,7 +325,13 @@ function parseObligationRow(line: string, lineNumber: number): ObligationRow | n
 
   if (!id.startsWith("ORG-")) return null;
 
-  return { id: id.trim(), citation: citation.trim(), fulfilmentPolicy: fulfilmentPolicy.trim(), status: status.trim(), lineNumber };
+  return {
+    id: id.trim(),
+    citation: citation.trim(),
+    fulfilmentPolicy: fulfilmentPolicy.trim(),
+    status: status.trim(),
+    lineNumber,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -358,7 +368,10 @@ function extractPolicyRefs(cell: string): PolicyRef[] {
     if (!trimmed) continue;
 
     // Detect if this segment is marked planned before stripping
-    const isPlanned = /\(planned/i.test(trimmed) || /\(under development/i.test(trimmed) || /\(deferred/i.test(trimmed);
+    const isPlanned =
+      /\(planned/i.test(trimmed) ||
+      /\(under development/i.test(trimmed) ||
+      /\(deferred/i.test(trimmed);
 
     // Strip advisory parentheticals
     const stripped = trimmed.replace(ADVISORY_SUFFIX_RE, "").trim();
@@ -468,7 +481,9 @@ export function runFscaRegToPolicyRecon(
   const obligationsPath = resolve(repoRoot, "Regulations/_obligations-register.md");
   const policiesDir = resolve(repoRoot, "Policies");
 
-  const content = opts.fileOverride ?? (existsSync(obligationsPath) ? readFileSync(obligationsPath, "utf8") : null);
+  const content =
+    opts.fileOverride ??
+    (existsSync(obligationsPath) ? readFileSync(obligationsPath, "utf8") : null);
 
   if (!content) {
     logger.warn({ pipeline: PIPELINE, msg: "Obligations register not found — skipping recon" });
@@ -522,7 +537,8 @@ export function runFscaRegToPolicyRecon(
       // If the original cell was only procedures/file paths, that's a warn/fail
       const isFsca = isFscaRow(row.citation);
       // Only flag if there truly is no policy reference at all
-      const hasPolicyLike = /\bPolicy\b|\bCharter\b|\bMandate\b|\bFramework\b|\bPolicy v/i.test(cell) &&
+      const hasPolicyLike =
+        /\bPolicy\b|\bCharter\b|\bMandate\b|\bFramework\b|\bPolicy v/i.test(cell) &&
         !/^\s*`[^`]+`\s*$/.test(cell.replace(FILEPATH_RE, "").trim());
       if (!hasPolicyLike) {
         violations.push({
