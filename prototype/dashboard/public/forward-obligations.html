@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forward Obligations · Bank operations dashboard</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  /* Page-local — kept in sync with onboarding.html / obligations.html conventions. */
+  .fo-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .fo-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .fo-card-num { font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .fo-card-lbl { font-size: 12px; color: #666; margin-top: 4px; }
+  .fo-card-sub { font-size: 11px; color: #999; margin-top: 2px; }
+  .fo-card-red .fo-card-num  { color: #c0392b; }
+  .fo-card-amber .fo-card-num { color: #b8860b; }
+
+  .fo-table-wrap { overflow-x: auto; }
+  table.fo-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.fo-table th, table.fo-table td {
+    border-bottom: 1px solid #eee; padding: 6px 8px; vertical-align: top; text-align: left;
+  }
+  table.fo-table th { background: #fafafa; font-weight: 600; color: #444; }
+  table.fo-table tr:hover { background: #fafcff; }
+  table.fo-table code { font-size: 11.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
+
+  /* Status chips */
+  .fo-status {
+    display: inline-block; padding: 2px 7px; border-radius: 10px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .fo-status-pending   { background: #fff8e1; color: #7d5c00; border: 1px solid #ffe082; }
+  .fo-status-overdue   { background: #fce4e4; color: #7d1e10; border: 1px solid #f3c1bc; }
+  .fo-status-fulfilled { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+  .fo-status-cancelled { background: #f5f5f5; color: #888; border: 1px solid #e0e0e0; }
+
+  /* Kind chips */
+  .fo-kind {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 10.5px; white-space: nowrap;
+  }
+  .fo-kind-regulatory-filing   { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+  .fo-kind-trade-settlement    { background: #f3e5f5; color: #5c1b7a; border: 1px solid #e1bee7; }
+  .fo-kind-corporate-statutory { background: #fff3e0; color: #6d3b00; border: 1px solid #ffe0b2; }
+  .fo-kind-counterparty-payment { background: #fce4ec; color: #7d1039; border: 1px solid #f8bbd0; }
+  .fo-kind-ad-hoc              { background: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
+
+  .fo-empty-state {
+    padding: 40px 24px; text-align: center;
+    color: #666; font-size: 14px; line-height: 1.6;
+  }
+  .fo-empty-state strong { display: block; font-size: 16px; margin-bottom: 8px; color: #333; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Forward Obligations</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/forward-obligations"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/agents.html">Agents</a>
+      <a class="nav-link" href="/obligations.html">Obligations</a>
+      <a class="nav-link" href="/policies.html">Policies</a>
+      <a class="nav-link" href="/activity.html">Activity</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <section class="band">
+    <div class="band-head">
+      <h1>Forward Obligations</h1>
+      <span class="band-sub muted" id="foAsOf"></span>
+    </div>
+    <p class="muted">
+      Concrete dated future obligations — regulatory filings, trade settlements,
+      corporate-statutory deliverables. Distinct from the static obligations register;
+      this register captures <em>specific instances</em> the bank must fulfil by a given date.
+      Authority:
+      <code>D-MARKETS-SCHEMA-FOUNDATION</code> · <code>TRADING-MANDATE-V1</code> ·
+      <code>P1-EVENTS-ARE-TRUTH</code> · <code>ORG-MK-10</code>.
+      Source: <code>GET /api/forward-obligations</code>.
+    </p>
+  </section>
+
+  <section class="band" id="summarySection">
+    <div class="band-head">
+      <h2>At a glance</h2>
+    </div>
+    <div class="fo-summary" id="foSummary">
+      <!-- rendered by forward-obligations.js -->
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band-head">
+      <h2>Obligations</h2>
+      <span class="band-sub muted" id="foTableSub"></span>
+    </div>
+    <div id="foEmptyState" hidden>
+      <div class="fo-empty-state">
+        <strong>No forward obligations recorded.</strong>
+        Seed entries and registered events will appear here once the register is populated.
+      </div>
+    </div>
+    <div class="fo-table-wrap" id="foTableWrap">
+      <table class="fo-table" id="foTable">
+        <thead>
+          <tr>
+            <th>Due Date</th>
+            <th>Description</th>
+            <th>Kind</th>
+            <th>Recurrence</th>
+            <th>Responsible Agent</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="foBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script src="/forward-obligations.js"></script>
+<script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+</body>
+</html>

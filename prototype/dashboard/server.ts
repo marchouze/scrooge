@@ -70,6 +70,7 @@ import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
+import { getForwardObligationsView } from "./forward-obligations-view";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
 import {
@@ -1017,6 +1018,21 @@ const server = Bun.serve({
       // pageProvenance: event-derived → simulated-only in build phase.
       return jsonResponse({
         ...buildOnboardingView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/forward-obligations" && req.method === "GET") {
+      // Forward Obligations Register — Slice 1. Merges the static seed
+      // (regulatory filings, trade settlements, corporate-statutory) with
+      // ForwardObligationRegistered / ForwardObligationFulfilled /
+      // ForwardObligationCancelled events from the event store. Derives
+      // "overdue" status at projection time. Read-only; no caching (volume
+      // is small in build phase).
+      // Authority: D-MARKETS-SCHEMA-FOUNDATION; TRADING-MANDATE-V1 (PR #256);
+      //            P1-EVENTS-ARE-TRUTH; ORG-MK-10.
+      // pageProvenance: event-derived → simulated-only in build phase.
+      return jsonResponse({
+        ...getForwardObligationsView(eventStore),
         pageProvenance: eventDerivedPageProvenance(),
       });
     }

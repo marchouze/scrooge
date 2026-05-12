@@ -77,6 +77,14 @@
         "Niko's counterparty-onboarding pipeline — 21-phase lifecycle from sounding to activated.",
       href: "/onboarding.html",
     },
+    {
+      id: "forward-obligations",
+      category: "dashboards",
+      title: "Forward Obligations",
+      blurb:
+        "Concrete dated future obligations — BA returns, FX settlements, statutory filings. Due-date-sorted register with overdue detection.",
+      href: "/forward-obligations.html",
+    },
 
     // -------- Reports (as-of-date) --------
     {
@@ -364,7 +372,7 @@
     return typeof n === "number" && Number.isFinite(n) ? n : 0;
   }
 
-  function deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding) {
+  function deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding, forwardObligations) {
     const counts = {};
 
     if (state) {
@@ -494,6 +502,23 @@
       counts["cmp-kyc"] = counts.onboarding;
     }
 
+    if (forwardObligations && forwardObligations.summary) {
+      const s = forwardObligations.summary;
+      const total = safeNum(s.total);
+      const overdue = safeNum(s.overdue);
+      const dueToday = safeNum(s.dueToday);
+      const tone = overdue > 0 ? "error" : dueToday > 0 ? "warn" : total > 0 ? "default" : "muted";
+      counts["forward-obligations"] = {
+        text: String(total),
+        tone,
+        aria: `${total} forward obligations; ${overdue} overdue; ${dueToday} due today`,
+        meta: [
+          { label: `${overdue} overdue`, tone: overdue > 0 ? "warn" : "muted" },
+          { label: `${dueToday} due today`, tone: dueToday > 0 ? "warn" : "muted" },
+        ],
+      };
+    }
+
     return counts;
   }
 
@@ -506,8 +531,9 @@
     if (!window.bankShell) return;
 
     // Parallel fetch — five existing endpoints + the RMS catalogue
-    // (Slice 4) + onboarding pipeline (PR #272). One round-trip wall-clock per tick.
-    const [state, obligations, substrateGaps, fleet, escalations, rms, onboarding] =
+    // (Slice 4) + onboarding pipeline (PR #272) + forward-obligations
+    // register (Slice 1). One round-trip wall-clock per tick.
+    const [state, obligations, substrateGaps, fleet, escalations, rms, onboarding, forwardObligations] =
       await Promise.all([
         window.bankShell.fetch.state(),
         window.bankShell.fetch.obligations(),
@@ -523,6 +549,9 @@
         fetch("/api/onboarding", { headers: { Accept: "application/json" } })
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
+        fetch("/api/forward-obligations", { headers: { Accept: "application/json" } })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
       ]);
 
     if (window.bankShell.render && state && state.asOf) {
@@ -531,7 +560,7 @@
       window.bankShell.render.asOf(null);
     }
 
-    const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding);
+    const counts = deriveCounts(state, obligations, substrateGaps, fleet, escalations, onboarding, forwardObligations);
     if (rms?.counts) {
       const total =
         safeNum(rms.counts.decisions) +
