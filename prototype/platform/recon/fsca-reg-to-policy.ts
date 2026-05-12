@@ -52,7 +52,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import logger from "../observability/logger";
+import { logger } from "../observability/logger";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 // ---------------------------------------------------------------------------
