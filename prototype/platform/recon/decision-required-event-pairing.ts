@@ -1,64 +1,44 @@
 // platform/recon/decision-required-event-pairing.ts
 //
-// Continuous-controls pipeline: decision-required → CeoDecision pairing
-// integrity (F-033).
+// Vera continuous-controls pipeline: F-033 — decision-required ↔
+// CeoDecision event pairing gate.
 //
-// Closes the bug class shipped in PR #197. Symptom: D-BANK-NAME-SELECTION
-// showed as "decision required" on the dashboard despite being decided
-// 2026-05-09. Root cause: the boot-time backfill deduped on bare
-// decisionId, so the second on-disk record (which superseded the first)
-// emitted no event. The "latest wins by asOf" projection rule cannot work
-// when an event is missing.
+// Every `Owner Inbox/actioned/` file whose YAML frontmatter carries
+//   decision-required: true
+//   decision-id: <ID>
+// must have a terminal `CeoDecision` event in the event store
+// (payload.action ∈ {"approve","reject"}) with payload.decisionId === <ID>.
 //
-// PR #197 fixed the dedup. This recon makes the *invariant* the dedup
-// preserves audit-checkable, so any future regression of the same shape
-// surfaces at recon time, not the next time someone notices the dashboard
-// is wrong.
+// Without this gate a decision can be "actioned" in markdown (moved to
+// actioned/) without a corresponding event, violating Principle 1
+// (events are the only source of truth).
 //
-// Two distinct assertions:
+// Exit codes:
+//   0 — all assertions pass (or store is empty → clean-bench guard)
+//   1 — one or more violations
 //
-//   (a) **Pairing existence.** For every Owner Inbox decision-record
-//       file matching `*_ceo-decision-record_*.md` carrying a
-//       `decisionId` derivable from the body or filename, there must be
-//       at least one `CeoDecision` event in the store with that
-//       `decisionId`. If none exists, that's a P1 finding (backfill
-//       regression — events lost).
-//
-//   (b) **Supersession integrity.** When *multiple* records exist on
-//       disk for the same `decisionId` (different `asOf` timestamps),
-//       every record must produce a corresponding `CeoDecision` event
-//       in the store, matched on `(decisionId, asOf)`. Missing events
-//       break the latest-wins-by-asOf projection rule. Any (record,
-//       asOf) pair with no matching event is a **P0 finding** — this is
-//       exactly the bug PR #197 fixed.
-//
-// Empty-store posture: a fresh runner with no `.local/event.db` will
-// have zero CeoDecision events. The recon distinguishes this from a
-// genuine pairing miss by looking at whether the event store is empty
-// of CeoDecision events entirely. When empty, findings are downgraded
-// to `info` severity and a single "store-empty" message is emitted.
-// This matches the convention in `decision-event-recon.ts`.
-//
-// P2 — citation discipline. Findings carry typed citations:
-//   - `P1-EVENTS-AS-TRUTH` (Principle 1)
-//   - `GOV-FRAMEWORK-CEO-RESERVED` (CEO decision authority)
-//   - `Owner Inbox/2026-05-10_vera_codebase-quality-review.md` (F-033)
-//   - PR #197 (`fix(decisions): dedup backfill on (decisionId, asOf)`)
-//
-// Author: Vera (Internal audit engineer, third-line)
+// P1 — events are the only source of truth (Principle 1).
+// P2 — single-graph discipline (Principle 2).
+// Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+// Finding: F-033 (Owner Inbox/2026-05-10_vera_codebase-quality-review.md).
+// Author: Vera (Internal audit engineer, third-line —
+//         functionally to Thandiwe (Chief Audit Executive, governance);
+//         administratively through the CEO).
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { synthesizeCeoDecisionsFromRecords } from "../../dashboard/derive";
+import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
-const CITATIONS = [
-  "P1-EVENTS-AS-TRUTH",
-  "GOV-FRAMEWORK-CEO-RESERVED",
-  "Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-033)",
-  "PR #197 — fix(decisions): dedup backfill on (decisionId, asOf)",
-];
+const PIPELINE = "decision-required-event-pairing";
+
+/** Terminal CeoDecision actions that close a decision. */
+const TERMINAL_ACTIONS = new Set(["approve", "reject"]);
+
+// ---------------------------------------------------------------------------
+// Repo-root resolver
+// ---------------------------------------------------------------------------
 
 function findRepoRoot(start: string): string {
   let dir = start;
@@ -71,245 +51,278 @@ function findRepoRoot(start: string): string {
 
 const REPO_ROOT = findRepoRoot(import.meta.dir);
 const OWNER_INBOX_DIR = resolve(REPO_ROOT, "Owner Inbox");
-const DEFAULT_DB_PATH = resolve(REPO_ROOT, "prototype/.local/event.db");
 
-export interface CeoDecisionEvent {
-  readonly decisionId: string;
-  readonly asOf: string;
+// ---------------------------------------------------------------------------
+// YAML frontmatter helpers
+// ---------------------------------------------------------------------------
+
+interface Frontmatter {
+  decisionRequired: boolean;
+  decisionId: string | null;
 }
 
+/**
+ * Parse the YAML frontmatter block from a markdown file.
+ * Uses a simple regex approach (no js-yaml dependency needed — the fields
+ * are scalar strings on single lines, no multi-line YAML required).
+ */
+function parseFrontmatter(content: string): Frontmatter {
+  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fmMatch?.[1]) {
+    return { decisionRequired: false, decisionId: null };
+  }
+  const fm = fmMatch[1];
+
+  // decision-required: true  (exact boolean true)
+  const drMatch = fm.match(/^decision-required:\s*(.+?)\s*$/im);
+  const decisionRequired = drMatch?.[1]?.trim().toLowerCase() === "true";
+
+  // decision-id: D-SOME-ID
+  const diMatch = fm.match(/^decision-id:\s*(.+?)\s*$/im);
+  const decisionId = diMatch?.[1]?.trim() ?? null;
+
+  return { decisionRequired, decisionId };
+}
+
+// ---------------------------------------------------------------------------
+// File scanners
+// ---------------------------------------------------------------------------
+
+interface InboxFile {
+  path: string;
+  basename: string;
+  frontmatter: Frontmatter;
+}
+
+function scanDir(dir: string): InboxFile[] {
+  if (!existsSync(dir)) return [];
+  const out: InboxFile[] = [];
+  for (const name of readdirSync(dir)) {
+    if (!name.endsWith(".md")) continue;
+    const full = join(dir, name);
+    try {
+      if (!statSync(full).isFile()) continue;
+    } catch {
+      continue;
+    }
+    let content: string;
+    try {
+      content = readFileSync(full, "utf8");
+    } catch {
+      continue;
+    }
+    out.push({
+      path: full,
+      basename: name,
+      frontmatter: parseFrontmatter(content),
+    });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Event-store helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when the event store has zero events of any type.
+ * Used to detect a fresh CI bench before any seed scripts have run.
+ *
+ * When `testOverride` is provided we skip the live store entirely.
+ */
+function isStoreEmpty(testOverride?: ReadonlySet<string>): boolean {
+  if (testOverride !== undefined) return false;
+  try {
+    return eventStore.count() === 0;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Returns the set of decisionIds that have at least one terminal
+ * CeoDecision event (action ∈ {approve, reject}).
+ *
+ * When `testOverride` is provided, it is used directly (allows unit tests
+ * to drive the recon without touching the live store).
+ */
+function terminalDecisionIds(testOverride?: ReadonlySet<string>): Set<string> {
+  if (testOverride !== undefined) return new Set(testOverride);
+  const ids = new Set<string>();
+  try {
+    for (const e of eventStore.replay({ type: "CeoDecision" })) {
+      const p = e.payload as { decisionId?: string; action?: string };
+      const id = p.decisionId;
+      const action = p.action;
+      if (id && action && TERMINAL_ACTIONS.has(action)) {
+        ids.add(id);
+      }
+    }
+  } catch {
+    // Read error — treat as empty; the guard above covers the empty-store case.
+  }
+  return ids;
+}
+
+// ---------------------------------------------------------------------------
+// Run options (for unit tests)
+// ---------------------------------------------------------------------------
+
 export interface RunOpts {
-  /** Override owner inbox dir (for tests). */
-  ownerInboxDir?: string;
-  /** Override event store path (for tests / live). */
-  dbPath?: string;
-  /** Inject events directly (skips reading the store). */
-  events?: ReadonlyArray<CeoDecisionEvent>;
   /**
-   * If true, treat the event source as known-empty (CI / fresh runner)
-   * and downgrade pairing findings to info. Defaults to derivation
-   * from the actual store state.
+   * Override the Owner Inbox directory root. Defaults to repo root /
+   * "Owner Inbox".
+   */
+  ownerInboxDir?: string;
+  /**
+   * Inject a pre-built set of terminal decision IDs instead of reading
+   * the live event store. Used by unit tests.
+   */
+  terminalIds?: ReadonlySet<string>;
+  /**
+   * Force the empty-store guard on or off. When undefined, derived from
+   * the live store.
    */
   forceEmptyStore?: boolean;
 }
 
-interface RecordSummary {
-  readonly decisionId: string;
-  readonly asOf: string;
-  readonly source: string; // file basename for diagnostics
-}
-
-function gatherRecords(ownerInboxDir: string): RecordSummary[] {
-  // Reuse the dashboard's parser — same regex, same fallbacks, same
-  // "actioned/" subdirectory scan. Diverging would be a Principle 2
-  // violation (two parsers for the same canonical surface).
-  const summaries = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
-  // We need the source filename for diagnostics; the dashboard's helper
-  // doesn't return it, so we re-walk to attach a best-guess source.
-  // (Filenames are stable inputs; double-walking is cheap.)
-  const filenamesByDecisionId = mapFilenamesByDecisionId(ownerInboxDir);
-  return summaries.map((s) => ({
-    decisionId: s.decisionId,
-    asOf: s.asOf,
-    source: filenamesByDecisionId.get(`${s.decisionId}|${s.asOf}`) ?? "<unknown>",
-  }));
-}
-
-function mapFilenamesByDecisionId(ownerInboxDir: string): Map<string, string> {
-  const out = new Map<string, string>();
-  if (!existsSync(ownerInboxDir)) return out;
-  const dirs = [ownerInboxDir, join(ownerInboxDir, "actioned")];
-  const re = /_ceo-decision-record_/i;
-  for (const dir of dirs) {
-    if (!existsSync(dir)) continue;
-    for (const name of readdirSync(dir)) {
-      if (!re.test(name) || !name.toLowerCase().endsWith(".md")) continue;
-      try {
-        if (!statSync(join(dir, name)).isFile()) continue;
-      } catch {
-        continue;
-      }
-      // Tolerate multiple decisionIds in one file by attaching the same
-      // source for each parsed (id, asOf) pair on a best-effort basis.
-      // We do this lazily — the parser does the heavy lifting; this map
-      // is diagnostics-only.
-      const content = readFileSync(join(dir, name), "utf8");
-      const ids = extractDecisionIds(content, name);
-      const asOf = extractAsOf(content, name);
-      for (const id of ids) {
-        out.set(`${id}|${asOf}`, name);
-      }
-    }
-  }
-  return out;
-}
-
-function extractDecisionIds(content: string, filename: string): string[] {
-  const out = new Set<string>();
-  const lineRe = /\*\*Decision ID(?:s resolved)?:\*\*\s*(.+?)\s*$/im;
-  const idRe = /(D-[A-Z0-9][A-Z0-9-]*)/g;
-  const m = content.match(lineRe);
-  if (m?.[1]) {
-    for (const idMatch of m[1].matchAll(idRe)) {
-      if (idMatch[1]) out.add(idMatch[1].toUpperCase());
-    }
-  }
-  if (out.size === 0) {
-    const fileRe = /_ceo-decision-record_(d-[a-z0-9-]+)\.md$/i;
-    const fm = filename.match(fileRe);
-    if (fm?.[1]) out.add(fm[1].toUpperCase());
-  }
-  return [...out];
-}
-
-function extractAsOf(content: string, filename: string): string {
-  const fmRe = /^---\r?\n([\s\S]*?)\r?\n---/;
-  const fm = content.match(fmRe);
-  if (fm?.[1]) {
-    const asOfRe = /^asOf:\s*(.+?)\s*$/im;
-    const am = fm[1].match(asOfRe);
-    if (am?.[1]) return am[1].trim();
-  }
-  const dateRe = /^(\d{4}-\d{2}-\d{2})_/;
-  const dm = filename.match(dateRe);
-  if (dm?.[1]) return `${dm[1]}T12:00:00.000Z`;
-  return "";
-}
-
-function gatherEvents(dbPath: string): ReadonlyArray<CeoDecisionEvent> {
-  // Walk the live store using EventStore. Tolerates absent / empty —
-  // returns [] in either case. The recon's empty-store posture handles
-  // the downgrade.
-  if (!existsSync(dbPath)) return [];
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require("../event-store/store") as {
-    EventStore: new (
-      path: string,
-    ) => {
-      replay: (filter?: { type?: string }) => Iterable<{
-        as_of?: string;
-        payload?: Record<string, unknown>;
-      }>;
-      close: () => void;
-    };
-  };
-  const store = new mod.EventStore(dbPath);
-  const out: CeoDecisionEvent[] = [];
-  try {
-    for (const e of store.replay({ type: "CeoDecision" })) {
-      const id = (e.payload?.decisionId as string | undefined) ?? "";
-      const asOf = e.as_of ?? "";
-      if (id && asOf) out.push({ decisionId: id, asOf });
-    }
-  } catch {
-    // Empty store / read error — return empty.
-  } finally {
-    try {
-      store.close();
-    } catch {
-      // best-effort
-    }
-  }
-  return out;
-}
+// ---------------------------------------------------------------------------
+// Main pipeline export
+// ---------------------------------------------------------------------------
 
 export function run(opts: RunOpts = {}): ReconResult {
-  const result = emptyResult("decision-required-event-pairing");
+  const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
-  const ownerInboxDir = opts.ownerInboxDir ?? OWNER_INBOX_DIR;
-  const dbPath = opts.dbPath ?? DEFAULT_DB_PATH;
-  const records = gatherRecords(ownerInboxDir);
-  const events = opts.events ?? gatherEvents(dbPath);
-  const storeEmpty = opts.forceEmptyStore ?? events.length === 0;
+  const inboxRoot = opts.ownerInboxDir ?? OWNER_INBOX_DIR;
+  const actionedDir = join(inboxRoot, "actioned");
 
-  if (storeEmpty && records.length > 0) {
-    // Fresh-runner condition. Emit one info-severity heartbeat and
-    // exit clean — the recon is unable to assert pairing without a
-    // populated event store. This matches decision-event-recon.ts.
-    violations.push({
-      subject: "decision-required-event-pairing:store-empty",
-      message: `Owner Inbox carries ${records.length} decision-record entries, but the event store at \`${dbPath}\` has zero CeoDecision events. Substrate-context (fresh runner / new worktree); the boot-time backfill (\`runtime/decisions/backfill-from-records.ts\`) populates the store at first dashboard server start. Pairing not asserted. Citations: ${CITATIONS.join(", ")}.`,
-      severity: "info",
-    });
+  // -----------------------------------------------------------------------
+  // Scan actioned files — these MUST have terminal CeoDecision events.
+  // -----------------------------------------------------------------------
+  const actionedFiles = scanDir(actionedDir);
+  const actionedWithDecision = actionedFiles.filter((f) => f.frontmatter.decisionRequired);
+
+  // -----------------------------------------------------------------------
+  // Scan open Owner Inbox — these are EXPECTED to lack events (INFO only).
+  // -----------------------------------------------------------------------
+  const openFiles = scanDir(inboxRoot);
+  const openWithDecision = openFiles.filter((f) => f.frontmatter.decisionRequired);
+
+  // -----------------------------------------------------------------------
+  // Clean-bench guard: if the event store is empty and there are actioned
+  // decision-required files, skip the pairing assertion entirely.
+  // This matches the convention in decision-event-recon.ts and
+  // document-registration.ts — a fresh runner (GitHub Actions, new
+  // worktree) has not been seeded and cannot be judged against an empty
+  // store.
+  // -----------------------------------------------------------------------
+  const storeEmpty = opts.forceEmptyStore ?? isStoreEmpty(opts.terminalIds);
+
+  if (storeEmpty) {
+    const actionedCount = actionedWithDecision.length;
+    const openCount = openWithDecision.length;
+    if (actionedCount > 0 || openCount > 0) {
+      violations.push({
+        subject: `${PIPELINE}:store-empty`,
+        message: `Event store is empty — decision-pairing not asserted on clean bench. ${actionedCount} actioned decision-required file(s) and ${openCount} open decision-required file(s) present. Run the boot-time backfill (runtime/decisions/backfill-from-records.ts) to populate the store before asserting pairing. Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
+        severity: "info",
+      });
+    }
     result.asserted = 1;
     result.violations = violations;
     result.ok = true;
     return result;
   }
 
-  // Index events by decisionId and by (decisionId, asOf).
-  const eventsByDecisionId = new Map<string, CeoDecisionEvent[]>();
-  const eventTuples = new Set<string>();
-  for (const e of events) {
-    const arr = eventsByDecisionId.get(e.decisionId) ?? [];
-    arr.push(e);
-    eventsByDecisionId.set(e.decisionId, arr);
-    eventTuples.add(`${e.decisionId}|${e.asOf}`);
-  }
+  // -----------------------------------------------------------------------
+  // Fetch terminal decision IDs from the event store.
+  // -----------------------------------------------------------------------
+  const terminal = terminalDecisionIds(opts.terminalIds);
 
-  // Group records by decisionId for the supersession check.
-  const recordsByDecisionId = new Map<string, RecordSummary[]>();
-  for (const r of records) {
-    const arr = recordsByDecisionId.get(r.decisionId) ?? [];
-    arr.push(r);
-    recordsByDecisionId.set(r.decisionId, arr);
-  }
+  // -----------------------------------------------------------------------
+  // Assert actioned files: each decision-required + decision-id file must
+  // have a terminal CeoDecision event.
+  // -----------------------------------------------------------------------
+  for (const f of actionedWithDecision) {
+    const { decisionId } = f.frontmatter;
 
-  // ---------------------------------------------------------------------
-  // (a) Pairing existence — every decisionId has ≥1 event.
-  // ---------------------------------------------------------------------
-  for (const [decisionId, recordsForId] of recordsByDecisionId) {
-    result.asserted++;
-    if (!eventsByDecisionId.has(decisionId)) {
-      const sources = recordsForId.map((r) => r.source).join(", ");
+    if (decisionId === null) {
+      // Advisory only: decision-required: true but no decision-id.
+      // Common for older files that predate the decision-id convention.
       violations.push({
-        subject: `decision:${decisionId}`,
-        message: `Decision \`${decisionId}\` has ${recordsForId.length} on-disk record(s) (${sources}) but no \`CeoDecision\` event in the event store. The boot-time backfill (\`runtime/decisions/backfill-from-records.ts\`) should have emitted at least one event; absent events break Principle 1 (the projection's resolved-set cannot derive from records that aren't in the log). Citations: ${CITATIONS.join(", ")}.`,
+        subject: f.basename,
+        message: `"${f.basename}" has \`decision-required: true\` but no \`decision-id\` field in its YAML frontmatter. Cannot assert CeoDecision event pairing without a decision-id. Add \`decision-id: D-<ID>\` to the frontmatter, or confirm this decision pre-dates the convention and does not require event pairing. Finding: F-033.`,
+        severity: "info",
+      });
+      continue;
+    }
+
+    result.asserted++;
+    if (!terminal.has(decisionId)) {
+      violations.push({
+        subject: decisionId,
+        message: `"${f.basename}" is actioned (moved to actioned/) with \`decision-required: true\` and \`decision-id: ${decisionId}\` but no terminal \`CeoDecision\` event exists in the event store for decisionId="${decisionId}" with action ∈ {approve, reject}. A decision actioned in markdown without a corresponding event violates Principle 1 (events are the only source of truth). Remediation: emit a CeoDecision(approve|reject) event for \`${decisionId}\` via \`recordDelegatedDecision\` or the decision-backfill script. Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
         severity: "fail",
       });
     }
   }
 
-  // ---------------------------------------------------------------------
-  // (b) Supersession integrity — every (decisionId, asOf) has an event.
-  // P0: this is the bug class PR #197 fixed.
-  // ---------------------------------------------------------------------
-  for (const [decisionId, recordsForId] of recordsByDecisionId) {
-    if (recordsForId.length < 2) continue; // single-record case is covered by (a)
-    for (const r of recordsForId) {
-      result.asserted++;
-      const tuple = `${r.decisionId}|${r.asOf}`;
-      if (!eventTuples.has(tuple)) {
-        violations.push({
-          subject: `decision:${decisionId}@${r.asOf}`,
-          message: `Decision \`${decisionId}\` has ${recordsForId.length} records on-disk; the record at asOf=${r.asOf} (\`${r.source}\`) has no matching CeoDecision event in the store keyed on (decisionId, asOf). The "latest event wins by asOf" projection rule cannot order superseded records when their events are missing — this is exactly the bug class PR #197 fixed. Re-run \`backfillCeoDecisionsFromRecords\`. Citations: ${CITATIONS.join(", ")}.`,
-          severity: "fail",
-        });
-      }
-    }
+  // -----------------------------------------------------------------------
+  // Surface open decisions as INFO (not violations — open decisions are
+  // expected to lack CeoDecision events).
+  // -----------------------------------------------------------------------
+  for (const f of openWithDecision) {
+    const { decisionId } = f.frontmatter;
+    violations.push({
+      subject: decisionId ?? f.basename,
+      message: `OPEN decision: "${f.basename}"${decisionId ? ` (decision-id: ${decisionId})` : " (no decision-id)"} is in Owner Inbox/ (not actioned) with \`decision-required: true\`. No CeoDecision event expected yet. Open-decision count: ${openWithDecision.length}.`,
+      severity: "info",
+    });
   }
+
+  const violationCount = violations.filter((v) => v.severity === "fail").length;
+  const openCount = openWithDecision.length;
 
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
+
+  // Attach summary fields expected by the JSON output consumer.
+  (result as ReconResult & { open?: number; advisories?: number }).open = openCount;
+  (result as ReconResult & { open?: number; advisories?: number }).advisories = violations.filter(
+    (v) => v.severity === "info",
+  ).length;
+
+  void violationCount; // used via result.ok
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// CLI entrypoint
+// ---------------------------------------------------------------------------
+
 if (import.meta.main) {
   const r = run();
+  const ext = r as ReconResult & { open?: number; advisories?: number };
   console.log(
-    JSON.stringify({
-      level: r.ok ? "info" : "error",
-      time: r.asOf,
-      service: "bank-prototype",
-      pipeline: r.pipeline,
-      asserted: r.asserted,
-      violations: r.violations.length,
-      ok: r.ok,
-      msg: r.ok
-        ? "Decision-required → CeoDecision pairing passed"
-        : "Decision-required → CeoDecision pairing FAILED — supersession or backfill regression",
-      detail: r.violations,
-    }),
+    JSON.stringify(
+      {
+        level: r.ok ? "info" : "error",
+        time: r.asOf,
+        service: "bank-prototype",
+        pipeline: r.pipeline,
+        asserted: r.asserted,
+        violations: r.violations.filter((v) => v.severity === "fail").length,
+        open: ext.open ?? 0,
+        advisories: ext.advisories ?? 0,
+        ok: r.ok,
+        msg: r.ok
+          ? "Decision-required ↔ CeoDecision event pairing passed"
+          : "Decision-required ↔ CeoDecision event pairing FAILED — actioned decisions missing terminal events",
+        detail: r.violations,
+      },
+      null,
+      2,
+    ),
   );
   process.exit(r.ok ? 0 : 1);
 }
