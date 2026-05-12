@@ -9,7 +9,6 @@ export type {
   AgentAttrs,
   BeneficialOwnerChainAssertedPayload,
   Citation,
-  CounterpartyAttrs,
   KindAttributes,
   LegalEntityAttrs,
   NaturalPersonAttrs,

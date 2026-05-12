@@ -105,8 +105,7 @@ function asPartyId(v: unknown): PartyId | undefined {
 }
 
 function asPartyKind(v: unknown): PartyKind | undefined {
-  if (v === "natural-person" || v === "legal-entity" || v === "counterparty" || v === "agent")
-    return v;
+  if (v === "natural-person" || v === "legal-entity" || v === "agent") return v;
   return undefined;
 }
 
