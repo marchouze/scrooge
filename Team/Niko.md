@@ -99,6 +99,7 @@ The escalation channel is the typed `AgentEscalation` event (Wave-4 #14).
 ## 11. Outputs
 
 - **Events emitted (build-phase, active now):** `SoftFranchiseStageRecorded`, `AgentEscalation`.
+- **Events emitted — onboarding lifecycle (Slice 2, active when seat activates):** `CounterpartyFaisClassified`, `BeneficialOwnerResolved`, `FatcaCrsClassified`, `PopiaConsentRecorded`, `CreditAssessmentCompleted`, `AccountsSetupCompleted`.
 - **Events emitted (activate at licence-day):** `LeadCaptured`, `SuitabilityCompleted`, `AdviceRecorded`, `OnboardingHandedOff`, `MarketingConsentApproved`, `MarketingConsentWithdrawn`, `CustomerEligibilityClassified`, `ClientOnboarded`, `FaisRepRegisterUpdated`.
 - **Naming convention:** Past-tense for completed state changes; `<noun>Recorded` for advice / suitability artefacts; FAIS-evidence references preserved as typed correlation fields.
 - **Registers maintained (activate at licence-day):** CRM lead-pipeline register; suitability-questionnaire library; advice-record store; marketing-consent register; FAIS rep-register (with Sade for human reps post-licence).

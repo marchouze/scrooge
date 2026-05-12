@@ -25,18 +25,24 @@
 //   FIC-ACT-38-2001
 //     — Financial Intelligence Centre Act; KYC/CDD statutory root.
 //
-// Substrate gaps (Slice 1 — phases with no backing event type yet):
-//   Phase 3  (fais-categorised)        → [substrate-gap: planned, Slice 2]
-//   Phase 5  (bo-resolved)             → [substrate-gap: planned, Slice 2]
-//   Phase 6  (sanctions-cleared)       → [substrate-gap: planned, Slice 2]
-//   Phase 7  (fatca-crs-classified)    → [substrate-gap: planned, Slice 2]
-//   Phase 8  (popia-recorded)          → [substrate-gap: planned, Slice 2]
-//   Phase 10 (credit-assessed)         → [substrate-gap: planned, Slice 2]
-//   Phase 16 (accounts-setup)          → [substrate-gap: planned, Slice 2]
+// Slice 2 — all 21 phases now have backing event types:
+//   Phase 3  (fais-categorised)     ← CounterpartyFaisClassified
+//   Phase 5  (bo-resolved)          ← BeneficialOwnerResolved
+//   Phase 6  (sanctions-cleared)    ← SanctionsClearancePassed
+//   Phase 7  (fatca-crs-classified) ← FatcaCrsClassified
+//   Phase 8  (popia-recorded)       ← PopiaConsentRecorded
+//   Phase 10 (credit-assessed)      ← CreditAssessmentCompleted
+//   Phase 16 (accounts-setup)       ← AccountsSetupCompleted
+//
+// Additional authority (Slice 2):
+//   FAIS-ACT-37-2002         — fais-categorised gate (s.45 + GCC s.2(1))
+//   POPIA-S11                — popia-recorded gate (processing consent)
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { CUSTOMER_EVENT_TYPES } from "@domains/customer/types";
+// Slice 2 event types are in CUSTOMER_EVENT_TYPES (indices 12–18); the
+// fold below maps them to their respective phases via eventToPhaseCandidate.
 import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
 
@@ -204,11 +210,28 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
       return "sounding";
     case "CounterpartyProspectRegistered":
       return "prospect-registered";
+    // Slice 2 — FAIS categorisation (Phase 3). Authority: FAIS-ACT-37-2002 s.45.
+    case "CounterpartyFaisClassified":
+      return "fais-categorised";
     case "KycCompleted":
-      // KYC completion implies CDD gate passed (Slice 1 simplification;
-      // Slice 2 will separate KycCompleted → cdd-initiated from a
-      // dedicated CddCompleted event). Authority: AML-CFT-POLICY-V1.
+      // KYC completion maps to cdd-initiated (the CDD process is initiated
+      // by the KYC gate). Authority: AML-CFT-POLICY-V1, FIC-ACT-38-2001.
       return "cdd-initiated";
+    // Slice 2 — Beneficial-owner resolution (Phase 5). Authority: FIC-ACT-38-2001 s.21B.
+    case "BeneficialOwnerResolved":
+      return "bo-resolved";
+    // Slice 2 — Sanctions clearance (Phase 6). Authority: AML-CFT-POLICY-V1; FAFT Recommendations.
+    case "SanctionsClearancePassed":
+      return "sanctions-cleared";
+    // Slice 2 — FATCA/CRS classification (Phase 7). Authority: IRS IRC §1471–1474; OECD CRS.
+    case "FatcaCrsClassified":
+      return "fatca-crs-classified";
+    // Slice 2 — POPIA consent (Phase 8). Authority: POPIA s.11.
+    case "PopiaConsentRecorded":
+      return "popia-recorded";
+    // Slice 2 — Credit assessment (Phase 10). Authority: RT-CR.CP; TRADING-MANDATE-V1.
+    case "CreditAssessmentCompleted":
+      return "credit-assessed";
     case "DocumentationDrafted":
       return "documentation-drafted";
     case "DocumentationReadyToExecute":
@@ -220,6 +243,9 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
     case "MandateRevoked":
       // Regression sentinel — not a monotonic advance.
       return "REVOKE";
+    // Slice 2 — Accounts setup (Phase 16). Authority: RT-OP.PR.
+    case "AccountsSetupCompleted":
+      return "accounts-setup";
     case "CounterpartyActivated":
       return "activated";
     case "CounterpartyOffboarded":
