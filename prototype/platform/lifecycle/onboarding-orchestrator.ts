@@ -41,10 +41,24 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { CUSTOMER_EVENT_TYPES } from "@domains/customer/types";
-// Slice 2 event types are in CUSTOMER_EVENT_TYPES (indices 12–18); the
-// fold below maps them to their respective phases via eventToPhaseCandidate.
+// Slice 2 event types (CounterpartyFaisClassified … AccountsSetupCompleted)
+// are now in CUSTOMER_EVENT_TYPES (indices 12–18 per PR #XXX). The fold
+// below maps them to their phases via eventToPhaseCandidate.
 import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
+
+// ---------------------------------------------------------------------------
+// Post-activation + eligibility event types not yet in CUSTOMER_EVENT_TYPES.
+// These are emitted by the rehearsal script and fold here once the event
+// store replays them. When they land in CUSTOMER_EVENT_TYPES, delete this.
+//   Substrate gap: [substrate-gap: planned, Slice 2 follow-on]
+// ---------------------------------------------------------------------------
+const SLICE2_EVENT_TYPES: readonly string[] = [
+  "CounterpartyMonitoringStarted", // → monitoring              (Phase 18)
+  "KycRefreshDue", // → kyc-refresh-due         (Phase 19)
+  "CounterpartyEligibilityRevalidated", // → eligibility-revalidated (Phase 20)
+  "CounterpartyEligibilityScreened", // → eligibility-screened   (Phase 9, CRM domain)
+] as const;
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -250,6 +264,22 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
       return "activated";
     case "CounterpartyOffboarded":
       return "offboarded";
+    // ------------------------------------------------------------------
+    // Post-activation phases (Slice 2 monitoring cycle)
+    // ------------------------------------------------------------------
+    case "CounterpartyMonitoringStarted":
+      return "monitoring";
+    case "KycRefreshDue":
+      return "kyc-refresh-due";
+    case "CounterpartyEligibilityRevalidated":
+      return "eligibility-revalidated";
+    // ------------------------------------------------------------------
+    // CounterpartyEligibilityScreened maps to "eligibility-screened"
+    // (from the CRM domain — already in the registry; wired here for
+    // the 21-phase ordering).
+    // ------------------------------------------------------------------
+    case "CounterpartyEligibilityScreened":
+      return "eligibility-screened";
     default:
       // MandateRevised: keeps the current phase; the mandate is updated in
       // place. Authority: TRADING-MANDATE-V1.
@@ -279,7 +309,7 @@ function eventToPhaseCandidate(eventType: string): OnboardingPhase | null | "REV
 export function derivePhaseFromEvents(
   events: Iterable<Event>,
 ): Map<string, CounterpartyOnboardingState> {
-  const customerEventSet = new Set<string>(CUSTOMER_EVENT_TYPES);
+  const customerEventSet = new Set<string>([...CUSTOMER_EVENT_TYPES, ...SLICE2_EVENT_TYPES]);
   const byCounterparty = new Map<string, MutableState>();
 
   for (const ev of events) {
