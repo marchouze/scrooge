@@ -103,10 +103,7 @@ export function backfillCeoDecisionsFromRecords(
   // Actor lines) so they are appended last; the dedup key comparison means
   // if both paths produce the same (id, asOf) pair, the record-file version
   // lands and the frontmatter version is skipped as already-present.
-  const allCandidates: CeoDecisionEventSummary[] = [
-    ...fromFrontmatter,
-    ...fromRecords,
-  ];
+  const allCandidates: CeoDecisionEventSummary[] = [...fromFrontmatter, ...fromRecords];
 
   const existing = existingDecisionKeys(eventStore);
   const emitted: string[] = [];

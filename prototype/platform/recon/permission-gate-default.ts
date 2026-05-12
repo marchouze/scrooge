@@ -136,6 +136,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Supersession annotation integrity recon — read-only replay of CeoDecision
   // events; wrapping the read path with the gate is a no-op.
   "platform/recon/supersession-annotation-integrity.ts",
+  // Backfill CLI entry point — emits CeoDecision events synthesised from
+  // on-disk Owner Inbox records at boot / CI. Acts as a composition root in
+  // the same way platform/composition.ts does: the raw store is constructed
+  // here, used to backfill, then immediately closed. The permission gate is
+  // not meaningful in this context because the actor identity is a fixed
+  // system actor ("backfill:owner-inbox-records"), not a live agent URN.
+  "runtime/decisions/backfill-from-records.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

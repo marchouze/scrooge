@@ -74,6 +74,11 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // Approved clock helpers (nowIso, utcNow, newEventId).
   "platform/core/types.ts",
   "platform/types/time.ts",
+  // Server-side TTL cache for the substrate-gaps view. Date.now() is used
+  // for elapsed-milliseconds comparison (not as an event timestamp), which
+  // is the correct API for monotonic TTL arithmetic. The cache does not
+  // affect event provenance or Principle 1 correctness.
+  "dashboard/substrate-gaps.ts",
 ];
 
 // Directories to skip entirely when walking prototype/.

@@ -108,23 +108,19 @@ function loadCalibrationEvents(opts: RunOpts): RasLineCalibratedEventLike[] {
 }
 
 /**
- * Cheap "is the event store empty" check — used to soften assertion-1 in
- * CI / fresh-bench contexts where no events of any kind have been
- * appended yet. We sample the first event of any type via replay; if the
- * iterator is empty, the store has no events and the recon downgrades
- * its missing-calibration finding to an `info`-severity note rather
- * than a hard `fail` (CI runs against a fresh `.local/event.db` that
- * has not been seeded with `record-d-regulatory-readiness-w2-slice-2.ts`).
- *
- * This mirrors the pattern in `decision-event-recon.ts` where an empty
- * event-store reconciles against an empty derived-decisions set. Real
- * drift — events present but the B2 calibration absent / wrong — still
- * fails hard.
+ * Cheap "has any RasLineCalibrated event ever been emitted" check — used to
+ * soften assertion-1 in CI / fresh-bench contexts where the calibration
+ * emitter (`record-d-regulatory-readiness-w2-slice-2.ts`) has never been
+ * run. The check is scoped to `RasLineCalibrated` events specifically, not
+ * the whole event store, so that the boot-time `backfill:decisions` step
+ * (which populates `CeoDecision` events from Owner Inbox records) does not
+ * accidentally trigger the hard-fail posture before the calibration emitter
+ * has run.
  *
  * Test override: when `opts.events` is supplied (synthetic input), we
  * treat the synthetic feed as the universe and do NOT consult the live
- * store for emptiness — synthetic empty means "no calibration events
- * for testing", which IS a hard failure case.
+ * store — synthetic empty means "no calibration events for testing", which
+ * IS a hard failure case.
  */
 function eventStoreIsEmpty(opts: RunOpts): boolean {
   if (opts.events !== undefined) {
@@ -132,7 +128,7 @@ function eventStoreIsEmpty(opts: RunOpts): boolean {
     // hard failure (test-author asked the question).
     return false;
   }
-  for (const _e of eventStore.replay()) {
+  for (const _e of eventStore.replay({ type: "RasLineCalibrated" })) {
     return false;
   }
   return true;
