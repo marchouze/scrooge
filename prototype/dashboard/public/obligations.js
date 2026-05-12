@@ -189,7 +189,10 @@ function renderTable(rows) {
         (o.linkedPolicies ?? []).length === 0
           ? '<span class="muted" style="font-size:11px;">— none</span>'
           : (o.linkedPolicies ?? [])
-              .map((p) => `<span class="oblig-tag">${esc(p)}</span>`)
+              .map(
+                (p) =>
+                  `<a href="policies.html?policy=${encodeURIComponent(p)}" class="oblig-tag oblig-policy-link">${esc(p)}</a>`,
+              )
               .join(" ");
       const chainHtml =
         (o.gaps ?? []).length === 0

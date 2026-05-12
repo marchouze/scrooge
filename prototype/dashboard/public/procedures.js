@@ -632,6 +632,17 @@ async function load() {
     live.classList.remove("bad");
     live.classList.add("ok");
     stamp.textContent = `Updated ${fmtDate(view.asOf)}`;
+
+    // Auto-open inline preview from ?procedure= query param (only on first load).
+    const params = new URLSearchParams(location.search);
+    const targetProc = params.get("procedure");
+    if (targetProc) {
+      const match = allRows.find((r) => r.procedureFile === targetProc);
+      if (match) {
+        const label = match.procedureTitle || match.procedureLabel || match.procedureFile;
+        openProcedurePreview(match.procedureFile, label);
+      }
+    }
   } catch (e) {
     live.classList.add("bad");
     stamp.textContent = `Offline (${e.message})`;
