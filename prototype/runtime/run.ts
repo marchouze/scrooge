@@ -49,6 +49,7 @@ import { randomBytes } from "node:crypto";
 
 import { WorktreeBoundaryError, createRunnerWorker } from "../platform/agent-runtime/runner-worker";
 import { eventStore } from "../platform/composition";
+import { newEventId } from "../platform/core/types";
 import {
   makeLegacyFanoutShadowed,
   makeSubstrateAgentRunCompleted,
@@ -57,7 +58,6 @@ import {
   makeSubstrateAlert,
 } from "../platform/event-store/event-types";
 import type { Actor } from "../platform/event-store/types";
-import { newEventId } from "../platform/core/types";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import { logger } from "../platform/observability/logger";
 import { HANDLER_CALLABLES } from "./handler-callables";

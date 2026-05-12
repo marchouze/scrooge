@@ -49,7 +49,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // below applied (excluding tests, scenarios, scripts, config, and approved
 // boundary files).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 197;
+const KNOWN_VIOLATIONS_SNAPSHOT = 128;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
@@ -130,7 +130,7 @@ function listTsFiles(dir: string, base: string, out: string[]): void {
     if (st.isDirectory()) {
       listTsFiles(full, base, out);
     } else if (st.isFile() && (name.endsWith(".ts") || name.endsWith(".tsx"))) {
-      out.push(full.startsWith(base + "/") ? full.slice(base.length + 1) : full);
+      out.push(full.startsWith(`${base}/`) ? full.slice(base.length + 1) : full);
     }
   }
 }
@@ -162,33 +162,32 @@ function scanWallClockCallsites(prototypeDir: string): WallClockViolation[] {
       continue;
     }
     const lines = src.split(/\r?\n/);
-    let charOffset = 0;
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
       const line = lines[lineIdx] ?? "";
       // Skip pure comment lines — documentation prose mentioning Date.now()
       // should not trip the scanner.
       const trimmed = line.trimStart();
       if (trimmed.startsWith("//") || trimmed.startsWith("*")) {
-        charOffset += line.length + 1;
         continue;
       }
       WALL_CLOCK_RE.lastIndex = 0;
-      let m: RegExpExecArray | null;
-      while ((m = WALL_CLOCK_RE.exec(line)) !== null) {
+      let m = WALL_CLOCK_RE.exec(line);
+      while (m !== null) {
         // Skip if the match is inside a string / backtick / block comment
         // (coarse heuristic: count unescaped quotes before match start).
         const before = line.slice(0, m.index);
         const backticks = (before.match(/`/g) ?? []).length;
         const dquotes = (before.match(/(?<!\\)"/g) ?? []).length;
-        if (backticks % 2 === 1 || dquotes % 2 === 1) continue;
-        found.push({
-          file: rel,
-          line: lineIdx + 1,
-          col: m.index + 1,
-          snippet: line.trim().slice(0, 80),
-        });
+        if (backticks % 2 !== 1 && dquotes % 2 !== 1) {
+          found.push({
+            file: rel,
+            line: lineIdx + 1,
+            col: m.index + 1,
+            snippet: line.trim().slice(0, 80),
+          });
+        }
+        m = WALL_CLOCK_RE.exec(line);
       }
-      charOffset += line.length + 1;
     }
   }
   return found;
@@ -215,7 +214,7 @@ export function run(opts: RunOpts = {}): ReconResult & { callsiteCount: number }
         `Wall-clock callsite count grew from snapshot ${snapshot} to ${callsites.length}.`,
         `${callsites.length - snapshot} new callsite(s) outside the approved boundary:`,
         ...newViolations.map((c) => `  ${c.file}:${c.line}:${c.col} — ${c.snippet}`),
-        `Use clock.now() / nowIso() / utcNow() instead of Date.now() / new Date() in production code.`,
+        "Use clock.now() / nowIso() / utcNow() instead of Date.now() / new Date() in production code.",
         `Citations: ${CITATIONS.join(", ")}.`,
       ].join("\n"),
       severity: "fail",
@@ -248,7 +247,7 @@ if (import.meta.main) {
       ok: r.ok,
       msg: r.ok
         ? `Wall-clock callsite ratchet passed (${r.callsiteCount} callsites; snapshot ${KNOWN_VIOLATIONS_SNAPSHOT})`
-        : `Wall-clock callsite ratchet FAILED — new callsite(s) added outside the clock-abstraction boundary`,
+        : "Wall-clock callsite ratchet FAILED — new callsite(s) added outside the clock-abstraction boundary",
       detail: r.violations,
     }),
   );
