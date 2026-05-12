@@ -40,10 +40,7 @@
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
-import {
-  defaultProvenanceFilter,
-  eventMatchesProvenanceFilter,
-} from "../projections/filter";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import { fxPositionsToBa350Input } from "./ba-350-fx-adapter";
 import { generateBa350MarketRisk } from "./ba-350-market-risk";
 import type {

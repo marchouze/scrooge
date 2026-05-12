@@ -28,10 +28,10 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { hashContent } from "../platform/document-store";
-import { type DocumentHash, LocalFsDocumentStore } from "../platform/document-store";
+import { type DocumentHash, LocalFsDocumentStore, hashContent } from "../platform/document-store";
+import { setDefaultProvenanceModeOverride } from "../platform/projections";
 import type { Ba325Output, Ba350Output, Ba600Output, Ba700Output } from "../platform/reporting";
 import {
   PHASE_D_FORMS,
@@ -40,6 +40,15 @@ import {
   SCENARIO_PROVENANCE,
   runPhaseAandBandD,
 } from "../scenarios/03-fx-end-to-end-rehearsal";
+
+// ---------------------------------------------------------------------------
+// Provenance override — scenario events are tagged simulated (kind='simulated').
+// D-PROVENANCE-FILTER-ENFORCEMENT changed the default to production-only so
+// scenario tests must opt into combined mode to see simulated events.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 function makeTempLayout(): {
   readonly dbPath: string;

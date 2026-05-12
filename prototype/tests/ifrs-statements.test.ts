@@ -30,11 +30,12 @@
 //   reports to Camille CFO; IFRS line-mapping owner) · Atlas (Core banking
 //   platform architect, engineering — substrate consult).
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
+import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   IFRS_BANK_ENTITIES,
   IFRS_RENDERER_VERSION,
@@ -93,6 +94,15 @@ const PERIOD_OPEN = {
 };
 
 const RENDERED_AT = "2026-05-31T23:59:59.999Z";
+
+// ---------------------------------------------------------------------------
+// Provenance override — test fixture events are untagged (treated as simulated).
+// D-PROVENANCE-FILTER-ENFORCEMENT changed computeTrialBalance to apply
+// production-only by default. Unit tests must opt into combined mode.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 function appendPosting(
   store: EventStore,

@@ -42,11 +42,12 @@
 //   (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration).
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
+import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   type AccountCapitalClassification,
   BA_700_BANK_ENTITIES,
@@ -134,6 +135,15 @@ const FIXTURE_RWA: RwaDecomposition = {
   operationalRwaMinor: 500_000_000,
   source: "fixture-test",
 };
+
+// ---------------------------------------------------------------------------
+// Provenance override — test fixture events are untagged (treated as simulated).
+// D-PROVENANCE-FILTER-ENFORCEMENT changed the default to production-only, so
+// unit tests that seed fixture events must opt into combined mode to see them.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 // =====================================================================
 // 1. Capital-classification semantic entries register.

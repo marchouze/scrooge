@@ -19,7 +19,7 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { BANK_ZA_001, newEventId } from "../platform/core/types";
 import {
@@ -33,7 +33,7 @@ import {
 } from "../platform/event-store/event-types";
 import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
-import { LocalProjector } from "../platform/projections";
+import { LocalProjector, setDefaultProvenanceModeOverride } from "../platform/projections";
 import {
   agentRunsRegisterProjection,
   agentRunsRegisterRows,
@@ -52,6 +52,15 @@ import {
   workstreamsRegisterProjection,
   workstreamsRegisterRows,
 } from "../platform/rms-registers";
+
+// ---------------------------------------------------------------------------
+// Provenance override — test events are untagged (treated as simulated).
+// D-PROVENANCE-FILTER-ENFORCEMENT changed the default to production-only so
+// unit tests that seed untagged fixture events must opt into combined mode.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 const ENTITY = BANK_ZA_001;
 const ACTOR = { type: "service" as const, id: "agent:atlas" };

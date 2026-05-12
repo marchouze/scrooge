@@ -88,10 +88,7 @@ import {
 } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event, ProvenanceTag } from "../event-store/types";
-import {
-  defaultProvenanceFilter,
-  eventMatchesProvenanceFilter,
-} from "../projections/filter";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 
 // ---------------------------------------------------------------------------
 // Stream-key convention

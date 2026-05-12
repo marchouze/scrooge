@@ -28,8 +28,9 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
+import { setDefaultProvenanceModeOverride } from "../platform/projections";
 import { accountBalanceProjection } from "../platform/projections/accounts/balance.projection";
 import {
   ENTITY,
@@ -44,6 +45,15 @@ import {
   buildPhaseBPreCloseEvents,
   runPhaseAandB,
 } from "../scenarios/03-fx-end-to-end-rehearsal";
+
+// ---------------------------------------------------------------------------
+// Provenance override — scenario events are tagged simulated (kind='simulated').
+// D-PROVENANCE-FILTER-ENFORCEMENT changed the default to production-only so
+// scenario tests must opt into combined mode to see simulated events.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 describe("scenarios/03-fx-end-to-end-rehearsal — Phase B (pre-close builder)", () => {
   const phaseA = buildPhaseAEvents();

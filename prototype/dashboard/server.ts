@@ -64,7 +64,7 @@ import {
   type resolveHorizon,
 } from "../platform/forward-obligations";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
-import { defaultProvenanceFilter } from "../platform/projections";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordCeoDecisionResult,
@@ -1163,13 +1163,15 @@ const server = Bun.serve({
       return handleFxTrade(req);
     }
     if (url.pathname === "/api/events" && req.method === "GET") {
-      // Event store browser — paginated, filterable by type / entity / search.
+      // Event store browser — paginated, filterable by type / entity / search / provenance.
       // Query params:
-      //   ?page=N       — 1-based page (default 1)
-      //   ?limit=N      — page size 1–200 (default 50)
-      //   ?type=X       — exact event type filter
-      //   ?entity=X     — exact entity filter
-      //   ?search=X     — substring match on event_id or payload JSON
+      //   ?page=N           — 1-based page (default 1)
+      //   ?limit=N          — page size 1–200 (default 50)
+      //   ?type=X           — exact event type filter
+      //   ?entity=X         — exact entity filter
+      //   ?search=X         — substring match on event_id or payload JSON
+      //   ?provenance=M     — provenance mode: "all" | "production-only" | "simulated-only"
+      //                       (default "all" so the browser shows every event in the store)
       // pageProvenance: production (real event log, not simulated data).
       const page = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
       const limit = Math.min(
@@ -1179,6 +1181,14 @@ const server = Bun.serve({
       const typeFilter = url.searchParams.get("type") ?? "";
       const entityFilter = url.searchParams.get("entity") ?? "";
       const search = (url.searchParams.get("search") ?? "").toLowerCase();
+      const provenanceParam = url.searchParams.get("provenance") ?? "all";
+      // Resolve to a ProvenanceFilter for the browser — "all" means combined (no filtering).
+      const browseProvenanceFilter =
+        provenanceParam === "production-only"
+          ? { mode: "production-only" as const }
+          : provenanceParam === "simulated-only"
+            ? { mode: "simulated-only" as const }
+            : { mode: "combined" as const };
 
       const replayOpts: { type?: string; entity?: string } = {};
       if (typeFilter) replayOpts.type = typeFilter;
@@ -1198,6 +1208,10 @@ const server = Bun.serve({
       let seq = 0;
       for (const ev of eventStore.replay(replayOpts)) {
         seq++;
+        // Apply provenance filter if not "all"/"combined".
+        if (browseProvenanceFilter.mode !== "combined") {
+          if (!eventMatchesProvenanceFilter(ev, browseProvenanceFilter)) continue;
+        }
         if (search) {
           const haystack = `${ev.event_id} ${JSON.stringify(ev.payload)}`.toLowerCase();
           if (!haystack.includes(search)) continue;
@@ -1234,6 +1248,7 @@ const server = Bun.serve({
         typeFilter,
         entityFilter,
         search,
+        provenanceFilter: provenanceParam,
         events: rows,
         storeCount: eventStore.count(),
         pageProvenance: { mode: "production-only" },

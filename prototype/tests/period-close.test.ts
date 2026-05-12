@@ -36,7 +36,7 @@
 //   reports to Camille CFO; close orchestration owner) + Atlas (Core
 //   banking platform architect, engineering — substrate consult).
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import {
   closePeriod,
@@ -64,6 +64,7 @@ import {
 import { simulatedTag } from "../platform/event-store/provenance";
 import { EVENT_TYPE_REGISTRY, lookupEventType } from "../platform/event-store/registry";
 import { EventStore } from "../platform/event-store/store";
+import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 
 const PERIOD_CLOSE_EVENT_NAMES = [
   "AccountingPeriodOpened",
@@ -87,6 +88,15 @@ const PROVENANCE = simulatedTag({
   scenario: "slice-2-period-close-tests",
   sourceLineage: "agent:bea:period-close",
 });
+
+// ---------------------------------------------------------------------------
+// Provenance override — test fixture events are tagged simulated.
+// D-PROVENANCE-FILTER-ENFORCEMENT changed computeTrialBalance to apply
+// production-only by default. Unit tests must opt into combined mode.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 const VALID_OPEN_PAYLOAD = {
   periodId: "period:hoz-bank:month:2026-05",

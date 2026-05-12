@@ -34,13 +34,14 @@
 //   semantic-layer integration) · Atlas (Core banking platform architect,
 //   engineering — P1 fix).
 
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
 import { makeFxSettlementConfirmed } from "../platform/event-store/event-types/fx-accounting";
 import { EventStore } from "../platform/event-store/store";
 import { makeFxSettlementInstructed } from "../platform/markets/cdm/fx";
+import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   type AccountLiquidityClassification,
   BA_325_BANK_ENTITIES,
@@ -87,6 +88,15 @@ const PERIOD_OPEN = {
 
 const PERIOD_START = "2026-05-01T00:00:00.000Z";
 const PERIOD_END = "2026-05-31T23:59:59.999Z";
+
+// ---------------------------------------------------------------------------
+// Provenance override — test fixture events are untagged (treated as simulated).
+// D-PROVENANCE-FILTER-ENFORCEMENT changed the default to production-only, so
+// unit tests that seed fixture events must opt into combined mode to see them.
+// ---------------------------------------------------------------------------
+
+beforeEach(() => setDefaultProvenanceModeOverride("combined"));
+afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 // ---------------------------------------------------------------------------
 // Helpers

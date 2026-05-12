@@ -9,6 +9,7 @@
     limit: PAGE_SIZE,
     type: "",
     search: "",
+    provenance: "all",
     data: null,
     selectedEventId: null,
   };
@@ -19,6 +20,7 @@
   const resultCount = document.getElementById("result-count");
   const storeCountBadge = document.getElementById("store-count-badge");
   const typeSelect = document.getElementById("type-select");
+  const provenanceSelect = document.getElementById("provenance-select");
   const searchInput = document.getElementById("search-input");
   const clearBtn = document.getElementById("clear-btn");
   const detailPanel = document.getElementById("ev-detail");
@@ -63,6 +65,7 @@
     });
     if (state.type) params.set("type", state.type);
     if (state.search) params.set("search", state.search);
+    if (state.provenance && state.provenance !== "all") params.set("provenance", state.provenance);
 
     tbody.innerHTML = `<tr><td colspan="7" class="ev-empty">Loading…</td></tr>`;
     pagination.innerHTML = "";
@@ -223,12 +226,20 @@
     load();
   });
 
+  provenanceSelect?.addEventListener("change", () => {
+    state.provenance = provenanceSelect.value;
+    state.page = 1;
+    load();
+  });
+
   clearBtn.addEventListener("click", () => {
     state.type = "";
     state.search = "";
+    state.provenance = "all";
     state.page = 1;
     searchInput.value = "";
     typeSelect.value = "";
+    if (provenanceSelect) provenanceSelect.value = "all";
     load();
   });
 

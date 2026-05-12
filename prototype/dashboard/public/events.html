@@ -181,6 +181,11 @@
           <select id="type-select">
             <option value="">All types</option>
           </select>
+          <select id="provenance-select" title="Filter by provenance" aria-label="Provenance filter">
+            <option value="all">All provenance</option>
+            <option value="production-only">Production only</option>
+            <option value="simulated-only">Simulated only</option>
+          </select>
           <button id="clear-btn" style="font:inherit;font-size:0.82rem;padding:0.35rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);cursor:pointer;">Clear</button>
           <span class="ev-count" id="result-count"></span>
         </div>

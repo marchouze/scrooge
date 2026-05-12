@@ -35,10 +35,7 @@
 //   + Camille (CFO, finance — capital-stack methodology)
 
 import type { EventStore } from "../event-store/store";
-import {
-  defaultProvenanceFilter,
-  eventMatchesProvenanceFilter,
-} from "../projections/filter";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import type {
   AccountCapitalClassification,
   RegulatoryDeduction,
