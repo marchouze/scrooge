@@ -80,6 +80,7 @@ function bindBadges(binds) {
 
 let allPolicies = [];
 let obligationDetailById = {}; // populated via /api/state's obligations metadata, see hydrateObligations
+let allProcedures = null; // populated via /api/procedures, used in drilldown
 
 function applyFilters() {
   const fDomain = $("filterDomain").value;
@@ -353,6 +354,37 @@ function openDrill(policyId) {
               )
               .join("")
       }
+    </div>
+
+    <div class="pol-drill-section">
+      <h3>Linked procedures</h3>
+      ${(() => {
+        const linkedProcs = (allProcedures ?? []).filter(
+          (r) =>
+            r.policyParent?.trim().toLowerCase() === p.name?.trim().toLowerCase() &&
+            r.procedureFile,
+        );
+        if (linkedProcs.length === 0) {
+          return '<p class="muted">No procedures authored under this policy yet.</p>';
+        }
+        const rows = linkedProcs
+          .map((r) => {
+            const statusBadge = r.status
+              ? `<span class="pol-proc-status pol-proc-status-${r.status.toLowerCase()}">${esc(r.status)}</span>`
+              : "";
+            const title = r.procedureTitle || r.procedureLabel || r.procedureFile;
+            return `
+              <div class="pol-proc-row">
+                <a href="procedures.html?procedure=${encodeURIComponent(r.procedureFile)}" class="pol-proc-link">
+                  <code>${esc(r.procedureFile)}</code>
+                </a>
+                ${statusBadge}
+                ${title && title !== r.procedureFile ? `<div class="pol-proc-title">${esc(title)}</div>` : ""}
+              </div>`;
+          })
+          .join("");
+        return `<div class="pol-proc-list">${rows}</div>`;
+      })()}
     </div>
 
     <div class="pol-drill-section">
@@ -751,6 +783,24 @@ async function hydrateObligations() {
   }
 }
 
+async function loadProcedures() {
+  try {
+    const r = await fetch("/api/procedures", { cache: "no-store" });
+    if (!r.ok) return;
+    const data = await r.json();
+    // Flatten grouped structure into a single array of rows.
+    const rows = [];
+    for (const g of data.groups ?? []) {
+      for (const row of g.rows ?? []) {
+        rows.push(row);
+      }
+    }
+    allProcedures = rows;
+  } catch {
+    // Drilldown still works; procedures section shows empty.
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Wiring
 // ---------------------------------------------------------------------------
@@ -763,7 +813,7 @@ async function load() {
     if (!stateR.ok) throw new Error(`HTTP ${stateR.status}`);
     const state = await stateR.json();
     allPolicies = state.policies ?? [];
-    await hydrateObligations();
+    await Promise.all([hydrateObligations(), loadProcedures()]);
     renderSummary(allPolicies);
     if (!$("filterDomain").options.length || $("filterDomain").options.length === 1) {
       populateDomainFilter(allPolicies);
@@ -771,6 +821,14 @@ async function load() {
     refresh();
     live.classList.add("ok");
     stamp.textContent = `Updated ${fmtDate(state.asOf)}`;
+
+    // Auto-open drilldown from ?policy= query param (only on first load).
+    const params = new URLSearchParams(location.search);
+    const targetPolicy = params.get("policy");
+    if (targetPolicy) {
+      const match = allPolicies.find((p) => p.name === targetPolicy || p.id === targetPolicy);
+      if (match) openDrill(match.id);
+    }
   } catch (e) {
     live.classList.add("bad");
     stamp.textContent = `Offline (${e.message})`;
