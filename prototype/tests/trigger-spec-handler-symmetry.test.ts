@@ -268,11 +268,10 @@ describe("integration — live recon against current repo (build-phase visibilit
     const r = triggerSpecHandlerSymmetry();
     expect(r.pipeline).toBe("trigger-spec-handler-symmetry");
     expect(r.ok).toBe(true); // build-phase tolerance
-    // Per Atlas's brief §3 Gap 3: ≈73 spec-without-handler + a handful
-    // of handler-without-spec. Don't pin exact numbers — they drift as
-    // Slice 2b remediation lands. Just assert >0 to confirm the pipeline
-    // is actually doing work.
-    expect(r.violations.length).toBeGreaterThan(0);
+    // Don't pin exact violation count — it drifts as §7 spec rows are
+    // added (handler-without-spec) and as Slice 2b stub-handler
+    // remediation lands (spec-without-handler). Assert asserted > 0 to
+    // confirm the pipeline is actually walking the persona files.
     expect(r.asserted).toBeGreaterThan(0);
 
     const breakdown = buildBreakdown(r);

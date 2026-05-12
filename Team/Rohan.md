@@ -55,6 +55,7 @@ Rohan shares the IFRS 9 ECL methodology surface with Bea, and the pre-trade gate
 | `ModelDriftDetected` event | Model-monitoring engine | Investigation + finding within 5 working days |
 | `PolicyChange` (RAS) event | Event store (Helena) | Limit-framework recalibration within 10 working days |
 | `PortfolioReclassification` event | Event store (Bea / Saskia) | Risk re-aggregation within 1 working day |
+| `BacktestRequested` event | Event store (internal / Rohan / Kai) | Execute backtest run and emit results within 1 working day |
 | Inbound query — Helena (RAS calibration) / Camille (capital plan) / Eitan / Kai | Owner Inbox / direct ask | Within 2 working days |
 
 ## 8. Inputs
