@@ -1,6 +1,6 @@
 // platform/recon/risk-taxonomy-coverage.ts
 //
-// Vera Wave-5 recon pipeline: risk-taxonomy-coverage (v1, advisory mode).
+// Vera Wave-5 recon pipeline: risk-taxonomy-coverage (v2, enforcing mode).
 //
 // Asserts that every obligation row, RAS line, and policy/charter/mandate
 // document carries a valid `riskTaxonomy` code drawn from the canonical
@@ -13,22 +13,22 @@
 // obligations + their fulfilment policies + outstanding RAS calibrations")
 // resolve with a single graph walk.
 //
-// **Mode: advisory.** v1 emits findings rather than failing CI. The
-// recon framework's severity vocabulary is `info | warn | fail` (see
-// `types.ts`); advisory findings are emitted at `warn` severity and the
-// pipeline always returns `ok: true` (only `fail`-severity findings
-// flip `ok` to `false`). The upgrade plan is documented in the v1
-// completion brief at
-// `Owner Inbox/2026-05-11_vera_risk-taxonomy-coverage-recon-v1.md`:
+// **Mode: enforcing (v2).** Promoted from advisory (v1) after all three
+// backfills landed in a single PR:
 //   1. Mira (Compliance / RegTech engineer, engineering — reports to
-//      Zara CCO) backfills `riskTaxonomy` across the obligations register
-//      (~259 rows).
-//   2. Helena (CRO) + Rohan (Risk engineer) backfill RAS lines (~9 in
-//      Part B).
-//   3. Policy owners backfill frontmatter on the 10 policies / charters /
-//      mandates merged in PRs #255–#264.
-//   4. Once all three backfills land, v2 of this recon flips advisory →
-//      enforcing (`warn` → `fail`) in a single PR.
+//      Zara CCO) backfilled `riskTaxonomy` across all 259 obligation rows
+//      (220 rows via `riskTaxonomy:` prefix in the 10th column; 39
+//      `ORG-PR(IV)-*` POPIA rows via extended OBLIGATION_ROW_RE).
+//   2. Helena (CRO) + Rohan (Risk engineer) RAS Part-B lines (B1–B14.4)
+//      annotated with `riskTaxonomy:` field.
+//   3. Policy frontmatter backfilled on 13 policies / charters /
+//      mandates (multi-line YAML lists collapsed to inline `[RT-X, RT-Y]`
+//      format readable by RISK_TAXONOMY_FIELD_RE).
+//
+// The upgrade plan is documented in the v1 completion brief at
+// `Owner Inbox/2026-05-11_vera_risk-taxonomy-coverage-recon-v1.md`.
+// All violations are now `fail`-severity; any missing or invalid
+// `riskTaxonomy` annotation will fail CI.
 //
 // What the recon walks:
 //
@@ -108,7 +108,8 @@ const POLICY_TITLE_RE = /^\s*title\s*:\s*.*\b(Policy|Charter|Mandate)\b/i;
 const FRONTMATTER_OPEN_RE = /^---\s*$/;
 
 // Obligations table row marker — pipe-separated row starting with `| ORG-`.
-const OBLIGATION_ROW_RE = /^\|\s*ORG-[A-Z]+-[A-Z0-9-]+\s*\|/;
+// Extended to cover IDs with parenthesised qualifiers such as `ORG-PR(IV)-01`.
+const OBLIGATION_ROW_RE = /^\|\s*ORG-[A-Z]+-[A-Z0-9().-]+\s*\|/;
 
 // RAS Part-B line marker — header style `## B<n>` or `### B<n>.<m>`.
 const RAS_B_LINE_RE = /^#{2,4}\s+(B\d+(?:[a-z]?|\.\d+)?)\b/;
@@ -248,8 +249,8 @@ function scanObligations(opts: RunOpts): {
     if (!m?.[1]) {
       violations.push({
         subject: `${subjectBase}:line-${i + 1}:${id}`,
-        message: `Obligation row \`${id}\` is missing the \`riskTaxonomy\` field. Expected behaviour: annotate the row with \`riskTaxonomy: RT-<code>\` drawn from the canonical register at \`Regulations/_risk-taxonomy.md\` (typed enum at \`prototype/platform/risk/taxonomy.ts\`). Backfill is scoped to Mira (Compliance / RegTech engineer) under standing register-curator mandate. Recon mode is advisory in v1.`,
-        severity: "warn",
+        message: `Obligation row \`${id}\` is missing the \`riskTaxonomy\` field. Annotate the row with \`riskTaxonomy: RT-<code>\` drawn from the canonical register at \`Regulations/_risk-taxonomy.md\` (typed enum at \`prototype/platform/risk/taxonomy.ts\`). Backfill owner: Mira (Compliance / RegTech engineer) under standing register-curator mandate.`,
+        severity: "fail",
       });
       continue;
     }
@@ -258,7 +259,7 @@ function scanObligations(opts: RunOpts): {
       violations.push({
         subject: `${subjectBase}:line-${i + 1}:${id}`,
         message: `Obligation row \`${id}\` declares \`riskTaxonomy\` but the value parsed empty. Use \`riskTaxonomy: RT-<code>\` (single) or \`riskTaxonomy: [RT-X, RT-Y]\` (multi).`,
-        severity: "warn",
+        severity: "fail",
       });
       continue;
     }
@@ -267,7 +268,7 @@ function scanObligations(opts: RunOpts): {
         violations.push({
           subject: `${subjectBase}:line-${i + 1}:${id}`,
           message: `Obligation row \`${id}\` declares \`riskTaxonomy: ${code}\` — code not in canonical register at \`Regulations/_risk-taxonomy.md\` (94 codes: 11 L1 + 56 L2 + 27 L3). Replace with a valid \`RiskTaxonomyCode\` or, if no fit, propose a taxonomy amendment via the Board-gated process in register §9.`,
-          severity: "warn",
+          severity: "fail",
         });
       }
     }
@@ -311,8 +312,8 @@ function scanRas(opts: RunOpts): {
     if (!m?.[1]) {
       violations.push({
         subject: `${subjectBase}:line-${cur.idx + 1}:${cur.label}`,
-        message: `RAS line \`${cur.label}\` is missing the \`riskTaxonomy\` annotation. Expected behaviour: add \`riskTaxonomy: RT-<code>\` (or array) to the line's body, drawn from \`Regulations/_risk-taxonomy.md\`. Backfill owner: Helena (Chief Risk Officer, governance) + Rohan (Risk engineer). Recon mode is advisory in v1.`,
-        severity: "warn",
+        message: `RAS line \`${cur.label}\` is missing the \`riskTaxonomy\` annotation. Add \`riskTaxonomy: RT-<code>\` (or array) to the line's body, drawn from \`Regulations/_risk-taxonomy.md\`. Backfill owner: Helena (Chief Risk Officer, governance) + Rohan (Risk engineer, engineering).`,
+        severity: "fail",
       });
       continue;
     }
@@ -322,7 +323,7 @@ function scanRas(opts: RunOpts): {
         violations.push({
           subject: `${subjectBase}:line-${cur.idx + 1}:${cur.label}`,
           message: `RAS line \`${cur.label}\` declares \`riskTaxonomy: ${code}\` — code not in canonical register at \`Regulations/_risk-taxonomy.md\`. Replace with a valid \`RiskTaxonomyCode\` or propose a taxonomy amendment.`,
-          severity: "warn",
+          severity: "fail",
         });
       }
     }
@@ -357,10 +358,10 @@ function scanPolicies(opts: RunOpts): {
         subject,
         message:
           "Policy / charter / mandate file is missing the `riskTaxonomy` field in frontmatter. " +
-          "Expected behaviour: add `riskTaxonomy: RT-<code>` (or array for multi-risk policies) " +
+          "Add `riskTaxonomy: RT-<code>` (or inline array `riskTaxonomy: [RT-X, RT-Y]` for multi-risk policies) " +
           "to the document's YAML frontmatter, drawn from `Regulations/_risk-taxonomy.md`. " +
-          "Backfill owner: the policy's stated `author:` seat. Recon mode is advisory in v1.",
-        severity: "warn",
+          "Owner: the policy's stated `author:` seat.",
+        severity: "fail",
       });
       continue;
     }
@@ -371,7 +372,7 @@ function scanPolicies(opts: RunOpts): {
         message:
           "Policy declares `riskTaxonomy` but the value parsed empty. Use " +
           "`riskTaxonomy: RT-<code>` (single) or `riskTaxonomy: [RT-X, RT-Y]` (multi).",
-        severity: "warn",
+        severity: "fail",
       });
       continue;
     }
@@ -380,7 +381,7 @@ function scanPolicies(opts: RunOpts): {
         violations.push({
           subject: `${subject}:line-${hit.lineNumber}`,
           message: `Policy declares \`riskTaxonomy: ${code}\` — code not in canonical register at \`Regulations/_risk-taxonomy.md\`. Replace with a valid \`RiskTaxonomyCode\` or propose a taxonomy amendment via the Board-gated process in register §9.`,
-          severity: "warn",
+          severity: "fail",
         });
       }
     }
@@ -414,9 +415,8 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   result.violations = violations;
-  // Advisory mode: only `fail`-severity findings flip ok to false. v1
-  // emits everything at `warn`, so a green run is the default even when
-  // findings are present.
+  // Enforcing mode (v2): any `fail`-severity finding (missing or invalid
+  // `riskTaxonomy` annotation) flips ok to false and fails CI.
   result.ok = violations.every((v) => v.severity !== "fail");
   return result;
 }
@@ -442,13 +442,12 @@ if (import.meta.main) {
       warns,
       infos,
       ok: r.ok,
-      mode: "advisory",
+      mode: "enforcing",
       msg: r.ok
-        ? `risk-taxonomy-coverage (advisory): asserted ${r.asserted} artefact(s); ${warns} backfill finding(s)`
-        : "risk-taxonomy-coverage FAILED — fail-severity finding present (should not happen in advisory mode v1)",
+        ? `risk-taxonomy-coverage (enforcing): asserted ${r.asserted} artefact(s); 0 violations`
+        : `risk-taxonomy-coverage FAILED — ${fails} missing/invalid riskTaxonomy annotation(s)`,
       detail: r.violations,
     }),
   );
-  // Advisory mode: exit 0 unless a fail-severity finding sneaked in.
   process.exit(r.ok ? 0 : 1);
 }

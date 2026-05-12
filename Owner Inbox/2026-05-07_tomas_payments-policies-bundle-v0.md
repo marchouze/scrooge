@@ -4,10 +4,7 @@ author: Tomas
 date: 2026-05-07
 summary: Two stub policies (Payments Policy; Sponsor-Bank Operating Policy) at v0.1 anchoring the keystone Reg→Policy→Procedure→Capability chain on Tomas's payments substrate. Neither policy was in the policy register — both are added (as STUB) with the indirect-participant posture as a first-class concern. One substrate-gap ask of Mira: register a Domain N — Payment systems section in the obligations register so NPS Act / SARB NPSD obligations have ORG-PS-* IDs.
 decision-required: false
-riskTaxonomy:
-  - RT-OP.PA
-  - RT-OP.TP.MS
-  - RT-CR.SL
+riskTaxonomy: [RT-OP.PA, RT-OP.TP.MS, RT-CR.SL]
 ---
 
 # Payments-policies bundle v0 — stubs

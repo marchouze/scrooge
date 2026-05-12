@@ -4,11 +4,7 @@ author: Kai (Structured rates trader, markets) + Helena (Chief Risk Officer, gov
 date: 2026-05-11
 summary: Standalone Trading Mandate defining the bank's permissible trading activities, desk structure, product scope (JSE bonds/equities, OTC IRD, FX spot/forward), client-driven mandate (no proprietary), position limits, booking model, and FX settlement risk framework. RAS B5 deferred pending refinement. Closes obligations ORG-PR-19, ORG-PR-20, ORG-MK-01, ORG-MK-04, ORG-PR-48, ORG-MK-09. LICENCE-BIND.
 decision-required: false
-riskTaxonomy:
-  - RT-MK
-  - RT-CR.CP
-  - RT-CR.SL
-  - RT-OP.PA
+riskTaxonomy: [RT-MK, RT-CR.CP, RT-CR.SL, RT-OP.PA]
 ---
 
 # Trading Mandate v1
