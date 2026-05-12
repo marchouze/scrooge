@@ -1,8 +1,18 @@
 // dashboard/agent-runs.ts
 //
-// Per-agent GitHub Actions run history. Calls `gh run list` once every
-// 5 minutes (cached) and exposes a structured view keyed by agent +
-// trigger so the agents page can render a recent-runs strip per card.
+// Per-agent GitHub Actions run history. Calls `gh run list` (cached) and
+// exposes a structured view keyed by agent + trigger so the agents page
+// can render a recent-runs strip per card.
+//
+// Cache invalidation (F-002 fix): the cache is keyed on the event-store
+// sequence cursor (`eventStore.count()`) rather than a wall-clock TTL.
+// This ensures:
+//   - A stale read is impossible after new events are appended (the cursor
+//     advances, so the next request sees a cache miss and re-fetches).
+//   - A cache miss while the store has not changed is also impossible
+//     (the cursor is stable, so repeated requests within the same
+//     store-count window return the cached result).
+// The `fetchedAt` field is retained for observability (surfaced to /api/agent-runs).
 //
 // Substrate boundary: this module depends on the `gh` CLI being
 // installed and authenticated on the host running the dashboard. That
@@ -11,8 +21,9 @@
 // on Azure, swap this module for one that calls the GitHub REST API
 // directly with a token from Key Vault.
 //
-// Author: Atlas (substrate plumbing).
+// Author: Atlas (substrate plumbing). F-002 cursor invalidation: Anya.
 
+import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 
 export interface AgentRun {
@@ -57,13 +68,17 @@ interface RawGhRun {
   // we extract from name + workflowName + an additional fetch when needed.
 }
 
+// F-002: cursor-keyed cache. `storeCount` is the event-store sequence
+// cursor at the time of the last successful fetch. The cache is valid
+// as long as `eventStore.count()` equals `storeCount`; any append
+// to the store advances the cursor and triggers a re-fetch.
 interface CachedRuns {
+  storeCount: number;
   fetchedAt: number;
   runs: readonly AgentRun[];
   error?: string;
 }
 
-const TTL_MS = 5 * 60 * 1000; // 5 minutes
 const RUN_LIMIT = 50;
 
 let cache: CachedRuns | null = null;
@@ -165,7 +180,13 @@ export async function getAgentRuns(): Promise<{
   error?: string;
 }> {
   const now = Date.now();
-  if (cache && now - cache.fetchedAt < TTL_MS) {
+  // F-002: cursor-keyed invalidation. The cache is valid iff the event-store
+  // count hasn't changed since the last fetch. This replaces the previous
+  // TTL-based check, which could both serve stale data (TTL not yet expired
+  // but new events appended) and miss cache hits (TTL expired but store
+  // unchanged).
+  const currentCount = eventStore.count();
+  if (cache && cache.storeCount === currentCount) {
     return {
       runs: cache.runs,
       fetchedAt: cache.fetchedAt,
@@ -184,8 +205,8 @@ export async function getAgentRuns(): Promise<{
   inflight = (async () => {
     try {
       const runs = await fetchFromGh();
-      cache = { fetchedAt: Date.now(), runs };
-      logger.debug({ runs: runs.length }, "agent-runs cache refreshed");
+      cache = { storeCount: currentCount, fetchedAt: Date.now(), runs };
+      logger.debug({ runs: runs.length, storeCount: currentCount }, "agent-runs cache refreshed");
       return runs;
     } catch (e) {
       const err = (e as Error).message;
@@ -193,6 +214,7 @@ export async function getAgentRuns(): Promise<{
       // Serve stale cache on error if any; otherwise empty list with error.
       const prev = cache;
       cache = {
+        storeCount: currentCount,
         fetchedAt: Date.now(),
         runs: prev?.runs ?? [],
         error: err,
