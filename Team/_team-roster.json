@@ -131,6 +131,19 @@
       "reportsTo": "Devon"
     },
     {
+      "id": "noa",
+      "name": "Noa",
+      "title": "Intranet Product Owner & UI Architect",
+      "role": "Intranet Product Owner & UI Architect",
+      "type": "engineering",
+      "expertise": "Internal tooling product management, React/TypeScript UI architecture, dashboard design systems, UX for operations and executive consumers, information architecture, accessibility",
+      "reportsTo": "marc",
+      "reportsToNote": "Reports to CEO (Marc) for product/design authority; engineering coordination with Atlas for backend platform integration.",
+      "buildPhaseStatus": "active",
+      "specFile": "Team/Noa.md",
+      "coordinationNote": "Noa owns the intranet product end-to-end (information architecture, UX, component library, feature roadmap). Atlas provides backend event-store and API platform that Noa's UI consumes."
+    },
+    {
       "name": "Helena",
       "role": "Chief Risk Officer",
       "type": "governance",
