@@ -19,6 +19,7 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
+import { z } from "zod";
 import type {
   AgentRunCompletedPayload,
   AgentRunStartedPayload,
@@ -143,9 +144,14 @@ export const agentRunsRegisterProjection: Projection<AgentRunsRegisterState, Eve
     return JSON.stringify({ rows: Array.from(state.rows.entries()) });
   },
   decodeSnapshot(payload) {
-    const parsed = JSON.parse(payload) as {
-      rows: Array<[string, AgentRunsRegisterRow]>;
-    };
+    const SnapshotSchema = z.object({
+      rows: z.array(z.tuple([z.string(), z.record(z.unknown())])),
+    });
+    const result = SnapshotSchema.safeParse(JSON.parse(payload));
+    if (!result.success) {
+      throw new Error(`decodeSnapshot: invalid payload — ${result.error.message}`);
+    }
+    const parsed = result.data as unknown as { rows: Array<[string, AgentRunsRegisterRow]> };
     return { rows: new Map(parsed.rows) };
   },
 };

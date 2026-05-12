@@ -26,6 +26,7 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
+import { z } from "zod";
 import type {
   AgentBriefIssuedPayload,
   AgentRunCompletedPayload,
@@ -254,7 +255,16 @@ export const workstreamsRegisterProjection: Projection<WorkstreamsRegisterState,
     });
   },
   decodeSnapshot(payload) {
-    const parsed = JSON.parse(payload) as {
+    const SnapshotSchema = z.object({
+      rows: z.array(z.tuple([z.string(), z.record(z.unknown())])),
+      briefToWorkstream: z.array(z.tuple([z.string(), z.string()])),
+      runToWorkstream: z.array(z.tuple([z.string(), z.string()])),
+    });
+    const result = SnapshotSchema.safeParse(JSON.parse(payload));
+    if (!result.success) {
+      throw new Error(`decodeSnapshot: invalid payload — ${result.error.message}`);
+    }
+    const parsed = result.data as unknown as {
       rows: Array<[string, WorkstreamsRegisterRow]>;
       briefToWorkstream: Array<[string, string]>;
       runToWorkstream: Array<[string, string]>;
