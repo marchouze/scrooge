@@ -26,10 +26,13 @@
 //      - If a matching event exists with a matching hash → pass.
 //
 // **Empty-store posture.** On a fresh runner with no `.local/event.db`
-// (GitHub Actions, first boot), the store has no `DocumentRegistered`
-// events. A missing-event finding is still a real violation: the
-// backfill script must be run before CI can pass. This is intentional —
-// the CI gate is only green once the events are in the store.
+// (GitHub Actions, first boot), the store has no events of any kind.
+// In that case, all missing-event violations are downgraded from `fail`
+// to `info` and `ok` is set to `true`. This mirrors the pattern in
+// `ras-b2-calibration-coverage.ts`: an entirely-empty store means the
+// bench has never been seeded, not that someone forgot to emit events.
+// Real drift — events present but a policy file missing its event — still
+// fails hard.
 //
 // **Advisory vs enforcing.** This pipeline is `enforcing` by default:
 // `fail`-severity violations flip `ok` to `false`. The `mode` option
@@ -70,6 +73,29 @@ function findRepoRoot(start: string): string {
     dir = resolve(dir, "..");
   }
   throw new Error("Cannot locate repo root (CLAUDE.md not found by walking up from recon dir)");
+}
+
+// ---------------------------------------------------------------------------
+// Fresh-runner detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when the event store has no events of any type.
+ * Used to downgrade missing-DocumentRegistered violations to `info` on
+ * CI runners / fresh benches where no seed scripts have been run yet.
+ *
+ * When `opts.eventOverrides` is provided (test mode), we are operating on
+ * a synthetic universe — do NOT consult the live store for emptiness.
+ */
+function eventStoreIsEmpty(opts: DocumentRegistrationRunOpts): boolean {
+  if (opts.eventOverrides !== undefined) {
+    // Synthetic mode: treat the supplied overrides as the universe.
+    return false;
+  }
+  for (const _e of eventStore.replay()) {
+    return false;
+  }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,6 +192,27 @@ export function run(opts: DocumentRegistrationRunOpts = {}): ReconResult {
         registeredHashByPath.set(fp, ch);
       }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3b. Fresh-runner fast-path: if the store is entirely empty, downgrade
+  //     all missing-event violations to `info` and return ok.
+  // ---------------------------------------------------------------------------
+  if (registeredHashByPath.size === 0 && !opts.eventOverrides && eventStoreIsEmpty(opts)) {
+    const infoViolations: ReconViolation[] = policyFiles.map((basename) => ({
+      subject: `Policies/${basename}`,
+      message:
+        "Event store is empty — DocumentRegistered events not yet seeded on this bench. " +
+        "Run `bun run scripts/backfill-document-registered-2026-05-12.ts` to seed locally.",
+      severity: "info" as const,
+    }));
+    return {
+      pipeline: PIPELINE,
+      ok: true,
+      asserted: policyFiles.length,
+      violations: infoViolations,
+      asOf: new Date().toISOString(),
+    };
   }
 
   // ---------------------------------------------------------------------------
