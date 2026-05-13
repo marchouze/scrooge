@@ -212,13 +212,8 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-<<<<<<< HEAD
-| **STUB** | 6 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13) · Stress test cycle (PROC-RISK-ST-01, 2026-05-13) · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** |
+| **STUB** | 6 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** |
 | PLANNED | ~58 | Drafting queue under domain leads, coordinated by Owen |
-=======
-| **STUB** | 4 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** |
-| PLANNED | ~60 | Drafting queue under domain leads, coordinated by Owen |
->>>>>>> f166c79 (feat(procedures): stress test cycle v0.1 + index update)
 | **Total identified procedures** | **~81** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
