@@ -226,7 +226,7 @@ function renderTable(rows) {
         : '<span style="color:var(--neutral-stone)">—</span>';
       return `
       <tr class="${gapClass}">
-        <td><button class="oblig-id-btn" data-id="${esc(o.id)}">${esc(o.id)}</button></td>
+        <td><button class="oblig-id-btn" data-id="${esc(o.id)}">${esc(urnDisplay(o))}</button></td>
         <td>${bindHtml}</td>
         <td>${esc(o.requirement)}</td>
         <td>${linkedHtml}</td>
