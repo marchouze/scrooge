@@ -1,15 +1,11 @@
 # Procedure — Key Rotation
 
-| Field | Value |
-|-------|-------|
-| Procedure ID | PROC-IS-KR-01 |
-| Version | 1.0 |
-| Status | STUB |
-| Owner | Senna (Chief Information Security Officer, governance) |
-| Author | Atlas (Core banking platform architect, engineering) |
-| Last updated | 2026-05-13 |
-| Source policy | [Information Security and IT Governance Policy v1](../../Policies/information-security-it-governance-policy-v1.md) |
-| Applies-at | LICENCE-BIND |
+**Procedure ID:** PROC-IS-KR-01
+**Owner:** Senna (Chief Information Security Officer, governance) · Devon (Chief Operating Officer, engineering)
+**Version:** v1.0 — 2026-05-13
+**Status:** STUB
+**Source policy:** [Information Security and IT Governance Policy v1](../../Policies/information-security-it-governance-policy-v1.md)
+**Applies-at:** LICENCE-BIND
 
 ## Source regulations
 

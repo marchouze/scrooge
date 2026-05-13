@@ -1,15 +1,11 @@
 # Procedure — Month-End Close
 
-| Field | Value |
-|-------|-------|
-| Procedure ID | PROC-FIN-MC-01 |
-| Version | 1.0 |
-| Status | STUB |
-| Owner | Camille (Chief Financial Officer, governance) |
-| Author | Atlas (Core banking platform architect, engineering) |
-| Last updated | 2026-05-13 |
-| Source policy | [Regulatory Reporting Policy v1](../../Policies/regulatory-reporting-policy-v1.md) |
-| Applies-at | LICENCE-BIND |
+**Procedure ID:** PROC-FIN-MC-01
+**Owner:** Camille (Chief Financial Officer, governance) · Bea (Financial reporting engineer)
+**Version:** v1.0 — 2026-05-13
+**Status:** STUB
+**Source policy:** [Regulatory Reporting Policy v1](../../Policies/regulatory-reporting-policy-v1.md)
+**Applies-at:** LICENCE-BIND
 
 ## Source regulations
 
