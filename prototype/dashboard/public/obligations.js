@@ -164,35 +164,50 @@ function renderSummary() {
   `;
 }
 
+function chipBtn(filterId, k, v) {
+  return `<button class="oblig-chip oblig-chip--btn" data-filter="${filterId}" data-value="${esc(k)}"><b>${esc(k)}</b><span class="muted">${v}</span></button>`;
+}
+
+function wireChips(container) {
+  for (const btn of container.querySelectorAll(".oblig-chip--btn")) {
+    btn.addEventListener("click", () => drillTo(btn.dataset.filter, btn.dataset.value));
+  }
+}
+
 function renderHistograms() {
   if (!view) return;
   const fam = $("obligFamilyList");
   const bind = $("obligBindList");
   const stat = $("obligStatusList");
+  const act = $("obligActivityList");
+  const prod = $("obligProductList");
 
   const famSorted = Object.entries(view.familyCounts ?? {}).sort((a, b) => b[1] - a[1]);
-  fam.innerHTML = famSorted
-    .map(
-      ([k, v]) => `<span class="oblig-chip"><b>${esc(k)}</b><span class="muted">${v}</span></span>`,
-    )
-    .join("");
+  fam.innerHTML = famSorted.map(([k, v]) => chipBtn("filterFamily", k, v)).join("");
+  wireChips(fam);
 
   const bindOrder = ["CORPORATE", "LICENCE", "COMMENCEMENT", "CONDITIONAL", "UNCLASSIFIED"];
   const bindSorted = Object.entries(view.bindCounts ?? {}).sort(
     (a, b) => bindOrder.indexOf(a[0]) - bindOrder.indexOf(b[0]),
   );
-  bind.innerHTML = bindSorted
-    .map(
-      ([k, v]) => `<span class="oblig-chip"><b>${esc(k)}</b><span class="muted">${v}</span></span>`,
-    )
-    .join("");
+  bind.innerHTML = bindSorted.map(([k, v]) => chipBtn("filterBind", k, v)).join("");
+  wireChips(bind);
 
   const statSorted = Object.entries(view.statusCounts ?? {}).sort((a, b) => b[1] - a[1]);
-  stat.innerHTML = statSorted
-    .map(
-      ([k, v]) => `<span class="oblig-chip"><b>${esc(k)}</b><span class="muted">${v}</span></span>`,
-    )
-    .join("");
+  stat.innerHTML = statSorted.map(([k, v]) => chipBtn("filterStatus", k, v)).join("");
+  wireChips(stat);
+
+  if (act) {
+    const actSorted = Object.entries(view.activityCounts ?? {}).sort((a, b) => b[1] - a[1]);
+    act.innerHTML = actSorted.map(([k, v]) => chipBtn("filterActivity", k, v)).join("");
+    wireChips(act);
+  }
+
+  if (prod) {
+    const prodSorted = Object.entries(view.productFamilyCounts ?? {}).sort((a, b) => b[1] - a[1]);
+    prod.innerHTML = prodSorted.map(([k, v]) => chipBtn("filterProduct", k, v)).join("");
+    wireChips(prod);
+  }
 }
 
 function populateFamilyFilter() {
@@ -533,27 +548,29 @@ function closeDrawer() {
 // Regulation drill-down
 // ---------------------------------------------------------------------------
 
-function drillToFamily(family) {
-  const sel = $("filterFamily");
+function drillTo(filterId, value) {
+  const sel = $(filterId);
   if (!sel) return;
-  // Find or create the option for this family.
   let found = false;
   for (const opt of sel.options) {
-    if (opt.value === family) {
+    if (opt.value === value) {
       found = true;
       break;
     }
   }
   if (!found) {
     const opt = document.createElement("option");
-    opt.value = family;
-    opt.textContent = family;
+    opt.value = value;
+    opt.textContent = value;
     sel.appendChild(opt);
   }
-  sel.value = family;
+  sel.value = value;
   refresh();
-  // Scroll back to top of table.
   $("obligTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function drillToFamily(family) {
+  drillTo("filterFamily", family);
 }
 
 // ---------------------------------------------------------------------------
