@@ -76,6 +76,7 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { buildKycCandidatesView } from "./kyc-candidates-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
@@ -1075,6 +1076,19 @@ const server = Bun.serve({
       // pageProvenance: event-derived → simulated-only in build phase.
       return jsonResponse({
         ...buildOnboardingView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/kyc/candidates" && req.method === "GET") {
+      // KYC candidate projection — folds the KYC lifecycle event family
+      // (ClientCandidateRegistered → SanctionsClearancePassed → PEPScreeningCompleted
+      // → BeneficialOwnerResolved → RiskRatingAssigned → EddInitiated/EddCompleted
+      // → ClientAccepted / ClientRejected) into per-candidate current state.
+      // Read-only; no caching (event volume is small in build phase).
+      // Authority: D-LIFECYCLE-SLICE-2; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+      // pageProvenance: event-derived → simulated-only in build phase.
+      return jsonResponse({
+        ...buildKycCandidatesView(eventStore),
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
