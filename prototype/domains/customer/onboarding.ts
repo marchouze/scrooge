@@ -16,17 +16,24 @@ import {
   type AuthorisedSignatoryPayload,
   type BeneficialOwnerResolvedPayload,
   CUSTOMER_EVENT_TYPES,
+  type ClientAcceptedPayload,
+  type ClientCandidateRegisteredPayload,
+  type ClientRejectedPayload,
   type CounterpartyFaisClassifiedPayload,
   type CounterpartyId,
   type CreditAssessmentCompletedPayload,
   DEFAULT_ENTITY,
   type DocumentationPayload,
+  type EddCompletedPayload,
+  type EddInitiatedPayload,
   type FatcaCrsClassifiedPayload,
   type KycCompletedPayload,
   type MandatePayload,
   type OffboardPayload,
+  type PEPScreeningCompletedPayload,
   type PopiaConsentRecordedPayload,
   type ProspectPayload,
+  type RiskRatingAssignedPayload,
   type SanctionsClearancePassedPayload,
   type SoundingPayload,
 } from "./types";
@@ -156,4 +163,69 @@ export function creditAssessmentCompleted(
 /** AccountsSetupCompleted — settlement/nostro accounts opened at accounts-setup gate. */
 export function accountsSetupCompleted(p: AccountsSetupCompletedPayload, opts: MakeOpts): Event {
   return base(CUSTOMER_EVENT_TYPES[18], { ...p }, opts);
+}
+
+// ---------------------------------------------------------------------------
+// KYC onboarding gateway event constructors (PROC-FC-01)
+// Authority: PROC-FC-01 (Approved), KYC/CDD/EDD Policy (BRC-approved)
+// Author: Mira (Regulatory Intelligence Engineer)
+// ---------------------------------------------------------------------------
+
+/**
+ * ClientCandidateRegistered — PROC-FC-01 step 1.
+ * Citations: ORG-FC-02 (KYC/CDD/EDD), FIC-ACT-S21, FATF-REC-10.
+ */
+export function clientCandidateRegistered(
+  p: ClientCandidateRegisteredPayload,
+  opts: MakeOpts,
+): Event {
+  return base(CUSTOMER_EVENT_TYPES[19], { ...p }, opts);
+}
+
+/**
+ * PEPScreeningCompleted — PROC-FC-01 step 3.
+ * Citations: ORG-FC-04 (PEP screening), FIC-ACT-S21B, FATF-REC-12.
+ */
+export function pepScreeningCompleted(p: PEPScreeningCompletedPayload, opts: MakeOpts): Event {
+  return base(CUSTOMER_EVENT_TYPES[20], { ...p }, opts);
+}
+
+/**
+ * RiskRatingAssigned — PROC-FC-01 step 5.
+ * Citations: ORG-FC-02 (KYC/CDD/EDD), FIC-ACT-S21, FATF-REC-10.
+ */
+export function riskRatingAssigned(p: RiskRatingAssignedPayload, opts: MakeOpts): Event {
+  return base(CUSTOMER_EVENT_TYPES[21], { ...p }, opts);
+}
+
+/**
+ * EddInitiated — PROC-FC-01 step 6.
+ * Citations: ORG-FC-05 (EDD), FIC-ACT-S21B, FATF-REC-10.
+ */
+export function eddInitiated(p: EddInitiatedPayload, opts: MakeOpts): Event {
+  return base(CUSTOMER_EVENT_TYPES[22], { ...p }, opts);
+}
+
+/**
+ * EddCompleted — PROC-FC-01 step 7.
+ * Citations: ORG-FC-05 (EDD), FIC-ACT-S21B.
+ */
+export function eddCompleted(p: EddCompletedPayload, opts: MakeOpts): Event {
+  return base(CUSTOMER_EVENT_TYPES[23], { ...p }, opts);
+}
+
+/**
+ * ClientAccepted — PROC-FC-01 step 8.
+ * Citations: ORG-FC-02 (KYC/CDD/EDD), ORG-FC-03, FIC-ACT-S21.
+ */
+export function clientAccepted(p: ClientAcceptedPayload, opts: MakeOpts): Event {
+  return base(CUSTOMER_EVENT_TYPES[24], { ...p }, opts);
+}
+
+/**
+ * ClientRejected — PROC-FC-01 steps 2–7 (any gate failure).
+ * Citations: ORG-FC-02, ORG-FC-03, ORG-FC-04, FIC-ACT-S21.
+ */
+export function clientRejected(p: ClientRejectedPayload, opts: MakeOpts): Event {
+  return base(CUSTOMER_EVENT_TYPES[25], { ...p }, opts);
 }

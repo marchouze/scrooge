@@ -340,6 +340,14 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Mira", "m1-regulator-citation-urns", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
+  // PROC-FC-01 — Mira's KYC onboarding gateway.
+  // Processes ClientCandidateRegistered through PROC-FC-01 steps 1–9:
+  // sanctions screening, PEP screening, UBO resolution, RBA risk rating,
+  // and terminal accept/reject/EDD-initiation.
+  // Authority: PROC-FC-01 (Approved), KYC/CDD/EDD Policy (BRC-approved).
+  entry("Mira", "kyc-onboarding-gateway", "event-driven", {
+    subscribesTo: ["ClientCandidateRegistered"],
+  }),
   // M1 — Senna's trading-stack threat-model handler.
   entry("Senna", "m1-trading-stack-threat-model", "event-driven", {
     subscribesTo: ["CeoDecision"],
