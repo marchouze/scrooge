@@ -126,12 +126,12 @@
 | Best Execution | `best-execution-report.md` | Saskia | PLANNED |
 | Market Abuse / Surveillance | `surveillance-alert-triage.md` | Zara (Mira) + Saskia | PLANNED |
 | Voice & Comms Recording | `recording-retention.md` | Saskia + Senna + Sade | PLANNED |
-| Counterparty Onboarding (markets) | `counterparty-onboarding-markets.md` | Saskia + Imani + Eitan | PLANNED |
+| Counterparty Onboarding (markets) | [`counterparty-onboarding-markets.md`](by-policy/counterparty-onboarding-markets.md) (PROC-MK-CO-01 — seven-gate institutional counterparty onboarding; KYC/CDD, ISDA/GMRA docs, FAIS categorisation, credit limit, collateral, settlement instructions, margin agreement; `CounterpartyEnabled` gate event) | Saskia · Imani · Zara · Eitan | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`new-product-due-diligence.md`](by-policy/new-product-due-diligence.md) (PROC-MK-NPA-DD-01 — stage 3, 14-dimension cycle) | Saskia + Devon | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-controlled-launch.md`](by-policy/product-controlled-launch.md) (PROC-MK-NPA-CL-01 — stage 5 limit administration + daily monitoring) | Saskia | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-post-implementation-review.md`](by-policy/product-post-implementation-review.md) (PROC-MK-NPA-PIR-01 — stage 6 PIR convening) | Saskia + Devon | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-retirement-migration.md`](by-policy/product-retirement-migration.md) (PROC-MK-NPA-RET-01 — stage 8 open-position migration) | Saskia + Imani + Tomas | **STUB** |
-| New Product Approval | `npa-gate.md` | Saskia + Helena + Camille + Zara | PLANNED (superseded by the four NPA stage procedures above; entry retained for index continuity until removed in next index review) |
+| New Product Approval | [`npa-gate.md`](by-policy/npa-gate.md) (PROC-NPA-GATE-01 — stage-4 gate; four-party opinion cycle; `NewProductApproved` gate event; controlled-launch configuration; handoff to stage 5) | Saskia · Helena · Camille · Zara | **STUB** |
 
 ## Markets — OTC Derivative Provider (FMA / FSCA)
 
@@ -212,8 +212,8 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-| **STUB** | 12 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · CTR filing (PROC-FC-CTR-01, 2026-05-13) · TPR filing (PROC-FC-TPR-01, 2026-05-13) · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-13)** · **DR test execution (PROC-OR-DR-01, 2026-05-13)** · **KYC continuous monitoring (PROC-FC-KYC-C-01, 2026-05-13)** · **Sanctions override (PROC-FC-SO-01, 2026-05-13)** |
-| PLANNED | ~52 | Drafting queue under domain leads, coordinated by Owen |
+| **STUB** | 14 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **CTR filing (PROC-FC-CTR-01, 2026-05-13)** · **TPR filing (PROC-FC-TPR-01, 2026-05-13)** · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-13)** · **DR test execution (PROC-OR-DR-01, 2026-05-13)** · **KYC continuous monitoring (PROC-FC-KYC-C-01, 2026-05-13)** · **Sanctions override (PROC-FC-SO-01, 2026-05-13)** · **NPA gate (PROC-NPA-GATE-01, 2026-05-13)** · **Counterparty onboarding markets (PROC-MK-CO-01, 2026-05-13)** |
+| PLANNED | ~50 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~81** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
