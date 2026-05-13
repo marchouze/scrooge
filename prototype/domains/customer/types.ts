@@ -191,6 +191,93 @@ export interface AccountsSetupCompletedPayload {
   setupBy: string; // agent URN or PartyId
 }
 
+// ---------------------------------------------------------------------------
+// KYC onboarding gateway event types (PROC-FC-01)
+// Authority: PROC-FC-01 (Approved), KYC/CDD/EDD Policy (BRC-approved)
+// Author: Mira (Regulatory Intelligence Engineer)
+// ---------------------------------------------------------------------------
+
+/**
+ * ClientCandidateRegistered — a new onboarding candidate is registered for
+ * KYC processing under PROC-FC-01 step 1.
+ * Citations: ORG-FC-02, FIC-ACT-S21, FATF-REC-10
+ */
+export interface ClientCandidateRegisteredPayload {
+  candidateId: string;
+  entityType: "natural-person" | "legal-entity" | "trust";
+  registeredBy: PartyId;
+  entity: string;
+}
+
+/**
+ * PEPScreeningCompleted — PEP screening result recorded per PROC-FC-01 step 3.
+ * Citations: ORG-FC-04, FIC-ACT-S21B, FATF-REC-12
+ */
+export interface PEPScreeningCompletedPayload {
+  candidateId: string;
+  result: "CLEAR" | "HIT" | "ERROR";
+  pepTier?: 1 | 2 | 3;
+  matchRefs?: string[];
+}
+
+/**
+ * RiskRatingAssigned — RBA risk rating assigned per PROC-FC-01 step 5.
+ * Citations: ORG-FC-02, FIC-ACT-S21, FATF-REC-10
+ */
+export interface RiskRatingAssignedPayload {
+  candidateId: string;
+  rating: "STANDARD" | "HIGH" | "PEP" | "PROHIBITED";
+  rbaScoreFactors: string[];
+}
+
+/**
+ * EddInitiated — enhanced due diligence initiated per PROC-FC-01 step 6.
+ * Citations: ORG-FC-05, FIC-ACT-S21B, FATF-REC-10
+ */
+export interface EddInitiatedPayload {
+  candidateId: string;
+  reason: string;
+  assignedTo: PartyId;
+  slaDeadlineIso: string;
+}
+
+/**
+ * EddCompleted — EDD review outcome recorded per PROC-FC-01 step 7.
+ * Citations: ORG-FC-05, FIC-ACT-S21B
+ */
+export interface EddCompletedPayload {
+  candidateId: string;
+  outcome: "PROCEED" | "REJECT";
+  reviewerId: PartyId;
+  notes: string;
+}
+
+/**
+ * ClientAccepted — candidate accepted into client roster per PROC-FC-01 step 8.
+ * Citations: ORG-FC-02, ORG-FC-03, FIC-ACT-S21
+ */
+export interface ClientAcceptedPayload {
+  candidateId: string;
+  riskRating: "STANDARD" | "HIGH" | "PEP";
+  kycTier: "Tier-1" | "Tier-2";
+  acceptedBy: PartyId;
+}
+
+/**
+ * ClientRejected — candidate rejected at any gate per PROC-FC-01 steps 2–7.
+ * Citations: ORG-FC-02, ORG-FC-03, ORG-FC-04, FIC-ACT-S21
+ */
+export interface ClientRejectedPayload {
+  candidateId: string;
+  reasonCode:
+    | "SANCTIONS_HIT"
+    | "PEP_EDD_REJECTED"
+    | "PROHIBITED_ENTITY"
+    | "DOCUMENT_FAIL"
+    | "SCREENING_ERROR";
+  rejectedBy: PartyId;
+}
+
 export const CUSTOMER_EVENT_TYPES = [
   "CounterpartySoundingOpened",
   "CounterpartyProspectRegistered",
@@ -212,6 +299,14 @@ export const CUSTOMER_EVENT_TYPES = [
   "PopiaConsentRecorded",
   "CreditAssessmentCompleted",
   "AccountsSetupCompleted",
+  // KYC onboarding gateway — PROC-FC-01 (Mira)
+  "ClientCandidateRegistered",
+  "PEPScreeningCompleted",
+  "RiskRatingAssigned",
+  "EddInitiated",
+  "EddCompleted",
+  "ClientAccepted",
+  "ClientRejected",
 ] as const;
 
 export type CustomerEventType = (typeof CUSTOMER_EVENT_TYPES)[number];
