@@ -201,7 +201,7 @@ function renderTable(rows) {
   const body = $("obligBody");
   const sub = $("obligListSub");
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="5" style="padding:18px;text-align:center;color:var(--neutral-stone)">No obligations match the current filter.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" style="padding:18px;text-align:center;color:var(--neutral-stone)">No obligations match the current filter.</td></tr>`;
     sub.textContent = `0 of ${allObligations.length}`;
     return;
   }
@@ -212,6 +212,10 @@ function renderTable(rows) {
       const bindHtml = o.bind
         ? `<span class="oblig-tag oblig-tag-bind" style="white-space:nowrap">${esc(o.bind)}</span>`
         : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
+      const famHtml =
+        o.family && o.family !== "OTHER"
+          ? `<button class="oblig-reg-btn" data-family="${esc(o.family)}">${esc(o.family)}</button>`
+          : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
       const linkedHtml =
         (o.linkedPolicies ?? []).length === 0
           ? '<span style="color:var(--neutral-stone);font-size:11px;">—</span>'
@@ -228,6 +232,7 @@ function renderTable(rows) {
       <tr class="${gapClass}">
         <td><button class="oblig-id-btn" data-id="${esc(o.id)}">${esc(urnDisplay(o))}</button></td>
         <td>${bindHtml}</td>
+        <td>${famHtml}</td>
         <td>${esc(o.requirement)}</td>
         <td>${linkedHtml}</td>
         <td>${statusHtml}</td>
@@ -237,6 +242,9 @@ function renderTable(rows) {
 
   for (const btn of body.querySelectorAll(".oblig-id-btn")) {
     btn.addEventListener("click", () => openDrawer(btn.dataset.id));
+  }
+  for (const btn of body.querySelectorAll(".oblig-reg-btn")) {
+    btn.addEventListener("click", () => drillToFamily(btn.dataset.family));
   }
 }
 
@@ -461,7 +469,9 @@ function openDrawer(id) {
     ),
     row(
       "Source family",
-      o.family ? `<span class="oblig-tag">${esc(o.family)}</span>` : '<span class="muted">—</span>',
+      o.family
+        ? `<button class="oblig-reg-btn" data-family="${esc(o.family)}">${esc(o.family)}</button>`
+        : '<span class="muted">—</span>',
     ),
     row(
       "Bind",
@@ -483,10 +493,46 @@ function openDrawer(id) {
   ].join("");
 
   $("drawerOverlay").classList.add("open");
+
+  // Wire source-family drill-through: close drawer and filter table.
+  const famBtn = $("drawerBody").querySelector(".oblig-reg-btn");
+  if (famBtn) {
+    famBtn.addEventListener("click", () => {
+      closeDrawer();
+      drillToFamily(famBtn.dataset.family);
+    });
+  }
 }
 
 function closeDrawer() {
   $("drawerOverlay").classList.remove("open");
+}
+
+// ---------------------------------------------------------------------------
+// Regulation drill-down
+// ---------------------------------------------------------------------------
+
+function drillToFamily(family) {
+  const sel = $("filterFamily");
+  if (!sel) return;
+  // Find or create the option for this family.
+  let found = false;
+  for (const opt of sel.options) {
+    if (opt.value === family) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    const opt = document.createElement("option");
+    opt.value = family;
+    opt.textContent = family;
+    sel.appendChild(opt);
+  }
+  sel.value = family;
+  refresh();
+  // Scroll back to top of table.
+  $("obligTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // ---------------------------------------------------------------------------
