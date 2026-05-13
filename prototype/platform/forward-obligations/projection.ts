@@ -414,25 +414,26 @@ export interface ForwardObligationsResult {
 }
 
 export function buildForwardObligations(opts: ProjectionOpts): ForwardObligationsResult {
-  const asOf = opts.asOf.slice(0, 10);
-  const { from, to } = resolveHorizon(asOf, opts.horizon);
+  const asOfDate = opts.asOf.slice(0, 10); // date-only for horizon/date arithmetic
+  const replayAsOf = opts.asOf; // full ISO timestamp for store.replay's `as_of <=` gate
+  const { from, to } = resolveHorizon(asOfDate, opts.horizon);
 
   const all: ForwardObligation[] = [];
 
   // Source 1 — regulatory filings (derived from hardcoded cadence rules)
-  const regulatoryItems = generateRegulatoryFilings(from, to, asOf);
+  const regulatoryItems = generateRegulatoryFilings(from, to, asOfDate);
   all.push(...regulatoryItems);
 
   // Source 2 — trade settlements (event store fold)
-  const tradeItems = generateTradeSettlements(opts.store, from, to, asOf);
+  const tradeItems = generateTradeSettlements(opts.store, from, to, replayAsOf);
   all.push(...tradeItems);
 
   // Source 3 — manual items (event store fold)
-  const manualItems = generateManualItems(opts.store, from, to, asOf);
+  const manualItems = generateManualItems(opts.store, from, to, replayAsOf);
   all.push(...manualItems);
 
   // Source 4 — seed obligations (policy-review + supplementary static items)
-  const seedItems = buildSeedObligations(asOf).filter((s) => inWindow(s.dueDate, from, to));
+  const seedItems = buildSeedObligations(asOfDate).filter((s) => inWindow(s.dueDate, from, to));
   all.push(...seedItems);
 
   // Sort by dueDate ASC then by id for stable ordering.
@@ -449,7 +450,7 @@ export function buildForwardObligations(opts: ProjectionOpts): ForwardObligation
   }
 
   return {
-    asOf,
+    asOf: asOfDate,
     from,
     to,
     obligations: all,
