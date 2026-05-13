@@ -120,8 +120,18 @@ function isFscaRow(citation: string): boolean {
  * We check case-insensitively for the key tokens.
  */
 function isInactiveStatus(status: string): boolean {
-  const s = status.toLowerCase();
-  return s.includes("n/a-yet") || s.includes("conditional-bind") || s.includes("pre-licence");
+  const s = status.toLowerCase().trim();
+  // v1.18 closed enum values
+  if (s === "not_applicable" || s === "deferred" || s === "superseded") {
+    return true;
+  }
+  // Legacy values (pre-v1.18) retained for backwards compat on any cached/historical rows
+  return (
+    s.includes("n/a-yet") ||
+    s.includes("conditional-bind") ||
+    s.includes("pre-licence") ||
+    s.includes("wave-2-deferred")
+  );
 }
 
 // ---------------------------------------------------------------------------
