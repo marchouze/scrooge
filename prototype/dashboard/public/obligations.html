@@ -1,272 +1,343 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Obligations · Bank operations dashboard</title>
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
-<style>
-  /* Page-local — keep in sync with policies.html visual conventions. */
-  .oblig-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-  .oblig-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 12px 14px;
-  }
-  .oblig-card-num { font-size: 26px; font-weight: 600; line-height: 1.1; }
-  .oblig-card-lbl { font-size: 12px; color: #666; margin-top: 4px; }
-  .oblig-card-sub { font-size: 11px; color: #999; margin-top: 2px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Obligations · Hoz</title>
+  <meta name="description" content="Obligations register — every regulatory obligation mapped to the policy that fulfils it.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    /* ── Map semantic tokens not yet in _brand.css ── */
+    :root {
+      --surface-base:    #ffffff;
+      --surface-raised:  #f5f3ee;
+      --surface-hover:   #edeae4;
+      --neutral-rule:    var(--neutral-mist);
+      --text-primary:    var(--brand-primary);
+      --text-secondary:  var(--neutral-graphite);
+    }
 
-  .oblig-family-list, .oblig-bind-list, .oblig-status-list {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
-  }
-  .oblig-chip {
-    display: inline-flex; align-items: baseline; gap: 6px;
-    padding: 3px 8px; border-radius: 12px;
-    background: #f5f5f5; border: 1px solid #e0e0e0;
-    font-size: 11.5px;
-  }
-  .oblig-chip b { font-weight: 600; }
+    /* ── Filter bar ── */
+    .oblig-filter-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+      padding: 12px 0 4px;
+    }
+    .oblig-filter-bar .fc { display: flex; flex-direction: column; gap: 3px; }
+    .oblig-filter-bar label { font-size: 11px; font-weight: 500; color: var(--neutral-stone); text-transform: uppercase; letter-spacing: .04em; }
+    .oblig-filter-bar select,
+    .oblig-filter-bar input[type=search] {
+      padding: 5px 8px; border: 1px solid var(--neutral-rule); border-radius: 4px;
+      font-size: 13px; font-family: inherit; background: var(--surface-base);
+      color: var(--text-primary);
+    }
+    .oblig-filter-bar input[type=search] { min-width: 220px; }
+    .oblig-filter-bar .fc-wide { flex: 1; min-width: 180px; }
+    .oblig-filter-count {
+      font-size: 12px; color: var(--neutral-stone); align-self: flex-end; padding-bottom: 6px; white-space: nowrap;
+    }
 
-  .oblig-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
-  .oblig-controls .ctrl { display: flex; flex-direction: column; gap: 4px; min-width: 140px; }
-  .oblig-controls label { font-size: 11.5px; color: #666; }
-  .oblig-controls select, .oblig-controls input[type=search] {
-    padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px;
-    font-size: 13px;
-  }
+    /* ── Table ── */
+    .oblig-table-wrap { overflow-x: auto; margin-top: 8px; }
+    table.oblig-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.oblig-table th, table.oblig-table td {
+      border-bottom: 1px solid var(--neutral-rule); padding: 7px 10px; vertical-align: top; text-align: left;
+    }
+    table.oblig-table th { background: var(--surface-raised); font-weight: 600; color: var(--text-secondary); font-size: 11.5px; }
+    table.oblig-table tr:hover td { background: var(--surface-hover); }
+    table.oblig-table code { font-size: 11px; background: var(--surface-raised); padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono); }
+    .oblig-id-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
+      color: var(--accent-ink); text-decoration: underline dotted;
+      text-align: left;
+    }
+    .oblig-id-btn:hover { color: var(--accent-ink-hover, #1a5190); }
+    .oblig-reg-btn {
+      background: #eef; border: 1px solid #cce; border-radius: 3px;
+      padding: 1px 6px; font-size: 10.5px; font-weight: 500; color: #335;
+      cursor: pointer; text-align: left; white-space: nowrap;
+      font-family: inherit; line-height: 1.5;
+    }
+    .oblig-reg-btn:hover { background: #ddf; border-color: #aac; }
+    .oblig-gap-row td { background: #fff7f6 !important; }
 
-  .oblig-table-wrap { overflow-x: auto; }
-  table.oblig-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  table.oblig-table th, table.oblig-table td {
-    border-bottom: 1px solid #eee; padding: 6px 8px; vertical-align: top; text-align: left;
-  }
-  table.oblig-table th { background: #fafafa; font-weight: 600; color: #444; }
-  table.oblig-table tr:hover { background: #fafcff; }
-  table.oblig-table code { font-size: 11.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
-  .oblig-tag {
-    display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-    background: #eef; color: #335; border: 1px solid #cce;
-  }
-  .oblig-tag-bind { background: #fff3e0; color: #a04200; border-color: #ffd9a8; }
-  .oblig-tag-source-regulatory { background: #e3f2fd; color: #1c4d80; border-color: #cae0f5; }
-  .oblig-tag-source-objective  { background: #f1f8e9; color: #3d6024; border-color: #d3e6bf; }
-  .oblig-tag-source-both       { background: #ede7f6; color: #3d316d; border-color: #cfc3eb; }
-  a.oblig-policy-link { text-decoration: underline; cursor: pointer; color: inherit; }
-  a.oblig-policy-link:hover { background: #d8d8f5; }
-  .oblig-gap-flag {
-    display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-    background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; margin-right: 4px;
-  }
-  .oblig-gap-row { background: #fff7f6; }
+    /* ── Tags ── */
+    .oblig-tag {
+      display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
+      background: #eef; color: #335; border: 1px solid #cce;
+    }
+    .oblig-tag-bind { background: #fff3e0; color: #a04200; border-color: #ffd9a8; }
+    a.oblig-policy-link { text-decoration: underline; cursor: pointer; color: inherit; }
+    a.oblig-policy-link:hover { background: #d8d8f5; }
+    .oblig-gap-flag {
+      display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
+      background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; margin-right: 3px;
+    }
+    .status-in-force    { background: #e8f5e9; color: #2e6b34; border-color: #bce0c0; }
+    .status-partial     { background: #fff8e1; color: #7a5a00; border-color: #ffe082; }
+    .status-drafting    { background: #e3f2fd; color: #1c4d80; border-color: #cae0f5; }
+    .status-planned     { background: #f3e5f5; color: #5c2d7e; border-color: #d9b8ed; }
+    .status-not-applicable { background: #f5f5f5; color: #666; border-color: #ddd; }
+    .status-deferred    { background: #fff3e0; color: #a04200; border-color: #ffd9a8; }
+    .status-superseded  { background: #fbe9e7; color: #7d1e10; border-color: #f3c1bc; }
 
-  .mermaid {
-    background: #fafafa;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 16px;
-    margin: 12px 0;
-    overflow: auto;
-  }
-  .mermaid-legend { font-size: 12px; color: #555; margin-top: 4px; }
-  .mermaid-legend code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; }
+    /* ── Collapsible analytics panels ── */
+    details.oblig-panel { border: 1px solid var(--neutral-rule); border-radius: 6px; margin-top: 20px; }
+    details.oblig-panel summary {
+      padding: 10px 14px; font-weight: 600; font-size: 13.5px; cursor: pointer;
+      list-style: none; display: flex; align-items: center; gap: 8px;
+      color: var(--text-primary);
+    }
+    details.oblig-panel summary::before { content: "▶"; font-size: 10px; color: var(--neutral-stone); transition: transform .15s; }
+    details.oblig-panel[open] summary::before { transform: rotate(90deg); }
+    details.oblig-panel summary::-webkit-details-marker { display: none; }
+    details.oblig-panel .panel-body { padding: 0 14px 14px; }
 
-  .oblig-findings-summary { font-size: 13px; color: #444; margin: 8px 0 12px; }
-  .oblig-findings-summary b { font-weight: 600; }
-</style>
+    /* ── Summary cards ── */
+    .oblig-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
+    .oblig-card {
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      border-radius: 5px; padding: 10px 12px;
+    }
+    .oblig-card-num { font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--text-primary); }
+    .oblig-card-lbl { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
+    .oblig-card-sub { font-size: 10.5px; color: var(--neutral-stone); margin-top: 2px; }
+
+    .oblig-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .oblig-chip {
+      display: inline-flex; align-items: baseline; gap: 5px;
+      padding: 3px 8px; border-radius: 10px;
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      font-size: 11.5px;
+    }
+    .oblig-chip b { font-weight: 600; }
+
+    /* ── Mermaid map ── */
+    .mermaid {
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      border-radius: 5px; padding: 14px; overflow: auto; margin-top: 10px;
+    }
+
+    /* ── Findings ── */
+    .oblig-findings-summary { font-size: 13px; color: var(--text-secondary); margin: 10px 0 12px; }
+    .oblig-findings-summary b { font-weight: 600; }
+
+    /* ── Drawer ── */
+    .oblig-drawer-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 200;
+    }
+    .oblig-drawer-overlay.open { display: block; }
+    .oblig-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(540px, 100vw);
+      background: var(--surface-base); box-shadow: -4px 0 24px rgba(0,0,0,.15);
+      display: flex; flex-direction: column; z-index: 201;
+      transform: translateX(100%); transition: transform .2s ease;
+    }
+    .oblig-drawer-overlay.open .oblig-drawer { transform: translateX(0); }
+    .oblig-drawer-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 16px 20px 12px; border-bottom: 1px solid var(--neutral-rule); gap: 12px;
+    }
+    .oblig-drawer-head h3 { margin: 0; font-size: 14px; word-break: break-all; font-family: var(--font-mono); }
+    .oblig-drawer-close {
+      background: none; border: none; cursor: pointer; font-size: 18px; color: var(--neutral-stone);
+      padding: 0 4px; flex-shrink: 0; line-height: 1;
+    }
+    .oblig-drawer-close:hover { color: var(--text-primary); }
+    .oblig-drawer-body { overflow-y: auto; padding: 16px 20px; flex: 1; }
+    .oblig-drawer-body dl { margin: 0; }
+    .oblig-drawer-body dt {
+      font-size: 10.5px; font-weight: 600; color: var(--neutral-stone); text-transform: uppercase;
+      letter-spacing: .04em; margin-top: 14px;
+    }
+    .oblig-drawer-body dt:first-child { margin-top: 0; }
+    .oblig-drawer-body dd {
+      margin: 3px 0 0 0; font-size: 13px; color: var(--text-primary); line-height: 1.5;
+      word-break: break-word;
+    }
+    .oblig-drawer-body dd code { font-size: 11.5px; background: var(--surface-raised); padding: 1px 5px; border-radius: 3px; }
+  </style>
 </head>
 <body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Obligations · register + Principle-6 citation map</span>
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+        <span class="shell-wordmark-suffix">Obligations</span>
+      </a>
+      <div class="shell-meta">
+        <span data-provenance-badge="page-top" data-provenance-source="/api/obligations" aria-label="Provenance badge"></span>
+        <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh data">Refresh</button>
+        <span class="shell-as-of" id="lastUpdated" aria-live="polite">connecting…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/obligations"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/agents.html">Agents</a>
-      <a class="nav-link" href="/policies.html">Policies</a>
-      <a class="nav-link" href="/activity.html">Activity</a>
-      <a class="nav-link" href="/health.html">Health</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Department navigation">
+      <div data-shell-dept-nav></div>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">Obligations register</h1>
+        <p class="shell-page-lede">
+          Mira's curated map of every statutory and policy obligation —
+          Reg&nbsp;→&nbsp;Policy&nbsp;→&nbsp;Procedure&nbsp;→&nbsp;System&nbsp;Capability.
+          Source: <code>Regulations/_obligations-register.md</code>, parsed live.
+        </p>
+      </div>
+
+      <!-- ── Filter bar ── -->
+      <div class="oblig-filter-bar">
+        <div class="fc">
+          <label for="filterFamily">Domain</label>
+          <select id="filterFamily"><option value="">All domains</option></select>
+        </div>
+        <div class="fc">
+          <label for="filterBind">Bind</label>
+          <select id="filterBind">
+            <option value="">Any</option>
+            <option value="CORPORATE">CORPORATE</option>
+            <option value="LICENCE">LICENCE</option>
+            <option value="COMMENCEMENT">COMMENCEMENT</option>
+            <option value="CONDITIONAL">CONDITIONAL</option>
+            <option value="UNCLASSIFIED">UNCLASSIFIED</option>
+          </select>
+        </div>
+        <div class="fc">
+          <label for="filterStatus">Status</label>
+          <select id="filterStatus">
+            <option value="">Any</option>
+            <option value="IN FORCE">IN FORCE</option>
+            <option value="PARTIAL">PARTIAL</option>
+            <option value="PLANNED">PLANNED</option>
+            <option value="DRAFTING">DRAFTING</option>
+            <option value="SUPERSEDED">SUPERSEDED</option>
+          </select>
+        </div>
+        <div class="fc">
+          <label for="filterChain">Chain</label>
+          <select id="filterChain">
+            <option value="">Any</option>
+            <option value="COMPLETE">Complete</option>
+            <option value="GAP">Has gap</option>
+            <option value="NO-FULFILMENT">No policy</option>
+            <option value="NO-OWNER">No owner</option>
+          </select>
+        </div>
+        <div class="fc fc-wide">
+          <label for="filterSearch">Search</label>
+          <input type="search" id="filterSearch" placeholder="ID, citation, requirement, owner…" autocomplete="off">
+        </div>
+        <span class="oblig-filter-count" id="obligListSub"></span>
+      </div>
+
+      <!-- ── Main obligations table ── -->
+      <div class="oblig-table-wrap">
+        <table class="oblig-table" id="obligTable" aria-label="Obligations register">
+          <thead>
+            <tr>
+              <th style="width:8em;">ID</th>
+              <th style="width:6em;">Bind</th>
+              <th style="width:12em;">Regulation</th>
+              <th>Requirement</th>
+              <th style="width:18em;">Fulfilment policy</th>
+              <th style="width:8em;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="obligBody">
+            <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--neutral-stone)">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Analytics (collapsible) ── -->
+      <details class="oblig-panel" id="panelSummary">
+        <summary>Register at a glance <span id="obligSummarySub" style="font-weight:400;font-size:12px;color:var(--neutral-stone);margin-left:6px;"></span></summary>
+        <div class="panel-body">
+          <div class="oblig-summary" id="obligSummary"></div>
+          <p style="margin:14px 0 2px;font-size:12.5px;font-weight:600;">By source-instrument family</p>
+          <div class="oblig-chips" id="obligFamilyList"></div>
+          <p style="margin:12px 0 2px;font-size:12.5px;font-weight:600;">By bind state</p>
+          <div class="oblig-chips" id="obligBindList"></div>
+          <p style="margin:12px 0 2px;font-size:12.5px;font-weight:600;">By status</p>
+          <div class="oblig-chips" id="obligStatusList"></div>
+        </div>
+      </details>
+
+      <details class="oblig-panel" id="panelFindings">
+        <summary>Citation-integrity findings <span id="obligFindingsBadge" style="font-weight:400;font-size:12px;color:var(--neutral-stone);margin-left:6px;"></span></summary>
+        <div class="panel-body">
+          <p style="font-size:12.5px;color:var(--text-secondary);margin:10px 0 8px;">
+            Obligations whose Reg&nbsp;→&nbsp;Policy&nbsp;→&nbsp;Procedure&nbsp;→&nbsp;Capability chain is incomplete.
+            Resolving these is part of Mira's register-maintenance cadence and Vera's continuous-controls programme.
+          </p>
+          <div class="oblig-findings-summary" id="obligFindingsSummary"></div>
+          <div class="oblig-table-wrap">
+            <table class="oblig-table" id="obligFindingsTable" aria-label="Citation-integrity findings">
+              <thead>
+                <tr>
+                  <th style="width:7em;">ID</th>
+                  <th style="width:16em;">Citation</th>
+                  <th>Requirement</th>
+                  <th style="width:12em;">Gap</th>
+                </tr>
+              </thead>
+              <tbody id="obligFindingsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+
+      <details class="oblig-panel" id="panelMap">
+        <summary>Principle&nbsp;2 citation map <span style="font-weight:400;font-size:12px;color:var(--neutral-stone);margin-left:6px;">Reg → Policy → Procedure → Capability</span></summary>
+        <div class="panel-body">
+          <p style="font-size:12.5px;color:var(--text-secondary);margin:10px 0 6px;">
+            Representative slice — one subgraph per source-instrument family.
+            Dashed edges = chain incomplete.
+          </p>
+          <div class="mermaid" id="obligMap">flowchart LR
+  subgraph LOAD["loading…"]
+    L[expand panel to render]
+  end
+</div>
+        </div>
+      </details>
+
+    </main>
+  </div>
+
+  <!-- Detail drawer -->
+  <div class="oblig-drawer-overlay" id="drawerOverlay">
+    <div class="oblig-drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="oblig-drawer-head">
+        <h3 id="drawerTitle"></h3>
+        <button class="oblig-drawer-close" id="drawerClose" aria-label="Close">&#x2715;</button>
+      </div>
+      <div class="oblig-drawer-body">
+        <dl id="drawerBody"></dl>
+      </div>
     </div>
   </div>
-</header>
 
-<div id="failureBanner" class="failure-banner" hidden></div>
-
-<main id="app">
-
-  <section class="band">
-    <h1>Obligations register</h1>
-    <p class="muted">
-      Mira's curated graph of statutory and policy obligations the bank discharges. Every row maps an external requirement
-      (regulator, standard, internal RAS) to the policy that fulfils it — the operational expression of CLAUDE.md
-      Principle 2 (every action traces to a source) and Principle 6 (the upward chain
-      <code>Regulation OR Bank Objective → Policy → Procedure → System Capability</code>).
-      Source: <code>Regulations/_obligations-register.md</code>, parsed live by
-      <code>prototype/dashboard/obligations-view.ts</code>.
-    </p>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Register at a glance</h2>
-      <span class="band-sub muted" id="obligSummarySub"></span>
-    </div>
-    <div class="oblig-summary" id="obligSummary"></div>
-    <h3 style="margin: 18px 0 4px; font-size: 14px;">By source-instrument family</h3>
-    <div class="oblig-family-list" id="obligFamilyList"></div>
-    <h3 style="margin: 14px 0 4px; font-size: 14px;">By bind state</h3>
-    <p class="muted" style="font-size: 12px; margin: 0 0 4px;">
-      Bind taxonomy: <b>CORPORATE</b> (Companies-Act / employment / contracting obligations that bind from
-      incorporation) · <b>LICENCE</b> (banking-specific obligations that bind from SARB licence-grant) ·
-      <b>COMMENCEMENT</b> (obligations that bind from commencement of trading) ·
-      <b>CONDITIONAL</b> (binds only when the relevant trigger fires — e.g. FAIS once an FSP licence is held).
-      Per memory <code>project_rules_bind_at_commencement</code>.
-    </p>
-    <div class="oblig-bind-list" id="obligBindList"></div>
-    <h3 style="margin: 14px 0 4px; font-size: 14px;">By register status</h3>
-    <div class="oblig-status-list" id="obligStatusList"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Principle-6 citation map</h2>
-      <span class="band-sub muted">Reg → Policy → Procedure → System Capability — grouped by source-instrument family</span>
-    </div>
-    <p class="muted">
-      Visual rendering of the upward chain across a representative slice of obligations. Each family node fans out to
-      its registered obligations; each obligation fans out to its linked-policy(ies); the policy / procedure / capability
-      lanes complete the chain. Where an obligation has no fulfilment policy named, it surfaces as a <em>gap</em> on the
-      Citation-integrity findings panel below — the "no orphans" rule of Principle 6 made visible.
-      Click-through interactivity is deferred to v1; the v0 map is dense but static.
-    </p>
-    <div class="mermaid" id="obligMap">flowchart LR
-      subgraph LOAD["loading…"]
-        L[parsing obligations register]
-      end
-    </div>
-    <p class="mermaid-legend">
-      <strong>Legend.</strong>
-      <code>Yellow</code> source-instrument family ·
-      <code>Blue</code> obligation (ORG-* id) ·
-      <code>Green</code> linked policy ·
-      <code>Pink</code> procedure layer (cited where named in the policy register) ·
-      <code>Purple</code> system-capability layer (substrate-bound).
-      Dashed edges = chain incomplete (the gap is the finding).
-    </p>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Filter</h2>
-      <span class="band-sub muted">Cumulative — all filters apply.</span>
-    </div>
-    <div class="oblig-controls">
-      <div class="ctrl">
-        <label for="filterFamily">Source family</label>
-        <select id="filterFamily"><option value="">All families</option></select>
-      </div>
-      <div class="ctrl">
-        <label for="filterBind">Bind state</label>
-        <select id="filterBind">
-          <option value="">Any bind</option>
-          <option value="CORPORATE">CORPORATE</option>
-          <option value="LICENCE">LICENCE</option>
-          <option value="COMMENCEMENT">COMMENCEMENT</option>
-          <option value="CONDITIONAL">CONDITIONAL</option>
-          <option value="UNCLASSIFIED">UNCLASSIFIED</option>
-        </select>
-      </div>
-      <div class="ctrl">
-        <label for="filterChain">Citation-chain state</label>
-        <select id="filterChain">
-          <option value="">All</option>
-          <option value="COMPLETE">COMPLETE (no gaps)</option>
-          <option value="GAP">GAP (one or more)</option>
-          <option value="NO-FULFILMENT">No fulfilment policy</option>
-          <option value="NO-OWNER">No owner</option>
-          <option value="NO-FAMILY">No source-family match</option>
-        </select>
-      </div>
-      <div class="ctrl">
-        <label for="filterSearch">Search</label>
-        <input type="search" id="filterSearch" placeholder="ID, citation, requirement, owner…">
-      </div>
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Obligations</h2>
-      <span class="band-sub" id="obligListSub"></span>
-    </div>
-    <div class="oblig-table-wrap">
-      <table class="oblig-table" id="obligTable">
-        <thead>
-          <tr>
-            <th style="width: 7em;">URN</th>
-            <th>Citation</th>
-            <th>Requirement</th>
-            <th>Linked policy(ies)</th>
-            <th style="width: 8em;">Family</th>
-            <th style="width: 5em;">Bind</th>
-            <th style="width: 6em;">Source</th>
-            <th style="width: 7em;">Status</th>
-            <th style="width: 9em;">Chain</th>
-          </tr>
-        </thead>
-        <tbody id="obligBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Citation-integrity findings</h2>
-      <span class="band-sub muted">Principle 6 — "no orphans" rule</span>
-    </div>
-    <p class="muted">
-      Obligations whose Reg → Policy → Procedure → System-Capability chain is incomplete at the register layer.
-      Resolving these is part of Mira's regulatory-change-management cadence and Vera's continuous-controls assurance
-      programme. Substrate gap surfaced separately: the obligations register currently does not author the procedure
-      and system-capability columns directly — they are inferred from the linked-policy column. v1 of this page should
-      ingest <code>Procedures/_index.md</code> and the runtime handler-metadata to close that loop.
-    </p>
-    <div class="oblig-findings-summary" id="obligFindingsSummary"></div>
-    <div class="oblig-table-wrap">
-      <table class="oblig-table" id="obligFindingsTable">
-        <thead>
-          <tr>
-            <th style="width: 7em;">URN</th>
-            <th>Citation</th>
-            <th>Requirement</th>
-            <th style="width: 12em;">Gap</th>
-          </tr>
-        </thead>
-        <tbody id="obligFindingsBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-</main>
-
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script src="/obligations.js"></script>
-<!-- Shared refresh + shell-back-link injection (Anya / Linnea v0). -->
-<script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  <script src="/_failure-banner.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="/obligations.js"></script>
+  <script src="/_shell.js" defer onerror="this.remove();"></script>
 </body>
 </html>
