@@ -11,21 +11,21 @@
 |---|---|---|---|
 | Risk Management Framework | `procedures-rmf-governance.md` | Helena | PLANNED |
 | Governance Framework | `procedures-board-papers.md` | Owen | PLANNED |
-| Delegation of Authority | `delegation-of-authority.md` | Owen + Devon | PLANNED |
+| Delegation of Authority | [`delegation-of-authority.md`](by-policy/delegation-of-authority.md) (PROC-GV-DOA-01 — four authority levels; Board-reserved matters; agent Level 4 limits; `EscalationRequired` path) | Owen + Devon | **STUB** |
 
 ## Risk
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Credit Risk Policy | `credit-origination.md` | Helena (future Head of Credit) | PLANNED |
-| Market Risk Policy | `market-risk-monitoring.md` | Helena (Rohan) | PLANNED |
+| Market Risk Policy | [`market-risk-monitoring.md`](by-policy/market-risk-monitoring.md) (PROC-RISK-MRM-01 — daily VaR/ES limit monitoring, FRTB back-testing, PLA test, prop-trading attestation) | Helena (CRO, governance) · Rohan (market risk quant, engineering) | **STUB** |
 | Liquidity Risk Management Policy | [`capital-ratio-monitoring.md`](by-policy/capital-ratio-monitoring.md) (covers LCR / NSFR) | Camille + Eitan | **POPULATED** |
 | Liquidity Risk Management Policy | `intraday-liquidity-funding.md` | Eitan | PLANNED |
 | IRRBB Policy | `irrbb-measurement.md` | Helena + Eitan | PLANNED |
-| Operational Risk Policy | [`rcsa-cycle.md`](by-policy/rcsa-cycle.md) | Helena + Devon | **STUB** |
+| Operational Risk Policy | [`rcsa-cycle.md`](by-policy/rcsa-cycle.md) (PROC-RISK-RCSA-01) | Helena + Devon | **STUB** |
 | Operational Resilience Policy | `severe-but-plausible-test.md` | Devon | PLANNED |
 | Model Risk Policy | [`model-validation.md`](by-policy/model-validation.md) | Helena (independent validation) | **STUB** (Nadia cross-link; awaiting Helena population — Slice D of validation-methodology library v0) |
-| Stress Testing Policy | `stress-test-cycle.md` | Helena | PLANNED |
+| Stress Testing Policy | [`stress-test-cycle.md`](by-policy/stress-test-cycle.md) (PROC-RISK-ST-01 — annual baseline + adverse + reverse stress; ICAAP/ILAAP; Recovery Plan feed) | Helena (CRO, governance) · Camille (CFO, governance) | **STUB** |
 | Climate-Related Risk | `climate-scenario-analysis.md` | Helena (with S&E) | PLANNED |
 
 ## Compliance & financial crime
@@ -33,15 +33,15 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | RMCP | `rmcp-annual-attestation.md` | Zara | PLANNED |
-| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) | Zara (Mira) | **STUB** |
+| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) (PROC-FC-TM-01 — continuous rule-engine scoring, alert triage, MLRO escalation) | Zara (Mira) | **STUB** |
 | Sanctions Policy | [`sanctions-screening.md`](by-policy/sanctions-screening.md) | Zara (Mira) + Senna | **POPULATED** |
 | Sanctions Policy | `sanctions-override.md` | Zara | PLANNED |
 | KYC / CDD / EDD Policy | [`kyc-onboarding.md`](by-policy/kyc-onboarding.md) | Zara (Mira) | **POPULATED** |
-| KYC / CDD / EDD Policy | `kyc-recurring.md` | Zara (Mira) | PLANNED |
+| KYC / CDD / EDD Policy | [`kyc-recurring.md`](by-policy/kyc-recurring.md) (PROC-FC-KYC-R-01 — annual/6-monthly/event-triggered CDD refresh; UBO re-walk; EDD for high-risk/PEP; MLRO escalation; `KYCRefreshCompleted` chain) | Zara (Mira) | **STUB** |
 | KYC / CDD / EDD Policy | `kyc-continuous.md` | Zara (Mira) | PLANNED |
 | Conduct of Business / TCF Policy | `complaints-handling.md` | Zara + Niko | PLANNED |
 | FATCA / CRS Policy | `fatca-crs-annual-submission.md` | Yael (Mira) | PLANNED |
-| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) | Zara (MLRO) | **STUB** |
+| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **STUB** |
 | Sanctions / FIC | `tpr-filing.md` | Zara (MLRO) | PLANNED |
 | Sanctions / FIC | `ctr-filing.md` | Zara (MLRO) | PLANNED |
 | RMCP / Sanctions / FIC | [`fic-submission-cycle.md`](by-policy/fic-submission-cycle.md) | Triple-hatted compliance lead (MLRO + FIC CO + IO) — Zara (governance) + Mira (engineering) | **DRAFT v0.1** (post D-THIN-HUMAN-LAYER-MINIMUM) |
@@ -62,7 +62,7 @@
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Information Security Policy | [`access-provisioning.md`](by-policy/access-provisioning.md) (PROC-IS-AP-01 — joiner / mover / leaver lifecycle; PAM sub-flow; quarterly access review; orphan-access revocation) | Senna (CISO) + Devon (COO) | **STUB** |
+| Information Security Policy | [`access-provisioning.md`](by-policy/access-provisioning.md) (PROC-IS-AP-01) | Senna + Devon | **STUB** |
 | Information Security Policy | `key-rotation.md` | Senna | PLANNED |
 | Cyber Resilience Policy | [`incident-response.md`](by-policy/incident-response.md) (IR command) | Senna + Devon + Iris + Zara | **POPULATED** |
 | Cyber Resilience Policy | `cyber-incident-classification.md` (severity tiering) | Senna + Iris | PLANNED |
@@ -80,7 +80,7 @@
 | Cloud Computing | `cloud-residency-attestation.md` | Devon + Senna | PLANNED |
 | BCP / DR | `dr-test-execution.md` | Devon | PLANNED |
 | BCP / DR | `crisis-management-activation.md` | Devon + Helena | PLANNED |
-| Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01 — retention schedule review; disposal candidate identification; legal-hold check; disposal authorisation + execution; POPIA purpose-limitation) | Owen (Company Secretary) + Devon (COO) | **STUB** |
+| Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01) | Owen + Devon | **STUB** |
 | Records Management | `legal-hold.md` | Imani (with Owen) | PLANNED |
 | Change Management + Secure SDLC + InfoSec (Atlas Step 2 substrate) | [`agent-runtime-deploy.md`](by-policy/agent-runtime-deploy.md) | Atlas · Senna · Rashida · Vera (audit) | **POPULATED** |
 | Change Management + Secure SDLC + D-NEW-PRODUCT-APPROVAL-POLICY (cross-cutting schema discipline) | [`event-schema-evolution.md`](by-policy/event-schema-evolution.md) (PROC-PLAT-EV-EVOL-01 — schema amendment after events exist in store) | Atlas · Anya · Senna · Mira (citation gate) · Vera (audit) | **STUB** |
@@ -108,7 +108,7 @@
 | Accounting Policies (IFRS) — IFRS 10 consolidation policy (planned by Camille; sub-policy of Accounting Policies (IFRS) v0.1 STUB + Financial Reporting & Disclosure v0.1 STUB) | [`ifrs10-consolidation-cycle.md`](by-policy/ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01 — three-entity group consolidation per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER) | Bea · Camille (governance sign-off) | **STUB** |
 | Accounting Policies (IFRS) | [`balance-sheet-substantiation.md`](by-policy/balance-sheet-substantiation.md) (PROC-FIN-BSS-01 — monthly per-account source-event trace + CFO sign-off + `BalanceSheetSubstantiationCompleted` event) | Bea (Camille sign-off) | **DRAFT v1.0** |
 | Accounting Policies (IFRS) | `month-end-close.md` (broader period-close orchestration — balance sheet substantiation is a named step within it; see PROC-FIN-BSS-01) | Camille (Bea) | PLANNED |
-| Regulatory Reporting Policy | [`ba-return-generation.md`](by-policy/ba-return-generation.md) | Camille (Bea) | **STUB** |
+| Regulatory Reporting Policy | [`ba-return-generation.md`](by-policy/ba-return-generation.md) (PROC-FIN-BA-01) | Camille (Bea) | **STUB** |
 | Provisioning / IFRS 9 ECL Policy v0.1 (STUB) + RAS (in-force) | [`ecl-stage-projection-refresh.md`](by-policy/ecl-stage-projection-refresh.md) | Rohan · Bea | **POPULATED** |
 | IFRS 9 ECL | `ecl-staging-cycle.md` | Helena (Bea) | PLANNED |
 | Tax | `corporate-tax-filing.md` | Yael | PLANNED |
@@ -212,8 +212,8 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-| **STUB** | +2 (2026-05-13) | **Records retention & disposal (PROC-RM-RD-01; Owen + Devon)** · **Access provisioning JML (PROC-IS-AP-01; Senna + Devon)** — plus earlier stubs from prior sessions |
-| PLANNED | ~62 | Drafting queue under domain leads, coordinated by Owen |
+| **STUB** | 4 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** |
+| PLANNED | ~60 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~81** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
