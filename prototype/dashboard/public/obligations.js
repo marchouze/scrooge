@@ -164,13 +164,48 @@ function renderSummary() {
   `;
 }
 
-function chipBtn(filterId, k, v) {
-  return `<button class="oblig-chip oblig-chip--btn" data-filter="${filterId}" data-value="${esc(k)}"><b>${esc(k)}</b><span class="muted">${v}</span></button>`;
-}
+// ---------------------------------------------------------------------------
+// Chip rendering helpers
+// ---------------------------------------------------------------------------
 
-function wireChips(container) {
+function renderChips(container, entries, activeValue, onDrill, onClear) {
+  container.innerHTML = entries
+    .map(([k, v]) => {
+      const isActive = activeValue === k;
+      const resetBtn = isActive
+        ? ` <span class="oblig-chip-reset" role="button" tabindex="0" title="Clear filter" aria-label="Clear filter">×</span>`
+        : "";
+      return `<button
+        type="button"
+        class="oblig-chip oblig-chip--btn${isActive ? " oblig-chip--active" : ""}"
+        data-chip-key="${esc(k)}"
+        aria-pressed="${isActive ? "true" : "false"}"
+        aria-label="Filter by ${esc(k)}"
+      ><b>${esc(k)}</b><span class="oblig-chip-muted">${v}</span>${resetBtn}</button>`;
+    })
+    .join("");
+
   for (const btn of container.querySelectorAll(".oblig-chip--btn")) {
-    btn.addEventListener("click", () => drillTo(btn.dataset.filter, btn.dataset.value));
+    btn.addEventListener("click", (e) => {
+      const resetSpan = e.target.closest(".oblig-chip-reset");
+      if (resetSpan) {
+        e.stopPropagation();
+        onClear();
+        return;
+      }
+      const key = btn.dataset.chipKey;
+      onDrill(key);
+    });
+    const reset = btn.querySelector(".oblig-chip-reset");
+    if (reset) {
+      reset.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          onClear();
+        }
+      });
+    }
   }
 }
 
@@ -182,31 +217,82 @@ function renderHistograms() {
   const act = $("obligActivityList");
   const prod = $("obligProductList");
 
+  const activeFam = $("filterFamily").value;
+  const activeBind = $("filterBind").value;
+  const activeStat = $("filterStatus").value;
+  const activeActivity = $("filterActivity")?.value ?? "";
+  const activeProd = $("filterProduct")?.value ?? "";
+
   const famSorted = Object.entries(view.familyCounts ?? {}).sort((a, b) => b[1] - a[1]);
-  fam.innerHTML = famSorted.map(([k, v]) => chipBtn("filterFamily", k, v)).join("");
-  wireChips(fam);
+  renderChips(
+    fam,
+    famSorted,
+    activeFam,
+    (key) => drillToFamily(key),
+    () => {
+      $("filterFamily").value = "";
+      refresh();
+      renderHistograms();
+    },
+  );
 
   const bindOrder = ["CORPORATE", "LICENCE", "COMMENCEMENT", "CONDITIONAL", "UNCLASSIFIED"];
   const bindSorted = Object.entries(view.bindCounts ?? {}).sort(
     (a, b) => bindOrder.indexOf(a[0]) - bindOrder.indexOf(b[0]),
   );
-  bind.innerHTML = bindSorted.map(([k, v]) => chipBtn("filterBind", k, v)).join("");
-  wireChips(bind);
+  renderChips(
+    bind,
+    bindSorted,
+    activeBind,
+    (key) => drillToBind(key),
+    () => {
+      $("filterBind").value = "";
+      refresh();
+      renderHistograms();
+    },
+  );
 
   const statSorted = Object.entries(view.statusCounts ?? {}).sort((a, b) => b[1] - a[1]);
-  stat.innerHTML = statSorted.map(([k, v]) => chipBtn("filterStatus", k, v)).join("");
-  wireChips(stat);
+  renderChips(
+    stat,
+    statSorted,
+    activeStat,
+    (key) => drillToStatus(key),
+    () => {
+      $("filterStatus").value = "";
+      refresh();
+      renderHistograms();
+    },
+  );
 
   if (act) {
     const actSorted = Object.entries(view.activityCounts ?? {}).sort((a, b) => b[1] - a[1]);
-    act.innerHTML = actSorted.map(([k, v]) => chipBtn("filterActivity", k, v)).join("");
-    wireChips(act);
+    renderChips(
+      act,
+      actSorted,
+      activeActivity,
+      (key) => drillToActivity(key),
+      () => {
+        $("filterActivity").value = "";
+        refresh();
+        renderHistograms();
+      },
+    );
   }
 
   if (prod) {
     const prodSorted = Object.entries(view.productFamilyCounts ?? {}).sort((a, b) => b[1] - a[1]);
-    prod.innerHTML = prodSorted.map(([k, v]) => chipBtn("filterProduct", k, v)).join("");
-    wireChips(prod);
+    renderChips(
+      prod,
+      prodSorted,
+      activeProd,
+      (key) => drillToProduct(key),
+      () => {
+        $("filterProduct").value = "";
+        refresh();
+        renderHistograms();
+      },
+    );
   }
 }
 
@@ -545,32 +631,54 @@ function closeDrawer() {
 }
 
 // ---------------------------------------------------------------------------
-// Regulation drill-down
+// Drill-down helpers
 // ---------------------------------------------------------------------------
 
-function drillTo(filterId, value) {
-  const sel = $(filterId);
+function drillToBind(bind) {
+  const sel = $("filterBind");
   if (!sel) return;
-  let found = false;
-  for (const opt of sel.options) {
-    if (opt.value === value) {
-      found = true;
-      break;
-    }
-  }
-  if (!found) {
-    const opt = document.createElement("option");
-    opt.value = value;
-    opt.textContent = value;
-    sel.appendChild(opt);
-  }
-  sel.value = value;
+  sel.value = bind;
   refresh();
+  renderHistograms(); // sync active chip state
   $("obligTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function drillToFamily(family) {
-  drillTo("filterFamily", family);
+function drillToStatus(status) {
+  const sel = $("filterStatus");
+  if (!sel) return;
+  let bestVal = "";
+  for (const opt of sel.options) {
+    if (!opt.value) continue;
+    if (
+      status.toUpperCase().includes(opt.value.toUpperCase()) ||
+      opt.value.toUpperCase().includes(status.toUpperCase())
+    ) {
+      bestVal = opt.value;
+      break;
+    }
+  }
+  sel.value = bestVal || status;
+  refresh();
+  renderHistograms(); // sync active chip state
+  $("obligTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function drillToActivity(activity) {
+  const sel = $("filterActivity");
+  if (!sel) return;
+  sel.value = activity;
+  refresh();
+  renderHistograms(); // sync active chip state
+  $("obligTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function drillToProduct(product) {
+  const sel = $("filterProduct");
+  if (!sel) return;
+  sel.value = product;
+  refresh();
+  renderHistograms(); // sync active chip state
+  $("obligTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // ---------------------------------------------------------------------------
@@ -619,14 +727,15 @@ async function load() {
 }
 
 function wireFilters() {
-  for (const id of [
-    "filterFamily",
-    "filterBind",
-    "filterStatus",
-    "filterChain",
-    "filterActivity",
-    "filterProduct",
-  ]) {
+  // Chip-synced filters: re-render histograms so active chip state tracks dropdown
+  for (const id of ["filterFamily", "filterBind", "filterStatus"]) {
+    $(id).addEventListener("change", () => {
+      refresh();
+      renderHistograms();
+    });
+  }
+  // Other filters: just refresh the table
+  for (const id of ["filterChain", "filterActivity", "filterProduct"]) {
     $(id).addEventListener("change", refresh);
   }
   $("filterSearch").addEventListener("input", refresh);
