@@ -42,8 +42,8 @@
 | Conduct of Business / TCF Policy | `complaints-handling.md` | Zara + Niko | PLANNED |
 | FATCA / CRS Policy | `fatca-crs-annual-submission.md` | Yael (Mira) | PLANNED |
 | Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **STUB** |
-| Sanctions / FIC | `tpr-filing.md` | Zara (MLRO) | PLANNED |
-| Sanctions / FIC | `ctr-filing.md` | Zara (MLRO) | PLANNED |
+| Sanctions / FIC | [`tpr-filing.md`](by-policy/tpr-filing.md) (PROC-FC-TPR-01 — MLRO determination, immediate property freeze, goAML TPR submission, DPCI notification, tipping-off controls) | Zara (MLRO) | **STUB** |
+| Sanctions / FIC | [`ctr-filing.md`](by-policy/ctr-filing.md) (PROC-FC-CTR-01 — threshold detection, structuring aggregation, goAML batch submission, 15-day timeliness) | Zara (MLRO) · Mira | **STUB** |
 | RMCP / Sanctions / FIC | [`fic-submission-cycle.md`](by-policy/fic-submission-cycle.md) | Triple-hatted compliance lead (MLRO + FIC CO + IO) — Zara (governance) + Mira (engineering) | **DRAFT v0.1** (post D-THIN-HUMAN-LAYER-MINIMUM) |
 
 ## Privacy & data protection
@@ -212,8 +212,8 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-| **STUB** | 6 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** |
-| PLANNED | ~58 | Drafting queue under domain leads, coordinated by Owen |
+| **STUB** | 10 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **CTR filing (PROC-FC-CTR-01, 2026-05-13)** · **TPR filing (PROC-FC-TPR-01, 2026-05-13)** · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-13)** · **DR test execution (PROC-OR-DR-01, 2026-05-13)** |
+| PLANNED | ~54 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~81** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
