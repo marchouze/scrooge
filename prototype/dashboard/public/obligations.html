@@ -118,6 +118,29 @@
     }
     .oblig-chip b { font-weight: 600; }
 
+    /* ── Clickable chip buttons ── */
+    .oblig-chip--btn {
+      cursor: pointer; font-family: inherit;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .oblig-chip--btn:hover {
+      background: var(--surface-hover); border-color: var(--neutral-stone);
+    }
+    .oblig-chip--btn:focus-visible {
+      outline: 2px solid var(--accent-ink); outline-offset: 2px;
+    }
+    .oblig-chip--btn.oblig-chip--active {
+      background: var(--accent-ink); border-color: var(--accent-ink);
+      color: #fff;
+    }
+    .oblig-chip--btn.oblig-chip--active b { color: #fff; }
+    .oblig-chip--btn.oblig-chip--active .oblig-chip-muted { color: rgba(255,255,255,0.75); }
+    .oblig-chip-reset {
+      margin-left: 3px; font-size: 10px; font-weight: 700; opacity: 0.85;
+      line-height: 1; cursor: pointer; vertical-align: middle;
+    }
+    .oblig-chip-reset:hover { opacity: 1; }
+
     /* ── Mermaid map ── */
     .mermaid {
       background: var(--surface-raised); border: 1px solid var(--neutral-rule);

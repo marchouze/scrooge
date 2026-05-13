@@ -3,35 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Forward obligations · Bank operations dashboard</title>
+<title>Forward obligations · Hoz</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="/_brand.css">
+<link rel="stylesheet" href="/_shell.css">
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/provenance-badge.css">
 <style>
+  /* ── Map semantic tokens (mirrors obligations.html :root block) ── */
+  :root {
+    --surface-base:   #ffffff;
+    --surface-raised: #f5f3ee;
+    --surface-hover:  #edeae4;
+    --neutral-rule:   var(--neutral-mist);
+    --text-primary:   var(--brand-primary);
+    --text-secondary: var(--neutral-graphite);
+  }
+
   /* -------- Tab switcher -------- */
   .fo-tabs {
-    display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px;
+    display: flex; gap: 0; border-bottom: 2px solid var(--neutral-rule); margin-bottom: 20px;
   }
   .fo-tab-btn {
     padding: 9px 20px; border: none; background: none; cursor: pointer;
-    font-size: 13.5px; color: #666; border-bottom: 3px solid transparent;
+    font-size: 13.5px; color: var(--neutral-stone); border-bottom: 3px solid transparent;
     margin-bottom: -2px; font-weight: 500; transition: color 0.15s;
   }
-  .fo-tab-btn:hover { color: #222; }
-  .fo-tab-btn.active { color: #1a6fb8; border-bottom-color: #1a6fb8; }
+  .fo-tab-btn:hover { color: var(--text-primary); }
+  .fo-tab-btn.active { color: var(--accent-ink); border-bottom-color: var(--accent-ink); }
+  .fo-tab-btn:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
 
   /* -------- Horizon selector -------- */
   .fo-toolbar {
     display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
     margin-bottom: 18px;
   }
-  .fo-horizon-label { font-size: 12px; color: #666; }
+  .fo-horizon-label { font-size: 12px; color: var(--neutral-stone); }
   .fo-horizon-btn {
-    padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px;
-    background: #fff; font-size: 12.5px; cursor: pointer; color: #444;
+    padding: 4px 12px; border: 1px solid var(--neutral-rule); border-radius: var(--radius-md);
+    background: var(--surface-base); font-size: 12.5px; cursor: pointer; color: var(--text-secondary);
     transition: background 0.1s;
   }
-  .fo-horizon-btn:hover { background: #f5f5f5; }
-  .fo-horizon-btn.active { background: #1a6fb8; color: #fff; border-color: #1a6fb8; }
+  .fo-horizon-btn:hover { background: var(--surface-hover); }
+  .fo-horizon-btn.active { background: var(--accent-ink); color: #fff; border-color: var(--accent-ink); }
+  .fo-horizon-btn:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
 
   /* -------- Summary cards -------- */
   .fo-summary {
@@ -39,11 +57,11 @@
     gap: 10px; margin-bottom: 20px;
   }
   .fo-card {
-    background: #fff; border: 1px solid #e0e0e0; border-radius: 6px;
+    background: var(--surface-base); border: 1px solid var(--neutral-rule); border-radius: var(--radius-lg);
     padding: 10px 14px;
   }
-  .fo-card-num { font-size: 24px; font-weight: 600; line-height: 1.1; }
-  .fo-card-lbl { font-size: 11.5px; color: #666; margin-top: 4px; }
+  .fo-card-num { font-size: 24px; font-weight: 600; line-height: 1.1; color: var(--text-primary); }
+  .fo-card-lbl { font-size: 11.5px; color: var(--text-secondary); margin-top: 4px; }
 
   /* -------- Planning table -------- */
   .fo-table-wrap { overflow-x: auto; }
@@ -51,37 +69,38 @@
     width: 100%; border-collapse: collapse; font-size: 12.5px;
   }
   table.fo-table th, table.fo-table td {
-    border-bottom: 1px solid #eee; padding: 6px 10px;
+    border-bottom: 1px solid var(--neutral-rule); padding: 6px 10px;
     vertical-align: top; text-align: left;
   }
   table.fo-table th {
-    background: #fafafa; font-weight: 600; color: #444; white-space: nowrap;
+    background: var(--surface-raised); font-weight: 600; color: var(--text-secondary); white-space: nowrap;
   }
-  table.fo-table tr:hover { background: #fafcff; }
+  table.fo-table tr:hover td { background: var(--surface-hover); }
   table.fo-table code {
-    font-size: 11.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px;
+    font-size: 11.5px; background: var(--surface-raised); padding: 1px 4px; border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
   }
 
   /* -------- Certainty badges -------- */
   .cert-badge {
-    display: inline-block; padding: 1px 7px; border-radius: 3px;
+    display: inline-block; padding: 1px 7px; border-radius: var(--radius-sm);
     font-size: 10.5px; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.03em;
   }
   .cert-certain  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
   .cert-probable { background: #fff8e1; color: #7c5e00; border: 1px solid #ffe082; }
-  .cert-estimated { background: #f5f5f5; color: #666; border: 1px solid #e0e0e0; }
+  .cert-estimated { background: var(--surface-raised); color: var(--neutral-stone); border: 1px solid var(--neutral-rule); }
 
   /* -------- Bucket section headers in planning -------- */
   .fo-bucket-header {
-    background: #f7f7f7; font-size: 11.5px; font-weight: 700;
-    color: #555; text-transform: uppercase; letter-spacing: 0.05em;
+    background: var(--surface-raised); font-size: 11.5px; font-weight: 700;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;
   }
   .fo-bucket-header td { padding: 5px 10px !important; }
 
   /* -------- Source badges -------- */
   .src-badge {
-    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm);
     font-size: 10.5px; white-space: nowrap;
     background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5;
   }
@@ -93,38 +112,38 @@
   /* -------- Liquidity view -------- */
   .fo-liq-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .fo-liq-table th, .fo-liq-table td {
-    border-bottom: 1px solid #eee; padding: 6px 10px; vertical-align: top; text-align: left;
+    border-bottom: 1px solid var(--neutral-rule); padding: 6px 10px; vertical-align: top; text-align: left;
   }
-  .fo-liq-table th { background: #fafafa; font-weight: 600; color: #444; }
+  .fo-liq-table th { background: var(--surface-raised); font-weight: 600; color: var(--text-secondary); }
   .fo-liq-table tr.fo-liq-date-row { cursor: pointer; }
-  .fo-liq-table tr.fo-liq-date-row:hover { background: #fafcff; }
+  .fo-liq-table tr.fo-liq-date-row:hover td { background: var(--surface-hover); }
 
-  .flow-positive { color: #2e7d32; font-weight: 600; }
-  .flow-negative { color: #c62828; font-weight: 600; }
-  .flow-zero { color: #999; }
+  .flow-positive { color: var(--semantic-success); font-weight: 600; }
+  .flow-negative { color: var(--semantic-error); font-weight: 600; }
+  .flow-zero { color: var(--neutral-stone); }
 
   .fo-liq-items { display: none; }
   .fo-liq-items.open { display: table-row-group; }
   .fo-liq-items td {
-    background: #fafcff; font-size: 11.5px; padding-left: 28px !important;
-    color: #555;
+    background: var(--surface-raised); font-size: 11.5px; padding-left: 28px !important;
+    color: var(--text-secondary);
   }
 
   /* -------- Empty state -------- */
   .fo-empty {
     padding: 40px 24px; text-align: center;
-    color: #666; font-size: 14px; line-height: 1.6;
+    color: var(--neutral-stone); font-size: 14px; line-height: 1.6;
   }
-  .fo-empty strong { display: block; font-size: 16px; margin-bottom: 8px; color: #333; }
+  .fo-empty strong { display: block; font-size: 16px; margin-bottom: 8px; color: var(--text-primary); }
 
   /* -------- Error state -------- */
   .fo-error {
     padding: 16px; background: #fff3f3; border: 1px solid #f5c6cb;
-    border-radius: 6px; color: #721c24; font-size: 13px;
+    border-radius: var(--radius-md); color: #721c24; font-size: 13px;
   }
 
   /* -------- Loading -------- */
-  .fo-loading { color: #999; font-size: 13px; padding: 20px 0; }
+  .fo-loading { color: var(--neutral-stone); font-size: 13px; padding: 20px 0; }
 </style>
 </head>
 <body>
