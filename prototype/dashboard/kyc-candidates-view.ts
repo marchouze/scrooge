@@ -15,6 +15,7 @@
 //
 // Authors: Anya (Data / analytics engineer, engineering)
 
+import { nowUtc } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { LocalProjector } from "../platform/projections";
 import { kycCandidateProjection } from "../platform/projections/kyc";
@@ -45,9 +46,7 @@ export interface KycCandidatesView {
  *               tests. The projection itself never imports the composition
  *               root.
  */
-export function buildKycCandidatesView(
-  store: Pick<EventStore, "replay">,
-): KycCandidatesView {
+export function buildKycCandidatesView(store: Pick<EventStore, "replay">): KycCandidatesView {
   const projector = new LocalProjector(store as EventStore);
   const stateMap = projector.build(kycCandidateProjection);
 
@@ -64,7 +63,7 @@ export function buildKycCandidatesView(
   };
 
   return {
-    asOf: new Date().toISOString(), // wall-clock: read-time snapshot for dashboard tile
+    asOf: nowUtc(), // clock abstraction: read-time snapshot for dashboard tile
     candidates,
     counts,
   };

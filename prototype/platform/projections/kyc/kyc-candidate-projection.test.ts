@@ -31,7 +31,7 @@ function makeEvent(type: string, payload: Record<string, unknown>): Event {
     type,
     as_of: new Date(1_700_000_000_000 + seq * 1_000).toISOString(),
     entity: "BANK-ZA-001",
-    actor: { type: "agent", id: "anya:test" },
+    actor: { type: "service", id: "anya:test" },
     citations: ["AML-CFT-POLICY-V1"],
     payload,
   };
@@ -163,7 +163,10 @@ describe("kycCandidateProjection — lifecycle", () => {
         screenedBy: "zara:mlro",
       }),
       makeEvent("RiskRatingAssigned", { candidateId: "cand-007", riskRating: "HIGH" }),
-      makeEvent("EddInitiated", { candidateId: "cand-007", deadlineIso: "2026-06-01T00:00:00.000Z" }),
+      makeEvent("EddInitiated", {
+        candidateId: "cand-007",
+        deadlineIso: "2026-06-01T00:00:00.000Z",
+      }),
       makeEvent("EddCompleted", { candidateId: "cand-007", outcome: "PROCEED" }),
     ];
     const state = fold(events);
@@ -216,7 +219,10 @@ describe("kycCandidateProjection — lifecycle", () => {
   test("ClientRejected without prior screening (fast-fail path)", () => {
     const events = [
       makeEvent("ClientCandidateRegistered", { candidateId: "cand-010" }),
-      makeEvent("ClientRejected", { candidateId: "cand-010", reasonCode: "PROHIBITED_JURISDICTION" }),
+      makeEvent("ClientRejected", {
+        candidateId: "cand-010",
+        reasonCode: "PROHIBITED_JURISDICTION",
+      }),
     ];
     const state = fold(events);
     const candidate = state.get("cand-010");
@@ -283,9 +289,7 @@ describe("kycCandidateProjection — idempotency", () => {
     const state2 = fold([...events, ...events]); // replay the same events twice
 
     expect(state2.get("cand-idem-002")?.status).toBe("accepted");
-    expect(state2.get("cand-idem-002")?.acceptedAt).toBe(
-      state1.get("cand-idem-002")?.acceptedAt,
-    );
+    expect(state2.get("cand-idem-002")?.acceptedAt).toBe(state1.get("cand-idem-002")?.acceptedAt);
   });
 
   test("events after ClientAccepted do not change terminal state", () => {

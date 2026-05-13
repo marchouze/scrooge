@@ -99,6 +99,22 @@ function screeningStatus(current: KycCandidateStatus): KycCandidateStatus {
   return current;
 }
 
+/**
+ * Merge an updated candidate state into the Map, returning a new Map.
+ * Using a dedicated helper makes every update site uniform and avoids
+ * `exactOptionalPropertyTypes` spread pitfalls by requiring callers to
+ * pass a fully-typed KycCandidateState.
+ */
+function setCandidate(
+  state: KycCandidateProjectionState,
+  candidateId: string,
+  row: KycCandidateState,
+): KycCandidateProjectionState {
+  const next = new Map(state);
+  next.set(candidateId, row);
+  return next;
+}
+
 // ---------------------------------------------------------------------------
 // Per-event-type reduce handlers (each returns a new or identical Map)
 // ---------------------------------------------------------------------------
@@ -116,19 +132,22 @@ function applyClientCandidateRegistered(
     return state;
   }
 
+  // Build the row explicitly; exactOptionalPropertyTypes requires that
+  // optional fields are only set when their value is defined.
+  const entityType =
+    p.entityType === "natural-person" || p.entityType === "legal-entity" || p.entityType === "trust"
+      ? p.entityType
+      : undefined;
+
   const row: KycCandidateState = {
     candidateId,
     status: "pending",
     registeredAt: e.as_of,
     lastEventAt: e.as_of,
-    ...(typeof p.entityType === "string"
-      ? { entityType: p.entityType as KycCandidateState["entityType"] }
-      : {}),
+    ...(entityType !== undefined ? { entityType } : {}),
   };
 
-  const next = new Map(state);
-  next.set(candidateId, row);
-  return next;
+  return setCandidate(state, candidateId, row);
 }
 
 function applySanctionsClearancePassed(
@@ -143,14 +162,12 @@ function applySanctionsClearancePassed(
   if (!existing) return state; // no registration — drop (substrate-integrity violation)
   if (isTerminal(existing.status)) return state; // terminal — idempotent drop
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  return setCandidate(state, candidateId, {
     ...existing,
     status: screeningStatus(existing.status),
     sanctionsClear: true,
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyPEPScreeningCompleted(
@@ -165,15 +182,16 @@ function applyPEPScreeningCompleted(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state;
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  const isPep = p.isPep === true;
+  const pepTier = p.pepTier === 1 || p.pepTier === 2 || p.pepTier === 3 ? p.pepTier : undefined;
+
+  return setCandidate(state, candidateId, {
     ...existing,
     status: screeningStatus(existing.status),
-    pepStatus: p.isPep === true,
-    ...(typeof p.pepTier === "number" ? { pepTier: p.pepTier as 1 | 2 | 3 } : {}),
+    pepStatus: isPep,
+    ...(pepTier !== undefined ? { pepTier } : {}),
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyBeneficialOwnerResolved(
@@ -188,14 +206,12 @@ function applyBeneficialOwnerResolved(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state;
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  return setCandidate(state, candidateId, {
     ...existing,
     status: screeningStatus(existing.status),
     uboResolved: true,
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyPopiaConsentRecorded(
@@ -212,12 +228,10 @@ function applyPopiaConsentRecorded(
 
   // POPIA consent alone does not advance the status gate; it augments the
   // record. Screening step events (sanctions, PEP, UBO) advance the gate.
-  const next = new Map(state);
-  next.set(candidateId, {
+  return setCandidate(state, candidateId, {
     ...existing,
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyRiskRatingAssigned(
@@ -232,21 +246,25 @@ function applyRiskRatingAssigned(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state;
 
+  const riskRating =
+    p.riskRating === "STANDARD" ||
+    p.riskRating === "HIGH" ||
+    p.riskRating === "PEP" ||
+    p.riskRating === "PROHIBITED"
+      ? p.riskRating
+      : undefined;
+
+  const kycTier = p.kycTier === "Tier-1" || p.kycTier === "Tier-2" ? p.kycTier : undefined;
+
   // RiskRatingAssigned transitions any non-terminal state to "risk-rating".
   // (It legitimately fires after EddCompleted to re-enter the final gate.)
-  const next = new Map(state);
-  next.set(candidateId, {
+  return setCandidate(state, candidateId, {
     ...existing,
     status: "risk-rating",
-    ...(typeof p.riskRating === "string"
-      ? { riskRating: p.riskRating as KycCandidateState["riskRating"] }
-      : {}),
-    ...(typeof p.kycTier === "string"
-      ? { kycTier: p.kycTier as KycCandidateState["kycTier"] }
-      : {}),
+    ...(riskRating !== undefined ? { riskRating } : {}),
+    ...(kycTier !== undefined ? { kycTier } : {}),
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyEddInitiated(
@@ -261,14 +279,14 @@ function applyEddInitiated(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state;
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  const eddDeadlineIso = typeof p.deadlineIso === "string" ? p.deadlineIso : undefined;
+
+  return setCandidate(state, candidateId, {
     ...existing,
     status: "edd-pending",
-    ...(typeof p.deadlineIso === "string" ? { eddDeadlineIso: p.deadlineIso } : {}),
+    ...(eddDeadlineIso !== undefined ? { eddDeadlineIso } : {}),
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyEddCompleted(
@@ -283,17 +301,15 @@ function applyEddCompleted(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state;
 
+  const eddOutcome = p.outcome === "PROCEED" || p.outcome === "REJECT" ? p.outcome : undefined;
+
   // EDD completion re-enters the risk-rating gate for final disposition.
-  const next = new Map(state);
-  next.set(candidateId, {
+  return setCandidate(state, candidateId, {
     ...existing,
     status: "risk-rating",
-    ...(typeof p.outcome === "string"
-      ? { eddOutcome: p.outcome as KycCandidateState["eddOutcome"] }
-      : {}),
+    ...(eddOutcome !== undefined ? { eddOutcome } : {}),
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyClientAccepted(
@@ -308,14 +324,12 @@ function applyClientAccepted(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state; // idempotent-terminal; first wins
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  return setCandidate(state, candidateId, {
     ...existing,
     status: "accepted",
     acceptedAt: e.as_of,
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyClientRejected(
@@ -330,15 +344,15 @@ function applyClientRejected(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state; // idempotent-terminal; first wins
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  const rejectionReasonCode = typeof p.reasonCode === "string" ? p.reasonCode : undefined;
+
+  return setCandidate(state, candidateId, {
     ...existing,
     status: "rejected",
-    ...(typeof p.reasonCode === "string" ? { rejectionReasonCode: p.reasonCode } : {}),
+    ...(rejectionReasonCode !== undefined ? { rejectionReasonCode } : {}),
     rejectedAt: e.as_of,
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 function applyKycCompleted(
@@ -356,17 +370,19 @@ function applyKycCompleted(
   if (!existing) return state;
   if (isTerminal(existing.status)) return state;
 
-  const next = new Map(state);
-  next.set(candidateId, {
+  const kycTier = p.tier === "Tier-1" || p.tier === "Tier-2" ? p.tier : undefined;
+  const sanctionsClear = typeof p.sanctionsClear === "boolean" ? p.sanctionsClear : undefined;
+  const pepStatus = typeof p.pep === "boolean" ? p.pep : undefined;
+
+  return setCandidate(state, candidateId, {
     ...existing,
     status: "accepted",
-    ...(typeof p.tier === "string" ? { kycTier: p.tier as KycCandidateState["kycTier"] } : {}),
-    ...(typeof p.sanctionsClear === "boolean" ? { sanctionsClear: p.sanctionsClear } : {}),
-    ...(typeof p.pep === "boolean" ? { pepStatus: p.pep } : {}),
+    ...(kycTier !== undefined ? { kycTier } : {}),
+    ...(sanctionsClear !== undefined ? { sanctionsClear } : {}),
+    ...(pepStatus !== undefined ? { pepStatus } : {}),
     acceptedAt: e.as_of,
     lastEventAt: e.as_of,
   });
-  return next;
 }
 
 // ---------------------------------------------------------------------------

@@ -64,7 +64,6 @@ import {
   type resolveHorizon,
 } from "../platform/forward-obligations";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
-import { buildKycCandidatesView } from "./kyc-candidates-view";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
@@ -77,6 +76,7 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { buildKycCandidatesView } from "./kyc-candidates-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
