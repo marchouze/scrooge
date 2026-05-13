@@ -1102,7 +1102,7 @@ const server = Bun.serve({
         );
       }
 
-      const asOf = nowUtc().slice(0, 10);
+      const asOf = nowUtc(); // full ISO timestamp so replay's `as_of <=` gate includes same-day events
       let horizonOpts: Parameters<typeof resolveHorizon>[1];
       const fromParam = url.searchParams.get("from");
       const toParam = url.searchParams.get("to");
