@@ -63,7 +63,7 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Information Security Policy | [`access-provisioning.md`](by-policy/access-provisioning.md) (PROC-IS-AP-01) | Senna + Devon | **STUB** |
-| Information Security Policy | `key-rotation.md` | Senna | PLANNED |
+| Information Security Policy | [`key-rotation.md`](by-policy/key-rotation.md) (PROC-IS-KR-01 — cryptographic key lifecycle: HSM root/signing/encryption/API key rotation on schedule or on-demand; dual-control ceremony; `KeyRotated` event chain; key-rotation register) | Senna (CISO, governance) · Devon (IT ops engineer) | **STUB** |
 | Cyber Resilience Policy | [`incident-response.md`](by-policy/incident-response.md) (IR command) | Senna + Devon + Iris + Zara | **POPULATED** |
 | Cyber Resilience Policy | `cyber-incident-classification.md` (severity tiering) | Senna + Iris | PLANNED |
 | Vulnerability Management | `patch-cadence.md` | Senna | PLANNED |
@@ -107,7 +107,7 @@
 | Accounting Policies (IFRS) v0.1 (STUB) + Financial Reporting & Disclosure v0.1 (STUB) | [`posting-rule-publication.md`](by-policy/posting-rule-publication.md) | Bea · Atlas | **POPULATED** |
 | Accounting Policies (IFRS) — IFRS 10 consolidation policy (planned by Camille; sub-policy of Accounting Policies (IFRS) v0.1 STUB + Financial Reporting & Disclosure v0.1 STUB) | [`ifrs10-consolidation-cycle.md`](by-policy/ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01 — three-entity group consolidation per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER) | Bea · Camille (governance sign-off) | **STUB** |
 | Accounting Policies (IFRS) | [`balance-sheet-substantiation.md`](by-policy/balance-sheet-substantiation.md) (PROC-FIN-BSS-01 — monthly per-account source-event trace + CFO sign-off + `BalanceSheetSubstantiationCompleted` event) | Bea (Camille sign-off) | **DRAFT v1.0** |
-| Accounting Policies (IFRS) | `month-end-close.md` (broader period-close orchestration — balance sheet substantiation is a named step within it; see PROC-FIN-BSS-01) | Camille (Bea) | PLANNED |
+| Accounting Policies (IFRS) | [`month-end-close.md`](by-policy/month-end-close.md) (PROC-FIN-MC-01 — broader period-close orchestration: GL freeze, reconciliation, accruals/provisions, trial balance, CFO sign-off, `PeriodClosed` event, BA return trigger; balance sheet substantiation is a named step within it, see PROC-FIN-BSS-01) | Camille (CFO, governance) · Bea (finance/reporting engineer) | **STUB** |
 | Regulatory Reporting Policy | [`ba-return-generation.md`](by-policy/ba-return-generation.md) (PROC-FIN-BA-01) | Camille (Bea) | **STUB** |
 | Provisioning / IFRS 9 ECL Policy v0.1 (STUB) + RAS (in-force) | [`ecl-stage-projection-refresh.md`](by-policy/ecl-stage-projection-refresh.md) | Rohan · Bea | **POPULATED** |
 | IFRS 9 ECL | `ecl-staging-cycle.md` | Helena (Bea) | PLANNED |
@@ -212,7 +212,7 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-| **STUB** | 14 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **CTR filing (PROC-FC-CTR-01, 2026-05-13)** · **TPR filing (PROC-FC-TPR-01, 2026-05-13)** · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-13)** · **DR test execution (PROC-OR-DR-01, 2026-05-13)** · **KYC continuous monitoring (PROC-FC-KYC-C-01, 2026-05-13)** · **Sanctions override (PROC-FC-SO-01, 2026-05-13)** · **NPA gate (PROC-NPA-GATE-01, 2026-05-13)** · **Counterparty onboarding markets (PROC-MK-CO-01, 2026-05-13)** |
+| **STUB** | 16 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) · **CTR filing (PROC-FC-CTR-01, 2026-05-13)** · **TPR filing (PROC-FC-TPR-01, 2026-05-13)** · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-13)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-13)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-13)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-13)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-13)** · **DR test execution (PROC-OR-DR-01, 2026-05-13)** · **KYC continuous monitoring (PROC-FC-KYC-C-01, 2026-05-13)** · **Sanctions override (PROC-FC-SO-01, 2026-05-13)** · **NPA gate (PROC-NPA-GATE-01, 2026-05-13)** · **Counterparty onboarding markets (PROC-MK-CO-01, 2026-05-13)** · **Key rotation (PROC-IS-KR-01, 2026-05-13)** · **Month-end close (PROC-FIN-MC-01, 2026-05-13)** |
 | PLANNED | ~50 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~81** across 14 domains |
 
