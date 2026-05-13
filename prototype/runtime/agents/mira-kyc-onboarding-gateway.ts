@@ -27,24 +27,24 @@
 //
 // Author: Mira (Regulatory Intelligence Engineer)
 
-import { nowUtc } from "../../platform/core/types";
-import { eventStore, logger } from "../../platform/composition";
 import {
+  beneficialOwnerResolved,
   clientAccepted,
   clientRejected,
-  beneficialOwnerResolved,
   eddInitiated,
   pepScreeningCompleted,
   popiaConsentRecorded,
   riskRatingAssigned,
   sanctionsClearancePassed,
 } from "../../domains/customer/onboarding";
-import { StubScreeningAdapter } from "../../platform/kyc/screening-adapter";
-import { assignRiskRating } from "../../platform/kyc/risk-rating-engine";
-import type { Event } from "../../platform/event-store/types";
-import type { AgentRunContext, AgentRunOutput } from "../types";
-import type { PartyId } from "../../domains/party";
 import type { ClientCandidateRegisteredPayload } from "../../domains/customer/types";
+import type { PartyId } from "../../domains/party";
+import { eventStore, logger } from "../../platform/composition";
+import { nowUtc } from "../../platform/core/types";
+import type { Event } from "../../platform/event-store/types";
+import { assignRiskRating } from "../../platform/kyc/risk-rating-engine";
+import { StubScreeningAdapter } from "../../platform/kyc/screening-adapter";
+import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const GATEWAY_ACTOR = {
   type: "service" as const,
@@ -98,9 +98,7 @@ const screening = new StubScreeningAdapter();
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
-  const candidates = triggering.filter(
-    (e): e is Event => e.type === "ClientCandidateRegistered",
-  );
+  const candidates = triggering.filter((e): e is Event => e.type === "ClientCandidateRegistered");
 
   if (candidates.length === 0) {
     return {
@@ -115,7 +113,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let skipped = 0;
 
   for (const triggerEvent of candidates) {
-    const p = triggerEvent.payload as ClientCandidateRegisteredPayload;
+    const p = triggerEvent.payload as unknown as ClientCandidateRegisteredPayload;
     const { candidateId, entityType } = p;
 
     if (!candidateId) {
@@ -158,10 +156,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       // -------------------------------------------------------------------------
       let sanctionsClear = false;
       try {
-        const sanctionsResult = await screening.checkSanctions(
-          candidateId,
-          p.entity,
-        );
+        const sanctionsResult = await screening.checkSanctions(candidateId, p.entity);
 
         if (sanctionsResult.result === "HIT") {
           // Sanctions hit — reject immediately (PROC-FC-01 step 2).
@@ -202,7 +197,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         eventStore.append(
           sanctionsClearancePassed(
             {
-              counterpartyId: candidateId as Parameters<typeof sanctionsClearancePassed>[0]["counterpartyId"],
+              counterpartyId: candidateId as Parameters<
+                typeof sanctionsClearancePassed
+              >[0]["counterpartyId"],
               screeningProvider: "stub",
               screeningRef: `stub-sanctions-${candidateId}`,
               clearedAt: ctx.asOf,
@@ -304,7 +301,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventStore.append(
         beneficialOwnerResolved(
           {
-            counterpartyId: candidateId as Parameters<typeof beneficialOwnerResolved>[0]["counterpartyId"],
+            counterpartyId: candidateId as Parameters<
+              typeof beneficialOwnerResolved
+            >[0]["counterpartyId"],
             beneficialOwners: [
               {
                 partyId: candidateId,
@@ -371,7 +370,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         eventStore.append(
           popiaConsentRecorded(
             {
-              counterpartyId: candidateId as Parameters<typeof popiaConsentRecorded>[0]["counterpartyId"],
+              counterpartyId: candidateId as Parameters<
+                typeof popiaConsentRecorded
+              >[0]["counterpartyId"],
               consentScope: ["kyc-processing", "regulatory-reporting"],
               recordedAt: ctx.asOf,
               recordedBy: GATEWAY_ACTOR.id,

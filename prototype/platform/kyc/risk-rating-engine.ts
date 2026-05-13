@@ -53,9 +53,7 @@ export function assignRiskRating(input: RbaInput): { rating: RiskRating; factors
   // Entity complexity: trusts and legal entities add structural opacity.
   // FATF Rec 10 — higher scrutiny for complex legal structures.
   if (input.entityType === "trust" || input.entityType === "legal-entity") {
-    factors.push(
-      `entity-type:${input.entityType} — complexity factor (FATF-REC-10, ORG-FC-02)`,
-    );
+    factors.push(`entity-type:${input.entityType} — complexity factor (FATF-REC-10, ORG-FC-02)`);
     if (rating === "STANDARD") rating = "HIGH";
   }
 
