@@ -22,7 +22,7 @@
 | Liquidity Risk Management Policy | [`capital-ratio-monitoring.md`](by-policy/capital-ratio-monitoring.md) (covers LCR / NSFR) | Camille + Eitan | **POPULATED** |
 | Liquidity Risk Management Policy | `intraday-liquidity-funding.md` | Eitan | PLANNED |
 | IRRBB Policy | `irrbb-measurement.md` | Helena + Eitan | PLANNED |
-| Operational Risk Policy | `rcsa-cycle.md` | Helena + Devon | PLANNED |
+| Operational Risk Policy | [`rcsa-cycle.md`](by-policy/rcsa-cycle.md) (PROC-RISK-RCSA-01 — annual + ad-hoc BCBS PSMOR-aligned RCSA; AI-agent risk category mandatory) | Helena + Devon | **STUB** |
 | Operational Resilience Policy | `severe-but-plausible-test.md` | Devon | PLANNED |
 | Model Risk Policy | [`model-validation.md`](by-policy/model-validation.md) | Helena (independent validation) | **STUB** (Nadia cross-link; awaiting Helena population — Slice D of validation-methodology library v0) |
 | Stress Testing Policy | `stress-test-cycle.md` | Helena | PLANNED |
@@ -33,7 +33,7 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | RMCP | `rmcp-annual-attestation.md` | Zara | PLANNED |
-| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) (PROC-FC-TM-01 — continuous rule-engine scoring, alert triage, MLRO escalation) | Zara (Mira) | **STUB** |
+| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) | Zara (Mira) | **STUB** |
 | Sanctions Policy | [`sanctions-screening.md`](by-policy/sanctions-screening.md) | Zara (Mira) + Senna | **POPULATED** |
 | Sanctions Policy | `sanctions-override.md` | Zara | PLANNED |
 | KYC / CDD / EDD Policy | [`kyc-onboarding.md`](by-policy/kyc-onboarding.md) | Zara (Mira) | **POPULATED** |
@@ -41,7 +41,7 @@
 | KYC / CDD / EDD Policy | `kyc-continuous.md` | Zara (Mira) | PLANNED |
 | Conduct of Business / TCF Policy | `complaints-handling.md` | Zara + Niko | PLANNED |
 | FATCA / CRS Policy | `fatca-crs-annual-submission.md` | Yael (Mira) | PLANNED |
-| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **STUB** |
+| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) | Zara (MLRO) | **STUB** |
 | Sanctions / FIC | `tpr-filing.md` | Zara (MLRO) | PLANNED |
 | Sanctions / FIC | `ctr-filing.md` | Zara (MLRO) | PLANNED |
 | RMCP / Sanctions / FIC | [`fic-submission-cycle.md`](by-policy/fic-submission-cycle.md) | Triple-hatted compliance lead (MLRO + FIC CO + IO) — Zara (governance) + Mira (engineering) | **DRAFT v0.1** (post D-THIN-HUMAN-LAYER-MINIMUM) |
@@ -108,7 +108,7 @@
 | Accounting Policies (IFRS) — IFRS 10 consolidation policy (planned by Camille; sub-policy of Accounting Policies (IFRS) v0.1 STUB + Financial Reporting & Disclosure v0.1 STUB) | [`ifrs10-consolidation-cycle.md`](by-policy/ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01 — three-entity group consolidation per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER) | Bea · Camille (governance sign-off) | **STUB** |
 | Accounting Policies (IFRS) | [`balance-sheet-substantiation.md`](by-policy/balance-sheet-substantiation.md) (PROC-FIN-BSS-01 — monthly per-account source-event trace + CFO sign-off + `BalanceSheetSubstantiationCompleted` event) | Bea (Camille sign-off) | **DRAFT v1.0** |
 | Accounting Policies (IFRS) | `month-end-close.md` (broader period-close orchestration — balance sheet substantiation is a named step within it; see PROC-FIN-BSS-01) | Camille (Bea) | PLANNED |
-| Accounting Policies (IFRS) | `ba-return-generation.md` | Bea | PLANNED |
+| Regulatory Reporting Policy + Capital Management Policy | [`ba-return-generation.md`](by-policy/ba-return-generation.md) (PROC-FIN-BA-01 — monthly BA 100/200/300/600/700/900 + quarterly BA 325/326 + Risk Return) | Camille (Bea) | **STUB** |
 | Provisioning / IFRS 9 ECL Policy v0.1 (STUB) + RAS (in-force) | [`ecl-stage-projection-refresh.md`](by-policy/ecl-stage-projection-refresh.md) | Rohan · Bea | **POPULATED** |
 | IFRS 9 ECL | `ecl-staging-cycle.md` | Helena (Bea) | PLANNED |
 | Tax | `corporate-tax-filing.md` | Yael | PLANNED |
@@ -212,7 +212,7 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-| **STUB** | 2 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) |
+| **STUB** | ~14 + 2 | Includes PROC-FIN-BA-01 (BA return generation, 2026-05-13) + PROC-RISK-RCSA-01 (RCSA cycle, 2026-05-13) |
 | PLANNED | ~62 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~81** across 14 domains |
 
