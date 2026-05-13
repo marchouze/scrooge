@@ -16,17 +16,45 @@
 // surfaced directly from the register's dedicated columns rather than
 // derived.
 //
+// v1.19 column additions (Mira, 2026-05-13):
+//   - Product scope (col 11): pipe-separated product family codes or "universal"
+//   - Activity scope (col 12): pipe-separated ACT-* codes or "universal"
+// These columns are inserted before the existing Risk taxonomy column (col 13
+// when all columns present). The parser handles variable column count
+// gracefully — missing cells default to ["universal"].
+//
 // Per CLAUDE.md Principle 2: this is a read-only projection over the
 // canonical obligations register. The register file is the single citable
 // source; this view is a query-time shape-shift, not authored content.
 //
-// Author: Anya (data)
+// Author: Anya (data) · Atlas (product/activity scope columns, 2026-05-13)
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import type { RiskTaxonomyCode } from "../platform/risk/taxonomy";
 import { classifyBinds, classifySources } from "./policy-register";
+
+// ---------------------------------------------------------------------------
+// Scope-column parsers.
+//
+// Both Product scope and Activity scope columns use the same format:
+// pipe-separated codes, or the literal string "universal", or "[TBD]"/empty.
+// Missing/empty/TBD cells are normalised to ["universal"] so that universal
+// obligations always surface regardless of active scope filter.
+// ---------------------------------------------------------------------------
+
+function parseScopeCell(raw: string): string[] {
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed === "[TBD]" || trimmed.toLowerCase() === "universal") {
+    return ["universal"];
+  }
+  const parts = trimmed
+    .split("|")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return parts.length > 0 ? parts : ["universal"];
+}
 
 interface ObligationDetail {
   id: string;
@@ -66,11 +94,24 @@ interface ObligationDetail {
   /**
    * Risk-taxonomy classification — one terminal-or-near-terminal code from
    * `Regulations/_risk-taxonomy.md` (typed at `@platform/risk/taxonomy`).
-   * Read from the 10th column of the register (`Risk taxonomy`); empty
-   * string when the cell is missing or `[TBD]` (transitional state until
-   * Vera Wave-5 `taxonomy-coverage` recon lands).
+   * Read from the register's `Risk taxonomy` column; empty string when the
+   * cell is missing or `[TBD]` (transitional state until Vera Wave-5
+   * `taxonomy-coverage` recon lands).
    */
   riskTaxonomy: RiskTaxonomyCode | "";
+  /**
+   * Product families this obligation covers. Read from the `Product scope`
+   * column (pipe-separated family codes). `["universal"]` means the
+   * obligation applies to all product families. Mira authors this column
+   * as part of the v1.19 register schema.
+   */
+  productScope: string[];
+  /**
+   * Activities this obligation covers. Read from the `Activity scope`
+   * column (pipe-separated ACT-* codes from `platform/activities/taxonomy`).
+   * `["universal"]` means the obligation applies to all activities.
+   */
+  activityScope: string[];
 }
 
 interface ObligationsView {
@@ -91,6 +132,17 @@ interface ObligationsView {
    * "UNCLASSIFIED".
    */
   statusCounts: Record<string, number>;
+  /**
+   * Histogram by activity code. `universal` is reported under "universal".
+   * Each ACT-* code that appears in any obligation's activityScope is counted.
+   * An obligation with N activity codes contributes N counts (one per code).
+   */
+  activityCounts: Record<string, number>;
+  /**
+   * Histogram by product family code. `universal` is reported under "universal".
+   * An obligation with N product family codes contributes N counts.
+   */
+  productFamilyCounts: Record<string, number>;
 }
 
 const TABLE_ROW = /^\s*\|(.*)\|\s*$/;
@@ -190,6 +242,8 @@ export function getObligationsView(repoRoot: string): ObligationsView {
   const familyCounts: Record<string, number> = {};
   const bindCounts: Record<string, number> = {};
   const statusCounts: Record<string, number> = {};
+  const activityCounts: Record<string, number> = {};
+  const productFamilyCounts: Record<string, number> = {};
   if (!existsSync(path)) {
     return {
       asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
@@ -198,6 +252,8 @@ export function getObligationsView(repoRoot: string): ObligationsView {
       familyCounts,
       bindCounts,
       statusCounts,
+      activityCounts,
+      productFamilyCounts,
     };
   }
   const text = readFileSync(path, "utf8");
@@ -205,11 +261,15 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     const m = raw.match(TABLE_ROW);
     if (!m) continue;
     const cells = (m[1] ?? "").split("|").map((c) => c.trim());
-    // Ten-column register (v1.17+ Risk taxonomy backfill):
-    //   ID | URN | Citation | Requirement | Fulfilment | Owner | Status |
-    //   Entity scope | Applies-at | Risk taxonomy
-    // Tolerates the nine-column shape (pre-backfill rows) — riskTaxonomy
-    // falls back to "" when the 10th cell is absent.
+    // Variable-column register — column layout has grown over time:
+    //   v1.13 (9 cols):  ID | URN | Citation | Requirement | Fulfilment | Owner | Status | Entity scope | Applies-at
+    //   v1.17 (10 cols): + Risk taxonomy
+    //   v1.19 (12 cols): + Product scope (col 9) | Activity scope (col 10) | Risk taxonomy (col 11)
+    //
+    // We detect by cell count: if 12+ cells the two scope columns are present
+    // at positions 9 and 10; if 10-11 cells position 9 is Risk taxonomy (legacy
+    // backfill shape without scope columns); if <10 the risk taxonomy cell is
+    // absent. Missing scope cells default to ["universal"].
     if (cells.length < 9) continue;
     const id = cells[0] ?? "";
     if (!/^ORG-/i.test(id)) continue;
@@ -221,7 +281,24 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     const bind = pickBind(citation);
     const linkedPolicies = parseLinkedPolicies(fulfilment);
     const gaps = detectGaps({ fulfilment, owner, family });
-    const taxonomyRaw = (cells[9] ?? "").trim();
+
+    // Scope columns (v1.19+) — present only when cells.length >= 12.
+    // Positions 9 = Product scope, 10 = Activity scope, 11 = Risk taxonomy.
+    // Legacy rows (10-11 cells) have Risk taxonomy at position 9.
+    let productScope: string[];
+    let activityScope: string[];
+    let taxonomyRaw: string;
+    if (cells.length >= 12) {
+      productScope = parseScopeCell(cells[9] ?? "");
+      activityScope = parseScopeCell(cells[10] ?? "");
+      taxonomyRaw = (cells[11] ?? "").trim();
+    } else {
+      // Legacy shape: no scope columns yet.
+      productScope = ["universal"];
+      activityScope = ["universal"];
+      taxonomyRaw = (cells[9] ?? "").trim(); // risk taxonomy at old position
+    }
+
     // Accept any cell whose content matches the taxonomy code pattern; the
     // typed enum gate is the recon harness's job (Vera Wave-5). At parse
     // time we only validate the surface shape and clear `[TBD]` to "".
@@ -243,6 +320,8 @@ export function getObligationsView(repoRoot: string): ObligationsView {
       linkedPolicies,
       gaps,
       riskTaxonomy,
+      productScope,
+      activityScope,
     };
 
     familyCounts[family] = (familyCounts[family] ?? 0) + 1;
@@ -250,6 +329,15 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     bindCounts[bindKey] = (bindCounts[bindKey] ?? 0) + 1;
     const statusKey = status || "UNCLASSIFIED";
     statusCounts[statusKey] = (statusCounts[statusKey] ?? 0) + 1;
+
+    // Activity and product scope histograms — each code in the cell contributes
+    // one count; "universal" is counted as its own key.
+    for (const code of activityScope) {
+      activityCounts[code] = (activityCounts[code] ?? 0) + 1;
+    }
+    for (const code of productScope) {
+      productFamilyCounts[code] = (productFamilyCounts[code] ?? 0) + 1;
+    }
   }
   return {
     asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
@@ -258,5 +346,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     familyCounts,
     bindCounts,
     statusCounts,
+    activityCounts,
+    productFamilyCounts,
   };
 }

@@ -77,6 +77,8 @@ function applyFilters() {
   const fBind = $("filterBind").value;
   const fStatus = $("filterStatus").value;
   const fChain = $("filterChain").value;
+  const fActivity = $("filterActivity").value;
+  const fProduct = $("filterProduct").value;
   const fSearch = $("filterSearch").value.trim().toLowerCase();
 
   return allObligations.filter((o) => {
@@ -93,6 +95,17 @@ function applyFilters() {
     if (fChain === "GAP" && (o.gaps?.length ?? 0) === 0) return false;
     if (fChain && fChain !== "COMPLETE" && fChain !== "GAP") {
       if (!(o.gaps ?? []).includes(fChain)) return false;
+    }
+    // Activity scope filter: show rows that include the selected code OR are
+    // universal (universal obligations always satisfy any activity filter).
+    if (fActivity) {
+      const acts = o.activityScope ?? ["universal"];
+      if (!acts.includes(fActivity) && !acts.includes("universal")) return false;
+    }
+    // Product scope filter: same logic as activity.
+    if (fProduct) {
+      const prods = o.productScope ?? ["universal"];
+      if (!prods.includes(fProduct) && !prods.includes("universal")) return false;
     }
     if (fSearch) {
       const hay = [o.id, o.citation, o.requirement, o.fulfilment, o.owner, o.family]
@@ -489,6 +502,14 @@ function openDrawer(id) {
       "Risk taxonomy",
       o.riskTaxonomy ? `<code>${esc(o.riskTaxonomy)}</code>` : '<span class="muted">—</span>',
     ),
+    row(
+      "Product scope",
+      (o.productScope ?? ["universal"]).map((c) => `<code>${esc(c)}</code>`).join(" "),
+    ),
+    row(
+      "Activity scope",
+      (o.activityScope ?? ["universal"]).map((c) => `<code>${esc(c)}</code>`).join(" "),
+    ),
     row("Citation chain", chainHtml),
   ].join("");
 
@@ -581,7 +602,14 @@ async function load() {
 }
 
 function wireFilters() {
-  for (const id of ["filterFamily", "filterBind", "filterStatus", "filterChain"]) {
+  for (const id of [
+    "filterFamily",
+    "filterBind",
+    "filterStatus",
+    "filterChain",
+    "filterActivity",
+    "filterProduct",
+  ]) {
     $(id).addEventListener("change", refresh);
   }
   $("filterSearch").addEventListener("input", refresh);

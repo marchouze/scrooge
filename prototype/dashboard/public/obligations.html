@@ -239,6 +239,74 @@
             <option value="NO-OWNER">No owner</option>
           </select>
         </div>
+        <div class="fc">
+          <label for="filterActivity">Activity</label>
+          <select id="filterActivity">
+            <option value="">All activities</option>
+            <option value="universal">Universal</option>
+            <optgroup label="Trading">
+              <option value="ACT-TRADE-FX">FX dealing</option>
+              <option value="ACT-TRADE-BOND">Bond trading</option>
+              <option value="ACT-TRADE-EQUITY">Equity trading (JSE)</option>
+              <option value="ACT-TRADE-OTC-IRD">OTC IRD</option>
+              <option value="ACT-TRADE-OTC-CREDIT">OTC credit derivatives</option>
+            </optgroup>
+            <optgroup label="Banking">
+              <option value="ACT-BANK-DEPOSIT">Deposit-taking</option>
+              <option value="ACT-BANK-PAYMENT">Payment processing</option>
+              <option value="ACT-BANK-NOSTRO">Nostro management</option>
+            </optgroup>
+            <optgroup label="Client">
+              <option value="ACT-CLIENT-ONBOARD">Client onboarding</option>
+              <option value="ACT-CLIENT-ADVICE">FAIS investment advice</option>
+              <option value="ACT-CLIENT-CATEGORISE">Client categorisation</option>
+            </optgroup>
+            <optgroup label="Reporting">
+              <option value="ACT-REPORT-PRUDENTIAL">Prudential reporting</option>
+              <option value="ACT-REPORT-CONDUCT">Conduct reporting</option>
+              <option value="ACT-REPORT-FINSURV">FX / FinSurv reporting</option>
+              <option value="ACT-REPORT-TRADE">Trade reporting</option>
+            </optgroup>
+            <optgroup label="Risk">
+              <option value="ACT-RISK-CAPITAL">Capital management</option>
+              <option value="ACT-RISK-LIQUIDITY">Liquidity management</option>
+              <option value="ACT-RISK-MARKET">Market risk</option>
+              <option value="ACT-RISK-CREDIT">Credit &amp; counterparty risk</option>
+              <option value="ACT-RISK-OPERATIONAL">Operational risk</option>
+              <option value="ACT-RISK-MODEL">Model risk &amp; validation</option>
+            </optgroup>
+            <optgroup label="Governance">
+              <option value="ACT-GOVERN-BOARD">Board &amp; committee governance</option>
+              <option value="ACT-GOVERN-AUDIT">Internal audit</option>
+              <option value="ACT-GOVERN-COMPLIANCE">Compliance monitoring</option>
+              <option value="ACT-GOVERN-REMUNER">Remuneration governance</option>
+            </optgroup>
+            <optgroup label="Technology">
+              <option value="ACT-TECH-IT">IT systems management</option>
+              <option value="ACT-TECH-CYBER">Cybersecurity</option>
+              <option value="ACT-TECH-DATA">Data management</option>
+              <option value="ACT-TECH-KEY-MGMT">Key management</option>
+            </optgroup>
+            <optgroup label="Corporate">
+              <option value="ACT-CORP-ENTITY">Legal entity management</option>
+              <option value="ACT-CORP-EMPLOYEE">Employment &amp; HR</option>
+              <option value="ACT-CORP-LEGAL">Legal &amp; contracting</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="fc">
+          <label for="filterProduct">Product</label>
+          <select id="filterProduct">
+            <option value="">All products</option>
+            <option value="universal">Universal</option>
+            <option value="listed-equity">Listed equity</option>
+            <option value="listed-bond">Listed bond</option>
+            <option value="repo">Repo</option>
+            <option value="otc-ird">OTC IRD</option>
+            <option value="fx">FX</option>
+            <option value="structured">Structured</option>
+          </select>
+        </div>
         <div class="fc fc-wide">
           <label for="filterSearch">Search</label>
           <input type="search" id="filterSearch" placeholder="ID, citation, requirement, owner…" autocomplete="off">

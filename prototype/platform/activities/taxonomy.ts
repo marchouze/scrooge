@@ -20,48 +20,48 @@
 
 export const ACTIVITY_CODES = [
   // Trading
-  "ACT-TRADE-FX",           // FX dealing (spot, forward, swap)
-  "ACT-TRADE-BOND",         // Bond trading (JSE & OTC)
-  "ACT-TRADE-EQUITY",       // Equity trading (JSE)
-  "ACT-TRADE-OTC-IRD",      // OTC interest rate derivatives
-  "ACT-TRADE-OTC-CREDIT",   // OTC credit derivatives
+  "ACT-TRADE-FX", // FX dealing (spot, forward, swap)
+  "ACT-TRADE-BOND", // Bond trading (JSE & OTC)
+  "ACT-TRADE-EQUITY", // Equity trading (JSE)
+  "ACT-TRADE-OTC-IRD", // OTC interest rate derivatives
+  "ACT-TRADE-OTC-CREDIT", // OTC credit derivatives
   // Banking
-  "ACT-BANK-DEPOSIT",       // Deposit-taking
-  "ACT-BANK-PAYMENT",       // Payment processing (SAMOS / sponsor-bank channel)
-  "ACT-BANK-NOSTRO",        // Nostro & correspondent management
+  "ACT-BANK-DEPOSIT", // Deposit-taking
+  "ACT-BANK-PAYMENT", // Payment processing (SAMOS / sponsor-bank channel)
+  "ACT-BANK-NOSTRO", // Nostro & correspondent management
   // Client
-  "ACT-CLIENT-ONBOARD",     // Counterparty/client onboarding (KYC, CDD, EDD)
-  "ACT-CLIENT-ADVICE",      // FAIS investment advice
-  "ACT-CLIENT-CATEGORISE",  // Client categorisation & suitability
+  "ACT-CLIENT-ONBOARD", // Counterparty/client onboarding (KYC, CDD, EDD)
+  "ACT-CLIENT-ADVICE", // FAIS investment advice
+  "ACT-CLIENT-CATEGORISE", // Client categorisation & suitability
   // Reporting
-  "ACT-REPORT-PRUDENTIAL",  // Prudential regulatory reporting (BA returns, ICAAP, ILAAP)
-  "ACT-REPORT-CONDUCT",     // Conduct / market-abuse regulatory reporting
-  "ACT-REPORT-FINSURV",     // FX & FinSurv reporting (EXCON)
-  "ACT-REPORT-TRADE",       // Trade reporting (STRATE / Umoja / ODP)
+  "ACT-REPORT-PRUDENTIAL", // Prudential regulatory reporting (BA returns, ICAAP, ILAAP)
+  "ACT-REPORT-CONDUCT", // Conduct / market-abuse regulatory reporting
+  "ACT-REPORT-FINSURV", // FX & FinSurv reporting (EXCON)
+  "ACT-REPORT-TRADE", // Trade reporting (STRATE / Umoja / ODP)
   // Risk
-  "ACT-RISK-CAPITAL",       // Capital management & adequacy
-  "ACT-RISK-LIQUIDITY",     // Liquidity management
-  "ACT-RISK-MARKET",        // Market risk management
-  "ACT-RISK-CREDIT",        // Credit & counterparty risk management
-  "ACT-RISK-OPERATIONAL",   // Operational risk management
-  "ACT-RISK-MODEL",         // Model risk & validation
+  "ACT-RISK-CAPITAL", // Capital management & adequacy
+  "ACT-RISK-LIQUIDITY", // Liquidity management
+  "ACT-RISK-MARKET", // Market risk management
+  "ACT-RISK-CREDIT", // Credit & counterparty risk management
+  "ACT-RISK-OPERATIONAL", // Operational risk management
+  "ACT-RISK-MODEL", // Model risk & validation
   // Governance
-  "ACT-GOVERN-BOARD",       // Board & committee governance
-  "ACT-GOVERN-AUDIT",       // Internal audit
-  "ACT-GOVERN-COMPLIANCE",  // Compliance programme & monitoring
-  "ACT-GOVERN-REMUNER",     // Remuneration governance
+  "ACT-GOVERN-BOARD", // Board & committee governance
+  "ACT-GOVERN-AUDIT", // Internal audit
+  "ACT-GOVERN-COMPLIANCE", // Compliance programme & monitoring
+  "ACT-GOVERN-REMUNER", // Remuneration governance
   // Technology
-  "ACT-TECH-IT",            // IT systems management
-  "ACT-TECH-CYBER",         // Cybersecurity & cyber resilience
-  "ACT-TECH-DATA",          // Data management & governance
-  "ACT-TECH-KEY-MGMT",      // Cryptographic key management
+  "ACT-TECH-IT", // IT systems management
+  "ACT-TECH-CYBER", // Cybersecurity & cyber resilience
+  "ACT-TECH-DATA", // Data management & governance
+  "ACT-TECH-KEY-MGMT", // Cryptographic key management
   // Corporate
-  "ACT-CORP-ENTITY",        // Legal entity management (company secretarial)
-  "ACT-CORP-EMPLOYEE",      // Employment & HR
-  "ACT-CORP-LEGAL",         // Legal & contracting
+  "ACT-CORP-ENTITY", // Legal entity management (company secretarial)
+  "ACT-CORP-EMPLOYEE", // Employment & HR
+  "ACT-CORP-LEGAL", // Legal & contracting
 ] as const;
 
-export type ActivityCode = typeof ACTIVITY_CODES[number];
+export type ActivityCode = (typeof ACTIVITY_CODES)[number];
 
 export const ACTIVITY_LABELS: Record<ActivityCode, string> = {
   "ACT-TRADE-FX": "FX dealing",
@@ -99,12 +99,35 @@ export const ACTIVITY_LABELS: Record<ActivityCode, string> = {
 };
 
 export const ACTIVITY_GROUPS: Record<string, ActivityCode[]> = {
-  "Trading": ["ACT-TRADE-FX","ACT-TRADE-BOND","ACT-TRADE-EQUITY","ACT-TRADE-OTC-IRD","ACT-TRADE-OTC-CREDIT"],
-  "Banking": ["ACT-BANK-DEPOSIT","ACT-BANK-PAYMENT","ACT-BANK-NOSTRO"],
-  "Client": ["ACT-CLIENT-ONBOARD","ACT-CLIENT-ADVICE","ACT-CLIENT-CATEGORISE"],
-  "Reporting": ["ACT-REPORT-PRUDENTIAL","ACT-REPORT-CONDUCT","ACT-REPORT-FINSURV","ACT-REPORT-TRADE"],
-  "Risk": ["ACT-RISK-CAPITAL","ACT-RISK-LIQUIDITY","ACT-RISK-MARKET","ACT-RISK-CREDIT","ACT-RISK-OPERATIONAL","ACT-RISK-MODEL"],
-  "Governance": ["ACT-GOVERN-BOARD","ACT-GOVERN-AUDIT","ACT-GOVERN-COMPLIANCE","ACT-GOVERN-REMUNER"],
-  "Technology": ["ACT-TECH-IT","ACT-TECH-CYBER","ACT-TECH-DATA","ACT-TECH-KEY-MGMT"],
-  "Corporate": ["ACT-CORP-ENTITY","ACT-CORP-EMPLOYEE","ACT-CORP-LEGAL"],
+  Trading: [
+    "ACT-TRADE-FX",
+    "ACT-TRADE-BOND",
+    "ACT-TRADE-EQUITY",
+    "ACT-TRADE-OTC-IRD",
+    "ACT-TRADE-OTC-CREDIT",
+  ],
+  Banking: ["ACT-BANK-DEPOSIT", "ACT-BANK-PAYMENT", "ACT-BANK-NOSTRO"],
+  Client: ["ACT-CLIENT-ONBOARD", "ACT-CLIENT-ADVICE", "ACT-CLIENT-CATEGORISE"],
+  Reporting: [
+    "ACT-REPORT-PRUDENTIAL",
+    "ACT-REPORT-CONDUCT",
+    "ACT-REPORT-FINSURV",
+    "ACT-REPORT-TRADE",
+  ],
+  Risk: [
+    "ACT-RISK-CAPITAL",
+    "ACT-RISK-LIQUIDITY",
+    "ACT-RISK-MARKET",
+    "ACT-RISK-CREDIT",
+    "ACT-RISK-OPERATIONAL",
+    "ACT-RISK-MODEL",
+  ],
+  Governance: [
+    "ACT-GOVERN-BOARD",
+    "ACT-GOVERN-AUDIT",
+    "ACT-GOVERN-COMPLIANCE",
+    "ACT-GOVERN-REMUNER",
+  ],
+  Technology: ["ACT-TECH-IT", "ACT-TECH-CYBER", "ACT-TECH-DATA", "ACT-TECH-KEY-MGMT"],
+  Corporate: ["ACT-CORP-ENTITY", "ACT-CORP-EMPLOYEE", "ACT-CORP-LEGAL"],
 };
