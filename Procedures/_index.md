@@ -23,7 +23,7 @@
 | Liquidity Risk Management Policy | `intraday-liquidity-funding.md` | Eitan | PLANNED |
 | IRRBB Policy | `irrbb-measurement.md` | Helena + Eitan | PLANNED |
 | Operational Risk Policy | [`rcsa-cycle.md`](by-policy/rcsa-cycle.md) (PROC-RISK-RCSA-01) | Helena + Devon | **STUB** |
-| Operational Resilience Policy | `severe-but-plausible-test.md` | Devon | PLANNED |
+| Operational Resilience Policy | [`severe-but-plausible-test.md`](by-policy/severe-but-plausible-test.md) (PROC-OR-SBP-01 — annual SBP scenario test; five IBS; four scenario types; tabletop facilitation; BRC + Board approval; PA self-assessment) | Devon (COO, governance) · Helena (CRO, governance) | **STUB** |
 | Model Risk Policy | [`model-validation.md`](by-policy/model-validation.md) | Helena (independent validation) | **STUB** (Nadia cross-link; awaiting Helena population — Slice D of validation-methodology library v0) |
 | Stress Testing Policy | [`stress-test-cycle.md`](by-policy/stress-test-cycle.md) (PROC-RISK-ST-01 — annual baseline + adverse + reverse stress; ICAAP/ILAAP; Recovery Plan feed) | Helena (CRO, governance) · Camille (CFO, governance) | **STUB** |
 | Climate-Related Risk | `climate-scenario-analysis.md` | Helena (with S&E) | PLANNED |
@@ -35,10 +35,10 @@
 | RMCP | `rmcp-annual-attestation.md` | Zara | PLANNED |
 | AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) (PROC-FC-TM-01 — continuous rule-engine scoring, alert triage, MLRO escalation) | Zara (Mira) | **STUB** |
 | Sanctions Policy | [`sanctions-screening.md`](by-policy/sanctions-screening.md) | Zara (Mira) + Senna | **POPULATED** |
-| Sanctions Policy | `sanctions-override.md` | Zara | PLANNED |
+| Sanctions Policy | [`sanctions-override.md`](by-policy/sanctions-override.md) (PROC-FC-SO-01 — false-positive override + controlled-exit for newly designated clients; MLRO-only cryptographic sign-off; FIC/DPCI notification; PAR filing) | Zara (Chief Compliance Officer, governance) — MLRO | **STUB** |
 | KYC / CDD / EDD Policy | [`kyc-onboarding.md`](by-policy/kyc-onboarding.md) | Zara (Mira) | **POPULATED** |
 | KYC / CDD / EDD Policy | [`kyc-recurring.md`](by-policy/kyc-recurring.md) (PROC-FC-KYC-R-01 — annual/6-monthly/event-triggered CDD refresh; UBO re-walk; EDD for high-risk/PEP; MLRO escalation; `KYCRefreshCompleted` chain) | Zara (Mira) | **STUB** |
-| KYC / CDD / EDD Policy | `kyc-continuous.md` | Zara (Mira) | PLANNED |
+| KYC / CDD / EDD Policy | [`kyc-continuous.md`](by-policy/kyc-continuous.md) (PROC-FC-KYC-C-01 — event-triggered CDD; signal ingestion; severity classification Low/Medium/High/Critical; EDD on High/Critical; MLRO escalation; relationship-exit path) | Zara (Chief Compliance Officer, governance) · Mira (Regulatory intelligence engineer, compliance) | **STUB** |
 | Conduct of Business / TCF Policy | `complaints-handling.md` | Zara + Niko | PLANNED |
 | FATCA / CRS Policy | `fatca-crs-annual-submission.md` | Yael (Mira) | PLANNED |
 | Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **STUB** |
@@ -78,7 +78,7 @@
 | Outsourcing & Third-Party Risk | [`outsourcing-due-diligence.md`](by-policy/outsourcing-due-diligence.md) (pre-engagement) | Devon + Senna + Iris + Imani + Mira | STUB |
 | Outsourcing & Third-Party Risk | [`directive-3-pa-notification.md`](by-policy/directive-3-pa-notification.md) | Devon + Owen + Imani + Senna + Rashida + Iris | STUB |
 | Cloud Computing | `cloud-residency-attestation.md` | Devon + Senna | PLANNED |
-| BCP / DR | `dr-test-execution.md` | Devon | PLANNED |
+| BCP / DR | [`dr-test-execution.md`](by-policy/dr-test-execution.md) (PROC-OR-DR-01 — annual full DR test + semi-annual component tests; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report) | Devon (COO, governance) · Senna (CISO, engineering) | **STUB** |
 | BCP / DR | `crisis-management-activation.md` | Devon + Helena | PLANNED |
 | Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01) | Owen + Devon | **STUB** |
 | Records Management | `legal-hold.md` | Imani (with Owen) | PLANNED |
