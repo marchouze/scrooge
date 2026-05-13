@@ -33,7 +33,7 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | RMCP | `rmcp-annual-attestation.md` | Zara | PLANNED |
-| AML / CFT Policy | `transaction-monitoring.md` | Zara (Mira) | PLANNED |
+| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) (PROC-FC-TM-01 — continuous rule-engine scoring, alert triage, MLRO escalation) | Zara (Mira) | **STUB** |
 | Sanctions Policy | [`sanctions-screening.md`](by-policy/sanctions-screening.md) | Zara (Mira) + Senna | **POPULATED** |
 | Sanctions Policy | `sanctions-override.md` | Zara | PLANNED |
 | KYC / CDD / EDD Policy | [`kyc-onboarding.md`](by-policy/kyc-onboarding.md) | Zara (Mira) | **POPULATED** |
@@ -41,7 +41,7 @@
 | KYC / CDD / EDD Policy | `kyc-continuous.md` | Zara (Mira) | PLANNED |
 | Conduct of Business / TCF Policy | `complaints-handling.md` | Zara + Niko | PLANNED |
 | FATCA / CRS Policy | `fatca-crs-annual-submission.md` | Yael (Mira) | PLANNED |
-| Sanctions / FIC | `str-filing.md` | Zara (MLRO) | PLANNED |
+| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **STUB** |
 | Sanctions / FIC | `tpr-filing.md` | Zara (MLRO) | PLANNED |
 | Sanctions / FIC | `ctr-filing.md` | Zara (MLRO) | PLANNED |
 | RMCP / Sanctions / FIC | [`fic-submission-cycle.md`](by-policy/fic-submission-cycle.md) | Triple-hatted compliance lead (MLRO + FIC CO + IO) — Zara (governance) + Mira (engineering) | **DRAFT v0.1** (post D-THIN-HUMAN-LAYER-MINIMUM) |
@@ -212,7 +212,8 @@
 |---|---|---|
 | **POPULATED** | 16 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption (Imani 2026-05-07) · Posting-rule publication (Bea 2026-05-07) · ECL stage projection refresh (Rohan 2026-05-07) · FAIS advice-record capture (Niko 2026-05-07; FSP-conditional) · Outbound payment sponsor-bank channel (Tomas 2026-05-07) · **Agent-runtime deploy (Atlas Step 2, 2026-05-07)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
-| PLANNED | ~64 | Drafting queue under domain leads, coordinated by Owen |
+| **STUB** | 2 | Transaction monitoring (PROC-FC-TM-01, 2026-05-13) · STR filing (PROC-FC-STR-01, 2026-05-13) |
+| PLANNED | ~62 | Drafting queue under domain leads, coordinated by Owen |
 | **Total identified procedures** | **~81** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
