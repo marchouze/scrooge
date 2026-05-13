@@ -19,7 +19,7 @@
 // What the recon walks:
 //
 //   `Regulations/_obligations-register.md` — every pipe-delimited row
-//   matching `| ORG-<domain>-<id> |` (the 9-column obligations table).
+//   matching `| ORG-<domain>-<id> |` (the 10-column obligations table, v1.18+).
 //   Columns (1-indexed): ID | URN | Citation | Requirement | Fulfilment policy
 //   | Owner | Status | Entity scope | Applies-at | Risk taxonomy (col 10
 //   appended by risk-taxonomy-coverage pipeline).
@@ -120,8 +120,18 @@ function isFscaRow(citation: string): boolean {
  * We check case-insensitively for the key tokens.
  */
 function isInactiveStatus(status: string): boolean {
-  const s = status.toLowerCase();
-  return s.includes("n/a-yet") || s.includes("conditional-bind") || s.includes("pre-licence");
+  const s = status.toLowerCase().trim();
+  // v1.18 closed enum values
+  if (s === "not_applicable" || s === "deferred" || s === "superseded") {
+    return true;
+  }
+  // Legacy values (pre-v1.18) retained for backwards compat on any cached/historical rows
+  return (
+    s.includes("n/a-yet") ||
+    s.includes("conditional-bind") ||
+    s.includes("pre-licence") ||
+    s.includes("wave-2-deferred")
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -302,7 +312,7 @@ interface ObligationRow {
  * Parse a pipe-delimited obligation row.
  *
  * The row format is:
- *   | ID | URN | Citation | Requirement | Fulfilment policy | Owner | Status | Entity scope | Applies-at | [Risk taxonomy] |
+ *   | ID | URN | Citation | Requirement | Fulfilment policy | Owner | Status | Bind-trigger | Entity scope | Applies-at | [Risk taxonomy] |
  *
  * Cells may contain embedded content including backtick-quoted paths and
  * parenthetical notes. We split on ` | ` with spaces, or fall back to `|`
