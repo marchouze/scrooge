@@ -120,10 +120,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // The composition root itself is the canonical wrap site — the raw store
   // is built here and immediately gated on the next statement.
   "platform/composition.ts",
-  // The recon harness builds an in-memory throwaway store for the round-trip
-  // assertion; gating it would require synthesising a fake policy resolver
-  // for every test event, defeating the harness's purpose.
+  // The recon self-test (formerly harness.ts) builds an in-memory throwaway
+  // store for the round-trip assertion; gating it would require synthesising
+  // a fake policy resolver for every test event, defeating the purpose.
   "platform/recon/harness.ts",
+  "platform/recon/recon-self-test.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",

@@ -103,7 +103,13 @@ function readInput(): DecisionRecordInput {
   try {
     parsed = JSON.parse(raw);
   } catch (e) {
-    throw new Error(`BANK_CEO_DECISION_RECORD_JSON is not valid JSON: ${(e as Error).message}`);
+    // F-016: Parse failure on a CEO-decision record is an integrity event.
+    // Ideally this routes through AgentEscalation (substrate gap — Atlas §16).
+    // Until then, throw so the runtime records a SubstrateAgentRunFailed and
+    // the failure is visible in the dashboard's agent-runs tile.
+    throw new Error(
+      `[INTEGRITY] BANK_CEO_DECISION_RECORD_JSON is not valid JSON — decision record corrupted or malformed. This failure is recorded as SubstrateAgentRunFailed; CEO review required. Parse error: ${(e as Error).message}`,
+    );
   }
   const obj = parsed as Record<string, unknown>;
   const action = String(obj.action ?? "");

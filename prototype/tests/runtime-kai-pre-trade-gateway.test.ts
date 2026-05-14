@@ -116,6 +116,8 @@ describe("runtime — kai:pre-trade-gateway-aggregator (slice 1)", () => {
 
     const approval = latestApprovalFor(orderId);
     expect(approval).toBeDefined();
+    // F-012: assert specific event type, not just existence.
+    expect(approval?.type).toBe("OrderApprovedAtGateway");
     expect(approval?.actor.id).toBe("agent:kai:pre-trade-gateway-aggregator");
 
     // Citation chain present (Principle 2). Every emit MUST have at

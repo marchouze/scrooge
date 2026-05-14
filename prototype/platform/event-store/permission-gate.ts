@@ -104,7 +104,7 @@ export const PRIVILEGED_EVENT_TYPES: ReadonlySet<string> = new Set([
  *
  * Composition:
  *   - Every `prototype/platform/event-store/registry.ts` event type as
- *     of T-01-mitigation date (2026-05-10) is included. As agents
+ *     of D-T-01-PERMISSION-GATE-SECURE-DEFAULT mitigation date (2026-05-10) is included. As agents
  *     publish their `PermissionPolicyPublished` events, their actor
  *     URNs naturally take the policy-enforced path; the bypass only
  *     fires when *no policy is published yet* AND the type is on this
@@ -121,7 +121,7 @@ export const LEGACY_PRE_A1_EVENT_TYPES: ReadonlySet<string> = new Set([
   // -------------------------------------------------------------------
   // Snapshot of every event type emitted across `prototype/platform/`,
   // `prototype/runtime/`, `prototype/scenarios/`, `prototype/scripts/`
-  // and `prototype/tests/` as of 2026-05-10 (T-01 mitigation date).
+  // and `prototype/tests/` as of 2026-05-10 (D-T-01-PERMISSION-GATE-SECURE-DEFAULT mitigation date).
   // The list is alphabetised for stable diffs; *adding* a type here
   // after this date is a Vera finding (recon:permission-gate-default
   // will assert the snapshot is closed-set). New event types must

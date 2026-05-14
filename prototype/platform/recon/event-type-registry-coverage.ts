@@ -101,9 +101,10 @@ const PROTOTYPE_DIR = resolve(REPO_ROOT, "prototype");
 // these; they are exempt from append-site scanning. Adding a file here
 // requires a comment-justified citation in the same commit.
 const SUPPRESSED_DYNAMIC_APPEND_FILES: ReadonlySet<string> = new Set([
-  // Recon harness emits ReconSynthetic for round-trip tests; not a
-  // production event type and not in the registry on purpose.
+  // Recon self-test (formerly harness.ts) emits ReconSynthetic for
+  // round-trip tests; not a production event type, not in the registry.
   "platform/recon/harness.ts",
+  "platform/recon/recon-self-test.ts",
 ]);
 
 // Event type names appearing in tests as fixtures-only and never emitted
