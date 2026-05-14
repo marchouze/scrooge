@@ -67,19 +67,21 @@ export interface PerformanceRunResult {
  * Run daily performance evaluations for all active agents for the given
  * evaluation period (YYYY-MM-DD).
  *
+ * Pass force=true to bypass idempotency and re-evaluate all agents.
  * Returns { evaluated, skipped } counts.
  */
 export async function runPerformanceEvaluations(
   evaluationPeriod: string,
   actor: Actor,
+  { force = false }: { force?: boolean } = {},
 ): Promise<PerformanceRunResult> {
   const agentIds = getActiveAgentIds();
   let evaluated = 0;
   let skipped = 0;
 
   for (const agentId of agentIds) {
-    // Idempotency — skip if already evaluated this period
-    if (alreadyEvaluated(agentId, evaluationPeriod)) {
+    // Idempotency — skip if already evaluated this period (unless forced)
+    if (!force && alreadyEvaluated(agentId, evaluationPeriod)) {
       skipped++;
       continue;
     }

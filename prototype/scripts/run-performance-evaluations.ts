@@ -17,6 +17,8 @@ const period = process.argv.includes("--date")
   ? process.argv[process.argv.indexOf("--date") + 1]
   : new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
 
+const force = process.argv.includes("--force");
+
 if (!period || !/^\d{4}-\d{2}-\d{2}$/.test(period)) {
   console.error(`Invalid date: "${period}". Expected YYYY-MM-DD.`);
   process.exit(1);
@@ -29,6 +31,8 @@ const actor: Actor = {
 
 console.log(`Running performance evaluations for ${period}…`);
 
-const result = await runPerformanceEvaluations(period, actor);
+if (force) console.log("--force: bypassing idempotency, re-evaluating all agents.");
+
+const result = await runPerformanceEvaluations(period, actor, { force });
 
 console.log(`Evaluated ${result.evaluated} agents, skipped ${result.skipped} (idempotent).`);
