@@ -296,14 +296,12 @@
       })
       .join("");
 
-    if (register === "document") {
-      body.querySelectorAll("tr").forEach((tr, i) => {
-        const row = rows[i];
-        if (!row) return;
-        tr.style.cursor = "pointer";
-        tr.addEventListener("click", () => openRmsDocPreview(row));
-      });
-    }
+    body.querySelectorAll("tr").forEach((tr, i) => {
+      const row = rows[i];
+      if (!row) return;
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", () => openRmsDocPreview(row, register));
+    });
   }
 
   // ---------------- Loader ------------------------------------
@@ -331,44 +329,110 @@
     }
   }
 
-  // ---------------- RMS document preview modal ----------------
+  // ---------------- RMS entry preview modal -------------------
   //
-  // Click-to-view for the document register. Fetches raw markdown from
-  // GET /api/rms/document-content?hash=<blake3:...> and renders it with
-  // renderMarkdownLite (same formatter used in policies/procedures/owner-inbox).
+  // Click-to-view for all registers. Shows a structured detail card for
+  // every row type; fetches + renders markdown when a documentHash is present.
   // Authority: D-RMS-PHASE-1.
 
   let rmsDocPreviewActive = null;
 
-  async function openRmsDocPreview(row) {
-    const hash = row.documentHash;
-    const title = row.metadata?.title || hash;
-    const path = row.metadata?.path || "";
-    const category = row.metadata?.category || "";
-    const date = row.metadata?.date || "";
+  function rowTitle(row, register) {
+    switch (register) {
+      case "document":      return row.metadata?.title || HASH_DISPLAY(row.documentHash) || "Document";
+      case "correspondence":return row.metadata?.title || row.correspondenceId || "Correspondence";
+      case "decisions":     return row.title || row.decisionId || "Decision";
+      case "agent-runs":    return AGENT_DISPLAY(row.agent) || row.runId || "Agent run";
+      case "feedback":      return row.subjectKey || row.feedbackId || "Feedback";
+      case "briefs-dispatches": return row.title || row.briefId || "Brief";
+      case "workstreams":   return row.title || row.workstreamId || "Workstream";
+      default:              return register;
+    }
+  }
+
+  function rowMeta(row, register) {
+    const parts = [];
+    switch (register) {
+      case "document":
+        if (row.metadata?.category) parts.push(row.metadata.category);
+        if (row.metadata?.path)     parts.push(row.metadata.path);
+        if (row.classification)     parts.push(row.classification);
+        break;
+      case "correspondence":
+        if (row.classification)     parts.push(row.classification);
+        if (row.correspondenceAt)   parts.push(TS_DISPLAY(row.correspondenceAt));
+        break;
+      case "decisions":
+        if (row.category)   parts.push(row.category);
+        if (row.status)     parts.push(row.status);
+        if (row.resolvedAt) parts.push(TS_DISPLAY(row.resolvedAt));
+        break;
+      case "agent-runs":
+        if (row.outcome)    parts.push(row.outcome);
+        if (row.startedAt)  parts.push(TS_DISPLAY(row.startedAt));
+        break;
+      case "feedback":
+        if (row.channel)    parts.push(row.channel);
+        if (row.intakeAt)   parts.push(TS_DISPLAY(row.intakeAt));
+        break;
+      case "briefs-dispatches":
+        if (row.status)     parts.push(row.status);
+        if (row.issuedAt)   parts.push(TS_DISPLAY(row.issuedAt));
+        break;
+      case "workstreams":
+        if (row.status)           parts.push(row.status);
+        if (row.lastActivityAt)   parts.push(TS_DISPLAY(row.lastActivityAt));
+        break;
+    }
+    return parts.filter(Boolean).join(" · ");
+  }
+
+  function renderDetailCard(row, register) {
+    const cols = COLUMNS[register] || [];
+    const seenKeys = new Set();
+    const rows = cols
+      .filter((c) => { if (seenKeys.has(c.key + c.label)) return false; seenKeys.add(c.key + c.label); return true; })
+      .map((c) => {
+        const raw = row[c.key];
+        const v = c.format ? c.format(raw) : raw;
+        const display = (v === null || v === undefined || v === "") ? "—" : String(v);
+        return `<div class="rms-detail-row"><dt>${escapeHtml(c.label)}</dt><dd>${escapeHtml(display)}</dd></div>`;
+      });
+    return `<dl class="rms-detail-card">${rows.join("")}</dl>`;
+  }
+
+  async function openRmsDocPreview(row, register) {
+    const hash = row.documentHash || row.documentHashes?.[0] || null;
+    const token = (hash || register) + Math.random();
 
     const modal = $("rmsDocPreviewModal");
     const titleEl = $("rmsDocPreviewTitle");
     const metaEl = $("rmsDocPreviewMeta");
     const bodyEl = $("rmsDocPreviewBody");
 
-    titleEl.textContent = title;
-    metaEl.textContent = [category, path, date].filter(Boolean).join(" · ");
-    bodyEl.innerHTML = '<p class="muted">Loading…</p>';
+    titleEl.textContent = rowTitle(row, register);
+    metaEl.textContent = rowMeta(row, register);
+    bodyEl.innerHTML = renderDetailCard(row, register);
     modal.hidden = false;
     document.body.style.overflow = "hidden";
-    rmsDocPreviewActive = hash;
+    rmsDocPreviewActive = token;
+
+    if (!hash) return;
+
+    const separator = '<hr style="margin:1.5rem 0;opacity:.25;">';
+    bodyEl.innerHTML += separator + '<p class="muted" style="font-size:.85em">Loading document…</p>';
 
     try {
       const res = await fetch(`/api/rms/document-content?hash=${encodeURIComponent(hash)}`);
-      if (rmsDocPreviewActive !== hash) return;
+      if (rmsDocPreviewActive !== token) return;
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const md = await res.text();
-      if (rmsDocPreviewActive !== hash) return;
-      bodyEl.innerHTML = renderMarkdownLite(md);
+      if (rmsDocPreviewActive !== token) return;
+      bodyEl.innerHTML = renderDetailCard(row, register) + separator + renderMarkdownLite(md);
     } catch (e) {
-      if (rmsDocPreviewActive !== hash) return;
-      bodyEl.innerHTML = `<p class="error-text">Could not load document: ${escapeHtml(String(e))}</p>`;
+      if (rmsDocPreviewActive !== token) return;
+      bodyEl.innerHTML = renderDetailCard(row, register) + separator +
+        `<p class="error-text">Could not load document: ${escapeHtml(String(e))}</p>`;
     }
   }
 
