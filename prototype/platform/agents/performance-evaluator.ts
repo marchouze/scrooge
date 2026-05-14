@@ -241,9 +241,13 @@ function buildNarrative(
   }
   if (strengths.length === 0) {
     if (inactive) {
-      strengths.push("No activity recorded this period — no runs started, no PRs merged, no decisions advanced.");
+      strengths.push(
+        "No activity recorded this period — no runs started, no PRs merged, no decisions advanced.",
+      );
     } else {
-      strengths.push("No standout strengths recorded for this period — baseline performance observed.");
+      strengths.push(
+        "No standout strengths recorded for this period — baseline performance observed.",
+      );
     }
   }
 
@@ -280,8 +284,8 @@ function buildNarrative(
   if (inactive) {
     areasForImprovement.push(
       "Agent was completely inactive this period — zero runs, zero PRs, zero decisions, zero workstreams. " +
-      "An autonomous agent must generate output on its own cadence (Principle 6). " +
-      "Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.",
+        "An autonomous agent must generate output on its own cadence (Principle 6). " +
+        "Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.",
     );
   } else if (
     strategicMetrics.decisionsAdvanced.length === 0 &&

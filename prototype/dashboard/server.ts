@@ -66,6 +66,12 @@ import {
 } from "../platform/forward-obligations";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
+import {
+  getCorrespondentRouting,
+  getLimitUtilisations,
+  rebuildCorrespondentRouting,
+  rebuildLimitUtilisation,
+} from "../platform/projections/markets";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordCeoDecisionResult,
@@ -148,6 +154,14 @@ function ensureRuntimeDir(path: string): void {
 
 let cachedState: DashboardState = bootDerive();
 
+function buildSlice5Projections(): void {
+  // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
+  // from the current event store on every derive tick.
+  const allEvents = [...eventStore.replay({})];
+  rebuildLimitUtilisation(allEvents);
+  rebuildCorrespondentRouting(allEvents);
+}
+
 function bootDerive(): DashboardState {
   try {
     // Backfill any CeoDecision events that exist as on-disk decision
@@ -170,7 +184,13 @@ function bootDerive(): DashboardState {
     // existing legal-entity / counterparty / agent / signatory streams.
     // Idempotent (keyed by source-event id); re-boot is a no-op.
     bootPartyBackfill();
-    const s = deriveState({ sources: SOURCES, events: EVENTS });
+    // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections.
+    buildSlice5Projections();
+    const s = deriveState({
+      sources: SOURCES,
+      events: EVENTS,
+      limitUtilisations: getLimitUtilisations(),
+    });
     ensureRuntimeDir(RUNTIME_STATE_PATH);
     saveState(s, RUNTIME_STATE_PATH);
     return s;
@@ -302,7 +322,12 @@ function bootPartyBackfill(): void {
 
 function refresh(reason: string): void {
   try {
-    const next = deriveState({ sources: SOURCES, events: EVENTS });
+    buildSlice5Projections();
+    const next = deriveState({
+      sources: SOURCES,
+      events: EVENTS,
+      limitUtilisations: getLimitUtilisations(),
+    });
     cachedState = next;
     // RMS Slice 4 — invalidate the register-fold cache because new
     // appends to the event store may have changed any of the seven
@@ -1276,6 +1301,36 @@ const server = Bun.serve({
         });
       }
     }
+    // ---------- Slice 5 — pre-trade risk controls + correspondent routing ----------
+    if (url.pathname === "/api/rejections" && req.method === "GET") {
+      // Replays last 24h of OrderRejected events from the event store.
+      // Returns { asOf, rows } sorted newest first.
+      // Authority: D-MARKETS-SCHEMA-FOUNDATION Slice 5; ORG-JSE-IRC-01.
+      // pageProvenance: event-derived → simulated-only in build phase.
+      const windowStart = Date.now() - 86_400_000;
+      const rows = [...eventStore.replay({ type: "OrderRejected" })]
+        .filter((e) => new Date(e.as_of).getTime() >= windowStart)
+        .map((e) => e.payload)
+        .reverse(); // newest first (replay returns oldest first)
+      return jsonResponse({
+        asOf: nowUtc(),
+        rows,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/correspondent-routing" && req.method === "GET") {
+      // Static routing table for the bank's five operating currencies.
+      // Folds SettlementInstructionRouted events when available; falls back
+      // to the static seed. Authority: D-MARKETS-SCHEMA-FOUNDATION Slice 5;
+      // D-FX-CORRESPONDENT-PAIR-NAMING (CEO-approved 2026-05-09).
+      // pageProvenance: event-derived (static seed + event-derived overrides).
+      return jsonResponse({
+        asOf: nowUtc(),
+        rows: getCorrespondentRouting(),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    // ---------- end Slice 5 ----------
     if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
       // FX desk Slice 1 picker source. Folds the counterparty
       // institutional-eligibility events (Niko, PR #77) and returns the

@@ -156,12 +156,63 @@
         </div>
       </section>
 
+      <!-- Risk Controls — Slice 5 -->
+      <h2 class="shell-category-title" style="margin-top:var(--space-12);margin-bottom:var(--space-4)">Risk Controls — Slice 5</h2>
+
+      <!-- Tile 1 — RAS Utilisation -->
+      <section aria-labelledby="risk-ras-util-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="risk-ras-util-head">RAS Utilisation</h2>
+          <span class="shell-category-kind">Live</span>
+        </div>
+        <p class="shell-category-blurb">
+          Per-cluster utilisation against active RAS limit schedule (Helena, CRO).
+          Green &lt; 70 %, amber 70–90 %, red &gt; 90 %.
+          Source: <code>/api/state</code> → <code>limitUtilisations</code>.
+        </p>
+        <div id="risk-ras-utilisation-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Tile 2 — Rejection Feed -->
+      <section aria-labelledby="risk-rejections-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="risk-rejections-head">Rejection Feed</h2>
+          <span class="shell-category-kind">Last 24 h</span>
+        </div>
+        <p class="shell-category-blurb">
+          Orders blocked by pre-trade RAS limit checks (last 24 hours).
+          Source: <code>GET /api/rejections</code>.
+        </p>
+        <div id="risk-rejections-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Tile 3 — Correspondent Routing -->
+      <section aria-labelledby="risk-correspondent-head" style="margin-bottom:var(--space-12)">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="risk-correspondent-head">Correspondent Routing</h2>
+          <span class="shell-category-kind">Static seed</span>
+        </div>
+        <p class="shell-category-blurb">
+          Correspondent bank routing table per currency (Tomas, Operations &amp; payments).
+          Herstatt-risk flags for non-CLS pairs.
+          Source: <code>GET /api/correspondent-routing</code>.
+        </p>
+        <div id="risk-correspondent-body">
+          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
+        </div>
+      </section>
+
       <aside class="shell-callout" aria-labelledby="risk-gaps">
         <h3 id="risk-gaps">Build-phase substrate gaps</h3>
         <ul>
           <li>RAS metrics derivation pipeline — Helena (CRO) + Rohan (Market risk engineer) full wiring is M-phase work; B1–B5 clusters shown as placeholders until the event-typed RAS framework lands.</li>
           <li>Live limit monitoring — Rohan's limit-breach event types are not yet emitted; utilisations are placeholder.</li>
           <li>Stress scenarios C (extreme tail) deferred to M-phase per Helena's risk framework.</li>
+          <li>Slice 5 — CorrespondentRoutingProjection uses static seed; SettlementInstructionRouted event type lands in Tomas's payments-readiness substrate (M-phase).</li>
         </ul>
       </aside>
     </main>

@@ -251,6 +251,180 @@
     // --- Findings table (from AuditFinding events) ---------------
     const findingsEl = document.getElementById("risk-findings-body");
     if (findingsEl) findingsEl.innerHTML = renderFindingsSummary(findings);
+
+    // --- Slice 5 tiles -------------------------------------------
+    await loadSlice5(state);
+  }
+
+  // -------------------------------------------------------------------------
+  // Slice 5 — RAS Utilisation tile
+  // -------------------------------------------------------------------------
+
+  function fmtZar(amount) {
+    if (typeof amount !== "number") return "–";
+    return new Intl.NumberFormat("en-ZA", {
+      style: "currency",
+      currency: "ZAR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  function fmtPct(ratio) {
+    if (typeof ratio !== "number") return "–";
+    return `${(ratio * 100).toFixed(1)} %`;
+  }
+
+  function ragTone(ragStatus) {
+    if (ragStatus === "red") return "error";
+    if (ragStatus === "amber") return "warn";
+    return "success";
+  }
+
+  function renderRasUtilisation(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No RAS limit schedule published yet.</p>`;
+    }
+    const barRows = rows
+      .map((row) => {
+        const pct = typeof row.utilisationPct === "number" ? row.utilisationPct : 0;
+        const barPct = Math.min(pct * 100, 100).toFixed(1);
+        const tone = ragTone(row.ragStatus);
+        const barColor =
+          tone === "error"
+            ? "var(--semantic-error)"
+            : tone === "warn"
+              ? "var(--semantic-warn, #f59e0b)"
+              : "var(--semantic-success, #22c55e)";
+        return `<div style="padding:var(--space-3) var(--space-4);border-bottom:var(--border-subtle);display:grid;grid-template-columns:3rem 1fr 10rem 5rem 3.5rem;gap:var(--space-3);align-items:center">
+  <strong style="font-family:var(--font-mono);font-size:var(--type-small)">${row.cluster}</strong>
+  <div>
+    <div style="font-size:var(--type-small);margin-bottom:var(--space-1)">${row.limitName || "–"}</div>
+    <div style="background:var(--neutral-subtlest);border-radius:var(--radius-sm);height:8px;overflow:hidden">
+      <div style="background:${barColor};width:${barPct}%;height:100%;transition:width 0.4s ease"></div>
+    </div>
+  </div>
+  <span style="font-size:var(--type-caption);color:var(--neutral-stone);font-family:var(--font-mono);text-align:right">${fmtZar(row.currentExposure)} / ${fmtZar(row.limitValue)}</span>
+  <span style="font-size:var(--type-caption);font-family:var(--font-mono);text-align:right">${fmtPct(pct)}</span>
+  <span class="tl-dot" data-tone="${tone}" title="${row.ragStatus}" style="margin:0 auto"></span>
+</div>`;
+      })
+      .join("");
+    return `<div style="background:#fff;border:var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden">${barRows}</div>`;
+  }
+
+  // -------------------------------------------------------------------------
+  // Slice 5 — Rejection Feed tile
+  // -------------------------------------------------------------------------
+
+  function renderRejectionFeed(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No rejections in the last 24 hours.</p>`;
+    }
+    const displayRows = rows.slice(0, 50);
+    const tableRows = displayRows
+      .map((r) => {
+        const time = r.timestamp
+          ? new Date(r.timestamp).toISOString().replace("T", " ").slice(0, 19)
+          : "–";
+        const notional = typeof r.notional === "number" ? fmtZar(r.notional) : "–";
+        const util =
+          typeof r.utilisationAtRejection === "number" ? fmtPct(r.utilisationAtRejection) : "–";
+        return `<tr>
+  <td style="font-size:var(--type-caption);white-space:nowrap;font-family:var(--font-mono)">${time}</td>
+  <td><code style="font-size:var(--type-caption)">${r.instrumentId || "–"}</code></td>
+  <td style="font-family:var(--font-mono);text-align:right">${notional}</td>
+  <td><code style="font-size:var(--type-caption)">${r.limitCode || "–"}</code></td>
+  <td style="font-family:var(--font-mono);text-align:right">${util}</td>
+</tr>`;
+      })
+      .join("");
+    return `<div class="dept-table-wrap">
+  <table class="dept-table" aria-label="Order rejections last 24 h">
+    <thead><tr><th>Time</th><th>Instrument</th><th>Notional</th><th>Limit breached</th><th>Util. at rejection</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+</div>${rows.length > 50 ? `<p style="margin-top:var(--space-2);font-size:var(--type-caption);color:var(--neutral-stone)">Showing 50 of ${rows.length} rejections.</p>` : ""}`;
+  }
+
+  // -------------------------------------------------------------------------
+  // Slice 5 — Correspondent Routing tile
+  // -------------------------------------------------------------------------
+
+  function renderCorrespondentRouting(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No routing data available.</p>`;
+    }
+    const tableRows = rows
+      .map((r) => {
+        const clsCell = r.clsEligible
+          ? `<span style="color:var(--semantic-success, #22c55e)">Yes</span>`
+          : `<span style="color:var(--neutral-stone)">No</span>`;
+        const herstattTone =
+          r.herstattRisk === "high" ? "error" : r.herstattRisk === "managed" ? "warn" : "success";
+        const herstattCell = `<span class="status-badge" data-status="${herstattTone === "error" ? "flagged" : herstattTone === "warn" ? "pending" : "met"}">${r.herstattRisk || "–"}</span>`;
+        const bilateralFlag = r.flagBilateral
+          ? ` <span title="Non-CLS fallback applies" style="color:var(--semantic-warn, #f59e0b)">⚠</span>`
+          : "";
+        const scheme = r.flagBilateral ? `${r.scheme || "–"}${bilateralFlag}` : r.scheme || "–";
+        // Amber background for non-CLS pairs
+        const rowStyle =
+          (!r.clsEligible && r.currency !== "ZAR") || r.flagBilateral
+            ? "background:var(--semantic-warn-subtle, #fef3c7)"
+            : "";
+        return `<tr${rowStyle ? ` style="${rowStyle}"` : ""}>
+  <td><strong style="font-family:var(--font-mono)">${r.currency}</strong></td>
+  <td>${r.correspondentBank || "–"}</td>
+  <td><code style="font-size:var(--type-caption)">${scheme}</code></td>
+  <td>${clsCell}</td>
+  <td>${herstattCell}</td>
+</tr>`;
+      })
+      .join("");
+    return `<div class="dept-table-wrap">
+  <table class="dept-table" aria-label="Correspondent routing table">
+    <thead><tr><th>Currency</th><th>Correspondent</th><th>Scheme</th><th>CLS eligible</th><th>Herstatt risk</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+</div>`;
+  }
+
+  // -------------------------------------------------------------------------
+  // Load function — extended for Slice 5
+  // -------------------------------------------------------------------------
+
+  async function loadSlice5(state) {
+    // Tile 1 — RAS Utilisation from /api/state → limitUtilisations
+    const rasUtilEl = document.getElementById("risk-ras-utilisation-body");
+    if (rasUtilEl) {
+      rasUtilEl.innerHTML = renderRasUtilisation(state?.limitUtilisations);
+    }
+
+    // Tile 2 — Rejection Feed from /api/rejections
+    const rejectEl = document.getElementById("risk-rejections-body");
+    if (rejectEl) {
+      try {
+        const resp = await fetch("/api/rejections", { headers: { Accept: "application/json" } });
+        const data = resp.ok ? await resp.json() : null;
+        rejectEl.innerHTML = renderRejectionFeed(data?.rows);
+      } catch {
+        rejectEl.innerHTML = `<p style="color:var(--neutral-stone);font-size:var(--type-small)">Could not load /api/rejections.</p>`;
+      }
+    }
+
+    // Tile 3 — Correspondent Routing from /api/correspondent-routing
+    const corrEl = document.getElementById("risk-correspondent-body");
+    if (corrEl) {
+      try {
+        const resp = await fetch("/api/correspondent-routing", {
+          headers: { Accept: "application/json" },
+        });
+        const data = resp.ok ? await resp.json() : null;
+        corrEl.innerHTML = renderCorrespondentRouting(data?.rows);
+      } catch {
+        corrEl.innerHTML = `<p style="color:var(--neutral-stone);font-size:var(--type-small)">Could not load /api/correspondent-routing.</p>`;
+      }
+    }
   }
 
   window.bankRisk = { load };

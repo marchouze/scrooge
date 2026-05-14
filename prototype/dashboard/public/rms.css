@@ -208,7 +208,7 @@
   padding: 0.45rem 0.75rem;
   font-weight: 600;
   color: var(--shell-text-muted, #5b6470);
-  background: var(--shell-sidebar-active-bg, rgba(0,0,0,.03));
+  background: var(--shell-sidebar-active-bg, rgba(0, 0, 0, 0.03));
   border-right: 1px solid var(--shell-border, #e2e6ea);
   word-break: break-word;
 }

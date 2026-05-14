@@ -359,6 +359,117 @@ export function makeCounterpartyEligibilityBreached(args: {
 }
 
 // ---------------------------------------------------------------------------
+// Pre-trade risk controls — OrderRejected (Slice 5)
+//
+// Distinct from `OrderRejectedAtGateway` (which records a gateway-level
+// check rejection). `OrderRejected` is the RAS-limit-breach variant:
+// emitted when a pre-trade notional / exposure check breaches a hard limit
+// registered in the active `RasLimitSchedulePublished` schedule. Records
+// the cluster, limit code, and utilisation at the moment of rejection so
+// the LimitUtilisationProjection can fold the breach into its RAG status.
+//
+// Retention: 7 years per ORG-JSE-IRC-01 (JSE Integrated Risk Controls
+// record-retention obligation). Authors: Kai (Markets engineer) +
+// Helena (Chief Risk Officer, governance) + Rohan (Risk engineer).
+// Authority: D-MARKETS-SCHEMA-FOUNDATION, Slice 5.
+// ---------------------------------------------------------------------------
+
+export const riskClusterSchema = z.enum(["B1", "B2", "B3", "B4", "B5"]);
+export type RiskCluster = z.infer<typeof riskClusterSchema>;
+
+export const orderRejectedPayloadSchema = z.object({
+  orderId: z.string().min(1),
+  instrumentId: z.string().min(1),
+  asset: z.string().min(1),
+  notional: z.number().nonnegative(),
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/, { message: "currency must be ISO 4217 (3-char uppercase)" }),
+  limitCode: z.string().min(1),
+  utilisationAtRejection: z.number().min(0).max(1),
+  riskCluster: riskClusterSchema,
+  timestamp: z.string().min(1),
+});
+
+export type OrderRejectedPayload = z.infer<typeof orderRejectedPayloadSchema>;
+
+export function makeOrderRejected(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OrderRejectedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OrderRejected",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: orderRejectedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RasLimitSchedulePublished (Slice 5)
+//
+// Helena (CRO, governance) publishes the active RAS limit schedule.
+// Folds into LimitUtilisationProjection to set the denominator for each
+// cluster's utilisation calculation. A new schedule supersedes the prior
+// one (latest-wins-per-entity semantics in the projection).
+//
+// Authors: Helena (Chief Risk Officer, governance) + Rohan (Risk engineer).
+// Authority: D-MARKETS-SCHEMA-FOUNDATION, Slice 5.
+// ---------------------------------------------------------------------------
+
+export const rasLimitRowSchema = z.object({
+  cluster: riskClusterSchema,
+  limitName: z.string().min(1),
+  limitValue: z.number().positive(),
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/, { message: "currency must be ISO 4217 (3-char uppercase)" }),
+  breachThresholdAmber: z.number().min(0).max(1),
+  breachThresholdRed: z.number().min(0).max(1),
+});
+
+export type RasLimitRow = z.infer<typeof rasLimitRowSchema>;
+
+export const rasLimitSchedulePublishedPayloadSchema = z.object({
+  scheduleId: z.string().min(1),
+  publishedBy: z.string().min(1),
+  effectiveFrom: z.string().min(1),
+  limits: z.array(rasLimitRowSchema).min(1),
+});
+
+export type RasLimitSchedulePublishedPayload = z.infer<
+  typeof rasLimitSchedulePublishedPayloadSchema
+>;
+
+export function makeRasLimitSchedulePublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RasLimitSchedulePublishedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RasLimitSchedulePublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: rasLimitSchedulePublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX correspondent-routing — switch-test event family
 // ---------------------------------------------------------------------------
 
