@@ -155,8 +155,6 @@ export type RiskTaxonomyCode =
 // Node shape + flat registry.
 // ---------------------------------------------------------------------------
 
-import type { DcamAlignment } from "../taxonomies/index";
-
 export interface RiskTaxonomyNode {
   readonly code: RiskTaxonomyCode;
   readonly level: 1 | 2 | 3;
@@ -165,8 +163,6 @@ export interface RiskTaxonomyNode {
   /** Governance seat (or seat-pair) that holds policy authority. Level-1 only. */
   readonly owner: string;
   readonly definition: string;
-  /** DCAM three-layer alignment. L1 nodes only — L2/L3 inherit via parent. */
-  readonly dcamAlignment?: DcamAlignment;
 }
 
 /**
@@ -202,23 +198,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA,
     definition:
       "Risk that an obligor fails to meet contractual obligations as they fall due, producing a financial loss for the bank.",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
-        fiboLabel: "Financial Services Entity (Credit Risk)",
-        skosMatch: "relatedMatch",
-      },
-      logical: [
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d457.htm#credit-risk",
-          label: "Basel III Credit Risk",
-          skosMatch: "exactMatch",
-        },
-      ],
-    },
   },
   {
     code: "RT-MK",
@@ -228,16 +207,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA,
     definition:
       "Risk of loss in on- and off-balance-sheet positions arising from movements in market prices (interest rate in trading book, equity, FX, commodity, credit-spread).",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d352.htm",
-          label: "FRTB Market Risk",
-          skosMatch: "exactMatch",
-        },
-      ],
-    },
   },
   {
     code: "RT-LQ",
@@ -247,16 +216,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA_EITAN,
     definition:
       "Risk that the bank cannot meet obligations as they fall due (funding-liquidity) or cannot liquidate positions without unacceptable loss (market-liquidity).",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d457.htm#liquidity-risk",
-          label: "Basel III Liquidity Risk (LCR/NSFR)",
-          skosMatch: "exactMatch",
-        },
-      ],
-    },
   },
   {
     code: "RT-IRRBB",
@@ -266,16 +225,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA,
     definition:
       "Risk to earnings (NII) and economic value (EVE) from interest-rate movements affecting banking-book positions.",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d368.htm",
-          label: "Basel IRRBB Standard",
-          skosMatch: "exactMatch",
-        },
-      ],
-    },
   },
   {
     code: "RT-OP",
@@ -285,16 +234,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA_DEVON,
     definition:
       "Risk of loss from inadequate or failed internal processes, people, systems, or external events. Includes cyber, third-party, model, conduct-execution; excludes strategic and reputational.",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d457.htm#operational-risk",
-          label: "Basel III Operational Risk",
-          skosMatch: "exactMatch",
-        },
-      ],
-    },
   },
   {
     code: "RT-CD",
@@ -304,15 +243,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_ZARA,
     definition:
       "Risk that the bank's behaviour in markets or with clients produces unfair outcomes, market abuse, or breaches of conduct duties.",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
-        fiboLabel: "Financial Services Provider (Conduct)",
-        skosMatch: "closeMatch",
-      },
-    },
   },
   {
     code: "RT-FC",
@@ -322,16 +252,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_ZARA_MLRO,
     definition:
       "Risk that the bank is used to launder funds, finance terrorism, evade sanctions, facilitate tax evasion, or transact bribery and corruption.",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "FATF",
-          ref: "https://www.fatf-gafi.org/en/topics/financial-crime.html",
-          label: "FATF Financial Crime Framework",
-          skosMatch: "closeMatch",
-        },
-      ],
-    },
   },
   {
     code: "RT-LR",
@@ -341,15 +261,6 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_LEGAL,
     definition:
       "Risk of loss from unenforceable contracts, litigation, regulatory enforcement, or non-compliance with binding obligations. Excludes financial-crime obligations (under RT-FC).",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/RegulatoryAgency",
-        fiboLabel: "Regulatory Agency (Legal Risk)",
-        skosMatch: "closeMatch",
-      },
-    },
   },
   {
     code: "RT-ST",
@@ -1231,3 +1142,78 @@ export function getRiskTaxonomyNode(code: RiskTaxonomyCode): RiskTaxonomyNode | 
 export const RISK_TAXONOMY_CODES: ReadonlyArray<RiskTaxonomyCode> = RISK_TAXONOMY.map(
   (n) => n.code,
 );
+
+// ---------------------------------------------------------------------------
+// DCAM assembly — Risk taxonomy
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_RISK_L1,
+  getLogicalMappings,
+} from "../taxonomies/dcam/index";
+import type { DcamAlignment } from "../taxonomies/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for a risk taxonomy L1 code.
+ * Returns undefined for codes with no conceptual anchor (RT-ST, RT-RP, RT-CL).
+ * L2/L3 nodes inherit alignment from their L1 parent — call with the L1 code.
+ */
+export function getRiskDcamAlignment(code: string): DcamAlignment | undefined {
+  const physical = PHYSICAL_RISK_L1[code];
+  if (!physical) return undefined;
+  const concept = CONCEPTUAL_REGISTRY.get(physical.conceptKey);
+  if (!concept) return undefined;
+  const logical = getLogicalMappings(physical.conceptKey);
+
+  // For risk codes, override with the per-code BCBS ref if present;
+  // otherwise fall through to any BCBS mappings on the shared concept.
+  const bcbsLogical = physical.bcbsRef
+    ? [
+        {
+          standard: "BCBS" as const,
+          ref: physical.bcbsRef,
+          label:
+            logical.find(
+              (m) => m.standard === "BCBS" && m.notes?.includes(code.replace("RT-", "RT-")),
+            )?.label ??
+            logical.find((m) => m.standard === "BCBS")?.label ??
+            "BCBS Reference",
+          skosMatch: "exactMatch" as const,
+        },
+      ]
+    : logical
+        .filter((m) => m.standard === "BCBS")
+        .map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }));
+
+  const nonBcbsLogical = logical
+    .filter((m) => m.standard !== "BCBS")
+    .map((m) => ({
+      standard: m.standard,
+      ref: m.ref,
+      label: m.label,
+      skosMatch: m.skosMatch,
+      ...(m.notes !== undefined ? { notes: m.notes } : {}),
+    }));
+
+  const allLogical = [...bcbsLogical, ...nonBcbsLogical];
+
+  const conceptual = {
+    fiboModule: concept.fiboModule,
+    fiboIri: concept.fiboIri,
+    fiboLabel: concept.fiboLabel,
+    skosMatch: concept.skosMatch,
+    ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+  };
+
+  return {
+    conceptual,
+    ...(allLogical.length > 0 ? { logical: allLogical } : {}),
+  };
+}

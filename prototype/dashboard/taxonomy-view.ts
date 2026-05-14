@@ -7,6 +7,7 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { nowUtc } from "../platform/core/types";
+import { getRiskDcamAlignment } from "../platform/risk/taxonomy";
 import {
   ACTIVITY_CODES,
   ACTIVITY_GROUPS,
@@ -15,6 +16,8 @@ import {
   type DcamAlignment,
   PRODUCT_SCOPE,
   RISK_TAXONOMY,
+  getDomainDcamAlignment,
+  getProductDcamAlignment,
 } from "../platform/taxonomies";
 
 // ---------------------------------------------------------------------------
@@ -95,15 +98,18 @@ export interface TaxonomiesView {
  */
 export function buildTaxonomiesView(): TaxonomiesView {
   // ── Risk taxonomy ──────────────────────────────────────────────────────────
-  const riskNodes: RiskTaxonomyNodeView[] = RISK_TAXONOMY.map((n) => ({
-    code: n.code,
-    label: n.name,
-    parent: n.parent,
-    level: n.level,
-    description: n.definition,
-    owner: n.owner,
-    ...(n.dcamAlignment !== undefined ? { dcamAlignment: n.dcamAlignment } : {}),
-  }));
+  const riskNodes: RiskTaxonomyNodeView[] = RISK_TAXONOMY.map((n) => {
+    const dcamAlignment = n.level === 1 ? getRiskDcamAlignment(n.code) : undefined;
+    return {
+      code: n.code,
+      label: n.name,
+      parent: n.parent,
+      level: n.level,
+      description: n.definition,
+      owner: n.owner,
+      ...(dcamAlignment !== undefined ? { dcamAlignment } : {}),
+    };
+  });
 
   // ── Activity taxonomy ──────────────────────────────────────────────────────
   // Build a reverse map: code → group name.
@@ -127,20 +133,26 @@ export function buildTaxonomiesView(): TaxonomiesView {
   }
 
   // ── Domain taxonomy ────────────────────────────────────────────────────────
-  const domainNodes: DomainNodeView[] = DOMAIN_TAXONOMY.map((n) => ({
-    code: n.code,
-    label: n.label,
-    description: n.description,
-    ...(n.dcamAlignment !== undefined ? { dcamAlignment: n.dcamAlignment } : {}),
-  }));
+  const domainNodes: DomainNodeView[] = DOMAIN_TAXONOMY.map((n) => {
+    const dcamAlignment = getDomainDcamAlignment(n.code);
+    return {
+      code: n.code,
+      label: n.label,
+      description: n.description,
+      ...(dcamAlignment !== undefined ? { dcamAlignment } : {}),
+    };
+  });
 
   // ── Product scope ──────────────────────────────────────────────────────────
-  const productScopeNodes: ProductScopeNodeView[] = PRODUCT_SCOPE.map((n) => ({
-    code: n.code,
-    label: n.label,
-    description: n.description,
-    ...(n.dcamAlignment !== undefined ? { dcamAlignment: n.dcamAlignment } : {}),
-  }));
+  const productScopeNodes: ProductScopeNodeView[] = PRODUCT_SCOPE.map((n) => {
+    const dcamAlignment = getProductDcamAlignment(n.code);
+    return {
+      code: n.code,
+      label: n.label,
+      description: n.description,
+      ...(dcamAlignment !== undefined ? { dcamAlignment } : {}),
+    };
+  });
 
   return {
     asOf: nowUtc(),

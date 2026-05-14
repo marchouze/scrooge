@@ -19,6 +19,9 @@
 //   Layer 2 Logical:    CDM, ESMA-CFI, BCBS, FATF (how concepts are MODELED)
 //   Layer 3 Physical:   ISO 20022 message types + bank's own code strings
 //
+//   Layer files: ./dcam/layer1-conceptual.ts, ./dcam/layer2-logical.ts, ./dcam/layer3-physical.ts
+//   Assembly:    getProductDcamAlignment(), getDomainDcamAlignment() (this file)
+//
 // Author: Atlas (Core banking platform architect, engineering)
 
 // ---------------------------------------------------------------------------
@@ -87,6 +90,108 @@ export interface DcamAlignment {
 }
 
 // ---------------------------------------------------------------------------
+// DCAM three-layer assembly utilities
+// Cross-layer traversal: Layer 3 (physical code) → Layer 1 (concept) → Layer 2 (logical)
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_DOMAIN,
+  PHYSICAL_PRODUCT_SCOPE,
+  getLogicalMappings,
+} from "./dcam/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for a product scope code.
+ * Traverses: Layer 3 (physical mapping) → Layer 1 (conceptual registry) → Layer 2 (logical mappings).
+ * Returns undefined for codes with no Layer 1 anchor (e.g. "multi-asset").
+ */
+export function getProductDcamAlignment(code: string): DcamAlignment | undefined {
+  const physical = PHYSICAL_PRODUCT_SCOPE[code];
+  if (!physical) return undefined;
+
+  const concept = physical.conceptKey ? CONCEPTUAL_REGISTRY.get(physical.conceptKey) : undefined;
+  const logical = physical.conceptKey ? getLogicalMappings(physical.conceptKey) : [];
+
+  if (!concept && logical.length === 0 && (!physical.iso20022 || physical.iso20022.length === 0)) {
+    return undefined;
+  }
+
+  const conceptual = concept
+    ? {
+        fiboModule: concept.fiboModule,
+        fiboIri: concept.fiboIri,
+        fiboLabel: concept.fiboLabel,
+        skosMatch: concept.skosMatch,
+        ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+      }
+    : undefined;
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+  const physicalMapped =
+    physical.iso20022 && physical.iso20022.length > 0
+      ? physical.iso20022.map((p) => ({
+          standard: "ISO20022" as const,
+          messageType: p.messageType,
+          label: p.label,
+          ...(p.notes !== undefined ? { notes: p.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    ...(conceptual !== undefined ? { conceptual } : {}),
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+    ...(physicalMapped !== undefined ? { physical: physicalMapped } : {}),
+  };
+}
+
+/** Assemble DCAM alignment for a domain taxonomy code. */
+export function getDomainDcamAlignment(code: string): DcamAlignment | undefined {
+  const physical = PHYSICAL_DOMAIN[code];
+  if (!physical) return undefined;
+  const concept = CONCEPTUAL_REGISTRY.get(physical.conceptKey);
+  if (!concept) return undefined;
+  const logical = getLogicalMappings(physical.conceptKey);
+
+  const conceptual = {
+    fiboModule: concept.fiboModule,
+    fiboIri: concept.fiboIri,
+    fiboLabel: concept.fiboLabel,
+    skosMatch: concept.skosMatch,
+    ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+  };
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    conceptual,
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Re-exports — DCAM layer modules
+// ---------------------------------------------------------------------------
+
+export * from "./dcam/index";
+
+// ---------------------------------------------------------------------------
 // Re-exports — Risk taxonomy
 // ---------------------------------------------------------------------------
 
@@ -115,7 +220,6 @@ export interface DomainTaxonomyNode {
   readonly code: string;
   readonly label: string;
   readonly description: string;
-  readonly dcamAlignment?: DcamAlignment;
 }
 
 export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
@@ -123,58 +227,21 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     code: "A-PRUDENTIAL",
     label: "Prudential Regulation",
     description: "Capital adequacy, liquidity, ICAAP, ILAAP, recovery planning",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/PrudentialRegulator",
-        fiboLabel: "Prudential Regulator",
-        skosMatch: "broadMatch",
-      },
-    },
   },
   {
     code: "B-FINANCIAL-CRIME",
     label: "Financial Crime",
     description: "AML, sanctions, POCA, FIC Act, FATF",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "FATF",
-          ref: "https://www.fatf-gafi.org/en/topics/fatf-recommendations.html",
-          label: "FATF 40 Recommendations",
-          skosMatch: "closeMatch",
-        },
-      ],
-    },
   },
   {
     code: "C-FAIS",
     label: "Financial Advisory and Intermediary Services",
     description: "FSP licensing, fit-and-proper, conduct under FAIS Act",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
-        fiboLabel: "Financial Services Provider",
-        skosMatch: "closeMatch",
-      },
-    },
   },
   {
     code: "D-MARKET-CONDUCT",
     label: "Market Conduct",
     description: "FSCA conduct, TCF, market-abuse prohibition, FMCA",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/FinancialProduct",
-        fiboLabel: "Financial Product (Market Conduct)",
-        skosMatch: "closeMatch",
-      },
-    },
   },
   {
     code: "E-CYBER",
@@ -187,72 +254,26 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     label: "Corporate Governance",
     description:
       "Board, audit-committee, remuneration, internal-audit per BCBS CGPS, Companies Act",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FND",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/FormalOrganization",
-        fiboLabel: "Formal Organization",
-        skosMatch: "broadMatch",
-      },
-    },
   },
   {
     code: "G-REPORTING",
     label: "Regulatory Reporting",
     description: "BA returns, FinSurv, STRATE/Umoja/ODP trade reporting",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/RegulatoryAgency",
-        fiboLabel: "Regulatory Agency (Reporting)",
-        skosMatch: "relatedMatch",
-      },
-    },
   },
   {
     code: "H-OPERATIONAL",
     label: "Operational Resilience",
     description: "Outsourcing, business-continuity, DORA-aligned resilience",
-    dcamAlignment: {
-      logical: [
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d457.htm#operational-risk",
-          label: "Basel III Operational Risk",
-          skosMatch: "relatedMatch",
-        },
-      ],
-    },
   },
   {
     code: "I-TREASURY",
     label: "Treasury and ALM",
     description: "IRRBB, collateral management, liquidity-buffer, ALCO",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/MarketParticipant",
-        fiboLabel: "Market Participant (Treasury)",
-        skosMatch: "closeMatch",
-      },
-    },
   },
   {
     code: "J-MARKET-INFRASTRUCTURE",
     label: "Market Infrastructure",
     description: "CSD/STRATE rules, settlement, ODP obligations",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/Exchange",
-        fiboLabel: "Exchange / Market Infrastructure",
-        skosMatch: "closeMatch",
-      },
-    },
   },
 ] as const;
 
@@ -272,7 +293,6 @@ export interface ProductScopeNode {
   readonly code: string;
   readonly label: string;
   readonly description: string;
-  readonly dcamAlignment?: DcamAlignment;
 }
 
 export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
@@ -280,233 +300,36 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
     code: "equity-securities",
     label: "Equity Securities",
     description: "JSE-listed equities — spot trading and equity finance",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "SEC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/SEC/Equities/EquityInstruments/ListedShare",
-        fiboLabel: "Listed Share",
-        skosMatch: "exactMatch",
-      },
-      logical: [
-        {
-          standard: "CDM",
-          ref: "cdm.base.staticdata.asset.common.EquityTypeEnum.EQUITY",
-          label: "CDM Equity",
-          skosMatch: "exactMatch",
-        },
-        {
-          standard: "ESMA-CFI",
-          ref: "ES",
-          label: "Equities, Shares (ISO 10962 CFI)",
-          skosMatch: "broadMatch",
-        },
-      ],
-      physical: [
-        {
-          standard: "ISO20022",
-          messageType: "sese.023",
-          label: "Securities Settlement Instruction",
-        },
-        { standard: "ISO20022", messageType: "seev.036", label: "Corporate Action Instruction" },
-      ],
-    },
   },
   {
     code: "debt-securities",
     label: "Debt Securities",
     description: "JSE-listed and OTC bonds — government, SOE, and corporate fixed-income",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "SEC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/SEC/Debt/Bonds/Bond",
-        fiboLabel: "Bond",
-        skosMatch: "broadMatch",
-        definition: "Debt instrument with fixed maturity and coupon obligations",
-      },
-      logical: [
-        {
-          standard: "CDM",
-          ref: "cdm.base.staticdata.asset.common.DebtClassEnum.BOND",
-          label: "CDM Bond",
-          skosMatch: "broadMatch",
-        },
-        {
-          standard: "ESMA-CFI",
-          ref: "DB",
-          label: "Debt, Bonds (ISO 10962 CFI)",
-          skosMatch: "broadMatch",
-        },
-      ],
-      physical: [
-        {
-          standard: "ISO20022",
-          messageType: "sese.023",
-          label: "Securities Settlement Instruction",
-        },
-      ],
-    },
   },
   {
     code: "money-market-instruments",
     label: "Money Market Instruments",
     description: "Money market instruments: call deposits, NCDs, treasury bills",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "SEC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/SEC/Debt/ShortTermDebt/ShortTermDebt",
-        fiboLabel: "Short-Term Debt Instrument",
-        skosMatch: "exactMatch",
-      },
-      logical: [
-        {
-          standard: "ESMA-CFI",
-          ref: "MM",
-          label: "Money Market Instruments (ISO 10962 CFI)",
-          skosMatch: "broadMatch",
-        },
-      ],
-      physical: [
-        {
-          standard: "ISO20022",
-          messageType: "sese.023",
-          label: "Securities Settlement Instruction",
-        },
-      ],
-    },
   },
   {
     code: "interest-rate-derivatives",
     label: "Interest Rate Derivatives",
     description: "OTC interest rate derivatives: IRS, basis swaps, FRAs, caps, floors, swaptions",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "DER",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/DER/RateDerivatives/IRDerivatives/InterestRateDerivative",
-        fiboLabel: "Interest Rate Derivative",
-        skosMatch: "exactMatch",
-      },
-      logical: [
-        {
-          standard: "CDM",
-          ref: "cdm.product.asset.InterestRatePayout",
-          label: "CDM Interest Rate Payout",
-          skosMatch: "exactMatch",
-        },
-        {
-          standard: "ESMA-CFI",
-          ref: "SR",
-          label: "Swaps, Interest Rate (ISO 10962 CFI)",
-          skosMatch: "closeMatch",
-        },
-        {
-          standard: "BCBS",
-          ref: "https://www.bis.org/bcbs/publ/d352.htm",
-          label: "FRTB Market Risk — Interest Rate",
-          skosMatch: "relatedMatch",
-        },
-      ],
-      physical: [
-        {
-          standard: "ISO20022",
-          messageType: "auth.001",
-          label: "EMIR Trade Report",
-          notes: "Mandatory for OTC IRD with EU counterparties",
-        },
-        {
-          standard: "ISO20022",
-          messageType: "sese.023",
-          label: "Securities Settlement Instruction",
-          notes: "For physically-settled OTC",
-        },
-      ],
-    },
   },
   {
     code: "fx-instruments",
     label: "FX Instruments",
     description: "FX spot and forward: USD/ZAR and major cross-currency pairs",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "FBC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/ForeignExchange",
-        fiboLabel: "Foreign Exchange",
-        skosMatch: "broadMatch",
-      },
-      logical: [
-        {
-          standard: "CDM",
-          ref: "cdm.product.asset.FxSingle",
-          label: "CDM FX Single",
-          skosMatch: "closeMatch",
-        },
-        {
-          standard: "ESMA-CFI",
-          ref: "FF",
-          label: "Forwards, Foreign Exchange (ISO 10962 CFI)",
-          skosMatch: "broadMatch",
-        },
-      ],
-      physical: [
-        { standard: "ISO20022", messageType: "fxtr.014", label: "FX Trade Instruction" },
-        {
-          standard: "ISO20022",
-          messageType: "auth.001",
-          label: "EMIR Trade Report",
-          notes: "NDF / FX forward if EU counterparty",
-        },
-      ],
-    },
   },
   {
     code: "securities-financing",
     label: "Securities Financing",
     description: "Repos, reverse repos, and securities-lending arrangements",
-    dcamAlignment: {
-      conceptual: {
-        fiboModule: "SEC",
-        fiboIri:
-          "https://spec.edmcouncil.org/fibo/ontology/SEC/Securities/SecuritiesFinancing/RepurchaseAgreement",
-        fiboLabel: "Repurchase Agreement",
-        skosMatch: "broadMatch",
-        notes: "broadMatch — code also covers stock lending",
-      },
-      logical: [
-        {
-          standard: "CDM",
-          ref: "cdm.product.repo.RepurchaseAgreement",
-          label: "CDM Repo",
-          skosMatch: "closeMatch",
-        },
-        {
-          standard: "ESMA-CFI",
-          ref: "RF",
-          label: "Repurchase Agreements (ISO 10962 CFI)",
-          skosMatch: "broadMatch",
-        },
-      ],
-      physical: [
-        {
-          standard: "ISO20022",
-          messageType: "sese.023",
-          label: "Securities Settlement Instruction",
-        },
-        {
-          standard: "ISO20022",
-          messageType: "auth.001",
-          label: "EMIR Trade Report",
-          notes: "SFT reporting under SFTR",
-        },
-      ],
-    },
   },
   {
     code: "multi-asset",
     label: "Multi-Asset / Universal",
     description: "Applies to all products — cross-product scope obligations",
-    // No DCAM alignment: internal catch-all with no industry equivalent
   },
 ] as const;
 

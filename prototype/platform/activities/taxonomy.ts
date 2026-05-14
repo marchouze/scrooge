@@ -18,8 +18,6 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import type { DcamAlignment } from "../taxonomies/index";
-
 export const ACTIVITY_CODES = [
   // Trading
   "ACT-TRADE-FX", // FX dealing (spot, forward, swap)
@@ -100,185 +98,66 @@ export const ACTIVITY_LABELS: Record<ActivityCode, string> = {
   "ACT-CORP-LEGAL": "Legal & contracting",
 };
 
-export const ACTIVITY_DCAM_ALIGNMENTS: Partial<Record<ActivityCode, DcamAlignment>> = {
-  "ACT-TRADE-FX": {
-    conceptual: {
-      fiboModule: "FBC",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/ForeignExchange",
-      fiboLabel: "Foreign Exchange",
-      skosMatch: "closeMatch",
-    },
-    logical: [
-      {
-        standard: "CDM",
-        ref: "cdm.event.common.BusinessEvent",
-        label: "CDM Business Event (FX execution)",
-        skosMatch: "closeMatch",
-      },
-    ],
-    physical: [{ standard: "ISO20022", messageType: "fxtr.014", label: "FX Trade Instruction" }],
-  },
-  "ACT-TRADE-BOND": {
-    conceptual: {
-      fiboModule: "SEC",
-      fiboIri: "https://spec.edmcouncil.org/fibo/ontology/SEC/Debt/Bonds/Bond",
-      fiboLabel: "Bond (trading activity)",
-      skosMatch: "closeMatch",
-    },
-    logical: [
-      {
-        standard: "CDM",
-        ref: "cdm.event.common.BusinessEvent",
-        label: "CDM Business Event (bond execution)",
-        skosMatch: "closeMatch",
-      },
-    ],
-    physical: [
-      { standard: "ISO20022", messageType: "sese.023", label: "Securities Settlement Instruction" },
-    ],
-  },
-  "ACT-TRADE-EQUITY": {
-    conceptual: {
-      fiboModule: "SEC",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/SEC/Equities/EquityInstruments/ListedShare",
-      fiboLabel: "Listed Share (trading activity)",
-      skosMatch: "closeMatch",
-    },
-    logical: [
-      {
-        standard: "CDM",
-        ref: "cdm.event.common.BusinessEvent",
-        label: "CDM Business Event (equity execution)",
-        skosMatch: "closeMatch",
-      },
-    ],
-    physical: [
-      { standard: "ISO20022", messageType: "sese.023", label: "Securities Settlement Instruction" },
-    ],
-  },
-  "ACT-TRADE-OTC-IRD": {
-    conceptual: {
-      fiboModule: "DER",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/DER/RateDerivatives/IRDerivatives/InterestRateDerivative",
-      fiboLabel: "Interest Rate Derivative",
-      skosMatch: "exactMatch",
-    },
-    logical: [
-      {
-        standard: "CDM",
-        ref: "cdm.product.asset.InterestRatePayout",
-        label: "CDM Interest Rate Payout",
-        skosMatch: "exactMatch",
-      },
-    ],
-    physical: [
-      { standard: "ISO20022", messageType: "auth.001", label: "EMIR Trade Report" },
-      {
-        standard: "ISO20022",
-        messageType: "sese.023",
-        label: "Securities Settlement Instruction",
-        notes: "Physically-settled only",
-      },
-    ],
-  },
-  "ACT-TRADE-OTC-CREDIT": {
-    conceptual: {
-      fiboModule: "DER",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/DER/CreditDerivatives/CreditDerivatives/CreditDerivative",
-      fiboLabel: "Credit Derivative",
-      skosMatch: "exactMatch",
-    },
-    logical: [
-      {
-        standard: "CDM",
-        ref: "cdm.product.asset.CreditDefaultPayout",
-        label: "CDM Credit Default Payout",
-        skosMatch: "exactMatch",
-      },
-    ],
-    physical: [{ standard: "ISO20022", messageType: "auth.001", label: "EMIR Trade Report" }],
-  },
-  "ACT-BANK-PAYMENT": {
-    conceptual: {
-      fiboModule: "FBC",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/FBC/PaymentsAndSchedules/Payments/Payment",
-      fiboLabel: "Payment",
-      skosMatch: "exactMatch",
-    },
-    physical: [
-      { standard: "ISO20022", messageType: "pacs.008", label: "FI Credit Transfer (inter-bank)" },
-      { standard: "ISO20022", messageType: "pain.001", label: "Credit Transfer Initiation" },
-    ],
-  },
-  "ACT-BANK-NOSTRO": {
-    physical: [
-      { standard: "ISO20022", messageType: "camt.053", label: "Bank Account Statement (Nostro)" },
-      { standard: "ISO20022", messageType: "camt.052", label: "Intraday Liquidity Report" },
-    ],
-  },
-  "ACT-REPORT-TRADE": {
-    conceptual: {
-      fiboModule: "FBC",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/RegulatoryAgency",
-      fiboLabel: "Regulatory Agency (Trade Reporting)",
-      skosMatch: "relatedMatch",
-    },
-    physical: [
-      { standard: "ISO20022", messageType: "auth.001", label: "EMIR / SFTR Trade Report" },
-    ],
-  },
-  "ACT-RISK-CAPITAL": {
-    conceptual: {
-      fiboModule: "FND",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount",
-      fiboLabel: "Monetary Amount (Capital)",
-      skosMatch: "relatedMatch",
-    },
-    logical: [
-      {
-        standard: "BCBS",
-        ref: "https://www.bis.org/bcbs/publ/d457.htm",
-        label: "Basel III Capital Framework",
-        skosMatch: "exactMatch",
-      },
-    ],
-  },
-  "ACT-RISK-MARKET": {
-    logical: [
-      {
-        standard: "BCBS",
-        ref: "https://www.bis.org/bcbs/publ/d352.htm",
-        label: "FRTB Market Risk",
-        skosMatch: "exactMatch",
-      },
-    ],
-  },
-  "ACT-CLIENT-ADVICE": {
-    conceptual: {
-      fiboModule: "FBC",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/FinancialService",
-      fiboLabel: "Financial Advisory Service",
-      skosMatch: "closeMatch",
-    },
-  },
-  "ACT-CLIENT-ONBOARD": {
-    conceptual: {
-      fiboModule: "BE",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/LegalPerson",
-      fiboLabel: "Legal Person (onboarding)",
-      skosMatch: "relatedMatch",
-    },
-  },
-};
+// ---------------------------------------------------------------------------
+// DCAM assembly — Activity taxonomy
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_ACTIVITY,
+  getLogicalMappings,
+} from "../taxonomies/dcam/index";
+import type { DcamAlignment } from "../taxonomies/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for an activity code.
+ * Returns undefined for codes with no Layer 1 anchor.
+ */
+export function getActivityDcamAlignment(code: ActivityCode): DcamAlignment | undefined {
+  const physical = PHYSICAL_ACTIVITY[code];
+  if (!physical) return undefined;
+  const concept = physical.conceptKey ? CONCEPTUAL_REGISTRY.get(physical.conceptKey) : undefined;
+  const logical = physical.conceptKey ? getLogicalMappings(physical.conceptKey) : [];
+
+  if (!concept && logical.length === 0 && (!physical.iso20022 || physical.iso20022.length === 0)) {
+    return undefined;
+  }
+
+  const conceptual = concept
+    ? {
+        fiboModule: concept.fiboModule,
+        fiboIri: concept.fiboIri,
+        fiboLabel: concept.fiboLabel,
+        skosMatch: concept.skosMatch,
+        ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+      }
+    : undefined;
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+  const physicalMapped =
+    physical.iso20022 && physical.iso20022.length > 0
+      ? physical.iso20022.map((p) => ({
+          standard: "ISO20022" as const,
+          messageType: p.messageType,
+          label: p.label,
+          ...(p.notes !== undefined ? { notes: p.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    ...(conceptual !== undefined ? { conceptual } : {}),
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+    ...(physicalMapped !== undefined ? { physical: physicalMapped } : {}),
+  };
+}
 
 export const ACTIVITY_GROUPS: Record<string, ActivityCode[]> = {
   Trading: [

@@ -14,8 +14,6 @@
 //
 // Author: Atlas (Core banking platform architect; substrate)
 
-import type { DcamAlignment } from "../../platform/taxonomies/index";
-
 // ===========================================================================
 // PartyKind + PartyId
 // ===========================================================================
@@ -34,45 +32,6 @@ import type { DcamAlignment } from "../../platform/taxonomies/index";
  * Per D-PARTY-REGISTER correction (CEO-approved 2026-05-12).
  */
 export type PartyKind = "natural-person" | "legal-entity" | "agent";
-
-/**
- * DCAM three-layer alignment for each PartyKind.
- * Maps each kind to its FIBO / ISO-17442 anchor.
- * Null indicates no industry-standard equivalent (bank-internal concept).
- */
-export const PARTY_KIND_DCAM_ALIGNMENTS: Record<PartyKind, DcamAlignment | null> = {
-  "natural-person": {
-    conceptual: {
-      fiboModule: "BE",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/LegallyCompetentNaturalPerson",
-      fiboLabel: "Legally Competent Natural Person",
-      skosMatch: "exactMatch",
-    },
-  },
-  "legal-entity": {
-    conceptual: {
-      fiboModule: "BE",
-      fiboIri:
-        "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/LegalPerson",
-      fiboLabel: "Legal Person",
-      skosMatch: "broadMatch",
-      notes:
-        "Corporations: BE/Corporations/Corporations/Corporation (narrower). Covers all SA entity forms (Ltd, RF, Pty).",
-    },
-    logical: [
-      {
-        standard: "ISO17442",
-        ref: "https://www.gleif.org/en/about-lei/introducing-the-legal-entity-identifier-lei",
-        label: "Legal Entity Identifier (LEI)",
-        skosMatch: "exactMatch",
-        notes:
-          "Required for EMIR/SFTR reporting when trading OTC derivatives with EU counterparties.",
-      },
-    ],
-  },
-  agent: null, // Bank-specific AI persona — no FIBO or industry equivalent
-};
 
 /**
  * The closed enum at value-level — used by schemas + the constraint
@@ -518,4 +477,49 @@ export type PartyEventType = (typeof PARTY_EVENT_TYPES)[number];
  */
 export function partyId(kind: PartyKind, slug: string): PartyId {
   return `urn:party:${kind}:${slug}`;
+}
+
+// ---------------------------------------------------------------------------
+// DCAM assembly — Party kind
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_PARTY_KIND,
+  getLogicalMappings,
+} from "../../platform/taxonomies/dcam/index";
+import type { DcamAlignment } from "../../platform/taxonomies/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for a party kind.
+ * Returns null for kinds with no industry-standard equivalent (e.g. "agent").
+ */
+export function getPartyKindDcamAlignment(kind: PartyKind): DcamAlignment | null {
+  const physical = PHYSICAL_PARTY_KIND[kind];
+  if (!physical) return null;
+  const concept = CONCEPTUAL_REGISTRY.get(physical.conceptKey);
+  if (!concept) return null;
+  const logical = getLogicalMappings(physical.conceptKey);
+  const conceptual = {
+    fiboModule: concept.fiboModule,
+    fiboIri: concept.fiboIri,
+    fiboLabel: concept.fiboLabel,
+    skosMatch: concept.skosMatch,
+    ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+  };
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    conceptual,
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+  };
 }
