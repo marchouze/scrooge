@@ -49,6 +49,7 @@ export * from "./accounting";
 // Slice 2 — institutional counterparty onboarding lifecycle (7 new phase events).
 export * from "./customer";
 export * from "./fx-accounting";
+export * from "./regulatory";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -228,6 +229,13 @@ export const TYPED_EVENT_TYPES = [
   "FxPositionRevalued",
   "FxSettlementConfirmed",
   "SubLedgerPostingEmitted",
+  // Regulatory horizon-scanning event family — Mira pilot (FAIS Act 37/2002).
+  // Author: Mira (Compliance / RegTech engineer, engineering).
+  "RegulatoryInstrumentRegistered",
+  "RegulatoryInstrumentAmended",
+  "RegulatoryInstrumentContextualised",
+  "RegulatoryConceptExtracted",
+  "ObligationConceptLinked",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

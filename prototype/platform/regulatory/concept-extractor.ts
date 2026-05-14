@@ -1,0 +1,468 @@
+// platform/regulatory/concept-extractor.ts
+//
+// Regulatory concept extractor — uses Claude API to extract structured
+// obligation concepts from regulatory instrument text.
+//
+// Design:
+//   - Parses instrument text into sections using the FAIS Act numbering
+//     convention (section numbers like "1.", "2A." at top level).
+//   - For each section: idempotency check → Claude extraction → event emit.
+//   - Contextualisation (RegulatoryInstrumentContextualised) runs once
+//     per instrument on first call.
+//   - Prompt-cached: the bank profile + taxonomy + rubrics are the stable
+//     system prompt; section text is the volatile user input.
+//
+// Author: Mira (Compliance / RegTech engineer, engineering)
+
+import { claudeAvailable, tryGenerateNarrative } from "../../runtime/claude";
+import { BANK_ZA_001 } from "../core/types";
+import { hashContent } from "../document-store/hash";
+import {
+  type RegulatoryConceptExtractedPayload,
+  type RegulatoryInstrumentContextualisedPayload,
+  makeRegulatoryConceptExtracted,
+  makeRegulatoryInstrumentContextualised,
+} from "../event-store/event-types/regulatory";
+import type { EventStore } from "../event-store/store";
+import type { Actor } from "../event-store/types";
+import { logger } from "../observability/logger";
+
+// ---------------------------------------------------------------------------
+// Stable system prompt — prompt-cached on the Claude API.
+// Must remain byte-stable across runs (no timestamps, no UUIDs).
+// ---------------------------------------------------------------------------
+
+const EXTRACTION_SYSTEM_PROMPT = `You are a regulatory analysis engine for a SARB-licensed institutional global-markets trading bank in South Africa.
+
+BANK PROFILE:
+- Holds both a banking licence (Banks Act 94/1990) and an FSP licence (Category I, FAIS Act 37/2002)
+- Operates exclusively with institutional counterparties — no retail clients
+- Activities: JSE-listed bonds and equities, OTC interest rate derivatives (IRD), FX spot
+- Does not directly join CLS or SAMOS (uses correspondent banks)
+- No physical branches beyond registered office
+- AI-agent-operated; human staff at licence-day is statutory minimum (~5-10 people)
+
+TAXONOMY CODES (use only these for classifications):
+- Domains: A-PRUDENTIAL, B-FINANCIAL-CRIME, C-FAIS, D-MARKET-CONDUCT, E-CYBER, F-GOVERNANCE, G-REPORTING, H-OPERATIONAL, I-TREASURY, J-MARKET-INFRASTRUCTURE
+- Activity scope: ACT-TRADE-EXEC, ACT-TRADE-BOOK, ACT-CLIENT-ONBOARD, ACT-RISK-MGMT, ACT-REPORTING, ACT-SETTLEMENT, ACT-COMPLIANCE, ACT-CUSTODY, ACT-FX, ACT-CREDIT
+- Product scope: equities, bonds, ird, fx, money-market, repo, derivatives, universal
+- Risk taxonomy codes (abbreviated): MKT-001 through MKT-010, CRD-001 through CRD-005, OPR-001 through OPR-010, CMP-001 through CMP-010, LIQ-001 through LIQ-005
+
+APPLICABILITY SCORING RUBRIC:
+- 1.0: section explicitly names the bank's entity/licence type; condition scope matches activities; currently effective
+- 0.7-0.9: plausibly applies; one dimension uncertain
+- 0.4-0.6: applies to the bank's sector but not its specific activities (e.g. retail-only rules)
+- 0.1-0.3: applies to entities the bank is not (e.g. stockbroker-specific rules)
+- 0.0: definitional, penalty admin, or no direct obligation on the bank
+
+RELEVANCY SCORING RUBRIC (given it applies, how operationally significant?):
+- 0.9-1.0: criminal penalty / licence-affecting / regulator-recipient obligation
+- 0.7-0.8: ongoing operational duty (disclosure, reporting, record-keeping)
+- 0.5-0.6: internal governance or system-capability requirement
+- 0.3-0.4: client-facing duty (lower exposure for institutional-only bank)
+- 0.0-0.2: definitional or contextual; no direct action required
+
+Return ONLY valid JSON matching this exact structure (no markdown, no explanation):
+{
+  "sectionTitle": "...",
+  "subjectScope": { "entityTypes": [], "licenceTypes": [], "roles": [], "thresholdDescription": null },
+  "temporalScope": { "commencementDate": null, "cadence": "ongoing", "eventTrigger": null, "periodDays": null, "transitionalNote": null },
+  "conditionScope": { "clientTypes": [], "activityTriggers": [], "instrumentTypes": [], "thresholdConditions": [], "exclusions": [] },
+  "obligation": { "type": "duty", "actor": [], "actionSummary": "...", "timeframeDescription": null, "output": null, "recipient": [] },
+  "applicabilityScore": 0.0,
+  "applicabilityRationale": "...",
+  "relevancyScore": 0.0,
+  "relevancyRationale": "...",
+  "classifications": { "domain": [], "riskTaxonomy": [], "productScope": [], "activityScope": [] }
+}`;
+
+const CONTEXTUALISATION_SYSTEM_PROMPT = `You are a regulatory analysis engine for a SARB-licensed institutional global-markets trading bank in South Africa.
+
+Analyse the regulatory instrument text provided and return ONLY valid JSON (no markdown, no explanation) matching this exact structure:
+{
+  "regulatoryAuthority": {
+    "name": "...",
+    "mandate": "...",
+    "enforcementPowers": []
+  },
+  "legislativeFramework": {
+    "instrumentType": "...",
+    "parentLegislation": [],
+    "relatedDomesticInstruments": [],
+    "positionInHierarchy": "...",
+    "administeredBy": "..."
+  },
+  "internationalAlignment": {
+    "conformsTo": [],
+    "alignmentDescription": "...",
+    "knownDeviations": []
+  },
+  "regulatoryObjective": {
+    "longTitle": "...",
+    "primaryObjective": "...",
+    "protectedInterests": [],
+    "enforcementApproach": "principles-based",
+    "outcomeStatement": "..."
+  }
+}`;
+
+// ---------------------------------------------------------------------------
+// Section parser
+// ---------------------------------------------------------------------------
+
+export interface ParsedSection {
+  /** e.g. "7" or "13A" */
+  sectionNumber: string;
+  /** Full text of the section including subsections */
+  text: string;
+}
+
+/**
+ * Parse a regulatory instrument's full text into top-level sections.
+ *
+ * FAIS Act convention:
+ *   Section 1. heading
+ *   (1) subsection one
+ *   (2) subsection two
+ *
+ * Top-level section markers: digits optionally followed by a capital letter,
+ * followed by a period and a capital letter or opening bracket.
+ * e.g. "1. Definitions", "7. Authorisation", "13A. Fit and proper"
+ */
+export function parseSections(fullText: string): ParsedSection[] {
+  // Match lines starting a top-level section: "  7. Heading" or "13A. Heading"
+  // The capital letter or bracket after the period distinguishes sections from
+  // sub-references like "(a) text" which do NOT match.
+  const lines = fullText.split("\n");
+  const sections: ParsedSection[] = [];
+  let currentSectionNum: string | null = null;
+  let currentLines: string[] = [];
+
+  for (const line of lines) {
+    const m = line.match(/^[ \t]*(\d+[A-Z]?)\.[ \t]+([A-Z\(])/);
+    if (m) {
+      // Save the previous section if any
+      if (currentSectionNum !== null && currentLines.length > 0) {
+        sections.push({
+          sectionNumber: currentSectionNum,
+          text: currentLines.join("\n").trim(),
+        });
+      }
+      currentSectionNum = m[1] ?? null;
+      currentLines = [line];
+    } else if (currentSectionNum !== null) {
+      currentLines.push(line);
+    }
+    // Lines before the first section are skipped (preamble / table of contents)
+  }
+
+  // Flush the last section
+  if (currentSectionNum !== null && currentLines.length > 0) {
+    sections.push({
+      sectionNumber: currentSectionNum,
+      text: currentLines.join("\n").trim(),
+    });
+  }
+
+  return sections;
+}
+
+/**
+ * Build the canonical sectionId for a given instrument + section number.
+ * e.g. ("FAIS-ACT-37-2002", "7") → "FAIS-ACT-37-2002:s7"
+ *      ("FAIS-ACT-37-2002", "13A") → "FAIS-ACT-37-2002:s13A"
+ */
+export function buildSectionId(instrumentId: string, sectionNumber: string): string {
+  return `${instrumentId}:s${sectionNumber}`;
+}
+
+// ---------------------------------------------------------------------------
+// Idempotency helpers
+// ---------------------------------------------------------------------------
+
+function hasContextualisation(store: EventStore, instrumentId: string): boolean {
+  for (const event of store.replay({ type: "RegulatoryInstrumentContextualised" })) {
+    const p = event.payload as { instrumentId?: string };
+    if (p.instrumentId === instrumentId) return true;
+  }
+  return false;
+}
+
+function hasConceptExtracted(store: EventStore, sectionId: string, contentHash: string): boolean {
+  for (const event of store.replay({ type: "RegulatoryConceptExtracted" })) {
+    // Key: sectionId must match AND we need to check that the extraction was
+    // done against the same content version (same instrument contentHash).
+    // We store a composite key in a _contentHash field appended to the payload.
+    const raw = event.payload as Record<string, unknown>;
+    if (raw.sectionId === sectionId && raw._contentHash === contentHash) return true;
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Contextualisation
+// ---------------------------------------------------------------------------
+
+async function contextualise(opts: {
+  instrumentId: string;
+  fullText: string;
+  actor: Actor;
+  store: EventStore;
+}): Promise<void> {
+  const { instrumentId, fullText, actor, store } = opts;
+
+  if (!claudeAvailable()) {
+    logger.warn({ instrumentId }, "Claude unavailable — skipping contextualisation");
+    return;
+  }
+
+  // Pass the first 3000 chars of the text (preamble + long title) for context
+  const excerpt = fullText.slice(0, 3000);
+
+  const result = await tryGenerateNarrative({
+    stableSystem: CONTEXTUALISATION_SYSTEM_PROMPT,
+    userInput: `INSTRUMENT: ${instrumentId}\n\nTEXT EXCERPT (first 3000 chars):\n${excerpt}`,
+    maxTokens: 2000,
+    effort: "medium",
+  });
+
+  if (!result.ok) {
+    logger.error({ instrumentId, error: result.error }, "contextualisation Claude call failed");
+    return;
+  }
+
+  let parsed: Omit<
+    RegulatoryInstrumentContextualisedPayload,
+    "instrumentId" | "contextualisedAt" | "contextualisedBy"
+  >;
+  try {
+    parsed = JSON.parse(result.result.text);
+  } catch {
+    logger.error(
+      { instrumentId, raw: result.result.text.slice(0, 200) },
+      "failed to parse contextualisation JSON",
+    );
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const event = makeRegulatoryInstrumentContextualised({
+    asOf: now,
+    entity: BANK_ZA_001,
+    actor,
+    citations: ["FAIS-ACT-37-2002", "ORG-CD-01"],
+    payload: {
+      instrumentId,
+      ...parsed,
+      contextualisedAt: now,
+      contextualisedBy: actor.id,
+    },
+  });
+
+  store.append(event);
+  logger.info({ instrumentId }, "RegulatoryInstrumentContextualised emitted");
+}
+
+// ---------------------------------------------------------------------------
+// Main extractor
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract regulatory concepts from a full instrument text.
+ *
+ * For each top-level section:
+ * 1. Checks idempotency (skip if already extracted for this content hash).
+ * 2. Calls Claude to extract structured obligation concept.
+ * 3. Emits RegulatoryConceptExtracted event.
+ *
+ * Returns counts of concepts emitted and sections skipped.
+ */
+export async function extractConcepts(opts: {
+  instrumentId: string;
+  fullText: string;
+  actor: Actor;
+  eventStore: EventStore;
+}): Promise<{ conceptsEmitted: number; skipped: number; highApplicability: string[] }> {
+  const { instrumentId, fullText, actor, eventStore } = opts;
+
+  // Compute content hash for idempotency (DocumentHash is a branded string)
+  const contentHash = hashContent(fullText) as string;
+
+  // Run contextualisation if not already done
+  if (!hasContextualisation(eventStore, instrumentId)) {
+    await contextualise({ instrumentId, fullText, actor, store: eventStore });
+  }
+
+  // Parse sections
+  const sections = parseSections(fullText);
+  logger.info({ instrumentId, sectionCount: sections.length }, "sections parsed");
+
+  let conceptsEmitted = 0;
+  let skipped = 0;
+  const highApplicability: string[] = [];
+
+  for (const section of sections) {
+    const sectionId = buildSectionId(instrumentId, section.sectionNumber);
+
+    // Idempotency check
+    if (hasConceptExtracted(eventStore, sectionId, contentHash)) {
+      skipped++;
+      continue;
+    }
+
+    if (!claudeAvailable()) {
+      logger.warn({ sectionId }, "Claude unavailable — skipping section extraction");
+      skipped++;
+      continue;
+    }
+
+    // Truncate verbatim text to 2000 chars
+    const verbatim = section.text.slice(0, 2000);
+
+    const result = await tryGenerateNarrative({
+      stableSystem: EXTRACTION_SYSTEM_PROMPT,
+      userInput: `INSTRUMENT: ${instrumentId}\nSECTION: ${section.sectionNumber}\n\nTEXT:\n${section.text}`,
+      maxTokens: 2000,
+      effort: "medium",
+    });
+
+    if (!result.ok) {
+      logger.error({ sectionId, error: result.error }, "concept extraction Claude call failed");
+      skipped++;
+      continue;
+    }
+
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(result.result.text);
+    } catch {
+      logger.error(
+        { sectionId, raw: result.result.text.slice(0, 200) },
+        "failed to parse concept JSON",
+      );
+      skipped++;
+      continue;
+    }
+
+    const now = new Date().toISOString();
+
+    // Build payload — map Claude output to our schema
+    const payload: RegulatoryConceptExtractedPayload & { _contentHash: string } = {
+      instrumentId,
+      sectionId,
+      sectionTitle:
+        (parsed.sectionTitle as string | undefined) ?? `Section ${section.sectionNumber}`,
+      verbatimText: verbatim,
+      subjectScope: {
+        entityTypes:
+          ((parsed.subjectScope as Record<string, unknown>)?.entityTypes as string[]) ?? [],
+        licenceTypes:
+          ((parsed.subjectScope as Record<string, unknown>)?.licenceTypes as string[]) ?? [],
+        roles: ((parsed.subjectScope as Record<string, unknown>)?.roles as string[]) ?? [],
+        thresholdDescription:
+          ((parsed.subjectScope as Record<string, unknown>)?.thresholdDescription as
+            | string
+            | undefined) ?? undefined,
+      },
+      temporalScope: {
+        commencementDate:
+          ((parsed.temporalScope as Record<string, unknown>)?.commencementDate as
+            | string
+            | undefined) ?? undefined,
+        cadence: (((parsed.temporalScope as Record<string, unknown>)?.cadence as string) ??
+          "ongoing") as "ongoing" | "one-time" | "periodic" | "event-triggered",
+        eventTrigger:
+          ((parsed.temporalScope as Record<string, unknown>)?.eventTrigger as string | undefined) ??
+          undefined,
+        periodDays:
+          ((parsed.temporalScope as Record<string, unknown>)?.periodDays as number | undefined) ??
+          undefined,
+        transitionalNote:
+          ((parsed.temporalScope as Record<string, unknown>)?.transitionalNote as
+            | string
+            | undefined) ?? undefined,
+      },
+      conditionScope: {
+        clientTypes:
+          ((parsed.conditionScope as Record<string, unknown>)?.clientTypes as
+            | string[]
+            | undefined) ?? undefined,
+        activityTriggers:
+          ((parsed.conditionScope as Record<string, unknown>)?.activityTriggers as
+            | string[]
+            | undefined) ?? undefined,
+        instrumentTypes:
+          ((parsed.conditionScope as Record<string, unknown>)?.instrumentTypes as
+            | string[]
+            | undefined) ?? undefined,
+        thresholdConditions:
+          ((parsed.conditionScope as Record<string, unknown>)?.thresholdConditions as
+            | string[]
+            | undefined) ?? undefined,
+        exclusions:
+          ((parsed.conditionScope as Record<string, unknown>)?.exclusions as
+            | string[]
+            | undefined) ?? undefined,
+      },
+      obligation: {
+        type: (((parsed.obligation as Record<string, unknown>)?.type as string) ??
+          "other") as RegulatoryConceptExtractedPayload["obligation"]["type"],
+        actor: ((parsed.obligation as Record<string, unknown>)?.actor as string[]) ?? [],
+        actionSummary:
+          ((parsed.obligation as Record<string, unknown>)?.actionSummary as string) ??
+          "No action summary available.",
+        timeframeDescription:
+          ((parsed.obligation as Record<string, unknown>)?.timeframeDescription as
+            | string
+            | undefined) ?? undefined,
+        output:
+          ((parsed.obligation as Record<string, unknown>)?.output as string | undefined) ??
+          undefined,
+        recipient:
+          ((parsed.obligation as Record<string, unknown>)?.recipient as string[] | undefined) ??
+          undefined,
+      },
+      applicabilityScore: (parsed.applicabilityScore as number | undefined) ?? 0,
+      applicabilityRationale:
+        (parsed.applicabilityRationale as string | undefined) ?? "No rationale provided.",
+      relevancyScore: (parsed.relevancyScore as number | undefined) ?? 0,
+      relevancyRationale:
+        (parsed.relevancyRationale as string | undefined) ?? "No rationale provided.",
+      classifications: {
+        domain: ((parsed.classifications as Record<string, unknown>)?.domain as string[]) ?? [],
+        riskTaxonomy:
+          ((parsed.classifications as Record<string, unknown>)?.riskTaxonomy as string[]) ?? [],
+        productScope:
+          ((parsed.classifications as Record<string, unknown>)?.productScope as string[]) ?? [],
+        activityScope:
+          ((parsed.classifications as Record<string, unknown>)?.activityScope as string[]) ?? [],
+      },
+      extractedAt: now,
+      extractedBy: actor.id,
+      // Internal idempotency key — stored in payload for deduplication.
+      _contentHash: contentHash,
+    };
+
+    const event = makeRegulatoryConceptExtracted({
+      asOf: now,
+      entity: BANK_ZA_001,
+      actor,
+      citations: ["FAIS-ACT-37-2002", "ORG-CD-01"],
+      payload,
+    });
+
+    eventStore.append(event);
+    conceptsEmitted++;
+
+    if (payload.applicabilityScore >= 0.7) {
+      highApplicability.push(sectionId);
+    }
+
+    logger.debug(
+      { sectionId, applicabilityScore: payload.applicabilityScore },
+      "concept extracted",
+    );
+  }
+
+  return { conceptsEmitted, skipped, highApplicability };
+}
