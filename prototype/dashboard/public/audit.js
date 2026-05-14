@@ -190,11 +190,12 @@
     let p3 = 0;
 
     if (findingsArr.length > 0) {
-      // Count from the event-derived array: map severity strings to P1/P2/P3.
+      // P1 = Critical, P2 = High, P3 = Medium / Low / Advisory.
+      // Matches the HTML tile labels (audit-p1 "P1 — Critical", audit-p2 "P2 — High").
       for (const f of findingsArr) {
         const sev = (f.severity || "").toLowerCase();
-        if (sev === "critical" || sev === "high") p1++;
-        else if (sev === "medium") p2++;
+        if (sev === "critical") p1++;
+        else if (sev === "high") p2++;
         else p3++;
       }
     } else {
