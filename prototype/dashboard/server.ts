@@ -94,6 +94,7 @@ import {
   proseAuthoredPageProvenance,
   substrateGapsPageProvenance,
 } from "./page-provenance";
+import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
@@ -114,7 +115,6 @@ import {
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import type { DashboardState } from "./types";
-import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);

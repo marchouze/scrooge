@@ -604,7 +604,7 @@
       const fleetSize = safeNum(performance.fleetSize);
       if (fleetSize === 0 || safeNum(performance.evaluatedToday) === 0) {
         // No evaluations yet — neutral state
-        counts["performance"] = {
+        counts.performance = {
           text: "—",
           tone: "muted",
           aria: "No agent evaluations recorded yet",
@@ -615,7 +615,7 @@
         const tc = performance.tierCounts ?? {};
         const attention = safeNum(tc.needsImprovement) + safeNum(tc.unsatisfactory);
         const tone = attention > 0 ? "warn" : "success";
-        counts["performance"] = {
+        counts.performance = {
           text: `${avgPct}%`,
           tone,
           aria: `Fleet avg score ${avgPct}%; ${safeNum(tc.exceeds)} exceeds; ${attention} need attention`,

@@ -38,15 +38,15 @@
   // ---------------------------------------------------------------------------
   function pct(score) {
     if (typeof score !== "number") return "—";
-    return Math.round(score * 100) + "%";
+    return `${Math.round(score * 100)}%`;
   }
 
   function tierBadge(tier) {
     const map = {
-      "exceeds":            ["tier-exceeds",            "Exceeds"],
-      "meets":              ["tier-meets",               "Meets"],
-      "needs-improvement":  ["tier-needs-improvement",   "Needs improvement"],
-      "unsatisfactory":     ["tier-unsatisfactory",      "Unsatisfactory"],
+      exceeds: ["tier-exceeds", "Exceeds"],
+      meets: ["tier-meets", "Meets"],
+      "needs-improvement": ["tier-needs-improvement", "Needs improvement"],
+      unsatisfactory: ["tier-unsatisfactory", "Unsatisfactory"],
     };
     const [cls, label] = map[tier] ?? ["tier-meets", tier ?? "—"];
     return `<span class="tier-badge ${cls}">${label}</span>`;
@@ -54,11 +54,16 @@
 
   function trendArrow(trend) {
     switch (trend) {
-      case "improving":         return `<span class="trend-arrow trend-improving" title="Improving">↑</span>`;
-      case "declining":         return `<span class="trend-arrow trend-declining" title="Declining">↓</span>`;
-      case "stable":            return `<span class="trend-arrow trend-stable" title="Stable">→</span>`;
-      case "insufficient-data": return `<span class="trend-arrow trend-insufficient" title="Insufficient data">—</span>`;
-      default:                  return `<span class="trend-arrow trend-insufficient">—</span>`;
+      case "improving":
+        return `<span class="trend-arrow trend-improving" title="Improving">↑</span>`;
+      case "declining":
+        return `<span class="trend-arrow trend-declining" title="Declining">↓</span>`;
+      case "stable":
+        return `<span class="trend-arrow trend-stable" title="Stable">→</span>`;
+      case "insufficient-data":
+        return `<span class="trend-arrow trend-insufficient" title="Insufficient data">—</span>`;
+      default:
+        return `<span class="trend-arrow trend-insufficient">—</span>`;
     }
   }
 
@@ -76,10 +81,14 @@
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     const last7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
     switch (period) {
-      case "today":     return agent.latestPeriod === today;
-      case "yesterday": return agent.latestPeriod === yesterday;
-      case "last7":     return agent.latestPeriod >= last7;
-      default:          return true;
+      case "today":
+        return agent.latestPeriod === today;
+      case "yesterday":
+        return agent.latestPeriod === yesterday;
+      case "last7":
+        return agent.latestPeriod >= last7;
+      default:
+        return true;
     }
   }
 
@@ -90,7 +99,9 @@
     const scores = agent.latestScores ?? {};
     const narrative = agent.latestNarrative ?? {};
     const strengths = Array.isArray(narrative.strengths) ? narrative.strengths : [];
-    const improvements = Array.isArray(narrative.areasForImprovement) ? narrative.areasForImprovement : [];
+    const improvements = Array.isArray(narrative.areasForImprovement)
+      ? narrative.areasForImprovement
+      : [];
     const feedbackSummary = narrative.feedbackSummary ?? "";
     const feedbackPath = agent.lastFeedbackPath;
 
@@ -114,13 +125,15 @@
         </div>
       </div>`;
 
-    const strengthsHtml = strengths.length > 0
-      ? `<ul>${strengths.map(s => `<li>${escHtml(s)}</li>`).join("")}</ul>`
-      : `<p style="color:var(--neutral-stone);font-style:italic">None recorded</p>`;
+    const strengthsHtml =
+      strengths.length > 0
+        ? `<ul>${strengths.map((s) => `<li>${escHtml(s)}</li>`).join("")}</ul>`
+        : `<p style="color:var(--neutral-stone);font-style:italic">None recorded</p>`;
 
-    const improvementsHtml = improvements.length > 0
-      ? `<ul>${improvements.map(s => `<li>${escHtml(s)}</li>`).join("")}</ul>`
-      : `<p style="color:var(--neutral-stone);font-style:italic">None recorded</p>`;
+    const improvementsHtml =
+      improvements.length > 0
+        ? `<ul>${improvements.map((s) => `<li>${escHtml(s)}</li>`).join("")}</ul>`
+        : `<p style="color:var(--neutral-stone);font-style:italic">None recorded</p>`;
 
     const feedbackHtml = feedbackPath
       ? `<p>${escHtml(feedbackSummary)}</p><p style="margin-top:6px"><a class="perf-feedback-link" href="${escHtml(feedbackPath)}">${escHtml(feedbackPath)}</a></p>`
@@ -165,7 +178,8 @@
     const tbody = document.getElementById("perfTableBody");
     if (!tbody) return;
 
-    document.getElementById("filterCount").textContent = `${agents.length} agent${agents.length !== 1 ? "s" : ""}`;
+    document.getElementById("filterCount").textContent =
+      `${agents.length} agent${agents.length !== 1 ? "s" : ""}`;
 
     if (agents.length === 0) {
       tbody.innerHTML = `<tr><td colspan="9">
@@ -223,7 +237,7 @@
     const avgPct = data.fleetSize > 0 ? pct(data.avgOverallScore) : "—";
     const tc = data.tierCounts ?? {};
     const improving = Array.isArray(data.allAgents)
-      ? data.allAgents.filter(a => a.trend === "improving").length
+      ? data.allAgents.filter((a) => a.trend === "improving").length
       : 0;
     const attention = (tc.needsImprovement ?? 0) + (tc.unsatisfactory ?? 0);
 
@@ -253,7 +267,7 @@
         <div class="perf-card-sub">trend ↑ vs prior eval</div>
       </div>
       <div class="perf-card">
-        <div class="perf-card-num" style="color:${attention > 0 ? '#8b2018' : 'inherit'}">${attention}</div>
+        <div class="perf-card-num" style="color:${attention > 0 ? "#8b2018" : "inherit"}">${attention}</div>
         <div class="perf-card-lbl">Need attention</div>
         <div class="perf-card-sub">needs-improvement or unsat.</div>
       </div>`;
@@ -266,17 +280,17 @@
 
   function applyFilters() {
     const period = document.getElementById("filterPeriod")?.value ?? "";
-    const tier   = document.getElementById("filterTier")?.value ?? "";
-    const trend  = document.getElementById("filterTrend")?.value ?? "";
+    const tier = document.getElementById("filterTier")?.value ?? "";
+    const trend = document.getElementById("filterTrend")?.value ?? "";
     const search = (document.getElementById("filterSearch")?.value ?? "").toLowerCase().trim();
 
-    const filtered = allAgents.filter(agent => {
+    const filtered = allAgents.filter((agent) => {
       if (!agentMatchesPeriod(agent, period)) return false;
       if (tier && agent.latestTier !== tier) return false;
       if (trend && agent.trend !== trend) return false;
       if (search) {
         const role = agentRole(agent.agentId).toLowerCase();
-        const id   = agent.agentId.toLowerCase();
+        const id = agent.agentId.toLowerCase();
         if (!id.includes(search) && !role.includes(search)) return false;
       }
       return true;
@@ -289,10 +303,10 @@
   // Main fetch + render
   // ---------------------------------------------------------------------------
   async function fetchAndRender() {
-    const liveDot   = document.getElementById("liveDot");
-    const lastUp    = document.getElementById("lastUpdated");
-    const perfSub   = document.getElementById("perfSub");
-    const banner    = document.getElementById("failureBanner");
+    const liveDot = document.getElementById("liveDot");
+    const lastUp = document.getElementById("lastUpdated");
+    const perfSub = document.getElementById("perfSub");
+    const banner = document.getElementById("failureBanner");
 
     try {
       await loadFleetRoles();
@@ -302,7 +316,8 @@
 
       if (liveDot) liveDot.classList.add("live");
       if (lastUp) lastUp.textContent = `as of ${(data.asOf ?? "").slice(11, 19)} UTC`;
-      if (perfSub) perfSub.textContent = `${data.fleetSize ?? 0} agents · ${data.evaluatedToday ?? 0} evaluated today`;
+      if (perfSub)
+        perfSub.textContent = `${data.fleetSize ?? 0} agents · ${data.evaluatedToday ?? 0} evaluated today`;
       if (banner) banner.hidden = true;
 
       allAgents = Array.isArray(data.allAgents) ? data.allAgents : [];

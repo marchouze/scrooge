@@ -130,8 +130,8 @@ function computeTrend(
 ): "improving" | "stable" | "declining" | "insufficient-data" {
   if (history.length < 2) return "insufficient-data";
   // history is newest-first; compare the most recent two
-  const latest = history[0].overallScore;
-  const previous = history[1].overallScore;
+  const latest = history[0]?.overallScore ?? 0;
+  const previous = history[1]?.overallScore ?? 0;
   const delta = latest - previous;
   if (delta > 0.05) return "improving";
   if (delta < -0.05) return "declining";
@@ -179,6 +179,7 @@ function applyPerformanceEvaluated(
   // Prepend new entry to history (newest-first)
   const newHistory: AgentPerformanceHistoryEntry[] = [historyEntry, ...(existing?.history ?? [])];
 
+  const feedbackPath = existing?.lastFeedbackPath;
   const updated: AgentPerformanceState = {
     agentId: p.agentId,
     latestPeriod: p.evaluationPeriod,
@@ -193,7 +194,7 @@ function applyPerformanceEvaluated(
     history: newHistory,
     trend: computeTrend(newHistory),
     evaluationCount: newHistory.length,
-    lastFeedbackPath: existing?.lastFeedbackPath,
+    ...(feedbackPath !== undefined ? { lastFeedbackPath: feedbackPath } : {}),
   };
 
   const next = new Map(state);
@@ -244,10 +245,7 @@ export const agentPerformanceProjection: Projection<AgentPerformanceProjectionSt
   accepts(event: Event): event is Event {
     return PERFORMANCE_EVENT_TYPES.has(event.type);
   },
-  reduce(
-    state: AgentPerformanceProjectionState,
-    event: Event,
-  ): AgentPerformanceProjectionState {
+  reduce(state: AgentPerformanceProjectionState, event: Event): AgentPerformanceProjectionState {
     switch (event.type) {
       case "AgentPerformanceEvaluated":
         return applyPerformanceEvaluated(state, event);

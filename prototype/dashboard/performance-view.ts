@@ -49,9 +49,7 @@ export function buildPerformanceView(store: Pick<EventStore, "replay">): Perform
   const evaluatedToday = agents.filter((a) => a.latestPeriod === today).length;
 
   const avgOverallScore =
-    agents.length > 0
-      ? agents.reduce((s, a) => s + a.latestOverallScore, 0) / agents.length
-      : 0;
+    agents.length > 0 ? agents.reduce((s, a) => s + a.latestOverallScore, 0) / agents.length : 0;
 
   const tierCounts = {
     exceeds: agents.filter((a) => a.latestTier === "exceeds").length,
