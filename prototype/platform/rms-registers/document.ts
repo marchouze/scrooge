@@ -49,6 +49,8 @@ export interface DocumentRegisterRow {
   readonly supersededBy: string | null;
   /** True iff this hash was added by a `RecordFiled` (not just cited). */
   readonly registered: boolean;
+  /** Optional metadata from the filing event (title, path, category, author, date). */
+  readonly metadata: RecordFiledPayload["metadata"] | null;
 }
 
 export interface DocumentRegisterState {
@@ -118,6 +120,7 @@ function ensureRow(state: DocumentRegisterState, hash: string, event: Event): Do
     supersedes: null,
     supersededBy: null,
     registered: false,
+    metadata: null,
   };
 }
 
@@ -142,6 +145,7 @@ function applyEvent(state: DocumentRegisterState, event: Event): DocumentRegiste
         registerKey: p.registerKey,
         supersedes: p.supersedes ?? null,
         registered: true,
+        metadata: p.metadata ?? null,
       });
     }
     // Mark the predecessor's `supersededBy` chain. The supersedes link is

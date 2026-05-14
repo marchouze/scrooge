@@ -190,6 +190,15 @@ export const recordFiledPayloadSchema = z.object({
   }),
   supersedes: z.string().min(1).optional(),
   correctsOriginalErrors: z.boolean().optional(),
+  metadata: z
+    .object({
+      title: z.string(),
+      path: z.string(),
+      category: z.string(),
+      author: z.string().optional(),
+      date: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type RecordFiledPayload = z.infer<typeof recordFiledPayloadSchema>;
