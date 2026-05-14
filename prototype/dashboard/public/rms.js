@@ -295,6 +295,15 @@
         return `<tr>${cells}</tr>`;
       })
       .join("");
+
+    if (register === "document") {
+      body.querySelectorAll("tr").forEach((tr, i) => {
+        const row = rows[i];
+        if (!row) return;
+        tr.style.cursor = "pointer";
+        tr.addEventListener("click", () => openRmsDocPreview(row));
+      });
+    }
   }
 
   // ---------------- Loader ------------------------------------
@@ -322,6 +331,222 @@
     }
   }
 
+  // ---------------- RMS document preview modal ----------------
+  //
+  // Click-to-view for the document register. Fetches raw markdown from
+  // GET /api/rms/document-content?hash=<blake3:...> and renders it with
+  // renderMarkdownLite (same formatter used in policies/procedures/owner-inbox).
+  // Authority: D-RMS-PHASE-1.
+
+  let rmsDocPreviewActive = null;
+
+  async function openRmsDocPreview(row) {
+    const hash = row.documentHash;
+    const title = row.metadata?.title || hash;
+    const path = row.metadata?.path || "";
+    const category = row.metadata?.category || "";
+    const date = row.metadata?.date || "";
+
+    const modal = $("rmsDocPreviewModal");
+    const titleEl = $("rmsDocPreviewTitle");
+    const metaEl = $("rmsDocPreviewMeta");
+    const bodyEl = $("rmsDocPreviewBody");
+
+    titleEl.textContent = title;
+    metaEl.textContent = [category, path, date].filter(Boolean).join(" · ");
+    bodyEl.innerHTML = '<p class="muted">Loading…</p>';
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+    rmsDocPreviewActive = hash;
+
+    try {
+      const res = await fetch(`/api/rms/document-content?hash=${encodeURIComponent(hash)}`);
+      if (rmsDocPreviewActive !== hash) return;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const md = await res.text();
+      if (rmsDocPreviewActive !== hash) return;
+      bodyEl.innerHTML = renderMarkdownLite(md);
+    } catch (e) {
+      if (rmsDocPreviewActive !== hash) return;
+      bodyEl.innerHTML = `<p class="error-text">Could not load document: ${escapeHtml(String(e))}</p>`;
+    }
+  }
+
+  function closeRmsDocPreview() {
+    const modal = $("rmsDocPreviewModal");
+    if (modal) modal.hidden = true;
+    document.body.style.overflow = "";
+    rmsDocPreviewActive = null;
+  }
+
+  // ---------------- renderMarkdownLite ------------------------
+  //
+  // Shared lightweight markdown renderer. Copied verbatim from policies.js.
+  // No third-party dep; no exec'd HTML. Anything fancier falls back to <pre>.
+  // TODO: extract to a shared module; see /api/markdown/:scope/:filename refactor.
+
+  function renderMarkdownLite(md) {
+    const src = String(md ?? "");
+    let body = src;
+    if (body.startsWith("---")) {
+      const end = body.indexOf("\n---", 3);
+      if (end !== -1) body = body.slice(end + 4);
+    }
+    const lines = body.split(/\r?\n/);
+    const out = [];
+    let inCode = false;
+    let codeBuf = [];
+    let inList = false;
+    let listType = null;
+    let inTable = false;
+    let tableRows = [];
+    const closeList = () => {
+      if (inList) {
+        out.push(listType === "ol" ? "</ol>" : "</ul>");
+        inList = false;
+        listType = null;
+      }
+    };
+    const isTableSep = (r) => /^\|[\s\-:| ]+\|$/.test(r);
+    const parseTableCells = (r) =>
+      r
+        .split("|")
+        .slice(1, -1)
+        .map((c) => c.trim());
+    const closeTable = () => {
+      if (!inTable || tableRows.length === 0) {
+        inTable = false;
+        tableRows = [];
+        return;
+      }
+      const sepIdx = tableRows.findIndex((r) => isTableSep(r));
+      const headRows = sepIdx === -1 ? [] : tableRows.slice(0, sepIdx);
+      const bodyRows = sepIdx === -1 ? tableRows : tableRows.slice(sepIdx + 1);
+      let html = '<div class="md-table-wrap"><table>';
+      if (headRows.length > 0) {
+        html += "<thead>";
+        for (const r of headRows)
+          html += `<tr>${parseTableCells(r)
+            .map((c) => `<th>${inlineFormat(c)}</th>`)
+            .join("")}</tr>`;
+        html += "</thead>";
+      }
+      if (bodyRows.length > 0) {
+        html += "<tbody>";
+        for (const r of bodyRows)
+          html += `<tr>${parseTableCells(r)
+            .map((c) => `<td>${inlineFormat(c)}</td>`)
+            .join("")}</tr>`;
+        html += "</tbody>";
+      }
+      html += "</table></div>";
+      out.push(html);
+      inTable = false;
+      tableRows = [];
+    };
+    const inlineFormat = (line) => {
+      let s = escapeHtml(line);
+      s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
+      s = s.replace(/\*\*([^*]+)\*\*/g, (_, t) => `<strong>${t}</strong>`);
+      s = s.replace(/(^|\W)\*([^*]+)\*(\W|$)/g, (_m, a, t, b) => `${a}<em>${t}</em>${b}`);
+      s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, href) => {
+        const safe = /^(https?:|\/|\.\.?\/)/i.test(href) ? href : "#";
+        return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+      });
+      return s;
+    };
+    for (const raw of lines) {
+      const line = raw.replace(/\s+$/, "");
+      if (line.startsWith("```")) {
+        if (inCode) {
+          out.push(`<pre><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`);
+          codeBuf = [];
+          inCode = false;
+        } else {
+          closeList();
+          closeTable();
+          inCode = true;
+        }
+        continue;
+      }
+      if (inCode) {
+        codeBuf.push(line);
+        continue;
+      }
+      if (!line.trim()) {
+        closeList();
+        closeTable();
+        continue;
+      }
+      const h1 = line.match(/^# (.+)$/);
+      if (h1) {
+        closeList();
+        closeTable();
+        out.push(`<h2>${inlineFormat(h1[1])}</h2>`);
+        continue;
+      }
+      const h2 = line.match(/^## (.+)$/);
+      if (h2) {
+        closeList();
+        closeTable();
+        out.push(`<h3>${inlineFormat(h2[1])}</h3>`);
+        continue;
+      }
+      const h3 = line.match(/^### (.+)$/);
+      if (h3) {
+        closeList();
+        closeTable();
+        out.push(`<h4>${inlineFormat(h3[1])}</h4>`);
+        continue;
+      }
+      const ul = line.match(/^[-*]\s+(.+)$/);
+      if (ul) {
+        if (!inList || listType !== "ul") {
+          closeList();
+          closeTable();
+          out.push("<ul>");
+          inList = true;
+          listType = "ul";
+        }
+        out.push(`<li>${inlineFormat(ul[1])}</li>`);
+        continue;
+      }
+      const ol = line.match(/^\d+\.\s+(.+)$/);
+      if (ol) {
+        if (!inList || listType !== "ol") {
+          closeList();
+          closeTable();
+          out.push("<ol>");
+          inList = true;
+          listType = "ol";
+        }
+        out.push(`<li>${inlineFormat(ol[1])}</li>`);
+        continue;
+      }
+      if (line.startsWith("> ")) {
+        closeList();
+        closeTable();
+        out.push(`<blockquote>${inlineFormat(line.slice(2))}</blockquote>`);
+        continue;
+      }
+      if (line.startsWith("|")) {
+        closeList();
+        inTable = true;
+        tableRows.push(line);
+        continue;
+      }
+      closeList();
+      closeTable();
+      out.push(`<p>${inlineFormat(line)}</p>`);
+    }
+    if (inCode) {
+      out.push(`<pre><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`);
+    }
+    closeList();
+    closeTable();
+    return out.join("\n");
+  }
+
   // ---------------- Boot --------------------------------------
 
   function boot() {
@@ -330,6 +555,12 @@
     loadAll();
     // 30s polling — same cadence as the rest of the dashboard.
     setInterval(() => loadAll().catch((e) => console.warn("[rms] refresh failed", e)), 30_000);
+
+    const closeBtn = $("rmsDocPreviewClose");
+    if (closeBtn) closeBtn.addEventListener("click", closeRmsDocPreview);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeRmsDocPreview();
+    });
   }
 
   if (document.readyState === "loading") {

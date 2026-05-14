@@ -106,6 +106,18 @@
     <a href="/Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md">spec</a>
   </footer>
 
+  <!-- RMS document preview modal -->
+  <div class="modal oi-preview-modal" id="rmsDocPreviewModal" hidden>
+    <div class="oi-preview-card">
+      <div class="oi-preview-head">
+        <h2 id="rmsDocPreviewTitle">Document</h2>
+        <button class="icon-btn" id="rmsDocPreviewClose" aria-label="Close">×</button>
+      </div>
+      <div class="oi-preview-path muted small" id="rmsDocPreviewMeta"></div>
+      <div class="oi-preview-body" id="rmsDocPreviewBody"></div>
+    </div>
+  </div>
+
   <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
   <script src="/_failure-banner.js"></script>
   <script src="/provenance-badge.js"></script>
