@@ -97,6 +97,7 @@ import {
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
+import { buildTaxonomiesView } from "./taxonomy-view";
 import {
   RMS_REGISTER_KEYS,
   buildRmsRegistersFold,
@@ -1197,6 +1198,16 @@ const server = Bun.serve({
       return jsonResponse({
         ...buildRegConceptsView(eventStore, instrumentId, { sort, minScore, domain }),
         pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/taxonomies" && req.method === "GET") {
+      // Canonical taxonomy explorer — all four taxonomies (risk, activity,
+      // domain, product scope) bundled in one response. Pure read; no event
+      // store dependency. Authority: Atlas (Core banking platform architect,
+      // engineering) under CLAUDE.md Principle 2 (single-graph discipline).
+      return jsonResponse({
+        ...buildTaxonomiesView(),
+        pageProvenance: proseAuthoredPageProvenance(),
       });
     }
     if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
