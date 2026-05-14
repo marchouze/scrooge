@@ -148,6 +148,8 @@ Contract changes follow Anya's data-contract-evolution discipline. Validation-ev
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Model registry not yet built.** Currently lives as Markdown methodology documents cross-referenced from procedure files (Rohan § 16). Without the registry as substrate, Nadia cannot enforce the production-status veto via typed events. Owner: Rohan + Anya. Target: M2.
 - **Backtest harness not yet built.** Live backtest cycles are not executable as substrate; backtest design exists at the methodology layer only. Owner: Rohan + Atlas. Target: pre-licence go-live readiness gate.
 - **Scenario library partial.** Scenario library prototyped; replay engine not yet event-driven (Rohan § 16). Validation against scenario libraries is therefore methodology-only today. Owner: Rohan + Atlas. Target: pre-licence.
@@ -157,10 +159,11 @@ Contract changes follow Anya's data-contract-evolution discipline. Validation-ev
 - **Validation-methodology library** — design only; Tier-1 / Tier-2 / Tier-3 methodologies will be authored as Nadia's first deliverables. Until authored, validation runs methodology-by-methodology against SR 11-7 / SS 1/23 / RAS § B7 directly. Owner: Nadia. Target: first Tier-1 methodology before any Tier-1 model registers.
 - **Pre-trade gateway envelope enforcement** — Kai's pre-trade gateway must respect Nadia's `envelope` field on `ModelValidationApproved`; today the gateway's design assumes a binary approve / withhold. Envelope-aware enforcement is a Kai-side substrate gap. Owner: Kai + Nadia. Target: pre-licence (binds at first model-with-envelope in production).
 - **Build-phase posture: zero models in production today.** Nadia's first months are spec authoring (validation-methodology library; validation-cycle register design; findings register design; co-design of typed events with Atlas) and methodology rehearsal against synthetic positions. The agent's authority surface activates fully at first model-in-production (pre-licence for any synthetic-position pricing or VaR usage that supports build-phase ICAAP rehearsal; post-licence for capital and IFRS 9 ECL).
-- **Agent-runtime substrate** — Nadia's continuous and scheduled runs depend on Atlas's scheduler + event-trigger bus to run autonomously. Until Step 2 of the Principle-7 rollout lands, Nadia runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Nadia's scheduled runs operate; event-triggered runs (`ModelRegistered`, `ProductionUseRequested`) still route via Scrooge until the bus lands. Owner: Atlas. Target: event-trigger bus before next release.
 
 ## 17. Change log
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-09 | Nolan (as recruiter) | Initial agent-spec authorship from PAX role brief (`Owner Inbox/2026-05-09_pax_independent-validation-role-brief.md`). Hire authorised by CEO directive 2026-05-08 EOD; closes substrate gap registered in `Team/Helena.md` § 16 and `prototype/runtime/agents/rohan-risk-run.ts` (`appetite:model:tier-discipline`). Reports-to: Helena (CRO) per RAS § B7 last line. Build-phase posture: spec authoring and methodology rehearsal; authority surface activates at first model-in-production. |
+| v1.0 | 2026-05-14 | Nadia (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

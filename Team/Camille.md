@@ -137,6 +137,8 @@ Camille is the first-line executive for finance; Helena (CRO, second line) chall
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **BA-return generator** — not yet built. Quarterly BA returns currently assembled by Bea under audit-pack discipline; gap captured. Owner: Bea + Anya + Atlas.
 - **AC-pack generator** — not yet built. AC pack is authored, not generated. Owner: Camille (template) + Owen (governance flow) + Atlas.
 - **ICAAP capital engine** — not yet built (also Helena's gap). Owner: Helena + Camille + Bea + Atlas.
@@ -150,3 +152,4 @@ Camille is the first-line executive for finance; Helena (CRO, second line) chall
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CFO hire confirmation. |
 | v1.0 | 2026-05-07 | Camille (via Scrooge) | Upgraded to agent operating spec under Principle 6; declared monthly close as cadence anchor; named Bea + Yael as primary escalation sources; sections 6–17 added; sections 1–5 preserved. |
+| v1.1 | 2026-05-14 | Camille (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

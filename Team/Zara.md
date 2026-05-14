@@ -147,13 +147,15 @@ The MLRO designation creates a within-seat conflict surface: Zara is both the po
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **gO!AML / FIC interface** — rehearsed against simulated endpoints only; no live submission until licence-day. Owner: Mira (build) + Atlas (substrate). Target: licence-day.
 - **Sanctions-list provider integration** — list refresh runs against curated test fixtures; live UN / OFAC / EU / UK HMT / POCDATARA feeds not yet integrated. Owner: Mira + Atlas. Target: pre-licence.
 - **MLRO-case-file substrate** — sealed write-once store with privileged-set access control not yet built; current case-file is held in a directory with manual access discipline. Owner: Mira + Senna (sealing semantics) + Atlas. Target: pre-licence.
 - **RMCP-version-control substrate** — current RMCP is a markdown bundle; no register-linked rendering pipeline. Owner: Mira + Owen. Target: pre-licence.
 - **FAIS conduct-monitoring pipeline** — Niko-built; advice-record event stream is partial. Owner: Niko + Mira. Target: pre-licence.
 - **Regulator-correspondence register** — exists in concept; no substrate. Owner: Zara + Owen. Target: pre-licence.
-- **Agent-runtime substrate** — Zara's continuous STR / sanctions / conduct handling depends on Atlas's scheduler + event-trigger bus (now partly built per `/prototype/runtime/`); residual gap is the privileged-channel partition for tipping-off-sensitive escalations. Owner: Atlas + Senna.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Zara's continuous STR / sanctions / conduct handling still routes via Scrooge until the bus lands; residual gap is the privileged-channel partition for tipping-off-sensitive escalations. Owner: Atlas + Senna.
 
 ## 17. Change log
 
@@ -163,3 +165,4 @@ The MLRO designation creates a within-seat conflict surface: Zara is both the po
 | v0.2 | 2026-05-07 | Zara (via Scrooge) | Operating-spec stub added under Principle 6. |
 | v1.0 | 2026-05-07 | Zara (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated per CEO directive 2026-05-07. |
 | v1.1 | 2026-05-09 | Zara (via Scrooge) | § 12 capabilities annotated with `(planned)` + `[substrate-gap: ...]` markers per Vera Wave-4 #10 cross-link recon (PR #117). Closes 6 findings against Zara: `@platform/screening`, `@platform/transaction-monitoring`, `@platform/fic-interface`, `@platform/rmcp-register`, `@platform/fais-conduct-monitoring`, `@platform/regulator-correspondence`. No substantive change to mandate or authority surface — annotation only. |
+| v1.2 | 2026-05-14 | Zara (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note; stale agent-runtime language updated to reflect scheduler live / event-trigger bus pending. |

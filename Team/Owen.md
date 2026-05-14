@@ -142,6 +142,8 @@ Owen is the statutory Company Secretary; the role is structurally independent of
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Forum / board secretariat tooling** — partial. Interim forums (Audit Forum, Risk Forum) operate on structured artefacts; full board substrate awaits Board formation (S3). Owner: Owen + Atlas.
 - **Resolution / minute store** — exists in concept (event-store-backed); no purpose-built UI. Owner: Owen + Atlas.
 - **Whistleblowing intake substrate** — not yet built. Currently a typed channel into Owen + CAE. Owner: Owen + Thandiwe + Atlas.
@@ -157,3 +159,4 @@ Owen is the statutory Company Secretary; the role is structurally independent of
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from Company Secretary hire confirmation. |
 | v1.0 | 2026-05-07 | Owen (via Scrooge) | Upgraded to agent operating spec under Principle 6; named canonical-source registry curation; declared Audit Forum chairmanship as registered interim conflict; sections 6–17 added; sections 1–5 preserved. |
+| v1.1 | 2026-05-14 | Owen (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

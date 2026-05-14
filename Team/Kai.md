@@ -142,13 +142,15 @@ The surveillance feed is **emitted to Mira** but Mira consumes it read-only — 
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Live JSE FIX certification** — synthetic only; certification application not yet lodged. Owner: Kai + Saskia. Target: pre-licence.
 - **Live market-data licences** — vendor selection in flight. Owner: Kai (selection) + Imani (licence terms) + Camille (cost). Target: pre-licence.
 - **Strate Trade Repository connectivity** — **gated on 1 March 2027 cutover** under Joint Notice 2 of 2024 reportable-trades regime. Owner: Kai + Tomas (settlement-side) + Mira (reporting compliance). Target: 1 March 2027 cutover.
 - **Pre-trade gateway — full multi-asset coverage** — equities path designed; FX / rates / OTC derivatives paths in build. Owner: Kai + Rohan. Target: rolling, with first three asset classes at M1.
 - **Surveillance feed — full typology coverage** — feed shape designed; typology catalogue under Mira at M1. Owner: Kai (feed) + Mira (typologies).
 - **OMS / EMS — multi-asset booking** — equities and bonds paths designed; FX / rates / derivatives paths land per Saskia / Kai architecture (`Owner Inbox/2026-05-07_saskia-kai_global-markets-trading-system-architecture.md`). Target: pre-licence.
-- **Agent-runtime substrate** — Kai's continuous pipelines depend on Atlas's scheduler + event-trigger bus. Until Step 2 of the Principle-7 rollout lands, Kai runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Kai's market-hour continuous runs (`OrderProposed`, `OrderFilled`) still route via Scrooge until the bus lands. Owner: Atlas. Target: event-trigger bus before next release.
 
 ## 17. Change log
 
@@ -158,3 +160,4 @@ The surveillance feed is **emitted to Mira** but Mira consumes it read-only — 
 | v0.5 | 2026-05-07 | Kai (via Scrooge) | Partial agent-spec sketch added under Principle 6. |
 | v1.0 | 2026-05-07 | Kai (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained; Sections 6–17 expanded substantively. Reports-to corrected to Saskia (Head of Global Markets) per top-of-house structure. References A0 event-schema freeze and Saskia / Kai trading-system architecture both authored 2026-05-07. |
 | v1.1 | 2026-05-09 | Kai (via Scrooge) | Closed Vera (Internal audit / continuous-assurance engineer) Wave-4 #10 cross-link findings: §12 capabilities `oms-ems`, `fix-gateway`, `market-data`, `pre-trade-gateway`, `surveillance-feed`, `best-execution` annotated `[substrate-gap: ...]` with cross-references to §16 and the canonical authoring briefs. Added two newly-landed §12 entries — `@platform/markets/products` and `@platform/markets/cdm` (Atlas + Kai Slices 1–3 of D-PRODUCT-CONSTRUCTION-SUBSTRATE; PRs #113 / #114 / #115; Anya's semantic-layer entries via PR #109). |
+| v1.2 | 2026-05-14 | Kai (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

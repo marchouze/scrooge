@@ -141,9 +141,11 @@ Scrooge's contribution to the dashboard derive is itself event-sourced — Anya'
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 Many of the agents Scrooge routes to are partial today. The fleet-state of which agents have full operating specs vs character sheets vs no spec is itself a register Scrooge maintains. Current notable gaps:
 
-- **Agent-runtime substrate (Atlas Step 2)** — scheduler runs scheduled handlers (Scrooge's hygiene, Senna's substrate-state, Atlas's substrate-state, Owen's governance-cycle, Mira's gates, Anya's projections, Vera's overnight recon). Event-driven triggers (`AgentEscalation`, `WorkstreamRegistered`, `MandateGapDetected`) await the event-trigger bus. Owner: Atlas. Target: Step 2 of Principle-7 rollout.
+- **Agent-runtime substrate — event-trigger bus** — scheduler runs scheduled handlers (Scrooge's hygiene, Senna's substrate-state, Atlas's substrate-state, Owen's governance-cycle, Mira's gates, Anya's projections, Vera's overnight recon). Event-driven triggers (`AgentEscalation`, `WorkstreamRegistered`, `MandateGapDetected`) await the event-trigger bus. Owner: Atlas. Target: next release.
 - **`AgentEscalation` event channel — typed but not yet consumed.** Today, agent escalations land in Owner Inbox files; the typed-event consumer for routing to the CEO is planned. Owner: Atlas. Target: Step 2.
 - **`WorkRoutedToAgent` / `RoleResearchRequested` / `SubstrateGapInventoried` event types** — not yet defined in `event-types.ts`. Owner: Atlas (schema) + Scrooge. Target: M1.
 - **CEO oversight UI** — not yet built. CEO reviews escalations as Owner Inbox files today. Owner: Atlas. Target: Step 2.
@@ -158,3 +160,4 @@ Many of the agents Scrooge routes to are partial today. The fleet-state of which
 | v0.1 | 2026-05-04 | Scrooge | Initial character sheet at team bootstrap. |
 | v0.2 | 2026-05-07 | Scrooge | Operating-spec section added inline (mid-format). |
 | v1.0 | 2026-05-07 | Scrooge (via CEO directive) | Initial agent-spec authorship; upgraded to canonical template per CEO directive 2026-05-07. Sections 1–5 retained; 6–17 expanded to match Vera/Atlas depth. Independence section made explicit on the producer/consumer self-routing risk. |
+| v1.1 | 2026-05-14 | Scrooge (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

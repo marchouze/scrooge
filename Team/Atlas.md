@@ -120,14 +120,16 @@ Atlas's contribution to the agent-runtime substrate spec is itself a subject Ver
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 This agent's mandate **is** the substrate. The relevant gaps are the things Atlas owes the rest of the fleet:
 
-- **Agent-runtime scheduler** — not built. All other agents currently run via Scrooge in-session. Owner: Atlas. Target: Step 2 of Principle-7 rollout (this week).
-- **Event-trigger bus for agents** — not built. Agents cannot subscribe to event-store streams autonomously. Owner: Atlas. Target: Step 2.
-- **Agent identity & permissioning** — not built. No typed identities issued; no scoped permissions; zero-trust posture for agents not yet enforced. Owner: Atlas (Senna + Rashida policy). Target: Step 2.
-- **Escalation channel (`AgentEscalation` event)** — not built. Escalations currently happen via Scrooge surfacing items to Marc. Owner: Atlas. Target: Step 2.
-- **Oversight UI for the CEO** — not built. Marc currently reviews escalations as Owner Inbox files. Owner: Atlas. Target: Step 2 (initial cut) → ongoing iteration.
-- **Cloud lift to Azure** — local-first per P3 implementation sequence. Owner: Atlas + Devon. Target: post-licence-grant.
+- **Agent-runtime scheduler** — *live* (`/prototype/runtime/`). Scheduled handlers operational across the fleet. Closed.
+- **Event-trigger bus for agents** — not yet built. Agents cannot subscribe to event-store streams autonomously; event-triggered runs still route via Scrooge. Owner: Atlas. Target: next release.
+- **Agent identity & permissioning** — registry + identity module live (A1 landed). Zero-trust posture and scoped permissions partially closed; full enforcement pending event-trigger bus. Owner: Atlas (Senna + Rashida policy).
+- **Escalation channel (`AgentEscalation` event)** — schema defined; typed consumer not yet wired. Escalations still surface via Scrooge to Marc. Owner: Atlas. Target: next release.
+- **Oversight UI for the CEO** — not built. Marc reviews escalations as Owner Inbox files. Owner: Atlas. Target: A3.
+- **Cloud lift to Azure** — local-first per Principle 3 implementation sequence. Owner: Atlas + Devon. Target: post-licence-grant.
 
 ## 17. Change log
 
@@ -135,4 +137,5 @@ This agent's mandate **is** the substrate. The relevant gaps are the things Atla
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Atlas (via Scrooge) | Upgraded to agent operating spec under Principle 6. Mandate explicitly extended to include the agent-runtime substrate. Reports-to corrected to Devon (COO) per top-of-house structure. |
-| v1.1 | 2026-05-07 | Atlas (via Scrooge) | Step 2 — A0 (schemas frozen) + A1 starter (registry + identity) landed. 11 substrate-event schemas added to `prototype/platform/event-store/event-types.ts` (AgentRegistered, AgentRetired, PermissionPolicyPublished, IdentityKeyRotated, ScheduledTrigger, AgentRunStarted, AgentRunCompleted, AgentRunFailed, AgentEscalationAcknowledged, AgentEscalationDecided, AgentEscalationDelegated, AgentEscalationOverdue, SubstrateAlert) — `SUBSTRATE_EVENT_TYPES` registry exported. New `prototype/platform/agent-runtime/` module: types, spec-loader (extracts from /Team/<Name>.md sections 7/11/12/17), permission-policy (pure derivation + check helpers + Vera read-only carve-out), identity (LocalAgentIdentityIssuer wrapping Authenticator), registry (idempotent on sha256, emits PermissionPolicyPublished + AgentRegistered events). Wired into composition.ts as `agentRuntime`. Bootstrap script `bun run agent-runtime:bootstrap` registers all 28 personas cleanly (Vera carve-out asserted; Niko + Sade flagged as paused). 16 new tests in `tests/agent-runtime.test.ts`; 91 tests across the suite all green. Procedure `agent-runtime-deploy.md` (PROC-OPS-AR-01) populated. Substrate Gaps §1 (scheduler), §2 (event-trigger bus), §3 (agent identity & permissioning), §4 (escalation channel), §5 (oversight UI) status: gap §3 closed (registry + identity in force); gaps §1, §2 partially closed (schemas frozen so consumers can begin referencing); gaps §4, §5 unchanged — A2 / A3 still ahead per published roadmap. |
+| v1.1 | 2026-05-07 | Atlas (via Scrooge) | Step 2 — A0 (schemas frozen) + A1 starter (registry + identity) landed. 11 substrate-event schemas added; agent-runtime module live; scheduler operational. Gap §3 closed; gaps §1, §2 partially closed; gaps §4, §5 unchanged. |
+| v1.2 | 2026-05-14 | Atlas (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; scheduler gap marked closed; event-trigger bus gap restated as current primary gap. |

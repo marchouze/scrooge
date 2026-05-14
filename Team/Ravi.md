@@ -134,6 +134,8 @@ Ravi pairs with Tomas on SAMOS: Tomas owns the SAMOS connector and settlement-ac
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **No real liquidity to manage yet.** Per CLAUDE.md "build phase vs licence-day": no real capital, no real customers, no real funding. Build-phase work runs against synthetic positions to validate the substrate end-to-end. Real ALM begins at licence-day.
 - **ALM engine** — designed; partial. LCR / NSFR / IRRBB computation prototyped against synthetic positions; not yet event-driven. Owner: Ravi + Atlas. Target: pre-licence go-live readiness gate.
 - **FTP engine** — designed; partial. Curve construction prototyped; transaction-level FTP attribution not yet wired to the postable-event stream. Owner: Ravi. Target: pre-licence.
@@ -149,3 +151,4 @@ Ravi pairs with Tomas on SAMOS: Tomas owns the SAMOS connector and settlement-ac
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Ravi (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Eitan (Treasurer) per top-of-house structure. |
+| v1.1 | 2026-05-14 | Ravi (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

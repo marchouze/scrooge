@@ -125,6 +125,8 @@ Anya pairs with Atlas on the substrate: Atlas owns event-store invariants and sc
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Event-driven runtime** — *closed 2026-05-07*. The `anya:projection-refresh` handler subscribes to `SubstrateStateSnapshot`, `WorkstreamRegistered`, `WorkstreamCompleted`, and `CeoDecision` and re-derives the dashboard projection in-process. Cross-process / cross-workflow event-bus is M8 (Azure cloud lift).
 - **ML platform substrate** — feature store, model registry, offline/online parity not yet built. Owner: Anya + Atlas. Target: post-licence; gated on first model use case (likely Rohan's IFRS 9 ECL or Mira's screening false-positive reduction).
 - **Semantic-layer registry** — designed; not yet hosted as a queryable register. Currently lives as Markdown definitions cross-referenced from procedure files. Owner: Anya. Target: M2.
@@ -138,3 +140,4 @@ Anya pairs with Atlas on the substrate: Atlas owns event-store invariants and sc
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Anya (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Devon (COO) per top-of-house structure. |
 | v1.1 | 2026-05-08 | Anya | M1 projection-runtime-mapping handler landed (`anya:m1-projection-runtime-mapping`). §11 updated for new events emitted (`MarketsProjectionRegistered`, `MarketsProjectionRefreshed`). Authority: D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07). |
+| v1.2 | 2026-05-14 | Anya (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

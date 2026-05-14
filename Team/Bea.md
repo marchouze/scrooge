@@ -132,6 +132,8 @@ Bea co-owns IFRS 9 ECL methodology with Rohan; the engineering build is shared, 
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **No real bookings yet.** Per CLAUDE.md "build phase vs licence-day": no real customers, no real capital, no real revenue. Build-phase work runs against synthetic transactions to validate the pipeline end-to-end. Real bookings begin at licence-day.
 - **BA-return generator templates** — designed; not yet substrate-complete. BA 100 / 200 / 300 / 700 cell mappings drafted but not yet wired to projections. Owner: Bea + Anya. Target: pre-licence go-live readiness gate.
 - **IFRS engine** — partial. IFRS 9 staging logic prototyped; IFRS 13 FV-hierarchy classification prototyped; IFRS 15 / 16 not yet started (low priority during build phase). Owner: Bea. Target: pre-licence.
@@ -147,3 +149,4 @@ Bea co-owns IFRS 9 ECL methodology with Rohan; the engineering build is shared, 
 | v1.0 | 2026-05-07 | Bea (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Camille (CFO) per top-of-house structure. |
 | v1.1 | 2026-05-08 | Bea | M1 IFRS-classification handler (`bea:m1-ifrs-classification-rules`) shipped per `D-MARKETS-SCHEMA-FOUNDATION`. §11 outputs updated to register `IfrsClassificationApplied` and `SubLedgerPostingEmitted` event types. |
 | v1.1 | 2026-05-07 | Bea (via Scrooge) | Chart of accounts v0 and posting-rule register v0 substrates landed at `prototype/platform/accounting/_chart-of-accounts.md` and `prototype/platform/accounting/_posting-rules.md` (with JSON schemas). Procedure `posting-rule-publication.md` populated as keystone of Bea's first end-to-end Reg→Policy→Procedure→Capability chain (PROC-FIN-AC-01). Two stub policies (Accounting Policies (IFRS); Financial Reporting & Disclosure) bundled at `Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md`. Substrate Gap §3 (close engine) status update: posting-rule register substrate live; close-engine still planned for M2. |
+| v1.2 | 2026-05-14 | Bea (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

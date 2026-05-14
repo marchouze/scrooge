@@ -135,6 +135,8 @@ Yael co-owns deferred tax with Bea: Bea owns IFRS-classification of the underlyi
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **PAYE / EMP201 / EMP501 / IRP5 slice paused.** No employees during build phase; activates at licence-day when statutory humans are hired. Owner: Yael + Sade. Target: licence-day.
 - **CIT / VAT / STT / live submissions paused.** No revenue during build phase; activates when revenue starts. Owner: Yael. Target: revenue-start (= licence-day for most flows).
 - **SARS eFiling interface** — designed; not yet built. Submission events run as paper exercises during build. Owner: Yael + Atlas. Target: pre-licence go-live readiness gate.
@@ -149,3 +151,4 @@ Yael co-owns deferred tax with Bea: Bea owns IFRS-classification of the underlyi
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Yael (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1 (including build-phase scope inset); Sections 6–17 added. Reports-to corrected to Camille (CFO) per top-of-house structure. |
+| v1.1 | 2026-05-14 | Yael (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

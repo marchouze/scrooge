@@ -178,8 +178,10 @@ At licence-day, when Sade's HR slice activates, a separate conflicts boundary ap
 
 ## 16. Substrate gaps (current state)
 
-- **Agent-spec-integrity recon pipeline (Vera Wave-4 #10)** — not yet built. Until it lands, agent-spec conformance is asserted in-session by Vera against the template at `/Team/_agent-spec-template.md`. Owner: Vera; gated on agent-runtime substrate. Target: Step 2 of Principle-7 rollout.
-- **Agent-runtime substrate (Atlas)** — not built. Sade currently registers, retires, and assigns capabilities by editing `/Team/<name>.md` files and the conflicts register; Scrooge in-session simulates the runtime. Owner: Atlas. Target: Step 2 of Principle-7 rollout.
+> Reviewed 2026-05-14.
+
+- **Agent-spec-integrity recon pipeline (Vera Wave-4 #10)** — not yet built. Until it lands, agent-spec conformance is asserted in-session by Vera against the template at `/Team/_agent-spec-template.md`. Owner: Vera; gated on agent-runtime substrate. Target: post-substrate.
+- **Agent-runtime substrate (Atlas)** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Sade currently registers, retires, and assigns capabilities by editing `/Team/<name>.md` files; Scrooge in-session simulates the remaining runtime events. Owner: Atlas. Target: event-trigger bus before next release.
 - **Capability-assignment register** — design only; not deployed. Owner: Sade + Atlas. Target: M1.
 - **Agent-fit-and-proper attestation pipeline** — design only; first cycle planned at quarter-end after substrate lands. Owner: Sade + Vera. Target: post-substrate, first quarter-end.
 - **Persona-coherence drift detection** — manual today (diff agent's outputs against its operating spec); pipeline-form not yet specified. Owner: Sade + Anya (semantic-layer integration for output classification). Target: M2.
@@ -195,3 +197,4 @@ At licence-day, when Sade's HR slice activates, a separate conflicts boundary ap
 | v0.5 | 2026-05-07 | Sade (via Scrooge) | Reshaped to AgentOps for build-phase; HR slice paused until licence-day; partial agent-spec sketch added. |
 | v1.0 | 2026-05-07 | Sade (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained (build-phase reshape note added at top of §3); Sections 6–17 expanded substantively. Reports-to clarified as Devon (COO) interim until CHRO hired at licence-day. AgentOps slice declared foundational to Principle 6. |
 | v1.1 | 2026-05-14 | Sade | Added agent performance management mandate: daily fleet-wide evaluation engine (delivery / quality / strategic scoring), deterministic feedback writer, event emission (AgentPerformanceEvaluated + AgentFeedbackIssued). Updated §3 (Mandate) and §6 (Cadence — daily run added). |
+| v1.2 | 2026-05-14 | Sade (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

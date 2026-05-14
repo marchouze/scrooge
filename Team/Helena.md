@@ -134,12 +134,14 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Risk-appetite monitoring projection** — not built. Appetite breaches currently surface only when Helena runs in-session via Scrooge against the policy text. Owner: Rohan (build) + Atlas (substrate). Target: M1.
 - **ICAAP / ILAAP engine** — not built; current pack is authored, not generated. Owner: Helena (specification) + Bea (financial inputs) + Atlas (substrate). Target: pre-licence ICAAP cycle.
 - **BRC-paper generator** — not built; current pack would be authored. Owner: Helena (templates) + Owen (governance flow) + Atlas (substrate). Target: pre-first-Board.
 - **Supervisory-correspondence register** — exists in concept; no substrate. Owner: Helena + Owen. Target: pre-licence.
-- **Independent model-validation function** — not staffed. Standing escalation route bypasses Helena and reads to her after validation; until staffed, Helena signs without independent validation, with the gap registered. Owner: PAX research / Nolan hire.
-- **Agent-runtime substrate** — Helena's continuous appetite-monitoring depends on Atlas's scheduler + event-trigger bus. Until Step 2 of the Principle-7 rollout lands, Helena runs via Scrooge.
+- **Independent model-validation function** — Nadia hired 2026-05-09; gap closed. Nadia reports to Helena; typed validation events (`ModelValidationApproved`, `ModelValidationWithheld`) now in scope.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Helena's scheduled BRC / ICAAP cycles operate; event-triggered runs (`AppetiteBreach`, `ModelRiskDecisionRequired`) still route via Scrooge until the bus lands. Owner: Atlas.
 
 ## 17. Change log
 
@@ -147,3 +149,4 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CRO hire confirmation. |
 | v1.0 | 2026-05-07 | Helena (via Scrooge) | Upgraded to agent operating spec under Principle 6. |
+| v1.1 | 2026-05-14 | Helena (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending; independent model-validation function noted as now staffed (Nadia hired). |

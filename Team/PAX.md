@@ -130,6 +130,8 @@ PAX's source-citation integrity is independently testable by Vera (Wave-1 citati
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **`Procedures/by-policy/role-research.md`** — does not yet exist; the role-research workflow is encoded only in this spec and CLAUDE.md operating procedures. Owner: PAX + Owen (procedure-index). Target: M1.
 - **Structured-citation storage for role briefs** — citations live in markdown narrative today; future state is structured-citation register entries that flow into Mira's obligations register where the source is a regulatory instrument. Owner: PAX + Mira. Target: post-runtime.
 - **WebFetch / WebSearch tooling on the runtime** — not yet wired into the agent runtime; today, source-scans run via Scrooge's in-session Claude. Owner: Atlas (substrate). Target: agent-runtime substrate phase.
@@ -142,3 +144,4 @@ PAX's source-citation integrity is independently testable by Vera (Wave-1 citati
 |---|---|---|---|
 | v0.1 | 2026-05-04 | Scrooge | Initial character sheet at team bootstrap. |
 | v1.0 | 2026-05-07 | PAX (via Scrooge) | Initial agent-spec authorship; upgraded from character-sheet form per CEO directive 2026-05-07. Outputs reframed as `WorkstreamRegistered` events; HIRE-decision escalation made explicit. |
+| v1.1 | 2026-05-14 | PAX (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

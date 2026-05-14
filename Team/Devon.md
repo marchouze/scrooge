@@ -133,6 +133,8 @@ Devon is the first-line executive for operations and engineering; Helena (CRO, s
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Auto-generated CAB pack** — partial. CAB currently runs against artefacts the engineers assemble; the gap is captured. Owner: Atlas (substrate) + Devon (template).
 - **Live SLO observability stack** — partial. Some SLOs are decision-grade; others rely on synthetic checks. Owner: Atlas + Anya.
 - **Resilience-test harness** — not yet built. Scenarios currently rehearsed in-session against the spec. Owner: Atlas + Devon.
@@ -146,3 +148,4 @@ Devon is the first-line executive for operations and engineering; Helena (CRO, s
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from COO hire confirmation. |
 | v1.0 | 2026-05-07 | Devon (via Scrooge) | Upgraded to agent operating spec under Principle 6; sections 6–17 added; sections 1–5 preserved with minimal copy-edits for template alignment. |
+| v1.1 | 2026-05-14 | Devon (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
