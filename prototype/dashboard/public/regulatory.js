@@ -44,7 +44,7 @@
 
   function pct(n) {
     if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-    return (n * 100).toFixed(0) + "%";
+    return `${(n * 100).toFixed(0)}%`;
   }
 
   function scoreBar(score, color) {
@@ -193,12 +193,9 @@
     renderInstrumentCards();
 
     const inst = allInstruments.find((i) => i.instrumentId === id);
-    conceptsPanelTitle.textContent = inst
-      ? `Concepts — ${inst.title}`
-      : `Concepts — ${id}`;
+    conceptsPanelTitle.textContent = inst ? `Concepts — ${inst.title}` : `Concepts — ${id}`;
     conceptsPanel.classList.add("open");
-    conceptBody.innerHTML =
-      '<tr><td colspan="7" class="reg-empty">Loading concepts…</td></tr>';
+    conceptBody.innerHTML = '<tr><td colspan="7" class="reg-empty">Loading concepts…</td></tr>';
     conceptsPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
     await loadConcepts();
@@ -357,13 +354,9 @@
 
     const obligLines = [
       `Actor: ${(c.obligation?.actor ?? []).join(", ") || "—"}`,
-      c.obligation?.timeframeDescription
-        ? `Timeframe: ${c.obligation.timeframeDescription}`
-        : null,
+      c.obligation?.timeframeDescription ? `Timeframe: ${c.obligation.timeframeDescription}` : null,
       c.obligation?.output ? `Output: ${c.obligation.output}` : null,
-      c.obligation?.recipient?.length
-        ? `Recipient: ${c.obligation.recipient.join(", ")}`
-        : null,
+      c.obligation?.recipient?.length ? `Recipient: ${c.obligation.recipient.join(", ")}` : null,
     ]
       .filter(Boolean)
       .join("<br>");

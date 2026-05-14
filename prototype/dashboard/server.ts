@@ -95,8 +95,8 @@ import {
   substrateGapsPageProvenance,
 } from "./page-provenance";
 import { getProceduresIndex } from "./procedures-index";
-import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import { saveState } from "./registry";
+import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import {
   RMS_REGISTER_KEYS,
   buildRmsRegistersFold,
@@ -1188,8 +1188,7 @@ const server = Bun.serve({
         return jsonResponse({ error: "missing instrumentId" }, 400);
       }
       const sortParam = url.searchParams.get("sort") ?? "applicability";
-      const sort =
-        sortParam === "relevancy" ? ("relevancy" as const) : ("applicability" as const);
+      const sort = sortParam === "relevancy" ? ("relevancy" as const) : ("applicability" as const);
       const minScore = Math.max(
         0,
         Math.min(1, Number.parseFloat(url.searchParams.get("minScore") ?? "0") || 0),

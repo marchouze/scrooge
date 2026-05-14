@@ -12,8 +12,8 @@ import { nowUtc } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { LocalProjector } from "../platform/projections";
 import {
-  regInstrumentProjection,
   type RegInstrumentState,
+  regInstrumentProjection,
 } from "../platform/projections/regulatory";
 
 // ---------------------------------------------------------------------------
@@ -35,27 +35,20 @@ export interface RegInstrumentsView {
 /**
  * Build the full regulatory instruments view from the projection.
  */
-export function buildRegInstrumentsView(
-  store: Pick<EventStore, "replay">,
-): RegInstrumentsView {
+export function buildRegInstrumentsView(store: Pick<EventStore, "replay">): RegInstrumentsView {
   const projector = new LocalProjector(store as EventStore);
   const stateMap = projector.build(regInstrumentProjection);
   const instruments = [...stateMap.values()];
 
   const totalConcepts = instruments.reduce((s, i) => s + i.conceptCount, 0);
-  const highApplicabilityCount = instruments.reduce(
-    (s, i) => s + i.highApplicabilityCount,
-    0,
-  );
+  const highApplicabilityCount = instruments.reduce((s, i) => s + i.highApplicabilityCount, 0);
   const avgApplicabilityScore =
     instruments.length > 0
-      ? instruments.reduce((s, i) => s + i.avgApplicabilityScore, 0) /
-        instruments.length
+      ? instruments.reduce((s, i) => s + i.avgApplicabilityScore, 0) / instruments.length
       : 0;
   const avgRelevancyScore =
     instruments.length > 0
-      ? instruments.reduce((s, i) => s + i.avgRelevancyScore, 0) /
-        instruments.length
+      ? instruments.reduce((s, i) => s + i.avgRelevancyScore, 0) / instruments.length
       : 0;
 
   return {
@@ -199,8 +192,7 @@ export function buildRegConceptsView(
     if (p.instrumentId !== instrumentId) continue;
 
     // Score filter
-    const scoreToCheck =
-      sort === "relevancy" ? p.relevancyScore : p.applicabilityScore;
+    const scoreToCheck = sort === "relevancy" ? p.relevancyScore : p.applicabilityScore;
     if (scoreToCheck < minScore) continue;
 
     // Domain filter
@@ -226,10 +218,8 @@ export function buildRegConceptsView(
 
   // Sort descending by the requested score
   concepts.sort((a, b) => {
-    const scoreA =
-      sort === "relevancy" ? a.relevancyScore : a.applicabilityScore;
-    const scoreB =
-      sort === "relevancy" ? b.relevancyScore : b.applicabilityScore;
+    const scoreA = sort === "relevancy" ? a.relevancyScore : a.applicabilityScore;
+    const scoreB = sort === "relevancy" ? b.relevancyScore : b.applicabilityScore;
     return scoreB - scoreA;
   });
 

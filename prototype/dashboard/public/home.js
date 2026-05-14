@@ -553,7 +553,7 @@
       const concepts = safeNum(s.totalConcepts);
       const highApp = safeNum(s.highApplicabilityCount);
       const tone = instruments === 0 ? "muted" : highApp > 0 ? "default" : "muted";
-      counts["regulatory"] = {
+      counts.regulatory = {
         text: String(instruments),
         tone,
         aria: `${instruments} instruments; ${concepts} concepts; ${highApp} high-applicability sections`,
