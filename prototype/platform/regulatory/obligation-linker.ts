@@ -93,27 +93,163 @@ export function parseObligationsRegister(markdownContent: string): ObligationRow
 // ---------------------------------------------------------------------------
 
 /**
- * Normalise a citation string for fuzzy matching.
- * Strips spaces, lowercases, and collapses common separators.
- * "FAIS-ACT-37-2002-S7" and "FAIS-ACT-S7" both normalise to contain "faiss7".
+ * Known instrument name → instrument ID prefix mappings.
+ *
+ * Each entry is [regex pattern for the human-prose name, canonical instrument prefix].
+ * Order matters: more specific patterns first.
  */
-function normaliseCitation(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[-_\s.:/]/g, "")
-    .replace(/37of2002|372002|372|2002|act/g, "");
+const INSTRUMENT_PATTERNS: Array<[RegExp, string]> = [
+  // FAIS Act 37/2002  →  FAIS-ACT-37-2002
+  [/\bFAIS\s+Act\s+37[\s/of]*2002\b/i, "FAIS-ACT-37-2002"],
+  // Banks Act 94/1990  →  BANKS-ACT-94-1990
+  [/\bBanks\s+Act\s+94[\s/of]*1990\b/i, "BANKS-ACT-94-1990"],
+  // FIC Act 38/2001  →  FIC-ACT-38-2001
+  [/\bFIC\s+Act\s+38[\s/of]*2001\b/i, "FIC-ACT-38-2001"],
+  // Companies Act 71/2008  →  COMPANIES-ACT-71-2008
+  [/\bCompanies\s+Act\s+71[\s/of]*2008\b/i, "COMPANIES-ACT-71-2008"],
+  // POPIA / Protection of Personal Information Act 4/2013
+  [/\bPOPIA\b|\bProtection of Personal Information Act\s+4[\s/of]*2013\b/i, "POPIA-4-2013"],
+  // Securities Transfer Tax Act 25/2007
+  [/\bSecurities\s+Transfer\s+Tax\s+Act\s+25[\s/of]*2007\b/i, "STT-ACT-25-2007"],
+  // General pattern: "{Word} Act {number}/{year}" → "{WORD}-ACT-{number}-{year}"
+  [
+    /\b([A-Za-z][A-Za-z\s]+?)\s+Act\s+(\d+)[\s/of]*(\d{4})\b/i,
+    "", // placeholder — handled dynamically below
+  ],
+];
+
+/**
+ * Derive a canonical instrument ID from a human-prose instrument name.
+ *
+ * "FAIS Act 37/2002"   → "FAIS-ACT-37-2002"
+ * "Banks Act 94/1990"  → "BANKS-ACT-94-1990"
+ * "FIC Act 38/2001"    → "FIC-ACT-38-2001"
+ *
+ * Returns null if the name cannot be matched.
+ */
+export function normaliseInstrumentId(name: string): string | null {
+  // Try fixed mappings first (all except the last generic one)
+  for (let i = 0; i < INSTRUMENT_PATTERNS.length - 1; i++) {
+    const entry = INSTRUMENT_PATTERNS[i];
+    if (entry?.[0].test(name)) return entry[1];
+  }
+
+  // Generic pattern: "{Words} Act {number}/{year}"
+  const generic = name.match(/\b([\w\s]+?)\s+Act\s+(\d+)[\s/of]*(\d{4})\b/i);
+  if (generic) {
+    const prefix = (generic[1] ?? "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^A-Z0-9-]/g, "");
+    const num = generic[2] ?? "";
+    const year = generic[3] ?? "";
+    return `${prefix}-ACT-${num}-${year}`;
+  }
+
+  return null;
 }
 
 /**
- * Derive the normalised section token from a sectionId.
- * "FAIS-ACT-37-2002:s7" → "faiss7"
- * "FAIS-ACT-37-2002:s13A" → "faiss13a"
+ * Normalise a section reference from human-prose to the canonical `sNNN` form.
+ *
+ * "s.7"       → "s7"
+ * "s.7(1)(a)" → "s7"       (subsections stripped to top-level section)
+ * "s.13A"     → "s13A"     (letter suffix preserved)
+ * "s.13A(2)"  → "s13A"
+ * "§ 8"       → "s8"       (§ sign treated identically)
+ * "ss.16–19"  → "s16"      (range — first section only for matching)
+ *
+ * Returns null if the string does not look like a section reference.
  */
-function sectionToken(sectionId: string): string {
-  // Extract the "s<N>" suffix
-  const m = sectionId.match(/:s(.+)$/i);
-  if (!m || !m[1]) return normaliseCitation(sectionId);
-  return `fais${m[1].toLowerCase()}`;
+export function normaliseSectionRef(sectionRef: string): string | null {
+  // Normalise § → s. and strip leading whitespace
+  const cleaned = sectionRef.trim().replace(/§\s*/g, "s.");
+
+  // Range like "ss.16–19" or "ss.16-19" — take first section only
+  const rangeMatch = cleaned.match(/^ss?\.(\d+[A-Za-z]?)[–\-]/i);
+  if (rangeMatch) {
+    return `s${rangeMatch[1] ?? ""}`;
+  }
+
+  // Standard section: "s.7", "s.13A", "s.7(1)(a)(ii)"
+  // Capture the section number + optional letter suffix, drop subsections
+  const sectionMatch = cleaned.match(/^s\.(\d+[A-Za-z]?)(?:\(|$)/i);
+  if (sectionMatch) {
+    return `s${sectionMatch[1] ?? ""}`;
+  }
+
+  return null;
+}
+
+/**
+ * Convert a human-prose obligation citation to the structured `instrumentId:sNNN`
+ * format used by `RegulatoryConceptExtracted.sectionId`.
+ *
+ * Examples:
+ *   "FAIS Act 37/2002 s.7"       → "FAIS-ACT-37-2002:s7"
+ *   "FAIS Act 37/2002 s.7(1)(a)" → "FAIS-ACT-37-2002:s7"
+ *   "FAIS Act 37/2002 s.13A"     → "FAIS-ACT-37-2002:s13A"
+ *   "Banks Act 94/1990 s.60"     → "BANKS-ACT-94-1990:s60"
+ *   "Banks Act 94/1990 s.60(1)"  → "BANKS-ACT-94-1990:s60"
+ *   "FAIS Act 37/2002 § 8"       → "FAIS-ACT-37-2002:s8"
+ *
+ * Returns null if the citation does not match a known pattern.
+ */
+export function normaliseCitationToSectionId(citation: string): string | null {
+  // Match instrument + section in a single regex sweep.
+  // Handles both "s." and "§" section designators.
+  // Captures: (instrument name) (section marker) (section number + optional letter) (optional subsections)
+  const m = citation.match(
+    /^([\w\s()./,]+?)\s+(?:s\.|§\s*)(\d+[A-Za-z]?)(\([^)]*\)(?:\([^)]*\))*)?\s*(?:\+.*)?$/,
+  );
+
+  if (m) {
+    const instrumentName = (m[1] ?? "").trim();
+    const sectionNum = m[2] ?? ""; // e.g. "7" or "13A"
+    const instrumentId = normaliseInstrumentId(instrumentName);
+    if (instrumentId && sectionNum) {
+      return `${instrumentId}:s${sectionNum}`;
+    }
+  }
+
+  // Try alternate form: "ss.16–19" ranges
+  const rangeM = citation.match(/^([\w\s()./,]+?)\s+ss\.(\d+[A-Za-z]?)[–\-]\d+/);
+  if (rangeM) {
+    const instrumentName = (rangeM[1] ?? "").trim();
+    const sectionNum = rangeM[2] ?? "";
+    const instrumentId = normaliseInstrumentId(instrumentName);
+    if (instrumentId && sectionNum) {
+      return `${instrumentId}:s${sectionNum}`;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extract all section IDs from a citation cell that may contain multiple
+ * citations (pipe-delimited or plus-sign-separated).
+ *
+ * Returns an array of normalised `instrumentId:sNNN` strings.
+ * Unknown / un-parseable citations are silently dropped (not null-safe to
+ * the caller — each item in the returned array is a valid string).
+ */
+export function extractSectionIdsFromCitation(citation: string): string[] {
+  const ids: string[] = [];
+
+  // Split on pipe or " + " separators (the register uses both)
+  const parts = citation.split(/\s*[|+]\s*/);
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    const id = normaliseCitationToSectionId(trimmed);
+    if (id) ids.push(id);
+  }
+
+  return ids;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,12 +314,11 @@ export async function linkToObligations(opts: {
   const linkedSections = new Set<string>();
 
   for (const concept of concepts) {
-    const token = sectionToken(concept.sectionId);
-
     for (const obligation of obligations) {
-      // Normalise the obligation's citation column and check for match
-      const normCitation = normaliseCitation(obligation.citation);
-      if (!normCitation.includes(token)) continue;
+      // Normalise the obligation's citation column values to structured sectionIds
+      // and check whether any of them match this concept's sectionId.
+      const citationIds = extractSectionIdsFromCitation(obligation.citation);
+      if (!citationIds.includes(concept.sectionId)) continue;
 
       // We have a match — determine link type
       const linkType =
