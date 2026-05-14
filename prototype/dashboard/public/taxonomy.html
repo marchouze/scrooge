@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taxonomy Explorer · Hoz</title>
+  <meta name="description" content="Canonical classification codes used across obligations, regulatory concepts, risk, and products.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    :root {
+      --surface-base:   #ffffff;
+      --surface-raised: #f5f3ee;
+      --surface-hover:  #edeae4;
+      --neutral-rule:   var(--neutral-mist);
+      --text-primary:   var(--brand-primary);
+      --text-secondary: var(--neutral-graphite);
+    }
+
+    /* ── Page header ── */
+    .tax-page-header {
+      padding: 20px 0 12px;
+    }
+    .tax-page-header h1 {
+      margin: 0 0 4px; font-size: 22px; font-weight: 700;
+      color: var(--text-primary);
+    }
+    .tax-page-header .subtitle {
+      font-size: 13.5px; color: var(--text-secondary); margin: 0;
+    }
+
+    /* ── Search bar ── */
+    .tax-search-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 0 4px;
+    }
+    .tax-search-bar input[type=search] {
+      flex: 1; max-width: 420px;
+      padding: 6px 10px; border: 1px solid var(--neutral-rule); border-radius: 4px;
+      font-size: 13.5px; font-family: inherit;
+      background: var(--surface-base); color: var(--text-primary);
+    }
+    .tax-search-bar .clear-btn {
+      padding: 5px 10px; border: 1px solid var(--neutral-rule);
+      border-radius: 4px; font-size: 12.5px; background: var(--surface-raised);
+      cursor: pointer; color: var(--text-secondary);
+    }
+    .tax-search-bar .clear-btn:hover { background: var(--surface-hover); }
+    .tax-search-info {
+      font-size: 12px; color: var(--neutral-stone); padding-left: 4px;
+    }
+
+    /* ── Panel (collapsible card) ── */
+    .tax-panel {
+      border: 1px solid var(--neutral-rule); border-radius: 6px;
+      margin-top: 20px; overflow: hidden;
+    }
+    .tax-panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 16px; background: var(--surface-raised);
+      cursor: pointer; user-select: none;
+      border-bottom: 1px solid var(--neutral-rule);
+    }
+    .tax-panel-head:hover { background: var(--surface-hover); }
+    .tax-panel-title-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tax-panel-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .tax-panel-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .tax-panel-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+      background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5;
+    }
+    .tax-panel-toggle {
+      font-size: 18px; color: var(--text-secondary); flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .tax-panel.collapsed .tax-panel-toggle { transform: rotate(-90deg); }
+    .tax-panel-body {
+      padding: 14px 16px;
+    }
+    .tax-panel.collapsed .tax-panel-body { display: none; }
+
+    /* ── Code chips ── */
+    .tax-chip {
+      display: inline-block; padding: 2px 7px; border-radius: 4px;
+      font-size: 11px; font-weight: 600; letter-spacing: .02em;
+      font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    .tax-chip-domain {
+      cursor: pointer; text-decoration: none; color: inherit;
+      background: #eef; border-color: #cce; color: #335;
+    }
+    .tax-chip-domain:hover { background: #ddf; border-color: #aac; }
+    .tax-chip-product {
+      background: #f3fdf3; border-color: #bce0c0; color: #2e6b34;
+    }
+    .tax-chip-act {
+      background: #fff8e1; border-color: #ffe082; color: #7a5a00;
+    }
+
+    /* ── Severity colours for risk L1 ── */
+    .sev-critical { background: #fdecea; border-color: #f2b4b0; color: #7d1e10; }
+    .sev-high     { background: #fff3e0; border-color: #ffd9a8; color: #8c4a00; }
+    .sev-medium   { background: #fffde7; border-color: #fff59d; color: #6d5a00; }
+    .sev-low      { background: #e8f5e9; border-color: #bce0c0; color: #2e6b34; }
+
+    /* ── Risk tree ── */
+    .risk-tree { font-size: 13px; }
+    .risk-l1 {
+      border: 1px solid var(--neutral-rule); border-radius: 5px;
+      margin-bottom: 8px; overflow: hidden;
+    }
+    .risk-l1-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px; cursor: pointer; user-select: none;
+      background: var(--surface-raised);
+    }
+    .risk-l1-head:hover { background: var(--surface-hover); }
+    .risk-l1-toggle { font-size: 13px; color: var(--text-secondary); flex-shrink: 0; transition: transform .15s; }
+    .risk-l1.l1-collapsed .risk-l1-toggle { transform: rotate(-90deg); }
+    .risk-l1-label { font-weight: 600; color: var(--text-primary); }
+    .risk-l1-owner { font-size: 10.5px; color: var(--neutral-stone); margin-left: auto; max-width: 280px; text-align: right; line-height: 1.3; }
+    .risk-l1-def { padding: 8px 12px; font-size: 12px; color: var(--text-secondary); border-top: 1px solid var(--neutral-rule); background: var(--surface-base); display: none; }
+    .risk-l1-children { display: block; }
+    .risk-l1.l1-collapsed .risk-l1-children { display: none; }
+    .risk-l1.l1-collapsed .risk-l1-def { display: none; }
+
+    .risk-l2-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--neutral-rule); }
+    .risk-l2-item {
+      padding: 0;
+      border-bottom: 1px solid var(--neutral-rule);
+    }
+    .risk-l2-item:last-child { border-bottom: none; }
+    .risk-l2-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px 7px 24px; cursor: pointer; user-select: none;
+    }
+    .risk-l2-head:hover { background: var(--surface-hover); }
+    .risk-l2-toggle { font-size: 11px; color: var(--text-secondary); flex-shrink: 0; transition: transform .15s; }
+    .risk-l2-label { font-size: 12.5px; color: var(--text-primary); }
+    .risk-l2.l2-collapsed .risk-l2-toggle { transform: rotate(-90deg); }
+    .risk-l2-detail { padding: 5px 12px 7px 44px; font-size: 11.5px; color: var(--text-secondary); background: var(--surface-base); }
+    .risk-l2.l2-collapsed .risk-l2-detail { display: none; }
+
+    .risk-l3-list { list-style: none; margin: 4px 0 0; padding: 0; }
+    .risk-l3-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 0;
+      font-size: 12px; color: var(--text-secondary);
+    }
+
+    /* ── Activity groups ── */
+    .act-group { margin-bottom: 14px; }
+    .act-group-head {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--neutral-stone);
+      margin-bottom: 6px; padding-bottom: 3px;
+      border-bottom: 1px solid var(--neutral-rule);
+    }
+    .act-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    /* ── Domain + product tables ── */
+    .tax-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .tax-table th, .tax-table td {
+      border-bottom: 1px solid var(--neutral-rule);
+      padding: 7px 10px; text-align: left; vertical-align: top;
+    }
+    .tax-table th {
+      background: var(--surface-raised); font-weight: 600;
+      color: var(--text-secondary); font-size: 11.5px;
+    }
+    .tax-table tr:hover td { background: var(--surface-hover); }
+    .tax-table td.code-col { width: 180px; }
+    .tax-table td.desc-col { color: var(--text-secondary); font-size: 12px; }
+    .tax-table tr:last-child td { border-bottom: none; }
+
+    /* ── Hidden rows (search filter) ── */
+    .tax-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Operations Dashboard</span>
+    </div>
+    <div class="meta" id="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/taxonomies"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/home.html">Home</a>
+      <a class="nav-link" href="/obligations.html">Obligations</a>
+      <a class="nav-link" href="/regulatory.html">Regulatory</a>
+      <a class="nav-link" href="/taxonomy.html" aria-current="page">Taxonomies</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">loading…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main class="page-content" style="max-width:960px; margin:0 auto; padding:0 16px 48px;">
+
+  <div class="tax-page-header">
+    <h1>Taxonomy Explorer</h1>
+    <p class="subtitle">Canonical classification codes used across obligations, regulatory concepts, risk, and products.</p>
+  </div>
+
+  <div class="tax-search-bar">
+    <input type="search" id="taxSearch" placeholder="Filter by code or label…" autocomplete="off">
+    <button class="clear-btn" id="taxClear">Clear</button>
+    <span class="tax-search-info" id="taxSearchInfo"></span>
+  </div>
+
+  <!-- Risk taxonomy panel -->
+  <div class="tax-panel" id="panelRisk">
+    <div class="tax-panel-head" id="panelRiskHead" role="button" aria-expanded="true" tabindex="0">
+      <div>
+        <div class="tax-panel-title-row">
+          <span class="tax-panel-title">Risk Taxonomy</span>
+          <span class="tax-panel-badge" id="riskBadge">…</span>
+        </div>
+        <div class="tax-panel-desc">Hierarchical L1/L2/L3 classification. Owner: Helena (Chief Risk Officer, governance).</div>
+      </div>
+      <span class="tax-panel-toggle">▾</span>
+    </div>
+    <div class="tax-panel-body">
+      <div class="risk-tree" id="riskTree">
+        <div class="muted" style="font-size:13px">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity taxonomy panel -->
+  <div class="tax-panel" id="panelActivity">
+    <div class="tax-panel-head" id="panelActivityHead" role="button" aria-expanded="true" tabindex="0">
+      <div>
+        <div class="tax-panel-title-row">
+          <span class="tax-panel-title">Activity Taxonomy</span>
+          <span class="tax-panel-badge" id="activityBadge">…</span>
+        </div>
+        <div class="tax-panel-desc">ACT-* codes classifying bank operations. Owner: Atlas (Core banking platform architect, engineering).</div>
+      </div>
+      <span class="tax-panel-toggle">▾</span>
+    </div>
+    <div class="tax-panel-body">
+      <div id="activityGroups">
+        <div class="muted" style="font-size:13px">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domain taxonomy panel -->
+  <div class="tax-panel" id="panelDomain">
+    <div class="tax-panel-head" id="panelDomainHead" role="button" aria-expanded="true" tabindex="0">
+      <div>
+        <div class="tax-panel-title-row">
+          <span class="tax-panel-title">Obligation Domain Taxonomy</span>
+          <span class="tax-panel-badge" id="domainBadge">…</span>
+        </div>
+        <div class="tax-panel-desc">Ten regulatory domain codes for the obligations register. Owner: Mira (Compliance / RegTech engineer, engineering).</div>
+      </div>
+      <span class="tax-panel-toggle">▾</span>
+    </div>
+    <div class="tax-panel-body">
+      <table class="tax-table" id="domainTable">
+        <thead>
+          <tr><th>Code</th><th>Label</th><th>Description</th></tr>
+        </thead>
+        <tbody id="domainBody">
+          <tr><td colspan="3" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Product scope panel -->
+  <div class="tax-panel" id="panelProduct">
+    <div class="tax-panel-head" id="panelProductHead" role="button" aria-expanded="true" tabindex="0">
+      <div>
+        <div class="tax-panel-title-row">
+          <span class="tax-panel-title">Product Scope</span>
+          <span class="tax-panel-badge" id="productBadge">…</span>
+        </div>
+        <div class="tax-panel-desc">Product classifications for obligation scope. Owner: Atlas (Core banking platform architect, engineering).</div>
+      </div>
+      <span class="tax-panel-toggle">▾</span>
+    </div>
+    <div class="tax-panel-body">
+      <table class="tax-table" id="productTable">
+        <thead>
+          <tr><th>Code</th><th>Label</th><th>Description</th></tr>
+        </thead>
+        <tbody id="productBody">
+          <tr><td colspan="3" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="muted" style="font-size:11.5px; margin-top:24px; padding-top:12px; border-top:1px solid var(--neutral-rule)">
+    Taxonomy codes are stable canonical identifiers (Principle 2 — single-graph discipline).
+    Amending a node requires a Board-approved CeoDecision.
+    Last loaded: <span id="asOf">—</span>
+  </div>
+
+</main>
+
+<script src="/_refresh-controls.js"></script>
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script src="/taxonomy.js"></script>
+</body>
+</html>

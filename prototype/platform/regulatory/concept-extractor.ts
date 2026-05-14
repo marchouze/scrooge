@@ -115,17 +115,24 @@ const CADENCE_MAP: Record<string, "ongoing" | "one-time" | "periodic" | "event-t
   "event driven": "event-triggered",
   "one time": "one-time",
   "one-off": "one-time",
-  "single": "one-time",
-  "recurring": "periodic",
-  "regular": "periodic",
-  "continuous": "ongoing",
+  single: "one-time",
+  recurring: "periodic",
+  regular: "periodic",
+  continuous: "ongoing",
   "continuous obligation": "ongoing",
 };
 
-function normaliseCadence(raw: string | undefined): "ongoing" | "one-time" | "periodic" | "event-triggered" {
+function normaliseCadence(
+  raw: string | undefined,
+): "ongoing" | "one-time" | "periodic" | "event-triggered" {
   if (!raw) return "ongoing";
   const lower = raw.toLowerCase().trim();
-  if (lower === "ongoing" || lower === "one-time" || lower === "periodic" || lower === "event-triggered") {
+  if (
+    lower === "ongoing" ||
+    lower === "one-time" ||
+    lower === "periodic" ||
+    lower === "event-triggered"
+  ) {
     return lower as "ongoing" | "one-time" | "periodic" | "event-triggered";
   }
   return CADENCE_MAP[lower] ?? "ongoing";
@@ -133,20 +140,27 @@ function normaliseCadence(raw: string | undefined): "ongoing" | "one-time" | "pe
 
 type ObligationType = RegulatoryConceptExtractedPayload["obligation"]["type"];
 const OBLIGATION_TYPES = new Set<ObligationType>([
-  "duty", "prohibition", "disclosure", "reporting",
-  "record-keeping", "system-capability", "definition", "penalty", "other",
+  "duty",
+  "prohibition",
+  "disclosure",
+  "reporting",
+  "record-keeping",
+  "system-capability",
+  "definition",
+  "penalty",
+  "other",
 ]);
 const OBLIGATION_TYPE_MAP: Record<string, ObligationType> = {
-  "right": "duty",
-  "rights": "duty",
-  "power": "duty",
-  "requirement": "duty",
-  "obligation": "duty",
-  "permission": "duty",
-  "authorization": "duty",
-  "authorisation": "duty",
+  right: "duty",
+  rights: "duty",
+  power: "duty",
+  requirement: "duty",
+  obligation: "duty",
+  permission: "duty",
+  authorization: "duty",
+  authorisation: "duty",
   "record keeping": "record-keeping",
-  "recordkeeping": "record-keeping",
+  recordkeeping: "record-keeping",
   "system capability": "system-capability",
 };
 

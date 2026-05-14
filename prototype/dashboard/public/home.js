@@ -169,6 +169,14 @@
 
     // -------- Registers (canonical) --------
     {
+      id: "reg-taxonomies",
+      category: "registers",
+      title: "Taxonomy Explorer",
+      blurb:
+        "Atlas — four canonical taxonomies: risk (L1/L2/L3), activity codes, obligation domains, and product scope.",
+      href: "/taxonomy.html",
+    },
+    {
       id: "reg-obligations",
       category: "registers",
       title: "Obligations register",
@@ -397,6 +405,7 @@
     onboarding,
     forwardObligations,
     regulatory,
+    taxonomies,
   ) {
     const counts = {};
 
@@ -564,6 +573,24 @@
       };
     }
 
+    if (taxonomies?.taxonomies) {
+      const t = taxonomies.taxonomies;
+      const riskCount = safeNum(t.risk?.nodeCount);
+      const actCount = safeNum(t.activity?.nodeCount);
+      const domainCount = safeNum(t.domain?.nodeCount);
+      const productCount = safeNum(t.productScope?.nodeCount);
+      const total = riskCount + actCount + domainCount + productCount;
+      counts["reg-taxonomies"] = {
+        text: String(total),
+        tone: total > 0 ? "default" : "muted",
+        aria: `${total} taxonomy nodes across 4 taxonomies`,
+        meta: [
+          { label: "4 taxonomies", tone: "muted" },
+          { label: "3 hierarchical", tone: "muted" },
+        ],
+      };
+    }
+
     return counts;
   }
 
@@ -576,7 +603,8 @@
     if (!window.bankShell) return;
 
     // Parallel fetch — five existing endpoints + the RMS catalogue
-    // (Slice 4) + onboarding pipeline (PR #272) + forward obligations + regulatory.
+    // (Slice 4) + onboarding pipeline (PR #272) + forward obligations + regulatory
+    // + taxonomy explorer.
     // One round-trip wall-clock per tick.
     const [
       state,
@@ -588,6 +616,7 @@
       onboarding,
       forwardObligations,
       regulatory,
+      taxonomies,
     ] = await Promise.all([
       window.bankShell.fetch.state(),
       window.bankShell.fetch.obligations(),
@@ -613,6 +642,10 @@
       fetch("/api/regulatory/instruments", { headers: { Accept: "application/json" } })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
+      // Taxonomy explorer tile data — four taxonomy node counts.
+      fetch("/api/taxonomies", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
     ]);
 
     if (window.bankShell.render && state && state.asOf) {
@@ -630,6 +663,7 @@
       onboarding,
       forwardObligations,
       regulatory,
+      taxonomies,
     );
     if (rms?.counts) {
       const total =
