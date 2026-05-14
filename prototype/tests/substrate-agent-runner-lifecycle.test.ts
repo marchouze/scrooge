@@ -115,7 +115,7 @@ describe("Substrate-runner lifecycle — payload schema parse", () => {
       expect(() =>
         substrateAgentRunStartedPayloadSchema.parse({
           ...STARTED_GOOD,
-          // biome-ignore lint/suspicious/noExplicitAny: deliberate boundary test
+          // biome-ignore lint/suspicious/noExplicitAny: deliberate runtime-enforcement probe — Zod must reject unknown trigger.kind even when TS type is bypassed
           trigger: { kind: "wallclock" as any, id: "x" },
         }),
       ).toThrow();
@@ -131,7 +131,7 @@ describe("Substrate-runner lifecycle — payload schema parse", () => {
       expect(() =>
         substrateAgentRunStartedPayloadSchema.parse({
           ...STARTED_GOOD,
-          // biome-ignore lint/suspicious/noExplicitAny: deliberate boundary test
+          // biome-ignore lint/suspicious/noExplicitAny: deliberate runtime-enforcement probe — Zod must reject unknown substrate even when TS type is bypassed
           substrate: "azure-functions" as any,
         }),
       ).toThrow();
@@ -181,7 +181,7 @@ describe("Substrate-runner lifecycle — payload schema parse", () => {
       expect(() =>
         substrateAgentRunFailedPayloadSchema.parse({
           ...FAILED_GOOD,
-          // biome-ignore lint/suspicious/noExplicitAny: deliberate boundary test
+          // biome-ignore lint/suspicious/noExplicitAny: deliberate runtime-enforcement probe — Zod must reject unknown errorClass even when TS type is bypassed
           errorClass: "panic" as any,
         }),
       ).toThrow();

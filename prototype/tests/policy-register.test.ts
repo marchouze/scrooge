@@ -220,14 +220,23 @@ describe("policy-register — parser fixture", () => {
       obligationsRegister: f.obligations,
     });
     for (const p of policies) {
-      expect(p.id).toBeTruthy();
-      expect(p.name).toBeTruthy();
-      expect(p.domain).toBeTruthy();
-      expect(p.owner).toBeTruthy();
-      expect(p.approval).toBeTruthy();
-      expect(p.cadence).toBeTruthy();
-      expect(p.citation).toBeTruthy();
-      expect(p.statusRaw).toBeTruthy();
+      // F-013: use specific type+content assertions instead of generic toBeTruthy().
+      expect(typeof p.id).toBe("string");
+      expect(p.id.length).toBeGreaterThan(0);
+      expect(typeof p.name).toBe("string");
+      expect(p.name.length).toBeGreaterThan(0);
+      expect(typeof p.domain).toBe("string");
+      expect(p.domain.length).toBeGreaterThan(0);
+      expect(typeof p.owner).toBe("string");
+      expect(p.owner.length).toBeGreaterThan(0);
+      expect(typeof p.approval).toBe("string");
+      expect(p.approval.length).toBeGreaterThan(0);
+      expect(typeof p.cadence).toBe("string");
+      expect(p.cadence.length).toBeGreaterThan(0);
+      expect(typeof p.citation).toBe("string");
+      expect(p.citation.length).toBeGreaterThan(0);
+      expect(typeof p.statusRaw).toBe("string");
+      expect(p.statusRaw.length).toBeGreaterThan(0);
       expect(Array.isArray(p.sources)).toBe(true);
       expect(Array.isArray(p.binds)).toBe(true);
       expect(Array.isArray(p.linkedObligations)).toBe(true);

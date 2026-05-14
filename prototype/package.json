@@ -23,7 +23,7 @@
     "backfill:policy-documents": "bun run scripts/backfill-document-registered-2026-05-12.ts",
     "rms:backfill-documents": "bun run scripts/backfill-document-register.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
-    "recon": "bun run platform/recon/harness.ts",
+    "recon": "bun run platform/recon/recon-self-test.ts",
     "recon:mandate": "bun run platform/recon/mandate-ownership.ts",
     "recon:decisions": "bun run platform/recon/decision-event-recon.ts",
     "recon:dashboard": "bun run platform/recon/dashboard-derivation-recon.ts",
@@ -126,7 +126,8 @@
     "recon:fsca-reg-to-policy": "bun run platform/recon/fsca-reg-to-policy.ts",
     "ras:seed-limits": "bun run scripts/seed-ras-limits.ts",
     "perf:raise-finding": "bun run scripts/raise-finding.ts",
-    "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts"
+    "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts",
+    "recon:circular-deps": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",

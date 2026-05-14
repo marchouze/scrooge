@@ -130,6 +130,14 @@ This agent's mandate **is** the substrate. The relevant gaps are the things Atla
 - **Escalation channel (`AgentEscalation` event)** — schema defined; typed consumer not yet wired. Escalations still surface via Scrooge to Marc. Owner: Atlas. Target: next release.
 - **Oversight UI for the CEO** — not built. Marc reviews escalations as Owner Inbox files. Owner: Atlas. Target: A3.
 - **Cloud lift to Azure** — local-first per Principle 3 implementation sequence. Owner: Atlas + Devon. Target: post-licence-grant.
+- **F-008 (Vera P2)** — `store.ts:replay()` returns `Record<string, unknown>` payload; consumers skip per-type schema on the fast path. Roadmap: tighten `replay()` to a discriminated union when a type filter is set. Low urgency; no correctness defect today.
+- **F-010 (Vera P3)** — Several `JSON.parse(...) as <Shape>` casts at trust boundaries in `dashboard/agent-runs.ts`, `dashboard/derive.ts`, `dashboard/registry.ts`. Add Zod parse at each boundary to fail-closed on bad input. Owner: Atlas (substrate) / Anya (dashboard projections).
+- **F-021 (Vera P2)** — `platform/event-store/registry.ts` is 2015 lines. Split together with F-020 (`event-types.ts`) per domain (markets / accounting / governance / agent-lifecycle / RMS / recon) with a thin barrel. Defer to avoid merge conflict surface until fleet expansion requires it.
+- **F-025 (Vera P2)** — `runId` vs `run_id` snake/camel boundary enforced ad-hoc in each `replay()` shape mapping (`store.ts:359-369`, `postgres-sync.ts:113-115`). Centralise into a single `rowToEvent()` adapter function to eliminate drift risk.
+- **F-028 (Vera P2)** — Synchronous `readFileSync` / `writeFileSync` / `existsSync` callsites in agent handlers (`anya-projection-drift.ts`, `owen-governance-cycle-prep.ts`, `senna-security-substrate-state.ts`). Non-blocking during build phase; replace with async alternatives at cloud-lift (Principle 3).
+- **F-030 (Vera P2)** — 90 ad-hoc `process.env` reads across `prototype/` with no central schema. Centralise in a `platform/env.ts` Zod-parsed config singleton; fail at boot on misconfig. Owner: Atlas.
+- **F-034 (Vera P2)** — `recon:circular-deps` script added to `package.json` but not wired into `ci` chain — 5 circular deps currently present (taxonomies barrel cycle + dcam/index cycle). Resolve cycles then add `bun run recon:circular-deps` to the `ci` script. Owner: Atlas.
+- **F-016 (Vera P2, partial)** — CEO-decision-record parse failures currently surface as `SubstrateAgentRunFailed`; should emit `AgentEscalation` for integrity events. Blocked on escalation channel wiring (above gap). Owner: Atlas (channel) + Scrooge (handler update).
 
 ## 17. Change log
 
@@ -139,3 +147,4 @@ This agent's mandate **is** the substrate. The relevant gaps are the things Atla
 | v1.0 | 2026-05-07 | Atlas (via Scrooge) | Upgraded to agent operating spec under Principle 6. Mandate explicitly extended to include the agent-runtime substrate. Reports-to corrected to Devon (COO) per top-of-house structure. |
 | v1.1 | 2026-05-07 | Atlas (via Scrooge) | Step 2 — A0 (schemas frozen) + A1 starter (registry + identity) landed. 11 substrate-event schemas added; agent-runtime module live; scheduler operational. Gap §3 closed; gaps §1, §2 partially closed; gaps §4, §5 unchanged. |
 | v1.2 | 2026-05-14 | Atlas (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; scheduler gap marked closed; event-trigger bus gap restated as current primary gap. |
+| v1.3 | 2026-05-14 | Vera (via Scrooge) | P2/P3 triage — substrate gaps F-008, F-010, F-016, F-021, F-025, F-028, F-030, F-034 recorded from 2026-05-10 Vera codebase quality review. |
