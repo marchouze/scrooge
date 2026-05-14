@@ -37,13 +37,20 @@ import { type ReconResult, type ReconViolation, emptyResult } from "../types";
  *
  * If a deliberate retirement pass shrinks the list, update this constant
  * in the same commit.
+ *
+ * 2026-05-14: +2 entries (AgentPerformanceEvaluated, AgentFeedbackIssued)
+ * added by Sade's performance-evaluator PR. These are new AgentOps substrate
+ * events; no agent has published a policy for them yet. Growth authorised by
+ * Scrooge dispatch brief (agent-aba467f89147533bf) under Principle 6
+ * (autonomous by default — performance management is load-bearing AgentOps).
+ * Baseline bumped from 215 → 217.
  */
-export const BASELINE_COUNT = 215;
+export const BASELINE_COUNT = 217;
 
 /**
  * Date the baseline was snapshotted, for the deliverable's message line.
  */
-export const BASELINE_AS_OF = "2026-05-10";
+export const BASELINE_AS_OF = "2026-05-14";
 
 export interface RunOpts {
   /** Override the permission-gate.ts path (for tests). */

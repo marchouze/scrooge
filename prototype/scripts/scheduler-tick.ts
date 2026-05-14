@@ -158,6 +158,29 @@ async function main(): Promise<number> {
     logger.warn(f, `scheduler:tick — inactivity ${f.alertId}: ${f.details}`);
   }
 
+  // 5. Daily performance evaluations (Sade — AgentOps).
+  //    Run once per calendar day (idempotent — skips if already evaluated).
+  //    TODO: move to a Sade-owned scheduled handler (cron entry in Team/Sade.md)
+  //    once the goal-loop scheduled-handler substrate is fully wired.
+  const yesterday = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
+  const alreadyRanToday = [...eventStore.replay({ type: "AgentPerformanceEvaluated" })].some(
+    (e) => (e.payload as Record<string, unknown>).evaluationPeriod === yesterday,
+  );
+  if (!alreadyRanToday) {
+    const { runPerformanceEvaluations } = await import("../platform/agents/performance-runner");
+    const perfActor = { type: "service" as const, id: "agent:sade:performance-evaluator" };
+    const perfResult = await runPerformanceEvaluations(yesterday, perfActor);
+    logger.info(
+      { evaluated: perfResult.evaluated, skipped: perfResult.skipped, period: yesterday },
+      `scheduler:tick — performance evaluations: ${perfResult.evaluated} evaluated, ${perfResult.skipped} skipped`,
+    );
+  } else {
+    logger.debug(
+      { period: yesterday },
+      "scheduler:tick — performance evaluations: already ran for yesterday",
+    );
+  }
+
   // Summary line.
   logger.info(
     {

@@ -50,8 +50,11 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // boundary files). Decreased from 46 to 45 when dashboard/registry.ts,
 // dashboard/onboarding-view.ts, and dashboard/server.ts were allowlisted
 // (all carry `// wall-clock: ...` annotations; see allowlist entries below).
+// Bumped 45 → 47: dashboard/markets-fx-counterparties.ts:75 and
+// dashboard/rms-view.ts:267 added default nowIso/now params (approved
+// boundary pattern — injected clock at call-site, default is wall-clock).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 45;
+const KNOWN_VIOLATIONS_SNAPSHOT = 47;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
