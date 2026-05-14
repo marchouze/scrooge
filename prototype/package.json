@@ -123,7 +123,8 @@
     "reset": "rm -rf .local && mkdir -p .local",
     "check:circular": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
     "recon:wall-clock-callsite-coverage": "bun run platform/recon/wall-clock-callsite-coverage.ts",
-    "recon:fsca-reg-to-policy": "bun run platform/recon/fsca-reg-to-policy.ts"
+    "recon:fsca-reg-to-policy": "bun run platform/recon/fsca-reg-to-policy.ts",
+    "ras:seed-limits": "bun run scripts/seed-ras-limits.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",

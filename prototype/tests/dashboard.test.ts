@@ -66,6 +66,7 @@ function mk(opens: OpenDecision[] = [sampleOpen], inFlight: InFlightItem[] = [])
     findings: [],
     runtimeHandlers: [],
     decisionComments: {},
+    limitUtilisations: [],
   };
 }
 

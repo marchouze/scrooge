@@ -462,6 +462,23 @@ export interface Policy {
   sourceFiles: readonly string[];
 }
 
+// ---------------------------------------------------------------------------
+// Slice 5 — RAS limit utilisation rows (LimitUtilisationProjection)
+// Authors: Rohan (Risk engineer) + Helena (Chief Risk Officer, governance)
+// Authority: D-MARKETS-SCHEMA-FOUNDATION Slice 5
+// ---------------------------------------------------------------------------
+
+export interface LimitUtilisationStateSummary {
+  cluster: "B1" | "B2" | "B3" | "B4" | "B5";
+  limitName: string;
+  utilisationPct: number;
+  limitValue: number;
+  currentExposure: number;
+  currency: string;
+  ragStatus: "green" | "amber" | "red";
+  asOf: string;
+}
+
 export interface DashboardState {
   asOf: string;
   /**
@@ -494,6 +511,12 @@ export interface DashboardState {
   runtimeHandlers: readonly RuntimeHandlerInfo[];
   /** Comments per decisionId — append-only thread, oldest first. */
   decisionComments: Readonly<Record<string, readonly DecisionCommentSummary[]>>;
+  /**
+   * Slice 5 — per-cluster RAS limit utilisations. Derived from the
+   * LimitUtilisationProjection (Rohan). Empty array if no
+   * RasLimitSchedulePublished event has been emitted yet.
+   */
+  limitUtilisations: readonly LimitUtilisationStateSummary[];
 }
 
 export interface DecisionRequestBody {

@@ -241,6 +241,11 @@ export const TYPED_EVENT_TYPES = [
   // Author: Mira (Compliance / RegTech engineer, engineering).
   "AgentPerformanceEvaluated",
   "AgentFeedbackIssued",
+  // Slice 5 — pre-trade risk controls + RAS limit schedule.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
+  // Authors: Kai (Markets engineer), Helena (CRO), Rohan (Risk engineer).
+  "OrderRejected",
+  "RasLimitSchedulePublished",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

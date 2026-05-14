@@ -44,6 +44,7 @@ import type {
   DecisionRecommendation,
   FindingSummary,
   InFlightItem,
+  LimitUtilisationStateSummary,
   OpenDecision,
   OpenSeat,
   OwnerInboxGroup,
@@ -159,6 +160,12 @@ export interface DeriveOpts {
   readonly sources: SourcePaths;
   readonly events: EventSource;
   readonly now?: () => string;
+  /**
+   * Slice 5 — pre-built LimitUtilisation rows. Optional: if omitted the
+   * dashboard state carries an empty array (caller is responsible for
+   * re-building the projection and injecting the result).
+   */
+  readonly limitUtilisations?: readonly LimitUtilisationStateSummary[];
 }
 
 export function defaultSourcePaths(repoRoot: string): SourcePaths {
@@ -1992,6 +1999,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     findings: findingsSorted,
     runtimeHandlers: RUNTIME_HANDLERS,
     decisionComments: commentsByDecisionId,
+    limitUtilisations: opts.limitUtilisations ?? [],
   };
 }
 

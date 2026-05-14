@@ -43,7 +43,9 @@ import {
   orderApprovedAtGatewayPayloadSchema,
   orderProposedPayloadSchema,
   orderRejectedAtGatewayPayloadSchema,
+  orderRejectedPayloadSchema,
   preTradeLimitChangedPayloadSchema,
+  rasLimitSchedulePublishedPayloadSchema,
   switchTestActivatedPayloadSchema,
   switchTestEndedPayloadSchema,
   switchTestReportPayloadSchema,
@@ -411,6 +413,45 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/event-store/event-types-cdm.ts; runtime/agents/kai-m1-cdm-typescript-bindings.ts; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07)",
+  },
+  // ---------------------------------------------------------------------------
+  // Slice 5 — pre-trade risk controls
+  //
+  // `OrderRejected` — emitted when a pre-trade limit check (RAS cluster B1–B5)
+  // blocks an order at the notional/exposure limit. Distinct from
+  // `OrderRejectedAtGateway` (check-level rejection). Retention: 7 years per
+  // ORG-JSE-IRC-01 (JSE Integrated Risk Controls record-retention).
+  // Authors: Kai (Markets engineer) + Helena (CRO) + Rohan (Risk engineer).
+  //
+  // `RasLimitSchedulePublished` — Helena publishes the active RAS limit
+  // schedule; feeds the LimitUtilisationProjection denominator per cluster.
+  // Governance-grade 7-year retention (RAS decisions are board-level records).
+  //
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION, Slice 5.
+  // ---------------------------------------------------------------------------
+  {
+    type: "OrderRejected",
+    class: "markets",
+    payloadSchema: orderRejectedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Helena", "Rohan", "Saskia", "Mira", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["ORG-JSE-IRC-01", "JSE-RULES-EQUITIES", "FMA-S5"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "D-MARKETS-SCHEMA-FOUNDATION Slice 5; platform/projections/markets/limit-utilisation.ts; ORG-JSE-IRC-01",
+  },
+  {
+    type: "RasLimitSchedulePublished",
+    class: "markets",
+    payloadSchema: rasLimitSchedulePublishedPayloadSchema,
+    issuer: "Helena",
+    subscribers: ["Rohan", "Kai", "Saskia", "Camille", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["ORG-PR-19", "ORG-PR-48", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "D-MARKETS-SCHEMA-FOUNDATION Slice 5; platform/projections/markets/limit-utilisation.ts; Helena RAS mandate",
   },
 ];
 

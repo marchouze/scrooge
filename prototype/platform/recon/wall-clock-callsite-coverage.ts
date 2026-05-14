@@ -95,6 +95,12 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // rationale as dashboard/substrate-gaps.ts — monotonic comparison, not
   // an event timestamp. Marked `// wall-clock: TTL cache elapsed-time check`.
   "dashboard/server.ts",
+  // FX counterparties view + RMS view: default injectable `now` parameters
+  // (same pattern as dashboard/onboarding-view.ts). The default is a
+  // wall-clock fallback; callers that need deterministic time inject an
+  // explicit `nowIso`. No event `asOf` is sourced from these defaults.
+  "dashboard/markets-fx-counterparties.ts",
+  "dashboard/rms-view.ts",
   // Agent goal-loop deriving functions: all Date.now() calls here are
   // elapsed-time staleness checks — comparing real wall-clock time against
   // stored event timestamps to determine if an agent run is overdue.
