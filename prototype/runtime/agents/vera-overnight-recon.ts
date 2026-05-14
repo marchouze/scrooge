@@ -23,6 +23,10 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import {
+  type AuditFindingSeverity,
+  makeAuditFinding,
+} from "../../platform/event-store/event-types/audit";
 import { run as runDashboardDerivation } from "../../platform/recon/dashboard-derivation-recon";
 import { run as runDecisionEvent } from "../../platform/recon/decision-event-recon";
 import { run as runDecisionRequiredEventPairing } from "../../platform/recon/decision-required-event-pairing";
@@ -97,26 +101,37 @@ function emitReconResultEvent(ctx: AgentRunContext, result: ReconResult): void {
   });
 }
 
+/** Map recon violation severity ("fail") to AuditFinding severity enum. */
+function mapReconSeverity(s: "warn" | "fail"): AuditFindingSeverity {
+  return s === "fail" ? "high" : "medium";
+}
+
 function emitAuditFindingEvents(ctx: AgentRunContext, result: ReconResult): number {
   if (ctx.dryRun) return 0;
   const failures = result.violations.filter((v) => v.severity === "fail");
+  const dateSlug = ctx.asOf.slice(0, 10).replace(/-/g, "");
   for (const v of failures) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: ctx.asOf,
+    const randSuffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const findingId = `F-VERA-${dateSlug}-${randSuffix}`;
+    const event = makeAuditFinding({
+      asOf: ctx.asOf,
       entity: "BANK-ZA-001",
       actor: { type: "service", id: "agent:vera:overnight-recon" },
       citations: EVENT_CITATIONS,
       payload: {
-        pipeline: result.pipeline,
-        subject: v.subject,
-        message: v.message,
-        severity: v.severity,
-        recommendedOwner: "Thandiwe",
-        runTrigger: ctx.trigger.id,
+        findingId,
+        severity: mapReconSeverity(v.severity as "warn" | "fail"),
+        category: "process",
+        addressedTo: "agent:vera",
+        agentId: "vera",
+        raisedBy: "agent:vera:overnight-recon",
+        summary: `${result.pipeline}: ${v.subject} — ${v.message}`,
+        detail: `Pipeline: ${result.pipeline}; Subject: ${v.subject}; Message: ${v.message}`,
+        sourceRef: result.pipeline,
+        citations: EVENT_CITATIONS,
       },
     });
+    eventStore.append(event);
   }
   return failures.length;
 }
