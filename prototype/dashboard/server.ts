@@ -54,6 +54,7 @@ import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permi
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
+import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
 import type { Event } from "../platform/event-store/types";
 import {
@@ -869,6 +870,42 @@ function handlePolicyFetch(filename: string): Response {
   });
 }
 
+// ---------------------------------------------------------------------------
+// GET /api/rms/document-content?hash=<blake3:...>
+//
+// Serves the raw text content of a document from the BLAKE3 content-addressed
+// store so the RMS document register can render a click-to-view markdown
+// preview panel. Authority: D-RMS-PHASE-1 (document register, Slice 4+).
+//
+// Safety:
+//   • hash param must match blake3:[a-f0-9]{64} — rejects traversal + malformed.
+//   • DocumentStoreMissError → 404; all other errors → 500.
+// ---------------------------------------------------------------------------
+
+const BLAKE3_HASH_RE = /^blake3:[a-f0-9]{64}$/;
+
+function handleRmsDocumentContent(searchParams: URLSearchParams): Response {
+  const hash = searchParams.get("hash");
+  if (!hash || !BLAKE3_HASH_RE.test(hash)) {
+    return new Response("Bad request: hash must match blake3:[a-f0-9]{64}", { status: 400 });
+  }
+  let bytes: Uint8Array;
+  try {
+    bytes = defaultDocumentStore.get(hash as import("../platform/document-store").DocumentHash);
+  } catch (e) {
+    const msg = (e as Error).message ?? String(e);
+    if (msg.includes("not found") || msg.includes("DocumentStoreMiss")) {
+      return new Response("Document not found", { status: 404 });
+    }
+    return new Response(`Store error: ${msg}`, { status: 500 });
+  }
+  const text = new TextDecoder().decode(bytes);
+  return new Response(text, {
+    status: 200,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+
 function handleRmsRegister(register: string): Response {
   if (!isRmsRegisterKey(register)) {
     return jsonResponse(
@@ -1382,6 +1419,9 @@ const server = Bun.serve({
     // D-RMS-PHASE-1.
     if (url.pathname === "/api/rms" && req.method === "GET") {
       return handleRmsCatalogue();
+    }
+    if (url.pathname === "/api/rms/document-content" && req.method === "GET") {
+      return handleRmsDocumentContent(url.searchParams);
     }
     {
       const rmsMatch = url.pathname.match(/^\/api\/rms\/(.+)$/);
