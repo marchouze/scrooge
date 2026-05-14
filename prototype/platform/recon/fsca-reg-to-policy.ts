@@ -169,6 +169,14 @@ const POLICY_NAME_ALIASES: Readonly<Record<string, string>> = {
   "aml policy": "aml-cft-policy",
   "anti-money laundering policy": "aml-cft-policy",
   "cft policy": "aml-cft-policy",
+  // FAIS — the full FAIS Compliance Policy covers all "FAIS Policy" obligations
+  "fais policy": "fais-compliance-policy",
+  "fais compliance policy": "fais-compliance-policy",
+  // Information Security — the IT-governance policy covers all "Information Security Policy" obligations
+  "information security policy": "information-security-it-governance-policy",
+  "infosec policy": "information-security-it-governance-policy",
+  "it governance policy": "information-security-it-governance-policy",
+  "it risk management policy": "information-security-it-governance-policy",
 };
 
 // ---------------------------------------------------------------------------
