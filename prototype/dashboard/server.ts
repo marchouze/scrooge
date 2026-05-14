@@ -97,7 +97,6 @@ import {
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
-import { buildTaxonomiesView } from "./taxonomy-view";
 import {
   RMS_REGISTER_KEYS,
   buildRmsRegistersFold,
@@ -113,6 +112,7 @@ import {
   StartWorkstreamBodySchema,
 } from "./server-schemas";
 import { getSubstrateGapsView } from "./substrate-gaps";
+import { buildTaxonomiesView } from "./taxonomy-view";
 import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);

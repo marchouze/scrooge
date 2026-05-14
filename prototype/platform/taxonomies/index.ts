@@ -147,8 +147,7 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
   {
     code: "money-market",
     label: "Money market",
-    description:
-      "Money market instruments — call deposits, NCDs, and treasury bills.",
+    description: "Money market instruments — call deposits, NCDs, and treasury bills.",
   },
   {
     code: "repo",
@@ -158,7 +157,8 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
   {
     code: "derivatives",
     label: "Derivatives (generic)",
-    description: "Generic derivatives catch-all for obligations spanning multiple derivative asset classes.",
+    description:
+      "Generic derivatives catch-all for obligations spanning multiple derivative asset classes.",
   },
   {
     code: "universal",
@@ -171,8 +171,12 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
 // Unified bundle — AllTaxonomies.
 // ---------------------------------------------------------------------------
 
+import {
+  ACTIVITY_CODES as _AC,
+  ACTIVITY_GROUPS as _AG,
+  ACTIVITY_LABELS as _AL,
+} from "../activities/taxonomy";
 import { RISK_TAXONOMY as _RT } from "../risk/taxonomy";
-import { ACTIVITY_CODES as _AC, ACTIVITY_GROUPS as _AG, ACTIVITY_LABELS as _AL } from "../activities/taxonomy";
 
 export interface AllTaxonomies {
   readonly risk: {

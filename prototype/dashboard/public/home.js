@@ -575,11 +575,11 @@
 
     if (taxonomies?.taxonomies) {
       const t = taxonomies.taxonomies;
-      const riskCount    = safeNum(t.risk?.nodeCount);
-      const actCount     = safeNum(t.activity?.nodeCount);
-      const domainCount  = safeNum(t.domain?.nodeCount);
+      const riskCount = safeNum(t.risk?.nodeCount);
+      const actCount = safeNum(t.activity?.nodeCount);
+      const domainCount = safeNum(t.domain?.nodeCount);
       const productCount = safeNum(t.productScope?.nodeCount);
-      const total        = riskCount + actCount + domainCount + productCount;
+      const total = riskCount + actCount + domainCount + productCount;
       counts["reg-taxonomies"] = {
         text: String(total),
         tone: total > 0 ? "default" : "muted",
