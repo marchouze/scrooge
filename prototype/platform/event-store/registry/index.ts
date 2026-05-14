@@ -56,6 +56,7 @@ export {
   READINESS_SNAPSHOT_EVENT_TYPES,
   RMS_EVENT_TYPES,
 } from "./governance";
+export { REGULATORY_EVENT_TYPES } from "./regulatory";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -79,6 +80,7 @@ import {
   PERIOD_CLOSE_EVENT_TYPES,
 } from "./markets";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
+import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { GOAL_LOOP_EVENT_TYPES, RUNTIME_EVENT_TYPES } from "./runtime";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 
@@ -103,6 +105,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...READINESS_SNAPSHOT_EVENT_TYPES,
   ...GOAL_LOOP_EVENT_TYPES,
   ...CUSTOMER_LIFECYCLE_EVENT_TYPES,
+  ...REGULATORY_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
