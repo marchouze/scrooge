@@ -115,7 +115,7 @@ export const KNOWN_AGENTS = [
 // ---------------------------------------------------------------------------
 
 function scoreDelivery(m: RunMetrics): number {
-  if (m.runsStarted === 0) return 0.5; // no data → neutral
+  if (m.runsStarted === 0) return 0; // no runs = zero delivery; absence of work is not neutral
   const r = m.deliveryRate;
   if (r >= 0.9) return 1.0;
   if (r >= 0.7) return 0.75;
@@ -123,7 +123,14 @@ function scoreDelivery(m: RunMetrics): number {
   return r * 0.5;
 }
 
-function scoreQuality(m: QualityMetrics): number {
+function scoreQuality(m: QualityMetrics, runMetrics: RunMetrics): number {
+  const noObservableActivity =
+    runMetrics.runsStarted === 0 &&
+    m.auditFindingsRaised === 0 &&
+    m.ciViolations === 0 &&
+    m.worktreeViolations === 0;
+  // Absence of violations when no work was done is absence of evidence, not quality.
+  if (noObservableActivity) return 0.5;
   let score = 1.0;
   score -= m.findingsBySeverity.critical * 0.3;
   score -= m.findingsBySeverity.high * 0.15;
@@ -151,7 +158,7 @@ function scoreStrategic(m: StrategicMetrics): number {
     m.decisionsAdvanced.length === 0 &&
     m.workstreamsProgressed.length === 0
   ) {
-    score = 0.3;
+    score = 0; // zero strategic contribution = zero strategic score
   } else {
     score = 0.6;
   }
@@ -182,13 +189,21 @@ function buildNarrative(
   const strengths: string[] = [];
   const areasForImprovement: string[] = [];
 
+  const inactive =
+    runMetrics.runsStarted === 0 &&
+    strategicMetrics.prsMerged === 0 &&
+    strategicMetrics.decisionsAdvanced.length === 0 &&
+    strategicMetrics.workstreamsProgressed.length === 0;
+
   // Strengths
   if (runMetrics.runsStarted > 0 && runMetrics.deliveryRate >= 0.9) {
     strengths.push(
       `High delivery rate of ${(runMetrics.deliveryRate * 100).toFixed(0)}% — consistently completing assigned runs.`,
     );
   }
+  // Only credit clean quality signals when the agent actually did work.
   if (
+    !inactive &&
     qualityMetrics.ciViolations === 0 &&
     qualityMetrics.worktreeViolations === 0 &&
     qualityMetrics.auditFindingsRaised === 0
@@ -196,7 +211,11 @@ function buildNarrative(
     strengths.push(
       "Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline.",
     );
-  } else if (qualityMetrics.ciViolations === 0 && qualityMetrics.worktreeViolations === 0) {
+  } else if (
+    !inactive &&
+    qualityMetrics.ciViolations === 0 &&
+    qualityMetrics.worktreeViolations === 0
+  ) {
     strengths.push(
       "Zero CI violations and worktree isolation violations — process hygiene maintained.",
     );
@@ -221,9 +240,11 @@ function buildNarrative(
     );
   }
   if (strengths.length === 0) {
-    strengths.push(
-      "No standout strengths recorded for this period — baseline performance observed.",
-    );
+    if (inactive) {
+      strengths.push("No activity recorded this period — no runs started, no PRs merged, no decisions advanced.");
+    } else {
+      strengths.push("No standout strengths recorded for this period — baseline performance observed.");
+    }
   }
 
   // Areas for improvement
@@ -256,7 +277,13 @@ function buildNarrative(
       `${qualityMetrics.worktreeViolations} worktree isolation violation(s) — agents must NEVER cd to /Users/marc/code/Bank (CLAUDE.md worktree-isolation rule).`,
     );
   }
-  if (
+  if (inactive) {
+    areasForImprovement.push(
+      "Agent was completely inactive this period — zero runs, zero PRs, zero decisions, zero workstreams. " +
+      "An autonomous agent must generate output on its own cadence (Principle 6). " +
+      "Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.",
+    );
+  } else if (
     strategicMetrics.decisionsAdvanced.length === 0 &&
     strategicMetrics.workstreamsProgressed.length === 0 &&
     strategicMetrics.prsMerged === 0
@@ -496,7 +523,7 @@ export async function evaluateAgent(
   const strategicMetrics = collectStrategicMetrics(agentId, evaluationPeriod);
 
   const delivery = scoreDelivery(runMetrics);
-  const quality = scoreQuality(qualityMetrics);
+  const quality = scoreQuality(qualityMetrics, runMetrics);
   const strategic = scoreStrategic(strategicMetrics);
   const overall = delivery * 0.4 + quality * 0.4 + strategic * 0.2;
 
