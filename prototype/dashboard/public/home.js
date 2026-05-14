@@ -93,6 +93,14 @@
         "Niko's counterparty-onboarding pipeline — 21-phase lifecycle from sounding to activated.",
       href: "/onboarding.html",
     },
+    {
+      id: "regulatory",
+      category: "dashboards",
+      title: "Regulatory Intelligence",
+      blurb:
+        "Mira's horizon-scanning substrate — instruments registered, concepts extracted, high-applicability sections scored and classified.",
+      href: "/regulatory.html",
+    },
 
     // -------- Reports (as-of-date) --------
     {
@@ -388,6 +396,7 @@
     escalations,
     onboarding,
     forwardObligations,
+    regulatory,
   ) {
     const counts = {};
 
@@ -538,6 +547,23 @@
       };
     }
 
+    if (regulatory?.summary) {
+      const s = regulatory.summary;
+      const instruments = safeNum(s.totalInstruments);
+      const concepts = safeNum(s.totalConcepts);
+      const highApp = safeNum(s.highApplicabilityCount);
+      const tone = instruments === 0 ? "muted" : highApp > 0 ? "default" : "muted";
+      counts.regulatory = {
+        text: String(instruments),
+        tone,
+        aria: `${instruments} instruments; ${concepts} concepts; ${highApp} high-applicability sections`,
+        meta: [
+          { label: `${concepts} concepts`, tone: concepts > 0 ? "default" : "muted" },
+          { label: `${highApp} high-app`, tone: highApp > 0 ? "default" : "muted" },
+        ],
+      };
+    }
+
     return counts;
   }
 
@@ -550,7 +576,7 @@
     if (!window.bankShell) return;
 
     // Parallel fetch — five existing endpoints + the RMS catalogue
-    // (Slice 4) + onboarding pipeline (PR #272) + forward obligations (this PR).
+    // (Slice 4) + onboarding pipeline (PR #272) + forward obligations + regulatory.
     // One round-trip wall-clock per tick.
     const [
       state,
@@ -561,6 +587,7 @@
       rms,
       onboarding,
       forwardObligations,
+      regulatory,
     ] = await Promise.all([
       window.bankShell.fetch.state(),
       window.bankShell.fetch.obligations(),
@@ -582,6 +609,10 @@
       })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
+      // Regulatory intelligence tile data — instrument count + concept summary.
+      fetch("/api/regulatory/instruments", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
     ]);
 
     if (window.bankShell.render && state && state.asOf) {
@@ -598,6 +629,7 @@
       escalations,
       onboarding,
       forwardObligations,
+      regulatory,
     );
     if (rms?.counts) {
       const total =

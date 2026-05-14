@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regulatory Intelligence · Hoz</title>
+  <meta name="description" content="Regulatory horizon-scanning — instruments registered, concepts extracted, high-applicability sections.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    :root {
+      --surface-base:   #ffffff;
+      --surface-raised: #f5f3ee;
+      --surface-hover:  #edeae4;
+      --neutral-rule:   var(--neutral-mist);
+      --text-primary:   var(--brand-primary);
+      --text-secondary: var(--neutral-graphite);
+    }
+
+    /* ── Summary bar ── */
+    .reg-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px; margin-top: 12px;
+    }
+    .reg-card {
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      border-radius: 5px; padding: 10px 12px;
+    }
+    .reg-card-num { font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--text-primary); }
+    .reg-card-lbl { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
+    .reg-card-sub { font-size: 10.5px; color: var(--neutral-stone); margin-top: 2px; }
+
+    /* ── Filter bar ── */
+    .reg-filter-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+      padding: 12px 0 4px;
+    }
+    .reg-filter-bar .fc { display: flex; flex-direction: column; gap: 3px; }
+    .reg-filter-bar label { font-size: 11px; font-weight: 500; color: var(--neutral-stone); text-transform: uppercase; letter-spacing: .04em; }
+    .reg-filter-bar select,
+    .reg-filter-bar input[type=search],
+    .reg-filter-bar input[type=number] {
+      padding: 5px 8px; border: 1px solid var(--neutral-rule); border-radius: 4px;
+      font-size: 13px; font-family: inherit; background: var(--surface-base);
+      color: var(--text-primary);
+    }
+    .reg-filter-bar input[type=search] { min-width: 180px; }
+    .reg-filter-bar input[type=number] { width: 70px; }
+    .reg-filter-count { font-size: 12px; color: var(--neutral-stone); align-self: flex-end; padding-bottom: 6px; white-space: nowrap; }
+
+    /* ── Instrument cards ── */
+    .reg-instrument-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 12px; margin-top: 16px;
+    }
+    .reg-instrument-card {
+      background: var(--surface-base); border: 1px solid var(--neutral-rule);
+      border-radius: 6px; padding: 14px 16px; cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .reg-instrument-card:hover { border-color: var(--accent-ink); box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+    .reg-instrument-card.active { border-color: var(--accent-ink); background: #f0f5ff; }
+    .reg-instrument-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .reg-instrument-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+    .reg-status-badge {
+      display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px;
+      font-weight: 600; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+    }
+    .status-pending    { background: #fff8e1; color: #7a5a00; border: 1px solid #ffe082; }
+    .status-in-progress { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+    .status-complete   { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+
+    .reg-instrument-meta { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; }
+    .reg-instrument-meta span { margin-right: 10px; }
+    .reg-instrument-meta code { font-size: 11px; background: var(--surface-raised); padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono); }
+
+    .reg-instrument-stats {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+    }
+    .reg-stat-chip {
+      display: inline-flex; align-items: baseline; gap: 4px;
+      padding: 2px 7px; border-radius: 10px;
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      font-size: 11px;
+    }
+    .reg-stat-chip b { font-weight: 600; font-size: 12px; }
+    .reg-stat-chip.hi-app { background: #e8f5e9; border-color: #bce0c0; color: #2e6b34; }
+    .reg-stat-chip.hi-rel { background: #e3f2fd; border-color: #cae0f5; color: #1c4d80; }
+
+    /* ── Concepts panel ── */
+    .reg-concepts-panel {
+      margin-top: 20px; border: 1px solid var(--neutral-rule); border-radius: 6px;
+      display: none;
+    }
+    .reg-concepts-panel.open { display: block; }
+    .reg-concepts-head {
+      padding: 12px 16px; border-bottom: 1px solid var(--neutral-rule);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--surface-raised); border-radius: 6px 6px 0 0;
+    }
+    .reg-concepts-head h3 { margin: 0; font-size: 14px; }
+    .reg-concepts-close {
+      background: none; border: none; cursor: pointer; font-size: 18px;
+      color: var(--neutral-stone); padding: 0 4px; line-height: 1;
+    }
+    .reg-concepts-close:hover { color: var(--text-primary); }
+
+    .reg-concepts-filter-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end;
+      padding: 10px 16px; border-bottom: 1px solid var(--neutral-rule);
+    }
+    .reg-concepts-filter-bar .fc { display: flex; flex-direction: column; gap: 2px; }
+    .reg-concepts-filter-bar label { font-size: 10px; font-weight: 500; color: var(--neutral-stone); text-transform: uppercase; letter-spacing: .04em; }
+    .reg-concepts-filter-bar select,
+    .reg-concepts-filter-bar input[type=number] {
+      padding: 4px 7px; border: 1px solid var(--neutral-rule); border-radius: 4px;
+      font-size: 12px; font-family: inherit; background: var(--surface-base);
+      color: var(--text-primary);
+    }
+    .reg-concepts-filter-bar input[type=number] { width: 65px; }
+
+    /* ── Concepts table ── */
+    .reg-table-wrap { overflow-x: auto; }
+    table.reg-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.reg-table th, table.reg-table td {
+      border-bottom: 1px solid var(--neutral-rule); padding: 7px 10px;
+      vertical-align: top; text-align: left;
+    }
+    table.reg-table th {
+      background: var(--surface-raised); font-weight: 600;
+      color: var(--text-secondary); font-size: 11.5px; white-space: nowrap;
+    }
+    table.reg-table th.sortable { cursor: pointer; user-select: none; }
+    table.reg-table th.sortable:hover { color: var(--text-primary); }
+    table.reg-table th.sort-active { color: var(--accent-ink); }
+    table.reg-table tr:hover td { background: var(--surface-hover); }
+    table.reg-table code { font-size: 11px; background: var(--surface-raised); padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono); }
+    .reg-section-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+      color: var(--accent-ink); text-decoration: underline dotted; text-align: left;
+    }
+    .reg-section-btn:hover { color: #1a5190; }
+
+    .reg-score-bar {
+      display: inline-block; height: 6px; border-radius: 3px; vertical-align: middle; margin-right: 4px;
+    }
+    .reg-score-val { font-size: 11.5px; font-weight: 600; }
+
+    .reg-tag {
+      display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px;
+      background: #eef; color: #335; border: 1px solid #cce; margin: 1px 2px 1px 0;
+    }
+    .reg-tag-risk { background: #fbe9e7; color: #7d1e10; border-color: #f3c1bc; }
+    .reg-tag-oblig {
+      display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px;
+      background: #fff3e0; color: #a04200; border: 1px solid #ffd9a8;
+    }
+
+    /* ── Concept expand row ── */
+    .reg-expand-row td {
+      background: #fafbff !important; padding: 14px 16px;
+      border-bottom: 2px solid var(--neutral-rule);
+    }
+    .reg-expand-body { max-width: 820px; }
+    .reg-expand-body dt {
+      font-size: 10px; font-weight: 600; color: var(--neutral-stone);
+      text-transform: uppercase; letter-spacing: .04em; margin-top: 12px;
+    }
+    .reg-expand-body dt:first-child { margin-top: 0; }
+    .reg-expand-body dd {
+      margin: 3px 0 0 0; font-size: 12.5px; color: var(--text-primary);
+      line-height: 1.55; word-break: break-word;
+    }
+    .reg-expand-body dd code { font-size: 11px; background: var(--surface-raised); padding: 1px 5px; border-radius: 3px; }
+    .reg-expand-verbatim {
+      font-family: var(--font-mono); font-size: 11.5px; background: var(--surface-raised);
+      border: 1px solid var(--neutral-rule); border-radius: 4px;
+      padding: 10px 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+      max-height: 220px; overflow-y: auto;
+    }
+    .reg-expand-dims {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px; margin-top: 10px;
+    }
+    .reg-expand-dim {
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      border-radius: 4px; padding: 8px 10px;
+    }
+    .reg-expand-dim-title {
+      font-size: 10px; font-weight: 700; color: var(--neutral-stone);
+      text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px;
+    }
+    .reg-expand-dim-body { font-size: 11.5px; color: var(--text-primary); line-height: 1.5; }
+    .reg-empty {
+      padding: 24px; text-align: center; color: var(--neutral-stone); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+        <span class="shell-wordmark-suffix">Regulatory</span>
+      </a>
+      <div class="shell-meta">
+        <span data-provenance-badge="page-top" data-provenance-source="/api/regulatory/instruments" aria-label="Provenance badge"></span>
+        <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh data">Refresh</button>
+        <span class="shell-as-of" id="lastUpdated" aria-live="polite">connecting…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Department navigation">
+      <div data-shell-dept-nav></div>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">Regulatory Intelligence</h1>
+        <p class="shell-page-lede">
+          Mira's horizon-scanning substrate — every instrument registered, every section
+          AI-extracted into a scored obligation concept. Click an instrument card to explore
+          its concepts. Data: event-derived projection over
+          <code>RegulatoryInstrumentRegistered</code> + <code>RegulatoryConceptExtracted</code>.
+        </p>
+      </div>
+
+      <!-- ── Summary bar ── -->
+      <div class="reg-summary" id="regSummary">
+        <div class="reg-card"><div class="reg-card-num" id="sumInstruments">—</div><div class="reg-card-lbl">Instruments registered</div></div>
+        <div class="reg-card"><div class="reg-card-num" id="sumConcepts">—</div><div class="reg-card-lbl">Concepts extracted</div></div>
+        <div class="reg-card"><div class="reg-card-num" id="sumHighApp">—</div><div class="reg-card-lbl">High-applicability sections</div><div class="reg-card-sub">score ≥ 0.7</div></div>
+        <div class="reg-card"><div class="reg-card-num" id="sumAvgApp">—</div><div class="reg-card-lbl">Avg applicability</div></div>
+        <div class="reg-card"><div class="reg-card-num" id="sumAvgRel">—</div><div class="reg-card-lbl">Avg relevancy</div></div>
+      </div>
+
+      <!-- ── Instrument filter bar ── -->
+      <div class="reg-filter-bar">
+        <div class="fc">
+          <label for="filterType">Type</label>
+          <select id="filterType">
+            <option value="">All types</option>
+            <option value="act">Act</option>
+            <option value="regulation">Regulation</option>
+            <option value="notice">Notice</option>
+            <option value="circular">Circular</option>
+            <option value="guidance">Guidance</option>
+            <option value="directive">Directive</option>
+            <option value="conduct-standard">Conduct standard</option>
+          </select>
+        </div>
+        <div class="fc">
+          <label for="filterStatus">Status</label>
+          <select id="filterStatus">
+            <option value="">Any</option>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In progress</option>
+            <option value="complete">Complete</option>
+          </select>
+        </div>
+        <div class="fc">
+          <label for="filterSearch">Search</label>
+          <input type="search" id="filterSearch" placeholder="Title, issuing body, regulator…" autocomplete="off">
+        </div>
+        <span class="reg-filter-count" id="instrumentCount"></span>
+      </div>
+
+      <!-- ── Instrument cards ── -->
+      <div class="reg-instrument-grid" id="instrumentGrid">
+        <div style="padding:24px;color:var(--neutral-stone);font-size:13px;">Loading…</div>
+      </div>
+
+      <!-- ── Concepts panel (shown when an instrument is selected) ── -->
+      <div class="reg-concepts-panel" id="conceptsPanel">
+        <div class="reg-concepts-head">
+          <h3 id="conceptsPanelTitle">Concepts</h3>
+          <button class="reg-concepts-close" id="conceptsClose" aria-label="Close concepts panel">&#x2715;</button>
+        </div>
+
+        <!-- Concepts filter bar -->
+        <div class="reg-concepts-filter-bar">
+          <div class="fc">
+            <label for="conceptSort">Sort by</label>
+            <select id="conceptSort">
+              <option value="applicability">Applicability ↓</option>
+              <option value="relevancy">Relevancy ↓</option>
+            </select>
+          </div>
+          <div class="fc">
+            <label for="conceptMinScore">Min score</label>
+            <input type="number" id="conceptMinScore" min="0" max="1" step="0.05" value="0" placeholder="0">
+          </div>
+          <div class="fc">
+            <label for="conceptDomain">Domain</label>
+            <select id="conceptDomain">
+              <option value="">All domains</option>
+            </select>
+          </div>
+          <span class="reg-filter-count" id="conceptCount"></span>
+        </div>
+
+        <!-- Concepts table -->
+        <div class="reg-table-wrap">
+          <table class="reg-table" id="conceptTable" aria-label="Extracted concepts">
+            <thead>
+              <tr>
+                <th style="width:12em;">Section ID</th>
+                <th class="sortable sort-active" id="thApp" style="width:7em;" title="Sort by applicability">Applicability ↓</th>
+                <th class="sortable" id="thRel" style="width:7em;" title="Sort by relevancy">Relevancy</th>
+                <th style="width:9em;">Obligation type</th>
+                <th>Action summary</th>
+                <th style="width:8em;">Domain</th>
+                <th style="width:8em;">Risk taxonomy</th>
+              </tr>
+            </thead>
+            <tbody id="conceptBody">
+              <tr><td colspan="7" class="reg-empty">Select an instrument above to view its concepts.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/_failure-banner.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/regulatory.js"></script>
+  <script src="/_shell.js" defer onerror="this.remove();"></script>
+</body>
+</html>
