@@ -8,13 +8,188 @@
 //   1. Risk taxonomy (hierarchical L1/L2/L3) — Helena (Chief Risk Officer, governance)
 //   2. Activity taxonomy (grouped codes)     — Atlas (Core banking platform architect, engineering)
 //   3. Domain taxonomy (10 obligation domains) — Mira (Compliance / RegTech engineer, engineering)
-//   4. Product scope (8 product codes)        — Atlas (Core banking platform architect, engineering)
+//   4. Product scope (7 product codes)        — Atlas (Core banking platform architect, engineering)
 //
 // Principle 2 (single-graph discipline): every taxonomy node is a
 // stable-code entry; obligations, policies, and risk records cite the
 // code — the label is a derived render, never the canonical key.
 //
+// DCAM alignment (EDM Council DCAM framework — three-layer architecture):
+//   Layer 1 Conceptual: FIBO ontological anchors (what concepts ARE)
+//   Layer 2 Logical:    CDM, ESMA-CFI, BCBS, FATF (how concepts are MODELED)
+//   Layer 3 Physical:   ISO 20022 message types + bank's own code strings
+//
+//   Layer files: ./dcam/layer1-conceptual.ts, ./dcam/layer2-logical.ts, ./dcam/layer3-physical.ts
+//   Assembly:    getProductDcamAlignment(), getDomainDcamAlignment() (this file)
+//
 // Author: Atlas (Core banking platform architect, engineering)
+
+// ---------------------------------------------------------------------------
+// DCAM alignment type system
+// EDM Council DCAM framework: three-layer architecture
+// ---------------------------------------------------------------------------
+
+export type SkosMatchType =
+  | "exactMatch"
+  | "closeMatch"
+  | "broadMatch"
+  | "narrowMatch"
+  | "relatedMatch";
+
+export type FiboModule =
+  | "FND" // Foundations (amounts, dates, jurisdictions, parties)
+  | "BE" // Business Entities (corporations, legal persons)
+  | "FBC" // Financial Business and Commerce (market participants, services)
+  | "SEC" // Securities (equities, debt, funds)
+  | "DER" // Derivatives (IR, FX, credit, equity derivatives)
+  | "IND" // Indices and Indicators (benchmarks, rates)
+  | "BP" // Business Processes (trading, settlement, clearing)
+  | "LOAN"; // Loans (credit facilities)
+
+/** Layer 1 — Conceptual: FIBO ontological anchor. Defines what the concept IS. */
+export interface ConceptualLayer {
+  readonly fiboModule: FiboModule;
+  readonly fiboIri: string;
+  readonly fiboLabel: string;
+  readonly skosMatch: SkosMatchType;
+  readonly definition?: string;
+  readonly notes?: string;
+}
+
+export type LogicalStandard =
+  | "CDM" // ISDA/ICMA Common Domain Model — trade lifecycle data model
+  | "ESMA-CFI" // ISO 10962 Classification of Financial Instruments
+  | "ISO17442" // Legal Entity Identifier (LEI)
+  | "BCBS" // Basel Committee on Banking Supervision
+  | "FATF"; // Financial Action Task Force
+
+/** Layer 2 — Logical: Industry data models and classification standards. */
+export interface LogicalLayer {
+  readonly standard: LogicalStandard;
+  readonly ref: string;
+  readonly label: string;
+  readonly skosMatch: SkosMatchType;
+  readonly notes?: string;
+}
+
+export type PhysicalStandard = "ISO20022";
+
+/** Layer 3 — Physical: Message formats. The node's own `code` is also Layer 3. */
+export interface PhysicalLayer {
+  readonly standard: PhysicalStandard;
+  readonly messageType: string;
+  readonly label: string;
+  readonly notes?: string;
+}
+
+/** DCAM three-layer alignment record for a taxonomy node. */
+export interface DcamAlignment {
+  readonly conceptual?: ConceptualLayer;
+  readonly logical?: ReadonlyArray<LogicalLayer>;
+  readonly physical?: ReadonlyArray<PhysicalLayer>;
+}
+
+// ---------------------------------------------------------------------------
+// DCAM three-layer assembly utilities
+// Cross-layer traversal: Layer 3 (physical code) → Layer 1 (concept) → Layer 2 (logical)
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_DOMAIN,
+  PHYSICAL_PRODUCT_SCOPE,
+  getLogicalMappings,
+} from "./dcam/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for a product scope code.
+ * Traverses: Layer 3 (physical mapping) → Layer 1 (conceptual registry) → Layer 2 (logical mappings).
+ * Returns undefined for codes with no Layer 1 anchor (e.g. "multi-asset").
+ */
+export function getProductDcamAlignment(code: string): DcamAlignment | undefined {
+  const physical = PHYSICAL_PRODUCT_SCOPE[code];
+  if (!physical) return undefined;
+
+  const concept = physical.conceptKey ? CONCEPTUAL_REGISTRY.get(physical.conceptKey) : undefined;
+  const logical = physical.conceptKey ? getLogicalMappings(physical.conceptKey) : [];
+
+  if (!concept && logical.length === 0 && (!physical.iso20022 || physical.iso20022.length === 0)) {
+    return undefined;
+  }
+
+  const conceptual = concept
+    ? {
+        fiboModule: concept.fiboModule,
+        fiboIri: concept.fiboIri,
+        fiboLabel: concept.fiboLabel,
+        skosMatch: concept.skosMatch,
+        ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+      }
+    : undefined;
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+  const physicalMapped =
+    physical.iso20022 && physical.iso20022.length > 0
+      ? physical.iso20022.map((p) => ({
+          standard: "ISO20022" as const,
+          messageType: p.messageType,
+          label: p.label,
+          ...(p.notes !== undefined ? { notes: p.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    ...(conceptual !== undefined ? { conceptual } : {}),
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+    ...(physicalMapped !== undefined ? { physical: physicalMapped } : {}),
+  };
+}
+
+/** Assemble DCAM alignment for a domain taxonomy code. */
+export function getDomainDcamAlignment(code: string): DcamAlignment | undefined {
+  const physical = PHYSICAL_DOMAIN[code];
+  if (!physical) return undefined;
+  const concept = CONCEPTUAL_REGISTRY.get(physical.conceptKey);
+  if (!concept) return undefined;
+  const logical = getLogicalMappings(physical.conceptKey);
+
+  const conceptual = {
+    fiboModule: concept.fiboModule,
+    fiboIri: concept.fiboIri,
+    fiboLabel: concept.fiboLabel,
+    skosMatch: concept.skosMatch,
+    ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+  };
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    conceptual,
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Re-exports — DCAM layer modules
+// ---------------------------------------------------------------------------
+
+export * from "./dcam/index";
 
 // ---------------------------------------------------------------------------
 // Re-exports — Risk taxonomy
@@ -50,70 +225,68 @@ export interface DomainTaxonomyNode {
 export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
   {
     code: "A-PRUDENTIAL",
-    label: "Prudential regulation",
-    description:
-      "Capital adequacy, liquidity management, ICAAP, ILAAP, and recovery planning under the Banks Act and SARB Directives.",
+    label: "Prudential Regulation",
+    description: "Capital adequacy, liquidity, ICAAP, ILAAP, recovery planning",
   },
   {
     code: "B-FINANCIAL-CRIME",
-    label: "Financial crime",
-    description:
-      "Anti-money-laundering, sanctions compliance, POCA, FIC Act obligations, and FATF Recommendations implementation.",
+    label: "Financial Crime",
+    description: "AML, sanctions, POCA, FIC Act, FATF",
   },
   {
     code: "C-FAIS",
-    label: "FAIS Act — conduct",
-    description:
-      "FSP licensing, fit-and-proper requirements, conflict-of-interest management, and conduct obligations under the Financial Advisory and Intermediary Services Act.",
+    label: "Financial Advisory and Intermediary Services",
+    description: "FSP licensing, fit-and-proper, conduct under FAIS Act",
   },
   {
     code: "D-MARKET-CONDUCT",
-    label: "Market conduct",
-    description:
-      "FSCA conduct supervision, Treating Customers Fairly (TCF), market-abuse prohibition, and FMCA obligations.",
+    label: "Market Conduct",
+    description: "FSCA conduct, TCF, market-abuse prohibition, FMCA",
   },
   {
     code: "E-CYBER",
-    label: "Cyber & information security",
-    description:
-      "Cyber and information-security obligations under PA/FSCA Joint Standard 2 of 2024 and POPIA ss.19–22.",
+    label: "Cyber and Information Security",
+    description: "Cyber/information security under PA/FSCA Joint Standard 2 of 2024, POPIA",
+    // No FIBO or industry standard IRI — NIST/ISO 27001 domain
   },
   {
     code: "F-GOVERNANCE",
-    label: "Corporate governance",
+    label: "Corporate Governance",
     description:
-      "Board composition, audit-committee, remuneration governance, and internal-audit independence under BCBS CGPS and Companies Act 71 of 2008.",
+      "Board, audit-committee, remuneration, internal-audit per BCBS CGPS, Companies Act",
   },
   {
     code: "G-REPORTING",
-    label: "Regulatory reporting",
-    description:
-      "BA-return submissions to the SARB Prudential Authority, FinSurv reporting, and trade reporting to STRATE / Umoja / ODP.",
+    label: "Regulatory Reporting",
+    description: "BA returns, FinSurv, STRATE/Umoja/ODP trade reporting",
   },
   {
     code: "H-OPERATIONAL",
-    label: "Operational resilience",
-    description:
-      "Outsourcing controls, business-continuity planning, and DORA-aligned operational resilience obligations.",
+    label: "Operational Resilience",
+    description: "Outsourcing, business-continuity, DORA-aligned resilience",
   },
   {
     code: "I-TREASURY",
-    label: "Treasury & ALCO",
-    description:
-      "Interest-rate risk in the banking book (IRRBB), collateral management, liquidity-buffer maintenance, and ALCO governance.",
+    label: "Treasury and ALM",
+    description: "IRRBB, collateral management, liquidity-buffer, ALCO",
   },
   {
     code: "J-MARKET-INFRASTRUCTURE",
-    label: "Market infrastructure",
-    description:
-      "CSD and STRATE participation rules, settlement obligations, and obligations as an ODP (Over-the-counter Derivatives Provider).",
+    label: "Market Infrastructure",
+    description: "CSD/STRATE rules, settlement, ODP obligations",
   },
 ] as const;
 
 // ---------------------------------------------------------------------------
-// Product scope taxonomy — eight product-scope codes.
+// Product scope taxonomy — seven product-scope codes.
 // Canonical authoring location: this file.
 // Owner: Atlas (Core banking platform architect, engineering).
+//
+// v1.25 — ground-up redesign following EDM Council DCAM framework.
+// Old codes (8): equities, bonds, ird, fx, money-market, repo, derivatives, universal
+// New codes (7): equity-securities, debt-securities, money-market-instruments,
+//                interest-rate-derivatives, fx-instruments, securities-financing,
+//                multi-asset
 // ---------------------------------------------------------------------------
 
 export interface ProductScopeNode {
@@ -124,46 +297,39 @@ export interface ProductScopeNode {
 
 export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
   {
-    code: "equities",
-    label: "Equities",
-    description: "JSE-listed equities — spot trading and equity finance.",
+    code: "equity-securities",
+    label: "Equity Securities",
+    description: "JSE-listed equities — spot trading and equity finance",
   },
   {
-    code: "bonds",
-    label: "Bonds",
-    description: "JSE-listed and OTC bonds — government, SOE, and corporate fixed-income.",
+    code: "debt-securities",
+    label: "Debt Securities",
+    description: "JSE-listed and OTC bonds — government, SOE, and corporate fixed-income",
   },
   {
-    code: "ird",
-    label: "Interest rate derivatives",
-    description:
-      "OTC interest rate derivatives — IRS, basis swaps, FRAs, caps, floors, and swaptions.",
+    code: "money-market-instruments",
+    label: "Money Market Instruments",
+    description: "Money market instruments: call deposits, NCDs, treasury bills",
   },
   {
-    code: "fx",
-    label: "FX",
-    description: "FX spot and forward — USD/ZAR and major cross-currency pairs.",
+    code: "interest-rate-derivatives",
+    label: "Interest Rate Derivatives",
+    description: "OTC interest rate derivatives: IRS, basis swaps, FRAs, caps, floors, swaptions",
   },
   {
-    code: "money-market",
-    label: "Money market",
-    description: "Money market instruments — call deposits, NCDs, and treasury bills.",
+    code: "fx-instruments",
+    label: "FX Instruments",
+    description: "FX spot and forward: USD/ZAR and major cross-currency pairs",
   },
   {
-    code: "repo",
-    label: "Repo & securities lending",
-    description: "Repos, reverse repos, and securities-lending arrangements.",
+    code: "securities-financing",
+    label: "Securities Financing",
+    description: "Repos, reverse repos, and securities-lending arrangements",
   },
   {
-    code: "derivatives",
-    label: "Derivatives (generic)",
-    description:
-      "Generic derivatives catch-all for obligations spanning multiple derivative asset classes.",
-  },
-  {
-    code: "universal",
-    label: "Universal",
-    description: "Applies to all products — used for obligations with no product-specific scope.",
+    code: "multi-asset",
+    label: "Multi-Asset / Universal",
+    description: "Applies to all products — cross-product scope obligations",
   },
 ] as const;
 

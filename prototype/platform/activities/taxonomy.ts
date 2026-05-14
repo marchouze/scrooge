@@ -98,6 +98,67 @@ export const ACTIVITY_LABELS: Record<ActivityCode, string> = {
   "ACT-CORP-LEGAL": "Legal & contracting",
 };
 
+// ---------------------------------------------------------------------------
+// DCAM assembly — Activity taxonomy
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_ACTIVITY,
+  getLogicalMappings,
+} from "../taxonomies/dcam/index";
+import type { DcamAlignment } from "../taxonomies/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for an activity code.
+ * Returns undefined for codes with no Layer 1 anchor.
+ */
+export function getActivityDcamAlignment(code: ActivityCode): DcamAlignment | undefined {
+  const physical = PHYSICAL_ACTIVITY[code];
+  if (!physical) return undefined;
+  const concept = physical.conceptKey ? CONCEPTUAL_REGISTRY.get(physical.conceptKey) : undefined;
+  const logical = physical.conceptKey ? getLogicalMappings(physical.conceptKey) : [];
+
+  if (!concept && logical.length === 0 && (!physical.iso20022 || physical.iso20022.length === 0)) {
+    return undefined;
+  }
+
+  const conceptual = concept
+    ? {
+        fiboModule: concept.fiboModule,
+        fiboIri: concept.fiboIri,
+        fiboLabel: concept.fiboLabel,
+        skosMatch: concept.skosMatch,
+        ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+      }
+    : undefined;
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+  const physicalMapped =
+    physical.iso20022 && physical.iso20022.length > 0
+      ? physical.iso20022.map((p) => ({
+          standard: "ISO20022" as const,
+          messageType: p.messageType,
+          label: p.label,
+          ...(p.notes !== undefined ? { notes: p.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    ...(conceptual !== undefined ? { conceptual } : {}),
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+    ...(physicalMapped !== undefined ? { physical: physicalMapped } : {}),
+  };
+}
+
 export const ACTIVITY_GROUPS: Record<string, ActivityCode[]> = {
   Trading: [
     "ACT-TRADE-FX",

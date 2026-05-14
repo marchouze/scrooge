@@ -45,7 +45,7 @@ BANK PROFILE:
 TAXONOMY CODES (use only these for classifications):
 - Domains: A-PRUDENTIAL, B-FINANCIAL-CRIME, C-FAIS, D-MARKET-CONDUCT, E-CYBER, F-GOVERNANCE, G-REPORTING, H-OPERATIONAL, I-TREASURY, J-MARKET-INFRASTRUCTURE
 - Activity scope: ACT-TRADE-EXEC, ACT-TRADE-BOOK, ACT-CLIENT-ONBOARD, ACT-RISK-MGMT, ACT-REPORTING, ACT-SETTLEMENT, ACT-COMPLIANCE, ACT-CUSTODY, ACT-FX, ACT-CREDIT
-- Product scope: equities, bonds, ird, fx, money-market, repo, derivatives, universal
+- Product scope: equity-securities, debt-securities, money-market-instruments, interest-rate-derivatives, fx-instruments, securities-financing, multi-asset
 - Risk taxonomy codes (abbreviated): MKT-001 through MKT-010, CRD-001 through CRD-005, OPR-001 through OPR-010, CMP-001 through CMP-010, LIQ-001 through LIQ-005
 
 APPLICABILITY SCORING RUBRIC:

@@ -174,6 +174,12 @@ export interface LegalEntityAttrs {
    * entity. Mirrors `LegalEntityRegistered.regulatoryRegime.regimeAnchor`.
    */
   readonly regimeAnchor: readonly string[];
+  /**
+   * Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Required for
+   * EMIR/SFTR reporting with EU counterparties. Optional until the bank holds
+   * its own LEI and operates with EU-counterparty OTC derivatives.
+   */
+  readonly lei?: string;
 }
 
 /**
@@ -471,4 +477,49 @@ export type PartyEventType = (typeof PARTY_EVENT_TYPES)[number];
  */
 export function partyId(kind: PartyKind, slug: string): PartyId {
   return `urn:party:${kind}:${slug}`;
+}
+
+// ---------------------------------------------------------------------------
+// DCAM assembly — Party kind
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_PARTY_KIND,
+  getLogicalMappings,
+} from "../../platform/taxonomies/dcam/index";
+import type { DcamAlignment } from "../../platform/taxonomies/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for a party kind.
+ * Returns null for kinds with no industry-standard equivalent (e.g. "agent").
+ */
+export function getPartyKindDcamAlignment(kind: PartyKind): DcamAlignment | null {
+  const physical = PHYSICAL_PARTY_KIND[kind];
+  if (!physical) return null;
+  const concept = CONCEPTUAL_REGISTRY.get(physical.conceptKey);
+  if (!concept) return null;
+  const logical = getLogicalMappings(physical.conceptKey);
+  const conceptual = {
+    fiboModule: concept.fiboModule,
+    fiboIri: concept.fiboIri,
+    fiboLabel: concept.fiboLabel,
+    skosMatch: concept.skosMatch,
+    ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+  };
+  const logicalMapped =
+    logical.length > 0
+      ? logical.map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }))
+      : undefined;
+
+  return {
+    conceptual,
+    ...(logicalMapped !== undefined ? { logical: logicalMapped } : {}),
+  };
 }

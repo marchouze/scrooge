@@ -270,6 +270,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_CEO_CFO,
     definition:
       "Risk to the bank's earnings or franchise from adverse business decisions, poor execution, or failure to respond to industry change.",
+    // No FIBO IRI or L2 standard — internal strategic classification
   },
   {
     code: "RT-RP",
@@ -279,6 +280,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_REPUTATION,
     definition:
       "Risk that negative perception by clients, counterparties, regulators, or the public produces value erosion, funding loss, or licence threat. Treated as a second-order risk that shadows first-order categories at Critical severity.",
+    // No FIBO IRI or L2 standard — internal reputational classification
   },
   {
     code: "RT-CL",
@@ -288,6 +290,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_CLIMATE,
     definition:
       "Risk to financial position or franchise from physical and transition climate impacts, biodiversity loss, and broader ESG dimensions. Treated as a transverse risk that manifests through credit, market, operational, liquidity, strategic, and reputational nodes.",
+    // No FIBO IRI or L2 standard — emerging taxonomy; TCFD/TNFD alignment planned
   },
 
   // -----------------------------------------------------------------------
@@ -1139,3 +1142,78 @@ export function getRiskTaxonomyNode(code: RiskTaxonomyCode): RiskTaxonomyNode | 
 export const RISK_TAXONOMY_CODES: ReadonlyArray<RiskTaxonomyCode> = RISK_TAXONOMY.map(
   (n) => n.code,
 );
+
+// ---------------------------------------------------------------------------
+// DCAM assembly — Risk taxonomy
+// ---------------------------------------------------------------------------
+
+import {
+  CONCEPTUAL_REGISTRY,
+  PHYSICAL_RISK_L1,
+  getLogicalMappings,
+} from "../taxonomies/dcam/index";
+import type { DcamAlignment } from "../taxonomies/index";
+
+/**
+ * Assemble the full DCAM three-layer alignment for a risk taxonomy L1 code.
+ * Returns undefined for codes with no conceptual anchor (RT-ST, RT-RP, RT-CL).
+ * L2/L3 nodes inherit alignment from their L1 parent — call with the L1 code.
+ */
+export function getRiskDcamAlignment(code: string): DcamAlignment | undefined {
+  const physical = PHYSICAL_RISK_L1[code];
+  if (!physical) return undefined;
+  const concept = CONCEPTUAL_REGISTRY.get(physical.conceptKey);
+  if (!concept) return undefined;
+  const logical = getLogicalMappings(physical.conceptKey);
+
+  // For risk codes, override with the per-code BCBS ref if present;
+  // otherwise fall through to any BCBS mappings on the shared concept.
+  const bcbsLogical = physical.bcbsRef
+    ? [
+        {
+          standard: "BCBS" as const,
+          ref: physical.bcbsRef,
+          label:
+            logical.find(
+              (m) => m.standard === "BCBS" && m.notes?.includes(code.replace("RT-", "RT-")),
+            )?.label ??
+            logical.find((m) => m.standard === "BCBS")?.label ??
+            "BCBS Reference",
+          skosMatch: "exactMatch" as const,
+        },
+      ]
+    : logical
+        .filter((m) => m.standard === "BCBS")
+        .map((m) => ({
+          standard: m.standard,
+          ref: m.ref,
+          label: m.label,
+          skosMatch: m.skosMatch,
+          ...(m.notes !== undefined ? { notes: m.notes } : {}),
+        }));
+
+  const nonBcbsLogical = logical
+    .filter((m) => m.standard !== "BCBS")
+    .map((m) => ({
+      standard: m.standard,
+      ref: m.ref,
+      label: m.label,
+      skosMatch: m.skosMatch,
+      ...(m.notes !== undefined ? { notes: m.notes } : {}),
+    }));
+
+  const allLogical = [...bcbsLogical, ...nonBcbsLogical];
+
+  const conceptual = {
+    fiboModule: concept.fiboModule,
+    fiboIri: concept.fiboIri,
+    fiboLabel: concept.fiboLabel,
+    skosMatch: concept.skosMatch,
+    ...(concept.definition !== undefined ? { definition: concept.definition } : {}),
+  };
+
+  return {
+    conceptual,
+    ...(allLogical.length > 0 ? { logical: allLogical } : {}),
+  };
+}
