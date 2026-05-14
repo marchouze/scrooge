@@ -685,7 +685,16 @@ describe("permission gate — Vera carve-out", () => {
       entity: "BANK-ZA-001",
       actor: { type: "service", id: "agent:rohan" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
-      payload: { findingId: "f1", description: "test" },
+      payload: {
+        findingId: "f1",
+        severity: "low",
+        category: "other",
+        addressedTo: "agent:rohan",
+        agentId: "rohan",
+        raisedBy: "agent:vera",
+        summary: "test finding",
+        citations: [],
+      },
     };
     store.append(seedEvent);
     const wrapped = gateEventStore({
