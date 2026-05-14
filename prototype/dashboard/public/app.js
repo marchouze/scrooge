@@ -796,13 +796,24 @@ function renderDecisionsResolved(resolved) {
       <span class="id">${esc(r.id)}</span>
       <div class="body">
         <b>${esc(r.title)}</b> — ${esc(r.outcome)}
-        ${r.comment ? `<br><span class="muted">“${esc(r.comment)}”</span>` : ""}
+        ${r.comment ? `<br><span class="muted">"${esc(r.comment)}"</span>` : ""}
       </div>
+      <span class="by muted">${esc(formatActor(r.actionedBy))}</span>
       <span class="when">${esc(formatDate(r.actionedAt))}</span>
     </div>
   `,
     )
     .join("");
+}
+
+function formatActor(actor) {
+  if (!actor) return "";
+  if (actor === "marc@tgv.co.za") return "Marc";
+  const m = actor.match(/^agent:([^:]+)/);
+  if (m) return m[1].charAt(0).toUpperCase() + m[1].slice(1);
+  const at = actor.indexOf("@");
+  if (at > 0) return actor.slice(0, at);
+  return actor;
 }
 
 function formatDate(iso) {

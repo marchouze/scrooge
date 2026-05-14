@@ -1090,12 +1090,6 @@ export function synthesizeCeoDecisionsFromRecords(
 }
 
 // Body-text decision ID pattern — e.g. D-RMS-PHASE-1, D-AGENT-RUNTIME-AUTHORIZE.
-// Starts with D- followed by an uppercase letter, then uppercase letters,
-// digits, and hyphens. Used to mirror the decision-record-event-symmetry
-// recon's `extractDecisionId` step (b) so the backfill covers the same
-// set of IDs the recon asserts against.
-const BODY_DECISION_ID_RE = /\b(D-[A-Z][A-Z0-9-]+)/;
-
 // Scan ALL Owner Inbox `.md` files (not just `_ceo-decision-record_*`) and
 // emit a `CeoDecisionEventSummary` for every closed decision they reference.
 // Mirrors the three-step ID-extraction logic of the
@@ -1165,17 +1159,11 @@ export function synthesizeCeoDecisionsFromOwnerInboxFrontmatter(
       if (isValidDecisionId(id)) candidates.add(id);
     }
 
-    // Step (b) — first D-XXX in body text (mirrors recon step b).
-    // Only runs when step (a) yields nothing (same priority as the recon).
-    if (candidates.size === 0) {
-      const bodyStart = fmMatch[0].length;
-      const body = content.slice(bodyStart);
-      const bodyMatch = body.match(BODY_DECISION_ID_RE);
-      if (bodyMatch?.[1]) {
-        const id = bodyMatch[1].toUpperCase();
-        if (isValidDecisionId(id)) candidates.add(id);
-      }
-    }
+    // Step (b) — body-text scan deliberately omitted for decision-required:false
+    // files. These are informational deliverables; a D-XXX code in the body is
+    // a cross-reference, not an owned decision ID, and the body scan produces
+    // false positives (e.g. taxonomy domain codes, obligation cross-refs).
+    // Proper decisions are recorded via recordDelegatedDecision.
 
     // Step (c) — D-XXX slug in filename (mirrors recon step c).
     // Only runs when steps (a) and (b) yield nothing.

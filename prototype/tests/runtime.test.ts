@@ -7,11 +7,13 @@
 //
 // Author: Atlas
 
-import { describe, expect, it } from "bun:test";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { beforeAll, describe, expect, it } from "bun:test";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
+import { eventStore } from "../platform/composition";
+import { newEventId } from "../platform/core/types";
 import anyaProjectionDrift from "../runtime/agents/anya-projection-drift";
 import atlasSubstrateState from "../runtime/agents/atlas-substrate-state";
 import miraObligationsSnapshot from "../runtime/agents/mira-obligations-snapshot";
@@ -36,6 +38,55 @@ function makeContext(overrides: Partial<AgentRunContext> = {}): AgentRunContext 
 }
 
 describe("runtime — Vera overnight-recon handler", () => {
+  beforeAll(() => {
+    // The test event store (temp DB from _setup.ts) starts empty. If other
+    // test files running in parallel write CeoDecision events (e.g. Mira's
+    // M1 handler tests), isStoreEmpty() returns false and the
+    // decision-required-event-pairing recon runs its full check — but the
+    // temp store won't have the real actioned files' decision IDs, so the
+    // check fails. Pre-seed the temp store with terminal CeoDecision events
+    // for every actioned file that has decision-required: true + decision-id.
+    const repoRoot = join(import.meta.dir, "..", "..");
+    const actionedDir = resolve(repoRoot, "Owner Inbox", "actioned");
+    try {
+      for (const name of readdirSync(actionedDir)) {
+        if (!name.endsWith(".md")) continue;
+        const path = resolve(actionedDir, name);
+        try {
+          if (!statSync(path).isFile()) continue;
+        } catch {
+          continue;
+        }
+        const content = readFileSync(path, "utf8");
+        const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+        if (!fmMatch?.[1]) continue;
+        const fm = fmMatch[1];
+        const drMatch = fm.match(/^decision-required:\s*(.+?)\s*$/im);
+        if (drMatch?.[1]?.trim().toLowerCase() !== "true") continue;
+        const diMatch = fm.match(/^decision-id:\s*(.+?)\s*$/im);
+        const decisionId = diMatch?.[1]?.trim();
+        if (!decisionId) continue;
+        eventStore.append({
+          event_id: newEventId(),
+          type: "CeoDecision",
+          as_of: "2026-05-01T00:00:00.000Z",
+          entity: "BANK-ZA-001",
+          actor: { type: "human", id: "marc@tgv.co.za" },
+          citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+          payload: {
+            decisionId,
+            title: `Seed approval for ${decisionId}`,
+            action: "approve",
+            outcome: "Approved (runtime test seed).",
+            recordedVia: "test:runtime.test.ts:beforeAll",
+          },
+        });
+      }
+    } catch {
+      // If actioned/ doesn't exist or can't be read, skip seeding.
+    }
+  });
+
   it("runs all pipelines and reports ok against the live repo", async () => {
     const ctx = makeContext({ dryRun: true });
     const result = await veraOvernightRecon(ctx);
