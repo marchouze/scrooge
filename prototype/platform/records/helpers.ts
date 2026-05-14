@@ -552,6 +552,7 @@ export interface RecordFiledInput {
   readonly retention: RecordFiledPayload["retention"];
   readonly supersedes?: string;
   readonly correctsOriginalErrors?: boolean;
+  readonly metadata?: RecordFiledPayload["metadata"];
   readonly citations: readonly string[];
   readonly actor: Actor;
   readonly entity?: string;
@@ -590,6 +591,7 @@ export function recordFiled(
       ...(input.correctsOriginalErrors !== undefined
         ? { correctsOriginalErrors: input.correctsOriginalErrors }
         : {}),
+      ...(input.metadata ? { metadata: input.metadata } : {}),
     },
   });
 

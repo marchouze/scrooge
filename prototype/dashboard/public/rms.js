@@ -92,13 +92,26 @@
       { key: "briefSuperseded", label: "Brief superseded" },
     ],
     document: [
-      { key: "documentHash", label: "Document hash", format: HASH_DISPLAY },
-      { key: "recordId", label: "Record id" },
+      {
+        key: "metadata",
+        label: "Title",
+        format: (m) => (m?.title ? m.title : undefined),
+      },
+      {
+        key: "metadata",
+        label: "Category",
+        format: (m) => (m?.category ? m.category : "—"),
+      },
+      {
+        key: "metadata",
+        label: "Path",
+        format: (m) =>
+          m?.path ? `<span style="color:#888;font-size:0.85em">${m.path}</span>` : "—",
+        html: true,
+      },
       { key: "classification", label: "Classification" },
-      { key: "firstSeenAt", label: "First seen at", format: TS_DISPLAY },
-      { key: "firstReferencedByEventType", label: "First ref event type" },
-      { key: "registered", label: "Registered" },
-      { key: "referencedByEventIds", label: "Refs", format: ARRAY_LEN },
+      { key: "firstSeenAt", label: "Filed at", format: TS_DISPLAY },
+      { key: "documentHash", label: "Hash", format: HASH_DISPLAY },
     ],
     feedback: [
       { key: "feedbackId", label: "Feedback id" },
@@ -267,7 +280,11 @@
           .map((c) => {
             const raw = row[c.key];
             const v = c.format ? c.format(raw) : raw;
-            const display = v === null || v === undefined ? "" : escapeHtml(v);
+            if (c.html) {
+              const display = v === null || v === undefined ? "" : String(v);
+              return `<td>${display}</td>`;
+            }
+            const display = v === null || v === undefined ? "" : escapeHtml(String(v));
             if (c.isStatus && v) {
               const cls = `rms-status rms-status-${escapeHtml(String(v).toLowerCase().replace(/\s+/g, "-"))}`;
               return `<td><span class="${cls}">${display}</span></td>`;

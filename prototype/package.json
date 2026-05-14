@@ -21,6 +21,7 @@
     "scenario:fx-spot:shared": "BANK_SCENARIO_SHARED=1 bun run scenarios/06-fx-spot-trade.ts",
     "backfill:decisions": "bun run runtime/decisions/backfill-from-records.ts",
     "backfill:policy-documents": "bun run scripts/backfill-document-registered-2026-05-12.ts",
+    "rms:backfill-documents": "bun run scripts/backfill-document-register.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
     "recon": "bun run platform/recon/harness.ts",
     "recon:mandate": "bun run platform/recon/mandate-ownership.ts",
