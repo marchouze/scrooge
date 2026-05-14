@@ -68,6 +68,10 @@ import {
   mlroAttestationPayloadSchema,
 } from "../event-types-readiness-snapshots";
 import {
+  agentFeedbackIssuedPayloadSchema,
+  agentPerformanceEvaluatedPayloadSchema,
+} from "../event-types/performance";
+import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
   RETENTION_BANKING_5Y,
@@ -925,5 +929,45 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+  },
+];
+
+// ===========================================================================
+// Agent performance management event family.
+//
+// Authority: Sade mandate (AgentOps) — performance evaluation cadence;
+//            Atlas (Core banking platform architect) — projection integration.
+// Author: Mira (Compliance / RegTech engineer, engineering)
+// ===========================================================================
+
+export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "AgentPerformanceEvaluated",
+    class: "audit",
+    payloadSchema: agentPerformanceEvaluatedPayloadSchema,
+    issuer: "Sade",
+    subscribers: ["Atlas", "Vera", "Thandiwe", "dashboard"],
+    // Append-only audit — each evaluation period is a distinct snapshot;
+    // projections aggregate the series rather than overwrite.
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-GV-21"],
+    // Performance evaluations are governance-grade audit records —
+    // 7y retention consistent with director-decision and audit-trail
+    // requirements (Companies Act / BCBS Principle IX).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "runtime/agents/sade-performance-evaluator.ts; Mira performance substrate",
+  },
+  {
+    type: "AgentFeedbackIssued",
+    class: "audit",
+    payloadSchema: agentFeedbackIssuedPayloadSchema,
+    issuer: "Sade",
+    subscribers: ["Atlas", "Vera", "dashboard"],
+    // Paired with AgentPerformanceEvaluated — but modelled as append-only
+    // since feedback delivery is a separate durable fact.
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "runtime/agents/sade-performance-evaluator.ts; Mira performance substrate",
   },
 ];
