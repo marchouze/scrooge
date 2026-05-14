@@ -101,6 +101,14 @@
         "Mira's horizon-scanning substrate — instruments registered, concepts extracted, high-applicability sections scored and classified.",
       href: "/regulatory.html",
     },
+    {
+      id: "performance",
+      category: "dashboards",
+      title: "Agent Performance",
+      blurb:
+        "Sade + Scrooge — fleet-wide performance evaluations, tier distribution, score trends, and per-agent narrative.",
+      href: "/performance.html",
+    },
 
     // -------- Reports (as-of-date) --------
     {
@@ -406,6 +414,7 @@
     forwardObligations,
     regulatory,
     taxonomies,
+    performance,
   ) {
     const counts = {};
 
@@ -591,6 +600,33 @@
       };
     }
 
+    if (performance) {
+      const fleetSize = safeNum(performance.fleetSize);
+      if (fleetSize === 0 || safeNum(performance.evaluatedToday) === 0) {
+        // No evaluations yet — neutral state
+        counts.performance = {
+          text: "—",
+          tone: "muted",
+          aria: "No agent evaluations recorded yet",
+          meta: [{ label: "No evaluations yet", tone: "muted" }],
+        };
+      } else {
+        const avgPct = Math.round(safeNum(performance.avgOverallScore) * 100);
+        const tc = performance.tierCounts ?? {};
+        const attention = safeNum(tc.needsImprovement) + safeNum(tc.unsatisfactory);
+        const tone = attention > 0 ? "warn" : "success";
+        counts.performance = {
+          text: `${avgPct}%`,
+          tone,
+          aria: `Fleet avg score ${avgPct}%; ${safeNum(tc.exceeds)} exceeds; ${attention} need attention`,
+          meta: [
+            { label: `${safeNum(tc.exceeds)} exceeds`, tone: "default" },
+            { label: `${attention} need attention`, tone: attention > 0 ? "warn" : "muted" },
+          ],
+        };
+      }
+    }
+
     return counts;
   }
 
@@ -617,6 +653,7 @@
       forwardObligations,
       regulatory,
       taxonomies,
+      performance,
     ] = await Promise.all([
       window.bankShell.fetch.state(),
       window.bankShell.fetch.obligations(),
@@ -646,6 +683,10 @@
       fetch("/api/taxonomies", { headers: { Accept: "application/json" } })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
+      // Agent performance tile data — fleet avg score + tier counts.
+      fetch("/api/performance", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
     ]);
 
     if (window.bankShell.render && state && state.asOf) {
@@ -664,6 +705,7 @@
       forwardObligations,
       regulatory,
       taxonomies,
+      performance,
     );
     if (rms?.counts) {
       const total =

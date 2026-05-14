@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Performance · Hoz</title>
+  <meta name="description" content="Agent performance management — fleet scores, tier distribution, trend, and per-agent drill-down.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    :root {
+      --surface-base:   #ffffff;
+      --surface-raised: #f5f3ee;
+      --surface-hover:  #edeae4;
+      --neutral-rule:   var(--neutral-mist);
+      --text-primary:   var(--brand-primary);
+      --text-secondary: var(--neutral-graphite);
+    }
+
+    /* ── Summary bar ── */
+    .perf-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px; margin-top: 12px;
+    }
+    .perf-card {
+      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
+      border-radius: 5px; padding: 10px 12px;
+    }
+    .perf-card-num { font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--text-primary); }
+    .perf-card-lbl { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
+    .perf-card-sub { font-size: 10.5px; color: var(--neutral-stone); margin-top: 2px; }
+
+    /* Tier chips in KPI card */
+    .perf-tier-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .tier-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 7px; border-radius: 3px; font-size: 10.5px; font-weight: 600;
+      letter-spacing: .02em;
+    }
+    .tier-exceeds       { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+    .tier-meets         { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+    .tier-needs-improvement { background: #fff8e1; color: #7a5a00; border: 1px solid #ffe082; }
+    .tier-unsatisfactory { background: #fdecea; color: #8b2018; border: 1px solid #f5c6c3; }
+
+    /* ── Filter bar ── */
+    .perf-filter-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+      padding: 12px 0 4px;
+    }
+    .perf-filter-bar .fc { display: flex; flex-direction: column; gap: 3px; }
+    .perf-filter-bar label {
+      font-size: 11px; font-weight: 500; color: var(--neutral-stone);
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .perf-filter-bar select,
+    .perf-filter-bar input[type=search] {
+      padding: 5px 8px; border: 1px solid var(--neutral-rule); border-radius: 4px;
+      font-size: 13px; font-family: inherit; background: var(--surface-base);
+      color: var(--text-primary);
+    }
+    .perf-filter-bar input[type=search] { min-width: 180px; }
+    .perf-filter-count {
+      font-size: 12px; color: var(--neutral-stone); align-self: flex-end;
+      padding-bottom: 6px; white-space: nowrap;
+    }
+
+    /* ── Fleet table ── */
+    .perf-table-wrap { overflow-x: auto; margin-top: 8px; }
+    table.perf-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.perf-table th, table.perf-table td {
+      border-bottom: 1px solid var(--neutral-rule); padding: 7px 10px;
+      vertical-align: top; text-align: left;
+    }
+    table.perf-table th {
+      background: var(--surface-raised); font-weight: 600;
+      color: var(--text-secondary); font-size: 11.5px; white-space: nowrap;
+    }
+    table.perf-table tr.data-row { cursor: pointer; }
+    table.perf-table tr.data-row:hover td { background: var(--surface-hover); }
+    table.perf-table tr.expanded-row td { background: var(--surface-raised); padding: 14px 16px; }
+
+    .tier-badge {
+      display: inline-block; padding: 2px 7px; border-radius: 3px;
+      font-size: 10px; font-weight: 600; letter-spacing: .03em;
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .trend-arrow { font-size: 14px; line-height: 1; }
+    .trend-improving    { color: #2e6b34; }
+    .trend-stable       { color: var(--neutral-stone); }
+    .trend-declining    { color: #8b2018; }
+    .trend-insufficient { color: var(--neutral-stone); }
+
+    /* ── Expanded detail panel ── */
+    .perf-detail {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 700px) { .perf-detail { grid-template-columns: 1fr; } }
+    .perf-detail-section h4 {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--text-secondary);
+      margin: 0 0 6px 0;
+    }
+    .perf-detail-section ul {
+      margin: 0; padding: 0 0 0 14px; font-size: 12.5px; color: var(--text-primary);
+    }
+    .perf-detail-section ul li { margin-bottom: 3px; }
+    .perf-detail-section p {
+      font-size: 12.5px; color: var(--text-primary); margin: 0;
+      line-height: 1.5;
+    }
+    .perf-score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .perf-score-item {
+      background: var(--surface-base); border: 1px solid var(--neutral-rule);
+      border-radius: 4px; padding: 6px 8px; text-align: center;
+    }
+    .perf-score-val { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .perf-score-lbl { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+    .perf-feedback-link {
+      font-size: 11.5px; color: var(--accent-ink); text-decoration: underline dotted;
+      font-family: var(--font-mono);
+    }
+
+    /* ── Empty state ── */
+    .perf-empty {
+      padding: 40px 20px; text-align: center;
+      color: var(--neutral-stone); font-size: 14px;
+    }
+    .perf-empty strong { display: block; font-size: 16px; margin-bottom: 6px; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Agent Performance</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/performance"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/agents.html">Agents</a>
+      <a class="nav-link" href="/fleet">Fleet</a>
+      <a class="nav-link" href="/performance.html" aria-current="page">Performance</a>
+      <a class="nav-link" href="/health.html">Health</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <section class="band">
+    <div class="band-head">
+      <h1>Agent Performance</h1>
+      <span class="band-sub" id="perfSub"></span>
+    </div>
+    <p class="muted">
+      Fleet-wide performance evaluation — tier distribution, score trends, and per-agent narrative.
+      Evaluations fold <code>AgentPerformanceEvaluated</code> events (P1 projection).
+    </p>
+
+    <!-- KPI Summary bar -->
+    <div class="perf-summary" id="perfSummary"></div>
+  </section>
+
+  <section class="band">
+    <div class="band-head">
+      <h2>Fleet table</h2>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="perf-filter-bar">
+      <div class="fc">
+        <label>Period</label>
+        <select id="filterPeriod">
+          <option value="">Most recent</option>
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="last7">Last 7 days</option>
+        </select>
+      </div>
+      <div class="fc">
+        <label>Tier</label>
+        <select id="filterTier">
+          <option value="">All tiers</option>
+          <option value="exceeds">Exceeds</option>
+          <option value="meets">Meets</option>
+          <option value="needs-improvement">Needs improvement</option>
+          <option value="unsatisfactory">Unsatisfactory</option>
+        </select>
+      </div>
+      <div class="fc">
+        <label>Trend</label>
+        <select id="filterTrend">
+          <option value="">All trends</option>
+          <option value="improving">Improving</option>
+          <option value="stable">Stable</option>
+          <option value="declining">Declining</option>
+        </select>
+      </div>
+      <div class="fc">
+        <label>Search</label>
+        <input type="search" id="filterSearch" placeholder="Agent ID or role…">
+      </div>
+      <span class="perf-filter-count" id="filterCount"></span>
+    </div>
+
+    <div class="perf-table-wrap">
+      <table class="perf-table">
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>Role</th>
+            <th>Score</th>
+            <th>Delivery</th>
+            <th>Quality</th>
+            <th>Strategic</th>
+            <th>Tier</th>
+            <th>Trend</th>
+            <th>Last evaluated</th>
+          </tr>
+        </thead>
+        <tbody id="perfTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="/provenance-badge.js"></script>
+<script src="/_failure-banner.js"></script>
+<script src="/_refresh-controls.js"></script>
+<script src="/performance.js"></script>
+</body>
+</html>

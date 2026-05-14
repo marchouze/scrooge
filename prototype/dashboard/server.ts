@@ -94,6 +94,7 @@ import {
   proseAuthoredPageProvenance,
   substrateGapsPageProvenance,
 } from "./page-provenance";
+import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
@@ -1209,6 +1210,34 @@ const server = Bun.serve({
         ...buildTaxonomiesView(),
         pageProvenance: proseAuthoredPageProvenance(),
       });
+    }
+    // ── Agent Performance endpoints ────────────────────────────────────────
+    if (url.pathname === "/api/performance" && req.method === "GET") {
+      // Fleet performance summary — folds AgentPerformanceEvaluated +
+      // AgentFeedbackIssued events into a per-agent state map and returns
+      // aggregate KPIs (avg score, tier distribution, trend counts).
+      // pageProvenance: event-derived → simulated-only in build phase.
+      return jsonResponse({
+        ...buildPerformanceView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    {
+      const perfMatch = url.pathname.match(/^\/api\/performance\/(.+)$/);
+      if (perfMatch?.[1] && req.method === "GET") {
+        // Per-agent performance detail — full history, narrative, feedback path.
+        // pageProvenance: event-derived → simulated-only in build phase.
+        const agentId = decodeURIComponent(perfMatch[1]);
+        const agentState = getAgentPerformanceState(eventStore, agentId);
+        if (!agentState) {
+          return jsonResponse({ error: `No performance data for agent: ${agentId}` }, 404);
+        }
+        return jsonResponse({
+          ...agentState,
+          asOf: nowUtc(),
+          pageProvenance: eventDerivedPageProvenance(),
+        });
+      }
     }
     if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
       // FX desk Slice 1 picker source. Folds the counterparty
