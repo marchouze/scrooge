@@ -67,6 +67,7 @@ import {
   agentOpsReadinessSnapshotPayloadSchema,
   mlroAttestationPayloadSchema,
 } from "../event-types-readiness-snapshots";
+import { auditFindingPayloadSchema } from "../event-types/audit";
 import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
@@ -140,9 +141,10 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "any-agent",
     subscribers: ["Thandiwe", "Vera", "dashboard"],
     replay: "append-only-audit",
-    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source: "Vera continuous-controls programme; Mira citation-gate",
+    source: "prototype/platform/event-store/event-types/audit.ts",
+    payloadSchema: auditFindingPayloadSchema,
   },
   {
     type: "ReconResult",

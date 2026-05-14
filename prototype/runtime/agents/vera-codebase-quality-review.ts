@@ -34,12 +34,20 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
+import {
+  type AuditFindingSeverity,
+  makeAuditFinding,
+} from "../../platform/event-store/event-types/audit";
 import { run as runAnyDensity } from "../../platform/recon/code-quality/any-density";
 import { run as runLegacyBypassWatch } from "../../platform/recon/code-quality/legacy-bypass-watch";
 import { run as runSwallowedErrors } from "../../platform/recon/code-quality/swallowed-errors";
 import type { ReconResult, ReconViolation } from "../../platform/recon/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
+
+/** Map recon violation severity to AuditFinding severity. */
+function mapReconSeverity(s: "warn" | "fail"): AuditFindingSeverity {
+  return s === "fail" ? "high" : "medium";
+}
 
 interface PipelineEntry {
   readonly key: string;
@@ -113,23 +121,29 @@ function emitAuditFindingEvents(ctx: AgentRunContext, result: ReconResult): numb
   // but do not need an event-per-row (the run itself is the heartbeat).
   const ofInterest = result.violations.filter((v) => v.severity !== "info");
   const citations = citationsForRecon(result.pipeline.replace(/^code-quality:/, ""));
+  const dateSlug = ctx.asOf.slice(0, 10).replace(/-/g, "");
   for (const v of ofInterest) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: ctx.asOf,
+    const randSuffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const findingId = `F-VERA-${dateSlug}-${randSuffix}`;
+    const event = makeAuditFinding({
+      asOf: ctx.asOf,
       entity: ENTITY,
       actor: { type: "service", id: "agent:vera:codebase-quality-review" },
       citations: [...citations],
       payload: {
-        pipeline: result.pipeline,
-        subject: v.subject,
-        message: v.message,
-        severity: v.severity,
-        recommendedOwner: "Thandiwe",
-        runTrigger: ctx.trigger.id,
+        findingId,
+        severity: mapReconSeverity(v.severity as "warn" | "fail"),
+        category: "code-quality",
+        addressedTo: "agent:vera",
+        agentId: "vera",
+        raisedBy: "agent:vera:codebase-quality-review",
+        summary: `${result.pipeline}: ${v.subject} — ${v.message}`,
+        detail: `Pipeline: ${result.pipeline}; Subject: ${v.subject}; Message: ${v.message}`,
+        sourceRef: result.pipeline,
+        citations: [...citations],
       },
     });
+    eventStore.append(event);
   }
   return ofInterest.length;
 }

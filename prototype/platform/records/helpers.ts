@@ -53,6 +53,11 @@ import {
   makeFeedback,
   makeRecordFiled,
 } from "../event-store/event-types";
+import {
+  type AuditFindingCategory,
+  type AuditFindingSeverity,
+  makeAuditFinding,
+} from "../event-store/event-types/audit";
 import type { Actor, Event } from "../event-store/types";
 
 // ---------------------------------------------------------------------------
@@ -603,4 +608,65 @@ export function recordFiled(
     documentHash: put.hash,
     isNewDocument: put.isNew,
   };
+}
+
+// ---------------------------------------------------------------------------
+// recordAuditFinding — typed finding against an agent's performance or output
+// ---------------------------------------------------------------------------
+
+export interface RecordAuditFindingInput {
+  /** Bare agent name — e.g. "mira". Matches AgentRegistered.agentId. */
+  readonly agentId: string;
+  readonly severity: AuditFindingSeverity;
+  readonly category: AuditFindingCategory;
+  readonly summary: string;
+  readonly detail?: string;
+  readonly sourceRef?: string;
+  /** Actor who is raising the finding — e.g. "marc@tgv.co.za" or "agent:vera". */
+  readonly raisedBy: string;
+  readonly citations?: readonly string[];
+}
+
+/**
+ * Emit a typed `AuditFinding` event against the named agent.
+ *
+ * Returns the `findingId` (e.g. `F-MIRA-20260514-A3B2`) so the caller can
+ * reference it in downstream dispatch (apply-agent-feedback.ts).
+ *
+ * The event is consumed by the performance-evaluator quality-scoring pipeline
+ * (prototype/platform/agents/performance-evaluator.ts) — no further wiring needed.
+ *
+ * Authority: D-AGENT-AUTONOMY-OPERATIONAL (Principle 6).
+ */
+export function recordAuditFinding(
+  input: RecordAuditFindingInput,
+  asOf: string,
+): string /* returns findingId */ {
+  const dateSlug = asOf.slice(0, 10).replace(/-/g, "");
+  const randSuffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const findingId = `F-${input.agentId.toUpperCase()}-${dateSlug}-${randSuffix}`;
+  const agentUrn = `agent:${input.agentId.toLowerCase()}`;
+  const citations = [...(input.citations ?? ["D-AGENT-AUTONOMY-OPERATIONAL"])];
+
+  const event = makeAuditFinding({
+    asOf,
+    entity: DEFAULT_ENTITY,
+    actor: { type: "human", id: input.raisedBy },
+    citations,
+    payload: {
+      findingId,
+      severity: input.severity,
+      category: input.category,
+      addressedTo: agentUrn,
+      agentId: input.agentId.toLowerCase(),
+      raisedBy: input.raisedBy,
+      summary: input.summary,
+      ...(input.detail ? { detail: input.detail } : {}),
+      ...(input.sourceRef ? { sourceRef: input.sourceRef } : {}),
+      citations,
+    },
+  });
+
+  eventStore.append(event);
+  return findingId;
 }

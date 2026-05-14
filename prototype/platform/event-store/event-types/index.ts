@@ -11,6 +11,8 @@
 //   - agent.ts          — AgentEscalation family, AgentDecision,
 //                         AgentRegistered, SubstrateAgentRun*, RMS agent-runs
 //                         (AgentBriefIssued, AgentRunStarted/Completed)
+//   - audit.ts          — AuditFinding (typed finding against an agent's
+//                         performance or output quality)
 //   - platform.ts       — WorkstreamRegistered, DecisionComment,
 //                         ScheduledTrigger, SubstrateAlert, IdentityKeyRotated,
 //                         PermissionPolicyPublished, BusDispatched,
@@ -37,6 +39,7 @@
 // re-exported directly here as before.
 
 export * from "./agent";
+export * from "./audit";
 export * from "./governance";
 export * from "./platform";
 export * from "./risk";
@@ -246,6 +249,10 @@ export const TYPED_EVENT_TYPES = [
   // Authors: Kai (Markets engineer), Helena (CRO), Rohan (Risk engineer).
   "OrderRejected",
   "RasLimitSchedulePublished",
+  // Audit finding — typed finding raised against an agent's performance or output
+  // quality; consumed by the performance evaluator quality-scoring pipeline.
+  // D-AGENT-AUTONOMY-OPERATIONAL.
+  "AuditFinding",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

@@ -124,7 +124,9 @@
     "check:circular": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
     "recon:wall-clock-callsite-coverage": "bun run platform/recon/wall-clock-callsite-coverage.ts",
     "recon:fsca-reg-to-policy": "bun run platform/recon/fsca-reg-to-policy.ts",
-    "ras:seed-limits": "bun run scripts/seed-ras-limits.ts"
+    "ras:seed-limits": "bun run scripts/seed-ras-limits.ts",
+    "perf:raise-finding": "bun run scripts/raise-finding.ts",
+    "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",

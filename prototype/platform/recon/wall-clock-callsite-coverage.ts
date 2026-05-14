@@ -84,13 +84,14 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // is the correct API for monotonic TTL arithmetic. The cache does not
   // affect event provenance or Principle 1 correctness.
   "dashboard/substrate-gaps.ts",
-  // Dashboard registry + onboarding view: default parameter values for `now`
-  // inject points. The `// wall-clock: default; inject now for deterministic
-  // scenarios` comment pattern signals an injectable default — callers that
-  // need deterministic behaviour pass an explicit timestamp. No event `asOf`
-  // is sourced from these defaults.
+  // Dashboard registry, onboarding view, and rms-view: default parameter values
+  // for `now` inject points. The `// wall-clock: default; inject now for
+  // deterministic scenarios` comment pattern signals an injectable default —
+  // callers that need deterministic behaviour pass an explicit timestamp.
+  // No event `asOf` is sourced from these defaults.
   "dashboard/registry.ts",
   "dashboard/onboarding-view.ts",
+  "dashboard/rms-view.ts",
   // Dashboard server: TTL elapsed-time check for the RMS fold cache. Same
   // rationale as dashboard/substrate-gaps.ts — monotonic comparison, not
   // an event timestamp. Marked `// wall-clock: TTL cache elapsed-time check`.
