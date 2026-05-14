@@ -26,10 +26,6 @@
 //     AgentOpsReadinessSnapshot
 
 import {
-  agentFeedbackIssuedPayloadSchema,
-  agentPerformanceEvaluatedPayloadSchema,
-} from "../event-types/performance";
-import {
   beneficialOwnerChainAssertedPayloadSchema,
   partyAttributeChangedPayloadSchema,
   partyClassifiedPayloadSchema,
@@ -71,6 +67,10 @@ import {
   agentOpsReadinessSnapshotPayloadSchema,
   mlroAttestationPayloadSchema,
 } from "../event-types-readiness-snapshots";
+import {
+  agentFeedbackIssuedPayloadSchema,
+  agentPerformanceEvaluatedPayloadSchema,
+} from "../event-types/performance";
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
