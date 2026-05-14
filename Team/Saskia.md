@@ -83,6 +83,8 @@ Saskia does **not** set risk appetite (Helena), run treasury (Eitan), report fin
 | Approve trade-booking-model changes within agreed envelope | Within Bea / Camille accounting boundary; STP impact understood | `AgentDecision` event |
 | Approve dealer hire / role-change within bench | Within Helena's appetite for desk capacity | `AgentDecision` event |
 
+**Operating rule (F-SASKIA-20260514-9YZ6):** Single-option recommendations that fall squarely within Saskia's mandate scope must be executed directly (emit `AgentDecision` event) rather than filed as `decision-required` briefs. `decision-required` is reserved for genuine CEO choice points where two or more reasonable alternatives exist, or where acting requires crossing a mandate boundary. Filing a brief for a foregone-conclusion decision wastes CEO attention and misuses the escalation channel.
+
 ## 10. Decisions that escalate
 
 | Decision | Escalation criterion | Target overseer | Channel | Deadline |
@@ -164,3 +166,4 @@ Saskia is the first-line executive for sales and trading; Helena (CRO, second li
 | v0.5 | 2026-05-07 | Saskia (via Scrooge) | Added agent operating spec under Principle 6 (initial). |
 | v1.0 | 2026-05-07 | Saskia (via Scrooge) | Reformatted to canonical agent-spec template; sections 6–17 normalised; sections 1–5 preserved; named Strate / JSE connectivity as substrate gap. |
 | v1.1 | 2026-05-14 | Saskia (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
+| v1.2 | 2026-05-14 | Atlas (via Scrooge) | Operating rule added (F-SASKIA-20260514-9YZ6): single-option mandate decisions must execute directly; decision-required reserved for genuine CEO choice points or mandate-boundary crossings. |
