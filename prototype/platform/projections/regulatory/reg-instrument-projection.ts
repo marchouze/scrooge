@@ -215,12 +215,8 @@ function applyContextualised(
   }
   const updated: RegInstrumentState = {
     ...existing,
-    ...(p.regulatoryAuthority !== undefined
-      ? { regulatoryAuthority: p.regulatoryAuthority }
-      : {}),
-    ...(p.regulatoryObjective !== undefined
-      ? { regulatoryObjective: p.regulatoryObjective }
-      : {}),
+    ...(p.regulatoryAuthority !== undefined ? { regulatoryAuthority: p.regulatoryAuthority } : {}),
+    ...(p.regulatoryObjective !== undefined ? { regulatoryObjective: p.regulatoryObjective } : {}),
     ...(p.internationalAlignment !== undefined
       ? { internationalAlignment: p.internationalAlignment }
       : {}),
@@ -247,8 +243,7 @@ function applyConceptExtracted(
   // Cumulative running average: avg_n = (avg_{n-1} * (n-1) + x_n) / n
   const newAvgApplicability =
     (existing.avgApplicabilityScore * prevCount + p.applicabilityScore) / newCount;
-  const newAvgRelevancy =
-    (existing.avgRelevancyScore * prevCount + p.relevancyScore) / newCount;
+  const newAvgRelevancy = (existing.avgRelevancyScore * prevCount + p.relevancyScore) / newCount;
 
   const updated: RegInstrumentState = {
     ...existing,
@@ -261,9 +256,7 @@ function applyConceptExtracted(
         ? existing.highApplicabilityCount + 1
         : existing.highApplicabilityCount,
     highRelevancyCount:
-      p.relevancyScore >= 0.7
-        ? existing.highRelevancyCount + 1
-        : existing.highRelevancyCount,
+      p.relevancyScore >= 0.7 ? existing.highRelevancyCount + 1 : existing.highRelevancyCount,
   };
   const next = new Map(state);
   next.set(p.instrumentId, updated);
@@ -310,10 +303,7 @@ export const regInstrumentProjection: Projection<RegInstrumentProjectionState> =
   accepts(event: Event): event is Event {
     return REG_INSTRUMENT_EVENT_TYPES.has(event.type);
   },
-  reduce(
-    state: RegInstrumentProjectionState,
-    event: Event,
-  ): RegInstrumentProjectionState {
+  reduce(state: RegInstrumentProjectionState, event: Event): RegInstrumentProjectionState {
     switch (event.type) {
       case "RegulatoryInstrumentRegistered":
         return applyRegistered(state, event);
