@@ -101,7 +101,6 @@
         "Mira's horizon-scanning substrate — instruments registered, concepts extracted, high-applicability sections scored and classified.",
       href: "/regulatory.html",
     },
-<<<<<<< HEAD
     {
       id: "performance",
       category: "dashboards",
@@ -627,7 +626,6 @@
         };
       }
     }
-
 
     return counts;
   }
