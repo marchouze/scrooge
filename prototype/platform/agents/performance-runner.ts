@@ -16,6 +16,7 @@
 import { eventStore } from "../composition";
 import { newEventId } from "../core/types";
 import type { Actor, Event } from "../event-store/types";
+import { recordFiled } from "../records/helpers";
 import { KNOWN_AGENTS, evaluateAgent } from "./performance-evaluator";
 import { issueFeedback } from "./performance-feedback";
 
@@ -103,8 +104,32 @@ export async function runPerformanceEvaluations(
     };
     eventStore.append(evalEvent);
 
-    // Issue feedback file
+    // Issue feedback file (markdown dual-render — Phase 0 compat)
     const { artifactPath, feedbackText } = await issueFeedback(result, evalEvent.event_id);
+
+    // File in RMS document register immediately (Principle 1 / D-RMS-PHASE-1).
+    // recordFiled handles document store put + RecordFiled event in one call.
+    const repoRelPath = `Owner Inbox/${artifactPath.split("Owner Inbox/")[1]}`;
+    const asOf = new Date().toISOString();
+    recordFiled(
+      {
+        recordId: `perf-feedback:${agentId}:${evaluationPeriod}`,
+        registerKey: "documents",
+        body: feedbackText,
+        classification: "governance-seat",
+        retention: { citationRef: "D-RMS-PHASE-1", minimumYears: 5, archivalTier: "cool" },
+        citations: ["D-RMS-PHASE-1", "D-AGENT-AUTONOMY-OPERATIONAL"],
+        actor,
+        metadata: {
+          title: `Performance Feedback — ${result.agentId} (${result.evaluationPeriod})`,
+          path: repoRelPath,
+          category: "Performance feedback",
+          date: result.evaluationPeriod,
+          author: "Sade (AgentOps engineer, engineering)",
+        },
+      },
+      asOf,
+    );
 
     // Emit AgentFeedbackIssued event
     // TODO: replace payload cast with typed makeAgentFeedbackIssued() once
