@@ -930,6 +930,31 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source:
       "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
   },
+  {
+    // TODO: once Mira's event-types/performance.ts PR lands, replace
+    // this open record with the typed payloadSchema from that module.
+    type: "AgentPerformanceEvaluated",
+    class: "governance",
+    issuer: "Sade",
+    subscribers: ["Devon", "Vera", "Thandiwe", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "platform/agents/performance-evaluator.ts; platform/agents/performance-runner.ts",
+  },
+  {
+    // TODO: once Mira's event-types/performance.ts PR lands, replace
+    // this open record with the typed payloadSchema from that module.
+    type: "AgentFeedbackIssued",
+    class: "governance",
+    issuer: "Sade",
+    subscribers: ["Devon", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/agents/performance-feedback.ts; platform/agents/performance-runner.ts",
+  },
 ];
 
 // ===========================================================================
