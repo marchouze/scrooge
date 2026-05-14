@@ -14,6 +14,8 @@
 //
 // Author: Atlas (Core banking platform architect; substrate)
 
+import type { DcamAlignment } from "../../platform/taxonomies/index";
+
 // ===========================================================================
 // PartyKind + PartyId
 // ===========================================================================
@@ -32,6 +34,45 @@
  * Per D-PARTY-REGISTER correction (CEO-approved 2026-05-12).
  */
 export type PartyKind = "natural-person" | "legal-entity" | "agent";
+
+/**
+ * DCAM three-layer alignment for each PartyKind.
+ * Maps each kind to its FIBO / ISO-17442 anchor.
+ * Null indicates no industry-standard equivalent (bank-internal concept).
+ */
+export const PARTY_KIND_DCAM_ALIGNMENTS: Record<PartyKind, DcamAlignment | null> = {
+  "natural-person": {
+    conceptual: {
+      fiboModule: "BE",
+      fiboIri:
+        "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/LegallyCompetentNaturalPerson",
+      fiboLabel: "Legally Competent Natural Person",
+      skosMatch: "exactMatch",
+    },
+  },
+  "legal-entity": {
+    conceptual: {
+      fiboModule: "BE",
+      fiboIri:
+        "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/LegalPerson",
+      fiboLabel: "Legal Person",
+      skosMatch: "broadMatch",
+      notes:
+        "Corporations: BE/Corporations/Corporations/Corporation (narrower). Covers all SA entity forms (Ltd, RF, Pty).",
+    },
+    logical: [
+      {
+        standard: "ISO17442",
+        ref: "https://www.gleif.org/en/about-lei/introducing-the-legal-entity-identifier-lei",
+        label: "Legal Entity Identifier (LEI)",
+        skosMatch: "exactMatch",
+        notes:
+          "Required for EMIR/SFTR reporting when trading OTC derivatives with EU counterparties.",
+      },
+    ],
+  },
+  agent: null, // Bank-specific AI persona — no FIBO or industry equivalent
+};
 
 /**
  * The closed enum at value-level — used by schemas + the constraint
@@ -174,6 +215,12 @@ export interface LegalEntityAttrs {
    * entity. Mirrors `LegalEntityRegistered.regulatoryRegime.regimeAnchor`.
    */
   readonly regimeAnchor: readonly string[];
+  /**
+   * Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Required for
+   * EMIR/SFTR reporting with EU counterparties. Optional until the bank holds
+   * its own LEI and operates with EU-counterparty OTC derivatives.
+   */
+  readonly lei?: string;
 }
 
 /**

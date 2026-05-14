@@ -4,13 +4,78 @@
 //   1. Risk taxonomy — expandable L1/L2/L3 tree
 //   2. Activity taxonomy — grouped ACT-* chips
 //   3. Domain taxonomy — 10-row table with clickable domain codes
-//   4. Product scope — 8-row table
+//   4. Product scope — 7-row table (DCAM-aligned)
+//
+// DCAM alignment badges are shown on nodes that carry dcamAlignment:
+//   L1 chip (indigo): FIBO · {module} — links to fiboIri
+//   L2 chips (colour by standard): CDM=teal, ESMA-CFI=emerald, BCBS=red,
+//              FATF=amber, ISO17442=slate
+//   L3 chips (purple): ISO20022 · {messageType}
 //
 // Search bar at the top filters all four panels simultaneously.
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
 (() => {
+  // ── DCAM legend (collapsible) ─────────────────────────────────────────────
+  function renderDcamLegend() {
+    const container = document.getElementById("dcamLegend");
+    if (!container) return;
+
+    container.innerHTML = `
+      <div id="dcamLegendHead" role="button" tabindex="0" aria-expanded="false"
+           style="cursor:pointer; display:flex; align-items:center; gap:8px; padding:8px 12px;
+                  background:#f8f9fa; border-radius:6px; border:1px solid #e2e8f0; user-select:none;"
+           onclick="this.setAttribute('aria-expanded', this.nextElementSibling.style.display==='none'?'true':'false');
+                    this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span style="font-size:11px;">▶</span>
+        <strong style="font-size:13px;">DCAM Alignment Legend</strong>
+        <span style="font-size:12px; color:#64748b;">EDM Council three-layer architecture</span>
+      </div>
+      <div style="display:none; padding:12px 16px; border:1px solid #e2e8f0; border-top:none;
+                  border-radius:0 0 6px 6px; background:#fff;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:12px;">
+          <div>
+            <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:#4338ca;">L1 — Conceptual (FIBO)</div>
+            <div style="font-size:11px; color:#64748b; line-height:1.5;">
+              FIBO ontological anchors — defines what the concept IS.<br>
+              Links to spec.edmcouncil.org IRI. Click chip to open.
+            </div>
+            <div style="margin-top:6px;">
+              <span style="background:#4338ca; color:white; padding:2px 6px; border-radius:3px; font-size:11px;">FIBO · SEC</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:#0f766e;">L2 — Logical (Industry Standards)</div>
+            <div style="font-size:11px; color:#64748b; line-height:1.5;">
+              CDM, ESMA-CFI, BCBS, FATF, ISO17442. How concepts are MODELED.
+            </div>
+            <div style="margin-top:6px; display:flex; gap:4px; flex-wrap:wrap;">
+              <span style="background:#0f766e; color:white; padding:2px 5px; border-radius:3px; font-size:10px;">CDM</span>
+              <span style="background:#059669; color:white; padding:2px 5px; border-radius:3px; font-size:10px;">ESMA-CFI</span>
+              <span style="background:#dc2626; color:white; padding:2px 5px; border-radius:3px; font-size:10px;">BCBS</span>
+              <span style="background:#d97706; color:white; padding:2px 5px; border-radius:3px; font-size:10px;">FATF</span>
+              <span style="background:#475569; color:white; padding:2px 5px; border-radius:3px; font-size:10px;">ISO17442</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:#7e22ce;">L3 — Physical (ISO 20022)</div>
+            <div style="font-size:11px; color:#64748b; line-height:1.5;">
+              Message formats. The node's own code string is also Layer 3.
+            </div>
+            <div style="margin-top:6px;">
+              <span style="background:#7e22ce; color:white; padding:2px 6px; border-radius:3px; font-size:11px;">ISO20022 · sese.023</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:#64748b; border-top:1px solid #f1f5f9; padding-top:8px;">
+          <strong>SKOS match opacity:</strong>
+          exactMatch (100%) · closeMatch (80%) · broadMatch (60%) · relatedMatch (50%) · narrowMatch (70%)
+        </div>
+      </div>`;
+  }
+
   // ── Severity colour map for risk L1 nodes ────────────────────────────────
   // Derived from the risk register — L1 codes carry an implicit severity
   // based on their regulatory weight and capital requirements.
@@ -49,6 +114,9 @@
   wirePanel("panelActivity", "panelActivityHead");
   wirePanel("panelDomain", "panelDomainHead");
   wirePanel("panelProduct", "panelProductHead");
+
+  // Render the DCAM legend
+  renderDcamLegend();
 
   // ── Search ────────────────────────────────────────────────────────────────
   let allData = null;
@@ -161,6 +229,82 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  // SKOS match opacity
+  const SKOS_OPACITY = {
+    exactMatch: 1.0,
+    closeMatch: 0.8,
+    broadMatch: 0.6,
+    relatedMatch: 0.5,
+    narrowMatch: 0.7,
+  };
+
+  // L2 standard colours
+  const L2_COLORS = {
+    CDM: "#0f766e",
+    "ESMA-CFI": "#059669",
+    BCBS: "#dc2626",
+    FATF: "#d97706",
+    ISO17442: "#475569",
+  };
+
+  /**
+   * Render DCAM alignment chips for a node.
+   * Returns HTML string — empty string if no alignment.
+   */
+  function renderDcamChips(dcamAlignment) {
+    if (!dcamAlignment) return "";
+    const parts = [];
+
+    // L1 — Conceptual (FIBO)
+    if (dcamAlignment.conceptual) {
+      const c = dcamAlignment.conceptual;
+      const opacity = SKOS_OPACITY[c.skosMatch] ?? 0.7;
+      const title = `${esc(c.fiboLabel)} (${esc(c.skosMatch)})${c.definition ? ` — ${esc(c.definition)}` : ""}`;
+      parts.push(
+        `<a href="${esc(c.fiboIri)}" target="_blank" rel="noopener"
+            title="${title}"
+            style="display:inline-block; opacity:${opacity}; text-decoration:none; margin-right:3px; margin-bottom:3px;
+                   background:#4338ca; color:white; padding:2px 6px; border-radius:3px; font-size:10px; white-space:nowrap;">
+          FIBO · ${esc(c.fiboModule)}
+        </a>`,
+      );
+    }
+
+    // L2 — Logical
+    if (dcamAlignment.logical && dcamAlignment.logical.length > 0) {
+      for (const l of dcamAlignment.logical) {
+        const opacity = SKOS_OPACITY[l.skosMatch] ?? 0.7;
+        const color = L2_COLORS[l.standard] ?? "#64748b";
+        const title = `${esc(l.label)} (${esc(l.skosMatch)})${l.notes ? ` — ${esc(l.notes)}` : ""}`;
+        parts.push(
+          `<a href="${esc(l.ref)}" target="_blank" rel="noopener"
+              title="${title}"
+              style="display:inline-block; opacity:${opacity}; text-decoration:none; margin-right:3px; margin-bottom:3px;
+                     background:${color}; color:white; padding:2px 6px; border-radius:3px; font-size:10px; white-space:nowrap;">
+            ${esc(l.standard)}
+          </a>`,
+        );
+      }
+    }
+
+    // L3 — Physical (ISO 20022)
+    if (dcamAlignment.physical && dcamAlignment.physical.length > 0) {
+      for (const p of dcamAlignment.physical) {
+        const title = `${esc(p.label)}${p.notes ? ` — ${esc(p.notes)}` : ""}`;
+        parts.push(
+          `<span title="${title}"
+                 style="display:inline-block; margin-right:3px; margin-bottom:3px;
+                        background:#7e22ce; color:white; padding:2px 6px; border-radius:3px; font-size:10px; white-space:nowrap;">
+            ISO20022 · ${esc(p.messageType)}
+          </span>`,
+        );
+      }
+    }
+
+    if (parts.length === 0) return "";
+    return `<div style="margin-top:4px; line-height:1.8;">${parts.join("")}</div>`;
   }
 
   // ── Render: Risk tree ─────────────────────────────────────────────────────
@@ -298,7 +442,10 @@
              title="View obligations for ${esc(n.label)}">${esc(n.code)}</a>
         </td>
         <td><strong>${esc(n.label)}</strong></td>
-        <td class="desc-col">${esc(n.description)}</td>
+        <td class="desc-col">
+          ${esc(n.description)}
+          ${renderDcamChips(n.dcamAlignment)}
+        </td>
       </tr>`,
       )
       .join("");
@@ -319,7 +466,10 @@
           <span class="tax-chip tax-chip-product">${esc(n.code)}</span>
         </td>
         <td><strong>${esc(n.label)}</strong></td>
-        <td class="desc-col">${esc(n.description)}</td>
+        <td class="desc-col">
+          ${esc(n.description)}
+          ${renderDcamChips(n.dcamAlignment)}
+        </td>
       </tr>`,
       )
       .join("");

@@ -12,6 +12,7 @@ import {
   ACTIVITY_GROUPS,
   ACTIVITY_LABELS,
   DOMAIN_TAXONOMY,
+  type DcamAlignment,
   PRODUCT_SCOPE,
   RISK_TAXONOMY,
 } from "../platform/taxonomies";
@@ -27,6 +28,7 @@ export interface RiskTaxonomyNodeView {
   readonly level: number;
   readonly description: string;
   readonly owner: string;
+  readonly dcamAlignment?: DcamAlignment;
 }
 
 export interface ActivityNodeView {
@@ -39,12 +41,14 @@ export interface DomainNodeView {
   readonly code: string;
   readonly label: string;
   readonly description: string;
+  readonly dcamAlignment?: DcamAlignment;
 }
 
 export interface ProductScopeNodeView {
   readonly code: string;
   readonly label: string;
   readonly description: string;
+  readonly dcamAlignment?: DcamAlignment;
 }
 
 export interface TaxonomiesView {
@@ -98,6 +102,7 @@ export function buildTaxonomiesView(): TaxonomiesView {
     level: n.level,
     description: n.definition,
     owner: n.owner,
+    ...(n.dcamAlignment !== undefined ? { dcamAlignment: n.dcamAlignment } : {}),
   }));
 
   // ── Activity taxonomy ──────────────────────────────────────────────────────
@@ -126,6 +131,7 @@ export function buildTaxonomiesView(): TaxonomiesView {
     code: n.code,
     label: n.label,
     description: n.description,
+    ...(n.dcamAlignment !== undefined ? { dcamAlignment: n.dcamAlignment } : {}),
   }));
 
   // ── Product scope ──────────────────────────────────────────────────────────
@@ -133,6 +139,7 @@ export function buildTaxonomiesView(): TaxonomiesView {
     code: n.code,
     label: n.label,
     description: n.description,
+    ...(n.dcamAlignment !== undefined ? { dcamAlignment: n.dcamAlignment } : {}),
   }));
 
   return {

@@ -155,6 +155,8 @@ export type RiskTaxonomyCode =
 // Node shape + flat registry.
 // ---------------------------------------------------------------------------
 
+import type { DcamAlignment } from "../taxonomies/index";
+
 export interface RiskTaxonomyNode {
   readonly code: RiskTaxonomyCode;
   readonly level: 1 | 2 | 3;
@@ -163,6 +165,8 @@ export interface RiskTaxonomyNode {
   /** Governance seat (or seat-pair) that holds policy authority. Level-1 only. */
   readonly owner: string;
   readonly definition: string;
+  /** DCAM three-layer alignment. L1 nodes only — L2/L3 inherit via parent. */
+  readonly dcamAlignment?: DcamAlignment;
 }
 
 /**
@@ -198,6 +202,23 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA,
     definition:
       "Risk that an obligor fails to meet contractual obligations as they fall due, producing a financial loss for the bank.",
+    dcamAlignment: {
+      conceptual: {
+        fiboModule: "FBC",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
+        fiboLabel: "Financial Services Entity (Credit Risk)",
+        skosMatch: "relatedMatch",
+      },
+      logical: [
+        {
+          standard: "BCBS",
+          ref: "https://www.bis.org/bcbs/publ/d457.htm#credit-risk",
+          label: "Basel III Credit Risk",
+          skosMatch: "exactMatch",
+        },
+      ],
+    },
   },
   {
     code: "RT-MK",
@@ -207,6 +228,16 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA,
     definition:
       "Risk of loss in on- and off-balance-sheet positions arising from movements in market prices (interest rate in trading book, equity, FX, commodity, credit-spread).",
+    dcamAlignment: {
+      logical: [
+        {
+          standard: "BCBS",
+          ref: "https://www.bis.org/bcbs/publ/d352.htm",
+          label: "FRTB Market Risk",
+          skosMatch: "exactMatch",
+        },
+      ],
+    },
   },
   {
     code: "RT-LQ",
@@ -216,6 +247,16 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA_EITAN,
     definition:
       "Risk that the bank cannot meet obligations as they fall due (funding-liquidity) or cannot liquidate positions without unacceptable loss (market-liquidity).",
+    dcamAlignment: {
+      logical: [
+        {
+          standard: "BCBS",
+          ref: "https://www.bis.org/bcbs/publ/d457.htm#liquidity-risk",
+          label: "Basel III Liquidity Risk (LCR/NSFR)",
+          skosMatch: "exactMatch",
+        },
+      ],
+    },
   },
   {
     code: "RT-IRRBB",
@@ -225,6 +266,16 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA,
     definition:
       "Risk to earnings (NII) and economic value (EVE) from interest-rate movements affecting banking-book positions.",
+    dcamAlignment: {
+      logical: [
+        {
+          standard: "BCBS",
+          ref: "https://www.bis.org/bcbs/publ/d368.htm",
+          label: "Basel IRRBB Standard",
+          skosMatch: "exactMatch",
+        },
+      ],
+    },
   },
   {
     code: "RT-OP",
@@ -234,6 +285,16 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_HELENA_DEVON,
     definition:
       "Risk of loss from inadequate or failed internal processes, people, systems, or external events. Includes cyber, third-party, model, conduct-execution; excludes strategic and reputational.",
+    dcamAlignment: {
+      logical: [
+        {
+          standard: "BCBS",
+          ref: "https://www.bis.org/bcbs/publ/d457.htm#operational-risk",
+          label: "Basel III Operational Risk",
+          skosMatch: "exactMatch",
+        },
+      ],
+    },
   },
   {
     code: "RT-CD",
@@ -243,6 +304,15 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_ZARA,
     definition:
       "Risk that the bank's behaviour in markets or with clients produces unfair outcomes, market abuse, or breaches of conduct duties.",
+    dcamAlignment: {
+      conceptual: {
+        fiboModule: "FBC",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
+        fiboLabel: "Financial Services Provider (Conduct)",
+        skosMatch: "closeMatch",
+      },
+    },
   },
   {
     code: "RT-FC",
@@ -252,6 +322,16 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_ZARA_MLRO,
     definition:
       "Risk that the bank is used to launder funds, finance terrorism, evade sanctions, facilitate tax evasion, or transact bribery and corruption.",
+    dcamAlignment: {
+      logical: [
+        {
+          standard: "FATF",
+          ref: "https://www.fatf-gafi.org/en/topics/financial-crime.html",
+          label: "FATF Financial Crime Framework",
+          skosMatch: "closeMatch",
+        },
+      ],
+    },
   },
   {
     code: "RT-LR",
@@ -261,6 +341,15 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_LEGAL,
     definition:
       "Risk of loss from unenforceable contracts, litigation, regulatory enforcement, or non-compliance with binding obligations. Excludes financial-crime obligations (under RT-FC).",
+    dcamAlignment: {
+      conceptual: {
+        fiboModule: "FBC",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/RegulatoryAgency",
+        fiboLabel: "Regulatory Agency (Legal Risk)",
+        skosMatch: "closeMatch",
+      },
+    },
   },
   {
     code: "RT-ST",
@@ -270,6 +359,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_CEO_CFO,
     definition:
       "Risk to the bank's earnings or franchise from adverse business decisions, poor execution, or failure to respond to industry change.",
+    // No FIBO IRI or L2 standard — internal strategic classification
   },
   {
     code: "RT-RP",
@@ -279,6 +369,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_REPUTATION,
     definition:
       "Risk that negative perception by clients, counterparties, regulators, or the public produces value erosion, funding loss, or licence threat. Treated as a second-order risk that shadows first-order categories at Critical severity.",
+    // No FIBO IRI or L2 standard — internal reputational classification
   },
   {
     code: "RT-CL",
@@ -288,6 +379,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     owner: OWNER_CLIMATE,
     definition:
       "Risk to financial position or franchise from physical and transition climate impacts, biodiversity loss, and broader ESG dimensions. Treated as a transverse risk that manifests through credit, market, operational, liquidity, strategic, and reputational nodes.",
+    // No FIBO IRI or L2 standard — emerging taxonomy; TCFD/TNFD alignment planned
   },
 
   // -----------------------------------------------------------------------

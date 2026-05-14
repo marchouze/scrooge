@@ -34,13 +34,13 @@ export type SkosMatchType =
   | "relatedMatch";
 
 export type FiboModule =
-  | "FND"   // Foundations (amounts, dates, jurisdictions, parties)
-  | "BE"    // Business Entities (corporations, legal persons)
-  | "FBC"   // Financial Business and Commerce (market participants, services)
-  | "SEC"   // Securities (equities, debt, funds)
-  | "DER"   // Derivatives (IR, FX, credit, equity derivatives)
-  | "IND"   // Indices and Indicators (benchmarks, rates)
-  | "BP"    // Business Processes (trading, settlement, clearing)
+  | "FND" // Foundations (amounts, dates, jurisdictions, parties)
+  | "BE" // Business Entities (corporations, legal persons)
+  | "FBC" // Financial Business and Commerce (market participants, services)
+  | "SEC" // Securities (equities, debt, funds)
+  | "DER" // Derivatives (IR, FX, credit, equity derivatives)
+  | "IND" // Indices and Indicators (benchmarks, rates)
+  | "BP" // Business Processes (trading, settlement, clearing)
   | "LOAN"; // Loans (credit facilities)
 
 /** Layer 1 — Conceptual: FIBO ontological anchor. Defines what the concept IS. */
@@ -54,11 +54,11 @@ export interface ConceptualLayer {
 }
 
 export type LogicalStandard =
-  | "CDM"       // ISDA/ICMA Common Domain Model — trade lifecycle data model
-  | "ESMA-CFI"  // ISO 10962 Classification of Financial Instruments
-  | "ISO17442"  // Legal Entity Identifier (LEI)
-  | "BCBS"      // Basel Committee on Banking Supervision
-  | "FATF";     // Financial Action Task Force
+  | "CDM" // ISDA/ICMA Common Domain Model — trade lifecycle data model
+  | "ESMA-CFI" // ISO 10962 Classification of Financial Instruments
+  | "ISO17442" // Legal Entity Identifier (LEI)
+  | "BCBS" // Basel Committee on Banking Supervision
+  | "FATF"; // Financial Action Task Force
 
 /** Layer 2 — Logical: Industry data models and classification standards. */
 export interface LogicalLayer {
@@ -126,7 +126,8 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/PrudentialRegulator",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/PrudentialRegulator",
         fiboLabel: "Prudential Regulator",
         skosMatch: "broadMatch",
       },
@@ -154,7 +155,8 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/FinancialServicesProvider",
         fiboLabel: "Financial Services Provider",
         skosMatch: "closeMatch",
       },
@@ -167,7 +169,8 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/FinancialProduct",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/FinancialProduct",
         fiboLabel: "Financial Product (Market Conduct)",
         skosMatch: "closeMatch",
       },
@@ -182,11 +185,13 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
   {
     code: "F-GOVERNANCE",
     label: "Corporate Governance",
-    description: "Board, audit-committee, remuneration, internal-audit per BCBS CGPS, Companies Act",
+    description:
+      "Board, audit-committee, remuneration, internal-audit per BCBS CGPS, Companies Act",
     dcamAlignment: {
       conceptual: {
         fiboModule: "FND",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/FormalOrganization",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/FormalOrganization",
         fiboLabel: "Formal Organization",
         skosMatch: "broadMatch",
       },
@@ -199,7 +204,8 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/RegulatoryAgency",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/RegulatoryAgency",
         fiboLabel: "Regulatory Agency (Reporting)",
         skosMatch: "relatedMatch",
       },
@@ -227,7 +233,8 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/MarketParticipant",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/MarketParticipant",
         fiboLabel: "Market Participant (Treasury)",
         skosMatch: "closeMatch",
       },
@@ -240,7 +247,8 @@ export const DOMAIN_TAXONOMY: ReadonlyArray<DomainTaxonomyNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/Exchange",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/Exchange",
         fiboLabel: "Exchange / Market Infrastructure",
         skosMatch: "closeMatch",
       },
@@ -275,7 +283,8 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "SEC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/SEC/Equities/EquityInstruments/ListedShare",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/SEC/Equities/EquityInstruments/ListedShare",
         fiboLabel: "Listed Share",
         skosMatch: "exactMatch",
       },
@@ -294,7 +303,11 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
         },
       ],
       physical: [
-        { standard: "ISO20022", messageType: "sese.023", label: "Securities Settlement Instruction" },
+        {
+          standard: "ISO20022",
+          messageType: "sese.023",
+          label: "Securities Settlement Instruction",
+        },
         { standard: "ISO20022", messageType: "seev.036", label: "Corporate Action Instruction" },
       ],
     },
@@ -326,7 +339,11 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
         },
       ],
       physical: [
-        { standard: "ISO20022", messageType: "sese.023", label: "Securities Settlement Instruction" },
+        {
+          standard: "ISO20022",
+          messageType: "sese.023",
+          label: "Securities Settlement Instruction",
+        },
       ],
     },
   },
@@ -350,7 +367,11 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
         },
       ],
       physical: [
-        { standard: "ISO20022", messageType: "sese.023", label: "Securities Settlement Instruction" },
+        {
+          standard: "ISO20022",
+          messageType: "sese.023",
+          label: "Securities Settlement Instruction",
+        },
       ],
     },
   },
@@ -361,7 +382,8 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "DER",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/DER/RateDerivatives/IRDerivatives/InterestRateDerivative",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/DER/RateDerivatives/IRDerivatives/InterestRateDerivative",
         fiboLabel: "Interest Rate Derivative",
         skosMatch: "exactMatch",
       },
@@ -408,7 +430,8 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "FBC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/ForeignExchange",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/MarketsAndExchanges/ForeignExchange",
         fiboLabel: "Foreign Exchange",
         skosMatch: "broadMatch",
       },
@@ -444,7 +467,8 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
     dcamAlignment: {
       conceptual: {
         fiboModule: "SEC",
-        fiboIri: "https://spec.edmcouncil.org/fibo/ontology/SEC/Securities/SecuritiesFinancing/RepurchaseAgreement",
+        fiboIri:
+          "https://spec.edmcouncil.org/fibo/ontology/SEC/Securities/SecuritiesFinancing/RepurchaseAgreement",
         fiboLabel: "Repurchase Agreement",
         skosMatch: "broadMatch",
         notes: "broadMatch — code also covers stock lending",
@@ -464,7 +488,11 @@ export const PRODUCT_SCOPE: ReadonlyArray<ProductScopeNode> = [
         },
       ],
       physical: [
-        { standard: "ISO20022", messageType: "sese.023", label: "Securities Settlement Instruction" },
+        {
+          standard: "ISO20022",
+          messageType: "sese.023",
+          label: "Securities Settlement Instruction",
+        },
         {
           standard: "ISO20022",
           messageType: "auth.001",
