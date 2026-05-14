@@ -107,6 +107,8 @@ Noa's intranet surfaces data from all governance agents (Helena, Zara, Camille, 
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Typed UI events** — `IntranetFeatureShipped`, `DesignReviewComplete`, `UXFindingRaised` events are not yet in the event-type registry. Noa's outputs currently land as markdown deliverables only. Owner: Atlas (event-type registry extension).
 - **Autonomous UI build pipeline** — Noa's component PRs currently require Scrooge-coordinated in-session runs. A CI-integrated Storybook + visual-regression harness is needed for autonomous release gating. Owner: Atlas / Devon.
 - **Design-token store** — no versioned design-token registry exists yet. Noa operates from inline Tailwind/CSS conventions until the token store lands. Owner: Noa (to spec) + Atlas (to implement).
@@ -116,3 +118,4 @@ Noa's intranet surfaces data from all governance agents (Helena, Zara, Camille, 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v1.0 | 2026-05-12 | Nolan | Initial agent-spec authorship following PAX role brief. |
+| v1.1 | 2026-05-14 | Noa (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

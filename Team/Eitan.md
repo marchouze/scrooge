@@ -139,6 +139,8 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Auto-generated ALCO pack** — not yet built. ALCO pack currently authored against the cycle template; gap captured. Owner: Atlas + Anya + Eitan.
 - **Intraday liquidity watch (live)** — partial. Settlement-account watch exists; intraday HQLA-stress projection is not live. Owner: Ravi + Tomas + Anya.
 - **ALM engine** — under build by Ravi. Until live, daily ALM run is a manually-orchestrated query. Owner: Ravi + Atlas.
@@ -154,3 +156,4 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 |---|---|---|---|
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from Treasurer hire confirmation. |
 | v1.0 | 2026-05-07 | Eitan (via Scrooge) | Upgraded to agent operating spec under Principle 6; sections 6–17 added; sections 1–5 preserved. |
+| v1.1 | 2026-05-14 | Eitan (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

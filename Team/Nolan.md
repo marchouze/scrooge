@@ -119,10 +119,12 @@ Nolan's specs are themselves consumed by Atlas's agent-runtime registration (pla
 
 ## 16. Substrate gaps (current state)
 
-- **`AgentRegistered` event type** — not yet defined in `prototype/platform/event-store/event-types.ts`. Sade's AgentOps mandate covers agent registration / retirement / capability assignment, but the typed schema for `AgentRegistered` is not yet authored. Today, hires are committed by `/Team/<Name>.md` write + CLAUDE.md edit; the event is implied, not emitted. Owner: Sade (AgentOps schema) + Atlas (event-store). Target: Step 2 of Principle-7 rollout.
+> Reviewed 2026-05-14.
+
+- **`AgentRegistered` event type** — typed schema exists in the agent-runtime module (A1 landed 2026-05-07); hires now committed by `/Team/<Name>.md` write + registry event. Schema is live.
 - **`Procedures/by-policy/persona-recruitment.md`** — does not yet exist. Today the recruitment flow is encoded only in CLAUDE.md operating procedures. Owner: Nolan + Owen (procedure-index). Target: M1.
 - **Spec-integrity pipeline (Vera Wave-4 #10)** — planned. Until live, persona-spec correctness is asserted by hand. Owner: Vera. Target: post-runtime.
-- **Agent-runtime registration handoff to Atlas** — agent-runtime substrate not yet built; no typed identity is issued at hire-time today. Owner: Atlas. Target: Step 2 of Principle-7 rollout.
+- **Agent-runtime registration handoff** — registry + identity module live (A1 landed). Typed identities now issued at hire-time via `bun run agent-runtime:bootstrap`. Closed.
 - **Hiring-pipeline status report** — not yet automated; produced in-session via Scrooge.
 
 ## 17. Change log
@@ -131,3 +133,4 @@ Nolan's specs are themselves consumed by Atlas's agent-runtime registration (pla
 |---|---|---|---|
 | v0.1 | 2026-05-04 | Scrooge | Initial character sheet at team bootstrap. |
 | v1.0 | 2026-05-07 | Nolan (via Scrooge) | Initial agent-spec authorship; upgraded from character-sheet form per CEO directive 2026-05-07. House style restated as the canonical agent-spec template. |
+| v1.1 | 2026-05-14 | Nolan (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note; AgentRegistered schema live + registration handoff closed noted. |

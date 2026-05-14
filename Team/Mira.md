@@ -130,11 +130,13 @@ Mira drafts STR / CTR filings; Zara as MLRO signs. The drafter / signer split is
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Case-management substrate** — STR / CTR draft pipeline and MLRO sign-off UI not built. Currently, alert dispositions are simulated through Owner Inbox notes when Mira runs in-session via Scrooge. Owner: Atlas (substrate) + Mira (case-management domain). Target: M1.
 - **Transaction-monitoring typologies** — only the framework exists; no typology pipelines deployed. Owner: Mira. Target: rolling, with first 3 typologies at M1.
 - **PEP + adverse-media feeds** — vendor selection pending. Owner: Mira (selection) + Senna (third-party-risk gating). Target: pre-licence.
 - **Continuous-KYC orchestration** — designed in `Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md` but not deployed. Owner: Mira + Atlas. Target: M1.
-- **Agent-runtime substrate** — Mira's continuous pipelines depend on Atlas's scheduler + event-trigger bus to run autonomously. Until Step 2 of the Principle-7 rollout lands, Mira runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Mira's screening / monitoring event-triggered runs still route via Scrooge until the bus lands. Owner: Atlas.
 
 ## 17. Change log
 
@@ -142,4 +144,5 @@ Mira drafts STR / CTR filings; Zara as MLRO signs. The drafter / signer split is
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Mira (via Scrooge) | Upgraded to agent operating spec under Principle 6. Reports-to corrected to Zara (CCO) per top-of-house structure. |
-| v1.1 | 2026-05-08 | Mira | Added `mira:m1-regulator-citation-urns` event-driven handler under D-MARKETS-SCHEMA-FOUNDATION (markets-foundation proposal §8 + brief 2026-05-07). Registers the M1 regulator-citation URN tranche (market-infrastructure / OTC anchors / accounting / prudential / operational+cyber / AML+privacy / reporting). Emits `ObligationRegistered` + `M1CitationTrancheRegistered`. Trigger row added to §7; deliverable + event types added to §11; change log entry here. |
+| v1.1 | 2026-05-08 | Mira | Added `mira:m1-regulator-citation-urns` event-driven handler under D-MARKETS-SCHEMA-FOUNDATION. Emits `ObligationRegistered` + `M1CitationTrancheRegistered`. |
+| v1.2 | 2026-05-14 | Mira (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

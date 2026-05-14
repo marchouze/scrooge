@@ -137,6 +137,8 @@ Niko's incentive-design touches Sade's rep-register and Helena's material-risk-t
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14. Niko's seat remains paused until licence-day.
+
 **Niko's seat is paused.** The substrate gaps are seat-wide; nothing in this list is operational during build.
 
 - **Live CRM** — pattern-research only; vendor-vs-build decision deferred to licence-day. Owner: Niko + Camille (cost) + Devon. Target: pre-licence.
@@ -146,7 +148,7 @@ Niko's incentive-design touches Sade's rep-register and Helena's material-risk-t
 - **FAIS rep-register (human side)** — paused with Sade's HR slice; activates at licence-day. Owner: Niko + Sade + Mira.
 - **Onboarding hand-off pipeline to Mira** — designed in `Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md`; not deployed. Owner: Niko + Mira + Atlas. Target: licence-day-1.
 - **Lead-to-client lifecycle** — entire lifecycle paused until licence-day; soft-franchise pipeline (with Saskia) is the only live activity, structured-artefact only.
-- **Agent-runtime substrate** — Niko's pipelines depend on Atlas's scheduler + event-trigger bus. Until Step 2 of the Principle-7 rollout lands, the (small) build-phase soft-franchise contribution runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Niko's seat is paused; when it activates at licence-day, event-trigger bus will need to be live. Owner: Atlas.
 
 ## 17. Change log
 
@@ -156,3 +158,4 @@ Niko's incentive-design touches Sade's rep-register and Helena's material-risk-t
 | v0.5 | 2026-05-07 | Niko (via Scrooge) | Build-phase pause documented; soft-franchise contribution scoped; partial agent-spec sketch added. |
 | v1.0 | 2026-05-07 | Niko (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained (paused-status note preserved); Sections 6–17 expanded substantively with explicit "activates at licence-day" markers throughout. Reports-to clarified as Devon (COO) per top-of-house structure. |
 | v1.1 | 2026-05-07 | Niko (via Scrooge) | Advice-record substrate v0 and suitability-questionnaire library v0 landed at `prototype/platform/sales/_advice-record.md` and `prototype/platform/sales/_suitability-questionnaire.md` (with JSON schemas). Procedure `fais-advice-record-capture.md` populated as keystone of Niko's first end-to-end Reg→Policy→Procedure→Capability chain (PROC-CRM-FA-01) — operationally paused (FSP-conditional), activates at licence-day. Two stub policies (FAIS Policy; Customer Treatment) bundled at `Owner Inbox/2026-05-07_niko_conduct-policies-bundle-v0.md`. Substrate Gap §2 (suitability engine) and §3 (advice-record store) status update: schemas + skeletons live; live engines still planned for pre-licence. |
+| v1.2 | 2026-05-14 | Niko (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note; paused-seat status confirmed. |

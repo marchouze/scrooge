@@ -126,15 +126,18 @@ Active conflicts register entries (as of 2026-05-07): nil — Linnea is a new se
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Brand-asset library substrate** — `prototype/brand/` does not yet exist; the asset library is currently a deliverable in `/Owner Inbox/` and a roadmap item for Atlas's M8 cloud-lift. Owner: Atlas (substrate) + Linnea (domain). Target: M8.
 - **Typed brand events** — `BrandAssetPublished`, `BrandReviewCompleted`, `NamingShortlistProposed` are not yet in `prototype/platform/event-store/event-types.ts` or `registry.ts`. Owner: Atlas (next substrate slice). Target: alongside Wave-4 #14 (`AgentEscalation`).
 - **SVG render and font-licensing pipeline** — manual today; logo SVGs and font-license attestations are produced as plain artefacts in Linnea's deliverables. Owner: Linnea (domain) + Atlas (substrate). Target: post-M8.
 - **Naming pre-clearance pipeline** — no automated CIPC / Trade Marks / .za domain check; signals are based on Linnea's market knowledge and Imani's manual pre-clearance review. Owner: Imani + Linnea. Target: pre-licence-day (the bank-name decision blocks on Imani's manual pre-clearance regardless).
 - **Brand-review pipeline** — weekly sweep is currently a Linnea-coordinated in-session run; Vera's `@platform/recon/*` substrate has no brand-review pipeline. Owner: Linnea + Vera (eventual continuous-controls assurance over brand reviews). Target: post-M2.
-- **Agent-runtime substrate** — Linnea's continuous and scheduled runs depend on Atlas's scheduler + event-trigger bus to run autonomously. Until Step 2 of the Principle-7 rollout lands, Linnea runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Linnea's weekly brand-sweep operates; event-triggered brand-review pipeline not yet wired. Owner: Atlas.
 
 ## 17. Change log
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v1.0 | 2026-05-07 | Nolan (as recruiter) | Initial agent-spec authorship; first hire under the persona-spec-default-rule established 2026-05-07 (memory: `feedback_persona_agent_spec_default.md`). Reports-to: Devon (COO) per the PAX role brief recommendation locked in `Owner Inbox/2026-05-07_ceo-decision_brand-design-hire.md`. |
+| v1.1 | 2026-05-14 | Linnea (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

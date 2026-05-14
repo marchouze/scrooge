@@ -124,9 +124,11 @@ Active conflicts register entries (as of 2026-05-07):
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Opinion-pack generator** — not yet built; quarterly opinion-pack is pure-function-ready but rendering is manual. Owner: Vera. Target: ~6 weeks (co-timed with M2).
 - **SSE / push notifications on red pipelines** — dashboard polls the registry; pipelines surface at next poll. Owner: Atlas (substrate). Target: agent-runtime substrate phase.
-- **Agent-runtime substrate** — Wave-4 pipelines #14, #15 are gated on `AgentEscalation` and `AgentDecision` events existing. Owner: Atlas. Target: Step 2 of the Principle-7 rollout.
+- **Agent-runtime substrate** — scheduler is live; Wave-4 pipelines #14, #15 are gated on `AgentEscalation` and `AgentDecision` event types, which are now defined. Full pipeline wiring awaits event-trigger bus. Owner: Atlas.
 - **Conflict-of-interest auto-detection** — conflicts register is curated, not generated. Defer until the conflict surface is large enough to merit pipeline support.
 
 ## 17. Change log
@@ -135,3 +137,4 @@ Active conflicts register entries (as of 2026-05-07):
 |---|---|---|---|
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Vera (via Scrooge) | Upgraded to agent operating spec under Principle 6. Sections 1–5 retained from v0.1; Sections 6–17 added. |
+| v1.1 | 2026-05-14 | Vera (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note; stale "Step 2 of Principle-7 rollout" language replaced with current agent-runtime status. |

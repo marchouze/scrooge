@@ -133,6 +133,8 @@ Vera (third line) tests Senna's substrate via Wave-1 / Wave-3 pipelines; Senna d
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **HSM substrate** — not yet built. Cryptographic key custody runs against placeholder keys in the local-build phase; production keys and HSM ceremonies are licence-day capabilities. Owner: Senna (design) + Atlas (substrate). Target: pre-licence cloud-lift phase.
 - **Detection pipeline (SIEM / EDR / XDR)** — not yet built. Synthetic flows only today. Owner: Senna. Target: pre-licence.
 - **SOAR orchestrator** — not yet built. Incident response is procedural via `incident-response.md`. Owner: Senna. Target: pre-licence.
@@ -149,3 +151,4 @@ Vera (third line) tests Senna's substrate via Wave-1 / Wave-3 pipelines; Senna d
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Senna (via Scrooge) | Initial agent-spec authorship; upgraded from character-sheet form per CEO directive 2026-05-07. Reports-to corrected to Rashida (CISO) per top-of-house structure. |
 | v1.1 | 2026-05-08 | Senna | Added §11 entries for `ThreatModelDimensionRegistered` / `SecurityGateRegistered` events and the M1 trading-stack threat-model deliverable, on landing `runtime/agents/senna-m1-trading-stack-threat-model.ts` per `Team Inbox/2026-05-07_brief_senna_m1-trading-stack-threat-model.md`. Authority: D-MARKETS-SCHEMA-FOUNDATION; Joint Standard 2 of 2024; POPIA s.19–22; CLAUDE.md Principle 4. |
+| v1.2 | 2026-05-14 | Senna (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

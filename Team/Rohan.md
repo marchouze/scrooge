@@ -133,6 +133,8 @@ Rohan's model outputs are consumed by Vera's continuous-controls assurance pipel
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **No real positions yet.** Per CLAUDE.md "build phase vs licence-day": no real customers, no real trading. Build-phase work runs against synthetic positions to validate the risk substrate end-to-end. Real risk computation begins at licence-day.
 - **ECL engine not yet substrate.** IFRS 9 staging logic prototyped; PD / LGD / EAD models in design; no production engine yet. Owner: Rohan + Bea. Target: pre-licence go-live readiness gate.
 - **Risk engine modules** — market / credit / liquidity / operational all in build-only against synthetic positions. Owner: Rohan. Target: pre-licence.
@@ -149,3 +151,4 @@ Rohan's model outputs are consumed by Vera's continuous-controls assurance pipel
 | v0.1 | 2026-05-05 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Rohan (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Helena (CRO) per top-of-house structure. |
 | v1.1 | 2026-05-07 | Rohan (via Scrooge) | Risk taxonomy v0 and model registry v0 substrates landed at `prototype/platform/risk/_risk-taxonomy.md` and `prototype/platform/risk/_model-registry.md` (with JSON schemas). Procedure `ecl-stage-projection-refresh.md` populated as keystone of Rohan's first end-to-end Reg→RAS+Policy→Procedure→Capability chain (PROC-RSK-EC-01). One stub policy (Provisioning / IFRS 9 ECL) bundled at `Owner Inbox/2026-05-07_rohan_risk-policies-bundle-v0.md`; RAS reused unchanged. Substrate Gap §8 (model registry) status update: registry substrate live; M2-grade typed-file form still planned. |
+| v1.2 | 2026-05-14 | Rohan (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |

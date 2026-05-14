@@ -134,13 +134,15 @@ The MLRO sign-off discipline is preserved by `case-management` permissioning —
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Live SAMOS connectivity** — synthetic only. Owner: Tomas (domain) + Atlas (substrate). Target: licence-day; pre-licence end-to-end rehearsal under Saskia's go-live readiness gate.
 - **Live BankservAfrica connectivity** — synthetic only. Owner: Tomas + Atlas. Target: licence-day.
 - **Live SWIFT BIC + CSP onboarding** — application not yet lodged. Owner: Tomas + Senna (CSP). Target: pre-licence.
 - **Live Strate participant-onboarding** — synthetic only. Owner: Tomas + Saskia (markets seam). Target: pre-licence; **note 1 March 2027 Strate Trade Repository cutover under Joint Notice 2 of 2024 — Kai's reportable-trades feed lands on Strate, Tomas's settlement-side connectivity must be live by the same date.**
 - **Cut-off engine — multi-jurisdictional calendar** — single-SA-calendar today; P5 multi-jurisdiction extension is design-only. Owner: Tomas. Target: post-second-jurisdiction.
 - **Reconciliation harness — full multi-leg coverage** — partial; trade-leg ↔ payment-leg ↔ ledger-leg three-way recon designed, not deployed. Owner: Tomas + Bea + Anya. Target: M1.
-- **Agent-runtime substrate** — Tomas's continuous pipelines depend on Atlas's scheduler + event-trigger bus. Until Step 2 of the Principle-7 rollout lands, Tomas runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Tomas's scheduled cut-off rehearsals and scheme-cycle reconciliation operate; event-triggered payment instructions still route via Scrooge until the bus lands. Owner: Atlas.
 
 ## 17. Change log
 
@@ -150,4 +152,5 @@ The MLRO sign-off discipline is preserved by `case-management` permissioning —
 | v0.5 | 2026-05-07 | Tomas (via Scrooge) | Partial agent-spec sketch added under Principle 6. |
 | v1.0 | 2026-05-07 | Tomas (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained; Sections 6–17 expanded substantively. Reports-to corrected to Devon (COO) per top-of-house structure. |
 | v1.1 | 2026-05-07 | Tomas (via Scrooge) | ISO 20022 message catalogue v0 and sponsor-bank operating-model v0 substrates landed at `prototype/platform/payments/_iso-20022-message-catalogue.md` and `prototype/platform/payments/_sponsor-bank-operating-model.md` (with JSON schemas). Procedure `outbound-payment-sponsor-bank-channel.md` populated as keystone of Tomas's first end-to-end Reg→Policy→Procedure→Capability chain (PROC-OPS-PS-01) — indirect-participant posture is structural. Two new stub policies (Payments Policy; Sponsor-Bank Operating Policy) bundled at `Owner Inbox/2026-05-07_tomas_payments-policies-bundle-v0.md`; both new to register. Outstanding: Mira to register Domain N — Payment systems with ORG-PS-* IDs; Saskia + Eitan to open the sponsor-selection CEO decision card. |
-| v1.2 | 2026-05-09 | Tomas (via Scrooge) | Vera Wave-4 #10 cross-link recon (PR #117 / commit `70913cd`) closure — 9 findings remediated. § 12 capability bullets (`@platform/payments/{samos,bankserv,swift,strate,cls}-connector`, `@platform/payments/calendar-engine`, `@platform/payments/reconciliation`, `@platform/screening/sanctions.ts`) annotated with explicit `(planned)` markers and gating context (D-LICENCE-TYPE, indirect-participant posture, M1 substrate target, 1 March 2027 Strate cutover). § 13 `Procedures/by-policy/strate-settlement.md` bullet annotated `(planned)` with cross-reference to populated `trade-reporting-strate.md` (Kai's trade-reporting side). All build-phase synthetic substrate is now properly marked as planned rather than implied by prose. Substantive content unchanged — this is a discipline-of-marker upgrade, not a mandate change. |
+| v1.2 | 2026-05-09 | Tomas (via Scrooge) | Vera Wave-4 #10 cross-link recon (PR #117 / commit `70913cd`) closure — 9 findings remediated. § 12 capability bullets annotated with explicit `(planned)` markers. All build-phase synthetic substrate now properly marked. |
+| v1.3 | 2026-05-14 | Tomas (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |
