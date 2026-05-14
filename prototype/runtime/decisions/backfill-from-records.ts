@@ -27,10 +27,7 @@ import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import type { CeoDecisionEventSummary } from "../../dashboard/derive";
-import {
-  synthesizeCeoDecisionsFromOwnerInboxFrontmatter,
-  synthesizeCeoDecisionsFromRecords,
-} from "../../dashboard/derive";
+import { synthesizeCeoDecisionsFromRecords } from "../../dashboard/derive";
 import { newEventId } from "../../platform/core/types";
 import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
 import type { EventStore } from "../../platform/event-store/store";
@@ -86,24 +83,13 @@ export function backfillCeoDecisionsFromRecords(
   ownerInboxDir: string,
   eventStore: EventStore,
 ): BackfillResult {
-  // Gather candidates from both sources:
-  //   1. `*_ceo-decision-record_*.md` files (existing path).
-  //   2. All other Owner Inbox `.md` files with `decision-id` or
-  //      `maps-to-decision-id` + `decision-required: false` frontmatter
-  //      (new path — covers the ~27 "ghost" records the symmetry recon warned about).
-  const fromRecords = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
-  const fromFrontmatter = synthesizeCeoDecisionsFromOwnerInboxFrontmatter(ownerInboxDir);
-
-  // Combine all candidates. For a given decisionId there may be multiple
-  // asOf stamps (re-actions). `synthesizeCeoDecisionsFromRecords` emits one
-  // entry per (id, asOf) tuple; `synthesizeCeoDecisionsFromOwnerInboxFrontmatter`
-  // keeps only the latest asOf per id. Each (id, asOf) pair is checked
-  // against the live store's dedup key before writing.
-  // Decision-record files carry richer metadata (explicit Action, Outcome,
-  // Actor lines) so they are appended last; the dedup key comparison means
-  // if both paths produce the same (id, asOf) pair, the record-file version
-  // lands and the frontmatter version is skipped as already-present.
-  const allCandidates: CeoDecisionEventSummary[] = [...fromFrontmatter, ...fromRecords];
+  // Only canonical decision-record files (`*_ceo-decision-record_*.md`) are
+  // used as backfill candidates. Frontmatter-scanning of informational
+  // deliverables was removed: a D-XXX code in a body or frontmatter field
+  // of a `decision-required: false` file is a cross-reference, not a decision,
+  // and the heuristic produced false positives. Proper decisions are recorded
+  // via recordDelegatedDecision (scrooge:session-delegation).
+  const allCandidates: CeoDecisionEventSummary[] = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
 
   const existing = existingDecisionKeys(eventStore);
   const emitted: string[] = [];
