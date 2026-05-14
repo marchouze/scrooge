@@ -940,8 +940,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source:
-      "platform/agents/performance-evaluator.ts; platform/agents/performance-runner.ts",
+    source: "platform/agents/performance-evaluator.ts; platform/agents/performance-runner.ts",
   },
   {
     // TODO: once Mira's event-types/performance.ts PR lands, replace

@@ -193,9 +193,13 @@ function buildNarrative(
     qualityMetrics.worktreeViolations === 0 &&
     qualityMetrics.auditFindingsRaised === 0
   ) {
-    strengths.push("Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline.");
+    strengths.push(
+      "Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline.",
+    );
   } else if (qualityMetrics.ciViolations === 0 && qualityMetrics.worktreeViolations === 0) {
-    strengths.push("Zero CI violations and worktree isolation violations — process hygiene maintained.");
+    strengths.push(
+      "Zero CI violations and worktree isolation violations — process hygiene maintained.",
+    );
   }
   if (strategicMetrics.decisionsAdvanced.length >= 2) {
     strengths.push(
@@ -217,7 +221,9 @@ function buildNarrative(
     );
   }
   if (strengths.length === 0) {
-    strengths.push("No standout strengths recorded for this period — baseline performance observed.");
+    strengths.push(
+      "No standout strengths recorded for this period — baseline performance observed.",
+    );
   }
 
   // Areas for improvement
@@ -347,7 +353,11 @@ function collectRunMetrics(agentId: string, evaluationPeriod: string): RunMetric
 
   const totalCompleted = runsDelivered + runsBlocked + runsFailed;
   const deliveryRate =
-    runsStarted === 0 ? 0 : totalCompleted === 0 ? 0 : runsDelivered / Math.max(runsStarted, totalCompleted);
+    runsStarted === 0
+      ? 0
+      : totalCompleted === 0
+        ? 0
+        : runsDelivered / Math.max(runsStarted, totalCompleted);
 
   return { runsStarted, runsDelivered, runsBlocked, runsFailed, deliveryRate };
 }
@@ -446,7 +456,11 @@ function collectStrategicMetrics(agentId: string, evaluationPeriod: string): Str
         // followOnRoutes with kind "code-pr" count as PRs merged (best-effort proxy)
         const followOn = Array.isArray(p.followOnRoutes) ? p.followOnRoutes : [];
         for (const r of followOn) {
-          if (typeof r === "object" && r !== null && (r as Record<string, unknown>).kind === "code-pr") {
+          if (
+            typeof r === "object" &&
+            r !== null &&
+            (r as Record<string, unknown>).kind === "code-pr"
+          ) {
             prsMerged++;
           }
         }
@@ -488,7 +502,14 @@ export async function evaluateAgent(
 
   const scores: Scores = { delivery, quality, strategic, overall };
   const tier = tierFromOverall(overall);
-  const narrative = buildNarrative(agentId, scores, tier, runMetrics, qualityMetrics, strategicMetrics);
+  const narrative = buildNarrative(
+    agentId,
+    scores,
+    tier,
+    runMetrics,
+    qualityMetrics,
+    strategicMetrics,
+  );
 
   return {
     agentId,

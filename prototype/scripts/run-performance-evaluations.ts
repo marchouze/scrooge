@@ -9,8 +9,8 @@
 //
 // Author: Sade (AgentOps engineer, engineering)
 
-import type { Actor } from "../platform/event-store/types";
 import { runPerformanceEvaluations } from "../platform/agents/performance-runner";
+import type { Actor } from "../platform/event-store/types";
 
 // Resolve evaluation period from CLI args or default to yesterday
 const period = process.argv.includes("--date")
@@ -31,6 +31,4 @@ console.log(`Running performance evaluations for ${period}…`);
 
 const result = await runPerformanceEvaluations(period, actor);
 
-console.log(
-  `Evaluated ${result.evaluated} agents, skipped ${result.skipped} (idempotent).`,
-);
+console.log(`Evaluated ${result.evaluated} agents, skipped ${result.skipped} (idempotent).`);
