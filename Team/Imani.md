@@ -144,6 +144,8 @@ Imani's interim governance home is Devon (COO). At licence-day, when a General C
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Clause-library DSL** — design only; no DSL yet implemented. Active build-phase work. Owner: Imani + Atlas (substrate). Target: M1 (alongside ISDA / GMRA template architecture).
 - **ECTA-execution engine** — design only; cryptographic-signature substrate not yet integrated to platform HSM (Senna's domain). Owner: Imani + Senna + Atlas. Target: pre-licence.
 - **CLM platform** — pattern-research only; vendor-vs-build decision pending. Owner: Imani + Camille (cost) + Devon. Target: pre-licence.
@@ -152,7 +154,7 @@ Imani's interim governance home is Devon (COO). At licence-day, when a General C
 - **Customer-facing terms** — paused until licence-day.
 - **Employment-contracts / disciplinary-records substrate** — paused until licence-day (Sade's HR slice activates concurrently).
 - **Live signed counterparty agreements** — paused until licence-day; soft-franchise negotiations-in-principle structured artefacts only.
-- **Agent-runtime substrate** — Imani's continuous pipelines depend on Atlas's scheduler + event-trigger bus. Until Step 2 of the Principle-7 rollout lands, Imani runs via Scrooge.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Imani's scheduled pipelines operate; event-triggered runs still route via Scrooge until the bus lands. Owner: Atlas. Target: event-trigger bus before next release.
 
 ## 17. Change log
 
@@ -162,3 +164,4 @@ Imani's interim governance home is Devon (COO). At licence-day, when a General C
 | v0.5 | 2026-05-07 | Imani (via Scrooge) | Partial agent-spec sketch added under Principle 6; build-phase scope split (active vs paused) introduced. |
 | v1.0 | 2026-05-07 | Imani (via Scrooge) | Upgraded to canonical agent operating spec per CEO directive 2026-05-07. Sections 1–5 retained (build-phase scope split preserved verbatim); Sections 6–17 expanded substantively. Reports-to clarified as Devon (COO) interim until General Counsel hired. |
 | v1.1 | 2026-05-07 | Imani (via Scrooge) | Clause library v0 and legal-entity tree v0 substrates landed at `prototype/platform/legal/_clause-library.md` and `prototype/platform/legal/_legal-entity-tree.md` (with JSON schemas). Procedure `counterparty-governing-law-clause-adoption.md` populated as keystone of first end-to-end Reg→Policy→Procedure→Capability chain demonstration. Two stub policies (Contracting; Document Execution) bundled at `Owner Inbox/2026-05-07_imani_legal-policies-bundle-v0.md`. Substrate Gap §1 (clause-library DSL) status updated: markdown+schema substrate live; DSL still planned for M1. Substrate Gap §4 (legal-entity tree as live registry) status updated: markdown+schema substrate live; query API still planned for M1. |
+| v1.2 | 2026-05-14 | Imani (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

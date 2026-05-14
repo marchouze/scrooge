@@ -142,13 +142,15 @@ POPIA co-governance with Zara (RMCP / FIC seam) and with Rashida (s.19–22 secu
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Lawful-processing-register substrate** — canonical authoring location is co-located with `Regulations/_obligations-register.md` POPIA entries plus an Iris-curated purpose register; dedicated UI / pipeline not yet built. Owner: Iris (specification) + Anya (substrate). Target: pre-licence.
 - **DSAR pipeline** — partial; identity-verification step and downstream-projection-walk are scripted but not productised. The s.22 breach clock is tracked manually. Owner: Anya + Niko + Senna. Target: pre-licence.
 - **Automated breach-notification workflow** — Senna's IR pipeline emits the trigger; the s.22 statutory clock and notification dispatch is not yet productised. Owner: Senna + Iris (specification). Target: pre-licence.
 - **Consent-withdrawal-propagation projection** — Anya-spec'd; not yet built. Withdrawals currently propagate via manual ticket. Owner: Anya. Target: pre-licence.
 - **Cross-border-transfer gate** — vendor / outsourcing pipeline (Imani) does not yet pause for Iris's adequacy sign-off as a typed gate. Owner: Imani + Iris. Target: pre-licence.
 - **PAIA-manual generator** — current PAIA manual is authored, not generated. Owner: Owen + Iris. Target: pre-licence.
-- **Agent-runtime substrate** — Iris's continuous DSAR / breach / consent handling depends on the runtime scheduler + event-trigger bus (now partly built per `/prototype/runtime/`); residual gap is the sealed-channel partition for s.22 notifications that may carry tipping-off-adjacent sensitivity. Owner: Atlas + Senna.
+- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Iris's continuous DSAR / breach / consent handling routes via Scrooge until the bus lands; residual gap is the sealed-channel partition for s.22 notifications. Owner: Atlas + Senna.
 
 ## 17. Change log
 
@@ -158,3 +160,4 @@ POPIA co-governance with Zara (RMCP / FIC seam) and with Rashida (s.19–22 secu
 | v0.2 | 2026-05-07 | Iris (via Scrooge) | Operating-spec stub added under Principle 6. |
 | v1.0 | 2026-05-07 | Iris (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated per CEO directive 2026-05-07. |
 | v1.1 | 2026-05-09 | Iris (via Scrooge) | Vera Wave-4 #10 cross-link recon closure: §12 capability bullets annotated with `(planned)` / `[substrate-gap: ...]` markers (6 findings); §13 adds landed `popia-io-designation.md` (PR #91, PROC-PRIV-IO-DSG-01); §11 references authored briefs. |
+| v1.2 | 2026-05-14 | Iris (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |

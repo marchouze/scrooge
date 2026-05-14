@@ -144,6 +144,8 @@ Saskia is the first-line executive for sales and trading; Helena (CRO, second li
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-14.
+
 - **Institutional-markets-sales engineering counterpart** — vacant; flagged for PAX / Nolan as the franchise's needs concretise. Owner: Scrooge (route) + PAX / Nolan (recruit).
 - **OMS / EMS substrate** — under build by Kai. Until live, booking-and-state queries are point-in-time. Owner: Kai + Atlas.
 - **Surveillance substrate** — under build by Mira. Voice / e-comms ingest pipelines are partial. Owner: Mira + Atlas.
@@ -161,3 +163,4 @@ Saskia is the first-line executive for sales and trading; Helena (CRO, second li
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from Head of Global Markets hire confirmation. |
 | v0.5 | 2026-05-07 | Saskia (via Scrooge) | Added agent operating spec under Principle 6 (initial). |
 | v1.0 | 2026-05-07 | Saskia (via Scrooge) | Reformatted to canonical agent-spec template; sections 6–17 normalised; sections 1–5 preserved; named Strate / JSE connectivity as substrate gap. |
+| v1.1 | 2026-05-14 | Saskia (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
