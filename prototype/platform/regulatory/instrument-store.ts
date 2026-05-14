@@ -11,10 +11,10 @@
 // D-REGULATORY-HORIZON-SCANNING — Anya (Data / analytics engineer, engineering).
 // Author: Anya (Data / analytics engineer, engineering)
 
-import { newEventId } from "../core/types";
-import type { DocumentHash } from "../document-store/types";
-import { defaultDocumentStore } from "../document-store/local-fs";
 import { eventStore } from "../composition";
+import { newEventId } from "../core/types";
+import { defaultDocumentStore } from "../document-store/local-fs";
+import type { DocumentHash } from "../document-store/types";
 import type { Actor, Event } from "../event-store/types";
 
 // ---------------------------------------------------------------------------
@@ -171,12 +171,12 @@ export class RegulatoryInstrumentStore {
 
     for (const event of eventStore.replay({})) {
       if (event.type === "RegulatoryInstrumentRegistered") {
-        const p = event.payload as RegulatoryInstrumentRegisteredPayload;
+        const p = event.payload as unknown as RegulatoryInstrumentRegisteredPayload;
         if (p.instrumentId === instrumentId) {
           latestHash = p.contentHash;
         }
       } else if (event.type === "RegulatoryInstrumentAmended") {
-        const p = event.payload as RegulatoryInstrumentAmendedPayload;
+        const p = event.payload as unknown as RegulatoryInstrumentAmendedPayload;
         if (p.instrumentId === instrumentId) {
           latestHash = p.contentHash;
         }
