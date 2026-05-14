@@ -11,7 +11,7 @@ Audit record of a CEO-stated decision routed through Scrooge's chat-intake. The 
 
 - **Decision ID:** `D-THIN-HUMAN-LAYER-MINIMUM`
 - **Title:** Thin human layer — minimum-possible composition under SA banking law
-- **Action:** modify
+- **Action:** approve
 - **Outcome:** Approved with modification: tighten Owen+Imani's drafted composition from 5 to 6 separate humans + Marc + external audit firm. Add a separate human CRO before licence-application lodgment, per Mira+Zara's Joint Standard 1 of 2024 challenge (interim-CRO-as-CEO is a structural finding under JS 1 of 2024, not just SARB precedent). Other Owen+Imani recommendations stand: 3 NEDs (one as Chair + AC Chair + S&E NED; the other two as AC members); separate Company Secretary; triple-hatted compliance lead (MLRO + FIC CO + POPIA IO). Additional refinements from Mira+Zara accepted: alternate split (deputy-IO = CoSec; MLRO-alternate = AC-Chair NED, not double-hatted CoSec); FAIS KI (Saskia steady-state, Marc-interim acceptable until external counsel confirms FSP licensing scope).
 - **Actor:** `marc@tgv.co.za`
 - **Comment:** Add another human for CRO. Adopt Mira+Zara's JS-1 challenge over Owen+Imani's interim-CRO-as-CEO draft.
