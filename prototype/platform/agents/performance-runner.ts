@@ -97,7 +97,7 @@ export async function runPerformanceEvaluations(
       entity: "LE-ZA-HOZ-BANK",
       actor,
       citations: ["D-AGENT-AUTONOMY-OPERATIONAL"],
-      payload: result as unknown as Record<string, unknown>,
+      payload: { ...result, evaluatedBy: actor.id } as unknown as Record<string, unknown>,
     };
     eventStore.append(evalEvent);
 
