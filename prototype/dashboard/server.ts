@@ -96,6 +96,7 @@ import {
 } from "./page-provenance";
 import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 import { getProceduresIndex } from "./procedures-index";
+import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import { saveState } from "./registry";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import {
