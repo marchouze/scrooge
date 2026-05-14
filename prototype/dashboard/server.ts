@@ -95,6 +95,7 @@ import {
   substrateGapsPageProvenance,
 } from "./page-provenance";
 import { getProceduresIndex } from "./procedures-index";
+import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import { saveState } from "./registry";
 import {
   RMS_REGISTER_KEYS,
@@ -1151,6 +1152,51 @@ const server = Bun.serve({
         sourceCounts: result.sourceCounts,
         totalCount: result.obligations.length,
         data: output,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    // ── Regulatory horizon-scanning endpoints ──────────────────────────────
+    if (url.pathname === "/api/regulatory/instruments" && req.method === "GET") {
+      // Regulatory instrument register — folds the reg-instrument projection
+      // and returns all instruments with extraction stats, regulator metadata,
+      // and concept counts.
+      // Authority: D-REGULATORY-HORIZON-SCANNING (Mira + Atlas).
+      // pageProvenance: event-derived → simulated-only in build phase.
+      return jsonResponse({
+        ...buildRegInstrumentsView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (
+      url.pathname.startsWith("/api/regulatory/instruments/") &&
+      url.pathname.endsWith("/concepts") &&
+      req.method === "GET"
+    ) {
+      // Per-instrument concept list — replays RegulatoryConceptExtracted events
+      // filtered to the requested instrument, sorted and filtered per query params.
+      // Query params:
+      //   ?sort=applicability|relevancy  (default: applicability)
+      //   ?minScore=0.0                  (default: 0)
+      //   ?domain=C-FAIS                 (optional)
+      // Authority: D-REGULATORY-HORIZON-SCANNING (Mira + Atlas).
+      // pageProvenance: event-derived → simulated-only in build phase.
+      const segments = url.pathname.split("/");
+      // pathname: /api/regulatory/instruments/<id>/concepts
+      // segments: ["", "api", "regulatory", "instruments", "<id>", "concepts"]
+      const instrumentId = segments[4];
+      if (!instrumentId) {
+        return jsonResponse({ error: "missing instrumentId" }, 400);
+      }
+      const sortParam = url.searchParams.get("sort") ?? "applicability";
+      const sort =
+        sortParam === "relevancy" ? ("relevancy" as const) : ("applicability" as const);
+      const minScore = Math.max(
+        0,
+        Math.min(1, Number.parseFloat(url.searchParams.get("minScore") ?? "0") || 0),
+      );
+      const domain = url.searchParams.get("domain") ?? undefined;
+      return jsonResponse({
+        ...buildRegConceptsView(eventStore, instrumentId, { sort, minScore, domain }),
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
