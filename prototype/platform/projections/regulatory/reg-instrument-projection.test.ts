@@ -16,7 +16,7 @@ import { regInstrumentProjection } from "./reg-instrument-projection";
 
 function baseEvent(overrides: Partial<Event> = {}): Event {
   return {
-    event_id: `evt-test-${Math.random().toString(36).slice(2)}`,
+    event_id: "evt-test-" + Math.random().toString(36).slice(2),
     type: "RegulatoryInstrumentRegistered",
     as_of: "2026-05-14T00:00:00.000Z",
     entity: "LE-ZA-HOZ-BANK",
@@ -54,13 +54,7 @@ function amendedEvent(
   return baseEvent({
     type: "RegulatoryInstrumentAmended",
     as_of: "2026-06-01T00:00:00.000Z",
-    payload: {
-      instrumentId,
-      previousHash,
-      contentHash,
-      version,
-      amendedAt: "2026-06-01T00:00:00.000Z",
-    },
+    payload: { instrumentId, previousHash, contentHash, version, amendedAt: "2026-06-01T00:00:00.000Z" },
   });
 }
 
@@ -96,7 +90,7 @@ function conceptExtractedEvent(
     type: "RegulatoryConceptExtracted",
     payload: {
       instrumentId,
-      conceptId: `concept-${Math.random().toString(36).slice(2)}`,
+      conceptId: "concept-" + Math.random().toString(36).slice(2),
       applicabilityScore,
       relevancyScore,
     },
@@ -108,8 +102,8 @@ function obligationLinkedEvent(instrumentId: string): Event {
     type: "ObligationConceptLinked",
     payload: {
       instrumentId,
-      obligationId: `obl-${Math.random().toString(36).slice(2)}`,
-      conceptId: `concept-${Math.random().toString(36).slice(2)}`,
+      obligationId: "obl-" + Math.random().toString(36).slice(2),
+      conceptId: "concept-" + Math.random().toString(36).slice(2),
     },
   });
 }
@@ -133,15 +127,15 @@ describe("regInstrumentProjection", () => {
 
       const entry = state.get("BANKS-ACT-94-1990");
       expect(entry).toBeDefined();
-      expect(entry?.instrumentId).toBe("BANKS-ACT-94-1990");
-      expect(entry?.title).toBe("BANKS-ACT-94-1990 Title");
-      expect(entry?.extractionStatus).toBe("pending");
-      expect(entry?.conceptCount).toBe(0);
-      expect(entry?.avgApplicabilityScore).toBe(0);
-      expect(entry?.avgRelevancyScore).toBe(0);
-      expect(entry?.highApplicabilityCount).toBe(0);
-      expect(entry?.highRelevancyCount).toBe(0);
-      expect(entry?.linkedObligationCount).toBe(0);
+      expect(entry!.instrumentId).toBe("BANKS-ACT-94-1990");
+      expect(entry!.title).toBe("BANKS-ACT-94-1990 Title");
+      expect(entry!.extractionStatus).toBe("pending");
+      expect(entry!.conceptCount).toBe(0);
+      expect(entry!.avgApplicabilityScore).toBe(0);
+      expect(entry!.avgRelevancyScore).toBe(0);
+      expect(entry!.highApplicabilityCount).toBe(0);
+      expect(entry!.highRelevancyCount).toBe(0);
+      expect(entry!.linkedObligationCount).toBe(0);
     });
 
     it("sets initial versionHistory entry", () => {
@@ -149,19 +143,21 @@ describe("regInstrumentProjection", () => {
       const state = fold(events);
 
       const entry = state.get("FAIS-ACT-37-2002");
-      expect(entry?.versionHistory).toHaveLength(1);
-      expect(entry?.versionHistory[0]?.version).toBe("1.0");
-      expect(entry?.versionHistory[0]?.contentHash).toBe("blake3:aabbcc");
+      expect(entry!.versionHistory).toHaveLength(1);
+      expect(entry!.versionHistory[0]!.version).toBe("1.0");
+      expect(entry!.versionHistory[0]!.contentHash).toBe("blake3:aabbcc");
     });
 
-    it("folds duplicate registrations with last-event-wins semantics", () => {
-      // Two registrations for the same instrumentId — last-in-fold wins.
+    it("ignores duplicate accepted event for same instrumentId (first-write-wins)", () => {
+      // Second registration overwrites — this is consistent with event-log
+      // ordering (last event wins in the fold).
       const events = [
         registeredEvent("SARB-DIRECTIVE-1", { contentHash: "blake3:first" }),
         registeredEvent("SARB-DIRECTIVE-1", { contentHash: "blake3:second" }),
       ];
       const state = fold(events);
-      expect(state.get("SARB-DIRECTIVE-1")?.currentHash).toBe("blake3:second");
+      // Last event in the fold wins.
+      expect(state.get("SARB-DIRECTIVE-1")!.currentHash).toBe("blake3:second");
     });
   });
 
@@ -175,11 +171,11 @@ describe("regInstrumentProjection", () => {
       const state = fold(events);
       const entry = state.get("BANKS-ACT");
 
-      expect(entry?.conceptCount).toBe(2);
+      expect(entry!.conceptCount).toBe(2);
       // avg applicability = (0.8 + 0.6) / 2 = 0.7
-      expect(entry?.avgApplicabilityScore).toBeCloseTo(0.7, 5);
+      expect(entry!.avgApplicabilityScore).toBeCloseTo(0.7, 5);
       // avg relevancy = (0.6 + 0.9) / 2 = 0.75
-      expect(entry?.avgRelevancyScore).toBeCloseTo(0.75, 5);
+      expect(entry!.avgRelevancyScore).toBeCloseTo(0.75, 5);
     });
 
     it("counts high-applicability and high-relevancy concepts correctly", () => {
@@ -193,14 +189,17 @@ describe("regInstrumentProjection", () => {
       const state = fold(events);
       const entry = state.get("REG-X");
 
-      expect(entry?.highApplicabilityCount).toBe(2); // 0.9 and 0.7
-      expect(entry?.highRelevancyCount).toBe(2); // 0.8 and 0.7
+      expect(entry!.highApplicabilityCount).toBe(2); // 0.9 and 0.7
+      expect(entry!.highRelevancyCount).toBe(2); // 0.8 and 0.7
     });
 
     it("sets extractionStatus to in-progress", () => {
-      const events = [registeredEvent("REG-Y"), conceptExtractedEvent("REG-Y", 0.5, 0.5)];
+      const events = [
+        registeredEvent("REG-Y"),
+        conceptExtractedEvent("REG-Y", 0.5, 0.5),
+      ];
       const state = fold(events);
-      expect(state.get("REG-Y")?.extractionStatus).toBe("in-progress");
+      expect(state.get("REG-Y")!.extractionStatus).toBe("in-progress");
     });
 
     it("drops concept-extracted events before registration", () => {
@@ -219,11 +218,11 @@ describe("regInstrumentProjection", () => {
       const state = fold(events);
       const entry = state.get("BANKS-ACT");
 
-      expect(entry?.currentVersion).toBe("2.0");
-      expect(entry?.currentHash).toBe("blake3:v2");
-      expect(entry?.versionHistory).toHaveLength(2);
-      expect(entry?.versionHistory[1]?.version).toBe("2.0");
-      expect(entry?.versionHistory[1]?.contentHash).toBe("blake3:v2");
+      expect(entry!.currentVersion).toBe("2.0");
+      expect(entry!.currentHash).toBe("blake3:v2");
+      expect(entry!.versionHistory).toHaveLength(2);
+      expect(entry!.versionHistory[1]!.version).toBe("2.0");
+      expect(entry!.versionHistory[1]!.contentHash).toBe("blake3:v2");
     });
 
     it("resets extraction stats on amendment", () => {
@@ -236,12 +235,12 @@ describe("regInstrumentProjection", () => {
       const state = fold(events);
       const entry = state.get("REG-Z");
 
-      expect(entry?.extractionStatus).toBe("pending");
-      expect(entry?.conceptCount).toBe(0);
-      expect(entry?.avgApplicabilityScore).toBe(0);
-      expect(entry?.avgRelevancyScore).toBe(0);
-      expect(entry?.highApplicabilityCount).toBe(0);
-      expect(entry?.highRelevancyCount).toBe(0);
+      expect(entry!.extractionStatus).toBe("pending");
+      expect(entry!.conceptCount).toBe(0);
+      expect(entry!.avgApplicabilityScore).toBe(0);
+      expect(entry!.avgRelevancyScore).toBe(0);
+      expect(entry!.highApplicabilityCount).toBe(0);
+      expect(entry!.highRelevancyCount).toBe(0);
     });
 
     it("drops amendment before registration", () => {
@@ -257,15 +256,15 @@ describe("regInstrumentProjection", () => {
       const state = fold(events);
       const entry = state.get("BANKS-ACT");
 
-      expect(entry?.regulatoryAuthority).toBeDefined();
-      expect(entry?.regulatoryAuthority?.name).toBe("SARB");
-      expect(entry?.regulatoryAuthority?.enforcementPowers).toContain("directive");
+      expect(entry!.regulatoryAuthority).toBeDefined();
+      expect(entry!.regulatoryAuthority!.name).toBe("SARB");
+      expect(entry!.regulatoryAuthority!.enforcementPowers).toContain("directive");
 
-      expect(entry?.regulatoryObjective).toBeDefined();
-      expect(entry?.regulatoryObjective?.primaryObjective).toBe("Sound banking practices");
+      expect(entry!.regulatoryObjective).toBeDefined();
+      expect(entry!.regulatoryObjective!.primaryObjective).toBe("Sound banking practices");
 
-      expect(entry?.internationalAlignment).toBeDefined();
-      expect(entry?.internationalAlignment?.conformsTo).toContain("Basel III");
+      expect(entry!.internationalAlignment).toBeDefined();
+      expect(entry!.internationalAlignment!.conformsTo).toContain("Basel III");
     });
 
     it("drops contextualisation before registration", () => {
@@ -284,7 +283,7 @@ describe("regInstrumentProjection", () => {
         obligationLinkedEvent("BANKS-ACT"),
       ];
       const state = fold(events);
-      expect(state.get("BANKS-ACT")?.linkedObligationCount).toBe(3);
+      expect(state.get("BANKS-ACT")!.linkedObligationCount).toBe(3);
     });
 
     it("drops obligation-linked events before registration", () => {
@@ -307,39 +306,29 @@ describe("regInstrumentProjection", () => {
       ];
       const state = fold(events);
 
-      const a = state.get("INST-A");
-      const b = state.get("INST-B");
+      const a = state.get("INST-A")!;
+      const b = state.get("INST-B")!;
 
       // A has two concepts, one linked obligation, no amendment
-      expect(a?.conceptCount).toBe(2);
-      expect(a?.linkedObligationCount).toBe(1);
-      expect(a?.currentVersion).toBe("1.0");
-      expect(a?.currentHash).toBe("blake3:a1");
+      expect(a.conceptCount).toBe(2);
+      expect(a.linkedObligationCount).toBe(1);
+      expect(a.currentVersion).toBe("1.0");
+      expect(a.currentHash).toBe("blake3:a1");
 
       // B has been amended (resets stats), one concept prior to amendment (reset)
-      expect(b?.conceptCount).toBe(0);
-      expect(b?.extractionStatus).toBe("pending");
-      expect(b?.currentVersion).toBe("2.0");
-      expect(b?.currentHash).toBe("blake3:b2");
-      expect(b?.linkedObligationCount).toBe(0);
+      expect(b.conceptCount).toBe(0);
+      expect(b.extractionStatus).toBe("pending");
+      expect(b.currentVersion).toBe("2.0");
+      expect(b.currentHash).toBe("blake3:b2");
+      expect(b.linkedObligationCount).toBe(0);
     });
 
     it("accepts() filters correctly", () => {
-      expect(
-        regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryInstrumentRegistered" })),
-      ).toBe(true);
-      expect(
-        regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryInstrumentAmended" })),
-      ).toBe(true);
-      expect(
-        regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryInstrumentContextualised" })),
-      ).toBe(true);
-      expect(
-        regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryConceptExtracted" })),
-      ).toBe(true);
-      expect(regInstrumentProjection.accepts(baseEvent({ type: "ObligationConceptLinked" }))).toBe(
-        true,
-      );
+      expect(regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryInstrumentRegistered" }))).toBe(true);
+      expect(regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryInstrumentAmended" }))).toBe(true);
+      expect(regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryInstrumentContextualised" }))).toBe(true);
+      expect(regInstrumentProjection.accepts(baseEvent({ type: "RegulatoryConceptExtracted" }))).toBe(true);
+      expect(regInstrumentProjection.accepts(baseEvent({ type: "ObligationConceptLinked" }))).toBe(true);
       expect(regInstrumentProjection.accepts(baseEvent({ type: "BankAccountOpened" }))).toBe(false);
       expect(regInstrumentProjection.accepts(baseEvent({ type: "CeoDecision" }))).toBe(false);
     });
