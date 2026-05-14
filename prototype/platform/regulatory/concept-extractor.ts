@@ -107,6 +107,57 @@ Analyse the regulatory instrument text provided and return ONLY valid JSON (no m
 }`;
 
 // ---------------------------------------------------------------------------
+// LLM output normalisers
+// ---------------------------------------------------------------------------
+
+const CADENCE_MAP: Record<string, "ongoing" | "one-time" | "periodic" | "event-triggered"> = {
+  "event-driven": "event-triggered",
+  "event driven": "event-triggered",
+  "one time": "one-time",
+  "one-off": "one-time",
+  "single": "one-time",
+  "recurring": "periodic",
+  "regular": "periodic",
+  "continuous": "ongoing",
+  "continuous obligation": "ongoing",
+};
+
+function normaliseCadence(raw: string | undefined): "ongoing" | "one-time" | "periodic" | "event-triggered" {
+  if (!raw) return "ongoing";
+  const lower = raw.toLowerCase().trim();
+  if (lower === "ongoing" || lower === "one-time" || lower === "periodic" || lower === "event-triggered") {
+    return lower as "ongoing" | "one-time" | "periodic" | "event-triggered";
+  }
+  return CADENCE_MAP[lower] ?? "ongoing";
+}
+
+type ObligationType = RegulatoryConceptExtractedPayload["obligation"]["type"];
+const OBLIGATION_TYPES = new Set<ObligationType>([
+  "duty", "prohibition", "disclosure", "reporting",
+  "record-keeping", "system-capability", "definition", "penalty", "other",
+]);
+const OBLIGATION_TYPE_MAP: Record<string, ObligationType> = {
+  "right": "duty",
+  "rights": "duty",
+  "power": "duty",
+  "requirement": "duty",
+  "obligation": "duty",
+  "permission": "duty",
+  "authorization": "duty",
+  "authorisation": "duty",
+  "record keeping": "record-keeping",
+  "recordkeeping": "record-keeping",
+  "system capability": "system-capability",
+};
+
+function normaliseObligationType(raw: string | undefined): ObligationType {
+  if (!raw) return "other";
+  const lower = raw.toLowerCase().trim();
+  if (OBLIGATION_TYPES.has(lower as ObligationType)) return lower as ObligationType;
+  return OBLIGATION_TYPE_MAP[lower] ?? "other";
+}
+
+// ---------------------------------------------------------------------------
 // Section parser
 // ---------------------------------------------------------------------------
 
@@ -369,8 +420,9 @@ export async function extractConcepts(opts: {
           ((parsed.temporalScope as Record<string, unknown>)?.commencementDate as
             | string
             | undefined) ?? undefined,
-        cadence: (((parsed.temporalScope as Record<string, unknown>)?.cadence as string) ??
-          "ongoing") as "ongoing" | "one-time" | "periodic" | "event-triggered",
+        cadence: normaliseCadence(
+          (parsed.temporalScope as Record<string, unknown>)?.cadence as string | undefined,
+        ),
         eventTrigger:
           ((parsed.temporalScope as Record<string, unknown>)?.eventTrigger as string | undefined) ??
           undefined,
@@ -405,8 +457,9 @@ export async function extractConcepts(opts: {
             | undefined) ?? undefined,
       },
       obligation: {
-        type: (((parsed.obligation as Record<string, unknown>)?.type as string) ??
-          "other") as RegulatoryConceptExtractedPayload["obligation"]["type"],
+        type: normaliseObligationType(
+          (parsed.obligation as Record<string, unknown>)?.type as string | undefined,
+        ),
         actor: ((parsed.obligation as Record<string, unknown>)?.actor as string[]) ?? [],
         actionSummary:
           ((parsed.obligation as Record<string, unknown>)?.actionSummary as string) ??
