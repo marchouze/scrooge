@@ -125,15 +125,22 @@ function scanDir(dir: string): InboxFile[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns true when the event store has zero events of any type.
- * Used to detect a fresh CI bench before any seed scripts have run.
+ * Returns true when no CeoDecision events exist in the store.
+ * Used to detect a fresh CI bench before any decisions have been approved.
+ *
+ * Tests that emit non-decision events (ReconResult, AuditFinding, etc.) must
+ * not trigger the pairing check — only the presence of CeoDecision events
+ * indicates the bank has moved past the clean-bench state.
  *
  * When `testOverride` is provided we skip the live store entirely.
  */
 function isStoreEmpty(testOverride?: ReadonlySet<string>): boolean {
   if (testOverride !== undefined) return false;
   try {
-    return eventStore.count() === 0;
+    for (const _ of eventStore.replay({ type: "CeoDecision" })) {
+      return false;
+    }
+    return true;
   } catch {
     return true;
   }
