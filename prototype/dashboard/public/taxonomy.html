@@ -12,6 +12,17 @@
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <!-- UX sweep #001: surface-* tokens used in page-local styles -->
+  <style>
+    :root {
+      --surface-base:   #ffffff;
+      --surface-raised: #f5f3ee;
+      --surface-hover:  #edeae4;
+      --neutral-rule:   var(--neutral-mist);
+      --text-primary:   var(--brand-primary);
+      --text-secondary: var(--neutral-graphite);
+    }
+  </style>
   <style>
     :root {
       --surface-base:   #ffffff;
@@ -189,142 +200,148 @@
   </style>
 </head>
 <body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Operations Dashboard</span>
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+        <span class="shell-wordmark-suffix">Taxonomy</span>
+      </a>
+      <div class="shell-meta">
+        <span data-provenance-badge="page-top" data-provenance-source="/api/taxonomies" aria-label="Provenance badge"></span>
+        <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh data">Refresh</button>
+        <span class="shell-as-of" id="lastUpdated" aria-live="polite">loading…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
     </div>
-    <div class="meta" id="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/taxonomies"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/home.html">Home</a>
-      <a class="nav-link" href="/obligations.html">Obligations</a>
-      <a class="nav-link" href="/regulatory.html">Regulatory</a>
-      <a class="nav-link" href="/taxonomy.html" aria-current="page">Taxonomies</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">loading…</span>
-    </div>
-  </div>
-</header>
+  </header>
 
-<div id="failureBanner" class="failure-banner" hidden></div>
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Department navigation">
+      <div data-shell-dept-nav></div>
+    </nav>
 
-<main class="page-content" style="max-width:960px; margin:0 auto; padding:0 16px 48px;">
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">Taxonomy Explorer</h1>
+        <p class="shell-page-lede">
+          Canonical classification codes used across obligations, regulatory concepts, risk, and products.
+          Codes are stable identifiers (Principle 2 — single-graph discipline).
+        </p>
+      </div>
 
-  <div class="tax-page-header">
-    <h1>Taxonomy Explorer</h1>
-    <p class="subtitle">Canonical classification codes used across obligations, regulatory concepts, risk, and products.</p>
-  </div>
+      <!-- DCAM legend (rendered by taxonomy.js into #dcamLegend) -->
+      <div id="dcamLegend" style="margin-bottom:20px;"></div>
 
-  <div class="tax-search-bar">
-    <input type="search" id="taxSearch" placeholder="Filter by code or label…" autocomplete="off">
-    <button class="clear-btn" id="taxClear">Clear</button>
-    <span class="tax-search-info" id="taxSearchInfo"></span>
-  </div>
+      <div class="tax-search-bar">
+        <input type="search" id="taxSearch" placeholder="Filter by code or label…" autocomplete="off" aria-label="Search taxonomy codes and labels">
+        <button class="clear-btn" id="taxClear" aria-label="Clear search">Clear</button>
+        <span class="tax-search-info" id="taxSearchInfo" aria-live="polite"></span>
+      </div>
 
-  <!-- Risk taxonomy panel -->
-  <div class="tax-panel" id="panelRisk">
-    <div class="tax-panel-head" id="panelRiskHead" role="button" aria-expanded="true" tabindex="0">
-      <div>
-        <div class="tax-panel-title-row">
-          <span class="tax-panel-title">Risk Taxonomy</span>
-          <span class="tax-panel-badge" id="riskBadge">…</span>
+      <!-- Risk taxonomy panel -->
+      <div class="tax-panel" id="panelRisk">
+        <div class="tax-panel-head" id="panelRiskHead" role="button" aria-expanded="true" tabindex="0" aria-controls="panelRiskBody">
+          <div>
+            <div class="tax-panel-title-row">
+              <span class="tax-panel-title">Risk Taxonomy</span>
+              <span class="tax-panel-badge" id="riskBadge">…</span>
+            </div>
+            <div class="tax-panel-desc">Hierarchical L1/L2/L3 classification. Owner: Helena (Chief Risk Officer, governance).</div>
+          </div>
+          <span class="tax-panel-toggle" aria-hidden="true">▾</span>
         </div>
-        <div class="tax-panel-desc">Hierarchical L1/L2/L3 classification. Owner: Helena (Chief Risk Officer, governance).</div>
-      </div>
-      <span class="tax-panel-toggle">▾</span>
-    </div>
-    <div class="tax-panel-body">
-      <div class="risk-tree" id="riskTree">
-        <div class="muted" style="font-size:13px">Loading…</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Activity taxonomy panel -->
-  <div class="tax-panel" id="panelActivity">
-    <div class="tax-panel-head" id="panelActivityHead" role="button" aria-expanded="true" tabindex="0">
-      <div>
-        <div class="tax-panel-title-row">
-          <span class="tax-panel-title">Activity Taxonomy</span>
-          <span class="tax-panel-badge" id="activityBadge">…</span>
+        <div class="tax-panel-body" id="panelRiskBody">
+          <div class="risk-tree" id="riskTree">
+            <p style="font-size:13px;color:var(--neutral-stone);">Loading…</p>
+          </div>
         </div>
-        <div class="tax-panel-desc">ACT-* codes classifying bank operations. Owner: Atlas (Core banking platform architect, engineering).</div>
       </div>
-      <span class="tax-panel-toggle">▾</span>
-    </div>
-    <div class="tax-panel-body">
-      <div id="activityGroups">
-        <div class="muted" style="font-size:13px">Loading…</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Domain taxonomy panel -->
-  <div class="tax-panel" id="panelDomain">
-    <div class="tax-panel-head" id="panelDomainHead" role="button" aria-expanded="true" tabindex="0">
-      <div>
-        <div class="tax-panel-title-row">
-          <span class="tax-panel-title">Obligation Domain Taxonomy</span>
-          <span class="tax-panel-badge" id="domainBadge">…</span>
+      <!-- Activity taxonomy panel -->
+      <div class="tax-panel" id="panelActivity">
+        <div class="tax-panel-head" id="panelActivityHead" role="button" aria-expanded="true" tabindex="0" aria-controls="panelActivityBody">
+          <div>
+            <div class="tax-panel-title-row">
+              <span class="tax-panel-title">Activity Taxonomy</span>
+              <span class="tax-panel-badge" id="activityBadge">…</span>
+            </div>
+            <div class="tax-panel-desc">ACT-* codes classifying bank operations. Owner: Atlas (Core banking platform architect, engineering).</div>
+          </div>
+          <span class="tax-panel-toggle" aria-hidden="true">▾</span>
         </div>
-        <div class="tax-panel-desc">Ten regulatory domain codes for the obligations register. Owner: Mira (Compliance / RegTech engineer, engineering).</div>
-      </div>
-      <span class="tax-panel-toggle">▾</span>
-    </div>
-    <div class="tax-panel-body">
-      <table class="tax-table" id="domainTable">
-        <thead>
-          <tr><th>Code</th><th>Label</th><th>Description</th></tr>
-        </thead>
-        <tbody id="domainBody">
-          <tr><td colspan="3" class="muted">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Product scope panel -->
-  <div class="tax-panel" id="panelProduct">
-    <div class="tax-panel-head" id="panelProductHead" role="button" aria-expanded="true" tabindex="0">
-      <div>
-        <div class="tax-panel-title-row">
-          <span class="tax-panel-title">Product Scope</span>
-          <span class="tax-panel-badge" id="productBadge">…</span>
+        <div class="tax-panel-body" id="panelActivityBody">
+          <div id="activityGroups">
+            <p style="font-size:13px;color:var(--neutral-stone);">Loading…</p>
+          </div>
         </div>
-        <div class="tax-panel-desc">Product classifications for obligation scope. Owner: Atlas (Core banking platform architect, engineering).</div>
       </div>
-      <span class="tax-panel-toggle">▾</span>
-    </div>
-    <div class="tax-panel-body">
-      <table class="tax-table" id="productTable">
-        <thead>
-          <tr><th>Code</th><th>Label</th><th>Description</th></tr>
-        </thead>
-        <tbody id="productBody">
-          <tr><td colspan="3" class="muted">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
+
+      <!-- Domain taxonomy panel -->
+      <div class="tax-panel" id="panelDomain">
+        <div class="tax-panel-head" id="panelDomainHead" role="button" aria-expanded="true" tabindex="0" aria-controls="panelDomainBody">
+          <div>
+            <div class="tax-panel-title-row">
+              <span class="tax-panel-title">Obligation Domain Taxonomy</span>
+              <span class="tax-panel-badge" id="domainBadge">…</span>
+            </div>
+            <div class="tax-panel-desc">Ten regulatory domain codes for the obligations register. Owner: Mira (Compliance / RegTech engineer, engineering).</div>
+          </div>
+          <span class="tax-panel-toggle" aria-hidden="true">▾</span>
+        </div>
+        <div class="tax-panel-body" id="panelDomainBody">
+          <table class="tax-table" id="domainTable" aria-label="Obligation domain codes">
+            <thead>
+              <tr><th>Code</th><th>Label</th><th>Description</th></tr>
+            </thead>
+            <tbody id="domainBody">
+              <tr><td colspan="3" style="color:var(--neutral-stone);padding:14px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Product scope panel -->
+      <div class="tax-panel" id="panelProduct">
+        <div class="tax-panel-head" id="panelProductHead" role="button" aria-expanded="true" tabindex="0" aria-controls="panelProductBody">
+          <div>
+            <div class="tax-panel-title-row">
+              <span class="tax-panel-title">Product Scope</span>
+              <span class="tax-panel-badge" id="productBadge">…</span>
+            </div>
+            <div class="tax-panel-desc">Product classifications for obligation scope. Owner: Atlas (Core banking platform architect, engineering).</div>
+          </div>
+          <span class="tax-panel-toggle" aria-hidden="true">▾</span>
+        </div>
+        <div class="tax-panel-body" id="panelProductBody">
+          <table class="tax-table" id="productTable" aria-label="Product scope codes">
+            <thead>
+              <tr><th>Code</th><th>Label</th><th>Description</th></tr>
+            </thead>
+            <tbody id="productBody">
+              <tr><td colspan="3" style="color:var(--neutral-stone);padding:14px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p style="font-size:11.5px;color:var(--neutral-stone);margin-top:24px;padding-top:12px;border-top:1px solid var(--neutral-mist);">
+        Taxonomy codes are stable canonical identifiers (Principle 2 — single-graph discipline).
+        Amending a node requires a Board-approved CeoDecision.
+        Last loaded: <span id="asOf">—</span>
+      </p>
+    </main>
   </div>
 
-  <div class="muted" style="font-size:11.5px; margin-top:24px; padding-top:12px; border-top:1px solid var(--neutral-rule)">
-    Taxonomy codes are stable canonical identifiers (Principle 2 — single-graph discipline).
-    Amending a node requires a Board-approved CeoDecision.
-    Last loaded: <span id="asOf">—</span>
-  </div>
-
-</main>
-
-<script src="/_refresh-controls.js"></script>
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/taxonomy.js"></script>
+  <script src="/_refresh-controls.js"></script>
+  <script src="/_failure-banner.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/taxonomy.js"></script>
+  <script src="/_shell.js" defer onerror="this.remove();"></script>
 </body>
 </html>
