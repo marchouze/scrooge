@@ -50,6 +50,7 @@ export * from "./accounting";
 export * from "./customer";
 export * from "./fx-accounting";
 export * from "./regulatory";
+export * from "./performance";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -236,6 +237,10 @@ export const TYPED_EVENT_TYPES = [
   "RegulatoryInstrumentContextualised",
   "RegulatoryConceptExtracted",
   "ObligationConceptLinked",
+  // Agent performance management event family — Sade evaluator + Atlas projection.
+  // Author: Mira (Compliance / RegTech engineer, engineering).
+  "AgentPerformanceEvaluated",
+  "AgentFeedbackIssued",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
