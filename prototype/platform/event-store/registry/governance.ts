@@ -930,29 +930,29 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source:
       "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
   },
+];
+
+export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
-    // TODO: once Mira's event-types/performance.ts PR lands, replace
-    // this open record with the typed payloadSchema from that module.
     type: "AgentPerformanceEvaluated",
-    class: "governance",
+    class: "audit",
+    payloadSchema: agentPerformanceEvaluatedPayloadSchema,
     issuer: "Sade",
-    subscribers: ["Devon", "Vera", "Thandiwe", "dashboard"],
+    subscribers: ["Atlas", "Vera", "Thandiwe", "dashboard"],
     replay: "append-only-audit",
-    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-GV-21"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-evaluator.ts; platform/agents/performance-runner.ts",
   },
   {
-    // TODO: once Mira's event-types/performance.ts PR lands, replace
-    // this open record with the typed payloadSchema from that module.
     type: "AgentFeedbackIssued",
-    class: "governance",
+    class: "audit",
+    payloadSchema: agentFeedbackIssuedPayloadSchema,
     issuer: "Sade",
-    subscribers: ["Devon", "Vera", "dashboard"],
+    subscribers: ["Atlas", "Vera", "dashboard"],
     replay: "append-only-audit",
-    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-feedback.ts; platform/agents/performance-runner.ts",
   },
 ];
-
