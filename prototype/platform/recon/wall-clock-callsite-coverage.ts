@@ -53,8 +53,12 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // Bumped 45 → 47: dashboard/markets-fx-counterparties.ts:75 and
 // dashboard/rms-view.ts:267 added default nowIso/now params (approved
 // boundary pattern — injected clock at call-site, default is wall-clock).
+// Bumped 47 → 48: dashboard/agent-runs.ts:230 added cache?.fetchedAt ??
+// Date.now() for the deferred-init path (wall-clock: cache TTL tracking
+// annotation present; same boundary pattern as other approved cache-TTL
+// callsites in the same file).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 47;
+const KNOWN_VIOLATIONS_SNAPSHOT = 48;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

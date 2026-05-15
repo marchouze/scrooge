@@ -147,9 +147,17 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
-// one-shot ops tools). They construct fixture stores; gate-wrapping in those
-// contexts is not a security boundary.
-const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = ["tests/", "scenarios/", "scripts/"];
+// one-shot ops tools, and per-module __tests__/ subdirectories). They
+// construct fixture stores; gate-wrapping in those contexts is not a security
+// boundary.
+const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
+  "tests/",
+  "scenarios/",
+  "scripts/",
+  // Per-module unit test directory — same carve-out rationale as tests/.
+  // The semantic-layer module co-locates its fixture-store tests here.
+  "platform/semantic-layer/__tests__/",
+];
 
 // Actor URNs that are accepted today as "no policy yet" without raising the
 // per-actor finding to P1. As Senna's T-02..T-12 mitigations land, these get

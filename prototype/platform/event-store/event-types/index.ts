@@ -54,6 +54,14 @@ export * from "./customer";
 export * from "./fx-accounting";
 export * from "./regulatory";
 export * from "./performance";
+// Semantic-layer quantity registration — Anya (Data / analytics engineer).
+// Schema authored in platform/semantic-layer/ and re-exported here so the
+// single `@platform/event-store/event-types` import surface is preserved.
+export {
+  makeSemanticLayerQuantityRegistered,
+  semanticLayerQuantityRegisteredPayloadSchema,
+} from "../../semantic-layer/event-type";
+export type { SemanticLayerQuantityRegisteredPayload } from "../../semantic-layer/event-type";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -253,6 +261,11 @@ export const TYPED_EVENT_TYPES = [
   // quality; consumed by the performance evaluator quality-scoring pipeline.
   // D-AGENT-AUTONOMY-OPERATIONAL.
   "AuditFinding",
+  // Semantic-layer quantity registration — emitted once per quantity on system
+  // boot (idempotent). Analytics / reporting consumers assert this event is
+  // present before generating any quantity-dependent report.
+  // Author: Anya (Data / analytics engineer, engineering).
+  "SemanticLayerQuantityRegistered",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
