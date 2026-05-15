@@ -23,11 +23,10 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+import { LocalEscalationChannel } from "../escalation/channel";
 import { type AgentEscalationPayload, makeAgentDecisionRequired } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
-import { newEventId } from "../core/types";
-import { LocalEscalationChannel } from "../escalation/channel";
 
 // ---------------------------------------------------------------------------
 // Default infrastructure constants
@@ -200,7 +199,10 @@ export function dispatchDecisionRequest(
   const event = makeAgentDecisionRequired({
     asOf: params.asOf,
     entity: params.entity ?? DEFAULT_ENTITY,
-    actor: params.actor ?? { ...DEFAULT_ACTOR, id: `agent:${params.fromAgent.toLowerCase().replace(/[^a-z0-9-]/g, "-")}:event-trigger` },
+    actor: params.actor ?? {
+      ...DEFAULT_ACTOR,
+      id: `agent:${params.fromAgent.toLowerCase().replace(/[^a-z0-9-]/g, "-")}:event-trigger`,
+    },
     citations: params.citations ?? [...DEFAULT_CITATIONS],
     payload: {
       requestId: params.eventId ? `${requestId}-${params.eventId.slice(0, 8)}` : requestId,

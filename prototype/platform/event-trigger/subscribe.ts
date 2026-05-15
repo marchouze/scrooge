@@ -41,9 +41,7 @@ export interface EscalationEventView {
  * Callers that need full lifecycle (acknowledge / decide / delegate)
  * should use `LocalEscalationChannel` from `platform/escalation/`.
  */
-export function* subscribeEscalations(
-  eventStore: EventStore,
-): Generator<EscalationEventView> {
+export function* subscribeEscalations(eventStore: EventStore): Generator<EscalationEventView> {
   for (const event of eventStore.replay({ type: "AgentEscalation" })) {
     yield {
       eventId: event.event_id,
@@ -96,9 +94,7 @@ export interface DecisionRequestView {
  *
  * Returns a typed iterator. Each element is a `DecisionRequestView`.
  */
-export function* subscribeDecisionRequests(
-  eventStore: EventStore,
-): Generator<DecisionRequestView> {
+export function* subscribeDecisionRequests(eventStore: EventStore): Generator<DecisionRequestView> {
   for (const event of eventStore.replay({ type: "AgentDecisionRequired" })) {
     yield {
       eventId: event.event_id,
@@ -148,9 +144,7 @@ export function findDecisionRequest(
  * Callers that need cross-linking with CEO decisions should fold
  * `CeoDecision` events directly.
  */
-export function listOpenDecisionRequests(
-  eventStore: EventStore,
-): readonly DecisionRequestView[] {
+export function listOpenDecisionRequests(eventStore: EventStore): readonly DecisionRequestView[] {
   // Collect requestIds that have been resolved via AgentDecision.
   const resolvedIds = new Set<string>();
   for (const event of eventStore.replay({ type: "AgentDecision" })) {
@@ -158,7 +152,5 @@ export function listOpenDecisionRequests(
     if (typeof p.decisionId === "string") resolvedIds.add(p.decisionId);
   }
 
-  return listDecisionRequests(eventStore).filter(
-    (v) => !resolvedIds.has(v.payload.requestId),
-  );
+  return listDecisionRequests(eventStore).filter((v) => !resolvedIds.has(v.payload.requestId));
 }

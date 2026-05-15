@@ -18,6 +18,8 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { EventStore } from "../platform/event-store/store";
+import type { Actor } from "../platform/event-store/types";
 import {
   dispatchDecisionRequest,
   dispatchEscalation,
@@ -29,8 +31,6 @@ import {
   subscribeDecisionRequests,
   subscribeEscalations,
 } from "../platform/event-trigger";
-import { EventStore } from "../platform/event-store/store";
-import type { Actor } from "../platform/event-store/types";
 
 // ---------------------------------------------------------------------------
 // Fixtures
