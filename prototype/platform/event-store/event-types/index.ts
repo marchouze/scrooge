@@ -142,14 +142,16 @@ export {
 //   (3) add one spread line here.
 // ---------------------------------------------------------------------------
 
+import { PARTY_EVENT_TYPES } from "../../../domains/party";
+import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "../../semantic-layer/event-type";
+import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
-import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
-import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
+import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
 import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
@@ -161,8 +163,6 @@ import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
-import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "../../semantic-layer/event-type";
-import { PARTY_EVENT_TYPES } from "../../../domains/party";
 
 export const TYPED_EVENT_TYPES = [
   ...AGENT_TYPED_EVENT_TYPES,

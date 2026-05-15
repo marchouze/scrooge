@@ -13,7 +13,6 @@
 //
 // Author: Atlas (Core Banking Platform Architect, engineering)
 
-import { createHandler as createScroogeFollowOnRouter } from "./agents/scrooge-follow-on-router";
 import { ANYA_CALLABLES } from "./agents/callables/anya";
 import { ATLAS_CALLABLES } from "./agents/callables/atlas";
 import { BEA_CALLABLES } from "./agents/callables/bea";
@@ -44,6 +43,7 @@ import { TOMAS_CALLABLES } from "./agents/callables/tomas";
 import { VERA_CALLABLES } from "./agents/callables/vera";
 import { YAEL_CALLABLES } from "./agents/callables/yael";
 import { ZARA_CALLABLES } from "./agents/callables/zara";
+import { createHandler as createScroogeFollowOnRouter } from "./agents/scrooge-follow-on-router";
 import type { AgentRunHandler } from "./types";
 
 // Two-phase init to break the cycle between handler-callables.ts and

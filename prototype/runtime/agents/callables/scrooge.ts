@@ -6,11 +6,11 @@
 // two-phase init (circular dependency break with handler-callables.ts). It is
 // inserted directly in handler-callables.ts after createHandler() is called.
 
+import type { AgentRunHandler } from "../../types";
 import scroogeCeoDecisionRecord from "../scrooge-ceo-decision-record";
 import scroogeEventTriage from "../scrooge-event-triage";
 import scroogeInboxHygiene from "../scrooge-inbox-hygiene";
 import scroogeOwnerInboxArchiver from "../scrooge-owner-inbox-archiver";
-import type { AgentRunHandler } from "../../types";
 
 export const SCROOGE_CALLABLES: Record<string, AgentRunHandler> = {
   "scrooge:inbox-hygiene": scroogeInboxHygiene,
