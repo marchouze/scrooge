@@ -733,6 +733,19 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   entry("Vera", "event-triage", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
+
+  // Noa — Intranet Product Owner & UI Architect; intranet-operations events.
+  // Three event-driven handlers — one per typed event family.
+  // Authority: Principle 1 (events-first authoring per CLAUDE.md).
+  entry("Noa", "feature-shipped", "event-driven", {
+    subscribesTo: ["IntranetFeatureShipped"],
+  }),
+  entry("Noa", "design-review-complete", "event-driven", {
+    subscribesTo: ["DesignReviewComplete"],
+  }),
+  entry("Noa", "ux-finding-raised", "event-driven", {
+    subscribesTo: ["UXFindingRaised"],
+  }),
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */

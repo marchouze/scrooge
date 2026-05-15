@@ -59,6 +59,7 @@ export {
   RMS_EVENT_TYPES,
 } from "./governance";
 export { REGULATORY_EVENT_TYPES } from "./regulatory";
+export { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -77,6 +78,7 @@ import {
   READINESS_SNAPSHOT_EVENT_TYPES,
   RMS_EVENT_TYPES,
 } from "./governance";
+import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
   CUSTOMER_LIFECYCLE_EVENT_TYPES,
@@ -112,6 +114,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...REGULATORY_EVENT_TYPES,
   ...PERFORMANCE_EVENT_TYPES,
   ...ANALYTICS_EVENT_TYPES,
+  ...INTRANET_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

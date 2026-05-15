@@ -58,16 +58,15 @@ export * from "./fx-accounting";
 export * from "./regulatory";
 export * from "./performance";
 // Semantic-layer quantity registration — Anya (Data / analytics engineer).
-// Schema authored in platform/semantic-layer/ and re-exported here so the
-// single `@platform/event-store/event-types` import surface is preserved.
 export {
   makeSemanticLayerQuantityRegistered,
   semanticLayerQuantityRegisteredPayloadSchema,
 } from "../../semantic-layer/event-type";
 export type { SemanticLayerQuantityRegisteredPayload } from "../../semantic-layer/event-type";
 // AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
-// TokenUsageRecorded, AgentEfficiencyAdvisoryIssued, AgentPromptOptimizationApplied.
 export * from "./agent-ops";
+// Intranet event family — Noa (Intranet Product Owner & UI Architect).
+export * from "./intranet";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -282,6 +281,11 @@ export const TYPED_EVENT_TYPES = [
   "TokenUsageRecorded",
   "AgentEfficiencyAdvisoryIssued",
   "AgentPromptOptimizationApplied",
+  // Intranet operations event family — Principle 1 artefacts for intranet
+  // state changes. Author: Noa (Intranet Product Owner & UI Architect).
+  "IntranetFeatureShipped",
+  "DesignReviewComplete",
+  "UXFindingRaised",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

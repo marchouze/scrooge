@@ -60,6 +60,9 @@ import nadiaEventTriage from "./agents/nadia-event-triage";
 import nadiaValidationCycle from "./agents/nadia-validation-cycle";
 import nikoClientLifecycle from "./agents/niko-client-lifecycle";
 import nikoEventTriage from "./agents/niko-event-triage";
+import noaDesignReviewComplete from "./agents/noa-design-review-complete";
+import noaFeatureShipped from "./agents/noa-feature-shipped";
+import noaUxFindingRaised from "./agents/noa-ux-finding-raised";
 import nolanEventTriage from "./agents/nolan-event-triage";
 import nolanHiringCycle from "./agents/nolan-hiring-cycle";
 import owenEventTriage from "./agents/owen-event-triage";
@@ -231,6 +234,10 @@ const _map: Record<string, AgentRunHandler> = {
   "atlas:event-triage": atlasEventTriage,
   "pax:event-triage": paxEventTriage,
   "vera:event-triage": veraEventTriage,
+  // Noa — Intranet Product Owner & UI Architect; intranet-operations events.
+  "noa:feature-shipped": noaFeatureShipped,
+  "noa:design-review-complete": noaDesignReviewComplete,
+  "noa:ux-finding-raised": noaUxFindingRaised,
 };
 
 // Phase 2: inject the map into the follow-on-router so it can look up
