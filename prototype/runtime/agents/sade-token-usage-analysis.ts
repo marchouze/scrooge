@@ -14,8 +14,8 @@
 // Authority: Sade mandate (AgentOps & Token Efficiency Engineer, engineering).
 // Author: Atlas (Platform & Substrate Engineering, engineering) — P0 token-capture gap closure.
 
-import type { TokenUsageRecordedPayload } from "../../platform/event-store/event-types/agent-ops";
 import { eventStore, logger } from "../../platform/composition";
+import type { TokenUsageRecordedPayload } from "../../platform/event-store/event-types/agent-ops";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const HIGH_SPEND_THRESHOLD = 50_000;
@@ -66,9 +66,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
   }
 
-  const summaries = Array.from(summaryMap.values()).sort(
-    (a, b) => b.totalTokens - a.totalTokens,
-  );
+  const summaries = Array.from(summaryMap.values()).sort((a, b) => b.totalTokens - a.totalTokens);
   const agentCount = summaries.length;
   const totalCost = summaries.reduce((acc, s) => acc + s.estimatedCostUsd, 0);
   const totalTokens = summaries.reduce((acc, s) => acc + s.totalTokens, 0);
@@ -82,7 +80,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     );
     return {
       eventsEmitted: 0,
-      summary: `token-usage-analysis: 0 events, 0 agents, $0.0000 estimated total`,
+      summary: "token-usage-analysis: 0 events, 0 agents, $0.0000 estimated total",
       ok: true,
     };
   }

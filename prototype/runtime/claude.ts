@@ -31,9 +31,9 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-import { logger } from "../platform/observability/logger";
-import { makeTokenUsageRecorded } from "../platform/event-store/event-types/agent-ops";
 import { eventStore } from "../platform/composition";
+import { makeTokenUsageRecorded } from "../platform/event-store/event-types/agent-ops";
+import { logger } from "../platform/observability/logger";
 
 const DEFAULT_MODEL = "claude-opus-4-7";
 const DEFAULT_MAX_TOKENS_STREAMING = 64_000;
@@ -44,13 +44,13 @@ const MODEL = process.env.BANK_CLAUDE_MODEL ?? DEFAULT_MODEL;
 
 // USD per 1M tokens — 2026-05-15. Update when Anthropic reprices.
 const MODEL_PRICING: Record<string, { inputPer1M: number; outputPer1M: number }> = {
-  "claude-opus-4-7":   { inputPer1M: 15.00, outputPer1M: 75.00 },
-  "claude-sonnet-4-6": { inputPer1M:  3.00, outputPer1M: 15.00 },
-  "claude-haiku-4-5":  { inputPer1M:  0.80, outputPer1M:  4.00 },
+  "claude-opus-4-7": { inputPer1M: 15.0, outputPer1M: 75.0 },
+  "claude-sonnet-4-6": { inputPer1M: 3.0, outputPer1M: 15.0 },
+  "claude-haiku-4-5": { inputPer1M: 0.8, outputPer1M: 4.0 },
 };
 
 function estimateCost(model: string, inputTokens: number, outputTokens: number): number {
-  const pricing = MODEL_PRICING[model] ?? { inputPer1M: 15.00, outputPer1M: 75.00 };
+  const pricing = MODEL_PRICING[model] ?? { inputPer1M: 15.0, outputPer1M: 75.0 };
   return (inputTokens * pricing.inputPer1M + outputTokens * pricing.outputPer1M) / 1_000_000;
 }
 
@@ -191,7 +191,7 @@ export async function generateNarrative(req: NarrativeRequest): Promise<Narrativ
         makeTokenUsageRecorded({
           asOf: now,
           entity: "bank:agent-ops",
-          actor: { kind: "agent", id: req.meta.agent },
+          actor: { type: "system", id: req.meta.agent },
           citations: [],
           payload: {
             agent: req.meta.agent,
