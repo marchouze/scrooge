@@ -135,7 +135,7 @@ The escalation channel is the typed `AgentEscalation` event. Side-channel escala
 
 - `@platform/event-store/read` — read token usage events, agent run records, and advisory history
 - `@platform/event-store/write` — emit `TokenUsageRecorded`, `AgentEfficiencyAdvisoryIssued`, `AgentPromptOptimizationApplied`, and related events
-- `@platform/agent-spec/bounded-write` — write to `/Team/*.md` files within bounded authority (substrate gap — see §16)
+- `@platform/agent-spec/bounded-write` — write to `/Team/*.md` files within bounded authority (`prototype/platform/agent-spec/bounded-write.ts`)
 - `@platform/dashboard/projection-update` — update `agentOps` slice of `DashboardState` via `buildAgentOpsState()`
 - `@platform/runtime` — agent scheduler; event-trigger bus; agent identity and permissioning (Atlas owns; Sade is operational counterparty)
 
@@ -178,7 +178,7 @@ At licence-day, when Sade's HR slice activates, a separate boundary applies: Sad
 > Reviewed 2026-05-15.
 
 1. **Token data capture (P0):** No mechanism yet to capture per-run token counts from the Anthropic API automatically. Pre-substrate workaround: Sade reads the Anthropic Console usage API on a scheduled basis and emits `TokenUsageRecorded` events from the aggregate. Full fix: harness wraps every Claude API call and emits `TokenUsageRecorded` on run completion. Roadmap item for Atlas (Core Banking Platform Architect). Owner: Atlas. Target: M8/cloud-lift or next substrate sprint.
-2. **Bounded file-write capability:** `@platform/agent-spec/bounded-write` is not yet implemented. Until built, prompt/mandate optimisations are dispatched as PRs by Sade and merged by Scrooge (Chief of Staff). Owner: Atlas. Target: post-M8.
+2. ~~**Bounded file-write capability:** `@platform/agent-spec/bounded-write` is not yet implemented.~~ **CLOSED 2026-05-15.** `@platform/agent-spec/bounded-write` is live at `prototype/platform/agent-spec/bounded-write.ts`. Sade may now apply prompt optimisations to sections 6–17 of any Team/*.md autonomously without a PR dispatch.
 3. **Daily scheduler registration:** launchd plist for Sade's `token-usage-analysis` and `fleet-optimisation` handlers is not yet registered as an autonomous run. Until wired, Scrooge (Chief of Staff) coordinates daily runs manually. Owner: Atlas + Devon (Chief Operating Officer). Target: next agent-runtime sprint.
 4. **Agent-spec-integrity recon pipeline (Vera Wave-4 #10):** not yet built. Until it lands, agent-spec conformance is asserted in-session by Vera (Internal Audit Engineer). Owner: Vera. Target: post-substrate.
 5. **Capability-assignment register:** design only; not deployed. Owner: Sade + Atlas. Target: M1.
