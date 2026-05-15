@@ -3,7 +3,7 @@ id: PROC-NPA-GATE-01
 title: New Product Approval Gate
 owner: Saskia · Helena · Camille · Zara
 policy-parent: D-NEW-PRODUCT-APPROVAL-POLICY
-status: STUB
+status: POPULATED
 last-reviewed: 2026-05-13
 reconciliation-cadence: per-product (stage-4 gate); re-checked at any controlled-launch limit amendment
 ---
@@ -11,11 +11,11 @@ reconciliation-cadence: per-product (stage-4 gate); re-checked at any controlled
 # Procedure — New Product Approval Gate
 
 **Procedure ID:** PROC-NPA-GATE-01
-**Owner:** Saskia (Head of Global Markets, governance) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance)
+**Owner:** Saskia (Chief Investment Officer — markets, governance) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance)
 **Approval:** EXCO (products within existing RAS); Board (products requiring RAS amendment or new regulatory authorisation)
 **Cadence:** Event-triggered — fires on `ProductDueDiligenceCompleted`; one run per product per approval cycle
-**Version:** v0.1 — 2026-05-13
-**Status:** **STUB** — authored alongside `new-product-due-diligence.md`; binds at first `ProductDueDiligenceCompleted` event
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -145,6 +145,7 @@ No trade may be executed in any product before `NewProductApproved` exists in th
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Saskia · Helena · Camille · Zara (via Scrooge) | Initial STUB. Authored to complement `new-product-due-diligence.md`; covers stage-4 gate and handoff to stage 5. |
+| v0.2 | 2026-05-15 | Saskia (Chief Investment Officer — markets, governance) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance) | Promoted to POPULATED; owner title updated to CIO; version bumped. |
 
 ## 14. Audit / assurance
 
