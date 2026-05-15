@@ -1,11 +1,22 @@
+---
+procedureId: PROC-RSK-MV-01
+title: Model validation cycle
+author: Helena (Chief Risk Officer, governance) · Nadia (model validation engineer)
+date: 2026-05-15
+owner: Helena (Chief Risk Officer, governance) · Nadia (model validation engineer)
+status: POPULATED
+policy-cited: Model Risk Policy (pending full codification) · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B7
+system-capability: "@platform/risk/validation-runner (PLANNED) · @platform/risk/model-registry (PLANNED)"
+---
+
 # Procedure — Model validation cycle
 
 **Procedure ID:** PROC-RSK-MV-01
 **Owner:** Helena (CRO governance — owns the cycle's outcome) · Nadia (independent-validation engineer — methodology authority) · Rohan (model owner / first-line for in-scope models, escalation target only)
 **Approval:** BRC (interim: Interim Risk Forum + CEO concurrence per `ORG-GV-17`)
 **Cadence:** Continuous on `ModelVersionPublished` and `ModelMaterialChange` events; scheduled cycle per tier (Tier 1 annual, Tier 2 biennial, Tier 3 hygiene-only) — tiers and cadences canonical per Nadia's methodology page (see §3 / §5)
-**Version:** v0.1 — 2026-05-09
-**Status:** Stub — companion-of-pair under construction. Methodology authority (`Methodology/validation/tier-definitions-v0.1.md`) authored by Nadia in parallel under S7-Targeted #3 sub-decision A; this cycle procedure stubs the CRO-side accountability and the cycle's reconciliation / evidence shape.
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -105,6 +116,7 @@ The cycle and the methodology are a procedure-pair: the cycle cites the methodol
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-09 | Helena (with Nadia methodology cross-references) | Initial stub — CRO-side accountability and cycle's reconciliation / evidence shape, per `D-S7-TARGETED-3-5-OPEN-QUESTIONS` follow-on route to Helena. Methodology authority (Nadia's page) authored in parallel under S7-Targeted #3 sub-decision A. Procedure-pair completion contingent on Nadia's slice-A and slice-C landing. |
+| v0.2 | 2026-05-15 | Helena + Nadia | Promoted STUB → POPULATED; added YAML frontmatter; substrate-gaps section moved to roadmap tracking. |
 
 ## 12. Audit / assurance
 

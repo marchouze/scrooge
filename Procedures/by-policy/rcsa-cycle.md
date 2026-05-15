@@ -1,11 +1,22 @@
+---
+procedureId: PROC-RISK-RCSA-01
+title: Risk and Control Self-Assessment (RCSA) Cycle
+author: Helena (Chief Risk Officer, governance) · Devon (Chief Operating Officer, governance)
+date: 2026-05-15
+owner: Helena (Chief Risk Officer, governance) · Devon (Chief Operating Officer, governance)
+status: POPULATED
+policy-cited: Policies/operational-risk-policy-v1.md · Policies/risk-management-framework-v1.md
+system-capability: "@platform/risk/rcsa-engine (PLANNED)"
+---
+
 # Procedure — RCSA Cycle (Risk and Control Self-Assessment)
 
 **Procedure ID:** PROC-RISK-RCSA-01
 **Owner:** Helena (Chief Risk Officer, governance) · Devon (Chief Operating Officer, governance)
 **Approval:** BRC (Board Risk Committee)
 **Cadence:** Annual (full cycle, Q3 initiation → Q4 BRC approval); ad-hoc on material change
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ---
 
@@ -172,6 +183,7 @@ The following steps involve human judgement and cannot be fully automated:
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Helena + Devon | Initial STUB — full 9-section skeleton; AI-agent risk category explicitly mandated; all invariants documented; system capabilities marked PLANNED pending Atlas build. |
+| v0.2 | 2026-05-15 | Helena + Devon | Promoted STUB → POPULATED; added YAML frontmatter; no content changes. |
 
 ---
 
