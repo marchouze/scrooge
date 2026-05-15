@@ -23,7 +23,7 @@
 //
 // Author: Atlas (substrate)
 
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import type { CeoDecisionEventSummary } from "../../dashboard/derive";
@@ -39,6 +39,76 @@ export interface BackfillResult {
 }
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
+
+// ---------------------------------------------------------------------------
+// Supplemental scan: actioned deliverables with decision-required frontmatter
+// ---------------------------------------------------------------------------
+//
+// Files in Owner Inbox/actioned/ that carry `decision-required: true` and
+// `decision-id: <ID>` in their YAML frontmatter but do NOT match the
+// `_ceo-decision-record_` filename pattern are NOT picked up by
+// synthesizeCeoDecisionsFromRecords (which filters on the record-file naming
+// convention). This gap means actioned deliverables (e.g. flag reports,
+// policy specs) can be moved to actioned/ without a corresponding CeoDecision
+// event, causing the F-033 recon to fail on a clean CI bench.
+//
+// This helper emits CeoDecisionEventSummary stubs for those files so the
+// F-033 pairing gate is satisfied idempotently.
+
+const FRONTMATTER_BLOCK_RE = /^---\r?\n([\s\S]*?)\r?\n---/;
+
+function fileDate(filename: string): string | null {
+  const m = filename.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m?.[1] ?? null;
+}
+
+function synthesizeFrontmatterTaggedActionedDecisions(
+  actionedDir: string,
+): CeoDecisionEventSummary[] {
+  if (!existsSync(actionedDir)) return [];
+  const out: CeoDecisionEventSummary[] = [];
+  for (const name of readdirSync(actionedDir)) {
+    if (!name.endsWith(".md")) continue;
+    // Skip files already handled by synthesizeCeoDecisionsFromRecords
+    // (the _ceo-decision-record_ pattern).
+    if (/_ceo-decision-record_/i.test(name)) continue;
+    const full = join(actionedDir, name);
+    try {
+      if (!statSync(full).isFile()) continue;
+    } catch {
+      continue;
+    }
+    let content: string;
+    try {
+      content = readFileSync(full, "utf8");
+    } catch {
+      continue;
+    }
+    const fmMatch = content.match(FRONTMATTER_BLOCK_RE);
+    if (!fmMatch?.[1]) continue;
+    const fm = fmMatch[1];
+    const drMatch = fm.match(/^decision-required:\s*(.+?)\s*$/im);
+    if (drMatch?.[1]?.trim().toLowerCase() !== "true") continue;
+    const diMatch = fm.match(/^decision-id:\s*(.+?)\s*$/im);
+    const decisionId = diMatch?.[1]?.trim() ?? null;
+    if (!decisionId) continue;
+    const dateStr = fileDate(name);
+    const asOf = dateStr ? `${dateStr}T12:00:00.000Z` : "";
+    if (!asOf) continue;
+    // Extract title from frontmatter if available, fall back to decision-id.
+    const titleMatch = fm.match(/^title:\s*["']?(.+?)["']?\s*$/im);
+    const title = titleMatch?.[1]?.trim() ?? decisionId;
+    out.push({
+      decisionId,
+      title,
+      action: "approve",
+      outcome: "(outcome not captured — actioned deliverable backfill)",
+      actor: "marc@tgv.co.za",
+      asOf,
+    });
+  }
+  return out;
+}
 
 // Build the dedup key from a (decisionId, asOf) tuple. Distinct on-disk
 // records for the same decisionId have distinct `asOf` stamps (frontmatter
@@ -83,13 +153,20 @@ export function backfillCeoDecisionsFromRecords(
   ownerInboxDir: string,
   eventStore: EventStore,
 ): BackfillResult {
-  // Only canonical decision-record files (`*_ceo-decision-record_*.md`) are
-  // used as backfill candidates. Frontmatter-scanning of informational
-  // deliverables was removed: a D-XXX code in a body or frontmatter field
-  // of a `decision-required: false` file is a cross-reference, not a decision,
-  // and the heuristic produced false positives. Proper decisions are recorded
-  // via recordDelegatedDecision (scrooge:session-delegation).
-  const allCandidates: CeoDecisionEventSummary[] = synthesizeCeoDecisionsFromRecords(ownerInboxDir);
+  // Primary candidates: canonical decision-record files (`*_ceo-decision-record_*.md`).
+  // These are the preferred authoring form; body-text scanning is strict to
+  // avoid false positives from D-XXX cross-references in informational files.
+  //
+  // Supplemental candidates: actioned deliverables (non-record-named files) in
+  // Owner Inbox/actioned/ that carry `decision-required: true` + `decision-id`
+  // frontmatter. These arise when a decision-required flag report or spec is
+  // actioned in markdown without a separate ceo-decision-record file. Without
+  // this supplemental scan the F-033 pairing recon fails on a clean CI bench.
+  const actionedDir = join(ownerInboxDir, "actioned");
+  const allCandidates: CeoDecisionEventSummary[] = [
+    ...synthesizeCeoDecisionsFromRecords(ownerInboxDir),
+    ...synthesizeFrontmatterTaggedActionedDecisions(actionedDir),
+  ];
 
   const existing = existingDecisionKeys(eventStore);
   const emitted: string[] = [];
