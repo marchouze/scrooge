@@ -126,11 +126,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "Basel III / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 38(12) — minimum 3%",
     sarbReturnCell: "BA 700 — Leverage ratio (%) exit cell",
-    dataLineage: [
-      "capital-stack projection",
-      "BankAccountOpened",
-      "TrialBalanceSnapshotted",
-    ],
+    dataLineage: ["capital-stack projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Camille (Chief Financial Officer, governance)",
   },
@@ -159,15 +155,12 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     name: "Capital Adequacy Ratio (CAR)",
     domain: "capital",
     unit: "ratio",
-    formula: "(CommonEquityTier1Capital + AdditionalTier1Capital + Tier2Capital) / RiskWeightedAssets",
+    formula:
+      "(CommonEquityTier1Capital + AdditionalTier1Capital + Tier2Capital) / RiskWeightedAssets",
     regulatorySource:
       "Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 38(2) — Total capital ≥ 8%",
     sarbReturnCell: "BA 700 — Total capital ratio (%) exit cell",
-    dataLineage: [
-      "capital-stack projection",
-      "BankAccountOpened",
-      "TrialBalanceSnapshotted",
-    ],
+    dataLineage: ["capital-stack projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Camille (Chief Financial Officer, governance)",
   },
@@ -186,11 +179,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "Basel III (BCBS D295) / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 26(2) — LCR ≥ 100%",
     sarbReturnCell: "BA 325 — Liquidity Coverage Ratio (%) exit cell",
-    dataLineage: [
-      "liquidity-projection",
-      "BankAccountOpened",
-      "TrialBalanceSnapshotted",
-    ],
+    dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Eitan (Treasurer, governance)",
   },
@@ -204,11 +193,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "Basel III (BCBS d295-nsfr) / Regulations Relating to Banks Reg 26A — NSFR ≥ 100%",
     sarbReturnCell: "BA 326 — Net Stable Funding Ratio (%) exit cell",
-    dataLineage: [
-      "liquidity-projection",
-      "BankAccountOpened",
-      "TrialBalanceSnapshotted",
-    ],
+    dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Eitan (Treasurer, governance)",
   },
@@ -223,11 +208,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "BCBS D295 §47–§55 / Regulations Relating to Banks Reg 26(7) — HQLA composition and haircuts",
     sarbReturnCell: "BA 325 — HQLA stock (LCR numerator)",
-    dataLineage: [
-      "liquidity-projection",
-      "BankAccountOpened",
-      "TrialBalanceSnapshotted",
-    ],
+    dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "daily",
     owner: "Eitan (Treasurer, governance)",
   },
@@ -242,11 +223,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "BCBS D295 §69–§142 / Regulations Relating to Banks Reg 26(8)+(11) — outflow run-off rates + 75% inflow cap",
     sarbReturnCell: "BA 325 — Total net cash outflows (LCR denominator)",
-    dataLineage: [
-      "liquidity-projection",
-      "BankAccountOpened",
-      "TrialBalanceSnapshotted",
-    ],
+    dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "daily",
     owner: "Eitan (Treasurer, governance)",
   },
@@ -299,7 +276,8 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     unit: "zar",
     formula:
       "sum(EAD_t * LGD_t discounted at EIR) for credit-impaired exposures (objective evidence of impairment)",
-    regulatorySource: "IFRS 9 §5.5.3 + §B5.5.37 — lifetime ECL for credit-impaired (Stage 3) exposures",
+    regulatorySource:
+      "IFRS 9 §5.5.3 + §B5.5.37 — lifetime ECL for credit-impaired (Stage 3) exposures",
     dataLineage: [
       "ecl-projection",
       "TradeBooked",
@@ -339,11 +317,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     unit: "ratio",
     formula: "NetInterestIncome / AverageInterestEarningAssets",
     regulatorySource: "IFRS 9 / IAS 1 — management metric derived from income statement",
-    dataLineage: [
-      "income-projection",
-      "TrialBalanceSnapshotted",
-      "AccountingPeriodClosed",
-    ],
+    dataLineage: ["income-projection", "TrialBalanceSnapshotted", "AccountingPeriodClosed"],
     reportingFrequency: "monthly",
     owner: "Camille (Chief Financial Officer, governance)",
   },
@@ -382,11 +356,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "Basel 2.5 / BCBS 158 / Regulations Relating to Banks Reg 38 — stressed VaR capital charge",
     sarbReturnCell: "BA 350 — Stressed VaR",
-    dataLineage: [
-      "market-risk-projection",
-      "BacktestRun",
-      "MarkToMarketObserved",
-    ],
+    dataLineage: ["market-risk-projection", "BacktestRun", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",
   },
@@ -401,11 +371,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     regulatorySource:
       "BCBS FRTB SA §330 — sensitivity-based method; SARB BA 350 interest-rate risk",
     sarbReturnCell: "BA 350 — DV01 sensitivity",
-    dataLineage: [
-      "market-risk-projection",
-      "OrderApprovedAtGateway",
-      "MarkToMarketObserved",
-    ],
+    dataLineage: ["market-risk-projection", "OrderApprovedAtGateway", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",
   },
@@ -417,14 +383,9 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     unit: "zar",
     formula:
       "sum(position.cs01) = sum(-(dPrice/dCreditSpread) * notional * 0.0001) across all credit positions",
-    regulatorySource:
-      "BCBS FRTB SA §330 — sensitivity-based method, CSR non-securitisation bucket",
+    regulatorySource: "BCBS FRTB SA §330 — sensitivity-based method, CSR non-securitisation bucket",
     sarbReturnCell: "BA 350 — CS01 credit spread sensitivity",
-    dataLineage: [
-      "market-risk-projection",
-      "OrderApprovedAtGateway",
-      "MarkToMarketObserved",
-    ],
+    dataLineage: ["market-risk-projection", "OrderApprovedAtGateway", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",
   },
@@ -438,11 +399,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "MacaulayDuration / (1 + yield/n) = -1/P * dP/dy; portfolio-weighted average across fixed-income holdings",
     regulatorySource:
       "BCBS FRTB / ALCO interest-rate risk in the banking book (IRRBB) — duration gap analysis",
-    dataLineage: [
-      "market-risk-projection",
-      "OrderApprovedAtGateway",
-      "MarkToMarketObserved",
-    ],
+    dataLineage: ["market-risk-projection", "OrderApprovedAtGateway", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",
   },
@@ -460,11 +417,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "BaseRate (JIBAR / ZARONIA) + LiquidityPremium + CreditSpread + OptionadjSpread for each instrument tenor bucket",
     regulatorySource:
       "Internal ALM Policy / Basel III IRRBB supervisory guidelines (BCBS 368) — internal rate used to price liquidity cost/benefit",
-    dataLineage: [
-      "alm-projection",
-      "TrialBalanceSnapshotted",
-      "BankAccountOpened",
-    ],
+    dataLineage: ["alm-projection", "TrialBalanceSnapshotted", "BankAccountOpened"],
     reportingFrequency: "daily",
     owner: "Eitan (Treasurer, governance)",
   },
@@ -478,11 +431,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "NII_BaseScenario - NII_StressScenario; stress = parallel rate shock of ±200bp applied to repricing cash flows over 12-month horizon",
     regulatorySource:
       "Basel III IRRBB (BCBS 368 §§40–72) / Regulations Relating to Banks Reg 28 — interest-rate risk in the banking book (IRRBB)",
-    dataLineage: [
-      "alm-projection",
-      "TrialBalanceSnapshotted",
-      "BankAccountOpened",
-    ],
+    dataLineage: ["alm-projection", "TrialBalanceSnapshotted", "BankAccountOpened"],
     reportingFrequency: "monthly",
     owner: "Eitan (Treasurer, governance)",
   },

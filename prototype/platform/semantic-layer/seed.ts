@@ -20,9 +20,9 @@
 //
 // Author: Anya (Data / analytics engineer, engineering)
 
-import { type EventStore } from "../event-store/store";
-import { QUANTITY_REGISTRY } from "./quantities";
+import type { EventStore } from "../event-store/store";
 import { makeSemanticLayerQuantityRegistered } from "./event-type";
+import { QUANTITY_REGISTRY } from "./quantities";
 
 const ENTITY = "BANK-ZA-001";
 const REGISTERED_AT = new Date().toISOString();

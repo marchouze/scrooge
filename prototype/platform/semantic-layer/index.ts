@@ -24,9 +24,7 @@ export {
   listQuantities,
 } from "./registry-helpers";
 
-export type {
-  SemanticLayerQuantityRegisteredPayload,
-} from "./event-type";
+export type { SemanticLayerQuantityRegisteredPayload } from "./event-type";
 
 export {
   makeSemanticLayerQuantityRegistered,

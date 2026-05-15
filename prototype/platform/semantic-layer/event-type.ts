@@ -33,14 +33,7 @@ export const semanticLayerQuantityRegisteredPayloadSchema = z.object({
   name: z.string().min(1),
 
   /** Quantity domain — matches QuantityDefinition.domain. */
-  domain: z.enum([
-    "capital",
-    "liquidity",
-    "credit",
-    "market-risk",
-    "pnl",
-    "treasury",
-  ]),
+  domain: z.enum(["capital", "liquidity", "credit", "market-risk", "pnl", "treasury"]),
 
   /** ISO-8601 timestamp at which the quantity was registered in this boot epoch. */
   registeredAt: z.string().min(1),

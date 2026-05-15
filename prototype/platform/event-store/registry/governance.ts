@@ -37,6 +37,7 @@ import {
   partyRelationshipRevokedPayloadSchema,
   partyScreeningCompletedPayloadSchema,
 } from "../../../domains/party";
+import { semanticLayerQuantityRegisteredPayloadSchema } from "../../semantic-layer/event-type";
 import {
   agentBriefIssuedPayloadSchema,
   briefSupersededPayloadSchema,
@@ -72,7 +73,6 @@ import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
-import { semanticLayerQuantityRegisteredPayloadSchema } from "../../semantic-layer/event-type";
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
