@@ -59,6 +59,7 @@
     "register-fleet": "bun run scripts/register-fleet.ts",
     "escalation:enforce": "bun run scripts/escalation-enforce.ts",
     "model-registry:list": "bun run scripts/model-registry-list.ts",
+    "agent:performance-eval": "bun run scripts/run-performance-evaluation.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-codebase-quality-review": "bun run runtime/run.ts --agent Vera --trigger codebase-quality-review",
