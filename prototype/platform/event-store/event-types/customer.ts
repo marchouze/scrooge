@@ -282,3 +282,14 @@ export function makeAccountsSetupCompleted(args: {
     payload: accountsSetupCompletedPayloadSchema.parse(args.payload),
   });
 }
+
+export const CUSTOMER_TYPED_EVENT_TYPES = [
+  "CounterpartyFaisClassified",
+  "BeneficialOwnerResolved",
+  "SanctionsClearancePassed",
+  "FatcaCrsClassified",
+  "PopiaConsentRecorded",
+  "CreditAssessmentCompleted",
+  "AccountsSetupCompleted",
+] as const;
+export type CustomerEventType = (typeof CUSTOMER_TYPED_EVENT_TYPES)[number];

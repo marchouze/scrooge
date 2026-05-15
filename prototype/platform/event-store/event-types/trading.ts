@@ -560,3 +560,21 @@ export function makeSwitchTestReport(args: {
     payload: switchTestReportPayloadSchema.parse(args.payload),
   });
 }
+
+export const TRADING_TYPED_EVENT_TYPES = [
+  "OrderProposed",
+  "GatewayCheckRequested",
+  "GatewayCheckCompleted",
+  "OrderApprovedAtGateway",
+  "OrderRejectedAtGateway",
+  "PreTradeLimitChanged",
+  "CounterpartyEligibilityScreened",
+  "CounterpartyEligibilityRevalidated",
+  "CounterpartyEligibilityBreached",
+  "SwitchTestActivated",
+  "SwitchTestEnded",
+  "SwitchTestReport",
+  "OrderRejected",
+  "RasLimitSchedulePublished",
+] as const;
+export type TradingEventType = (typeof TRADING_TYPED_EVENT_TYPES)[number];

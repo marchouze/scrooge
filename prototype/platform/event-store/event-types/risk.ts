@@ -99,3 +99,6 @@ export function makeRasLineCalibrated(args: {
     ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
+
+export const RISK_TYPED_EVENT_TYPES = ["RiskRaised", "RasLineCalibrated"] as const;
+export type RiskEventType = (typeof RISK_TYPED_EVENT_TYPES)[number];

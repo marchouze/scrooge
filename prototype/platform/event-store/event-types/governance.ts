@@ -78,3 +78,6 @@ export function makeDocumentRegistered(args: {
     payload: documentRegisteredPayloadSchema.parse(args.payload),
   });
 }
+
+export const GOVERNANCE_TYPED_EVENT_TYPES = ["DocumentRegistered"] as const;
+export type GovernanceEventType = (typeof GOVERNANCE_TYPED_EVENT_TYPES)[number];

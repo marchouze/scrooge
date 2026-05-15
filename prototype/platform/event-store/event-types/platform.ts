@@ -331,3 +331,15 @@ export function makeLegacyFanoutShadowed(args: {
     payload: legacyFanoutShadowedPayloadSchema.parse(args.payload),
   });
 }
+
+export const PLATFORM_TYPED_EVENT_TYPES = [
+  "WorkstreamRegistered",
+  "DecisionComment",
+  "ScheduledTrigger",
+  "SubstrateAlert",
+  "IdentityKeyRotated",
+  "PermissionPolicyPublished",
+  "BusDispatched",
+  "LegacyFanoutShadowed",
+] as const;
+export type PlatformEventType = (typeof PLATFORM_TYPED_EVENT_TYPES)[number];

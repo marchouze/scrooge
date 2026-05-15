@@ -61,3 +61,6 @@ export function makeSemanticLayerQuantityRegistered(args: {
     payload: semanticLayerQuantityRegisteredPayloadSchema.parse(args.payload),
   });
 }
+
+export const SEMANTIC_LAYER_TYPED_EVENT_TYPES = ["SemanticLayerQuantityRegistered"] as const;
+export type SemanticLayerEventType = (typeof SEMANTIC_LAYER_TYPED_EVENT_TYPES)[number];

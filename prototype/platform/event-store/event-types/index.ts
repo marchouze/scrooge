@@ -63,6 +63,7 @@ export * from "./performance";
 export {
   makeSemanticLayerQuantityRegistered,
   semanticLayerQuantityRegisteredPayloadSchema,
+  SEMANTIC_LAYER_TYPED_EVENT_TYPES,
 } from "../../semantic-layer/event-type";
 export type { SemanticLayerQuantityRegisteredPayload } from "../../semantic-layer/event-type";
 // AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
@@ -134,152 +135,58 @@ export {
 // ---------------------------------------------------------------------------
 // Type registry — single place for downstream consumers to enumerate all
 // typed events. Must be kept in sync with the per-domain modules above.
+//
+// To add a new event type:
+//   (1) define it in its domain file,
+//   (2) add its name to the domain's *_TYPED_EVENT_TYPES array in that file,
+//   (3) add one spread line here.
 // ---------------------------------------------------------------------------
 
+import { AGENT_TYPED_EVENT_TYPES } from "./agent";
+import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
+import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
+import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
+import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
+import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
+import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
+import { FTP_TYPED_EVENT_TYPES } from "./ftp";
+import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
+import { INTRANET_EVENT_TYPES } from "./intranet";
+import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
+import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
+import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
+import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
+import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
+import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
+import { RISK_TYPED_EVENT_TYPES } from "./risk";
+import { RMS_TYPED_EVENT_TYPES } from "./rms";
+import { TRADING_TYPED_EVENT_TYPES } from "./trading";
+import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "../../semantic-layer/event-type";
+import { PARTY_EVENT_TYPES } from "../../../domains/party";
+
 export const TYPED_EVENT_TYPES = [
-  "AgentEscalation",
-  "AgentEscalationAcknowledged",
-  "AgentEscalationDecided",
-  "AgentEscalationDelegated",
-  "AgentEscalationOverdue",
-  "AgentDecision",
-  "WorkstreamRegistered",
-  "RiskRaised",
-  "AgentRegistered",
-  "DecisionComment",
-  "ScheduledTrigger",
-  "SubstrateAlert",
-  "IdentityKeyRotated",
-  "PermissionPolicyPublished",
-  "BusDispatched",
-  "LegacyFanoutShadowed",
-  "ModelSubmitted",
-  "ModelTierClassified",
-  "ModelValidationApproved",
-  "ModelValidationWithheld",
-  "ValidationFindingRaised",
-  "ValidationFindingClosed",
-  "BacktestRequested",
-  "BacktestRun",
-  "OrderProposed",
-  "GatewayCheckRequested",
-  "GatewayCheckCompleted",
-  "OrderApprovedAtGateway",
-  "OrderRejectedAtGateway",
-  "PreTradeLimitChanged",
-  "ValidationMethodologyPublished",
-  "BacktestBreachDisposed",
-  "ModelDriftDetected",
-  "ProductionUseRequested",
-  "MethodologyChangeRequested",
-  "CounterpartyEligibilityScreened",
-  "CounterpartyEligibilityRevalidated",
-  "CounterpartyEligibilityBreached",
-  "SwitchTestActivated",
-  "SwitchTestEnded",
-  "SwitchTestReport",
-  "LegalEntityRegistered",
-  "LegalEntityChanged",
-  "IntraGroupArrangementSigned",
-  // Product-lifecycle event family — D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2.
-  "ProductProposalRegistered",
-  "ProductConceptualised",
-  "ProductDueDiligenceCompleted",
-  "ProductDueDiligenceWithheld",
-  "ProductDimensionAttested",
-  "ProductApproved",
-  "ProductWithheld",
-  "ProductLaunched",
-  "ProductPostImplementationReviewCompleted",
-  "ProductReviewCompleted",
-  "ProductRetired",
-  "ProductVersionPublished",
-  // Records Management Substrate event family — D-RMS-PHASE-1 Slice 2.
-  "AgentBriefIssued",
-  "AgentRunStarted",
-  "AgentRunCompleted",
-  "DecisionRequested",
-  "Feedback",
-  "BriefSuperseded",
-  "RecordFiled",
-  // Bank-account event family — D-BANK-ACCOUNT-SUBSTRATE.
-  "BankAccountOpened",
-  "BankAccountConfigured",
-  "BankAccountClosed",
-  // Period-close event family — D-REPORTING-CAPABILITY-SLICE-2.
-  "AccountingPeriodOpened",
-  "AccountingPeriodClosed",
-  "TrialBalanceSnapshotted",
-  // Balance sheet substantiation — PROC-FIN-BSS-01.
-  "BalanceSheetSubstantiationCompleted",
-  // Risk Appetite Statement calibration event.
-  "RasLineCalibrated",
-  // Substrate agent-run lifecycle (S8 primitives).
-  // Note: SubstrateAgentRunStarted/Completed/Failed are not in the original
-  // TYPED_EVENT_TYPES list — they are registered via the registry directly.
-  // Party event family — D-PARTY-REGISTER.
-  "PartyRegistered",
-  "PartyAttributeChanged",
-  "PartyClassified",
-  "PartyDeclassified",
-  "PartyScreeningCompleted",
-  "PartyRelationshipAsserted",
-  "PartyRelationshipChanged",
-  "PartyRelationshipRevoked",
-  "BeneficialOwnerChainAsserted",
-  "PartyDeactivated",
-  // Goal-loop planning-trace events — D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "AgentGoalEvaluated",
-  "AgentGoalSelected",
-  "AgentGoalDeferred",
-  // Governance document-lifecycle events — D-POLICY-DOCUMENT-HOME Option C
-  // (CEO-approved 2026-05-12). Emitted by the document-registration recon
-  // pipeline when a Policies/*.md file is first registered.
-  "DocumentRegistered",
-  // Onboarding Slice 2 — 7 new counterparty lifecycle phase events.
-  "CounterpartyFaisClassified",
-  "BeneficialOwnerResolved",
-  "SanctionsClearancePassed",
-  "FatcaCrsClassified",
-  "PopiaConsentRecorded",
-  "CreditAssessmentCompleted",
-  "AccountsSetupCompleted",
-  // FX accounting event family — D-MARKETS-SCHEMA-FOUNDATION +
-  // D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12).
-  // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting engineer).
-  "FxPositionRevalued",
-  "FxSettlementConfirmed",
-  "SubLedgerPostingEmitted",
-  // Regulatory horizon-scanning event family — Mira pilot (FAIS Act 37/2002).
-  // Author: Mira (Compliance / RegTech engineer, engineering).
-  "RegulatoryInstrumentRegistered",
-  "RegulatoryInstrumentAmended",
-  "RegulatoryInstrumentContextualised",
-  "RegulatoryConceptExtracted",
-  "ObligationConceptLinked",
-  // Agent performance management event family — Sade evaluator + Atlas projection.
-  // Author: Mira (Compliance / RegTech engineer, engineering).
-  "AgentPerformanceEvaluated",
-  "AgentFeedbackIssued",
-  // Slice 5 — pre-trade risk controls + RAS limit schedule.
-  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
-  // Authors: Kai (Markets engineer), Helena (CRO), Rohan (Risk engineer).
-  "OrderRejected",
-  "RasLimitSchedulePublished",
-  // Audit finding — typed finding raised against an agent's performance or output
-  // quality; consumed by the performance evaluator quality-scoring pipeline.
-  // D-AGENT-AUTONOMY-OPERATIONAL.
-  "AuditFinding",
-  "SemanticLayerQuantityRegistered",
-  "AgentDecisionRequired",
-  "TokenUsageRecorded",
-  "AgentEfficiencyAdvisoryIssued",
-  "AgentPromptOptimizationApplied",
-  "IntranetFeatureShipped",
-  "DesignReviewComplete",
-  "UXFindingRaised",
-  "FtpCurvePublished",
-  "FtpAttributionRecorded",
+  ...AGENT_TYPED_EVENT_TYPES,
+  ...PLATFORM_TYPED_EVENT_TYPES,
+  ...RISK_TYPED_EVENT_TYPES,
+  ...MODEL_RISK_TYPED_EVENT_TYPES,
+  ...TRADING_TYPED_EVENT_TYPES,
+  ...LEGAL_ENTITY_TYPED_EVENT_TYPES,
+  ...PRODUCT_TYPED_EVENT_TYPES,
+  ...RMS_TYPED_EVENT_TYPES,
+  ...ACCOUNTING_TYPED_EVENT_TYPES,
+  ...CUSTOMER_TYPED_EVENT_TYPES,
+  ...FX_ACCOUNTING_EVENT_TYPES,
+  ...REGULATORY_TYPED_EVENT_TYPES,
+  ...PERFORMANCE_TYPED_EVENT_TYPES,
+  ...AUDIT_TYPED_EVENT_TYPES,
+  ...DECISION_REQUEST_TYPED_EVENT_TYPES,
+  ...AGENT_OPS_TYPED_EVENT_TYPES,
+  ...INTRANET_EVENT_TYPES,
+  ...FTP_TYPED_EVENT_TYPES,
+  ...GOVERNANCE_TYPED_EVENT_TYPES,
+  ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
+  ...PARTY_EVENT_TYPES,
+  // ← new agent adds one spread line here
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

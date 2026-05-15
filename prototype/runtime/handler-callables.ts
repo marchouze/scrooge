@@ -7,113 +7,43 @@
 //
 // Adding a new handler:
 //   - Add a row to runtime/handlers-metadata.ts (canonical metadata).
-//   - Add a row here (callable function pointer).
-//   - The startup-validate in run.ts throws if either side is missing
-//     a key.
+//   - Create or edit runtime/agents/callables/<agent>.ts and add the entry there.
+//   - Add one spread here (see assembly section below).
+//   - The startup-validate in run.ts throws if either side is missing a key.
 //
-// Author: Atlas
+// Author: Atlas (Core Banking Platform Architect, engineering)
 
-import anyaEventTriage from "./agents/anya-event-triage";
-import anyaGoalLoop from "./agents/anya-goal-loop";
-import anyaM1ProjectionRuntimeMapping from "./agents/anya-m1-projection-runtime-mapping";
-import anyaProjectionDrift from "./agents/anya-projection-drift";
-import anyaProjectionRefresh from "./agents/anya-projection-refresh";
-import atlasEventTriage from "./agents/atlas-event-triage";
-import atlasGoalLoop from "./agents/atlas-goal-loop";
-import atlasSubstrateState from "./agents/atlas-substrate-state";
-import beaAccountingReadiness from "./agents/bea-accounting-readiness";
-import beaEventTriage from "./agents/bea-event-triage";
-import beaFxPostingEngine from "./agents/bea-fx-posting-engine";
-import beaGoalLoop from "./agents/bea-goal-loop";
-import beaM1IfrsClassificationRules from "./agents/bea-m1-ifrs-classification-rules";
-import camilleEventTriage from "./agents/camille-event-triage";
-import camilleFinancialPositionSnapshot from "./agents/camille-financial-position-snapshot";
-import camilleGoalLoop from "./agents/camille-goal-loop";
-import devonEventTriage from "./agents/devon-event-triage";
-import devonGoalLoop from "./agents/devon-goal-loop";
-import devonOperationalResilienceSnapshot from "./agents/devon-operational-resilience-snapshot";
-import eitanEventTriage from "./agents/eitan-event-triage";
-import eitanGoalLoop from "./agents/eitan-goal-loop";
-import eitanLiquiditySnapshot from "./agents/eitan-liquidity-snapshot";
-import helenaEventTriage from "./agents/helena-event-triage";
-import helenaGoalLoop from "./agents/helena-goal-loop";
-import helenaRiskAppetiteWatch from "./agents/helena-risk-appetite-watch";
-import imaniEventTriage from "./agents/imani-event-triage";
-import imaniGoalLoop from "./agents/imani-goal-loop";
-import imaniLegalReadiness from "./agents/imani-legal-readiness";
-import irisEventTriage from "./agents/iris-event-triage";
-import irisGoalLoop from "./agents/iris-goal-loop";
-import irisPopiaControlsSnapshot from "./agents/iris-popia-controls-snapshot";
-import kaiEventTriage from "./agents/kai-event-triage";
-import kaiGoalLoop from "./agents/kai-goal-loop";
-import kaiM1CdmTypescriptBindings from "./agents/kai-m1-cdm-typescript-bindings";
-import kaiPreTradeGatewayAggregator from "./agents/kai-pre-trade-gateway-aggregator";
-import linneaEventTriage from "./agents/linnea-event-triage";
-import linneaOpsCycle from "./agents/linnea-ops-cycle";
-import miraCitationGate from "./agents/mira-citation-gate";
-import miraEventTriage from "./agents/mira-event-triage";
-import miraGoalLoop from "./agents/mira-goal-loop";
-import miraKycOnboardingGateway from "./agents/mira-kyc-onboarding-gateway";
-import miraM1RegulatorCitationUrns from "./agents/mira-m1-regulator-citation-urns";
-import miraObligationsSnapshot from "./agents/mira-obligations-snapshot";
-import nadiaEventTriage from "./agents/nadia-event-triage";
-import nadiaValidationCycle from "./agents/nadia-validation-cycle";
-import nikoClientLifecycle from "./agents/niko-client-lifecycle";
-import nikoEventTriage from "./agents/niko-event-triage";
-import noaDesignReviewComplete from "./agents/noa-design-review-complete";
-import noaFeatureShipped from "./agents/noa-feature-shipped";
-import noaUxFindingRaised from "./agents/noa-ux-finding-raised";
-import nolanEventTriage from "./agents/nolan-event-triage";
-import nolanHiringCycle from "./agents/nolan-hiring-cycle";
-import owenEventTriage from "./agents/owen-event-triage";
-import owenGoalLoop from "./agents/owen-goal-loop";
-import owenGovernanceCyclePrep from "./agents/owen-governance-cycle-prep";
-import paxEventTriage from "./agents/pax-event-triage";
-import paxRoleResearchQueue from "./agents/pax-role-research-queue";
-import rashidaCyberResilienceSnapshot from "./agents/rashida-cyber-resilience-snapshot";
-import rashidaEventTriage from "./agents/rashida-event-triage";
-import rashidaGoalLoop from "./agents/rashida-goal-loop";
-import raviAlmReadiness from "./agents/ravi-alm-readiness";
-import raviEventTriage from "./agents/ravi-event-triage";
-import raviFtpAttribution from "./agents/ravi-ftp-attribution";
-import raviFtpCurvePublish from "./agents/ravi-ftp-curve-publish";
-import raviGoalLoop from "./agents/ravi-goal-loop";
-import rohanBacktestHarness from "./agents/rohan-backtest-harness";
-import rohanEventTriage from "./agents/rohan-event-triage";
-import rohanGoalLoop from "./agents/rohan-goal-loop";
-import rohanRiskRun from "./agents/rohan-risk-run";
-import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
-import sadeEfficiencyAdvisory from "./agents/sade-efficiency-advisory";
-import sadeEventTriage from "./agents/sade-event-triage";
-import sadeFleetOptimisation from "./agents/sade-fleet-optimisation";
-import sadeTokenUsageAnalysis from "./agents/sade-token-usage-analysis";
-import saskiaEventTriage from "./agents/saskia-event-triage";
-import saskiaGoalLoop from "./agents/saskia-goal-loop";
-import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
-import scroogeCeoDecisionRecord from "./agents/scrooge-ceo-decision-record";
-import scroogeEventTriage from "./agents/scrooge-event-triage";
 import { createHandler as createScroogeFollowOnRouter } from "./agents/scrooge-follow-on-router";
-import scroogeInboxHygiene from "./agents/scrooge-inbox-hygiene";
-import scroogeOwnerInboxArchiver from "./agents/scrooge-owner-inbox-archiver";
-import sennaEventTriage from "./agents/senna-event-triage";
-import sennaGoalLoop from "./agents/senna-goal-loop";
-import sennaM1TradingStackThreatModel from "./agents/senna-m1-trading-stack-threat-model";
-import sennaSecuritySubstrateState from "./agents/senna-security-substrate-state";
-import thandiweAuditCommitteePrep from "./agents/thandiwe-audit-committee-prep";
-import thandiweEventTriage from "./agents/thandiwe-event-triage";
-import thandiweGoalLoop from "./agents/thandiwe-goal-loop";
-import tomasEventTriage from "./agents/tomas-event-triage";
-import tomasGoalLoop from "./agents/tomas-goal-loop";
-import tomasPaymentsReadiness from "./agents/tomas-payments-readiness";
-import veraCodebaseQualityReview from "./agents/vera-codebase-quality-review";
-import veraEventTriage from "./agents/vera-event-triage";
-import veraGoalLoop from "./agents/vera-goal-loop";
-import veraOvernightRecon from "./agents/vera-overnight-recon";
-import yaelEventTriage from "./agents/yael-event-triage";
-import yaelTaxReadiness from "./agents/yael-tax-readiness";
-import zaraEventTriage from "./agents/zara-event-triage";
-import zaraGoalLoop from "./agents/zara-goal-loop";
-import zaraMlroSupervision from "./agents/zara-mlro-supervision";
+import { ANYA_CALLABLES } from "./agents/callables/anya";
+import { ATLAS_CALLABLES } from "./agents/callables/atlas";
+import { BEA_CALLABLES } from "./agents/callables/bea";
+import { CAMILLE_CALLABLES } from "./agents/callables/camille";
+import { DEVON_CALLABLES } from "./agents/callables/devon";
+import { EITAN_CALLABLES } from "./agents/callables/eitan";
+import { HELENA_CALLABLES } from "./agents/callables/helena";
+import { IMANI_CALLABLES } from "./agents/callables/imani";
+import { IRIS_CALLABLES } from "./agents/callables/iris";
+import { KAI_CALLABLES } from "./agents/callables/kai";
+import { LINNEA_CALLABLES } from "./agents/callables/linnea";
+import { MIRA_CALLABLES } from "./agents/callables/mira";
+import { NADIA_CALLABLES } from "./agents/callables/nadia";
+import { NIKO_CALLABLES } from "./agents/callables/niko";
+import { NOA_CALLABLES } from "./agents/callables/noa";
+import { NOLAN_CALLABLES } from "./agents/callables/nolan";
+import { OWEN_CALLABLES } from "./agents/callables/owen";
+import { PAX_CALLABLES } from "./agents/callables/pax";
+import { RASHIDA_CALLABLES } from "./agents/callables/rashida";
+import { RAVI_CALLABLES } from "./agents/callables/ravi";
+import { ROHAN_CALLABLES } from "./agents/callables/rohan";
+import { SADE_CALLABLES } from "./agents/callables/sade";
+import { SASKIA_CALLABLES } from "./agents/callables/saskia";
+import { SCROOGE_CALLABLES } from "./agents/callables/scrooge";
+import { SENNA_CALLABLES } from "./agents/callables/senna";
+import { THANDIWE_CALLABLES } from "./agents/callables/thandiwe";
+import { TOMAS_CALLABLES } from "./agents/callables/tomas";
+import { VERA_CALLABLES } from "./agents/callables/vera";
+import { YAEL_CALLABLES } from "./agents/callables/yael";
+import { ZARA_CALLABLES } from "./agents/callables/zara";
 import type { AgentRunHandler } from "./types";
 
 // Two-phase init to break the cycle between handler-callables.ts and
@@ -125,123 +55,42 @@ import type { AgentRunHandler } from "./types";
 // F-019 resolved: `bunx madge --circular --extensions ts runtime/` reports
 // "No circular dependency found!" — the two-phase init achieved the goal.
 // Use `bun run check:circular` (package.json) to verify at any time.
+//
+// To add a new handler: create or edit runtime/agents/callables/<agent>.ts;
+// add one spread here.
 const _map: Record<string, AgentRunHandler> = {
-  "vera:overnight-recon": veraOvernightRecon,
-  "vera:codebase-quality-review": veraCodebaseQualityReview,
-  "vera:goal-loop": veraGoalLoop,
-  "atlas:substrate-state": atlasSubstrateState,
-  "atlas:goal-loop": atlasGoalLoop,
-  "bea:goal-loop": beaGoalLoop,
-  "helena:risk-appetite-watch": helenaRiskAppetiteWatch,
-  // helena:goal-loop — no cron; shadow mode for first cohort ticks (on-request only).
-  // Cohort-3 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "helena:goal-loop": helenaGoalLoop,
-  "devon:operational-resilience-snapshot": devonOperationalResilienceSnapshot,
-  "camille:financial-position-snapshot": camilleFinancialPositionSnapshot,
-  // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "anya:goal-loop": anyaGoalLoop,
-  "anya:projection-drift": anyaProjectionDrift,
-  "anya:projection-refresh": anyaProjectionRefresh,
-  "scrooge:inbox-hygiene": scroogeInboxHygiene,
-  "scrooge:ceo-decision-record": scroogeCeoDecisionRecord,
+  ...VERA_CALLABLES,
+  ...ATLAS_CALLABLES,
+  ...BEA_CALLABLES,
+  ...HELENA_CALLABLES,
+  ...DEVON_CALLABLES,
+  ...CAMILLE_CALLABLES,
+  ...ANYA_CALLABLES,
+  ...SCROOGE_CALLABLES,
   // "scrooge:follow-on-router" inserted below after createHandler()
-  "scrooge:owner-inbox-archiver": scroogeOwnerInboxArchiver,
-  "owen:governance-cycle-prep": owenGovernanceCyclePrep,
-  "owen:goal-loop": owenGoalLoop,
-  "rohan:risk-run": rohanRiskRun,
-  // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "rohan:goal-loop": rohanGoalLoop,
-  "mira:obligations-snapshot": miraObligationsSnapshot,
-  "mira:citation-gate": miraCitationGate,
-  // mira:goal-loop — no cron; shadow mode for first two cohort ticks (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "mira:goal-loop": miraGoalLoop,
-  // PROC-FC-01 — KYC onboarding gateway.
-  "mira:kyc-onboarding-gateway": miraKycOnboardingGateway,
-  "senna:security-substrate-state": sennaSecuritySubstrateState,
-  "zara:mlro-supervision": zaraMlroSupervision,
-  "thandiwe:audit-committee-prep": thandiweAuditCommitteePrep,
-  // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "thandiwe:goal-loop": thandiweGoalLoop,
-  // cohort-3 goal-loops (batch 2) — no cron; shadow mode (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  "zara:goal-loop": zaraGoalLoop,
-  "eitan:goal-loop": eitanGoalLoop,
-  "camille:goal-loop": camilleGoalLoop,
-  "iris:goal-loop": irisGoalLoop,
-  "rashida:goal-loop": rashidaGoalLoop,
-  "senna:goal-loop": sennaGoalLoop,
-  "kai:goal-loop": kaiGoalLoop,
-  "tomas:goal-loop": tomasGoalLoop,
-  "ravi:goal-loop": raviGoalLoop,
-  "imani:goal-loop": imaniGoalLoop,
-  "devon:goal-loop": devonGoalLoop,
-  "saskia:goal-loop": saskiaGoalLoop,
-  "rashida:cyber-resilience-snapshot": rashidaCyberResilienceSnapshot,
-  "iris:popia-controls-snapshot": irisPopiaControlsSnapshot,
-  "eitan:liquidity-snapshot": eitanLiquiditySnapshot,
-  "saskia:markets-readiness-snapshot": saskiaMarketsReadinessSnapshot,
-  "kai:m1-cdm-typescript-bindings": kaiM1CdmTypescriptBindings,
-  "kai:pre-trade-gateway-aggregator": kaiPreTradeGatewayAggregator,
-  "bea:accounting-readiness": beaAccountingReadiness,
-  "bea:fx-posting-engine": beaFxPostingEngine,
-  "yael:tax-readiness": yaelTaxReadiness,
-  "tomas:payments-readiness": tomasPaymentsReadiness,
-  "imani:legal-readiness": imaniLegalReadiness,
-  "ravi:alm-readiness": raviAlmReadiness,
-  "ravi:ftp-curve-publish": raviFtpCurvePublish,
-  "ravi:ftp-attribution": raviFtpAttribution,
-  "sade:agentops-readiness": sadeAgentopsReadiness,
-  "sade:token-usage-analysis": sadeTokenUsageAnalysis,
-  "sade:efficiency-advisory": sadeEfficiencyAdvisory,
-  "sade:fleet-optimisation": sadeFleetOptimisation,
-  "pax:role-research-queue": paxRoleResearchQueue,
-  "rohan:backtest-harness": rohanBacktestHarness,
-  "anya:m1-projection-runtime-mapping": anyaM1ProjectionRuntimeMapping,
-  "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
-  "mira:m1-regulator-citation-urns": miraM1RegulatorCitationUrns,
-  "senna:m1-trading-stack-threat-model": sennaM1TradingStackThreatModel,
-  // Slice 2b — per-persona event-triage stubs.
-  "rashida:event-triage": rashidaEventTriage,
-  "rohan:event-triage": rohanEventTriage,
-  "kai:event-triage": kaiEventTriage,
-  "nadia:event-triage": nadiaEventTriage,
-  "nadia:validation-cycle": nadiaValidationCycle,
-  "owen:event-triage": owenEventTriage,
-  "ravi:event-triage": raviEventTriage,
-  "sade:event-triage": sadeEventTriage,
-  "saskia:event-triage": saskiaEventTriage,
-  "thandiwe:event-triage": thandiweEventTriage,
-  "bea:event-triage": beaEventTriage,
-  "devon:event-triage": devonEventTriage,
-  "eitan:event-triage": eitanEventTriage,
-  "iris:event-triage": irisEventTriage,
-  "mira:event-triage": miraEventTriage,
-  "tomas:event-triage": tomasEventTriage,
-  "zara:event-triage": zaraEventTriage,
-  "camille:event-triage": camilleEventTriage,
-  "imani:event-triage": imaniEventTriage,
-  "niko:event-triage": nikoEventTriage,
-  "niko:client-lifecycle": nikoClientLifecycle,
-  "senna:event-triage": sennaEventTriage,
-  "helena:event-triage": helenaEventTriage,
-  "scrooge:event-triage": scroogeEventTriage,
-  "yael:event-triage": yaelEventTriage,
-  "linnea:event-triage": linneaEventTriage,
-  "linnea:ops-cycle": linneaOpsCycle,
-  "nolan:event-triage": nolanEventTriage,
-  "nolan:hiring-cycle": nolanHiringCycle,
-  "anya:event-triage": anyaEventTriage,
-  "atlas:event-triage": atlasEventTriage,
-  "pax:event-triage": paxEventTriage,
-  "vera:event-triage": veraEventTriage,
-  // Noa — Intranet Product Owner & UI Architect; intranet-operations events.
-  "noa:feature-shipped": noaFeatureShipped,
-  "noa:design-review-complete": noaDesignReviewComplete,
-  "noa:ux-finding-raised": noaUxFindingRaised,
+  ...OWEN_CALLABLES,
+  ...ROHAN_CALLABLES,
+  ...MIRA_CALLABLES,
+  ...SENNA_CALLABLES,
+  ...ZARA_CALLABLES,
+  ...THANDIWE_CALLABLES,
+  ...RASHIDA_CALLABLES,
+  ...IRIS_CALLABLES,
+  ...EITAN_CALLABLES,
+  ...SASKIA_CALLABLES,
+  ...KAI_CALLABLES,
+  ...YAEL_CALLABLES,
+  ...TOMAS_CALLABLES,
+  ...IMANI_CALLABLES,
+  ...RAVI_CALLABLES,
+  ...SADE_CALLABLES,
+  ...PAX_CALLABLES,
+  ...NADIA_CALLABLES,
+  ...NIKO_CALLABLES,
+  ...NOA_CALLABLES,
+  ...LINNEA_CALLABLES,
+  ...NOLAN_CALLABLES,
+  // ← new agent adds one spread here
 };
 
 // Phase 2: inject the map into the follow-on-router so it can look up

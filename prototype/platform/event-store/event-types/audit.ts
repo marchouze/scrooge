@@ -87,3 +87,6 @@ export function makeAuditFinding(args: {
     payload: auditFindingPayloadSchema.parse(args.payload),
   });
 }
+
+export const AUDIT_TYPED_EVENT_TYPES = ["AuditFinding"] as const;
+export type AuditEventType = (typeof AUDIT_TYPED_EVENT_TYPES)[number];

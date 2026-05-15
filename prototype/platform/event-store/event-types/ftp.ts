@@ -142,3 +142,6 @@ export function makeFtpAttributionRecorded(args: {
     payload: ftpAttributionRecordedPayloadSchema.parse(args.payload),
   });
 }
+
+export const FTP_TYPED_EVENT_TYPES = ["FtpCurvePublished", "FtpAttributionRecorded"] as const;
+export type FtpEventType = (typeof FTP_TYPED_EVENT_TYPES)[number];
