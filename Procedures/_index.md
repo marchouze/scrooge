@@ -52,11 +52,11 @@
 |---|---|---|---|
 | POPIA / Privacy Policy | [`popia-breach-notification.md`](by-policy/popia-breach-notification.md) | Iris + Senna + Zara | **POPULATED** |
 | POPIA / Privacy Policy | [`popia-dsar.md`](by-policy/popia-dsar.md) (data subject access request) | Iris + Anya + Senna | **POPULATED** |
-| POPIA / Privacy Policy | `popia-dsar-correction.md` (correction / deletion) | Iris | PLANNED |
-| POPIA / Privacy Policy | [`popia-io-designation.md`](by-policy/popia-io-designation.md) (PROC-PRIV-IO-DSG-01 — per-entity IO + Deputy IO designation; PAIA s.51 manual) | Iris + Owen | **STUB** (binds at licence-day; scoping at `Owner Inbox/2026-05-09_iris_per-entity-popia-io-designation-scoping.md`) |
-| Cross-Border Transfer Policy | `s72-transfer-assessment.md` | Iris (with Devon) | PLANNED |
-| PAIA Manual | `paia-request-handling.md` | Iris + Owen | PLANNED |
-| Data Retention | `retention-disposal.md` | Iris + Owen | PLANNED |
+| POPIA / Privacy Policy | [`popia-dsar-correction.md`](by-policy/popia-dsar-correction.md) (PROC-PRIV-DSAR-COR-01 — correction / deletion; cryptographic-erasure path; FIC / Banks Act exemption handling; propagation mechanics) | Iris + Anya | **POPULATED** |
+| POPIA / Privacy Policy | [`popia-io-designation.md`](by-policy/popia-io-designation.md) (PROC-PRIV-IO-DSG-01 — per-entity IO + Deputy IO designation; PAIA s.51 manual) | Iris + Owen | **POPULATED** |
+| Cross-Border Transfer Policy | [`s72-transfer-assessment.md`](by-policy/s72-transfer-assessment.md) (PROC-PRIV-CBT-01 — s.72 four-gate model; adequacy check; SCCs / DPA; annual review) | Iris + Devon | **POPULATED** |
+| PAIA Manual | [`paia-request-handling.md`](by-policy/paia-request-handling.md) (PROC-PAIA-RH-01 — Form C receipt; third-party notification; grounds-for-refusal; SAHRC annual report) | Iris + Owen | **POPULATED** |
+| Data Retention | [`retention-disposal.md`](by-policy/retention-disposal.md) (PROC-PRIV-RD-01 — cryptographic erasure; NIST SP 800-88; legal-hold gate; PAIA-suspension gate; annual schedule review) | Iris + Owen | **POPULATED** |
 
 ## Information security & cyber
 
@@ -80,10 +80,10 @@
 | Cloud Computing | `cloud-residency-attestation.md` | Devon + Senna | PLANNED |
 | BCP / DR | [`dr-test-execution.md`](by-policy/dr-test-execution.md) (PROC-OR-DR-01 — annual full DR test + semi-annual component tests; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report) | Devon (COO, governance) · Senna (CISO, engineering) | **POPULATED** |
 | BCP / DR | `crisis-management-activation.md` | Devon + Helena | PLANNED |
-| Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01) | Owen + Devon | **STUB** |
+| Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01) | Owen + Devon | **POPULATED** |
 | Records Management | `legal-hold.md` | Imani (with Owen) | PLANNED |
 | Change Management + Secure SDLC + InfoSec (Atlas Step 2 substrate) | [`agent-runtime-deploy.md`](by-policy/agent-runtime-deploy.md) | Atlas · Senna · Rashida · Vera (audit) | **POPULATED** |
-| Change Management + Secure SDLC + D-NEW-PRODUCT-APPROVAL-POLICY (cross-cutting schema discipline) | [`event-schema-evolution.md`](by-policy/event-schema-evolution.md) (PROC-PLAT-EV-EVOL-01 — schema amendment after events exist in store) | Atlas · Anya · Senna · Mira (citation gate) · Vera (audit) | **STUB** |
+| Change Management + Secure SDLC + D-NEW-PRODUCT-APPROVAL-POLICY (cross-cutting schema discipline) | [`event-schema-evolution.md`](by-policy/event-schema-evolution.md) (PROC-PLAT-EV-EVOL-01 — schema amendment after events exist in store) | Atlas · Anya · Senna · Mira (citation gate) · Vera (audit) | **POPULATED** |
 
 ## Payments and operations
 
@@ -182,11 +182,11 @@
 |---|---|---|---|
 | Code of Conduct | `code-attestation.md` (annual) | Owen + Sade | PLANNED |
 | Conflicts of Interest | [`conflicts-declaration.md`](by-policy/conflicts-declaration.md) (per-meeting and on-arising) | Owen + Helena + Zara | **POPULATED** |
-| ABC Policy | `abc-due-diligence.md` (third parties) | Owen + Zara | PLANNED |
-| Whistleblowing | `whistleblowing-case.md` | Owen | PLANNED |
+| ABC Policy | [`abc-due-diligence.md`](by-policy/abc-due-diligence.md) (PROC-COND-ABC-DD-01 — PRECCA s.34; four-band risk score; EDD for High-band; ABC contractual safeguards; annual refresh) | Owen + Zara | **POPULATED** |
+| Whistleblowing | [`whistleblowing-case.md`](by-policy/whistleblowing-case.md) (PROC-COND-WB-01 — PDA s.3/9A; parallel escalation taxonomy; Board Chair independence; 6-month welfare-check; PRECCA s.34 path) | Owen | **POPULATED** |
 | Gifts | `gift-registration.md` | Owen | PLANNED |
 | Insider Trading / PA Dealing | `pa-dealing-pre-clearance.md` | Owen + Zara | PLANNED |
-| Corporate Naming Policy v0.1 (planned by Owen) | [`naming-pre-clearance.md`](by-policy/naming-pre-clearance.md) (TM + Banks Act § 22 + CIPC + 11-language sweep) | Owen + Imani · Mira (s.22) · PAX (language sweep) · Atlas (substrate) | STUB |
+| Corporate Naming Policy v0.1 (planned by Owen) | [`naming-pre-clearance.md`](by-policy/naming-pre-clearance.md) (TM + Banks Act § 22 + CIPC + 11-language sweep) | Owen + Imani · Mira (s.22) · PAX (language sweep) · Atlas (substrate) | **POPULATED** |
 
 ## Legal
 
@@ -210,11 +210,11 @@
 
 | Status | Count | Note |
 |---|---|---|
-| **POPULATED** | 39 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption · Posting-rule publication · ECL stage projection refresh · FAIS advice-record capture · Outbound payment sponsor-bank channel · Agent-runtime deploy · **Transaction monitoring (PROC-FC-TM-01, 2026-05-15)** · **STR filing (PROC-FC-STR-01, 2026-05-15)** · **CTR filing (PROC-FC-CTR-01, 2026-05-15)** · **TPR filing (PROC-FC-TPR-01, 2026-05-15)** · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-15)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-15)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-15)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-15)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-15)** · **DR test execution (PROC-OR-DR-01, 2026-05-15)** · **KYC continuous monitoring (PROC-FC-KYC-C-01, 2026-05-15)** · **Sanctions override (PROC-FC-SO-01, 2026-05-15)** · **NPA gate (PROC-NPA-GATE-01, 2026-05-15)** · **Counterparty onboarding markets (PROC-MK-CO-01, 2026-05-15)** · **Key rotation (PROC-IS-KR-01, 2026-05-15)** · **Month-end close (PROC-FIN-MC-01, 2026-05-15)** · **BA return generation (PROC-FIN-BA-01, 2026-05-15)** · **IFRS 10 consolidation cycle (PROC-ACC-IFRS10-01, 2026-05-15)** · **ECL staging cycle (PROC-RSK-ECL-02, 2026-05-15)** · **Corporate tax filing (PROC-TX-CIT-01, 2026-05-15)** · **FATCA / CRS annual submission (PROC-TX-FATCA-01, 2026-05-15)** · **VAT financial-services apportionment (PROC-TX-VAT-01, 2026-05-15)** · **Capital instrument issuance (PROC-CAP-CII-01, 2026-05-15)** |
+| **POPULATED** | 49 | KYC onboarding · Sanctions screening · Capital ratio monitoring · POPIA breach notification · IR command · Conflicts declaration · POPIA DSAR · Change management · Pricing approval · Secure SDLC · Counterparty governing-law clause adoption · Posting-rule publication · ECL stage projection refresh · FAIS advice-record capture · Outbound payment sponsor-bank channel · Agent-runtime deploy · **Transaction monitoring (PROC-FC-TM-01, 2026-05-15)** · **STR filing (PROC-FC-STR-01, 2026-05-15)** · **CTR filing (PROC-FC-CTR-01, 2026-05-15)** · **TPR filing (PROC-FC-TPR-01, 2026-05-15)** · **Market risk monitoring (PROC-RISK-MRM-01, 2026-05-15)** · **Stress test cycle (PROC-RISK-ST-01, 2026-05-15)** · **KYC recurring refresh (PROC-FC-KYC-R-01, 2026-05-15)** · **Delegation of authority (PROC-GV-DOA-01, 2026-05-15)** · **Severe-but-plausible test (PROC-OR-SBP-01, 2026-05-15)** · **DR test execution (PROC-OR-DR-01, 2026-05-15)** · **KYC continuous monitoring (PROC-FC-KYC-C-01, 2026-05-15)** · **Sanctions override (PROC-FC-SO-01, 2026-05-15)** · **NPA gate (PROC-NPA-GATE-01, 2026-05-15)** · **Counterparty onboarding markets (PROC-MK-CO-01, 2026-05-15)** · **Key rotation (PROC-IS-KR-01, 2026-05-15)** · **Month-end close (PROC-FIN-MC-01, 2026-05-15)** · **BA return generation (PROC-FIN-BA-01, 2026-05-15)** · **IFRS 10 consolidation cycle (PROC-ACC-IFRS10-01, 2026-05-15)** · **ECL staging cycle (PROC-RSK-ECL-02, 2026-05-15)** · **Corporate tax filing (PROC-TX-CIT-01, 2026-05-15)** · **FATCA / CRS annual submission (PROC-TX-FATCA-01, 2026-05-15)** · **VAT financial-services apportionment (PROC-TX-VAT-01, 2026-05-15)** · **Capital instrument issuance (PROC-CAP-CII-01, 2026-05-15)** · **POPIA IO designation (PROC-PRIV-IO-DSG-01, Batch C 2026-05-15)** · **Records retention disposal (PROC-RM-RD-01, Batch C 2026-05-15)** · **Naming pre-clearance (PROC-CORP-NC-01, Batch C 2026-05-15)** · **Event schema evolution (PROC-PLAT-EV-EVOL-01, Batch C 2026-05-15)** · **POPIA DSAR correction/deletion (PROC-PRIV-DSAR-COR-01, Batch C 2026-05-15)** · **POPIA s.72 transfer assessment (PROC-PRIV-CBT-01, Batch C 2026-05-15)** · **PAIA request handling (PROC-PAIA-RH-01, Batch C 2026-05-15)** · **Data retention and disposal (PROC-PRIV-RD-01, Batch C 2026-05-15)** · **ABC due diligence (PROC-COND-ABC-DD-01, Batch C 2026-05-15)** · **Whistleblowing case management (PROC-COND-WB-01, Batch C 2026-05-15)** |
 | **DRAFT** | 1 | **Balance sheet substantiation (Bea 2026-05-12; PROC-FIN-BSS-01)** |
 | **STUB** | 0 | — all previously tracked stubs promoted to POPULATED 2026-05-15 |
-| PLANNED | ~50 | Drafting queue under domain leads, coordinated by Owen |
-| **Total identified procedures** | **~88** across 14 domains |
+| PLANNED | ~40 | Drafting queue under domain leads, coordinated by Owen |
+| **Total identified procedures** | **~90** across 14 domains |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
 
