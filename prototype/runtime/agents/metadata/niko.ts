@@ -2,7 +2,7 @@
 // Per-agent handler metadata for Niko (Client Lifecycle Engineer — paused until licence-day).
 // To add a handler: add an entry here, then add one spread in handlers-metadata.ts.
 
-import type { HandlerMetadata } from "../../handlers-metadata";
+import type { HandlerMetadata } from "../../types";
 import { entry } from "./_entry";
 
 export const NIKO_HANDLER_METADATA: readonly HandlerMetadata[] = [

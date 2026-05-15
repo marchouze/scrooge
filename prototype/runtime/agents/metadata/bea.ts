@@ -2,7 +2,7 @@
 // Per-agent handler metadata for Bea (Accounting & Financial Reporting Engineer).
 // To add a handler: add an entry here, then add one spread in handlers-metadata.ts.
 
-import type { HandlerMetadata } from "../../handlers-metadata";
+import type { HandlerMetadata } from "../../types";
 import { entry } from "./_entry";
 
 export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [

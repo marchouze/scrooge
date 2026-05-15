@@ -2,7 +2,7 @@
 // Per-agent handler metadata for Noa (Intranet Product Owner & UI Architect).
 // To add a handler: add an entry here, then add one spread in handlers-metadata.ts.
 
-import type { HandlerMetadata } from "../../handlers-metadata";
+import type { HandlerMetadata } from "../../types";
 import { entry } from "./_entry";
 
 export const NOA_HANDLER_METADATA: readonly HandlerMetadata[] = [

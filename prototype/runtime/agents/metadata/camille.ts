@@ -2,7 +2,7 @@
 // Per-agent handler metadata for Camille (CFO / Financial Controller).
 // To add a handler: add an entry here, then add one spread in handlers-metadata.ts.
 
-import type { HandlerMetadata } from "../../handlers-metadata";
+import type { HandlerMetadata } from "../../types";
 import { entry } from "./_entry";
 
 export const CAMILLE_HANDLER_METADATA: readonly HandlerMetadata[] = [

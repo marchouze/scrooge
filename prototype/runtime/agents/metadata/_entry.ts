@@ -2,7 +2,7 @@
 // Shared entry() helper for per-agent metadata modules.
 // Do not import this from outside runtime/agents/metadata/.
 
-import type { HandlerMetadata } from "../../handlers-metadata";
+import type { HandlerMetadata } from "../../types";
 
 export function entry(
   agent: string,

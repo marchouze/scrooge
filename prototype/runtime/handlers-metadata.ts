@@ -48,42 +48,10 @@
 //
 // Author: Atlas (Core Banking Platform Architect, engineering)
 
-import type { TriggerKind } from "./types";
-
-export interface HandlerMetadata {
-  /** Persona name as it appears in /Team/<Name>.md */
-  readonly agent: string;
-  /** Trigger id — second half of the `agent:trigger` key. */
-  readonly trigger: string;
-  /** Trigger classification. */
-  readonly kind: TriggerKind;
-  /**
-   * Expected cadence in hours for `scheduled` handlers. Undefined for
-   * `event-driven` (fires when subscribed event lands) and `on-request`
-   * (fires when something asks). Used by the fleet-health page to set
-   * staleness thresholds.
-   */
-  readonly cadenceHours?: number;
-  /**
-   * For `event-driven` handlers: the event types this handler
-   * subscribes to. The runtime fans out to the handler when a parent
-   * run appends an event whose type intersects this set.
-   */
-  readonly subscribesTo?: readonly string[];
-  /**
-   * For `scheduled` handlers: the 5-field cron expression the
-   * in-process scheduler and the GH Actions workflow both fire on.
-   * MUST be present for `kind: "scheduled"` rows; `recon:cron-map-drift`
-   * asserts this. Undefined for `event-driven` and `on-request`.
-   *
-   * The mirrored authoritative source for GH Actions is the
-   * corresponding `.github/workflows/agent-runtime-<agent>-<trigger>.yml`
-   * file's `schedule.cron`. Both must match — the recon asserts.
-   */
-  readonly cronExpression?: string;
-  /** Composite key — `<lowercased-agent>:<trigger>`. Computed for convenience. */
-  readonly key: string;
-}
+// HandlerMetadata moved to ./types to break the handlers-metadata ↔
+// agents/metadata/_entry circular import chain (Vera Wave-4 F-034).
+import type { HandlerMetadata } from "./types";
+export type { HandlerMetadata } from "./types";
 
 // ---------------------------------------------------------------------------
 // Per-agent metadata modules.
