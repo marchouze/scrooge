@@ -1,11 +1,11 @@
 ---
 agent: Bea
 trigger: accounting-readiness
-asOf: 2026-05-14T06:00:33.363Z
+asOf: 2026-05-15T06:00:38.710Z
 decision-required: false
 ---
 
-# Bea — daily accounting readiness, 2026-05-14
+# Bea — daily accounting readiness, 2026-05-15
 
 Autonomous run of Bea's daily accounting-readiness attestation per `Team/Bea.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Eleventh handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the engineer-side of Camille's CFO-line measurement-substrate gap.
 
@@ -66,7 +66,11 @@ _Build-phase posture: zero accounting-domain events. The bank has no real bookin
 
 ## Bea's narrative
 
-_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Inventory above stands on its own._
+The accounting substrate is empty — zero postings, zero classifications, zero ECL bookings in the last seven days, and every Camille-visible readiness flag (CloseApproved, BAReturnSigned, AFSSigned, CapitalPlanRefreshed) reads `never`. We are squarely in build phase: 12 of 24 Bea-owned obligations sit at PLANNED, 2 at DRAFTING, none yet IN FORCE or even PARTIAL, because there is no close engine for an IFRS 9 / IFRS 7 / IAS 1 policy to bind to. The load-bearing block on Camille's first signed close is the **monthly close cycle**, and within it the sub-ledger projection over postable events — without it neither the BA-return generator (Banks Act 94 of 1990 Reg 38, BA 100 / 200 / 300 / 700) nor the AFS line-item generator (IAS 1 presentation) has an input to read from.
+
+Two observations rank above the rest. First, monthly close is one engineering ticket away from green in the narrow sense that its substrate is fully specified — chart-of-accounts schema, sub-ledger projection, close orchestrator, CloseApproved producer — and is gated on a single missing artefact: the first published posting rule. Until `FundingDrawn → Dr cash / Cr funding-liability` (IFRS 9 amortised-cost initial recognition, IAS 1 SoFP classification) is published jointly with Atlas, no `SubLedgerEntryPosted` can fire and the cycle cannot complete end-to-end on synthetic data. Second, the BA 100 cell-map is downstream of that same posting rule — there is no point commissioning Anya's BA-return harness against an empty sub-ledger, but the cell-map register itself (BA 100 capital line ↔ synthetic CET1 seed, per Reg 38) can and should be drafted in parallel so the dry-run fires the moment the sub-ledger lands. AFS (IAS 1 / IFRS 7 disclosure pack) and capital-plan refresh (CET1 + RWA + Pillar 2A + buffers) correctly defer behind close; IFRS 9 ECL staging correctly defers behind Saskia's first counterparty. Deferred tax (IAS 12) and lease accounting (IFRS 16) likewise have no trigger yet.
+
+Next engineering move, in order: (1) publish the chart-of-accounts schema and the first posting rule — `FundingDrawn → Dr cash / Cr funding-liability` — jointly with Atlas, anchored to IFRS 9 initial recognition and IAS 1 line-item taxonomy; (2) build the sub-ledger projection over postable events and wire the `CloseApproved` producer so the first synthetic close can fire; (3) commission with Anya the BA 100 cell-map register against the synthetic capital seed (Banks Act Reg 38), draft-only, to be exercised on the first `SubLedgerEntryPosted`. Income Tax Act 58 of 1962 / IAS 12 deferred-tax coupling with Yael, and IFRS 13 fair-value hierarchy disclosures, stay queued behind close-engine completion.
 
 ## Provenance
 

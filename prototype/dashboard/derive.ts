@@ -1869,7 +1869,12 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   // 25 dropped legitimate items within a single tick. The renderer adds
   // "Show older" pagination on top of this cap so the visual feed stays
   // scannable without losing audit-trail items.
-  const rawOwnerInbox = parseOwnerInbox(opts.sources.ownerInboxDir, 200);
+  //
+  // Decision scanning is unbounded — we must not miss an open decision just
+  // because it falls outside the UI feed window. The 200-item cap applies
+  // only to the rendered feed; `ownerInboxToOpenDecisions` sees all items.
+  const allOwnerInboxItems = parseOwnerInbox(opts.sources.ownerInboxDir, Number.POSITIVE_INFINITY);
+  const rawOwnerInbox = allOwnerInboxItems.slice(0, 200);
   const ownerInboxFeed: OwnerInboxItem[] = rawOwnerInbox
     .map((item): OwnerInboxItem => {
       if (!item.decisionRequired || !item.decisionId) return item;
@@ -1879,7 +1884,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       return { ...item, decisionStatus, group };
     })
     .sort(ownerInboxFeedSort);
-  const ownerInboxOpenDecisions = ownerInboxToOpenDecisions(ownerInboxFeed, resolvedIds);
+  const ownerInboxOpenDecisions = ownerInboxToOpenDecisions(allOwnerInboxItems, resolvedIds);
 
   // Lift AgentEscalation events into open decisions (Atlas substrate-gap
   // closure 2026-05-07). An escalation is "resolved" when a CeoDecision

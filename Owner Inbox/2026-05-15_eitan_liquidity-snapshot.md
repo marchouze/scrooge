@@ -1,11 +1,11 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-05-14T06:53:57.623Z
+asOf: 2026-05-15T06:53:41.845Z
 decision-required: false
 ---
 
-# Eitan — liquidity snapshot, 2026-05-14
+# Eitan — liquidity snapshot, 2026-05-15
 
 Autonomous run of Eitan's daily liquidity snapshot per `Team/Eitan.md` operating spec § Cadence. Run by the agent runtime; no human-in-the-loop. Build-phase degraded-mode digest — substantive LCR / NSFR / IRRBB / FX positions are not yet computed; this run is the daily-funding-event SLA heartbeat (§ 6 inactivity SLA) until the projection engines land.
 
@@ -46,7 +46,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 |---|---|
 | `ALCODecision` | 0 |
 | `HedgeProgrammeApproved` | 0 |
-| Prior `LiquiditySnapshot` (this agent) | 7 |
+| Prior `LiquiditySnapshot` (this agent) | 8 |
 
 ## Substrate gaps (build-phase)
 
@@ -60,11 +60,11 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-Headline: register coverage holds at nine liquidity-adjacent obligations indexed (ORG-PR-06/07/08/11/14/15 plus the three prudential anchors ORG-PR-36 LCR, ORG-PR-38 externally-facilitated stress, ORG-PR-43 NSFR), and zero treasury events landed in the last 24h across every channel — HQLA, LiquidityReport, LCR/NSFR projections, IRRBB, FX, SAMOS. This is the seventh consecutive LiquiditySnapshot run with the engine dark, so degraded-mode is doing exactly the work it was designed to do: the daily heartbeat is standing in as the § 6 inactivity-SLA placeholder for the funding-event channel, and so long as that heartbeat lands it is not itself a breach. Once Ravi's engine cuts over, the same zero-row pattern on `SAMOSFundingApproved` or `HQLAReported` flips to a control failure.
+Headline: nine liquidity-adjacent obligations indexed, none yet in PARTIAL/deferred — they sit upstream of that state, in `[TBD]` authoring or planned-procedure status against `Procedures/by-policy/lcr-nsfr-liquidity-stress.md`. Zero treasury events landed in the last 24h across every channel (HQLA, LiquidityReport, LCR/NSFR projections, IRRBB, FX, SAMOS, CapitalAction); this is the eighth consecutive LiquiditySnapshot run, so degraded-mode is functioning as designed — the daily heartbeat is standing in for the live engine, and under build-phase rules a zero-projection day is not a § 6 inactivity-SLA breach. Once Ravi's engine lands, the same zero on `SAMOSFundingApproved` or `LCRRatioProjection` becomes a breach; I want that line drawn now so the cutover isn't ambiguous.
 
-The load-bearing observations: ORG-PR-36 (LCR, PA D6/2015 revised) and ORG-PR-43 (NSFR, PA D1/2023) are the two obligations where degraded-mode is most exposed — both require daily (LCR) and quarterly (NSFR) ratio computation that I cannot evidence without `LCRRatioProjection` / `NSFRRatioProjection` rows, and both have Bea on the engineering hook for the BA 325/300 reporting tie-out. ORG-PR-38 (externally-facilitated stress) sits behind those: no stress engine, no projection, no ALCO-grade scenario pack, and Rohan's runtime is upstream of any meaningful read on ORG-PR-14 (ILAAP). ORG-PR-08 and ORG-PR-15 (funding strategy / concentration) remain governance-only until SAMOS and counterparty-funding events start flowing. No IRRBB or FX excursion to flag — but equally, no `IRRBBChecked` or `FXPositionReported` for seven days running, which means ORG-PR-11 is presently evidenced only by the obligations register, not by behaviour.
+Most consequential observations, ranked by where degraded-mode is load-bearing: (1) ORG-PR-36 (PA D6/2015 revised LCR) and ORG-PR-43 (PA D1/2023 NSFR) both gate on the planned `lcr-nsfr-liquidity-stress.md` procedure and on a `LCRRatioProjection` / `NSFRRatioProjection` schema that doesn't yet exist — until Bea and I land those, the daily snapshot cannot evidence BCBS 238 / D6 numerator-denominator construction, and I am signing nothing on LCR adequacy. (2) ORG-PR-38 (PA D4/2021 externally-facilitated stress simulation) is the next live regulatory exercise on the horizon and depends on Rohan's runtime stress-engine plus the same procedure file — it cannot be exercised cold. (3) ORG-PR-08 / -15 (Funding Strategy) and ORG-PR-11 (IRRBB) remain `[TBD]` on policy text; zero `IRRBBChecked` and zero `FXPositionReported` are tolerable today but become ALCO-chair escalations the moment the engine is live.
 
-Next substrate step, in order: (1) land the `LCRRatioProjection` schema first — it is the highest-frequency control surface (daily under PA D6) and the cleanest event shape, and it unblocks the ALCO liquidity tile; (2) `HQLAReported` immediately after, since the LCR numerator is unauditable without it; (3) `NSFRRatioProjection` can follow on a quarterly cadence. ALCO prep item that follows from this snapshot: a one-page note to Camille flagging that until those three event types are emitting, the ALCO liquidity section will continue to read "degraded-mode, heartbeat-only" and we should agree the cut-over date at which zero-row days start counting as § 6 breaches rather than build-phase artefacts.
+What's needed next, concretely: land the `LCRRatioProjection` schema first — it is the single projection that unlocks ORG-PR-36 evidence, feeds ORG-PR-43 once NSFR follows, and sets the shape for `SAMOSFundingApproved` and `HQLAReported` to slot beside it. I'll draft the field list (HQLA stock by Level 1 / 2A / 2B, net cash outflows over 30 days, ratio, as-of, source-snapshot ref) against Ravi this week and pair it with a stub `Procedures/by-policy/lcr-nsfr-liquidity-stress.md` so ORG-PR-36, -38 and -43 move from `[TBD]` to PARTIAL with a named gap rather than an empty pointer. Next ALCO prep item: a one-page cutover note defining when zero-projection days flip from "degraded-mode expected" to "§ 6 inactivity breach," co-signed with Helena, tabled at the next ALCO.
 
 ## Provenance
 

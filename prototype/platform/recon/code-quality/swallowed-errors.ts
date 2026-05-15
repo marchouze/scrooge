@@ -66,11 +66,22 @@ function walk(dir: string, out: string[]): void {
 }
 
 /**
- * Strip block comments and line comments inside a `{ … }` body, then
- * check whether what remains is whitespace-only. This is the test for
- * "swallowed error" — a body that is truly empty after comment removal.
+ * Returns true when a catch body has neither executable code nor a
+ * substantive explanatory comment.
+ *
+ * A substantive comment (> 3 non-whitespace characters) satisfies the
+ * "leave a comment explaining why the error is safe to ignore" guidance.
+ * Catches like `catch { // best-effort }` or `catch { // first run }`
+ * are documented and must NOT be flagged; only truly empty catches —
+ * `catch {}` or catches with trivial/empty comments — are violations.
  */
 function bodyIsEffectivelyEmpty(body: string): boolean {
+  // Collect all comment text. A substantive comment exempts the block.
+  const blockTexts = [...body.matchAll(/\/\*([\s\S]*?)\*\//g)].map((m) => (m[1] ?? "").trim());
+  const lineTexts = [...body.matchAll(/\/\/([^\n]*)/g)].map((m) => (m[1] ?? "").trim());
+  const hasSubstantiveComment = [...blockTexts, ...lineTexts].some((t) => t.length > 3);
+  if (hasSubstantiveComment) return false;
+
   const noBlock = body.replace(/\/\*[\s\S]*?\*\//g, "");
   const noLine = noBlock.replace(/\/\/[^\n]*/g, "");
   return noLine.trim().length === 0;

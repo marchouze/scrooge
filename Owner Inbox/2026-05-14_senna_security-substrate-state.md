@@ -1,7 +1,7 @@
 ---
 agent: Senna
 trigger: security-substrate-state
-asOf: 2026-05-14T05:54:29.854Z
+asOf: 2026-05-14T07:37:36.304Z
 decision-required: false
 ---
 
@@ -100,7 +100,11 @@ _Note: under build-only posture and the AI-driven-bank reframe, security-event p
 
 ## Senna's narrative
 
-_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Inventory above stands on its own._
+Substrate is **governance-shaped but security-empty**: 29 CI gates and 31 recon pipelines are live and enforcing structural invariants, but the three artefact classes that actually carry the security control surface — threat-models, SBOMs, and security event emissions — are at zero. The bottleneck is not gate coverage; it is that no gate is wired to *security* substrate yet. Every recon pipeline today polices governance shape (decision/event symmetry, provenance lineage, retention citations); none polices control posture.
+
+Three observations are load-bearing. First, `security/threat-models/` does not exist as a populated directory, which means there is no `recon:threat-model-coverage` gate possible and no `ThreatModelGateDecision` events can be emitted with referents — the entire s.19 POPIA "appropriate technical and organisational measures" evidence chain is currently posture-only. Second, `security/sbom/` is empty: with no SBOM artefacts, supply-chain provenance under Joint Standard 2 of 2024 §6.3 (ICT third-party risk) has no substrate to cite, and the live `recon:provenance-lineage-registered` gate cannot extend to dependency lineage. Third, **zero `KeyRotationPerformed` events in seven days** is consistent with quarterly policy on a calendar basis, but combined with zero `SecurityIncidentRaised` and zero `ThreatModelGateDecision` it tells us the security event channel is unexercised — we cannot distinguish "quiet week" from "emitter not wired", which is itself a JS2 §5.2 monitoring-effectiveness finding waiting to happen.
+
+Next hardening step, in order: (1) author `TM-CORE-EVENT-BUS-001` as the first threat-model artefact under `security/threat-models/`, covering the event substrate that every other control depends on, so the directory exists and `ThreatModelGateDecision` has a referent; (2) add a `recon:threat-model-coverage` pipeline that fails CI when an agent spec declares ownership of a system component with no linked threat-model file — this converts threat modelling from posture to gate; (3) emit a synthetic `KeyRotationPerformed` event against the HSM-bound signing key this cycle to prove the channel works end-to-end before the next quarterly rotation falls due, and register the absence-of-emission as a recon check so silence becomes a failure mode, not a default.
 
 ## Provenance
 

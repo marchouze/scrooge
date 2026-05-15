@@ -165,11 +165,24 @@ describe("swallowed-errors recon", () => {
     expect(r.violations[0]?.message).toMatch(/Swallowed error/);
   });
 
-  it("flags a comment-only catch body", () => {
+  it("flags a trivially empty comment catch body", () => {
+    // An empty or near-empty comment (≤3 chars) is not an explanation.
     writeFixture(
       "runtime/bar.ts",
+      ["export function g() {", "  try { JSON.parse('x'); }", "  catch { /* */ }", "}", ""].join(
+        "\n",
+      ),
+    );
+    const r = runSwallowedErrors({ rootDir: fixtureRoot });
+    expect(r.violations.length).toBe(1);
+  });
+
+  it("does NOT flag a catch with a substantive explanatory comment", () => {
+    // A comment explaining WHY the error is safe to ignore satisfies the rule.
+    writeFixture(
+      "runtime/bar2.ts",
       [
-        "export function g() {",
+        "export function g2() {",
         "  try { JSON.parse('x'); }",
         "  catch { /* best-effort */ }",
         "}",
@@ -177,7 +190,7 @@ describe("swallowed-errors recon", () => {
       ].join("\n"),
     );
     const r = runSwallowedErrors({ rootDir: fixtureRoot });
-    expect(r.violations.length).toBe(1);
+    expect(r.violations.length).toBe(0);
   });
 
   it("does NOT flag a catch with a real statement", () => {

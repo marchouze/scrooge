@@ -1,7 +1,7 @@
 ---
 agent: Yael
 trigger: tax-readiness
-asOf: 2026-05-14T05:54:30.464Z
+asOf: 2026-05-14T06:07:36.534Z
 decision-required: false
 ---
 
