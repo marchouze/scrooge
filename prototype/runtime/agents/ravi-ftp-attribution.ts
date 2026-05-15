@@ -20,20 +20,24 @@
 // Authority: D-MARKETS-SCHEMA-FOUNDATION.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
-import { logger } from "../../platform/composition";
-import { eventStore } from "../../platform/composition";
+import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import type { FtpCurvePublishedPayload } from "../../platform/event-store/event-types/ftp";
 import { makeFtpAttributionRecorded } from "../../platform/event-store/event-types/ftp";
+import type { Event } from "../../platform/event-store/types";
 import { attributeTransaction } from "../../platform/ftp/attribution";
 import { FtpCurve } from "../../platform/ftp/curve";
-import type { Event } from "../../platform/event-store/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-D365-IRRBB"];
 
 /** Supported transaction event types for FTP attribution. */
-const TRADE_EVENT_TYPES = new Set(["TradeBooked", "LoanBooked", "DepositReceived", "FundingDrawnDown"]);
+const TRADE_EVENT_TYPES = new Set([
+  "TradeBooked",
+  "LoanBooked",
+  "DepositReceived",
+  "FundingDrawnDown",
+]);
 
 /**
  * Load the most recent FtpCurvePublished event for the given currency.
@@ -58,9 +62,7 @@ function loadActiveCurve(currency: string): FtpCurve | null {
  * Returns null if the payload lacks required fields (missing fields are
  * treated as not-yet-attributable; the handler logs a debug note).
  */
-function extractTradeParams(
-  event: Event,
-): {
+function extractTradeParams(event: Event): {
   transactionId: string;
   transactionType: "loan" | "bond" | "swap" | "deposit" | "repo";
   currency: string;
@@ -70,14 +72,18 @@ function extractTradeParams(
 } | null {
   const p = event.payload as Record<string, unknown>;
   const transactionId =
-    (p["tradeId"] as string | undefined) ??
-    (p["loanId"] as string | undefined) ??
-    (p["transactionId"] as string | undefined) ??
+    (p.tradeId as string | undefined) ??
+    (p.loanId as string | undefined) ??
+    (p.transactionId as string | undefined) ??
     event.event_id;
-  const currency = (p["currency"] as string | undefined) ?? (p["priceCurrency"] as string | undefined);
-  const notional = (p["notional"] as number | undefined) ?? (p["amount"] as number | undefined);
-  const maturityDays = (p["maturityDays"] as number | undefined) ?? (p["tenorDays"] as number | undefined);
-  const clientRate = (p["clientRate"] as number | undefined) ?? (p["coupon"] as number | undefined) ?? (p["rate"] as number | undefined);
+  const currency = (p.currency as string | undefined) ?? (p.priceCurrency as string | undefined);
+  const notional = (p.notional as number | undefined) ?? (p.amount as number | undefined);
+  const maturityDays =
+    (p.maturityDays as number | undefined) ?? (p.tenorDays as number | undefined);
+  const clientRate =
+    (p.clientRate as number | undefined) ??
+    (p.coupon as number | undefined) ??
+    (p.rate as number | undefined);
 
   // Derive transaction type from event type
   let transactionType: "loan" | "bond" | "swap" | "deposit" | "repo";
@@ -91,18 +97,22 @@ function extractTradeParams(
     case "FundingDrawnDown":
       transactionType = "repo";
       break;
-    default:
+    default: {
       // TradeBooked — infer from instrument field
-      {
-        const instrument = ((p["instrument"] as string | undefined) ?? "").toLowerCase();
-        if (instrument.includes("bond")) transactionType = "bond";
-        else if (instrument.includes("swap")) transactionType = "swap";
-        else if (instrument.includes("repo")) transactionType = "repo";
-        else transactionType = "bond"; // default for equity/bond trades
-      }
+      const instrument = ((p.instrument as string | undefined) ?? "").toLowerCase();
+      if (instrument.includes("bond")) transactionType = "bond";
+      else if (instrument.includes("swap")) transactionType = "swap";
+      else if (instrument.includes("repo")) transactionType = "repo";
+      else transactionType = "bond"; // default for equity/bond trades
+    }
   }
 
-  if (!currency || notional === undefined || maturityDays === undefined || clientRate === undefined) {
+  if (
+    !currency ||
+    notional === undefined ||
+    maturityDays === undefined ||
+    clientRate === undefined
+  ) {
     return null;
   }
 

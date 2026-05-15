@@ -21,7 +21,7 @@
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import type { FtpAttributionRecordedPayload } from "../event-store/event-types/ftp";
-import { tenorToDays, type FtpCurve } from "./curve";
+import { type FtpCurve, tenorToDays } from "./curve";
 
 // ---------------------------------------------------------------------------
 // AttributionParams
@@ -107,7 +107,7 @@ export function attributeTransaction(
  */
 function findClosestTenor(curve: FtpCurve, days: number): string {
   let bestTenor = curve.tenors[0]?.tenor ?? "1D";
-  let bestDistance = Infinity;
+  let bestDistance = Number.POSITIVE_INFINITY;
 
   for (const t of curve.tenors) {
     const tenorDays = tenorToDays(t.tenor);

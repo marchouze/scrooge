@@ -34,12 +34,7 @@ import type { FtpTenorRate } from "../../platform/event-store/event-types/ftp";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = [
-  "BANKS-ACT-94-1990",
-  "BANKS-REG-26",
-  "BANKS-REG-27",
-  "BCBS-D365-IRRBB",
-];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"];
 
 /**
  * Build the indicative ZAR FTP tenor grid for the given date.
@@ -57,15 +52,15 @@ function buildIndicativeZarTenors(asOf: string): FtpTenorRate[] {
   // Long end: SAGB yields interpolated from the on-the-run curve.
   void asOf; // reserved for live-data enrichment once feeds land
   return [
-    { tenor: "1D",  rate: 0.0810, basis: "ZARONIA" },
-    { tenor: "1W",  rate: 0.0815, basis: "ZARONIA" },
-    { tenor: "1M",  rate: 0.0820, basis: "JIBAR" },
-    { tenor: "3M",  rate: 0.0858, basis: "JIBAR" },
-    { tenor: "6M",  rate: 0.0890, basis: "JIBAR" },
-    { tenor: "1Y",  rate: 0.0920, basis: "JIBAR" },
-    { tenor: "2Y",  rate: 0.0950, basis: "SAGB-YIELD" },
-    { tenor: "5Y",  rate: 0.0990, basis: "SAGB-YIELD" },
-    { tenor: "10Y", rate: 0.1030, basis: "SAGB-YIELD" },
+    { tenor: "1D", rate: 0.081, basis: "ZARONIA" },
+    { tenor: "1W", rate: 0.0815, basis: "ZARONIA" },
+    { tenor: "1M", rate: 0.082, basis: "JIBAR" },
+    { tenor: "3M", rate: 0.0858, basis: "JIBAR" },
+    { tenor: "6M", rate: 0.089, basis: "JIBAR" },
+    { tenor: "1Y", rate: 0.092, basis: "JIBAR" },
+    { tenor: "2Y", rate: 0.095, basis: "SAGB-YIELD" },
+    { tenor: "5Y", rate: 0.099, basis: "SAGB-YIELD" },
+    { tenor: "10Y", rate: 0.103, basis: "SAGB-YIELD" },
   ];
 }
 
@@ -130,7 +125,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     writeFileSync(resolve(ctx.ownerInboxDir, filename), lines.join("\n"), "utf8");
   }
 
-  logger.info({ curveId, tenorCount: tenors.length, dryRun: ctx.dryRun }, "ravi:ftp-curve-publish — curve published");
+  logger.info(
+    { curveId, tenorCount: tenors.length, dryRun: ctx.dryRun },
+    "ravi:ftp-curve-publish — curve published",
+  );
 
   return {
     eventsEmitted,

@@ -94,7 +94,7 @@ export function tenorToDays(tenor: string): number | null {
 
   const m = normalised.match(/^(\d+(?:\.\d+)?)(D|W|M|Y)$/);
   if (!m) return null;
-  const n = parseFloat(m[1] ?? "0");
+  const n = Number.parseFloat(m[1] ?? "0");
   switch (m[2]) {
     case "D":
       return Math.round(n);
@@ -200,8 +200,15 @@ export class FtpCurve {
       throw new Error("FtpCurve.getRateForDays: curve has no valid points");
     }
 
-    const first = this._points[0]!;
-    const last = this._points[this._points.length - 1]!;
+    const first = this._points[0];
+    const last = this._points[this._points.length - 1];
+
+    // These are guaranteed non-null because length > 0 (checked above),
+    // but TypeScript array access returns T|undefined. Use early throw rather
+    // than the forbidden ! operator.
+    if (first === undefined || last === undefined) {
+      throw new Error("FtpCurve.getRateForDays: internal error — points array unexpectedly empty");
+    }
 
     // Short-circuit: at or below the shortest tenor
     if (days <= first.days) {
@@ -215,8 +222,10 @@ export class FtpCurve {
 
     // Linear interpolation: find the two surrounding points
     for (let i = 0; i < this._points.length - 1; i++) {
-      const lo = this._points[i]!;
-      const hi = this._points[i + 1]!;
+      const lo = this._points[i];
+      const hi = this._points[i + 1];
+
+      if (lo === undefined || hi === undefined) continue;
 
       if (days >= lo.days && days <= hi.days) {
         if (hi.days === lo.days) {

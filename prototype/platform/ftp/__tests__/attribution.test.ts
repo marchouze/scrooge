@@ -19,14 +19,14 @@ const CURVE_PAYLOAD: FtpCurvePublishedPayload = {
   currency: "ZAR",
   effectiveDate: "2026-05-15",
   tenors: [
-    { tenor: "1D",  rate: 0.0810, basis: "ZARONIA" },
-    { tenor: "1M",  rate: 0.0820, basis: "JIBAR" },
-    { tenor: "3M",  rate: 0.0858, basis: "JIBAR" },
-    { tenor: "6M",  rate: 0.0890, basis: "JIBAR" },
-    { tenor: "1Y",  rate: 0.0920, basis: "JIBAR" },
-    { tenor: "2Y",  rate: 0.0950, basis: "SAGB-YIELD" },
-    { tenor: "5Y",  rate: 0.0990, basis: "SAGB-YIELD" },
-    { tenor: "10Y", rate: 0.1030, basis: "SAGB-YIELD" },
+    { tenor: "1D", rate: 0.081, basis: "ZARONIA" },
+    { tenor: "1M", rate: 0.082, basis: "JIBAR" },
+    { tenor: "3M", rate: 0.0858, basis: "JIBAR" },
+    { tenor: "6M", rate: 0.089, basis: "JIBAR" },
+    { tenor: "1Y", rate: 0.092, basis: "JIBAR" },
+    { tenor: "2Y", rate: 0.095, basis: "SAGB-YIELD" },
+    { tenor: "5Y", rate: 0.099, basis: "SAGB-YIELD" },
+    { tenor: "10Y", rate: 0.103, basis: "SAGB-YIELD" },
   ],
   methodology: "matched-maturity",
   publishedBy: "ravi",
@@ -49,15 +49,15 @@ describe("attributeTransaction — spread calculation", () => {
       currency: "ZAR",
       notional: 100_000_000,
       maturityDays: 365,
-      clientRate: 0.1050,
+      clientRate: 0.105,
       curve: CURVE,
       attributedAt: "2026-05-15T06:00:00.000Z",
     });
 
-    expect(result.spread).toBeCloseTo(0.1050 - 0.0920, 8);
+    expect(result.spread).toBeCloseTo(0.105 - 0.092, 8);
     expect(result.spread).toBeGreaterThan(0);
-    expect(result.ftpRate).toBe(0.0920);
-    expect(result.clientRate).toBe(0.1050);
+    expect(result.ftpRate).toBe(0.092);
+    expect(result.clientRate).toBe(0.105);
   });
 
   it("computes a negative spread when clientRate < ftpRate (unprofitable transaction)", () => {
@@ -69,12 +69,12 @@ describe("attributeTransaction — spread calculation", () => {
       currency: "ZAR",
       notional: 50_000_000,
       maturityDays: 91,
-      clientRate: 0.0800,
+      clientRate: 0.08,
       curve: CURVE,
       attributedAt: "2026-05-15T06:00:00.000Z",
     });
 
-    expect(result.spread).toBeCloseTo(0.0800 - 0.0858, 8);
+    expect(result.spread).toBeCloseTo(0.08 - 0.0858, 8);
     expect(result.spread).toBeLessThan(0);
     expect(result.ftpRate).toBe(0.0858);
   });
@@ -106,7 +106,7 @@ describe("attributeTransaction — spread calculation", () => {
       currency: "ZAR",
       notional: 200_000_000,
       maturityDays: 180,
-      clientRate: 0.0900,
+      clientRate: 0.09,
       curve: CURVE,
       attributedAt: "2026-05-15T06:00:00.000Z",
     });
@@ -115,8 +115,8 @@ describe("attributeTransaction — spread calculation", () => {
     // t = (180 - 91) / (182 - 91) = 89/91 ≈ 0.978
     // rate ≈ 0.0858 + 0.978 * (0.0890 - 0.0858) ≈ 0.0889
     expect(result.ftpRate).toBeGreaterThan(0.0858);
-    expect(result.ftpRate).toBeLessThanOrEqual(0.0890);
-    expect(result.spread).toBeCloseTo(0.0900 - result.ftpRate, 6);
+    expect(result.ftpRate).toBeLessThanOrEqual(0.089);
+    expect(result.spread).toBeCloseTo(0.09 - result.ftpRate, 6);
   });
 });
 
@@ -132,7 +132,7 @@ describe("attributeTransaction — payload shape", () => {
     currency: "ZAR",
     notional: 75_000_000,
     maturityDays: 365,
-    clientRate: 0.1100,
+    clientRate: 0.11,
     curve: CURVE,
     attributedAt: "2026-05-15T07:00:00.000Z",
   });
@@ -163,7 +163,7 @@ describe("attributeTransaction — payload shape", () => {
   });
 
   it("includes clientRate", () => {
-    expect(result.clientRate).toBe(0.1100);
+    expect(result.clientRate).toBe(0.11);
   });
 
   it("includes ftpRate as a number", () => {
@@ -228,7 +228,11 @@ describe("attributeTransaction — matched tenor", () => {
 
 describe("attributeTransaction — all transaction types accepted", () => {
   const types: Array<"loan" | "bond" | "swap" | "deposit" | "repo"> = [
-    "loan", "bond", "swap", "deposit", "repo",
+    "loan",
+    "bond",
+    "swap",
+    "deposit",
+    "repo",
   ];
 
   for (const txType of types) {

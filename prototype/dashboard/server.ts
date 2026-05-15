@@ -64,9 +64,9 @@ import {
   buildForwardObligations,
   type resolveHorizon,
 } from "../platform/forward-obligations";
+import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
-import { buildFtpPortfolio } from "../platform/ftp/projection";
 import {
   getCorrespondentRouting,
   getLimitUtilisations,

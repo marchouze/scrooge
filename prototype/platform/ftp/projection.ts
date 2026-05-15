@@ -134,9 +134,7 @@ export function buildFtpPortfolio(events: readonly Event[]): FtpPortfolioSummary
   const byTransactionType: FtpPortfolioSummary["byTransactionType"] = {};
   for (const [type, row] of Object.entries(byType)) {
     const avgSpreadBps =
-      row.totalNotional > 0
-        ? (row.totalNotionalWeightedSpread / row.totalNotional) * 10_000
-        : 0;
+      row.totalNotional > 0 ? (row.totalNotionalWeightedSpread / row.totalNotional) * 10_000 : 0;
     byTransactionType[type] = {
       count: row.count,
       totalNotional: row.totalNotional,

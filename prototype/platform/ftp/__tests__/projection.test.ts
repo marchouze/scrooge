@@ -7,8 +7,8 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { buildFtpPortfolio, emptyFtpPortfolioSummary } from "../projection";
 import type { Event } from "../../event-store/types";
+import { buildFtpPortfolio, emptyFtpPortfolioSummary } from "../projection";
 
 // ---------------------------------------------------------------------------
 // Helper: fabricate minimal events
@@ -166,10 +166,10 @@ describe("buildFtpPortfolio — single attribution", () => {
     // spread = 0.105 - 0.092 = 0.013 → in bps = 130
     expect(s.weightedAvgSpread).toBeCloseTo(130, 4);
     expect(s.activeCurveId).toBe("FTP-ZAR-2026-05-15");
-    expect(s.byTransactionType["loan"]).toBeDefined();
-    expect(s.byTransactionType["loan"]!.count).toBe(1);
-    expect(s.byTransactionType["loan"]!.totalNotional).toBe(100_000_000);
-    expect(s.byTransactionType["loan"]!.avgSpread).toBeCloseTo(130, 4);
+    expect(s.byTransactionType.loan).toBeDefined();
+    expect(s.byTransactionType.loan?.count).toBe(1);
+    expect(s.byTransactionType.loan?.totalNotional).toBe(100_000_000);
+    expect(s.byTransactionType.loan?.avgSpread).toBeCloseTo(130, 4);
   });
 });
 
@@ -198,7 +198,7 @@ describe("buildFtpPortfolio — multiple attributions", () => {
     makeAttributionEvent("ATTR-003", "2026-05-15T06:02:00Z", {
       transactionType: "deposit",
       notional: 50_000_000,
-      clientRate: 0.090,
+      clientRate: 0.09,
       ftpRate: 0.092,
     }),
   ];
@@ -218,25 +218,26 @@ describe("buildFtpPortfolio — multiple attributions", () => {
     //   (100M × 0.013 + 200M × 0.005 + 50M × (-0.002)) / 350M
     //   = (1_300_000 + 1_000_000 - 100_000) / 350_000_000
     //   = 2_200_000 / 350_000_000 = 0.006285... → 62.85... bps
-    const expectedBps = ((100_000_000 * 0.013 + 200_000_000 * 0.005 + 50_000_000 * (-0.002)) / 350_000_000) * 10_000;
+    const expectedBps =
+      ((100_000_000 * 0.013 + 200_000_000 * 0.005 + 50_000_000 * -0.002) / 350_000_000) * 10_000;
     expect(s.weightedAvgSpread).toBeCloseTo(expectedBps, 2);
   });
 
   it("breaks down by transaction type", () => {
     expect(Object.keys(s.byTransactionType).sort()).toEqual(["bond", "deposit", "loan"]);
 
-    expect(s.byTransactionType["loan"]!.count).toBe(1);
-    expect(s.byTransactionType["bond"]!.count).toBe(1);
-    expect(s.byTransactionType["deposit"]!.count).toBe(1);
+    expect(s.byTransactionType.loan?.count).toBe(1);
+    expect(s.byTransactionType.bond?.count).toBe(1);
+    expect(s.byTransactionType.deposit?.count).toBe(1);
 
-    expect(s.byTransactionType["loan"]!.totalNotional).toBe(100_000_000);
-    expect(s.byTransactionType["bond"]!.totalNotional).toBe(200_000_000);
-    expect(s.byTransactionType["deposit"]!.totalNotional).toBe(50_000_000);
+    expect(s.byTransactionType.loan?.totalNotional).toBe(100_000_000);
+    expect(s.byTransactionType.bond?.totalNotional).toBe(200_000_000);
+    expect(s.byTransactionType.deposit?.totalNotional).toBe(50_000_000);
 
     // Avg spreads per type (in bps)
-    expect(s.byTransactionType["loan"]!.avgSpread).toBeCloseTo(130, 4);
-    expect(s.byTransactionType["bond"]!.avgSpread).toBeCloseTo(50, 4);
-    expect(s.byTransactionType["deposit"]!.avgSpread).toBeCloseTo(-20, 4);
+    expect(s.byTransactionType.loan?.avgSpread).toBeCloseTo(130, 4);
+    expect(s.byTransactionType.bond?.avgSpread).toBeCloseTo(50, 4);
+    expect(s.byTransactionType.deposit?.avgSpread).toBeCloseTo(-20, 4);
   });
 
   it("sets activeCurveId to the most recently published curve", () => {
@@ -258,7 +259,7 @@ describe("buildFtpPortfolio — multiple attributions of the same type", () => {
       makeAttributionEvent("A1", "2026-05-15T06:00:00Z", {
         transactionType: "loan",
         notional: 100_000_000,
-        clientRate: 0.10,
+        clientRate: 0.1,
         ftpRate: 0.092,
       }),
       makeAttributionEvent("A2", "2026-05-15T06:01:00Z", {
@@ -270,13 +271,13 @@ describe("buildFtpPortfolio — multiple attributions of the same type", () => {
     ];
     const s = buildFtpPortfolio(events);
     expect(s.totalAttributions).toBe(2);
-    expect(s.byTransactionType["loan"]!.count).toBe(2);
-    expect(s.byTransactionType["loan"]!.totalNotional).toBe(150_000_000);
+    expect(s.byTransactionType.loan?.count).toBe(2);
+    expect(s.byTransactionType.loan?.totalNotional).toBe(150_000_000);
 
     // Weighted avg spread for loans:
     // (100M × 0.008 + 50M × 0.018) / 150M = (800K + 900K) / 150M = 1700K / 150M
     // = 0.01133... → 113.33 bps
     const expectedBps = ((100_000_000 * 0.008 + 50_000_000 * 0.018) / 150_000_000) * 10_000;
-    expect(s.byTransactionType["loan"]!.avgSpread).toBeCloseTo(expectedBps, 2);
+    expect(s.byTransactionType.loan?.avgSpread).toBeCloseTo(expectedBps, 2);
   });
 });
