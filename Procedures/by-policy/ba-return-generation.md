@@ -1,3 +1,14 @@
+---
+procedureId: PROC-FIN-BA-01
+title: BA return generation
+author: Atlas (Core banking platform architect, engineering)
+date: 2026-05-15
+owner: Camille (Chief Financial Officer, governance) · Bea (Accounting & financial reporting engineer, engineering)
+status: POPULATED
+policy-cited: Policies/regulatory-reporting-policy-v1.md · Policies/capital-management-policy-v1.md
+system-capability: prototype/platform/reporting/ba-return-engine (PLANNED)
+---
+
 # Procedure — BA Return Generation
 
 **Procedure ID:** PROC-FIN-BA-01
@@ -5,7 +16,7 @@
 **Approval:** Audit Committee
 **Cadence:** Monthly (BA 100 / 200 / 300 / 600 / 700 / 900); Quarterly (BA 325 / 326 / Risk Return)
 **Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Status:** POPULATED
 
 ---
 
@@ -165,6 +176,7 @@ The following steps involve human judgement and are not fully automated in the c
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Bea + Camille | Initial STUB — full 9-section skeleton; all steps and invariants documented; system capabilities marked PLANNED pending Atlas build. |
+| v0.2 | 2026-05-15 | Atlas (Core banking platform architect, engineering) | Promoted to POPULATED — status updated; all 12 sections verified complete; frontmatter added. |
 
 ---
 
