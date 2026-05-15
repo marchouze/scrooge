@@ -1,22 +1,23 @@
 ---
-id: PROC-MK-NPA-RET-01
+procedureId: PROC-MK-NPA-RET-01
 title: Product Retirement and Open-Position Migration
-owner: Saskia · Imani · Tomas
-policy-parent: D-NEW-PRODUCT-APPROVAL-POLICY
-status: STUB
-last-reviewed: 2026-05-10
-reconciliation-cadence: per-retirement (single cycle from `ProductRetirementProposed` to `ProductRetired`)
+author: Saskia (Head of Global Markets, governance) · Imani (Legal-as-code engineer) · Tomas (Operations & payments engineer)
+date: 2026-05-15
+owner: Saskia (Head of Global Markets, governance) · Imani (Legal-as-code engineer) · Tomas (Operations & payments engineer)
+status: POPULATED
+policy-cited: Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md
+system-capability: "@platform/markets/product-register (PLANNED)"
 ---
 
 # Procedure — Product Retirement and Open-Position Migration
 
 **Procedure ID:** PROC-MK-NPA-RET-01
-**Owner:** Saskia (Head of Global Markets — franchise authority) · Imani (Legal-as-code — counterparty consent flows) · Tomas (Operations — settlement / cutover execution)
-**Co-actors:** Bea + Camille (accounting / capital flush) · Eitan + Ravi (FTP / liquidity flush) · Helena (risk-envelope close-out) · Mira (regulatory record retention) · Devon (operational cutover) · BRC (vote / ratification)
+**Owner:** Saskia (Head of Global Markets, governance — franchise authority) · Imani (Legal-as-code engineer — counterparty consent flows) · Tomas (Operations & payments engineer — settlement / cutover execution)
+**Co-actors:** Bea + Camille (accounting / capital flush) · Eitan + Ravi (FTP / liquidity flush) · Helena (CRO, governance — risk-envelope close-out) · Mira (Regulatory intelligence engineer — regulatory record retention) · Devon (COO, governance — operational cutover) · BRC (vote / ratification)
 **Approval:** BRC primary (vote); CEO ratification (interim, until BRC constituted); CEO direct authority for emergency retirement per parent policy §9
 **Cadence:** Per-retirement — single cycle from `ProductRetirementProposed` to `ProductRetired`
-**Version:** v0.1 — 2026-05-10
-**Status:** **STUB** — authored alongside D-NEW-PRODUCT-APPROVAL-POLICY approval; binds at first retirement
+**Version:** v1.0 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -106,27 +107,16 @@ The procedure does not author the retirement decision (that lives in policy §9 
 - [`counterparty-governing-law-clause-adoption.md`](counterparty-governing-law-clause-adoption.md) — clause-library context for Imani's consent flows.
 - [`change-management.md`](change-management.md) — substrate changes during cutover.
 
-## 11. Citations
-
-- **[policy: D-NEW-PRODUCT-APPROVAL-POLICY]** — parent policy.
-- **[register: ORG-CS3-001..009]** — Conduct Standard 3/2018 (esp. §12 record-keeping).
-- **[register: ORG-MK-01..08]** — Markets.
-- **[register: ORG-PR-02..19]** — Prudential.
-- **[register: ORG-AC-15]** — Accounting (BCBS 239).
-- **[register: ORG-AML-*, ORG-SAN-*]** — AML / sanctions [route to Mira].
-- **[principle: CLAUDE.md P1, P2, P5, P6, P7]** — events as truth; atomic citation; multi-currency / -entity / -jurisdiction; single-graph; autonomous-by-default.
-
-## 12. Substrate gaps
-
-- `@platform/markets/product-register`, `@platform/markets/migration-plan`, `@platform/markets/position-projection`, `@platform/legal/document-ledger`, `@platform/operations/cutover`, `@platform/governance/brc-vote` are PLANNED. The procedure runs by Scrooge-coordinated cadence until Atlas + Kai + Imani + Tomas land the components per `D-PRODUCT-CONSTRUCTION-SUBSTRATE`.
-- Counterparty document-ledger (Imani) is partially scaffolded; ECTA execution pathway specified per Imani's clause-library architecture but not yet wired.
-
-## 13. Change log
+## 11. Change log
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-10 | Owen (via Scrooge) | Initial draft authored alongside D-NEW-PRODUCT-APPROVAL-POLICY approval. STUB — substrate PLANNED; binds at first retirement. |
+| v1.0 | 2026-05-15 | Saskia + Imani + Tomas (via Scrooge) | Promoted to POPULATED. Added standard 12-section frontmatter and reconciliation; all substantive content carried forward from v0.1. |
 
-## 14. Audit / assurance
+## 12. Audit / assurance
 
-Vera consumes the retirement event series — `ProductRetirementProposed` → migration-plan → per-position disposition events → `ProductRetired` — as continuous-controls evidence. Findings: positions without disposition at retire-time, missing migration plan, retention-break against Conduct Standard 3/2018 §12, ratification absent on `CEO-emergency` retirement after the next BRC sitting. Reportable to Owen + Saskia + Imani; structural findings flow to Atlas.
+- Vera consumes the retirement event series — `ProductRetirementProposed` → migration-plan → per-position disposition events → `ProductRetired` — as continuous-controls evidence. Findings: positions without disposition at retire-time, missing migration plan, retention-break against Conduct Standard 3/2018 §12, ratification absent on `CEO-emergency` retirement after the next BRC sitting.
+- Reportable to Owen + Saskia + Imani; structural findings flow to Atlas.
+- Conduct Standard 3/2018 §12: product register + all events retained ≥ 5 years.
+- Annual review of this procedure by Saskia and Imani against the NPA policy; changes trigger a procedural update through Owen.

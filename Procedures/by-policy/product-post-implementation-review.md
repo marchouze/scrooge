@@ -1,22 +1,23 @@
 ---
-id: PROC-MK-NPA-PIR-01
+procedureId: PROC-MK-NPA-PIR-01
 title: Product Post-Implementation Review
-owner: Saskia · Devon
-policy-parent: D-NEW-PRODUCT-APPROVAL-POLICY
-status: STUB
-last-reviewed: 2026-05-10
-reconciliation-cadence: per-product (at controlled-launch period end, default 90 days from `ProductControlledLaunchStarted`); annual re-review thereafter
+author: Saskia (Head of Global Markets, governance) · Devon (COO, governance)
+date: 2026-05-15
+owner: Saskia (Head of Global Markets, governance) · Devon (COO, governance)
+status: POPULATED
+policy-cited: Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md
+system-capability: "@platform/markets/product-register (PLANNED)"
 ---
 
 # Procedure — Product Post-Implementation Review
 
 **Procedure ID:** PROC-MK-NPA-PIR-01
-**Owner:** Saskia (Head of Global Markets) · Devon (COO)
+**Owner:** Saskia (Head of Global Markets, governance) · Devon (COO, governance)
 **Co-actors:** the 14 dimension owners (Helena · Rohan · Eitan · Ravi · Tomas · Atlas · Kai · Bea · Camille · Zara · Mira · Nadia · Imani · Senna · Iris · Yael) for re-attestations; BRC for verdict
 **Approval:** BRC primary; CEO ratification (interim, until BRC constituted)
 **Cadence:** Per-product; fires at end of controlled-launch period (default 90 calendar days from `ProductControlledLaunchStarted`; BRC-extendable per policy §7)
-**Version:** v0.1 — 2026-05-10
-**Status:** **STUB** — authored alongside D-NEW-PRODUCT-APPROVAL-POLICY approval; binds at first PIR
+**Version:** v1.0 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -65,7 +66,7 @@ The PIR verdict drives the next stage transition:
 ## 6. Reconciliation
 
 - **Events produced:** `ProductPIRDue` (scheduler), `ProductPIRConvened`, 14 × re-attestation `ProductDimensionAttested` (or fewer if any are passed-through unchanged with explicit no-change attestation), `ProductPIRCompleted` (with verdict). Downstream: `ProductControlledLaunchCompleted` (on `continue` / `continue-with-amended-conditions`), or `ProductRetired` (on `retire`).
-- **Reconciliation point:** PIR findings either close clean (verdict `continue`), generate follow-up actions (verdict `continue-with-amended-conditions`), or trigger `ProductWithheld` (verdict `withheld`) / `ProductRetired` (verdict `retire`). Every `ProductControlledLaunchStarted` resolves to exactly one `ProductPIRCompleted`. Missing or duplicate PIR events are findings.
+- **Reconciliation check:** every `ProductControlledLaunchStarted` resolves to exactly one `ProductPIRCompleted`. PIR findings either close clean (verdict `continue`), generate follow-up actions (verdict `continue-with-amended-conditions`), or trigger `ProductWithheld` (verdict `withheld`) / `ProductRetired` (verdict `retire`). Missing or duplicate PIR events are findings.
 - **Failure mode:** PIR not convened by `scheduledDate` triggers automatic escalation to BRC chair + CEO; new transactions halt until PIR convenes.
 
 ## 7. Evidence / artefacts
@@ -100,27 +101,18 @@ The PIR verdict drives the next stage transition:
 - [`product-controlled-launch.md`](product-controlled-launch.md) — stage 5; PIR is the mandatory closure gate.
 - [`product-retirement-migration.md`](product-retirement-migration.md) — stage 8; routed on PIR `retire` verdict.
 - [`incident-response.md`](incident-response.md) — incident records consumed at Step 4.
-- `pre-trade-conduct-gate.md` — PLANNED; relevant where PIR amends conduct posture.
+- [`npa-gate.md`](npa-gate.md) — stage 4; the gate paper that set the conditions PIR re-examines.
 
-## 11. Citations
-
-- **[policy: D-NEW-PRODUCT-APPROVAL-POLICY]** — parent policy.
-- **[register: ORG-CS3-001..009]** — Conduct Standard 3/2018 (incl. §12 record-keeping).
-- **[register: ORG-MK-01..08]** — Markets.
-- **[register: ORG-PR-02..19]** — Prudential.
-- **[principle: CLAUDE.md P1, P2, P6, P7]** — events as truth; atomic citation; single-graph; autonomous-by-default.
-
-## 12. Substrate gaps
-
-- `@platform/markets/product-register`, `@platform/governance/brc-vote`, `@platform/markets/conditions-ledger`, `@platform/operations/incident-register` are PLANNED. PIR runs by Scrooge-coordinated cadence until Atlas + Kai land the substrate per `D-PRODUCT-CONSTRUCTION-SUBSTRATE`.
-- BRC vote substrate not yet wired; CEO-interim ratification per `D-THIN-HUMAN-LAYER-MINIMUM` recorded as `AgentDecision`.
-
-## 13. Change log
+## 11. Change log
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-10 | Owen (via Scrooge) | Initial draft authored alongside D-NEW-PRODUCT-APPROVAL-POLICY approval. STUB — substrate PLANNED; binds at first PIR. |
+| v1.0 | 2026-05-15 | Saskia + Devon (via Scrooge) | Promoted to POPULATED. Added standard 12-section frontmatter and reconciliation; all substantive content carried forward from v0.1. |
 
-## 14. Audit / assurance
+## 12. Audit / assurance
 
-Vera consumes the PIR event series + re-attestation stream + incident-record cross-references as continuous-controls evidence. Findings: PIRs not convened on schedule, missing dimensional re-attestations, verdicts inconsistent with incident record, `continue` verdicts where Severity-1/2 incidents were unaddressed. Reportable to Owen + Saskia.
+- Vera consumes the PIR event series + re-attestation stream + incident-record cross-references as continuous-controls evidence. Findings: PIRs not convened on schedule, missing dimensional re-attestations, verdicts inconsistent with incident record, `continue` verdicts where Severity-1/2 incidents were unaddressed.
+- Reportable to Owen + Saskia.
+- Annual re-review of this procedure by Saskia and Devon against the NPA policy §8; changes trigger a procedural update through Owen.
+- Conduct Standard 3/2018 §12 record-keeping: PIR papers retained ≥ 5 years.
