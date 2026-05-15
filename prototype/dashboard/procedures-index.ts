@@ -210,7 +210,7 @@ function readProcedureFrontmatter(path: string): ProcedureFrontmatter {
     fields[key] = value;
   }
   return {
-    id: fields.id ?? "",
+    id: fields.id ?? fields.procedureId ?? "",
     title: fields.title ?? "",
     policyParent: fields["policy-parent"] ?? "",
     lastReviewed: fields["last-reviewed"] ?? "",

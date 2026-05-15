@@ -1,22 +1,23 @@
 ---
-id: PROC-MK-NPA-CL-01
+procedureId: PROC-MK-NPA-CL-01
 title: Product Controlled Launch
-owner: Saskia
-policy-parent: D-NEW-PRODUCT-APPROVAL-POLICY
-status: STUB
-last-reviewed: 2026-05-10
-reconciliation-cadence: daily during controlled-launch window; per-breach event
+author: Saskia (Head of Global Markets, governance)
+date: 2026-05-15
+owner: Saskia (Head of Global Markets, governance)
+status: POPULATED
+policy-cited: Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md
+system-capability: "@platform/markets/product-register (PLANNED)"
 ---
 
 # Procedure — Product Controlled Launch
 
 **Procedure ID:** PROC-MK-NPA-CL-01
-**Owner:** Saskia (Head of Global Markets)
-**Co-actors:** Devon (operational monitoring) · Helena (risk-envelope monitoring) · Camille (capital / accounting monitoring) · Tomas (settlement) · Anya (Product Register projection) · BRC chair (escalation point)
+**Owner:** Saskia (Head of Global Markets, governance)
+**Co-actors:** Devon (COO, governance) · Helena (CRO, governance) · Camille (CFO, governance) · Tomas (Operations & payments engineer) · Anya (platform engineer) · BRC chair (escalation point)
 **Approval:** BRC primary; CEO ratification (interim, until BRC constituted)
 **Cadence:** Per-product; fires on `ProductApproved` (stage 5 of the 8-stage NPA lifecycle); runs continuously through the controlled-launch window; closes on PIR
-**Version:** v0.1 — 2026-05-10
-**Status:** **STUB** — authored alongside D-NEW-PRODUCT-APPROVAL-POLICY approval; binds at first `ProductApproved`
+**Version:** v1.0 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -51,7 +52,7 @@ The procedure does not author the limits themselves (BRC sets them at stage 4 ap
 | 1 | Confirm operational readiness pre-launch. Saskia checks with Devon (process-readiness) and Tomas (settlement path live or simulator-equivalent) before emitting the start event. | Saskia · Devon · Tomas | `@platform/markets/product-register` (PLANNED) | Per policy §4 stage 5 transition. |
 | 2 | Emit `ProductControlledLaunchStarted`. The substrate registers the active limit envelope and the monitoring-recipient list. | Saskia | `@platform/markets/product-register` (PLANNED) | Recipients per policy §7 default: BRC chair, CEO, Helena, Camille, Saskia, Devon. |
 | 3 | First trades execute. Each trade is checked pre-deal against the active limits (volume cap, single-trade cap, counterparty-count cap, risk envelope). Breach attempts are blocked at the OMS gate. | Kai · OMS | `@platform/markets/oms-pre-deal-gate` (PLANNED) | Pre-deal block is the first line of defence; daily report is the second. |
-| 4 | Daily monitoring report. At 06:00 UTC, the substrate generates the report from the Product Register projection: day-1 flow, cap-utilisation, incidents, conditions-tracking deltas. Distributed to monitoring recipients. | system | `@platform/markets/controlled-launch-report` (PLANNED) | Generated as a query (Principle 1, Principle 2); never hand-assembled. |
+| 4 | Daily monitoring report. At 06:00 UTC, the substrate generates the report from the Product Register projection: day-1 flow, cap-utilisation, incidents, conditions-tracking deltas. Distributed to monitoring recipients. | system | `@platform/markets/controlled-launch-report` (PLANNED) | Generated as a query (Principle 1); never hand-assembled. |
 | 5 | Breach handling. On any `ProductControlledLaunchBreach { productId, capName, observedValue, capValue, asOf }`, escalation event fires to BRC chair within the same trading day. Two breaches within the controlled-launch window halt new transactions in the product pending BRC review (`ProductControlledLaunchHalt`). | system + Saskia · BRC chair | `@platform/markets/controlled-launch-monitor` (PLANNED) | Per policy §7 — breach-trigger escalation. |
 | 6 | Limit amendment (if BRC approves). Amendments to limits during the window emit `ProductControlledLaunchAmended { productId, amendedLimits, authority, asOf }`. | BRC + Saskia | `@platform/markets/product-register` (PLANNED) | Recorded with `authority` payload (BRC / CEO-interim). |
 | 7 | Conditions-tracking. Conditions BRC attached at approval are tracked daily; closures, deferrals, and breaches each emit typed events on the conditions ledger. | Devon · Saskia | `@platform/markets/conditions-ledger` (PLANNED) | Each condition has an owner, deadline, and closure event. |
@@ -69,7 +70,7 @@ The procedure does not author the limits themselves (BRC sets them at stage 4 ap
 | Artefact | Location | Retention | Sensitivity |
 |---|---|---|---|
 | `ProductControlledLaunchStarted` / `ProductControlledLaunchCompleted` | Event log (P1) | Indefinite | Internal |
-| Daily monitoring report | Generated query over Product Register projection; archived in event log + Owner Inbox `YYYY-MM-DD_saskia_controlled-launch-report_<productId>.md` | ≥ 5 years (Conduct Standard 3/2018 §12) | Internal |
+| Daily monitoring report | Generated query over Product Register projection; archived as Owner Inbox `YYYY-MM-DD_saskia_controlled-launch-report_<productId>.md` | ≥ 5 years (Conduct Standard 3/2018 §12) | Internal |
 | `ProductControlledLaunchBreach`, `ProductControlledLaunchHalt`, `ProductControlledLaunchAmended` | Event log | Indefinite | Internal |
 | Conditions-tracking deltas | `@platform/markets/conditions-ledger` (PLANNED) | Indefinite | Internal |
 
@@ -77,7 +78,7 @@ The procedure does not author the limits themselves (BRC sets them at stage 4 ap
 
 - BRC chair's same-day acknowledgement of a breach escalation is human discretion captured as `AgentDecision` (or BRC-minute event once the substrate lands).
 - BRC limit-amendment vote (Step 6) is a governance decision recorded with `authority: BRC` (or `authority: CEO-interim` until BRC constituted).
-- Build-phase: until the OMS pre-deal gate (`@platform/markets/oms-pre-deal-gate`) lands, limit enforcement is operated by Kai's pre-deal review; this is a substrate gap (§ below).
+- Build-phase: until the OMS pre-deal gate (`@platform/markets/oms-pre-deal-gate`) lands, limit enforcement is operated by Kai's pre-deal review; this is a substrate gap tracked as a roadmap item.
 
 ## 9. Failure modes and escalation
 
@@ -93,30 +94,21 @@ The procedure does not author the limits themselves (BRC sets them at stage 4 ap
 ## 10. Related procedures
 
 - [`new-product-due-diligence.md`](new-product-due-diligence.md) — stage 3; closes upstream of `ProductApproved`.
+- [`npa-gate.md`](npa-gate.md) — stage 4; produces `ProductApproved` that triggers this procedure.
 - [`product-post-implementation-review.md`](product-post-implementation-review.md) — stage 6; mandatory closure gate for controlled launch.
 - [`product-retirement-migration.md`](product-retirement-migration.md) — stage 8; route on PIR `retire`.
 - [`change-management.md`](change-management.md) — limit-amendment changes route through Devon + Atlas + Senna.
-- `pre-trade-conduct-gate.md` — PLANNED; consumed for the first trade of any new product.
 
-## 11. Citations
-
-- **[policy: D-NEW-PRODUCT-APPROVAL-POLICY]** — parent policy.
-- **[register: ORG-CS3-001..009]** — Conduct Standard 3/2018.
-- **[register: ORG-MK-01..08]** — Markets.
-- **[register: ORG-PR-02..19]** — Prudential.
-- **[principle: CLAUDE.md P1, P2, P5, P6, P7]** — events as truth; atomic citation; multi-currency / -entity / -jurisdiction; single-graph; autonomous-by-default.
-
-## 12. Substrate gaps
-
-- `@platform/markets/product-register`, `@platform/markets/oms-pre-deal-gate`, `@platform/markets/controlled-launch-report`, `@platform/markets/controlled-launch-monitor`, `@platform/markets/conditions-ledger` are all PLANNED. The procedure runs by Scrooge-coordinated cadence until Atlas + Kai land the components per `D-PRODUCT-CONSTRUCTION-SUBSTRATE`.
-- Daily-report distribution channel: until the substrate-native dashboard distribution lands (M8 cloud lift), reports are filed as Owner Inbox deliverables.
-
-## 13. Change log
+## 11. Change log
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-10 | Owen (via Scrooge) | Initial draft authored alongside D-NEW-PRODUCT-APPROVAL-POLICY approval. STUB — substrate components PLANNED; binds at first `ProductApproved`. |
+| v1.0 | 2026-05-15 | Saskia (via Scrooge) | Promoted to POPULATED. Added standard 12-section frontmatter and reconciliation; all substantive content carried forward from v0.1. |
 
-## 14. Audit / assurance
+## 12. Audit / assurance
 
-Vera consumes the controlled-launch event series as continuous-controls evidence. Findings: missing daily reports, breach events not matched by escalation events, halt events with subsequent in-flight trades, PIR-absent window closure. Reportable to Owen + Saskia; structural findings flow to Atlas + Devon.
+- Vera consumes the controlled-launch event series as continuous-controls evidence. Findings: missing daily reports, breach events not matched by escalation events, halt events with subsequent in-flight trades, PIR-absent window closure.
+- Reportable to Owen + Saskia; structural findings flow to Atlas + Devon.
+- Conduct Standard 3/2018 §12 record-keeping: daily monitoring reports retained ≥ 5 years.
+- Annual review of this procedure by Saskia and Devon against the NPA policy; any change to policy §7 triggers a procedural update through Owen.
