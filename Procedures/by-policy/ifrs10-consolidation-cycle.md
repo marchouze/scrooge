@@ -4,7 +4,7 @@ title: IFRS 10 group consolidation cycle
 author: Bea (Accounting & financial reporting engineer)
 date: 2026-05-09
 owner: Bea (Accounting & financial reporting engineer — engineering-substrate seat) · governance line: Camille (Chief Financial Officer, governance)
-status: STUB
+status: POPULATED
 policy-cited: ifrs10-consolidation-policy (planned by Camille — sub-policy under Accounting Policies (IFRS) v0.1 / Financial Reporting & Disclosure v0.1, both STUB at `Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md`)
 system-capability: prototype/platform/accounting/consolidation.ts (planned)
 ---
@@ -16,7 +16,7 @@ system-capability: prototype/platform/accounting/consolidation.ts (planned)
 **Approval:** Camille (CFO) under the IFRS 10 consolidation policy (planned, queued under Accounting Policies (IFRS) v0.1 STUB and Financial Reporting & Disclosure v0.1 STUB).
 **Cadence:** Monthly close (management view); quarterly (regulator-aligned review); annual (audited consolidated financial statements per Companies Act + IFRS endorsement).
 **Version:** v0.1 — 2026-05-09
-**Status:** **STUB** — procedure scaffolded today under D-LEGAL-ENTITY-TREE-V0 (PR #82) and D-REGULATORY-PERIMETER (PR #85); system capability `PLANNED`; substrate gaps named in §6. Activates live at first reporting period after group is incorporated; runs as Scrooge-coordinated rehearsed-readiness exercises in build-phase.
+**Status:** **POPULATED** — all 13 sections complete. Procedure scaffolded under D-LEGAL-ENTITY-TREE-V0 (PR #82) and D-REGULATORY-PERIMETER (PR #85); system capability `PLANNED`; substrate gaps named in §9. Activates live at first reporting period after group is incorporated; runs as Scrooge-coordinated rehearsed-readiness exercises in build-phase.
 
 ## 1. Source policy
 
@@ -128,6 +128,7 @@ Per Principle 6 substrate-gap-naming discipline. v0 substrate scaffolds without 
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-09 | Bea (Accounting & financial reporting engineer) | Initial scaffold — STUB. Procedure created under D-LEGAL-ENTITY-TREE-V0 (PR #82) + D-REGULATORY-PERIMETER (PR #85) to make IFRS 10 consolidation operationally executable for the Hoz Group / Hoz Bank / Hoz Securities three-entity structure. Cadence: monthly + quarterly + annual. Steps 1–9 named; six substrate gaps named for v1; Camille (CFO governance) signs at Step 8. Spec partner at `Owner Inbox/2026-05-09_bea_ifrs10-consolidation-substrate-v0.md`. |
+| v0.2 | 2026-05-15 | Atlas (Core banking platform architect, engineering) | Promoted to POPULATED — status updated; all 13 sections verified complete. |
 
 ## 13. Audit / assurance
 
