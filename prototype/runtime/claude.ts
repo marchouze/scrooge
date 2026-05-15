@@ -31,7 +31,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-import { eventStore } from "../platform/composition";
+import { clock, eventStore } from "../platform/composition";
 import { makeTokenUsageRecorded } from "../platform/event-store/event-types/agent-ops";
 import { logger } from "../platform/observability/logger";
 
@@ -185,7 +185,7 @@ export async function generateNarrative(req: NarrativeRequest): Promise<Narrativ
   };
 
   if (req.meta?.runId && !req.meta?.dryRun) {
-    const now = new Date().toISOString();
+    const now = clock.now();
     try {
       eventStore.append(
         makeTokenUsageRecorded({
