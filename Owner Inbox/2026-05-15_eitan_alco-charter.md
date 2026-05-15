@@ -4,6 +4,7 @@ author: Eitan (Treasurer, engineering)
 date: 2026-05-15
 decision-required: false
 tags: [alco, treasury, governance, charter, alm]
+riskTaxonomy: [RT-LQ, RT-IRRBB]
 ---
 
 # Asset and Liability Committee (ALCO) — Charter v1
