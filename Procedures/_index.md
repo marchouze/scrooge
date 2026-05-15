@@ -33,17 +33,17 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | RMCP | `rmcp-annual-attestation.md` | Zara | PLANNED |
-| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) (PROC-FC-TM-01 — continuous rule-engine scoring, alert triage, MLRO escalation) | Zara (Mira) | **STUB** |
+| AML / CFT Policy | [`transaction-monitoring.md`](by-policy/transaction-monitoring.md) (PROC-FC-TM-01 — continuous rule-engine scoring, alert triage, MLRO escalation) | Zara (Mira) | **POPULATED** |
 | Sanctions Policy | [`sanctions-screening.md`](by-policy/sanctions-screening.md) | Zara (Mira) + Senna | **POPULATED** |
-| Sanctions Policy | [`sanctions-override.md`](by-policy/sanctions-override.md) (PROC-FC-SO-01 — false-positive override + controlled-exit for newly designated clients; MLRO-only cryptographic sign-off; FIC/DPCI notification; PAR filing) | Zara (Chief Compliance Officer, governance) — MLRO | **STUB** |
+| Sanctions Policy | [`sanctions-override.md`](by-policy/sanctions-override.md) (PROC-FC-SO-01 — false-positive override + controlled-exit for newly designated clients; MLRO-only cryptographic sign-off; FIC/DPCI notification; PAR filing) | Zara (Chief Compliance Officer, governance) — MLRO | **POPULATED** |
 | KYC / CDD / EDD Policy | [`kyc-onboarding.md`](by-policy/kyc-onboarding.md) | Zara (Mira) | **POPULATED** |
-| KYC / CDD / EDD Policy | [`kyc-recurring.md`](by-policy/kyc-recurring.md) (PROC-FC-KYC-R-01 — annual/6-monthly/event-triggered CDD refresh; UBO re-walk; EDD for high-risk/PEP; MLRO escalation; `KYCRefreshCompleted` chain) | Zara (Mira) | **STUB** |
-| KYC / CDD / EDD Policy | [`kyc-continuous.md`](by-policy/kyc-continuous.md) (PROC-FC-KYC-C-01 — event-triggered CDD; signal ingestion; severity classification Low/Medium/High/Critical; EDD on High/Critical; MLRO escalation; relationship-exit path) | Zara (Chief Compliance Officer, governance) · Mira (Regulatory intelligence engineer, compliance) | **STUB** |
+| KYC / CDD / EDD Policy | [`kyc-recurring.md`](by-policy/kyc-recurring.md) (PROC-FC-KYC-R-01 — annual/6-monthly/event-triggered CDD refresh; UBO re-walk; EDD for high-risk/PEP; MLRO escalation; `KYCRefreshCompleted` chain) | Zara (Mira) | **POPULATED** |
+| KYC / CDD / EDD Policy | [`kyc-continuous.md`](by-policy/kyc-continuous.md) (PROC-FC-KYC-C-01 — event-triggered CDD; signal ingestion; severity classification Low/Medium/High/Critical; EDD on High/Critical; MLRO escalation; relationship-exit path) | Zara (Chief Compliance Officer, governance) · Mira (Regulatory intelligence engineer, compliance) | **POPULATED** |
 | Conduct of Business / TCF Policy | `complaints-handling.md` | Zara + Niko | PLANNED |
 | FATCA / CRS Policy | `fatca-crs-annual-submission.md` | Yael (Mira) | PLANNED |
-| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **STUB** |
-| Sanctions / FIC | [`tpr-filing.md`](by-policy/tpr-filing.md) (PROC-FC-TPR-01 — MLRO determination, immediate property freeze, goAML TPR submission, DPCI notification, tipping-off controls) | Zara (MLRO) | **STUB** |
-| Sanctions / FIC | [`ctr-filing.md`](by-policy/ctr-filing.md) (PROC-FC-CTR-01 — threshold detection, structuring aggregation, goAML batch submission, 15-day timeliness) | Zara (MLRO) · Mira | **STUB** |
+| Sanctions / FIC | [`str-filing.md`](by-policy/str-filing.md) (PROC-FC-STR-01 — MLRO decision, goAML submission, tipping-off controls, TPR coordination) | Zara (MLRO) | **POPULATED** |
+| Sanctions / FIC | [`tpr-filing.md`](by-policy/tpr-filing.md) (PROC-FC-TPR-01 — MLRO determination, immediate property freeze, goAML TPR submission, DPCI notification, tipping-off controls) | Zara (MLRO) | **POPULATED** |
+| Sanctions / FIC | [`ctr-filing.md`](by-policy/ctr-filing.md) (PROC-FC-CTR-01 — threshold detection, structuring aggregation, goAML batch submission, 15-day timeliness) | Zara (MLRO) · Mira | **POPULATED** |
 | RMCP / Sanctions / FIC | [`fic-submission-cycle.md`](by-policy/fic-submission-cycle.md) | Triple-hatted compliance lead (MLRO + FIC CO + IO) — Zara (governance) + Mira (engineering) | **DRAFT v0.1** (post D-THIN-HUMAN-LAYER-MINIMUM) |
 
 ## Privacy & data protection

@@ -4,8 +4,8 @@
 **Owner:** Zara (Chief Compliance Officer, governance) — acting MLRO
 **Approval:** Board (MLRO accountability is statutory under FIC Act s.43; Board reserves this approval)
 **Cadence:** Event-triggered (per MLRO decision to file following a case escalation or direct referral)
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ---
 
@@ -122,6 +122,7 @@ Any of the following initiates the STR filing procedure:
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Zara + Mira | Initial STUB — all 9 sections; system capabilities all PLANNED. |
+| v0.2 | 2026-05-15 | Zara (Chief Compliance Officer, governance) + Mira (Regulatory intelligence engineer, compliance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

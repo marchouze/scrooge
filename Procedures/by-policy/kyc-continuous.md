@@ -4,8 +4,8 @@
 **Owner:** Zara (Chief Compliance Officer, governance) · Mira (Regulatory intelligence engineer, compliance)
 **Approval:** BRC
 **Cadence:** Continuous (event-triggered; runs on every KYC signal ingestion)
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -139,6 +139,7 @@ These manual steps are tracked exceptions under Principle 2; each produces a typ
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer, governance) | Initial stub. All 9 sections drafted; system capabilities `PLANNED`; pending BRC review and approval. |
+| v0.2 | 2026-05-15 | Zara (Chief Compliance Officer, governance) + Mira (Regulatory intelligence engineer, compliance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 
