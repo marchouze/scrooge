@@ -30,7 +30,7 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
 | ★ Risk Appetite Statement (RAS) | Helena | Board | Annual | Banks Act; BCBS Corporate Governance Principles for Banks | `EXISTS` (Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md, approved B1) |
-| ★ Governance Framework (constitutional / meta-policy) | Helena + Owen | Board | Annual | Banks Act; King IV; Companies Act 71 of 2008 | `EXISTS` (approved A1) |
+| ★ Governance Framework (constitutional / meta-policy) | Helena + Owen | Board | Annual | Banks Act; King IV; Companies Act 71 of 2008 | `IN FORCE` (v1: Policies/governance-framework-v1.md; approved A1) |
 | Risk Management Framework | Helena | Board | Annual | BCBS; Banks Act | `DRAFTING` (in RAS-RAF) |
 | Combined Assurance Policy | Owen + future CAE | AC | Annual | King IV; IIA IPPF | `PLANNED` |
 | ★ Delegation of Authority (DoA) | Owen + Devon | Board | Annual | Companies Act; King IV | `DRAFTING` (in framework §6) |
@@ -40,15 +40,15 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Credit Risk Policy | Helena | BRC | Annual | Banks Act; BCBS large-exposures framework | `PLANNED` |
-| ★ Market Risk Policy | Helena | BRC | Annual | BCBS Market Risk (FRTB / D352, D457) | `PLANNED` |
+| ★ Credit Risk Policy | Helena | BRC | Annual | Banks Act; BCBS large-exposures framework | `IN FORCE` (v1: Policies/credit-risk-policy-v1.md) |
+| ★ Market Risk Policy | Helena | BRC | Annual | BCBS Market Risk (FRTB / D352, D457) | `IN FORCE` (v1: Policies/market-risk-policy-v1.md) |
 | ★ Liquidity Risk Management Policy | Helena + Eitan | BRC | Annual | BCBS D295 / D335 / BCBS 144 | `IN FORCE` (v1: Policies/liquidity-risk-management-policy-v1.md; inbox: Owner Inbox/2026-05-11_camille-eitan-helena_liquidity-risk-management-policy-v1.md) |
 | IRRBB Policy | Helena + Eitan | BRC | Annual | BCBS D368 | `PLANNED` |
 | Counterparty Credit Risk Policy | Helena + Saskia | BRC | Annual | BCBS large-exposures framework | `PLANNED` |
-| ★ Operational Risk Policy | Helena + Devon | BRC | Annual | BCBS Operational Risk (rev. 2021) | `PLANNED` |
-| ★ Operational Resilience Policy | Devon (with Helena) | BRC | Annual | BCBS Operational Resilience (2021) | `PLANNED` |
-| Model Risk Policy | Helena | BRC | Annual | SR 11-7 / SS 1/23 idiom; BCBS | `PLANNED` (B7 approved) |
-| Stress Testing Policy | Helena | BRC | Annual | Banks Act / PA; BCBS | `PLANNED` |
+| ★ Operational Risk Policy | Helena + Devon | BRC | Annual | BCBS Operational Risk (rev. 2021) | `IN FORCE` (v1: Policies/operational-risk-policy-v1.md) |
+| ★ Operational Resilience Policy | Devon (with Helena) | BRC | Annual | BCBS Operational Resilience (2021) | `IN FORCE` (v1: Policies/operational-resilience-policy-v1.md) |
+| Model Risk Policy | Helena | BRC | Annual | SR 11-7 / SS 1/23 idiom; BCBS | `IN FORCE` (v1: Policies/model-risk-policy-v1.md; B7 approved) |
+| Stress Testing Policy | Helena | BRC | Annual | Banks Act / PA; BCBS | `IN FORCE` (v1: Policies/stress-testing-policy-v1.md) |
 | ★ ICAAP | Helena (with Camille) | Board | Annual | Banks Act / PA | `PLANNED` |
 | ★ ILAAP | Helena (with Eitan) | Board | Annual | Banks Act / PA; BCBS | `PLANNED` |
 | Climate-Related Risk Policy | Helena (with S&E) | BRC + S&E | Annual | PA Guidance Note 1 of 2024; TCFD | `PLANNED` (B9 approved) |
@@ -68,11 +68,11 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 | STR / CTR / TPR Policy | Zara | BRC | Annual | FIC Act ss.28 / 28A / 29 | `PLANNED` |
 | FATCA / CRS Policy | Zara + Yael | BRC | Annual | FATCA IGA; CRS; SARS BRS | `PLANNED` |
 | Tipping-Off Prevention Policy | Zara | BRC | Annual | FIC Act | `PLANNED` |
-| ★ Conduct of Business / TCF Policy | Zara | BRC | Annual | FSCA conduct standards; TCF outcomes | `PLANNED` |
-| FAIS Policy (when FSP licence carried) | Zara (with Saskia / Niko) | BRC | Annual | FAIS Act 37 of 2002; General Code of Conduct | `PLANNED` |
+| ★ Conduct of Business / TCF Policy | Zara | BRC | Annual | FSCA conduct standards; TCF outcomes | `IN FORCE` (v1: Policies/conduct-of-business-tcf-policy-v1.md) |
+| FAIS Policy (when FSP licence carried) | Zara (with Saskia / Niko) | BRC | Annual | FAIS Act 37 of 2002; General Code of Conduct | `IN FORCE` (v1: Policies/fais-compliance-policy-v1.md) |
 | Market Abuse / Surveillance Policy | Zara (with Saskia) | BRC | Annual | Financial Markets Act 19 of 2012, Ch. X | `PLANNED` |
 | Complaints Handling Policy | Zara (with Niko) | BRC | Annual | FAIS; FSCA; National Credit Act where relevant | `PLANNED` |
-| Excon Compliance Policy | Zara (with Eitan) | BRC | Annual | Currency and Exchanges Manual for Authorised Dealers | `PLANNED` |
+| Excon Compliance Policy | Zara (with Eitan) | BRC | Annual | Currency and Exchanges Manual for Authorised Dealers | `IN FORCE` (v1: Policies/excon-compliance-policy-v1.md) |
 | Regulatory Change Management Policy | Zara (with Mira) | BRC | Annual | Internal — implements P2 | `PLANNED` |
 | Regulatory Engagement Policy | Zara (with Owen) | Board | Annual | King IV; Banks Act | `PLANNED` |
 
@@ -91,11 +91,11 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Information Security Policy | Senna + Rashida (CISO from 2026-05-06) | BRC | Annual | POPIA ss.19–22; ISO 27001 | `IN FORCE` (Round 2 bundle §1) |
+| ★ Information Security Policy | Senna + Rashida (CISO from 2026-05-06) | BRC | Annual | POPIA ss.19–22; ISO 27001 | `IN FORCE` (v1: Policies/information-security-it-governance-policy-v1.md; Round 2 bundle §1) |
 | ★ Cyber Resilience Policy | Senna + Rashida (CISO from 2026-05-06) | BRC | Annual | Joint Standard 1 of 2024 | `IN FORCE` (Round 2 bundle §2; B6 approved) |
 | Access Control Policy | Senna + Rashida | BRC | Annual | POPIA ss.19; ISO 27001 | `PLANNED` |
 | Cryptographic Key Management Policy | Senna + Rashida | BRC | Annual | FIPS 140-2/3; ISO 27001 | `PLANNED` |
-| Incident Response Policy | Senna + Rashida (with Iris, Zara) | BRC | Annual | Joint Standard 1 of 2024; POPIA s.22 | `IN FORCE` (Round 2 bundle §3) |
+| Incident Response Policy | Senna + Rashida (with Iris, Zara) | BRC | Annual | Joint Standard 1 of 2024; POPIA s.22 | `IN FORCE` (v1: Policies/incident-response-policy-v1.md; Round 2 bundle §3) |
 | Secure SDLC Policy | Senna + Rashida | BRC | Annual | NIST SSDF; SLSA; ISO/IEC 27001:2022 A.8.25–A.8.34; Joint Standard 1 of 2024 | **`IN FORCE`** (added 2026-05-06 end-of-day; bundle §9; procedure `secure-sdlc.md` populated) |
 | Data Classification & Handling Policy | Senna (with Iris) | BRC | Annual | POPIA; ISO 27001 | `PLANNED` |
 | Acceptable Use Policy | Senna (with Sade) | BRC | Annual | ISO 27001 | `PLANNED` |
@@ -106,11 +106,11 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 
 | Policy | Owner | Approval | Cadence | Citation | Status |
 |---|---|---|---|---|---|
-| ★ Outsourcing & Third-Party Risk Policy | Devon | Board | Annual | SARB Directive 3 of 2018 | `PLANNED` |
+| ★ Outsourcing & Third-Party Risk Policy | Devon | Board | Annual | SARB Directive 3 of 2018 | `IN FORCE` (v1: Policies/outsourcing-third-party-risk-policy-v1.md) |
 | Cloud Computing Policy | Devon (with Senna, Iris) | Board | Annual | SARB Directive 3 of 2018; POPIA s.72 | `PLANNED` |
 | ★ Business Continuity & Disaster Recovery Policy | Devon | BRC | Annual | BCBS Operational Resilience; King IV | `PLANNED` |
 | Change Management Policy | Devon (with Atlas) | BRC | Annual | ITIL; BCBS Operational Risk | `PLANNED` |
-| ★ Records Management Policy | Owen (with Devon) | Board | Annual | Companies Act; FIC Act s.22; POPIA | `PLANNED` |
+| ★ Records Management Policy | Owen (with Devon) | Board | Annual | Companies Act; FIC Act s.22; POPIA | `IN FORCE` (v1: Policies/records-management-policy-v1.md) |
 | IT General Controls Policy | Devon (with Atlas, Senna) | BRC | Annual | COBIT; ISO 27001 | `PLANNED` |
 | Vendor Management Policy | Devon | BRC | Annual | SARB Directive 3 of 2018 | `PLANNED` |
 
@@ -121,9 +121,9 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 | ★ Capital Management Policy | Camille | Board (via BRC) | Annual | Banks Act; BCBS Basel III/IV | `IN FORCE` (v1: Policies/capital-management-policy-v1.md; inbox: Owner Inbox/2026-05-11_camille-helena_capital-management-policy-v1.md) |
 | ★ Recovery & Resolution Planning Policy | Helena + Camille + Owen | Board | Annual | PA D1/2015; Banks Act ss.60-72; FSB Key Attributes | `IN FORCE` (v1: Policies/recovery-resolution-planning-policy-v1.md; inbox: Owner Inbox/2026-05-11_helena-camille_recovery-resolution-planning-policy-v1.md) |
 | ★ Capital Plan | Camille | Board | Annual | Banks Act; PA | `PLANNED` |
-| ★ Accounting Policies (IFRS) | Camille (with Bea) | AC + Board | Annual | IFRS 9 / 7 / 13 / 15 / 16; IAS 1 / 12 / 21 | `PLANNED` |
+| ★ Accounting Policies (IFRS) | Camille (with Bea) | AC + Board | Annual | IFRS 9 / 7 / 13 / 15 / 16; IAS 1 / 12 / 21 | `IN FORCE` (v1: Policies/accounting-policies-ifrs-v1.md) |
 | Financial Reporting & Disclosure Policy | Camille (with Bea) | AC + Board | Annual | Banks Act; IFRS; JSE LR (if listed) | `PLANNED` |
-| ★ Tax Policy | Yael (under Camille) | AC | Annual | Income Tax Act; VAT Act; Tax Admin Act | `PLANNED` |
+| ★ Tax Policy | Yael (under Camille) | AC | Annual | Income Tax Act; VAT Act; Tax Admin Act | `IN FORCE` (v1: Policies/tax-policy-v1.md) |
 | Transfer Pricing Policy | Yael | AC | Annual | Income Tax Act; OECD TP Guidelines | `PLANNED` |
 | External Audit Engagement Policy | Camille (with Owen) | AC + Board | Annual | Companies Act; Banks Act; IRBA | `PLANNED` |
 | Provisioning / IFRS 9 ECL Policy | Helena (with Bea) | BRC + AC | Annual | IFRS 9 | `PLANNED` |
@@ -182,11 +182,11 @@ The register lists **~75 policies** across 14 domains. Some are mandatory for SA
 |---|---|---|---|---|---|
 | ★ Code of Conduct | Owen (with Sade) | Board | Biennial | King IV; Companies Act | `PLANNED` |
 | Code of Ethics | Owen | Board | Biennial | King IV | `PLANNED` |
-| ★ Conflicts of Interest Policy | Owen | Board | Biennial | Companies Act; King IV; FAIS | `PLANNED` |
+| ★ Conflicts of Interest Policy | Owen | Board | Biennial | Companies Act; King IV; FAIS | `IN FORCE` (v1: Policies/conflicts-of-interest-policy-v1.md) |
 | Related-Party Transactions Policy | Owen | Board | Biennial | Companies Act; IAS 24; JSE LR if listed | `PLANNED` |
 | Gifts, Hospitality & Entertainment Policy | Owen | AC + S&E | Biennial | PRECCA; King IV | `PLANNED` |
-| ★ Anti-Bribery & Corruption Policy | Owen + Zara | Board | Biennial | PRECCA; UK Bribery Act (extra-territorial); FCPA where relevant | `PLANNED` |
-| ★ Whistleblowing Policy | Owen | AC + S&E | Biennial | Protected Disclosures Act; King IV | `PLANNED` |
+| ★ Anti-Bribery & Corruption Policy | Owen + Zara | Board | Biennial | PRECCA; UK Bribery Act (extra-territorial); FCPA where relevant | `IN FORCE` (v1: Policies/anti-bribery-corruption-whistleblowing-policy-v1.md) |
+| ★ Whistleblowing Policy | Owen | AC + S&E | Biennial | Protected Disclosures Act; King IV | `IN FORCE` (v1: Policies/anti-bribery-corruption-whistleblowing-policy-v1.md — combined ABC+WB policy) |
 | Insider Trading / Personal Account Dealing Policy | Owen + Zara | BRC | Annual | FMA Ch. X; JSE LR if listed | `PLANNED` |
 | Information Disclosure / Insider-Information Policy | Owen + Zara | Board | Biennial | FMA; JSE LR if listed | `PLANNED` |
 | Social & Ethics Policy | Owen + future CHRO | S&E | Biennial | Companies Act Reg. 43 | `PLANNED` |
