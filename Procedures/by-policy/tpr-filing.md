@@ -4,8 +4,8 @@
 **Owner:** Zara (Chief Compliance Officer, governance) — MLRO
 **Approval:** Board (MLRO accountability is statutory under FIC Act s.43; Board reserves this approval)
 **Cadence:** Event-triggered (per MLRO determination)
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ---
 
@@ -131,6 +131,7 @@ Any of the following initiates the TPR filing procedure:
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Zara | Initial STUB — all 9 sections; system capabilities all PLANNED; Board approval pathway noted. |
+| v0.2 | 2026-05-15 | Zara (Chief Compliance Officer, governance) + Mira (Regulatory intelligence engineer, compliance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

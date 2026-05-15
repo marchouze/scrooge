@@ -4,8 +4,8 @@
 **Owner:** Zara (Chief Compliance Officer, governance) · Mira (Regulatory intelligence engineer, compliance)
 **Approval:** BRC
 **Cadence:** Annual (standard risk); 6-monthly (high risk / PEP); event-triggered (material change)
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -113,6 +113,7 @@ Two independent trigger types:
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Mira + Zara | Initial stub — all 9 sections; system capabilities PLANNED. |
+| v0.2 | 2026-05-15 | Zara (Chief Compliance Officer, governance) + Mira (Regulatory intelligence engineer, compliance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

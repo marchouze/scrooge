@@ -4,8 +4,8 @@
 **Owner:** Zara (Chief Compliance Officer, governance) — MLRO · Mira (Regulatory intelligence engineer, compliance)
 **Approval:** BRC
 **Cadence:** Continuous (per qualifying transaction); monthly submission cycle to FIC
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ---
 
@@ -122,6 +122,7 @@ Any of the following initiates the CTR filing procedure:
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Zara + Mira | Initial STUB — all 9 sections; system capabilities all PLANNED. |
+| v0.2 | 2026-05-15 | Zara (Chief Compliance Officer, governance) + Mira (Regulatory intelligence engineer, compliance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

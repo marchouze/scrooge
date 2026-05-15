@@ -4,8 +4,8 @@
 **Owner:** Zara (Chief Compliance Officer, governance) — MLRO
 **Approval:** Board (Sanctions Policy is Board-reserved; override authority is statutory MLRO)
 **Cadence:** Event-triggered (per override petition; expected to be rare)
-**Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Version:** v0.2 — 2026-05-15
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -127,6 +127,7 @@ All manual steps produce typed events with the actor's agent identity under Prin
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Zara (Chief Compliance Officer, governance) · Mira (Regulatory intelligence engineer, compliance) | Initial stub. All 9 sections drafted covering both override types (false-positive and controlled-exit). System capabilities PLANNED. Pending Board review and approval (Sanctions Policy is Board-reserved). |
+| v0.2 | 2026-05-15 | Zara (Chief Compliance Officer, governance) + Mira (Regulatory intelligence engineer, compliance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 
