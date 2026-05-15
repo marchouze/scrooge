@@ -13,6 +13,8 @@
 //                         (AgentBriefIssued, AgentRunStarted/Completed)
 //   - audit.ts          — AuditFinding (typed finding against an agent's
 //                         performance or output quality)
+//   - decision-request.ts — AgentDecisionRequired (request-for-input that
+//                         blocks forward progress; see platform/event-trigger/)
 //   - platform.ts       — WorkstreamRegistered, DecisionComment,
 //                         ScheduledTrigger, SubstrateAlert, IdentityKeyRotated,
 //                         PermissionPolicyPublished, BusDispatched,
@@ -40,6 +42,7 @@
 
 export * from "./agent";
 export * from "./audit";
+export * from "./decision-request";
 export * from "./governance";
 export * from "./platform";
 export * from "./risk";
@@ -266,6 +269,11 @@ export const TYPED_EVENT_TYPES = [
   // present before generating any quantity-dependent report.
   // Author: Anya (Data / analytics engineer, engineering).
   "SemanticLayerQuantityRegistered",
+  // Agent decision request — emitted when an agent needs a human or
+  // higher-authority agent to make a decision before proceeding.
+  // Principle 6: every step an agent cannot authorise on its own is a
+  // formal typed channel. See platform/event-trigger/ dispatch library.
+  "AgentDecisionRequired",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
