@@ -2,7 +2,7 @@
 // Per-agent handler metadata for Rohan (Risk Engineer).
 // To add a handler: add an entry here, then add one spread in handlers-metadata.ts.
 
-import type { HandlerMetadata } from "../../handlers-metadata";
+import type { HandlerMetadata } from "../../types";
 import { entry } from "./_entry";
 
 export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
