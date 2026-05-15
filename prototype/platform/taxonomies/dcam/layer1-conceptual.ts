@@ -10,7 +10,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import type { FiboModule, SkosMatchType } from "../index";
+import type { FiboModule, SkosMatchType } from "./types";
 
 export interface ConceptualConcept {
   readonly key: string;

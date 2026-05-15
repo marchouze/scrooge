@@ -13,7 +13,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import type { LogicalStandard, SkosMatchType } from "../index";
+import type { LogicalStandard, SkosMatchType } from "./types";
 
 export interface LogicalMapping {
   readonly conceptKey: string;

@@ -1152,7 +1152,7 @@ import {
   PHYSICAL_RISK_L1,
   getLogicalMappings,
 } from "../taxonomies/dcam/index";
-import type { DcamAlignment } from "../taxonomies/index";
+import type { DcamAlignment } from "../taxonomies/dcam/types";
 
 /**
  * Assemble the full DCAM three-layer alignment for a risk taxonomy L1 code.

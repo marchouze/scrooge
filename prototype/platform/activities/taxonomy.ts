@@ -107,7 +107,7 @@ import {
   PHYSICAL_ACTIVITY,
   getLogicalMappings,
 } from "../taxonomies/dcam/index";
-import type { DcamAlignment } from "../taxonomies/index";
+import type { DcamAlignment } from "../taxonomies/dcam/types";
 
 /**
  * Assemble the full DCAM three-layer alignment for an activity code.
