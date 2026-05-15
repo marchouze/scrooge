@@ -4,7 +4,7 @@ title: Counterparty institutional-eligibility screening (FAIS Posture A)
 author: Niko (Sales / CRM engineer)
 date: 2026-05-09
 owner: Niko (Sales / CRM engineer) + governance-line: Saskia (Head of Global Markets, governance) + Zara (Chief Compliance Officer, governance)
-status: STUB
+status: POPULATED
 policy-cited: institutional-only-FAIS-Posture-A
 system-capability: prototype/platform/lifecycle/counterparty-eligibility.ts (planned)
 ---
@@ -15,8 +15,8 @@ system-capability: prototype/platform/lifecycle/counterparty-eligibility.ts (pla
 **Owner (engineering):** Niko (Sales / CRM engineer) — counterparty-lifecycle substrate.
 **Owner (governance):** Saskia (Head of Global Markets, governance) — markets-franchise side; Zara (Chief Compliance Officer, governance) — conduct line.
 **Cadence:** Per-counterparty at onboarding; annual re-eligibility cycle; trigger-based on ongoing-monitoring breach signal.
-**Version:** v0 — 2026-05-09
-**Status:** **STUB** — substrate (typed events + this procedure) lands in this PR. The classification module that performs the test (`prototype/platform/lifecycle/counterparty-eligibility.ts`) is named as a substrate gap and authored in a follow-on PR.
+**Version:** v0.2 — 2026-05-15
+**Status:** **POPULATED**
 
 ## 1. Source policy
 
@@ -74,10 +74,46 @@ The procedure produces an immutable `CounterpartyEligibilityScreened` event keye
 | `CounterpartyEligibilityBreached` event | event store | per FAIS retention (`[citation: TBC]`) | restricted |
 | Screening rationale document | `Owner Inbox/<counterpartyId>/eligibility-screening-<screeningId>.md` | per counterparty-master-data retention | restricted |
 
-## 8. Substrate gaps named (NOT built in this PR)
+## 8. Manual steps
 
-- **`prototype/platform/lifecycle/counterparty-eligibility.ts`** — typescript module that performs the actual classification logic + emits the events. **Owner:** Atlas (Core banking platform architect) + Niko (Sales / CRM engineer) joint follow-on PR.
-- **Vera (Internal-audit / continuous-assurance engineer) Wave-4 finding-pipeline** — the `Order*`-without-current-eligibility recon (cross-domain check above). **Owner:** Vera planning task.
-- **Institutional-eligibility-criteria-as-code** — typed criteria taxonomy at `prototype/platform/lifecycle/eligibility-criteria.ts`. **Owner:** Niko (Sales / CRM engineer) + Imani (Legal-as-code engineer) joint follow-on; legal-as-code engineer authors the criteria-typed definitions; CRM engineer consumes.
-- **Counterparty-master-data interaction** — Niko's wider lifecycle substrate (counterparty registration, FK references, status projections). Out of scope for this v0 PR.
-- **FAIS s.45 sub-section refs** — `[citation: TBC pending counsel]` until counsel ratifies at the licence-application gate. Tracked under Imani (Legal-as-code engineer)'s external-counsel scope (`Owner Inbox/2026-05-09_imani_external-counsel-licence-application.md`).
+The following steps involve human judgement and cannot be fully automated in the current build-phase substrate:
+
+- **Step 2 — Apply institutional-eligibility criteria:** While the criteria taxonomy will be codified (`prototype/platform/lifecycle/eligibility-criteria.ts` — PLANNED, Niko + Imani joint follow-on), the initial assessment at each onboarding requires human review of entity documentation and classification evidence.
+- **Step 4 — Ineligibility routing:** When a counterparty screens as ineligible, Saskia (Head of Global Markets, governance) and Zara (Chief Compliance Officer, governance) must jointly decide whether to decline or explore alternative structuring. This governance decision is not automatable.
+- **Step 5 — Indeterminate outcome:** Zara and counsel must exercise legal and regulatory judgement on borderline cases. Counsel ratification feeds back as a fresh screening cycle; the judgement call is irreducibly human.
+
+Substrate gaps tracked separately: (1) `prototype/platform/lifecycle/counterparty-eligibility.ts` — Atlas + Niko follow-on; (2) FAIS s.45 sub-section refs — `[citation: TBC pending counsel]` until counsel ratifies at the licence-application gate (Imani external-counsel scope).
+
+## 9. Failure modes and escalation
+
+| Failure mode | Detection | Escalation |
+|---|---|---|
+| `ineligible` outcome at onboarding | `CounterpartyEligibilityScreened { outcome: "ineligible" }` event | Niko routes to Saskia (Head of Global Markets, governance) + Zara (Chief Compliance Officer, governance) via typed escalation channel; counterparty blocked from lifecycle |
+| `indeterminate` outcome | `CounterpartyEligibilityScreened { outcome: "indeterminate" }` event | Zara (Chief Compliance Officer, governance) + counsel; counterparty held pre-lifecycle pending ratification |
+| `CounterpartyEligibilityBreached` (ongoing monitoring) | Automated breach detection on external signal | Fresh screening triggered immediately; all `Order*` activity gated until new `institutional-eligible` outcome recorded; Saskia + Zara notified |
+| No `evidenceRef` on screening event | Zod schema rejection at event-store write | Event rejected; Niko must re-submit with at least one evidence reference |
+| `Order*` event without current `CounterpartyEligibilityScreened` | Vera Wave-4 recon | Vera finding → Helena (CRO, governance) + Zara (Chief Compliance Officer, governance); order halted or reversed; root-cause investigation |
+| Annual re-eligibility cycle missed | Scheduler alert + Vera recon | Niko escalates to Zara; counterparty flagged for manual re-eligibility; further orders blocked until cleared |
+| FAIS scope-of-services breach | Zara conduct-line monitoring | Immediate escalation to CEO + BRC; regulator notification if material |
+
+## 10. Related procedures
+
+- [`counterparty-onboarding-markets.md`](counterparty-onboarding-markets.md) (PROC-MK-CO-01) — institutional-eligibility screening (this procedure) is a gate within the broader seven-gate counterparty onboarding; must clear before ISDA/GMRA documentation, credit limit setting, and `CounterpartyEnabled` event.
+- [`kyc-onboarding.md`](kyc-onboarding.md) — KYC/CDD/EDD gate runs in parallel with eligibility screening for new counterparties.
+- [`sanctions-screening.md`](sanctions-screening.md) (PROC-FC-02) — sanctions screening is a mandatory parallel gate; no counterparty enters the lifecycle without both a `CounterpartyEligibilityScreened` (institutional-eligible) and a `ScreeningPerformed` (no block).
+- [`fais-advice-record-capture.md`](fais-advice-record-capture.md) — downstream of eligibility; FAIS advice records cite the `screeningId` as the institutional-eligibility anchor.
+- `client-categorisation.md` (STUB) — FAIS client categorisation interacts with the institutional-eligibility outcome; Posture A binds both.
+
+## 11. Change log
+
+| Version | Date | Author | Summary |
+|---|---|---|---|
+| v0 | 2026-05-09 | Niko + Saskia + Zara | Initial STUB — typed events, §1–§8 (substrate gaps); FAIS Posture A binding per D-FSP-LICENCE-NECESSITY. |
+| v0.2 | 2026-05-15 | Niko + Zara | Promoted STUB → POPULATED; added §8 manual steps (proper), §9 failure modes, §10 related procedures, §11 change log, §12 audit; substrate gaps relocated to notes. |
+
+## 12. Audit / assurance
+
+- **Vera continuous:** `Order*`-without-current-eligibility recon — every `Order*` event for a counterparty traces to a current `CounterpartyEligibilityScreened` (or `CounterpartyEligibilityRevalidated`) outcome of `institutional-eligible`. A `CounterpartyEligibilityBreached` invalidates the prior screening; orders gate until fresh screening. Finding surfaced to Helena (CRO, governance) + Zara (Chief Compliance Officer, governance).
+- **Vera periodic (quarterly):** citation-completeness check — every `CounterpartyEligibilityScreened` event carries the required FAIS s.45 citation and at least one Mira PR #70 URN reference.
+- **Annual re-eligibility:** the scheduler emits annual re-eligibility prompts; Vera verifies that every active counterparty has a `CounterpartyEligibilityRevalidated` within the preceding 13 months.
+- **Zara conduct-line review (annual):** review of all `indeterminate` outcomes resolved by counsel; review of any FAIS scope-of-services issues surfaced during the year; report to BRC.
