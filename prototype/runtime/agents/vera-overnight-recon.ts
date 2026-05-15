@@ -341,6 +341,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         // Short narrative — adaptive thinking will wrap up early; cap is a safety net.
         maxTokens: 8_000,
         effort: "high",
+      meta: { runId: ctx.runId ?? ctx.trigger.id, agent: ctx.agent, dryRun: ctx.dryRun },
       });
       if (r.ok) {
         narrative = r.result.text.trim();

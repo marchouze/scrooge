@@ -533,6 +533,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         userInput: buildNarrativeInput(ctx, snap),
         maxTokens: 6_000,
         effort: "high",
+      meta: { runId: ctx.runId ?? ctx.trigger.id, agent: ctx.agent, dryRun: ctx.dryRun },
       });
       if (r.ok) {
         narrative = r.result.text.trim();
