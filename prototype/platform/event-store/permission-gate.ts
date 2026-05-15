@@ -93,7 +93,7 @@ export const PRIVILEGED_EVENT_TYPES: ReadonlySet<string> = new Set([
  * Legacy pre-A1-vintage event types. The gate skips enforcement for
  * events of these types when the actor's policy lookup fails (no
  * `PermissionPolicyPublished` yet). This is the one-time backfill
- * window per Senna+Rashida T-01 mitigation #2:
+ * window per D-T-01-PERMISSION-GATE-SECURE-DEFAULT mitigation #2:
  *
  *   "Add a one-time backfill allow-list (`LEGACY_PRE_A1_EVENT_TYPES`)
  *    for the small set of events whose actors pre-date the registry
@@ -104,7 +104,7 @@ export const PRIVILEGED_EVENT_TYPES: ReadonlySet<string> = new Set([
  *
  * Composition:
  *   - Every `prototype/platform/event-store/registry.ts` event type as
- *     of D-T-01-PERMISSION-GATE-SECURE-DEFAULT mitigation date (2026-05-10) is included. As agents
+ *     as of D-T-01-PERMISSION-GATE-SECURE-DEFAULT (2026-05-10) is included. As agents
  *     publish their `PermissionPolicyPublished` events, their actor
  *     URNs naturally take the policy-enforced path; the bypass only
  *     fires when *no policy is published yet* AND the type is on this
@@ -121,7 +121,7 @@ export const LEGACY_PRE_A1_EVENT_TYPES: ReadonlySet<string> = new Set([
   // -------------------------------------------------------------------
   // Snapshot of every event type emitted across `prototype/platform/`,
   // `prototype/runtime/`, `prototype/scenarios/`, `prototype/scripts/`
-  // and `prototype/tests/` as of 2026-05-10 (D-T-01-PERMISSION-GATE-SECURE-DEFAULT mitigation date).
+  // and `prototype/tests/` as of D-T-01-PERMISSION-GATE-SECURE-DEFAULT (2026-05-10).
   // The list is alphabetised for stable diffs; *adding* a type here
   // after this date is a Vera finding (recon:permission-gate-default
   // will assert the snapshot is closed-set). New event types must
