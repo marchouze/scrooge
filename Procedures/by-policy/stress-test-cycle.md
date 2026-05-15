@@ -5,7 +5,7 @@
 **Approval:** Board (stress testing is a Board-level governance item per ICAAP/ILAAP)
 **Cadence:** Annual (baseline + adverse scenario full cycle); quarterly (sensitivity parameter update); ad-hoc (reverse stress test on trigger)
 **Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -123,3 +123,15 @@ Produce an integrated, annually-refreshed stress test that demonstrates the bank
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Helena + Camille (via Scrooge dispatch) | Initial populated stub. Three scenario types; five risk types; integrated output; ICAAP/ILAAP submission path; Recovery Plan trigger feed. |
+| v0.2 | 2026-05-15 | Helena (Chief Risk Officer, governance) + Camille (Chief Financial Officer, governance) + Rohan (Market risk quantitative engineer, engineering) | Promoted to POPULATED — §12 Audit/assurance added; all 12 sections complete. |
+
+## 12. Audit / assurance
+
+- **Vera annual-cycle recon:** confirms that a `StressTestCycleOpened` event exists for every calendar year vintage and that the cycle reaches `StressTestCycleClosed` within the annual submission deadline. Missing vintages are findings escalated to Helena and the Board.
+- **Vera scenario-count invariant:** asserts that every annual cycle produces exactly 15 `StressScenarioRun` events (3 scenario types × 5 risk types) before `StressTestResultsReviewed` is emitted; any shortfall blocks cycle closure.
+- **Vera ICAAP/ILAAP submission gate:** confirms that `ICAAPSubmitted` and `ILAAPSubmitted` events carry a valid PA reference and are preceded by Board-authorisation events; absence of either is a critical finding.
+- **Vera Recovery Plan trigger check:** confirms that every reverse-stress-scenario result triggers a Recovery Plan trigger-update event before the cycle closes; missing update is a finding.
+- **BRC quarterly review:** BRC reviews sensitivity-update outputs and the status of the current annual cycle. Helena presents; Camille presents the capital-adequacy conclusion.
+- **Board annual review:** Board approves the ICAAP/ILAAP narrative and the stress-test programme at the annual governance cycle. Board resolution is the primary assurance record.
+- **PA SREP:** the PA reviews the ICAAP and ILAAP submissions through the Supervisory Review and Evaluation Process; any Pillar 2A add-on or required remediation is a regulatory-assurance outcome. Helena manages the SREP dialogue.
+- **Independent model validation:** stress-test models (scenario calibration, credit migration matrices, liquidity outflow models) are subject to annual independent validation by Nadia (model validation engineer, engineering) per `model-validation.md`.

@@ -5,7 +5,7 @@
 **Approval:** BRC
 **Cadence:** Daily (limit monitoring); real-time (breach alert); monthly (MRC report)
 **Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -113,3 +113,14 @@ Ensure that the bank's trading-book market risk exposures are measured daily, co
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Helena + Rohan (via Scrooge dispatch) | Initial populated stub. FRTB SA + IMA; back-testing; PLA; prop-trading check; breach escalation. |
+| v0.2 | 2026-05-15 | Helena (Chief Risk Officer, governance) + Rohan (Market risk quantitative engineer, engineering) | Promoted to POPULATED — all 12 sections verified complete. |
+
+## 12. Audit / assurance
+
+- **Vera daily recon:** checks that every trading desk has produced a `MarketRiskMetricsCalculated` event for the prior business day; any missing event is surfaced as a Vera finding to Helena and Rohan by 09:00 SAST.
+- **Vera breach-closure recon:** confirms that every `MarketRiskLimitBreached` event has a downstream `BreachRemediated` event within the SLA; unresolved breaches older than 48 hours are escalated to BRC.
+- **Vera back-testing exception recon:** tracks the trailing 250-day exception count per desk and alerts when any desk enters amber (5+) or red (10+) zone; PA notification trigger for red zone is automated.
+- **Vera PLA recon:** confirms that every IMA desk produces exactly one `PLATestResultRecorded` event per month; missing events are findings.
+- **BRC monthly dashboard:** Helena presents risk metrics, breach history, back-testing exception counts, and PLA results. BRC may request ad-hoc re-runs or additional sensitivity analyses.
+- **Annual model validation:** VaR, ES, and PLA models are independently validated by Nadia (model validation engineer, engineering) per `model-validation.md`; IMA approval by the PA requires a clean validation opinion.
+- **PA SREP / supervisory visit:** all `MarketRiskMetricsCalculated`, `MarketRiskLimitBreached`, and back-testing exception records are available for PA inspection; retrieval SLA < 5 business days.
