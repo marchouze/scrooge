@@ -37,6 +37,7 @@ import { parsePolicyRegister } from "./policy-register";
 import type {
   AgentDeliverable,
   AgentMiniDashboard,
+  AgentOpsState,
   DashboardState,
   DecisionAction,
   DecisionCategory,
@@ -166,6 +167,13 @@ export interface DeriveOpts {
    * re-building the projection and injecting the result).
    */
   readonly limitUtilisations?: readonly LimitUtilisationStateSummary[];
+  /**
+   * AgentOps tile — pre-built AgentOps state from the agent-ops projection.
+   * Optional: if omitted the dashboard state carries the default zero-value.
+   * Caller (server.ts) is responsible for building the projection and
+   * injecting the result via buildAgentOpsState().
+   */
+  readonly agentOps?: AgentOpsState;
 }
 
 export function defaultSourcePaths(repoRoot: string): SourcePaths {
@@ -1988,6 +1996,17 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     runtimeHandlers: RUNTIME_HANDLERS,
     decisionComments: commentsByDecisionId,
     limitUtilisations: opts.limitUtilisations ?? [],
+    agentOps: opts.agentOps ?? {
+      totalTokens7d: 0,
+      totalTokens30d: 0,
+      estimatedCost7d: 0,
+      estimatedCost30d: 0,
+      byAgent: [],
+      recentAdvisories: [],
+      recentOptimisations: [],
+      efficiencyTrend: "stable",
+      lastUpdated: "2026-05-15T00:00:00.000Z",
+    },
   };
 }
 

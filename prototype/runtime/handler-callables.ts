@@ -78,7 +78,10 @@ import rohanEventTriage from "./agents/rohan-event-triage";
 import rohanGoalLoop from "./agents/rohan-goal-loop";
 import rohanRiskRun from "./agents/rohan-risk-run";
 import sadeAgentopsReadiness from "./agents/sade-agentops-readiness";
+import sadeEfficiencyAdvisory from "./agents/sade-efficiency-advisory";
 import sadeEventTriage from "./agents/sade-event-triage";
+import sadeFleetOptimisation from "./agents/sade-fleet-optimisation";
+import sadeTokenUsageAnalysis from "./agents/sade-token-usage-analysis";
 import saskiaEventTriage from "./agents/saskia-event-triage";
 import saskiaGoalLoop from "./agents/saskia-goal-loop";
 import saskiaMarketsReadinessSnapshot from "./agents/saskia-markets-readiness-snapshot";
@@ -185,6 +188,9 @@ const _map: Record<string, AgentRunHandler> = {
   "imani:legal-readiness": imaniLegalReadiness,
   "ravi:alm-readiness": raviAlmReadiness,
   "sade:agentops-readiness": sadeAgentopsReadiness,
+  "sade:token-usage-analysis": sadeTokenUsageAnalysis,
+  "sade:efficiency-advisory": sadeEfficiencyAdvisory,
+  "sade:fleet-optimisation": sadeFleetOptimisation,
   "pax:role-research-queue": paxRoleResearchQueue,
   "rohan:backtest-harness": rohanBacktestHarness,
   "anya:m1-projection-runtime-mapping": anyaM1ProjectionRuntimeMapping,

@@ -65,6 +65,9 @@ export {
   semanticLayerQuantityRegisteredPayloadSchema,
 } from "../../semantic-layer/event-type";
 export type { SemanticLayerQuantityRegisteredPayload } from "../../semantic-layer/event-type";
+// AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
+// TokenUsageRecorded, AgentEfficiencyAdvisoryIssued, AgentPromptOptimizationApplied.
+export * from "./agent-ops";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -274,6 +277,11 @@ export const TYPED_EVENT_TYPES = [
   // Principle 6: every step an agent cannot authorise on its own is a
   // formal typed channel. See platform/event-trigger/ dispatch library.
   "AgentDecisionRequired",
+  // AgentOps token efficiency event family — Sade (AgentOps & Token Efficiency Engineer).
+  // Authority: Sade mandate; AgentOps dashboard tile projection.
+  "TokenUsageRecorded",
+  "AgentEfficiencyAdvisoryIssued",
+  "AgentPromptOptimizationApplied",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

@@ -67,6 +67,17 @@ function mk(opens: OpenDecision[] = [sampleOpen], inFlight: InFlightItem[] = [])
     runtimeHandlers: [],
     decisionComments: {},
     limitUtilisations: [],
+    agentOps: {
+      totalTokens7d: 0,
+      totalTokens30d: 0,
+      estimatedCost7d: 0,
+      estimatedCost30d: 0,
+      byAgent: [],
+      recentAdvisories: [],
+      recentOptimisations: [],
+      efficiencyTrend: "stable",
+      lastUpdated: "2026-05-15T00:00:00.000Z",
+    },
   };
 }
 

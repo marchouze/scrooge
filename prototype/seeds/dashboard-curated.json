@@ -681,5 +681,16 @@
     "Single point of failure on Saskia + Kai for the markets franchise.",
     "Single point of failure on Owen (CoSec, governance framework, conflicts, whistleblowing, PAIA).",
     "Personas reshaped under reframe: Sade \u2192 AgentOps for build; Niko paused; Yael / Imani build-phase scopes trimmed. Reshape work pending in /Team/."
-  ]
+  ],
+  "agentOps": {
+    "totalTokens7d": 0,
+    "totalTokens30d": 0,
+    "estimatedCost7d": 0,
+    "estimatedCost30d": 0,
+    "byAgent": [],
+    "recentAdvisories": [],
+    "recentOptimisations": [],
+    "efficiencyTrend": "stable",
+    "lastUpdated": "2026-05-15T00:00:00.000Z"
+  }
 }
