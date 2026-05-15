@@ -57,7 +57,11 @@ describe("event-type registry-coverage recon (F-032)", () => {
     // `recon:trigger-spec-handler-symmetry`. Ceiling raised from 14 to
     // 145 to absorb the new subscriptions; ratchet down as event-schema
     // registry rows land.
-    expect(warns.length).toBeLessThanOrEqual(145);
+    // Raised to 152 to absorb Sade's three new AgentOps event types
+    // (TokenUsageRecorded, AgentEfficiencyAdvisoryIssued,
+    // AgentPromptOptimizationApplied) and AgentDecisionRequired (Atlas
+    // event-trigger bus, PR #392). Ratchet down as registry rows land.
+    expect(warns.length).toBeLessThanOrEqual(152);
   });
 
   it("F-032 closed types — equity + CDM + FX + MLRO + Bea/Sade readiness", () => {

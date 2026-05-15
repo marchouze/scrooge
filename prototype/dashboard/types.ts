@@ -468,6 +468,72 @@ export interface Policy {
 // Authority: D-MARKETS-SCHEMA-FOUNDATION Slice 5
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// AgentOps dashboard tile — Sade (AgentOps & Token Efficiency Engineer)
+//
+// Projection derived from TokenUsageRecorded, AgentEfficiencyAdvisoryIssued,
+// and AgentPromptOptimizationApplied events. Surfaces on the CEO dashboard
+// as the AgentOps tile. Handler: dashboard/agent-ops.ts.
+//
+// Summary types mirror the canonical event payloads but are scoped to what
+// the dashboard projection needs, avoiding a circular dependency on the
+// event-store event-types module.
+// ---------------------------------------------------------------------------
+
+export interface AgentTokenSummary {
+  /** Bare agent name — matches AgentRegistered.agentId. */
+  agent: string;
+  /** Total tokens consumed in the last 7 calendar days. */
+  tokens7d: number;
+  /** Total tokens consumed in the last 30 calendar days. */
+  tokens30d: number;
+  /** Estimated cost (USD) for the last 7 days. */
+  estimatedCost7d: number;
+  /** Estimated cost (USD) for the last 30 days. */
+  estimatedCost30d: number;
+  /** Efficiency trend for this agent derived from rolling window. */
+  trend: "improving" | "stable" | "degrading";
+  /** Most recent advisory ID issued for this agent, or null if none. */
+  lastAdvisoryId: string | null;
+}
+
+export interface AgentEfficiencyAdvisorySummary {
+  advisoryId: string;
+  agent: string;
+  finding: string;
+  severity: "low" | "medium" | "high";
+  issuedAt: string;
+}
+
+export interface PromptOptimisationSummary {
+  optimisationId: string;
+  agent: string;
+  summary: string;
+  changeType: string;
+  appliedAt: string;
+}
+
+export interface AgentOpsState {
+  /** Total tokens across the whole fleet in the last 7 days. */
+  totalTokens7d: number;
+  /** Total tokens across the whole fleet in the last 30 days. */
+  totalTokens30d: number;
+  /** Estimated fleet cost (USD) for the last 7 days. */
+  estimatedCost7d: number;
+  /** Estimated fleet cost (USD) for the last 30 days. */
+  estimatedCost30d: number;
+  /** Per-agent token summary rows. */
+  byAgent: AgentTokenSummary[];
+  /** Most recent efficiency advisories (up to 10). */
+  recentAdvisories: AgentEfficiencyAdvisorySummary[];
+  /** Most recent prompt/mandate optimisations applied (up to 10). */
+  recentOptimisations: PromptOptimisationSummary[];
+  /** Overall fleet efficiency trend derived from the rolling window. */
+  efficiencyTrend: "improving" | "stable" | "degrading";
+  /** ISO 8601 — when this projection slice was last updated. */
+  lastUpdated: string;
+}
+
 export interface LimitUtilisationStateSummary {
   cluster: "B1" | "B2" | "B3" | "B4" | "B5";
   limitName: string;
@@ -517,6 +583,12 @@ export interface DashboardState {
    * RasLimitSchedulePublished event has been emitted yet.
    */
   limitUtilisations: readonly LimitUtilisationStateSummary[];
+  /**
+   * AgentOps tile — token efficiency monitoring by Sade
+   * (AgentOps & Token Efficiency Engineer). Derived from TokenUsageRecorded,
+   * AgentEfficiencyAdvisoryIssued, and AgentPromptOptimizationApplied events.
+   */
+  agentOps: AgentOpsState;
 }
 
 export interface DecisionRequestBody {

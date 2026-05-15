@@ -302,6 +302,25 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 7,
     cronExpression: "41 7 * * 5",
   }),
+  // Sade — AgentOps & Token Efficiency Engineer.
+  // Daily full-fleet token analysis; subscribes to TokenUsageRecorded for
+  // ingestion and anomaly detection.
+  // Authority: Sade mandate (AgentOps & Token Efficiency Engineer).
+  entry("Sade", "token-usage-analysis", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 5 * * *",
+  }),
+  // Sade — efficiency advisory emission; fires on every AgentRun completion
+  // to check whether the run has crossed the efficiency degradation threshold.
+  entry("Sade", "efficiency-advisory", "event-driven", {
+    subscribesTo: ["AgentRunCompleted", "TokenUsageRecorded"],
+  }),
+  // Sade — daily fleet prompt/mandate optimisation cycle; applies queued
+  // bounded optimisations (no structural role changes).
+  entry("Sade", "fleet-optimisation", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "30 5 * * *",
+  }),
   entry("PAX", "role-research-queue", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "11 8 * * 5",

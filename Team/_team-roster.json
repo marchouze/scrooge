@@ -78,12 +78,13 @@
     },
     {
       "name": "Sade",
-      "role": "HR systems engineer",
+      "role": "AgentOps & Token Efficiency Engineer",
       "type": "engineering",
-      "expertise": "Payroll, BCEA, EE/B-BBEE, fit-and-proper, statutory submissions",
+      "expertise": "Agent fleet operations; token usage monitoring; efficiency advisory and autonomous prompt/mandate optimisation; agent fit-and-proper analogue; HR systems (licence-day)",
       "reportsTo": "Devon",
-      "reportsToNote": "Interim; routes to CHRO when hired",
-      "buildPhaseStatus": "Reshape to AgentOps (agent registration, retirement, capability assignment, agent fit-and-proper analogue). Human-HR slice activates at licence-day."
+      "reportsToNote": "Interim; routes to CHRO when hired at licence-day",
+      "mandate": "Continuous monitoring of Claude API token usage; efficiency advisory and autonomous prompt/mandate optimisation; AgentOps fleet health",
+      "buildPhaseStatus": "active"
     },
     {
       "name": "Niko",
