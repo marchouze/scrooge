@@ -107,7 +107,7 @@
 | Accounting Policies (IFRS) v0.1 (STUB) + Financial Reporting & Disclosure v0.1 (STUB) | [`posting-rule-publication.md`](by-policy/posting-rule-publication.md) | Bea · Atlas | **POPULATED** |
 | Accounting Policies (IFRS) — IFRS 10 consolidation policy (planned by Camille; sub-policy of Accounting Policies (IFRS) v0.1 STUB + Financial Reporting & Disclosure v0.1 STUB) | [`ifrs10-consolidation-cycle.md`](by-policy/ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01 — three-entity group consolidation per D-LEGAL-ENTITY-TREE-V0 + D-REGULATORY-PERIMETER) | Bea · Camille (governance sign-off) | **STUB** |
 | Accounting Policies (IFRS) | [`balance-sheet-substantiation.md`](by-policy/balance-sheet-substantiation.md) (PROC-FIN-BSS-01 — monthly per-account source-event trace + CFO sign-off + `BalanceSheetSubstantiationCompleted` event) | Bea (Camille sign-off) | **DRAFT v1.0** |
-| Accounting Policies (IFRS) | [`month-end-close.md`](by-policy/month-end-close.md) (PROC-FIN-MC-01 — broader period-close orchestration: GL freeze, reconciliation, accruals/provisions, trial balance, CFO sign-off, `PeriodClosed` event, BA return trigger; balance sheet substantiation is a named step within it, see PROC-FIN-BSS-01) | Camille (CFO, governance) · Bea (finance/reporting engineer) | **STUB** |
+| Accounting Policies (IFRS) | [`month-end-close.md`](by-policy/month-end-close.md) (PROC-FIN-MC-01 — broader period-close orchestration: GL freeze, reconciliation, accruals/provisions, trial balance, CFO sign-off, `PeriodClosed` event, BA return trigger; balance sheet substantiation is a named step within it, see PROC-FIN-BSS-01) | Camille (CFO, governance) · Bea (finance/reporting engineer) | **POPULATED** |
 | Regulatory Reporting Policy | [`ba-return-generation.md`](by-policy/ba-return-generation.md) (PROC-FIN-BA-01) | Camille (Bea) | **STUB** |
 | Provisioning / IFRS 9 ECL Policy v0.1 (STUB) + RAS (in-force) | [`ecl-stage-projection-refresh.md`](by-policy/ecl-stage-projection-refresh.md) | Rohan · Bea | **POPULATED** |
 | IFRS 9 ECL | `ecl-staging-cycle.md` | Helena (Bea) | PLANNED |
@@ -126,12 +126,12 @@
 | Best Execution | `best-execution-report.md` | Saskia | PLANNED |
 | Market Abuse / Surveillance | `surveillance-alert-triage.md` | Zara (Mira) + Saskia | PLANNED |
 | Voice & Comms Recording | `recording-retention.md` | Saskia + Senna + Sade | PLANNED |
-| Counterparty Onboarding (markets) | [`counterparty-onboarding-markets.md`](by-policy/counterparty-onboarding-markets.md) (PROC-MK-CO-01 — seven-gate institutional counterparty onboarding; KYC/CDD, ISDA/GMRA docs, FAIS categorisation, credit limit, collateral, settlement instructions, margin agreement; `CounterpartyEnabled` gate event) | Saskia · Imani · Zara · Eitan | **STUB** |
+| Counterparty Onboarding (markets) | [`counterparty-onboarding-markets.md`](by-policy/counterparty-onboarding-markets.md) (PROC-MK-CO-01 — seven-gate institutional counterparty onboarding; KYC/CDD, ISDA/GMRA docs, FAIS categorisation, credit limit, collateral, settlement instructions, margin agreement; `CounterpartyEnabled` gate event) | Saskia · Imani · Zara · Eitan | **POPULATED** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`new-product-due-diligence.md`](by-policy/new-product-due-diligence.md) (PROC-MK-NPA-DD-01 — stage 3, 14-dimension cycle) | Saskia + Devon | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-controlled-launch.md`](by-policy/product-controlled-launch.md) (PROC-MK-NPA-CL-01 — stage 5 limit administration + daily monitoring) | Saskia | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-post-implementation-review.md`](by-policy/product-post-implementation-review.md) (PROC-MK-NPA-PIR-01 — stage 6 PIR convening) | Saskia + Devon | **STUB** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-retirement-migration.md`](by-policy/product-retirement-migration.md) (PROC-MK-NPA-RET-01 — stage 8 open-position migration) | Saskia + Imani + Tomas | **STUB** |
-| New Product Approval | [`npa-gate.md`](by-policy/npa-gate.md) (PROC-NPA-GATE-01 — stage-4 gate; four-party opinion cycle; `NewProductApproved` gate event; controlled-launch configuration; handoff to stage 5) | Saskia · Helena · Camille · Zara | **STUB** |
+| New Product Approval | [`npa-gate.md`](by-policy/npa-gate.md) (PROC-NPA-GATE-01 — stage-4 gate; four-party opinion cycle; `NewProductApproved` gate event; controlled-launch configuration; handoff to stage 5) | Saskia · Helena · Camille · Zara | **POPULATED** |
 
 ## Markets — OTC Derivative Provider (FMA / FSCA)
 
