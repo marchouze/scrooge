@@ -66,6 +66,7 @@ import {
 } from "../platform/forward-obligations";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
+import { buildFtpPortfolio } from "../platform/ftp/projection";
 import {
   getCorrespondentRouting,
   getLimitUtilisations,
@@ -162,6 +163,21 @@ function buildSlice5Projections(): void {
   rebuildCorrespondentRouting(allEvents);
 }
 
+/** Derive the FTP portfolio summary from the current event store. */
+function buildFtpSummary(): import("./types").FtpDashboardSummary | null {
+  const allEvents = [...eventStore.replay({})];
+  const portfolio = buildFtpPortfolio(allEvents);
+  if (portfolio.totalAttributions === 0 && portfolio.activeCurveId === null) {
+    return null;
+  }
+  return {
+    totalAttributions: portfolio.totalAttributions,
+    weightedAvgSpreadBps: portfolio.weightedAvgSpread,
+    activeCurveId: portfolio.activeCurveId,
+    lastUpdated: portfolio.lastUpdated,
+  };
+}
+
 function bootDerive(): DashboardState {
   try {
     // Backfill any CeoDecision events that exist as on-disk decision
@@ -190,6 +206,7 @@ function bootDerive(): DashboardState {
       sources: SOURCES,
       events: EVENTS,
       limitUtilisations: getLimitUtilisations(),
+      ftp: buildFtpSummary(),
     });
     ensureRuntimeDir(RUNTIME_STATE_PATH);
     saveState(s, RUNTIME_STATE_PATH);
@@ -327,6 +344,7 @@ function refresh(reason: string): void {
       sources: SOURCES,
       events: EVENTS,
       limitUtilisations: getLimitUtilisations(),
+      ftp: buildFtpSummary(),
     });
     cachedState = next;
     // RMS Slice 4 — invalidate the register-fold cache because new

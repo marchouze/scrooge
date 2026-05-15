@@ -33,6 +33,7 @@ import { join } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
 import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
+import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { parsePolicyRegister } from "./policy-register";
 import type {
   AgentDeliverable,
@@ -44,6 +45,7 @@ import type {
   DecisionCommentSummary,
   DecisionRecommendation,
   FindingSummary,
+  FtpDashboardSummary,
   InFlightItem,
   LimitUtilisationStateSummary,
   OpenDecision,
@@ -168,12 +170,21 @@ export interface DeriveOpts {
    */
   readonly limitUtilisations?: readonly LimitUtilisationStateSummary[];
   /**
+<<<<<<< HEAD
    * AgentOps tile — pre-built AgentOps state from the agent-ops projection.
    * Optional: if omitted the dashboard state carries the default zero-value.
    * Caller (server.ts) is responsible for building the projection and
    * injecting the result via buildAgentOpsState().
    */
   readonly agentOps?: AgentOpsState;
+=======
+   * FTP portfolio summary — pre-built from FtpAttributionRecorded +
+   * FtpCurvePublished events via buildFtpPortfolio(). Optional: if
+   * omitted the dashboard state carries null (graceful build-phase
+   * default). Caller is responsible for re-building and injecting.
+   */
+  readonly ftp?: FtpDashboardSummary | null;
+>>>>>>> ebb5031 (feat(treasury): FTP scaffold — FtpCurvePublished + FtpAttributionRecorded events, engine stub)
 }
 
 export function defaultSourcePaths(repoRoot: string): SourcePaths {
@@ -2007,6 +2018,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       efficiencyTrend: "stable",
       lastUpdated: "2026-05-15T00:00:00.000Z",
     },
+    ftp: opts.ftp ?? null,
   };
 }
 
