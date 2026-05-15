@@ -72,6 +72,7 @@ import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
+import { semanticLayerQuantityRegisteredPayloadSchema } from "../../semantic-layer/event-type";
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
@@ -956,5 +957,32 @@ export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-feedback.ts; platform/agents/performance-runner.ts",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Analytics — semantic-layer quantity registration
+// ---------------------------------------------------------------------------
+
+/**
+ * `ANALYTICS_EVENT_TYPES` — event types emitted by the analytics /
+ * semantic-layer registration substrate.
+ *
+ * Currently: SemanticLayerQuantityRegistered (idempotent boot-time event
+ * confirming each of the 20 core quantities is registered in the event store).
+ *
+ * Author: Anya (Data / analytics engineer, engineering).
+ */
+export const ANALYTICS_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "SemanticLayerQuantityRegistered",
+    class: "audit",
+    payloadSchema: semanticLayerQuantityRegisteredPayloadSchema,
+    issuer: "Anya",
+    subscribers: ["Atlas", "Vera", "dashboard", "Camille", "Helena", "Eitan"],
+    replay: "idempotent-terminal",
+    citationsHint: ["D-SEMANTIC-LAYER-QUANTITIES-V1"],
+    retention: RETENTION_BANKING_5Y,
+    source: "platform/semantic-layer/event-type.ts; platform/semantic-layer/seed.ts",
   },
 ];

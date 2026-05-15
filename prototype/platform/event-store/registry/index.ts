@@ -47,6 +47,7 @@ export {
   PERIOD_CLOSE_EVENT_TYPES,
 } from "./markets";
 export {
+  ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
   GOVERNANCE_EVENT_TYPES,
   LEGAL_ENTITY_EVENT_TYPES,
@@ -65,6 +66,7 @@ export { REGULATORY_EVENT_TYPES } from "./regulatory";
 // ---------------------------------------------------------------------------
 
 import {
+  ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
   GOVERNANCE_EVENT_TYPES,
   LEGAL_ENTITY_EVENT_TYPES,
@@ -109,6 +111,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...CUSTOMER_LIFECYCLE_EVENT_TYPES,
   ...REGULATORY_EVENT_TYPES,
   ...PERFORMANCE_EVENT_TYPES,
+  ...ANALYTICS_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
