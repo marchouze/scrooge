@@ -94,3 +94,6 @@ export function makeAgentDecisionRequired(args: {
     payload: agentDecisionRequiredPayloadSchema.parse(args.payload),
   });
 }
+
+export const DECISION_REQUEST_TYPED_EVENT_TYPES = ["AgentDecisionRequired"] as const;
+export type DecisionRequestEventType = (typeof DECISION_REQUEST_TYPED_EVENT_TYPES)[number];

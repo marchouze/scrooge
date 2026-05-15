@@ -190,3 +190,10 @@ export function makeAgentPromptOptimizationApplied(args: {
     payload: agentPromptOptimizationAppliedPayloadSchema.parse(args.payload),
   });
 }
+
+export const AGENT_OPS_TYPED_EVENT_TYPES = [
+  "TokenUsageRecorded",
+  "AgentEfficiencyAdvisoryIssued",
+  "AgentPromptOptimizationApplied",
+] as const;
+export type AgentOpsEventType = (typeof AGENT_OPS_TYPED_EVENT_TYPES)[number];

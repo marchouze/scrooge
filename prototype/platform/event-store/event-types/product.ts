@@ -415,3 +415,19 @@ export function makeProductVersionPublished(args: {
     payload: productVersionPublishedPayloadSchema.parse(args.payload),
   });
 }
+
+export const PRODUCT_TYPED_EVENT_TYPES = [
+  "ProductProposalRegistered",
+  "ProductConceptualised",
+  "ProductDueDiligenceCompleted",
+  "ProductDueDiligenceWithheld",
+  "ProductDimensionAttested",
+  "ProductApproved",
+  "ProductWithheld",
+  "ProductLaunched",
+  "ProductPostImplementationReviewCompleted",
+  "ProductReviewCompleted",
+  "ProductRetired",
+  "ProductVersionPublished",
+] as const;
+export type ProductEventType = (typeof PRODUCT_TYPED_EVENT_TYPES)[number];

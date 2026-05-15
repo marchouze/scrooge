@@ -664,3 +664,27 @@ export function makeAgentGoalDeferred(args: {
     payload: agentGoalDeferredPayloadSchema.parse(args.payload),
   });
 }
+
+// ---------------------------------------------------------------------------
+// Per-domain typed-event-type registry
+// ---------------------------------------------------------------------------
+
+export const AGENT_TYPED_EVENT_TYPES = [
+  "AgentEscalation",
+  "AgentEscalationAcknowledged",
+  "AgentEscalationDecided",
+  "AgentEscalationDelegated",
+  "AgentEscalationOverdue",
+  "AgentDecision",
+  "AgentRegistered",
+  // RMS agent-run records
+  "AgentBriefIssued",
+  "AgentRunStarted",
+  "AgentRunCompleted",
+  // Goal-loop planning-trace events
+  "AgentGoalEvaluated",
+  "AgentGoalSelected",
+  "AgentGoalDeferred",
+] as const;
+
+export type AgentEventType = (typeof AGENT_TYPED_EVENT_TYPES)[number];

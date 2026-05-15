@@ -416,3 +416,14 @@ export function makeBalanceSheetSubstantiationCompleted(args: {
     ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
+
+export const ACCOUNTING_TYPED_EVENT_TYPES = [
+  "BankAccountOpened",
+  "BankAccountConfigured",
+  "BankAccountClosed",
+  "AccountingPeriodOpened",
+  "AccountingPeriodClosed",
+  "TrialBalanceSnapshotted",
+  "BalanceSheetSubstantiationCompleted",
+] as const;
+export type AccountingEventType = (typeof ACCOUNTING_TYPED_EVENT_TYPES)[number];

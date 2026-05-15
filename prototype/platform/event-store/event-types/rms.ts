@@ -253,3 +253,11 @@ export const ceoDecisionRmsExtendedPayloadSchema = z.object({
 });
 
 export type CeoDecisionRmsExtendedPayload = z.infer<typeof ceoDecisionRmsExtendedPayloadSchema>;
+
+export const RMS_TYPED_EVENT_TYPES = [
+  "DecisionRequested",
+  "Feedback",
+  "BriefSuperseded",
+  "RecordFiled",
+] as const;
+export type RmsEventType = (typeof RMS_TYPED_EVENT_TYPES)[number];

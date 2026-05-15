@@ -521,3 +521,20 @@ export function makeMethodologyChangeRequested(args: {
     payload: methodologyChangeRequestedPayloadSchema.parse(args.payload),
   });
 }
+
+export const MODEL_RISK_TYPED_EVENT_TYPES = [
+  "ModelSubmitted",
+  "ModelTierClassified",
+  "ModelValidationApproved",
+  "ModelValidationWithheld",
+  "ValidationFindingRaised",
+  "ValidationFindingClosed",
+  "BacktestRequested",
+  "BacktestRun",
+  "ValidationMethodologyPublished",
+  "BacktestBreachDisposed",
+  "ModelDriftDetected",
+  "ProductionUseRequested",
+  "MethodologyChangeRequested",
+] as const;
+export type ModelRiskEventType = (typeof MODEL_RISK_TYPED_EVENT_TYPES)[number];

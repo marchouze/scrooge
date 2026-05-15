@@ -424,3 +424,12 @@ export function makeObligationConceptLinked(args: {
     payload: obligationConceptLinkedPayloadSchema.parse(args.payload),
   });
 }
+
+export const REGULATORY_TYPED_EVENT_TYPES = [
+  "RegulatoryInstrumentRegistered",
+  "RegulatoryInstrumentAmended",
+  "RegulatoryInstrumentContextualised",
+  "RegulatoryConceptExtracted",
+  "ObligationConceptLinked",
+] as const;
+export type RegulatoryEventType = (typeof REGULATORY_TYPED_EVENT_TYPES)[number];

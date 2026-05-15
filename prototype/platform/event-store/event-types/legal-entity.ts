@@ -158,3 +158,10 @@ export function makeIntraGroupArrangementSigned(args: {
     payload: intraGroupArrangementSignedPayloadSchema.parse(args.payload),
   });
 }
+
+export const LEGAL_ENTITY_TYPED_EVENT_TYPES = [
+  "LegalEntityRegistered",
+  "LegalEntityChanged",
+  "IntraGroupArrangementSigned",
+] as const;
+export type LegalEntityEventType = (typeof LEGAL_ENTITY_TYPED_EVENT_TYPES)[number];

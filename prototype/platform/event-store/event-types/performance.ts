@@ -159,3 +159,9 @@ export function makeAgentFeedbackIssued(args: {
     payload: agentFeedbackIssuedPayloadSchema.parse(args.payload),
   });
 }
+
+export const PERFORMANCE_TYPED_EVENT_TYPES = [
+  "AgentPerformanceEvaluated",
+  "AgentFeedbackIssued",
+] as const;
+export type PerformanceEventType = (typeof PERFORMANCE_TYPED_EVENT_TYPES)[number];

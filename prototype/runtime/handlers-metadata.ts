@@ -37,9 +37,8 @@
 //   the YAMLs from this metadata too.
 //
 // Adding a new handler:
-//   - Add a metadata row here. For `kind: "scheduled"`, supply a
-//     `cronExpression` (and `cadenceHours`). For `event-driven`,
-//     supply `subscribesTo`. For `on-request`, no extras needed.
+//   - Create or edit runtime/agents/metadata/<agent>.ts and add an entry there.
+//   - Add one spread line here (see assembly section below).
 //   - Add the callable in `handler-callables.ts` under the same key.
 //   - For scheduled handlers, also add the workflow YAML at
 //     `.github/workflows/agent-runtime-<agent>-<trigger>.yml` with
@@ -47,7 +46,7 @@
 //   - Vera's `recon:runtime-handler-sync` and `recon:cron-map-drift`
 //     assert these stay in sync.
 //
-// Author: Atlas
+// Author: Atlas (Core Banking Platform Architect, engineering)
 
 import type { TriggerKind } from "./types";
 
@@ -86,26 +85,43 @@ export interface HandlerMetadata {
   readonly key: string;
 }
 
-function entry(
-  agent: string,
-  trigger: string,
-  kind: TriggerKind,
-  extras: {
-    cadenceHours?: number;
-    subscribesTo?: readonly string[];
-    cronExpression?: string;
-  } = {},
-): HandlerMetadata {
-  return {
-    agent,
-    trigger,
-    kind,
-    ...(extras.cadenceHours !== undefined ? { cadenceHours: extras.cadenceHours } : {}),
-    ...(extras.subscribesTo !== undefined ? { subscribesTo: extras.subscribesTo } : {}),
-    ...(extras.cronExpression !== undefined ? { cronExpression: extras.cronExpression } : {}),
-    key: `${agent.toLowerCase()}:${trigger}`,
-  };
-}
+// ---------------------------------------------------------------------------
+// Per-agent metadata modules.
+//
+// To add a new handler: create or edit runtime/agents/metadata/<agent>.ts;
+// add one spread here.
+// ---------------------------------------------------------------------------
+
+import { ANYA_HANDLER_METADATA } from "./agents/metadata/anya";
+import { ATLAS_HANDLER_METADATA } from "./agents/metadata/atlas";
+import { BEA_HANDLER_METADATA } from "./agents/metadata/bea";
+import { CAMILLE_HANDLER_METADATA } from "./agents/metadata/camille";
+import { DEVON_HANDLER_METADATA } from "./agents/metadata/devon";
+import { EITAN_HANDLER_METADATA } from "./agents/metadata/eitan";
+import { HELENA_HANDLER_METADATA } from "./agents/metadata/helena";
+import { IMANI_HANDLER_METADATA } from "./agents/metadata/imani";
+import { IRIS_HANDLER_METADATA } from "./agents/metadata/iris";
+import { KAI_HANDLER_METADATA } from "./agents/metadata/kai";
+import { LINNEA_HANDLER_METADATA } from "./agents/metadata/linnea";
+import { MIRA_HANDLER_METADATA } from "./agents/metadata/mira";
+import { NADIA_HANDLER_METADATA } from "./agents/metadata/nadia";
+import { NIKO_HANDLER_METADATA } from "./agents/metadata/niko";
+import { NOA_HANDLER_METADATA } from "./agents/metadata/noa";
+import { NOLAN_HANDLER_METADATA } from "./agents/metadata/nolan";
+import { OWEN_HANDLER_METADATA } from "./agents/metadata/owen";
+import { PAX_HANDLER_METADATA } from "./agents/metadata/pax";
+import { RASHIDA_HANDLER_METADATA } from "./agents/metadata/rashida";
+import { RAVI_HANDLER_METADATA } from "./agents/metadata/ravi";
+import { ROHAN_HANDLER_METADATA } from "./agents/metadata/rohan";
+import { SADE_HANDLER_METADATA } from "./agents/metadata/sade";
+import { SASKIA_HANDLER_METADATA } from "./agents/metadata/saskia";
+import { SCROOGE_HANDLER_METADATA } from "./agents/metadata/scrooge";
+import { SENNA_HANDLER_METADATA } from "./agents/metadata/senna";
+import { THANDIWE_HANDLER_METADATA } from "./agents/metadata/thandiwe";
+import { TOMAS_HANDLER_METADATA } from "./agents/metadata/tomas";
+import { VERA_HANDLER_METADATA } from "./agents/metadata/vera";
+import { YAEL_HANDLER_METADATA } from "./agents/metadata/yael";
+import { ZARA_HANDLER_METADATA } from "./agents/metadata/zara";
 
 /**
  * Canonical handler metadata. Order matches the fleet-health card
@@ -113,660 +129,37 @@ function entry(
  * consumers sort their own views.
  */
 export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
-  entry("Vera", "overnight-recon", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "13 2 * * *",
-  }),
-  // Vera's weekly codebase quality review — distinct from overnight-recon.
-  // Runs the deterministic-checkable subset of code-quality heuristics
-  // (any-density, swallowed-errors, legacy-bypass-watch). LLM-judgment
-  // findings (severity classification, principle-violation interpretation)
-  // remain Scrooge-coordinated until handler-LLM-runtime lands.
-  // Authority: D-AGENT-RUNTIME-AUTHORIZE (S8 / fleet-rollout slice).
-  entry("Vera", "codebase-quality-review", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "23 3 * * SAT",
-  }),
-  entry("Atlas", "substrate-state", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "19 6 * * 1",
-  }),
-  // atlas:goal-loop — hourly tick; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  // Tracks slow-moving substrate state; handler runs in dryRun=true (shadow) until
-  // 2 successful ticks have been observed per spec §4.
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  entry("Atlas", "goal-loop", "scheduled", {
-    cadenceHours: 1,
-    cronExpression: "0 * * * *",
-  }),
-  // bea:goal-loop — daily 06:00 UTC; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  // Tracks regulatory filing schedule and accounting readiness.
-  // Handler runs in dryRun=true (shadow) for first 2 ticks per spec §4.
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  entry("Bea", "goal-loop", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "0 6 * * *",
-  }),
-  // vera:goal-loop — event-driven only; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  // Fires on AuditFinding / ReconResult events; no cron trigger.
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  entry("Vera", "goal-loop", "event-driven", {
-    subscribesTo: ["AuditFinding", "ReconResult"],
-  }),
-  // owen:goal-loop — daily 07:00 UTC; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  // Tracks governance cycle, decisions, and briefs.
-  // Handler runs in dryRun=true (shadow) for first 2 ticks per spec §4.
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  entry("Owen", "goal-loop", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "0 7 * * *",
-  }),
-  entry("Helena", "risk-appetite-watch", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "30 4 * * *",
-  }),
-  // helena:goal-loop — no cron; shadow mode for first cohort ticks (on-request only).
-  // Cohort-3 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Helena", "goal-loop", "on-request"),
-  entry("Devon", "operational-resilience-snapshot", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "23 5 * * MON",
-  }),
-  entry("Camille", "financial-position-snapshot", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "41 6 * * MON",
-  }),
-  // anya:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Anya", "goal-loop", "on-request"),
-  entry("Anya", "projection-drift", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "17 3 * * *",
-  }),
-  entry("Anya", "projection-refresh", "event-driven", {
-    subscribesTo: [
-      "SubstrateStateSnapshot",
-      "WorkstreamRegistered",
-      "WorkstreamCompleted",
-      "CeoDecision",
-    ],
-  }),
-  entry("Scrooge", "inbox-hygiene", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "27 4 * * *",
-  }),
-  entry("Scrooge", "ceo-decision-record", "on-request"),
-  entry("Scrooge", "follow-on-router", "event-driven", {
-    subscribesTo: ["CeoDecision"],
-  }),
-  entry("Owen", "governance-cycle-prep", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "31 7 * * 2",
-  }),
-  entry("Rohan", "risk-run", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "43 3 * * *",
-  }),
-  // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Rohan", "goal-loop", "on-request"),
-  entry("Mira", "obligations-snapshot", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "29 7 * * 3",
-  }),
-  entry("Mira", "citation-gate", "on-request"),
-  // mira:goal-loop — event-driven only; cohort-1 activation per D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  // Fires on regulatory obligation events; no cron trigger.
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3, D-T-01-PERMISSION-GATE-SECURE-DEFAULT.
-  entry("Mira", "goal-loop", "event-driven", {
-    subscribesTo: [
-      "RegulatoryInstrumentUpdate",
-      "ObligationRegistered",
-      "SanctionsListPublished",
-      "PepListPublished",
-    ],
-  }),
-  entry("Senna", "security-substrate-state", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "37 7 * * 4",
-  }),
-  entry("Zara", "mlro-supervision", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "30 5 * * MON",
-  }),
-  entry("Thandiwe", "audit-committee-prep", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "47 7 * * 2",
-  }),
-  // thandiwe:goal-loop — no cron; shadow mode for cohort-3 (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Thandiwe", "goal-loop", "on-request"),
-  // cohort-3 goal-loops (batch 2) — no cron; shadow mode (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Zara", "goal-loop", "on-request"),
-  entry("Eitan", "goal-loop", "on-request"),
-  entry("Camille", "goal-loop", "on-request"),
-  entry("Iris", "goal-loop", "on-request"),
-  entry("Rashida", "goal-loop", "on-request"),
-  entry("Senna", "goal-loop", "on-request"),
-  entry("Kai", "goal-loop", "on-request"),
-  entry("Tomas", "goal-loop", "on-request"),
-  entry("Ravi", "goal-loop", "on-request"),
-  entry("Imani", "goal-loop", "on-request"),
-  entry("Devon", "goal-loop", "on-request"),
-  entry("Saskia", "goal-loop", "on-request"),
-  entry("Rashida", "cyber-resilience-snapshot", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "49 7 * * 4",
-  }),
-  entry("Iris", "popia-controls-snapshot", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "51 7 * * 3",
-  }),
-  entry("Eitan", "liquidity-snapshot", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "53 6 * * *",
-  }),
-  entry("Saskia", "markets-readiness-snapshot", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "33 5 * * MON",
-  }),
-  entry("Kai", "m1-cdm-typescript-bindings", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "27 6 * * MON",
-  }),
-  entry("Kai", "pre-trade-gateway-aggregator", "event-driven", {
-    subscribesTo: ["OrderProposed"],
-  }),
-  entry("Bea", "accounting-readiness", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "47 5 * * *",
-  }),
-  entry("Yael", "tax-readiness", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "7 6 * * THU",
-  }),
-  entry("Tomas", "payments-readiness", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "21 4 * * *",
-  }),
-  entry("Imani", "legal-readiness", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "9 7 * * 5",
-  }),
-  entry("Ravi", "alm-readiness", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "37 5 * * *",
-  }),
-  // Ravi: FTP curve publication — daily morning run.
-  // Ravi (Treasury/ALM Engineer) publishes a new FTP curve each morning;
-  // emits FtpCurvePublished. Eitan (Treasurer) consumes for ALCO NII-at-risk.
-  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
-  entry("Ravi", "ftp-curve-publish", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "45 5 * * *",
-  }),
-  // Ravi: FTP attribution — event-driven on relevant trade/loan events.
-  // Subscribes to trade/loan booking events and emits FtpAttributionRecorded
-  // for each transaction attributed against the active FTP curve.
-  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
-  entry("Ravi", "ftp-attribution", "event-driven", {
-    subscribesTo: [
-      "FtpCurvePublished",
-      "TradeBooked",
-      "LoanBooked",
-      "DepositReceived",
-      "FundingDrawnDown",
-    ],
-  }),
-  entry("Sade", "agentops-readiness", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "41 7 * * 5",
-  }),
-  // Sade — AgentOps & Token Efficiency Engineer.
-  // Daily full-fleet token analysis; subscribes to TokenUsageRecorded for
-  // ingestion and anomaly detection.
-  // Authority: Sade mandate (AgentOps & Token Efficiency Engineer).
-  entry("Sade", "token-usage-analysis", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "0 5 * * *",
-  }),
-  // Sade — efficiency advisory emission; fires on every AgentRun completion
-  // to check whether the run has crossed the efficiency degradation threshold.
-  entry("Sade", "efficiency-advisory", "event-driven", {
-    subscribesTo: ["AgentRunCompleted", "TokenUsageRecorded"],
-  }),
-  // Sade — daily fleet prompt/mandate optimisation cycle; applies queued
-  // bounded optimisations (no structural role changes).
-  entry("Sade", "fleet-optimisation", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "30 5 * * *",
-  }),
-  entry("PAX", "role-research-queue", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "11 8 * * 5",
-  }),
-  // S7-Targeted #4 — Rohan's backtest harness (v0). Event-driven on
-  // `BacktestRequested`; emits `BacktestRun`. Tier-1 IFRS 9 ECL only.
-  // Added at the end of the array to minimise file-clash with Saskia+Kai's
-  // parallel gateway slice (six handler-metadata entries land alongside).
-  entry("Rohan", "backtest-harness", "event-driven", {
-    subscribesTo: ["BacktestRequested"],
-  }),
-  // M1 — Anya's projection-runtime-mapping handler.
-  entry("Anya", "m1-projection-runtime-mapping", "event-driven", {
-    subscribesTo: ["CeoDecision", "CdmBindingsRegenerated"],
-  }),
-  // B-1 — Bea FX posting engine. Subscribes to FX lifecycle events and
-  // emits SubLedgerPostingEmitted for each posting rule:
-  //   PR-FX-001 (FxTradeExecuted → trade-booking)
-  //   PR-FX-002 (FxPositionRevalued → revaluation)
-  //   PR-FX-003 (FxSettlementConfirmed → settlement)
-  // Authority: D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12).
-  entry("Bea", "fx-posting-engine", "event-driven", {
-    subscribesTo: ["FxTradeExecuted", "FxPositionRevalued", "FxSettlementConfirmed"],
-  }),
-  // M1 — Bea IFRS-9 classification rules.
-  entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
-    subscribesTo: [
-      "CeoDecision",
-      "CdmBindingsRegenerated",
-      "EquityTradeBooked",
-      "EquitySettlementInstructed",
-      "EquityCorporateActionApplied",
-    ],
-  }),
-  // M1 — Mira's regulator-citation-URN handler.
-  entry("Mira", "m1-regulator-citation-urns", "event-driven", {
-    subscribesTo: ["CeoDecision"],
-  }),
-  // PROC-FC-01 — Mira's KYC onboarding gateway.
-  // Processes ClientCandidateRegistered through PROC-FC-01 steps 1–9:
-  // sanctions screening, PEP screening, UBO resolution, RBA risk rating,
-  // and terminal accept/reject/EDD-initiation.
-  // Authority: PROC-FC-01 (Approved), KYC/CDD/EDD Policy (BRC-approved).
-  entry("Mira", "kyc-onboarding-gateway", "event-driven", {
-    subscribesTo: ["ClientCandidateRegistered"],
-  }),
-  // M1 — Senna's trading-stack threat-model handler.
-  entry("Senna", "m1-trading-stack-threat-model", "event-driven", {
-    subscribesTo: ["CeoDecision"],
-  }),
-  // D-OWNER-INBOX-AUTO-ARCHIVE — Scrooge's auto-archiver moves the source
-  // decision-required card from `Owner Inbox/` to `Owner Inbox/actioned/`
-  // and emits a typed `RecordFiled` event whenever a CeoDecision fires.
-  // Closes the half-automated CEO-decision-card lifecycle (Atlas + Owen,
-  // 2026-05-10).
-  entry("Scrooge", "owner-inbox-archiver", "event-driven", {
-    subscribesTo: ["CeoDecision"],
-  }),
-
-  // -------------------------------------------------------------------------
-  // Slice 2b — per-persona event-triage stubs.
-  //
-  // Each entry below closes ≥1 `specWithoutHandler` violation surfaced by
-  // `recon:trigger-spec-handler-symmetry` (Slice 2a, PR #212). The handler
-  // files are minimal stubs (log + acknowledge); full implementations are
-  // roadmap items per D-AGENT-AUTONOMY-OPERATIONAL.
-  // -------------------------------------------------------------------------
-
-  // Rashida — CISO; security-domain events (9 event types → 1 handler).
-  entry("Rashida", "event-triage", "event-driven", {
-    subscribesTo: [
-      "SecurityIncidentRaised",
-      "ThreatModelExceptionRequested",
-      "ThreatModelGateDecision",
-      "KeyCeremonyScheduled",
-      "SBOMAcceptanceRequired",
-      "VendorSecurityReview",
-      "RegulatorCyberInquiry",
-      "PersonalInformationCompromiseSuspected",
-      "AgentEscalation",
-    ],
-  }),
-
-  // Rohan — Risk engineer; risk/market events.
-  entry("Rohan", "event-triage", "event-driven", {
-    subscribesTo: [
-      "TradeBooked",
-      "PositionAdjusted",
-      "CollateralUpdated",
-      "LimitBreachProposed",
-      "LimitBreachActioned",
-      "ModelDriftDetected",
-      "PolicyChange",
-      "PortfolioReclassification",
-    ],
-  }),
-
-  // Kai — Trading systems engineer; order/market-data events.
-  entry("Kai", "event-triage", "event-driven", {
-    subscribesTo: [
-      "OrderSubmitted",
-      "OrderFilled",
-      "PreTradeGatewayBlock",
-      "OrderRoutingAnomaly",
-      "SurveillanceFeedGap",
-      "MarketDataOutage",
-      "ExchangeRuleChange",
-    ],
-  }),
-
-  // Nadia — Model validation engineer; model-lifecycle events.
-  entry("Nadia", "event-triage", "event-driven", {
-    subscribesTo: [
-      "ModelRegistered",
-      "ProductionUseRequested",
-      "MethodologyChangeRequested",
-      "BacktestTriggered",
-      "ModelDriftDetected",
-      "ValidationFindingRaised",
-      "RiskPolicyChange",
-    ],
-  }),
-  // Nadia — scheduled validation-cycle (closes `scheduled-coverage` violation).
-  entry("Nadia", "validation-cycle", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "17 7 * * THU",
-  }),
-
-  // Owen — Company Secretary; corporate-governance events.
-  entry("Owen", "event-triage", "event-driven", {
-    subscribesTo: [
-      "ResolutionRequired",
-      "ConflictDeclared",
-      "RelatedPartyTransactionProposed",
-      "WhistleblowingDisclosure",
-      "PAIARequest",
-      "MOIChangeProposed",
-      "SupervisoryLetterReceived",
-      "AgentEscalation",
-    ],
-  }),
-
-  // Ravi — Treasury/ALM engineer; balance-sheet/treasury events.
-  entry("Ravi", "event-triage", "event-driven", {
-    subscribesTo: [
-      "TradePosted",
-      "FundingDrawn",
-      "DepositReceived",
-      "SAMOSFundingShortfall",
-      "HQLACompositionDrift",
-      "IRRBBExcursion",
-      "FXPositionBreach",
-      "HedgeIneffective",
-    ],
-  }),
-
-  // Sade — AgentOps/HR engineer; agent-lifecycle and HR events.
-  entry("Sade", "event-triage", "event-driven", {
-    subscribesTo: [
-      "AgentRegistered",
-      "AgentRetired",
-      "AgentCapabilityChanged",
-      "PersonaSpecChanged",
-      "HireConfirmed",
-      "Termination",
-      "LeaveGranted",
-      "DisciplinaryActionRequested",
-    ],
-  }),
-
-  // Saskia — Head of Global Markets; markets/franchise events.
-  entry("Saskia", "event-triage", "event-driven", {
-    subscribesTo: [
-      "DealerMandateBreach",
-      "SurveillanceAlert",
-      "CurveSourceAnomaly",
-      "CounterpartyEvent",
-      "RASCalibrationChange",
-      "LicenceGranted",
-      "CEODecision",
-      "AgentEscalation",
-    ],
-  }),
-
-  // Thandiwe — CAE; audit/oversight events.
-  entry("Thandiwe", "event-triage", "event-driven", {
-    subscribesTo: [
-      "AuditFinding",
-      "AuditIssueOpened",
-      "AuditIssueClosed",
-      "AgentEscalation",
-      "WhistleblowingDisclosure",
-      "ExternalAuditorInquiry",
-      "AppetiteBreach",
-    ],
-  }),
-
-  // Bea — Accountant/IFRS engineer; accounting/financial events.
-  entry("Bea", "event-triage", "event-driven", {
-    subscribesTo: [
-      "TradePosted",
-      "FundingDrawn",
-      "PaymentSettled",
-      "AccrualBooked",
-      "IFRS9ECLPublished",
-      "TaxClassificationPublished",
-      "RestatementProposed",
-    ],
-  }),
-
-  // Devon — Operational Resilience engineer; resilience/incident events.
-  entry("Devon", "event-triage", "event-driven", {
-    subscribesTo: [
-      "IncidentRaised",
-      "SLOBudgetBurn",
-      "CapacityBreach",
-      "ChangeApprovalRequested",
-      "AgentEscalation",
-      "ResilienceTestResult",
-      "AuditFinding",
-    ],
-  }),
-
-  // Eitan — Liquidity/Capital engineer; liquidity/capital events.
-  entry("Eitan", "event-triage", "event-driven", {
-    subscribesTo: [
-      "IRRBBExcursion",
-      "FXPositionBreach",
-      "LCRRatioProjection",
-      "NSFRRatioProjection",
-      "CapitalActionTrigger",
-      "AgentEscalation",
-      "PolicyChange",
-    ],
-  }),
-
-  // Iris — POPIA/Privacy engineer; data-protection events.
-  entry("Iris", "event-triage", "event-driven", {
-    subscribesTo: [
-      "PersonalInformationCompromiseSuspected",
-      "DSARReceived",
-      "NewProcessingPurposeProposed",
-      "ConsentWithdrawn",
-      "CrossBorderTransferRequested",
-      "InformationRegulatorInquiry",
-      "AgentEscalation",
-    ],
-  }),
-
-  // Mira — Compliance/AML/FICA engineer; compliance/AML events.
-  entry("Mira", "event-triage", "event-driven", {
-    subscribesTo: [
-      "ClientCandidateRegistered",
-      "TransactionPosted",
-      "SanctionsListPublished",
-      "PepListPublished",
-      "AdverseMediaPublished",
-      "RegulatoryInstrumentUpdate",
-      "AlertOpened",
-    ],
-  }),
-
-  // Tomas — Payments engineer; payment/settlement events.
-  entry("Tomas", "event-triage", "event-driven", {
-    subscribesTo: [
-      "SettlementInstructionReceived",
-      "PaymentInitiated",
-      "ReconciliationBreak",
-      "CutOffBreach",
-      "SchemeRuleChange",
-      "CSPAttestationDue",
-      "SanctionsHoldRaised",
-    ],
-  }),
-
-  // Zara — MLRO/FIC Compliance Officer; AML/FICA events.
-  entry("Zara", "event-triage", "event-driven", {
-    subscribesTo: [
-      "STRCandidate",
-      "SanctionsHit",
-      "PEPMatchExceedsThreshold",
-      "FAISConductBreachSuspected",
-      "RegulatorInquiry",
-      "PolicyChange",
-      "AgentEscalation",
-    ],
-  }),
-
-  // Camille — CFO/Financial Controller; financial/audit events.
-  entry("Camille", "event-triage", "event-driven", {
-    subscribesTo: [
-      "RestatementProposed",
-      "CapitalEvent",
-      "MaterialIFRSClassificationChange",
-      "AgentEscalation",
-      "AuditFinding",
-      "RegulatorRequest",
-    ],
-  }),
-
-  // Imani — Legal/ISDA/contract engineer; legal/contract events.
-  entry("Imani", "event-triage", "event-driven", {
-    subscribesTo: [
-      "ContractDraftRequested",
-      "ClauseChangeProposed",
-      "SignatureRequested",
-      "ECTAExceptionFlagged",
-      "LegalEntityChange",
-      "ObligationRegistered",
-    ],
-  }),
-
-  // Niko — Client lifecycle engineer (paused until licence-day); client events.
-  entry("Niko", "event-triage", "event-driven", {
-    subscribesTo: [
-      "LeadCaptured",
-      "SuitabilityAssessmentRequired",
-      "AdviceRecordRequested",
-      "OnboardingHandoffPending",
-      "ConsentWithdrawn",
-    ],
-  }),
-  // Niko — scheduled client-lifecycle cycle (closes `scheduled-coverage`).
-  entry("Niko", "client-lifecycle", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "23 8 * * MON",
-  }),
-
-  // Senna — DevSecOps/security substrate engineer; DevSecOps events.
-  entry("Senna", "event-triage", "event-driven", {
-    subscribesTo: [
-      "MergeRequested",
-      "SecurityIncidentRaised",
-      "KeyRotationDue",
-      "DependencyVulnDetected",
-      "SuspiciousAuthEvent",
-      "SBOMRequired",
-    ],
-  }),
-
-  // Helena — CRO; risk-governance events.
-  entry("Helena", "event-triage", "event-driven", {
-    subscribesTo: [
-      "AppetiteBreach",
-      "ModelRiskDecisionRequired",
-      "SupervisoryLetterReceived",
-      "IcaapIlaapInputReady",
-      "RiskPolicyChangeProposal",
-    ],
-  }),
-
-  // Scrooge — Chief of Staff; orchestration-relevant events.
-  entry("Scrooge", "event-triage", "event-driven", {
-    subscribesTo: [
-      "AgentEscalation",
-      "WorkstreamCompleted",
-      "WorkstreamRegistered",
-      "HireConfirmed",
-      "MandateGapDetected",
-    ],
-  }),
-
-  // Yael — Tax engineer; tax events.
-  entry("Yael", "event-triage", "event-driven", {
-    subscribesTo: [
-      "SARSGuidanceUpdate",
-      "IFRS9ECLChange",
-      "InterEntityTransactionProposed",
-      "ClientCandidateRegistered",
-      "ClientReviewTriggered",
-    ],
-  }),
-
-  // Linnea — COO/Operations engineer; operations-relevant events.
-  entry("Linnea", "event-triage", "event-driven", {
-    subscribesTo: ["CeoDecision", "WorkstreamRegistered", "AgentEscalation"],
-  }),
-  // Linnea — scheduled ops-cycle (closes `scheduled-coverage`).
-  entry("Linnea", "ops-cycle", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "29 8 * * TUE",
-  }),
-
-  // Nolan — HR/Hiring engineer; hiring/mandate events.
-  entry("Nolan", "event-triage", "event-driven", {
-    subscribesTo: ["RoleBriefDelivered", "MandateGapDetected", "WorkstreamRegistered"],
-  }),
-  // Nolan — scheduled hiring-cycle (closes `scheduled-coverage`).
-  entry("Nolan", "hiring-cycle", "scheduled", {
-    cadenceHours: 24 * 7,
-    cronExpression: "53 8 * * FRI",
-  }),
-
-  // Anya — projection/schema engineer; additional schema/obligation events.
-  entry("Anya", "event-triage", "event-driven", {
-    subscribesTo: ["EventSchemaPublished", "ObligationRegistered", "PolicyChange"],
-  }),
-
-  // Atlas — Core banking platform architect; platform-architecture events.
-  entry("Atlas", "event-triage", "event-driven", {
-    subscribesTo: ["EventSchemaProposal", "IdentityPermissionChangeProposal", "SubstrateAlert"],
-  }),
-
-  // PAX — Research assistant; role-research and mandate-gap events.
-  entry("PAX", "event-triage", "event-driven", {
-    subscribesTo: ["RoleResearchRequested", "MandateGapDetected", "AgentEscalation"],
-  }),
-
-  // Vera — Internal audit engineer; CEO-decision audit trail events.
-  entry("Vera", "event-triage", "event-driven", {
-    subscribesTo: ["CeoDecision"],
-  }),
-
-  // Noa — Intranet Product Owner & UI Architect; intranet-operations events.
-  // Three event-driven handlers — one per typed event family.
-  // Authority: Principle 1 (events-first authoring per CLAUDE.md).
-  entry("Noa", "feature-shipped", "event-driven", {
-    subscribesTo: ["IntranetFeatureShipped"],
-  }),
-  entry("Noa", "design-review-complete", "event-driven", {
-    subscribesTo: ["DesignReviewComplete"],
-  }),
-  entry("Noa", "ux-finding-raised", "event-driven", {
-    subscribesTo: ["UXFindingRaised"],
-  }),
+  ...VERA_HANDLER_METADATA,
+  ...ATLAS_HANDLER_METADATA,
+  ...BEA_HANDLER_METADATA,
+  ...HELENA_HANDLER_METADATA,
+  ...DEVON_HANDLER_METADATA,
+  ...CAMILLE_HANDLER_METADATA,
+  ...ANYA_HANDLER_METADATA,
+  ...SCROOGE_HANDLER_METADATA,
+  ...OWEN_HANDLER_METADATA,
+  ...ROHAN_HANDLER_METADATA,
+  ...MIRA_HANDLER_METADATA,
+  ...SENNA_HANDLER_METADATA,
+  ...ZARA_HANDLER_METADATA,
+  ...THANDIWE_HANDLER_METADATA,
+  ...RASHIDA_HANDLER_METADATA,
+  ...IRIS_HANDLER_METADATA,
+  ...EITAN_HANDLER_METADATA,
+  ...SASKIA_HANDLER_METADATA,
+  ...KAI_HANDLER_METADATA,
+  ...YAEL_HANDLER_METADATA,
+  ...TOMAS_HANDLER_METADATA,
+  ...IMANI_HANDLER_METADATA,
+  ...RAVI_HANDLER_METADATA,
+  ...SADE_HANDLER_METADATA,
+  ...PAX_HANDLER_METADATA,
+  ...NADIA_HANDLER_METADATA,
+  ...NIKO_HANDLER_METADATA,
+  ...NOA_HANDLER_METADATA,
+  ...LINNEA_HANDLER_METADATA,
+  ...NOLAN_HANDLER_METADATA,
+  // ← new agent adds one spread here
 ];
 
 /** Map from `<lowercased-agent>:<trigger>` to metadata. */
