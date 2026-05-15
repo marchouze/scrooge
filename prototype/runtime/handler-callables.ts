@@ -75,6 +75,8 @@ import rashidaEventTriage from "./agents/rashida-event-triage";
 import rashidaGoalLoop from "./agents/rashida-goal-loop";
 import raviAlmReadiness from "./agents/ravi-alm-readiness";
 import raviEventTriage from "./agents/ravi-event-triage";
+import raviFtpAttribution from "./agents/ravi-ftp-attribution";
+import raviFtpCurvePublish from "./agents/ravi-ftp-curve-publish";
 import raviGoalLoop from "./agents/ravi-goal-loop";
 import rohanBacktestHarness from "./agents/rohan-backtest-harness";
 import rohanEventTriage from "./agents/rohan-event-triage";
@@ -190,6 +192,8 @@ const _map: Record<string, AgentRunHandler> = {
   "tomas:payments-readiness": tomasPaymentsReadiness,
   "imani:legal-readiness": imaniLegalReadiness,
   "ravi:alm-readiness": raviAlmReadiness,
+  "ravi:ftp-curve-publish": raviFtpCurvePublish,
+  "ravi:ftp-attribution": raviFtpAttribution,
   "sade:agentops-readiness": sadeAgentopsReadiness,
   "sade:token-usage-analysis": sadeTokenUsageAnalysis,
   "sade:efficiency-advisory": sadeEfficiencyAdvisory,

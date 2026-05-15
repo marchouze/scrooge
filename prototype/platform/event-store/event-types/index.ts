@@ -15,6 +15,8 @@
 //                         performance or output quality)
 //   - decision-request.ts — AgentDecisionRequired (request-for-input that
 //                         blocks forward progress; see platform/event-trigger/)
+//   - ftp.ts            — FtpCurvePublished (daily curve publication),
+//                         FtpAttributionRecorded (per-transaction spread)
 //   - platform.ts       — WorkstreamRegistered, DecisionComment,
 //                         ScheduledTrigger, SubstrateAlert, IdentityKeyRotated,
 //                         PermissionPolicyPublished, BusDispatched,
@@ -67,6 +69,8 @@ export type { SemanticLayerQuantityRegisteredPayload } from "../../semantic-laye
 export * from "./agent-ops";
 // Intranet event family — Noa (Intranet Product Owner & UI Architect).
 export * from "./intranet";
+// FTP event family — Ravi (Treasury/ALM Engineer).
+export * from "./ftp";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -266,26 +270,16 @@ export const TYPED_EVENT_TYPES = [
   // quality; consumed by the performance evaluator quality-scoring pipeline.
   // D-AGENT-AUTONOMY-OPERATIONAL.
   "AuditFinding",
-  // Semantic-layer quantity registration — emitted once per quantity on system
-  // boot (idempotent). Analytics / reporting consumers assert this event is
-  // present before generating any quantity-dependent report.
-  // Author: Anya (Data / analytics engineer, engineering).
   "SemanticLayerQuantityRegistered",
-  // Agent decision request — emitted when an agent needs a human or
-  // higher-authority agent to make a decision before proceeding.
-  // Principle 6: every step an agent cannot authorise on its own is a
-  // formal typed channel. See platform/event-trigger/ dispatch library.
   "AgentDecisionRequired",
-  // AgentOps token efficiency event family — Sade (AgentOps & Token Efficiency Engineer).
-  // Authority: Sade mandate; AgentOps dashboard tile projection.
   "TokenUsageRecorded",
   "AgentEfficiencyAdvisoryIssued",
   "AgentPromptOptimizationApplied",
-  // Intranet operations event family — Principle 1 artefacts for intranet
-  // state changes. Author: Noa (Intranet Product Owner & UI Architect).
   "IntranetFeatureShipped",
   "DesignReviewComplete",
   "UXFindingRaised",
+  "FtpCurvePublished",
+  "FtpAttributionRecorded",
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

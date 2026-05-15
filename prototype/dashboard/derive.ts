@@ -44,6 +44,7 @@ import type {
   DecisionCommentSummary,
   DecisionRecommendation,
   FindingSummary,
+  FtpDashboardSummary,
   InFlightItem,
   LimitUtilisationStateSummary,
   OpenDecision,
@@ -170,10 +171,14 @@ export interface DeriveOpts {
   /**
    * AgentOps tile — pre-built AgentOps state from the agent-ops projection.
    * Optional: if omitted the dashboard state carries the default zero-value.
-   * Caller (server.ts) is responsible for building the projection and
-   * injecting the result via buildAgentOpsState().
    */
   readonly agentOps?: AgentOpsState;
+  /**
+   * FTP portfolio summary — pre-built from FtpAttributionRecorded +
+   * FtpCurvePublished events via buildFtpPortfolio(). Optional: if
+   * omitted the dashboard state carries null (graceful build-phase default).
+   */
+  readonly ftp?: FtpDashboardSummary | null;
 }
 
 export function defaultSourcePaths(repoRoot: string): SourcePaths {
@@ -2007,6 +2012,7 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       efficiencyTrend: "stable",
       lastUpdated: "2026-05-15T00:00:00.000Z",
     },
+    ftp: opts.ftp ?? null,
   };
 }
 

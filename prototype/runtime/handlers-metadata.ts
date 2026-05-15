@@ -298,6 +298,27 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "37 5 * * *",
   }),
+  // Ravi: FTP curve publication — daily morning run.
+  // Ravi (Treasury/ALM Engineer) publishes a new FTP curve each morning;
+  // emits FtpCurvePublished. Eitan (Treasurer) consumes for ALCO NII-at-risk.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
+  entry("Ravi", "ftp-curve-publish", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "45 5 * * *",
+  }),
+  // Ravi: FTP attribution — event-driven on relevant trade/loan events.
+  // Subscribes to trade/loan booking events and emits FtpAttributionRecorded
+  // for each transaction attributed against the active FTP curve.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
+  entry("Ravi", "ftp-attribution", "event-driven", {
+    subscribesTo: [
+      "FtpCurvePublished",
+      "TradeBooked",
+      "LoanBooked",
+      "DepositReceived",
+      "FundingDrawnDown",
+    ],
+  }),
   entry("Sade", "agentops-readiness", "scheduled", {
     cadenceHours: 24 * 7,
     cronExpression: "41 7 * * 5",

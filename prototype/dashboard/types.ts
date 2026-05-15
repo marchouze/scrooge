@@ -545,6 +545,21 @@ export interface LimitUtilisationStateSummary {
   asOf: string;
 }
 
+// ---------------------------------------------------------------------------
+// FTP dashboard tile — Ravi (Treasury/ALM Engineer) + Eitan (Treasurer).
+//
+// Derived from FtpAttributionRecorded and FtpCurvePublished events via
+// buildFtpPortfolio(). Null when no FTP data has been emitted yet (build
+// phase); populated once the first FtpCurvePublished event lands.
+// ---------------------------------------------------------------------------
+
+export interface FtpDashboardSummary {
+  totalAttributions: number;
+  weightedAvgSpreadBps: number;
+  activeCurveId: string | null;
+  lastUpdated: string;
+}
+
 export interface DashboardState {
   asOf: string;
   /**
@@ -589,6 +604,12 @@ export interface DashboardState {
    * AgentEfficiencyAdvisoryIssued, and AgentPromptOptimizationApplied events.
    */
   agentOps: AgentOpsState;
+  /**
+   * FTP summary tile — Ravi (Treasury/ALM Engineer) + Eitan (Treasurer).
+   * Derived from FtpAttributionRecorded + FtpCurvePublished events via
+   * buildFtpPortfolio(). Null when no FTP data has been emitted yet.
+   */
+  ftp?: FtpDashboardSummary | null;
 }
 
 export interface DecisionRequestBody {

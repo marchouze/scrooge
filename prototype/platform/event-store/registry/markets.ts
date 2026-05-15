@@ -62,6 +62,10 @@ import {
   sanctionsClearancePassedPayloadSchema,
 } from "../event-types/customer";
 import {
+  ftpAttributionRecordedPayloadSchema,
+  ftpCurvePublishedPayloadSchema,
+} from "../event-types/ftp";
+import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
   RETENTION_FIC_5Y,
@@ -695,5 +699,43 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // retention under Companies Act s.24).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+  },
+  // ---------------------------------------------------------------------------
+  // FTP (Funds Transfer Pricing) event family.
+  //
+  // FtpCurvePublished — Ravi publishes a new ZAR FTP curve each morning via
+  //   ravi:ftp-curve-publish. The curve maps tenors to rates; consumed by the
+  //   FTP attribution engine and Eitan's ALCO NII-at-risk dashboard.
+  //
+  // FtpAttributionRecorded — per-transaction spread attribution record emitted
+  //   by ravi:ftp-attribution on each trade/loan event. Enables ALCO to assess
+  //   true transaction profitability relative to the bank's cost of funds.
+  //
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
+  // Authors: Ravi (Treasury/ALM Engineer, engineering) + Eitan (Treasurer, governance).
+  // ---------------------------------------------------------------------------
+  {
+    type: "FtpCurvePublished",
+    class: "markets",
+    payloadSchema: ftpCurvePublishedPayloadSchema,
+    issuer: "Ravi",
+    subscribers: ["Eitan", "Ravi", "Camille", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"],
+    // FTP curve: governance-grade 7y (ALCO decision record; NII-at-risk audit trail).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/platform/ftp/; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
+  },
+  {
+    type: "FtpAttributionRecorded",
+    class: "markets",
+    payloadSchema: ftpAttributionRecordedPayloadSchema,
+    issuer: "Ravi",
+    subscribers: ["Eitan", "Camille", "Rohan", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-D365-IRRBB"],
+    // Attribution record: governance-grade 7y (ALCO / NII-at-risk audit trail).
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/ftp/attribution.ts; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
   },
 ];
