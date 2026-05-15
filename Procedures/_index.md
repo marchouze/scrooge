@@ -11,21 +11,21 @@
 |---|---|---|---|
 | Risk Management Framework | `procedures-rmf-governance.md` | Helena | PLANNED |
 | Governance Framework | `procedures-board-papers.md` | Owen | PLANNED |
-| Delegation of Authority | [`delegation-of-authority.md`](by-policy/delegation-of-authority.md) (PROC-GV-DOA-01 — four authority levels; Board-reserved matters; agent Level 4 limits; `EscalationRequired` path) | Owen + Devon | **STUB** |
+| Delegation of Authority | [`delegation-of-authority.md`](by-policy/delegation-of-authority.md) (PROC-GV-DOA-01 — four authority levels; Board-reserved matters; agent Level 4 limits; `EscalationRequired` path) | Owen + Devon | **POPULATED** |
 
 ## Risk
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Credit Risk Policy | `credit-origination.md` | Helena (future Head of Credit) | PLANNED |
-| Market Risk Policy | [`market-risk-monitoring.md`](by-policy/market-risk-monitoring.md) (PROC-RISK-MRM-01 — daily VaR/ES limit monitoring, FRTB back-testing, PLA test, prop-trading attestation) | Helena (CRO, governance) · Rohan (market risk quant, engineering) | **STUB** |
+| Market Risk Policy | [`market-risk-monitoring.md`](by-policy/market-risk-monitoring.md) (PROC-RISK-MRM-01 — daily VaR/ES limit monitoring, FRTB back-testing, PLA test, prop-trading attestation) | Helena (CRO, governance) · Rohan (market risk quant, engineering) | **POPULATED** |
 | Liquidity Risk Management Policy | [`capital-ratio-monitoring.md`](by-policy/capital-ratio-monitoring.md) (covers LCR / NSFR) | Camille + Eitan | **POPULATED** |
 | Liquidity Risk Management Policy | `intraday-liquidity-funding.md` | Eitan | PLANNED |
 | IRRBB Policy | `irrbb-measurement.md` | Helena + Eitan | PLANNED |
 | Operational Risk Policy | [`rcsa-cycle.md`](by-policy/rcsa-cycle.md) (PROC-RISK-RCSA-01) | Helena + Devon | **STUB** |
-| Operational Resilience Policy | [`severe-but-plausible-test.md`](by-policy/severe-but-plausible-test.md) (PROC-OR-SBP-01 — annual SBP scenario test; five IBS; four scenario types; tabletop facilitation; BRC + Board approval; PA self-assessment) | Devon (COO, governance) · Helena (CRO, governance) | **STUB** |
+| Operational Resilience Policy | [`severe-but-plausible-test.md`](by-policy/severe-but-plausible-test.md) (PROC-OR-SBP-01 — annual SBP scenario test; five IBS; four scenario types; tabletop facilitation; BRC + Board approval; PA self-assessment) | Devon (COO, governance) · Helena (CRO, governance) | **POPULATED** |
 | Model Risk Policy | [`model-validation.md`](by-policy/model-validation.md) | Helena (independent validation) | **STUB** (Nadia cross-link; awaiting Helena population — Slice D of validation-methodology library v0) |
-| Stress Testing Policy | [`stress-test-cycle.md`](by-policy/stress-test-cycle.md) (PROC-RISK-ST-01 — annual baseline + adverse + reverse stress; ICAAP/ILAAP; Recovery Plan feed) | Helena (CRO, governance) · Camille (CFO, governance) | **STUB** |
+| Stress Testing Policy | [`stress-test-cycle.md`](by-policy/stress-test-cycle.md) (PROC-RISK-ST-01 — annual baseline + adverse + reverse stress; ICAAP/ILAAP; Recovery Plan feed) | Helena (CRO, governance) · Camille (CFO, governance) | **POPULATED** |
 | Climate-Related Risk | `climate-scenario-analysis.md` | Helena (with S&E) | PLANNED |
 
 ## Compliance & financial crime
@@ -63,7 +63,7 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Information Security Policy | [`access-provisioning.md`](by-policy/access-provisioning.md) (PROC-IS-AP-01) | Senna + Devon | **STUB** |
-| Information Security Policy | [`key-rotation.md`](by-policy/key-rotation.md) (PROC-IS-KR-01 — cryptographic key lifecycle: HSM root/signing/encryption/API key rotation on schedule or on-demand; dual-control ceremony; `KeyRotated` event chain; key-rotation register) | Senna (CISO, governance) · Devon (IT ops engineer) | **STUB** |
+| Information Security Policy | [`key-rotation.md`](by-policy/key-rotation.md) (PROC-IS-KR-01 — cryptographic key lifecycle: HSM root/signing/encryption/API key rotation on schedule or on-demand; dual-control ceremony; `KeyRotated` event chain; key-rotation register) | Senna (CISO, governance) · Devon (IT ops engineer) | **POPULATED** |
 | Cyber Resilience Policy | [`incident-response.md`](by-policy/incident-response.md) (IR command) | Senna + Devon + Iris + Zara | **POPULATED** |
 | Cyber Resilience Policy | `cyber-incident-classification.md` (severity tiering) | Senna + Iris | PLANNED |
 | Vulnerability Management | `patch-cadence.md` | Senna | PLANNED |
@@ -78,7 +78,7 @@
 | Outsourcing & Third-Party Risk | [`outsourcing-due-diligence.md`](by-policy/outsourcing-due-diligence.md) (pre-engagement) | Devon + Senna + Iris + Imani + Mira | STUB |
 | Outsourcing & Third-Party Risk | [`directive-3-pa-notification.md`](by-policy/directive-3-pa-notification.md) | Devon + Owen + Imani + Senna + Rashida + Iris | STUB |
 | Cloud Computing | `cloud-residency-attestation.md` | Devon + Senna | PLANNED |
-| BCP / DR | [`dr-test-execution.md`](by-policy/dr-test-execution.md) (PROC-OR-DR-01 — annual full DR test + semi-annual component tests; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report) | Devon (COO, governance) · Senna (CISO, engineering) | **STUB** |
+| BCP / DR | [`dr-test-execution.md`](by-policy/dr-test-execution.md) (PROC-OR-DR-01 — annual full DR test + semi-annual component tests; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report) | Devon (COO, governance) · Senna (CISO, engineering) | **POPULATED** |
 | BCP / DR | `crisis-management-activation.md` | Devon + Helena | PLANNED |
 | Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01) | Owen + Devon | **STUB** |
 | Records Management | `legal-hold.md` | Imani (with Owen) | PLANNED |

@@ -5,7 +5,7 @@
 **Approval:** EXCO
 **Cadence:** Annual (full DR test); semi-annual (component tests)
 **Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -127,6 +127,7 @@ Both tests are required. DR test results feed the SBP scenario assessments: if a
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Devon + Senna (via Scrooge dispatch) | Initial populated stub. Full DR test + semi-annual component tests; 13-step cycle; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report path. Covers ORG-PR-18 + ORG-PR-45 + ORG-CY-16. |
+| v0.2 | 2026-05-15 | Devon (Chief Operating Officer, governance) + Senna (Chief Information Security Officer, engineering) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

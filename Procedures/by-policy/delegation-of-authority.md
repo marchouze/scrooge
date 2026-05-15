@@ -5,7 +5,7 @@
 **Approval:** Board
 **Cadence:** Annual review; immediate update on material organisational change
 **Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -116,6 +116,7 @@ This procedure is triggered in four circumstances:
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Owen + Devon | Initial stub — all 9 sections; system capabilities PLANNED; four authority levels defined; agent-runtime Level 4 limits encoded. |
+| v0.2 | 2026-05-15 | Owen (Company Secretary, governance) + Devon (Chief Operating Officer, governance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

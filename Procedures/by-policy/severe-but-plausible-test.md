@@ -5,7 +5,7 @@
 **Approval:** Board
 **Cadence:** Annual (minimum); triggered on any material change to an Important Business Service
 **Version:** v0.1 — 2026-05-13
-**Status:** STUB
+**Status:** POPULATED
 
 ## 1. Source policy
 
@@ -122,6 +122,7 @@ The procedure is distinct from DR testing (`dr-test-execution.md` PROC-OR-DR-01)
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Devon + Helena (via Scrooge dispatch) | Initial populated stub. Five IBS; four scenario types; 13-step cycle including tabletop facilitation, BRC review, Board approval, PA submission. Covers ORG-PR-18 + ORG-PR-45 / D4/2023. |
+| v0.2 | 2026-05-15 | Devon (Chief Operating Officer, governance) + Helena (Chief Risk Officer, governance) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 
