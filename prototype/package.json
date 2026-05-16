@@ -147,7 +147,8 @@
     "ras:seed-limits": "bun run scripts/seed-ras-limits.ts",
     "perf:raise-finding": "bun run scripts/raise-finding.ts",
     "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts",
-    "recon:circular-deps": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/"
+    "recon:circular-deps": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
+    "sarb:pdf-extract": "bun run platform/tools/sarb-pdf-extract.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
@@ -158,6 +159,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
     "@noble/hashes": "^2.2.0",
+    "pdfjs-dist": "^5.7.284",
     "pino": "^9.5.0",
     "zod": "^3.23.8"
   }
