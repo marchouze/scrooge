@@ -175,6 +175,13 @@ export const PRODUCTION_CARVE_OUTS: Readonly<Record<string, ProvenanceTag>> = {
     kind: "production",
     sourceLineage: "agent-brief",
   },
+  // D-DECISIONS-FRAMEWORK-REDESIGN (CEO-approved 2026-05-16) — unified
+  // `Decision` event family. Same architectural-commitment provenance
+  // carve-out as the legacy `CeoDecision` it subsumes.
+  Decision: {
+    kind: "production",
+    sourceLineage: "decision-record",
+  },
 };
 
 /**
