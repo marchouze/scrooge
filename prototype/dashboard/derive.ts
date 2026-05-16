@@ -29,7 +29,7 @@
 // Author: Atlas · Anya
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
 import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
@@ -1638,36 +1638,29 @@ interface DeriveAgentsInput {
 // Returns: governance-head name → list of engineer names.
 function parseReportsTo(claudeMd: string): Map<string, string[]> {
   const out = new Map<string, string[]>();
-  if (!existsSync(claudeMd)) return out;
-  const text = readFileSync(claudeMd, "utf8");
 
-  // Find the Engineering-vs-governance reporting paragraph. The paragraph
-  // contains semicolon-separated entries of the form "<engineer-list> →
-  // <head> (<role>)". Use a tolerant regex that survives paragraph
-  // rewrites.
-  const pattern =
-    /([A-Z][A-Za-z]+(?:\s*,\s*[A-Z][A-Za-z]+(?:\s*\([^)]*\))?)*)\s*→\s*([A-Z][A-Za-z]+)\s*\(/g;
-  for (const m of text.matchAll(pattern)) {
-    const engineers = (m[1] ?? "")
-      .split(/\s*,\s*/)
-      .map((s) => s.replace(/\s*\([^)]*\)/, "").trim())
-      .filter((s) => /^[A-Z][A-Za-z]+$/.test(s));
-    const head = (m[2] ?? "").trim();
-    if (!head || engineers.length === 0) continue;
-    const list = out.get(head) ?? [];
-    for (const e of engineers) if (!list.includes(e)) list.push(e);
-    out.set(head, list);
+  // Read from Team/_team-roster.json — the canonical source for reporting lines
+  // per CLAUDE.md ("Engineering-to-governance reporting is encoded in the
+  // roster JSON reportsTo field"). The previous CLAUDE.md text-parsing approach
+  // never matched because the → arrows in CLAUDE.md are principle citations,
+  // not reporting-line entries. Root cause of ghost-warns on Atlas-owned
+  // workstreams (Vera dashboard-derivation 2026-05-16).
+  const rosterPath = join(dirname(claudeMd), "Team", "_team-roster.json");
+  if (existsSync(rosterPath)) {
+    try {
+      const roster = JSON.parse(readFileSync(rosterPath, "utf8")) as {
+        personas?: Array<{ name: string; reportsTo?: string }>;
+      };
+      for (const p of roster.personas ?? []) {
+        if (!p.name || !p.reportsTo) continue;
+        const list = out.get(p.reportsTo) ?? [];
+        if (!list.includes(p.name)) list.push(p.name);
+        out.set(p.reportsTo, list);
+      }
+    } catch {
+      // Fail open — validator emits warns rather than crash.
+    }
   }
-
-  // Static mappings the CLAUDE.md paragraph doesn't enumerate cleanly:
-  // Vera (CAE-line) and PAX/Nolan (under Scrooge). We add these conservatively.
-  const veraSet = out.get("Thandiwe") ?? [];
-  if (!veraSet.includes("Vera")) veraSet.push("Vera");
-  out.set("Thandiwe", veraSet);
-
-  const scroogeSet = out.get("Scrooge") ?? [];
-  for (const s of ["PAX", "Nolan"]) if (!scroogeSet.includes(s)) scroogeSet.push(s);
-  out.set("Scrooge", scroogeSet);
 
   return out;
 }

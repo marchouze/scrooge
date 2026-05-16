@@ -592,7 +592,7 @@
     {
       "id": "WS-PROCEDURES-DRAFTING",
       "what": "~70 procedures drafting (markets-bank-tilted)",
-      "owner": "Domain leads",
+      "owner": "Devon",
       "due": "Continuous",
       "active": false
     },
@@ -606,7 +606,7 @@
     {
       "id": "WS-API-CLOUD-BUDGET",
       "what": "API + cloud cost budget (S6)",
-      "owner": "Marc + Camille",
+      "owner": "Camille",
       "due": "Decision at next session",
       "active": false
     },
