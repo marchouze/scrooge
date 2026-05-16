@@ -28,6 +28,8 @@ import {
 import {
   fxSettlementInstructedPayloadSchema,
   fxTradeExecutedPayloadSchema,
+  principalPaymentPayloadSchema,
+  settlementConfirmedPayloadSchema,
 } from "../../markets/cdm/fx";
 import {
   accountingPeriodClosedPayloadSchema,
@@ -402,6 +404,42 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M3 FX bindings); scenarios/03-fx-end-to-end-rehearsal.ts; Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  // PrincipalPayment — emitted when the correspondent actions a settlement leg
+  // (deliver or receive). Two per FX Spot trade (one per currency leg). Closes
+  // the instruction loop opened by FxSettlementInstructed. Per D-FX-CLS-MEMBERSHIP
+  // correspondent-routing decision. Retention: 7y (trade-record retention norm).
+  {
+    type: "PrincipalPayment",
+    class: "markets",
+    payloadSchema: principalPaymentPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Bea", "Anya", "Mira", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "EXCON-SARB-CIRC-3-2020"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/fx.ts (Kai M4 FX settlement lifecycle); scenarios/06-fx-spot-trade.ts; D-FX-CLS-MEMBERSHIP; D-MARKETS-SCHEMA-FOUNDATION",
+  },
+  // SettlementConfirmed — final lifecycle event for an FX Spot (or Forward/Swap)
+  // trade; closes the trade lifecycle once both principal payments are confirmed.
+  // Carries realised P&L delta and optional FinSurv reference.
+  {
+    type: "SettlementConfirmed",
+    class: "markets",
+    payloadSchema: settlementConfirmedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Bea", "Anya", "Mira", "Rohan", "Vera"],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "D-FX-CLS-MEMBERSHIP",
+      "D-FX-AD-STATUS",
+      "EXCON-SARB-CIRC-3-2020",
+      "IAS-21-§23",
+    ],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/fx.ts (Kai M4 FX settlement lifecycle); scenarios/06-fx-spot-trade.ts; D-FX-CLS-MEMBERSHIP; D-MARKETS-SCHEMA-FOUNDATION",
   },
   // CDM substrate — bindings-regeneration self-test, emitted by Kai's
   // m1-cdm-typescript-bindings handler after inventory + round-trip. The

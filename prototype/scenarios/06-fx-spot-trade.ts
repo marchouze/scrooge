@@ -2,19 +2,14 @@
 //
 // Synthetic ZAR/USD FX Spot trade — institutional client buys USD against ZAR.
 //
-// Exercises: FxTradeExecuted (productTaxonomy: "FX-spot") → FxSettlementInstructed
+// Exercises the full 6-event FX Spot lifecycle:
 //
-// This scenario validates the M4 FX Spot product definition (M4_FX_SPOT_FIXTURE)
-// by emitting the two canonical CDM events that anchor the FX Spot lifecycle:
-//
-//   T0  FxTradeExecuted    — bank buys USD 5m vs ZAR 92.5m at 18.5000 (T+2 spot)
-//   T1  FxSettlementInstructed — USD leg via correspondent (pacs.009 path)
-//   T2  FxSettlementInstructed — ZAR leg via correspondent (pacs.009 path)
-//
-// Remaining lifecycle events (PrincipalPayment, SettlementConfirmed,
-// TradeReportSubmitted, TradeMatured) require downstream substrate (Tomas
-// settlement-confirmation family; Mira FinSurv reporting). Substrate gaps
-// are surfaced in the completion brief.
+//   T0  FxTradeExecuted               — bank buys USD 5m vs ZAR 92.5m at 18.5000 (T+2 spot)
+//   T1  FxSettlementInstructed (USD)  — USD receive leg via correspondent (pacs.009 path)
+//   T2  FxSettlementInstructed (ZAR)  — ZAR deliver leg via correspondent (pacs.009 path)
+//   T3  PrincipalPayment (ZAR)        — correspondent confirms ZAR deliver leg actioned
+//   T4  PrincipalPayment (USD)        — correspondent confirms USD receive leg actioned
+//   T5  SettlementConfirmed           — both legs settled; lifecycle closed
 //
 // Authority:
 //   D-PRODUCT-CONSTRUCTION-SUBSTRATE — product definition substrate
@@ -37,7 +32,12 @@ import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
 import { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
-import { makeFxSettlementInstructed, makeFxTradeExecuted } from "@platform/markets/cdm/fx";
+import {
+  makeFxSettlementInstructed,
+  makeFxTradeExecuted,
+  makePrincipalPayment,
+  makeSettlementConfirmed,
+} from "@platform/markets/cdm/fx";
 import { M4_FX_SPOT_FIXTURE } from "@platform/markets/products/fixtures";
 import { logger } from "@platform/observability/logger";
 
@@ -223,6 +223,95 @@ function buildZarSettlementInstructed(asOf: string, tradeEventId: string): Event
   return { ...base, provenance: SCENARIO_PROVENANCE };
 }
 
+/**
+ * T3 — PrincipalPayment (ZAR deliver leg).
+ * Correspondent confirms ZAR 92.5m delivered by the bank.
+ */
+function buildZarPrincipalPayment(asOf: string): Event {
+  const base = makePrincipalPayment({
+    asOf,
+    entity: ENTITY,
+    actor: TOMAS,
+    citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "ORG-MK-08"],
+    payload: {
+      tradeId: "TRD-FX-SPOT-M4-001",
+      legKind: "deliver",
+      currencyPair: "ZAR/USD",
+      currency: "ZAR",
+      // Bank delivers ZAR (negative = outflow)
+      netCash: -ZAR_NOTIONAL_MINOR,
+      settlementDate: SETTLEMENT_DATE_ISO,
+      settlementPath: "correspondent",
+      correspondent: {
+        name: "SimulatedCorrespondent Bank",
+        bic: "SBZAZAJJXXX",
+      },
+      settlementConfirmationRef: "CONF-ZAR-M4-001",
+      citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "ORG-MK-08"],
+    },
+    eventId: newEventId(),
+  });
+  return { ...base, provenance: SCENARIO_PROVENANCE };
+}
+
+/**
+ * T4 — PrincipalPayment (USD receive leg).
+ * Correspondent confirms USD 5m received by the bank.
+ */
+function buildUsdPrincipalPayment(asOf: string): Event {
+  const base = makePrincipalPayment({
+    asOf,
+    entity: ENTITY,
+    actor: TOMAS,
+    citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "ORG-MK-08"],
+    payload: {
+      tradeId: "TRD-FX-SPOT-M4-001",
+      legKind: "receive",
+      currencyPair: "ZAR/USD",
+      currency: "USD",
+      // Bank receives USD (positive = inflow)
+      netCash: USD_NOTIONAL_MINOR,
+      settlementDate: SETTLEMENT_DATE_ISO,
+      settlementPath: "correspondent",
+      correspondent: {
+        name: "SimulatedCorrespondent Bank",
+        bic: "SBZAZAJJXXX",
+      },
+      settlementConfirmationRef: "CONF-USD-M4-001",
+      citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "ORG-MK-08"],
+    },
+    eventId: newEventId(),
+  });
+  return { ...base, provenance: SCENARIO_PROVENANCE };
+}
+
+/**
+ * T5 — SettlementConfirmed.
+ * Both legs settled; FX Spot lifecycle closed.
+ */
+function buildSettlementConfirmed(asOf: string): Event {
+  const base = makeSettlementConfirmed({
+    asOf,
+    entity: ENTITY,
+    actor: TOMAS,
+    citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "ORG-MK-08"],
+    payload: {
+      tradeId: "TRD-FX-SPOT-M4-001",
+      currencyPair: "ZAR/USD",
+      settledDate: SETTLEMENT_DATE_ISO,
+      // Realised P&L delta: zero for a market-rate trade (mark = execution)
+      // In a live system Bea's IFRS classifier would compute this.
+      realisedPnlDelta: 0,
+      settlementRef: "SWIFT-CONF-M4-001",
+      // FinSurv ref pending Mira's substrate (D-FX-AD-STATUS obligation)
+      finsurvReportingRef: undefined,
+      citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS", "ORG-MK-08"],
+    },
+    eventId: newEventId(),
+  });
+  return { ...base, provenance: SCENARIO_PROVENANCE };
+}
+
 // ---------------------------------------------------------------------------
 // Scenario builder — pure, returns the ordered event list.
 // ---------------------------------------------------------------------------
@@ -231,6 +320,9 @@ export interface FxSpotScenarioEvents {
   readonly trade: Event;
   readonly usdSettlement: Event;
   readonly zarSettlement: Event;
+  readonly zarPrincipalPayment: Event;
+  readonly usdPrincipalPayment: Event;
+  readonly settlementConfirmed: Event;
   readonly all: ReadonlyArray<Event>;
 }
 
@@ -239,16 +331,30 @@ export function buildFxSpotScenarioEvents(): FxSpotScenarioEvents {
   // would advance per event. T+2 settlement date is captured in the payload.
   const tradeTimestamp = "2026-05-12T07:00:00.000Z";
   const settlementTimestamp = "2026-05-12T07:02:00.000Z";
+  const confirmationTimestamp = "2026-05-14T10:00:00.000Z";
 
   const trade = buildFxTradeExecuted(tradeTimestamp);
   const usdSettlement = buildUsdSettlementInstructed(settlementTimestamp, trade.event_id);
   const zarSettlement = buildZarSettlementInstructed(settlementTimestamp, trade.event_id);
+  const zarPrincipalPayment = buildZarPrincipalPayment(confirmationTimestamp);
+  const usdPrincipalPayment = buildUsdPrincipalPayment(confirmationTimestamp);
+  const settlementConfirmed = buildSettlementConfirmed(confirmationTimestamp);
 
   return {
     trade,
     usdSettlement,
     zarSettlement,
-    all: [trade, usdSettlement, zarSettlement],
+    zarPrincipalPayment,
+    usdPrincipalPayment,
+    settlementConfirmed,
+    all: [
+      trade,
+      usdSettlement,
+      zarSettlement,
+      zarPrincipalPayment,
+      usdPrincipalPayment,
+      settlementConfirmed,
+    ],
   };
 }
 
@@ -317,19 +423,21 @@ export function runFxSpotScenario(opts: {
 // Substrate gaps surfaced by this scenario
 // ---------------------------------------------------------------------------
 //
-// 1. PrincipalPayment event family not yet built.
-//    Remaining FX Spot lifecycle events (PrincipalPayment, SettlementConfirmed,
-//    TradeReportSubmitted, TradeMatured) require downstream substrate that does
-//    not exist at M4 Slice 1. Surfaced as a roadmap item.
-//
-// 2. FinSurv submission event family not yet built.
+// 1. FinSurv submission event family not yet built.
 //    TradeReportSubmitted{regulator:'SARB-FinSurv'} requires Mira's FinSurv
 //    reporting substrate (roadmap: D-FX-FINSURV-REPORTING).
+//    SettlementConfirmed.finsurvReportingRef is optional until then.
 //
-// 3. Scenario clock substrate.
+// 2. Scenario clock substrate.
 //    This scenario uses inline timestamps rather than the D-SCENARIO-CLOCK
 //    substrate (same gap as scenario 03). Swap when Atlas's clock substrate
 //    merges.
+//
+// 3. ProvenanceTag.sourceEventId not yet wired.
+//    PrincipalPayment and SettlementConfirmed cannot carry a typed
+//    reference to the upstream FxSettlementInstructed event_id in the
+//    provenance envelope. The tradeId payload field is the canonical link
+//    until Atlas adds sourceEventId to the ProvenanceTag schema.
 //
 // ---------------------------------------------------------------------------
 
@@ -387,9 +495,9 @@ if (import.meta.main) {
         "ORG-EXCON-ODP-001",
       ],
       substrateGaps: [
-        "PrincipalPayment event family not yet built",
-        "TradeReportSubmitted (SARB-FinSurv) substrate pending",
-        "SettlementConfirmed event family pending (Tomas roadmap)",
+        "TradeReportSubmitted (SARB-FinSurv) substrate pending (D-FX-FINSURV-REPORTING)",
+        "ProvenanceTag.sourceEventId not yet wired for PrincipalPayment→FxSettlementInstructed link",
+        "SettlementConfirmed.finsurvReportingRef optional until Mira FinSurv substrate complete",
       ],
     },
     result.ok ? "scenario 06 — FX Spot trade — PASSED" : "scenario 06 — FX Spot trade — FAILED",

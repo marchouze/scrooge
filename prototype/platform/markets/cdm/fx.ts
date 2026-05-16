@@ -440,9 +440,166 @@ export function makeFxSettlementInstructed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// PrincipalPayment
+//
+// Emitted when a settlement leg is actioned by the correspondent bank.
+// Per D-FX-CLS-MEMBERSHIP, the correspondent notifies the bank when cash
+// moves; this event records that notification and closes the instruction
+// loop. Two PrincipalPayment events are emitted per FX Spot trade (one for
+// each leg: deliver ZAR, receive USD).
+//
+// Authority:
+//   D-FX-CLS-MEMBERSHIP — correspondent-routing for FX settlement
+//   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
+//   D-FX-AD-STATUS — FinSurv reporting (AD rules require confirmation of
+//     cross-border payment execution)
+// ---------------------------------------------------------------------------
+
+export const principalPaymentPayloadSchema = z.object({
+  /** The trade this payment settles. */
+  tradeId: z.string().min(1),
+  /**
+   * Which leg is being actioned: "receive" (bank receives currency) or
+   * "deliver" (bank pays currency).
+   */
+  legKind: z.enum(["receive", "deliver"]),
+  /** Currency pair traded (e.g. "ZAR/USD"). */
+  currencyPair: z.string().min(1),
+  /** ISO 4217 currency code for this payment leg. */
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /**
+   * Net cash amount in minor units (cents). Positive = inflow (receive);
+   * negative = outflow (deliver). Convention must match `legKind`.
+   */
+  netCash: z.number().int(),
+  /** Settlement date for this leg (ISO 8601). */
+  settlementDate: z.string().min(1),
+  /**
+   * Settlement path. Per D-FX-CLS-MEMBERSHIP the default is "correspondent";
+   * bilateral is exception-path only.
+   */
+  settlementPath: z.literal("correspondent"),
+  /** Correspondent bank that actioned this leg. */
+  correspondent: z.object({
+    name: z.string().min(1),
+    bic: z.string().min(1),
+  }),
+  /** Optional confirmation reference from the correspondent. */
+  settlementConfirmationRef: z.string().optional(),
+  /** Citations — must not be empty (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type PrincipalPaymentPayload = z.infer<typeof principalPaymentPayloadSchema>;
+
+export function makePrincipalPayment(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: PrincipalPaymentPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "PrincipalPayment requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  if (!args.payload.citations || args.payload.citations.length === 0) {
+    throw new Error("PrincipalPayment payload.citations must not be empty (Principle 2).");
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "PrincipalPayment",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: principalPaymentPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SettlementConfirmed
+//
+// Final lifecycle event for an FX Spot (or Forward/Swap) trade. Emitted
+// once both PrincipalPayment events have been recorded and the correspondent
+// confirms that both legs have settled. Closes the FX Spot lifecycle.
+//
+// Authority:
+//   D-FX-CLS-MEMBERSHIP — correspondent confirmation path
+//   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
+//   D-FX-AD-STATUS — FinSurv reporting (FinSurv ref carried as optional field)
+// ---------------------------------------------------------------------------
+
+export const settlementConfirmedPayloadSchema = z.object({
+  /** The trade whose settlement is now confirmed. */
+  tradeId: z.string().min(1),
+  /** Currency pair traded (e.g. "ZAR/USD"). */
+  currencyPair: z.string().min(1),
+  /** Date settlement was confirmed (ISO 8601). */
+  settledDate: z.string().min(1),
+  /**
+   * Realised P&L delta in ZAR minor units (cents). Positive = profit;
+   * negative = loss. Computed from execution rate vs settlement rate
+   * (mark-to-settlement). The IAS-21 translation gain/loss is a separate
+   * accounting event.
+   */
+  realisedPnlDelta: z.number().int(),
+  /** Correspondent settlement reference (SWIFT confirmation ref). */
+  settlementRef: z.string().min(1),
+  /**
+   * SARB FinSurv reporting reference, if applicable. Required for
+   * ZAR/USD and other cross-border FX trades reportable under the
+   * Currency and Exchanges Manual (D-FX-AD-STATUS). Optional until
+   * the Mira FinSurv reporting substrate is complete.
+   */
+  finsurvReportingRef: z.string().optional(),
+  /** Citations — must not be empty (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type SettlementConfirmedPayload = z.infer<typeof settlementConfirmedPayloadSchema>;
+
+export function makeSettlementConfirmed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SettlementConfirmedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "SettlementConfirmed requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  if (!args.payload.citations || args.payload.citations.length === 0) {
+    throw new Error("SettlementConfirmed payload.citations must not be empty (Principle 2).");
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SettlementConfirmed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: settlementConfirmedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX event-type registry — for runtime registration into the event store.
 // ---------------------------------------------------------------------------
 
-export const FX_EVENT_TYPES = ["FxTradeExecuted", "FxSettlementInstructed"] as const;
+export const FX_EVENT_TYPES = [
+  "FxTradeExecuted",
+  "FxSettlementInstructed",
+  "PrincipalPayment",
+  "SettlementConfirmed",
+] as const;
 
 export type FxEventType = (typeof FX_EVENT_TYPES)[number];

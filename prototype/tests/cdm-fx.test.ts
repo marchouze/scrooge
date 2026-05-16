@@ -6,6 +6,9 @@
 //     Swap, NDF) — including discriminator enforcement and the
 //     bookType-required rule per D-FX-BOOK-BOUNDARY.
 //   - FxSettlementInstructed correspondent vs bilateral path discipline.
+//   - PrincipalPayment schema validation + citation enforcement (Principle 2).
+//   - SettlementConfirmed schema validation + citation enforcement (Principle 2).
+//   - Full 6-event FX Spot lifecycle (scenario 06).
 //   - Citation-slot enforcement (Principle 2).
 //
 // Author: Saskia · Kai — M4 per D-MARKETS-SCHEMA-FOUNDATION + D-FX-* sub-decisions.
@@ -21,7 +24,12 @@ import {
   fxTradeExecutedPayloadSchema,
   makeFxSettlementInstructed,
   makeFxTradeExecuted,
+  makePrincipalPayment,
+  makeSettlementConfirmed,
+  principalPaymentPayloadSchema,
+  settlementConfirmedPayloadSchema,
 } from "../platform/markets/cdm";
+import { buildFxSpotScenarioEvents, runFxSpotScenario } from "../scenarios/06-fx-spot-trade";
 
 const counterparty = {
   partyId: "LEI-CTPY-FX",
@@ -325,9 +333,270 @@ describe("FxSettlementInstructed — correspondent vs bilateral path", () => {
 });
 
 describe("FX event-type registry", () => {
-  it("exposes the M4 FX event-type list", () => {
+  it("exposes the M4 FX event-type list including settlement lifecycle events", () => {
     expect(FX_EVENT_TYPES).toContain("FxTradeExecuted");
     expect(FX_EVENT_TYPES).toContain("FxSettlementInstructed");
-    expect(FX_EVENT_TYPES.length).toBe(2);
+    expect(FX_EVENT_TYPES).toContain("PrincipalPayment");
+    expect(FX_EVENT_TYPES).toContain("SettlementConfirmed");
+    expect(FX_EVENT_TYPES.length).toBe(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PrincipalPayment — schema validation + citation enforcement
+// ---------------------------------------------------------------------------
+
+const basePrincipalPaymentPayload = {
+  tradeId: "TRD-FX-001",
+  legKind: "deliver" as const,
+  currencyPair: "ZAR/USD",
+  currency: "ZAR",
+  netCash: -1_900_000_000,
+  settlementDate: "2026-05-13",
+  settlementPath: "correspondent" as const,
+  correspondent: {
+    name: "Test Correspondent Bank",
+    bic: "SBZAZAJJXXX",
+  },
+  citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS"],
+};
+
+describe("PrincipalPayment — schema validation", () => {
+  it("accepts a valid deliver-leg PrincipalPayment", () => {
+    expect(() => principalPaymentPayloadSchema.parse(basePrincipalPaymentPayload)).not.toThrow();
+  });
+
+  it("accepts a valid receive-leg PrincipalPayment", () => {
+    expect(() =>
+      principalPaymentPayloadSchema.parse({
+        ...basePrincipalPaymentPayload,
+        legKind: "receive",
+        currency: "USD",
+        netCash: 500_000_000,
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts an optional settlementConfirmationRef", () => {
+    expect(() =>
+      principalPaymentPayloadSchema.parse({
+        ...basePrincipalPaymentPayload,
+        settlementConfirmationRef: "CONF-001",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects empty citations array (Principle 2)", () => {
+    expect(() =>
+      principalPaymentPayloadSchema.parse({ ...basePrincipalPaymentPayload, citations: [] }),
+    ).toThrow();
+  });
+
+  it("rejects an invalid currency code (lowercase)", () => {
+    expect(() =>
+      principalPaymentPayloadSchema.parse({ ...basePrincipalPaymentPayload, currency: "zar" }),
+    ).toThrow();
+  });
+
+  it("rejects a currency code longer than 3 characters", () => {
+    expect(() =>
+      principalPaymentPayloadSchema.parse({ ...basePrincipalPaymentPayload, currency: "ZARX" }),
+    ).toThrow();
+  });
+});
+
+describe("makePrincipalPayment — envelope + citation enforcement", () => {
+  it("envelopes a valid PrincipalPayment and stamps event_id + type", () => {
+    const e = makePrincipalPayment({
+      asOf: "2026-05-13T10:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:tomas:settlement" },
+      citations: ["D-FX-CLS-MEMBERSHIP"],
+      payload: basePrincipalPaymentPayload,
+    });
+    expect(e.type).toBe("PrincipalPayment");
+    expect(e.event_id).toBeDefined();
+    expect(e.entity).toBe("BANK-ZA-001");
+    expect(e.citations).toContain("D-FX-CLS-MEMBERSHIP");
+  });
+
+  it("rejects empty envelope citations (Principle 2)", () => {
+    expect(() =>
+      makePrincipalPayment({
+        asOf: "2026-05-13T10:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:tomas:settlement" },
+        citations: [],
+        payload: basePrincipalPaymentPayload,
+      }),
+    ).toThrow();
+  });
+
+  it("rejects empty payload citations (Principle 2)", () => {
+    expect(() =>
+      makePrincipalPayment({
+        asOf: "2026-05-13T10:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:tomas:settlement" },
+        citations: ["D-FX-CLS-MEMBERSHIP"],
+        payload: { ...basePrincipalPaymentPayload, citations: [] },
+      }),
+    ).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SettlementConfirmed — schema validation + citation enforcement
+// ---------------------------------------------------------------------------
+
+const baseSettlementConfirmedPayload = {
+  tradeId: "TRD-FX-001",
+  currencyPair: "ZAR/USD",
+  settledDate: "2026-05-13",
+  realisedPnlDelta: 0,
+  settlementRef: "SWIFT-CONF-001",
+  citations: ["D-FX-CLS-MEMBERSHIP", "D-FX-AD-STATUS"],
+};
+
+describe("SettlementConfirmed — schema validation", () => {
+  it("accepts a valid SettlementConfirmed with zero P&L delta", () => {
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse(baseSettlementConfirmedPayload),
+    ).not.toThrow();
+  });
+
+  it("accepts a positive realisedPnlDelta (profit)", () => {
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse({
+        ...baseSettlementConfirmedPayload,
+        realisedPnlDelta: 50_000_00,
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts a negative realisedPnlDelta (loss)", () => {
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse({
+        ...baseSettlementConfirmedPayload,
+        realisedPnlDelta: -20_000_00,
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts an optional finsurvReportingRef", () => {
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse({
+        ...baseSettlementConfirmedPayload,
+        finsurvReportingRef: "FINSURV-2026-001",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects empty citations array (Principle 2)", () => {
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse({
+        ...baseSettlementConfirmedPayload,
+        citations: [],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects a non-integer realisedPnlDelta (minor units must be integer)", () => {
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse({
+        ...baseSettlementConfirmedPayload,
+        realisedPnlDelta: 1.5,
+      }),
+    ).toThrow();
+  });
+});
+
+describe("makeSettlementConfirmed — envelope + citation enforcement", () => {
+  it("envelopes a valid SettlementConfirmed and stamps event_id + type", () => {
+    const e = makeSettlementConfirmed({
+      asOf: "2026-05-13T10:05:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:tomas:settlement" },
+      citations: ["D-FX-CLS-MEMBERSHIP"],
+      payload: baseSettlementConfirmedPayload,
+    });
+    expect(e.type).toBe("SettlementConfirmed");
+    expect(e.event_id).toBeDefined();
+    expect(e.entity).toBe("BANK-ZA-001");
+  });
+
+  it("rejects empty envelope citations (Principle 2)", () => {
+    expect(() =>
+      makeSettlementConfirmed({
+        asOf: "2026-05-13T10:05:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:tomas:settlement" },
+        citations: [],
+        payload: baseSettlementConfirmedPayload,
+      }),
+    ).toThrow();
+  });
+
+  it("rejects empty payload citations (Principle 2)", () => {
+    expect(() =>
+      makeSettlementConfirmed({
+        asOf: "2026-05-13T10:05:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:tomas:settlement" },
+        citations: ["D-FX-CLS-MEMBERSHIP"],
+        payload: { ...baseSettlementConfirmedPayload, citations: [] },
+      }),
+    ).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Full 6-event FX Spot lifecycle — scenario 06
+// ---------------------------------------------------------------------------
+
+describe("Scenario 06 — full 6-event FX Spot lifecycle", () => {
+  it("builds all 6 events with correct types in order", () => {
+    const events = buildFxSpotScenarioEvents();
+    expect(events.all.length).toBe(6);
+    expect(events.all[0]?.type).toBe("FxTradeExecuted");
+    expect(events.all[1]?.type).toBe("FxSettlementInstructed");
+    expect(events.all[2]?.type).toBe("FxSettlementInstructed");
+    expect(events.all[3]?.type).toBe("PrincipalPayment");
+    expect(events.all[4]?.type).toBe("PrincipalPayment");
+    expect(events.all[5]?.type).toBe("SettlementConfirmed");
+  });
+
+  it("all 6 events carry the simulated provenance tag", () => {
+    const events = buildFxSpotScenarioEvents();
+    for (const e of events.all) {
+      expect(e.provenance?.kind).toBe("simulated");
+    }
+  });
+
+  it("PrincipalPayment events carry correct legKind (deliver then receive)", () => {
+    const events = buildFxSpotScenarioEvents();
+    const zarPayment = events.zarPrincipalPayment;
+    const usdPayment = events.usdPrincipalPayment;
+    expect((zarPayment.payload as { legKind: string }).legKind).toBe("deliver");
+    expect((usdPayment.payload as { legKind: string }).legKind).toBe("receive");
+  });
+
+  it("SettlementConfirmed references the correct tradeId", () => {
+    const events = buildFxSpotScenarioEvents();
+    const confirmed = events.settlementConfirmed;
+    expect((confirmed.payload as { tradeId: string }).tradeId).toBe("TRD-FX-SPOT-M4-001");
+  });
+
+  it("runFxSpotScenario stores exactly 6 events and returns ok", () => {
+    const result = runFxSpotScenario({
+      dbPath: ".local/test-scenario-fx-spot-6events.db",
+      cleanup: true,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.emitted).toBe(6);
+    expect(result.countsByType.FxTradeExecuted).toBe(1);
+    expect(result.countsByType.FxSettlementInstructed).toBe(2);
+    expect(result.countsByType.PrincipalPayment).toBe(2);
+    expect(result.countsByType.SettlementConfirmed).toBe(1);
   });
 });
