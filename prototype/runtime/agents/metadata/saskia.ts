@@ -20,7 +20,7 @@ export const SASKIA_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "CounterpartyEvent",
       "RASCalibrationChange",
       "LicenceGranted",
-      "CEODecision",
+      "CeoDecision",
       "AgentEscalation",
     ],
   }),

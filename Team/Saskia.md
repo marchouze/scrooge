@@ -58,7 +58,7 @@ Saskia does **not** set risk appetite (Helena), run treasury (Eitan), report fin
 | `CounterpartyEvent` (default / near-default / new categorisation) | Imani / Mira | Within 4h |
 | `RASCalibrationChange` event | Helena | Within 5 working days |
 | `LicenceGranted` event | Owen / regulator-correspondence intake | Pre-defined go-live runbook |
-| `CEODecision` event on open §8-class question | Scrooge / Owen | Per CEO-stated deadline |
+| `CeoDecision` event on open §8-class question | Scrooge / Owen | Per CEO-stated deadline |
 | `AgentEscalation` from Kai | Engineering bench | Within escalator-stated deadline |
 | Scheduled wake-up — weekly desk-state refresh | Runtime scheduler | 1 business day |
 | Scheduled wake-up — quarterly franchise posture refresh | Runtime scheduler | Per cycle |

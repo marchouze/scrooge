@@ -11,7 +11,7 @@
 // Subscribed events (per Saskia's Team/Saskia.md §7):
 //   DealerMandateBreach, SurveillanceAlert, CurveSourceAnomaly,
 //   CounterpartyEvent, RASCalibrationChange, LicenceGranted,
-//   CEODecision, AgentEscalation
+//   CeoDecision, AgentEscalation
 //
 // Stub behaviour: logs receipt of triggering events and acknowledges.
 // No LLM call; no Owner Inbox deliverable in this stub pass. Full
@@ -29,7 +29,7 @@ const SUBSCRIBED_EVENTS = [
   "CounterpartyEvent",
   "RASCalibrationChange",
   "LicenceGranted",
-  "CEODecision",
+  "CeoDecision",
   "AgentEscalation",
 ] as const;
 
