@@ -100,20 +100,22 @@ export type DispatchHint = z.infer<typeof dispatchHintSchema>;
  * a `backfill:<source>` form. Validated as a regex so backfill scripts
  * can carry their dataset slug.
  */
-const recordedViaSchema = z.string().refine(
-  (s) =>
-    s === "authoring-ui" ||
-    s === "scrooge:session-delegation" ||
-    s === "agent:autonomous" ||
-    s === "recon:repair" ||
-    s === "unknown" ||
-    /^backfill:[a-z0-9][a-z0-9-]*$/.test(s) ||
-    /^scrooge:session-delegation:[a-z0-9][a-z0-9-]*$/.test(s),
-  {
-    message:
-      "recordedVia must be one of: 'authoring-ui', 'scrooge:session-delegation' (optionally with `:<suffix>`), 'agent:autonomous', 'recon:repair', 'unknown', or 'backfill:<source>'",
-  },
-);
+const recordedViaSchema = z
+  .string()
+  .refine(
+    (s) =>
+      s === "authoring-ui" ||
+      s === "scrooge:session-delegation" ||
+      s === "agent:autonomous" ||
+      s === "recon:repair" ||
+      s === "unknown" ||
+      /^backfill:[a-z0-9][a-z0-9-]*$/.test(s) ||
+      /^scrooge:session-delegation:[a-z0-9][a-z0-9-]*$/.test(s),
+    {
+      message:
+        "recordedVia must be one of: 'authoring-ui', 'scrooge:session-delegation' (optionally with `:<suffix>`), 'agent:autonomous', 'recon:repair', 'unknown', or 'backfill:<source>'",
+    },
+  );
 
 /**
  * Decision id — `D-<SLUG>`, uppercase, 3–60 chars, hyphen-separated.

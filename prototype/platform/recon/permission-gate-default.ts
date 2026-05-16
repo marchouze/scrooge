@@ -137,6 +137,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Supersession annotation integrity recon — read-only replay of CeoDecision
   // events; wrapping the read path with the gate is a no-op.
   "platform/recon/supersession-annotation-integrity.ts",
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A recon pipelines — read-only
+  // replay of Decision / CeoDecision events; gate is a no-op on replay.
+  "platform/recon/decisions-events-only.ts",
+  "platform/recon/decision-symmetry.ts",
+  "platform/recon/decision-id-hygiene.ts",
+  "platform/recon/decision-authority-coverage.ts",
   // M2 Slice 2 — period-close handler unit tests. Co-located with the module
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.

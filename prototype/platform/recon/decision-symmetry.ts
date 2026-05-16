@@ -18,8 +18,8 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
-import { EventStore } from "../event-store/store";
 import { DECISION_TERMINAL_PHASES } from "../event-store/event-types/decision";
+import { EventStore } from "../event-store/store";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 function findRepoRoot(start: string): string {
@@ -39,7 +39,8 @@ export interface RunOpts {
 
 export function run(opts: RunOpts = {}): ReconResult {
   const repoRoot = findRepoRoot(import.meta.dir);
-  const dbPath = opts.dbPath ?? process.env.BANK_EVENT_DB ?? resolve(repoRoot, "prototype/.local/event.db");
+  const dbPath =
+    opts.dbPath ?? process.env.BANK_EVENT_DB ?? resolve(repoRoot, "prototype/.local/event.db");
   const result: ReconResult = emptyResult(PIPELINE);
   if (!existsSync(dbPath)) {
     // Fresh worktree without a local event store — nothing to assert.
@@ -93,7 +94,6 @@ export function run(opts: RunOpts = {}): ReconResult {
 
 if (import.meta.main) {
   const result = run();
-  // biome-ignore lint/suspicious/noConsoleLog: recon CLI output is intentional.
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 }

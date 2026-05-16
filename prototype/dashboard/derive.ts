@@ -32,6 +32,11 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
+import {
+  type DecisionsRegister,
+  buildDecisionsRegister,
+  decisionsSourceFromStore,
+} from "../projections/decisions";
 import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
 import { parsePolicyRegister } from "./policy-register";
 import type {
@@ -156,6 +161,14 @@ export interface EventSource {
   agentEscalations(): AgentEscalationEventSummary[];
   auditFindings(): AuditFindingEventSummary[];
   decisionComments(): DecisionCommentEventSummary[];
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — read the events-only
+  // decisions register directly. The dashboard switches to this in lieu
+  // of the prior three-source fusion (curated JSON + Owner Inbox FS scan
+  // + CeoDecision events). Returns null when the caller has not wired
+  // the source (test fixtures that don't care about decisions); the
+  // derive falls back to the legacy CeoDecision-event reduce in that
+  // case to keep test fixtures green during the transition.
+  decisionsRegister?(): DecisionsRegister | null;
 }
 
 export interface DeriveOpts {
@@ -317,6 +330,13 @@ export function eventSourceFromStore(store: EventStore): EventSource {
         });
       }
       return out;
+    },
+    decisionsRegister(): DecisionsRegister {
+      // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — events-only projection.
+      // No I/O happens until the register builder iterates; the store's
+      // `replay` is itself a generator. Both `Decision` and (transition)
+      // `CeoDecision` events feed in.
+      return buildDecisionsRegister(decisionsSourceFromStore(store));
     },
     auditFindings(): AuditFindingEventSummary[] {
       // Accept two payload shapes:
@@ -594,6 +614,43 @@ function openSeatStatusFor(seat: string, claudeText: string): string {
 // ---------------------------------------------------------------------------
 // Event reductions
 // ---------------------------------------------------------------------------
+
+/**
+ * D-DECISIONS-FRAMEWORK-REDESIGN Slice A — adapt the events-only
+ * `DecisionsRegister` to the dashboard's existing `OpenDecision` /
+ * `ResolvedDecision` shapes. Pure mapping; no reads.
+ *
+ * The dashboard's `DecisionCategory` enum (pacing / near-term / ...) is
+ * distinct from the unified payload's `category` (governance / risk /
+ * ...) — Slice A maps every projected row to `near-term` so the queue
+ * is visible without inventing presentation semantics. Slice B will
+ * either reconcile the two enums or carry presentation hints on the
+ * `Decision` payload directly.
+ */
+function adaptDecisionsRegister(register: DecisionsRegister): {
+  resolved: ResolvedDecision[];
+  remainingOpen: OpenDecision[];
+  reopenedFromEvents: OpenDecision[];
+} {
+  const open: OpenDecision[] = register.open.map((row) => ({
+    id: row.decisionId,
+    title: row.title,
+    category: "near-term",
+    owner: row.authorityRef,
+    trigger: `Decision event (authority: ${row.authority}, phase: requested)`,
+    decisionForCEO: row.recommendation,
+    sourceDocs: [],
+  }));
+  const resolved: ResolvedDecision[] = register.resolved.map((row) => ({
+    id: row.decisionId,
+    title: row.title,
+    actionedAt: row.resolvedAt ?? row.asOf,
+    outcome: row.recommendation,
+    sourceDoc: "",
+    ...(row.recordedVia ? { actionedBy: row.authorityRef } : {}),
+  }));
+  return { resolved, remainingOpen: open, reopenedFromEvents: [] };
+}
 
 function reduceCeoDecisions(
   events: readonly CeoDecisionEventSummary[],
@@ -1839,11 +1896,18 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     if (arr) arr.sort((a, b) => (a.asOf < b.asOf ? -1 : 1));
   }
 
-  const { resolved, remainingOpen, reopenedFromEvents } = reduceCeoDecisions(
-    ceoEvents,
-    curated.decisionsOpen,
-    curated.decisionsResolvedSeed,
-  );
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — read the unified
+  // decisions register directly from the events-only projection when
+  // the source provides it. When absent (legacy in-process test
+  // fixtures that don't construct a `decisionsRegister()`), fall back
+  // to the legacy CeoDecision-event reduce so existing tests stay green
+  // until Slice B migrates them. The Owner Inbox markdown scan and the
+  // curated `decisionsOpen` / `decisionsResolvedSeed` fusion are gone
+  // from the decisions path: markdown is now pure render.
+  const registerProvided = opts.events.decisionsRegister?.() ?? null;
+  const { resolved, remainingOpen, reopenedFromEvents } = registerProvided
+    ? adaptDecisionsRegister(registerProvided)
+    : reduceCeoDecisions(ceoEvents, [], []);
   const inFlight = reduceInFlight(curated.inFlight, wsStarts, wsCompletions, wsRegistrations);
 
   // Owner Inbox feed (Marc, 2026-05-07): every deliverable in /Owner Inbox/
@@ -1877,7 +1941,11 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       return { ...item, decisionStatus, group };
     })
     .sort(ownerInboxFeedSort);
-  const ownerInboxOpenDecisions = ownerInboxToOpenDecisions(allOwnerInboxItems, resolvedIds);
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — Owner Inbox markdown is no
+  // longer an authoring channel for open decisions. The feed above still
+  // renders the inbox items, but the lift into `decisionsOpen` is gone.
+  // Slice C backfills any historical D-* ids that lived only in markdown.
+  const ownerInboxOpenDecisions: OpenDecision[] = [];
 
   // Lift AgentEscalation events into open decisions (Atlas substrate-gap
   // closure 2026-05-07). An escalation is "resolved" when a CeoDecision
