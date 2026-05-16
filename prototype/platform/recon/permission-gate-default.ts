@@ -141,6 +141,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.
   "platform/accounting/period-close-handler.test.ts",
+  // M3 Slice 4 — BA 700 period-close return scenario test. Co-located in the
+  // returns/ba700/ package per the per-module test convention. Raw
+  // EventStore(":memory:") is a build-phase fixture, not a production access
+  // path. T-01 carve-out.
+  "platform/returns/ba700/ba700.test.ts",
   // Backfill CLI entry point — emits CeoDecision events synthesised from
   // on-disk Owner Inbox records at boot / CI. Acts as a composition root in
   // the same way platform/composition.ts does: the raw store is constructed
