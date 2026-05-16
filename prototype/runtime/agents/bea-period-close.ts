@@ -21,8 +21,8 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering) +
 //         Atlas (Platform Engineer, engineering)
 
-import { eventStore, logger } from "../../platform/composition";
 import { openPeriod } from "../../platform/accounting/period-close-handler";
+import { eventStore, logger } from "../../platform/composition";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const ENTITY = "LE-ZA-HOZ-BANK";

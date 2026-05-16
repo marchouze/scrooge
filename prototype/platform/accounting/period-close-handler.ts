@@ -32,10 +32,7 @@
 //         Atlas (Platform Engineer, engineering)
 
 import type { DocumentStore } from "../document-store";
-import type {
-  AccountingPeriodOpenedPayload,
-  TrialBalanceSnapshottedPayload,
-} from "../event-store/event-types";
+import type { TrialBalanceSnapshottedPayload } from "../event-store/event-types";
 import { makeTrialBalanceSnapshotted } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event, ProvenanceTag } from "../event-store/types";
@@ -46,21 +43,15 @@ import {
   type OpenPeriodResult,
   type TrialBalance,
   closePeriod as _closePeriod,
-  computeTrialBalance,
   openPeriod as _openPeriod,
+  computeTrialBalance,
 } from "./period-close";
 
 // ---------------------------------------------------------------------------
 // Re-export core types for consumers that import from this handler surface.
 // ---------------------------------------------------------------------------
 
-export type {
-  ClosePeriodArgs,
-  ClosePeriodResult,
-  OpenPeriodArgs,
-  OpenPeriodResult,
-  TrialBalance,
-};
+export type { ClosePeriodArgs, ClosePeriodResult, OpenPeriodArgs, OpenPeriodResult, TrialBalance };
 
 // ---------------------------------------------------------------------------
 // openPeriod
