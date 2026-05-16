@@ -1,11 +1,12 @@
 // platform/recon/decisions-events-only.ts
 //
-// D-DECISIONS-FRAMEWORK-REDESIGN Slice A — WARN-only.
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice B — promoted to ERROR with a
+// grandfathered-baseline allowlist at
+// `prototype/scripts/recon/baselines/decisions-events-only-baseline.txt`.
 //
 // Asserts: every `D-*` id referenced in `Owner Inbox/**.md` frontmatter
 // (`decision-id` and `superseded-by[].decision-id`) has a matching
-// `Decision` or `CeoDecision` event for every claimed phase. Slice A
-// emits warnings only; Slice B promotes to errors.
+// `Decision` or `CeoDecision` event for every claimed phase.
 //
 // Authoring rule (per the redesign): markdown is render, never the
 // authoring channel. Decisions must travel as events. Any `D-*` in
@@ -21,6 +22,7 @@ import { join, resolve } from "node:path";
 
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
 import { EventStore } from "../event-store/store";
+import { applyBaselineToResult, loadBaseline } from "./decisions-baseline";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 function findRepoRoot(start: string): string {
@@ -88,13 +90,13 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
   }
 
-  result.violations = violations;
-  result.ok = true; // WARN-only this slice.
+  const baseline = loadBaseline(repoRoot, PIPELINE);
+  applyBaselineToResult(result, violations, baseline);
   return result;
 }
 
 if (import.meta.main) {
   const result = run();
   console.log(JSON.stringify(result, null, 2));
-  process.exit(0);
+  process.exit(result.ok ? 0 : 1);
 }

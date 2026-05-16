@@ -190,6 +190,8 @@ describe("dashboard server — runtime-cache split (D-EVENT-STORE-SCALING Slice 
         decisionId: testDecisionId,
         action: "approve",
         outcome: "test outcome — runtime-cache split integration",
+        // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — actor is mandatory.
+        actor: "marc@tgv.co.za",
       }),
     });
     expect(r.status).toBe(200);
@@ -214,5 +216,31 @@ describe("dashboard server — runtime-cache split (D-EVENT-STORE-SCALING Slice 
     if (!seedExistedBefore) {
       expect(existsSync(SEED_PATH)).toBe(false);
     }
+  });
+
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — `/api/decide` returns 401
+  // when the request omits `actor`. The hard-coded server-side fallback
+  // was removed; clients must identify themselves.
+  it("returns 401 when actor is missing from the request body", async () => {
+    if (!testDecisionId) throw new Error("no testDecisionId");
+    const r = await fetch(`http://127.0.0.1:${serverPort}/api/decide`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        decisionId: testDecisionId,
+        action: "approve",
+        outcome: "missing-actor smoke test",
+      }),
+    });
+    expect(r.status).toBe(401);
+  });
+
+  it("returns 400 on a malformed payload (Zod parse failure)", async () => {
+    const r = await fetch(`http://127.0.0.1:${serverPort}/api/decide`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ not: "a decide body" }),
+    });
+    expect(r.status).toBe(400);
   });
 });

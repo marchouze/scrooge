@@ -1,0 +1,11 @@
+# D-DECISIONS-FRAMEWORK-REDESIGN Slice B grandfathered set (7 entries).
+# Non-CEO governance authorities activate in Slice D; until then no
+# Decision events under these authorities exist yet. The subject string
+# format matches the recon's `${name} (${authority})` shape.
+Camille (CFO)
+Devon (COO)
+Eitan (CISO)
+Helena (CRO)
+Owen (CoSec)
+Thandiwe (CAE)
+Zara (CCO)

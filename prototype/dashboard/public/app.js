@@ -1251,6 +1251,10 @@ async function submitModal() {
         decisionId: activeDecisionId,
         action,
         outcome,
+        // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — actor is required;
+        // the dashboard identifies the CEO explicitly (no server-side
+        // hard-coded fallback).
+        actor: "marc@tgv.co.za",
         ...(comment ? { comment } : {}),
         ...(followOnRoutes.length > 0 ? { followOnRoutes } : {}),
       }),

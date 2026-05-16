@@ -61,6 +61,22 @@ export type DecisionCategory =
   | "medium-term"
   | "long-horizon";
 
+/**
+ * Domain category carried on a unified `Decision` event payload (per
+ * `D-DECISIONS-FRAMEWORK-REDESIGN`). Orthogonal to the legacy
+ * pacing-flavoured `DecisionCategory` above — Slice B surfaces both so
+ * callers can group by either axis.
+ */
+export type DecisionDomainCategory =
+  | "governance"
+  | "risk"
+  | "compliance"
+  | "engineering"
+  | "people"
+  | "finance"
+  | "product"
+  | "other";
+
 export interface DecisionOption {
   label: string;
   description: string;
@@ -108,6 +124,8 @@ export interface OpenDecision {
   id: string;
   title: string;
   category: DecisionCategory;
+  /** D-DECISIONS-FRAMEWORK-REDESIGN — unified payload's domain category. */
+  domainCategory?: DecisionDomainCategory;
   owner: string;
   trigger: string;
   decisionForCEO: string;
@@ -128,6 +146,8 @@ export interface ResolvedDecision {
   action?: DecisionAction;
   comment?: string;
   actionedBy?: string;
+  /** D-DECISIONS-FRAMEWORK-REDESIGN — unified payload's domain category. */
+  domainCategory?: DecisionDomainCategory;
 }
 
 export interface InFlightItem {
