@@ -193,6 +193,14 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // assertion). Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN,
   // P4-SECURITY-DESIGNED-IN.
   "platform/returns/climate/",
+  // EOD FX revaluation — per-module unit tests build in-memory stores for
+  // revaluation scenario assertion. T-01 carve-out; no production access path.
+  // Citation: D-MARKETS-CAPITAL-TIME-SHAPE, P4-SECURITY-DESIGNED-IN.
+  "platform/markets/eod/",
+  // FinSurv stub — per-module unit tests build in-memory stores for
+  // regulatory reporting scenario assertion. T-01 carve-out.
+  // Citation: D-FX-AD-STATUS, EXCON-SARB-CIRC-3-2020, P4-SECURITY-DESIGNED-IN.
+  "platform/markets/regulatory/",
 ];
 
 // Actor URNs that are accepted today as "no policy yet" without raising the
