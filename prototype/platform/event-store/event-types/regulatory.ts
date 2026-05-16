@@ -433,3 +433,90 @@ export const REGULATORY_TYPED_EVENT_TYPES = [
   "ObligationConceptLinked",
 ] as const;
 export type RegulatoryEventType = (typeof REGULATORY_TYPED_EVENT_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// GraphNodeAsserted
+// ---------------------------------------------------------------------------
+
+export const graphNodeAssertedPayloadSchema = z.object({
+  nodeId: z.string().min(1),
+  nodeType: z.enum([
+    "Regulator",
+    "Jurisdiction",
+    "Framework",
+    "Document",
+    "Provision",
+    "Obligation",
+    "Term",
+    "RegulatedEntity",
+    "Activity",
+    "RiskCategory",
+    "Control",
+    "ReportingRequirement",
+    "Threshold",
+    "EffectivePeriod",
+    "Policy",
+    "Procedure",
+  ]),
+  label: z.string().min(1),
+  effectiveFrom: z.string().optional(),
+  effectiveTo: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type GraphNodeAssertedPayload = z.infer<typeof graphNodeAssertedPayloadSchema>;
+
+export function makeGraphNodeAsserted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: GraphNodeAssertedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "GraphNodeAsserted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: graphNodeAssertedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// GraphEdgeAsserted
+// ---------------------------------------------------------------------------
+
+export const graphEdgeAssertedPayloadSchema = z.object({
+  edgeId: z.string().min(1),
+  fromId: z.string().min(1),
+  toId: z.string().min(1),
+  edgeType: z.string().min(1),
+  effectiveFrom: z.string().optional(),
+  effectiveTo: z.string().optional(),
+  sourceProvision: z.string().optional(),
+  extractionMethod: z.enum(["register", "frontmatter", "llm", "rule-based"]),
+  confidenceScore: z.number().min(0).max(1),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type GraphEdgeAssertedPayload = z.infer<typeof graphEdgeAssertedPayloadSchema>;
+
+export function makeGraphEdgeAsserted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: GraphEdgeAssertedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "GraphEdgeAsserted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: graphEdgeAssertedPayloadSchema.parse(args.payload),
+  });
+}
