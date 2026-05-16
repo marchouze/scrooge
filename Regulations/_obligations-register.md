@@ -1,6 +1,8 @@
 # Obligations register
 
-**Curator:** Mira (Compliance / RegTech engineer) · **Governance:** Zara (Chief Compliance Officer) · **Date:** 2026-05-13 · **Version:** 1.25
+**Curator:** Mira (Compliance / RegTech engineer) · **Governance:** Zara (Chief Compliance Officer) · **Date:** 2026-05-16 · **Version:** 1.26
+
+> v1.26 — **JS-number confirmation pass.** Mira (Compliance / RegTech engineer, engineering — reports to Zara CCO; obligations-register curator) executes a full-register scan for residual "JS 1 of 2024" references in obligation rows. Finding: zero row-level occurrences remain. The WS-JS-NUMBER-RECONCILIATION rename from "JS 1 of 2024" → "JS 2 of 2024" was completed in v1.15 across all obligation rows. Three occurrences in historical version banners (v1.8, v1.14, v1.15) are intentionally retained as records of what those versions contained. No row edits required. Authority: standing register-curator mandate (Mira under Zara). (PR by Mira.)
 
 > v1.25 — **Product scope + Activity scope columns added.** Mira (Compliance / RegTech engineer, engineering — reports to Zara CCO; obligations-register curator) adds two new columns — `Product scope` (col 11) and `Activity scope` (col 12) — between `Applies-at` and `Risk taxonomy` across all ORG obligation rows. Product scope carries pipe-separated product family codes from the canonical product taxonomy (`listed-equity`, `listed-bond`, `repo`, `otc-ird`, `fx`) or `universal` where the obligation applies across all products. Activity scope carries pipe-separated ACT-* activity codes or `universal`. 277 ORG rows annotated across all domains. How-to-read section updated to reflect the 12-column schema. Authority: in-session CEO approval (Marc, 2026-05-13). (PR by Mira; rebased on top of v1.24.)
 
