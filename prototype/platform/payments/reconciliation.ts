@@ -14,9 +14,11 @@
 //   4. For each tradeId in trade legs:
 //      a. All three present AND amounts match → matched
 //      b. Amount mismatch → ReconciliationBreak { kind: "amount" }
-//      c. Payment or ledger missing, within 4h of settlementDate
+//      c. Payment or ledger missing, settlement date is today-or-future
 //         → ReconciliationBreak { kind: "timing" } (self-correcting)
-//      d. Payment settled but ledger missing, >4h past settlement
+//      d. Payment settled but ledger missing, payment >4h ago
+//         → ReconciliationBreak { kind: "nostro" }
+//      e. Payment missing, settlement date is in the past
 //         → ReconciliationBreak { kind: "nostro" }
 //   5. Emit ReconciliationBreak events for each break found
 //   6. Emit DailyReconciliationReport at end
@@ -30,17 +32,18 @@
 //          Bea (Accounting & financial reporting engineer),
 //          Atlas (Core Banking Platform Architect, engineering — substrate)
 
-import { eventStore } from "../composition";
+import { eventStore as compositionEventStore } from "../composition";
 import { newEventId } from "../core/types";
 import {
+  type JournalEntryPostedPayload,
+  type PaymentSettledPayload,
   type ReconciliationBreakKind,
   type ReconciliationBreakSummary,
+  type SettlementInstructionReceivedPayload,
   makeDailyReconciliationReport,
   makeReconciliationBreak,
 } from "../event-store/event-types/payments";
-import type { SettlementInstructionReceivedPayload } from "../event-store/event-types/payments";
-import type { PaymentSettledPayload } from "../event-store/event-types/payments";
-import type { JournalEntryPostedPayload } from "../event-store/event-types/payments";
+import type { EventStore } from "../event-store/store";
 
 // Re-export types for external consumers.
 export type { ReconciliationBreakKind, ReconciliationBreakSummary };
@@ -49,11 +52,7 @@ export type { ReconciliationBreakKind, ReconciliationBreakSummary };
 const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
 
 /** Citations required by Principle 2 for reconciliation events. */
-const RECON_CITATIONS = [
-  "PROC-PAY-RBH-01",
-  "NPS-ACT-78-1998",
-  "BANKS-ACT-94-1990",
-];
+const RECON_CITATIONS = ["PROC-PAY-RBH-01", "NPS-ACT-78-1998", "BANKS-ACT-94-1990"];
 
 /** The actor that emits reconciliation events. */
 const RECON_ACTOR = { type: "service" as const, id: "agent:tomas:daily-reconciliation" };
@@ -104,9 +103,9 @@ type LedgerLeg = {
 // Event store readers
 // ---------------------------------------------------------------------------
 
-function readTradeLegs(asOf: string): Map<string, TradeLeg> {
+function readTradeLegs(store: EventStore, asOf: string): Map<string, TradeLeg> {
   const map = new Map<string, TradeLeg>();
-  for (const e of eventStore.replay({ type: "SettlementInstructionReceived", asOf })) {
+  for (const e of store.replay({ type: "SettlementInstructionReceived", asOf })) {
     const p = e.payload as unknown as SettlementInstructionReceivedPayload;
     // Keep the most recent instruction per tradeId (last-write-wins).
     map.set(p.tradeId, {
@@ -120,9 +119,9 @@ function readTradeLegs(asOf: string): Map<string, TradeLeg> {
   return map;
 }
 
-function readPaymentLegs(asOf: string): Map<string, PaymentLeg> {
+function readPaymentLegs(store: EventStore, asOf: string): Map<string, PaymentLeg> {
   const map = new Map<string, PaymentLeg>();
-  for (const e of eventStore.replay({ type: "PaymentSettled", asOf })) {
+  for (const e of store.replay({ type: "PaymentSettled", asOf })) {
     const p = e.payload as unknown as PaymentSettledPayload;
     map.set(p.tradeId, {
       tradeId: p.tradeId,
@@ -133,9 +132,9 @@ function readPaymentLegs(asOf: string): Map<string, PaymentLeg> {
   return map;
 }
 
-function readLedgerLegs(asOf: string): Map<string, LedgerLeg> {
+function readLedgerLegs(store: EventStore, asOf: string): Map<string, LedgerLeg> {
   const map = new Map<string, LedgerLeg>();
-  for (const e of eventStore.replay({ type: "JournalEntryPosted", asOf })) {
+  for (const e of store.replay({ type: "JournalEntryPosted", asOf })) {
     const p = e.payload as unknown as JournalEntryPostedPayload;
     map.set(p.tradeId, {
       tradeId: p.tradeId,
@@ -151,13 +150,27 @@ function readLedgerLegs(asOf: string): Map<string, LedgerLeg> {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns true if `now` is within 4 hours of `settlementDate`.
- * Used to classify timing breaks (self-correcting) vs nostro breaks.
+ * Returns true if the given ISO 8601 timestamp `anchorStr` is within 4 hours
+ * of `nowStr`. Used to classify timing (self-correcting) vs nostro breaks
+ * when payment has settled but the ledger leg is missing.
  */
-function isWithin4Hours(settlementDateStr: string, nowStr: string): boolean {
-  const settlementMs = new Date(settlementDateStr).getTime();
+function isWithin4HoursTimestamp(anchorStr: string, nowStr: string): boolean {
+  const anchorMs = new Date(anchorStr).getTime();
   const nowMs = new Date(nowStr).getTime();
-  return Math.abs(nowMs - settlementMs) <= FOUR_HOURS_MS;
+  return Math.abs(nowMs - anchorMs) <= FOUR_HOURS_MS;
+}
+
+/**
+ * Returns true if the given settlementDate (YYYY-MM-DD) is today or in the future
+ * relative to `nowStr` (ISO 8601 timestamp). Timing breaks are self-correcting;
+ * nostro breaks require investigation.
+ *
+ * Business rationale: SAMOS/correspondent windows close same-day; a missing leg
+ * for today's or a future settlement date is within the timing tolerance window.
+ */
+function isSettlementDateTodayOrFuture(settlementDate: string, nowStr: string): boolean {
+  const todayStr = nowStr.slice(0, 10);
+  return settlementDate >= todayStr;
 }
 
 // ---------------------------------------------------------------------------
@@ -172,18 +185,21 @@ function isWithin4Hours(settlementDateStr: string, nowStr: string): boolean {
  * - Emits a `DailyReconciliationReport` summarising the run.
  * - Returns the result for the caller.
  *
- * @param asOf   ISO 8601 date string (YYYY-MM-DD) for the run.
- * @param dryRun If true, reads event store but does NOT emit events.
+ * @param asOf      ISO 8601 date string (YYYY-MM-DD) for the run.
+ * @param dryRun    If true, reads event store but does NOT emit events.
+ * @param store     EventStore to use (defaults to composition singleton).
+ *                  Pass an in-memory store in tests.
  */
 export function runThreeWayReconciliation(
   asOf: string,
   dryRun = false,
+  store: EventStore = compositionEventStore,
 ): ReconciliationResult {
   const detectedAt = new Date().toISOString();
 
-  const tradeLegs = readTradeLegs(asOf);
-  const paymentLegs = readPaymentLegs(asOf);
-  const ledgerLegs = readLedgerLegs(asOf);
+  const tradeLegs = readTradeLegs(store, asOf);
+  const paymentLegs = readPaymentLegs(store, asOf);
+  const ledgerLegs = readLedgerLegs(store, asOf);
 
   const breaks: ReconciliationBreakSummary[] = [];
 
@@ -205,7 +221,7 @@ export function runThreeWayReconciliation(
         };
         breaks.push(breakSummary);
         if (!dryRun) {
-          eventStore.append(
+          store.append(
             makeReconciliationBreak({
               asOf,
               entity: BANK_ENTITY,
@@ -223,7 +239,7 @@ export function runThreeWayReconciliation(
 
     // Case 2: payment settled but ledger missing.
     if (payment !== undefined && ledger === undefined) {
-      const kind: ReconciliationBreakKind = isWithin4Hours(payment.settledAt, detectedAt)
+      const kind: ReconciliationBreakKind = isWithin4HoursTimestamp(payment.settledAt, detectedAt)
         ? "timing"
         : "nostro";
       const description =
@@ -238,7 +254,7 @@ export function runThreeWayReconciliation(
       };
       breaks.push(breakSummary);
       if (!dryRun) {
-        eventStore.append(
+        store.append(
           makeReconciliationBreak({
             asOf,
             entity: BANK_ENTITY,
@@ -254,13 +270,16 @@ export function runThreeWayReconciliation(
 
     // Case 3: payment leg missing (whether ledger present or not).
     if (payment === undefined) {
-      const kind: ReconciliationBreakKind = isWithin4Hours(trade.settlementDate, detectedAt)
+      const kind: ReconciliationBreakKind = isSettlementDateTodayOrFuture(
+        trade.settlementDate,
+        detectedAt,
+      )
         ? "timing"
         : "nostro";
       const description =
         kind === "timing"
-          ? `Payment leg missing for tradeId=${tradeId} within 4h of settlementDate=${trade.settlementDate}; self-correcting expected`
-          : `Nostro break: no PaymentSettled for tradeId=${tradeId} after 4h past settlementDate=${trade.settlementDate}; investigation required`;
+          ? `Payment leg missing for tradeId=${tradeId}; settlementDate=${trade.settlementDate} is today or future — self-correcting expected`
+          : `Nostro break: no PaymentSettled for tradeId=${tradeId}; settlementDate=${trade.settlementDate} is in the past — investigation required`;
       const breakSummary: ReconciliationBreakSummary = {
         tradeId,
         kind,
@@ -269,7 +288,7 @@ export function runThreeWayReconciliation(
       };
       breaks.push(breakSummary);
       if (!dryRun) {
-        eventStore.append(
+        store.append(
           makeReconciliationBreak({
             asOf,
             entity: BANK_ENTITY,
@@ -288,7 +307,7 @@ export function runThreeWayReconciliation(
 
   // Emit the daily summary.
   if (!dryRun) {
-    eventStore.append(
+    store.append(
       makeDailyReconciliationReport({
         asOf,
         entity: BANK_ENTITY,

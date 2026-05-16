@@ -120,9 +120,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // In dry-run mode, no events are emitted and no file is written.
   // ReconciliationBreak events + DailyReconciliationReport are emitted inside
   // runThreeWayReconciliation when dryRun=false.
-  const eventsEmitted = ctx.dryRun
-    ? 0
-    : result.breakCount + 1; // breaks + 1 DailyReconciliationReport
+  const eventsEmitted = ctx.dryRun ? 0 : result.breakCount + 1; // breaks + 1 DailyReconciliationReport
 
   let deliverable: string | undefined;
   if (!ctx.dryRun) {

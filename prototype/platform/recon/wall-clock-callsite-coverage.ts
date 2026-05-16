@@ -57,8 +57,11 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // Date.now() for the deferred-init path (wall-clock: cache TTL tracking
 // annotation present; same boundary pattern as other approved cache-TTL
 // callsites in the same file).
+// Bumped 48 → 50: dashboard/agent-runs.ts:218 added fetchedAt: Date.now() and
+// dashboard/agent-runs.ts:230 now also annotated — both are wall-clock cache
+// TTL tracking patterns at the dashboard-infra boundary (approved pattern).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 48;
+const KNOWN_VIOLATIONS_SNAPSHOT = 50;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

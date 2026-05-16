@@ -1,15 +1,14 @@
 # Tomas — daily three-way reconciliation (autonomous run)
 #
 # Daily trade-leg ↔ payment-leg ↔ ledger-leg three-way reconciliation per
-# PROC-PAY-RBH-01. Runs at 05:00 UTC (07:00 SAST) after overnight settlement
-# to catch breaks before the trading day opens.
+# PROC-PAY-RBH-01.
+# Cadence: 05:00 UTC daily, driven by launchd scheduler (sole canonical
+# cadence mechanism post-2026-05-11 decommission of GH-Actions schedule blocks).
 # Per CLAUDE.md Principle 6 (Autonomous by default).
 
 name: Tomas daily reconciliation
 
 on:
-  schedule:
-    - cron: "0 5 * * *"
   workflow_dispatch: {}
 
 permissions:
