@@ -1,10 +1,5 @@
-# D-DECISIONS-FRAMEWORK-REDESIGN Slice B grandfathered set (6 entries).
-# Legacy S-prefix slugs predate the D-* convention; Slice C remaps them.
-# D-PARTY-REGISTER is a prefix-shadow of D-PARTY-REGISTER-CORRECTION;
-# Slice C will either rename or merge the records.
-S3
-S5
-S6
-S7
-S8
+# D-DECISIONS-FRAMEWORK-REDESIGN Slice C — baseline cleared.
+# S3-S8 legacy IDs remapped in migration script LEGACY_ID_MAP.
+# D-PARTY-REGISTER remains a prefix-shadow of D-PARTY-REGISTER-CORRECTION;
+# retained here pending manual merge/rename in Slice D or follow-on triage.
 D-PARTY-REGISTER

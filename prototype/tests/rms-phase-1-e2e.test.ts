@@ -55,7 +55,7 @@ import {
   documentRegisterRows,
 } from "../platform/rms-registers";
 import scroogeOwnerInboxArchiver from "../runtime/agents/scrooge-owner-inbox-archiver";
-import { recordCeoDecision } from "../runtime/decisions/record";
+import { recordDecision } from "../runtime/decisions/record";
 import type { AgentRunContext } from "../runtime/types";
 
 // ---------------------------------------------------------------------------
@@ -432,23 +432,27 @@ describe("RMS Phase 1 — end-to-end round-trip (Slice 5)", () => {
     expect(inboxAfterFixture).toEqual([SOURCE_CARD_FILENAME]);
 
     // -----------------------------------------------------------------------
-    // Step 5 — CeoDecision
+    // Step 5 — Decision (unified; D-DECISIONS-FRAMEWORK-REDESIGN Slice C)
     // -----------------------------------------------------------------------
-    const ceoRes = recordCeoDecision(
+    const ceoRes = recordDecision(
       {
         decisionId: DECISION_ID,
-        action: "approve",
+        phase: "approved",
+        authority: "CEO",
+        authorityRef: "marc@tgv.co.za",
         title: "Refresh FIC s.42 cadence to monthly",
-        outcome:
+        category: "governance",
+        recommendation:
           "Approved per Mira's recommendation; cadence shift lands at next FIC reporting tick.",
-        actor: "marc@tgv.co.za",
-        comment: "downstream dispatch from D-RMS-PHASE-1; cadence change low-risk",
-        sourceDoc: `Owner Inbox/${SOURCE_CARD_FILENAME}`,
-        recordedVia: "test:rms-phase-1-e2e",
+        rationale: "downstream dispatch from D-RMS-PHASE-1; cadence change low-risk",
+        sourceDocHashes: [],
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
+        recordedVia: "authoring-ui",
+        actor: { type: "human", id: "marc@tgv.co.za" },
       },
       asOf,
     );
-    expect(ceoRes.event.type).toBe("CeoDecision");
+    expect(ceoRes.event.type).toBe("Decision");
 
     // -----------------------------------------------------------------------
     // Step 6 — Auto-archive (RecordFiled)
@@ -548,15 +552,21 @@ describe("RMS Phase 1 — end-to-end round-trip (Slice 5)", () => {
     const sourceCardPath = resolve(ownerInboxDir, SOURCE_CARD_FILENAME);
     writeFileSync(sourceCardPath, decisionCardBody(), "utf8");
 
-    const ceoRes = recordCeoDecision(
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from recordCeoDecision
+    const ceoRes = recordDecision(
       {
         decisionId: `${DECISION_ID}-SHAPE`,
-        action: "approve",
+        phase: "approved",
+        authority: "CEO",
+        authorityRef: "marc@tgv.co.za",
         title: "Shape test",
-        outcome: "Approved.",
-        actor: "marc@tgv.co.za",
-        sourceDoc: `Owner Inbox/${SOURCE_CARD_FILENAME}`,
-        recordedVia: "test:rms-phase-1-e2e:shape",
+        category: "governance",
+        recommendation: "Approved.",
+        rationale: "Shape test rationale.",
+        sourceDocHashes: [],
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
+        recordedVia: "authoring-ui",
+        actor: { type: "human", id: "marc@tgv.co.za" },
       },
       asOf,
     );
