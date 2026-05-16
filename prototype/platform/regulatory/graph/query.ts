@@ -6,7 +6,7 @@
 // Author: Mira (Compliance / RegTech engineer, engineering)
 
 import { getDb } from "./db";
-import type { GraphEdge, GraphNode } from "./types";
+import type { DocumentApplicabilityStatus, GraphEdge, GraphNode } from "./types";
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -176,12 +176,21 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
  * Return all Obligation nodes that have no incoming CLOSES edge.
  * These represent Principle 2 gaps — regulatory obligations not yet
  * covered by any bank policy.
+ *
+ * @param asOf          Optional ISO date for temporal filtering.
+ * @param applicabilityFilter  When provided, restricts to obligations whose
+ *   source Document (via CONTAINS edges reversed) has one of the listed
+ *   applicabilityStatus values.  Pass `["direct", "transposed"]` to surface
+ *   genuine compliance gaps only.
  */
-export function findUnimplementedObligations(asOf?: string): GraphNode[] {
+export function findUnimplementedObligations(
+  asOf?: string,
+  applicabilityFilter?: DocumentApplicabilityStatus[],
+): GraphNode[] {
   const db = getDb();
   const temporalFilter = asOf ? `AND ${temporalClause("n", asOf)}` : "";
 
-  return (
+  const obligations = (
     db
       .prepare(
         `SELECT n.* FROM graph_nodes n
@@ -193,6 +202,106 @@ export function findUnimplementedObligations(asOf?: string): GraphNode[] {
       )
       .all() as NodeRow[]
   ).map(rowToNode);
+
+  if (!applicabilityFilter || applicabilityFilter.length === 0) {
+    return obligations;
+  }
+
+  // Filter: keep only obligations reachable from a Document with a matching
+  // applicabilityStatus. Walk: Obligation ← EXPRESSES ← Provision ← CONTAINS ← Document.
+  return obligations.filter((obl) => {
+    // Find provisions that EXPRESSES this obligation
+    const provRows = db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'EXPRESSES'`,
+      )
+      .all(obl.id) as NodeRow[];
+
+    for (const provRow of provRows) {
+      // Find documents that CONTAINS this provision
+      const docRows = db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.from_id = n.id
+           WHERE e.to_id = ? AND e.edge_type = 'CONTAINS' AND n.node_type = 'Document'`,
+        )
+        .all(provRow.id) as NodeRow[];
+
+      for (const docRow of docRows) {
+        const doc = rowToNode(docRow);
+        const status = doc.metadata?.applicabilityStatus as
+          | DocumentApplicabilityStatus
+          | undefined;
+        if (status && (applicabilityFilter as string[]).includes(status)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// findObligationsByApplicability
+// ---------------------------------------------------------------------------
+
+/**
+ * Return all Obligation nodes reachable from Document nodes with the given
+ * applicability status. Traversal: Document (with status) → CONTAINS →
+ * Provision → EXPRESSES → Obligation.
+ *
+ * @param status  The applicability status to filter on.
+ * @param asOf    Optional ISO date for temporal filtering on Document nodes.
+ */
+export function findObligationsByApplicability(
+  status: DocumentApplicabilityStatus,
+  asOf?: string,
+): GraphNode[] {
+  const db = getDb();
+  const temporalFilter = asOf ? `AND ${temporalClause("d", asOf)}` : "";
+
+  // Find all Document nodes with the given applicability status.
+  // metadata is stored as JSON; we use json_extract for SQLite.
+  const docRows = db
+    .prepare(
+      `SELECT d.* FROM graph_nodes d
+       WHERE d.node_type = 'Document' ${temporalFilter}
+         AND json_extract(d.metadata, '$.applicabilityStatus') = ?`,
+    )
+    .all(status) as NodeRow[];
+
+  const oblMap = new Map<string, GraphNode>();
+
+  for (const docRow of docRows) {
+    // Find provisions contained in this document
+    const provRows = db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.to_id = n.id
+         WHERE e.from_id = ? AND e.edge_type = 'CONTAINS' AND n.node_type = 'Provision'`,
+      )
+      .all(docRow.id) as NodeRow[];
+
+    for (const provRow of provRows) {
+      // Find obligations expressed by each provision
+      const oblRows = db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.to_id = n.id
+           WHERE e.from_id = ? AND e.edge_type = 'EXPRESSES' AND n.node_type = 'Obligation'`,
+        )
+        .all(provRow.id) as NodeRow[];
+
+      for (const oblRow of oblRows) {
+        const obl = rowToNode(oblRow);
+        oblMap.set(obl.id, obl);
+      }
+    }
+  }
+
+  return [...oblMap.values()];
 }
 
 // ---------------------------------------------------------------------------
@@ -378,11 +487,20 @@ export function findEquivalentObligations(obligationId: string): GraphNode[] {
 // getGraphStats
 // ---------------------------------------------------------------------------
 
+const ALL_APPLICABILITY_STATUSES: DocumentApplicabilityStatus[] = [
+  "direct",
+  "transposed",
+  "reference",
+  "monitored",
+];
+
 export function getGraphStats(): {
   nodesByType: Record<string, number>;
   edgesByType: Record<string, number>;
   totalNodes: number;
   totalEdges: number;
+  documentsByApplicability: Record<DocumentApplicabilityStatus, number>;
+  unimplementedByApplicability: Record<DocumentApplicabilityStatus, number>;
 } {
   const db = getDb();
 
@@ -408,5 +526,32 @@ export function getGraphStats(): {
     totalEdges += row.n;
   }
 
-  return { nodesByType, edgesByType, totalNodes, totalEdges };
+  // Applicability breakdowns
+  const documentsByApplicability = {} as Record<DocumentApplicabilityStatus, number>;
+  const unimplementedByApplicability = {} as Record<DocumentApplicabilityStatus, number>;
+
+  for (const status of ALL_APPLICABILITY_STATUSES) {
+    const docCount = (
+      db
+        .prepare(
+          `SELECT COUNT(*) AS n FROM graph_nodes
+           WHERE node_type = 'Document'
+             AND json_extract(metadata, '$.applicabilityStatus') = ?`,
+        )
+        .get(status) as { n: number }
+    ).n;
+    documentsByApplicability[status] = docCount;
+
+    const unimplCount = findUnimplementedObligations(undefined, [status]).length;
+    unimplementedByApplicability[status] = unimplCount;
+  }
+
+  return {
+    nodesByType,
+    edgesByType,
+    totalNodes,
+    totalEdges,
+    documentsByApplicability,
+    unimplementedByApplicability,
+  };
 }

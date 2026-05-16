@@ -1574,7 +1574,7 @@ const server = Bun.serve({
     // discipline). The graph DB is lazy-initialised; endpoints handle
     // empty state (totalNodes === 0) gracefully.
     {
-      const graphResponse = registerGraphRoutes(url.pathname, req.method);
+      const graphResponse = registerGraphRoutes(url.pathname, req.method, url.searchParams);
       if (graphResponse) return graphResponse;
     }
     if (req.method === "GET") {
