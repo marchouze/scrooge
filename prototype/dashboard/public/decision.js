@@ -246,6 +246,152 @@ function renderPopiaNotice(notice) {
   ]);
 }
 
+function renderActionPanel(open, decisionId) {
+  // Build the action panel for an open decision.
+  const statusEl = el("div", { class: "action-error", style: "display:none" });
+  const successEl = el("div", { class: "action-success", style: "display:none" });
+
+  // Authority
+  const authority = open.authority ?? "CEO";
+  const authorityEl = el("div", { class: "action-authority" }, `Authority required: ${authority}`);
+
+  // Decision prompt
+  const promptEl = el(
+    "div",
+    { class: "action-prompt" },
+    open.decisionForCEO ?? "Review and act on this decision.",
+  );
+
+  // Recommendation (optional)
+  let recoEl = null;
+  if (open.recommendation?.stance) {
+    const recoText = open.recommendation.reasoning
+      ? `${open.recommendation.stance} — ${open.recommendation.reasoning}`
+      : open.recommendation.stance;
+    recoEl = el("div", { class: "action-recommendation" }, [
+      el("strong", {}, "Recommendation: "),
+      recoText,
+    ]);
+  }
+
+  // Source docs (optional)
+  let sourceDocsEl = null;
+  if (open.sourceDocs && open.sourceDocs.length > 0) {
+    const items = open.sourceDocs.map((doc) => {
+      // If it looks like a path, make it a relative link; otherwise show as text.
+      const isPath = doc.startsWith("/") || doc.includes(".md") || doc.includes("/");
+      return isPath
+        ? el("li", {}, el("a", { href: doc, target: "_blank" }, doc))
+        : el("li", {}, doc);
+    });
+    const ul = el("ul", {}, items);
+    sourceDocsEl = el("div", { class: "action-source-docs" }, [
+      el("span", { class: "action-form-label" }, "Source documents"),
+      ul,
+    ]);
+  }
+
+  // Outcome textarea (required)
+  const outcomeId = `action-outcome-${decisionId}`;
+  const outcomeTextarea = el("textarea", {
+    id: outcomeId,
+    class: "action-textarea",
+    placeholder: "Outcome — describe what was decided…",
+    rows: "4",
+  });
+  const outcomeField = el("div", {}, [
+    el("label", { class: "action-form-label", for: outcomeId }, "Outcome (required)"),
+    outcomeTextarea,
+  ]);
+
+  // Comment textarea (optional)
+  const commentId = `action-comment-${decisionId}`;
+  const commentTextarea = el("textarea", {
+    id: commentId,
+    class: "action-textarea",
+    placeholder: "Comment (optional)",
+    rows: "3",
+  });
+  const commentField = el("div", {}, [
+    el("label", { class: "action-form-label", for: commentId }, "Comment (optional)"),
+    commentTextarea,
+  ]);
+
+  // Action buttons
+  const btnApprove = el("button", { class: "btn-approve", type: "button" }, "Approve");
+  const btnDefer = el("button", { class: "btn-defer", type: "button" }, "Defer");
+  const btnModify = el("button", { class: "btn-modify", type: "button" }, "Modify");
+  const btnRevision = el("button", { class: "btn-revision", type: "button" }, "Request Revision");
+  const allButtons = [btnApprove, btnDefer, btnModify, btnRevision];
+
+  const buttonsEl = el("div", { class: "action-buttons" }, allButtons);
+
+  async function submit(action) {
+    const outcome = outcomeTextarea.value.trim();
+    if (!outcome) {
+      statusEl.textContent = "Outcome is required — describe what was decided.";
+      statusEl.style.display = "";
+      successEl.style.display = "none";
+      return;
+    }
+    statusEl.style.display = "none";
+    successEl.style.display = "none";
+    for (const b of allButtons) b.disabled = true;
+    try {
+      const body = {
+        actor: "marc@tgv.co.za",
+        decisionId,
+        action,
+        outcome,
+        comment: commentTextarea.value.trim() || undefined,
+      };
+      const res = await fetch("/api/decide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error ?? `HTTP ${res.status}`);
+      }
+      successEl.textContent = `Decision recorded (${action}). Refreshing…`;
+      successEl.style.display = "";
+      setTimeout(() => location.reload(), 1500);
+    } catch (e) {
+      statusEl.textContent = `Error: ${e.message}`;
+      statusEl.style.display = "";
+      for (const b of allButtons) b.disabled = false;
+    }
+  }
+
+  btnApprove.addEventListener("click", () => submit("approve"));
+  btnDefer.addEventListener("click", () => submit("defer"));
+  btnModify.addEventListener("click", () => submit("modify"));
+  btnRevision.addEventListener("click", () => submit("request-revision"));
+
+  const panel = el(
+    "div",
+    { class: "decision-action-panel" },
+    [
+      el("h3", {}, open.title),
+      authorityEl,
+      promptEl,
+      recoEl,
+      sourceDocsEl,
+      outcomeField,
+      commentField,
+      buttonsEl,
+      statusEl,
+      successEl,
+    ].filter(Boolean),
+  );
+
+  return el("section", { class: "band" }, [
+    el("div", { class: "band-head" }, [el("h2", {}, "Act on this decision")]),
+    panel,
+  ]);
+}
+
 function renderNotFound(decisionId) {
   const wrap = $("decisionContent");
   wrap.innerHTML = "";
@@ -274,7 +420,7 @@ function renderStrategyBanner(state) {
   banner.innerHTML = "";
   banner.appendChild(el("span", { class: "banner-phase" }, `Phase: ${phase}`));
   banner.appendChild(el("span", { class: "banner-sep" }, " · "));
-  banner.appendChild(el("span", {}, `${openCount} CEO decision${openCount === 1 ? "" : "s"} open`));
+  banner.appendChild(el("span", {}, `${openCount} decision${openCount === 1 ? "" : "s"} open`));
   banner.appendChild(el("span", { class: "banner-sep" }, " · "));
   banner.appendChild(el("span", {}, `${agentCount} agent${agentCount === 1 ? "" : "s"} reporting`));
 }
@@ -318,7 +464,10 @@ async function load() {
     }
     if (data.escalation) wrap.appendChild(renderEscalation(data.escalation));
     if (data.resolution) wrap.appendChild(renderResolution(data.resolution));
-    else if (data.open) wrap.appendChild(renderOpen(data.open));
+    else if (data.open) {
+      wrap.appendChild(renderOpen(data.open));
+      wrap.appendChild(renderActionPanel(data.open, data.decisionId));
+    }
     const lifecycle = renderLifecycle(data.lifecycle);
     if (lifecycle) wrap.appendChild(lifecycle);
     const citations = renderCitations(data.citations);

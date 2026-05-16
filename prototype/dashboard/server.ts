@@ -1581,10 +1581,24 @@ const server = Bun.serve({
         if (!view) {
           return jsonResponse({ error: `Decision not found: ${decisionId}` }, 404);
         }
+        // Enrich open.authority from the decisions register if missing.
+        // Owner-Inbox-sourced OpenDecisions may not carry authority; the
+        // register always has it when the Decision event was recorded.
+        let enrichedView = view;
+        if (view.open && !view.open.authority) {
+          const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
+          const regRow = register.open.find((r) => r.decisionId === decisionId);
+          if (regRow?.authority) {
+            enrichedView = {
+              ...view,
+              open: { ...view.open, authority: regRow.authority },
+            };
+          }
+        }
         return jsonResponse({
           asOf: cachedState.asOf,
-          ...view,
-          ...(view.popiaS71 ? { popiaNotice: POPIA_S71_NOTICE } : {}),
+          ...enrichedView,
+          ...(enrichedView.popiaS71 ? { popiaNotice: POPIA_S71_NOTICE } : {}),
           // Decision drill-down folds CeoDecision* events from the
           // event store → build phase resolves to simulated-only.
           pageProvenance: eventDerivedPageProvenance(),

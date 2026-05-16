@@ -442,6 +442,7 @@ if (import.meta.main) {
     else if (v.message.includes("citationRef is missing")) kind = "missing-citation";
     byKind[kind] = (byKind[kind] ?? 0) + 1;
   }
+  const DETAIL_CAP = 20;
   console.log(
     JSON.stringify({
       level: r.ok ? (r.violations.length ? "warn" : "info") : "error",
@@ -457,7 +458,8 @@ if (import.meta.main) {
           : "Retention-citation-coverage recon passed"
         : "Retention-citation-coverage recon FAILED",
       breakdown: byKind,
-      detail: r.violations,
+      detail: r.violations.slice(0, DETAIL_CAP),
+      detailTruncated: r.violations.length > DETAIL_CAP,
     }),
   );
   process.exit(r.ok ? 0 : 1);
