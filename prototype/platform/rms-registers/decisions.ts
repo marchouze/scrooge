@@ -69,7 +69,9 @@ export interface DecisionsRegisterState {
 export const decisionsRegisterInitial: DecisionsRegisterState = { rows: new Map() };
 
 function isDecisionsRegisterEvent(event: { type: string }): boolean {
-  return event.type === "DecisionRequested" || event.type === "CeoDecision";
+  return (
+    event.type === "DecisionRequested" || event.type === "CeoDecision" || event.type === "Decision" // D-DECISIONS-FRAMEWORK-REDESIGN Slice C unified type
+  );
 }
 
 function applyDecisionRequested(
@@ -190,6 +192,75 @@ function applyCeoDecision(state: DecisionsRegisterState, event: Event): Decision
   return { rows: next };
 }
 
+/**
+ * Apply a unified `Decision` event (D-DECISIONS-FRAMEWORK-REDESIGN Slice C).
+ * Maps the `phase` field onto the legacy `action` vocabulary the register uses,
+ * then delegates to the same resolution logic as `applyCeoDecision`.
+ */
+function applyDecision(state: DecisionsRegisterState, event: Event): DecisionsRegisterState {
+  const p = event.payload as Record<string, unknown>;
+  const decisionId = typeof p.decisionId === "string" ? p.decisionId : "";
+  if (!decisionId) return state;
+  const phase = String(p.phase ?? "");
+  // Only terminal phases close a decision row.
+  if (phase === "requested") return state; // still open
+  // Map Decision.phase → legacy action for the resolution record.
+  const actionMap: Record<string, DecisionsRegisterResolution["action"]> = {
+    approved: "approve",
+    rejected: "approve", // rejection is a terminal close; surface as "approve" pending Phase 2 richer action set
+    deferred: "defer",
+    superseded: "modify",
+    withdrawn: "modify",
+  };
+  const action: DecisionsRegisterResolution["action"] = actionMap[phase] ?? "approve";
+  const existing = state.rows.get(decisionId);
+  if (existing?.resolution && existing.resolvedAt && existing.resolvedAt > event.as_of) {
+    const next = new Map(state.rows);
+    next.set(decisionId, { ...existing, status: "superseded" });
+    return { rows: next };
+  }
+  const newResolution: DecisionsRegisterResolution = {
+    eventId: event.event_id,
+    action,
+    outcome: typeof p.recommendation === "string" ? p.recommendation : "",
+    ...(typeof p.rationale === "string" ? { comment: p.rationale } : {}),
+    recordedVia: typeof p.recordedVia === "string" ? p.recordedVia : "unknown",
+    resolvedAt: event.as_of,
+    actorId: event.actor.id,
+  };
+  const next = new Map(state.rows);
+  if (existing) {
+    next.set(decisionId, {
+      ...existing,
+      status: "resolved",
+      resolution: newResolution,
+      resolvedAt: event.as_of,
+    });
+  } else {
+    // Decision event before DecisionRequested (legacy backfill or direct approval).
+    // Materialise a stub row so the decision is visible in the register.
+    next.set(decisionId, {
+      decisionId,
+      requestEventId: "",
+      title: typeof p.title === "string" ? p.title : decisionId,
+      category: "near-term",
+      owner: { name: "unknown", position: "unknown" },
+      forActor: "CEO",
+      decisionForActor: "",
+      recommendation: { stance: "", reasoning: "" },
+      sourceDocumentHashes: [],
+      decisionCitations: [],
+      options: undefined,
+      deadline: null,
+      requestedAt: event.as_of,
+      status: "resolved",
+      resolution: newResolution,
+      resolvedAt: event.as_of,
+    });
+  }
+  return { rows: next };
+}
+
 export const decisionsRegisterProjection: Projection<DecisionsRegisterState, Event> = {
   name: "rms.decisions",
   initial: decisionsRegisterInitial,
@@ -197,6 +268,7 @@ export const decisionsRegisterProjection: Projection<DecisionsRegisterState, Eve
   reduce(state, event) {
     if (event.type === "DecisionRequested") return applyDecisionRequested(state, event);
     if (event.type === "CeoDecision") return applyCeoDecision(state, event);
+    if (event.type === "Decision") return applyDecision(state, event);
     return state;
   },
   encodeSnapshot(state) {

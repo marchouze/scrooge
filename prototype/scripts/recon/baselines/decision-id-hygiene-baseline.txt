@@ -1,5 +1,15 @@
-# D-DECISIONS-FRAMEWORK-REDESIGN Slice C — baseline cleared.
+# D-DECISIONS-FRAMEWORK-REDESIGN Slice C — baseline.
 # S3-S8 legacy IDs remapped in migration script LEGACY_ID_MAP.
-# D-PARTY-REGISTER remains a prefix-shadow of D-PARTY-REGISTER-CORRECTION;
-# retained here pending manual merge/rename in Slice D or follow-on triage.
+#
+# Prefix-shadow triage (8 items):
+# These IDs are root-level siblings of namespaced slice IDs (e.g. D-RMS-PHASE-1
+# vs D-RMS-PHASE-1-SLICE-3). The root IDs are canonical decisions in their own
+# right; the naming collision is a design gap tracked as a Slice D item.
 D-PARTY-REGISTER
+D-RMS-PHASE-1
+D-REPORTING-CAPABILITY-M2-M3
+D-DATA-PROVENANCE-SUBSTRATE
+D-FX-SALES-TRADING-FRONTEND
+D-REGULATORY-READINESS-W2
+D-S7-TARGETED-3-5
+D-RAS
