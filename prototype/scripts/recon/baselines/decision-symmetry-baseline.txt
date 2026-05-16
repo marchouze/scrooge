@@ -2,10 +2,26 @@
 # The migration script emits both `requested` and terminal-phase Decision events
 # for all historical IDs, satisfying the symmetry check.
 #
-# Triage residuals (3): pre-existing ghost-open / no-requested anomalies that
-# pre-date Slice C. The migration script does not fix these because they require
-# manual event correction or a separate repair script. Tracked as Slice D items.
+# Triage residuals group A (4): pre-existing ghost-open / no-requested anomalies
+# that pre-date Slice C. Manual event correction or separate repair script needed.
 D-PRINCIPLES-P2-P6-MERGE
 D-MARKETS-CAPEX-OVERRUN-REVIEW
 D-POLICY-DOCUMENT-HOME
 D-AGENT-AUTONOMY-OPERATIONAL
+#
+# Triage residuals group B (10): decisions emitted by the OLD backfill-from-records.ts
+# script (CeoDecision events, terminal-only, no synthetic `requested` opener). These
+# carry the original pre-canonical IDs (S3..S8, D-FOLLOW-ON-ROUTER-TEST, etc.). The
+# new migration correctly maps them to canonical slugs with proper openers, but the old
+# CeoDecision events persist in the projection under their old IDs. Fix: update
+# backfill-from-records.ts to emit requested openers (follow-on cleanup, Slice D/E).
+D-FOLLOW-ON-ROUTER-TEST
+S3
+S5
+S6
+S7
+S8
+D-CRO-CLIMATE-FLUENCY
+D-CI-GITHUB-PLAN-UPGRADE-DEFER
+D-PARTY-RELATIONSHIP-KINDS-V0
+D-PARTY-REGISTER-CORRECTION
