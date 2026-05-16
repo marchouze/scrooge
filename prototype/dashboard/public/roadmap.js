@@ -363,12 +363,13 @@
 
   // ── Render workstreams ───────────────────────────────────────────────────
 
-  function renderWorkstreams() {
+  function renderWorkstreams(resolvedIds = new Set()) {
     const container = document.getElementById("rm-workstreams");
     if (!container) return;
 
     container.innerHTML = WORKSTREAMS.map((ws) => {
-      const blockerChips = ws.blockers
+      const openBlockers = ws.blockers.filter((b) => !resolvedIds.has(b));
+      const blockerChips = openBlockers
         .map((b) => `<span class="rm-blocker-chip">${esc(b)}</span>`)
         .join(" ");
 
@@ -414,7 +415,7 @@
               </div>
             </details>
             ${
-              ws.blockers.length
+              openBlockers.length
                 ? `<div class="rm-blockers">
                     <span class="rm-blocker-label">Open blockers</span>
                     ${blockerChips}
@@ -486,7 +487,8 @@
     );
     setMetric("rm-policies", policiesCount != null ? String(policiesCount) : "112+", "muted");
 
-    renderWorkstreams();
+    const resolvedIds = new Set(decisionsResolved.map((r) => r.id ?? r));
+    renderWorkstreams(resolvedIds);
 
     // CEO queue
     renderCeoQueue(decisionsOpen);
