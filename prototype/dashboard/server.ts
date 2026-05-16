@@ -881,7 +881,12 @@ function handleProcedureFetch(filename: string): Response {
 // queueing once a fourth scope (Team / Principles / Persona-spec
 // preview) lands.
 function handlePolicyFetch(filename: string): Response {
-  if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
+  // Accept bare basenames (Owner Inbox files) or `Policies/<basename>` qualified paths
+  // (D-POLICY-DOCUMENT-HOME Option C, 2026-05-12). Reject anything else.
+  const isPoliciesQualified = /^Policies\/[A-Za-z0-9._-]+\.md$/.test(filename);
+  const isBareBasename =
+    !filename.includes("/") && !filename.includes("\\") && !filename.includes("..");
+  if (!isPoliciesQualified && !isBareBasename) {
     return jsonResponse({ error: "invalid filename" }, 400);
   }
   if (!filename.toLowerCase().endsWith(".md")) {
@@ -889,14 +894,17 @@ function handlePolicyFetch(filename: string): Response {
   }
   // Allow-list check against the live policy library. Each Policy carries
   // a `sourceFiles[]` derived from the register; the union of those lists
-  // bounds the surface. A request for any other `Owner Inbox/*.md` file
-  // is rejected — that surface is `/api/owner-inbox/:filename` (which
-  // has its own narrower allow-list).
+  // bounds the surface. Owner Inbox files are bare basenames; Policies/ files
+  // use the `Policies/<basename>` qualified form.
   const allowed = cachedState.policies.some((p) => p.sourceFiles.includes(filename));
   if (!allowed) {
     return jsonResponse({ error: `not in current policy register: ${filename}` }, 404);
   }
-  const filePath = join(REPO_ROOT, "Owner Inbox", filename);
+  // Resolve to disk: qualified Policies/ paths are repo-relative; bare basenames
+  // live under Owner Inbox/.
+  const filePath = isPoliciesQualified
+    ? join(REPO_ROOT, filename)
+    : join(REPO_ROOT, "Owner Inbox", filename);
   if (!existsSync(filePath)) {
     return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
   }
