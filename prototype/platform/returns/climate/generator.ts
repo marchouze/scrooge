@@ -172,8 +172,8 @@ export function generateClimateRiskDisclosure(
   for (const event of eventStore.replay({ entity: entityId, asOf: reportingDate })) {
     if (event.type === "TradeBooked") {
       const p = event.payload as Record<string, unknown>;
-      const cpId = typeof p["counterpartyId"] === "string" ? p["counterpartyId"] : null;
-      const sector = typeof p["sectorCode"] === "string" ? p["sectorCode"] : "UNKNOWN";
+      const cpId = typeof p.counterpartyId === "string" ? p.counterpartyId : null;
+      const sector = typeof p.sectorCode === "string" ? p.sectorCode : "UNKNOWN";
       if (cpId && !exposureMap.has(cpId)) {
         exposureMap.set(cpId, buildPlaceholderExposure(cpId, sector));
       }
@@ -181,8 +181,8 @@ export function generateClimateRiskDisclosure(
 
     if (event.type === "CollateralUpdated") {
       const p = event.payload as Record<string, unknown>;
-      const cpId = typeof p["counterpartyId"] === "string" ? p["counterpartyId"] : null;
-      const sector = typeof p["sectorCode"] === "string" ? p["sectorCode"] : "UNKNOWN";
+      const cpId = typeof p.counterpartyId === "string" ? p.counterpartyId : null;
+      const sector = typeof p.sectorCode === "string" ? p.sectorCode : "UNKNOWN";
       if (cpId && !exposureMap.has(cpId)) {
         exposureMap.set(cpId, buildPlaceholderExposure(cpId, sector));
       }

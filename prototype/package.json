@@ -12,6 +12,7 @@
     "returns:ba350:smoke": "bun test platform/returns/ba350/period-close-subscriber.test.ts",
     "returns:ba600:smoke": "bun test platform/returns/ba600/period-close-subscriber.test.ts",
     "returns:cms:smoke": "bun test platform/returns/cms/cms.test.ts",
+    "returns:climate:smoke": "bun test platform/returns/climate/climate.test.ts",
     "scenario:hello": "bun run scenarios/01-hello-bank.ts",
     "scenario:onboard": "bun run scenarios/02-onboard-counterparty.ts",
     "scenario:dry-run-fx": "bun run scenarios/03-fx-end-to-end-rehearsal.ts",
