@@ -9,7 +9,8 @@
  * No real HTTP calls are made — fetch is mocked via globalThis.
  */
 
-import { expect, test, mock, beforeEach, afterEach } from "bun:test";
+import { expect, mock, test } from "bun:test";
+import { fileURLToPath } from "node:url";
 
 // Minimal valid PDF with embedded text "Hello SARB"
 // Generated via iTextSharp-compatible structure: a 1-page PDF with a text stream.
@@ -36,7 +37,7 @@ const MINIMAL_PDF_WITH_TEXT = Buffer.from(
     "0000000360 00000 n \n",
     "trailer\n<< /Size 6 /Root 1 0 R >>\n",
     "startxref\n430\n%%EOF\n",
-  ].join("")
+  ].join(""),
 );
 
 // Helper: extract text from a Uint8Array using pdfjs-dist directly
@@ -46,11 +47,19 @@ async function extractTextFromBuffer(data: Uint8Array): Promise<string | null> {
     getDocument: (src: { data: Uint8Array }) => { promise: Promise<unknown> };
     GlobalWorkerOptions: { workerSrc: string };
   };
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = fileURLToPath(
+    new URL("../../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs", import.meta.url),
+  );
 
-  interface TextItem { str?: string }
-  interface TextContent { items: TextItem[] }
-  interface Page { getTextContent(): Promise<TextContent> }
+  interface TextItem {
+    str?: string;
+  }
+  interface TextContent {
+    items: TextItem[];
+  }
+  interface Page {
+    getTextContent(): Promise<TextContent>;
+  }
   interface Doc {
     numPages: number;
     getPage(n: number): Promise<Page>;
@@ -63,7 +72,10 @@ async function extractTextFromBuffer(data: Uint8Array): Promise<string | null> {
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    const pageText = content.items.map((it) => it.str ?? "").join(" ").trim();
+    const pageText = content.items
+      .map((it) => it.str ?? "")
+      .join(" ")
+      .trim();
     texts.push(pageText);
     totalChars += pageText.length;
   }

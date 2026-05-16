@@ -18,13 +18,14 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 
 // Suppress the "Setting up fake worker" warning from pdfjs-dist in Node env
 const pdfjsLib = pdfjs as unknown as {
-  getDocument: (
-    src: { data: Uint8Array } | { url: string }
-  ) => { promise: Promise<PDFDocumentProxy> };
+  getDocument: (src: { data: Uint8Array } | { url: string }) => {
+    promise: Promise<PDFDocumentProxy>;
+  };
   GlobalWorkerOptions: { workerSrc: string };
 };
 
@@ -71,21 +72,16 @@ async function fetchPdf(url: string): Promise<Uint8Array> {
   const response = await fetch(url, {
     redirect: "follow",
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (compatible; SARB-PDF-Extract/1.0; Bank substrate tool)",
+      "User-Agent": "Mozilla/5.0 (compatible; SARB-PDF-Extract/1.0; Bank substrate tool)",
     },
   });
   if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} — ${url}`
-    );
+    throw new Error(`HTTP ${response.status} ${response.statusText} — ${url}`);
   }
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("pdf") && !contentType.includes("octet-stream")) {
     // Warn but proceed — some servers return wrong content-type
-    log(
-      `WARNING: content-type is "${contentType}", expected application/pdf. Proceeding anyway.`
-    );
+    log(`WARNING: content-type is "${contentType}", expected application/pdf. Proceeding anyway.`);
   }
   const buffer = await response.arrayBuffer();
   return new Uint8Array(buffer);
@@ -97,8 +93,10 @@ function readLocalPdf(filePath: string): Uint8Array {
 }
 
 async function extractTextLayer(data: Uint8Array): Promise<string | null> {
-  // Disable worker (not available in Bun/Node CLI context)
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+  // Point pdfjs-dist at the bundled worker file (required in Bun/Node CLI context)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = fileURLToPath(
+    new URL("../../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs", import.meta.url),
+  );
 
   const loadingTask = pdfjsLib.getDocument({ data });
   let doc: PDFDocumentProxy;
@@ -176,9 +174,7 @@ async function main(): Promise<void> {
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(
-      `[sarb-pdf-extract] ERROR: could not load PDF from ${inputArg}: ${msg}`
-    );
+    console.error(`[sarb-pdf-extract] ERROR: could not load PDF from ${inputArg}: ${msg}`);
     process.exit(1);
   }
 
@@ -194,13 +190,9 @@ async function main(): Promise<void> {
 
   if (text === null) {
     // Step B (not yet implemented — substrate gap)
-    log(
-      "no text layer found in PDF (image-only PDF). OCR path not yet implemented."
-    );
+    log("no text layer found in PDF (image-only PDF). OCR path not yet implemented.");
     console.error(
-      `[sarb-pdf-extract] ERROR: could not extract text from ${inputArg}. ` +
-        `PDF appears to be image-only. OCR (tesseract.js) is a planned substrate gap — see Owner Inbox brief. ` +
-        `PDF may also be encrypted or unsupported.`
+      `[sarb-pdf-extract] ERROR: could not extract text from ${inputArg}. PDF appears to be image-only. OCR (tesseract.js) is a planned substrate gap — see Owner Inbox brief. PDF may also be encrypted or unsupported.`,
     );
     process.exit(1);
   }
@@ -210,7 +202,7 @@ async function main(): Promise<void> {
     writeFileSync(outputPath, text, "utf-8");
     log(`text written to ${outputPath}`);
   } else {
-    process.stdout.write(text + "\n");
+    process.stdout.write(`${text}\n`);
   }
 
   log("done.");
