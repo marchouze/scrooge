@@ -23,7 +23,6 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { EventStore } from "../../event-store/store";
 import {
   BA_600_NAMESPACE,
   BA_600_REQUIRED_ELEMENTS,
