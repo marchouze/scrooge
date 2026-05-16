@@ -1,66 +1,30 @@
 // platform/semantic-layer/event-type.ts
 //
-// SemanticLayerQuantityRegistered event-payload schema.
+// SHIM — F-032 relocation (Atlas, 2026-05-16).
 //
-// Emitted once per quantity on system boot (idempotent — re-emit is a no-op
-// when the quantity code has already been registered in the current boot
-// epoch). Consumed by the analytics projection to confirm the full quantity
-// vocabulary is present before any quantity-dependent report is generated.
+// The `SemanticLayerQuantityRegistered` payload schema + factory were
+// originally authored here. They have been relocated to
+// `platform/event-store/event-types/analytics.ts` so the factory lives on a
+// surface scanned by `platform/recon/event-type-registry-coverage.ts`
+// (F-032 ratchet — registry coverage warns must be zero).
 //
-// Authority: Anya (Data / analytics engineer, engineering — reports to Devon
-//   COO; semantic-layer + projection-runtime curator).
-// Principle 1: the event log is the canonical record of which quantities are
-//   registered; the in-process `QUANTITY_REGISTRY` is a cache of the same
-//   definitions. Both must agree (Vera recon: semantic-layer-registration-
-//   coverage — planned Wave-5).
+// This file re-exports the canonical symbols so existing imports continue to
+// resolve without change. New code should import from
+// `../event-store/event-types/analytics` or from `../event-store/event-types`
+// (the barrel).
 //
 // Author: Anya (Data / analytics engineer, engineering)
+// Relocated by: Atlas (Core banking platform architect, engineering)
 
-import { z } from "zod";
+export {
+  ANALYTICS_TYPED_EVENT_TYPES,
+  makeSemanticLayerQuantityRegistered,
+  SEMANTIC_LAYER_TYPED_EVENT_TYPES,
+  semanticLayerQuantityRegisteredPayloadSchema,
+} from "../event-store/event-types/analytics";
 
-import { newEventId } from "../core/types";
-import { type Actor, type Event, eventSchema } from "../event-store/types";
-
-// ---------------------------------------------------------------------------
-// SemanticLayerQuantityRegistered
-// ---------------------------------------------------------------------------
-
-export const semanticLayerQuantityRegisteredPayloadSchema = z.object({
-  /** Machine-readable quantity code — matches QuantityDefinition.code. */
-  code: z.string().min(1),
-
-  /** Human-readable quantity name — matches QuantityDefinition.name. */
-  name: z.string().min(1),
-
-  /** Quantity domain — matches QuantityDefinition.domain. */
-  domain: z.enum(["capital", "liquidity", "credit", "market-risk", "pnl", "treasury"]),
-
-  /** ISO-8601 timestamp at which the quantity was registered in this boot epoch. */
-  registeredAt: z.string().min(1),
-});
-
-export type SemanticLayerQuantityRegisteredPayload = z.infer<
-  typeof semanticLayerQuantityRegisteredPayloadSchema
->;
-
-export function makeSemanticLayerQuantityRegistered(args: {
-  asOf: string;
-  entity: string;
-  actor: Actor;
-  citations: string[];
-  payload: SemanticLayerQuantityRegisteredPayload;
-  eventId?: string;
-}): Event {
-  return eventSchema.parse({
-    event_id: args.eventId ?? newEventId(),
-    type: "SemanticLayerQuantityRegistered",
-    as_of: args.asOf,
-    entity: args.entity,
-    actor: args.actor,
-    citations: args.citations,
-    payload: semanticLayerQuantityRegisteredPayloadSchema.parse(args.payload),
-  });
-}
-
-export const SEMANTIC_LAYER_TYPED_EVENT_TYPES = ["SemanticLayerQuantityRegistered"] as const;
-export type SemanticLayerEventType = (typeof SEMANTIC_LAYER_TYPED_EVENT_TYPES)[number];
+export type {
+  AnalyticsEventType,
+  SemanticLayerEventType,
+  SemanticLayerQuantityRegisteredPayload,
+} from "../event-store/event-types/analytics";

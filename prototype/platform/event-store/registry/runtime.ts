@@ -38,6 +38,11 @@ import {
   substrateAlertPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "../event-types";
+import {
+  agentEfficiencyAdvisoryIssuedPayloadSchema,
+  agentPromptOptimizationAppliedPayloadSchema,
+} from "../event-types/agent-ops";
+import { agentDecisionRequiredPayloadSchema } from "../event-types/decision-request";
 import { type EventTypeMetadata, RETENTION_GOVERNANCE_7Y, RETENTION_RUNTIME_1Y } from "./types";
 
 export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
@@ -385,5 +390,71 @@ export const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// AgentOps event types — efficiency advisories + prompt optimisations.
+//
+// Authority: Sade (AgentOps & Token Efficiency Engineer, engineering — reports
+//   to Devon COO). Advisories are non-binding recommendations to reduce token
+//   waste; optimisations are recorded after a bounded change is applied.
+//
+// Factories shipped under D-AGENT-OPS-ADVISORY-FAMILY (agent-ops.ts) without
+// matching registry rows. Rows added under F-032 (Atlas, 2026-05-16) so the
+// payload schemas are enforced at append-time and the types appear on Atlas's
+// permission-policy generator surface.
+// ---------------------------------------------------------------------------
+
+export const AGENT_OPS_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "AgentEfficiencyAdvisoryIssued",
+    class: "runtime",
+    payloadSchema: agentEfficiencyAdvisoryIssuedPayloadSchema,
+    issuer: "Sade",
+    subscribers: ["Sade", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_RUNTIME_1Y,
+    source: "platform/event-store/event-types/agent-ops.ts (factory)",
+  },
+  {
+    type: "AgentPromptOptimizationApplied",
+    class: "runtime",
+    payloadSchema: agentPromptOptimizationAppliedPayloadSchema,
+    issuer: "Sade",
+    subscribers: ["Sade", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_RUNTIME_1Y,
+    source: "platform/event-store/event-types/agent-ops.ts (factory)",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Agent decision-request event type — lightweight request-for-input.
+//
+// Authority: any agent may emit; consumed by the addressed overseer (Scrooge
+// for CEO-route requests, or another agent for cross-agent escalations).
+// Distinct from the heavyweight `Decision` lifecycle (D-DECISIONS-FRAMEWORK-
+// REDESIGN) — this is a "ping" asking for an answer, not a tracked
+// authority-approval lifecycle.
+//
+// Factory shipped earlier in `event-types/decision-request.ts`; registry row
+// added under F-032 (Atlas, 2026-05-16) so the payload schema is enforced at
+// append-time.
+// ---------------------------------------------------------------------------
+
+export const AGENT_DECISION_REQUEST_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "AgentDecisionRequired",
+    class: "runtime",
+    payloadSchema: agentDecisionRequiredPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["addressed-overseer", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/event-store/event-types/decision-request.ts (factory)",
   },
 ];

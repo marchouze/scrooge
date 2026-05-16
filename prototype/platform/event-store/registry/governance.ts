@@ -37,7 +37,6 @@ import {
   partyRelationshipRevokedPayloadSchema,
   partyScreeningCompletedPayloadSchema,
 } from "../../../domains/party";
-import { semanticLayerQuantityRegisteredPayloadSchema } from "../../semantic-layer/event-type";
 import {
   agentBriefIssuedPayloadSchema,
   briefSupersededPayloadSchema,
@@ -69,6 +68,7 @@ import {
   agentOpsReadinessSnapshotPayloadSchema,
   mlroAttestationPayloadSchema,
 } from "../event-types-readiness-snapshots";
+import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingPayloadSchema } from "../event-types/audit";
 import {
   agentFeedbackIssuedPayloadSchema,
@@ -998,6 +998,7 @@ export const ANALYTICS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "idempotent-terminal",
     citationsHint: ["D-SEMANTIC-LAYER-QUANTITIES-V1"],
     retention: RETENTION_BANKING_5Y,
-    source: "platform/semantic-layer/event-type.ts; platform/semantic-layer/seed.ts",
+    source:
+      "platform/event-store/event-types/analytics.ts (factory); platform/semantic-layer/seed.ts (boot-time emission)",
   },
 ];

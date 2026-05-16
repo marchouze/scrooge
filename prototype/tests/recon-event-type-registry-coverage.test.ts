@@ -16,52 +16,26 @@ import { describe, expect, it } from "bun:test";
 import { run } from "../platform/recon/event-type-registry-coverage";
 
 describe("event-type registry-coverage recon (F-032)", () => {
-  it("runs over the live corpus — surfaces real warns without blocking", () => {
-    // The live corpus today has ~22 warn-severity findings: event types
-    // referenced by handler `subscribesTo` or `eventStore.append` that
-    // have no row in EVENT_TYPE_REGISTRY. These are real registry gaps
-    // (tracked in the PR body). They are warn-severity per the recon's
-    // build-phase tolerance: the registry is intentionally fail-open
-    // for unknown types today, and the recon will tighten to fail
-    // once the gaps are closed.
+  it("runs over the live corpus — zero actionable warns (F-032 gate)", () => {
+    // F-032 close-out (Atlas, 2026-05-16): the live corpus now has zero
+    // warn-severity findings. The previous build-phase tolerance
+    // (`toBeLessThanOrEqual(152)`) has been replaced with a hard
+    // `toBe(0)` ratchet — any future PR that introduces a factory
+    // without a registry row, a registry row without a factory, or an
+    // unregistered `subscribesTo` / `eventStore.append` reference now
+    // fails CI.
     //
-    // This smoke test asserts the recon executes, reports the expected
-    // shape, and does NOT block CI on the build-phase gaps.
+    // info-severity findings (factory-without-consumer dead-code
+    // signals) remain tolerated under the build-phase envelope-only
+    // policy described in the registry header. This test asserts
+    // only the warn-floor.
     const r = run();
     expect(r.pipeline).toBe("event-type-registry-coverage");
     expect(r.asserted).toBeGreaterThan(0);
     expect(r.ok).toBe(true);
-    // The warn-count baseline: floor of 1 (we expect there to be at
-    // least one real-corpus warn today — and the recon surfaces them
-    // as designed). When the future tightening lands, this floor
-    // goes to 0.
     const warns = r.violations.filter((v) => v.severity === "warn");
-    expect(warns.length).toBeGreaterThan(0);
-    // Ratchet: the F-032 substrate slice landing 2026-05-10 closed 7
-    // gaps (3 equity + CdmBindingsRegenerated + MLROAttestation + 2
-    // readiness snapshots) and incidentally registered the FX pair
-    // (FxTradeExecuted + FxSettlementInstructed) once the recon's
-    // factory scan was widened to per-domain files. The ceiling here
-    // is a regression guard: any future PR that re-introduces a gap
-    // breaks this test and must update the ceiling explicitly. Adjust
-    // downward as further gaps close; do not raise without
-    // justification in the PR body.
-    //
-    // Raised to 145 in D-AGENT-AUTONOMY-OPERATIONAL Slice 2b (PR):
-    // 33 new per-persona event-triage stub handlers subscribe to ~124
-    // persona-§7-declared event types that are not yet in
-    // EVENT_TYPE_REGISTRY. These are real types (per-persona §7 specs
-    // declare them); the registry rows are a separate follow-on task
-    // (event-schema slice). The stubs are the minimum required to close
-    // the `specWithoutHandler` violations surfaced by
-    // `recon:trigger-spec-handler-symmetry`. Ceiling raised from 14 to
-    // 145 to absorb the new subscriptions; ratchet down as event-schema
-    // registry rows land.
-    // Raised to 152 to absorb Sade's three new AgentOps event types
-    // (TokenUsageRecorded, AgentEfficiencyAdvisoryIssued,
-    // AgentPromptOptimizationApplied) and AgentDecisionRequired (Atlas
-    // event-trigger bus, PR #392). Ratchet down as registry rows land.
-    expect(warns.length).toBeLessThanOrEqual(152);
+    expect(warns.map((w) => ({ subject: w.subject, message: w.message }))).toEqual([]);
+    expect(warns.length).toBe(0);
   });
 
   it("F-032 closed types — equity + CDM + FX + MLRO + Bea/Sade readiness", () => {
