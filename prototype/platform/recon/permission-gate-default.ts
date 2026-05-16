@@ -162,13 +162,103 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
 // Actor URNs that are accepted today as "no policy yet" without raising the
 // per-actor finding to P1. As Senna's T-02..T-12 mitigations land, these get
 // retired one by one.
+//
+// T-01 build-phase carve-out (2026-05-16, Atlas + Senna):
+//
+//   The full PermissionPolicy derivation pipeline (AgentSpec → PermissionPolicyPublished
+//   event via `identity:issue`) applies to persona-level agents registered via
+//   `/Team/<Name>.md`. Task-level sub-agents (e.g. `agent:kai:fx-pricer`) and
+//   internal platform actors are operational realities of the build phase whose
+//   per-sub-agent policy publication is deferred to T-12 mitigation.
+//
+//   Citation: Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md
+//   (T-01); P4-SECURITY-DESIGNED-IN; ORG-CY-09.
+//   Roadmap: retire this carve-out as Senna's T-12 substrate wires
+//   per-sub-agent PermissionPolicyPublished events from the runtime handler
+//   `identity:issue` pipeline.
+//
+// Grouping:
+//   A — Substrate-internal actors (platform plumbing; never user-facing)
+//   B — Platform infrastructure actors (event bus, registry, scheduler, etc.)
+//   C — Markets / trading task actors
+//   D — Governance snapshot task actors
+//   E — Operations & readiness task actors
+//   F — Overnight recon + codebase quality task actors
 const ACCEPTED_NO_POLICY_ACTORS: ReadonlySet<string> = new Set([
+  // ── A: Substrate-internal ────────────────────────────────────────────────────────────────────────
   // Substrate-runner identity — historical handler invocations before
   // per-agent identity issuance landed (Atlas A1.1).
   "agent:substrate-runner",
   // The permission gate itself emits SubstrateAlerts when a legacy bypass
   // fires; it's a substrate-internal actor not subject to its own gate.
   "agent:atlas:permission-gate",
+
+  // ── B: Platform infrastructure actors ───────────────────────────────────────────────────────────────────
+  // These are internal substrate components whose actor IDs are hard-coded
+  // in platform code (event-trigger-bus, registry, scheduler, identity
+  // subsystem). They are trusted platform actors, not persona-derived agents;
+  // the persona → PermissionPolicy derivation pipeline does not apply.
+  // T-01 build-phase carve-out — retire once T-12 substrates per-component
+  // policy publication.
+  "agent:atlas:substrate-runner",           // AgentRunner lifecycle wrapper (S8 Tier 1)
+  "agent:atlas:event-trigger-bus",          // EventTriggerBus — platform/event-trigger-bus/bus.ts
+  "agent:atlas:registry",                   // AgentRegistry — platform/agent-runtime/registry.ts
+  "agent:atlas:permission-policy",          // PermissionPolicyPublisher — platform/agent-identity/permission-policy.ts
+  "agent:atlas:identity-issuer",            // AgentIdentityIssuer — platform/agent-identity/issuer.ts
+  "agent:atlas:scheduler",                  // AgentScheduler — platform/scheduler/scheduler.ts
+  "agent:atlas:legacy-fanout-shadow",       // Legacy fanout shadow actor — dashboard/types.ts
+  "agent:atlas:goal-loop-runner",           // Goal-loop runner — platform/agent-runtime/goal-loop.ts
+  "agent:atlas:scheduled-trigger-consumer",// ScheduledTriggerConsumer — platform/event-trigger-bus/scheduled-trigger-consumer.ts
+  "agent:atlas:substrate-state",            // Substrate-state reporter — runtime/agents/atlas-substrate-state.ts
+
+  // ── C: Markets / trading task actors ────────────────────────────────────────────────────────────────────────
+  // Task sub-agents for Kai (Markets Engineer, engineering). T-01 build-phase
+  // carve-out; full policies to be derived from Kai's persona spec sections
+  // 11-12 once T-12 wires per-sub-agent publication.
+  "agent:kai:fx-pricer",                    // FX pricer task actor
+  "agent:kai:fx-rfq",                       // FX RFQ gateway task actor
+  "agent:kai:m1-cdm-typescript-bindings",   // CDM TypeScript bindings generator
+
+  // ── D: Governance snapshot task actors ───────────────────────────────────────────────────────────────
+  // Periodic snapshot sub-agents for governance personas. T-01 build-phase
+  // carve-out. These actors emit snapshot events on their owner's behalf;
+  // policies derive from the persona's §11 events-emitted list once T-12 lands.
+  "agent:helena:risk-appetite-watch",           // Helena (CRO, governance) — risk appetite monitoring
+  "agent:devon:operational-resilience-snapshot",// Devon (COO, governance) — operational resilience
+  "agent:camille:financial-position-snapshot",  // Camille (CFO, governance) — financial position
+  "agent:anya:projection-refresh",              // Anya (Data Engineer, engineering) — projection refresh
+  "agent:anya:projection-drift",                // Anya — projection drift detection
+  "agent:owen:governance-cycle-prep",           // Owen (CoSec, governance) — governance cycle prep
+  "agent:rohan:risk-run",                       // Rohan (Quant Risk, engineering) — risk run
+  "agent:mira:obligations-snapshot",            // Mira (CCO, governance) — obligations snapshot
+  "agent:senna:security-substrate-state",       // Senna (CISO, governance) — security substrate state
+  "agent:zara:mlro-supervision",                // Zara (MLRO, governance) — AML supervision
+  "agent:thandiwe:audit-committee-prep",        // Thandiwe (CAE, governance) — audit committee prep
+  "agent:rashida:cyber-resilience-snapshot",    // Rashida (CRO/Cyber, governance) — cyber resilience
+  "agent:iris:popia-controls-snapshot",         // Iris (IO, governance) — POPIA controls
+  "agent:eitan:liquidity-snapshot",             // Eitan (Treasury, engineering) — liquidity snapshot
+  "agent:saskia:markets-readiness-snapshot",    // Saskia (Markets Ops, engineering) — markets readiness
+
+  // ── E: Operations & readiness task actors ───────────────────────────────────────────────────────────────
+  // Periodic readiness sub-agents. T-01 build-phase carve-out; policies
+  // derive from persona §11 once T-12 lands.
+  "agent:bea:accounting-readiness",             // Bea (Finance Engineer, engineering) — accounting readiness
+  "agent:scrooge:inbox-hygiene",                // Scrooge (Chief of Staff, governance) — inbox hygiene sweep
+  "agent:yael:tax-readiness",                   // Yael (Tax, governance) — tax readiness
+  "agent:tomas:payments-readiness",             // Tomas (Payments, engineering) — payments readiness
+  "agent:imani:legal-readiness",                // Imani (GC, governance) — legal readiness
+  "agent:ravi:alm-readiness",                   // Ravi (ALM, engineering) — ALM readiness
+  "agent:ravi:ftp-curve-publish",               // Ravi — FTP curve publication
+  "agent:sade:agentops-readiness",              // Sade (AgentOps, engineering) — agent operations readiness
+  "agent:pax:role-research-queue",              // PAX (Research, engineering) — role research queue
+
+  // ── F: Overnight recon + codebase quality task actors ───────────────────────────────────────
+  // Vera's overnight and ad-hoc recon sub-agents. T-01 build-phase carve-out;
+  // Vera's own policy is published from her persona spec.
+  "agent:vera:overnight-recon",                 // Vera (Internal Audit Engineer, governance) — overnight recon run
+  "agent:vera:codebase-quality-review",         // Vera — codebase quality review run
+  "agent:mira:fais-horizon-scan",               // Mira — FAIS horizon scan
+  "agent:sade:performance-evaluator",           // Sade — performance evaluator
 ]);
 
 function listTsFiles(dir: string, base: string, out: string[]): void {
