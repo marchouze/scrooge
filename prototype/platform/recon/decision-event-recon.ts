@@ -106,6 +106,16 @@ function readEventDecisionInfo(dbPath: string): EventDecisionInfo {
   for (const [id, info] of latest) {
     if (info.action === "request-revision") reopenedIds.add(id);
   }
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — unified `Decision` events
+  // also count as a backing event for derived `decisionsResolved`. Until
+  // Slice C retires `CeoDecision`, either family satisfies the check.
+  for (const e of store.replay({ type: "Decision" })) {
+    const p = e.payload as { decisionId?: string; phase?: string };
+    const id = p.decisionId;
+    if (!id) continue;
+    allIds.add(id);
+    if (p.phase === "requested") reopenedIds.add(id);
+  }
   store.close();
   return { allIds, reopenedIds };
 }

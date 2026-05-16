@@ -20,6 +20,7 @@ import { resolve } from "node:path";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
 import { DECISION_TERMINAL_PHASES } from "../event-store/event-types/decision";
 import { EventStore } from "../event-store/store";
+import { applyBaselineToResult, loadBaseline } from "./decisions-baseline";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 function findRepoRoot(start: string): string {
@@ -86,14 +87,13 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
   }
 
-  result.violations = violations;
-  // WARN-only this slice — never flip ok=false.
-  result.ok = true;
+  const baseline = loadBaseline(repoRoot, PIPELINE);
+  applyBaselineToResult(result, violations, baseline);
   return result;
 }
 
 if (import.meta.main) {
   const result = run();
   console.log(JSON.stringify(result, null, 2));
-  process.exit(0);
+  process.exit(result.ok ? 0 : 1);
 }

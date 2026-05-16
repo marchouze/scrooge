@@ -254,10 +254,7 @@ export interface RecordDecisionResult {
  * Authority: `D-DECISIONS-FRAMEWORK-REDESIGN` (CEO-approved 2026-05-16),
  * Slice B.
  */
-export function recordDecision(
-  input: RecordDecisionInput,
-  asOf?: string,
-): RecordDecisionResult {
+export function recordDecision(input: RecordDecisionInput, asOf?: string): RecordDecisionResult {
   const slugCheck = validateDecisionSlug(input.decisionId);
   if (!slugCheck.ok) {
     throw new Error(`recordDecision: ${slugCheck.reason}`);

@@ -35,6 +35,7 @@ import {
 } from "../../dashboard/derive";
 import type { DashboardState, OpenDecision, ResolvedDecision } from "../../dashboard/types";
 import { EventStore } from "../event-store/store";
+import { isTestFixtureId, loadBaseline } from "./decisions-baseline";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 function findRepoRoot(start: string): string {
@@ -148,6 +149,17 @@ function loadState(opts: RunOpts): {
     for (const [id, { action }] of latestAction) {
       if (action === "request-revision") reopenedDecisionIds.add(id);
     }
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — unified `Decision`
+    // events also count as a backing event for derived `decisionsResolved`
+    // entries. Until Slice C retires `CeoDecision`, either family
+    // satisfies "every resolved decision has a backing event".
+    for (const e of store.replay({ type: "Decision" })) {
+      const p = e.payload as { decisionId?: string; phase?: string };
+      const id = p.decisionId;
+      if (!id) continue;
+      eventDecisionIds.add(id);
+      if (p.phase === "requested") reopenedDecisionIds.add(id);
+    }
     return eventSourceFromStore(store);
   })();
 
@@ -240,23 +252,24 @@ function assertOpenDecisionsHaveBackingSource(ctx: AssertionContext): {
     }
   }
 
-  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: Owner Inbox markdown is no
-  // longer an authoring channel — the legacy "lift markdown into the
-  // register" path is gone. The dedicated `recon:decisions-events-only`
-  // pipeline (also WARN-only this slice) covers the cross-reference;
-  // emitting a duplicate `fail` here would block CI before Slice C's
-  // backfill lands. Downgraded to `warn` for the transition window.
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice B: re-promoted to `fail`, but
+  // grandfathered through the shared baseline file at
+  // `prototype/scripts/recon/baselines/decisions-events-only-baseline.txt`
+  // (same set as the dedicated recon — Owner-Inbox refs share the same
+  // Slice-C-pending decisionIds). Slice C empties the baseline.
   const openIds = new Set(state.decisionsOpen.map((d) => d.id));
   const resolvedIds = new Set(state.decisionsResolved.map((d) => d.id));
+  const ownerInboxBaseline = loadBaseline(REPO_ROOT, "decisions-events-only");
   for (const item of state.ownerInboxFeed) {
     if (!item.decisionRequired) continue;
     if (!item.decisionId) continue;
+    if (isTestFixtureId(item.decisionId)) continue;
     asserted++;
     if (!openIds.has(item.decisionId) && !resolvedIds.has(item.decisionId)) {
       violations.push({
         subject: item.decisionId,
         message: `Owner Inbox file ${item.path} declares decision-id ${item.decisionId} but it appears in neither decisionsOpen nor decisionsResolved. D-DECISIONS-FRAMEWORK-REDESIGN Slice C backfill will close this gap.`,
-        severity: "warn",
+        severity: ownerInboxBaseline.has(item.decisionId) ? "warn" : "fail",
       });
     }
   }

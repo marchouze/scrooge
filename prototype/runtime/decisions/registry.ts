@@ -11,8 +11,8 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
 import { eventStore } from "../../platform/composition";
+import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
 
 // ---------------------------------------------------------------------------
 // Format / placeholder rules — mirror `decision-id-hygiene` recon at write-time
@@ -113,11 +113,7 @@ function levenshtein(a: string, b: string): number {
     curr[0] = i;
     for (let j = 1; j <= bl; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      curr[j] = Math.min(
-        (curr[j - 1] ?? 0) + 1,
-        (prev[j] ?? 0) + 1,
-        (prev[j - 1] ?? 0) + cost,
-      );
+      curr[j] = Math.min((curr[j - 1] ?? 0) + 1, (prev[j] ?? 0) + 1, (prev[j - 1] ?? 0) + cost);
     }
     prev = curr;
   }
