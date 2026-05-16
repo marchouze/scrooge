@@ -136,7 +136,9 @@ function main(): void {
     console.log(
       `\nSKIP — AgentRunStarted already recorded for agent "${agent}" on period ${period}.`,
     );
-    console.log("Use --force to override (not yet implemented — delete events manually if needed).");
+    console.log(
+      "Use --force to override (not yet implemented — delete events manually if needed).",
+    );
     process.exit(0);
   }
 
@@ -228,7 +230,7 @@ function main(): void {
     "The daily evaluator will now count this agent as having 1 delivered run for the period.",
   );
   console.log(
-    `\nNext: re-run the performance evaluator to pick up the new run:\n  bun run agent:performance-eval`,
+    "\nNext: re-run the performance evaluator to pick up the new run:\n  bun run agent:performance-eval",
   );
 }
 

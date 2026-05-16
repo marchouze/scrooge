@@ -51,7 +51,12 @@ interface AgentPerformanceEvaluatedPayload {
   /** Substrate status folded from the evaluator result. Absent for legacy events. */
   readonly substrateStatus?: "limited" | "operational";
   /** Display tier: "substrate-limited" for agents with no runs and no failures. */
-  readonly displayTier?: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory" | "substrate-limited";
+  readonly displayTier?:
+    | "exceeds"
+    | "meets"
+    | "needs-improvement"
+    | "unsatisfactory"
+    | "substrate-limited";
   readonly narrative: {
     strengths: string[];
     areasForImprovement: string[];
@@ -107,7 +112,12 @@ export interface AgentPerformanceState {
   /** Substrate status: "limited" when no runs have been recorded (scheduler not yet active). */
   readonly substrateStatus?: "limited" | "operational";
   /** Display tier: "substrate-limited" for limited agents — excluded from attentionNeeded. */
-  readonly displayTier?: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory" | "substrate-limited";
+  readonly displayTier?:
+    | "exceeds"
+    | "meets"
+    | "needs-improvement"
+    | "unsatisfactory"
+    | "substrate-limited";
   readonly latestScores: {
     delivery: number;
     quality: number;
@@ -192,7 +202,12 @@ function applyPerformanceEvaluated(
   // the substrateStatus field was added to the evaluator.
   const evalPayload = p as AgentPerformanceEvaluatedPayload & {
     substrateStatus?: "limited" | "operational";
-    displayTier?: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory" | "substrate-limited";
+    displayTier?:
+      | "exceeds"
+      | "meets"
+      | "needs-improvement"
+      | "unsatisfactory"
+      | "substrate-limited";
   };
   const substrateStatus = evalPayload.substrateStatus;
   const displayTier = evalPayload.displayTier;
