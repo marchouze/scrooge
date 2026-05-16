@@ -688,3 +688,20 @@ export const AGENT_TYPED_EVENT_TYPES = [
 ] as const;
 
 export type AgentEventType = (typeof AGENT_TYPED_EVENT_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C — AgentDecision deprecated alias.
+//
+// `AgentDecision` events are now unified under the `Decision` event family
+// (authority: 'Agent'). The type is kept here so old events in
+// `.local/event.db` remain deserializable; new agent-autonomous decisions
+// must use `recordDecision({ authority: 'Agent', ... })`.
+//
+// The migration script (scripts/migrate/backfill-all-decisions.ts) migrates
+// existing `AgentDecision` events to `Decision { authority: 'Agent', ... }`
+// events as part of Slice C.
+//
+// @deprecated D-DECISIONS-FRAMEWORK-REDESIGN Slice C — use
+//   `recordDecision({ authority: 'Agent', recordedVia: 'agent:autonomous', ... })`.
+// ---------------------------------------------------------------------------
+export type AgentDecisionDeprecated = AgentDecisionPayload;

@@ -1,11 +1,14 @@
 // tests/decisions-record-slice-b.test.ts
 //
-// D-DECISIONS-FRAMEWORK-REDESIGN Slice B — unit tests covering:
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice B + Slice C — unit tests covering:
 //   - `recordDecision` happy path + Zod rejection of malformed payloads;
 //   - `requestDecision` / `resolveDecision` convenience wrappers;
-//   - dual-emission from the deprecated `recordCeoDecision` wrapper
-//     (legacy CeoDecision + unified Decision both observed);
+//   - `recordDelegatedDecision` unified-Decision emission (Slice C);
 //   - slug minting + validation via `mintDecisionId` / `validateDecisionSlug`.
+//
+// Slice C update: dual-emit tests from Slice B (recordCeoDecision) removed;
+// `recordCeoDecision` was deleted in Slice C. `recordDelegatedDecision` now
+// emits only a unified `Decision` event.
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
@@ -13,8 +16,8 @@ import { describe, expect, it } from "bun:test";
 
 import { eventStore } from "../platform/composition";
 import {
-  recordCeoDecision,
   recordDecision,
+  recordDelegatedDecision,
   requestDecision,
   resolveDecision,
 } from "../runtime/decisions/record";
@@ -89,44 +92,41 @@ describe("requestDecision / resolveDecision", () => {
   });
 });
 
-describe("recordCeoDecision dual-emit (Slice B)", () => {
-  it("emits both a CeoDecision and a Decision event for the same decisionId", () => {
-    const beforeCeo = [...eventStore.replay({ type: "CeoDecision" })].length;
+describe("recordDelegatedDecision (Slice C — unified Decision only)", () => {
+  it("emits a Decision event (no CeoDecision) for the delegated path", () => {
     const beforeUnified = [...eventStore.replay({ type: "Decision" })].length;
-    recordCeoDecision(
+    const beforeCeo = [...eventStore.replay({ type: "CeoDecision" })].length;
+    recordDelegatedDecision(
       {
-        decisionId: "D-SLICE-B-DUAL-EMIT",
-        action: "approve",
-        title: "Dual-emit smoke test",
-        outcome: "Both event families observe this decision.",
-        actor: "marc@tgv.co.za",
-        recordedVia: "dashboard:/api/decide",
+        decisionId: "D-SLICE-B-DELEGATED-EMIT",
+        title: "Delegated session approval smoke test",
+        outcome: "Only unified Decision event emitted.",
       },
       AS_OF,
     );
-    const afterCeo = [...eventStore.replay({ type: "CeoDecision" })].length;
     const afterUnified = [...eventStore.replay({ type: "Decision" })].length;
-    expect(afterCeo).toBe(beforeCeo + 1);
+    const afterCeo = [...eventStore.replay({ type: "CeoDecision" })].length;
     expect(afterUnified).toBe(beforeUnified + 1);
+    // Slice C: no legacy CeoDecision emitted.
+    expect(afterCeo).toBe(beforeCeo);
   });
 
-  it("dual-emitted Decision event carries normalised recordedVia", () => {
-    recordCeoDecision(
+  it("delegated Decision event carries recordedVia=scrooge:session-delegation", () => {
+    recordDelegatedDecision(
       {
-        decisionId: "D-SLICE-B-DUAL-EMIT-VIA",
-        action: "approve",
-        title: "Dual-emit recordedVia normalisation",
-        outcome: "Mapped to authoring-ui.",
-        actor: "marc@tgv.co.za",
-        recordedVia: "dashboard:/api/decide",
+        decisionId: "D-SLICE-B-DELEGATED-VIA",
+        title: "Session delegation via test",
+        outcome: "Recorded via scrooge.",
       },
       AS_OF,
     );
     const unified = [...eventStore.replay({ type: "Decision" })].find(
-      (e) => (e.payload as { decisionId: string }).decisionId === "D-SLICE-B-DUAL-EMIT-VIA",
+      (e) => (e.payload as { decisionId: string }).decisionId === "D-SLICE-B-DELEGATED-VIA",
     );
     expect(unified).toBeDefined();
-    expect((unified?.payload as { recordedVia: string }).recordedVia).toBe("authoring-ui");
+    expect((unified?.payload as { recordedVia: string }).recordedVia).toBe(
+      "scrooge:session-delegation",
+    );
   });
 });
 

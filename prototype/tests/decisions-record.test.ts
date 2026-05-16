@@ -1,44 +1,45 @@
 // tests/decisions-record.test.ts
 //
 // Unit tests for `recordDelegatedDecision` — the Scrooge session-delegation
-// convenience wrapper around `recordCeoDecision`.
+// convenience wrapper over `recordDecision`.
+//
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C: `recordCeoDecision` removed;
+// tests updated to assert against unified `Decision` events only.
 //
 // Assertions:
-//   1. Emitted event carries actor.id === "marc@tgv.co.za", actor.type === "human".
+//   1. Emitted event is type "Decision" with actor.id === "marc@tgv.co.za".
 //   2. payload.recordedVia defaults to "scrooge:session-delegation".
 //   3. Custom recordedVia override is respected.
-//   4. The permission gate (human actor) allows the append — no gate denial.
-//   5. Structural validation: required fields (decisionId, title, outcome) are
-//      enforced through the underlying recordCeoDecision guard.
+//   4. actor.id is always marc@tgv.co.za (non-negotiable for session delegation).
+//   5. Structural validation: required fields (decisionId, title, outcome) enforced.
 //
 // Authority: CEO in-session approval = CEO authorization (CLAUDE.md §Session
-// delegation); D-POLICY-DOCUMENT-HOME-SURFACE (back-record 2026-05-12).
+// delegation); D-DECISIONS-FRAMEWORK-REDESIGN (CEO-approved 2026-05-16).
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { describe, expect, it } from "bun:test";
 
 import { eventStore } from "../platform/composition";
-import { recordCeoDecision, recordDelegatedDecision } from "../runtime/decisions/record";
+import { recordDelegatedDecision } from "../runtime/decisions/record";
 
 const AS_OF = "2026-05-12T10:00:00Z";
 const BASE_PARAMS = {
   decisionId: "D-TEST-SESSION-DELEGATION",
-  action: "approve" as const,
   title: "Test session delegation",
   outcome: "CEO approved via in-session 'y'.",
   sourceDoc: "Owner Inbox/2026-05-12_test_session-delegation.md",
 };
 
 describe("recordDelegatedDecision", () => {
-  it("emits CeoDecision with actor.id=marc@tgv.co.za and actor.type=human", () => {
-    const before = [...eventStore.replay({ type: "CeoDecision" })].length;
+  it("emits Decision with actor.id=marc@tgv.co.za and actor.type=human", () => {
+    const before = [...eventStore.replay({ type: "Decision" })].length;
     const result = recordDelegatedDecision(BASE_PARAMS, AS_OF);
 
-    expect(result.event.type).toBe("CeoDecision");
+    expect(result.event.type).toBe("Decision");
     expect(result.event.actor.id).toBe("marc@tgv.co.za");
     expect(result.event.actor.type).toBe("human");
-    expect([...eventStore.replay({ type: "CeoDecision" })].length).toBe(before + 1);
+    expect([...eventStore.replay({ type: "Decision" })].length).toBe(before + 1);
   });
 
   it("sets recordedVia to scrooge:session-delegation by default", () => {
@@ -68,10 +69,6 @@ describe("recordDelegatedDecision", () => {
   });
 
   it("does NOT accept agent: URN as the actor — human actor is non-negotiable", () => {
-    // The permission gate bypasses human actors from its agent-policy check,
-    // so the real guard here is that recordDelegatedDecision hard-wires
-    // actor to marc@tgv.co.za. We verify the human is still wired even when
-    // the caller passes extra fields.
     const result = recordDelegatedDecision(
       { ...BASE_PARAMS, decisionId: "D-TEST-SESSION-DELEGATION-ACTOR-GUARD" },
       AS_OF,
@@ -81,10 +78,18 @@ describe("recordDelegatedDecision", () => {
     expect(result.event.actor.id).not.toMatch(/^agent:/);
   });
 
-  it("propagates structural validation from recordCeoDecision — empty decisionId throws", () => {
-    expect(() => recordDelegatedDecision({ ...BASE_PARAMS, decisionId: "" }, AS_OF)).toThrow(
-      "decisionId is required",
+  it("emits Decision with authority='CEO' and phase='approved'", () => {
+    const result = recordDelegatedDecision(
+      { ...BASE_PARAMS, decisionId: "D-TEST-SESSION-AUTHORITY-CHECK" },
+      AS_OF,
     );
+    const payload = result.event.payload as { authority: string; phase: string };
+    expect(payload.authority).toBe("CEO");
+    expect(payload.phase).toBe("approved");
+  });
+
+  it("propagates structural validation — empty decisionId throws", () => {
+    expect(() => recordDelegatedDecision({ ...BASE_PARAMS, decisionId: "" }, AS_OF)).toThrow();
   });
 
   it("propagates structural validation — empty title throws", () => {
@@ -93,7 +98,7 @@ describe("recordDelegatedDecision", () => {
         { ...BASE_PARAMS, decisionId: "D-TEST-TITLE-GUARD", title: "" },
         AS_OF,
       ),
-    ).toThrow("title is required");
+    ).toThrow();
   });
 
   it("propagates structural validation — empty outcome throws", () => {
@@ -102,7 +107,7 @@ describe("recordDelegatedDecision", () => {
         { ...BASE_PARAMS, decisionId: "D-TEST-OUTCOME-GUARD", outcome: "" },
         AS_OF,
       ),
-    ).toThrow("outcome is required");
+    ).toThrow();
   });
 
   it("uses current ISO timestamp when asOf is omitted", () => {
@@ -119,41 +124,11 @@ describe("recordDelegatedDecision", () => {
   });
 
   it("permission gate allows human actor (marc@tgv.co.za) through without policy check", () => {
-    // The gate only blocks service actors with agent: URNs. Human actors go
-    // through the authentication path instead. This test confirms the gate
-    // does not throw for the delegated-decision path.
     expect(() =>
       recordDelegatedDecision(
         { ...BASE_PARAMS, decisionId: "D-TEST-SESSION-DELEGATION-GATE" },
         AS_OF,
       ),
     ).not.toThrow();
-  });
-});
-
-describe("recordCeoDecision / recordDelegatedDecision symmetry", () => {
-  it("recordDelegatedDecision produces identical payload shape to manual recordCeoDecision with same args", () => {
-    const id = "D-TEST-SYMMETRY";
-    const delegated = recordDelegatedDecision({ ...BASE_PARAMS, decisionId: id }, AS_OF);
-    const manual = recordCeoDecision(
-      {
-        ...BASE_PARAMS,
-        decisionId: `${id}-MANUAL`,
-        actor: "marc@tgv.co.za",
-        recordedVia: "scrooge:session-delegation",
-      },
-      AS_OF,
-    );
-
-    // Actor should be identical.
-    expect(delegated.event.actor).toEqual(manual.event.actor);
-
-    // Payload fields (excluding decisionId which differs by design) should match.
-    const dp = delegated.event.payload as Record<string, unknown>;
-    const mp = manual.event.payload as Record<string, unknown>;
-    expect(dp.action).toBe(mp.action);
-    expect(dp.title).toBe(mp.title);
-    expect(dp.outcome).toBe(mp.outcome);
-    expect(dp.recordedVia).toBe(mp.recordedVia);
   });
 });

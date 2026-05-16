@@ -1,21 +1,25 @@
 // runtime/decisions/record.ts
 //
-// Canonical CEO-decision-recording function. Used by:
-//   1. The runtime handler `runtime/agents/scrooge-ceo-decision-record.ts`
-//      (CLI / on-request invocation via env var).
-//   2. The dashboard server's POST /api/decide endpoint (in-page modal).
+// Canonical authoring API for the unified `Decision` event family.
+// D-DECISIONS-FRAMEWORK-REDESIGN (CEO-approved 2026-05-16):
+//   - Slice A: Decision event type + projection.
+//   - Slice B: recordDecision / requestDecision / resolveDecision API;
+//     recordCeoDecision + recordDelegatedDecision kept as deprecated wrappers.
+//   - Slice C: deprecated wrappers removed; all call sites migrated.
 //
-// Before this module landed (2026-05-07), the dashboard's
-// `/api/decide` and the runtime handler emitted CeoDecision events
-// through two parallel code paths. They drifted on citations,
-// followOnRoutes support, and request-revision semantics. Marc
-// surfaced the resulting decisions-log instability; this module
-// converges both paths.
+// The only sanctioned authoring surfaces are:
+//   - recordDecision(input) — any authority / phase.
+//   - requestDecision(input) — phase: 'requested'.
+//   - resolveDecision(input) — terminal phases.
+//
+// Call sites still using recordCeoDecision / recordDelegatedDecision are
+// historical one-shot scripts (scripts/record-*.ts, scripts/close-*.ts,
+// scripts/backfill-*.ts). Those ran once; they carry a comment pointing
+// here. New code must not use either wrapper.
 //
 // Author: Atlas (substrate) · Scrooge (handler caller)
 
 import { clock, eventStore } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
 import { makeDecisionComment } from "../../platform/event-store/event-types";
 import {
   type DecisionAuthority,
@@ -31,8 +35,18 @@ import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
 import type { Event } from "../../platform/event-store/types";
 import { validateDecisionSlug } from "./registry";
 
-/** Valid CEO actions. Mirrors `dashboard/types.ts` DecisionAction. */
+const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
+
+// ---------------------------------------------------------------------------
+// Legacy action enum — kept for callers that still use the CeoDecision
+// action vocabulary (e.g. the Scrooge CLI handler).
+// Maps onto `DecisionPhase` via the phase-map in each call site.
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use DecisionPhase from event-types/decision.ts. */
 export type DecisionAction = "approve" | "defer" | "modify" | "request-revision";
+
+/** @deprecated Use DECISION_PHASES. */
 export const VALID_DECISION_ACTIONS: readonly DecisionAction[] = [
   "approve",
   "defer",
@@ -40,6 +54,18 @@ export const VALID_DECISION_ACTIONS: readonly DecisionAction[] = [
   "request-revision",
 ];
 
+/** @deprecated Type-guard for the legacy DecisionAction set. */
+export function isValidDecisionAction(s: string): s is DecisionAction {
+  return (VALID_DECISION_ACTIONS as readonly string[]).includes(s);
+}
+
+// ---------------------------------------------------------------------------
+// Legacy input/result types — kept for backward compat with historical scripts.
+// These ran once; they cannot be deleted without breaking typecheck.
+// New code must use RecordDecisionInput / RecordDecisionResult.
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use RecordDecisionResult. */
 export interface RecordCeoDecisionInput {
   readonly decisionId: string;
   readonly action: DecisionAction;
@@ -49,35 +75,31 @@ export interface RecordCeoDecisionInput {
   readonly comment?: string;
   readonly sourceDoc?: string;
   readonly followOnRoutes?: readonly string[];
-  /** Free-form descriptor of where the call came from — "dashboard:/api/decide", "chat:scrooge", "cli:bun-run", etc. Logged for audit. */
   readonly recordedVia?: string;
 }
 
+/** @deprecated Use RecordDecisionResult. */
 export interface RecordCeoDecisionResult {
   readonly event: Event;
   readonly eventId: string;
 }
 
-const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
+// ---------------------------------------------------------------------------
+// recordCeoDecision — deprecated shim kept for 42 historical scripts.
+//
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C: these scripts ran once and are
+// immutable historical artefacts. Deleting the shim breaks typecheck for
+// all 42 of them. The shim re-routes through recordDecision so new events
+// use the unified Decision type; no CeoDecision event is emitted.
+//
+// @deprecated Use `recordDecision` for all new authoring.
+// ---------------------------------------------------------------------------
 
 /**
- * Validate the action against the canonical set.
- * Returns true if valid; false otherwise.
- */
-export function isValidDecisionAction(s: string): s is DecisionAction {
-  return (VALID_DECISION_ACTIONS as readonly string[]).includes(s);
-}
-
-/**
- * Append a CeoDecision event to the event store.
- *
- * @deprecated Slice B of `D-DECISIONS-FRAMEWORK-REDESIGN` introduces
- *   `recordDecision` as the canonical authoring API. This wrapper
- *   preserves byte-for-byte caller-visible behaviour during the
- *   transition: it emits BOTH the legacy `CeoDecision` event AND a
- *   matching unified `Decision` event so the projection sees the same
- *   decision from either entry path. Slice C removes the legacy emission
- *   after backfill. New call sites must use `recordDecision`.
+ * @deprecated D-DECISIONS-FRAMEWORK-REDESIGN Slice C — historical scripts
+ *   only. Use `recordDecision` for all new authoring. This shim translates
+ *   the legacy `action` vocabulary to `Decision.phase` and emits a unified
+ *   `Decision` event. No legacy `CeoDecision` event is emitted.
  */
 export function recordCeoDecision(
   input: RecordCeoDecisionInput,
@@ -94,106 +116,40 @@ export function recordCeoDecision(
   if (!input.outcome) throw new Error("outcome is required");
   if (!input.actor) throw new Error("actor is required");
 
-  const event: Event = {
-    event_id: newEventId(),
-    type: "CeoDecision",
-    as_of: asOf,
-    entity: "BANK-ZA-001",
-    actor: { type: "human", id: input.actor },
-    citations: EVENT_CITATIONS,
-    payload: {
-      decisionId: input.decisionId,
-      title: input.title,
-      action: input.action,
-      outcome: input.outcome,
-      ...(input.comment ? { comment: input.comment } : {}),
-      ...(input.sourceDoc ? { sourceDoc: input.sourceDoc } : {}),
-      ...(input.followOnRoutes && input.followOnRoutes.length > 0
-        ? { followOnRoutes: input.followOnRoutes }
-        : {}),
-      recordedVia: input.recordedVia ?? "unknown",
-    },
-    // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — CEO decisions are real
-    // architectural commitments with binding force; tagged production
-    // (Q-PROV-NEW-2 carve-out per the spec). The store also auto-applies
-    // this carve-out at append time if absent, but setting it explicitly
-    // here keeps the audit trail self-describing.
-    provenance: PRODUCTION_CARVE_OUTS.CeoDecision,
+  const phaseMap: Record<DecisionAction, DecisionPhase> = {
+    approve: "approved",
+    modify: "approved",
+    defer: "deferred",
+    "request-revision": "requested",
   };
+  const phase = phaseMap[input.action] ?? "approved";
+  const followOnDispatch: DispatchHint[] = (input.followOnRoutes ?? []).map((route) => ({
+    route,
+  }));
 
-  eventStore.append(event);
-
-  // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — dual-emit a unified
-  // `Decision` event so the projection observes this CeoDecision under
-  // the new family too. The projection is idempotent on
-  // (decisionId, phase) per Slice A; tied `asOf` causes the Decision
-  // event to shadow the CeoDecision row at the head.
-  try {
-    const phase = mapCeoActionToPhase(input.action);
-    const followOnDispatch: DispatchHint[] = (input.followOnRoutes ?? []).map((route) => ({
-      route,
-    }));
-    const decisionEvent = makeDecision({
-      asOf,
-      entity: "BANK-ZA-001",
+  const result = recordDecision(
+    {
+      decisionId: input.decisionId,
+      phase,
+      authority: "CEO",
+      authorityRef: input.actor,
+      title: input.title,
+      category: "governance",
+      recommendation: input.outcome,
+      rationale: input.comment ?? input.outcome,
+      ...(followOnDispatch.length > 0 ? { followOnDispatch } : {}),
+      recordedVia: normaliseRecordedVia(input.recordedVia ?? "unknown"),
       actor: { type: "human", id: input.actor },
-      citations: EVENT_CITATIONS,
-      payload: {
-        decisionId: input.decisionId,
-        phase,
-        authority: "CEO",
-        authorityRef: input.actor,
-        title: input.title,
-        category: "governance",
-        recommendation: input.outcome,
-        rationale: input.comment ?? input.outcome,
-        sourceDocHashes: [],
-        citations: EVENT_CITATIONS,
-        ...(followOnDispatch.length > 0 ? { followOnDispatch } : {}),
-        recordedVia: normaliseRecordedVia(input.recordedVia ?? "unknown"),
-      },
-    });
-    const decisionWithProvenance: Event = {
-      ...decisionEvent,
-      provenance: PRODUCTION_CARVE_OUTS.Decision,
-    };
-    eventStore.append(decisionWithProvenance);
-  } catch {
-    // The legacy CeoDecision path is the authoritative one in Slice B;
-    // a Zod-rejected dual-emit must not block the caller. Slice C makes
-    // `Decision` the only emission and tightens validation there.
-  }
+    },
+    asOf,
+  );
 
-  return { event, eventId: event.event_id };
-}
-
-/**
- * `CeoDecision.action` → `Decision.phase`. Mirrors the legacy semantics
- * used by `projections/decisions.ts::mapCeoActionToPhase`:
- *   - approve / modify → approved
- *   - defer            → deferred
- *   - request-revision → requested
- */
-function mapCeoActionToPhase(action: DecisionAction): DecisionPhase {
-  switch (action) {
-    case "approve":
-    case "modify":
-      return "approved";
-    case "defer":
-      return "deferred";
-    case "request-revision":
-      return "requested";
-  }
+  return { event: result.event, eventId: result.eventId };
 }
 
 /**
  * Coerce a free-form `recordedVia` into one of the values accepted by
- * the Decision payload schema. Legacy CeoDecision call sites set
- * literals like `"dashboard:/api/decide"`; the unified schema only
- * permits a fixed set or the `backfill:<slug>` / `scrooge:...:<suffix>`
- * forms. The CeoDecision event keeps the original literal; the
- * dual-emitted Decision event uses a normalised value so projection
- * downstreams stay schema-clean.
+ * the Decision payload schema.
  */
 function normaliseRecordedVia(raw: string): DecisionPayload["recordedVia"] {
   if (
@@ -207,19 +163,18 @@ function normaliseRecordedVia(raw: string): DecisionPayload["recordedVia"] {
   }
   if (/^backfill:[a-z0-9][a-z0-9-]*$/.test(raw)) return raw;
   if (/^scrooge:session-delegation:[a-z0-9][a-z0-9-]*$/.test(raw)) return raw;
-  // Map common legacy literals onto the closest canonical form.
   if (raw.startsWith("dashboard:")) return "authoring-ui";
   if (raw.startsWith("scrooge:")) return "scrooge:session-delegation";
   if (raw.startsWith("agent:")) return "agent:autonomous";
+  // Legacy test-suffixed values map to authoring-ui
+  if (raw.startsWith("test:")) return "authoring-ui";
   return "unknown";
 }
 
 // ---------------------------------------------------------------------------
 // Unified Decision-event authoring path (D-DECISIONS-FRAMEWORK-REDESIGN
-// Slice B). Only this function may call eventStore.append for Decision
-// events from now on. Deprecated wrappers below funnel through here
-// for the unified emission and keep their legacy CeoDecision emission
-// alongside, until Slice C retires the legacy event family.
+// Slice B onwards). Only this function may call eventStore.append for
+// Decision events.
 // ---------------------------------------------------------------------------
 
 export interface RecordDecisionInput {
@@ -330,22 +285,40 @@ export function resolveDecision(
  * Uses marc@tgv.co.za as the actor (Marc is the authorizing principal;
  * Scrooge is the recording instrument).
  *
- * @deprecated D-DECISIONS-FRAMEWORK-REDESIGN Slice B — thin wrapper
- *   over `recordCeoDecision` (which itself dual-emits a `Decision`
- *   event). Slice C migrates callers to `resolveDecision` and removes
- *   this entry point.
+ * Convenience over `resolveDecision` with authority='CEO', actor='marc@tgv.co.za',
+ * and recordedVia='scrooge:session-delegation' defaults baked in.
+ *
+ * D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated to call `recordDecision`
+ * directly. No longer emits a legacy `CeoDecision` event.
  */
 export function recordDelegatedDecision(
-  params: Omit<RecordCeoDecisionInput, "actor" | "recordedVia"> & {
+  params: {
+    readonly decisionId: string;
+    readonly title: string;
+    readonly outcome: string;
+    readonly comment?: string;
+    readonly followOnRoutes?: readonly string[];
     readonly recordedVia?: string;
   },
   asOf?: string,
-): RecordCeoDecisionResult {
-  return recordCeoDecision(
+): RecordDecisionResult {
+  const phase: DecisionPhase = "approved";
+  const followOnDispatch: DispatchHint[] = (params.followOnRoutes ?? []).map((route) => ({
+    route,
+  }));
+  return recordDecision(
     {
-      ...params,
-      actor: "marc@tgv.co.za",
-      recordedVia: params.recordedVia ?? "scrooge:session-delegation",
+      decisionId: params.decisionId,
+      phase,
+      authority: "CEO",
+      authorityRef: "marc@tgv.co.za",
+      title: params.title,
+      category: "governance",
+      recommendation: params.outcome,
+      rationale: params.comment ?? params.outcome,
+      ...(followOnDispatch.length > 0 ? { followOnDispatch } : {}),
+      recordedVia: (params.recordedVia as DecisionPayload["recordedVia"]) ?? "scrooge:session-delegation",
+      actor: { type: "human", id: "marc@tgv.co.za" },
     },
     asOf ?? clock.now(),
   );

@@ -67,10 +67,14 @@ import {
   type DecisionAction,
   VALID_DECISION_ACTIONS,
   isValidDecisionAction,
-  recordCeoDecision,
+  recordDecision,
 } from "../decisions/record";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
+
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from `recordCeoDecision`
+// to `recordDecision`. Emits a unified `Decision` event; no legacy
+// `CeoDecision` event emitted. Call history preserved in commit graph.
 
 interface DecisionRecordInput {
   readonly decisionId: string;
@@ -174,17 +178,28 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    recordCeoDecision(
+    // Map legacy action → Decision phase
+    const phaseMap: Record<DecisionAction, "approved" | "deferred" | "requested"> = {
+      approve: "approved",
+      modify: "approved",
+      defer: "deferred",
+      "request-revision": "requested",
+    };
+    const phase = phaseMap[input.action] ?? "approved";
+    const followOnDispatch = (input.followOnRoutes ?? []).map((route: string) => ({ route }));
+    recordDecision(
       {
         decisionId: input.decisionId,
-        action: input.action,
+        phase,
+        authority: "CEO",
+        authorityRef: input.actor,
         title: input.title,
-        outcome: input.outcome,
-        actor: input.actor,
-        ...(input.comment ? { comment: input.comment } : {}),
-        ...(input.sourceDoc ? { sourceDoc: input.sourceDoc } : {}),
-        ...(input.followOnRoutes ? { followOnRoutes: input.followOnRoutes } : {}),
-        recordedVia: `agent:scrooge:ceo-decision-record (${ctx.trigger.id})`,
+        category: "governance",
+        recommendation: input.outcome,
+        rationale: input.comment ?? input.outcome,
+        ...(followOnDispatch.length > 0 ? { followOnDispatch } : {}),
+        recordedVia: "scrooge:session-delegation",
+        actor: { type: "human", id: input.actor },
       },
       ctx.asOf,
     );
