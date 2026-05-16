@@ -42,6 +42,7 @@ import {
   agentBriefIssuedPayloadSchema,
   briefSupersededPayloadSchema,
   decisionCommentPayloadSchema,
+  decisionPayloadSchema,
   decisionRequestedPayloadSchema,
   documentRegisteredPayloadSchema,
   feedbackPayloadSchema,
@@ -132,6 +133,20 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // matches the Companies Act / BCBS-239 governance record floor.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/recon/document-registration.ts",
+  },
+  // D-DECISIONS-FRAMEWORK-REDESIGN (CEO-approved 2026-05-16). Unified
+  // Decision event family. Slice A adds the type alongside CeoDecision;
+  // Slice C aliases / retires CeoDecision after backfill.
+  {
+    type: "Decision",
+    class: "governance",
+    payloadSchema: decisionPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Owen", "dashboard", "Vera"],
+    replay: "append-only-audit",
+    citationsHint: ["D-DECISIONS-FRAMEWORK-REDESIGN", "GOV-FRAMEWORK-CEO-RESERVED"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/event-store/event-types/decision.ts",
   },
 ];
 

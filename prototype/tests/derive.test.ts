@@ -327,8 +327,10 @@ describe("deriveState — event reductions", () => {
       ]),
     });
     expect(state.decisionsOpen).toHaveLength(0);
-    expect(state.decisionsResolved.map((r) => r.id)).toEqual(["TEST-OPEN", "SEED-1"]);
-    expect(state.bank.metrics.ceoDecisionsActioned).toBe(2);
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: curated decisionsResolvedSeed is
+    // no longer fused into the resolved list — events are the only input.
+    expect(state.decisionsResolved.map((r) => r.id)).toEqual(["TEST-OPEN"]);
+    expect(state.bank.metrics.ceoDecisionsActioned).toBe(1);
   });
 
   it("uses the latest event when a decision id is actioned twice", () => {
@@ -355,8 +357,10 @@ describe("deriveState — event reductions", () => {
       ]),
     });
     expect(state.decisionsResolved[0]?.outcome).toBe("Latest action");
-    expect(state.decisionsResolved[0]?.action).toBe("modify");
-    expect(state.bank.metrics.ceoDecisionsActioned).toBe(2); // 1 distinct + seed
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: legacy `action` field is not
+    // carried through the unified projection (Slice B's recordDecision migration
+    // wires the field properly). Count: 1 distinct decision id; seed no longer fused.
+    expect(state.bank.metrics.ceoDecisionsActioned).toBe(1);
   });
 
   it("activates inFlight items from WorkstreamStarted events", () => {
@@ -478,10 +482,11 @@ describe("deriveState — event reductions", () => {
       ]),
     });
     const matches = state.decisionsOpen.filter((d) => d.id === "TEST-OPEN");
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: curated `decisionsOpen` is no
+    // longer fused. The event-synthesised entry is the only source; the
+    // request-revision reopens the decision under the event title.
     expect(matches).toHaveLength(1);
-    // Curated entry wins — the title is the curated one, not the event's.
-    expect(matches[0]?.title).toBe("Open decision");
-    expect(matches[0]?.owner).toBe("Test");
+    expect(matches[0]?.title).toBe("Different title from event");
   });
 });
 
@@ -582,12 +587,14 @@ describe("deriveState — per-agent mini-dashboards", () => {
     if (camille) expect(camille.activeWorkstreams.map((w) => w.id)).toContain("WS-RAS");
   });
 
-  it("preserves the curated baseline when no events are present", () => {
+  it("returns empty decisions when no events are present (Slice A: events-only)", () => {
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: curated `decisionsResolvedSeed`
+    // is no longer fused — events are the only input.
     const f = makeFixture();
     const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
-    expect(state.decisionsResolved.map((r) => r.id)).toEqual(["SEED-1"]);
+    expect(state.decisionsResolved).toEqual([]);
     expect(state.inFlight.every((i) => !i.active)).toBe(true);
-    expect(state.bank.metrics.ceoDecisionsActioned).toBe(1);
+    expect(state.bank.metrics.ceoDecisionsActioned).toBe(0);
   });
 });
 
@@ -913,7 +920,11 @@ function f0() {
 }
 
 describe("deriveState — Owner Inbox decision lift", () => {
-  it("lifts decision-required Owner Inbox items into decisionsOpen", () => {
+  it("no longer lifts decision-required Owner Inbox items into decisionsOpen (Slice A: events-only)", () => {
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: Owner Inbox markdown is no
+    // longer an authoring channel for open decisions. The feed item still
+    // renders with `decisionStatus: "open"` for visual continuity until
+    // Slice C backfills any historical D-* ids that lived only in markdown.
     const f = makeFixture();
     writeFileSync(
       join(f.sources.ownerInboxDir, "2026-05-07_decision-needed.md"),
@@ -934,13 +945,7 @@ describe("deriveState — Owner Inbox decision lift", () => {
       ].join("\n"),
     );
     const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
-    const lifted = state.decisionsOpen.find((d) => d.id === "D-OI-DECISION-NEEDED");
-    expect(lifted).toBeDefined();
-    expect(lifted?.title).toBe("Decision needed");
-    expect(lifted?.decisionForCEO).toBe("Authorise the substrate build.");
-    expect(lifted?.recommendation?.stance).toBe("Approve.");
-    expect(lifted?.sourceDocs).toContain("Owner Inbox/2026-05-07_decision-needed.md");
-
+    expect(state.decisionsOpen.find((d) => d.id === "D-OI-DECISION-NEEDED")).toBeUndefined();
     const feed = state.ownerInboxFeed.find((i) => i.filename === "2026-05-07_decision-needed.md");
     expect(feed?.decisionStatus).toBe("open");
   });

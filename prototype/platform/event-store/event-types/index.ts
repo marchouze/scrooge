@@ -44,6 +44,7 @@
 
 export * from "./agent";
 export * from "./audit";
+export * from "./decision";
 export * from "./decision-request";
 export * from "./governance";
 export * from "./platform";
@@ -149,6 +150,7 @@ import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
+import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
@@ -180,6 +182,7 @@ export const TYPED_EVENT_TYPES = [
   ...PERFORMANCE_TYPED_EVENT_TYPES,
   ...AUDIT_TYPED_EVENT_TYPES,
   ...DECISION_REQUEST_TYPED_EVENT_TYPES,
+  ...DECISION_TYPED_EVENT_TYPES,
   ...AGENT_OPS_TYPED_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES,
   ...FTP_TYPED_EVENT_TYPES,
