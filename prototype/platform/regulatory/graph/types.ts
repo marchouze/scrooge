@@ -59,6 +59,21 @@ export type GraphEdgeType =
   | "CLOSES"
   | "GOVERNS";
 
+/**
+ * Applicability status for Document and Framework nodes.
+ *
+ * - "direct"      SA legislation / directives that directly bind the bank.
+ * - "transposed"  Supranational standard implemented via an SA instrument
+ *                 (e.g. Basel III → PA D5/2021; FATF → FIC Act).
+ * - "reference"   Scanned for context; does not directly bind (EU/UK instruments).
+ * - "monitored"   Tracked for future applicability (cross-border expansion, etc.).
+ */
+export type DocumentApplicabilityStatus = "direct" | "transposed" | "reference" | "monitored";
+
+export interface DocumentNodeMetadata extends GraphNodeMetadata {
+  applicabilityStatus?: DocumentApplicabilityStatus;
+}
+
 export interface GraphNodeMetadata {
   [key: string]: string | number | boolean | null | undefined;
 }

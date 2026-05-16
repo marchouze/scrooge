@@ -96,6 +96,39 @@
   // Gap panel (unimplemented obligations)
   // ---------------------------------------------------------------------------
 
+  // Current gap filter state — default: direct + transposed
+  let currentGapFilter = "direct,transposed";
+
+  const APPLICABILITY_BADGE_LABELS = {
+    direct: { label: "direct", cls: "badge-direct" },
+    transposed: { label: "transposed", cls: "badge-transposed" },
+    reference: { label: "reference", cls: "badge-reference" },
+    monitored: { label: "monitored", cls: "badge-monitored" },
+  };
+
+  function applicabilityBadge(status) {
+    if (!status) return "";
+    const info = APPLICABILITY_BADGE_LABELS[status] || { label: status, cls: "badge-reference" };
+    return `<span class="graph-applicability-badge ${info.cls}">${escHtml(info.label)}</span>`;
+  }
+
+  async function loadGaps(filter) {
+    const list = document.getElementById("gapList");
+    const summary = document.getElementById("gapSummary");
+    if (!list) return;
+
+    list.innerHTML = '<div class="graph-trace-empty" style="padding:10px 0;">Loading…</div>';
+    if (summary) summary.textContent = "";
+
+    try {
+      const params = filter ? `?applicability=${encodeURIComponent(filter)}` : "";
+      const gapData = await apiFetch(`/api/graph/unimplemented${params}`);
+      renderGaps(gapData.nodes || []);
+    } catch (e) {
+      list.innerHTML = `<div class="graph-trace-empty" style="padding:10px 0;color:#c0392b;">${escHtml(e.message || String(e))}</div>`;
+    }
+  }
+
   function renderGaps(nodes) {
     const list = document.getElementById("gapList");
     const summary = document.getElementById("gapSummary");
@@ -109,8 +142,7 @@
     }
 
     if (summary) {
-      const s = summary;
-      s.innerHTML = `<strong style="color:#c0392b">${nodes.length} obligation${nodes.length === 1 ? "" : "s"}</strong> with no fulfilling policy (CLOSES edge missing).`;
+      summary.innerHTML = `<strong style="color:#c0392b">${nodes.length} obligation${nodes.length === 1 ? "" : "s"}</strong> with no fulfilling policy (CLOSES edge missing).`;
     }
 
     const items = nodes
@@ -118,9 +150,13 @@
         const id = node.id.replace(/^OBL-/, "");
         const domain = node.metadata?.domain || node.metadata?.source_instrument || "";
         const label = node.label || "";
+        const appStatus = node.metadata?.applicabilityStatus || "";
         return `
         <div class="graph-gap-row">
-          <span class="graph-gap-id">${escHtml(id)}</span>
+          <div class="graph-gap-row-head">
+            <span class="graph-gap-id">${escHtml(id)}</span>
+            ${appStatus ? applicabilityBadge(appStatus) : ""}
+          </div>
           ${domain ? `<span class="graph-gap-domain">${escHtml(String(domain))}</span>` : ""}
           <span class="graph-gap-label">${escHtml(label)}</span>
         </div>`;
@@ -128,6 +164,20 @@
       .join("");
 
     list.innerHTML = items;
+  }
+
+  function initGapFilter() {
+    const btns = document.querySelectorAll("[data-gap-filter]");
+    for (const btn of btns) {
+      btn.addEventListener("click", async () => {
+        const filter = btn.getAttribute("data-gap-filter") || "direct,transposed";
+        currentGapFilter = filter;
+        // Update active state
+        for (const b of btns) b.classList.remove("is-active");
+        btn.classList.add("is-active");
+        await loadGaps(filter === "all" ? "" : filter);
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -284,9 +334,8 @@
 
       renderStats(stats);
 
-      // Fetch unimplemented obligations for gap panel
-      const gapData = await apiFetch("/api/graph/unimplemented");
-      renderGaps(gapData.nodes || []);
+      // Fetch unimplemented obligations for gap panel (default: direct+transposed)
+      await loadGaps(currentGapFilter);
 
       // Update last-updated header
       const lu = document.getElementById("lastUpdated");
@@ -323,5 +372,6 @@
     load();
     initTrace();
     initRefresh();
+    initGapFilter();
   });
 })();

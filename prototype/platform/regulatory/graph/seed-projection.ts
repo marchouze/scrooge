@@ -20,7 +20,7 @@ import {
 import { getDb, getEdgeCount, getNodeCount, upsertEdge, upsertNode } from "./db";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
-import type { GraphNode } from "./types";
+import type { DocumentApplicabilityStatus, GraphNode } from "./types";
 
 // ---------------------------------------------------------------------------
 // Seed stats shape
@@ -33,6 +33,115 @@ export interface SeedStats {
   totalEdges: number;
   durationMs: number;
 }
+
+// ---------------------------------------------------------------------------
+// Applicability lookup table
+// ---------------------------------------------------------------------------
+
+/**
+ * Exact-match map: instrumentId → applicability status.
+ * Add new SA instruments here as they are registered.
+ */
+const INSTRUMENT_APPLICABILITY_EXACT: Record<string, DocumentApplicabilityStatus> = {
+  // Direct-binding SA primary legislation
+  "BANKS-ACT-94-1990": "direct",
+  "REGS-RELATING-TO-BANKS": "direct",
+  "REGULATIONS-RELATING-TO-BANKS": "direct",
+  "FAIS-ACT-37-2002": "direct",
+  "FIC-ACT-38-2001": "direct",
+  "POPIA-4-2013": "direct",
+  "COMPANIES-ACT-71-2008": "direct",
+  "STT-ACT-25-2007": "direct",
+  "FINANCIAL-MARKETS-ACT-19-2012": "direct",
+  "FINANCIAL-SECTOR-REGULATION-ACT-9-2017": "direct",
+  "NATIONAL-CREDIT-ACT-34-2005": "direct",
+  "PREVENTION-OF-ORGANISED-CRIME-ACT-121-1998": "direct",
+  "PROTECTION-OF-CONSTITUTIONAL-DEMOCRACY-ACT-33-2004": "direct",
+  "ECTA-25-2002": "direct",
+  "JSE-EQUITY-RULES": "direct",
+  "JSE-DEBT-LISTINGS-REQUIREMENTS": "direct",
+  "JSE-BOND-MARKET-RULES": "direct",
+};
+
+/**
+ * Prefix-based fallback rules evaluated in order.
+ * First matching prefix wins.
+ */
+const INSTRUMENT_APPLICABILITY_PREFIXES: Array<{
+  prefix: string;
+  status: DocumentApplicabilityStatus;
+}> = [
+  // SA prudential / SARB directives — direct
+  { prefix: "PA-D", status: "direct" },
+  { prefix: "SARB-D", status: "direct" },
+  { prefix: "SARB-GN", status: "direct" },
+  { prefix: "PA-GN", status: "direct" },
+  { prefix: "FSCA-NOTICE", status: "direct" },
+  { prefix: "FSCA-BOARD-NOTICE", status: "direct" },
+  // Supranational standards transposed into SA law
+  { prefix: "BCBS-", status: "transposed" },
+  { prefix: "BIS-", status: "transposed" },
+  { prefix: "FATF-", status: "transposed" },
+  { prefix: "IASB-", status: "transposed" },
+  { prefix: "IFRS-", status: "transposed" },
+  { prefix: "IAS-", status: "transposed" },
+  // EU / UK instruments — reference only
+  { prefix: "EU-", status: "reference" },
+  { prefix: "PRA-", status: "reference" },
+  { prefix: "FCA-", status: "reference" },
+  { prefix: "EBA-", status: "reference" },
+  { prefix: "ESMA-", status: "reference" },
+  { prefix: "ECB-", status: "reference" },
+  { prefix: "US-", status: "reference" },
+  { prefix: "SEC-", status: "reference" },
+  { prefix: "CFTC-", status: "reference" },
+];
+
+/**
+ * Derive applicability status for a Document or Framework node.
+ *
+ * Resolution order:
+ * 1. Exact match in INSTRUMENT_APPLICABILITY_EXACT.
+ * 2. Prefix match in INSTRUMENT_APPLICABILITY_PREFIXES (first wins).
+ * 3. Jurisdiction heuristic: ZA → "direct"; INTL → "transposed"; other → "reference".
+ * 4. Default: "reference".
+ */
+export function getApplicabilityStatus(
+  instrumentId: string,
+  jurisdiction?: string,
+): DocumentApplicabilityStatus {
+  // 1. Exact match
+  if (instrumentId in INSTRUMENT_APPLICABILITY_EXACT) {
+    return INSTRUMENT_APPLICABILITY_EXACT[instrumentId] as DocumentApplicabilityStatus;
+  }
+
+  // 2. Prefix match
+  const upper = instrumentId.toUpperCase();
+  for (const rule of INSTRUMENT_APPLICABILITY_PREFIXES) {
+    if (upper.startsWith(rule.prefix.toUpperCase())) {
+      return rule.status;
+    }
+  }
+
+  // 3. Jurisdiction heuristic
+  if (jurisdiction === "ZA") return "direct";
+  if (jurisdiction === "INTL") return "transposed";
+
+  // 4. Default
+  return "reference";
+}
+
+/**
+ * Applicability status for known Framework node IDs.
+ */
+const FRAMEWORK_APPLICABILITY: Record<string, DocumentApplicabilityStatus> = {
+  "FW-BASEL-III": "transposed",
+  "FW-FAIS": "direct",
+  "FW-AML-CFT": "direct",
+  "FW-IFRS": "transposed",
+  "FW-POPIA": "direct",
+  "FW-COMPANIES-ACT": "direct",
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -194,7 +303,14 @@ export async function runSeed(): Promise<SeedStats> {
   ];
 
   for (const fw of frameworks) {
-    upsertNode({ id: fw.id, nodeType: "Framework", label: fw.label, metadata: {} });
+    const fwApplicability: DocumentApplicabilityStatus =
+      FRAMEWORK_APPLICABILITY[fw.id] ?? "reference";
+    upsertNode({
+      id: fw.id,
+      nodeType: "Framework",
+      label: fw.label,
+      metadata: { applicabilityStatus: fwApplicability },
+    });
     upsertEdge({
       id: edgeId("ISSUED_BY"),
       fromId: fw.id,
@@ -230,6 +346,8 @@ export async function runSeed(): Promise<SeedStats> {
     const p = event.payload as RegulatoryInstrumentRegisteredPayload;
     const nodeId = `DOC-${p.instrumentId}`;
 
+    const applicabilityStatus = getApplicabilityStatus(p.instrumentId, p.jurisdiction);
+
     const node: GraphNode = {
       id: nodeId,
       nodeType: "Document",
@@ -244,6 +362,7 @@ export async function runSeed(): Promise<SeedStats> {
         publicationDate: p.publicationDate,
         gazetteRef: p.gazetteRef ?? null,
         sourceUrl: p.sourceUrl ?? null,
+        applicabilityStatus,
       },
     };
     upsertNode(node);
