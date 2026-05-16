@@ -14,6 +14,8 @@
 // Author: Mira (Compliance / RegTech engineer, engineering)
 
 import {
+  graphEdgeAssertedPayloadSchema,
+  graphNodeAssertedPayloadSchema,
   obligationConceptLinkedPayloadSchema,
   regulatoryConceptExtractedPayloadSchema,
   regulatoryInstrumentAmendedPayloadSchema,
@@ -80,5 +82,27 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/obligation-linker.ts; Mira horizon-scan pilot",
+  },
+  {
+    type: "GraphNodeAsserted",
+    class: "governance",
+    payloadSchema: graphNodeAssertedPayloadSchema,
+    issuer: "Mira",
+    subscribers: ["Mira", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["ORG-CD-01"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/regulatory/graph/seed-projection.ts; Mira regulatory knowledge graph",
+  },
+  {
+    type: "GraphEdgeAsserted",
+    class: "governance",
+    payloadSchema: graphEdgeAssertedPayloadSchema,
+    issuer: "Mira",
+    subscribers: ["Mira", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["ORG-CD-01"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/regulatory/graph/seed-projection.ts; Mira regulatory knowledge graph",
   },
 ];

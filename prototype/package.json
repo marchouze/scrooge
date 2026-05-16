@@ -56,6 +56,7 @@
     "registry:sync": "bun run scripts/agent-registry-sync.ts",
     "scheduler:tick": "bun run scripts/scheduler-tick.ts",
     "bus:tick": "bun run scripts/bus-tick.ts",
+    "graph:seed": "bun run platform/regulatory/graph/run-seed.ts",
     "identity:issue": "bun run scripts/identity-issue.ts",
     "register-fleet": "bun run scripts/register-fleet.ts",
     "escalation:enforce": "bun run scripts/escalation-enforce.ts",
