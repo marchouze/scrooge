@@ -9,15 +9,15 @@
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Risk Management Framework | `procedures-rmf-governance.md` | Helena | PLANNED |
-| Governance Framework | `procedures-board-papers.md` | Owen | PLANNED |
+| Risk Management Framework | [`procedures-rmf-governance.md`](by-policy/procedures-rmf-governance.md) (PROC-GOV-RMF-01 — annual RMF review; BCBS alignment check; RAS re-approval; CEO attestation; PA notification assessment) | Helena (Chief Risk Officer, governance) | **POPULATED** |
+| Governance Framework | [`procedures-board-papers.md`](by-policy/procedures-board-papers.md) (PROC-GOV-BP-01 — 5-business-day paper submission; Owen review; confidentiality classification; minutes approval cycle) | Owen (Company Secretary, governance) | **POPULATED** |
 | Delegation of Authority | [`delegation-of-authority.md`](by-policy/delegation-of-authority.md) (PROC-GV-DOA-01 — four authority levels; Board-reserved matters; agent Level 4 limits; `EscalationRequired` path) | Owen + Devon | **POPULATED** |
 
 ## Risk
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Credit Risk Policy | `credit-origination.md` | Helena (future Head of Credit) | PLANNED |
+| Credit Risk Policy | [`credit-origination.md`](by-policy/credit-origination.md) (PROC-RISK-CO-01 — counterparty credit limit application; financial analysis; ISDA/CSA gate; PFE model; Reg 29 cap; annual review; breach escalation) | Helena (Chief Risk Officer, governance) | **POPULATED** |
 | Market Risk Policy | [`market-risk-monitoring.md`](by-policy/market-risk-monitoring.md) (PROC-RISK-MRM-01 — daily VaR/ES limit monitoring, FRTB back-testing, PLA test, prop-trading attestation) | Helena (CRO, governance) · Rohan (market risk quant, engineering) | **POPULATED** |
 | Liquidity Risk Management Policy | [`capital-ratio-monitoring.md`](by-policy/capital-ratio-monitoring.md) (covers LCR / NSFR) | Camille + Eitan | **POPULATED** |
 | Liquidity Risk Management Policy | [`intraday-liquidity-funding.md`](by-policy/intraday-liquidity-funding.md) (PROC-RISK-ILF-01 — intraday liquidity position monitoring; BCBS seven metrics; correspondent bank funding facility; ALCO and ILAAP integration) | Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer) · Helena (CRO, governance) | **POPULATED** |
@@ -77,11 +77,11 @@
 |---|---|---|---|
 | Outsourcing & Third-Party Risk | [`outsourcing-due-diligence.md`](by-policy/outsourcing-due-diligence.md) (PROC-OPS-OUTS-01 — pre-engagement; 11-step DD cycle; materiality-based approval routing; Directive 3 trigger) | Devon (COO, governance) · Senna (CISO, governance) · Iris (IO, governance) · Imani · Mira | **POPULATED** |
 | Outsourcing & Third-Party Risk | [`directive-3-pa-notification.md`](by-policy/directive-3-pa-notification.md) (PROC-OPS-D3-01 — PA notification of cloud/offshoring arrangements; Directive 3 §6 minimum-content; cyber attestation; POPIA s.72) | Devon (COO, governance) · Owen (CoSec, governance) · Imani · Senna (CISO, governance) · Rashida · Iris (IO, governance) | **POPULATED** |
-| Cloud Computing | `cloud-residency-attestation.md` | Devon + Senna | PLANNED |
+| Cloud Computing | [`cloud-residency-attestation.md`](by-policy/cloud-residency-attestation.md) (PROC-IS-CRA-01 — annual cloud service inventory; data classification mapping; POPIA s.72 transfer assessment; PA Joint Standard 2 attestation; CEO sign-off) | Devon (DevOps & platform engineer) · Senna (information security & cloud engineer) | **POPULATED** |
 | BCP / DR | [`dr-test-execution.md`](by-policy/dr-test-execution.md) (PROC-OR-DR-01 — annual full DR test + semi-annual component tests; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report) | Devon (COO, governance) · Senna (CISO, engineering) | **POPULATED** |
 | BCP / DR | [`crisis-management-activation.md`](by-policy/crisis-management-activation.md) (PROC-OR-CMA-01 — CMT assembly; IBS impact assessment; three BCP paths; regulator-notification matrix; stand-down + post-crisis review) | Devon (COO, governance) · Helena (CRO, governance) | **POPULATED** |
 | Records Management | [`records-retention-disposal.md`](by-policy/records-retention-disposal.md) (PROC-RM-RD-01) | Owen + Devon | **POPULATED** |
-| Records Management | `legal-hold.md` | Imani (with Owen) | PLANNED |
+| Records Management | [`legal-hold.md`](by-policy/legal-hold.md) (PROC-RMS-LH-01 — litigation/regulatory/disciplinary hold trigger; automated preservation; custodian notifications; Vera daily monitoring; CEO notification for regulatory holds; hold release) | Imani (legal-as-code engineer) · Owen (Company Secretary, governance) | **POPULATED** |
 | Change Management + Secure SDLC + InfoSec (Atlas Step 2 substrate) | [`agent-runtime-deploy.md`](by-policy/agent-runtime-deploy.md) | Atlas · Senna · Rashida · Vera (audit) | **POPULATED** |
 | Change Management + Secure SDLC + D-NEW-PRODUCT-APPROVAL-POLICY (cross-cutting schema discipline) | [`event-schema-evolution.md`](by-policy/event-schema-evolution.md) (PROC-PLAT-EV-EVOL-01 — schema amendment after events exist in store) | Atlas · Anya · Senna · Mira (citation gate) · Vera (audit) | **POPULATED** |
 
@@ -180,12 +180,12 @@
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Code of Conduct | `code-attestation.md` (annual) | Owen + Sade | PLANNED |
+| Code of Conduct | [`code-attestation.md`](by-policy/code-attestation.md) (PROC-COND-CA-01 — annual attestation; agent attestation via AgentRunner; human attestation at licence-day; conflict disclosure; breach pathway; register) | Owen (Company Secretary, governance) · Sade (AgentOps & token efficiency engineer) | **POPULATED** |
 | Conflicts of Interest | [`conflicts-declaration.md`](by-policy/conflicts-declaration.md) (per-meeting and on-arising) | Owen + Helena + Zara | **POPULATED** |
 | ABC Policy | [`abc-due-diligence.md`](by-policy/abc-due-diligence.md) (PROC-COND-ABC-DD-01 — PRECCA s.34; four-band risk score; EDD for High-band; ABC contractual safeguards; annual refresh) | Owen + Zara | **POPULATED** |
 | Whistleblowing | [`whistleblowing-case.md`](by-policy/whistleblowing-case.md) (PROC-COND-WB-01 — PDA s.3/9A; parallel escalation taxonomy; Board Chair independence; 6-month welfare-check; PRECCA s.34 path) | Owen | **POPULATED** |
-| Gifts | `gift-registration.md` | Owen | PLANNED |
-| Insider Trading / PA Dealing | `pa-dealing-pre-clearance.md` | Owen + Zara | PLANNED |
+| Gifts | [`gift-registration.md`](by-policy/gift-registration.md) (PROC-COND-GR-01 — R500 disclosure threshold; FAIS s.3A; PRECCA; quarterly review; annual governance report) | Owen (Company Secretary, governance) | **POPULATED** |
+| Insider Trading / PA Dealing | [`pa-dealing-pre-clearance.md`](by-policy/pa-dealing-pre-clearance.md) (PROC-COND-PAD-01 — designated-person register; pre-clearance 24h SLA; trading window; FMCA Part 8; annual certification; activates at licence-day) | Owen (Company Secretary, governance) · Zara (compliance engineer) | **POPULATED** |
 | Corporate Naming Policy v0.1 (planned by Owen) | [`naming-pre-clearance.md`](by-policy/naming-pre-clearance.md) (TM + Banks Act § 22 + CIPC + 11-language sweep) | Owen + Imani · Mira (s.22) · PAX (language sweep) · Atlas (substrate) | **POPULATED** |
 
 ## Legal
@@ -193,16 +193,16 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Contracting v0.1 (STUB) + Document Execution v0.1 (STUB) | `counterparty-governing-law-clause-adoption.md` | Imani · Saskia (where soft-franchise) | **POPULATED** |
-| Contracting | `contract-execution.md` (incl. ECTA discipline) | Imani | PLANNED |
-| Litigation | `litigation-handling.md` | Imani + Owen | PLANNED |
+| Contracting | [`contract-execution.md`](by-policy/contract-execution.md) (PROC-LEG-CE-01 — ECTA Schedule 2 exclusion matrix; AES/wet/basic signature selection; DocuSign SA-region; ISDA/GMRA path; 5-year audit trail retention) | Imani (legal-as-code engineer) | **POPULATED** |
+| Litigation | [`litigation-handling.md`](by-policy/litigation-handling.md) (PROC-LEG-LH-01 — legal hold integration; external counsel instruction; settlement authority matrix R50k/R500k/Board; filing-deadline monitoring; lessons-learned) | Imani (legal-as-code engineer) · Owen (Company Secretary, governance) | **POPULATED** |
 
 ## Audit
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Internal Audit Charter (post-CAE) | `audit-plan-cycle.md` | future CAE (Vera) | PLANNED |
-| Internal Audit Charter | `findings-tracking.md` | future CAE (Vera) | PLANNED |
-| Combined Assurance | `combined-assurance-map-cycle.md` | future CAE + Owen | PLANNED |
+| Internal Audit Charter | [`audit-plan-cycle.md`](by-policy/audit-plan-cycle.md) (PROC-AUD-APC-01 — risk-based planning; audit universe scoping; Vera/Thandiwe roles; Forum approval gate; quarterly progress reporting) | Vera (internal audit engineer) · Thandiwe (Chief Audit Executive, governance) | **POPULATED** |
+| Internal Audit Charter | [`findings-tracking.md`](by-policy/findings-tracking.md) (PROC-AUD-FT-01 — P1-P4 classification; automated follow-up cadence; overdue escalation; Thandiwe P1/P2 closure attestation; closure verification by pipeline re-run) | Vera (internal audit engineer) · Thandiwe (Chief Audit Executive, governance) | **POPULATED** |
+| Combined Assurance | [`combined-assurance-map-cycle.md`](by-policy/combined-assurance-map-cycle.md) (PROC-AUD-CAM-01 — three-line assurance inventory; gap analysis; IIA Standards 2050 reliance decisions; Forum approval gate) | Vera (internal audit engineer) · Owen (Company Secretary, governance) | **POPULATED** |
 
 ---
 
