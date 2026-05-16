@@ -509,9 +509,7 @@ export function makePrincipalPayment(args: {
     );
   }
   if (!args.payload.citations || args.payload.citations.length === 0) {
-    throw new Error(
-      "PrincipalPayment payload.citations must not be empty (Principle 2).",
-    );
+    throw new Error("PrincipalPayment payload.citations must not be empty (Principle 2).");
   }
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -580,9 +578,7 @@ export function makeSettlementConfirmed(args: {
     );
   }
   if (!args.payload.citations || args.payload.citations.length === 0) {
-    throw new Error(
-      "SettlementConfirmed payload.citations must not be empty (Principle 2).",
-    );
+    throw new Error("SettlementConfirmed payload.citations must not be empty (Principle 2).");
   }
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),

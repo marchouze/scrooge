@@ -29,10 +29,7 @@ import {
   principalPaymentPayloadSchema,
   settlementConfirmedPayloadSchema,
 } from "../platform/markets/cdm";
-import {
-  buildFxSpotScenarioEvents,
-  runFxSpotScenario,
-} from "../scenarios/06-fx-spot-trade";
+import { buildFxSpotScenarioEvents, runFxSpotScenario } from "../scenarios/06-fx-spot-trade";
 
 const counterparty = {
   partyId: "LEI-CTPY-FX",
@@ -463,7 +460,9 @@ const baseSettlementConfirmedPayload = {
 
 describe("SettlementConfirmed — schema validation", () => {
   it("accepts a valid SettlementConfirmed with zero P&L delta", () => {
-    expect(() => settlementConfirmedPayloadSchema.parse(baseSettlementConfirmedPayload)).not.toThrow();
+    expect(() =>
+      settlementConfirmedPayloadSchema.parse(baseSettlementConfirmedPayload),
+    ).not.toThrow();
   });
 
   it("accepts a positive realisedPnlDelta (profit)", () => {
@@ -595,9 +594,9 @@ describe("Scenario 06 — full 6-event FX Spot lifecycle", () => {
     });
     expect(result.ok).toBe(true);
     expect(result.emitted).toBe(6);
-    expect(result.countsByType["FxTradeExecuted"]).toBe(1);
-    expect(result.countsByType["FxSettlementInstructed"]).toBe(2);
-    expect(result.countsByType["PrincipalPayment"]).toBe(2);
-    expect(result.countsByType["SettlementConfirmed"]).toBe(1);
+    expect(result.countsByType.FxTradeExecuted).toBe(1);
+    expect(result.countsByType.FxSettlementInstructed).toBe(2);
+    expect(result.countsByType.PrincipalPayment).toBe(2);
+    expect(result.countsByType.SettlementConfirmed).toBe(1);
   });
 });

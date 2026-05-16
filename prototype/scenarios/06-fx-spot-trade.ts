@@ -347,7 +347,14 @@ export function buildFxSpotScenarioEvents(): FxSpotScenarioEvents {
     zarPrincipalPayment,
     usdPrincipalPayment,
     settlementConfirmed,
-    all: [trade, usdSettlement, zarSettlement, zarPrincipalPayment, usdPrincipalPayment, settlementConfirmed],
+    all: [
+      trade,
+      usdSettlement,
+      zarSettlement,
+      zarPrincipalPayment,
+      usdPrincipalPayment,
+      settlementConfirmed,
+    ],
   };
 }
 
