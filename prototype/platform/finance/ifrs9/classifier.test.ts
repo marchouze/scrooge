@@ -2,11 +2,12 @@
 //
 // IFRS 9 classifier tests — FX Spot accounting cycle 5.
 //
-// Four test groups:
+// Five test groups:
 //   1. Sunny-day trade booking (fx-receivable + fx-payable)
 //   2. Daily revaluation (fx-revaluation gain and loss)
 //   3. Settlement close-out (fx-settlement-receive + fx-settlement-deliver)
 //   4. Accounting identity — complete lifecycle: debits = credits per currency
+//   5. Non-FX rows silently skipped
 //
 // Authority: D-MARKETS-CAPITAL-TIME-SHAPE (CEO-approved 2026-05-12)
 // Authors: Bea (Accounting & financial reporting engineer, engineering)
@@ -38,6 +39,12 @@ function makeRow(
   };
 }
 
+function firstEntry(entries: ReturnType<typeof classifyFxSubLedger>) {
+  const e = entries[0];
+  if (e === undefined) throw new Error("Expected at least one journal entry");
+  return e;
+}
+
 // ---------------------------------------------------------------------------
 // Test 1: Sunny-day trade booking
 // ---------------------------------------------------------------------------
@@ -50,7 +57,7 @@ describe("classifyFxSubLedger — trade booking", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
+    const e = firstEntry(entries);
     expect(e.ifrsRef).toBe("IFRS9-§4.1.4");
     expect(e.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
     expect(e.creditAccount).toBe(FX_ACCOUNTS.PAYABLE_ZAR);
@@ -66,7 +73,7 @@ describe("classifyFxSubLedger — trade booking", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
+    const e = firstEntry(entries);
     expect(e.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_USD);
     expect(e.creditAccount).toBe(FX_ACCOUNTS.PAYABLE_USD);
     expect(e.currency).toBe("USD");
@@ -79,7 +86,7 @@ describe("classifyFxSubLedger — trade booking", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
+    const e = firstEntry(entries);
     expect(e.ifrsRef).toBe("IFRS9-§4.1.4");
     expect(e.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
     expect(e.creditAccount).toBe(FX_ACCOUNTS.PAYABLE_ZAR);
@@ -95,16 +102,24 @@ describe("classifyFxSubLedger — trade booking", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(2);
-    expect(entries[0].debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
-    expect(entries[1].debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_USD);
+    const [zarEntry, usdEntry] = entries;
+    if (zarEntry === undefined || usdEntry === undefined) throw new Error("Expected two entries");
+    expect(zarEntry.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
+    expect(usdEntry.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_USD);
   });
 
   it("generates deterministic entryId", () => {
     const rows: SubLedgerRow[] = [
-      makeRow({ legKind: "fx-receivable", currency: "ZAR", cashAmountMinor: 500, externalRef: "T-42" }),
+      makeRow({
+        legKind: "fx-receivable",
+        currency: "ZAR",
+        cashAmountMinor: 500,
+        externalRef: "T-42",
+      }),
     ];
     const entries = classifyFxSubLedger(rows);
-    expect(entries[0].entryId).toBe("T-42-fx-receivable-1");
+    const e = firstEntry(entries);
+    expect(e.entryId).toBe("T-42-fx-receivable-1");
   });
 });
 
@@ -120,11 +135,11 @@ describe("classifyFxSubLedger — revaluation", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
-    expect(e.ifrsRef).toBe("IAS21-§23");
-    expect(e.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
-    expect(e.creditAccount).toBe(FX_ACCOUNTS.UNREALISED_PNL);
-    expect(e.amountMinor).toBe(5_000);
+    const eGain = firstEntry(entries);
+    expect(eGain.ifrsRef).toBe("IAS21-§23");
+    expect(eGain.debitAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
+    expect(eGain.creditAccount).toBe(FX_ACCOUNTS.UNREALISED_PNL);
+    expect(eGain.amountMinor).toBe(5_000);
   });
 
   it("produces IAS21-§23 loss entry (Dr Unrealised P&L / Cr Receivable)", () => {
@@ -134,11 +149,11 @@ describe("classifyFxSubLedger — revaluation", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
-    expect(e.ifrsRef).toBe("IAS21-§23");
-    expect(e.debitAccount).toBe(FX_ACCOUNTS.UNREALISED_PNL);
-    expect(e.creditAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
-    expect(e.amountMinor).toBe(3_000);
+    const eLoss = firstEntry(entries);
+    expect(eLoss.ifrsRef).toBe("IAS21-§23");
+    expect(eLoss.debitAccount).toBe(FX_ACCOUNTS.UNREALISED_PNL);
+    expect(eLoss.creditAccount).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
+    expect(eLoss.amountMinor).toBe(3_000);
   });
 
   it("skips zero-amount revaluation rows", () => {
@@ -162,10 +177,10 @@ describe("classifyFxSubLedger — settlement", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
-    expect(e.ifrsRef).toBe("IFRS9-§3.2.3");
-    expect(e.debitAccount).toBe(FX_ACCOUNTS.NOSTRO_USD);
-    expect(e.creditAccount).toBe(FX_ACCOUNTS.RECEIVABLE_USD);
+    const eReceive = firstEntry(entries);
+    expect(eReceive.ifrsRef).toBe("IFRS9-§3.2.3");
+    expect(eReceive.debitAccount).toBe(FX_ACCOUNTS.NOSTRO_USD);
+    expect(eReceive.creditAccount).toBe(FX_ACCOUNTS.RECEIVABLE_USD);
   });
 
   it("produces derecognition entry for fx-settlement-deliver (Dr Payable / Cr Nostro)", () => {
@@ -175,11 +190,11 @@ describe("classifyFxSubLedger — settlement", () => {
     const entries = classifyFxSubLedger(rows);
 
     expect(entries).toHaveLength(1);
-    const e = entries[0];
-    expect(e.ifrsRef).toBe("IFRS9-§3.2.3");
-    expect(e.debitAccount).toBe(FX_ACCOUNTS.PAYABLE_ZAR);
-    expect(e.creditAccount).toBe(FX_ACCOUNTS.NOSTRO_ZAR);
-    expect(e.amountMinor).toBe(1_000_000);
+    const eDeliver = firstEntry(entries);
+    expect(eDeliver.ifrsRef).toBe("IFRS9-§3.2.3");
+    expect(eDeliver.debitAccount).toBe(FX_ACCOUNTS.PAYABLE_ZAR);
+    expect(eDeliver.creditAccount).toBe(FX_ACCOUNTS.NOSTRO_ZAR);
+    expect(eDeliver.amountMinor).toBe(1_000_000);
   });
 
   it("produces both settlement legs when both present", () => {
@@ -210,24 +225,46 @@ describe("classifyFxSubLedger — accounting identity", () => {
     const tradeId = "T-LIFECYCLE-001";
     const rows: SubLedgerRow[] = [
       // Booking legs
-      makeRow({ legKind: "fx-receivable", currency: "ZAR", cashAmountMinor: 1_000_000, externalRef: tradeId }),
-      makeRow({ legKind: "fx-payable", currency: "USD", cashAmountMinor: -50_000, externalRef: tradeId }),
+      makeRow({
+        legKind: "fx-receivable",
+        currency: "ZAR",
+        cashAmountMinor: 1_000_000,
+        externalRef: tradeId,
+      }),
+      makeRow({
+        legKind: "fx-payable",
+        currency: "USD",
+        cashAmountMinor: -50_000,
+        externalRef: tradeId,
+      }),
       // Revaluation (gain)
-      makeRow({ legKind: "fx-revaluation", currency: "ZAR", cashAmountMinor: 5_000, externalRef: tradeId }),
+      makeRow({
+        legKind: "fx-revaluation",
+        currency: "ZAR",
+        cashAmountMinor: 5_000,
+        externalRef: tradeId,
+      }),
       // Settlement
-      makeRow({ legKind: "fx-settlement-receive", currency: "USD", cashAmountMinor: 50_000, externalRef: tradeId }),
-      makeRow({ legKind: "fx-settlement-deliver", currency: "ZAR", cashAmountMinor: -1_000_000, externalRef: tradeId }),
+      makeRow({
+        legKind: "fx-settlement-receive",
+        currency: "USD",
+        cashAmountMinor: 50_000,
+        externalRef: tradeId,
+      }),
+      makeRow({
+        legKind: "fx-settlement-deliver",
+        currency: "ZAR",
+        cashAmountMinor: -1_000_000,
+        externalRef: tradeId,
+      }),
     ];
 
     const entries = classifyFxSubLedger(rows);
     const tb = computeIfrsTrialBalance(entries);
 
     // Each currency must balance: debitMinor === creditMinor
-    for (const { currency, debitMinor, creditMinor } of tb.perCurrencyTotals) {
-      expect(debitMinor).toBe(
-        creditMinor,
-        `Accounting identity violated for ${currency}: debit=${debitMinor} credit=${creditMinor}`,
-      );
+    for (const { debitMinor, creditMinor } of tb.perCurrencyTotals) {
+      expect(debitMinor).toBe(creditMinor);
     }
   });
 
@@ -245,8 +282,9 @@ describe("classifyFxSubLedger — accounting identity", () => {
     const tb = computeIfrsTrialBalance(entries);
 
     expect(tb.perCurrencyTotals).toHaveLength(1);
-    const { debitMinor, creditMinor } = tb.perCurrencyTotals[0];
-    expect(debitMinor).toBe(creditMinor);
+    const zarTotals = tb.perCurrencyTotals[0];
+    if (zarTotals === undefined) throw new Error("Expected ZAR totals");
+    expect(zarTotals.debitMinor).toBe(zarTotals.creditMinor);
   });
 });
 
@@ -257,7 +295,11 @@ describe("classifyFxSubLedger — accounting identity", () => {
 describe("classifyFxSubLedger — non-FX legs skipped", () => {
   it("ignores equity trade-acquisition legs", () => {
     const rows: SubLedgerRow[] = [
-      makeRow({ legKind: "trade-acquisition" as never, currency: "ZAR", cashAmountMinor: -200_000 }),
+      makeRow({
+        legKind: "trade-acquisition" as never,
+        currency: "ZAR",
+        cashAmountMinor: -200_000,
+      }),
     ];
     const entries = classifyFxSubLedger(rows);
     expect(entries).toHaveLength(0);

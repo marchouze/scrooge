@@ -25,10 +25,7 @@
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering)
 
-import {
-  FX_ACCOUNTS,
-  nostroAccountFor,
-} from "../../accounting/posting-rules/fx-spot";
+import { FX_ACCOUNTS, nostroAccountFor } from "../../accounting/posting-rules/fx-spot";
 import type { SubLedgerRow } from "../../projections/markets/sub-ledger";
 import type { IfrsJournalEntry, IfrsTrialBalance, IfrsTrialBalanceRow } from "./types";
 
