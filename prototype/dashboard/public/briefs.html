@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Briefs / dispatches register · Hoz</title>
+<meta name="description" content="Briefs / dispatches register — every Scrooge dispatch as an AgentBriefIssued event (D-RMS-PHASE-1, Phase 2 Block A — events-first dispatch).">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Briefs / dispatches</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/rms/briefs-dispatches"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/home.html">Home</a>
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/decisions">Decisions</a>
+      <a class="nav-link" href="/rms.html">RMS registers</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
+    <h1 style="margin:0 0 var(--space-2);">Briefs / dispatches register</h1>
+    <p class="muted" style="margin:0 0 var(--space-4);">
+      Every Scrooge dispatch as an <code>AgentBriefIssued</code> event with run
+      lifecycle (<code>AgentRunStarted</code> → <code>AgentRunCompleted</code>).
+      Phase 2 Block A — events-first dispatch.
+      Sourced from <a href="/api/rms/briefs-dispatches">/api/rms/briefs-dispatches</a>.
+    </p>
+  </div>
+
+  <div id="filterBar" style="padding: 0 var(--space-6) var(--space-3); display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center;">
+    <!-- Status filter -->
+    <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
+      <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Status</legend>
+      <label class="filter-radio"><input type="radio" name="statusFilter" value="all" checked> All</label>
+      <label class="filter-radio"><input type="radio" name="statusFilter" value="issued"> Issued</label>
+      <label class="filter-radio"><input type="radio" name="statusFilter" value="in-flight"> In-flight</label>
+      <label class="filter-radio"><input type="radio" name="statusFilter" value="delivered"> Delivered</label>
+      <label class="filter-radio"><input type="radio" name="statusFilter" value="blocked"> Blocked</label>
+      <label class="filter-radio"><input type="radio" name="statusFilter" value="superseded"> Superseded</label>
+    </fieldset>
+
+    <!-- Agent filter -->
+    <label style="display:flex;gap:var(--space-1);align-items:center;font-size:0.85rem;">
+      <span style="font-size:0.75rem;color:var(--muted);">Agent</span>
+      <select id="agentFilter" style="padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;">
+        <option value="">All agents</option>
+      </select>
+    </label>
+
+    <!-- Workstream filter -->
+    <label style="display:flex;gap:var(--space-1);align-items:center;font-size:0.85rem;">
+      <span style="font-size:0.75rem;color:var(--muted);">Workstream</span>
+      <select id="workstreamFilter" style="padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;">
+        <option value="">All workstreams</option>
+      </select>
+    </label>
+
+    <!-- Search -->
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Search ID or title…"
+      style="flex:1;min-width:180px;max-width:320px;padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;font-size:0.85rem;"
+      aria-label="Search briefs by ID or title"
+    >
+  </div>
+
+  <div id="briefsContent" style="padding: 0 var(--space-6) var(--space-6);">
+    <p class="muted">Loading…</p>
+  </div>
+
+  <footer class="foot">
+    <span class="muted">
+      Briefs register derives from <code>AgentBriefIssued</code> + <code>AgentRunStarted</code> +
+      <code>AgentRunCompleted</code> + <code>BriefSuperseded</code> events
+      (D-RMS-PHASE-1 spec §6.6). Phase 2 Block A — events-first dispatch
+      (D-RMS-PHASE-2-4-AUTHORSHIP).
+      <a href="/api/rms/briefs-dispatches">/api/rms/briefs-dispatches</a>
+    </span>
+  </footer>
+
+</main>
+
+<!-- Brief detail drawer -->
+<div id="briefDrawer" class="modal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:var(--space-6);overflow-y:auto;">
+  <div style="background:var(--bg);max-width:880px;width:100%;border-radius:8px;padding:var(--space-5);border:1px solid var(--border);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);">
+      <div>
+        <h2 id="drawerTitle" style="margin:0 0 var(--space-1);font-size:1.1rem;">Brief</h2>
+        <div class="muted small" id="drawerMeta"></div>
+      </div>
+      <button type="button" id="drawerClose" class="icon-btn" aria-label="Close drawer" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
+    </div>
+    <div id="drawerBody"></div>
+  </div>
+</div>
+
+<script src="/_refresh-controls.js"></script>
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script src="/briefs.js"></script>
+</body>
+</html>
