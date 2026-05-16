@@ -35,8 +35,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { newEventId } from "../../core/types";
 import { clock } from "../../composition";
+import { newEventId } from "../../core/types";
 import {
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,

@@ -15,8 +15,8 @@
 // Authors: Mira (Compliance / RegTech engineer, engineering),
 //          Anya (Data / analytics engineer, engineering)
 
-import { newEventId } from "../../core/types";
 import { clock } from "../../composition";
+import { newEventId } from "../../core/types";
 import { makeTradeReportSubmitted } from "../../event-store/event-types/regulatory-reporting";
 import type { EventStore } from "../../event-store/store";
 
