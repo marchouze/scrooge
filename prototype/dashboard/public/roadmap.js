@@ -76,9 +76,24 @@
           ref: "PR #434",
         },
         { text: "PermissionPolicies for 41 agent actors (T-01)", ref: "PR #433" },
+        {
+          text: "Event-type registry coverage — CI-blocking gate (F-032), zero warns",
+          ref: "PR #464",
+        },
+        {
+          text: "RMS Phase 2 — events-first dispatch CLIs + /briefs route (briefs / runs events-first)",
+          ref: "PR #465",
+        },
+        {
+          text: "RMS Phase 3 — RecordFiled wiring + /documents route + projection-parity recon (deliverables events-first)",
+          ref: "PR #466",
+        },
       ],
       inflight: [
-        { text: "RMS Phase 2 — dual-render (registers co-exist with Owner Inbox / Team Inbox)" },
+        {
+          text: "RMS Phase 4 cutover — pending one-agent-week soak, then archive Owner Inbox / Team Inbox + delete parseOwnerInbox",
+          ref: "D-RMS-PHASE-1, D-RMS-PHASE-4-ARCHIVE-SCOPE",
+        },
         {
           text: "Product-construction substrate gap closure — six items (pricing-model registration, RWA-delta engine, trade-confirmation generators)",
           ref: "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
@@ -91,7 +106,7 @@
           text: "Reporting-capability M2–M3 build (Atlas + Anya + Bea)",
           ref: "WS-REPORTING-M2-M3",
         },
-        { text: "T-12 sub-agent PermissionPolicy substrate + F-032 Zod schemas" },
+        { text: "T-12 sub-agent PermissionPolicy substrate" },
       ],
       todo: [
         {
@@ -99,7 +114,6 @@
           ref: "S8",
         },
         { text: "Approve substrate-completeness budget (S7)", ref: "S7 WS-SUBSTRATE-BUDGET" },
-        { text: "RMS Phase 3 → Phase 4 (cutover → archive legacy inboxes)" },
         {
           text: "M2 → M8 markers — reporting build, projection runtime hardening, agent-runtime ingest (M8 auto-commit ingest)",
         },
