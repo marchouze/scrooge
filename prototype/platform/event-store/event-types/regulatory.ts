@@ -353,6 +353,22 @@ export const regulatoryConceptExtractedPayloadSchema = z.object({
 
   /** Agent URN or email of the extractor. */
   extractedBy: z.string().min(1),
+
+  /**
+   * Graph nodes extracted from this provision (optional — populated when
+   * the LLM extraction pass includes knowledge-graph extraction).
+   * Schema contract: GRAPH_NODE_SCHEMA in platform/regulatory/graph/ontology-schema.ts.
+   * Kept loose (z.unknown()) here since the ontology is evolving; validated
+   * externally via validateExtractionResponse().
+   */
+  graphNodes: z.array(z.unknown()).optional(),
+
+  /**
+   * Graph edges asserted by this provision (optional — populated when
+   * the LLM extraction pass includes knowledge-graph extraction).
+   * Schema contract: GRAPH_EDGE_SCHEMA in platform/regulatory/graph/ontology-schema.ts.
+   */
+  graphEdges: z.array(z.unknown()).optional(),
 });
 
 export type RegulatoryConceptExtractedPayload = z.infer<

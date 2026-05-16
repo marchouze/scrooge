@@ -26,6 +26,7 @@ import {
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
 import { logger } from "../observability/logger";
+import { ONTOLOGY_DESCRIPTION, validateExtractionResponse } from "./graph/ontology-schema";
 
 // ---------------------------------------------------------------------------
 // Stable system prompt — prompt-cached on the Claude API.
@@ -73,8 +74,28 @@ Return ONLY valid JSON matching this exact structure (no markdown, no explanatio
   "applicabilityRationale": "...",
   "relevancyScore": 0.0,
   "relevancyRationale": "...",
-  "classifications": { "domain": [], "riskTaxonomy": [], "productScope": [], "activityScope": [] }
-}`;
+  "classifications": { "domain": [], "riskTaxonomy": [], "productScope": [], "activityScope": [] },
+  "graphNodes": [],
+  "graphEdges": []
+}
+
+KNOWLEDGE GRAPH EXTRACTION (populate graphNodes and graphEdges above):
+Extract graph nodes and edges from this provision following the ontology below.
+
+${ONTOLOGY_DESCRIPTION}
+
+EXTRACTION RULES FOR GRAPH NODES:
+- Extract only node types relevant to the provision: Provision, Obligation, Term, RegulatedEntity, Activity, Threshold, ReportingRequirement.
+- Always include one Provision node for the section itself (nodeType: "Provision", id: "{instrumentId}:s{section}", label: section heading).
+- For each obligation expressed: one Obligation node (obligationType: must/must-not/may/conditional/recommended; actor: who must act; actionSummary: what they must do).
+- For each defined term: one Term node (term: the word/phrase; definitionText: its statutory definition).
+- For each quantitative threshold: one Threshold node (value; unit; operator).
+
+EXTRACTION RULES FOR GRAPH EDGES:
+- Each Obligation node must have an EXPRESSES edge from its Provision.
+- Set confidenceScore honestly: 1.0 = explicit; 0.7-0.9 = strongly implied; 0.4-0.6 = inferred; 0.1-0.3 = speculative.
+- Only assert APPLIES_TO, APPLIES_TO_ACTIVITY, SETS, REQUIRES_REPORT edges when clearly supported by the text.
+- Omit edges you are not confident in (confidenceScore < 0.4).`;
 
 const CONTEXTUALISATION_SYSTEM_PROMPT = `You are a regulatory analysis engine for a SARB-licensed institutional global-markets trading bank in South Africa.
 
@@ -508,7 +529,28 @@ export async function extractConcepts(opts: {
       extractedBy: actor.id,
       // Internal idempotency key — stored in payload for deduplication.
       _contentHash: contentHash,
-    };
+    } as RegulatoryConceptExtractedPayload & { _contentHash: string };
+
+    // ── Graph extraction — validate and attach if present ─────────────────
+    const rawGraphNodes = Array.isArray(parsed.graphNodes) ? parsed.graphNodes : undefined;
+    const rawGraphEdges = Array.isArray(parsed.graphEdges) ? parsed.graphEdges : undefined;
+
+    if (rawGraphNodes !== undefined || rawGraphEdges !== undefined) {
+      const graphValidation = validateExtractionResponse({
+        provisionId: sectionId,
+        nodes: rawGraphNodes ?? [],
+        edges: rawGraphEdges ?? [],
+      });
+      if (graphValidation.valid) {
+        payload.graphNodes = rawGraphNodes;
+        payload.graphEdges = rawGraphEdges;
+      } else {
+        logger.warn(
+          { sectionId, errors: graphValidation.errors.slice(0, 5) },
+          "graph extraction output failed ontology validation — discarding graphNodes/graphEdges",
+        );
+      }
+    }
 
     const event = makeRegulatoryConceptExtracted({
       asOf: now,
