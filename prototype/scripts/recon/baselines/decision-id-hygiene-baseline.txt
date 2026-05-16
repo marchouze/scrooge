@@ -6,10 +6,15 @@
 # no longer emitted; the new migrate:decisions-backfill maps them to canonical
 # D-* slugs. No baseline suppression needed.
 #
-# Prefix-shadow triage (8 items):
+# Prefix-shadow triage (9 items):
 # These IDs are root-level siblings of namespaced slice IDs (e.g. D-RMS-PHASE-1
 # vs D-RMS-PHASE-1-SLICE-3). The root IDs are canonical decisions in their own
 # right; the naming collision is a design gap tracked as a Slice D item.
+#
+# D-EVENT-STORE-SCALING added: D-EVENT-STORE-SCALING-SLICE-3B is referenced in
+# the body text of actioned/2026-05-10_atlas_d-event-store-scaling-slice-3b-*.md
+# which was archived on 2026-05-16. Both are real decisions; the naming collision
+# is the same root-level-vs-slice-id design gap.
 D-PARTY-REGISTER
 D-RMS-PHASE-1
 D-REPORTING-CAPABILITY-M2-M3
@@ -18,3 +23,4 @@ D-FX-SALES-TRADING-FRONTEND
 D-REGULATORY-READINESS-W2
 D-S7-TARGETED-3-5
 D-RAS
+D-EVENT-STORE-SCALING
