@@ -25,12 +25,14 @@
 // Author: Anya (Data / analytics engineer, engineering)
 
 import { z } from "zod";
-import type {
-  AgentBriefIssuedPayload,
-  AgentRunCompletedPayload,
-  AgentRunStartedPayload,
-  BriefSupersededPayload,
-  RmsAgentRef,
+import {
+  type AgentBriefIssuedPayload,
+  type AgentRunCompletedPayload,
+  type AgentRunStartedPayload,
+  type BriefSupersededPayload,
+  type RmsAgentRef,
+  documentHashSchema,
+  rmsAgentRefSchema,
 } from "../event-store/event-types";
 import type { Event } from "../event-store/types";
 import type { Projection } from "../projections/types";
@@ -251,8 +253,40 @@ export const briefsRegisterProjection: Projection<BriefsRegisterState, Event> = 
     return JSON.stringify({ rows: Array.from(state.rows.entries()) });
   },
   decodeSnapshot(payload) {
+    // F-007 fix (RMS Phase 2 Block A, D-RMS-PHASE-2-4-AUTHORSHIP, 2026-05-16):
+    // replace the `z.record(z.unknown())` placeholder with a typed schema that
+    // mirrors `BriefsRegisterRow` exactly. A schema drift between this codec
+    // and the in-memory shape is now a parse failure (which degrades to the
+    // initial state with a structured log) rather than a silent type-cast.
+    const briefsRegisterRowSchema = z.object({
+      briefId: z.string(),
+      issuedTo: rmsAgentRefSchema,
+      issuedBy: rmsAgentRefSchema,
+      title: z.string(),
+      directiveDocumentHash: documentHashSchema,
+      priority: z.enum(["now", "next-tick", "scheduled"]),
+      workstreamId: z.string().nullable(),
+      scheduledFor: z.string().nullable(),
+      supersedes: z.string().nullable(),
+      supersedingBriefId: z.string().nullable(),
+      status: z.enum(["issued", "in-flight", "delivered", "blocked", "withdrawn", "superseded"]),
+      runId: z.string().nullable(),
+      expectedOutputs: z
+        .array(
+          z.object({
+            kind: z.enum(["decision-card", "deliverable-document", "register-row", "code-pr"]),
+            description: z.string(),
+          }),
+        )
+        .min(1),
+      issuedAt: z.string(),
+      issuedEventId: z.string(),
+      supersessionReason: z
+        .enum(["withdrawn", "merged", "scope-changed", "actioned-out-of-band"])
+        .nullable(),
+    });
     const SnapshotSchema = z.object({
-      rows: z.array(z.tuple([z.string(), z.record(z.unknown())])),
+      rows: z.array(z.tuple([z.string(), briefsRegisterRowSchema])),
     });
     let raw: unknown;
     try {

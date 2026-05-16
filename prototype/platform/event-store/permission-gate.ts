@@ -1,8 +1,20 @@
 // platform/event-store/permission-gate.ts
 //
-// A1.2 — Event-store permission gate. Hook for the event store's
-// `append` path that asserts the actor's agent identity is allowed to
-// emit the event type per its published permission policy.
+// F-023 preamble fix (RMS Phase 2 Block A, 2026-05-16): typed event-ID
+// citations replace the rotting slice-number markers (former "A1.2", "Slice
+// A2"). Slice numbers drift with each replan; CEO-decision IDs are stable.
+//
+// Event-store permission gate. Hook for the event store's `append` path that
+// asserts the actor's agent identity is allowed to emit the event type per
+// its published permission policy.
+//
+// Standing authorities:
+//   - D-AGENT-RUNTIME-AUTHORIZE — original substrate authorising the gate
+//     under the S8 agent-runtime work envelope.
+//   - D-DECISIONS-FRAMEWORK-REDESIGN — unified Decision event type
+//     (recon pipelines and authorisation checks depend on it).
+//   - D-T-01-PERMISSION-GATE-SECURE-DEFAULT — flipped the gate default to
+//     `on` (opt-out via `BANK_PERMISSION_GATE_DISABLED=true`).
 //
 // Per Atlas spec §3.1:
 //   - The actor's `agent:<urn>` resolves to a registered agent.
@@ -44,7 +56,9 @@
 // D-T-01-PERMISSION-GATE-SECURE-DEFAULT records the substrate change
 // under that umbrella.
 //
-// Author: Atlas + Senna (A1.2), Atlas (T-01 default-flip 2026-05-10)
+// Author: Atlas + Senna (D-AGENT-RUNTIME-AUTHORIZE); Atlas
+//         (D-T-01-PERMISSION-GATE-SECURE-DEFAULT default-flip 2026-05-10);
+//         Atlas (F-023 preamble cleanup, 2026-05-16).
 
 import type { PermissionPolicyResolver } from "../agent-identity/permission-policy";
 import { makeSubstrateAlert } from "./event-types";

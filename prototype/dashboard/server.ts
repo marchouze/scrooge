@@ -1635,6 +1635,16 @@ const server = Bun.serve({
     if (req.method === "GET" && (url.pathname === "/rms" || url.pathname === "/rms/")) {
       return serveStatic("/rms.html");
     }
+    // Briefs / dispatches register page — RMS Phase 2 Block A (events-first
+    // dispatch). Dedicated route with filters + drawer; the underlying
+    // register is also accessible at /rms.html?register=briefs-dispatches.
+    // Authority: D-RMS-PHASE-1; D-RMS-PHASE-2-4-AUTHORSHIP.
+    // TODO F-029: when a future PR adds an action endpoint here
+    // (e.g. POST /api/briefs/supersede), validate the request body with a
+    // Zod schema rather than an `as` cast.
+    if (req.method === "GET" && (url.pathname === "/briefs" || url.pathname === "/briefs/")) {
+      return serveStatic("/briefs.html");
+    }
     // ── Regulatory knowledge graph endpoints ──────────────────────────────
     // Authority: PR #424 (graph substrate); Principle 2 (single-graph
     // discipline). The graph DB is lazy-initialised; endpoints handle
