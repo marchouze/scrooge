@@ -59,7 +59,6 @@ export * from "./accounting";
 export * from "./customer";
 export * from "./fx-accounting";
 export * from "./regulatory";
-export * from "./regulatory-reporting";
 export * from "./performance";
 // Semantic-layer quantity registration — Anya (Data / analytics engineer).
 // Relocated under F-032 (Atlas, 2026-05-16) to the analytics module so the
@@ -166,7 +165,6 @@ import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
-import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
@@ -184,7 +182,6 @@ export const TYPED_EVENT_TYPES = [
   ...CUSTOMER_TYPED_EVENT_TYPES,
   ...FX_ACCOUNTING_EVENT_TYPES,
   ...REGULATORY_TYPED_EVENT_TYPES,
-  ...REGULATORY_REPORTING_TYPED_EVENT_TYPES,
   ...PERFORMANCE_TYPED_EVENT_TYPES,
   ...AUDIT_TYPED_EVENT_TYPES,
   ...DECISION_REQUEST_TYPED_EVENT_TYPES,

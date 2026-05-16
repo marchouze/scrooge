@@ -37,8 +37,8 @@ function buildReportMarkdown(
     tradeId: string;
     kind: string;
     description: string;
-    tradeAmount?: number;
-    paymentAmount?: number;
+    tradeAmount?: number | undefined;
+    paymentAmount?: number | undefined;
     detectedAt: string;
   }>,
 ): string {
