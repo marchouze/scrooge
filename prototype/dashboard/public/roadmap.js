@@ -262,7 +262,7 @@
       sublabel: "Saskia's domain — products, RAS, trading mandate, NPA",
       owner:
         "Saskia (Head of Global Markets) · Helena (CRO) · Kai (technology) · Tomas (settlement) · Eitan (funding)",
-      blockers: ["D-NEW-PRODUCT-APPROVAL-POLICY", "B5"],
+      blockers: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
       done: [
         {
           text: "Strategic foundation — institutional global-markets dealer in JSE bonds + JSE equities + OTC IRD; institutional-only; SA single-branch; ~R300m capital target",
@@ -307,10 +307,6 @@
         { text: "Daily accounting readiness (Bea) + Liquidity snapshot (Eitan)" },
       ],
       todo: [
-        {
-          text: "B5 trading-mandate decision — awaiting Saskia's franchise-design proposal close-out",
-          ref: "B5",
-        },
         {
           text: "CEO decide NPA Policy v1.0 — gates first product through approval (cross-ref Workstream C)",
           ref: "D-NEW-PRODUCT-APPROVAL-POLICY",
