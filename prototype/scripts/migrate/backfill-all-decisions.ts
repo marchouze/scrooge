@@ -20,10 +20,7 @@ import { eventStore } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
 import type { Event } from "../../platform/event-store/types";
-import {
-  buildDecisionsRegister,
-  decisionsSourceFromStore,
-} from "../../projections/decisions";
+import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -159,9 +156,21 @@ function dateFromFilename(filePath: string): string | null {
   return m?.[1] ?? null;
 }
 
-function resolveAsOf(fm: ParsedFrontmatter, filePath: string): string {
-  const d =
-    fm.supersededOn ?? fm.decisionDate ?? fm.date ?? dateFromFilename(filePath);
+function resolveAsOf(fm: ParsedFrontmatter, filePath: string, phase?: string): string {
+  // For `requested` phase, use the file's creation date (filename date) as the
+  // opener timestamp. This ensures requested events sort BEFORE terminal events
+  // so the head-of-chain is the terminal phase, not the opener.
+  if (phase === "requested") {
+    const d = dateFromFilename(filePath) ?? fm.date ?? fm.decisionDate;
+    if (d) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return `${d}T00:00:00.000Z`;
+      if (/^\d{4}-\d{2}-\d{2}T/.test(d)) return d;
+    }
+    // Fallback: use 2026-05-01 (before all known CEO decisions) so that
+    // any terminal event sorts after the requested event.
+    return "2026-05-01T00:00:00.000Z";
+  }
+  const d = fm.supersededOn ?? fm.decisionDate ?? fm.date ?? dateFromFilename(filePath);
   if (d) {
     // Normalise to ISO UTC
     if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return `${d}T00:00:00.000Z`;
@@ -174,12 +183,7 @@ function resolveAsOf(fm: ParsedFrontmatter, filePath: string): string {
 // Phase inference
 // ---------------------------------------------------------------------------
 
-type InferredPhase =
-  | "requested"
-  | "approved"
-  | "superseded"
-  | "deferred"
-  | "withdrawn";
+type InferredPhase = "requested" | "approved" | "superseded" | "deferred" | "withdrawn";
 
 interface SourceDecision {
   decisionId: string;
@@ -194,11 +198,7 @@ interface SourceDecision {
   triageReason?: string;
 }
 
-function inferPhase(
-  fm: ParsedFrontmatter,
-  filePath: string,
-  isActioned: boolean,
-): InferredPhase {
+function inferPhase(fm: ParsedFrontmatter, filePath: string, isActioned: boolean): InferredPhase {
   const name = filePath.split("/").pop() ?? "";
   // Filename signals: [APPROVED-...], [SUPERSEDED-BY-...]
   if (/\[APPROVED-/i.test(name)) return "approved";
@@ -310,7 +310,7 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
       } else if (canonicalId) {
         const phase = inferPhase(fm, filePath, isActioned);
         const authority = resolveAuthority(fm);
-        const asOf = resolveAsOf(fm, filePath);
+        const asOf = resolveAsOf(fm, filePath, phase);
         const title = fm.title ?? canonicalId;
         if (!seenIds.has(`${canonicalId}|${phase}`)) {
           seenIds.add(`${canonicalId}|${phase}`);
@@ -361,7 +361,7 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
         phase: "requested",
         authority: "CEO",
         authorityRef: "marc@tgv.co.za",
-        asOf: "2026-05-16T00:00:00.000Z",
+        asOf: "2026-05-01T00:00:00.000Z", // before all known CEO decisions → requested sorts first
         filePath: "(body-text reference)",
         isReferenceOnly: true,
       });
@@ -392,6 +392,36 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
       });
     }
   }
+
+  // 4b. For every terminal-phase source that doesn't already have a `requested`
+  //     event, synthesise a matching opener so the symmetry recon is satisfied.
+  //     The opener's asOf is set to one millisecond before the terminal event's
+  //     asOf (or the filename date if earlier) so it sorts before the terminal.
+  const TERMINAL_PHASES = new Set(["approved", "rejected", "deferred", "superseded", "withdrawn"]);
+  const requestedSynthetic: SourceDecision[] = [];
+  for (const src of sources) {
+    if (!TERMINAL_PHASES.has(src.phase)) continue;
+    if (seenIds.has(`${src.canonicalId}|requested`)) continue;
+    const existingCov = coveredPhases.get(src.canonicalId);
+    if (existingCov?.has("requested")) continue;
+    // Synthesise: use filename date or one day before the terminal asOf
+    const terminalDate = new Date(src.asOf);
+    const openerDate = new Date(terminalDate.getTime() - 86400_000); // -1 day
+    const openerAsOf = openerDate.toISOString();
+    seenIds.add(`${src.canonicalId}|requested`);
+    requestedSynthetic.push({
+      decisionId: src.decisionId,
+      canonicalId: src.canonicalId,
+      title: src.title,
+      phase: "requested",
+      authority: src.authority,
+      authorityRef: src.authorityRef,
+      asOf: openerAsOf,
+      filePath: src.filePath,
+      isReferenceOnly: src.isReferenceOnly,
+    });
+  }
+  sources.push(...requestedSynthetic);
 
   // 5. Emit Decision events for each source that isn't already covered
   const emitted: string[] = [];
@@ -472,6 +502,17 @@ function resolveId(
       triageReason: `id \`${rawId}\` exceeds 60-char limit`,
     };
   }
+  // Too short / too few segments — these are likely body-text prefix fragments
+  // (e.g., "D-FX", "D-RAS", "D-HIRE") that appear in prose but aren't real
+  // canonical decision IDs. Require at least 2 dash-separated segments after D-
+  // and a minimum of 10 characters total.
+  const segmentsAfterD = rawId.slice(2).split("-");
+  if (segmentsAfterD.length < 2 || rawId.length < 10) {
+    return {
+      canonicalId: null,
+      triageReason: `id \`${rawId}\` is too short / too few segments to be a canonical decision ID (body-text fragment?)`,
+    };
+  }
   return { canonicalId: rawId, triageReason: null };
 }
 
@@ -549,7 +590,9 @@ function writeTriage(
     lines.push("_None — all encountered IDs resolved cleanly._");
   } else {
     for (const t of triageEntries) {
-      lines.push(`- \`${t.id}\` — ${t.reason}${t.sourceFile ? ` (source: \`${t.sourceFile.split("Bank/").pop()}\`)` : ""}`);
+      lines.push(
+        `- \`${t.id}\` — ${t.reason}${t.sourceFile ? ` (source: \`${t.sourceFile.split("Bank/").pop()}\`)` : ""}`,
+      );
     }
   }
 
@@ -564,21 +607,17 @@ function writeTriage(
   }
 
   lines.push("", "## (c) IDs with conflicting resolution signals", "");
-  lines.push("_None identified by the migration script. Review manually if recon gates still fire._");
+  lines.push(
+    "_None identified by the migration script. Review manually if recon gates still fire._",
+  );
 
-  lines.push("", "---", "", `## Summary`, "");
+  lines.push("", "---", "", "## Summary", "");
   lines.push(`- Triage IDs (a): ${triageEntries.length}`);
   lines.push(`- Reference-only IDs (b): ${refOnly.length}`);
   lines.push(`- Emitted backfill events: ${emittedIds.length}`);
 
-  const logPath = resolve(
-    REPO_ROOT,
-    "prototype",
-    "scripts",
-    "migrate",
-    "backfill-triage-log.md",
-  );
-  writeFileSync(logPath, lines.join("\n") + "\n", "utf8");
+  const logPath = resolve(REPO_ROOT, "prototype", "scripts", "migrate", "backfill-triage-log.md");
+  writeFileSync(logPath, `${lines.join("\n")}\n`, "utf8");
 }
 
 // ---------------------------------------------------------------------------

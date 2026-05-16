@@ -235,7 +235,7 @@ function snapshotEventCounts(): {
   agentRunStarted: number;
   agentRunCompleted: number;
   decisionRequested: number;
-  ceoDecision: number;
+  ceoDecision: number; // counts unified Decision events (D-DECISIONS-FRAMEWORK-REDESIGN Slice C)
   recordFiled: number;
 } {
   let agentBriefIssued = 0;
@@ -258,7 +258,10 @@ function snapshotEventCounts(): {
       case "DecisionRequested":
         decisionRequested++;
         break;
-      case "CeoDecision":
+      case "CeoDecision": // legacy — kept for backward compat
+        ceoDecision++;
+        break;
+      case "Decision": // D-DECISIONS-FRAMEWORK-REDESIGN Slice C unified type
         ceoDecision++;
         break;
       case "RecordFiled":
@@ -458,8 +461,8 @@ describe("RMS Phase 1 — end-to-end round-trip (Slice 5)", () => {
     // Step 6 — Auto-archive (RecordFiled)
     // -----------------------------------------------------------------------
     // In production, the event-trigger bus dispatches the archiver
-    // handler with the CeoDecision event. Here we call the handler
-    // directly — same code path, isolated repo root.
+    // handler with the Decision event (Slice C unified type). Here we
+    // call the handler directly — same code path, isolated repo root.
     const ctx: AgentRunContext = {
       agent: "Scrooge",
       trigger: {
@@ -552,10 +555,12 @@ describe("RMS Phase 1 — end-to-end round-trip (Slice 5)", () => {
     const sourceCardPath = resolve(ownerInboxDir, SOURCE_CARD_FILENAME);
     writeFileSync(sourceCardPath, decisionCardBody(), "utf8");
 
-    // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from recordCeoDecision
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from recordCeoDecision.
+    // decisionId matches the `decision-id` frontmatter on the source card so
+    // the auto-archiver can locate the file by scanning the Owner Inbox.
     const ceoRes = recordDecision(
       {
-        decisionId: `${DECISION_ID}-SHAPE`,
+        decisionId: DECISION_ID,
         phase: "approved",
         authority: "CEO",
         authorityRef: "marc@tgv.co.za",

@@ -317,7 +317,8 @@ export function recordDelegatedDecision(
       recommendation: params.outcome,
       rationale: params.comment ?? params.outcome,
       ...(followOnDispatch.length > 0 ? { followOnDispatch } : {}),
-      recordedVia: (params.recordedVia as DecisionPayload["recordedVia"]) ?? "scrooge:session-delegation",
+      recordedVia:
+        (params.recordedVia as DecisionPayload["recordedVia"]) ?? "scrooge:session-delegation",
       actor: { type: "human", id: "marc@tgv.co.za" },
     },
     asOf ?? clock.now(),
