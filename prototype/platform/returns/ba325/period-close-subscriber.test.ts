@@ -20,10 +20,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../../accounting/period-close";
 import { newEventId } from "../../core/types";
+import { EventStore } from "../../event-store/store";
 import { makeFxSettlementInstructed } from "../../markets/cdm/fx";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
 import { cashAndBalancesAtSARB } from "../../semantic";
-import { EventStore } from "../../event-store/store";
 import {
   CASH_AT_SARB_ACCOUNT_ID,
   DEFAULT_HQLA_CLASSIFICATIONS,

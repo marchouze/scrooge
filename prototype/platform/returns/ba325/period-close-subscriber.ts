@@ -46,13 +46,16 @@
 //   owner)
 //   + Anya (Projection Engineer, engineering — semantic-layer integration).
 
-import type { AccountingPeriodClosedPayload, TrialBalanceSnapshottedPayload } from "../../event-store/event-types";
+import type {
+  AccountingPeriodClosedPayload,
+  TrialBalanceSnapshottedPayload,
+} from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
 import {
   type AccountLiquidityClassification,
-  type Ba325Output,
   BA_325_BANK_ENTITIES,
+  type Ba325Output,
   generateBa325Lcr,
 } from "../../reporting/ba-325-lcr";
 import { cashAndBalancesAtSARB } from "../../semantic";
@@ -91,7 +94,9 @@ export const DEFAULT_HQLA_CLASSIFICATIONS: readonly AccountLiquidityClassificati
     // entry.regulatoryCells[1]: { form: "BA 325", line: "HQLA Level 1 — central-bank reserves (LCR)" }
     leafAccountId: CASH_AT_SARB_ACCOUNT_ID,
     hqlaLevel: "level-1",
-    subCategory: cashAndBalancesAtSARB.regulatoryCells?.find((c) => c.form === "BA 325")?.line ?? "level-1.cash-at-sarb",
+    subCategory:
+      cashAndBalancesAtSARB.regulatoryCells?.find((c) => c.form === "BA 325")?.line ??
+      "level-1.cash-at-sarb",
   },
 ];
 
@@ -136,7 +141,11 @@ export interface Ba325PeriodCloseSubscriberResult {
   /** The generated BA 325 projection. Caller renders + stores this. */
   readonly ba325Output: Ba325Output;
   /** The trial-balance rows used as HQLA stock input. */
-  readonly trialBalanceRows: readonly { leafAccountId: string; currency: string; amountMinor: number }[];
+  readonly trialBalanceRows: readonly {
+    leafAccountId: string;
+    currency: string;
+    amountMinor: number;
+  }[];
   /**
    * True if the entity was not in `BA_325_BANK_ENTITIES` and the subscriber
    * skipped generation. The caller can route non-bank-entity closes to other
@@ -189,7 +198,11 @@ export function ba325PeriodCloseSubscriber(
 
   // Resolve trial-balance rows from the TrialBalanceSnapshotted event.
   const tbEventId = input.closedPayload.trialBalanceSnapshotEventId;
-  let trialBalanceRows: readonly { leafAccountId: string; currency: string; amountMinor: number }[] = [];
+  let trialBalanceRows: readonly {
+    leafAccountId: string;
+    currency: string;
+    amountMinor: number;
+  }[] = [];
 
   if (tbEventId) {
     // Replay all events for the entity and find the TrialBalanceSnapshotted event
