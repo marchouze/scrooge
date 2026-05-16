@@ -181,21 +181,11 @@ function buildFtpSummary(): import("./types").FtpDashboardSummary | null {
 
 function bootDerive(): DashboardState {
   try {
-    // Backfill any CeoDecision events that exist as on-disk decision
-    // records in `Owner Inbox/` but are missing from the event store.
-    // The local sqlite store is gitignored and per-worktree, so a fresh
-    // worktree starts with zero CeoDecision events even when 30+
-    // records sit on disk. Without this, every decision-required
-    // proposal in the Owner Inbox stays "open" in the dashboard even
-    // when the matching `_ceo-decision-record_*.md` is right next to
-    // it. Idempotent — skips ids already in the store.
-    const ceoBackfill = backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
-    if (ceoBackfill.emitted.length > 0) {
-      logger.info(
-        { emitted: ceoBackfill.emitted.length, skipped: ceoBackfill.skipped.length },
-        "dashboard boot — backfilled CeoDecision events from on-disk records",
-      );
-    }
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice D: backfillCeoDecisionsFromRecords
+    // is now a retired no-op stub. Legacy CeoDecision backfill was replaced
+    // by migrate:decisions-backfill (unified Decision events with proper
+    // symmetry). The call is kept for backwards-compat but emits nothing.
+    backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
     bootFleetRegistration();
     // D-PARTY-REGISTER PR 2 — backfill the unified Party graph from
     // existing legal-entity / counterparty / agent / signatory streams.

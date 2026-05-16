@@ -38,7 +38,7 @@ The team's primary focus is banking. If a task falls outside this domain and no 
 
 ### Events-first authoring
 
-Every deliverable that records a decision, dispatches work, files a record, or emits a finding lands as a typed event first; the markdown is a render of the event, never the canonical artefact. Markdown-without-event is a Principle 1 violation reportable by Vera. The Records Management Substrate (per `D-RMS-PHASE-1`, approved 2026-05-09) is the production form of this rule; until Phase 1 lands, Scrooge dual-writes (event via `recordCeoDecision` or equivalent, plus markdown mirror).
+Every deliverable that records a decision, dispatches work, files a record, or emits a finding lands as a typed event first; the markdown is a render of the event, never the canonical artefact. Markdown-without-event is a Principle 1 violation reportable by Vera. The Records Management Substrate (per `D-RMS-PHASE-1`, approved 2026-05-09) is the production form of this rule; until Phase 1 lands, Scrooge dual-writes (event via `recordDecision` or equivalent, plus markdown mirror).
 
 ### Deliverables
 
@@ -67,7 +67,7 @@ Every Scrooge-coordinated agent dispatch follows these rules. Dispatch prompts c
 - **Identity discipline.** Every agent reference in any deliverable, brief, comment, or memory pairs name + position on first mention (e.g. "Owen (Company Secretary, governance)", "Helena (Chief Risk Officer, governance)"). Subsequent same-artefact references may use the bare name.
 - **Pre-dispatch live-check.** Before each dispatch: (1) is the routing brief still live (not in `actioned/`, not `[WITHDRAWN]`)? (2) has the deliverable already merged on `main`? Skip dispatches that fail either check.
 - **No-pause rule.** Standing CEO decisions authorise downstream dispatch. When a CEO-level decision is approved, Scrooge dispatches the downstream agent work without pausing for per-item confirmation. Pause only on genuinely new policy choices.
-- **Approved-decision references.** Cite the `CeoDecision` event ID (e.g. `D-RMS-PHASE-1`), not the markdown record path; the event is canonical (Principle 1).
+- **Approved-decision references.** Cite the `Decision` event ID (e.g. `D-RMS-PHASE-1`), not the markdown record path; the event is canonical (Principle 1). (`CeoDecision` is a deprecated alias; new authoring uses `Decision`.)
 - **One dispatch path per scope.** Never run `spawn_task` chip AND background `Agent` for the same scope — that produces duplicate PRs. Pick one.
 - **Concurrency on shared files.** Parallel dispatches that touch shared infrastructure files (handlers-metadata.ts, handler-callables.ts, package.json) collide deterministically. Resolve manually + run `recon:runtime-handler-sync` before pushing.
 
@@ -75,11 +75,23 @@ Every Scrooge-coordinated agent dispatch follows these rules. Dispatch prompts c
 
 Marc's explicit in-session approval ("y", "yes", or equivalent clear confirmation) of a Scrooge-asked question constitutes CEO authorization. Scrooge must, in the same turn:
 
-1. Call `recordDelegatedDecision` (from `runtime/decisions/record.ts`) with the `decisionId`, `title`, `action`, `outcome`, and `sourceDoc`.
+1. Call `recordDecision` (from `runtime/decisions/record.ts`) with the call signature below.
 2. Confirm the decision no longer appears in `decisionsOpen` (query the event store or the cached state).
 3. Dispatch any downstream work under the no-pause rule.
 
-`recordDelegatedDecision` uses `actor: "marc@tgv.co.za"` and `recordedVia: "scrooge:session-delegation"`. Marc is the authorizing principal; Scrooge is the recording instrument. Do not use this for decisions Marc has not explicitly approved in the current session.
+```ts
+recordDecision({
+  decisionId, phase: "approved", authority: "CEO",
+  authorityRef: "marc@tgv.co.za",
+  title, category, recommendation, rationale,
+  sourceDocHashes: [], citations: [],
+  recordedVia: "scrooge:session-delegation",
+}, clock.now())
+```
+
+`recordDecision` uses `authorityRef: "marc@tgv.co.za"` and `recordedVia: "scrooge:session-delegation"`. Marc is the authorizing principal; Scrooge is the recording instrument. Do not use this for decisions Marc has not explicitly approved in the current session.
+
+Note: `recordDelegatedDecision` (deprecated wrapper) still exists in `runtime/decisions/record.ts` for historical scripts. New authoring must use `recordDecision` directly (D-DECISIONS-FRAMEWORK-REDESIGN Slice C).
 
 ## Operating model — what is real, deferred, paused
 
