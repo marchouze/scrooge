@@ -260,12 +260,58 @@ function findSubstrateGapHires(repoRoot: string): readonly SubstrateGapHire[] {
   return out;
 }
 
+/** Terminal CeoDecision actions that close a decision (no longer pending).
+ * Matches `platform/recon/decision-required-event-pairing.ts` semantics
+ * extended with `defer` and `modify` from the Decisions register projection —
+ * any of these means the CEO has acted; only `request-revision` leaves the
+ * brief genuinely pending further work. */
+const RESOLVED_CEO_ACTIONS = new Set(["approve", "reject", "defer", "modify"]);
+
+/**
+ * Returns the set of `decisionId`s that have at least one CeoDecision event
+ * with a resolved action. Used to exclude briefs whose CEO decision has
+ * already landed but whose markdown card has not yet been moved to
+ * `Owner Inbox/actioned/` by the auto-archive handler (e.g. the brief was
+ * decided in the window between this PAX run starting and the archive
+ * handler firing). Without this cross-check, PAX surfaces ghost-pending
+ * briefs to Scrooge → Marc.
+ *
+ * Returns an empty set on store-read failure — the worst case is a list
+ * that includes already-resolved items, which is exactly the pre-fix
+ * behaviour, so it is not a regression.
+ */
+function resolvedDecisionIds(): Set<string> {
+  const ids = new Set<string>();
+  try {
+    for (const e of eventStore.replay({ type: "CeoDecision" })) {
+      const p = e.payload as { decisionId?: string; action?: string };
+      if (p.decisionId && p.action && RESOLVED_CEO_ACTIONS.has(p.action)) {
+        ids.add(p.decisionId);
+      }
+    }
+  } catch {
+    // Empty / unreachable store → treat as "no resolutions known".
+  }
+  return ids;
+}
+
 /**
  * Walk Owner Inbox for `decision-required: true` deliverables whose
- * decision-id or title imply a hire. Returns the briefs in date-descending
- * order (newest first) so the most recent open hire-brief is at the top.
+ * decision-id or title imply a hire. Excludes any brief whose `decision-id`
+ * has a resolved CeoDecision event in the event store — Principle 1 says
+ * the event store is the source of truth, not the markdown card's
+ * filesystem location.
+ *
+ * Returns the briefs in date-descending order (newest first) so the most
+ * recent open hire-brief is at the top.
+ *
+ * @param resolved Optional override for the resolved-decisions set, used by
+ *   unit tests to drive the function without touching the live event store.
  */
-function findPendingHireBriefs(repoRoot: string): readonly PendingHireBrief[] {
+function findPendingHireBriefs(
+  repoRoot: string,
+  resolved: ReadonlySet<string> = resolvedDecisionIds(),
+): readonly PendingHireBrief[] {
   const inboxDir = resolve(repoRoot, "Owner Inbox");
   if (!existsSync(inboxDir)) return [];
   const out: PendingHireBrief[] = [];
@@ -281,6 +327,8 @@ function findPendingHireBriefs(repoRoot: string): readonly PendingHireBrief[] {
     const fm = parseFrontmatter(content);
     if (fm["decision-required"] !== "true") continue;
     const decisionId = fm["decision-id"];
+    // Principle 1 cross-check: event store wins over markdown frontmatter.
+    if (decisionId && resolved.has(decisionId)) continue;
     const title = fm.title ?? extractH1(content) ?? name;
     const decisionFor = fm["decision-for-ceo"] ?? "";
     const matchesId = decisionId ? HIRE_BRIEF_DECISION_ID_PATTERN.test(decisionId) : false;
@@ -315,6 +363,10 @@ function buildSnapshot(ctx: AgentRunContext): PaxQueueSnapshot {
     pendingHireBriefs: findPendingHireBriefs(ctx.repoRoot),
   };
 }
+
+// Test-only export: exercise `findPendingHireBriefs` with an injected
+// resolved-decisions set so unit tests do not need a live event store.
+export const __testing = { findPendingHireBriefs };
 
 function buildNarrativeInput(ctx: AgentRunContext, snap: PaxQueueSnapshot): string {
   const lines: string[] = [];
@@ -434,7 +486,7 @@ function buildReportMarkdown(
     }
     lines.push("");
     lines.push(
-      "_Source: frontmatter parse of every `.md` in `Owner Inbox/`; filtered to `decision-required: true` AND (decision-id matches `(HIRE|RECRUIT|ROLE|BRAND-DESIGN|INDEPENDENT-VALIDATION)` OR title / decision-for-ceo matches `(role brief|hire|recruit)`)._",
+      "_Source: frontmatter parse of every `.md` in `Owner Inbox/`; filtered to `decision-required: true` AND (decision-id matches `(HIRE|RECRUIT|ROLE|BRAND-DESIGN|INDEPENDENT-VALIDATION)` OR title / decision-for-ceo matches `(role brief|hire|recruit)`). Briefs whose decision-id has a resolved `CeoDecision` event (action ∈ {approve, reject, defer, modify}) in the event store are excluded — Principle 1, event store is the source of truth even if the markdown card has not yet been archived to `actioned/`._",
     );
     lines.push("");
   }
@@ -477,7 +529,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Draft / stub personas folded from the latest `| vN.M |` row in each `/Team/<Name>.md` § 17 Change log table; PAX.md, Nolan.md, and `_agent-spec-template.md` are excluded by spec. Substrate-gap hires extracted from § 16 bullet lines that match `(PAX research|Nolan hire)`. Pending hire-briefs read from `Owner Inbox/*.md` frontmatter (`decision-required: true` + decision-id / title regex match). Counts are coarse — refines once `MandateGapDetected` and `RoleResearchRequested` event producers are live (substrate gaps above).",
+    "Draft / stub personas folded from the latest `| vN.M |` row in each `/Team/<Name>.md` § 17 Change log table; PAX.md, Nolan.md, and `_agent-spec-template.md` are excluded by spec. Substrate-gap hires extracted from § 16 bullet lines that match `(PAX research|Nolan hire)`. Pending hire-briefs read from `Owner Inbox/*.md` frontmatter (`decision-required: true` + decision-id / title regex match), cross-checked against the event store: any decision-id with a resolved `CeoDecision` event (action ∈ {approve, reject, defer, modify}) is excluded per Principle 1. Counts are coarse — refines once `MandateGapDetected` and `RoleResearchRequested` event producers are live (substrate gaps above).",
   );
   lines.push("");
   return lines.join("\n");
