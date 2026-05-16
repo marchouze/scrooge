@@ -139,11 +139,11 @@
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| ODP Authorisation Policy | [`odp-authorisation-application.md`](by-policy/odp-authorisation-application.md) | Owen + Camille + Imani + Saskia | STUB |
-| Trade Reporting Policy | [`trade-reporting-strate.md`](by-policy/trade-reporting-strate.md) | Mira + Tomas + Anya + Kai | STUB |
-| Margin Policy (RMF sub-policy) | [`margin-vm.md`](by-policy/margin-vm.md) | Ravi + Eitan + Imani + Bea | STUB |
-| Margin Policy / IM Methodology Policy | [`margin-im.md`](by-policy/margin-im.md) | Ravi + Rohan + Eitan + Imani | STUB |
-| OTC Trading Policy | [`portfolio-reconciliation.md`](by-policy/portfolio-reconciliation.md) | Tomas + Anya + Rohan | STUB |
+| ODP Authorisation Policy | [`odp-authorisation-application.md`](by-policy/odp-authorisation-application.md) — PROC-MK-ODP-01: one-shot FSCA ODP authorisation application (Index 1, banks-track); pre-assembled during build-phase, lodged at licence-day | Owen + Camille + Imani + Saskia | **POPULATED** |
+| Trade Reporting Policy | [`trade-reporting-strate.md`](by-policy/trade-reporting-strate.md) — PROC-MK-ODP-02: per-transaction reporting of OTC IRD trades to STRATE Trade Repository (169 CS 3/2018 fields); daily reconciliation | Mira + Tomas + Anya + Kai | **POPULATED** |
+| Margin Policy (RMF sub-policy) | [`margin-vm.md`](by-policy/margin-vm.md) — PROC-MK-ODP-03: daily variation-margin calculation and exchange per-counterparty under ISDA CSA; zero threshold; correspondent bank settlement; PA Umoja reporting | Ravi + Eitan + Imani + Bea | **POPULATED** |
+| Margin Policy / IM Methodology Policy | [`margin-im.md`](by-policy/margin-im.md) — PROC-MK-ODP-04: SIMM-aligned initial-margin calculation, exchange, and custodian segregation for in-scope non-cleared OTC counterparties; phased BCBS-IOSCO applicability | Ravi + Rohan + Eitan + Imani | **POPULATED** |
+| OTC Trading Policy | [`portfolio-reconciliation.md`](by-policy/portfolio-reconciliation.md) — PROC-MK-ODP-05: frequency-tiered OTC IRD portfolio reconciliation (weekly/monthly/quarterly per CS 3/2018 §5); material-break escalation and FSCA reporting | Tomas + Anya + Rohan | **POPULATED** |
 | OTC Trading Policy | [`otc-confirmation.md`](by-policy/otc-confirmation.md) | Kai + Tomas + Imani | STUB |
 | OTC Trading Policy / ISDA dispute | [`otc-dispute-resolution.md`](by-policy/otc-dispute-resolution.md) | Imani + Saskia + Zara | STUB |
 | Client Categorisation Policy | [`client-categorisation.md`](by-policy/client-categorisation.md) | Zara + Niko (paused build-phase) | STUB |
