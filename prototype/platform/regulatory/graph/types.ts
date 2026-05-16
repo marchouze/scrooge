@@ -67,8 +67,8 @@ export interface GraphNode {
   id: string;
   nodeType: GraphNodeType;
   label: string;
-  effectiveFrom?: string;
-  effectiveTo?: string;
+  effectiveFrom?: string | undefined;
+  effectiveTo?: string | undefined;
   metadata: GraphNodeMetadata;
 }
 
@@ -77,11 +77,11 @@ export interface GraphEdge {
   fromId: string;
   toId: string;
   edgeType: GraphEdgeType;
-  effectiveFrom?: string;
-  effectiveTo?: string;
-  sourceProvision?: string;
+  effectiveFrom?: string | undefined;
+  effectiveTo?: string | undefined;
+  sourceProvision?: string | undefined;
   extractionMethod: "register" | "frontmatter" | "llm" | "rule-based";
   confidenceScore: number;
   extractedAt: string;
-  metadata?: GraphNodeMetadata;
+  metadata?: GraphNodeMetadata | undefined;
 }
