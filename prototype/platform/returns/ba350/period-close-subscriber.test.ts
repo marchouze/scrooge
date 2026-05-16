@@ -25,6 +25,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { newEventId } from "../../core/types";
 import { EventStore } from "../../event-store/store";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
+import { BA_350_SUBSCRIBER_ENTITIES, ba350PeriodCloseSubscriber } from "./period-close-subscriber";
 import {
   BA_350_NAMESPACE,
   BA_350_REQUIRED_ELEMENTS,
@@ -33,10 +34,6 @@ import {
   renderSarbXml,
   validateSarbXmlStructural,
 } from "./xml";
-import {
-  BA_350_SUBSCRIBER_ENTITIES,
-  ba350PeriodCloseSubscriber,
-} from "./period-close-subscriber";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const ENTITY_SECURITIES = "LE-ZA-HOZ-SECURITIES";
@@ -149,9 +146,7 @@ describe("BA350 period-close subscriber — caller-supplied inputs", () => {
       eventStore: store,
       actor: ACTOR,
       periodStart: PERIOD_START,
-      irGeneralMaturityLadder: [
-        { band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 400 },
-      ],
+      irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 400 }],
     });
 
     // |1000-400| = 600
@@ -189,9 +184,7 @@ describe("BA350 period-close subscriber — caller-supplied inputs", () => {
       eventStore: store,
       actor: ACTOR,
       periodStart: PERIOD_START,
-      irGeneralMaturityLadder: [
-        { band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 0 },
-      ],
+      irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 0 }],
     });
 
     expect(result.ba350Output.totalMarketRiskCapitalMinor).toBe(1000);
@@ -212,9 +205,7 @@ describe("BA350 period-close subscriber — XML serialiser", () => {
       eventStore: store,
       actor: ACTOR,
       periodStart: PERIOD_START,
-      irGeneralMaturityLadder: [
-        { band: "0-1m", weightedLongMinor: 500, weightedShortMinor: 0 },
-      ],
+      irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 500, weightedShortMinor: 0 }],
     });
 
     const payload = ba350ToXmlPayload(result.ba350Output);

@@ -23,6 +23,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { BA_600_SUBSCRIBER_ENTITIES, ba600PeriodCloseSubscriber } from "./period-close-subscriber";
 import {
   BA_600_NAMESPACE,
   BA_600_REQUIRED_ELEMENTS,
@@ -31,10 +32,6 @@ import {
   renderSarbXml,
   validateSarbXmlStructural,
 } from "./xml";
-import {
-  BA_600_SUBSCRIBER_ENTITIES,
-  ba600PeriodCloseSubscriber,
-} from "./period-close-subscriber";
 
 // Keep a local store reference available for helper functions. Each test
 // constructs its own (no cross-test state).
@@ -166,9 +163,7 @@ describe("BA600 period-close subscriber — BIA arithmetic", () => {
     expect(result.ba600Output.bia?.nPositiveYears).toBe(2);
     expect(result.ba600Output.bia?.averagePositiveMinor).toBe(2_000_000);
     expect(result.ba600Output.bia?.capitalMinor).toBe(300_000);
-    expect(
-      result.ba600Output.placeholders.some((p) => p.includes("2 positive years")),
-    ).toBe(true);
+    expect(result.ba600Output.placeholders.some((p) => p.includes("2 positive years"))).toBe(true);
   });
 
   it("BIA aggregates gross income across business lines per year", () => {
