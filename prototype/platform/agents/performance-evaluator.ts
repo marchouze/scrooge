@@ -57,6 +57,14 @@ interface Scores {
 
 type Tier = "exceeds" | "meets" | "needs-improvement" | "unsatisfactory";
 
+/**
+ * "limited"    — runsStarted === 0 and no AgentRunFailed events; the autonomous
+ *                scheduler has not yet dispatched this agent (substrate gap),
+ *                not a performance failure.
+ * "operational" — at least one run has been recorded, or a failure event exists.
+ */
+export type SubstrateStatus = "limited" | "operational";
+
 interface Narrative {
   strengths: string[];
   areasForImprovement: string[];
@@ -71,6 +79,10 @@ export interface PerformanceEvaluationResult {
   strategicMetrics: StrategicMetrics;
   scores: Scores;
   tier: Tier;
+  /** Display tier: "substrate-limited" overrides the scored tier for agents with no runs
+   *  and no failures — they should not appear in attentionNeeded. */
+  displayTier: Tier | "substrate-limited";
+  substrateStatus: SubstrateStatus;
   narrative: Narrative;
 }
 
@@ -533,6 +545,14 @@ export async function evaluateAgent(
 
   const scores: Scores = { delivery, quality, strategic, overall };
   const tier = tierFromOverall(overall);
+
+  // Substrate-limited: agent has never run AND has no failure events.
+  // Distinguish "inactive because scheduler doesn't exist yet" from "failing".
+  const substrateStatus: SubstrateStatus =
+    runMetrics.runsStarted === 0 && runMetrics.runsFailed === 0 ? "limited" : "operational";
+  const displayTier: Tier | "substrate-limited" =
+    substrateStatus === "limited" ? "substrate-limited" : tier;
+
   const narrative = buildNarrative(
     agentId,
     scores,
@@ -550,6 +570,8 @@ export async function evaluateAgent(
     strategicMetrics,
     scores,
     tier,
+    displayTier,
+    substrateStatus,
     narrative,
   };
 }
