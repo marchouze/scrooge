@@ -1,0 +1,19 @@
+{
+  "_comment": "Build-phase static FX rate seed — rates in minor units (ZAR cents per USD cent, i.e. the rate × 1,000,000 for 6dp precision). Used by staticRateSource in platform/markets/eod/fx-revaluation.ts.",
+  "_authority": "D-MARKETS-SCHEMA-FOUNDATION; D-MARKETS-CAPITAL-TIME-SHAPE",
+  "_note": "Production: replaced by reuters-wm-fix or bloomberg-bfix live feed per Bea spec §7.",
+  "ZAR/USD": {
+    "2026-05-16": 1850000,
+    "2026-05-15": 1851500,
+    "2026-05-14": 1848000,
+    "2026-05-13": 1849000,
+    "2026-05-12": 1852000
+  },
+  "USD/ZAR": {
+    "2026-05-16": 540541,
+    "2026-05-15": 539953,
+    "2026-05-14": 541126,
+    "2026-05-13": 540676,
+    "2026-05-12": 539956
+  }
+}

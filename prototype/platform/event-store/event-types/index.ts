@@ -75,6 +75,8 @@ export * from "./ftp";
 // Payments / settlement event family — Tomas (Operations & payments engineer),
 // Bea (Accounting & financial reporting engineer), Atlas (substrate).
 export * from "./payments";
+// Regulatory reporting event family — Mira + Anya (FinSurv TradeReportSubmitted).
+export * from "./regulatory-reporting";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -165,6 +167,7 @@ import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
+import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
@@ -193,6 +196,7 @@ export const TYPED_EVENT_TYPES = [
   ...GOVERNANCE_TYPED_EVENT_TYPES,
   ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
   ...PARTY_EVENT_TYPES,
+  ...REGULATORY_REPORTING_TYPED_EVENT_TYPES,
   // ← new agent adds one spread line here
 ] as const;
 

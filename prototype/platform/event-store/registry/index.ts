@@ -64,6 +64,7 @@ export {
   RMS_EVENT_TYPES,
 } from "./governance";
 export { REGULATORY_EVENT_TYPES } from "./regulatory";
+export { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 export { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 export { MISSING_EVENT_TYPES } from "./missing-types";
 export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
@@ -96,6 +97,7 @@ import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
+import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
@@ -126,6 +128,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...GOAL_LOOP_EVENT_TYPES,
   ...CUSTOMER_LIFECYCLE_EVENT_TYPES,
   ...REGULATORY_EVENT_TYPES,
+  ...REGULATORY_REPORTING_EVENT_TYPES,
   ...PERFORMANCE_EVENT_TYPES,
   ...ANALYTICS_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES_REGISTRY,
