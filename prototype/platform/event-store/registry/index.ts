@@ -86,10 +86,10 @@ import {
   MARKETS_EVENT_TYPES,
   PERIOD_CLOSE_EVENT_TYPES,
 } from "./markets";
+import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { GOAL_LOOP_EVENT_TYPES, RUNTIME_EVENT_TYPES } from "./runtime";
-import { MISSING_EVENT_TYPES } from "./missing-types";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 
 /**

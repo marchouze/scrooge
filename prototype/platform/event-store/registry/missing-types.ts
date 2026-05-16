@@ -33,10 +33,7 @@
 //   M — Readiness snapshots (various)
 //   N — Tax (Yael)
 
-import {
-  type EventTypeMetadata,
-  RETENTION_CONSERVATIVE_DEFAULT,
-} from "./types";
+import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
 
 // ---------------------------------------------------------------------------
 // A — FX / markets / trading events
@@ -1468,16 +1465,9 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/pax.ts",
   },
-  {
-    // AgentOps readiness snapshot.
-    type: "AgentOpsReadinessSnapshot",
-    class: "audit",
-    issuer: "Sade",
-    subscribers: ["Sade", "dashboard"],
-    replay: "latest-wins-per-key",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/sade.ts",
-  },
+  // NOTE: AgentOpsReadinessSnapshot is already registered in governance.ts
+  // with a payloadSchema (F-032 closed type). Omitting here to avoid
+  // overriding the schema-bearing row with this placeholder.
 ];
 
 // ---------------------------------------------------------------------------
