@@ -1445,6 +1445,7 @@ const server = Bun.serve({
         });
       }
 
+      allEvents.reverse();
       const total = allEvents.length;
       const totalPages = Math.max(1, Math.ceil(total / limit));
       const safePage = Math.min(page, totalPages);
