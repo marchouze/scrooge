@@ -18,6 +18,53 @@
   // resolves. `placeholder: true` flags M-phase / not-yet-wired tiles.
 
   const CATALOGUE = [
+    // -------- Intranet (department entry points) --------
+    {
+      id: "finance",
+      category: "intranet",
+      title: "Capital & Liquidity",
+      blurb:
+        "Camille (CFO) — Tier 1 capital, LCR, NSFR, total assets. BA-325 / BA-700 return fields.",
+      href: "/finance.html",
+    },
+    {
+      id: "risk",
+      category: "intranet",
+      title: "Risk Watch",
+      blurb: "Helena (CRO) — RAS cluster status B1–B5, stress-test results, limit utilisations.",
+      href: "/risk.html",
+    },
+    {
+      id: "compliance",
+      category: "intranet",
+      title: "Obligations & Compliance",
+      blurb:
+        "Mira (Compliance / RegTech) — obligations by status, POPIA, FATCA/CRS, FIC indicators.",
+      href: "/compliance.html",
+    },
+    {
+      id: "ops",
+      category: "intranet",
+      title: "Ops Dashboard",
+      blurb: "Devon (COO) — settlement/clearing status, system health, recent operational events.",
+      href: "/ops.html",
+    },
+    {
+      id: "audit",
+      category: "intranet",
+      title: "Audit & Recon",
+      blurb: "Thandiwe (CAE) / Vera — open findings by severity P1–P3, recon pipeline status.",
+      href: "/audit.html",
+    },
+    {
+      id: "rms",
+      category: "intranet",
+      title: "Records",
+      blurb:
+        "Owen (Company Secretary) — decisions, policies, regulations, correspondence, agent briefs. RMS Phase 1.",
+      href: "/rms.html",
+    },
+
     // -------- Dashboards (live) --------
     {
       id: "roadmap",
@@ -214,13 +261,6 @@
       href: "/procedures.html",
     },
     {
-      id: "reg-agents",
-      category: "registers",
-      title: "Agent registry",
-      blurb: "Sade (AgentOps) + Scrooge — every standing agent's operating spec.",
-      href: "/agents.html",
-    },
-    {
       id: "reg-regs",
       category: "registers",
       title: "Regulations index",
@@ -249,34 +289,6 @@
       title: "Architecture",
       blurb: "Atlas (Core banking platform architect) — four-diagram view of the stack.",
       href: "/architecture.html",
-    },
-    {
-      id: "sub-fleet",
-      category: "substrate",
-      title: "Fleet",
-      blurb: "Same view as Dashboards · Fleet — repeated here for ops-pivot convenience.",
-      href: "/fleet",
-    },
-    {
-      id: "sub-health",
-      category: "substrate",
-      title: "Health",
-      blurb: "Recon pipelines, derivation tick, build conclusions.",
-      href: "/health.html",
-    },
-    {
-      id: "sub-agents",
-      category: "substrate",
-      title: "Agents",
-      blurb: "Standing agents — last run, next tick.",
-      href: "/agents.html",
-    },
-    {
-      id: "sub-escalations",
-      category: "substrate",
-      title: "Escalations",
-      blurb: "Open escalations awaiting CEO action.",
-      href: "/escalations",
     },
     {
       id: "sub-gaps",
