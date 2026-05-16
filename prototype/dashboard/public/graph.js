@@ -1,0 +1,327 @@
+// graph.js — Regulatory Knowledge Graph dashboard page
+//
+// Vanilla JS (no framework). Three panels:
+//   1. Stats — node/edge counts by type, gap KPIs.
+//   2. Gaps  — unimplemented obligations (Principle 2 violations).
+//   3. Trace — search an ORG-* ID and render its full chain.
+//
+// Author: Atlas (Core banking platform architect, engineering)
+
+(() => {
+  // ---------------------------------------------------------------------------
+  // API helpers
+  // ---------------------------------------------------------------------------
+
+  async function apiFetch(path) {
+    const res = await fetch(path, { headers: { Accept: "application/json" } });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+    }
+    return res.json();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Stats panel
+  // ---------------------------------------------------------------------------
+
+  function renderStats(stats) {
+    const body = document.getElementById("statsBody");
+    if (!body) return;
+
+    const {
+      nodesByType,
+      edgesByType,
+      totalNodes,
+      totalEdges,
+      unimplementedCount,
+      orphanProcedureCount,
+    } = stats;
+
+    const nodeRows = Object.entries(nodesByType)
+      .sort((a, b) => b[1] - a[1])
+      .map(([t, n]) => `<tr><td>${t}</td><td class="num">${n}</td></tr>`)
+      .join("");
+
+    const edgeRows = Object.entries(edgesByType)
+      .sort((a, b) => b[1] - a[1])
+      .map(([t, n]) => `<tr><td><code>${t}</code></td><td class="num">${n}</td></tr>`)
+      .join("");
+
+    const uClass = unimplementedCount > 0 ? " red" : "";
+    const oClass = orphanProcedureCount > 0 ? " red" : "";
+
+    body.innerHTML = `
+      <div class="graph-kpi-row">
+        <div class="graph-kpi">
+          <div class="graph-kpi-num">${totalNodes.toLocaleString()}</div>
+          <div class="graph-kpi-lbl">Total nodes</div>
+        </div>
+        <div class="graph-kpi">
+          <div class="graph-kpi-num">${totalEdges.toLocaleString()}</div>
+          <div class="graph-kpi-lbl">Total edges</div>
+        </div>
+        <div class="graph-kpi">
+          <div class="graph-kpi-num${uClass}">${unimplementedCount}</div>
+          <div class="graph-kpi-lbl">Unimplemented obligations</div>
+        </div>
+        <div class="graph-kpi">
+          <div class="graph-kpi-num${oClass}">${orphanProcedureCount}</div>
+          <div class="graph-kpi-lbl">Orphan procedures</div>
+        </div>
+      </div>
+      <div class="graph-stats-grid">
+        <div class="graph-stats-section">
+          <h4>Nodes by type</h4>
+          <table class="graph-table">
+            <thead><tr><th>Type</th><th>Count</th></tr></thead>
+            <tbody>${nodeRows || '<tr><td colspan="2" style="color:var(--neutral-stone);font-style:italic">none</td></tr>'}</tbody>
+          </table>
+        </div>
+        <div class="graph-stats-section">
+          <h4>Edges by type</h4>
+          <table class="graph-table">
+            <thead><tr><th>Type</th><th>Count</th></tr></thead>
+            <tbody>${edgeRows || '<tr><td colspan="2" style="color:var(--neutral-stone);font-style:italic">none</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    const sub = document.getElementById("statsSub");
+    if (sub) sub.textContent = `${totalNodes} nodes · ${totalEdges} edges`;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Gap panel (unimplemented obligations)
+  // ---------------------------------------------------------------------------
+
+  function renderGaps(nodes) {
+    const list = document.getElementById("gapList");
+    const summary = document.getElementById("gapSummary");
+    if (!list) return;
+
+    if (nodes.length === 0) {
+      if (summary) summary.textContent = "No gaps found — all obligations have a closing policy.";
+      list.innerHTML =
+        '<div class="graph-trace-empty" style="padding:10px 0;">No Principle 2 gaps detected.</div>';
+      return;
+    }
+
+    if (summary) {
+      const s = summary;
+      s.innerHTML = `<strong style="color:#c0392b">${nodes.length} obligation${nodes.length === 1 ? "" : "s"}</strong> with no fulfilling policy (CLOSES edge missing).`;
+    }
+
+    const items = nodes
+      .map((node) => {
+        const id = node.id.replace(/^OBL-/, "");
+        const domain = node.metadata?.domain || node.metadata?.source_instrument || "";
+        const label = node.label || "";
+        return `
+        <div class="graph-gap-row">
+          <span class="graph-gap-id">${escHtml(id)}</span>
+          ${domain ? `<span class="graph-gap-domain">${escHtml(String(domain))}</span>` : ""}
+          <span class="graph-gap-label">${escHtml(label)}</span>
+        </div>`;
+      })
+      .join("");
+
+    list.innerHTML = items;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Trace panel
+  // ---------------------------------------------------------------------------
+
+  function renderNodeList(nodes, emptyMsg) {
+    if (!nodes || nodes.length === 0) {
+      return `<span class="graph-trace-empty">${emptyMsg}</span>`;
+    }
+    return nodes
+      .map((n) => {
+        const rawId = n.id;
+        // Strip type prefix for display
+        const shortId = rawId.replace(/^(OBL|POL|PROC|PROV|RISK|ACT|REG|DOC|CTRL|THRESH)-/, "");
+        return `
+        <div class="graph-trace-node">
+          <span class="graph-trace-node-id">${escHtml(rawId)}</span>
+          <span class="graph-trace-node-label">${escHtml(n.label || shortId)}</span>
+        </div>`;
+      })
+      .join("");
+  }
+
+  function renderTrace(chain) {
+    const el = document.getElementById("traceResult");
+    if (!el) return;
+
+    const { obligation, provisions, policies, procedures, riskCategories, activities } = chain;
+
+    // Strip OBL- prefix for readable display
+    const oblId = obligation.id.replace(/^OBL-/, "");
+
+    el.innerHTML = `
+      <div class="graph-trace-chain">
+
+        <div class="graph-trace-section">
+          <h5>Obligation</h5>
+          <div class="graph-trace-obligation">
+            <div class="id">${escHtml(oblId)}</div>
+            <div class="lbl">${escHtml(obligation.label)}</div>
+          </div>
+        </div>
+
+        <div class="graph-trace-section">
+          <h5>Provisions (EXPRESSES)</h5>
+          ${renderNodeList(provisions, "No source provisions linked.")}
+        </div>
+
+        <div class="graph-trace-arrow">&#x25BC;</div>
+
+        <div class="graph-trace-section">
+          <h5>Policies (CLOSES)</h5>
+          ${renderNodeList(policies, "No closing policy — Principle 2 gap.")}
+        </div>
+
+        <div class="graph-trace-arrow">&#x25BC;</div>
+
+        <div class="graph-trace-section">
+          <h5>Procedures (GOVERNS)</h5>
+          ${renderNodeList(procedures, "No procedures linked to these policies.")}
+        </div>
+
+        <div class="graph-trace-section" style="margin-top:14px;">
+          <h5>Risk categories (ADDRESSES)</h5>
+          ${renderNodeList(riskCategories, "No risk categories linked.")}
+        </div>
+
+        <div class="graph-trace-section">
+          <h5>Activities (APPLIES_TO_ACTIVITY)</h5>
+          ${renderNodeList(activities, "No activities linked.")}
+        </div>
+
+      </div>
+    `;
+  }
+
+  function renderTraceError(msg) {
+    const el = document.getElementById("traceResult");
+    if (el)
+      el.innerHTML = `<div class="graph-empty" style="text-align:left;padding:10px 0;color:#c0392b;">${escHtml(msg)}</div>`;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Initialise trace search
+  // ---------------------------------------------------------------------------
+
+  function initTrace() {
+    const input = document.getElementById("traceInput");
+    const btn = document.getElementById("traceBtn");
+    if (!input || !btn) return;
+
+    async function doTrace() {
+      const raw = input.value.trim();
+      if (!raw) return;
+
+      // Accept with or without "ORG-" prefix; strip it — the server adds OBL- prefix
+      const id = raw.replace(/^OBL-/i, "");
+
+      const result = document.getElementById("traceResult");
+      if (result)
+        result.innerHTML =
+          '<div class="graph-empty" style="text-align:left;padding:8px 0;">Tracing…</div>';
+
+      try {
+        const chain = await apiFetch(`/api/graph/trace/${encodeURIComponent(id)}`);
+        renderTrace(chain);
+      } catch (e) {
+        renderTraceError(e.message || String(e));
+      }
+    }
+
+    btn.addEventListener("click", doTrace);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doTrace();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Escape HTML
+  // ---------------------------------------------------------------------------
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ---------------------------------------------------------------------------
+  // Page load
+  // ---------------------------------------------------------------------------
+
+  async function load() {
+    const loading = document.getElementById("graphLoading");
+    const panels = document.getElementById("graphPanels");
+    const empty = document.getElementById("graphEmpty");
+
+    try {
+      // Fetch stats first to decide which state to show
+      const stats = await apiFetch("/api/graph/stats");
+
+      if (loading) loading.style.display = "none";
+
+      if (!stats.totalNodes || stats.totalNodes === 0) {
+        // Graph not seeded
+        if (empty) empty.style.display = "";
+        return;
+      }
+
+      // Graph has data — show panels
+      if (panels) panels.style.display = "";
+
+      renderStats(stats);
+
+      // Fetch unimplemented obligations for gap panel
+      const gapData = await apiFetch("/api/graph/unimplemented");
+      renderGaps(gapData.nodes || []);
+
+      // Update last-updated header
+      const lu = document.getElementById("lastUpdated");
+      if (lu) {
+        const now = new Date().toISOString();
+        lu.textContent = `as of ${now.slice(0, 16).replace("T", " ")}Z`;
+      }
+    } catch (e) {
+      if (loading) {
+        loading.innerHTML = `<div class="graph-empty" style="color:#c0392b;">Failed to load graph data: ${escHtml(e.message || String(e))}</div>`;
+      }
+    }
+  }
+
+  function initRefresh() {
+    const btn = document.getElementById("refreshBtn");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.classList.add("is-busy");
+      try {
+        await load();
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("is-busy");
+      }
+    });
+    // Expose for _shell.js refresh instrumentation
+    window.bankShell = window.bankShell || {};
+    window.bankShell.pageReload = load;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    load();
+    initTrace();
+    initRefresh();
+  });
+})();

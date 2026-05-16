@@ -84,6 +84,7 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { registerGraphRoutes } from "./graph-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
@@ -1567,6 +1568,14 @@ const server = Bun.serve({
     // RMS register hub + per-register page (Slice 4).
     if (req.method === "GET" && (url.pathname === "/rms" || url.pathname === "/rms/")) {
       return serveStatic("/rms.html");
+    }
+    // ── Regulatory knowledge graph endpoints ──────────────────────────────
+    // Authority: PR #424 (graph substrate); Principle 2 (single-graph
+    // discipline). The graph DB is lazy-initialised; endpoints handle
+    // empty state (totalNodes === 0) gracefully.
+    {
+      const graphResponse = registerGraphRoutes(url.pathname, req.method);
+      if (graphResponse) return graphResponse;
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname);

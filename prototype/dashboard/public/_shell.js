@@ -192,7 +192,10 @@
     },
     {
       dept: "Compliance & Legal",
-      pages: [{ label: "Obligations & Compliance", href: "/compliance.html" }],
+      pages: [
+        { label: "Obligations & Compliance", href: "/compliance.html" },
+        { label: "Regulatory Graph", href: "/graph.html" },
+      ],
     },
     {
       dept: "Operations",
