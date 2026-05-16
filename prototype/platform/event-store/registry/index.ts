@@ -60,6 +60,7 @@ export {
 } from "./governance";
 export { REGULATORY_EVENT_TYPES } from "./regulatory";
 export { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
+export { MISSING_EVENT_TYPES } from "./missing-types";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -85,6 +86,7 @@ import {
   MARKETS_EVENT_TYPES,
   PERIOD_CLOSE_EVENT_TYPES,
 } from "./markets";
+import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { GOAL_LOOP_EVENT_TYPES, RUNTIME_EVENT_TYPES } from "./runtime";
@@ -115,6 +117,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...PERFORMANCE_EVENT_TYPES,
   ...ANALYTICS_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES_REGISTRY,
+  ...MISSING_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
