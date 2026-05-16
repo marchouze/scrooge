@@ -8,6 +8,7 @@ import beaEventTriage from "../bea-event-triage";
 import beaFxPostingEngine from "../bea-fx-posting-engine";
 import beaGoalLoop from "../bea-goal-loop";
 import beaM1IfrsClassificationRules from "../bea-m1-ifrs-classification-rules";
+import beaPeriodClose from "../bea-period-close";
 
 export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:goal-loop": beaGoalLoop,
@@ -15,4 +16,5 @@ export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:fx-posting-engine": beaFxPostingEngine,
   "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
   "bea:event-triage": beaEventTriage,
+  "bea:period-close": beaPeriodClose,
 };

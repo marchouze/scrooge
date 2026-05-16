@@ -95,6 +95,7 @@
     "agent:kai-m1-cdm-typescript-bindings": "bun run runtime/run.ts --agent Kai --trigger m1-cdm-typescript-bindings",
     "agent:kai-pre-trade-gateway-aggregator": "bun run runtime/run.ts --agent Kai --trigger pre-trade-gateway-aggregator",
     "agent:bea-accounting-readiness": "bun run runtime/run.ts --agent Bea --trigger accounting-readiness",
+    "agent:bea-period-close": "bun run runtime/run.ts --agent Bea --trigger period-close",
     "agent:yael-tax-readiness": "bun run runtime/run.ts --agent Yael --trigger tax-readiness",
     "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",
     "agent:imani-legal-readiness": "bun run runtime/run.ts --agent Imani --trigger legal-readiness",

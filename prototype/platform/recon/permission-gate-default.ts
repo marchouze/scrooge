@@ -137,6 +137,10 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Supersession annotation integrity recon — read-only replay of CeoDecision
   // events; wrapping the read path with the gate is a no-op.
   "platform/recon/supersession-annotation-integrity.ts",
+  // M2 Slice 2 — period-close handler unit tests. Co-located with the module
+  // per the per-module test convention. Raw EventStore(":memory:") in tests is
+  // a build-phase fixture, not a production access path. T-01 carve-out.
+  "platform/accounting/period-close-handler.test.ts",
   // Backfill CLI entry point — emits CeoDecision events synthesised from
   // on-disk Owner Inbox records at boot / CI. Acts as a composition root in
   // the same way platform/composition.ts does: the raw store is constructed
