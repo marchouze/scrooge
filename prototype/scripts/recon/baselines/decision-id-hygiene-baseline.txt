@@ -1,15 +1,10 @@
-# D-DECISIONS-FRAMEWORK-REDESIGN Slice C — baseline.
+# D-DECISIONS-FRAMEWORK-REDESIGN Slice D — baseline updated.
 #
-# Sprint IDs (5): S3-S8 were pre-D-* sprint identifiers emitted by the old
-# backfill-from-records.ts as CeoDecision events. They fail VALID_SLUG (no D- prefix).
-# The new migration maps them to canonical slugs, but the old CeoDecision events
-# persist in CI because backfill:decisions still runs before migrate:decisions-backfill.
-# Fix: retire backfill-from-records.ts (follow-on cleanup, Slice D/E).
-S3
-S5
-S6
-S7
-S8
+# Sprint IDs (S3-S8) removed: backfill-from-records.ts is now a retired no-op
+# stub. The old script emitted CeoDecision events with raw sprint IDs (no D-
+# prefix) which failed VALID_SLUG. With the old script retired, those IDs are
+# no longer emitted; the new migrate:decisions-backfill maps them to canonical
+# D-* slugs. No baseline suppression needed.
 #
 # Prefix-shadow triage (8 items):
 # These IDs are root-level siblings of namespaced slice IDs (e.g. D-RMS-PHASE-1
