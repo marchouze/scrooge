@@ -36,6 +36,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { newEventId } from "../../core/types";
+import { clock } from "../../composition";
 import {
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,
@@ -167,7 +168,7 @@ export function runEodFxRevaluation(
   valuationDate: string,
   rateSource: FxRateSource = staticRateSource,
 ): EodRevaluationResult {
-  const revaluedAt = new Date().toISOString();
+  const revaluedAt = clock.now();
 
   // Step 1: Collect all FX trades.
   const trades = new Map<string, FxTradeExecutedPayload>();

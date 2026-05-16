@@ -16,6 +16,7 @@
 //          Anya (Data / analytics engineer, engineering)
 
 import { newEventId } from "../../core/types";
+import { clock } from "../../composition";
 import { makeTradeReportSubmitted } from "../../event-store/event-types/regulatory-reporting";
 import type { EventStore } from "../../event-store/store";
 
@@ -54,8 +55,8 @@ export function emitFinsuvPendingReport(
   submittedAt?: string,
   finsurvCategory?: string,
 ): void {
-  const asOf = new Date().toISOString().slice(0, 10);
-  const resolvedSubmittedAt = submittedAt ?? new Date().toISOString();
+  const asOf = clock.now().slice(0, 10);
+  const resolvedSubmittedAt = submittedAt ?? clock.now();
 
   const payload: Parameters<typeof makeTradeReportSubmitted>[0]["payload"] = {
     tradeId,
