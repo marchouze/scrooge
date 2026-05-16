@@ -35,11 +35,11 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { clock, eventStore } from "../../platform/composition";
-import { LocalFsDocumentStore, defaultDocumentStore } from "../../platform/document-store";
-import { recordBriefIssued } from "../../platform/records";
+import { type LocalFsDocumentStore, defaultDocumentStore } from "../../platform/document-store";
 import type { AgentBriefIssuedPayload, RmsAgentRef } from "../../platform/event-store/event-types";
+import { recordBriefIssued } from "../../platform/records";
 import {
   die,
   emitOk,
@@ -157,7 +157,8 @@ function main(): void {
     return;
   }
 
-  const briefId = briefIdOverride ?? `brief:${slugify(toName)}:${slugify(title)}:${asOf.slice(0, 10)}`;
+  const briefId =
+    briefIdOverride ?? `brief:${slugify(toName)}:${slugify(title)}:${asOf.slice(0, 10)}`;
 
   const issuedTo: RmsAgentRef = {
     name: toName,

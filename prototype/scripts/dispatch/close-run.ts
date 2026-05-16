@@ -36,13 +36,7 @@ import type {
   RmsAgentRef,
 } from "../../platform/event-store/event-types";
 import { recordAgentRunCompleted } from "../../platform/records";
-import {
-  die,
-  emitOk,
-  optionalRepeatable,
-  parseArgs,
-  requireString,
-} from "./args";
+import { die, emitOk, optionalRepeatable, parseArgs, requireString } from "./args";
 
 const REPEATABLE = new Set(["deliverable", "cite", "gap", "follow-on"]);
 const OUTCOMES = ["delivered", "blocked", "withdrawn"] as const;
@@ -59,8 +53,8 @@ function parseFollowOns(values: readonly string[]): AgentRunCompletedFollowOnRou
   return values.map((raw) => {
     const parts = raw.split(":");
     if (parts.length < 3) die(`--follow-on must be 'kind:target:directive', got: ${raw}`);
-    const kind = parts[0]!.trim();
-    const target = parts[1]!.trim();
+    const kind = (parts[0] ?? "").trim();
+    const target = (parts[1] ?? "").trim();
     const directive = parts.slice(2).join(":").trim();
     if (!["agent", "decision", "register-update"].includes(kind)) {
       die(`--follow-on kind must be one of agent|decision|register-update, got: ${kind}`);

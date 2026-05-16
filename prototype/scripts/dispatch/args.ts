@@ -17,7 +17,10 @@ export type ParsedArgs = Readonly<Record<string, string | string[]>>;
  * `repeatableFlags`) collect into a string[]. Single-value flags overwrite.
  * Bare flags without a value are rejected (no boolean flags in this CLI).
  */
-export function parseArgs(argv: readonly string[], repeatableFlags: ReadonlySet<string>): ParsedArgs {
+export function parseArgs(
+  argv: readonly string[],
+  repeatableFlags: ReadonlySet<string>,
+): ParsedArgs {
   const out: Record<string, string | string[]> = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];

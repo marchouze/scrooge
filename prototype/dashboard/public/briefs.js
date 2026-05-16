@@ -29,7 +29,9 @@
 
   function renderAgent(a) {
     if (!a || typeof a !== "object" || typeof a.name !== "string") return "—";
-    return a.position ? `${esc(a.name)} <span class="muted small">(${esc(a.position)})</span>` : esc(a.name);
+    return a.position
+      ? `${esc(a.name)} <span class="muted small">(${esc(a.position)})</span>`
+      : esc(a.name);
   }
 
   function statusBadge(status) {
@@ -193,9 +195,7 @@
 
     const body = visible
       .map((r) => {
-        const expected = Array.isArray(r.expectedOutputs)
-          ? r.expectedOutputs.length
-          : 0;
+        const expected = Array.isArray(r.expectedOutputs) ? r.expectedOutputs.length : 0;
         return `<tr data-brief-id="${esc(r.briefId)}" style="cursor:pointer;" tabindex="0" role="button" aria-label="Open brief ${esc(r.briefId)}">
           <td><code>${esc(r.briefId)}</code></td>
           <td>${esc(r.title)}</td>
@@ -221,7 +221,7 @@
       </div>`;
 
     // Wire row clicks.
-    content.querySelectorAll("tr[data-brief-id]").forEach((tr) => {
+    for (const tr of content.querySelectorAll("tr[data-brief-id]")) {
       tr.addEventListener("click", () => openDrawer(tr.getAttribute("data-brief-id")));
       tr.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -229,7 +229,7 @@
           openDrawer(tr.getAttribute("data-brief-id"));
         }
       });
-    });
+    }
   }
 
   // ------------------------------------------------------------------
@@ -282,10 +282,7 @@
     const expectedHtml =
       Array.isArray(row.expectedOutputs) && row.expectedOutputs.length > 0
         ? `<ul style="margin:var(--space-2) 0;padding-left:var(--space-4);">${row.expectedOutputs
-            .map(
-              (eo) =>
-                `<li><strong>${esc(eo.kind)}</strong> — ${esc(eo.description)}</li>`,
-            )
+            .map((eo) => `<li><strong>${esc(eo.kind)}</strong> — ${esc(eo.description)}</li>`)
             .join("")}</ul>`
         : '<p class="muted">none declared</p>';
 
@@ -346,12 +343,13 @@
       if (lu) lu.textContent = `as of ${fmtTs(registerData.asOf ?? "")}`;
       render();
     } catch (err) {
-      $("briefsContent").innerHTML = `<p class="muted" style="color:var(--danger,#c33);">Failed to load briefs: ${esc(String(err))}</p>`;
+      $("briefsContent").innerHTML =
+        `<p class="muted" style="color:var(--danger,#c33);">Failed to load briefs: ${esc(String(err))}</p>`;
     }
   }
 
   function wireFilters() {
-    document.querySelectorAll('input[name="statusFilter"]').forEach((el) => {
+    for (const el of document.querySelectorAll('input[name="statusFilter"]')) {
       el.addEventListener("change", () => {
         if (el.checked) {
           currentStatus = el.value;
@@ -359,7 +357,7 @@
           render();
         }
       });
-    });
+    }
     $("agentFilter").addEventListener("change", (e) => {
       currentAgent = e.target.value;
       writeUrl();

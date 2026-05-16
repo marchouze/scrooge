@@ -23,14 +23,7 @@
 import { clock } from "../../platform/composition";
 import type { RmsAgentRef } from "../../platform/event-store/event-types";
 import { recordAgentRunStarted } from "../../platform/records";
-import {
-  die,
-  emitOk,
-  optionalRepeatable,
-  optionalString,
-  parseArgs,
-  requireString,
-} from "./args";
+import { die, emitOk, optionalRepeatable, optionalString, parseArgs, requireString } from "./args";
 
 const REPEATABLE = new Set(["cite"]);
 const SUBSTRATE_VALUES = ["agent-runtime", "scrooge-coordinated-in-session"] as const;
@@ -63,9 +56,7 @@ function main(): void {
   const citations = cites.length > 0 ? cites : ["D-RMS-PHASE-1"];
 
   const asOf = clock.now();
-  const runId =
-    runIdOverride ??
-    `run:${slugify(agentName)}:${asOf.replace(/[:.]/g, "-")}`;
+  const runId = runIdOverride ?? `run:${slugify(agentName)}:${asOf.replace(/[:.]/g, "-")}`;
 
   const agent: RmsAgentRef = {
     name: agentName,
