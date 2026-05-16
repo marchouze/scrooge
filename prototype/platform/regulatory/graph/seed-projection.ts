@@ -152,7 +152,7 @@ function edgeId(prefix: string): string {
   return `${prefix}-${++_edgeSeq}`;
 }
 
-const REPO_ROOT = resolve(import.meta.dir, "../../../../..");
+const REPO_ROOT = resolve(import.meta.dir, "../../../..");
 
 /** Absolute path relative to repo root */
 function repoPath(...parts: string[]): string {
