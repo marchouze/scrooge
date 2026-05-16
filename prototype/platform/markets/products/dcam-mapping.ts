@@ -20,9 +20,9 @@
 //
 // Author: Kai (Quantitative Markets Architect, engineering)
 
-import type { ProductFamily } from "./types";
 import { getProductDcamAlignment } from "../../taxonomies";
 import type { DcamAlignment } from "../../taxonomies";
+import type { ProductFamily } from "./types";
 
 // ---------------------------------------------------------------------------
 // ProductFamily → DCAM product scope code bridge

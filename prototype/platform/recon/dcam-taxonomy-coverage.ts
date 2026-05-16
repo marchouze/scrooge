@@ -20,8 +20,8 @@
 // Author: Kai (Quantitative Markets Architect, engineering)
 
 import {
-  getAllProductFamilyDcamRecords,
   PRODUCT_FAMILY_TO_SCOPE_CODE,
+  getAllProductFamilyDcamRecords,
 } from "../markets/products/dcam-mapping";
 import type { ProductFamily } from "../markets/products/types";
 import { PHYSICAL_PRODUCT_SCOPE } from "../taxonomies/dcam/layer3-physical";
@@ -147,9 +147,9 @@ async function main(): Promise<void> {
 
   // ── Check 5: no orphan scope codes in PHYSICAL_PRODUCT_SCOPE ─────────────
   // Every scope code in PHYSICAL_PRODUCT_SCOPE should be reachable from a ProductFamily.
-  const referencedScopeCodes = new Set(Object.values(PRODUCT_FAMILY_TO_SCOPE_CODE));
+  const referencedScopeCodesSet: Set<string> = new Set(Object.values(PRODUCT_FAMILY_TO_SCOPE_CODE));
   for (const scopeCode of Object.keys(PHYSICAL_PRODUCT_SCOPE)) {
-    if (!referencedScopeCodes.has(scopeCode as ReturnType<typeof Object.keys>[number])) {
+    if (!referencedScopeCodesSet.has(scopeCode)) {
       findings.push({
         level: "warn",
         family: "structured", // placeholder — not family-specific
