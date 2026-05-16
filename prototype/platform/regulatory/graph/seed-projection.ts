@@ -860,6 +860,122 @@ export async function runSeed(): Promise<SeedStats> {
     });
   }
 
+  // ── Step 12: DCAM taxonomy nodes + CLASSIFIES edges ─────────────────────
+  //
+  // Seed one Activity node per ProductFamily (using the DCAM scope-code as
+  // the node id prefix), plus CLASSIFIES edges linking each scope-code
+  // Activity node to its FIBO concept document node (Layer 1) and to the
+  // obligation Activity nodes seeded in Step 7.
+  //
+  // Graph design:
+  //   DCAM-<scopeCode> : Activity node — represents the DCAM data domain
+  //   DCAM-<scopeCode> → REG-BCBS / REG-IASB (GOVERNS) — standard-setter anchor
+  //   DCAM-<scopeCode> → DOC-<fiboIri-slug> (MAPS_TO) — FIBO conceptual anchor
+  //
+  // "CLASSIFIES" is not in the ontology edge set; we use MAPS_TO (cross-reference)
+  // for the FIBO link and GOVERNS (bank-internal) for the standard-setter link.
+
+  const { getAllProductFamilyDcamRecords: getDcamRecords } = await import(
+    "../../markets/products/dcam-mapping"
+  );
+
+  const dcamRecords = getDcamRecords();
+
+  for (const record of dcamRecords) {
+    const { family, scopeCode, dcamAlignment, layer3 } = record;
+
+    // Primary DCAM data-domain Activity node (one per scope code)
+    const dcamNodeId = `DCAM-${scopeCode}`;
+    const dcamNode: GraphNode = {
+      id: dcamNodeId,
+      nodeType: "Activity",
+      label: `DCAM Data Domain: ${scopeCode}`,
+      metadata: {
+        dcamScopeCode: scopeCode,
+        productFamily: family,
+        layer3AttributeGroupCount: layer3.dataAttributeGroups.length,
+        fiboConceptKey: dcamAlignment?.conceptual
+          ? (dcamAlignment.conceptual.fiboIri ?? null)
+          : null,
+        fiboLabel: dcamAlignment?.conceptual?.fiboLabel ?? null,
+        layer2StandardCount: dcamAlignment?.logical?.length ?? 0,
+        layer3Iso20022Count: dcamAlignment?.physical?.length ?? 0,
+      },
+    };
+    upsertNode(dcamNode);
+
+    // Per-family Layer 3 attribute-group nodes (data concepts)
+    for (const dag of layer3.dataAttributeGroups) {
+      const dagNodeId = `DCAM-DAG-${dag.id}`;
+      const dagNode: GraphNode = {
+        id: dagNodeId,
+        nodeType: "Activity",
+        label: `${dag.label} [${dag.id}]`,
+        metadata: {
+          dagId: dag.id,
+          description: dag.description,
+          productFamily: family,
+          scopeCode,
+          carriedByEvents: dag.carriedByEvents.join("|"),
+        },
+      };
+      upsertNode(dagNode);
+
+      // PART_OF: attribute-group → scope-code domain node
+      upsertEdge({
+        id: edgeId("PART_OF"),
+        fromId: dagNodeId,
+        toId: dcamNodeId,
+        edgeType: "PART_OF",
+        extractionMethod: "rule-based",
+        confidenceScore: 1.0,
+        extractedAt: now,
+      });
+    }
+
+    // MAPS_TO: DCAM domain node → FIBO concept document node (Layer 1 anchor)
+    if (dcamAlignment?.conceptual) {
+      const { fiboModule } = dcamAlignment.conceptual;
+      // Map FIBO module → the regulatory standard-setter regulator node
+      const fiboRegMap: Record<string, string> = {
+        SEC: "REG-IASB",
+        DER: "REG-IASB",
+        FBC: "REG-IASB",
+        BE: "REG-IASB",
+        FND: "REG-IASB",
+        IND: "REG-IASB",
+        BP: "REG-IASB",
+        LOAN: "REG-IASB",
+      };
+      const regulatorId = fiboRegMap[fiboModule] ?? "REG-IASB";
+
+      // GOVERNS: standard-setter → DCAM domain node
+      upsertEdge({
+        id: edgeId("GOVERNS"),
+        fromId: regulatorId,
+        toId: dcamNodeId,
+        edgeType: "GOVERNS",
+        extractionMethod: "rule-based",
+        confidenceScore: 0.85,
+        extractedAt: now,
+      });
+    }
+
+    // GOVERNS: BCBS → DCAM domain node for risk-bearing products
+    const bcbsFamilies = new Set(["listed-bond", "repo", "otc-ird", "fx"]);
+    if (bcbsFamilies.has(family)) {
+      upsertEdge({
+        id: edgeId("GOVERNS"),
+        fromId: "REG-BCBS",
+        toId: dcamNodeId,
+        edgeType: "GOVERNS",
+        extractionMethod: "rule-based",
+        confidenceScore: 0.8,
+        extractedAt: now,
+      });
+    }
+  }
+
   // ── Final stats ──────────────────────────────────────────────────────────
 
   const totalNodes = getNodeCount();
