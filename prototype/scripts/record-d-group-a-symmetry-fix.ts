@@ -27,8 +27,8 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { eventStore } from "../platform/composition";
+import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { requestDecision } from "../runtime/decisions/record";
 
 // ---------------------------------------------------------------------------
@@ -90,15 +90,11 @@ function emitRequestedIfMissing(
 //    Source spec: Owner Inbox/actioned/2026-05-11_owen_d-principles-p2-p6-merge_decision-spec.md
 //    Requested opener: day before approval (2026-05-11T00:00:00.000Z)
 // ---------------------------------------------------------------------------
-emitRequestedIfMissing(
-  "D-PRINCIPLES-P2-P6-MERGE",
-  "2026-05-11T00:00:00.000Z",
-  {
-    title: "Principles 2 and 6 — merge into single principle",
-    rationale:
-      "Backfill: requested opener for D-PRINCIPLES-P2-P6-MERGE. Source: Owen (Company Secretary, governance) decision spec filed 2026-05-11. Approved via PR #215 merge. The CeoDecision approve event was emitted in the close-out script; the requested opener was missing from the event chain.",
-  },
-);
+emitRequestedIfMissing("D-PRINCIPLES-P2-P6-MERGE", "2026-05-11T00:00:00.000Z", {
+  title: "Principles 2 and 6 — merge into single principle",
+  rationale:
+    "Backfill: requested opener for D-PRINCIPLES-P2-P6-MERGE. Source: Owen (Company Secretary, governance) decision spec filed 2026-05-11. Approved via PR #215 merge. The CeoDecision approve event was emitted in the close-out script; the requested opener was missing from the event chain.",
+});
 
 // ---------------------------------------------------------------------------
 // 2. D-MARKETS-CAPEX-OVERRUN-REVIEW
@@ -108,15 +104,11 @@ emitRequestedIfMissing(
 //    terminal event exists, the decision is open. We emit the requested
 //    opener at 2026-05-12.
 // ---------------------------------------------------------------------------
-emitRequestedIfMissing(
-  "D-MARKETS-CAPEX-OVERRUN-REVIEW",
-  "2026-05-12T00:00:00.000Z",
-  {
-    title: "CapEx overrun — R45m prior estimate vs R5m approved envelope",
-    rationale:
-      "Backfill: requested opener for D-MARKETS-CAPEX-OVERRUN-REVIEW. Source: Saskia (Platform engineer) flag report 2026-05-12. The prior franchise-design estimate carried ~R45m vs the CEO-approved R5m envelope under D-MARKETS-CAPITAL-TIME-SHAPE. Marc was asked to formally confirm the R45m estimate is withdrawn. The requested opener ensures the symmetry chain is valid whether or not a terminal event is subsequently emitted.",
-  },
-);
+emitRequestedIfMissing("D-MARKETS-CAPEX-OVERRUN-REVIEW", "2026-05-12T00:00:00.000Z", {
+  title: "CapEx overrun — R45m prior estimate vs R5m approved envelope",
+  rationale:
+    "Backfill: requested opener for D-MARKETS-CAPEX-OVERRUN-REVIEW. Source: Saskia (Platform engineer) flag report 2026-05-12. The prior franchise-design estimate carried ~R45m vs the CEO-approved R5m envelope under D-MARKETS-CAPITAL-TIME-SHAPE. Marc was asked to formally confirm the R45m estimate is withdrawn. The requested opener ensures the symmetry chain is valid whether or not a terminal event is subsequently emitted.",
+});
 
 // ---------------------------------------------------------------------------
 // 3. D-POLICY-DOCUMENT-HOME
@@ -124,15 +116,11 @@ emitRequestedIfMissing(
 //    Source: Owner Inbox/2026-05-12_owen_policy-document-home-decision.md
 //    Requested opener: proposal date 2026-05-12
 // ---------------------------------------------------------------------------
-emitRequestedIfMissing(
-  "D-POLICY-DOCUMENT-HOME",
-  "2026-05-12T00:00:00.000Z",
-  {
-    title: "Canonical home for policy documents",
-    rationale:
-      "Backfill: requested opener for D-POLICY-DOCUMENT-HOME. Source: Owen (Company Secretary, governance) decision spec filed 2026-05-12. Approved 2026-05-14 via Scrooge CEO decision record. The CeoDecision approve event was emitted; the requested opener was missing from the event chain.",
-  },
-);
+emitRequestedIfMissing("D-POLICY-DOCUMENT-HOME", "2026-05-12T00:00:00.000Z", {
+  title: "Canonical home for policy documents",
+  rationale:
+    "Backfill: requested opener for D-POLICY-DOCUMENT-HOME. Source: Owen (Company Secretary, governance) decision spec filed 2026-05-12. Approved 2026-05-14 via Scrooge CEO decision record. The CeoDecision approve event was emitted; the requested opener was missing from the event chain.",
+});
 
 // ---------------------------------------------------------------------------
 // 4. D-AGENT-AUTONOMY-OPERATIONAL
@@ -140,15 +128,11 @@ emitRequestedIfMissing(
 //    Source: Owner Inbox/actioned/2026-05-11_atlas_agent-autonomy-operational-status-and-delta-brief.md
 //    Requested opener: 2026-05-11T00:00:00.000Z (same day, before approval)
 // ---------------------------------------------------------------------------
-emitRequestedIfMissing(
-  "D-AGENT-AUTONOMY-OPERATIONAL",
-  "2026-05-11T00:00:00.000Z",
-  {
-    title: "Agent autonomy — close the four operational gaps to make Principle 6 production-true",
-    rationale:
-      "Backfill: requested opener for D-AGENT-AUTONOMY-OPERATIONAL. Source: Atlas (Core banking platform architect, engineering) delta brief 2026-05-11. Approved 2026-05-11 via Scrooge CEO decision record (PR #205 context). The CeoDecision approve event was emitted; the requested opener was missing from the event chain.",
-  },
-);
+emitRequestedIfMissing("D-AGENT-AUTONOMY-OPERATIONAL", "2026-05-11T00:00:00.000Z", {
+  title: "Agent autonomy — close the four operational gaps to make Principle 6 production-true",
+  rationale:
+    "Backfill: requested opener for D-AGENT-AUTONOMY-OPERATIONAL. Source: Atlas (Core banking platform architect, engineering) delta brief 2026-05-11. Approved 2026-05-11 via Scrooge CEO decision record (PR #205 context). The CeoDecision approve event was emitted; the requested opener was missing from the event chain.",
+});
 
 console.log(
   JSON.stringify({
