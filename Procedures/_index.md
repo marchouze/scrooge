@@ -92,10 +92,10 @@
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
 | Payments Policy v0.1 (STUB) + Sponsor-Bank Operating Policy v0.1 (STUB) | [`outbound-payment-sponsor-bank-channel.md`](by-policy/outbound-payment-sponsor-bank-channel.md) | Tomas · Eitan · Mira (sanctions gate) · Imani (contract) | **POPULATED** |
-| Payments Policy | `samos-cut-off.md` | Tomas | PLANNED |
-| Payments Policy | `bankserv-cycle.md` | Tomas | PLANNED |
-| Payments Policy | `reconciliation-break-handling.md` | Tomas | PLANNED |
-| Sponsor-Bank Operating Policy | `nostro-management.md` | Tomas + Eitan | PLANNED |
+| Payments Policy | [`samos-cut-off.md`](by-policy/samos-cut-off.md) (PROC-PAY-SCO-01 — internal cut-off discipline for SAMOS morning/afternoon cycles; correspondent processing buffer; calendar engine; `CutOffCheckPassed` / `CutOffDeferred` events) | Tomas (payments engineer) | **POPULATED** |
+| Payments Policy | [`bankserv-cycle.md`](by-policy/bankserv-cycle.md) (PROC-PAY-BSC-01 — cycle-timing discipline for EFT credit/debit, RTC, PayShap; scheme resolution; batch vs real-time paths; `SchemeCycleCheckPassed` / `SchemeCutOffDeferred` events) | Tomas (payments engineer) | **POPULATED** |
+| Payments Policy | [`reconciliation-break-handling.md`](by-policy/reconciliation-break-handling.md) (PROC-PAY-RBH-01 — three-way recon: trade-leg / payment-leg / ledger-leg + nostro-leg; break severity classification; `ReconciliationBreak` / `ReconciliationBreakResolved` events) | Tomas (payments engineer) · Bea (financial-reporting engineer) | **POPULATED** |
+| Sponsor-Bank Operating Policy · Payments Policy | [`nostro-management.md`](by-policy/nostro-management.md) (PROC-PAY-NM-01 — opening balance feed → PROC-RISK-ILF-01 Step 1; intraday projection; EoD reconciliation against correspondent statement; account maintenance; `NostroOpeningBalance` / `NostroEoDReconciliationComplete` events) | Tomas (payments engineer) · Eitan (treasury & ALM engineer) | **POPULATED** |
 | SWIFT CSP | `swift-csp-attestation.md` | Tomas + Senna | PLANNED |
 
 ## Finance, accounting, tax, treasury
