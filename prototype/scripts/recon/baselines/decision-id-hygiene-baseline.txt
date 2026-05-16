@@ -1,5 +1,15 @@
 # D-DECISIONS-FRAMEWORK-REDESIGN Slice C — baseline.
-# S3-S8 legacy IDs remapped in migration script LEGACY_ID_MAP.
+#
+# Sprint IDs (5): S3-S8 were pre-D-* sprint identifiers emitted by the old
+# backfill-from-records.ts as CeoDecision events. They fail VALID_SLUG (no D- prefix).
+# The new migration maps them to canonical slugs, but the old CeoDecision events
+# persist in CI because backfill:decisions still runs before migrate:decisions-backfill.
+# Fix: retire backfill-from-records.ts (follow-on cleanup, Slice D/E).
+S3
+S5
+S6
+S7
+S8
 #
 # Prefix-shadow triage (8 items):
 # These IDs are root-level siblings of namespaced slice IDs (e.g. D-RMS-PHASE-1
