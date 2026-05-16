@@ -21,10 +21,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { newEventId } from "../../core/types";
 import { EventStore } from "../../event-store/store";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
-import type { ConductMetrics, TCFOutcome } from "./types";
-import { CMS_REGULATED_ENTITIES } from "./types";
 import { generateCmsDisclosure } from "./generator";
 import { cmsPeriodCloseSubscriber } from "./period-close-subscriber";
+import type { ConductMetrics, TCFOutcome } from "./types";
+import { CMS_REGULATED_ENTITIES } from "./types";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const ENTITY_SECURITIES = "LE-ZA-HOZ-SECURITIES";

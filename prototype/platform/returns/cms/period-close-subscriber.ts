@@ -22,8 +22,8 @@
 import type { AccountingPeriodClosedPayload } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
-import type { CMSDisclosure } from "./types";
 import { generateCmsDisclosure } from "./generator";
+import type { CMSDisclosure } from "./types";
 import { CMS_REGULATED_ENTITIES } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -105,20 +105,21 @@ export function cmsPeriodCloseSubscriber(
       reportingDate: input.closedPayload.closedAt,
       eventStore: input.eventStore,
       periodStart: input.periodStart,
-      periodLabel: input.periodLabel,
+      ...(input.periodLabel !== undefined ? { periodLabel: input.periodLabel } : {}),
     });
-    return { disclosure, skipped, skipReason };
+    return skipReason !== undefined ? { disclosure, skipped, skipReason } : { disclosure, skipped };
   }
 
+  const periodLabel = input.periodLabel ?? input.closedPayload.closedAt;
   const { disclosure, skipped, skipReason } = generateCmsDisclosure({
     entityId: input.entity,
     reportingDate: input.closedPayload.closedAt,
     eventStore: input.eventStore,
     periodStart: input.periodStart,
-    periodLabel: input.periodLabel ?? input.closedPayload.closedAt,
+    periodLabel,
   });
 
-  return { disclosure, skipped, skipReason };
+  return skipReason !== undefined ? { disclosure, skipped, skipReason } : { disclosure, skipped };
 }
 
 // Re-export the entity list so external code can reference it without

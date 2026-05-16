@@ -24,12 +24,7 @@
 //   Devon (Chief Operating Officer, governance — TCF oversight).
 
 import type { EventStore } from "../../event-store/store";
-import type {
-  CMSDisclosure,
-  ConductComplaint,
-  ConductMetrics,
-  TCFOutcome,
-} from "./types";
+import type { CMSDisclosure, ConductComplaint, ConductMetrics, TCFOutcome } from "./types";
 import { CMS_REGULATED_ENTITIES } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -71,12 +66,6 @@ function zeroByCF(): Record<TCFOutcome, number> {
 function parseTs(iso: string): number {
   const t = Date.parse(iso);
   return Number.isFinite(t) ? t : 0;
-}
-
-/** Calendar days between two ISO 8601 timestamps. */
-function daysBetween(from: string, to: string): number {
-  const diff = parseTs(to) - parseTs(from);
-  return Math.max(0, Math.round(diff / 86_400_000));
 }
 
 // ---------------------------------------------------------------------------

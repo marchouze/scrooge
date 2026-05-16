@@ -173,6 +173,10 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // M3 Slice 5 BA 350 subscriber — per-module fixture test; same rationale.
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
   "platform/returns/ba350/",
+  // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
+  // rationale as tests/; builds in-memory stores for conduct scenario assertion).
+  // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
+  "platform/returns/cms/",
 ];
 
 // Actor URNs that are accepted today as "no policy yet" without raising the
