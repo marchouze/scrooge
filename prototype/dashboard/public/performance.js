@@ -47,9 +47,16 @@
       meets: ["tier-meets", "Meets"],
       "needs-improvement": ["tier-needs-improvement", "Needs improvement"],
       unsatisfactory: ["tier-unsatisfactory", "Unsatisfactory"],
+      // Neutral grey — agent not yet dispatched by autonomous scheduler; not a failure.
+      "substrate-limited": ["tier-substrate-limited", "Substrate limited"],
     };
     const [cls, label] = map[tier] ?? ["tier-meets", tier ?? "—"];
     return `<span class="tier-badge ${cls}">${label}</span>`;
+  }
+
+  /** Resolve the display tier for an agent — prefer displayTier (new field) over latestTier. */
+  function resolveDisplayTier(agent) {
+    return agent.displayTier ?? agent.latestTier;
   }
 
   function trendArrow(trend) {
@@ -203,7 +210,7 @@
         <td>${pct(agent.latestScores?.delivery)}</td>
         <td>${pct(agent.latestScores?.quality)}</td>
         <td>${pct(agent.latestScores?.strategic)}</td>
-        <td>${tierBadge(agent.latestTier)}</td>
+        <td>${tierBadge(resolveDisplayTier(agent))}</td>
         <td>${trendArrow(agent.trend)}</td>
         <td style="font-size:11.5px;color:var(--neutral-stone)">${fmtDate(agent.latestPeriod)}</td>
       </tr>`);
@@ -239,7 +246,8 @@
     const improving = Array.isArray(data.allAgents)
       ? data.allAgents.filter((a) => a.trend === "improving").length
       : 0;
-    const attention = (tc.needsImprovement ?? 0) + (tc.unsatisfactory ?? 0);
+    // attentionNeeded excludes substrate-limited agents (server-side filtered).
+    const attention = Array.isArray(data.attentionNeeded) ? data.attentionNeeded.length : 0;
 
     container.innerHTML = `
       <div class="perf-card">
@@ -259,6 +267,7 @@
           <span class="tier-chip tier-meets">${tc.meets ?? 0} meets</span>
           <span class="tier-chip tier-needs-improvement">${tc.needsImprovement ?? 0} improvement</span>
           <span class="tier-chip tier-unsatisfactory">${tc.unsatisfactory ?? 0} unsat.</span>
+          <span class="tier-chip tier-substrate-limited">${tc.substrateLimited ?? 0} substrate-limited</span>
         </div>
       </div>
       <div class="perf-card">
@@ -286,7 +295,7 @@
 
     const filtered = allAgents.filter((agent) => {
       if (!agentMatchesPeriod(agent, period)) return false;
-      if (tier && agent.latestTier !== tier) return false;
+      if (tier && resolveDisplayTier(agent) !== tier) return false;
       if (trend && agent.trend !== trend) return false;
       if (search) {
         const role = agentRole(agent.agentId).toLowerCase();

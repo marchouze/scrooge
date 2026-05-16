@@ -48,6 +48,10 @@ interface AgentPerformanceEvaluatedPayload {
     overall: number;
   };
   readonly tier: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory";
+  /** Substrate status folded from the evaluator result. Absent for legacy events. */
+  readonly substrateStatus?: "limited" | "operational";
+  /** Display tier: "substrate-limited" for agents with no runs and no failures. */
+  readonly displayTier?: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory" | "substrate-limited";
   readonly narrative: {
     strengths: string[];
     areasForImprovement: string[];
@@ -100,6 +104,10 @@ export interface AgentPerformanceState {
   readonly latestPeriod: string; // YYYY-MM-DD
   readonly latestOverallScore: number; // 0–1
   readonly latestTier: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory";
+  /** Substrate status: "limited" when no runs have been recorded (scheduler not yet active). */
+  readonly substrateStatus?: "limited" | "operational";
+  /** Display tier: "substrate-limited" for limited agents — excluded from attentionNeeded. */
+  readonly displayTier?: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory" | "substrate-limited";
   readonly latestScores: {
     delivery: number;
     quality: number;
@@ -180,11 +188,22 @@ function applyPerformanceEvaluated(
   const newHistory: AgentPerformanceHistoryEntry[] = [historyEntry, ...(existing?.history ?? [])];
 
   const feedbackPath = existing?.lastFeedbackPath;
+  // Substrate status / displayTier may be absent on legacy events emitted before
+  // the substrateStatus field was added to the evaluator.
+  const evalPayload = p as AgentPerformanceEvaluatedPayload & {
+    substrateStatus?: "limited" | "operational";
+    displayTier?: "exceeds" | "meets" | "needs-improvement" | "unsatisfactory" | "substrate-limited";
+  };
+  const substrateStatus = evalPayload.substrateStatus;
+  const displayTier = evalPayload.displayTier;
+
   const updated: AgentPerformanceState = {
     agentId: p.agentId,
     latestPeriod: p.evaluationPeriod,
     latestOverallScore: p.scores.overall,
     latestTier: p.tier,
+    ...(substrateStatus !== undefined ? { substrateStatus } : {}),
+    ...(displayTier !== undefined ? { displayTier } : {}),
     latestScores: { ...p.scores },
     latestNarrative: {
       strengths: [...p.narrative.strengths],
