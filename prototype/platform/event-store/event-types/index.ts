@@ -72,6 +72,9 @@ export * from "./agent-ops";
 export * from "./intranet";
 // FTP event family — Ravi (Treasury/ALM Engineer).
 export * from "./ftp";
+// Payments / settlement event family — Tomas (Operations & payments engineer),
+// Bea (Accounting & financial reporting engineer), Atlas (substrate).
+export * from "./payments";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -157,6 +160,7 @@ import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
+import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
@@ -185,6 +189,7 @@ export const TYPED_EVENT_TYPES = [
   ...AGENT_OPS_TYPED_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES,
   ...FTP_TYPED_EVENT_TYPES,
+  ...PAYMENTS_TYPED_EVENT_TYPES,
   ...GOVERNANCE_TYPED_EVENT_TYPES,
   ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
   ...PARTY_EVENT_TYPES,
