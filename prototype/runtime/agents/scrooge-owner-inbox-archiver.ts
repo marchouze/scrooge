@@ -46,7 +46,7 @@
 // Author: Atlas (Core banking platform architect, engineering) +
 //         Owen (Company Secretary, governance)
 
-import { existsSync, mkdirSync, readFileSync, renameSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import { logger } from "../../platform/composition";
@@ -129,6 +129,43 @@ function isDecisionRequired(filepath: string): boolean {
 }
 
 /**
+ * For Decision events (D-DECISIONS-FRAMEWORK-REDESIGN Slice C), there is no
+ * `sourceDoc` field on the payload. Instead, scan the Owner Inbox top-level
+ * for a `.md` file whose frontmatter `decision-id` matches the given
+ * decisionId. Returns the repo-relative path if found, or `""` if not.
+ */
+function findSourceDocByDecisionId(decisionId: string, ownerInboxDir: string): string {
+  let entries: string[];
+  try {
+    entries = readdirSync(ownerInboxDir, { withFileTypes: true })
+      .filter((d) => d.isFile() && d.name.endsWith(".md"))
+      .map((d) => d.name);
+  } catch {
+    return "";
+  }
+  for (const name of entries) {
+    const abs = resolve(ownerInboxDir, name);
+    let body: string;
+    try {
+      body = readFileSync(abs, "utf8");
+    } catch {
+      continue;
+    }
+    if (!body.startsWith("---")) continue;
+    const end = body.indexOf("\n---", 3);
+    if (end === -1) continue;
+    const fm = body.slice(0, end);
+    // Match `decision-id: <decisionId>` (allow surrounding whitespace).
+    const match = /^decision-id:\s*(.+?)\s*$/m.exec(fm);
+    if (match && match[1] === decisionId) {
+      // Return a repo-relative path: "Owner Inbox/<filename>"
+      return `Owner Inbox/${name}`;
+    }
+  }
+  return "";
+}
+
+/**
  * Build the recordId for an archival. Convention:
  *   record:decisions:<source-card-slug>:actioned
  * where <source-card-slug> is the source filename without `.md`.
@@ -144,7 +181,14 @@ function processCeoDecision(
 ): { outcome: ArchiveOutcome; eventsEmitted: number } {
   const payload = event.payload as Record<string, unknown>;
   const decisionId = String(payload.decisionId ?? "(unknown)");
-  const sourceDoc = typeof payload.sourceDoc === "string" ? payload.sourceDoc : "";
+  // CeoDecision events carry `sourceDoc` directly on the payload.
+  // Decision events (D-DECISIONS-FRAMEWORK-REDESIGN Slice C) carry
+  // `sourceDocHashes` instead; fall back to a scan of the Owner Inbox
+  // for a file whose frontmatter `decision-id` matches.
+  const sourceDoc =
+    typeof payload.sourceDoc === "string" && payload.sourceDoc
+      ? payload.sourceDoc
+      : findSourceDocByDecisionId(decisionId, ctx.ownerInboxDir ?? ctx.repoRoot);
 
   if (!sourceDoc) {
     return {
@@ -345,12 +389,14 @@ function processCeoDecision(
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
-  const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision");
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: accept both legacy CeoDecision
+  // and unified Decision events (the new canonical type).
+  const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision" || e.type === "Decision");
 
   if (ceoDecisions.length === 0) {
     return {
       eventsEmitted: 0,
-      summary: "no CeoDecision events in triggering set; nothing to archive",
+      summary: "no CeoDecision/Decision events in triggering set; nothing to archive",
       ok: true,
     };
   }
@@ -368,7 +414,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   return {
     eventsEmitted: totalEvents,
-    summary: `${ceoDecisions.length} CeoDecision events; ${archived} archived, ${skipped} skipped`,
+    summary: `${ceoDecisions.length} CeoDecision/Decision events; ${archived} archived, ${skipped} skipped`,
     ok: true,
   };
 };

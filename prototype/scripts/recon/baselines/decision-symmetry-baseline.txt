@@ -1,52 +1,27 @@
-# D-DECISIONS-FRAMEWORK-REDESIGN Slice B grandfathered set (49 entries).
-# Decisions closed without an explicit `requested` event; Slice C will
-# emit the missing opener.
-D-A22-RETIRE-LEGACY
-D-AGENT-AUTONOMY-OPERATIONAL
-D-AGENT-RUNTIME-AUTHORIZE
-D-BRAND-DESIGN-HIRE
-D-CI-GATE-INTEGRITY
-D-CI-GITHUB-PLAN-UPGRADE-DEFER
-D-COMP-FRAMEWORK-SIX-SEATS
-D-CRO-CLIMATE-FLUENCY
-D-DATA-PROVENANCE-SUBSTRATE
-D-DECISIONS-FRAMEWORK-REDESIGN
-D-EVENT-STORE-SCALING
-D-FIRST-DRY-RUN-SCENARIO
-D-FLEET-ROLLOUT-SEQUENCING
-D-FOLLOW-ON-ROUTER-TEST
-D-FSP-LICENCE-NECESSITY
-D-FX-CORRESPONDENT-PAIR-NAMING
-D-FX-SALES-TRADING-FRONTEND
-D-GROUP-STRUCTURE
-D-HIRE-COMPANY-SECRETARY
-D-HIRE-COMPLIANCE-LEAD
-D-HIRE-HUMAN-CRO
-D-HIRE-INDEPENDENT-CHAIR
-D-HIRE-NED-2
-D-HIRE-NED-3
-D-HIRE-SIX-SEATS-PACK
-D-HOZ-DOMAIN-REGISTRATION-SET
-D-LEGAL-ENTITY-TREE-V0
-D-M4-FX-SUB-DECISIONS
-D-MARKETS-CAPEX-OVERRUN-REVIEW
-D-MARKETS-SCHEMA-FOUNDATION
-D-NEW-PRODUCT-APPROVAL-POLICY
-D-PARTY-REGISTER
-D-PARTY-REGISTER-CORRECTION
-D-PARTY-RELATIONSHIP-KINDS-V0
-D-POLICY-DOCUMENT-HOME
+# D-DECISIONS-FRAMEWORK-REDESIGN Slice C — baseline cleared by full backfill.
+# The migration script emits both `requested` and terminal-phase Decision events
+# for all historical IDs, satisfying the symmetry check.
+#
+# Triage residuals group A (4): pre-existing ghost-open / no-requested anomalies
+# that pre-date Slice C. Manual event correction or separate repair script needed.
 D-PRINCIPLES-P2-P6-MERGE
-D-PRODUCT-CONSTRUCTION-SUBSTRATE
-D-RAS-B-CLUSTER-CONCENTRATION-LINES
-D-REGULATORY-PERIMETER
-D-REGULATORY-READINESS-GATE-PLAN
-D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
-D-RMS-PHASE-1
-D-S7-TARGETED-3-5-OPEN-QUESTIONS
-D-THIN-HUMAN-LAYER-MINIMUM
+D-MARKETS-CAPEX-OVERRUN-REVIEW
+D-POLICY-DOCUMENT-HOME
+D-AGENT-AUTONOMY-OPERATIONAL
+#
+# Triage residuals group B (10): decisions emitted by the OLD backfill-from-records.ts
+# script (CeoDecision events, terminal-only, no synthetic `requested` opener). These
+# carry the original pre-canonical IDs (S3..S8, D-FOLLOW-ON-ROUTER-TEST, etc.). The
+# new migration correctly maps them to canonical slugs with proper openers, but the old
+# CeoDecision events persist in the projection under their old IDs. Fix: update
+# backfill-from-records.ts to emit requested openers (follow-on cleanup, Slice D/E).
+D-FOLLOW-ON-ROUTER-TEST
 S3
 S5
 S6
 S7
 S8
+D-CRO-CLIMATE-FLUENCY
+D-CI-GITHUB-PLAN-UPGRADE-DEFER
+D-PARTY-RELATIONSHIP-KINDS-V0
+D-PARTY-REGISTER-CORRECTION
