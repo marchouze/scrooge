@@ -41,4 +41,11 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "RestatementProposed",
     ],
   }),
+  // M2 Slice 2 — period-close handler. Emits AccountingPeriodOpened,
+  // TrialBalanceSnapshotted, AccountingPeriodClosed.
+  // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+  entry("Bea", "period-close", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "30 5 * * *",
+  }),
 ];
