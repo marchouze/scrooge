@@ -161,6 +161,10 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // Per-module unit test directory — same carve-out rationale as tests/.
   // The semantic-layer module co-locates its fixture-store tests here.
   "platform/semantic-layer/__tests__/",
+  // M2 Slice 3 BA 325 subscriber — per-module fixture test (same carve-out
+  // rationale as tests/; builds in-memory stores for scenario assertion).
+  // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
+  "platform/returns/ba325/",
 ];
 
 // Actor URNs that are accepted today as "no policy yet" without raising the
