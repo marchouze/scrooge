@@ -107,12 +107,7 @@ function registerKeyFrom(value: string): RecordFiledPayload["registerKey"] {
  * broadcast to the remaining slots. If `values` is empty, every slot is
  * filled with `fallback`. Longer-than-count is rejected (caller error).
  */
-function pairBroadcast<T>(
-  flagName: string,
-  values: readonly T[],
-  count: number,
-  fallback: T,
-): T[] {
+function pairBroadcast<T>(flagName: string, values: readonly T[], count: number, fallback: T): T[] {
   if (values.length > count) {
     die(`--${flagName} supplied ${values.length} times but only ${count} --deliverable(s)`);
   }

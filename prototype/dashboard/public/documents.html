@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document register · Hoz</title>
+<meta name="description" content="Document register — every documentHash ever cited by an RMS event (D-RMS-PHASE-1, Phase 2 Block B — RecordFiled wiring).">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Document register</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/rms/document"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/home.html">Home</a>
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/decisions">Decisions</a>
+      <a class="nav-link" href="/briefs">Briefs</a>
+      <a class="nav-link" href="/rms.html">RMS registers</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
+    <h1 style="margin:0 0 var(--space-2);">Document register</h1>
+    <p class="muted" style="margin:0 0 var(--space-4);">
+      Every <code>documentHash</code> ever cited by an RMS event, with classification,
+      retention citation, and supersession chain. <code>RecordFiled</code> events
+      register a hash with its formal envelope; unregistered hashes surface with
+      <code>agent-internal</code> default classification (Phase 1 spec §6.4).
+      Phase 2 Block B — RecordFiled wiring.
+      Sourced from <a href="/api/rms/document">/api/rms/document</a>.
+    </p>
+  </div>
+
+  <div id="filterBar" style="padding: 0 var(--space-6) var(--space-3); display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center;">
+    <!-- Classification filter -->
+    <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
+      <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Classification</legend>
+      <label class="filter-radio"><input type="radio" name="classFilter" value="all" checked> All</label>
+      <label class="filter-radio"><input type="radio" name="classFilter" value="ceo-only"> CEO-only</label>
+      <label class="filter-radio"><input type="radio" name="classFilter" value="governance-seat"> Governance</label>
+      <label class="filter-radio"><input type="radio" name="classFilter" value="engineering-seat"> Engineering</label>
+      <label class="filter-radio"><input type="radio" name="classFilter" value="agent-internal"> Agent-internal</label>
+      <label class="filter-radio"><input type="radio" name="classFilter" value="public-disclosure"> Public</label>
+    </fieldset>
+
+    <!-- Register-key filter -->
+    <label style="display:flex;gap:var(--space-1);align-items:center;font-size:0.85rem;">
+      <span style="font-size:0.75rem;color:var(--muted);">Register</span>
+      <select id="registerFilter" style="padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;">
+        <option value="">All registers</option>
+        <option value="decisions">decisions</option>
+        <option value="correspondence">correspondence</option>
+        <option value="agent-runs">agent-runs</option>
+        <option value="documents">documents</option>
+        <option value="feedback">feedback</option>
+        <option value="briefs">briefs</option>
+        <option value="workstreams">workstreams</option>
+        <option value="__unregistered__">(unregistered)</option>
+      </select>
+    </label>
+
+    <!-- Registration filter -->
+    <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
+      <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Status</legend>
+      <label class="filter-radio"><input type="radio" name="registeredFilter" value="all" checked> All</label>
+      <label class="filter-radio"><input type="radio" name="registeredFilter" value="registered"> RecordFiled</label>
+      <label class="filter-radio"><input type="radio" name="registeredFilter" value="unregistered"> Cited only</label>
+    </fieldset>
+
+    <!-- Search -->
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Search hash, recordId, or path…"
+      style="flex:1;min-width:200px;max-width:360px;padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;font-size:0.85rem;"
+      aria-label="Search documents"
+    >
+  </div>
+
+  <div id="documentsContent" style="padding: 0 var(--space-6) var(--space-6);">
+    <p class="muted">Loading…</p>
+  </div>
+
+  <footer class="foot">
+    <span class="muted">
+      Document register derives from <code>AgentBriefIssued</code>,
+      <code>AgentRunCompleted</code>, <code>DecisionRequested</code>,
+      <code>Feedback</code>, and <code>RecordFiled</code> events
+      (D-RMS-PHASE-1 spec §6.4). Phase 2 Block B — RecordFiled wiring
+      (D-RMS-PHASE-2-4-AUTHORSHIP).
+      <a href="/api/rms/document">/api/rms/document</a>
+    </span>
+  </footer>
+
+</main>
+
+<!-- Document detail drawer -->
+<div id="docDrawer" class="modal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:var(--space-6);overflow-y:auto;">
+  <div style="background:var(--bg);max-width:920px;width:100%;border-radius:8px;padding:var(--space-5);border:1px solid var(--border);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);">
+      <div>
+        <h2 id="drawerTitle" style="margin:0 0 var(--space-1);font-size:1.1rem;">Document</h2>
+        <div class="muted small" id="drawerMeta"></div>
+      </div>
+      <button type="button" id="drawerClose" class="icon-btn" aria-label="Close drawer" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
+    </div>
+    <div id="drawerBody"></div>
+  </div>
+</div>
+
+<script src="/_refresh-controls.js"></script>
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script src="/documents.js"></script>
+</body>
+</html>

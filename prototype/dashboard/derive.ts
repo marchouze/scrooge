@@ -1346,6 +1346,12 @@ export function parseOwnerInboxFile(filename: string, content: string): OwnerInb
   return item;
 }
 
+// DEPRECATED — RMS Phase 4 (D-RMS-PHASE-1) retires this parser.
+// Block B (this PR) wires the events-first replacement via RecordFiled
+// + Document register. Block C deletes this function once one full
+// agent-week passes with zero Owner Inbox files authored without a
+// matching RecordFiled event. Tracked: D-RMS-PHASE-1 §15.
+//
 // Read /Owner Inbox/, return items most-recent-first (cap retains tidy UI).
 export function parseOwnerInbox(dir: string, limit = 25): OwnerInboxItem[] {
   if (!existsSync(dir)) return [];
