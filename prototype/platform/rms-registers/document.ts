@@ -175,8 +175,56 @@ export const documentRegisterProjection: Projection<DocumentRegisterState, Event
     return JSON.stringify({ rows: Array.from(state.rows.entries()) });
   },
   decodeSnapshot(payload) {
+    // F-007 fix (RMS Phase 2 Block B, D-RMS-PHASE-2-4-AUTHORSHIP,
+    // 2026-05-16): replace `z.record(z.unknown())` with a typed schema
+    // that mirrors `DocumentRegisterRow` exactly. Drift between this
+    // codec and the in-memory shape is now a parse failure (degrades to
+    // initial state with structured log) rather than a silent type-cast.
+    const retentionSchema = z.object({
+      citationRef: z.string().min(1),
+      minimumYears: z.number().int().positive(),
+      archivalTier: z.enum(["hot", "cool", "archive"]),
+    });
+    const metadataSchema = z.object({
+      title: z.string(),
+      path: z.string(),
+      category: z.string(),
+      author: z.string().optional(),
+      date: z.string().optional(),
+    });
+    const documentRegisterRowSchema = z.object({
+      documentHash: z.string(),
+      recordId: z.string().nullable(),
+      firstSeenAt: z.string(),
+      firstReferencedByEventId: z.string(),
+      firstReferencedByEventType: z.string(),
+      referencedByEventIds: z.array(z.string()),
+      classification: z.enum([
+        "ceo-only",
+        "governance-seat",
+        "engineering-seat",
+        "agent-internal",
+        "public-disclosure",
+      ]),
+      retention: retentionSchema.nullable(),
+      registerKey: z
+        .enum([
+          "decisions",
+          "correspondence",
+          "agent-runs",
+          "documents",
+          "feedback",
+          "briefs",
+          "workstreams",
+        ])
+        .nullable(),
+      supersedes: z.string().nullable(),
+      supersededBy: z.string().nullable(),
+      registered: z.boolean(),
+      metadata: metadataSchema.nullable(),
+    });
     const SnapshotSchema = z.object({
-      rows: z.array(z.tuple([z.string(), z.record(z.unknown())])),
+      rows: z.array(z.tuple([z.string(), documentRegisterRowSchema])),
     });
     let raw: unknown;
     try {

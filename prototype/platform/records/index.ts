@@ -16,6 +16,7 @@ export {
   recordDecisionRequested,
   recordFeedback,
   recordFiled,
+  defaultRetentionForRegister,
   supersedeBrief,
   type RecordAgentRunCompletedInput,
   type RecordAgentRunCompletedResult,
