@@ -263,12 +263,28 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
   // Also track (decisionId, phase, asOf) triples from existing Decision events
   // so we don't re-emit the exact same event.
   const existingDecisionTriples = new Set<string>();
+  // Track earliest terminal asOf per decisionId (across both Decision + CeoDecision)
+  // so synthetic `requested` openers are dated BEFORE any existing terminal event.
+  const earliestTerminalAsOf = new Map<string, number>();
+  const TERMINAL_PHASES_SET = new Set([
+    "approved",
+    "rejected",
+    "deferred",
+    "superseded",
+    "withdrawn",
+  ]);
   for (const e of eventStore.replay({ type: "Decision" })) {
     const p = e.payload as Record<string, unknown>;
     const id = typeof p.decisionId === "string" ? p.decisionId : "";
     const phase = typeof p.phase === "string" ? p.phase : "";
     const asOf = e.as_of;
     if (id && phase) existingDecisionTriples.add(`${id}|${phase}|${asOf}`);
+    if (id && TERMINAL_PHASES_SET.has(phase)) {
+      const t = new Date(asOf).getTime();
+      if (!earliestTerminalAsOf.has(id) || t < (earliestTerminalAsOf.get(id) as number)) {
+        earliestTerminalAsOf.set(id, t);
+      }
+    }
   }
   // Also track existing CeoDecision events (mapped to approved phase)
   for (const e of eventStore.replay({ type: "CeoDecision" })) {
@@ -278,7 +294,15 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
     let phase = "approved";
     if (action === "defer") phase = "deferred";
     if (action === "request-revision") phase = "requested";
-    if (id) existingDecisionTriples.add(`${id}|${phase}|${e.as_of}`);
+    if (id) {
+      existingDecisionTriples.add(`${id}|${phase}|${e.as_of}`);
+      if (TERMINAL_PHASES_SET.has(phase)) {
+        const t = new Date(e.as_of).getTime();
+        if (!earliestTerminalAsOf.has(id) || t < (earliestTerminalAsOf.get(id) as number)) {
+          earliestTerminalAsOf.set(id, t);
+        }
+      }
+    }
   }
 
   // 2. Scan all markdown sources
@@ -404,10 +428,16 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
     if (seenIds.has(`${src.canonicalId}|requested`)) continue;
     const existingCov = coveredPhases.get(src.canonicalId);
     if (existingCov?.has("requested")) continue;
-    // Synthesise: use filename date or one day before the terminal asOf
-    const terminalDate = new Date(src.asOf);
-    const openerDate = new Date(terminalDate.getTime() - 86400_000); // -1 day
-    const openerAsOf = openerDate.toISOString();
+    // Use the MINIMUM of (markdown terminal date - 1day, earliest existing terminal event - 1ms)
+    // so the synthetic opener always sorts before every terminal event, including pre-existing
+    // CeoDecision events that may pre-date the markdown date.
+    const markdownTerminalMs = new Date(src.asOf).getTime();
+    const existingTerminalMs = earliestTerminalAsOf.get(src.canonicalId);
+    const refMs =
+      existingTerminalMs !== undefined
+        ? Math.min(markdownTerminalMs - 86400_000, existingTerminalMs - 1)
+        : markdownTerminalMs - 86400_000;
+    const openerAsOf = new Date(refMs).toISOString();
     seenIds.add(`${src.canonicalId}|requested`);
     requestedSynthetic.push({
       decisionId: src.decisionId,
