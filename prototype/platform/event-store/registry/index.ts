@@ -63,9 +63,10 @@ export {
   READINESS_SNAPSHOT_EVENT_TYPES,
   RMS_EVENT_TYPES,
 } from "./governance";
-export { REGULATORY_EVENT_TYPES } from "./regulatory";
+export { REGULATORY_EVENT_TYPES, REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory";
 export { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 export { MISSING_EVENT_TYPES } from "./missing-types";
+export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -93,7 +94,8 @@ import {
 } from "./markets";
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
-import { REGULATORY_EVENT_TYPES } from "./regulatory";
+import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
+import { REGULATORY_EVENT_TYPES, REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
@@ -124,12 +126,17 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...GOAL_LOOP_EVENT_TYPES,
   ...CUSTOMER_LIFECYCLE_EVENT_TYPES,
   ...REGULATORY_EVENT_TYPES,
+  ...REGULATORY_REPORTING_EVENT_TYPES,
   ...PERFORMANCE_EVENT_TYPES,
   ...ANALYTICS_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES_REGISTRY,
   ...AGENT_OPS_EVENT_TYPES,
   ...AGENT_DECISION_REQUEST_EVENT_TYPES,
   ...MISSING_EVENT_TYPES,
+  // Typed payments registry — placed AFTER MISSING_EVENT_TYPES so that
+  // the schema-bearing rows win over the placeholder rows in missing-types.ts
+  // (Map deduplication: last entry for a given key wins).
+  ...PAYMENTS_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

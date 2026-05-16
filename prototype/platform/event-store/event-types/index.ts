@@ -59,6 +59,7 @@ export * from "./accounting";
 export * from "./customer";
 export * from "./fx-accounting";
 export * from "./regulatory";
+export * from "./regulatory-reporting";
 export * from "./performance";
 // Semantic-layer quantity registration — Anya (Data / analytics engineer).
 // Relocated under F-032 (Atlas, 2026-05-16) to the analytics module so the
@@ -72,6 +73,9 @@ export * from "./agent-ops";
 export * from "./intranet";
 // FTP event family — Ravi (Treasury/ALM Engineer).
 export * from "./ftp";
+// Payments / settlement event family — Tomas (Operations & payments engineer),
+// Bea (Accounting & financial reporting engineer), Atlas (substrate).
+export * from "./payments";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -153,6 +157,7 @@ import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
+import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
@@ -161,6 +166,7 @@ import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
+import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
@@ -178,6 +184,7 @@ export const TYPED_EVENT_TYPES = [
   ...CUSTOMER_TYPED_EVENT_TYPES,
   ...FX_ACCOUNTING_EVENT_TYPES,
   ...REGULATORY_TYPED_EVENT_TYPES,
+  ...REGULATORY_REPORTING_TYPED_EVENT_TYPES,
   ...PERFORMANCE_TYPED_EVENT_TYPES,
   ...AUDIT_TYPED_EVENT_TYPES,
   ...DECISION_REQUEST_TYPED_EVENT_TYPES,
@@ -185,6 +192,7 @@ export const TYPED_EVENT_TYPES = [
   ...AGENT_OPS_TYPED_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES,
   ...FTP_TYPED_EVENT_TYPES,
+  ...PAYMENTS_TYPED_EVENT_TYPES,
   ...GOVERNANCE_TYPED_EVENT_TYPES,
   ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
   ...PARTY_EVENT_TYPES,

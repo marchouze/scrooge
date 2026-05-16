@@ -113,6 +113,7 @@
     "agent:bea-period-close": "bun run runtime/run.ts --agent Bea --trigger period-close",
     "agent:yael-tax-readiness": "bun run runtime/run.ts --agent Yael --trigger tax-readiness",
     "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",
+    "agent:tomas-daily-reconciliation": "bun run runtime/run.ts --agent Tomas --trigger daily-reconciliation",
     "agent:imani-legal-readiness": "bun run runtime/run.ts --agent Imani --trigger legal-readiness",
     "agent:ravi-alm-readiness": "bun run runtime/run.ts --agent Ravi --trigger alm-readiness",
     "agent:ravi-ftp-curve-publish": "bun run runtime/run.ts --agent Ravi --trigger ftp-curve-publish",
