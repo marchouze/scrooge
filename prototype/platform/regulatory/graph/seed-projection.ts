@@ -159,6 +159,51 @@ function repoPath(...parts: string[]): string {
   return join(REPO_ROOT, ...parts);
 }
 
+/**
+ * Normalise a policy title or ID to a canonical lookup key.
+ * "Capital Management Policy v1" → "capital-management"
+ * "capital-management-policy-v1" → "capital-management"
+ */
+function normalisePolicyTitle(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/\s*\(.*?\)\s*/g, "") // strip "(planned)", "(draft)", etc.
+    .replace(/[-_\s]+/g, " ")
+    .replace(/\bpolicy\b|\bv\d+\b|\bframework\b/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/**
+ * Resolve a free-form policyCited string to a GraphNode from the policyNodes map.
+ * Tries: exact → normalised title → longest-substring match.
+ */
+function resolvePolicyNode(
+  policyCited: string,
+  policyNodes: Map<string, GraphNode>,
+): GraphNode | undefined {
+  // 1. Exact match
+  const exact = policyNodes.get(policyCited);
+  if (exact) return exact;
+
+  // 2. Normalised match
+  const norm = normalisePolicyTitle(policyCited);
+  const normMatch = policyNodes.get(norm);
+  if (normMatch) return normMatch;
+
+  // 3. Keyword substring — find the policy whose normalised key is a substring of norm
+  //    (handles "capital management" matching "capital-management-policy-v1")
+  for (const [key, node] of policyNodes) {
+    const keyNorm = normalisePolicyTitle(key);
+    if (keyNorm.length >= 6 && norm.includes(keyNorm)) return node;
+    if (keyNorm.length >= 6 && keyNorm.includes(norm)) return node;
+  }
+
+  return undefined;
+}
+
 /** Recursively walk a directory and return all .md file paths. */
 function walkMd(dir: string): string[] {
   const results: string[] = [];
@@ -681,6 +726,9 @@ export async function runSeed(): Promise<SeedStats> {
     };
     upsertNode(node);
     policyNodes.set(fm.policyId, node);
+    // Also index by normalised title for fuzzy procedure→policy matching
+    policyNodes.set(normalisePolicyTitle(fm.title), node);
+    policyNodes.set(normalisePolicyTitle(fm.policyId), node);
 
     // IMPLEMENTS edges (Policy → Document) via citations
     for (const citation of fm.citations) {
@@ -773,7 +821,7 @@ export async function runSeed(): Promise<SeedStats> {
 
     // GOVERNS edge (Policy → Procedure)
     if (fm.policyCited) {
-      const policyNode = policyNodes.get(fm.policyCited);
+      const policyNode = resolvePolicyNode(fm.policyCited, policyNodes);
       if (policyNode) {
         upsertEdge({
           id: edgeId("GOVERNS"),
