@@ -54,7 +54,7 @@ const PERIOD_CLOSED_PAYLOAD = {
 // we keep the store instantiation for structural consistency with the
 // BA 325 / BA 350 pattern. The subscriber does not take eventStore; the
 // store reference is kept for potential future P1-compliant income fold.
-const _store = new EventStore(":memory:");
+// const _store = new EventStore(":memory:");  // BA600 does not use event store (gross income is caller-supplied)
 
 // =====================================================================
 // 1. Per-entity guard

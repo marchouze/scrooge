@@ -41,9 +41,7 @@
 //   + Atlas (Core banking platform architect, engineering — reports to
 //   Devon COO; P1-fix events-adapter substrate).
 
-import type {
-  AccountingPeriodClosedPayload,
-} from "../../event-store/event-types";
+import type { AccountingPeriodClosedPayload } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
 import {

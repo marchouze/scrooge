@@ -41,7 +41,6 @@ import {
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const ENTITY_SECURITIES = "LE-ZA-HOZ-SECURITIES";
 const ACTOR = { type: "service" as const, id: "agent:Bea" };
-const CITATIONS = ["D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN", "D-REPORTING-CAPABILITY-SLICE-5"];
 
 const PERIOD_CLOSED_PAYLOAD = {
   periodId: "period:hoz-bank:month:2026-05",

@@ -43,9 +43,7 @@
 //   + Helena (Chief Risk Officer, governance — reports to CEO; op-risk
 //   methodology owner — citation).
 
-import type {
-  AccountingPeriodClosedPayload,
-} from "../../event-store/event-types";
+import type { AccountingPeriodClosedPayload } from "../../event-store/event-types";
 import type { Actor } from "../../event-store/types";
 import {
   type Ba600GeneratorInput,
