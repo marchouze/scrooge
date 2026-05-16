@@ -24,7 +24,10 @@ export const DecideBodySchema = z
     action: z.enum(DECISION_ACTIONS),
     outcome: z.string().min(1),
     comment: z.string().optional(),
-    actor: z.string().optional(),
+    /** Identity of the caller. Required — `/api/decide` returns 401 when
+     *  absent. D-DECISIONS-FRAMEWORK-REDESIGN Slice B removed the
+     *  server-side hard-coded fallback. */
+    actor: z.string().min(1).optional(),
     followOnRoutes: z.array(z.string()).optional(),
   })
   .strict();

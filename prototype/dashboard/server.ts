@@ -75,9 +75,9 @@ import {
 } from "../platform/projections/markets";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
-  type RecordCeoDecisionResult,
   type RecordDecisionCommentResult,
-  recordCeoDecision,
+  type RecordDecisionResult,
+  recordDecision,
   recordDecisionComment,
 } from "../runtime/decisions/record";
 import { runPartyBackfill } from "../scripts/party-backfill";
@@ -417,39 +417,59 @@ async function handleDecide(req: Request): Promise<Response> {
   }
   const body = parsed.data;
 
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — caller identity is
+  // mandatory; the handler no longer hard-codes a fallback. The
+  // dashboard UI passes the CEO's email; agent callers pass their
+  // strong identity. Anonymous requests are rejected.
+  const actor =
+    typeof body.actor === "string" && body.actor.trim().length > 0 ? body.actor.trim() : null;
+  if (!actor) {
+    return jsonResponse(
+      { error: "unauthenticated: `actor` is required (no server-side fallback)" },
+      401,
+    );
+  }
+
   const open = cachedState.decisionsOpen.find((d) => d.id === body.decisionId);
   if (!open) {
     return jsonResponse({ error: `Decision not found: ${body.decisionId}` }, 404);
   }
 
-  // Actor from request body (for automated/agent calls); fall back to CEO for dashboard UI.
-  const actor =
-    typeof body.actor === "string" && body.actor.trim().length > 0
-      ? body.actor.trim()
-      : "marc@tgv.co.za";
-
-  // Route through the canonical CEO-decision recorder. This is the same
-  // function the runtime handler `agent:scrooge:ceo-decision-record`
-  // calls — single source of truth for CeoDecision emission, no
-  // parallel paths.
+  // Route through the canonical unified-Decision recorder. The handler
+  // performs no event construction itself — `recordDecision` is the
+  // only path to `eventStore.append` for decision events.
   const followOnRoutes = Array.isArray(body.followOnRoutes)
     ? body.followOnRoutes
         .filter((s) => typeof s === "string" && s.trim().length > 0)
         .map((s) => s.trim())
     : [];
 
-  let result: RecordCeoDecisionResult;
+  // Map the legacy `action` onto the unified `phase`.
+  const phase =
+    body.action === "approve" || body.action === "modify"
+      ? "approved"
+      : body.action === "defer"
+        ? "deferred"
+        : "requested"; // request-revision reopens
+
+  let result: RecordDecisionResult;
   try {
-    result = recordCeoDecision(
+    result = recordDecision(
       {
         decisionId: body.decisionId,
-        action: body.action,
+        phase,
+        authority: "CEO",
+        authorityRef: actor,
         title: open.title,
-        outcome: body.outcome,
-        actor,
-        ...(body.comment ? { comment: body.comment } : {}),
-        ...(followOnRoutes.length > 0 ? { followOnRoutes } : {}),
-        recordedVia: "dashboard:/api/decide",
+        category: open.domainCategory ?? "governance",
+        recommendation: body.outcome,
+        rationale: body.comment ?? body.outcome,
+        sourceDocHashes: [],
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
+        ...(followOnRoutes.length > 0
+          ? { followOnDispatch: followOnRoutes.map((route) => ({ route })) }
+          : {}),
+        recordedVia: "authoring-ui",
       },
       nowUtc(),
     );

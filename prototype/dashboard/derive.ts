@@ -636,6 +636,7 @@ function adaptDecisionsRegister(register: DecisionsRegister): {
     id: row.decisionId,
     title: row.title,
     category: "near-term",
+    domainCategory: row.category,
     owner: row.authorityRef,
     trigger: `Decision event (authority: ${row.authority}, phase: requested)`,
     decisionForCEO: row.recommendation,
@@ -647,6 +648,7 @@ function adaptDecisionsRegister(register: DecisionsRegister): {
     actionedAt: row.resolvedAt ?? row.asOf,
     outcome: row.recommendation,
     sourceDoc: "",
+    domainCategory: row.category,
     ...(row.recordedVia ? { actionedBy: row.authorityRef } : {}),
   }));
   return { resolved, remainingOpen: open, reopenedFromEvents: [] };
