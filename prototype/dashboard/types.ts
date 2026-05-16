@@ -126,6 +126,8 @@ export interface OpenDecision {
   category: DecisionCategory;
   /** D-DECISIONS-FRAMEWORK-REDESIGN — unified payload's domain category. */
   domainCategory?: DecisionDomainCategory;
+  /** D-DECISIONS-FRAMEWORK-REDESIGN — which authority seat owns this decision. */
+  authority?: string;
   owner: string;
   trigger: string;
   decisionForCEO: string;

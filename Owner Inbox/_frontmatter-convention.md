@@ -1,5 +1,12 @@
 # Owner Inbox — frontmatter convention
 
+> **DEPRECATED — `decision-required: true` no longer lifts decisions to the dashboard.**
+> As of D-DECISIONS-FRAMEWORK-REDESIGN (all 4 slices merged), the `decision-required: true`
+> frontmatter path is retired as a decision-authoring channel. New decisions must be opened
+> via `requestDecision()` in `runtime/decisions/record.ts`, which emits a `Decision(requested)`
+> event — that event is the canonical opener. The markdown Owner Inbox file remains a useful
+> document store; the frontmatter fields below are preserved for historical reference only.
+
 **As of 2026-05-07.** Default action set by Marc (CEO): every deliverable saved to `/Owner Inbox/` surfaces in the dashboard's **Owner Inbox** section automatically; deliverables that require a CEO decision additionally appear in **Decisions for CEO**, lifted via frontmatter.
 
 The dashboard derivation reads frontmatter from each `.md` file in this directory. Frontmatter is *optional* — files without it still surface (title from the body's first H1, author from the `**Author:**` line, date from the filename) — but **only** files with `decision-required: true` lift into the open-decisions queue.

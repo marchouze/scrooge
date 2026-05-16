@@ -73,6 +73,7 @@ import {
   rebuildCorrespondentRouting,
   rebuildLimitUtilisation,
 } from "../platform/projections/markets";
+import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordDecisionCommentResult,
@@ -1544,6 +1545,34 @@ const server = Bun.serve({
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
+    // Decisions register — all authorities (CEO, CRO, CoSec, Agent, etc.).
+    // Authority: D-DECISIONS-FRAMEWORK-REDESIGN (unified Decision event type).
+    if (url.pathname === "/api/decisions-register" && req.method === "GET") {
+      const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
+      return jsonResponse({
+        open: register.open.map((r) => ({
+          id: r.decisionId,
+          title: r.title,
+          authority: r.authority,
+          authorityRef: r.authorityRef,
+          category: r.category,
+          phase: r.phase,
+          requestedAt: r.openedAt,
+        })),
+        resolved: register.resolved.map((r) => ({
+          id: r.decisionId,
+          title: r.title,
+          authority: r.authority,
+          authorityRef: r.authorityRef,
+          category: r.category,
+          phase: r.phase,
+          actionedAt: r.resolvedAt ?? r.asOf,
+          outcome: r.recommendation,
+        })),
+        asOf: cachedState.asOf,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
     {
       const decisionMatch = url.pathname.match(/^\/api\/decisions\/(.+)$/);
       if (decisionMatch?.[1] && req.method === "GET") {
@@ -1561,6 +1590,11 @@ const server = Bun.serve({
           pageProvenance: eventDerivedPageProvenance(),
         });
       }
+    }
+    // Decisions register page (all authorities, filterable).
+    // Must be checked before the /decisions/:id drill-down route.
+    if (req.method === "GET" && url.pathname === "/decisions") {
+      return serveStatic("/decisions.html");
     }
     // Pretty-URL routes for drill-down — Bun serves the static HTML and the
     // page reads the decisionId from `window.location.pathname`.
