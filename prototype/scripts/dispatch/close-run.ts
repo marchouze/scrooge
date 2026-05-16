@@ -1,11 +1,16 @@
 // scripts/dispatch/close-run.ts
 //
 // RMS Phase 2 Block A — events-first dispatch helper #3 of 3.
+// Extended in Block B to file each deliverable as a `RecordFiled` event
+// alongside the run-completion event, making the Document register the
+// canonical home for every agent deliverable.
 //
 // Scrooge invokes this CLI when an agent run completes (or is blocked /
 // withdrawn). Each `--deliverable <path>` body is put into the content-
 // addressed document store; the hashes go into the
-// `AgentRunCompleted.deliverableDocumentHashes` payload (RMS-3).
+// `AgentRunCompleted.deliverableDocumentHashes` payload (RMS-3), and a
+// `RecordFiled` event registers each hash in the typed-classification +
+// retention envelope (RMS-7).
 //
 // Usage:
 //
@@ -15,6 +20,8 @@
 //     --agent-name <name> --agent-position <position> \
 //     --outcome <delivered|blocked|withdrawn> \
 //     [--deliverable <path>]... \
+//     [--classification <ceo-only|governance-seat|engineering-seat|agent-internal|public-disclosure>]... \
+//     [--register-key <decisions|correspondence|agent-runs|documents|feedback|briefs|workstreams>]... \
 //     [--cite <urn>]... \
 //     [--gap <substrate-gap-string>]... \
 //     [--follow-on <kind:target:directive>]...
@@ -23,22 +30,93 @@
 // `--follow-on` format: `kind:target:directive` where kind ∈
 // {agent, decision, register-update}.
 //
+// `--classification` and `--register-key` are repeatable, paired with
+// `--deliverable` by position. When fewer values are supplied than
+// deliverables, the last value broadcasts to the remaining deliverables;
+// missing entirely → `agent-internal` / `documents` (Phase 1 spec §6
+// defaults). Retention citation is derived from the register-key via
+// `defaultRetentionForRegister` (Banks Act 5y for agent-runs / documents
+// / workstreams; Companies Act §24 7y for decisions / briefs;
+// FIC Act §22 5y for correspondence / feedback).
+//
 // Authority: D-RMS-PHASE-1; D-RMS-PHASE-2-4-AUTHORSHIP.
 // Spec: Owner Inbox/actioned/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { existsSync, readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { clock } from "../../platform/composition";
 import type {
   AgentRunCompletedFollowOnRoute,
   AgentRunCompletedPayload,
+  RecordFiledPayload,
   RmsAgentRef,
 } from "../../platform/event-store/event-types";
-import { recordAgentRunCompleted } from "../../platform/records";
+import {
+  defaultRetentionForRegister,
+  recordAgentRunCompleted,
+  recordFiled,
+} from "../../platform/records";
 import { die, emitOk, optionalRepeatable, parseArgs, requireString } from "./args";
 
-const REPEATABLE = new Set(["deliverable", "cite", "gap", "follow-on"]);
+const REPEATABLE = new Set([
+  "deliverable",
+  "classification",
+  "register-key",
+  "cite",
+  "gap",
+  "follow-on",
+]);
+
+const CLASSIFICATIONS = [
+  "ceo-only",
+  "governance-seat",
+  "engineering-seat",
+  "agent-internal",
+  "public-disclosure",
+] as const satisfies readonly RecordFiledPayload["classification"][];
+
+const REGISTER_KEYS = [
+  "decisions",
+  "correspondence",
+  "agent-runs",
+  "documents",
+  "feedback",
+  "briefs",
+  "workstreams",
+] as const satisfies readonly RecordFiledPayload["registerKey"][];
+
+function classificationFrom(value: string): RecordFiledPayload["classification"] {
+  if (!(CLASSIFICATIONS as readonly string[]).includes(value)) {
+    die(`--classification must be one of ${CLASSIFICATIONS.join("|")}, got: ${value}`);
+  }
+  return value as RecordFiledPayload["classification"];
+}
+
+function registerKeyFrom(value: string): RecordFiledPayload["registerKey"] {
+  if (!(REGISTER_KEYS as readonly string[]).includes(value)) {
+    die(`--register-key must be one of ${REGISTER_KEYS.join("|")}, got: ${value}`);
+  }
+  return value as RecordFiledPayload["registerKey"];
+}
+
+/**
+ * Pair-broadcast a repeatable per-deliverable flag against the deliverable
+ * list. If `values` is shorter than `count`, the last supplied value is
+ * broadcast to the remaining slots. If `values` is empty, every slot is
+ * filled with `fallback`. Longer-than-count is rejected (caller error).
+ */
+function pairBroadcast<T>(flagName: string, values: readonly T[], count: number, fallback: T): T[] {
+  if (values.length > count) {
+    die(`--${flagName} supplied ${values.length} times but only ${count} --deliverable(s)`);
+  }
+  const out: T[] = [];
+  for (let i = 0; i < count; i++) {
+    out.push(values[i] ?? values[values.length - 1] ?? fallback);
+  }
+  return out;
+}
 const OUTCOMES = ["delivered", "blocked", "withdrawn"] as const;
 type Outcome = (typeof OUTCOMES)[number];
 
@@ -87,6 +165,8 @@ function main(): void {
   const outcome = outcomeFrom(requireString(args, "outcome"));
 
   const deliverablePaths = optionalRepeatable(args, "deliverable");
+  const classificationsRaw = optionalRepeatable(args, "classification");
+  const registerKeysRaw = optionalRepeatable(args, "register-key");
   const cites = optionalRepeatable(args, "cite");
   const gaps = optionalRepeatable(args, "gap");
   const followOnsRaw = optionalRepeatable(args, "follow-on");
@@ -102,6 +182,22 @@ function main(): void {
     if (body.trim() === "") die(`--deliverable file is empty: ${p}`);
     deliverableBodies.push(body);
   }
+
+  // Pair classification + register-key with each deliverable by position;
+  // broadcast last value when fewer supplied; default `agent-internal` /
+  // `documents` per Phase 1 spec §6.
+  const classifications = pairBroadcast<RecordFiledPayload["classification"]>(
+    "classification",
+    classificationsRaw.map(classificationFrom),
+    deliverablePaths.length,
+    "agent-internal",
+  );
+  const registerKeys = pairBroadcast<RecordFiledPayload["registerKey"]>(
+    "register-key",
+    registerKeysRaw.map(registerKeyFrom),
+    deliverablePaths.length,
+    "documents",
+  );
 
   const followOnRoutes = parseFollowOns(followOnsRaw);
   const citations = cites.length > 0 ? cites : ["D-RMS-PHASE-1"];
@@ -135,14 +231,74 @@ function main(): void {
   );
 
   const payload: AgentRunCompletedPayload = result.event.payload as AgentRunCompletedPayload;
+  const deliverableHashes = [...payload.deliverableDocumentHashes];
+
+  // -----------------------------------------------------------------
+  // Block B — RecordFiled per deliverable. One event per deliverable;
+  // the document body has already been put into the store by
+  // `recordAgentRunCompleted`, so `recordFiled` re-puts the same bytes
+  // (idempotent at the content-addressed layer) and emits the
+  // classification + retention envelope. recordId is derived as
+  // `record:<runId>:<index>:<deliverable-basename>` — stable per run +
+  // position so re-running close-run for the same outputs produces the
+  // same recordId (the event itself is appended once per call; this is
+  // a Phase 2 limitation, see substrate gap below).
+  // -----------------------------------------------------------------
+  const recordEvents: Array<{
+    recordId: string;
+    documentHash: string;
+    classification: RecordFiledPayload["classification"];
+    registerKey: RecordFiledPayload["registerKey"];
+    eventId: string;
+  }> = [];
+
+  for (let i = 0; i < deliverablePaths.length; i++) {
+    const deliverablePath = deliverablePaths[i] ?? `deliverable-${i}`;
+    const body = deliverableBodies[i] ?? "";
+    const classification = classifications[i] ?? "agent-internal";
+    const registerKey = registerKeys[i] ?? "documents";
+    const retention = defaultRetentionForRegister(registerKey);
+    const fileBase = basename(deliverablePath).replace(/[^A-Za-z0-9._-]/g, "-");
+    const recordId = `record:${runId}:${i}:${fileBase}`;
+
+    const filed = recordFiled(
+      {
+        recordId,
+        registerKey,
+        body,
+        classification,
+        retention,
+        actor: { type: "service", id: agent.agentId ?? `agent:${slugify(agentName)}` },
+        citations: deliverableCitations,
+        metadata: {
+          title: fileBase,
+          path: deliverablePath,
+          category: registerKey,
+          author: agentName,
+          date: asOf.slice(0, 10),
+        },
+      },
+      asOf,
+    );
+
+    recordEvents.push({
+      recordId,
+      documentHash: filed.documentHash,
+      classification,
+      registerKey,
+      eventId: filed.eventId,
+    });
+  }
+
   emitOk({
     runId,
     briefId,
     eventId: result.eventId,
     outcome,
-    deliverableHashes: [...payload.deliverableDocumentHashes],
+    deliverableHashes,
     newDeliverableCount: result.newDeliverableCount,
     completedAt: asOf,
+    recordEvents,
   });
 }
 

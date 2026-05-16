@@ -611,6 +611,60 @@ export function recordFiled(
 }
 
 // ---------------------------------------------------------------------------
+// Default retention for a register key — RMS Phase 2 Block B.
+//
+// Maps each of the seven RMS register keys to its default retention
+// citation, minimum-years, and archival tier, per the Phase 1 spec §6
+// retention defaults. The dispatch:close-run CLI uses this to derive a
+// retention envelope for each --deliverable without making the caller
+// specify it inline. Authoring code that needs a non-default retention
+// (e.g. a 10-year tax record) still constructs the retention object
+// directly and bypasses this helper.
+//
+// Authority: D-RMS-PHASE-1; D-RMS-PHASE-2-4-AUTHORSHIP.
+// ---------------------------------------------------------------------------
+
+export function defaultRetentionForRegister(
+  registerKey: RecordFiledPayload["registerKey"],
+): RecordFiledPayload["retention"] {
+  switch (registerKey) {
+    // Banks Act 94 of 1990 — books-and-records baseline (5 years).
+    case "agent-runs":
+    case "documents":
+      return {
+        citationRef: "BANKS-ACT-94-1990",
+        minimumYears: 5,
+        archivalTier: "cool",
+      };
+    // Companies Act 71 of 2008 §24 — accounting records & board / management
+    // decisions (7 years).
+    case "decisions":
+    case "briefs":
+      return {
+        citationRef: "COMPANIES-ACT-71-2008-S24",
+        minimumYears: 7,
+        archivalTier: "cool",
+      };
+    // FIC Act 38 of 2001 §22 — AML / KYC / suspicious-transaction records
+    // and counterparty correspondence (5 years).
+    case "correspondence":
+    case "feedback":
+      return {
+        citationRef: "FIC-ACT-38-2001-S22",
+        minimumYears: 5,
+        archivalTier: "cool",
+      };
+    // Workstream-level metadata mirrors agent-runs (Banks Act 5y).
+    case "workstreams":
+      return {
+        citationRef: "BANKS-ACT-94-1990",
+        minimumYears: 5,
+        archivalTier: "cool",
+      };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // recordAuditFinding — typed finding against an agent's performance or output
 // ---------------------------------------------------------------------------
 
