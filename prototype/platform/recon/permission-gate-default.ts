@@ -159,6 +159,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // not meaningful in this context because the actor identity is a fixed
   // system actor ("backfill:owner-inbox-records"), not a live agent URN.
   "runtime/decisions/backfill-from-records.ts",
+  // Three-way reconciliation unit tests — co-located per-module test
+  // convention. Raw EventStore(":memory:") is a build-phase test fixture,
+  // not a production access path. T-01 carve-out.
+  // Citation: D-MARKETS-SCHEMA-FOUNDATION, P4-SECURITY-DESIGNED-IN.
+  "platform/payments/reconciliation.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
