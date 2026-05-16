@@ -61,12 +61,11 @@ export * from "./fx-accounting";
 export * from "./regulatory";
 export * from "./performance";
 // Semantic-layer quantity registration — Anya (Data / analytics engineer).
-export {
-  makeSemanticLayerQuantityRegistered,
-  semanticLayerQuantityRegisteredPayloadSchema,
-  SEMANTIC_LAYER_TYPED_EVENT_TYPES,
-} from "../../semantic-layer/event-type";
-export type { SemanticLayerQuantityRegisteredPayload } from "../../semantic-layer/event-type";
+// Relocated under F-032 (Atlas, 2026-05-16) to the analytics module so the
+// factory lives on a surface scanned by the event-type registry coverage
+// recon. The legacy `platform/semantic-layer/event-type.ts` module re-exports
+// from here for back-compat.
+export * from "./analytics";
 // AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
 export * from "./agent-ops";
 // Intranet event family — Noa (Intranet Product Owner & UI Architect).
@@ -144,10 +143,10 @@ export {
 // ---------------------------------------------------------------------------
 
 import { PARTY_EVENT_TYPES } from "../../../domains/party";
-import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "../../semantic-layer/event-type";
 import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
+import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";

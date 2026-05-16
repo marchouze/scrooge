@@ -38,7 +38,12 @@ export {
   RETENTION_RUNTIME_1Y,
 } from "./types";
 
-export { GOAL_LOOP_EVENT_TYPES, RUNTIME_EVENT_TYPES } from "./runtime";
+export {
+  AGENT_DECISION_REQUEST_EVENT_TYPES,
+  AGENT_OPS_EVENT_TYPES,
+  GOAL_LOOP_EVENT_TYPES,
+  RUNTIME_EVENT_TYPES,
+} from "./runtime";
 export { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 export {
   BANK_ACCOUNT_EVENT_TYPES,
@@ -89,7 +94,12 @@ import {
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
-import { GOAL_LOOP_EVENT_TYPES, RUNTIME_EVENT_TYPES } from "./runtime";
+import {
+  AGENT_DECISION_REQUEST_EVENT_TYPES,
+  AGENT_OPS_EVENT_TYPES,
+  GOAL_LOOP_EVENT_TYPES,
+  RUNTIME_EVENT_TYPES,
+} from "./runtime";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 
 /**
@@ -117,6 +127,8 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...PERFORMANCE_EVENT_TYPES,
   ...ANALYTICS_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES_REGISTRY,
+  ...AGENT_OPS_EVENT_TYPES,
+  ...AGENT_DECISION_REQUEST_EVENT_TYPES,
   ...MISSING_EVENT_TYPES,
 ];
 

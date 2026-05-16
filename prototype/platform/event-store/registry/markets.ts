@@ -52,6 +52,7 @@ import {
   trialBalanceSnapshottedPayloadSchema,
 } from "../event-types";
 import { cdmBindingsRegeneratedPayloadSchema } from "../event-types-cdm";
+import { balanceSheetSubstantiationCompletedPayloadSchema } from "../event-types/accounting";
 import {
   accountsSetupCompletedPayloadSchema,
   beneficialOwnerResolvedPayloadSchema,
@@ -588,6 +589,30 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+  },
+  {
+    // Emitted by Bea (Accounting & financial reporting engineer) at the end
+    // of each monthly balance-sheet substantiation run. Every
+    // AccountingPeriodClosed must be followed within 2 agent ticks by this
+    // event (Vera-enforced). Registry row added under F-032 (Atlas,
+    // 2026-05-16) — factory shipped earlier without a row, leaving the
+    // payload schema unenforced at append-time.
+    type: "BalanceSheetSubstantiationCompleted",
+    class: "markets",
+    payloadSchema: balanceSheetSubstantiationCompletedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Anya", "Vera", "dashboard"],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "PROC-FIN-BSS-01",
+      "IAS-1",
+      "COMPANIES-ACT-71-2008-S28",
+      "COMPANIES-ACT-71-2008-S29",
+      "COMPANIES-ACT-71-2008-S30",
+    ],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "platform/event-store/event-types/accounting.ts (factory); PROC-FIN-BSS-01 — Procedures/balance-sheet-substantiation.md",
   },
 ];
 
