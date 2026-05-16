@@ -451,13 +451,14 @@ export interface Policy {
   /** ORG-* obligation IDs whose Fulfilment-policy column names this policy. */
   linkedObligations: readonly string[];
   /**
-   * Source markdown files that author this policy, basenames only (the
-   * server resolves under `Owner Inbox/`). Always non-empty: the canonical
-   * policy register is included for every policy as the row-of-truth, and
-   * any explicit `Owner Inbox/...md` path mentioned in the status cell is
-   * appended (e.g. policies that point at a standalone document or one of
-   * the `core-policies-*.md` bundles). The `/api/policy/:filename`
-   * endpoint allow-list is the union of these paths.
+   * Source markdown files that author this policy. Always non-empty: the
+   * canonical policy register is always first (the row-of-truth fallback).
+   * Two path forms are used:
+   * - Bare basenames for `Owner Inbox/` files (e.g. `2026-05-06_policy-register.md`)
+   * - `Policies/<basename>` qualified paths for canonical policy documents
+   *   under the `Policies/` directory (D-POLICY-DOCUMENT-HOME Option C, 2026-05-12)
+   * The `/api/policy/:filename` endpoint accept-list is the union of these paths
+   * and resolves each to its directory accordingly.
    */
   sourceFiles: readonly string[];
 }

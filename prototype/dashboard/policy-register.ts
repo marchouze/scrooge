@@ -54,7 +54,9 @@ function extractOwnerInboxPolicyFiles(...cells: string[]): string[] {
     for (const m of cell.matchAll(POLICIES_MD_REF)) {
       const name = m[1];
       if (!name) continue;
-      out.add(basename(name));
+      // Store with Policies/ prefix so the server knows which directory to read from
+      // (D-POLICY-DOCUMENT-HOME Option C).
+      out.add(`Policies/${basename(name)}`);
     }
   }
   return Array.from(out);
@@ -597,8 +599,9 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
     const slug = slugify(name);
     for (const f of policiesDirFiles) {
       const stem = f.replace(/\.md$/, "");
-      if (policyFileStemMatchesSlug(stem, slug) && !explicit.includes(f)) {
-        explicit.push(f);
+      const qualified = `Policies/${f}`;
+      if (policyFileStemMatchesSlug(stem, slug) && !explicit.includes(qualified)) {
+        explicit.push(qualified);
       }
     }
 

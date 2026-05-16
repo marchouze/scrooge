@@ -508,7 +508,9 @@ async function openPolicyPreview(policyId, preferredFilename) {
   if (!filename) return;
   policyPreviewActive = `${p.id}::${filename}`;
 
-  if (pathEl) pathEl.textContent = `Owner Inbox/${filename}`;
+  if (pathEl) {
+    pathEl.textContent = filename.startsWith("Policies/") ? filename : `Owner Inbox/${filename}`;
+  }
 
   if (pickerEl) {
     if (sources.length > 1) {
