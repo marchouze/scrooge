@@ -642,6 +642,14 @@ function adaptDecisionsRegister(register: DecisionsRegister): {
     trigger: `Decision event (authority: ${row.authority}, phase: requested)`,
     decisionForCEO: row.recommendation,
     sourceDocs: [],
+    ...(row.recommendation
+      ? {
+          recommendation: {
+            stance: row.recommendation,
+            reasoning: row.rationale,
+          },
+        }
+      : {}),
   }));
   const resolved: ResolvedDecision[] = register.resolved.map((row) => ({
     id: row.decisionId,
