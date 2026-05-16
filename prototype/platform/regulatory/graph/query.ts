@@ -231,9 +231,7 @@ export function findUnimplementedObligations(
 
       for (const docRow of docRows) {
         const doc = rowToNode(docRow);
-        const status = doc.metadata?.applicabilityStatus as
-          | DocumentApplicabilityStatus
-          | undefined;
+        const status = doc.metadata?.applicabilityStatus as DocumentApplicabilityStatus | undefined;
         if (status && (applicabilityFilter as string[]).includes(status)) {
           return true;
         }

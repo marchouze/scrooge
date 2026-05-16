@@ -168,16 +168,16 @@
 
   function initGapFilter() {
     const btns = document.querySelectorAll("[data-gap-filter]");
-    btns.forEach((btn) => {
+    for (const btn of btns) {
       btn.addEventListener("click", async () => {
         const filter = btn.getAttribute("data-gap-filter") || "direct,transposed";
         currentGapFilter = filter;
         // Update active state
-        btns.forEach((b) => b.classList.remove("is-active"));
+        for (const b of btns) b.classList.remove("is-active");
         btn.classList.add("is-active");
         await loadGaps(filter === "all" ? "" : filter);
       });
-    });
+    }
   }
 
   // ---------------------------------------------------------------------------

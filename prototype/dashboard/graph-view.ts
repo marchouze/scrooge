@@ -17,7 +17,6 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import type { DocumentApplicabilityStatus } from "../platform/regulatory/graph/types";
 import {
   findObligationsByApplicability,
   findOrphanProcedures,
@@ -25,6 +24,7 @@ import {
   getGraphStats,
   traceObligationChain,
 } from "../platform/regulatory/graph/query";
+import type { DocumentApplicabilityStatus } from "../platform/regulatory/graph/types";
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
