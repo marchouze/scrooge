@@ -80,8 +80,7 @@ export const GRAPH_NODE_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://hoz-bank/regulatory-graph/node/v1",
   title: "RegulatoryGraphNode",
-  description:
-    "A node in the regulatory knowledge graph extracted from a regulatory provision.",
+  description: "A node in the regulatory knowledge graph extracted from a regulatory provision.",
   type: "object",
   required: ["nodeType", "id", "label"],
   properties: {
@@ -178,8 +177,7 @@ export const GRAPH_EDGE_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://hoz-bank/regulatory-graph/edge/v1",
   title: "RegulatoryGraphEdge",
-  description:
-    "An edge in the regulatory knowledge graph asserted by a regulatory provision.",
+  description: "An edge in the regulatory knowledge graph asserted by a regulatory provision.",
   type: "object",
   required: ["fromId", "toId", "edgeType", "confidenceScore"],
   properties: {
@@ -275,8 +273,7 @@ export const EXTRACTION_RESPONSE_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://hoz-bank/regulatory-graph/extraction-response/v1",
   title: "ExtractionResponse",
-  description:
-    "Structured output from one LLM extraction pass over a single regulatory provision.",
+  description: "Structured output from one LLM extraction pass over a single regulatory provision.",
   type: "object",
   required: ["provisionId", "nodes", "edges"],
   properties: {
@@ -459,8 +456,6 @@ export function validateExtractionResponse(data: unknown): { valid: boolean; err
   if (result.success) {
     return { valid: true, errors: [] };
   }
-  const errors = result.error.issues.map(
-    (issue) => `${issue.path.join(".")}: ${issue.message}`,
-  );
+  const errors = result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`);
   return { valid: false, errors };
 }

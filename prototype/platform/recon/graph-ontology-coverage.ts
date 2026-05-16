@@ -21,7 +21,8 @@ import { join } from "node:path";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
-const REPO_ROOT = join(import.meta.dir, "../../../..");
+// import.meta.dir = prototype/platform/recon → ../../.. = repo root
+const REPO_ROOT = join(import.meta.dir, "../../..");
 
 // Node types that are not yet seeded (expected during build phase).
 // Remove from this list as the graph seed grows.
@@ -62,6 +63,7 @@ const FUTURE_EDGE_TYPES = new Set<string>([
   "MAPS_TO",
   "CONFLICTS_WITH",
   "CLOSES",
+  "REFERENCES",
 ]);
 
 type FindingLevel = "info" | "warn" | "fail";
@@ -73,26 +75,8 @@ interface Finding {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-function nodeTypesFromSeedProjection(): Set<string> {
-  // Read the seed-projection output indirectly by scanning the source
-  // for registered node types. We do a static scan rather than executing
-  // the projection to avoid requiring a live SQLite DB in CI.
-  const seedPath = join(
-    REPO_ROOT,
-    "prototype/platform/regulatory/graph/seed-projection.ts",
-  );
-  if (!existsSync(seedPath)) return new Set();
-
-  const src = Bun.file(seedPath).text();
-  // We resolve this synchronously below
-  return new Set<string>(); // placeholder; resolved async
-}
-
 async function collectSeedNodeTypes(): Promise<Set<string>> {
-  const seedPath = join(
-    REPO_ROOT,
-    "prototype/platform/regulatory/graph/seed-projection.ts",
-  );
+  const seedPath = join(REPO_ROOT, "prototype/platform/regulatory/graph/seed-projection.ts");
   if (!existsSync(seedPath)) return new Set();
 
   const text = await Bun.file(seedPath).text();
@@ -106,10 +90,7 @@ async function collectSeedNodeTypes(): Promise<Set<string>> {
 }
 
 async function collectSeedEdgeTypes(): Promise<Set<string>> {
-  const seedPath = join(
-    REPO_ROOT,
-    "prototype/platform/regulatory/graph/seed-projection.ts",
-  );
+  const seedPath = join(REPO_ROOT, "prototype/platform/regulatory/graph/seed-projection.ts");
   if (!existsSync(seedPath)) return new Set();
 
   const text = await Bun.file(seedPath).text();
@@ -132,12 +113,8 @@ async function main(): Promise<void> {
     "../regulatory/graph/ontology-schema"
   );
 
-  const allNodeTypes: string[] = (
-    GRAPH_NODE_SCHEMA.properties.nodeType.enum as string[]
-  ).slice();
-  const allEdgeTypes: string[] = (
-    GRAPH_EDGE_SCHEMA.properties.edgeType.enum as string[]
-  ).slice();
+  const allNodeTypes: string[] = (GRAPH_NODE_SCHEMA.properties.nodeType.enum as string[]).slice();
+  const allEdgeTypes: string[] = (GRAPH_EDGE_SCHEMA.properties.edgeType.enum as string[]).slice();
 
   // Collect seeded types from seed-projection source scan
   const seededNodeTypes = await collectSeedNodeTypes();
@@ -218,7 +195,7 @@ async function main(): Promise<void> {
       `\nrecon:graph-ontology-coverage ADVISORY — ${warns.length} warning(s); ${infos.length} info(s). Non-blocking.`,
     );
   } else {
-    console.log(`\nrecon:graph-ontology-coverage OK — all types accounted for.`);
+    console.log("\nrecon:graph-ontology-coverage OK — all types accounted for.");
   }
 }
 
