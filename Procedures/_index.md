@@ -144,10 +144,10 @@
 | Margin Policy (RMF sub-policy) | [`margin-vm.md`](by-policy/margin-vm.md) — PROC-MK-ODP-03: daily variation-margin calculation and exchange per-counterparty under ISDA CSA; zero threshold; correspondent bank settlement; PA Umoja reporting | Ravi + Eitan + Imani + Bea | **POPULATED** |
 | Margin Policy / IM Methodology Policy | [`margin-im.md`](by-policy/margin-im.md) — PROC-MK-ODP-04: SIMM-aligned initial-margin calculation, exchange, and custodian segregation for in-scope non-cleared OTC counterparties; phased BCBS-IOSCO applicability | Ravi + Rohan + Eitan + Imani | **POPULATED** |
 | OTC Trading Policy | [`portfolio-reconciliation.md`](by-policy/portfolio-reconciliation.md) — PROC-MK-ODP-05: frequency-tiered OTC IRD portfolio reconciliation (weekly/monthly/quarterly per CS 3/2018 §5); material-break escalation and FSCA reporting | Tomas + Anya + Rohan | **POPULATED** |
-| OTC Trading Policy | [`otc-confirmation.md`](by-policy/otc-confirmation.md) | Kai + Tomas + Imani | STUB |
-| OTC Trading Policy / ISDA dispute | [`otc-dispute-resolution.md`](by-policy/otc-dispute-resolution.md) | Imani + Saskia + Zara | STUB |
-| Client Categorisation Policy | [`client-categorisation.md`](by-policy/client-categorisation.md) | Zara + Niko (paused build-phase) | STUB |
-| Excon Compliance Policy | [`excon-otc-derivatives.md`](by-policy/excon-otc-derivatives.md) | Eitan + Mira + Ravi | STUB |
+| OTC Trading Policy | [`otc-confirmation.md`](by-policy/otc-confirmation.md) (PROC-MK-ODP-06 — ISO 20022 / FpML confirmation generation; ECTA dispatch; SLA tracking T+1 vanilla / T+5 exotic; counterparty-ack escalation; daily EOD reconciliation; BLAKE3 tamper-detection) | Kai + Tomas + Imani | **POPULATED** |
+| OTC Trading Policy / ISDA dispute | [`otc-dispute-resolution.md`](by-policy/otc-dispute-resolution.md) (PROC-MK-ODP-07 — three-pathway resolution: MTM / material terms / margin call; R5m and 5 BD escalation thresholds; independent recalculation; senior engagement; external escalation; ISDA 2016 CSA 1-BD VM window) | Imani + Saskia + Zara | **POPULATED** |
+| Client Categorisation Policy | [`client-categorisation.md`](by-policy/client-categorisation.md) (PROC-MK-ODP-08 — EC / PC / RC three-tier classification; institutional-only RC hard-decline; pre-trade gate integration; annual review cycle; material-change re-review; Party register update) | Zara + Niko (paused build-phase) | **POPULATED** |
+| Excon Compliance Policy | [`excon-otc-derivatives.md`](by-policy/excon-otc-derivatives.md) (PROC-MK-ODP-09 — per-trade Excon scope screen; FinSurv pre-approval pathway; post-trade and aggregate periodic reporting; external counsel engagement pre-first-non-resident-trade; annual framework review) | Eitan + Mira + Ravi | **POPULATED** |
 
 ## Customer / sales
 
@@ -167,7 +167,7 @@
 | Remuneration Policy | `annual-remuneration-review.md` | Sade + Helena (RemCo) | PLANNED |
 | Remuneration Policy | `malus-clawback-trigger.md` | Sade + Helena | PLANNED |
 | Fit-and-Proper Policy | `fit-and-proper-attestation.md` | Sade + Owen + Helena | PLANNED |
-| Fit-and-Proper Policy + FAIS Policy v0.1 (STUB) | [`fais-ki-fit-and-proper.md`](by-policy/fais-ki-fit-and-proper.md) (PROC-FAIS-KI-FAP-01 — five-dimension Determination 2017 framework) | Sade · Zara · Saskia (named KI) | STUB |
+| Fit-and-Proper Policy + FAIS Policy v0.1 (STUB) | [`fais-ki-fit-and-proper.md`](by-policy/fais-ki-fit-and-proper.md) (PROC-FAIS-KI-FAP-01 — five-dimension FSCA Determination 2017 framework: honesty/integrity, competence, operational ability, financial soundness, oversight; composite approval gate; continuous monitoring; annual CPD cycle; FSP-licence application bundle) | Sade · Zara · Saskia (named KI) | **POPULATED** |
 | Recruitment & Selection | `recruitment-process.md` | Sade | PLANNED |
 | Disciplinary | `disciplinary-process.md` | Sade | PLANNED |
 | Grievance | `grievance-process.md` | Sade | PLANNED |
