@@ -637,6 +637,7 @@ function adaptDecisionsRegister(register: DecisionsRegister): {
     title: row.title,
     category: "near-term",
     domainCategory: row.category,
+    authority: row.authority,
     owner: row.authorityRef,
     trigger: `Decision event (authority: ${row.authority}, phase: requested)`,
     decisionForCEO: row.recommendation,
@@ -1398,9 +1399,11 @@ export function ownerInboxFeedSort(a: OwnerInboxItem, b: OwnerInboxItem): number
   return a.filename < b.filename ? 1 : -1;
 }
 
-// Lift Owner-Inbox decision-required items into OpenDecision shape so they
-// merge into the same `decisionsOpen` list as the curated decisions. Items
-// already resolved via a CeoDecision event are excluded by the caller.
+// @deprecated — D-DECISIONS-FRAMEWORK-REDESIGN: Owner Inbox `decision-required: true`
+// is no longer a valid authoring channel for decisions. New decisions must be opened
+// via `requestDecision()` in `runtime/decisions/record.ts`, which emits a
+// `Decision(requested)` event. This function is retained for reference only;
+// it is no longer called from the main derivation pipeline.
 export function ownerInboxToOpenDecisions(
   items: readonly OwnerInboxItem[],
   resolvedIds: ReadonlySet<string>,
@@ -1979,21 +1982,16 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     });
   }
 
-  // Dedupe: prefer curated open and Owner-Inbox-lifted entries over the
-  // event-synthesized fallback (the latter has no human-authored
-  // `decisionForCEO` / `recommendation`).
-  const knownOpenIds = new Set<string>([
-    ...remainingOpen.map((d) => d.id),
-    ...ownerInboxOpenDecisions.map((d) => d.id),
-  ]);
+  // Dedupe: prefer curated open entries over the event-synthesized fallback
+  // (the latter has no human-authored `decisionForCEO` / `recommendation`).
+  // D-DECISIONS-FRAMEWORK-REDESIGN — Owner Inbox `decision-required: true`
+  // is retired as a decision-authoring channel; `ownerInboxOpenDecisions` is
+  // always empty (the variable is kept for the ownerByDecisionId call below
+  // which preserves owner attribution for resolved decisions).
+  const knownOpenIds = new Set<string>([...remainingOpen.map((d) => d.id)]);
   const reopenedFallback = reopenedFromEvents.filter((d) => !knownOpenIds.has(d.id));
 
-  const decisionsOpenAll = [
-    ...remainingOpen,
-    ...ownerInboxOpenDecisions,
-    ...reopenedFallback,
-    ...escalationOpenDecisions,
-  ];
+  const decisionsOpenAll = [...remainingOpen, ...reopenedFallback, ...escalationOpenDecisions];
 
   const ownerById = ownerByDecisionId(curated.decisionsOpen, ownerInboxOpenDecisions);
 
