@@ -164,17 +164,17 @@
 
 | Policy | Procedure | Owner | Status |
 |---|---|---|---|
-| Remuneration Policy | `annual-remuneration-review.md` | Sade + Helena (RemCo) | PLANNED |
-| Remuneration Policy | `malus-clawback-trigger.md` | Sade + Helena | PLANNED |
-| Fit-and-Proper Policy | `fit-and-proper-attestation.md` | Sade + Owen + Helena | PLANNED |
+| Remuneration Policy | [`annual-remuneration-review.md`](by-policy/annual-remuneration-review.md) (PROC-HR-ARR-01 — annual benchmarking agent costs and human pay; variable-pay calculation; RemCo sign-off; board approval for executive remuneration; PA notification if material) | Sade · Helena (RemCo) | **POPULATED** |
+| Remuneration Policy | [`malus-clawback-trigger.md`](by-policy/malus-clawback-trigger.md) (PROC-HR-MC-01 — trigger event detection; causal assessment; RemCo determination; board approval; PA notification; executed recovery) | Sade · Helena | **POPULATED** |
+| Fit-and-Proper Policy | [`fit-and-proper-attestation.md`](by-policy/fit-and-proper-attestation.md) (PROC-HR-FP-01 — annual self-declaration + third-party verification; four-dimension framework; board attestation; PA s.60A notification on adverse event; fit-and-proper register) | Sade · Owen · Helena | **POPULATED** |
 | Fit-and-Proper Policy + FAIS Policy v0.1 (STUB) | [`fais-ki-fit-and-proper.md`](by-policy/fais-ki-fit-and-proper.md) (PROC-FAIS-KI-FAP-01 — five-dimension FSCA Determination 2017 framework: honesty/integrity, competence, operational ability, financial soundness, oversight; composite approval gate; continuous monitoring; annual CPD cycle; FSP-licence application bundle) | Sade · Zara · Saskia (named KI) | **POPULATED** |
-| Recruitment & Selection | `recruitment-process.md` | Sade | PLANNED |
-| Disciplinary | `disciplinary-process.md` | Sade | PLANNED |
-| Grievance | `grievance-process.md` | Sade | PLANNED |
-| Performance Management | `performance-cycle.md` | Sade | PLANNED |
-| EE / B-BBEE | `ee-annual-report.md` | Sade | PLANNED |
-| Skills Development | `wsp-atr-cycle.md` | Sade | PLANNED |
-| Health & Safety | `ohs-incident.md` | Sade | PLANNED |
+| Recruitment & Selection | [`recruitment-process.md`](by-policy/recruitment-process.md) (PROC-HR-REC-01 — regulatory-basis role scoping; F&P pre-screening; PA/FSCA notification; EEA non-discrimination; onboarding trigger) | Sade | **POPULATED** |
+| Disciplinary | [`disciplinary-process.md`](by-policy/disciplinary-process.md) (PROC-HR-DISC-01 — LRA Schedule 8 fair procedure; preliminary investigation; formal hearing; sanction; appeal; CCMA referral; PA notification on misconduct dismissal) | Sade | **POPULATED** |
+| Grievance | [`grievance-process.md`](by-policy/grievance-process.md) (PROC-HR-GRIEV-01 — informal resolution first; formal investigation; outcome determination; appeal; CCMA referral; systemic trend analysis) | Sade | **POPULATED** |
+| Performance Management | [`performance-cycle.md`](by-policy/performance-cycle.md) (PROC-HR-PERF-01 — dual-track: human KPI/annual-rating cycle + active agent-performance monitoring; perf-feedback reports; variable-pay scorecard input; improvement plans; incapacity pathway) | Sade | **POPULATED** |
+| EE / B-BBEE | [`ee-annual-report.md`](by-policy/ee-annual-report.md) (PROC-HR-EE-01 — workforce profile analysis; EEA2 and EEA4 compilation; CEO sign-off; DoL submission by 15 January; public display; EE plan annual review) | Sade | **POPULATED** |
+| Skills Development | [`wsp-atr-cycle.md`](by-policy/wsp-atr-cycle.md) (PROC-HR-WSP-01 — FASSET registration; WSP by 30 April; ATR by 30 April; mandatory grant claim; discretionary grant applications; SDL levy reconciliation) | Sade | **POPULATED** |
+| Health & Safety | [`ohs-incident.md`](by-policy/ohs-incident.md) (PROC-HR-OHS-01 — incident categorisation; DoL notification within 7 days (s.24); COIDA claim; root-cause investigation; corrective-action plan; OHS committee records) | Sade | **POPULATED** |
 
 ## Conduct & ethics
 
