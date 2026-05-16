@@ -64,13 +64,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { SemanticRegistry, type SemanticEntry } from "../semantic";
-import { balance, cashAndBalancesAtSARB, exposure } from "../semantic/entries";
+import { type SemanticEntry, SemanticRegistry } from "../semantic";
+import { SLICE_3_LIQUIDITY_ENTRIES, SLICE_4_CAPITAL_ENTRIES } from "../semantic";
 import {
-  SLICE_3_LIQUIDITY_ENTRIES,
-  SLICE_4_CAPITAL_ENTRIES,
+  SLICE_3_RWA_ENTRIES,
+  SLICE_5_MARKET_RISK_ENTRIES,
+  SLICE_5_OP_RISK_ENTRIES,
+  SLICE_6_IFRS_ENTRIES,
 } from "../semantic";
-import { SLICE_3_RWA_ENTRIES, SLICE_5_MARKET_RISK_ENTRIES, SLICE_5_OP_RISK_ENTRIES, SLICE_6_IFRS_ENTRIES } from "../semantic";
+import { balance, cashAndBalancesAtSARB, exposure } from "../semantic/entries";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const CITATIONS = [
@@ -84,11 +86,7 @@ const CITATIONS = [
 // ---------------------------------------------------------------------------
 // Slice-1 required entries — must be registered in-force at all times.
 // ---------------------------------------------------------------------------
-const REQUIRED_SLICE1_IDS: readonly string[] = [
-  "Balance",
-  "Exposure",
-  "CashAndBalancesAtSARB",
-];
+const REQUIRED_SLICE1_IDS: readonly string[] = ["Balance", "Exposure", "CashAndBalancesAtSARB"];
 
 // ---------------------------------------------------------------------------
 // Known valid signer names — derived from Team/_team-roster.json at
@@ -266,7 +264,8 @@ export function run(): ReconResult {
   if (allEntries.length === 0) {
     violations.push({
       subject: "semantic-registry",
-      message: "SemanticRegistry is empty — no entries registered. At minimum Slice 1 entries (Balance, Exposure, CashAndBalancesAtSARB) must be registered. Citations: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.",
+      message:
+        "SemanticRegistry is empty — no entries registered. At minimum Slice 1 entries (Balance, Exposure, CashAndBalancesAtSARB) must be registered. Citations: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.",
       severity: "fail",
     });
   }
