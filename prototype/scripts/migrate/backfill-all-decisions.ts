@@ -215,7 +215,7 @@ function inferPhase(fm: ParsedFrontmatter, filePath: string, isActioned: boolean
 // Body-text D-* reference extraction
 // ---------------------------------------------------------------------------
 
-const BODY_DECISION_ID_RE = /\bD-[A-Z][A-Z0-9-]*\b/g;
+const BODY_DECISION_ID_RE = /\bD-[A-Z][A-Z0-9-]*\b(?!-?\{)/g;
 
 function extractBodyDecisionIds(text: string): string[] {
   // Skip the frontmatter block
