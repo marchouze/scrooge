@@ -42,6 +42,12 @@ export const STATIC_LINEAGE_REGISTRY: readonly ProvenanceLineageEntry[] = [
       "CeoDecision events carved out as kind:'production' (Q-PROV-NEW-2). Real architectural commitments with binding force.",
   },
   {
+    value: "decision-record",
+    issuer: "Scrooge",
+    description:
+      "Decision events (D-DECISIONS-FRAMEWORK-REDESIGN). Unified family subsuming CeoDecision; kind:'production'.",
+  },
+  {
     value: "agent-brief",
     issuer: "Scrooge",
     description:

@@ -18,7 +18,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { type Subprocess, spawn } from "bun";
@@ -26,6 +26,8 @@ import { type Subprocess, spawn } from "bun";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import type { DashboardState, OpenDecision } from "../dashboard/types";
+import { makeDecision } from "../platform/event-store/event-types/decision";
+import { EventStore } from "../platform/event-store/store";
 
 const PROTOTYPE_ROOT = resolve(import.meta.dir, "..");
 const REPO_ROOT = resolve(PROTOTYPE_ROOT, "..");
@@ -38,7 +40,6 @@ let eventDbPath: string;
 let serverProcess: Subprocess | undefined;
 let serverPort: number;
 let testDecisionId: string | undefined;
-let injectedDecisionFile: string | undefined;
 let seedExistedBefore: boolean;
 
 async function findFreePort(): Promise<number> {
@@ -84,36 +85,35 @@ beforeAll(async () => {
   // post-assertion is "never created or modified by the server".
   seedExistedBefore = existsSync(SEED_PATH);
 
-  // Inject a synthetic open-decision file into the real Owner Inbox so the
-  // /api/decide test has something to action. After Atlas's fix to derive
-  // resolved decisions from on-disk decision-records, the live repo has
-  // zero open decisions in steady state — every recorded one is resolved
-  // by its corresponding `_ceo-decision-record_*.md` companion. The
-  // injected file is unique-suffixed and cleaned up in afterAll.
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: Owner Inbox markdown is no
+  // longer an authoring channel for open decisions. Inject a synthetic
+  // `Decision(requested)` event directly into the test event store so
+  // the /api/decide POST has something to resolve.
   testDecisionId = `D-RUNTIME-CACHE-TEST-${Date.now()}`;
-  injectedDecisionFile = resolve(
-    REPO_ROOT,
-    "Owner Inbox",
-    `2026-05-10_runtime-cache-test_${testDecisionId.toLowerCase()}.md`,
-  );
-  writeFileSync(
-    injectedDecisionFile,
-    [
-      "---",
-      `title: Runtime-cache integration test fixture (${testDecisionId})`,
-      "author: dashboard-runtime-cache.test.ts",
-      "date: 2026-05-10",
-      "summary: Synthetic decision-required item used by the runtime-cache integration test. Cleaned up in afterAll.",
-      "decision-required: true",
-      `decision-id: ${testDecisionId}`,
-      "decision-category: pacing",
-      "decision-for-ceo: Resolve to exercise the /api/decide handler.",
-      "decision-recommendation: Approve.",
-      "---",
-      "",
-      `# Test fixture: ${testDecisionId}`,
-    ].join("\n"),
-  );
+  {
+    const store = new EventStore(eventDbPath);
+    store.append(
+      makeDecision({
+        asOf: "2026-05-10T00:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "human", id: "marc@tgv.co.za" },
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+        payload: {
+          decisionId: testDecisionId,
+          phase: "requested",
+          authority: "CEO",
+          authorityRef: "marc@tgv.co.za",
+          title: `Runtime-cache integration test fixture (${testDecisionId})`,
+          category: "governance",
+          recommendation: "Approve.",
+          rationale: "Synthetic decision used by the runtime-cache integration test.",
+          sourceDocHashes: [],
+          citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+          recordedVia: "authoring-ui",
+        },
+      }),
+    );
+  }
 
   serverPort = await findFreePort();
 
@@ -161,9 +161,7 @@ afterAll(async () => {
   if (tmpDir && existsSync(tmpDir)) {
     rmSync(tmpDir, { recursive: true, force: true });
   }
-  if (injectedDecisionFile && existsSync(injectedDecisionFile)) {
-    rmSync(injectedDecisionFile, { force: true });
-  }
+  // No injectedDecisionFile in Slice A — decision was emitted as an event.
 });
 
 describe("dashboard server — runtime-cache split (D-EVENT-STORE-SCALING Slice 3a + 3b)", () => {
