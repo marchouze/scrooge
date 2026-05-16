@@ -20,6 +20,14 @@
   const CATALOGUE = [
     // -------- Dashboards (live) --------
     {
+      id: "roadmap",
+      category: "dashboards",
+      title: "Project Plan",
+      blurb:
+        "Scrooge — four workstreams, past milestones, open blockers, and the path to pre-licence readiness.",
+      href: "/roadmap.html",
+    },
+    {
       id: "obligations",
       category: "dashboards",
       title: "Obligations",

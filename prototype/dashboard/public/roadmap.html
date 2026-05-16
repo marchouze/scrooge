@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Plan · Hoz</title>
+  <meta name="description" content="Hoz build-phase project plan — four workstreams, past milestones, open blockers, and the path to pre-licence readiness.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    :root {
+      --surface-base:   #ffffff;
+      --surface-raised: #f5f3ee;
+      --surface-hover:  #edeae4;
+      --neutral-rule:   var(--neutral-mist);
+      --text-primary:   var(--brand-primary);
+      --text-secondary: var(--neutral-graphite);
+    }
+
+    /* ── Phase timeline ── */
+    .rm-timeline {
+      display: flex; align-items: stretch; gap: 0;
+      border: 1px solid var(--neutral-rule); border-radius: 8px;
+      overflow: hidden; margin-bottom: var(--space-8);
+    }
+    .rm-phase {
+      flex: 1; padding: 14px 18px; position: relative;
+      background: var(--surface-raised);
+      border-right: 1px solid var(--neutral-rule);
+    }
+    .rm-phase:last-child { border-right: none; }
+    .rm-phase.active {
+      background: #e8f5e9; border-top: 3px solid #2e7d32;
+    }
+    .rm-phase.future {
+      background: var(--surface-raised); border-top: 3px solid var(--neutral-rule);
+      opacity: .75;
+    }
+    .rm-phase.endpoint {
+      background: #f3e5f5; border-top: 3px solid #6a1b9a;
+      opacity: .7;
+    }
+    .rm-phase-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--text-secondary); margin-bottom: 4px;
+    }
+    .rm-phase.active .rm-phase-label { color: #2e7d32; }
+    .rm-phase.endpoint .rm-phase-label { color: #6a1b9a; }
+    .rm-phase-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+    .rm-phase-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
+    .rm-arrow {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 6px; background: var(--surface-raised); color: var(--neutral-stone);
+      font-size: 14px; border-right: 1px solid var(--neutral-rule);
+      flex-shrink: 0;
+    }
+
+    /* ── Stat cards ── */
+    .rm-stats {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: var(--space-8);
+    }
+    .rm-stat {
+      flex: 1; min-width: 120px; padding: 12px 14px;
+      border: 1px solid var(--neutral-rule); border-radius: 6px;
+      background: var(--surface-base);
+    }
+    .rm-stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--text-secondary); }
+    .rm-stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin: 4px 0 2px; }
+    .rm-stat-value[data-tone="green"]  { color: #2e7d32; }
+    .rm-stat-value[data-tone="amber"]  { color: #a04200; }
+    .rm-stat-value[data-tone="red"]    { color: #7d1e10; }
+    .rm-stat-value[data-tone="muted"]  { color: var(--neutral-stone); }
+    .rm-stat-sub { font-size: 11px; color: var(--neutral-stone); }
+
+    /* ── Workstream section ── */
+    .rm-workstream {
+      border: 1px solid var(--neutral-rule); border-radius: 8px;
+      margin-bottom: var(--space-6); overflow: hidden;
+    }
+    .rm-ws-head {
+      display: flex; align-items: baseline; gap: 12px;
+      padding: 14px 18px; background: var(--surface-raised);
+      border-bottom: 1px solid var(--neutral-rule);
+    }
+    .rm-ws-id {
+      font-size: 11px; font-weight: 700; font-family: var(--font-mono);
+      background: var(--brand-primary); color: #fff;
+      padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
+    }
+    .rm-ws-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .rm-ws-owner { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+    .rm-ws-body { padding: 0; }
+
+    /* ── Done / In-flight / To-do panels ── */
+    details.rm-panel { border-bottom: 1px solid var(--neutral-rule); }
+    details.rm-panel:last-child { border-bottom: none; }
+    details.rm-panel summary {
+      padding: 10px 18px; font-weight: 600; font-size: 13px;
+      cursor: pointer; list-style: none;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-primary); user-select: none;
+    }
+    details.rm-panel summary::-webkit-details-marker { display: none; }
+    details.rm-panel summary::before {
+      content: "▶"; font-size: 10px; color: var(--neutral-stone);
+      transition: transform .15s; flex-shrink: 0;
+    }
+    details.rm-panel[open] summary::before { transform: rotate(90deg); }
+    details.rm-panel .rm-panel-body { padding: 2px 18px 14px 42px; }
+
+    /* Panel type badges in summary */
+    .rm-panel-badge {
+      font-size: 11px; font-weight: 600; padding: 1px 7px;
+      border-radius: 10px; flex-shrink: 0;
+    }
+    .rm-panel-badge.done     { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+    .rm-panel-badge.inflight { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+    .rm-panel-badge.todo     { background: #fff8e1; color: #7a5a00; border: 1px solid #ffe082; }
+    .rm-panel-count {
+      font-size: 11px; color: var(--neutral-stone); margin-left: auto;
+    }
+
+    /* Item lists */
+    .rm-items { list-style: none; padding: 0; margin: 0; }
+    .rm-items li {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 5px 0; border-bottom: 1px solid var(--neutral-rule);
+      font-size: 12.5px; color: var(--text-primary);
+    }
+    .rm-items li:last-child { border-bottom: none; }
+    .rm-item-icon { flex-shrink: 0; margin-top: 1px; }
+    .rm-item-text { flex: 1; }
+    .rm-item-owner {
+      font-size: 11px; color: var(--neutral-stone); white-space: nowrap;
+      margin-left: 6px; flex-shrink: 0;
+    }
+    .rm-item-ref {
+      font-family: var(--font-mono); font-size: 10.5px;
+      background: var(--surface-raised); padding: 1px 5px;
+      border-radius: 3px; color: var(--neutral-stone); flex-shrink: 0;
+    }
+
+    /* Status icons */
+    .icon-done     { color: #2e7d32; }
+    .icon-inflight { color: #1c4d80; }
+    .icon-todo     { color: #7a5a00; }
+
+    /* Blockers strip */
+    .rm-blockers {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 10px 18px; background: #fff7f6;
+      border-top: 1px solid #f3c1bc;
+    }
+    .rm-blocker-label {
+      font-size: 11px; font-weight: 600; color: #7d1e10;
+      align-self: center; margin-right: 4px;
+    }
+    .rm-blocker-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 10px; font-size: 11px;
+      background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc;
+      font-family: var(--font-mono); font-weight: 600;
+    }
+
+    /* ── CEO queue table ── */
+    .rm-queue-wrap { overflow-x: auto; margin-top: 8px; }
+    table.rm-queue { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.rm-queue th, table.rm-queue td {
+      border-bottom: 1px solid var(--neutral-rule);
+      padding: 7px 10px; text-align: left; vertical-align: top;
+    }
+    table.rm-queue th {
+      background: var(--surface-raised); font-weight: 600;
+      font-size: 11.5px; color: var(--text-secondary);
+    }
+    table.rm-queue tr:hover td { background: var(--surface-hover); }
+    table.rm-queue code {
+      font-size: 11px; background: var(--surface-raised);
+      padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono);
+    }
+    .rm-empty { font-size: 13px; color: var(--neutral-stone); padding: 12px 0; }
+
+    /* ── Cross-cutting watch items ── */
+    .rm-watch { list-style: none; padding: 0; margin: 0; }
+    .rm-watch li {
+      padding: 8px 0; border-bottom: 1px solid var(--neutral-rule);
+      font-size: 12.5px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .rm-watch li:last-child { border-bottom: none; }
+    .rm-watch-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--neutral-stone); flex-shrink: 0; margin-top: 4px;
+    }
+    .rm-watch-dot.active { background: #2e7d32; }
+    .rm-watch-dot.amber  { background: #a04200; }
+  </style>
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+        <span class="shell-wordmark-suffix">Project Plan</span>
+      </a>
+      <div class="shell-meta">
+        <span data-provenance-badge="page-top" data-provenance-source="/api/state" aria-label="Provenance badge"></span>
+        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh data">Refresh</button>
+        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Section navigation">
+      <div data-shell-dept-nav></div>
+      <h2 style="margin-top:var(--space-6)">On this page</h2>
+      <ul>
+        <li><a href="#phase-overview" data-shell-nav="sidebar:phase-overview">Phase overview</a></li>
+        <li><a href="#ws-a" data-shell-nav="sidebar:ws-a">A — Substrate</a></li>
+        <li><a href="#ws-b" data-shell-nav="sidebar:ws-b">B — Governance</a></li>
+        <li><a href="#ws-c" data-shell-nav="sidebar:ws-c">C — Regulatory chain</a></li>
+        <li><a href="#ws-d" data-shell-nav="sidebar:ws-d">D — Markets franchise</a></li>
+        <li><a href="#ceo-queue" data-shell-nav="sidebar:ceo-queue">CEO decision queue</a></li>
+        <li><a href="#watch-items" data-shell-nav="sidebar:watch-items">Watch items</a></li>
+      </ul>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">Project Plan</h1>
+        <p class="shell-page-lede">
+          Scrooge (Chief of Staff) — build-phase roadmap across four workstreams.
+          Past milestones are anchors; the forward queue is sequenced by dependency.
+          Live counts (decisions, workstreams) are derived from the event store.
+        </p>
+      </div>
+
+      <!-- ── Phase timeline ── -->
+      <section id="phase-overview" aria-labelledby="rm-phase-head">
+        <h2 class="shell-category-title" id="rm-phase-head" style="margin-bottom:var(--space-4)">Phase overview</h2>
+        <div class="rm-timeline" role="list">
+          <div class="rm-phase active" role="listitem">
+            <div class="rm-phase-label">Current</div>
+            <div class="rm-phase-title">Build Phase</div>
+            <div class="rm-phase-sub">Engineering substrate, governance seats, regulatory chain, markets franchise prep</div>
+          </div>
+          <div class="rm-arrow" aria-hidden="true">→</div>
+          <div class="rm-phase future" role="listitem">
+            <div class="rm-phase-label">Gate</div>
+            <div class="rm-phase-title">Pre-licence Readiness</div>
+            <div class="rm-phase-sub">Saskia + Rashida + Devon co-own; lights green when substrate is production-grade</div>
+          </div>
+          <div class="rm-arrow" aria-hidden="true">→</div>
+          <div class="rm-phase endpoint" role="listitem">
+            <div class="rm-phase-label">Target</div>
+            <div class="rm-phase-title">Licence Day</div>
+            <div class="rm-phase-sub">Real capital, real customers, minimum human layer appointed under Banks Act</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="rm-stats">
+          <div class="rm-stat">
+            <div class="rm-stat-label">Decisions resolved</div>
+            <div class="rm-stat-value" id="rm-resolved" data-tone="muted">–</div>
+            <div class="rm-stat-sub">CEO decisions actioned</div>
+          </div>
+          <div class="rm-stat">
+            <div class="rm-stat-label">Decisions open</div>
+            <div class="rm-stat-value" id="rm-open" data-tone="muted">–</div>
+            <div class="rm-stat-sub">CEO queue</div>
+          </div>
+          <div class="rm-stat">
+            <div class="rm-stat-label">Workstreams active</div>
+            <div class="rm-stat-value" id="rm-inflight" data-tone="muted">–</div>
+            <div class="rm-stat-sub">In-flight now</div>
+          </div>
+          <div class="rm-stat">
+            <div class="rm-stat-label">Procedures</div>
+            <div class="rm-stat-value" id="rm-procedures" data-tone="muted">–</div>
+            <div class="rm-stat-sub">Populated (of ~80 identified)</div>
+          </div>
+          <div class="rm-stat">
+            <div class="rm-stat-label">Obligations</div>
+            <div class="rm-stat-value" id="rm-obligations" data-tone="muted">–</div>
+            <div class="rm-stat-sub">Across ~16 domains</div>
+          </div>
+          <div class="rm-stat">
+            <div class="rm-stat-label">Policies</div>
+            <div class="rm-stat-value" id="rm-policies" data-tone="muted">–</div>
+            <div class="rm-stat-sub">Policy register</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Workstreams ── -->
+      <section aria-labelledby="rm-ws-head">
+        <h2 class="shell-category-title" id="rm-ws-head" style="margin-bottom:var(--space-4)">Workstreams</h2>
+        <div id="rm-workstreams"></div>
+      </section>
+
+      <!-- ── CEO decision queue ── -->
+      <section id="ceo-queue" aria-labelledby="rm-ceo-head" style="margin-top:var(--space-8)">
+        <h2 class="shell-category-title" id="rm-ceo-head" style="margin-bottom:var(--space-4)">CEO decision queue</h2>
+        <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:var(--space-4)">
+          Open decisions requiring CEO action — ordered by sequencing pressure.
+        </p>
+        <div class="rm-queue-wrap">
+          <table class="rm-queue" aria-label="Open CEO decisions">
+            <thead>
+              <tr>
+                <th style="width:90px">ID</th>
+                <th>Decision</th>
+                <th style="width:110px">Owner</th>
+                <th style="width:110px">Category</th>
+              </tr>
+            </thead>
+            <tbody id="rm-queue-body">
+              <tr><td colspan="4" class="rm-empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Cross-cutting watch items ── -->
+      <section id="watch-items" aria-labelledby="rm-watch-head" style="margin-top:var(--space-8)">
+        <h2 class="shell-category-title" id="rm-watch-head" style="margin-bottom:var(--space-4)">Cross-cutting watch items</h2>
+        <ul class="rm-watch">
+          <li>
+            <div class="rm-watch-dot active"></div>
+            <div><strong>Build-phase endpoint</strong> — pre-licence go-live readiness gate (Saskia + Rashida + Devon). Target not yet date-set; defines the transition from build-phase to licence-day.</div>
+          </li>
+          <li>
+            <div class="rm-watch-dot amber"></div>
+            <div><strong>Anthropic API token spend</strong> — currently the largest real cost. Marc + Camille (CFO) tracking under <code>S6</code> / <code>WS-API-CLOUD-BUDGET</code>.</div>
+          </li>
+          <li>
+            <div class="rm-watch-dot amber"></div>
+            <div><strong>Agent-spec completeness</strong> — persona files require sections 6–17 (operating spec proper). Vera Wave-4 #10 asserts at audit time. Touch-time upgrade ongoing.</div>
+          </li>
+          <li>
+            <div class="rm-watch-dot active"></div>
+            <div><strong>Azure migration</strong> — single-coherent-phase per Principle 3. Substrate-replacement seams in place; migration executes once the platform is production-grade.</div>
+          </li>
+          <li>
+            <div class="rm-watch-dot active"></div>
+            <div><strong>M-phase markers</strong> — M2 (reporting build) → M3 → … → M8 (single auto-commit ingest). Sequenced behind the product-construction substrate gap closure.</div>
+          </li>
+          <li>
+            <div class="rm-watch-dot active"></div>
+            <div><strong>Dispatch-discipline harness</strong> — worktree isolation, scaffold-commit, push-retry, citation-gate, no-pause rule all live in <code>CLAUDE.md</code>. Substrate fixes (chroot/namespace, M8 ingest) on the to-do.</div>
+          </li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/roadmap.js"></script>
+</body>
+</html>
