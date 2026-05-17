@@ -71,6 +71,15 @@ import {
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingPayloadSchema } from "../event-types/audit";
 import {
+  dataProjectionSnapshotPayloadSchema,
+  governanceCyclePrepPayloadSchema,
+  inboxHygieneSweepPayloadSchema,
+  obligationsRegisterSnapshotPayloadSchema,
+  reconResultPayloadSchema,
+  securitySubstrateSnapshotPayloadSchema,
+  substrateStateSnapshotPayloadSchema,
+} from "../event-types/governance-snapshots";
+import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
@@ -91,12 +100,18 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "CeoDecision",
     class: "governance",
+    // Envelope-only for backward compat — CeoDecision is deprecated
+    // (D-DECISIONS-FRAMEWORK-REDESIGN Slice C). The superseding type Decision
+    // carries the strict schema. Runtime emit-site validation for legacy
+    // CeoDecision payloads is covered by the makeCeoDecision alias in
+    // platform/event-store/event-types/decision.ts which routes through
+    // the Decision schema.
     issuer: "human",
     subscribers: ["Owen", "dashboard", "Vera"],
     replay: "latest-wins-per-key",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source: "Procedures/by-policy/ceo-decision-review.md",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   {
     type: "WorkstreamStarted",
@@ -165,12 +180,13 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "ReconResult",
     class: "audit",
+    payloadSchema: reconResultPayloadSchema,
     issuer: "Vera",
     subscribers: ["Thandiwe", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source: "platform/recon/types.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   {
     type: "CitationGatePassed",
@@ -195,13 +211,14 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "SubstrateStateSnapshot",
     class: "runtime",
+    payloadSchema: substrateStateSnapshotPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Devon", "dashboard", "Anya"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     // Substrate-state is operational telemetry — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
-    source: "runtime/agents/atlas-substrate-state.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   {
     type: "DashboardProjectionRefreshed",
@@ -216,12 +233,13 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "DataProjectionSnapshot",
     class: "audit",
+    payloadSchema: dataProjectionSnapshotPayloadSchema,
     issuer: "Anya",
     subscribers: ["Vera", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
-    source: "runtime/agents/anya-projection-drift.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   {
     type: "DecisionComment",
@@ -237,16 +255,18 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "GovernanceCyclePrep",
     class: "governance",
+    payloadSchema: governanceCyclePrepPayloadSchema,
     issuer: "Owen",
     subscribers: ["dashboard"],
     replay: "append-only-audit",
     citationsHint: ["COMPANIES-ACT-71-2008", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source: "runtime/agents/owen-governance-cycle-prep.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   {
     type: "ObligationsRegisterSnapshot",
     class: "governance",
+    payloadSchema: obligationsRegisterSnapshotPayloadSchema,
     issuer: "Mira",
     subscribers: ["Zara", "dashboard"],
     replay: "append-only-audit",
@@ -254,7 +274,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Obligations register is FIC-record-bind (5y) but treated as
     // governance retention 7y for audit-trail integrity.
     retention: RETENTION_GOVERNANCE_7Y,
-    source: "runtime/agents/mira-obligations-snapshot.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   // M1 obligations-register family — emitted by Mira's
   // m1-regulator-citation-urns handler under D-MARKETS-SCHEMA-FOUNDATION
@@ -302,23 +322,25 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "SecuritySubstrateSnapshot",
     class: "audit",
+    payloadSchema: securitySubstrateSnapshotPayloadSchema,
     issuer: "Senna",
     subscribers: ["Rashida", "dashboard"],
     replay: "append-only-audit",
     citationsHint: ["JOINT-STANDARD-2-2024", "POPIA-S19-22"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source: "runtime/agents/senna-security-substrate-state.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   {
     type: "InboxHygieneSweep",
     class: "audit",
+    payloadSchema: inboxHygieneSweepPayloadSchema,
     issuer: "Scrooge",
     subscribers: ["dashboard"],
     replay: "append-only-audit",
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     // Inbox-hygiene sweeps are operational housekeeping — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
-    source: "runtime/agents/scrooge-inbox-hygiene.ts",
+    source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
   },
   // M1 markets-projection family — emitted by Anya's
   // m1-projection-runtime-mapping handler. Envelope-only at v0;
