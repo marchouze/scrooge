@@ -245,7 +245,7 @@ describe("buildRmsRegistersFold (seeded store)", () => {
     store.close();
   });
 
-  it("decisions register surfaces the open status when no CeoDecision lands", () => {
+  it("decisions register surfaces the open status when no terminal Decision lands", () => {
     const store = seed();
     const fold = buildRmsRegistersFold(store);
     expect(fold.decisions[0]?.status).toBe("open");
