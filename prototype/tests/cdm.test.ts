@@ -201,10 +201,15 @@ describe("CDM equity event types", () => {
 });
 
 describe("CDM event-type registry", () => {
-  it("exposes the M1 equity event-type list", () => {
+  it("exposes the M1+M3 equity event-type list", () => {
+    // M1 events
     expect(EQUITY_EVENT_TYPES).toContain("EquityTradeBooked");
     expect(EQUITY_EVENT_TYPES).toContain("EquityCorporateActionApplied");
     expect(EQUITY_EVENT_TYPES).toContain("EquitySettlementInstructed");
-    expect(EQUITY_EVENT_TYPES.length).toBe(3);
+    // M3 events (added in equity lifecycle extension)
+    expect(EQUITY_EVENT_TYPES).toContain("EquityTradeExecuted");
+    expect(EQUITY_EVENT_TYPES).toContain("EquitySettlementConfirmed");
+    expect(EQUITY_EVENT_TYPES).toContain("EquityPositionRevalued");
+    expect(EQUITY_EVENT_TYPES.length).toBe(6);
   });
 });

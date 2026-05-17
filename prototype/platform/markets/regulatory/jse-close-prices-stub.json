@@ -2,10 +2,35 @@
   "_comment": "Build-phase stub — JSE closing prices for EOD revaluation tests",
   "date": "2026-05-17",
   "prices": {
-    "ZAE000015889": { "ticker": "NPN", "name": "Naspers", "closePriceZAR": 425000, "unit": "cents" },
-    "ZAE000042164": { "ticker": "MTN", "name": "MTN Group", "closePriceZAR": 18250, "unit": "cents" },
-    "ZAE000015922": { "ticker": "SBK", "name": "Standard Bank", "closePriceZAR": 22100, "unit": "cents" },
-    "ZAE000030557": { "ticker": "ABG", "name": "Absa Group", "closePriceZAR": 19800, "unit": "cents" },
-    "ZAE000239781": { "ticker": "AGL", "name": "Anglo American", "closePriceZAR": 55400, "unit": "cents" }
+    "ZAE000015889": {
+      "ticker": "NPN",
+      "name": "Naspers",
+      "closePriceZAR": 425000,
+      "unit": "cents"
+    },
+    "ZAE000042164": {
+      "ticker": "MTN",
+      "name": "MTN Group",
+      "closePriceZAR": 18250,
+      "unit": "cents"
+    },
+    "ZAE000015922": {
+      "ticker": "SBK",
+      "name": "Standard Bank",
+      "closePriceZAR": 22100,
+      "unit": "cents"
+    },
+    "ZAE000030557": {
+      "ticker": "ABG",
+      "name": "Absa Group",
+      "closePriceZAR": 19800,
+      "unit": "cents"
+    },
+    "ZAE000239781": {
+      "ticker": "AGL",
+      "name": "Anglo American",
+      "closePriceZAR": 55400,
+      "unit": "cents"
+    }
   }
 }

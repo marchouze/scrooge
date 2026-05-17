@@ -212,10 +212,9 @@ export const equityTradeExecutedPayloadSchema = z.object({
   /** Order identifier — links to the OrderProposed event upstream. */
   orderId: z.string().min(1),
   /** Equity instrument traded. Class must be "listed-equity" or "etf". */
-  instrument: instrumentSchema.refine(
-    (i) => i.class === "listed-equity" || i.class === "etf",
-    { message: "EquityTradeExecuted requires listed-equity or etf instrument class" },
-  ),
+  instrument: instrumentSchema.refine((i) => i.class === "listed-equity" || i.class === "etf", {
+    message: "EquityTradeExecuted requires listed-equity or etf instrument class",
+  }),
   /** Side of the trade from the bank's perspective. */
   side: z.enum(["buy", "sell"]),
   /** Quantity of shares executed. */

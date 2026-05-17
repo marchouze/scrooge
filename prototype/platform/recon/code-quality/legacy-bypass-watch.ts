@@ -44,8 +44,14 @@ import { type ReconResult, type ReconViolation, emptyResult } from "../types";
  * Scrooge dispatch brief (agent-aba467f89147533bf) under Principle 6
  * (autonomous by default — performance management is load-bearing AgentOps).
  * Baseline bumped from 215 → 217.
+ *
+ * 2026-05-17: +3 entries (EquityTradeExecuted, EquitySettlementConfirmed,
+ * EquityPositionRevalued) added by Kai's M3 equity lifecycle PR. These are
+ * new CDM equity events extending the existing M1 equity family. Growth
+ * authorised by D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07).
+ * Baseline bumped from 217 → 220.
  */
-export const BASELINE_COUNT = 217;
+export const BASELINE_COUNT = 220;
 
 /**
  * Date the baseline was snapshotted, for the deliverable's message line.
