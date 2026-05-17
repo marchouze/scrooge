@@ -50,8 +50,14 @@ import { type ReconResult, type ReconViolation, emptyResult } from "../types";
  * new CDM equity events extending the existing M1 equity family. Growth
  * authorised by D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07).
  * Baseline bumped from 217 → 220.
+ *
+ * 2026-05-17: +5 entries (IrsTradeBooked, IrsCouponScheduleGenerated,
+ * IrsCouponPaymentInstructed, IrsCouponSettlementConfirmed, IrsPositionRevalued)
+ * added by Eitan's M5 OTC IRS lifecycle PR. New CDM IRD events completing the
+ * bank's third core asset class. Growth authorised by D-MARKETS-SCHEMA-FOUNDATION
+ * (CEO approved 2026-05-07). Baseline bumped from 220 → 225.
  */
-export const BASELINE_COUNT = 220;
+export const BASELINE_COUNT = 225;
 
 /**
  * Date the baseline was snapshotted, for the deliverable's message line.
