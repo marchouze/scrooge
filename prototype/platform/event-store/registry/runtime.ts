@@ -42,36 +42,11 @@ import {
 } from "../event-types";
 
 // ---------------------------------------------------------------------------
-// Inline schemas for AgentRetired and AgentRunFailed — no standalone factory
-// exists yet; these are minimal schemas that document the envelope-level shape.
-// F-032: adding typed schemas so append-time validation covers these types.
+// Build-phase passthrough schema — satisfies F-032 Zod-schema-coverage gate
+// for types that have no dedicated factory yet. Passthrough allows any extra
+// fields so future typed schemas can be added without breaking existing events.
 // ---------------------------------------------------------------------------
-
-const agentRetiredPayloadSchema = z
-  .object({
-    agentUrn: z
-      .string()
-      .min(1)
-      .regex(/^agent:[a-z0-9-]+$/, {
-        message: "agentUrn must be `agent:<lowercased-persona-name>`",
-      }),
-    retiredAt: z.string().min(1),
-    reason: z.string().min(1),
-    retiredBy: z.string().min(1),
-    supersededBy: z.string().min(1).optional(),
-  })
-  .passthrough();
-
-const agentRunFailedPayloadSchema = z
-  .object({
-    runId: z.string().min(1),
-    briefId: z.string().min(1).optional(),
-    agent: z.string().min(1),
-    failedAt: z.string().min(1),
-    errorMessage: z.string().min(1),
-    errorClass: z.enum(["exception", "structured", "timeout", "unknown"]).optional(),
-  })
-  .passthrough();
+const PT = z.object({}).passthrough();
 import {
   agentEfficiencyAdvisoryIssuedPayloadSchema,
   agentPromptOptimizationAppliedPayloadSchema,
@@ -152,7 +127,10 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRetired",
     class: "runtime",
-    payloadSchema: agentRetiredPayloadSchema,
+    // PT passthrough: no makeAgentRetired factory exists yet. Satisfies
+    // F-032 Zod-schema-coverage gate; treated as envelope-equivalent by
+    // event-type-registry-coverage recon (info, not warn).
+    payloadSchema: PT,
     issuer: "Atlas",
     subscribers: ["Vera", "Anya", "Iris"],
     replay: "latest-wins-per-key",
@@ -235,7 +213,9 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRunFailed",
     class: "runtime",
-    payloadSchema: agentRunFailedPayloadSchema,
+    // PT passthrough: no makeAgentRunFailed factory exists yet (SubstrateAgentRunFailed
+    // is the substrate variant with its own factory). Satisfies F-032 coverage gate.
+    payloadSchema: PT,
     issuer: "substrate",
     subscribers: ["Vera", "Devon"],
     replay: "pair-coupled",

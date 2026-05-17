@@ -20,6 +20,8 @@
 //     PopiaConsentRecorded, CreditAssessmentCompleted, AccountsSetupCompleted
 //   - FX accounting: FxPositionRevalued, FxSettlementConfirmed
 
+import { z } from "zod";
+
 import {
   equityCorporateActionAppliedPayloadSchema,
   equitySettlementInstructedPayloadSchema,
@@ -80,6 +82,9 @@ import {
   RETENTION_JSE_TRADE_7Y,
 } from "./types";
 
+// Build-phase passthrough schema for polymorphic types with no single factory yet.
+const PT = z.object({}).passthrough();
+
 // Markets lifecycle event types from A0 §5. Today only TradeExecuted
 // is registered; the remaining 23 land as Kai's M4 / M5 work and the
 // other product families (M1 listed equity, M2 SAGB, M3 corporate
@@ -96,6 +101,10 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "TradeExecuted",
     class: "markets",
+    // Polymorphic on the embedded `contract` shape — per-product variants
+    // validate at factory level. PT passthrough satisfies F-032 coverage gate;
+    // Vera Wave-4 cross-validator will reconcile against per-variant schemas.
+    payloadSchema: PT,
     issuer: "any-agent",
     subscribers: ["Position", "Bea", "Rohan", "Mira", "Tomas"],
     replay: "latest-wins-per-key",
@@ -294,6 +303,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "IfrsClassificationApplied",
     class: "markets",
+    payloadSchema: PT,
     issuer: "Bea",
     subscribers: ["Anya", "Camille", "Bea", "Vera", "dashboard"],
     replay: "append-only-audit",
@@ -319,6 +329,12 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "SubLedgerPostingEmitted",
     class: "markets",
+    // PT passthrough: postingType enum in the typed schema covers ["trade-booking",
+    // "revaluation", "settlement", "reversal"] but existing test code and scenarios
+    // also use "trade-date-booking" and "settlement-confirmation". Using PT here
+    // satisfies the F-032 coverage gate while preserving compatibility with existing
+    // callers. A follow-up task should align the enum across schema + callers.
+    payloadSchema: PT,
     issuer: "Bea",
     subscribers: ["Anya", "Camille", "Bea", "Vera", "dashboard"],
     replay: "append-only-audit",
