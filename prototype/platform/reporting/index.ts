@@ -220,6 +220,50 @@ export {
 } from "./ba-600-xml-adapter";
 
 // ---------------------------------------------------------------------------
+// Slice 9 — BA 120 (Off-Balance-Sheet Activities) monthly return
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba120ClassificationEntry,
+  type Ba120ClassificationMap,
+  type Ba120CommitmentsEntry,
+  type Ba120CommitmentsRow,
+  type Ba120CommitmentsSection,
+  type Ba120DerivativeEntry,
+  type Ba120DerivativeProductType,
+  type Ba120DerivativeRow,
+  type Ba120DerivativesSection,
+  type Ba120DocumentarySection,
+  type Ba120GeneratorInput,
+  Ba120GeneratorError,
+  type Ba120GuaranteeRow,
+  type Ba120GuaranteesEntry,
+  type Ba120GuaranteesSection,
+  type Ba120MaturityBand,
+  type Ba120OffBalanceSheet,
+  type Ba120OtherItem,
+  type Ba120OtherSection,
+  type Ba120Section,
+  type Ba120Total,
+  BA_120_BANK_ENTITIES,
+  fingerprintClassificationMap,
+  generateBa120OffBalanceSheet,
+  maturityBandFromDays,
+  remainingDaysTo,
+} from "./ba-120-off-balance-sheet";
+
+export {
+  Ba120RenderSchema,
+  type Ba120Render,
+  BA_120_SCHEMA_URL,
+  BA_120_RENDERER_VERSION,
+  canonicaliseBa120,
+  renderBa120Canonical,
+  renderBa120ToJson,
+  type RenderBa120Options,
+} from "./ba-120-render";
+
+// ---------------------------------------------------------------------------
 // Slice 6 — IFRS statement renderer (BS / IS / CF / Equity / Notes skeleton)
 // ---------------------------------------------------------------------------
 
