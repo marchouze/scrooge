@@ -175,13 +175,13 @@ export {
 
 import { PARTY_EVENT_TYPES } from "../../../domains/party";
 import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
-import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
+import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";

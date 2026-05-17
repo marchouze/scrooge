@@ -182,10 +182,16 @@ function lookupFaisCategory(counterpartyId: string): FaisCategory | null {
 // ---------------------------------------------------------------------------
 
 interface FxTradePayload {
-  tradeId?: { id?: unknown };
-  counterparty?: { id?: unknown };
+  // CDM identifierSchema: { scheme: string; value: string }
+  tradeId?: { scheme?: unknown; value?: unknown; id?: unknown };
+  // CDM partySchema: { partyId: string; name: string; role: string; ... }
+  counterparty?: { partyId?: unknown; id?: unknown };
   productTaxonomy?: unknown;
-  legs?: Array<{ rate?: { amount?: unknown }; notional?: { amountMinor?: unknown }; legKind?: unknown }>;
+  legs?: Array<{
+    rate?: { amount?: unknown };
+    notional?: { amountMinor?: unknown };
+    legKind?: unknown;
+  }>;
   bookType?: unknown;
   trader?: unknown;
   venue?: unknown;
@@ -195,25 +201,24 @@ interface TradeEvaluationResult {
   eventsEmitted: number;
 }
 
-async function evaluateFxTrade(
-  trade: Event,
-  ctx: AgentRunContext,
-): Promise<TradeEvaluationResult> {
+async function evaluateFxTrade(trade: Event, ctx: AgentRunContext): Promise<TradeEvaluationResult> {
   let eventsEmitted = 0;
   const p = trade.payload as FxTradePayload;
 
-  const tradeIdRaw = p.tradeId?.id;
-  const tradeId = typeof tradeIdRaw === "string" ? tradeIdRaw : trade.event_id;
-  const counterpartyId =
-    typeof p.counterparty?.id === "string" ? p.counterparty.id : undefined;
-  const productTaxonomy =
-    typeof p.productTaxonomy === "string" ? p.productTaxonomy : "FX-spot";
-  const bookType = typeof p.bookType === "string" ? p.bookType : "trading";
+  // Extract trade ID — CDM identifierSchema uses `.value`; fall back to `.id`
+  // for any synthetic events, then to the event_id.
+  const tradeIdFromPayload = p.tradeId?.value ?? p.tradeId?.id;
+  const tradeId = typeof tradeIdFromPayload === "string" ? tradeIdFromPayload : trade.event_id;
+
+  // Extract counterparty ID — CDM partySchema uses `.partyId`; fall back to `.id`.
+  const counterpartyIdRaw = p.counterparty?.partyId ?? p.counterparty?.id;
+  const counterpartyId = typeof counterpartyIdRaw === "string" ? counterpartyIdRaw : undefined;
+  const productTaxonomy = typeof p.productTaxonomy === "string" ? p.productTaxonomy : "FX-spot";
+  const bookType: string = typeof p.bookType === "string" ? p.bookType : "trading";
 
   // Extract near-leg rate for best-execution reference.
   const nearLeg = Array.isArray(p.legs) ? p.legs.find((l) => l.legKind === "near") : undefined;
-  const executedRate =
-    typeof nearLeg?.rate?.amount === "number" ? nearLeg.rate.amount : null;
+  const executedRate = typeof nearLeg?.rate?.amount === "number" ? nearLeg.rate.amount : null;
 
   // ---------------------------------------------------------------------------
   // 1. Best-execution check
@@ -228,8 +233,7 @@ async function evaluateFxTrade(
     // field on the trade. In production, the reference would come from an
     // FTP curve or benchmark feed.
     const refRateField = (trade.payload as Record<string, unknown>).referenceRate;
-    const referenceRate =
-      typeof refRateField === "number" ? refRateField : executedRate;
+    const referenceRate = typeof refRateField === "number" ? refRateField : executedRate;
 
     // Compute spread in bps. For FX: (executed / reference - 1) * 10000.
     // This gives a signed bps delta; positive = client paid more than reference.
@@ -435,8 +439,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   if (fxTrades.length === 0) {
     return {
       eventsEmitted: 0,
-      summary:
-        "no FxTradeExecuted events in triggering set; no conduct risk evaluation to perform",
+      summary: "no FxTradeExecuted events in triggering set; no conduct risk evaluation to perform",
       ok: true,
     };
   }

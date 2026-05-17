@@ -498,9 +498,7 @@ export const conductObligationFlaggedPayloadSchema = z.object({
   counterpartyId: z.string().min(1).optional(),
 });
 
-export type ConductObligationFlaggedPayload = z.infer<
-  typeof conductObligationFlaggedPayloadSchema
->;
+export type ConductObligationFlaggedPayload = z.infer<typeof conductObligationFlaggedPayloadSchema>;
 
 export function makeConductObligationFlagged(args: {
   asOf: string;
@@ -679,9 +677,7 @@ export const marketConductAlertRaisedPayloadSchema = z.object({
   counterpartyId: z.string().min(1).optional(),
 });
 
-export type MarketConductAlertRaisedPayload = z.infer<
-  typeof marketConductAlertRaisedPayloadSchema
->;
+export type MarketConductAlertRaisedPayload = z.infer<typeof marketConductAlertRaisedPayloadSchema>;
 
 export function makeMarketConductAlertRaised(args: {
   asOf: string;
@@ -712,11 +708,7 @@ export const faisClassificationSuitabilityCheckedPayloadSchema = z.object({
   /** ISO 8601 — when the suitability check was completed. */
   checkedAt: z.string().min(1),
   /** The counterparty's FAIS classification used in the check. */
-  counterpartyFaisCategory: z.enum([
-    "professional-client",
-    "retail-client",
-    "market-counterparty",
-  ]),
+  counterpartyFaisCategory: z.enum(["professional-client", "retail-client", "market-counterparty"]),
   /**
    * The product involved (e.g. "FX-spot", "OTC-IRD", "ZA-GOV-BOND").
    */

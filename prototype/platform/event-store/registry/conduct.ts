@@ -19,10 +19,16 @@
 
 import {
   bestExecutionAnalysisCompletedPayloadSchema,
+  bestExecutionBreachedPayloadSchema,
+  bestExecutionVerifiedPayloadSchema,
   conductComplaintFiledPayloadSchema,
   conductComplaintResolvedPayloadSchema,
   conductDisclosureEmittedPayloadSchema,
   conductIncidentLoggedPayloadSchema,
+  conductObligationFlaggedPayloadSchema,
+  conflictOfInterestDisclosedPayloadSchema,
+  faisClassificationSuitabilityCheckedPayloadSchema,
+  marketConductAlertRaisedPayloadSchema,
 } from "../event-types/conduct";
 import { RETENTION_BANKING_5Y, RETENTION_GOVERNANCE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
@@ -93,6 +99,74 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: conductDisclosureEmittedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+  },
+  // ---------------------------------------------------------------------------
+  // Trade-level conduct risk event types (M3 Slice 9 extension)
+  //
+  // Emitted per-trade by `rohan:conduct-risk-events` on FxTradeExecuted.
+  // Citations: FAIS Act 37/2002 §§16–17; Financial Markets Act 19/2012 §§78–82;
+  //   FSRA §131; D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+  // Author: Rohan (Quant Risk Engineer, markets).
+  // ---------------------------------------------------------------------------
+  {
+    type: "ConductObligationFlagged",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Mira", "Helena", "Devon"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: conductObligationFlaggedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+  },
+  {
+    type: "BestExecutionVerified",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Mira", "Kai"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: bestExecutionVerifiedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+  },
+  {
+    type: "BestExecutionBreached",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Mira", "Helena", "Devon", "Kai"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: bestExecutionBreachedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+  },
+  {
+    type: "MarketConductAlertRaised",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Mira", "Helena", "Devon"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: marketConductAlertRaisedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+  },
+  {
+    type: "FaisClassificationSuitabilityChecked",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Mira", "Kai"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: faisClassificationSuitabilityCheckedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+  },
+  {
+    type: "ConflictOfInterestDisclosed",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Mira", "Helena", "Devon"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: conflictOfInterestDisclosedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
   },
 ];
