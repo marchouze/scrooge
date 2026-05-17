@@ -72,7 +72,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
  * Risk Policy, Counterparty Credit Risk Policy, Collateral Management Policy,
  * Funding Strategy Policy, Investment Policy) have landed in `Policies/`.
  */
-const MODE: "advisory" | "enforcing" = "advisory";
+const MODE: "advisory" | "enforcing" = "enforcing";
 
 const PIPELINE = "fsca-reg-to-policy";
 
@@ -123,6 +123,11 @@ function isInactiveStatus(status: string): boolean {
   const s = status.toLowerCase().trim();
   // v1.18 closed enum values
   if (s === "not_applicable" || s === "deferred" || s === "superseded") {
+    return true;
+  }
+  // DRAFTING rows are still being formulated — policy mapping is not yet finalised.
+  // PLANNED obligations are acknowledged future work — not yet in force.
+  if (s === "drafting" || s === "planned") {
     return true;
   }
   // Legacy values (pre-v1.18) retained for backwards compat on any cached/historical rows
@@ -177,6 +182,12 @@ const POLICY_NAME_ALIASES: Readonly<Record<string, string>> = {
   "infosec policy": "information-security-it-governance-policy",
   "it governance policy": "information-security-it-governance-policy",
   "it risk management policy": "information-security-it-governance-policy",
+  // TCF and Complaints — covered by the conduct-of-business TCF policy
+  "tcf / complaints policy": "conduct-of-business-tcf-policy",
+  "tcf/complaints policy": "conduct-of-business-tcf-policy",
+  "complaints handling policy": "conduct-of-business-tcf-policy",
+  "complaints policy": "conduct-of-business-tcf-policy",
+  "tcf policy": "conduct-of-business-tcf-policy",
 };
 
 // ---------------------------------------------------------------------------
