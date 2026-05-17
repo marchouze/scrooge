@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Key Rotation
 
 **Procedure ID:** PROC-IS-KR-01

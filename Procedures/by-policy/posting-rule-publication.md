@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Posting-rule publication
 
 **Procedure ID:** PROC-FIN-AC-01

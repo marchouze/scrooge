@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Conflicts of interest declaration
 
 **Procedure ID:** PROC-WB-01

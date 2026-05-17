@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — FAIS advice record capture
 
 **Procedure ID:** PROC-CRM-FA-01

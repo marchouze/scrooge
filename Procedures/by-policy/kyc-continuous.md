@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — KYC continuous monitoring (event-triggered CDD)
 
 **Procedure ID:** PROC-FC-KYC-C-01

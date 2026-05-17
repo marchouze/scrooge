@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — KYC onboarding (gate before client master entry)
 
 **Procedure ID:** PROC-FC-01

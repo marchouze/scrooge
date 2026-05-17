@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Counterparty governing-law clause adoption
 
 **Procedure ID:** PROC-LEG-CL-01

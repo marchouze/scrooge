@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — POPIA breach notification
 
 **Procedure ID:** PROC-PRIV-01

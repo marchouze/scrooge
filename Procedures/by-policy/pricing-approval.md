@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Pricing approval (new product / re-pricing)
 
 **Procedure ID:** PROC-CD-01

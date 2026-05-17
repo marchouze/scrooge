@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — KYC Periodic Refresh (Recurring CDD)
 
 **Procedure ID:** PROC-FC-KYC-R-01

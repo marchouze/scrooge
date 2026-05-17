@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Transaction monitoring
 
 **Procedure ID:** PROC-FC-TM-01

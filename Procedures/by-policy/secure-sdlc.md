@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Secure software development lifecycle (idea-to-merge)
 
 **Procedure ID:** PROC-CY-03

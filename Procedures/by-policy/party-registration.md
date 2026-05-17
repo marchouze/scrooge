@@ -1,3 +1,6 @@
+---
+status: Approved
+---
 # Procedure — Party registration (unified identity axis across all four actor kinds)
 
 **Procedure ID:** PROC-ID-01

@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — POPIA Data Subject Access Request (DSAR)
 
 **Procedure ID:** PROC-PRIV-02

@@ -1,3 +1,6 @@
+---
+status: DRAFT
+---
 # Procedure — Balance sheet substantiation
 
 **Procedure ID:** PROC-FIN-BSS-01
