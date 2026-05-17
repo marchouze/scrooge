@@ -8,6 +8,9 @@
 // to resolve here (TypeScript resolves index.ts from the directory name).
 //
 // Domain modules:
+//   - conduct.ts        — ConductComplaintFiled, ConductComplaintResolved,
+//                         ConductIncidentLogged, BestExecutionAnalysisCompleted,
+//                         ConductDisclosureEmitted (M3 Slice 9)
 //   - agent.ts          — AgentEscalation family, AgentDecision,
 //                         AgentRegistered, SubstrateAgentRun*, RMS agent-runs
 //                         (AgentBriefIssued, AgentRunStarted/Completed)
@@ -82,6 +85,11 @@ export * from "./ftp";
 export * from "./payments";
 // Regulatory reporting event family — Mira + Anya (FinSurv TradeReportSubmitted).
 export * from "./regulatory-reporting";
+// M3 Slice 9 — Conduct events (FSCA/FSR Act market conduct framework).
+// ConductComplaintFiled, ConductComplaintResolved, ConductIncidentLogged,
+// BestExecutionAnalysisCompleted, ConductDisclosureEmitted.
+// Authority: D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+export * from "./conduct";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER

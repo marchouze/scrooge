@@ -68,6 +68,8 @@ export { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 export { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 export { MISSING_EVENT_TYPES } from "./missing-types";
 export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
+// M3 Slice 9 — conduct events (FSCA/FSR Act market conduct framework).
+export { CONDUCT_EVENT_TYPES } from "./conduct";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -96,6 +98,7 @@ import {
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
+import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import {
@@ -139,6 +142,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // the schema-bearing rows win over the placeholder rows in missing-types.ts
   // (Map deduplication: last entry for a given key wins).
   ...PAYMENTS_EVENT_TYPES_REGISTRY,
+  // M3 Slice 9 — conduct events. Placed after MISSING_EVENT_TYPES so that
+  // typed schema rows override any placeholder rows from missing-types.ts.
+  ...CONDUCT_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
