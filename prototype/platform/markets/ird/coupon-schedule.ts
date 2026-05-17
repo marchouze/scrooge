@@ -99,8 +99,8 @@ export function dayCountFraction(
   // Adjusted per ISDA 2006 definitions §4.16(f):
   //   D1 = min(D1, 30)
   //   if D1 = 30, D2 = min(D2, 30)
-  let y1 = start.getUTCFullYear();
-  let m1 = start.getUTCMonth() + 1;
+  const y1 = start.getUTCFullYear();
+  const m1 = start.getUTCMonth() + 1;
   let d1 = start.getUTCDate();
   const y2 = end.getUTCFullYear();
   const m2 = end.getUTCMonth() + 1;
@@ -112,7 +112,9 @@ export function dayCountFraction(
   void y1;
   void m1;
 
-  return (360 * (y2 - start.getUTCFullYear()) + 30 * (m2 - (start.getUTCMonth() + 1)) + (d2 - d1)) / 360;
+  return (
+    (360 * (y2 - start.getUTCFullYear()) + 30 * (m2 - (start.getUTCMonth() + 1)) + (d2 - d1)) / 360
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -143,7 +145,7 @@ function addMonths(date: Date, months: number): Date {
 
   // If day overflow (e.g. Jan 31 + 1 month → Feb 31 → Mar 3), clamp back.
   // Check if month rolled over unexpectedly.
-  const expectedMonth = ((date.getUTCMonth() + months) % 12 + 12) % 12;
+  const expectedMonth = (((date.getUTCMonth() + months) % 12) + 12) % 12;
   if (result.getUTCMonth() !== expectedMonth) {
     // Rolled over — set to last day of the intended month.
     result.setUTCDate(0);
@@ -219,9 +221,7 @@ export function generateCouponSchedule(
     const endIso = formatDate(actualEnd);
 
     const dcf = dayCountFraction(startIso, endIso, convention);
-    const actualDays = Math.round(
-      (actualEnd.getTime() - periodStart.getTime()) / 86_400_000,
-    );
+    const actualDays = Math.round((actualEnd.getTime() - periodStart.getTime()) / 86_400_000);
 
     // Fixed coupon: notional × fixedRate × dcf (in minor units).
     const fixedCouponMinor = Math.round(notionalMinor * trade.fixedRate * dcf);
@@ -234,10 +234,7 @@ export function generateCouponSchedule(
     let floatingCouponEstimateMinor = 0;
     try {
       // If period has already passed at valuation date, startDays = 0.
-      const forwardRate = rateSource.getForwardJibar(
-        Math.max(0, startDays),
-        Math.max(1, endDays),
-      );
+      const forwardRate = rateSource.getForwardJibar(Math.max(0, startDays), Math.max(1, endDays));
       floatingCouponEstimateMinor = Math.round(notionalMinor * forwardRate * dcf);
     } catch {
       // Rate source failure — use 0 for this period (surfaced as substrate gap).
@@ -269,10 +266,7 @@ export function generateCouponSchedule(
   }
 
   const totalFixedMinor = periods.reduce((s, p) => s + p.fixedCouponMinor, 0);
-  const totalFloatingEstimateMinor = periods.reduce(
-    (s, p) => s + p.floatingCouponEstimateMinor,
-    0,
-  );
+  const totalFloatingEstimateMinor = periods.reduce((s, p) => s + p.floatingCouponEstimateMinor, 0);
 
   void currency; // captured on trade; used by callers converting to events
 

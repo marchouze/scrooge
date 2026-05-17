@@ -44,21 +44,21 @@ export const JIBAR_FORWARD_CURVE = {
   curveDate: "2026-05-17",
   tenors: {
     "3M": 0.0815,
-    "6M": 0.0820,
-    "1Y": 0.0830,
-    "2Y": 0.0840,
+    "6M": 0.082,
+    "1Y": 0.083,
+    "2Y": 0.084,
     "3Y": 0.0848,
     "5Y": 0.0855,
     "7Y": 0.0858,
-    "10Y": 0.0860,
+    "10Y": 0.086,
   },
   /** Discount factors P(0,T): present value of 1 ZAR received at tenor T. */
   discountFactors: {
     "3M": 0.9798,
     "6M": 0.9601,
-    "1Y": 0.9220,
+    "1Y": 0.922,
     "2Y": 0.8499,
-    "3Y": 0.7840,
+    "3Y": 0.784,
     "5Y": 0.6693,
     "7Y": 0.5721,
     "10Y": 0.4491,
@@ -125,7 +125,10 @@ export interface IrsRateSource {
 const CURVE_NODES: Array<{ days: number; df: number }> = Object.entries(JIBAR_TENOR_DAYS)
   .map(([tenor, days]) => ({
     days,
-    df: JIBAR_FORWARD_CURVE.discountFactors[tenor as keyof typeof JIBAR_FORWARD_CURVE.discountFactors] ?? 1,
+    df:
+      JIBAR_FORWARD_CURVE.discountFactors[
+        tenor as keyof typeof JIBAR_FORWARD_CURVE.discountFactors
+      ] ?? 1,
   }))
   .sort((a, b) => a.days - b.days);
 

@@ -29,12 +29,7 @@ import { z } from "zod";
 
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../../event-store/types";
-import {
-  cdmDateSchema,
-  identifierSchema,
-  moneySchema,
-  partySchema,
-} from "./primitives";
+import { cdmDateSchema, identifierSchema, moneySchema, partySchema } from "./primitives";
 
 // ---------------------------------------------------------------------------
 // IrsTradeBooked

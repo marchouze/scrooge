@@ -36,13 +36,13 @@
 
 import { clock } from "../../composition";
 import { newEventId } from "../../core/types";
+import type { EventStore } from "../../event-store/store";
 import {
   type IrsCouponSettlementConfirmedPayload,
   type IrsPositionRevaluedPayload,
   type IrsTradeBookedPayload,
   makeIrsPositionRevalued,
 } from "../../markets/cdm/ird";
-import type { EventStore } from "../../event-store/store";
 import { dayCountFraction, generateCouponSchedule } from "../ird/coupon-schedule";
 import { type IrsRateSource, staticJibarRateSource } from "./jibar-curve-seed";
 
@@ -230,7 +230,7 @@ export function runEodIrsRevaluation(
       //   MTM(receiver) = fixedLegPV − floatingLegPV.
       const mtmMinor =
         trade.bankPays === "fixed"
-          ? floatingLegPvMinor - fixedLegPvMinor  // payer benefits when rates rise
+          ? floatingLegPvMinor - fixedLegPvMinor // payer benefits when rates rise
           : fixedLegPvMinor - floatingLegPvMinor; // receiver benefits when rates fall
 
       const remainingTenorDays = calendarDaysRemaining(valuationDate, trade.maturityDate.iso);

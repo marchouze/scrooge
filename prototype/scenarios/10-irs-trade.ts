@@ -31,15 +31,15 @@ import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenan
 import { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
 import {
+  type IrsTradeBookedPayload,
   makeIrsCouponPaymentInstructed,
   makeIrsCouponScheduleGenerated,
   makeIrsCouponSettlementConfirmed,
-  makeIrsPositionRevalued,
   makeIrsTradeBooked,
 } from "@platform/markets/cdm/ird";
-import { generateCouponSchedule } from "@platform/markets/ird/coupon-schedule";
-import { staticJibarRateSource } from "@platform/markets/eod/jibar-curve-seed";
 import { runEodIrsRevaluation } from "@platform/markets/eod/irs-revaluation";
+import { staticJibarRateSource } from "@platform/markets/eod/jibar-curve-seed";
+import { generateCouponSchedule } from "@platform/markets/ird/coupon-schedule";
 import { logger } from "@platform/observability/logger";
 
 // ---------------------------------------------------------------------------
@@ -92,12 +92,7 @@ function buildIrsTradeBooked(asOf: string): Event {
     asOf,
     entity: ENTITY,
     actor: EITAN,
-    citations: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-      "IFRS-9-§4.1",
-      "ORG-PR-11",
-    ],
+    citations: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "IFRS-9-§4.1", "ORG-PR-11"],
     payload: {
       tradeId: { scheme: "INTERNAL", value: "TRD-IRS-M5-001" },
       counterparty: {
@@ -128,21 +123,7 @@ function buildIrsTradeBooked(asOf: string): Event {
 // ---------------------------------------------------------------------------
 
 function buildCouponScheduleGenerated(asOf: string, tradeBooked: Event): Event {
-  const tradePayload = tradeBooked.payload as {
-    tradeId: { scheme: string; value: string };
-    notional: { currency: string; amountMinor: number };
-    fixedRate: number;
-    floatingIndex: string;
-    bankPays: "fixed" | "floating";
-    tradeDate: { iso: string; calendar: string };
-    effectiveDate: { iso: string; calendar: string };
-    maturityDate: { iso: string; calendar: string };
-    paymentFrequency: "monthly" | "quarterly" | "semi-annual" | "annual";
-    dayCountConvention: "ACT/365" | "ACT/360" | "30/360";
-    bookId: string;
-    traderRef: string;
-    counterparty: { partyId: string; name: string; role: "counterparty"; jurisdiction: string };
-  };
+  const tradePayload = tradeBooked.payload as unknown as IrsTradeBookedPayload;
 
   const schedule = generateCouponSchedule(tradePayload, staticJibarRateSource);
 
@@ -150,11 +131,7 @@ function buildCouponScheduleGenerated(asOf: string, tradeBooked: Event): Event {
     asOf,
     entity: ENTITY,
     actor: EITAN,
-    citations: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-      "IFRS-9-§4.1",
-    ],
+    citations: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "IFRS-9-§4.1"],
     payload: {
       tradeId: tradePayload.tradeId,
       paymentDates: schedule.periods.map((p) => ({
@@ -199,11 +176,7 @@ function buildFirstCouponPaymentInstructed(asOf: string): Event {
     asOf,
     entity: ENTITY,
     actor: EITAN,
-    citations: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-      "ORG-PR-11",
-    ],
+    citations: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "ORG-PR-11"],
     payload: {
       tradeId: { scheme: "INTERNAL", value: "TRD-IRS-M5-001" },
       paymentDate: { iso: FIRST_PAYMENT_DATE_ISO, calendar: "JIHCAL" },
@@ -232,10 +205,7 @@ function buildFirstCouponSettlementConfirmed(asOf: string): Event {
     asOf,
     entity: ENTITY,
     actor: TOMAS,
-    citations: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-    ],
+    citations: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER"],
     payload: {
       tradeId: { scheme: "INTERNAL", value: "TRD-IRS-M5-001" },
       paymentDate: { iso: FIRST_PAYMENT_DATE_ISO, calendar: "JIHCAL" },
@@ -327,9 +297,7 @@ export function runScenario(opts: { dbPath: string; cleanup: boolean }): IrsScen
   }
 
   const ok =
-    revalResult.errors.length === 0 &&
-    total >= events.all.length &&
-    revalResult.revalued >= 1;
+    revalResult.errors.length === 0 && total >= events.all.length && revalResult.revalued >= 1;
 
   return {
     ok,
@@ -373,12 +341,7 @@ export function main(): void {
       mtmZar: result.mtmZar / 100,
       countsByType: result.countsByType,
       errors: result.errors,
-      authority: [
-        "D-MARKETS-SCHEMA-FOUNDATION",
-        "ISDA-2002-MASTER",
-        "IFRS-9-§4.1",
-        "ORG-PR-11",
-      ],
+      authority: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "IFRS-9-§4.1", "ORG-PR-11"],
       substrateGaps: [
         "[GAP-IRS-1] JIBAR curve is a static seed — replace with Ravi IRRBB live curve",
         "[GAP-IRS-2] No JIHCAL business-day adjustment on payment dates",

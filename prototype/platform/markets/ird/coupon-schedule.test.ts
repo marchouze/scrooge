@@ -14,10 +14,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { IrsTradeBookedPayload } from "../cdm/ird";
 import { StaticJibarRateSource } from "../eod/jibar-curve-seed";
-import {
-  dayCountFraction,
-  generateCouponSchedule,
-} from "./coupon-schedule";
+import { dayCountFraction, generateCouponSchedule } from "./coupon-schedule";
 
 // ---------------------------------------------------------------------------
 // Shared test fixture — ZAR 100m, 5yr, quarterly, ACT/365, bankPays=fixed
@@ -223,7 +220,7 @@ describe("StaticJibarRateSource", () => {
     // JIBAR forward for [0, 91] days — approximately the 3M par rate.
     const fwd = rateSource.getForwardJibar(0, 91);
     expect(fwd).toBeGreaterThan(0.07);
-    expect(fwd).toBeLessThan(0.10);
+    expect(fwd).toBeLessThan(0.1);
   });
 
   it("throws when periodEndDays <= periodStartDays", () => {

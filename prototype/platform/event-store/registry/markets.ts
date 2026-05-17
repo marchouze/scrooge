@@ -23,13 +23,6 @@
 import { z } from "zod";
 
 import {
-  irsCouponPaymentInstructedPayloadSchema,
-  irsCouponScheduleGeneratedPayloadSchema,
-  irsCouponSettlementConfirmedPayloadSchema,
-  irsPositionRevaluedPayloadSchema,
-  irsTradeBookedPayloadSchema,
-} from "../../markets/cdm/ird";
-import {
   equityCorporateActionAppliedPayloadSchema,
   equityPositionRevaluedPayloadSchema,
   equitySettlementConfirmedPayloadSchema,
@@ -44,6 +37,13 @@ import {
   principalPaymentPayloadSchema,
   settlementConfirmedPayloadSchema,
 } from "../../markets/cdm/fx";
+import {
+  irsCouponPaymentInstructedPayloadSchema,
+  irsCouponScheduleGeneratedPayloadSchema,
+  irsCouponSettlementConfirmedPayloadSchema,
+  irsPositionRevaluedPayloadSchema,
+  irsTradeBookedPayloadSchema,
+} from "../../markets/cdm/ird";
 import {
   accountingPeriodClosedPayloadSchema,
   accountingPeriodOpenedPayloadSchema,
@@ -600,12 +600,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Eitan",
     subscribers: ["Anya", "Bea", "Rohan", "Mira", "Tomas", "Vera"],
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-      "IFRS-9-§4.1",
-      "ORG-PR-11",
-    ],
+    citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "IFRS-9-§4.1", "ORG-PR-11"],
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/10-irs-trade.ts",
@@ -634,14 +629,9 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Eitan",
     subscribers: ["Tomas", "Bea", "Anya", "Vera"],
     replay: "pair-coupled",
-    citationsHint: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-      "ORG-PR-11",
-    ],
+    citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "ORG-PR-11"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source:
-      "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); scenarios/10-irs-trade.ts",
+    source: "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); scenarios/10-irs-trade.ts",
   },
   {
     type: "IrsCouponSettlementConfirmed",
@@ -650,13 +640,9 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Tomas",
     subscribers: ["Bea", "Anya", "Eitan", "Rohan", "Vera"],
     replay: "pair-coupled",
-    citationsHint: [
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "ISDA-2002-MASTER",
-    ],
+    citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source:
-      "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); scenarios/10-irs-trade.ts",
+    source: "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); scenarios/10-irs-trade.ts",
   },
   {
     type: "IrsPositionRevalued",
@@ -665,11 +651,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Eitan",
     subscribers: ["Bea", "Anya", "Rohan", "Vera"],
     replay: "append-only-audit",
-    citationsHint: [
-      "IFRS-9-§4.1",
-      "BCBS-D365-IRRBB",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    citationsHint: ["IFRS-9-§4.1", "BCBS-D365-IRRBB", "D-MARKETS-SCHEMA-FOUNDATION"],
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); platform/markets/eod/irs-revaluation.ts; scenarios/10-irs-trade.ts",

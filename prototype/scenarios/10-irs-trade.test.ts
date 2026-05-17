@@ -20,11 +20,8 @@ import { describe, expect, it } from "bun:test";
 import { EventStore } from "@platform/event-store/store";
 import type { IrsTradeBookedPayload } from "@platform/markets/cdm/ird";
 import { makeIrsTradeBooked } from "@platform/markets/cdm/ird";
-import {
-  StaticJibarRateSource,
-  type IrsRateSource,
-} from "@platform/markets/eod/jibar-curve-seed";
 import { runEodIrsRevaluation } from "@platform/markets/eod/irs-revaluation";
+import { type IrsRateSource, StaticJibarRateSource } from "@platform/markets/eod/jibar-curve-seed";
 import { generateCouponSchedule } from "@platform/markets/ird/coupon-schedule";
 
 import { buildIrsScenarioEvents, runScenario } from "./10-irs-trade";
