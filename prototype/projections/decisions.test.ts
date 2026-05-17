@@ -33,22 +33,19 @@ function decisionEvent(asOf: string, payload: DecisionPayload): Event {
   return makeDecision({ asOf, entity: ENTITY, actor: ACTOR, citations: CITATIONS, payload });
 }
 
-function ceoEvent(asOf: string, decisionId: string, action: string, title = decisionId): Event {
-  return {
-    event_id: `evt-${decisionId}-${action}-${asOf}`,
-    type: "CeoDecision",
-    as_of: asOf,
+function ceoEvent(
+  asOf: string,
+  decisionId: string,
+  phase: "approved" | "deferred" | "requested" | "rejected" | "superseded" | "withdrawn",
+  title = decisionId,
+): Event {
+  return makeDecision({
+    asOf,
     entity: ENTITY,
     actor: ACTOR,
     citations: CITATIONS,
-    payload: {
-      decisionId,
-      title,
-      action,
-      outcome: "Test outcome",
-      recordedVia: "test",
-    },
-  } as Event;
+    payload: decisionPayload({ decisionId, phase, title }),
+  });
 }
 
 function source(decisions: Event[], ceo: Event[]): DecisionsEventSource {
@@ -91,26 +88,26 @@ describe("buildDecisionsRegister", () => {
     expect(r.resolved[0]?.resolvedAt).toBe("2026-05-16T01:00:00Z");
   });
 
-  it("maps CeoDecision `approve` → approved phase", () => {
+  it("Decision approved phase resolves correctly", () => {
     const r = buildDecisionsRegister(
-      source([], [ceoEvent("2026-05-15T00:00:00Z", "D-LEGACY", "approve")]),
+      source([ceoEvent("2026-05-15T00:00:00Z", "D-LEGACY", "approved")], []),
     );
     expect(r.resolved).toHaveLength(1);
     expect(r.resolved[0]?.authority).toBe("CEO");
     expect(r.resolved[0]?.phase).toBe("approved");
   });
 
-  it("maps CeoDecision `defer` → deferred phase", () => {
+  it("Decision deferred phase resolves correctly", () => {
     const r = buildDecisionsRegister(
-      source([], [ceoEvent("2026-05-15T00:00:00Z", "D-DEF", "defer")]),
+      source([ceoEvent("2026-05-15T00:00:00Z", "D-DEF", "deferred")], []),
     );
     expect(r.resolved).toHaveLength(1);
     expect(r.resolved[0]?.phase).toBe("deferred");
   });
 
-  it("maps CeoDecision `request-revision` → requested phase (reopens)", () => {
+  it("Decision requested phase leaves decision open", () => {
     const r = buildDecisionsRegister(
-      source([], [ceoEvent("2026-05-15T00:00:00Z", "D-REOP", "request-revision")]),
+      source([ceoEvent("2026-05-15T00:00:00Z", "D-REOP", "requested")], []),
     );
     expect(r.open).toHaveLength(1);
     expect(r.open[0]?.phase).toBe("requested");
@@ -152,13 +149,13 @@ describe("buildDecisionsRegister", () => {
     expect(hist?.head.phase).toBe("deferred");
   });
 
-  it("decides head from latest asOf when both Decision and CeoDecision share id", () => {
-    const ceo = ceoEvent("2026-05-15T00:00:00Z", "D-MIXED", "approve");
+  it("decides head from latest asOf when two Decision events share id", () => {
+    const approved = ceoEvent("2026-05-15T00:00:00Z", "D-MIXED", "approved");
     const requested = decisionEvent(
       "2026-05-16T00:00:00Z",
       decisionPayload({ decisionId: "D-MIXED", phase: "requested" }),
     );
-    const r = buildDecisionsRegister(source([requested], [ceo]));
+    const r = buildDecisionsRegister(source([approved, requested], []));
     // requested is later → head is open
     expect(r.open).toHaveLength(1);
     expect(r.resolved).toHaveLength(0);

@@ -50,7 +50,9 @@ export interface RunOpts {
 
 interface ProjectionPair {
   readonly name: keyof FoldRowsByName;
-  readonly naiveRows: (store: EventStore) => readonly unknown[];
+  // asOf is threaded from the live fold so both paths use the same temporal
+  // boundary — events with as_of > asOf are excluded from both replays.
+  readonly naiveRows: (store: EventStore, asOf: string) => readonly unknown[];
 }
 
 type FoldRowsByName = {
@@ -66,35 +68,40 @@ type FoldRowsByName = {
 const PAIRS: ProjectionPair[] = [
   {
     name: "decisions",
-    naiveRows: (s) =>
-      decisionsRegisterRows(new LocalProjector(s).build(decisionsRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      decisionsRegisterRows(new LocalProjector(s).build(decisionsRegisterProjection, { asOf })),
   },
   {
     name: "correspondence",
-    naiveRows: (s) =>
-      correspondenceRegisterRows(new LocalProjector(s).build(correspondenceRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      correspondenceRegisterRows(
+        new LocalProjector(s).build(correspondenceRegisterProjection, { asOf }),
+      ),
   },
   {
     name: "agent-runs",
-    naiveRows: (s) =>
-      agentRunsRegisterRows(new LocalProjector(s).build(agentRunsRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      agentRunsRegisterRows(new LocalProjector(s).build(agentRunsRegisterProjection, { asOf })),
   },
   {
     name: "document",
-    naiveRows: (s) => documentRegisterRows(new LocalProjector(s).build(documentRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      documentRegisterRows(new LocalProjector(s).build(documentRegisterProjection, { asOf })),
   },
   {
     name: "feedback",
-    naiveRows: (s) => feedbackRegisterRows(new LocalProjector(s).build(feedbackRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      feedbackRegisterRows(new LocalProjector(s).build(feedbackRegisterProjection, { asOf })),
   },
   {
     name: "briefs-dispatches",
-    naiveRows: (s) => briefsRegisterRows(new LocalProjector(s).build(briefsRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      briefsRegisterRows(new LocalProjector(s).build(briefsRegisterProjection, { asOf })),
   },
   {
     name: "workstreams",
-    naiveRows: (s) =>
-      workstreamsRegisterRows(new LocalProjector(s).build(workstreamsRegisterProjection)),
+    naiveRows: (s, asOf) =>
+      workstreamsRegisterRows(new LocalProjector(s).build(workstreamsRegisterProjection, { asOf })),
   },
 ];
 
@@ -165,14 +172,18 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
+  // Use the same asOf anchor for naive replays as the live fold so that
+  // future-dated events (as_of > now) are excluded from both paths equally.
+  const foldAsOf = live.asOf;
+
   for (const pair of PAIRS) {
     result.asserted++;
     let naive: readonly unknown[];
     let naiveB: readonly unknown[];
     try {
       // Two independent naive replays — guards Principle 1 purity.
-      naive = pair.naiveRows(store);
-      naiveB = pair.naiveRows(store);
+      naive = pair.naiveRows(store, foldAsOf);
+      naiveB = pair.naiveRows(store, foldAsOf);
     } catch (err) {
       violations.push({
         subject: `rms-register:${pair.name}`,

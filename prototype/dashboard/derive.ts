@@ -169,6 +169,10 @@ export interface EventSource {
   // derive falls back to the legacy CeoDecision-event reduce in that
   // case to keep test fixtures green during the transition.
   decisionsRegister?(): DecisionsRegister | null;
+  // RMS Phase 2 — agent recent deliverables from RecordFiled events.
+  // When provided, replaces the Owner Inbox FS scan in agent mini-dashboards.
+  // Optional for backwards compat with test fixtures that don't wire this.
+  recentDeliverables?(agentName: string, limit?: number): AgentDeliverable[];
 }
 
 export interface DeriveOpts {
@@ -231,9 +235,10 @@ export function eventSourceFromStore(store: EventStore): EventSource {
   return {
     ceoDecisions(): CeoDecisionEventSummary[] {
       const out: CeoDecisionEventSummary[] = [];
+      // Legacy CeoDecision events (pre D-DECISIONS-FRAMEWORK-REDESIGN).
       for (const e of store.replay({ type: "CeoDecision" })) {
         const p = e.payload as Record<string, unknown>;
-        const summary: CeoDecisionEventSummary = {
+        out.push({
           decisionId: String(p.decisionId ?? ""),
           title: String(p.title ?? ""),
           action: String(p.action ?? "approve") as DecisionAction,
@@ -241,8 +246,32 @@ export function eventSourceFromStore(store: EventStore): EventSource {
           actor: e.actor.id,
           asOf: e.as_of,
           ...(typeof p.comment === "string" ? { comment: p.comment } : {}),
+        });
+      }
+      // Unified Decision events (D-DECISIONS-FRAMEWORK-REDESIGN, 2026-05-16).
+      // Map Decision.phase → legacy DecisionAction shape used by reduceCeoDecisions.
+      for (const e of store.replay({ type: "Decision" })) {
+        const p = e.payload as Record<string, unknown>;
+        const phase = String(p.phase ?? "requested");
+        // Only terminal phases represent a decision having been acted upon.
+        const actionMap: Record<string, DecisionAction> = {
+          approved: "approve",
+          deferred: "defer",
+          rejected: "modify",
+          superseded: "modify",
+          withdrawn: "modify",
+          requested: "request-revision",
         };
-        out.push(summary);
+        const action: DecisionAction = actionMap[phase] ?? "approve";
+        out.push({
+          decisionId: String(p.decisionId ?? ""),
+          title: String(p.title ?? ""),
+          action,
+          outcome: String(p.recommendation ?? p.outcome ?? ""),
+          actor: e.actor.id,
+          asOf: e.as_of,
+          ...(typeof p.rationale === "string" ? { comment: p.rationale } : {}),
+        });
       }
       return out;
     },
@@ -337,6 +366,26 @@ export function eventSourceFromStore(store: EventStore): EventSource {
       // `replay` is itself a generator. Both `Decision` and (transition)
       // `CeoDecision` events feed in.
       return buildDecisionsRegister(decisionsSourceFromStore(store));
+    },
+    recentDeliverables(agentName: string, limit = 5): AgentDeliverable[] {
+      // RMS Phase 2 — read RecordFiled events authored by this agent.
+      // Replaces the Owner Inbox FS scan (Principle 1: events are truth).
+      const lower = agentName.toLowerCase();
+      const out: AgentDeliverable[] = [];
+      for (const e of store.replay({ type: "RecordFiled" })) {
+        const p = e.payload as Record<string, unknown>;
+        const meta = p.metadata as Record<string, unknown> | undefined;
+        if (!meta) continue;
+        const author = String(meta.author ?? "").toLowerCase();
+        if (!author.includes(lower)) continue;
+        out.push({
+          date: String(meta.date ?? e.as_of).slice(0, 10),
+          path: String(meta.path ?? ""),
+          title: String(meta.title ?? ""),
+        });
+      }
+      out.sort((a, b) => (a.date < b.date ? 1 : -1));
+      return out.slice(0, limit);
     },
     auditFindings(): AuditFindingEventSummary[] {
       // Accept three payload shapes:
@@ -1044,261 +1093,6 @@ function decisionIdFromRecordFilename(filename: string): string | null {
   return m[1].toUpperCase();
 }
 
-// Like `decisionIdFromRecordFilename` but also recognises sessional ids
-// such as `..._ceo-decision-record_s7.md` → `S7`. Used by the resolved-set
-// synthesiser, which needs to mark sessional decisions resolved too. Kept
-// separate from the display-title helper so existing presentation tests
-// don't shift.
-function resolutionIdFromRecordFilename(filename: string): string | null {
-  const dPath = decisionIdFromRecordFilename(filename);
-  if (dPath) return dPath;
-  const m = filename.match(/_ceo-decision-record_(s\d+)\.md$/i);
-  return m?.[1] ? m[1].toUpperCase() : null;
-}
-
-// Parse on-disk Owner-Inbox decision records into CeoDecision-event-shaped
-// summaries. Used by `runtime/decisions/backfill-from-records.ts` to emit
-// any events that are missing from the local store at boot — the local
-// sqlite store is gitignored and per-worktree (memory
-// `feedback_cache_in_commit_graph_anti_pattern`), so a fresh worktree
-// reads zero CeoDecision events even though 30+ records sit on disk.
-// Backfilling at boot keeps Principle 1 intact: the event store remains
-// the single canonical source the dashboard derivation reads from.
-//
-// Parses three body shapes:
-//   - Single-id record:   `- **Decision ID:** \`D-XXX\``
-//   - Multi-id record:    `- **Decision IDs resolved:** \`D-A\` + \`D-B\` + ...`
-//   - Title-only fallback (filename slug used when both lines are absent).
-const RECORD_FILENAME_RE = /_ceo-decision-record_/i;
-
-// Matches `decision-id: D-FOO` frontmatter line (the canonical field).
-const FM_DECISION_ID_RE = /^decision-id\s*:\s*(.+?)\s*$/im;
-// Matches `maps-to-decision-id: D-BAR` frontmatter line.
-// Used by agent-authored deliverables that implement a previously-approved CEO
-// decision (e.g. thin-human-layer implementation slices). The recon does NOT
-// check this key; the backfill emits events for both the explicit `decision-id`
-// AND the `maps-to-decision-id` so neither path is missed.
-const FM_MAPS_TO_DECISION_ID_RE = /^maps-to-decision-id\s*:\s*(.+?)\s*$/im;
-
-// Validate that a candidate decision ID is well-formed:
-//   • At least 5 characters long
-//   • Starts with D- or S- followed by an alphanumeric character
-//   • Does not end with a hyphen (malformed placeholder guard)
-function isValidDecisionId(id: string): boolean {
-  if (id.length < 5) return false;
-  if (id.endsWith("-")) return false;
-  return /^(?:D|S)-[A-Z0-9]/i.test(id);
-}
-const DECISION_ID_LINE_RE = /\*\*Decision ID(?:s resolved)?:\*\*\s*(.+?)\s*$/i;
-const ALL_DIDS_RE = /`((?:D|S)-[A-Z0-9][A-Z0-9-]*)`/g;
-const ACTION_LINE_RE = /\*\*Action:\*\*\s*(.+?)\s*$/i;
-const TITLE_LINE_RE = /\*\*Title:\*\*\s*(.+?)\s*$/i;
-const OUTCOME_LINE_RE = /\*\*Outcome:\*\*\s*(.+?)\s*$/i;
-const ACTOR_LINE_RE = /\*\*Actor:\*\*\s*`?([^`(]+)`?/i;
-const COMMENT_LINE_RE = /\*\*Comment:\*\*\s*(.+?)\s*$/i;
-const ASOF_FRONTMATTER_RE = /^asOf:\s*(.+?)\s*$/im;
-
-function parseAction(raw: string): DecisionAction {
-  const lower = raw.toLowerCase();
-  if (lower.includes("request-revision") || lower.includes("revise")) return "request-revision";
-  if (lower.startsWith("defer")) return "defer";
-  if (lower.startsWith("modify")) return "modify";
-  return "approve"; // "approve as drafted", "approve all 3", bare "approve", or unknown
-}
-
-export function synthesizeCeoDecisionsFromRecords(
-  ownerInboxDir: string,
-): CeoDecisionEventSummary[] {
-  if (!existsSync(ownerInboxDir)) return [];
-  const out: CeoDecisionEventSummary[] = [];
-  const dirs = [ownerInboxDir, join(ownerInboxDir, "actioned")];
-  for (const dir of dirs) {
-    if (!existsSync(dir)) continue;
-    for (const filename of readdirSync(dir)) {
-      if (!RECORD_FILENAME_RE.test(filename)) continue;
-      if (!filename.toLowerCase().endsWith(".md")) continue;
-      const full = join(dir, filename);
-      try {
-        if (!statSync(full).isFile()) continue;
-      } catch {
-        continue;
-      }
-      const content = readFileSync(full, "utf8");
-      const fmMatch = content.match(FRONTMATTER_RE);
-      const body = fmMatch ? content.slice(fmMatch[0].length) : content;
-      const fmBlock = fmMatch?.[1] ?? "";
-
-      // Collect decision-ids: prefer the explicit `Decision IDs resolved`
-      // line (multi-id case); fall back to the filename-derived id.
-      const ids = new Set<string>();
-      for (const line of body.split(/\r?\n/)) {
-        const m = line.match(DECISION_ID_LINE_RE);
-        if (!m?.[1]) continue;
-        for (const idMatch of m[1].matchAll(ALL_DIDS_RE)) {
-          if (idMatch[1]) ids.add(idMatch[1].toUpperCase());
-        }
-      }
-      if (ids.size === 0) {
-        const idFromFilename = resolutionIdFromRecordFilename(filename);
-        if (idFromFilename) ids.add(idFromFilename);
-      }
-      if (ids.size === 0) continue;
-
-      // Pull metadata from the record body.
-      let action: DecisionAction = "approve";
-      let title = "";
-      let outcome = "";
-      let actor = "marc@tgv.co.za";
-      let comment: string | undefined;
-      for (const line of body.split(/\r?\n/)) {
-        const a = line.match(ACTION_LINE_RE);
-        if (a?.[1]) action = parseAction(a[1]);
-        const t = line.match(TITLE_LINE_RE);
-        if (t?.[1]) title = t[1].replace(/`/g, "").trim();
-        const o = line.match(OUTCOME_LINE_RE);
-        if (o?.[1]) outcome = o[1].trim();
-        const ac = line.match(ACTOR_LINE_RE);
-        if (ac?.[1]) actor = ac[1].trim();
-        const c = line.match(COMMENT_LINE_RE);
-        if (c?.[1]) comment = c[1].replace(/^["']|["']$/g, "").trim();
-      }
-      const asOfFm = fmBlock.match(ASOF_FRONTMATTER_RE);
-      const date = fileDate(filename);
-      const asOf = asOfFm?.[1]?.trim() ?? (date ? `${date}T12:00:00.000Z` : "");
-      if (!asOf) continue;
-
-      for (const id of ids) {
-        out.push({
-          decisionId: id,
-          title: title || id,
-          action,
-          outcome,
-          actor,
-          asOf,
-          ...(comment ? { comment } : {}),
-        });
-      }
-    }
-  }
-  return out;
-}
-
-// Body-text decision ID pattern — e.g. D-RMS-PHASE-1, D-AGENT-RUNTIME-AUTHORIZE.
-// Scan ALL Owner Inbox `.md` files (not just `_ceo-decision-record_*`) and
-// emit a `CeoDecisionEventSummary` for every closed decision they reference.
-// Mirrors the three-step ID-extraction logic of the
-// `decision-record-event-symmetry` recon pipeline so the backfill resolves
-// exactly the set of IDs the recon would otherwise warn about:
-//
-//   (a) Frontmatter `decision-id` or `maps-to-decision-id` key (explicit).
-//   (b) First `D-XXX` match in the file body (same as the recon's step b).
-//   (c) `D-XXX` slug extracted from the filename (same as the recon's step c).
-//
-// Only files where `decision-required` is explicitly `false` are considered.
-// IDs that fail `isValidDecisionId` (too short, trailing hyphen, etc.) are
-// skipped — this filters out template placeholders like `D-RT-` and
-// `D-RT-<slug>`.
-//
-// De-duplication (by decisionId, latest-asOf wins) is applied before
-// returning. The caller (`backfillCeoDecisionsFromRecords`) also dedupes
-// against the live event store, so there is no risk of double-emission.
-export function synthesizeCeoDecisionsFromOwnerInboxFrontmatter(
-  ownerInboxDir: string,
-): CeoDecisionEventSummary[] {
-  if (!existsSync(ownerInboxDir)) return [];
-  const byId = new Map<string, CeoDecisionEventSummary>();
-  const EXCLUDED = new Set(["_frontmatter-convention.md", "_styles.css"]);
-  for (const filename of readdirSync(ownerInboxDir)) {
-    if (filename.startsWith(".") || filename.startsWith("_")) continue;
-    if (!filename.toLowerCase().endsWith(".md")) continue;
-    if (EXCLUDED.has(filename)) continue;
-    // Already covered by synthesizeCeoDecisionsFromRecords — skip to avoid
-    // double-counting (the record-file path carries richer metadata).
-    if (RECORD_FILENAME_RE.test(filename)) continue;
-    const full = join(ownerInboxDir, filename);
-    try {
-      if (!statSync(full).isFile()) continue;
-    } catch {
-      continue;
-    }
-    const content = readFileSync(full, "utf8");
-    const fmMatch = content.match(FRONTMATTER_RE);
-    if (!fmMatch?.[1]) continue;
-    const fmBlock = fmMatch[1];
-
-    // Must have decision-required: false (string or boolean, explicit).
-    const drMatch = fmBlock.match(/^decision-required\s*:\s*(.+?)\s*$/im);
-    if (!drMatch?.[1]) continue;
-    const drVal = drMatch[1].trim().toLowerCase();
-    if (drVal !== "false") continue;
-
-    // Pull title and asOf — used for all candidate IDs from this file.
-    const titleMatch = fmBlock.match(/^title\s*:\s*(.+?)\s*$/im);
-    const title = titleMatch?.[1]?.trim() ?? filename;
-    const date = fileDate(filename);
-    const asOf = date ? `${date}T00:00:00.000Z` : "";
-    if (!asOf) continue;
-
-    // Collect all candidate IDs this file "owns" so the backfill covers the
-    // same set the recon asserts against. Three extraction paths mirror the
-    // recon's `extractDecisionId` logic; the `maps-to-decision-id` path is
-    // a bonus the recon doesn't check (but is semantically load-bearing for
-    // implementation slices and confirmation papers).
-    const candidates = new Set<string>();
-
-    // Step (a) — frontmatter `decision-id` key (mirrors recon step a).
-    const didMatch = fmBlock.match(FM_DECISION_ID_RE);
-    if (didMatch?.[1]) {
-      const id = didMatch[1].trim().toUpperCase();
-      if (isValidDecisionId(id)) candidates.add(id);
-    }
-
-    // Step (b) — body-text scan deliberately omitted for decision-required:false
-    // files. These are informational deliverables; a D-XXX code in the body is
-    // a cross-reference, not an owned decision ID, and the body scan produces
-    // false positives (e.g. taxonomy domain codes, obligation cross-refs).
-    // Proper decisions are recorded via recordDelegatedDecision.
-
-    // Step (c) — D-XXX slug in filename (mirrors recon step c).
-    // Only runs when steps (a) and (b) yield nothing.
-    if (candidates.size === 0) {
-      const fnMatch = filename.match(/_(d-[a-z][a-z0-9-]+)(?:\.md)?$/i);
-      if (fnMatch?.[1]) {
-        const id = fnMatch[1].toUpperCase();
-        if (isValidDecisionId(id)) candidates.add(id);
-      }
-    }
-
-    // Bonus: `maps-to-decision-id` frontmatter key — the recon doesn't check
-    // this, but implementation slices reference the parent decision here and
-    // the backfill should ensure those parent decisions have events too.
-    const mapsMatch = fmBlock.match(FM_MAPS_TO_DECISION_ID_RE);
-    if (mapsMatch?.[1]) {
-      const id = mapsMatch[1].trim().toUpperCase();
-      if (isValidDecisionId(id)) candidates.add(id);
-    }
-
-    if (candidates.size === 0) continue;
-
-    // De-duplicate: keep the latest asOf when multiple files reference
-    // the same decision ID.
-    for (const rawId of candidates) {
-      const prev = byId.get(rawId);
-      if (!prev || prev.asOf <= asOf) {
-        byId.set(rawId, {
-          decisionId: rawId,
-          title,
-          action: "approve",
-          outcome: "(approved — backfilled from owner-inbox record)",
-          actor: "marc@tgv.co.za",
-          asOf,
-        });
-      }
-    }
-  }
-  return Array.from(byId.values());
-}
-
 // Build a short, scannable title for the Owner Inbox feed. Verbose
 // agent-prefixed titles like
 //   "Scrooge (Chief of Staff / Orchestrator) — CEO decision record:
@@ -1713,6 +1507,9 @@ interface DeriveAgentsInput {
   // their owning agent. Built from the curated open list + Owner-Inbox-lifted
   // open decisions before resolution removes them.
   readonly ownerByDecisionId?: Map<string, string>;
+  // RMS Phase 2 — when provided, recent deliverables come from RecordFiled
+  // events instead of the Owner Inbox FS scan. Optional for backwards compat.
+  readonly eventSource?: Pick<EventSource, "recentDeliverables">;
 }
 
 // ---------------------------------------------------------------------------
@@ -1760,6 +1557,7 @@ function buildSubordinate(
   ownerInboxDir: string,
   inFlight: readonly InFlightItem[],
   decisionsOpen: readonly OpenDecision[],
+  eventSource?: Pick<EventSource, "recentDeliverables">,
 ): SubordinateMini {
   const personaPath = join(teamDir, `${name}.md`);
   const content = readPersonaFile(personaPath);
@@ -1778,7 +1576,9 @@ function buildSubordinate(
     .sort((a, b) => ((a.completedAt ?? "") < (b.completedAt ?? "") ? 1 : -1))
     .slice(0, 3);
   const openDecisionsOwned = decisionsOpen.filter((d) => ownerMatches(d.owner, name));
-  const recentDeliverables = recentDeliverablesFor(ownerInboxDir, name, 5);
+  const recentDeliverables = eventSource?.recentDeliverables
+    ? eventSource.recentDeliverables(name, 5)
+    : recentDeliverablesFor(ownerInboxDir, name, 5);
   const lastActivityAt = maxDate(
     recentlyCompletedWorkstreams[0]?.completedAt,
     recentDeliverables[0]?.date,
@@ -1825,12 +1625,21 @@ export function deriveAgents(input: DeriveAgentsInput): AgentMiniDashboard[] {
       ? resolvedDecisionsForAgent(input.decisionsResolved, input.ownerByDecisionId, person.name, 3)
       : [];
 
-    const recentDeliverables = recentDeliverablesFor(input.ownerInboxDir, person.name);
+    const recentDeliverables = input.eventSource?.recentDeliverables
+      ? input.eventSource.recentDeliverables(person.name)
+      : recentDeliverablesFor(input.ownerInboxDir, person.name);
 
     // Build subordinates per the parsed reports-to mapping.
     const subordinateNames = reportsTo.get(person.name) ?? [];
     const subordinates: SubordinateMini[] = subordinateNames.map((n) =>
-      buildSubordinate(n, input.teamDir, input.ownerInboxDir, input.inFlight, input.decisionsOpen),
+      buildSubordinate(
+        n,
+        input.teamDir,
+        input.ownerInboxDir,
+        input.inFlight,
+        input.decisionsOpen,
+        input.eventSource,
+      ),
     );
 
     // Aggregate totals — own + subordinates.
@@ -2031,6 +1840,8 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     ownerInboxDir: opts.sources.ownerInboxDir,
     claudeMd: opts.sources.claudeMd,
     ownerByDecisionId: ownerById,
+    // RMS Phase 2 — use event-based deliverables when the source supports it.
+    ...(opts.events.recentDeliverables ? { eventSource: opts.events } : {}),
   });
 
   // Recent open findings — Vera's overnight recon and Mira's citation gate

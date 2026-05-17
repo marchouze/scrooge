@@ -7,7 +7,7 @@
 //   - Each projection round-trips a fixture event stream into the expected
 //     register rows (happy-path).
 //   - Pair-coupled projections handle out-of-order replay (Completed before
-//     Started; CeoDecision before DecisionRequested).
+//     Started; Decision before DecisionRequested).
 //   - Supersession resolves cleanly (BriefSuperseded; RecordFiled supersedes).
 //   - Snapshot codec is round-trip stable (`decodeSnapshot(encodeSnapshot(s))`
 //     equals s, and folding forward from a snapshot equals folding from
@@ -27,6 +27,7 @@ import {
   makeAgentRunCompleted,
   makeAgentRunStarted,
   makeBriefSuperseded,
+  makeDecision,
   makeDecisionRequested,
   makeFeedback,
   makeRecordFiled,
@@ -82,33 +83,35 @@ function newStore(): EventStore {
   return new EventStore();
 }
 
-function appendCeoDecision(
+function appendDecision(
   store: EventStore,
   args: {
     decisionId: string;
-    action: "approve" | "defer" | "modify" | "request-revision";
+    phase: "approved" | "deferred" | "requested" | "rejected" | "superseded" | "withdrawn";
     title: string;
     outcome: string;
     asOf: string;
-    requestEventId?: string;
   },
 ): Event {
-  const event: Event = {
-    event_id: newEventId(),
-    type: "CeoDecision",
-    as_of: args.asOf,
+  const event = makeDecision({
+    asOf: args.asOf,
     entity: ENTITY,
     actor: { type: "human", id: "marc@tgv.co.za" },
     citations: CITATIONS,
     payload: {
       decisionId: args.decisionId,
+      phase: args.phase,
+      authority: "CEO",
+      authorityRef: "marc@tgv.co.za",
       title: args.title,
-      action: args.action,
-      outcome: args.outcome,
-      recordedVia: "test",
-      ...(args.requestEventId ? { requestEventId: args.requestEventId } : {}),
+      category: "governance",
+      recommendation: args.outcome,
+      rationale: args.outcome,
+      sourceDocHashes: [],
+      citations: CITATIONS,
+      recordedVia: "authoring-ui",
     },
-  };
+  });
   store.append(event);
   return event;
 }
@@ -118,7 +121,7 @@ function appendCeoDecision(
 // ---------------------------------------------------------------------------
 
 describe("decisionsRegisterProjection", () => {
-  it("opens a row on DecisionRequested and resolves on matching CeoDecision", () => {
+  it("opens a row on DecisionRequested and resolves on matching Decision", () => {
     const store = newStore();
     const requestEv = makeDecisionRequested({
       asOf: "2026-05-10T08:00:00Z",
@@ -147,13 +150,12 @@ describe("decisionsRegisterProjection", () => {
     expect(rows[0]?.title).toBe("Test decision");
     expect(rows[0]?.sourceDocumentHashes).toEqual([HASH_A]);
 
-    appendCeoDecision(store, {
+    appendDecision(store, {
       decisionId: "D-TEST-1",
-      action: "approve",
+      phase: "approved",
       title: "Test decision",
       outcome: "Approved.",
       asOf: "2026-05-10T09:00:00Z",
-      requestEventId: requestEv.event_id,
     });
 
     state = projector.build(decisionsRegisterProjection);
@@ -165,7 +167,7 @@ describe("decisionsRegisterProjection", () => {
     store.close();
   });
 
-  it("flips to revision-requested when CEO actions request-revision", () => {
+  it("resolves to deferred when Decision phase is deferred", () => {
     const store = newStore();
     store.append(
       makeDecisionRequested({
@@ -174,38 +176,38 @@ describe("decisionsRegisterProjection", () => {
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
-          decisionId: "D-REV-1",
-          title: "Revision test",
+          decisionId: "D-DEF-1",
+          title: "Deferral test",
           category: "pacing",
           owner: ATLAS,
           forActor: "CEO",
-          decisionForActor: "Approve / revise.",
-          recommendation: { stance: "approve", reasoning: "x" },
+          decisionForActor: "Approve / defer.",
+          recommendation: { stance: "defer", reasoning: "x" },
           sourceDocumentHashes: [],
           citations: ["P1-EVENTS-ARE-TRUTH"],
         },
       }),
     );
-    appendCeoDecision(store, {
-      decisionId: "D-REV-1",
-      action: "request-revision",
-      title: "Revision test",
-      outcome: "Please revise.",
+    appendDecision(store, {
+      decisionId: "D-DEF-1",
+      phase: "deferred",
+      title: "Deferral test",
+      outcome: "Deferred.",
       asOf: "2026-05-10T09:00:00Z",
     });
 
     const projector = new LocalProjector(store);
     const rows = decisionsRegisterRows(projector.build(decisionsRegisterProjection));
-    expect(rows[0]?.status).toBe("revision-requested");
-    expect(rows[0]?.resolution?.action).toBe("request-revision");
+    expect(rows[0]?.status).toBe("resolved");
+    expect(rows[0]?.resolution?.action).toBe("defer");
     store.close();
   });
 
-  it("handles CeoDecision arriving before DecisionRequested (out-of-order)", () => {
+  it("handles Decision arriving before DecisionRequested (out-of-order)", () => {
     const store = newStore();
-    appendCeoDecision(store, {
+    appendDecision(store, {
       decisionId: "D-OUT-1",
-      action: "approve",
+      phase: "approved",
       title: "Out-of-order",
       outcome: "Approved.",
       asOf: "2026-05-10T10:00:00Z",
