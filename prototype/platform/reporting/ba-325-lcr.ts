@@ -955,16 +955,18 @@ const HQLA_DRIFT_THRESHOLD = 0.05;
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
  *   REG-26-LCR; BCBS-D295; BA-325.
  */
-export async function generateBa325LcrWithEvents(
-  input: Ba325GeneratorInput,
-): Promise<Ba325Output> {
+export async function generateBa325LcrWithEvents(input: Ba325GeneratorInput): Promise<Ba325Output> {
   const output = generateBa325Lcr(input);
   const { eventStore, entity, periodEnd } = input;
 
   // Map lcrRatio (dimensionless) to pct (100-based) for the event payload.
   const lcrRatioPct = Number.isFinite(output.lcrRatio) ? output.lcrRatio * 100 : 999_99;
   const status: "above-minimum" | "at-minimum" | "below-minimum" =
-    output.lcrRatio > 1.0 ? "above-minimum" : output.lcrRatio === 1.0 ? "at-minimum" : "below-minimum";
+    output.lcrRatio > 1.0
+      ? "above-minimum"
+      : output.lcrRatio === 1.0
+        ? "at-minimum"
+        : "below-minimum";
 
   const lcrEvent = makeLCRRatioProjection({
     asOf: periodEnd,

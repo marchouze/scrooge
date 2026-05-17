@@ -267,8 +267,7 @@ export async function generateNsfrProjection(
   for (const [field, value] of positiveFields) {
     if (value < 0) {
       throw new NsfrGeneratorError(
-        `NSFR generator: '${field}' must be ≥ 0, got ${value}. ` +
-          "All inputs are balance-sheet magnitudes in ZAR minor units.",
+        `NSFR generator: '${field}' must be ≥ 0, got ${value}. All inputs are balance-sheet magnitudes in ZAR minor units.`,
       );
     }
   }
@@ -295,7 +294,10 @@ export async function generateNsfrProjection(
   // -------------------------------------------------------------------------
   // NSFR ratio. RSF = 0 implies no illiquid assets to fund → unconstrained.
   // -------------------------------------------------------------------------
-  const nsfrRatio = requiredStableFundingZAR > 0 ? availableStableFundingZAR / requiredStableFundingZAR : Number.POSITIVE_INFINITY;
+  const nsfrRatio =
+    requiredStableFundingZAR > 0
+      ? availableStableFundingZAR / requiredStableFundingZAR
+      : Number.POSITIVE_INFINITY;
   const breached = Number.isFinite(nsfrRatio) && nsfrRatio < 1.0;
 
   const citations: readonly string[] = [
