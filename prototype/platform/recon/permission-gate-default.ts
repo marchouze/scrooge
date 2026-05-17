@@ -188,6 +188,11 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
   "platform/returns/cms/",
+  // M3 Slice 9 conduct events — per-module fixture test (same carve-out
+  // rationale as tests/; builds in-memory stores for conduct scenario assertion).
+  // Citation: D-MARKET-CONDUCT, D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/returns/conduct/",
   // M3 Slice 7 climate-risk disclosure — per-module fixture test (same
   // carve-out rationale as tests/; builds in-memory stores for scenario
   // assertion). Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN,
