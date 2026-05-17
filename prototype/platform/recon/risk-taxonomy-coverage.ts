@@ -95,9 +95,9 @@ const REPO_ROOT = findRepoRoot(import.meta.dir);
 const OBLIGATIONS_PATH = resolve(REPO_ROOT, "Regulations/_obligations-register.md");
 const RAS_PATH = resolve(
   REPO_ROOT,
-  "Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md",
+  "archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md",
 );
-const OWNER_INBOX_DIR = resolve(REPO_ROOT, "Owner Inbox");
+const OWNER_INBOX_DIR = resolve(REPO_ROOT, "archive", "owner-inbox");
 
 // Pattern: `riskTaxonomy: RT-<code>` or `riskTaxonomy: [RT-X, RT-Y, ...]`
 // in frontmatter, body, or row annotation.

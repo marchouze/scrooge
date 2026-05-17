@@ -600,7 +600,7 @@ describe("Owner Inbox feed — parseOwnerInboxFile", () => {
       ].join("\n"),
     );
     expect(item.filename).toBe("2026-05-07_demo.md");
-    expect(item.path).toBe("Owner Inbox/2026-05-07_demo.md");
+    expect(item.path).toBe("archive/owner-inbox/2026-05-07_demo.md");
     expect(item.date).toBe("2026-05-07");
     expect(item.title).toBe("Demo title");
     expect(item.author).toBe("Atlas");

@@ -179,9 +179,10 @@ let asOf: string;
 
 beforeEach(() => {
   repoRoot = mkdtempSync(join(tmpdir(), "rms-phase-1-e2e-"));
-  ownerInboxDir = resolve(repoRoot, "Owner Inbox");
+  // Phase 4: legacy inbox directories are now under archive/.
+  ownerInboxDir = resolve(repoRoot, "archive", "owner-inbox");
   actionedDir = resolve(ownerInboxDir, "actioned");
-  teamInboxDir = resolve(repoRoot, "Team Inbox");
+  teamInboxDir = resolve(repoRoot, "archive", "team-inbox");
   mkdirSync(actionedDir, { recursive: true });
   mkdirSync(teamInboxDir, { recursive: true });
 

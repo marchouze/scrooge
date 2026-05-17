@@ -418,6 +418,7 @@ function extractPolicyRefs(cell: string): PolicyRef[] {
       stripped.startsWith("Procedures/") ||
       stripped.startsWith("prototype/") ||
       stripped.startsWith("Owner Inbox/") ||
+      stripped.startsWith("archive/owner-inbox/") ||
       stripped.startsWith("D-") ||
       stripped.includes("urn:")
     ) {

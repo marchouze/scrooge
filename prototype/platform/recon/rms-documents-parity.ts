@@ -168,7 +168,7 @@ export function run(): ReconResult {
 
   // 1. Locate repo root and Owner Inbox directory.
   const repoRoot = findRepoRoot(import.meta.dir);
-  const ownerInboxDir = resolve(repoRoot, "Owner Inbox");
+  const ownerInboxDir = resolve(repoRoot, "archive", "owner-inbox");
 
   if (!existsSync(ownerInboxDir)) {
     return { ...result, ok: true, asserted: 0, violations: [] };

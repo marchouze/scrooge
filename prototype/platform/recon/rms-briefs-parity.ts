@@ -158,7 +158,7 @@ export function run(): ReconResult {
 
   // 1. Locate repo root and Team Inbox directory.
   const repoRoot = findRepoRoot(import.meta.dir);
-  const teamInboxDir = resolve(repoRoot, "Team Inbox");
+  const teamInboxDir = resolve(repoRoot, "archive", "team-inbox");
 
   if (!existsSync(teamInboxDir)) {
     // No Team Inbox yet — no files to check.

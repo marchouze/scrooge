@@ -83,7 +83,7 @@ interface DirConfig {
 
 const DIR_CONFIGS: readonly DirConfig[] = [
   {
-    relDir: "Owner Inbox",
+    relDir: "archive/owner-inbox",
     recurse: false,
     registerKey: "correspondence",
     classification: "ceo-only",
@@ -91,7 +91,7 @@ const DIR_CONFIGS: readonly DirConfig[] = [
     retentionYears: 7,
   },
   {
-    relDir: "Owner Inbox/actioned",
+    relDir: "archive/owner-inbox/actioned",
     recurse: false,
     registerKey: "correspondence",
     classification: "ceo-only",
@@ -99,7 +99,7 @@ const DIR_CONFIGS: readonly DirConfig[] = [
     retentionYears: 7,
   },
   {
-    relDir: "Team Inbox",
+    relDir: "archive/team-inbox",
     recurse: false,
     registerKey: "briefs",
     classification: "agent-internal",
@@ -107,7 +107,7 @@ const DIR_CONFIGS: readonly DirConfig[] = [
     retentionYears: 5,
   },
   {
-    relDir: "Team Inbox/actioned",
+    relDir: "archive/team-inbox/actioned",
     recurse: false,
     registerKey: "briefs",
     classification: "agent-internal",

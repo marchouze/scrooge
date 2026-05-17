@@ -87,6 +87,9 @@ type SourceClassification =
   | { kind: "outside" };
 
 function classifySourceDoc(sourceDoc: string, repoRoot: string): SourceClassification {
+  // Phase 4: legacy Owner Inbox is now at archive/owner-inbox/.
+  // Accept both the legacy path ("Owner Inbox/...") and the new archive path
+  // ("archive/owner-inbox/...") so historical Decision events resolve correctly.
   const ownerInboxRel = "Owner Inbox";
   const absPath = isAbsolute(sourceDoc) ? sourceDoc : resolve(repoRoot, sourceDoc);
   const relPath = relative(repoRoot, absPath);
@@ -95,13 +98,20 @@ function classifySourceDoc(sourceDoc: string, repoRoot: string): SourceClassific
     return { kind: "outside" };
   }
   const segments = relPath.split(sep);
-  if (segments[0] !== ownerInboxRel) return { kind: "outside" };
+  // Accept both legacy "Owner Inbox" prefix and new "archive/owner-inbox" prefix.
+  const isOwnerInbox = segments[0] === ownerInboxRel;
+  const isArchiveOwnerInbox = segments[0] === "archive" && segments[1] === "owner-inbox";
+  if (!isOwnerInbox && !isArchiveOwnerInbox) return { kind: "outside" };
   // Direct child of Owner Inbox/ — exactly two segments: ["Owner Inbox", "<file>.md"].
-  if (segments.length === 2) return { kind: "open", absPath, relPath };
+  if (isOwnerInbox && segments.length === 2) return { kind: "open", absPath, relPath };
+  // Direct child of archive/owner-inbox/ — exactly three segments: ["archive", "owner-inbox", "<file>.md"].
+  if (isArchiveOwnerInbox && segments.length === 3) return { kind: "open", absPath, relPath };
   // Sub-folder of Owner Inbox/ — three+ segments. `actioned` (or any
   // sub-folder we don't manage here) is treated the same: not eligible
   // for auto-archival.
-  if (segments[1] === "actioned") return { kind: "actioned" };
+  if (isOwnerInbox && segments[1] === "actioned") return { kind: "actioned" };
+  // archive/owner-inbox/actioned/ — four segments.
+  if (isArchiveOwnerInbox && segments[2] === "actioned") return { kind: "actioned" };
   return { kind: "outside" };
 }
 
@@ -158,8 +168,8 @@ function findSourceDocByDecisionId(decisionId: string, ownerInboxDir: string): s
     // Match `decision-id: <decisionId>` (allow surrounding whitespace).
     const match = /^decision-id:\s*(.+?)\s*$/m.exec(fm);
     if (match && match[1] === decisionId) {
-      // Return a repo-relative path: "Owner Inbox/<filename>"
-      return `Owner Inbox/${name}`;
+      // Return a repo-relative path: "archive/owner-inbox/<filename>" (Phase 4)
+      return `archive/owner-inbox/${name}`;
     }
   }
   return "";
@@ -222,9 +232,16 @@ function processCeoDecision(
     // Idempotency layer 2: check whether the file already lives in
     // `actioned/` under the same filename. If yes, this is a re-fire of
     // a previously-archived event — quiet no-op, not a warn.
-    const filenameOnly = classification.relPath.split(sep)[1];
+    const segs = classification.relPath.split(sep);
+    const filenameOnly = segs[segs.length - 1];
     if (filenameOnly) {
-      const actionedTarget = resolve(ctx.repoRoot, "Owner Inbox", "actioned", filenameOnly);
+      const actionedTarget = resolve(
+        ctx.repoRoot,
+        "archive",
+        "owner-inbox",
+        "actioned",
+        filenameOnly,
+      );
       if (existsSync(actionedTarget)) {
         return {
           outcome: { decisionId, sourceDoc, status: "already-archived" },
@@ -275,8 +292,9 @@ function processCeoDecision(
     };
   }
 
-  // Compute target path: Owner Inbox/actioned/<filename>.
-  const filename = classification.relPath.split(sep)[1];
+  // Compute target path: archive/owner-inbox/actioned/<filename>.
+  const relSegs = classification.relPath.split(sep);
+  const filename = relSegs[relSegs.length - 1];
   if (!filename) {
     return {
       outcome: {
@@ -288,7 +306,7 @@ function processCeoDecision(
       eventsEmitted: 0,
     };
   }
-  const actionedDir = resolve(ctx.repoRoot, "Owner Inbox", "actioned");
+  const actionedDir = resolve(ctx.repoRoot, "archive", "owner-inbox", "actioned");
   const targetAbs = resolve(actionedDir, filename);
 
   // Defensive: if target already exists (race / partial prior run), treat

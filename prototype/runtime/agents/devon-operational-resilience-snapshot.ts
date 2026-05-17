@@ -188,7 +188,12 @@ function readUpstreamSnapshotCounts(sinceIso: string): UpstreamSnapshotCounts {
 }
 
 function readSubstrateExceptions(repoRoot: string): SubstrateExceptions {
-  const path = resolve(repoRoot, "Owner Inbox", "2026-05-07_owen_substrate-exception-register.md");
+  const path = resolve(
+    repoRoot,
+    "archive",
+    "owner-inbox",
+    "2026-05-07_owen_substrate-exception-register.md",
+  );
   if (!existsSync(path)) return { known: [] };
   try {
     const txt = readFileSync(path, "utf8");

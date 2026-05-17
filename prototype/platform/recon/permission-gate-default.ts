@@ -208,113 +208,31 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   "platform/markets/regulatory/",
 ];
 
-// Actor URNs that are accepted today as "no policy yet" without raising the
-// per-actor finding to P1. As Senna's T-02..T-12 mitigations land, these get
-// retired one by one.
+// T-12 mitigation COMPLETE (2026-05-17, Atlas):
 //
-// T-01 build-phase carve-out (2026-05-16, Atlas + Senna):
+//   All 44 sub-agent task actors and platform infrastructure actors that were
+//   previously in ACCEPTED_NO_POLICY_ACTORS now have published PermissionPolicy
+//   events in the event store. The carve-out is empty; any new actor that
+//   appends events without a published policy will be reported as `warn`
+//   severity by Assertion 4 (no longer silently accepted as `info`).
 //
-//   The full PermissionPolicy derivation pipeline (AgentSpec → PermissionPolicyPublished
-//   event via `identity:issue`) applies to persona-level agents registered via
-//   `/Team/<Name>.md`. Task-level sub-agents (e.g. `agent:kai:fx-pricer`) and
-//   internal platform actors are operational realities of the build phase whose
-//   per-sub-agent policy publication is deferred to T-12 mitigation.
+//   Publication mechanism: `bun run publish:sub-agent-policies` (Option A —
+//   registry-time derivation, per Senna's spec §3). Run as part of the
+//   T-12 PR (feat(t12): sub-agent PermissionPolicy enforcement).
 //
-//   Citation: Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md
-//   (T-01); P4-SECURITY-DESIGNED-IN; ORG-CY-09.
-//   Roadmap: retire this carve-out as Senna's T-12 substrate wires
-//   per-sub-agent PermissionPolicyPublished events from the runtime handler
-//   `identity:issue` pipeline.
+//   Authority: Owner Inbox/2026-05-17_senna_t12-sub-agent-permission-policy-design-spec.md
+//   (T-12); D-T01-PERMISSION-GATE-SECURE-DEFAULT; P4-SECURITY-DESIGNED-IN; ORG-CY-09.
 //
-// Grouping:
-//   A — Substrate-internal actors (platform plumbing; never user-facing)
-//   B — Platform infrastructure actors (event bus, registry, scheduler, etc.)
-//   C — Markets / trading task actors
-//   D — Governance snapshot task actors
-//   E — Operations & readiness task actors
-//   F — Overnight recon + codebase quality task actors
-const ACCEPTED_NO_POLICY_ACTORS: ReadonlySet<string> = new Set([
-  // ── A: Substrate-internal ────────────────────────────────────────────────────────────────────────
-  // Substrate-runner identity — historical handler invocations before
-  // per-agent identity issuance landed (Atlas A1.1).
-  "agent:substrate-runner",
-  // The permission gate itself emits SubstrateAlerts when a legacy bypass
-  // fires; it's a substrate-internal actor not subject to its own gate.
-  "agent:atlas:permission-gate",
+// BASELINE_NO_POLICY_ACTORS_COUNT: tracks the size of ACCEPTED_NO_POLICY_ACTORS.
+// Starts at 0 (all retired). Any PR that adds entries must update this constant
+// upward and cite the carve-out reason. Recon reports `fail` if the set grows
+// above the baseline (regression); `info` if it shrinks (progress, update baseline).
+const BASELINE_NO_POLICY_ACTORS_COUNT = 0;
 
-  // ── B: Platform infrastructure actors ───────────────────────────────────────────────────────────────────
-  // These are internal substrate components whose actor IDs are hard-coded
-  // in platform code (event-trigger-bus, registry, scheduler, identity
-  // subsystem). They are trusted platform actors, not persona-derived agents;
-  // the persona → PermissionPolicy derivation pipeline does not apply.
-  // T-01 build-phase carve-out — retire once T-12 substrates per-component
-  // policy publication.
-  "agent:atlas:substrate-runner", // AgentRunner lifecycle wrapper (S8 Tier 1)
-  "agent:atlas:event-trigger-bus", // EventTriggerBus — platform/event-trigger-bus/bus.ts
-  "agent:atlas:registry", // AgentRegistry — platform/agent-runtime/registry.ts
-  "agent:atlas:permission-policy", // PermissionPolicyPublisher — platform/agent-identity/permission-policy.ts
-  "agent:atlas:identity-issuer", // AgentIdentityIssuer — platform/agent-identity/issuer.ts
-  "agent:atlas:scheduler", // AgentScheduler — platform/scheduler/scheduler.ts
-  "agent:atlas:legacy-fanout-shadow", // Legacy fanout shadow actor — dashboard/types.ts
-  "agent:atlas:goal-loop-runner", // Goal-loop runner — platform/agent-runtime/goal-loop.ts
-  "agent:atlas:scheduled-trigger-consumer", // ScheduledTriggerConsumer — platform/event-trigger-bus/scheduled-trigger-consumer.ts
-  "agent:atlas:substrate-state", // Substrate-state reporter — runtime/agents/atlas-substrate-state.ts
-
-  // ── C: Markets / trading task actors ────────────────────────────────────────────────────────────────────────
-  // Task sub-agents for Kai (Markets Engineer, engineering). T-01 build-phase
-  // carve-out; full policies to be derived from Kai's persona spec sections
-  // 11-12 once T-12 wires per-sub-agent publication.
-  "agent:kai:fx-pricer", // FX pricer task actor
-  "agent:kai:fx-rfq", // FX RFQ gateway task actor
-  "agent:kai:m1-cdm-typescript-bindings", // CDM TypeScript bindings generator
-
-  // ── D: Governance snapshot task actors ───────────────────────────────────────────────────────────────
-  // Periodic snapshot sub-agents for governance personas. T-01 build-phase
-  // carve-out. These actors emit snapshot events on their owner's behalf;
-  // policies derive from the persona's §11 events-emitted list once T-12 lands.
-  "agent:helena:risk-appetite-watch", // Helena (CRO, governance) — risk appetite monitoring
-  "agent:devon:operational-resilience-snapshot", // Devon (COO, governance) — operational resilience
-  "agent:camille:financial-position-snapshot", // Camille (CFO, governance) — financial position
-  "agent:anya:projection-refresh", // Anya (Data Engineer, engineering) — projection refresh
-  "agent:anya:projection-drift", // Anya — projection drift detection
-  "agent:owen:governance-cycle-prep", // Owen (CoSec, governance) — governance cycle prep
-  "agent:rohan:risk-run", // Rohan (Quant Risk, engineering) — risk run
-  "agent:mira:obligations-snapshot", // Mira (CCO, governance) — obligations snapshot
-  "agent:senna:security-substrate-state", // Senna (CISO, governance) — security substrate state
-  "agent:zara:mlro-supervision", // Zara (MLRO, governance) — AML supervision
-  "agent:thandiwe:audit-committee-prep", // Thandiwe (CAE, governance) — audit committee prep
-  "agent:rashida:cyber-resilience-snapshot", // Rashida (CRO/Cyber, governance) — cyber resilience
-  "agent:iris:popia-controls-snapshot", // Iris (IO, governance) — POPIA controls
-  "agent:eitan:liquidity-snapshot", // Eitan (Treasury, engineering) — liquidity snapshot
-  "agent:saskia:markets-readiness-snapshot", // Saskia (Markets Ops, engineering) — markets readiness
-
-  // ── E: Operations & readiness task actors ───────────────────────────────────────────────────────────────
-  // Periodic readiness sub-agents. T-01 build-phase carve-out; policies
-  // derive from persona §11 once T-12 lands.
-  "agent:bea:accounting-readiness", // Bea (Finance Engineer, engineering) — accounting readiness
-  "agent:scrooge:inbox-hygiene", // Scrooge (Chief of Staff, governance) — inbox hygiene sweep
-  "agent:yael:tax-readiness", // Yael (Tax, governance) — tax readiness
-  "agent:tomas:payments-readiness", // Tomas (Payments, engineering) — payments readiness
-  "agent:imani:legal-readiness", // Imani (GC, governance) — legal readiness
-  "agent:ravi:alm-readiness", // Ravi (ALM, engineering) — ALM readiness
-  "agent:ravi:ftp-curve-publish", // Ravi — FTP curve publication
-  "agent:sade:agentops-readiness", // Sade (AgentOps, engineering) — agent operations readiness
-  "agent:pax:role-research-queue", // PAX (Research, engineering) — role research queue
-
-  // ── F: Overnight recon + codebase quality task actors ───────────────────────────────────────
-  // Vera's overnight and ad-hoc recon sub-agents. T-01 build-phase carve-out;
-  // Vera's own policy is published from her persona spec.
-  "agent:vera:overnight-recon", // Vera (Internal Audit Engineer, governance) — overnight recon run
-  "agent:vera:codebase-quality-review", // Vera — codebase quality review run
-  "agent:mira:fais-horizon-scan", // Mira — FAIS horizon scan
-  "agent:sade:performance-evaluator", // Sade — performance evaluator
-
-  // ── G: Period-close task actors ───────────────────────────────────────────
-  // T-01 build-phase carve-out; policies derive from Bea's persona §11 once
-  // T-12 wires per-sub-agent publication. Citations: P4-SECURITY-DESIGNED-IN,
-  // ORG-CY-09, T-01 threat-model.
-  "agent:bea:period-close", // Bea (Finance Engineer, engineering) — period-close run
-]);
+// Intentionally empty — T-12 mitigation closed all 45 original carve-out entries.
+// Do NOT add new entries without a cited carve-out reason and a paired
+// PermissionPolicyPublished publication plan. Authority: Senna spec §4.2.
+const ACCEPTED_NO_POLICY_ACTORS: ReadonlySet<string> = new Set([]);
 
 function listTsFiles(dir: string, base: string, out: string[]): void {
   if (!existsSync(dir)) return;
@@ -578,22 +496,50 @@ export function run(opts: RunOpts = {}): ReconResult {
   // Assertion 4: actors observed appending events resolve to a published
   // PermissionPolicy. Live mode walks the event store; tests inject the
   // pairs directly.
+  //
+  // T-12 (2026-05-17): ACCEPTED_NO_POLICY_ACTORS is now empty — all 44
+  // sub-agent and platform actors have published PermissionPolicyPublished
+  // events via `bun run publish:sub-agent-policies`. The carve-out set
+  // is closed; any new actor without a policy is a `warn` finding.
+  //
+  // BASELINE_NO_POLICY_ACTORS_COUNT tracks the carve-out size (§4.2 of
+  // Senna's T-12 spec). Recon reports `fail` on growth (regression) and
+  // `info` on shrink (progress — update the baseline downward).
   // ---------------------------------------------------------------------
+  const noPolActorsBaseline = BASELINE_NO_POLICY_ACTORS_COUNT;
+  const noPolActorsSize = ACCEPTED_NO_POLICY_ACTORS.size;
+  result.asserted++;
+  if (noPolActorsSize > noPolActorsBaseline) {
+    violations.push({
+      subject: "no-policy-actors:size",
+      message: `ACCEPTED_NO_POLICY_ACTORS has ${noPolActorsSize} entries; baseline is ${noPolActorsBaseline}. Growth is a regression — every new sub-agent must have a published PermissionPolicy before being added to this set, and the addition must cite a reason. Citations: ${CITATIONS.join(", ")}.`,
+      severity: "fail",
+    });
+  } else if (noPolActorsSize < noPolActorsBaseline) {
+    violations.push({
+      subject: "no-policy-actors:size",
+      message: `ACCEPTED_NO_POLICY_ACTORS has shrunk from ${noPolActorsBaseline} to ${noPolActorsSize} — progress. Update BASELINE_NO_POLICY_ACTORS_COUNT to ${noPolActorsSize} to lock in the lower floor.`,
+      severity: "info",
+    });
+  }
+
   const actors = opts.appendedAgentActors ?? gatherAppendedAgentActors();
   for (const { agentUrn, hasPolicy } of actors) {
     result.asserted++;
     if (hasPolicy) continue;
     const accepted = ACCEPTED_NO_POLICY_ACTORS.has(agentUrn);
     if (accepted) {
+      // Carve-out set is intentionally empty post-T-12; this branch
+      // will never be reached unless a new entry is deliberately added.
       violations.push({
         subject: `actor:${agentUrn}`,
-        message: `Agent actor \`${agentUrn}\` has appended events without a published PermissionPolicy. Accepted today (substrate carve-out). T-12 (Senna threat model) lands per-agent policies; remove from ACCEPTED_NO_POLICY_ACTORS once published.`,
+        message: `Agent actor \`${agentUrn}\` has appended events without a published PermissionPolicy. Accepted today (substrate carve-out). Publish a PermissionPolicy via \`bun run publish:sub-agent-policies\` or \`bun run identity:issue\` and remove from ACCEPTED_NO_POLICY_ACTORS. Citations: ${CITATIONS.join(", ")}.`,
         severity: "info",
       });
     } else {
       violations.push({
         subject: `actor:${agentUrn}`,
-        message: `Agent actor \`${agentUrn}\` has appended events without a published PermissionPolicy. Publish via \`bun run identity:issue\` or add to ACCEPTED_NO_POLICY_ACTORS with a citation if the carve-out is intentional. Citations: ${CITATIONS.join(", ")}.`,
+        message: `Agent actor \`${agentUrn}\` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via \`bun run publish:sub-agent-policies\` or \`bun run identity:issue\`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: ${CITATIONS.join(", ")}.`,
         severity: "warn",
       });
     }

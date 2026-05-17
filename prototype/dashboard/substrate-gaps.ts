@@ -74,7 +74,7 @@ export function getSubstrateGapsView(repoRoot: string): SubstrateGapsView {
   const now = Date.now();
   if (cache && now - cache.fetchedAt < TTL_MS) return cache.view;
 
-  const ownerInboxDir = resolve(repoRoot, "Owner Inbox");
+  const ownerInboxDir = resolve(repoRoot, "archive", "owner-inbox");
   const filename = findLatestAtlasFile(ownerInboxDir);
   if (!filename) {
     const view: SubstrateGapsView = { asOf: null, sourceFile: null, gaps: [] };

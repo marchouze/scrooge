@@ -87,8 +87,8 @@ function snapshotCounts(repoRoot: string): CanonicalSourceCounts {
 
   const teamDir = resolve(repoRoot, "Team");
   const proceduresDir = resolve(repoRoot, "Procedures", "by-policy");
-  const ownerInboxDir = resolve(repoRoot, "Owner Inbox");
-  const teamInboxDir = resolve(repoRoot, "Team Inbox");
+  const ownerInboxDir = resolve(repoRoot, "archive", "owner-inbox");
+  const teamInboxDir = resolve(repoRoot, "archive", "team-inbox");
   const teamInboxActionedDir = resolve(teamInboxDir, "actioned");
 
   return {
