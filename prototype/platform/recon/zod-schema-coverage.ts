@@ -51,7 +51,11 @@ export interface RunOpts {
   }>;
 }
 
-function gatherRegistry(): ReadonlyArray<{ type: string; payloadSchema?: unknown; status?: string }> {
+function gatherRegistry(): ReadonlyArray<{
+  type: string;
+  payloadSchema?: unknown;
+  status?: string;
+}> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const reg = require("../event-store/registry") as {
     EVENT_TYPE_REGISTRY?: ReadonlyArray<{

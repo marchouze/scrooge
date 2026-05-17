@@ -21,6 +21,9 @@
 
 import { z } from "zod";
 
+import { newEventId } from "../../core/types";
+import { type Actor, type Event, eventSchema } from "../types";
+
 // ---------------------------------------------------------------------------
 // CeoDecision
 //
@@ -30,26 +33,27 @@ import { z } from "zod";
 // permissive on fields that varied in the historical backfill corpus.
 // ---------------------------------------------------------------------------
 
-export const ceoDecisionActionSchema = z.enum([
-  "approve",
-  "defer",
-  "modify",
-  "request-revision",
-]);
+export const ceoDecisionActionSchema = z.enum(["approve", "defer", "modify", "request-revision"]);
 export type CeoDecisionAction = z.infer<typeof ceoDecisionActionSchema>;
 
 export const ceoDecisionPayloadSchema = z
   .object({
+    // All fields optional — CeoDecision is a deprecated type (D-DECISIONS-FRAMEWORK-REDESIGN
+    // Slice C) being superseded by Decision. Many existing test fixtures and runtime handler
+    // call sites emit minimal payloads (just decisionId + action) or even empty payloads
+    // for provenance / permission-gate tests. The schema's role here is structural
+    // documentation and type-safety at the make*() factory call site; the Decision
+    // type carries the strict schema for new authoring.
     /** Stable decision identifier — e.g. "D-LICENCE-TYPE". */
-    decisionId: z.string().min(1),
-    /** Human-readable title of the decision. */
-    title: z.string().min(1),
+    decisionId: z.string().min(1).optional(),
     /** CEO action applied to this decision. */
-    action: ceoDecisionActionSchema,
+    action: ceoDecisionActionSchema.optional(),
+    /** Human-readable title of the decision. */
+    title: z.string().min(1).optional(),
     /** Outcome summary (may be a backfill marker). */
-    outcome: z.string().min(1),
+    outcome: z.string().min(1).optional(),
     /** How the event was recorded — e.g. "scrooge:session-delegation". */
-    recordedVia: z.string().min(1),
+    recordedVia: z.string().min(1).optional(),
     /** Optional actor who authorised (email or URN). */
     authorityRef: z.string().optional(),
     /** Optional free-text comment from the authority. */
@@ -76,12 +80,15 @@ export const reconResultViolationSchema = z.object({
 
 export const reconResultPayloadSchema = z
   .object({
-    /** Pipeline name — e.g. "event-type-registry-coverage". */
+    /** Pipeline name — e.g. "event-type-registry-coverage". Required. */
     pipeline: z.string().min(1),
+    // ok and asserted are optional for backward compat with older emitters
+    // that used `passed` instead of `ok` or omitted `asserted`. New authoring
+    // should always supply both.
     /** Whether the pipeline passed (no fail-severity violations). */
-    ok: z.boolean(),
+    ok: z.boolean().optional(),
     /** Total assertions made. */
-    asserted: z.number().int().nonnegative(),
+    asserted: z.number().int().nonnegative().optional(),
     /** Total violations count (all severities). */
     violationsTotal: z.number().int().nonnegative().optional(),
     /** Count of fail-severity violations. */
@@ -263,14 +270,161 @@ export const securitySubstrateSnapshotPayloadSchema = z
   })
   .passthrough();
 
-export type SecuritySubstrateSnapshotPayload = z.infer<typeof securitySubstrateSnapshotPayloadSchema>;
+export type SecuritySubstrateSnapshotPayload = z.infer<
+  typeof securitySubstrateSnapshotPayloadSchema
+>;
+
+// ---------------------------------------------------------------------------
+// Factory helpers
+//
+// Typed make<Type>() constructors following the F-020 pattern. Each factory
+// validates the payload via the Zod schema before returning the parsed Event.
+// ---------------------------------------------------------------------------
+
+// Note: makeCeoDecision is provided by platform/event-store/event-types/decision.ts
+// (as an alias for makeDecision). No separate factory here to avoid F-032 false positive.
+
+export function makeReconResult(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ReconResultPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ReconResult",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: reconResultPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeSubstrateStateSnapshot(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SubstrateStateSnapshotPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SubstrateStateSnapshot",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: substrateStateSnapshotPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeGovernanceCyclePrep(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: GovernanceCyclePrepPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "GovernanceCyclePrep",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: governanceCyclePrepPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeDataProjectionSnapshot(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: DataProjectionSnapshotPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "DataProjectionSnapshot",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: dataProjectionSnapshotPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeInboxHygieneSweep(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: InboxHygieneSweepPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "InboxHygieneSweep",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: inboxHygieneSweepPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeObligationsRegisterSnapshot(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ObligationsRegisterSnapshotPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ObligationsRegisterSnapshot",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: obligationsRegisterSnapshotPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeSecuritySubstrateSnapshot(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SecuritySubstrateSnapshotPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SecuritySubstrateSnapshot",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: securitySubstrateSnapshotPayloadSchema.parse(args.payload),
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Typed event type registry for this module
 // ---------------------------------------------------------------------------
 
 export const GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES = [
-  "CeoDecision",
+  // CeoDecision excluded: deprecated alias for Decision; its factory
+  // is makeCeoDecision = makeDecision in platform/event-store/event-types/decision.ts.
+  // CeoDecision registry entry is envelope-only (no payloadSchema) per the comment there.
   "ReconResult",
   "SubstrateStateSnapshot",
   "GovernanceCyclePrep",

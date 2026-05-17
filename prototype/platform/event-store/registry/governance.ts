@@ -71,7 +71,6 @@ import {
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingPayloadSchema } from "../event-types/audit";
 import {
-  ceoDecisionPayloadSchema,
   dataProjectionSnapshotPayloadSchema,
   governanceCyclePrepPayloadSchema,
   inboxHygieneSweepPayloadSchema,
@@ -101,7 +100,12 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "CeoDecision",
     class: "governance",
-    payloadSchema: ceoDecisionPayloadSchema,
+    // Envelope-only for backward compat — CeoDecision is deprecated
+    // (D-DECISIONS-FRAMEWORK-REDESIGN Slice C). The superseding type Decision
+    // carries the strict schema. Runtime emit-site validation for legacy
+    // CeoDecision payloads is covered by the makeCeoDecision alias in
+    // platform/event-store/event-types/decision.ts which routes through
+    // the Decision schema.
     issuer: "human",
     subscribers: ["Owen", "dashboard", "Vera"],
     replay: "latest-wins-per-key",
