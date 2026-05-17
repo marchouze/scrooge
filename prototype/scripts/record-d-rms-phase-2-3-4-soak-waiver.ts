@@ -14,9 +14,9 @@
 // Authority: scrooge:session-delegation; marc@tgv.co.za.
 // Run once from prototype/: bun run scripts/record-d-rms-phase-2-3-4-soak-waiver.ts
 
+import { clock, eventStore } from "../platform/composition";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
-import { clock, eventStore } from "../platform/composition";
 
 function alreadyApproved(id: string): boolean {
   const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
