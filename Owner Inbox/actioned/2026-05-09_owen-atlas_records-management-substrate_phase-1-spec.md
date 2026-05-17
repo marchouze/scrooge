@@ -459,7 +459,7 @@ Each register is a **projection** over events — derived, never authored. The d
 
 **Phase 3 — Deliverable routing.** All new deliverables are stored in the document substrate, referenced by hash from `AgentRunCompleted`. The Owner Inbox view becomes a *derived render* of the Document Register filtered to `recordFiled` events with classification `ceo-only` or `governance-seat`. Frontmatter convention deprecated; replaced by the typed payload of `AgentBriefIssued` / `RecordFiled`. Acceptance: zero Owner Inbox files authored without a corresponding `RecordFiled` event for one full agent-week.
 
-**Phase 4 — Cutover & archive.** Legacy `Owner Inbox/` and `Team Inbox/` directories are archived under `archive/owner-inbox/` and `archive/team-inbox/` with a one-time `RecordFiled` index event capturing the bulk-historical context. Dashboard removes the legacy renderers. Frontmatter convention removed. The dashboard reads only registers thereafter. The Owner Inbox feed parser at `prototype/dashboard/derive.ts:879–926` is deleted. Acceptance: dashboard renders identically with legacy directories moved out of the build.
+**Phase 4 — Cutover & archive.** Full move: all four directories — `Owner Inbox/`, `Owner Inbox/actioned/`, `Team Inbox/`, and `Team Inbox/actioned/` — move to `archive/` at Phase 4 cutover; no directories stay in-tree. A one-time `RecordFiled` index event captures the bulk-historical context. Dashboard removes the legacy renderers. Frontmatter convention removed. The dashboard reads only registers thereafter. The Owner Inbox feed parser at `prototype/dashboard/derive.ts:879–926` is deleted. Acceptance: dashboard renders identically with all four legacy directories moved to `archive/`. (Archive scope approved as D-RMS-PHASE-4-ARCHIVE-SCOPE, CEO-approved 2026-05-17.)
 
 ## 9. Interlock with S8 agent-runtime substrate
 
@@ -633,8 +633,8 @@ Existing Owner Inbox / Team Inbox files are **not** retroactively re-emitted as 
 
 What does happen at Phase 4 cutover:
 
-- One **`RecordFiled` index event** captures the bulk-historical context: a single document (a typed manifest listing every file under `archive/owner-inbox/` and `archive/team-inbox/` with filename, hash, first-seen date, summary), filed under the Document Register with classification `governance-seat` and citation to this Phase 1 spec.
-- The directories themselves move under `archive/` so they remain accessible to historical search but no longer appear in the dashboard's live view.
+- One **`RecordFiled` index event** captures the bulk-historical context: a single document (a typed manifest listing every file under all four archived directories — `archive/owner-inbox/`, `archive/owner-inbox/actioned/`, `archive/team-inbox/`, and `archive/team-inbox/actioned/` — with filename, hash, first-seen date, summary), filed under the Document Register with classification `governance-seat` and citation to this Phase 1 spec.
+- All four directories (`Owner Inbox/`, `Owner Inbox/actioned/`, `Team Inbox/`, `Team Inbox/actioned/`) move under `archive/` so they remain accessible to historical search but no longer appear in the dashboard's live view. No directories stay in-tree. (D-RMS-PHASE-4-ARCHIVE-SCOPE, CEO-approved 2026-05-17.)
 - The Owner Inbox feed parser at `derive.ts:879–926` is deleted at Phase 4 close.
 
 Phase 1 dual-render means: today's Owner Inbox / Team Inbox files continue to render exactly as they do now, alongside the new register views. No file in either directory needs to be touched for Phase 1 to land.

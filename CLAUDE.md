@@ -48,7 +48,7 @@ Every deliverable that records a decision, dispatches work, files a record, or e
 
 **Phase 1 dual-render:** once Phase 1 lands, RMS register views and legacy inbox folders co-exist; new authoring routes through events.
 
-**Phase 4 archive:** legacy `Owner Inbox/` and `Team Inbox/` move to `archive/`; RMS registers are sole canonical.
+**Phase 4 archive:** full move — all four directories (`Owner Inbox/`, `Owner Inbox/actioned/`, `Team Inbox/`, `Team Inbox/actioned/`) move to `archive/`; no directories stay in-tree; RMS registers are sole canonical. (D-RMS-PHASE-4-ARCHIVE-SCOPE, CEO-approved 2026-05-17.)
 
 ### Progress transparency
 
@@ -169,6 +169,6 @@ The Records Management Substrate (per `D-RMS-PHASE-1`, CEO-approved 2026-05-09) 
 
 - **Pre-Phase-1 (current):** legacy `Owner Inbox/` (deliverables for the CEO; decision-required items lifted to dashboard) and `Team Inbox/` (briefs routed to agents) remain in use under the events-first authoring rule above.
 - **Phase 1 (dual-render):** RMS registers (Decisions, Correspondence, Records-of-agent-runs, Document, Feedback, Briefs / dispatches, Workstreams) co-exist with the legacy folders; new authoring routes through events.
-- **Phase 4 (archive):** legacy folders move to `archive/`; RMS registers are sole canonical.
+- **Phase 4 (archive):** full move — all four directories (`Owner Inbox/`, `Owner Inbox/actioned/`, `Team Inbox/`, `Team Inbox/actioned/`) move to `archive/`; no directories stay in-tree; RMS registers are sole canonical. (D-RMS-PHASE-4-ARCHIVE-SCOPE, CEO-approved 2026-05-17.)
 
 The Party register at `Regulations/_party-register.md` (per `D-PARTY-REGISTER`, CEO-approved 2026-05-11) is the eighth standing register alongside RMS Phase 1's seven — the unified identity axis across all four actor kinds (natural-person, legal-entity, counterparty, agent), with the founding CEO seat (Marc) registered as the first natural-person Party from PR 3 onward.
