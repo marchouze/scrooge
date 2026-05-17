@@ -146,15 +146,15 @@ Vera reports through Thandiwe, not through Rashida; Rashida is a consumer of con
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-17.
 
 - **HSM key-custody substrate** — FIPS 140-2/3 Level 3 boundary not yet operational; build-only key material is in Azure-Key-Vault-Premium rehearsal mode. Owner: Senna + Atlas. Target: pre-licence.
 - **SOAR orchestrator** — IR runbooks are document-form; SOAR pipeline not yet built. Owner: Senna + Atlas. Target: pre-licence.
 - **User-behaviour-analytics (UBA)** — not built; insider-threat detection runs on rule-based signals only. Owner: Senna + Anya. Target: post-licence M+6.
 - **External threat-intel ingest** — CVE feed integrated; commercial threat-intel platform not yet selected. Owner: Senna + PAX. Target: pre-licence.
-- **JS-2-of-2024 regulator-notification runbook** — drafted; rehearsed against simulated PA endpoints only. Owner: Rashida + Owen. Target: pre-licence.
+- **JS-2-of-2024 regulator-notification runbook** — drafted; rehearsed against simulated PA endpoints only. JS-2 self-assessment filed 2026-05-15 (`2026-05-15_rashida_joint-standard-2-self-assessment.md`) — posture-gaps documented per domain; runbook rehearsal against live PA endpoints remains gap. Owner: Rashida + Owen. Target: pre-licence.
 - **WebAuthn / FIDO2 customer-facing surface** — prepared, not live; activation is licence-day. Owner: Senna + Niko. Target: licence-day.
-- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Sealed-channel partition for JS-2-reportable incidents is the residual gap. Owner: Atlas + Senna.
+- **Agent-runtime substrate** — scheduler live (`/prototype/runtime/`); event-trigger bus still pending. Sealed-channel partition for JS-2-reportable incidents is the residual gap. Owner: Atlas + Senna.
 
 ## 17. Change log
 
@@ -165,3 +165,4 @@ Vera reports through Thandiwe, not through Rashida; Rashida is a consumer of con
 | v1.0 | 2026-05-07 | Rashida (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated. |
 | v1.1 | 2026-05-09 | Rashida (via Scrooge) | §12 capability bullets annotated with `(planned)` markers per Vera Wave-4 #10 recon. |
 | v1.2 | 2026-05-14 | Rashida (via Scrooge) | Mandate review sweep — tightened to 17-section spec; non-template subsections removed from §5; substrate gaps updated. |
+| v1.3 | 2026-05-17 | Owen (via Scrooge) | §16 updated: JS-2-of-2024 self-assessment filed 2026-05-15 — posture-gaps-per-domain documented; runbook-rehearsal gap retained pending live PA endpoint rehearsal. |
