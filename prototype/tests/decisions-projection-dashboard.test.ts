@@ -91,22 +91,6 @@ function buildEventSource(decisions: Event[], ceo: Event[]): EventSource {
     ceoDecisionEvents: () => ceo,
   };
   return {
-    ceoDecisions: () =>
-      ceo.map((e) => {
-        const p = e.payload as Record<string, unknown>;
-        return {
-          decisionId: String(p.decisionId ?? ""),
-          title: String(p.title ?? ""),
-          action: String(p.action ?? "approve") as
-            | "approve"
-            | "defer"
-            | "modify"
-            | "request-revision",
-          outcome: String(p.outcome ?? ""),
-          actor: e.actor.id,
-          asOf: e.as_of,
-        };
-      }),
     workstreamStarts: () => [],
     workstreamCompletions: () => [],
     workstreamRegistrations: () => [],

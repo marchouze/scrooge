@@ -96,7 +96,6 @@ describe("dashboard.applyDecision", () => {
     expect(next.decisionsOpen).toHaveLength(0);
     expect(next.decisionsResolved).toHaveLength(1);
     expect(resolved.id).toBe("TEST-1");
-    expect(resolved.action).toBe("approve");
     expect(resolved.actionedBy).toBe("marc@tgv.co.za");
     expect(resolved.outcome).toBe("Approved as drafted");
   });

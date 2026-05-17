@@ -13,13 +13,7 @@
 // Author: Atlas · Anya
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import type {
-  DashboardState,
-  DecisionAction,
-  InFlightItem,
-  OpenDecision,
-  ResolvedDecision,
-} from "./types";
+import type { DashboardState, InFlightItem, OpenDecision, ResolvedDecision } from "./types";
 
 const REGISTRY_PATH =
   process.env.BANK_DASHBOARD_STATE ??
@@ -45,7 +39,7 @@ export function saveState(state: DashboardState, path: string = REGISTRY_PATH): 
 export function applyDecision(
   state: DashboardState,
   decisionId: string,
-  action: DecisionAction,
+  _action: string,
   outcome: string,
   actor: string,
   comment?: string,
@@ -61,7 +55,6 @@ export function applyDecision(
     actionedAt: now(),
     outcome,
     sourceDoc: original.sourceDocs[0] ?? "(unsourced)",
-    action,
     actionedBy: actor,
     ...(comment ? { comment } : {}),
   };

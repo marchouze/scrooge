@@ -202,8 +202,40 @@ function applyDecision(state: DecisionsRegisterState, event: Event): DecisionsRe
   const decisionId = typeof p.decisionId === "string" ? p.decisionId : "";
   if (!decisionId) return state;
   const phase = String(p.phase ?? "");
-  // Only terminal phases close a decision row.
-  if (phase === "requested") return state; // still open
+  // `requested` phase opens a row (unified replacement for DecisionRequested).
+  // Preserve any existing resolution if the row was already resolved
+  // (out-of-order replay protection).
+  if (phase === "requested") {
+    const existing = state.rows.get(decisionId);
+    const next = new Map(state.rows);
+    // Decision.category uses DecisionCategory ("governance", "risk", …) while
+    // DecisionRequestedPayload["category"] uses a different time-horizon enum.
+    // Map best-effort; "near-term" is the safe fallback for display purposes.
+    const category: DecisionRequestedPayload["category"] = "near-term";
+    next.set(decisionId, {
+      decisionId,
+      requestEventId: event.event_id,
+      title: typeof p.title === "string" ? p.title : decisionId,
+      category,
+      owner: { name: "unknown", position: "unknown" },
+      forActor: "CEO",
+      decisionForActor: "",
+      recommendation: { stance: "", reasoning: "" },
+      sourceDocumentHashes: Array.isArray(p.sourceDocHashes)
+        ? (p.sourceDocHashes as string[]).filter((s) => typeof s === "string")
+        : [],
+      decisionCitations: Array.isArray(p.citations)
+        ? (p.citations as string[]).filter((s) => typeof s === "string")
+        : [],
+      options: undefined,
+      deadline: typeof p.deadline === "string" ? p.deadline : null,
+      requestedAt: event.as_of,
+      status: existing?.status ?? "open",
+      resolution: existing?.resolution ?? null,
+      resolvedAt: existing?.resolvedAt ?? null,
+    });
+    return { rows: next };
+  }
   // Map Decision.phase → legacy action for the resolution record.
   const actionMap: Record<string, DecisionsRegisterResolution["action"]> = {
     approved: "approve",

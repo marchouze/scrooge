@@ -38,37 +38,27 @@ import { validateDecisionSlug } from "./registry";
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
 
 // ---------------------------------------------------------------------------
-// Legacy action enum — kept for callers that still use the CeoDecision
-// action vocabulary (e.g. the Scrooge CLI handler).
-// Maps onto `DecisionPhase` via the phase-map in each call site.
-// ---------------------------------------------------------------------------
-
-/** @deprecated Use DecisionPhase from event-types/decision.ts. */
-export type DecisionAction = "approve" | "defer" | "modify" | "request-revision";
-
-/** @deprecated Use DECISION_PHASES. */
-export const VALID_DECISION_ACTIONS: readonly DecisionAction[] = [
-  "approve",
-  "defer",
-  "modify",
-  "request-revision",
-];
-
-/** @deprecated Type-guard for the legacy DecisionAction set. */
-export function isValidDecisionAction(s: string): s is DecisionAction {
-  return (VALID_DECISION_ACTIONS as readonly string[]).includes(s);
-}
-
-// ---------------------------------------------------------------------------
 // Legacy input/result types — kept for backward compat with historical scripts.
 // These ran once; they cannot be deleted without breaking typecheck.
 // New code must use RecordDecisionInput / RecordDecisionResult.
 // ---------------------------------------------------------------------------
 
+// Legacy action vocabulary used by historical scripts (now inlined).
+type LegacyCeoAction = "approve" | "defer" | "modify" | "request-revision";
+const VALID_CEO_ACTIONS: readonly LegacyCeoAction[] = [
+  "approve",
+  "defer",
+  "modify",
+  "request-revision",
+];
+function isValidCeoAction(s: string): s is LegacyCeoAction {
+  return (VALID_CEO_ACTIONS as readonly string[]).includes(s);
+}
+
 /** @deprecated Use RecordDecisionResult. */
 export interface RecordCeoDecisionInput {
   readonly decisionId: string;
-  readonly action: DecisionAction;
+  readonly action: LegacyCeoAction;
   readonly title: string;
   readonly outcome: string;
   readonly actor: string;
@@ -107,16 +97,16 @@ export function recordCeoDecision(
 ): RecordCeoDecisionResult {
   if (!input.decisionId) throw new Error("decisionId is required");
   if (!input.action) throw new Error("action is required");
-  if (!isValidDecisionAction(input.action)) {
+  if (!isValidCeoAction(input.action)) {
     throw new Error(
-      `Invalid action "${input.action}" — must be one of ${VALID_DECISION_ACTIONS.join(" | ")}`,
+      `Invalid action "${input.action}" — must be one of ${VALID_CEO_ACTIONS.join(" | ")}`,
     );
   }
   if (!input.title) throw new Error("title is required");
   if (!input.outcome) throw new Error("outcome is required");
   if (!input.actor) throw new Error("actor is required");
 
-  const phaseMap: Record<DecisionAction, DecisionPhase> = {
+  const phaseMap: Record<LegacyCeoAction, DecisionPhase> = {
     approve: "approved",
     modify: "approved",
     defer: "deferred",

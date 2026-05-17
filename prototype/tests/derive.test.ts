@@ -12,7 +12,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
-  type CeoDecisionEventSummary,
   type EventSource,
   type SourcePaths,
   type WorkstreamCompletedEventSummary,
@@ -25,13 +24,68 @@ import {
   parseOwnerInbox,
   parseOwnerInboxFile,
 } from "../dashboard/derive";
+import type { DecisionRow, DecisionsRegister } from "../projections/decisions";
+
+// ---------------------------------------------------------------------------
+// Minimal helpers to build mock DecisionsRegister instances for tests
+// ---------------------------------------------------------------------------
+
+function mockResolvedRow(
+  decisionId: string,
+  title: string,
+  asOf: string,
+  recommendation = "",
+): DecisionRow {
+  return {
+    decisionId,
+    title,
+    authority: "CEO",
+    authorityRef: "marc@tgv.co.za",
+    category: "governance",
+    phase: "approved",
+    recommendation,
+    rationale: "",
+    asOf,
+    openedAt: asOf,
+    resolvedAt: asOf,
+    sourceDocHashes: [],
+    citations: [],
+    recordedVia: "scrooge:session-delegation",
+  };
+}
+
+function mockOpenRow(decisionId: string, title: string, asOf: string): DecisionRow {
+  return {
+    decisionId,
+    title,
+    authority: "CEO",
+    authorityRef: "marc@tgv.co.za",
+    category: "governance",
+    phase: "requested",
+    recommendation: "",
+    rationale: "",
+    asOf,
+    openedAt: asOf,
+    sourceDocHashes: [],
+    citations: [],
+    recordedVia: "scrooge:session-delegation",
+  };
+}
+
+function mockRegister(open: DecisionRow[], resolved: DecisionRow[]): DecisionsRegister {
+  const byId = new Map<string, import("../projections/decisions").DecisionHistory>();
+  for (const row of [...open, ...resolved]) {
+    byId.set(row.decisionId, { decisionId: row.decisionId, events: [row], head: row });
+  }
+  return { open, resolved, byId };
+}
 
 interface Fixture {
   sources: SourcePaths;
   setEvents(
-    c: CeoDecisionEventSummary[],
     w?: WorkstreamStartedEventSummary[],
     cmp?: WorkstreamCompletedEventSummary[],
+    register?: DecisionsRegister | null,
   ): EventSource;
 }
 
@@ -254,18 +308,18 @@ function makeFixture(): Fixture {
   return {
     sources,
     setEvents(
-      ceo: CeoDecisionEventSummary[],
       ws: WorkstreamStartedEventSummary[] = [],
       cmp: WorkstreamCompletedEventSummary[] = [],
+      register: DecisionsRegister | null = null,
     ) {
       return {
-        ceoDecisions: () => ceo,
         workstreamStarts: () => ws,
         workstreamCompletions: () => cmp,
         workstreamRegistrations: () => [],
         agentEscalations: () => [],
         auditFindings: () => [],
         decisionComments: () => [],
+        ...(register !== null ? { decisionsRegister: () => register } : {}),
       };
     },
   };
@@ -276,7 +330,7 @@ describe("deriveState — canonical-source parsers", () => {
     const f = makeFixture();
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([]),
+      events: f.setEvents(),
       now: () => "2026-05-06T00:00:00.000Z",
     });
     expect(state.bank.metrics.principles).toBe(3);
@@ -290,7 +344,7 @@ describe("deriveState — canonical-source parsers", () => {
 
   it("parses principles with title and summary", () => {
     const f = makeFixture();
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     expect(state.principles).toHaveLength(3);
     expect(state.principles[0]?.n).toBe(1);
     expect(state.principles[0]?.title).toBe("Events are the only source of truth");
@@ -299,7 +353,7 @@ describe("deriveState — canonical-source parsers", () => {
 
   it("parses CEO direct reports and open seats from CLAUDE.md", () => {
     const f = makeFixture();
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     expect(state.directReports.map((p) => p.name)).toEqual(["Scrooge", "Helena", "Thandiwe"]);
     // Thandiwe's role should not include the trailing annotation.
     expect(state.directReports.find((p) => p.name === "Thandiwe")?.role).toBe("CAE");
@@ -310,63 +364,59 @@ describe("deriveState — canonical-source parsers", () => {
 });
 
 describe("deriveState — event reductions", () => {
-  it("reduces CeoDecision events into decisionsResolved (events first, seed appended)", () => {
+  it("surfaces decisionsResolved from the decisions register", () => {
     const f = makeFixture();
+    const register = mockRegister(
+      [],
+      [
+        mockResolvedRow(
+          "TEST-OPEN",
+          "Open decision",
+          "2026-05-06T10:00:00.000Z",
+          "Approved as drafted.",
+        ),
+      ],
+    );
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([
-        {
-          decisionId: "TEST-OPEN",
-          title: "Open decision",
-          action: "approve",
-          outcome: "Approved as drafted.",
-          actor: "marc@tgv.co.za",
-          asOf: "2026-05-06T10:00:00.000Z",
-        },
-      ]),
+      events: f.setEvents([], [], register),
     });
     expect(state.decisionsOpen).toHaveLength(0);
-    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: curated decisionsResolvedSeed is
-    // no longer fused into the resolved list — events are the only input.
     expect(state.decisionsResolved.map((r) => r.id)).toEqual(["TEST-OPEN"]);
     expect(state.bank.metrics.ceoDecisionsActioned).toBe(1);
   });
 
-  it("uses the latest event when a decision id is actioned twice", () => {
+  it("surfaces open decisions from the decisions register", () => {
+    const f = makeFixture();
+    const register = mockRegister(
+      [mockOpenRow("D-PENDING", "Pending decision", "2026-05-06T10:00:00.000Z")],
+      [],
+    );
+    const state = deriveState({
+      sources: f.sources,
+      events: f.setEvents([], [], register),
+    });
+    expect(state.decisionsOpen.some((d) => d.id === "D-PENDING")).toBe(true);
+    expect(state.decisionsResolved).toHaveLength(0);
+    expect(state.bank.metrics.ceoDecisionsActioned).toBe(0);
+  });
+
+  it("returns empty decisions when no register is provided", () => {
+    // Without a decisionsRegister(), the fallback yields empty arrays.
     const f = makeFixture();
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([
-        {
-          decisionId: "TEST-OPEN",
-          title: "Open decision",
-          action: "approve",
-          outcome: "First action",
-          actor: "marc@tgv.co.za",
-          asOf: "2026-05-06T10:00:00.000Z",
-        },
-        {
-          decisionId: "TEST-OPEN",
-          title: "Open decision",
-          action: "modify",
-          outcome: "Latest action",
-          actor: "marc@tgv.co.za",
-          asOf: "2026-05-06T11:00:00.000Z",
-        },
-      ]),
+      events: f.setEvents(),
     });
-    expect(state.decisionsResolved[0]?.outcome).toBe("Latest action");
-    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: legacy `action` field is not
-    // carried through the unified projection (Slice B's recordDecision migration
-    // wires the field properly). Count: 1 distinct decision id; seed no longer fused.
-    expect(state.bank.metrics.ceoDecisionsActioned).toBe(1);
+    expect(state.decisionsResolved).toEqual([]);
+    expect(state.bank.metrics.ceoDecisionsActioned).toBe(0);
   });
 
   it("activates inFlight items from WorkstreamStarted events", () => {
     const f = makeFixture();
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([], [{ workstreamId: "WS-A", asOf: "2026-05-04T08:00:00.000Z" }]),
+      events: f.setEvents([{ workstreamId: "WS-A", asOf: "2026-05-04T08:00:00.000Z" }]),
     });
     const a = state.inFlight.find((i) => i.id === "WS-A");
     const b = state.inFlight.find((i) => i.id === "WS-B");
@@ -380,7 +430,6 @@ describe("deriveState — event reductions", () => {
     const state = deriveState({
       sources: f.sources,
       events: f.setEvents(
-        [],
         [{ workstreamId: "WS-A", asOf: "2026-05-04T08:00:00.000Z" }],
         [
           {
@@ -406,7 +455,6 @@ describe("deriveState — event reductions", () => {
       sources: f.sources,
       events: f.setEvents(
         [],
-        [],
         [
           { workstreamId: "WS-B", asOf: "2026-05-05T08:00:00.000Z", outcomeNote: "first" },
           { workstreamId: "WS-B", asOf: "2026-05-06T08:00:00.000Z", outcomeNote: "latest" },
@@ -416,76 +464,6 @@ describe("deriveState — event reductions", () => {
     const b = state.inFlight.find((i) => i.id === "WS-B");
     expect(b?.completedAt).toBe("2026-05-06");
     expect(b?.outcomeNote).toBe("latest");
-  });
-
-  // Regression: Vera FAIL on the inaugural autonomous overnight recon
-  // (2026-05-11) — `D-MARKETS-CAPITAL-TIME-SHAPE` had a CeoDecision event
-  // in the store with `action=request-revision`, but the decision did
-  // not appear in `decisionsResolved` (correct — request-revision is a
-  // reopen, not a resolution) and *also* did not appear in
-  // `decisionsOpen` because the source Owner-Inbox spec file
-  // (`2026-05-07_saskia_markets-franchise-design-proposal.md`) was older
-  // than the Owner-Inbox parse cap (200 items) and got dropped.
-  //
-  // Expected behaviour after the fix: `reduceCeoDecisions` synthesises a
-  // fallback OpenDecision from the event payload whenever a reopened
-  // decision has no curated/owner-inbox source, so the decision-event
-  // recon's invariant ("every CeoDecision event surfaces in the derived
-  // projection") holds without depending on Owner-Inbox visibility.
-  it("surfaces a reopened decision (request-revision) in decisionsOpen even when the source file is outside other inputs", () => {
-    const f = makeFixture();
-    const state = deriveState({
-      sources: f.sources,
-      events: f.setEvents([
-        {
-          decisionId: "D-MARKETS-CAPITAL-TIME-SHAPE",
-          title: "Markets franchise design — proposal",
-          action: "request-revision",
-          outcome: "Decision genuinely open — awaiting CEO call on §8 split.",
-          actor: "agent:scrooge",
-          asOf: "2026-05-07T13:51:16.781Z",
-          comment: "Audit-trail correction.",
-        },
-      ]),
-    });
-    const open = state.decisionsOpen.find((d) => d.id === "D-MARKETS-CAPITAL-TIME-SHAPE");
-    const resolved = state.decisionsResolved.find((d) => d.id === "D-MARKETS-CAPITAL-TIME-SHAPE");
-    // Reopened — must be in open, not resolved.
-    expect(resolved).toBeUndefined();
-    expect(open).toBeDefined();
-    expect(open?.title).toBe("Markets franchise design — proposal");
-    expect(open?.trigger).toContain("request-revision");
-    // Audit-trail comment carries through as a note so the CEO sees why
-    // the decision was reopened.
-    expect(open?.note).toBe("Audit-trail correction.");
-  });
-
-  it("prefers a curated OpenDecision over the event-synthesised fallback when both exist", () => {
-    // When the curated `decisionsOpen` (or an Owner-Inbox-lifted entry)
-    // already carries the reopened id, the projection should use that
-    // richer entry rather than the event-derived placeholder. The fixture
-    // ships `TEST-OPEN` as a curated open decision; emitting a
-    // request-revision event for it must not produce a duplicate.
-    const f = makeFixture();
-    const state = deriveState({
-      sources: f.sources,
-      events: f.setEvents([
-        {
-          decisionId: "TEST-OPEN",
-          title: "Different title from event",
-          action: "request-revision",
-          outcome: "Sent back.",
-          actor: "marc@tgv.co.za",
-          asOf: "2026-05-06T11:00:00.000Z",
-        },
-      ]),
-    });
-    const matches = state.decisionsOpen.filter((d) => d.id === "TEST-OPEN");
-    // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: curated `decisionsOpen` is no
-    // longer fused. The event-synthesised entry is the only source; the
-    // request-revision reopens the decision under the event title.
-    expect(matches).toHaveLength(1);
-    expect(matches[0]?.title).toBe("Different title from event");
   });
 });
 
@@ -533,7 +511,7 @@ describe("deriveState — per-agent mini-dashboards", () => {
 
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([]),
+      events: f.setEvents(),
       now: () => "2026-05-07T00:00:00.000Z",
     });
     const agents = state.agents;
@@ -573,7 +551,7 @@ describe("deriveState — per-agent mini-dashboards", () => {
 
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([]),
+      events: f.setEvents(),
       now: () => "2026-05-07T00:00:00.000Z",
     });
 
@@ -590,7 +568,7 @@ describe("deriveState — per-agent mini-dashboards", () => {
     // D-DECISIONS-FRAMEWORK-REDESIGN Slice A: curated `decisionsResolvedSeed`
     // is no longer fused — events are the only input.
     const f = makeFixture();
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     expect(state.decisionsResolved).toEqual([]);
     expect(state.inFlight.every((i) => !i.active)).toBe(true);
     expect(state.bank.metrics.ceoDecisionsActioned).toBe(0);
@@ -943,13 +921,13 @@ describe("deriveState — Owner Inbox decision lift", () => {
         "# Decision needed",
       ].join("\n"),
     );
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     expect(state.decisionsOpen.find((d) => d.id === "D-OI-DECISION-NEEDED")).toBeUndefined();
     const feed = state.ownerInboxFeed.find((i) => i.filename === "2026-05-07_decision-needed.md");
     expect(feed?.decisionStatus).toBe("open");
   });
 
-  it("excludes Owner Inbox decisions already resolved via a CeoDecision event", () => {
+  it("marks Owner Inbox decision-required items as resolved when the decisions register says so", () => {
     const f = makeFixture();
     writeFileSync(
       join(f.sources.ownerInboxDir, "2026-05-07_already-decided.md"),
@@ -963,18 +941,13 @@ describe("deriveState — Owner Inbox decision lift", () => {
         "# Already decided",
       ].join("\n"),
     );
+    const register = mockRegister(
+      [],
+      [mockResolvedRow("D-OI-ALREADY", "Already decided", "2026-05-07T09:00:00.000Z", "Approved.")],
+    );
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([
-        {
-          decisionId: "D-OI-ALREADY",
-          title: "Already decided",
-          action: "approve",
-          outcome: "Approved.",
-          actor: "marc@tgv.co.za",
-          asOf: "2026-05-07T09:00:00.000Z",
-        },
-      ]),
+      events: f.setEvents([], [], register),
     });
     expect(state.decisionsOpen.find((d) => d.id === "D-OI-ALREADY")).toBeUndefined();
     const feed = state.ownerInboxFeed.find((i) => i.filename === "2026-05-07_already-decided.md");
@@ -987,7 +960,7 @@ describe("deriveState — Owner Inbox decision lift", () => {
       join(f.sources.ownerInboxDir, "2026-05-07_just-info.md"),
       ["---", "title: Info only", "decision-required: false", "---", "", "# Info only"].join("\n"),
     );
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     expect(state.ownerInboxFeed.some((i) => i.filename === "2026-05-07_just-info.md")).toBe(true);
     expect(state.decisionsOpen.some((d) => d.title === "Info only")).toBe(false);
   });
@@ -1022,18 +995,13 @@ describe("deriveState — Owner Inbox decision lift", () => {
         "# Open decision",
       ].join("\n"),
     );
+    const register = mockRegister(
+      [],
+      [mockResolvedRow("D-OI-RESOLVED", "Resolved", "2026-05-09T09:00:00.000Z", "Approved.")],
+    );
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([
-        {
-          decisionId: "D-OI-RESOLVED",
-          title: "Resolved",
-          action: "approve",
-          outcome: "Approved.",
-          actor: "marc@tgv.co.za",
-          asOf: "2026-05-09T09:00:00.000Z",
-        },
-      ]),
+      events: f.setEvents([], [], register),
     });
     // The makeFixture seeds an additional informational policy-register note;
     // filter to the three we just authored so the assertion is local.
@@ -1066,7 +1034,7 @@ describe("deriveState — Owner Inbox decision lift", () => {
         "# Scrooge — CEO decision record: D-FOO-BAR",
       ].join("\n"),
     );
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     const item = state.ownerInboxFeed.find((i) =>
       i.filename.includes("ceo-decision-record_d-foo-bar"),
     );
@@ -1080,7 +1048,7 @@ describe("deriveState — wiring", () => {
     const f = makeFixture();
     const state = deriveState({
       sources: f.sources,
-      events: f.setEvents([]),
+      events: f.setEvents(),
       now: () => "2099-01-01T00:00:00.000Z",
     });
     expect(state.asOf).toBe("2099-01-01T00:00:00.000Z");
@@ -1088,7 +1056,7 @@ describe("deriveState — wiring", () => {
 
   it("carries through name, posture, cloudTarget, strategicFoundation, prototype, risks from curated", () => {
     const f = makeFixture();
-    const state = deriveState({ sources: f.sources, events: f.setEvents([]) });
+    const state = deriveState({ sources: f.sources, events: f.setEvents() });
     expect(state.bank.name).toBe("Test Bank");
     expect(state.bank.operatingPosture).toBe("Build-only");
     expect(state.bank.cloudTarget).toBe("Azure");

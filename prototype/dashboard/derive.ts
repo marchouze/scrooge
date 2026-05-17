@@ -44,7 +44,6 @@ import type {
   AgentMiniDashboard,
   AgentOpsState,
   DashboardState,
-  DecisionAction,
   DecisionCategory,
   DecisionCommentSummary,
   DecisionRecommendation,
@@ -87,16 +86,6 @@ export interface SourcePaths {
   readonly ownerInboxDir: string; // /Owner Inbox — deliverables
   readonly bankNameRegister: string; // /Regulations/_bank-name.md — canonical bank-name register
   readonly policiesDir?: string; // /Policies — canonical policy document store (D-POLICY-DOCUMENT-HOME)
-}
-
-export interface CeoDecisionEventSummary {
-  readonly decisionId: string;
-  readonly title: string;
-  readonly action: DecisionAction;
-  readonly outcome: string;
-  readonly comment?: string;
-  readonly actor: string;
-  readonly asOf: string;
 }
 
 export interface WorkstreamStartedEventSummary {
@@ -154,7 +143,6 @@ export interface DecisionCommentEventSummary {
 }
 
 export interface EventSource {
-  ceoDecisions(): CeoDecisionEventSummary[];
   workstreamStarts(): WorkstreamStartedEventSummary[];
   workstreamCompletions(): WorkstreamCompletedEventSummary[];
   workstreamRegistrations(): WorkstreamRegisteredEventSummary[];
@@ -233,48 +221,6 @@ export function readBankNameFromRegister(path: string): string | null {
 // Bridge a real EventStore to the EventSource interface used here.
 export function eventSourceFromStore(store: EventStore): EventSource {
   return {
-    ceoDecisions(): CeoDecisionEventSummary[] {
-      const out: CeoDecisionEventSummary[] = [];
-      // Legacy CeoDecision events (pre D-DECISIONS-FRAMEWORK-REDESIGN).
-      for (const e of store.replay({ type: "CeoDecision" })) {
-        const p = e.payload as Record<string, unknown>;
-        out.push({
-          decisionId: String(p.decisionId ?? ""),
-          title: String(p.title ?? ""),
-          action: String(p.action ?? "approve") as DecisionAction,
-          outcome: String(p.outcome ?? ""),
-          actor: e.actor.id,
-          asOf: e.as_of,
-          ...(typeof p.comment === "string" ? { comment: p.comment } : {}),
-        });
-      }
-      // Unified Decision events (D-DECISIONS-FRAMEWORK-REDESIGN, 2026-05-16).
-      // Map Decision.phase → legacy DecisionAction shape used by reduceCeoDecisions.
-      for (const e of store.replay({ type: "Decision" })) {
-        const p = e.payload as Record<string, unknown>;
-        const phase = String(p.phase ?? "requested");
-        // Only terminal phases represent a decision having been acted upon.
-        const actionMap: Record<string, DecisionAction> = {
-          approved: "approve",
-          deferred: "defer",
-          rejected: "modify",
-          superseded: "modify",
-          withdrawn: "modify",
-          requested: "request-revision",
-        };
-        const action: DecisionAction = actionMap[phase] ?? "approve";
-        out.push({
-          decisionId: String(p.decisionId ?? ""),
-          title: String(p.title ?? ""),
-          action,
-          outcome: String(p.recommendation ?? p.outcome ?? ""),
-          actor: e.actor.id,
-          asOf: e.as_of,
-          ...(typeof p.rationale === "string" ? { comment: p.rationale } : {}),
-        });
-      }
-      return out;
-    },
     workstreamStarts(): WorkstreamStartedEventSummary[] {
       const out: WorkstreamStartedEventSummary[] = [];
       for (const e of store.replay({ type: "WorkstreamStarted" })) {
@@ -723,92 +669,6 @@ function adaptDecisionsRegister(register: DecisionsRegister): {
     ...(row.recordedVia ? { actionedBy: row.authorityRef } : {}),
   }));
   return { resolved, remainingOpen: open, reopenedFromEvents: [] };
-}
-
-function reduceCeoDecisions(
-  events: readonly CeoDecisionEventSummary[],
-  open: readonly OpenDecision[],
-  seed: readonly ResolvedDecision[],
-): {
-  resolved: ResolvedDecision[];
-  remainingOpen: OpenDecision[];
-  reopenedFromEvents: OpenDecision[];
-} {
-  // Latest event per decisionId wins (handles re-action / correction).
-  const latest = new Map<string, CeoDecisionEventSummary>();
-  for (const e of events) {
-    const prev = latest.get(e.decisionId);
-    if (!prev || prev.asOf <= e.asOf) latest.set(e.decisionId, e);
-  }
-
-  const resolvedFromEvents: ResolvedDecision[] = [];
-  // Decision IDs whose latest CeoDecision is `request-revision` are
-  // explicitly NOT resolved — the action communicates "send back / I'm
-  // not ready / Scrooge defaulted in error". The decision returns to
-  // open in the dashboard. The corresponding CeoDecision event still
-  // lives in the audit log.
-  //
-  // Reopened decisions ordinarily re-surface in `decisionsOpen` via the
-  // curated `open` list or via Owner-Inbox parsing (`decision-required:
-  // true` frontmatter). When neither carries the decision — e.g. the
-  // spec file is older than the Owner-Inbox parse cap (Vera FAIL on
-  // D-MARKETS-CAPITAL-TIME-SHAPE, 2026-05-11) — we synthesize a fallback
-  // OpenDecision from the latest event payload so the decision-event
-  // recon still has a derivation entry to bind to. Without this
-  // fallback the recon reports "Event store has CeoDecision X but
-  // derived decisionsResolved does not surface it" even though the
-  // semantics (reopened, awaiting CEO action) are correct.
-  const reopenedIds = new Set<string>();
-  const reopenedEvents: CeoDecisionEventSummary[] = [];
-  for (const e of latest.values()) {
-    if (e.action === "request-revision") {
-      reopenedIds.add(e.decisionId);
-      reopenedEvents.push(e);
-      continue;
-    }
-    const original = open.find((d) => d.id === e.decisionId);
-    const sourceDoc = original?.sourceDocs[0] ?? "(unsourced)";
-    resolvedFromEvents.push({
-      id: e.decisionId,
-      title: e.title || (original?.title ?? e.decisionId),
-      actionedAt: e.asOf,
-      outcome: e.outcome,
-      sourceDoc,
-      action: e.action,
-      actionedBy: e.actor,
-      ...(e.comment ? { comment: e.comment } : {}),
-    });
-  }
-
-  // Newest first; events sorted by asOf desc, then seed appended (older).
-  resolvedFromEvents.sort((a, b) => (a.actionedAt < b.actionedAt ? 1 : -1));
-
-  const eventIds = new Set(resolvedFromEvents.map((r) => r.id));
-  const seedKept = seed.filter((s) => !eventIds.has(s.id) && !reopenedIds.has(s.id));
-  const resolved = [...resolvedFromEvents, ...seedKept];
-
-  const resolvedIds = new Set(resolved.map((r) => r.id));
-  const remainingOpen = open.filter((d) => !resolvedIds.has(d.id));
-
-  // Synthesize OpenDecision fallbacks for reopened ids that the caller's
-  // other sources (curated open, Owner-Inbox-lifted) do not already
-  // carry. The caller filters by id against the combined open list, so
-  // emitting candidates here is safe even when redundant.
-  const remainingOpenIds = new Set(remainingOpen.map((d) => d.id));
-  const reopenedFromEvents: OpenDecision[] = reopenedEvents
-    .filter((e) => !remainingOpenIds.has(e.decisionId))
-    .map((e) => ({
-      id: e.decisionId,
-      title: e.title || e.decisionId,
-      category: "near-term",
-      owner: "(reopened)",
-      trigger: `CeoDecision event with action=request-revision at ${e.asOf}`,
-      decisionForCEO: e.outcome || `Decision ${e.decisionId} reopened — awaiting CEO action`,
-      sourceDocs: [],
-      ...(e.comment ? { note: e.comment } : {}),
-    }));
-
-  return { resolved, remainingOpen, reopenedFromEvents };
 }
 
 function reduceInFlight(
@@ -1708,7 +1568,6 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     opts.sources.claudeMd,
   );
 
-  const ceoEvents = opts.events.ceoDecisions();
   const wsStarts = opts.events.workstreamStarts();
   const wsCompletions = opts.events.workstreamCompletions();
   const wsRegistrations = opts.events.workstreamRegistrations();
@@ -1737,18 +1596,14 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     if (arr) arr.sort((a, b) => (a.asOf < b.asOf ? -1 : 1));
   }
 
-  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — read the unified
-  // decisions register directly from the events-only projection when
-  // the source provides it. When absent (legacy in-process test
-  // fixtures that don't construct a `decisionsRegister()`), fall back
-  // to the legacy CeoDecision-event reduce so existing tests stay green
-  // until Slice B migrates them. The Owner Inbox markdown scan and the
-  // curated `decisionsOpen` / `decisionsResolvedSeed` fusion are gone
+  // D-DECISIONS-FRAMEWORK-REDESIGN — read the unified decisions register
+  // directly from the events-only projection. The Owner Inbox markdown scan
+  // and the curated `decisionsOpen` / `decisionsResolvedSeed` fusion are gone
   // from the decisions path: markdown is now pure render.
   const registerProvided = opts.events.decisionsRegister?.() ?? null;
   const { resolved, remainingOpen, reopenedFromEvents } = registerProvided
     ? adaptDecisionsRegister(registerProvided)
-    : reduceCeoDecisions(ceoEvents, [], []);
+    : { resolved: [], remainingOpen: [], reopenedFromEvents: [] };
   const inFlight = reduceInFlight(curated.inFlight, wsStarts, wsCompletions, wsRegistrations);
 
   // Owner Inbox feed (Marc, 2026-05-07): every deliverable in /Owner Inbox/
