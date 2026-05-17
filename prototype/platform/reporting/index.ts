@@ -223,6 +223,38 @@ export {
 // Slice 6 — IFRS statement renderer (BS / IS / CF / Equity / Notes skeleton)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Slice 11 — BA 320 (Credit-Risk Loans-and-Advances Breakdown)
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba320CreditRisk,
+  type Ba320CategorySection,
+  type Ba320ClassificationEntry,
+  type Ba320GeneratorInput,
+  Ba320GeneratorError,
+  type Ba320LoanEntry,
+  type Ba320Stage,
+  type Ba320StageSection,
+  type Ba320Total,
+  BA_320_BANK_ENTITIES,
+  ba320CategorySectionSchema,
+  ba320StageSectionSchema,
+  ba320TotalSchema,
+  generateBa320CreditRisk,
+} from "./ba-320-credit-risk";
+
+export {
+  Ba320RenderSchema,
+  type Ba320Render,
+  BA_320_SCHEMA_URL,
+  BA_320_RENDERER_VERSION,
+  canonicaliseBa320,
+  renderBa320Canonical,
+  renderBa320ToJson,
+  type RenderBa320Options,
+} from "./ba-320-render";
+
 export {
   type IfrsAccountClass,
   type IfrsAccountClassification,
