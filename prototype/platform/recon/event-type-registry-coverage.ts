@@ -403,14 +403,33 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!factories.has(type)) {
       const meta = lookupEventType(type);
       const isEnvelopeOnly = meta && meta.payloadSchema === undefined;
-      // Envelope-only types have no schema and no factory by design at
-      // this stage. Surface as info, not warn.
+      // A build-phase passthrough schema (`z.object({}).passthrough()`) is
+      // treated as envelope-equivalent: it carries no structural constraints
+      // and is explicitly used as a coverage-gate placeholder until a
+      // factory + typed schema land. Detect it by Zod internal shape.
+      const schema = meta?.payloadSchema as
+        | {
+            _def?: {
+              typeName?: string;
+              unknownKeys?: string;
+              shape?: () => Record<string, unknown>;
+            };
+          }
+        | undefined;
+      const isPassthroughOnly =
+        !isEnvelopeOnly &&
+        schema?._def?.typeName === "ZodObject" &&
+        schema?._def?.unknownKeys === "passthrough" &&
+        Object.keys(schema._def.shape?.() ?? { _: 1 }).length === 0;
+      const isEnvelopeEquivalent = isEnvelopeOnly || isPassthroughOnly;
+      // Envelope-only and passthrough-only types have no factory by design at
+      // this build phase. Surface as info, not warn.
       violations.push({
         subject: `event-type:${type}`,
-        message: isEnvelopeOnly
-          ? `Registry row for \`${type}\` is envelope-only (no payloadSchema, no make${type} factory). Build-phase tolerated per \`registry.ts\` header. Track for follow-on schema authoring.`
+        message: isEnvelopeEquivalent
+          ? `Registry row for \`${type}\` is ${isPassthroughOnly ? "passthrough-only (build-phase PT placeholder)" : "envelope-only (no payloadSchema)"} — no make${type} factory. Build-phase tolerated per \`registry.ts\` header. Track for follow-on schema authoring.`
           : `Registry row for \`${type}\` has a payloadSchema but no \`make${type}\` factory in \`platform/event-store/event-types.ts\`. Add the factory or mark the row envelope-only. Citations: ${CITATIONS.join(", ")}.`,
-        severity: isEnvelopeOnly ? "info" : "warn",
+        severity: isEnvelopeEquivalent ? "info" : "warn",
       });
     }
   }

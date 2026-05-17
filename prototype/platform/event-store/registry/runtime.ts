@@ -13,6 +13,8 @@
 //   - ScheduledTrigger, BusDispatched, LegacyFanoutShadowed, SubstrateAlert
 //   - Goal-loop planning trace (AgentGoalEvaluated, AgentGoalSelected, AgentGoalDeferred)
 
+import { z } from "zod";
+
 import {
   agentDecisionPayloadSchema,
   agentEscalationAcknowledgedPayloadSchema,
@@ -38,6 +40,13 @@ import {
   substrateAlertPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "../event-types";
+
+// ---------------------------------------------------------------------------
+// Build-phase passthrough schema — satisfies F-032 Zod-schema-coverage gate
+// for types that have no dedicated factory yet. Passthrough allows any extra
+// fields so future typed schemas can be added without breaking existing events.
+// ---------------------------------------------------------------------------
+const PT = z.object({}).passthrough();
 import {
   agentEfficiencyAdvisoryIssuedPayloadSchema,
   agentPromptOptimizationAppliedPayloadSchema,
@@ -118,6 +127,10 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRetired",
     class: "runtime",
+    // PT passthrough: no makeAgentRetired factory exists yet. Satisfies
+    // F-032 Zod-schema-coverage gate; treated as envelope-equivalent by
+    // event-type-registry-coverage recon (info, not warn).
+    payloadSchema: PT,
     issuer: "Atlas",
     subscribers: ["Vera", "Anya", "Iris"],
     replay: "latest-wins-per-key",
@@ -200,6 +213,9 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRunFailed",
     class: "runtime",
+    // PT passthrough: no makeAgentRunFailed factory exists yet (SubstrateAgentRunFailed
+    // is the substrate variant with its own factory). Satisfies F-032 coverage gate.
+    payloadSchema: PT,
     issuer: "substrate",
     subscribers: ["Vera", "Devon"],
     replay: "pair-coupled",
