@@ -421,9 +421,12 @@ async function handleDecide(req: Request): Promise<Response> {
     );
   }
 
-  const open = cachedState.decisionsOpen.find((d) => d.id === body.decisionId);
-  if (!open) {
-    return jsonResponse({ error: `Decision not found: ${body.decisionId}` }, 404);
+  const fold = getRmsFold();
+  const openDecision = fold.decisions.find(
+    (d) => d.decisionId === body.decisionId && d.status === "open",
+  );
+  if (!openDecision) {
+    return jsonResponse({ error: `Decision not found or not open: ${body.decisionId}` }, 404);
   }
 
   // Route through the canonical unified-Decision recorder. The handler
@@ -451,8 +454,8 @@ async function handleDecide(req: Request): Promise<Response> {
         phase,
         authority: "CEO",
         authorityRef: actor,
-        title: open.title,
-        category: open.domainCategory ?? "governance",
+        title: openDecision.title,
+        category: openDecision.category ?? "governance",
         recommendation: body.outcome,
         rationale: body.comment ?? body.outcome,
         sourceDocHashes: [],

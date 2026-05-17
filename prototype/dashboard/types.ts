@@ -137,15 +137,12 @@ export interface OpenDecision {
   brief?: DecisionBrief;
 }
 
-export type DecisionAction = "approve" | "defer" | "modify" | "request-revision";
-
 export interface ResolvedDecision {
   id: string;
   title: string;
   actionedAt: string;
   outcome: string;
   sourceDoc: string;
-  action?: DecisionAction;
   comment?: string;
   actionedBy?: string;
   /** D-DECISIONS-FRAMEWORK-REDESIGN — unified payload's domain category. */
@@ -637,7 +634,7 @@ export interface DashboardState {
 
 export interface DecisionRequestBody {
   decisionId: string;
-  action: DecisionAction;
+  action: string;
   outcome: string;
   comment?: string;
 }

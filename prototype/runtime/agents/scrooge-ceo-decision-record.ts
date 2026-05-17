@@ -63,12 +63,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { logger } from "../../platform/composition";
-import {
-  type DecisionAction,
-  VALID_DECISION_ACTIONS,
-  isValidDecisionAction,
-  recordDecision,
-} from "../decisions/record";
+import { recordDecision } from "../decisions/record";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -76,9 +71,17 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 // to `recordDecision`. Emits a unified `Decision` event; no legacy
 // `CeoDecision` event emitted. Call history preserved in commit graph.
 
+// Valid legacy action tokens sent by callers that still use the CeoDecision vocabulary.
+const VALID_ACTIONS = ["approve", "defer", "modify", "request-revision"] as const;
+type LegacyAction = (typeof VALID_ACTIONS)[number];
+
+function isValidAction(s: string): s is LegacyAction {
+  return (VALID_ACTIONS as readonly string[]).includes(s);
+}
+
 interface DecisionRecordInput {
   readonly decisionId: string;
-  readonly action: DecisionAction;
+  readonly action: LegacyAction;
   readonly title: string;
   readonly outcome: string;
   readonly actor: string;
@@ -117,9 +120,9 @@ function readInput(): DecisionRecordInput {
   }
   const obj = parsed as Record<string, unknown>;
   const action = String(obj.action ?? "");
-  if (!isValidDecisionAction(action)) {
+  if (!isValidAction(action)) {
     throw new Error(
-      `Invalid action "${action}" — must be one of ${VALID_DECISION_ACTIONS.join(" | ")}`,
+      `Invalid action "${action}" — must be one of ${VALID_ACTIONS.join(" | ")}`,
     );
   }
   const decisionId = String(obj.decisionId ?? "");
@@ -179,7 +182,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
     // Map legacy action → Decision phase
-    const phaseMap: Record<DecisionAction, "approved" | "deferred" | "requested"> = {
+    const phaseMap: Record<LegacyAction, "approved" | "deferred" | "requested"> = {
       approve: "approved",
       modify: "approved",
       defer: "deferred",

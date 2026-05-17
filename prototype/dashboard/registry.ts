@@ -15,7 +15,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import type {
   DashboardState,
-  DecisionAction,
   InFlightItem,
   OpenDecision,
   ResolvedDecision,
@@ -45,7 +44,7 @@ export function saveState(state: DashboardState, path: string = REGISTRY_PATH): 
 export function applyDecision(
   state: DashboardState,
   decisionId: string,
-  action: DecisionAction,
+  action: string,
   outcome: string,
   actor: string,
   comment?: string,
@@ -61,7 +60,6 @@ export function applyDecision(
     actionedAt: now(),
     outcome,
     sourceDoc: original.sourceDocs[0] ?? "(unsourced)",
-    action,
     actionedBy: actor,
     ...(comment ? { comment } : {}),
   };
