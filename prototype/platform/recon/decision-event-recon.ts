@@ -247,10 +247,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   // the decision in `decisionsResolved`. The `request-revision` action
   // reopens the decision — it remains in the event store as the audit
   // trail of the CEO's "send it back" call, and surfaces in
-  // `decisionsOpen` (either via the curated open list, the Owner-Inbox
-  // lifted entry, or — when those are unavailable, e.g. the spec file
-  // is past the Owner-Inbox parse cap — via the event-synthesized
-  // fallback added by `reduceCeoDecisions` on 2026-05-11).
+  // `decisionsOpen` via the RMS decisions projection.
   //
   // Treat the union of open and resolved as the set of "known" ids.
   const knownIds = new Set<string>([
@@ -259,17 +256,15 @@ export function run(opts: RunOpts = {}): ReconResult {
   ]);
   for (const id of eventDecisionIds) {
     result.asserted++;
-    // Decision IDs whose latest CeoDecision event is `request-revision`
-    // are intentionally reopened — the projection moves them back to
-    // `decisionsOpen`, so they correctly do NOT appear in
-    // `decisionsResolved`. This matches the `reduceCeoDecisions` logic
-    // in `dashboard/derive.ts` (lines 593-599). Flagging them as
-    // missing from the resolved set would be a false positive.
+    // Decision IDs whose latest event has phase `requested` are
+    // intentionally reopened — the RMS decisions projection moves them
+    // back to open, so they correctly do NOT appear in
+    // `decisionsResolved`. Flagging them as missing would be a false positive.
     if (reopenedIds.has(id)) continue;
     if (!knownIds.has(id)) {
       violations.push({
         subject: id,
-        message: `Event store has CeoDecision ${id} but derived decisionsResolved/decisionsOpen does not surface it (expected the projection to carry every event as either resolved or reopened — see reduceCeoDecisions in dashboard/derive.ts)`,
+        message: `Event store has Decision ${id} but derived decisionsResolved/decisionsOpen does not surface it (expected the RMS decisions projection to carry every event as either resolved or reopened)`,
         severity: "fail",
       });
     }

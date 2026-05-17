@@ -94,8 +94,7 @@ export interface DecisionsEventSource {
  *   - request-revision → reopens the decision; mapped to `requested`
  *
  * `request-revision` deliberately does NOT close the decision — it
- * returns it to the open queue, matching `reduceCeoDecisions` in
- * `dashboard/derive.ts` (the `reopenedEvents` path).
+ * returns it to the open queue.
  */
 function mapCeoActionToPhase(action: string): DecisionPhase {
   switch (action) {

@@ -23,12 +23,12 @@
 //
 // What it does:
 //   - Validates the action is one of approve / defer / modify /
-//     request-revision (per dashboard/types.ts DecisionAction).
-//   - Emits a typed CeoDecision event with citations
+//     request-revision and maps it to the unified Decision phase.
+//   - Emits a unified Decision event with citations
 //     GOV-FRAMEWORK-CEO-RESERVED + COMPANIES-ACT-71-2008 (per
 //     `Procedures/by-policy/ceo-decision-review.md`).
 //   - The runtime's event-driven fan-out then dispatches to any
-//     handler subscribed to CeoDecision (anya:projection-refresh
+//     handler subscribed to Decision (anya:projection-refresh
 //     today; future scrooge:follow-on-router will read the
 //     follow-on-routes payload and chain the actual work).
 //   - Optional `--follow-on-routes` is recorded in the event payload;
