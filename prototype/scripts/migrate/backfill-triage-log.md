@@ -1,6 +1,6 @@
 # Backfill triage log — D-DECISIONS-FRAMEWORK-REDESIGN Slice C
 
-Generated: 2026-05-17T12:56:15.178Z
+Generated: 2026-05-17T13:09:30.340Z
 
 ---
 
@@ -46,6 +46,7 @@ _None — all encountered IDs resolved cleanly._
 - `D-EQ-SALES-TRADING-FRONTEND`
 - `D-FX-SALES-TRADING-FRONTEND`
 - `D-PARTY-REGISTER`
+- `D-RMS-PHASE-4-ARCHIVE-SCOPE`
 - `D-FX-CLS-MEMBERSHIP`
 - `D-M4-FX-SUB-DECISIONS`
 - `D-M4-FX-SUB-1`
@@ -79,5 +80,5 @@ _None identified by the migration script. Review manually if recon gates still f
 ## Summary
 
 - Triage IDs (a): 0
-- Reference-only IDs (b): 59
+- Reference-only IDs (b): 60
 - Emitted backfill events: 0
