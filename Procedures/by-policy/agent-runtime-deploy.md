@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Agent-runtime deploy
 
 **Procedure ID:** PROC-OPS-AR-01

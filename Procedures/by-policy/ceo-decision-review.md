@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — CEO decision review
 
 **Owner:** Owen (CoSec, procedural-discipline custodian) · Scrooge (Chief of Staff, orchestration)

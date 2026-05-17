@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Sanctions screening (pre-execution)
 
 **Procedure ID:** PROC-FC-02

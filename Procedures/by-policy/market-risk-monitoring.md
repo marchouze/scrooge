@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Market risk monitoring
 
 **Procedure ID:** PROC-RISK-MRM-01

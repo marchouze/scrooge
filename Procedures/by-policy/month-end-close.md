@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Month-End Close
 
 **Procedure ID:** PROC-FIN-MC-01

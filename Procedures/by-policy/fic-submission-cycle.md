@@ -1,3 +1,6 @@
+---
+status: DRAFT
+---
 # Procedure — FIC submission cycle
 
 **Procedure ID:** PROC-FC-01

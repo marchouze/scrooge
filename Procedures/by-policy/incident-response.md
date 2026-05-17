@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Incident response (IR command)
 
 **Procedure ID:** PROC-CY-01

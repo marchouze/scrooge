@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Stress test cycle
 
 **Procedure ID:** PROC-RISK-ST-01

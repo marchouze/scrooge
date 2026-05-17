@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — DR Test Execution
 
 **Procedure ID:** PROC-OR-DR-01

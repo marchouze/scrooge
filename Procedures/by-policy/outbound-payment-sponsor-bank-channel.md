@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Outbound payment instruction lifecycle (sponsor-bank channel, indirect-participant posture)
 
 **Procedure ID:** PROC-OPS-PS-01

@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Severe-but-Plausible Scenario Test
 
 **Procedure ID:** PROC-OR-SBP-01

@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Capital and liquidity ratio monitoring (daily)
 
 **Procedure ID:** PROC-PR-01

@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Access provisioning (joiner / mover / leaver)
 
 **Procedure ID:** PROC-IS-AP-01

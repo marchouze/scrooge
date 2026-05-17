@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Terrorist Property Report (TPR) Filing
 
 **Procedure ID:** PROC-FC-TPR-01

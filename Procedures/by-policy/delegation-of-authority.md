@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Delegation of Authority
 
 **Procedure ID:** PROC-GV-DOA-01

@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Suspicious Transaction Report (STR) filing
 
 **Procedure ID:** PROC-FC-STR-01

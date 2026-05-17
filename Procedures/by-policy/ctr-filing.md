@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — Cash Threshold Report (CTR) Filing
 
 **Procedure ID:** PROC-FC-CTR-01

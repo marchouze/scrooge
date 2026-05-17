@@ -1,3 +1,6 @@
+---
+status: POPULATED
+---
 # Procedure — ECL stage projection refresh
 
 **Procedure ID:** PROC-RSK-EC-01
