@@ -339,10 +339,16 @@ export function eventSourceFromStore(store: EventStore): EventSource {
       return buildDecisionsRegister(decisionsSourceFromStore(store));
     },
     auditFindings(): AuditFindingEventSummary[] {
-      // Accept two payload shapes:
-      // (a) Mira/citation-gate shape: { findingId, source, severity, principle, description }
-      // (b) Vera/recon shape:         { pipeline, subject, message, severity (info|warn|fail) }
-      // Map (b)'s severity onto the canonical scale.
+      // Accept three payload shapes:
+      // (a) Canonical AuditFinding (platform/event-store/event-types/audit.ts):
+      //     { findingId, severity, category, addressedTo, agentId, raisedBy,
+      //       summary, detail?, sourceRef?, citations }
+      //     — `summary` is required by the Zod schema; `description` does
+      //     not exist on this shape. This is what Vera's overnight-recon
+      //     and the codebase-quality-review runner emit.
+      // (b) Mira/citation-gate legacy: { findingId, source, severity, principle, description }
+      // (c) Vera/recon legacy:         { pipeline, subject, message, severity (info|warn|fail) }
+      // Map (c)'s severity onto the canonical scale.
       const sevMap: Record<string, string> = {
         fail: "high",
         warn: "medium",
@@ -353,18 +359,25 @@ export function eventSourceFromStore(store: EventStore): EventSource {
         const p = e.payload as Record<string, unknown>;
         const rawSev = String(p.severity ?? "medium");
         const severity = sevMap[rawSev] ?? rawSev;
+        // Prefer canonical `summary` (shape a); fall back to legacy
+        // `description` (shape b) then `message` (shape c).
         const description =
+          (typeof p.summary === "string" && p.summary) ||
           (typeof p.description === "string" && p.description) ||
           (typeof p.message === "string" && p.message) ||
           "";
         const principle =
           (typeof p.principle === "string" && p.principle) ||
+          (typeof p.sourceRef === "string" && p.sourceRef) ||
           (typeof p.subject === "string" && p.subject) ||
           (typeof p.pipeline === "string" && `pipeline: ${p.pipeline}`) ||
           undefined;
+        // Canonical shape (a) carries `raisedBy`; legacy shapes carry
+        // `source`. Fall back to the actor id on the event envelope.
+        const source = String(p.source ?? p.raisedBy ?? e.actor.id);
         out.push({
           findingId: String(p.findingId ?? e.event_id),
-          source: String(p.source ?? e.actor.id),
+          source,
           severity,
           description: description || "(no description)",
           asOf: e.as_of,
