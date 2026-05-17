@@ -172,20 +172,6 @@ function getCheckCompletions(
   return completions;
 }
 
-/**
- * Resolve sourceOrderEventId from the OrderProposed event in the event store
- * for the given orderId.
- */
-function getSourceOrderEventId(orderId: string): string | null {
-  for (const e of eventStore.replay({ type: "OrderProposed" })) {
-    const p = e.payload as { orderId?: unknown };
-    if (typeof p.orderId === "string" && p.orderId === orderId) {
-      return e.event_id;
-    }
-  }
-  return null;
-}
-
 // ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
@@ -439,7 +425,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   if (orderProposed.length === 0 && checkCompleted.length === 0) {
     return {
       eventsEmitted: 0,
-      summary: "no OrderProposed or GatewayCheckCompleted events in triggering set; nothing to gate",
+      summary:
+        "no OrderProposed or GatewayCheckCompleted events in triggering set; nothing to gate",
       ok: true,
     };
   }

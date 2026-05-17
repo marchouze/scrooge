@@ -77,6 +77,7 @@ export const gatewayCheckKindSchema = z.enum([
   "funding",
   "documentation",
   "jurisdiction",
+  "counterparty-eligibility",
 ]);
 
 export const gatewayCheckRequestedPayloadSchema = z.object({

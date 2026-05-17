@@ -42,8 +42,8 @@ import { join } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import {
-  makeGatewayCheckCompleted,
   type GatewayCheckCompletedPayload,
+  makeGatewayCheckCompleted,
 } from "../../platform/event-store/event-types";
 import type { Event } from "../../platform/event-store/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -53,11 +53,7 @@ const HANDLER_ACTOR = {
   id: "agent:rohan:market-risk-limit-check",
 };
 
-const RISK_CITATIONS: readonly string[] = [
-  "ORG-PR-01",
-  "RAS-B1",
-  "RAS-B2",
-];
+const RISK_CITATIONS: readonly string[] = ["ORG-PR-01", "RAS-B1", "RAS-B2"];
 
 interface MarketRiskLimitsStub {
   singleNameNotionalLimitZAR: number;
@@ -127,11 +123,7 @@ function computeCurrentExposure(): Map<string, number> {
 function alreadyChecked(orderId: string): boolean {
   for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
     const p = e.payload as { orderId?: unknown; checkKind?: unknown };
-    if (
-      typeof p.orderId === "string" &&
-      p.orderId === orderId &&
-      p.checkKind === "market-risk"
-    ) {
+    if (typeof p.orderId === "string" && p.orderId === orderId && p.checkKind === "market-risk") {
       return true;
     }
   }
@@ -150,8 +142,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   if (riskCheckRequests.length === 0) {
     return {
       eventsEmitted: 0,
-      summary:
-        "no GatewayCheckRequested[market-risk] events in triggering set; nothing to check",
+      summary: "no GatewayCheckRequested[market-risk] events in triggering set; nothing to check",
       ok: true,
     };
   }
@@ -183,10 +174,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
 
     if (alreadyChecked(orderId)) {
-      logger.debug(
-        { orderId },
-        "rohan:market-risk-limit-check — already checked; skipping",
-      );
+      logger.debug({ orderId }, "rohan:market-risk-limit-check — already checked; skipping");
       skipped += 1;
       continue;
     }
@@ -223,8 +211,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         { orderId, sourceOrderEventId },
         "rohan:market-risk-limit-check — could not resolve order details from OrderProposed; rejecting",
       );
-      const requestedAt =
-        typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
+      const requestedAt = typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
       const durationMs = Math.max(
         0,
         new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime(),
@@ -258,8 +245,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
     // Sells can only reduce exposure — always pass.
     if (proposedSide === "sell") {
-      const requestedAt =
-        typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
+      const requestedAt = typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
       const durationMs = Math.max(
         0,
         new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime(),
@@ -312,8 +298,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       limits.perInstrumentLimits[proposedInstrument] ?? limits.singleNameNotionalLimitZAR;
 
     const singleNameBreached = proFormaInstrumentExposureZAR > singleNameLimitZAR;
-    const totalBookBreached =
-      proFormaTotalBookExposureZAR > limits.totalEquityBookNotionalLimitZAR;
+    const totalBookBreached = proFormaTotalBookExposureZAR > limits.totalEquityBookNotionalLimitZAR;
     const isBreached = singleNameBreached || totalBookBreached;
 
     const outcome: GatewayCheckCompletedPayload["outcome"] = isBreached ? "reject" : "approve";
@@ -329,21 +314,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         `proposed notional ZAR ${proposedNotionalZAR.toFixed(0)})`;
       citationToRule = "RAS-B1";
     } else if (totalBookBreached) {
-      rejectionReason =
-        `Total equity book notional limit breached: ` +
-        `proposed pro-forma book exposure ZAR ${proFormaTotalBookExposureZAR.toFixed(0)} ` +
-        `exceeds limit ZAR ${limits.totalEquityBookNotionalLimitZAR.toFixed(0)} ` +
-        `(current book ZAR ${totalCurrentBookExposureZAR.toFixed(0)}, ` +
-        `proposed notional ZAR ${proposedNotionalZAR.toFixed(0)})`;
+      rejectionReason = `Total equity book notional limit breached: proposed pro-forma book exposure ZAR ${proFormaTotalBookExposureZAR.toFixed(0)} exceeds limit ZAR ${limits.totalEquityBookNotionalLimitZAR.toFixed(0)} (current book ZAR ${totalCurrentBookExposureZAR.toFixed(0)}, proposed notional ZAR ${proposedNotionalZAR.toFixed(0)})`;
       citationToRule = "RAS-B2";
     }
 
-    const requestedAt =
-      typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
-    const durationMs = Math.max(
-      0,
-      new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime(),
-    );
+    const requestedAt = typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
+    const durationMs = Math.max(0, new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime());
 
     const completedPayload: GatewayCheckCompletedPayload = {
       orderId,
@@ -352,9 +328,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       sourceCheckRequestEventId,
       completedAt: ctx.asOf,
       durationMs,
-      ...(rejectionReason && citationToRule
-        ? { rejectionReason, citationToRule }
-        : {}),
+      ...(rejectionReason && citationToRule ? { rejectionReason, citationToRule } : {}),
     };
 
     if (ctx.dryRun) {

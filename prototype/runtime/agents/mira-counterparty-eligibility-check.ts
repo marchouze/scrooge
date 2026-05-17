@@ -34,8 +34,8 @@
 
 import { eventStore, logger } from "../../platform/composition";
 import {
-  makeGatewayCheckCompleted,
   type GatewayCheckCompletedPayload,
+  makeGatewayCheckCompleted,
 } from "../../platform/event-store/event-types";
 import type { Event } from "../../platform/event-store/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -45,10 +45,7 @@ const HANDLER_ACTOR = {
   id: "agent:mira:counterparty-eligibility-check",
 };
 
-const ELIGIBILITY_CITATIONS: readonly string[] = [
-  "ORG-CD-01",
-  "GOV-FRAMEWORK-CEO-RESERVED",
-];
+const ELIGIBILITY_CITATIONS: readonly string[] = ["ORG-CD-01", "GOV-FRAMEWORK-CEO-RESERVED"];
 
 // FAIS categories that are permitted for institutional-only trading.
 // "market-counterparty" = banks / broker-dealers / CCPs.
@@ -137,10 +134,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
 
     if (alreadyChecked(orderId)) {
-      logger.debug(
-        { orderId },
-        "mira:counterparty-eligibility-check — already checked; skipping",
-      );
+      logger.debug({ orderId }, "mira:counterparty-eligibility-check — already checked; skipping");
       skipped += 1;
       continue;
     }
@@ -154,8 +148,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       for (const orderEvent of eventStore.replay({ type: "OrderProposed" })) {
         if (orderEvent.event_id === sourceOrderEventId) {
           const op = orderEvent.payload as { counterpartyLei?: unknown };
-          counterpartyId =
-            typeof op.counterpartyLei === "string" ? op.counterpartyLei : null;
+          counterpartyId = typeof op.counterpartyLei === "string" ? op.counterpartyLei : null;
           break;
         }
       }
@@ -185,12 +178,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       }
     }
 
-    const requestedAt =
-      typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
-    const durationMs = Math.max(
-      0,
-      new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime(),
-    );
+    const requestedAt = typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
+    const durationMs = Math.max(0, new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime());
 
     const completedPayload: GatewayCheckCompletedPayload = {
       orderId,
@@ -199,9 +188,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       sourceCheckRequestEventId,
       completedAt: ctx.asOf,
       durationMs,
-      ...(rejectionReason
-        ? { rejectionReason, citationToRule: "ORG-CD-01" }
-        : {}),
+      ...(rejectionReason ? { rejectionReason, citationToRule: "ORG-CD-01" } : {}),
     };
 
     if (ctx.dryRun) {

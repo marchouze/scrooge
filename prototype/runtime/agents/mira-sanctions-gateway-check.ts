@@ -34,8 +34,8 @@ import { join } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import {
-  makeGatewayCheckCompleted,
   type GatewayCheckCompletedPayload,
+  makeGatewayCheckCompleted,
 } from "../../platform/event-store/event-types";
 import type { Event } from "../../platform/event-store/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -45,10 +45,7 @@ const HANDLER_ACTOR = {
   id: "agent:mira:sanctions-gateway-check",
 };
 
-const SANCTIONS_CITATIONS: readonly string[] = [
-  "ORG-FC-08",
-  "ORG-FC-13",
-];
+const SANCTIONS_CITATIONS: readonly string[] = ["ORG-FC-08", "ORG-FC-13"];
 
 interface SanctionsStub {
   blockedCounterpartyIds: string[];
@@ -73,11 +70,7 @@ function loadSanctionsStub(repoRoot: string): SanctionsStub {
 function alreadyChecked(orderId: string): boolean {
   for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
     const p = e.payload as { orderId?: unknown; checkKind?: unknown };
-    if (
-      typeof p.orderId === "string" &&
-      p.orderId === orderId &&
-      p.checkKind === "sanctions"
-    ) {
+    if (typeof p.orderId === "string" && p.orderId === orderId && p.checkKind === "sanctions") {
       return true;
     }
   }
@@ -97,8 +90,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   if (sanctionsCheckRequests.length === 0) {
     return {
       eventsEmitted: 0,
-      summary:
-        "no GatewayCheckRequested[sanctions] events in triggering set; nothing to check",
+      summary: "no GatewayCheckRequested[sanctions] events in triggering set; nothing to check",
       ok: true,
     };
   }
@@ -131,10 +123,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
     // Idempotency: skip if already checked.
     if (alreadyChecked(orderId)) {
-      logger.debug(
-        { orderId },
-        "mira:sanctions-gateway-check — already checked; skipping",
-      );
+      logger.debug({ orderId }, "mira:sanctions-gateway-check — already checked; skipping");
       skipped += 1;
       continue;
     }
@@ -149,8 +138,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       for (const orderEvent of eventStore.replay({ type: "OrderProposed" })) {
         if (orderEvent.event_id === sourceOrderEventId) {
           const op = orderEvent.payload as { counterpartyLei?: unknown };
-          counterpartyId =
-            typeof op.counterpartyLei === "string" ? op.counterpartyLei : null;
+          counterpartyId = typeof op.counterpartyLei === "string" ? op.counterpartyLei : null;
           break;
         }
       }
@@ -159,17 +147,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // Screen against the stub blocked list.
     // In the test scenarios we use counterpartyLei field for the CP id.
     const isBlocked =
-      counterpartyId !== null &&
-      sanctionsStub.blockedCounterpartyIds.includes(counterpartyId);
+      counterpartyId !== null && sanctionsStub.blockedCounterpartyIds.includes(counterpartyId);
 
     const outcome: GatewayCheckCompletedPayload["outcome"] = isBlocked ? "reject" : "approve";
 
-    const requestedAt =
-      typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
-    const durationMs = Math.max(
-      0,
-      new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime(),
-    );
+    const requestedAt = typeof p.requestedAt === "string" ? p.requestedAt : ctx.asOf;
+    const durationMs = Math.max(0, new Date(ctx.asOf).getTime() - new Date(requestedAt).getTime());
 
     const completedPayload: GatewayCheckCompletedPayload = {
       orderId,
