@@ -4,6 +4,7 @@
 
 import type { AgentRunHandler } from "../../types";
 import rohanBacktestHarness from "../rohan-backtest-harness";
+import rohanConductRiskEvents from "../rohan-conduct-risk-events";
 import rohanEventTriage from "../rohan-event-triage";
 import rohanGoalLoop from "../rohan-goal-loop";
 import rohanMarketRiskLimitCheck from "../rohan-market-risk-limit-check";
@@ -15,4 +16,5 @@ export const ROHAN_CALLABLES: Record<string, AgentRunHandler> = {
   "rohan:backtest-harness": rohanBacktestHarness,
   "rohan:event-triage": rohanEventTriage,
   "rohan:market-risk-limit-check": rohanMarketRiskLimitCheck,
+  "rohan:conduct-risk-events": rohanConductRiskEvents,
 };
