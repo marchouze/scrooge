@@ -110,7 +110,6 @@
       ? narrative.areasForImprovement
       : [];
     const feedbackSummary = narrative.feedbackSummary ?? "";
-    const feedbackPath = agent.lastFeedbackPath;
 
     const scoreGrid = `
       <div class="perf-score-grid">
@@ -142,9 +141,16 @@
         ? `<ul>${improvements.map((s) => `<li>${escHtml(s)}</li>`).join("")}</ul>`
         : `<p style="color:var(--neutral-stone);font-style:italic">None recorded</p>`;
 
-    const feedbackHtml = feedbackPath
-      ? `<p>${escHtml(feedbackSummary)}</p><p style="margin-top:6px"><a class="perf-feedback-link" href="${escHtml(feedbackPath)}">${escHtml(feedbackPath)}</a></p>`
-      : `<p>${feedbackSummary ? escHtml(feedbackSummary) : '<em style="color:var(--neutral-stone)">No feedback file recorded</em>'}</p>`;
+    const feedbackText = agent.lastFeedbackText ?? "";
+    const feedbackHtml = feedbackText
+      ? `<details style="margin:0">
+           <summary style="cursor:pointer;font-size:12.5px;color:var(--text-primary);list-style:none;display:flex;align-items:center;gap:6px">
+             <span style="font-size:11px;color:var(--neutral-stone)">▶</span>
+             ${escHtml(feedbackSummary || "View full feedback")}
+           </summary>
+           <pre style="margin:10px 0 0;padding:10px 12px;background:var(--surface-base);border:1px solid var(--neutral-rule);border-radius:4px;font-size:11.5px;font-family:var(--font-mono);white-space:pre-wrap;word-break:break-word;color:var(--text-primary);max-height:380px;overflow-y:auto">${escHtml(feedbackText)}</pre>
+         </details>`
+      : `<p>${feedbackSummary ? escHtml(feedbackSummary) : '<em style="color:var(--neutral-stone)">No feedback recorded for this period</em>'}</p>`;
 
     return `<div class="perf-detail">
       <div class="perf-detail-section" style="grid-column:1/-1">

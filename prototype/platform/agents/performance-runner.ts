@@ -104,12 +104,12 @@ export async function runPerformanceEvaluations(
     };
     eventStore.append(evalEvent);
 
-    // Issue feedback file (markdown dual-render — Phase 0 compat)
-    const { artifactPath, feedbackText } = await issueFeedback(result, evalEvent.event_id);
+    // Build feedback text — no file written to disk; Owner Inbox writing was
+    // Phase 0 behaviour retired with D-RMS-PHASE-1.
+    const { feedbackText } = issueFeedback(result, evalEvent.event_id);
 
-    // File in RMS document register immediately (Principle 1 / D-RMS-PHASE-1).
+    // File in RMS document register (Principle 1 / D-RMS-PHASE-1).
     // recordFiled handles document store put + RecordFiled event in one call.
-    const repoRelPath = `Owner Inbox/${artifactPath.split("Owner Inbox/")[1]}`;
     const asOf = new Date().toISOString();
     recordFiled(
       {
@@ -122,7 +122,7 @@ export async function runPerformanceEvaluations(
         actor,
         metadata: {
           title: `Performance Feedback — ${result.agentId} (${result.evaluationPeriod})`,
-          path: repoRelPath,
+          path: `rms://performance/perf-feedback/${agentId}/${evaluationPeriod}`,
           category: "Performance feedback",
           date: result.evaluationPeriod,
           author: "Sade (AgentOps engineer, engineering)",
@@ -132,8 +132,6 @@ export async function runPerformanceEvaluations(
     );
 
     // Emit AgentFeedbackIssued event
-    // TODO: replace payload cast with typed makeAgentFeedbackIssued() once
-    // Mira's event-types/performance.ts PR lands.
     const feedbackEvent: Event = {
       event_id: newEventId(),
       type: "AgentFeedbackIssued",
@@ -145,8 +143,7 @@ export async function runPerformanceEvaluations(
         agentId,
         evaluationPeriod,
         evaluationEventId: evalEvent.event_id,
-        deliveredVia: "team-inbox",
-        artifactPath,
+        deliveredVia: "rms-event",
         feedbackText,
         issuedBy: actor.id,
       } as Record<string, unknown>,

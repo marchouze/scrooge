@@ -1,27 +1,14 @@
 // platform/agents/performance-feedback.ts
 //
-// Feedback writer — converts a PerformanceEvaluationResult into a markdown
-// deliverable in Owner Inbox and emits AgentFeedbackIssued event.
-//
-// TODO: replace inline stub interfaces with imports from
-// event-types/performance.ts once Mira's PR lands.
+// Feedback builder — converts a PerformanceEvaluationResult into a structured
+// feedback document. The text is stored in the AgentFeedbackIssued event and
+// filed in the RMS document register via recordFiled(); no file is written to
+// Owner Inbox (Owner Inbox writing was Phase 0 behaviour, retired when the RMS
+// redesign landed — D-RMS-PHASE-1).
 //
 // Author: Sade (AgentOps engineer, engineering)
 
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-
 import type { PerformanceEvaluationResult } from "./performance-evaluator";
-
-// ---------------------------------------------------------------------------
-// Output path resolution — relative to repo root
-// ---------------------------------------------------------------------------
-
-const REPO_ROOT = resolve(import.meta.dir, "..", "..", "..");
-
-function ownerInboxPath(filename: string): string {
-  return resolve(REPO_ROOT, "Owner Inbox", filename);
-}
 
 // ---------------------------------------------------------------------------
 // Agent display name — capitalise first letter
@@ -156,50 +143,22 @@ function buildFeedbackText(result: PerformanceEvaluationResult): string {
 }
 
 // ---------------------------------------------------------------------------
-// Frontmatter builder
-// ---------------------------------------------------------------------------
-
-function buildFrontmatter(result: PerformanceEvaluationResult): string {
-  const name = displayName(result.agentId);
-  return [
-    "---",
-    `title: "Performance Feedback — ${name} (${result.evaluationPeriod})"`,
-    `date: ${result.evaluationPeriod}`,
-    `author: "Sade (AgentOps engineer, engineering)"`,
-    `agentId: ${result.agentId}`,
-    `tier: ${result.tier}`,
-    `overallScore: ${result.scores.overall.toFixed(4)}`,
-    "decision-required: false",
-    "---",
-    "",
-  ].join("\n");
-}
-
-// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 export interface FeedbackIssuedResult {
-  artifactPath: string;
   feedbackText: string;
 }
 
 /**
- * Write a performance feedback file to Owner Inbox.
- * Returns the absolute path and the full feedback text.
+ * Build performance feedback text for an agent evaluation result.
+ * The text is returned for event emission and RMS document filing;
+ * no file is written to disk (Owner Inbox writing was Phase 0, retired
+ * when D-RMS-PHASE-1 landed).
  */
-export async function issueFeedback(
+export function issueFeedback(
   result: PerformanceEvaluationResult,
   _evaluationEventId: string,
-): Promise<FeedbackIssuedResult> {
-  const feedbackText = buildFeedbackText(result);
-  const filename = `${result.evaluationPeriod}_sade_perf-feedback-${result.agentId}.md`;
-  const artifactPath = ownerInboxPath(filename);
-
-  mkdirSync(dirname(artifactPath), { recursive: true });
-
-  const fullContent = buildFrontmatter(result) + feedbackText;
-  writeFileSync(artifactPath, fullContent, "utf8");
-
-  return { artifactPath, feedbackText };
+): FeedbackIssuedResult {
+  return { feedbackText: buildFeedbackText(result) };
 }

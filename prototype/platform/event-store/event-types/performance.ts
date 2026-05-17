@@ -127,9 +127,9 @@ export const agentFeedbackIssuedPayloadSchema = z.object({
   evaluationEventId: z.string().min(1),
 
   /** How the feedback was delivered. */
-  deliveredVia: z.enum(["memory-file", "team-inbox", "both"]),
+  deliveredVia: z.enum(["memory-file", "team-inbox", "both", "rms-event"]),
 
-  /** Path to the memory file or Team Inbox brief written. */
+  /** Path to the memory file or Team Inbox brief written (Phase 0 only; omitted for rms-event). */
   artifactPath: z.string().min(1).optional(),
 
   /** One-paragraph feedback text delivered to the agent. */

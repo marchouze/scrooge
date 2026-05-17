@@ -134,7 +134,10 @@ export interface AgentPerformanceState {
   // Trend: "improving" | "stable" | "declining" | "insufficient-data"
   readonly trend: "improving" | "stable" | "declining" | "insufficient-data";
   readonly evaluationCount: number;
-  readonly lastFeedbackPath?: string; // from AgentFeedbackIssued.artifactPath
+  /** Full feedback markdown text from the most recent AgentFeedbackIssued event. */
+  readonly lastFeedbackText?: string;
+  /** Legacy: filesystem path to Owner Inbox file (Phase 0 only). */
+  readonly lastFeedbackPath?: string;
 }
 
 export type AgentPerformanceProjectionState = ReadonlyMap<string, AgentPerformanceState>;
@@ -246,13 +249,11 @@ function applyFeedbackIssued(
     // Feedback before evaluation — drop.
     return state;
   }
-  if (!p.artifactPath) {
-    // No artifact path to record — no-op.
-    return state;
-  }
   const updated: AgentPerformanceState = {
     ...existing,
-    lastFeedbackPath: p.artifactPath,
+    ...(p.feedbackText ? { lastFeedbackText: p.feedbackText } : {}),
+    // Legacy Phase 0 path — present only on events emitted before D-RMS-PHASE-1 retired file writing.
+    ...(p.artifactPath ? { lastFeedbackPath: p.artifactPath } : {}),
   };
   const next = new Map(state);
   next.set(p.agentId, updated);
