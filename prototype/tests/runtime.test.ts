@@ -14,6 +14,7 @@ import { join, resolve } from "node:path";
 
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
+import { makeDecision } from "../platform/event-store/event-types/decision";
 import anyaProjectionDrift from "../runtime/agents/anya-projection-drift";
 import atlasSubstrateState from "../runtime/agents/atlas-substrate-state";
 import miraObligationsSnapshot from "../runtime/agents/mira-obligations-snapshot";
@@ -66,21 +67,28 @@ describe("runtime — Vera overnight-recon handler", () => {
         const diMatch = fm.match(/^decision-id:\s*(.+?)\s*$/im);
         const decisionId = diMatch?.[1]?.trim();
         if (!decisionId) continue;
-        eventStore.append({
-          event_id: newEventId(),
-          type: "CeoDecision",
-          as_of: "2026-05-01T00:00:00.000Z",
-          entity: "BANK-ZA-001",
-          actor: { type: "human", id: "marc@tgv.co.za" },
-          citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
-          payload: {
-            decisionId,
-            title: `Seed approval for ${decisionId}`,
-            action: "approve",
-            outcome: "Approved (runtime test seed).",
-            recordedVia: "test:runtime.test.ts:beforeAll",
-          },
-        });
+        eventStore.append(
+          makeDecision({
+            asOf: "2026-05-01T00:00:00.000Z",
+            entity: "BANK-ZA-001",
+            actor: { type: "human", id: "marc@tgv.co.za" },
+            citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+            eventId: newEventId(),
+            payload: {
+              decisionId,
+              phase: "approved",
+              authority: "CEO",
+              authorityRef: "marc@tgv.co.za",
+              title: `Seed approval for ${decisionId}`,
+              category: "governance",
+              recommendation: "Approved.",
+              rationale: "Approved (runtime test seed).",
+              sourceDocHashes: [],
+              citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+              recordedVia: "backfill:owner-inbox-records",
+            },
+          }),
+        );
       }
     } catch {
       // If actioned/ doesn't exist or can't be read, skip seeding.

@@ -27,6 +27,8 @@ import { join } from "node:path";
 
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
+import { makeDecision } from "../platform/event-store/event-types/decision";
+import type { DecisionPhase } from "../platform/event-store/event-types/decision";
 import miraM1Handler, {
   M1_URN_CATALOGUE,
   TARGET_DECISION_ID,
@@ -50,25 +52,35 @@ function makeContext(overrides: Partial<AgentRunContext> = {}): AgentRunContext 
   };
 }
 
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from raw CeoDecision
+// construction to makeDecision with the unified Decision payload.
 function appendCeoDecision(
   decisionId: string,
-  action: "approve" | "defer" | "modify" | "request-revision",
+  phase: DecisionPhase,
 ): { event_id: string } {
   const event_id = newEventId();
-  eventStore.append({
-    event_id,
-    type: "CeoDecision",
-    as_of: "2026-05-07T10:00:00.000Z",
-    entity: "BANK-ZA-001",
-    actor: SCHEDULER_ACTOR,
-    citations: DECISION_CITATIONS,
-    payload: {
-      decisionId,
-      action,
-      // No followOnRoutes — the runtime fan-out, not the route table,
-      // is what dispatches this handler.
-    },
-  });
+  eventStore.append(
+    makeDecision({
+      asOf: "2026-05-07T10:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: SCHEDULER_ACTOR,
+      citations: DECISION_CITATIONS,
+      eventId: event_id,
+      payload: {
+        decisionId,
+        phase,
+        authority: "CEO",
+        authorityRef: "marc@tgv.co.za",
+        title: `Test decision ${decisionId}`,
+        category: "governance",
+        recommendation: phase === "approved" ? "Approved." : "No action.",
+        rationale: `Test fixture for ${decisionId}.`,
+        sourceDocHashes: [],
+        citations: DECISION_CITATIONS,
+        recordedVia: "authoring-ui",
+      },
+    }),
+  );
   return { event_id };
 }
 
@@ -82,7 +94,7 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
   });
 
   it("no-ops when the CeoDecision has a different decisionId", async () => {
-    const decision = appendCeoDecision("D-SOME-OTHER-DECISION", "approve");
+    const decision = appendCeoDecision("D-SOME-OTHER-DECISION", "approved");
     const triggering = [...eventStore.replay()].find((e) => e.event_id === decision.event_id);
     expect(triggering).toBeDefined();
     const ctx = makeContext({
@@ -99,7 +111,7 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
   });
 
   it("no-ops when the target decision is not approved", async () => {
-    const decision = appendCeoDecision(TARGET_DECISION_ID, "defer");
+    const decision = appendCeoDecision(TARGET_DECISION_ID, "deferred");
     const triggering = [...eventStore.replay()].find((e) => e.event_id === decision.event_id);
     const ctx = makeContext({
       trigger: {
@@ -117,19 +129,28 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     // Use a fresh entity to scope state away from earlier test runs.
     const decisionId = `${TARGET_DECISION_ID}-test-fresh-${Date.now()}`;
     const decision_event_id = newEventId();
-    eventStore.append({
-      event_id: decision_event_id,
-      type: "CeoDecision",
-      as_of: "2026-05-07T10:00:00.000Z",
-      entity: "BANK-ZA-001",
-      actor: SCHEDULER_ACTOR,
-      citations: DECISION_CITATIONS,
-      payload: {
-        decisionId: TARGET_DECISION_ID,
-        action: "approve",
-        scenarioTag: decisionId,
-      },
-    });
+    eventStore.append(
+      makeDecision({
+        asOf: "2026-05-07T10:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: SCHEDULER_ACTOR,
+        citations: DECISION_CITATIONS,
+        eventId: decision_event_id,
+        payload: {
+          decisionId: TARGET_DECISION_ID,
+          phase: "approved",
+          authority: "CEO",
+          authorityRef: "marc@tgv.co.za",
+          title: `Markets schema foundation approval (${decisionId})`,
+          category: "governance",
+          recommendation: "Approved.",
+          rationale: "Test fixture for M1 URN catalogue registration.",
+          sourceDocHashes: [],
+          citations: DECISION_CITATIONS,
+          recordedVia: "authoring-ui",
+        },
+      }),
+    );
     const triggering = [...eventStore.replay()].find((e) => e.event_id === decision_event_id);
     expect(triggering).toBeDefined();
 
@@ -163,15 +184,28 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
 
   it("idempotency: a second dispatch of the same decisionId does not double-register", async () => {
     const decision_event_id_1 = newEventId();
-    eventStore.append({
-      event_id: decision_event_id_1,
-      type: "CeoDecision",
-      as_of: "2026-05-07T10:00:00.000Z",
-      entity: "BANK-ZA-001",
-      actor: SCHEDULER_ACTOR,
-      citations: DECISION_CITATIONS,
-      payload: { decisionId: TARGET_DECISION_ID, action: "approve" },
-    });
+    eventStore.append(
+      makeDecision({
+        asOf: "2026-05-07T10:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: SCHEDULER_ACTOR,
+        citations: DECISION_CITATIONS,
+        eventId: decision_event_id_1,
+        payload: {
+          decisionId: TARGET_DECISION_ID,
+          phase: "approved",
+          authority: "CEO",
+          authorityRef: "marc@tgv.co.za",
+          title: "Markets schema foundation (idempotency test 1)",
+          category: "governance",
+          recommendation: "Approved.",
+          rationale: "Idempotency test fixture.",
+          sourceDocHashes: [],
+          citations: DECISION_CITATIONS,
+          recordedVia: "authoring-ui",
+        },
+      }),
+    );
     const triggering1 = [...eventStore.replay()].find((e) => e.event_id === decision_event_id_1);
     const ctx1 = makeContext({
       trigger: {
@@ -188,15 +222,28 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     // event-driven fan-out can fire twice on a re-run; idempotency must
     // be on the URN, not the decision event id).
     const decision_event_id_2 = newEventId();
-    eventStore.append({
-      event_id: decision_event_id_2,
-      type: "CeoDecision",
-      as_of: "2026-05-07T11:00:00.000Z",
-      entity: "BANK-ZA-001",
-      actor: SCHEDULER_ACTOR,
-      citations: DECISION_CITATIONS,
-      payload: { decisionId: TARGET_DECISION_ID, action: "approve" },
-    });
+    eventStore.append(
+      makeDecision({
+        asOf: "2026-05-07T11:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: SCHEDULER_ACTOR,
+        citations: DECISION_CITATIONS,
+        eventId: decision_event_id_2,
+        payload: {
+          decisionId: TARGET_DECISION_ID,
+          phase: "approved",
+          authority: "CEO",
+          authorityRef: "marc@tgv.co.za",
+          title: "Markets schema foundation (idempotency test 2)",
+          category: "governance",
+          recommendation: "Approved.",
+          rationale: "Idempotency test fixture — second fire.",
+          sourceDocHashes: [],
+          citations: DECISION_CITATIONS,
+          recordedVia: "authoring-ui",
+        },
+      }),
+    );
     const triggering2 = [...eventStore.replay()].find((e) => e.event_id === decision_event_id_2);
     const ctx2 = makeContext({
       trigger: {
@@ -227,15 +274,28 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     // this will skip; in that case the assertion still holds because
     // the existing events were emitted under the same handler.
     const decision_event_id = newEventId();
-    eventStore.append({
-      event_id: decision_event_id,
-      type: "CeoDecision",
-      as_of: "2026-05-07T10:00:00.000Z",
-      entity: "BANK-ZA-001",
-      actor: SCHEDULER_ACTOR,
-      citations: DECISION_CITATIONS,
-      payload: { decisionId: TARGET_DECISION_ID, action: "approve" },
-    });
+    eventStore.append(
+      makeDecision({
+        asOf: "2026-05-07T10:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: SCHEDULER_ACTOR,
+        citations: DECISION_CITATIONS,
+        eventId: decision_event_id,
+        payload: {
+          decisionId: TARGET_DECISION_ID,
+          phase: "approved",
+          authority: "CEO",
+          authorityRef: "marc@tgv.co.za",
+          title: "Markets schema foundation (citation-chain test)",
+          category: "governance",
+          recommendation: "Approved.",
+          rationale: "Citation-chain test fixture.",
+          sourceDocHashes: [],
+          citations: DECISION_CITATIONS,
+          recordedVia: "authoring-ui",
+        },
+      }),
+    );
     const triggering = [...eventStore.replay()].find((e) => e.event_id === decision_event_id);
     const ctx = makeContext({
       trigger: {
