@@ -203,6 +203,154 @@ export function makeEquitySettlementInstructed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// EquityTradeExecuted — exchange fill event (M3 slice)
+// ---------------------------------------------------------------------------
+
+export const equityTradeExecutedPayloadSchema = z.object({
+  /** Stable trade identifier — internal trade-id with venue cross-reference. */
+  tradeId: identifierSchema,
+  /** Order identifier — links to the OrderProposed event upstream. */
+  orderId: z.string().min(1),
+  /** Equity instrument traded. Class must be "listed-equity" or "etf". */
+  instrument: instrumentSchema.refine(
+    (i) => i.class === "listed-equity" || i.class === "etf",
+    { message: "EquityTradeExecuted requires listed-equity or etf instrument class" },
+  ),
+  /** Side of the trade from the bank's perspective. */
+  side: z.enum(["buy", "sell"]),
+  /** Quantity of shares executed. */
+  quantity: quantitySchema,
+  /** Execution price per share. */
+  executionPrice: priceSchema,
+  /** Total consideration (price × qty, pre-fees). */
+  consideration: moneySchema,
+  /** ISO 8601 UTC timestamp of execution. */
+  executedAt: z.string().min(1),
+  /** Trading venue. */
+  venue: z.enum(["JSE", "OTC"]),
+  /** Book identifier — which trading book / strategy this is allocated to. */
+  bookId: z.string().min(1),
+  /** Counterparty on the other side of the fill. */
+  counterparty: partySchema,
+  /** Trader reference (FIX SenderCompID equivalent). */
+  traderRef: z.string().min(1),
+});
+
+export type EquityTradeExecutedPayload = z.infer<typeof equityTradeExecutedPayloadSchema>;
+
+export function makeEquityTradeExecuted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: EquityTradeExecutedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "EquityTradeExecuted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: equityTradeExecutedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// EquitySettlementConfirmed — Strate T+3 confirmation (M3 slice)
+// ---------------------------------------------------------------------------
+
+export const equitySettlementConfirmedPayloadSchema = z.object({
+  /** Trade this confirmation settles. */
+  tradeId: identifierSchema,
+  /** Date on which settlement is confirmed. */
+  settlementDate: cdmDateSchema,
+  /** Securities leg detail. */
+  securitiesLeg: z.object({
+    direction: z.enum(["receive", "deliver"]),
+    quantity: quantitySchema,
+    instrument: instrumentSchema,
+  }),
+  /** Cash leg detail. */
+  cashLeg: z.object({
+    direction: z.enum(["pay", "receive"]),
+    amount: moneySchema,
+  }),
+  /** ISO 8601 UTC timestamp of confirmation. */
+  confirmedAt: z.string().min(1),
+  /** Strate CSD settlement reference (optional until Strate substrate lands). */
+  strateRef: z.string().optional(),
+});
+
+export type EquitySettlementConfirmedPayload = z.infer<
+  typeof equitySettlementConfirmedPayloadSchema
+>;
+
+export function makeEquitySettlementConfirmed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: EquitySettlementConfirmedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "EquitySettlementConfirmed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: equitySettlementConfirmedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// EquityPositionRevalued — EOD mark-to-market (M3 slice)
+// ---------------------------------------------------------------------------
+
+export const equityPositionRevaluedPayloadSchema = z.object({
+  /** Trade that opened this equity position. */
+  tradeId: identifierSchema,
+  /** Instrument being revalued. */
+  instrument: instrumentSchema,
+  /** YYYY-MM-DD valuation date (EOD). */
+  valuationDate: z.string().min(1),
+  /** JSE closing price for the valuation date. */
+  closingPrice: priceSchema,
+  /** Quantity held in this position. */
+  quantity: quantitySchema,
+  /** Book value (cost basis) in ZAR. */
+  bookValue: moneySchema,
+  /** Market value (closing price × qty) in ZAR. */
+  marketValue: moneySchema,
+  /** Unrealised P&L = marketValue − bookValue. */
+  unrealisedPnl: moneySchema,
+});
+
+export type EquityPositionRevaluedPayload = z.infer<typeof equityPositionRevaluedPayloadSchema>;
+
+export function makeEquityPositionRevalued(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: EquityPositionRevaluedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "EquityPositionRevalued",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: equityPositionRevaluedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Equity event-type registry — for runtime registration into the event store.
 // ---------------------------------------------------------------------------
 
@@ -210,6 +358,9 @@ export const EQUITY_EVENT_TYPES = [
   "EquityTradeBooked",
   "EquityCorporateActionApplied",
   "EquitySettlementInstructed",
+  "EquityTradeExecuted",
+  "EquitySettlementConfirmed",
+  "EquityPositionRevalued",
 ] as const;
 
 export type EquityEventType = (typeof EQUITY_EVENT_TYPES)[number];
