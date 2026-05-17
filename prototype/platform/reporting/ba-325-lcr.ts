@@ -97,9 +97,15 @@
 //   semantic-layer integration)
 //   + Atlas (Core banking platform architect, engineering — P1 fix).
 
+import { newEventId } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type { FxSettlementConfirmedPayload } from "../event-store/event-types/fx-accounting";
+import {
+  makeHQLACompositionDrift,
+  makeLCRRatioProjection,
+} from "../event-store/event-types/risk-treasury-extended";
 import type { EventStore } from "../event-store/store";
+import type { EquitySettlementInstructedPayload } from "../markets/cdm/equity";
 import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
 import type { Identifier } from "../markets/cdm/primitives";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
@@ -472,7 +478,10 @@ export function applyHqlaCaps(args: {
  */
 interface SettlementCashFlow {
   readonly eventId: string;
-  readonly eventType: "FxSettlementInstructed" | "FxSettlementConfirmed";
+  readonly eventType:
+    | "FxSettlementInstructed"
+    | "FxSettlementConfirmed"
+    | "EquitySettlementInstructed";
   readonly tradeId: string;
   /** Amount in the settlement currency (minor units). Positive = inflow; negative = outflow. */
   readonly amountMinor: number;
@@ -520,13 +529,35 @@ function foldSettlementCashFlows(args: {
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
   const provenanceFilter = defaultProvenanceFilter();
 
-  // Fold FxSettlementInstructed — expected cash flows.
+  // Fold FxSettlementInstructed, FxSettlementConfirmed, and EquitySettlementInstructed events.
   for (const event of eventStore.replay({ entity, asOf: periodEnd })) {
     if (!eventMatchesProvenanceFilter(event, provenanceFilter)) continue;
     if (event.as_of < periodStart) continue;
-    if (event.type !== "FxSettlementInstructed" && event.type !== "FxSettlementConfirmed") continue;
+    if (
+      event.type !== "FxSettlementInstructed" &&
+      event.type !== "FxSettlementConfirmed" &&
+      event.type !== "EquitySettlementInstructed"
+    )
+      continue;
 
-    if (event.type === "FxSettlementInstructed") {
+    if (event.type === "EquitySettlementInstructed") {
+      // Equity settlement cash flows — Basel III Table 1 (contractual obligations).
+      // `netCash.amountMinor < 0` = bank pays (outflow); `> 0` = bank receives (inflow).
+      // Per BCBS D295 §31: settlement instructions within the 30-day window are the
+      // primary contractual cash-flow input.
+      // Citation: Regulations Relating to Banks Reg 26; BCBS D295.
+      const payload = event.payload as EquitySettlementInstructedPayload;
+      if (payload.netCash.amountMinor !== 0) {
+        flows.push({
+          eventId: event.event_id,
+          eventType: "EquitySettlementInstructed",
+          tradeId: `${payload.tradeId.scheme}:${payload.tradeId.value}`,
+          amountMinor: payload.netCash.amountMinor,
+          currency: payload.netCash.currency,
+          asOf: event.as_of,
+        });
+      }
+    } else if (event.type === "FxSettlementInstructed") {
       const payload = event.payload as FxSettlementInstructedPayload;
       flows.push({
         eventId: event.event_id,
@@ -893,4 +924,95 @@ function fingerprintClassifications(
     a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
   );
   return JSON.stringify(sorted);
+}
+
+// ---------------------------------------------------------------------------
+// Event-emitting wrapper
+// ---------------------------------------------------------------------------
+
+/**
+ * Build-phase Level-1 HQLA share baseline (fraction, not %).
+ * At Hoz Bank's posture the stock is overwhelmingly Level-1 (SARB operational
+ * cash). The alert fires when Level-1 share deviates >5pp from this baseline.
+ *
+ * Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN; BCBS D295 §47.
+ */
+const PRIOR_LEVEL1_FRACTION = 0.9;
+const HQLA_DRIFT_THRESHOLD = 0.05;
+
+/**
+ * Async wrapper around `generateBa325Lcr` that:
+ *   1. Runs the pure generator.
+ *   2. Emits `LCRRatioProjection` to the event store.
+ *   3. Emits `HQLACompositionDrift` when the Level-1 share shifts >5pp vs
+ *      the build-phase baseline ({@link PRIOR_LEVEL1_FRACTION}).
+ *
+ * The emitted events are the canonical ratio signals per Principle 1 — the
+ * `Ba325Output` struct is a convenience projection for renderers and tests.
+ *
+ * Citations:
+ *   Principles/1-events-are-truth.md;
+ *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
+ *   REG-26-LCR; BCBS-D295; BA-325.
+ */
+export async function generateBa325LcrWithEvents(input: Ba325GeneratorInput): Promise<Ba325Output> {
+  const output = generateBa325Lcr(input);
+  const { eventStore, entity, periodEnd } = input;
+
+  // Map lcrRatio (dimensionless) to pct (100-based) for the event payload.
+  const lcrRatioPct = Number.isFinite(output.lcrRatio) ? output.lcrRatio * 100 : 999_99;
+  const status: "above-minimum" | "at-minimum" | "below-minimum" =
+    output.lcrRatio > 1.0
+      ? "above-minimum"
+      : output.lcrRatio === 1.0
+        ? "at-minimum"
+        : "below-minimum";
+
+  const lcrEvent = makeLCRRatioProjection({
+    asOf: periodEnd,
+    entity,
+    actor: { type: "service", id: "agent:ravi:lcr-engine" },
+    citations: ["REG-26-LCR", "BCBS-D295", "BA-325"],
+    payload: {
+      projectionId: newEventId(),
+      asOf: periodEnd,
+      projectionHorizonDays: 30,
+      lcrRatioPct,
+      regulatoryMinimumPct: 100,
+      status,
+    },
+  });
+  eventStore.append(lcrEvent);
+
+  // HQLA composition drift alert.
+  const totalHqla = output.hqla.totalStockHqlaMinor;
+  if (totalHqla > 0) {
+    const level1Fraction = output.hqla.level1.contributionMinor / totalHqla;
+    if (Math.abs(level1Fraction - PRIOR_LEVEL1_FRACTION) > HQLA_DRIFT_THRESHOLD) {
+      const l1Pct = Math.round(level1Fraction * 100 * 100) / 100; // 2dp
+      const l2aPct =
+        Math.round((output.hqla.level2A.contributionMinor / totalHqla) * 100 * 100) / 100;
+      const l2bPct =
+        Math.round((output.hqla.level2B.contributionMinor / totalHqla) * 100 * 100) / 100;
+      const severity = Math.abs(level1Fraction - PRIOR_LEVEL1_FRACTION) > 0.1 ? "breach" : "warn";
+      const driftEvent = makeHQLACompositionDrift({
+        asOf: periodEnd,
+        entity,
+        actor: { type: "service", id: "agent:ravi:lcr-engine" },
+        citations: ["REG-26-LCR", "BCBS-D295"],
+        payload: {
+          alertId: newEventId(),
+          detectedAt: periodEnd,
+          l1HQLAPct: l1Pct,
+          l2aHQLAPct: l2aPct,
+          l2bHQLAPct: l2bPct,
+          policyBandBreached: `Level1 share ${(level1Fraction * 100).toFixed(1)}% vs baseline ${(PRIOR_LEVEL1_FRACTION * 100).toFixed(1)}% (±${(HQLA_DRIFT_THRESHOLD * 100).toFixed(0)}pp)`,
+          severity,
+        },
+      });
+      eventStore.append(driftEvent);
+    }
+  }
+
+  return output;
 }

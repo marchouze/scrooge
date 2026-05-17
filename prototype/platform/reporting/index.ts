@@ -22,8 +22,17 @@ export {
   BA_325_BANK_ENTITIES,
   applyHqlaCaps,
   generateBa325Lcr,
+  generateBa325LcrWithEvents,
   type HqlaLevel,
 } from "./ba-325-lcr";
+
+export {
+  type NsfrInputs,
+  type NsfrProjection,
+  type NsfrComponents,
+  NsfrGeneratorError,
+  generateNsfrProjection,
+} from "./ba-350-nsfr";
 
 export {
   Ba325RenderSchema,
