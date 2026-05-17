@@ -159,10 +159,7 @@ function storeWithIncidents(
   return store;
 }
 
-function storeWithBestExecution(
-  tradesReviewed: number,
-  breachCount: number,
-): EventStore {
+function storeWithBestExecution(tradesReviewed: number, breachCount: number): EventStore {
   const store = new EventStore(":memory:");
   store.append(
     makeBestExecutionAnalysisCompleted({
@@ -390,8 +387,9 @@ describe("Conduct generator — ConductComplaintResolved", () => {
       periodStart: PERIOD_START,
     });
     expect(disclosure.complaints).toHaveLength(1);
-    expect(disclosure.complaints[0].status).toBe("resolved");
-    expect(disclosure.complaints[0].resolutionDays).toBe(4);
+    const complaint0 = disclosure.complaints[0];
+    expect(complaint0?.status).toBe("resolved");
+    expect(complaint0?.resolutionDays).toBe(4);
     expect(disclosure.metrics.resolvedComplaints).toBe(1);
   });
 
@@ -402,8 +400,9 @@ describe("Conduct generator — ConductComplaintResolved", () => {
       eventStore: storeWithResolvedComplaint(3, true),
       periodStart: PERIOD_START,
     });
-    expect(disclosure.complaints[0].status).toBe("escalated");
-    expect(disclosure.complaints[0].escalated).toBe(true);
+    const complaint0 = disclosure.complaints[0];
+    expect(complaint0?.status).toBe("escalated");
+    expect(complaint0?.escalated).toBe(true);
     expect(disclosure.metrics.escalatedCount).toBe(1);
   });
 });

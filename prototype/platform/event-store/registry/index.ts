@@ -76,6 +76,7 @@ export { CONDUCT_EVENT_TYPES } from "./conduct";
 // that the original registry.ts exported as EVENT_TYPE_REGISTRY.
 // ---------------------------------------------------------------------------
 
+import { CONDUCT_EVENT_TYPES } from "./conduct";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -98,7 +99,6 @@ import {
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
-import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import {

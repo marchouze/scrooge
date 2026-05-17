@@ -185,9 +185,7 @@ export const conductComplaintResolvedPayloadSchema = z.object({
   resolutionSummary: z.string().max(2000).optional(),
 });
 
-export type ConductComplaintResolvedPayload = z.infer<
-  typeof conductComplaintResolvedPayloadSchema
->;
+export type ConductComplaintResolvedPayload = z.infer<typeof conductComplaintResolvedPayloadSchema>;
 
 export function makeConductComplaintResolved(args: {
   asOf: string;
@@ -426,9 +424,7 @@ export const conductDisclosureEmittedPayloadSchema = z.object({
     .optional(),
 });
 
-export type ConductDisclosureEmittedPayload = z.infer<
-  typeof conductDisclosureEmittedPayloadSchema
->;
+export type ConductDisclosureEmittedPayload = z.infer<typeof conductDisclosureEmittedPayloadSchema>;
 
 export function makeConductDisclosureEmitted(args: {
   asOf: string;

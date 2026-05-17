@@ -200,15 +200,14 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
     const existing = complaintMap.get(complaintId);
     if (!existing) continue; // ConductComplaintFiled may be from a prior period
 
-    const resolutionDays =
-      typeof p.resolutionDays === "number" ? p.resolutionDays : undefined;
+    const resolutionDays = typeof p.resolutionDays === "number" ? p.resolutionDays : undefined;
     const escalated = typeof p.escalated === "boolean" ? p.escalated : false;
 
     const updated: ConductComplaintRecord = {
       ...existing,
       status: escalated ? "escalated" : "resolved",
       resolvedAt: String(p.resolvedAt ?? event.as_of),
-      resolutionDays,
+      ...(resolutionDays !== undefined ? { resolutionDays } : {}),
       escalated,
       tcfOutcome: toTCFOutcome(p.tcfOutcome ?? existing.tcfOutcome),
     };
@@ -244,19 +243,17 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
       ? (String(p.severity) as "low" | "medium" | "high" | "critical")
       : "low";
 
-    incidents.push({
+    const incidentRecord: ConductIncidentRecord = {
       incidentId: String(p.incidentId ?? event.event_id),
       occurredAt: String(p.occurredAt ?? event.as_of),
       category: String(p.category ?? "unclassified"),
       severity,
       tcfOutcome: toTCFOutcome(p.tcfOutcome),
-      counterpartyId:
-        p.counterpartyId !== undefined ? String(p.counterpartyId) : undefined,
+      ...(p.counterpartyId !== undefined ? { counterpartyId: String(p.counterpartyId) } : {}),
       regulatoryNotificationFiled:
-        typeof p.regulatoryNotificationFiled === "boolean"
-          ? p.regulatoryNotificationFiled
-          : false,
-    });
+        typeof p.regulatoryNotificationFiled === "boolean" ? p.regulatoryNotificationFiled : false,
+    };
+    incidents.push(incidentRecord);
   }
 
   // ---------------------------------------------------------------------------
@@ -300,15 +297,9 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
     tradesReviewed: beTotalTrades,
     breachCount: beTotalBreaches,
     aggregateBreachRatePct:
-      beTotalTrades > 0
-        ? Math.round((beTotalBreaches / beTotalTrades) * 100 * 100) / 100
-        : 0,
+      beTotalTrades > 0 ? Math.round((beTotalBreaches / beTotalTrades) * 100 * 100) / 100 : 0,
     verdict:
-      beAnalysisCount === 0
-        ? "not-applicable"
-        : beTotalBreaches > 0
-          ? "breach"
-          : "compliant",
+      beAnalysisCount === 0 ? "not-applicable" : beTotalBreaches > 0 ? "breach" : "compliant",
     assetClassesCovered: [...beAssetClasses].sort(),
     venuesCovered: [...beVenues].sort(),
   };
