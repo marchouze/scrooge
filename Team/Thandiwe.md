@@ -133,15 +133,15 @@ Vera reports functionally to Thandiwe; where Vera helped design a control she no
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-17.
 
 - **AC-pack generator** — not built; quarterly opinion-pack would today be authored, not generated. Owner: Thandiwe + Owen + Atlas. Target: pre-first-Board.
 - **AC secretariat data contracts** — typed AC-paper, AC-decision, and AC-meeting-minute schemas not yet defined. Owner: Owen + Thandiwe + Anya. Target: pre-first-Board.
-- **Risk-based audit-plan derivation engine** — conceptually defined; no substrate to derive plan from RAS / risk-taxonomy. Owner: Vera + Atlas. Target: pre-licence.
+- **Risk-based audit-plan derivation engine** — audit plan v1 filed 2026-05-15 (`2026-05-15_thandiwe_risk-based-audit-plan-v1.md`) — authored against cycle template; no substrate to auto-derive from RAS / risk-taxonomy. Owner: Vera + Atlas. Target: pre-licence.
 - **Issues-and-actions tracker** — exists in concept; no substrate. Owner: Vera + Atlas. Target: pre-licence.
 - **Combined-assurance-map tooling** — current map would be authored; cross-line coverage gaps surface only via in-session reasoning. Owner: Vera + governance seats. Target: pre-licence.
 - **Investigations-register substrate** — sealed write-once store not yet built (shared gap with Zara's MLRO file). Owner: Senna + Atlas. Target: pre-licence.
-- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Residual gap is the AC-chair sealed channel for tipping-off-adjacent investigations. Owner: Atlas + Senna.
+- **Agent-runtime substrate** — scheduler live (`/prototype/runtime/`); event-trigger bus still pending. Residual gap is the AC-chair sealed channel for tipping-off-adjacent investigations. Owner: Atlas + Senna.
 
 ## 17. Change log
 
@@ -151,3 +151,4 @@ Vera reports functionally to Thandiwe; where Vera helped design a control she no
 | v0.2 | 2026-05-07 | Thandiwe (via Scrooge) | Operating-spec stub added under Principle 6. |
 | v1.0 | 2026-05-07 | Thandiwe (via Scrooge) | Upgraded to canonical agent operating spec; sections 6–17 fully populated with load-bearing independence section. |
 | v1.1 | 2026-05-14 | Thandiwe (via Scrooge) | Mandate review sweep — tightened to 17-section spec; non-template subsections removed from §5; substrate gaps updated. |
+| v1.2 | 2026-05-17 | Owen (via Scrooge) | §16 updated: risk-based audit plan v1 filed 2026-05-15 — plan is authored (substrate-derivation gap retained); file reference added to audit-plan-derivation gap entry. |

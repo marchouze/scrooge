@@ -134,14 +134,15 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-17.
 
-- **Risk-appetite monitoring projection** — not built. Appetite breaches currently surface only when Helena runs in-session via Scrooge against the policy text. Owner: Rohan (build) + Atlas (substrate). Target: M1.
+- **Risk-appetite monitoring projection** — partially built. The risk-appetite-watch handler is live (autonomous daily run confirmed 2026-05-16 under `D-FLEET-ROLLOUT-SEQUENCING`); however, only 3 of 13 RAS lines are measurable via event store (zero-appetite procedural gates via Mira). The 6 unmeasured lines — including all three tier-1 prudential lines (LCR, NSFR, CET1) — remain unbuilt. Measurement substrate gap: Rohan (market/credit limits) + Ravi (LCR/NSFR) + Bea (CET1). BRC paper gap-inventory and activation plan to be tabled at next BRC cycle. Owner: Rohan + Ravi + Bea + Atlas (substrate). Target: M1.
 - **ICAAP / ILAAP engine** — not built; current pack is authored, not generated. Owner: Helena (specification) + Bea (financial inputs) + Atlas (substrate). Target: pre-licence ICAAP cycle.
 - **BRC-paper generator** — not built; current pack would be authored. Owner: Helena (templates) + Owen (governance flow) + Atlas (substrate). Target: pre-first-Board.
 - **Supervisory-correspondence register** — exists in concept; no substrate. Owner: Helena + Owen. Target: pre-licence.
+- **Climate-risk substrate** — PA Guidance Note 1 of 2024 governance posture declared but measurement substrate (climate scenario inputs, transition-risk taxonomy) not yet specified. Owner: Helena. Deadline: 60-day from 2026-05-16.
 - **Independent model-validation function** — Nadia hired 2026-05-09; gap closed. Nadia reports to Helena; typed validation events (`ModelValidationApproved`, `ModelValidationWithheld`) now in scope.
-- **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Helena's scheduled BRC / ICAAP cycles operate; event-triggered runs (`AppetiteBreach`, `ModelRiskDecisionRequired`) still route via Scrooge until the bus lands. Owner: Atlas.
+- **Agent-runtime substrate** — scheduler live (`/prototype/runtime/`); risk-appetite-watch handler live (autonomous daily run). Event-trigger bus still pending; `AppetiteBreach` event-triggered runs route via Scrooge until bus lands. Owner: Atlas.
 
 ## 17. Change log
 
@@ -150,3 +151,4 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CRO hire confirmation. |
 | v1.0 | 2026-05-07 | Helena (via Scrooge) | Upgraded to agent operating spec under Principle 6. |
 | v1.1 | 2026-05-14 | Helena (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending; independent model-validation function noted as now staffed (Nadia hired). |
+| v1.2 | 2026-05-17 | Owen (via Scrooge) | §16 updated to reflect: risk-appetite-watch handler now live (autonomous daily run confirmed 2026-05-16); monitoring baseline framework filed (`2026-05-15_helena_risk-appetite-monitoring.md`); measurement-substrate gap inventory (6/13 lines unmeasured, tier-1 prudential triad unbuilt) and climate-substrate gap registered. |
