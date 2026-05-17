@@ -152,7 +152,10 @@ function main(argv: readonly string[]): number {
     ? loadJson<readonly Ba320LoanEntry[]>(args.portfolioPath, "portfolio")
     : BUILD_PHASE_DEFAULT_PORTFOLIO;
   const classificationMap = args.classificationMapPath
-    ? loadJson<readonly Ba320ClassificationEntry[]>(args.classificationMapPath, "classification-map")
+    ? loadJson<readonly Ba320ClassificationEntry[]>(
+        args.classificationMapPath,
+        "classification-map",
+      )
     : BUILD_PHASE_DEFAULT_CLASSIFICATION_MAP;
 
   const output = generateBa320CreditRisk({

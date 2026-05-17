@@ -41,11 +41,11 @@ import { describe, expect, it } from "bun:test";
 import {
   BA_320_BANK_ENTITIES,
   BA_320_SCHEMA_URL,
-  Ba320GeneratorError,
-  Ba320RenderSchema,
   type Ba320ClassificationEntry,
+  Ba320GeneratorError,
   type Ba320GeneratorInput,
   type Ba320LoanEntry,
+  Ba320RenderSchema,
   canonicaliseBa320,
   generateBa320CreditRisk,
   renderBa320Canonical,
@@ -186,15 +186,15 @@ describe("BA 320 — per-entity isolation", () => {
   });
 
   it("rejects LE-ZA-HOZ-GROUP", () => {
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, entity: "LE-ZA-HOZ-GROUP" }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, entity: "LE-ZA-HOZ-GROUP" })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("rejects arbitrary entity string", () => {
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, entity: "LE-ZA-UNKNOWN" }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, entity: "LE-ZA-UNKNOWN" })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("BA_320_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
@@ -229,34 +229,34 @@ describe("BA 320 — end-to-end known shapes", () => {
     const corp = out.byCategory.find((c) => c.productCategory === "corporate");
     expect(corp).toBeDefined();
     // gross = 2_000_000_000 + 500_000_000 + 200_000_000 = 2_700_000_000
-    expect(corp!.totalGrossCarryingAmount).toBe(2_700_000_000);
+    expect(corp?.totalGrossCarryingAmount).toBe(2_700_000_000);
     // acl = 6_000_000 + 25_000_000 + 120_000_000 = 151_000_000
-    expect(corp!.totalAllowanceForCreditLoss).toBe(151_000_000);
+    expect(corp?.totalAllowanceForCreditLoss).toBe(151_000_000);
     // net = 1_994_000_000 + 475_000_000 + 80_000_000 = 2_549_000_000
-    expect(corp!.totalNetCarryingAmount).toBe(2_549_000_000);
-    expect(corp!.stage1Count).toBe(1);
-    expect(corp!.stage2Count).toBe(1);
-    expect(corp!.stage3Count).toBe(1);
-    expect(corp!.ba320RowLabel).toBe("Loans and advances — corporate");
-    expect(corp!.ba320SubCode).toBe("LA-CORP");
+    expect(corp?.totalNetCarryingAmount).toBe(2_549_000_000);
+    expect(corp?.stage1Count).toBe(1);
+    expect(corp?.stage2Count).toBe(1);
+    expect(corp?.stage3Count).toBe(1);
+    expect(corp?.ba320RowLabel).toBe("Loans and advances — corporate");
+    expect(corp?.ba320SubCode).toBe("LA-CORP");
   });
 
   it("interbank category aggregates correctly (1 entry, stage 1)", () => {
     const intbk = out.byCategory.find((c) => c.productCategory === "interbank");
     expect(intbk).toBeDefined();
-    expect(intbk!.totalGrossCarryingAmount).toBe(1_000_000_000);
-    expect(intbk!.totalAllowanceForCreditLoss).toBe(5_000_000);
-    expect(intbk!.stage1Count).toBe(1);
-    expect(intbk!.stage2Count).toBe(0);
-    expect(intbk!.stage3Count).toBe(0);
+    expect(intbk?.totalGrossCarryingAmount).toBe(1_000_000_000);
+    expect(intbk?.totalAllowanceForCreditLoss).toBe(5_000_000);
+    expect(intbk?.stage1Count).toBe(1);
+    expect(intbk?.stage2Count).toBe(0);
+    expect(intbk?.stage3Count).toBe(0);
   });
 
   it("sovereign-placeholder category aggregates correctly", () => {
     const sov = out.byCategory.find((c) => c.productCategory === "sovereign-placeholder");
     expect(sov).toBeDefined();
-    expect(sov!.totalGrossCarryingAmount).toBe(5_000_000_000);
-    expect(sov!.totalAllowanceForCreditLoss).toBe(5_000_000);
-    expect(sov!.stage1Count).toBe(1);
+    expect(sov?.totalGrossCarryingAmount).toBe(5_000_000_000);
+    expect(sov?.totalAllowanceForCreditLoss).toBe(5_000_000);
+    expect(sov?.stage1Count).toBe(1);
   });
 
   it("byStage has 3 entries in stage order [1, 2, 3]", () => {
@@ -303,9 +303,9 @@ describe("BA 320 — ECL invariant", () => {
           : e,
       ),
     ];
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, portfolio: badPortfolio }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, portfolio: badPortfolio })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("throws when stage-2 ACL does not equal eclLifetime (violation)", () => {
@@ -316,9 +316,9 @@ describe("BA 320 — ECL invariant", () => {
           : e,
       ),
     ];
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, portfolio: badPortfolio }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, portfolio: badPortfolio })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 });
 
@@ -553,34 +553,35 @@ describe("BA 320 — empty portfolio", () => {
 
 describe("BA 320 — boundary errors", () => {
   it("throws on negative grossCarryingAmount", () => {
-    const bad: Ba320LoanEntry[] = [
-      { ...FIXTURE_PORTFOLIO[0]!, grossCarryingAmount: -1 },
-    ];
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, portfolio: bad }),
-    ).toThrow(Ba320GeneratorError);
+    const first = FIXTURE_PORTFOLIO[0];
+    if (!first) throw new Error("fixture is empty");
+    const bad: Ba320LoanEntry[] = [{ ...first, grossCarryingAmount: -1 }];
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, portfolio: bad })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("throws on negative allowanceForCreditLoss", () => {
-    const bad: Ba320LoanEntry[] = [
-      { ...FIXTURE_PORTFOLIO[0]!, allowanceForCreditLoss: -1 },
-    ];
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, portfolio: bad }),
-    ).toThrow(Ba320GeneratorError);
+    const first = FIXTURE_PORTFOLIO[0];
+    if (!first) throw new Error("fixture is empty");
+    const bad: Ba320LoanEntry[] = [{ ...first, allowanceForCreditLoss: -1 }];
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, portfolio: bad })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("throws when netCarryingAmount does not equal gross − ACL", () => {
-    const entry = FIXTURE_PORTFOLIO[0]!;
+    const entry = FIXTURE_PORTFOLIO[0];
+    if (!entry) throw new Error("fixture is empty");
     const bad: Ba320LoanEntry[] = [
       {
         ...entry,
         netCarryingAmount: entry.grossCarryingAmount - entry.allowanceForCreditLoss + 99_999,
       },
     ];
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, portfolio: bad }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, portfolio: bad })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("throws on invalid entity", () => {
@@ -590,15 +591,15 @@ describe("BA 320 — boundary errors", () => {
   });
 
   it("throws on empty functionalCurrency", () => {
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, functionalCurrency: "" }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, functionalCurrency: "" })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 
   it("throws on 2-char functionalCurrency (not ISO-4217)", () => {
-    expect(() =>
-      generateBa320CreditRisk({ ...BASE_INPUT, functionalCurrency: "ZA" }),
-    ).toThrow(Ba320GeneratorError);
+    expect(() => generateBa320CreditRisk({ ...BASE_INPUT, functionalCurrency: "ZA" })).toThrow(
+      Ba320GeneratorError,
+    );
   });
 });
 

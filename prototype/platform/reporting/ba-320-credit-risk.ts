@@ -312,10 +312,7 @@ function assertEclInvariant(portfolio: readonly Ba320LoanEntry[]): void {
   // Floating-point tolerance: allow 1 minor unit of rounding error
   if (Math.abs(sumRelevantEcl - sumAcl) > 1) {
     throw new Ba320GeneratorError(
-      `BA 320 ECL invariant violated: sum(relevant ECL) = ${sumRelevantEcl} ≠ sum(allowanceForCreditLoss) = ${sumAcl}. ` +
-        `Difference: ${sumRelevantEcl - sumAcl}. ` +
-        `Stage-1 entries must use ecl12Month; stage-2/3 entries must use eclLifetime. ` +
-        `Authority: IFRS 9 §5.5; Procedures/by-policy/ecl-staging-cycle.md.`,
+      `BA 320 ECL invariant violated: sum(relevant ECL) = ${sumRelevantEcl} ≠ sum(allowanceForCreditLoss) = ${sumAcl}. Difference: ${sumRelevantEcl - sumAcl}. Stage-1 entries must use ecl12Month; stage-2/3 entries must use eclLifetime. Authority: IFRS 9 §5.5; Procedures/by-policy/ecl-staging-cycle.md.`,
     );
   }
 }
@@ -354,8 +351,7 @@ function majorityString(values: string[]): string {
 function fingerprintPortfolio(portfolio: readonly Ba320LoanEntry[]): string {
   // Deterministic: sort by (counterpartyId, productCategory, stage) before JSON
   const sorted = [...portfolio].sort((a, b) => {
-    if (a.counterpartyId !== b.counterpartyId)
-      return a.counterpartyId < b.counterpartyId ? -1 : 1;
+    if (a.counterpartyId !== b.counterpartyId) return a.counterpartyId < b.counterpartyId ? -1 : 1;
     if (a.productCategory !== b.productCategory)
       return a.productCategory < b.productCategory ? -1 : 1;
     return a.stage - b.stage;
@@ -472,7 +468,8 @@ export function generateBa320CreditRisk(input: Ba320GeneratorInput): Ba320Credit
         currencies: [],
       });
     }
-    const acc = categoryAccum.get(cat)!;
+    const acc = categoryAccum.get(cat);
+    if (!acc) continue; // should never happen — we just set it above
     acc.grossCarryingAmount += entry.grossCarryingAmount;
     acc.allowanceForCreditLoss += entry.allowanceForCreditLoss;
     acc.netCarryingAmount += entry.netCarryingAmount;
@@ -489,7 +486,8 @@ export function generateBa320CreditRisk(input: Ba320GeneratorInput): Ba320Credit
       const classEntry = classMap.get(cat);
       return {
         productCategory: cat,
-        ba320RowLabel: classEntry?.ba320RowLabel ?? `[citation: TBC — ${cat} not in classification map]`,
+        ba320RowLabel:
+          classEntry?.ba320RowLabel ?? `[citation: TBC — ${cat} not in classification map]`,
         ...(classEntry?.ba320SubCode ? { ba320SubCode: classEntry.ba320SubCode } : {}),
         totalGrossCarryingAmount: acc.grossCarryingAmount,
         totalAllowanceForCreditLoss: acc.allowanceForCreditLoss,
@@ -514,9 +512,27 @@ export function generateBa320CreditRisk(input: Ba320GeneratorInput): Ba320Credit
   };
 
   const stageAccum: Record<Ba320Stage, StageAccum> = {
-    1: { grossCarryingAmount: 0, ecl: 0, allowanceForCreditLoss: 0, netCarryingAmount: 0, entryCount: 0 },
-    2: { grossCarryingAmount: 0, ecl: 0, allowanceForCreditLoss: 0, netCarryingAmount: 0, entryCount: 0 },
-    3: { grossCarryingAmount: 0, ecl: 0, allowanceForCreditLoss: 0, netCarryingAmount: 0, entryCount: 0 },
+    1: {
+      grossCarryingAmount: 0,
+      ecl: 0,
+      allowanceForCreditLoss: 0,
+      netCarryingAmount: 0,
+      entryCount: 0,
+    },
+    2: {
+      grossCarryingAmount: 0,
+      ecl: 0,
+      allowanceForCreditLoss: 0,
+      netCarryingAmount: 0,
+      entryCount: 0,
+    },
+    3: {
+      grossCarryingAmount: 0,
+      ecl: 0,
+      allowanceForCreditLoss: 0,
+      netCarryingAmount: 0,
+      entryCount: 0,
+    },
   };
 
   for (const entry of input.portfolio) {
