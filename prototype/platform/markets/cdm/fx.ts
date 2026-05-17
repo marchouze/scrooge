@@ -592,6 +592,92 @@ export function makeSettlementConfirmed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// NdfFixingObserved
+//
+// FX-Forward (NDF variant) only. The NDF settles in a single currency
+// (`ndfSettlementCurrency`) against a fixing rate observed on the fixing
+// date (typically T-2 before settlement). This event records the
+// fixing-rate observation and the resulting net-cash settlement amount.
+// It is emitted between FxTradeExecuted and FxSettlementInstructed on the
+// NDF lifecycle, replacing the gross-principal exchange of a deliverable
+// forward.
+//
+// Authority:
+//   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
+//   D-FX-AD-STATUS              — FinSurv reporting on NDF cross-border flows
+//   ORG-EXCON-ODP-001           — Excon AD rules for OTC derivatives
+//   IFRS-9-§3.2.3               — derecognition on settlement (cash leg only)
+// ---------------------------------------------------------------------------
+
+export const ndfFixingObservedPayloadSchema = z.object({
+  /** The NDF trade this fixing applies to. */
+  tradeId: z.string().min(1),
+  /** Currency pair traded (canonical "BASE/QUOTE", e.g. "USD/ZAR"). */
+  currencyPair: z.string().min(1),
+  /**
+   * Fixing source — the published rate the parties agreed to observe
+   * (e.g. "SARB-ZAR-Fixing-1600-SAST", "EMTA-ZAR-FIX"). Must match the
+   * `ndfFixingSource` on the originating FxTradeExecuted.
+   */
+  fixingSource: z.string().min(1),
+  /** Date the fixing was observed (ISO 8601, fixingDate convention). */
+  fixingDate: z.string().min(1),
+  /** Observed fixing rate (receiveCurrency per pay-unit). */
+  fixingRate: z.number().positive(),
+  /** Agreed contract rate from the originating trade (for delta computation). */
+  contractRate: z.number().positive(),
+  /**
+   * Settlement currency — the currency the NDF cash-settles in.
+   * Must match `ndfSettlementCurrency` on the originating FxTradeExecuted.
+   */
+  settlementCurrency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /**
+   * Net cash settlement amount in `settlementCurrency` minor units.
+   * Positive = bank receives; negative = bank pays. Computed at fixing as
+   *   netCash = notional × (fixingRate − contractRate) / fixingRate
+   * for a buy; sign-flipped for a sell. The exact formula is recorded in
+   * the originating trade's NDF-fixing methodology citation.
+   */
+  netCashMinor: z.number().int(),
+  /** Settlement date for the net cash leg (typically fixingDate + 2 BD). */
+  settlementDate: z.string().min(1),
+  /** Citations — must not be empty (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type NdfFixingObservedPayload = z.infer<typeof ndfFixingObservedPayloadSchema>;
+
+export function makeNdfFixingObserved(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: NdfFixingObservedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "NdfFixingObserved requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  if (!args.payload.citations || args.payload.citations.length === 0) {
+    throw new Error("NdfFixingObserved payload.citations must not be empty (Principle 2).");
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "NdfFixingObserved",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: ndfFixingObservedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX event-type registry — for runtime registration into the event store.
 // ---------------------------------------------------------------------------
 
@@ -600,6 +686,7 @@ export const FX_EVENT_TYPES = [
   "FxSettlementInstructed",
   "PrincipalPayment",
   "SettlementConfirmed",
+  "NdfFixingObserved",
 ] as const;
 
 export type FxEventType = (typeof FX_EVENT_TYPES)[number];

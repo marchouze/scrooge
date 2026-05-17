@@ -28,6 +28,7 @@ import {
 import {
   fxSettlementInstructedPayloadSchema,
   fxTradeExecutedPayloadSchema,
+  ndfFixingObservedPayloadSchema,
   principalPaymentPayloadSchema,
   settlementConfirmedPayloadSchema,
 } from "../../markets/cdm/fx";
@@ -440,6 +441,23 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M4 FX settlement lifecycle); scenarios/06-fx-spot-trade.ts; D-FX-CLS-MEMBERSHIP; D-MARKETS-SCHEMA-FOUNDATION",
+  },
+  // NdfFixingObserved — FX-Forward NDF variant only. Records the observed
+  // fixing rate and the resulting net cash settlement amount on the fixing
+  // date. Replaces the gross-principal exchange of a deliverable forward.
+  // Per D-MARKETS-SCHEMA-FOUNDATION + D-FX-AD-STATUS (FinSurv reporting on
+  // NDF cross-border flows). Retention: 7y (trade-record retention norm).
+  {
+    type: "NdfFixingObserved",
+    class: "markets",
+    payloadSchema: ndfFixingObservedPayloadSchema,
+    issuer: "Saskia",
+    subscribers: ["Tomas", "Bea", "Anya", "Mira", "Rohan", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["D-FX-AD-STATUS", "ORG-EXCON-ODP-001", "IFRS-9-§3.2.3"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/fx.ts (Saskia M4 FX forwards lifecycle); scenarios/07-fx-forward-trade.ts; D-MARKETS-SCHEMA-FOUNDATION",
   },
   // CDM substrate — bindings-regeneration self-test, emitted by Kai's
   // m1-cdm-typescript-bindings handler after inventory + round-trip. The
