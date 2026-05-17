@@ -39,11 +39,11 @@ import { describe, expect, it } from "bun:test";
 import {
   BA_120_BANK_ENTITIES,
   BA_120_SCHEMA_URL,
-  Ba120GeneratorError,
-  Ba120RenderSchema,
   type Ba120ClassificationMap,
   type Ba120CommitmentsEntry,
+  Ba120GeneratorError,
   type Ba120GuaranteesEntry,
+  Ba120RenderSchema,
   fingerprintClassificationMap,
   generateBa120OffBalanceSheet,
   maturityBandFromDays,
@@ -284,12 +284,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-9 — derivatives section", () => {
     // Settlement in 400 days → 1y-to-5y
     const futureDate = new Date("2026-05-31");
     futureDate.setDate(futureDate.getDate() + 400);
-    const ob2 = makeFxObligation(
-      "ob-002",
-      futureDate.toISOString().slice(0, 10),
-      2_000_000,
-      "ZAR",
-    );
+    const ob2 = makeFxObligation("ob-002", futureDate.toISOString().slice(0, 10), 2_000_000, "ZAR");
     const out = generateBa120OffBalanceSheet({
       entity: ENTITY_BANK,
       asOf: AS_OF,

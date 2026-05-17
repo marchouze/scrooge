@@ -529,7 +529,11 @@ function extractDerivativeEntries(
       const refLower = (ob.relatedRef ?? "").toLowerCase();
       if (titleLower.includes("fx") || titleLower.includes("foreign exchange")) {
         productType = "fx";
-      } else if (titleLower.includes("swap") || titleLower.includes("irs") || refLower.includes("irs")) {
+      } else if (
+        titleLower.includes("swap") ||
+        titleLower.includes("irs") ||
+        refLower.includes("irs")
+      ) {
         productType = "ir";
       } else if (titleLower.includes("equity")) {
         productType = "equity";
@@ -591,7 +595,7 @@ function aggregateDerivativeRows(
   }
 
   // Stable sort: maturityBand order (lt1y < 1y-to-5y < gt5y), then currency.
-  const bandOrder: Record<Ba120MaturityBand, number> = { "lt1y": 0, "1y-to-5y": 1, "gt5y": 2 };
+  const bandOrder: Record<Ba120MaturityBand, number> = { lt1y: 0, "1y-to-5y": 1, gt5y: 2 };
   rows.sort((a, b) => {
     const bandDiff = bandOrder[a.maturityBand] - bandOrder[b.maturityBand];
     if (bandDiff !== 0) return bandDiff;
@@ -637,7 +641,7 @@ function buildGuaranteesSection(
   // Suppress unused parameter warning; asOf is available for future date-based derivation.
   void asOf;
 
-  const bandOrder: Record<Ba120MaturityBand, number> = { "lt1y": 0, "1y-to-5y": 1, "gt5y": 2 };
+  const bandOrder: Record<Ba120MaturityBand, number> = { lt1y: 0, "1y-to-5y": 1, gt5y: 2 };
   const sortRows = (rows: Map<string, Ba120GuaranteeRow>): Ba120GuaranteeRow[] =>
     [...rows.values()].sort((a, b) => {
       const bandDiff = bandOrder[a.maturityBand] - bandOrder[b.maturityBand];
@@ -680,7 +684,13 @@ function buildCommitmentsSection(
 ): Ba120CommitmentsSection {
   const bucketMap = new Map<
     string,
-    { commitmentType: "irrevocable" | "revocable"; ccf: 0 | 50; amount: number; currency: string; count: number }
+    {
+      commitmentType: "irrevocable" | "revocable";
+      ccf: 0 | 50;
+      amount: number;
+      currency: string;
+      count: number;
+    }
   >();
 
   for (const c of commitments) {
@@ -710,8 +720,7 @@ function buildCommitmentsSection(
   }));
 
   rows.sort((a, b) => {
-    if (a.commitmentType !== b.commitmentType)
-      return a.commitmentType < b.commitmentType ? -1 : 1;
+    if (a.commitmentType !== b.commitmentType) return a.commitmentType < b.commitmentType ? -1 : 1;
     if (a.ccfApplied !== b.ccfApplied) return a.ccfApplied - b.ccfApplied;
     return a.currency < b.currency ? -1 : 1;
   });
