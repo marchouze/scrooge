@@ -33,8 +33,15 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "decision-required-event-pairing";
 
-/** Terminal CeoDecision actions that close a decision. */
+/** Terminal CeoDecision actions that close a decision (legacy shape). */
 const TERMINAL_ACTIONS = new Set(["approve", "reject"]);
+
+/**
+ * Terminal Decision phases that close a decision (canonical shape per
+ * D-DECISIONS-FRAMEWORK-REDESIGN — `Decision` is the canonical event
+ * type; `CeoDecision` is a deprecated alias retained for transition).
+ */
+const TERMINAL_PHASES = new Set(["approved", "rejected", "deferred", "superseded", "withdrawn"]);
 
 // ---------------------------------------------------------------------------
 // Repo-root resolver
@@ -140,6 +147,9 @@ function isStoreEmpty(testOverride?: ReadonlySet<string>): boolean {
     for (const _ of eventStore.replay({ type: "CeoDecision" })) {
       return false;
     }
+    for (const _ of eventStore.replay({ type: "Decision" })) {
+      return false;
+    }
     return true;
   } catch {
     return true;
@@ -148,7 +158,10 @@ function isStoreEmpty(testOverride?: ReadonlySet<string>): boolean {
 
 /**
  * Returns the set of decisionIds that have at least one terminal
- * CeoDecision event (action ∈ {approve, reject}).
+ * decision event. Accepts both shapes per
+ * D-DECISIONS-FRAMEWORK-REDESIGN:
+ *   - canonical `Decision` events with `payload.phase ∈ TERMINAL_PHASES`
+ *   - legacy `CeoDecision` events with `payload.action ∈ {approve, reject}`
  *
  * When `testOverride` is provided, it is used directly (allows unit tests
  * to drive the recon without touching the live store).
@@ -157,11 +170,21 @@ function terminalDecisionIds(testOverride?: ReadonlySet<string>): Set<string> {
   if (testOverride !== undefined) return new Set(testOverride);
   const ids = new Set<string>();
   try {
+    // Legacy shape — CeoDecision events with .action
     for (const e of eventStore.replay({ type: "CeoDecision" })) {
       const p = e.payload as { decisionId?: string; action?: string };
       const id = p.decisionId;
       const action = p.action;
       if (id && action && TERMINAL_ACTIONS.has(action)) {
+        ids.add(id);
+      }
+    }
+    // Canonical shape — Decision events with .phase
+    for (const e of eventStore.replay({ type: "Decision" })) {
+      const p = e.payload as { decisionId?: string; phase?: string };
+      const id = p.decisionId;
+      const phase = p.phase;
+      if (id && phase && TERMINAL_PHASES.has(phase)) {
         ids.add(id);
       }
     }
@@ -268,7 +291,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!terminal.has(decisionId)) {
       violations.push({
         subject: decisionId,
-        message: `"${f.basename}" is actioned (moved to actioned/) with \`decision-required: true\` and \`decision-id: ${decisionId}\` but no terminal \`CeoDecision\` event exists in the event store for decisionId="${decisionId}" with action ∈ {approve, reject}. A decision actioned in markdown without a corresponding event violates Principle 1 (events are the only source of truth). Remediation: emit a CeoDecision(approve|reject) event for \`${decisionId}\` via \`recordDelegatedDecision\` or the decision-backfill script. Authority: D-PROVENANCE-FILTER-ENFORCEMENT; Finding: F-033.`,
+        message: `"${f.basename}" is actioned (moved to actioned/) with \`decision-required: true\` and \`decision-id: ${decisionId}\` but no terminal decision event exists in the event store for decisionId="${decisionId}" (neither a canonical \`Decision\` event with phase ∈ {approved, rejected, deferred, superseded, withdrawn} nor a legacy \`CeoDecision\` event with action ∈ {approve, reject}). A decision actioned in markdown without a corresponding event violates Principle 1 (events are the only source of truth). Remediation: call \`recordDecision\` (runtime/decisions/record.ts) for \`${decisionId}\` with a terminal phase, or run the decision-backfill script. Authority: D-PROVENANCE-FILTER-ENFORCEMENT, D-DECISIONS-FRAMEWORK-REDESIGN; Finding: F-033.`,
         severity: "fail",
       });
     }
