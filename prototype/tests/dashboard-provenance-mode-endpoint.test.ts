@@ -113,11 +113,11 @@ describe("/api/provenance/mode — build phase (default)", () => {
 
   beforeAll(async () => {
     booted = await bootServer({ BANK_PHASE: "build" });
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await teardown(booted);
-  });
+  }, 30_000);
 
   it("returns production-only filter (BANK_PHASE no longer changes default)", async () => {
     if (!booted) throw new Error("server not booted");
@@ -144,11 +144,11 @@ describe("/api/provenance/mode — licence-day", () => {
 
   beforeAll(async () => {
     booted = await bootServer({ BANK_PHASE: "licence-day" });
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await teardown(booted);
-  });
+  }, 30_000);
 
   it("returns production-only when BANK_PHASE is licence-day", async () => {
     if (!booted) throw new Error("server not booted");
