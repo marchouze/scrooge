@@ -284,7 +284,8 @@ export function generateBa300IncomeStatement(input: Ba300GeneratorInput): Ba300I
     // (credit balance on the TB = profit; flip so profit reads positive).
     // For all other categories we present absolute magnitude — the
     // direction is encoded in the category label (income vs expense).
-    const signedContribution = c.category === "trading-pnl" ? -row.amountMinor : Math.abs(row.amountMinor);
+    const signedContribution =
+      c.category === "trading-pnl" ? -row.amountMinor : Math.abs(row.amountMinor);
     const note = signWarningForCategory(row.amountMinor, c.category);
     const lineItem: Ba300LineItem = {
       lineId: `${c.category}.${row.leafAccountId}`,
