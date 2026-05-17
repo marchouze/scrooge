@@ -1,6 +1,6 @@
 # Backfill triage log — D-DECISIONS-FRAMEWORK-REDESIGN Slice C
 
-Generated: 2026-05-16T13:18:25.775Z
+Generated: 2026-05-17T05:47:12.094Z
 
 ---
 
@@ -10,7 +10,10 @@ _None — all encountered IDs resolved cleanly._
 
 ## (b) Reference-only IDs (body-text references, no owning record)
 
+- `D-HIRE-INDEPENDENT-CHAIR`
+- `D-THIN-HUMAN-LAYER-MINIMUM`
 - `D-EVENT-STORE-SCALING`
+- `D-EVENT-STORE-SCALING-SLICE-3B`
 - `D-RMS-PHASE-1`
 - `D-OWNER-INBOX-AUTO-ARCHIVE`
 - `D-REPORTING-CAPABILITY-M2-M3`
@@ -18,16 +21,20 @@ _None — all encountered IDs resolved cleanly._
 - `D-DATA-PROVENANCE-SUBSTRATE`
 - `D-FLEET-ROLLOUT-SEQUENCING`
 - `D-BRAND-DESIGN-HIRE`
-- `D-THIN-HUMAN-LAYER-MINIMUM`
 - `D-NEW-PRODUCT-APPROVAL-POLICY`
 - `D-LEGAL-ENTITY-TREE-V0`
 - `D-HOZ-DOMAIN-REGISTRATION-SET`
 - `D-GROUP-STRUCTURE`
 - `D-CI-GATE-INTEGRITY`
+- `D-LICENCE-TYPE`
+- `D-EXTERNAL-COUNSEL`
+- `D-AGENT-AUTONOMY-OPERATIONAL`
+- `D-AGENT-RUNTIME-AUTHORIZE`
+- `D-A22-RETIRE-LEGACY`
+- `D-T-01-PERMISSION-GATE-SECURE-DEFAULT`
 - `D-HIRE-COMPANY-SECRETARY`
 - `D-HIRE-COMPLIANCE-LEAD`
 - `D-HIRE-HUMAN-CRO`
-- `D-HIRE-INDEPENDENT-CHAIR`
 - `D-HIRE-NED-2`
 - `D-HIRE-NED-3`
 - `D-HIRE-SIX-SEATS-PACK`
@@ -39,7 +46,6 @@ _None — all encountered IDs resolved cleanly._
 - `D-EQ-SALES-TRADING-FRONTEND`
 - `D-FX-SALES-TRADING-FRONTEND`
 - `D-PARTY-REGISTER`
-- `D-AGENT-RUNTIME-AUTHORIZE`
 - `D-FX-CLS-MEMBERSHIP`
 - `D-M4-FX-SUB-DECISIONS`
 - `D-M4-FX-SUB-1`
@@ -50,7 +56,8 @@ _None — all encountered IDs resolved cleanly._
 - `D-REGULATORY-READINESS-W2`
 - `D-REGULATORY-READINESS-GATE-PLAN`
 - `D-A22-RETIRE-BUS`
-- `D-A22-RETIRE-LEGACY`
+- `D-RMS-PHASE-1-SLICE-5`
+- `D-RMS-SLICE-5-OBLIGATION-CADENCE`
 - `D-PRINCIPLES-P2-P6-MERGE`
 - `D-DECISIONS-FRAMEWORK-REDESIGN`
 - `D-POLICY-DOCUMENT-HOME`
@@ -58,9 +65,9 @@ _None — all encountered IDs resolved cleanly._
 - `D-M4-FX-SUB-3`
 - `D-FX-AD-STATUS`
 - `D-S7-TARGETED-3-5`
+- `D-AZURE-COST-BUDGET`
+- `D-API-CLOUD-COST-BUDGET`
 - `D-RAS-B-CLUSTER-CONCENTRATION-LINES`
-- `D-AGENT-AUTONOMY-OPERATIONAL`
-- `D-T-01-PERMISSION-GATE-SECURE-DEFAULT`
 - `D-S7-TARGETED-3-5-OPEN-QUESTIONS`
 
 ## (c) IDs with conflicting resolution signals
@@ -72,5 +79,5 @@ _None identified by the migration script. Review manually if recon gates still f
 ## Summary
 
 - Triage IDs (a): 0
-- Reference-only IDs (b): 52
-- Emitted backfill events: 112
+- Reference-only IDs (b): 59
+- Emitted backfill events: 0
