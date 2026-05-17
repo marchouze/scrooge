@@ -24,8 +24,11 @@ import { z } from "zod";
 
 import {
   equityCorporateActionAppliedPayloadSchema,
+  equityPositionRevaluedPayloadSchema,
+  equitySettlementConfirmedPayloadSchema,
   equitySettlementInstructedPayloadSchema,
   equityTradeBookedPayloadSchema,
+  equityTradeExecutedPayloadSchema,
 } from "../../markets/cdm/equity";
 import {
   fxSettlementInstructedPayloadSchema,
@@ -398,6 +401,45 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+  },
+  // M3 CDM Equity events (M3 slice, Kai 2026-05-17) — extended equity lifecycle:
+  // EquityTradeExecuted, EquitySettlementConfirmed, EquityPositionRevalued.
+  // Schemas at platform/markets/cdm/equity.ts. Exercised by scenario 08.
+  {
+    type: "EquityTradeExecuted",
+    class: "markets",
+    payloadSchema: equityTradeExecutedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Anya", "Bea", "Rohan", "Mira", "Tomas", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["JSE-EQUITIES-RULES", "IFRS-9-§4.1", "D-MARKETS-SCHEMA-FOUNDATION"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/equity.ts (Kai M3 equity lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/08-equity-trade.ts",
+  },
+  {
+    type: "EquitySettlementConfirmed",
+    class: "markets",
+    payloadSchema: equitySettlementConfirmedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Anya", "Bea", "Kai", "Vera"],
+    replay: "pair-coupled",
+    citationsHint: ["STRATE-RULE-7", "JSE-EQUITIES-RULES", "D-MARKETS-SCHEMA-FOUNDATION"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/equity.ts (Kai M3 equity lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/08-equity-trade.ts",
+  },
+  {
+    type: "EquityPositionRevalued",
+    class: "markets",
+    payloadSchema: equityPositionRevaluedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Bea", "Anya", "Rohan", "Vera"],
+    replay: "append-only-audit",
+    citationsHint: ["IFRS-9-§5.7.1", "IFRS-9-§4.1", "JSE-EQUITIES-RULES"],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/markets/cdm/equity.ts (Kai M3 equity lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/08-equity-trade.ts",
   },
   // M3 CDM FX events — schemas at platform/markets/cdm/fx.ts. Today
   // exercised by the FX end-to-end rehearsal scenario + dashboard widget;

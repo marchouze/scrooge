@@ -26,6 +26,7 @@
     "scenario:fx-spot:shared": "BANK_SCENARIO_SHARED=1 bun run scenarios/06-fx-spot-trade.ts",
     "scenario:fx-forward": "bun run scenarios/07-fx-forward-trade.ts",
     "scenario:fx-forward:shared": "BANK_SCENARIO_SHARED=1 bun run scenarios/07-fx-forward-trade.ts",
+    "scenario:equity-trade": "bun run scenarios/08-equity-trade.ts",
     "returns:ba700:smoke": "bun test platform/returns/ba700/ba700.test.ts --isolate",
     "backfill:decisions": "bun run runtime/decisions/backfill-from-records.ts",
     "migrate:decisions-backfill": "bun run scripts/migrate/backfill-all-decisions.ts && bun run scripts/record-d-group-a-symmetry-fix.ts && bun run scripts/record-d-group-b-symmetry-fix.ts && bun run scripts/record-d-governance-seat-activations.ts && bun run scripts/migrate/backfill-delivered-decisions.ts && bun run scripts/migrate/backfill-ghost-id-triage.ts",
