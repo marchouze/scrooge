@@ -24,12 +24,20 @@ import {
   fxTradeExecutedPayloadSchema,
   makeFxSettlementInstructed,
   makeFxTradeExecuted,
+  makeNdfFixingObserved,
   makePrincipalPayment,
   makeSettlementConfirmed,
+  ndfFixingObservedPayloadSchema,
   principalPaymentPayloadSchema,
   settlementConfirmedPayloadSchema,
 } from "../platform/markets/cdm";
 import { buildFxSpotScenarioEvents, runFxSpotScenario } from "../scenarios/06-fx-spot-trade";
+import {
+  buildFxForwardScenarioEvents,
+  buildNdfForwardScenarioEvents,
+  runFxForwardScenario,
+  runNdfForwardScenario,
+} from "../scenarios/07-fx-forward-trade";
 
 const counterparty = {
   partyId: "LEI-CTPY-FX",
@@ -338,7 +346,8 @@ describe("FX event-type registry", () => {
     expect(FX_EVENT_TYPES).toContain("FxSettlementInstructed");
     expect(FX_EVENT_TYPES).toContain("PrincipalPayment");
     expect(FX_EVENT_TYPES).toContain("SettlementConfirmed");
-    expect(FX_EVENT_TYPES.length).toBe(4);
+    expect(FX_EVENT_TYPES).toContain("NdfFixingObserved");
+    expect(FX_EVENT_TYPES.length).toBe(5);
   });
 });
 
@@ -598,5 +607,186 @@ describe("Scenario 06 — full 6-event FX Spot lifecycle", () => {
     expect(result.countsByType.FxSettlementInstructed).toBe(2);
     expect(result.countsByType.PrincipalPayment).toBe(2);
     expect(result.countsByType.SettlementConfirmed).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// NdfFixingObserved — schema validation + citation enforcement
+// ---------------------------------------------------------------------------
+
+const baseNdfFixingPayload = {
+  tradeId: "TRD-FX-NDF-TEST-001",
+  currencyPair: "USD/ZAR",
+  fixingSource: "SARB-ZAR-Fixing-1600-SAST",
+  fixingDate: "2026-08-10",
+  fixingRate: 18.97,
+  contractRate: 18.7,
+  settlementCurrency: "USD",
+  netCashMinor: 71_165_00,
+  settlementDate: "2026-08-12",
+  citations: ["D-FX-AD-STATUS", "ORG-EXCON-ODP-001"],
+};
+
+describe("NdfFixingObserved — schema + envelope", () => {
+  it("accepts a valid NDF fixing payload", () => {
+    expect(() => ndfFixingObservedPayloadSchema.parse(baseNdfFixingPayload)).not.toThrow();
+  });
+
+  it("envelopes a valid fixing and stamps event_id + type", () => {
+    const e = makeNdfFixingObserved({
+      asOf: "2026-08-10T16:00:00.000Z",
+      entity: "BANK-ZA-001",
+      actor: { type: "service", id: "agent:saskia:ndf-fixing" },
+      citations: ["D-FX-AD-STATUS"],
+      payload: baseNdfFixingPayload,
+    });
+    expect(e.type).toBe("NdfFixingObserved");
+    expect(e.event_id).toBeDefined();
+  });
+
+  it("rejects empty envelope citations (Principle 2)", () => {
+    expect(() =>
+      makeNdfFixingObserved({
+        asOf: "2026-08-10T16:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:saskia:ndf-fixing" },
+        citations: [],
+        payload: baseNdfFixingPayload,
+      }),
+    ).toThrow();
+  });
+
+  it("rejects empty payload citations (Principle 2)", () => {
+    expect(() =>
+      makeNdfFixingObserved({
+        asOf: "2026-08-10T16:00:00.000Z",
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:saskia:ndf-fixing" },
+        citations: ["D-FX-AD-STATUS"],
+        payload: { ...baseNdfFixingPayload, citations: [] },
+      }),
+    ).toThrow();
+  });
+
+  it("rejects invalid settlementCurrency (must be 3-letter ISO)", () => {
+    expect(() =>
+      ndfFixingObservedPayloadSchema.parse({
+        ...baseNdfFixingPayload,
+        settlementCurrency: "us",
+      }),
+    ).toThrow();
+  });
+
+  it("rejects non-positive fixingRate", () => {
+    expect(() =>
+      ndfFixingObservedPayloadSchema.parse({ ...baseNdfFixingPayload, fixingRate: 0 }),
+    ).toThrow();
+  });
+
+  it("registry exposes NdfFixingObserved in FX_EVENT_TYPES", () => {
+    expect(FX_EVENT_TYPES).toContain("NdfFixingObserved");
+    expect(FX_EVENT_TYPES.length).toBe(5);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Scenario 07 — FX Forward lifecycle (deliverable + NDF variant)
+// ---------------------------------------------------------------------------
+
+describe("Scenario 07 — FX Forward deliverable lifecycle", () => {
+  it("builds 8 events (trade + 2 settle-instruct + 2 MtM ticks + 2 principal + confirm)", () => {
+    const events = buildFxForwardScenarioEvents();
+    expect(events.all.length).toBe(8);
+    expect(events.all[0]?.type).toBe("FxTradeExecuted");
+    expect(events.all[1]?.type).toBe("FxSettlementInstructed");
+    expect(events.all[2]?.type).toBe("FxSettlementInstructed");
+    expect(events.all[3]?.type).toBe("FxPositionRevalued");
+    expect(events.all[4]?.type).toBe("FxPositionRevalued");
+    expect(events.all[5]?.type).toBe("PrincipalPayment");
+    expect(events.all[6]?.type).toBe("PrincipalPayment");
+    expect(events.all[7]?.type).toBe("SettlementConfirmed");
+  });
+
+  it("trade carries productTaxonomy = FX-forward and bookType = trading", () => {
+    const events = buildFxForwardScenarioEvents();
+    const payload = events.trade.payload as {
+      productTaxonomy: string;
+      bookType: string;
+    };
+    expect(payload.productTaxonomy).toBe("FX-forward");
+    expect(payload.bookType).toBe("trading");
+  });
+
+  it("MtM revaluation ticks emit positive unrealised P&L deltas (forward ITM)", () => {
+    const events = buildFxForwardScenarioEvents();
+    const tick1 = events.revalTick1.payload as { unrealisedPnlZarMinor: number };
+    const tick2 = events.revalTick2.payload as { unrealisedPnlZarMinor: number };
+    expect(tick1.unrealisedPnlZarMinor).toBeGreaterThan(0);
+    expect(tick2.unrealisedPnlZarMinor).toBeGreaterThan(0);
+    // Tick 2 should be larger (rate moved further from book)
+    expect(tick2.unrealisedPnlZarMinor).toBeGreaterThan(tick1.unrealisedPnlZarMinor);
+  });
+
+  it("all events carry simulated provenance", () => {
+    const events = buildFxForwardScenarioEvents();
+    for (const e of events.all) {
+      expect(e.provenance?.kind).toBe("simulated");
+    }
+  });
+
+  it("runFxForwardScenario stores 8 events and returns ok", () => {
+    const result = runFxForwardScenario({
+      dbPath: ".local/test-scenario-fx-forward.db",
+      cleanup: true,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.emitted).toBe(8);
+    expect(result.countsByType.FxTradeExecuted).toBe(1);
+    expect(result.countsByType.FxSettlementInstructed).toBe(2);
+    expect(result.countsByType.FxPositionRevalued).toBe(2);
+    expect(result.countsByType.PrincipalPayment).toBe(2);
+    expect(result.countsByType.SettlementConfirmed).toBe(1);
+  });
+});
+
+describe("Scenario 07 — NDF variant (fixing replaces gross-principal exchange)", () => {
+  it("builds 2 events (trade + fixing) — no PrincipalPayment legs", () => {
+    const events = buildNdfForwardScenarioEvents();
+    expect(events.all.length).toBe(2);
+    expect(events.all[0]?.type).toBe("FxTradeExecuted");
+    expect(events.all[1]?.type).toBe("NdfFixingObserved");
+  });
+
+  it("NDF trade carries settlementForm = cash + fixing source", () => {
+    const events = buildNdfForwardScenarioEvents();
+    const payload = events.trade.payload as {
+      productTaxonomy: string;
+      settlementForm: string;
+      ndfFixingSource?: string;
+      ndfSettlementCurrency?: string;
+    };
+    expect(payload.productTaxonomy).toBe("NDF");
+    expect(payload.settlementForm).toBe("cash");
+    expect(payload.ndfFixingSource).toBe("SARB-ZAR-Fixing-1600-SAST");
+    expect(payload.ndfSettlementCurrency).toBe("USD");
+  });
+
+  it("fixing event computes positive net cash (forward ITM at fixing)", () => {
+    const events = buildNdfForwardScenarioEvents();
+    const fixing = events.fixing.payload as { netCashMinor: number; fixingRate: number };
+    // Fixing rate (18.97) > contract rate (18.70) and bank bought USD → ITM
+    expect(fixing.netCashMinor).toBeGreaterThan(0);
+    expect(fixing.fixingRate).toBe(18.97);
+  });
+
+  it("runNdfForwardScenario stores 2 events and returns ok", () => {
+    const result = runNdfForwardScenario({
+      dbPath: ".local/test-scenario-fx-forward-ndf.db",
+      cleanup: true,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.emitted).toBe(2);
+    expect(result.countsByType.FxTradeExecuted).toBe(1);
+    expect(result.countsByType.NdfFixingObserved).toBe(1);
   });
 });
