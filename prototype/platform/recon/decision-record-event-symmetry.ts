@@ -294,9 +294,14 @@ function readEventDecisionIds(dbPath: string): Set<string> {
   };
   const store = new mod.EventStore(dbPath);
   try {
-    for (const e of store.replay({ type: "CeoDecision" })) {
-      const id = (e.payload?.decisionId as string | undefined)?.toUpperCase();
-      if (id) ids.add(id);
+    // Read both legacy CeoDecision events and new unified Decision events.
+    // D-DECISIONS-FRAMEWORK-REDESIGN: new authoring emits Decision; old events
+    // remain as CeoDecision in the store during the transition period.
+    for (const type of ["CeoDecision", "Decision"] as const) {
+      for (const e of store.replay({ type })) {
+        const id = (e.payload?.decisionId as string | undefined)?.toUpperCase();
+        if (id) ids.add(id);
+      }
     }
   } catch {
     // Empty / unreadable store — return empty set.
@@ -345,7 +350,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       // Still open — no CeoDecision event expected yet.
       violations.push({
         subject,
-        message: `Decision \`${rec.decisionId}\` is still open (\`decision-required: true\`) — no \`CeoDecision\` event expected until the CEO acts on it. File: \`Owner Inbox/${rec.filename}\`.`,
+        message: `Decision \`${rec.decisionId}\` is still open (\`decision-required: true\`) — no \`Decision\` event expected until the CEO acts on it. File: \`Owner Inbox/${rec.filename}\`.`,
         severity: "info",
       });
       continue;
@@ -355,7 +360,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (storeEmpty) {
       violations.push({
         subject,
-        message: `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\`) but the event store at \`${dbPath}\` has zero \`CeoDecision\` events (fresh-runner / new worktree posture). The boot-time backfill at \`runtime/decisions/backfill-from-records.ts\` populates the store on first dashboard-server start. Symmetry not asserted. Citations: P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED.`,
+        message: `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\`) but the event store at \`${dbPath}\` has zero \`Decision\` / \`CeoDecision\` events (fresh-runner / new worktree posture). The boot-time backfill at \`runtime/decisions/backfill-from-records.ts\` populates the store on first dashboard-server start. Symmetry not asserted. Citations: P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED.`,
         severity: "info",
       });
       continue;
@@ -365,7 +370,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       const severity = mode === "enforcing" ? "fail" : "warn";
       violations.push({
         subject,
-        message: `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\` in \`Owner Inbox/${rec.filename}\`) but has no backing \`CeoDecision\` event in the event store. Principle 1 requires the event log to be the canonical record — a decision that exists only in markdown is a ghost record. Fix: emit a \`CeoDecision\` event for \`${rec.decisionId}\` via the boot-time backfill or a targeted \`recordCeoDecision\` call. Citations: P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED, \`Procedures/by-policy/ceo-decision-review.md\`.`,
+        message: `Decision \`${rec.decisionId}\` is closed (\`decision-required: false\` in \`Owner Inbox/${rec.filename}\`) but has no backing \`Decision\` (or legacy \`CeoDecision\`) event in the event store. Principle 1 requires the event log to be the canonical record — a decision that exists only in markdown is a ghost record. Fix: emit a \`Decision\` event for \`${rec.decisionId}\` via \`recordDecision()\` or the boot-time backfill. Citations: P1-EVENTS-AS-TRUTH, GOV-FRAMEWORK-CEO-RESERVED, \`Procedures/by-policy/ceo-decision-review.md\`.`,
         severity,
       });
     }

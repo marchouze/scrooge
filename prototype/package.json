@@ -53,6 +53,7 @@
     "recon:event-type-registry-coverage": "bun run platform/recon/event-type-registry-coverage.ts",
     "recon:decision-required-event-pairing": "bun run platform/recon/decision-required-event-pairing.ts",
     "recon:agent-snapshot-staleness": "bun run platform/recon/agent-snapshot-staleness.ts",
+    "recon:agent-perf-eval-staleness": "bun run platform/recon/agent-perf-eval-staleness.ts",
     "recon:madge-circular-deps": "bun run platform/recon/madge-circular-deps.ts",
     "recon:graph-ontology": "bun run platform/recon/graph-ontology-coverage.ts",
     "recon:dcam-taxonomy-coverage": "bun run platform/recon/dcam-taxonomy-coverage.ts",

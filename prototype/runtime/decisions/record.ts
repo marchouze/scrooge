@@ -372,12 +372,11 @@ export function recordDecisionComment(
     },
   });
 
-  // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — DecisionComment events live in the
-  // CEO-decision audit trail; tag production with the same `ceo-decision-record`
-  // lineage as the parent CeoDecision they thread under.
+  // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — DecisionComment events thread
+  // under the unified Decision audit trail; tag with the Decision lineage.
   const eventWithProvenance: Event = {
     ...event,
-    provenance: PRODUCTION_CARVE_OUTS.CeoDecision,
+    provenance: PRODUCTION_CARVE_OUTS.Decision,
   };
   eventStore.append(eventWithProvenance);
 

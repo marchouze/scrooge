@@ -169,6 +169,10 @@ export interface EventSource {
   // derive falls back to the legacy CeoDecision-event reduce in that
   // case to keep test fixtures green during the transition.
   decisionsRegister?(): DecisionsRegister | null;
+  // RMS Phase 2 — agent recent deliverables from RecordFiled events.
+  // When provided, replaces the Owner Inbox FS scan in agent mini-dashboards.
+  // Optional for backwards compat with test fixtures that don't wire this.
+  recentDeliverables?(agentName: string, limit?: number): AgentDeliverable[];
 }
 
 export interface DeriveOpts {
@@ -231,9 +235,10 @@ export function eventSourceFromStore(store: EventStore): EventSource {
   return {
     ceoDecisions(): CeoDecisionEventSummary[] {
       const out: CeoDecisionEventSummary[] = [];
+      // Legacy CeoDecision events (pre D-DECISIONS-FRAMEWORK-REDESIGN).
       for (const e of store.replay({ type: "CeoDecision" })) {
         const p = e.payload as Record<string, unknown>;
-        const summary: CeoDecisionEventSummary = {
+        out.push({
           decisionId: String(p.decisionId ?? ""),
           title: String(p.title ?? ""),
           action: String(p.action ?? "approve") as DecisionAction,
@@ -241,8 +246,32 @@ export function eventSourceFromStore(store: EventStore): EventSource {
           actor: e.actor.id,
           asOf: e.as_of,
           ...(typeof p.comment === "string" ? { comment: p.comment } : {}),
+        });
+      }
+      // Unified Decision events (D-DECISIONS-FRAMEWORK-REDESIGN, 2026-05-16).
+      // Map Decision.phase → legacy DecisionAction shape used by reduceCeoDecisions.
+      for (const e of store.replay({ type: "Decision" })) {
+        const p = e.payload as Record<string, unknown>;
+        const phase = String(p.phase ?? "requested");
+        // Only terminal phases represent a decision having been acted upon.
+        const actionMap: Record<string, DecisionAction> = {
+          approved: "approve",
+          deferred: "defer",
+          rejected: "modify",
+          superseded: "modify",
+          withdrawn: "modify",
+          requested: "request-revision",
         };
-        out.push(summary);
+        const action: DecisionAction = actionMap[phase] ?? "approve";
+        out.push({
+          decisionId: String(p.decisionId ?? ""),
+          title: String(p.title ?? ""),
+          action,
+          outcome: String(p.recommendation ?? p.outcome ?? ""),
+          actor: e.actor.id,
+          asOf: e.as_of,
+          ...(typeof p.rationale === "string" ? { comment: p.rationale } : {}),
+        });
       }
       return out;
     },
@@ -337,6 +366,26 @@ export function eventSourceFromStore(store: EventStore): EventSource {
       // `replay` is itself a generator. Both `Decision` and (transition)
       // `CeoDecision` events feed in.
       return buildDecisionsRegister(decisionsSourceFromStore(store));
+    },
+    recentDeliverables(agentName: string, limit = 5): AgentDeliverable[] {
+      // RMS Phase 2 — read RecordFiled events authored by this agent.
+      // Replaces the Owner Inbox FS scan (Principle 1: events are truth).
+      const lower = agentName.toLowerCase();
+      const out: AgentDeliverable[] = [];
+      for (const e of store.replay({ type: "RecordFiled" })) {
+        const p = e.payload as Record<string, unknown>;
+        const meta = p.metadata as Record<string, unknown> | undefined;
+        if (!meta) continue;
+        const author = String(meta.author ?? "").toLowerCase();
+        if (!author.includes(lower)) continue;
+        out.push({
+          date: String(meta.date ?? e.as_of).slice(0, 10),
+          path: String(meta.path ?? ""),
+          title: String(meta.title ?? ""),
+        });
+      }
+      out.sort((a, b) => (a.date < b.date ? 1 : -1));
+      return out.slice(0, limit);
     },
     auditFindings(): AuditFindingEventSummary[] {
       // Accept three payload shapes:
@@ -1713,6 +1762,9 @@ interface DeriveAgentsInput {
   // their owning agent. Built from the curated open list + Owner-Inbox-lifted
   // open decisions before resolution removes them.
   readonly ownerByDecisionId?: Map<string, string>;
+  // RMS Phase 2 — when provided, recent deliverables come from RecordFiled
+  // events instead of the Owner Inbox FS scan. Optional for backwards compat.
+  readonly eventSource?: Pick<EventSource, "recentDeliverables">;
 }
 
 // ---------------------------------------------------------------------------
@@ -1760,6 +1812,7 @@ function buildSubordinate(
   ownerInboxDir: string,
   inFlight: readonly InFlightItem[],
   decisionsOpen: readonly OpenDecision[],
+  eventSource?: Pick<EventSource, "recentDeliverables">,
 ): SubordinateMini {
   const personaPath = join(teamDir, `${name}.md`);
   const content = readPersonaFile(personaPath);
@@ -1778,7 +1831,9 @@ function buildSubordinate(
     .sort((a, b) => ((a.completedAt ?? "") < (b.completedAt ?? "") ? 1 : -1))
     .slice(0, 3);
   const openDecisionsOwned = decisionsOpen.filter((d) => ownerMatches(d.owner, name));
-  const recentDeliverables = recentDeliverablesFor(ownerInboxDir, name, 5);
+  const recentDeliverables = eventSource?.recentDeliverables
+    ? eventSource.recentDeliverables(name, 5)
+    : recentDeliverablesFor(ownerInboxDir, name, 5);
   const lastActivityAt = maxDate(
     recentlyCompletedWorkstreams[0]?.completedAt,
     recentDeliverables[0]?.date,
@@ -1825,12 +1880,21 @@ export function deriveAgents(input: DeriveAgentsInput): AgentMiniDashboard[] {
       ? resolvedDecisionsForAgent(input.decisionsResolved, input.ownerByDecisionId, person.name, 3)
       : [];
 
-    const recentDeliverables = recentDeliverablesFor(input.ownerInboxDir, person.name);
+    const recentDeliverables = input.eventSource?.recentDeliverables
+      ? input.eventSource.recentDeliverables(person.name)
+      : recentDeliverablesFor(input.ownerInboxDir, person.name);
 
     // Build subordinates per the parsed reports-to mapping.
     const subordinateNames = reportsTo.get(person.name) ?? [];
     const subordinates: SubordinateMini[] = subordinateNames.map((n) =>
-      buildSubordinate(n, input.teamDir, input.ownerInboxDir, input.inFlight, input.decisionsOpen),
+      buildSubordinate(
+        n,
+        input.teamDir,
+        input.ownerInboxDir,
+        input.inFlight,
+        input.decisionsOpen,
+        input.eventSource,
+      ),
     );
 
     // Aggregate totals — own + subordinates.
@@ -2031,6 +2095,8 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     ownerInboxDir: opts.sources.ownerInboxDir,
     claudeMd: opts.sources.claudeMd,
     ownerByDecisionId: ownerById,
+    // RMS Phase 2 — use event-based deliverables when the source supports it.
+    ...(opts.events.recentDeliverables ? { eventSource: opts.events } : {}),
   });
 
   // Recent open findings — Vera's overnight recon and Mira's citation gate

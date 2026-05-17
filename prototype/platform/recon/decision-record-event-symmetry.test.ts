@@ -115,7 +115,7 @@ describe("decision-record-event-symmetry recon (Vera Wave-6, advisory mode)", ()
     const warns = r.violations.filter((v) => v.severity === "warn");
     expect(warns.length).toBe(1);
     expect(warns[0]?.message).toContain("D-TEST-BETA");
-    expect(warns[0]?.message).toContain("no backing `CeoDecision` event");
+    expect(warns[0]?.message).toContain("no backing `Decision` (or legacy `CeoDecision`) event");
     expect(r.ok).toBe(true); // advisory — ok stays true
   });
 
