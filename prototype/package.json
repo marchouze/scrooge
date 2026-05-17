@@ -83,6 +83,7 @@
     "bus:tick": "bun run scripts/bus-tick.ts",
     "graph:seed": "bun run platform/regulatory/graph/run-seed.ts",
     "identity:issue": "bun run scripts/identity-issue.ts",
+    "publish:sub-agent-policies": "bun run scripts/publish-sub-agent-permission-policies.ts",
     "register-fleet": "bun run scripts/register-fleet.ts",
     "escalation:enforce": "bun run scripts/escalation-enforce.ts",
     "model-registry:list": "bun run scripts/model-registry-list.ts",

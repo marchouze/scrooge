@@ -212,8 +212,13 @@ export const permissionPolicyPublishedPayloadSchema = z.object({
   agentUrn: z
     .string()
     .min(1)
-    .regex(/^agent:[a-z0-9-]+$/, {
-      message: "agentUrn must be `agent:<lowercased-persona-name>` (a-z, 0-9, -)",
+    .regex(/^agent:[a-z0-9-]+(:[a-z0-9-]+)*$/, {
+      // Persona-level agents: `agent:<persona>` (single segment, e.g. `agent:kai`).
+      // Sub-agent task actors: `agent:<persona>:<task>` (two segments).
+      // Platform infra actors: `agent:atlas:<component>` (two segments).
+      // T-12 (Senna spec §2.1): extended to allow multi-segment sub-agent URNs.
+      message:
+        "agentUrn must be `agent:<persona>` or `agent:<persona>:<task>` (a-z, 0-9, - per segment)",
     }),
   capabilityAllowList: z.array(z.string().min(1)),
   eventEmitAllowList: z.array(z.string().min(1)),
