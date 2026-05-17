@@ -417,6 +417,60 @@ export function makeBalanceSheetSubstantiationCompleted(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// BAReturnGenerationTriggered
+// ---------------------------------------------------------------------------
+//
+// Emitted by the month-end close engine at step MC14 of PROC-FIN-MC-01 to
+// kick off BA-return generation (PROC-FIN-BA-01). The PeriodClosed event
+// must precede this event for the same (period, entity) — enforced by the
+// idempotency check in ba-return-trigger.ts.
+//
+// Authority: PROC-FIN-MC-01 §5 MC14; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
+//   Banks Act 94/1990 s90; PA BA return submission requirements.
+// Authors: Bea (Accounting & financial reporting engineer, engineering)
+
+export const baReturnGenerationTriggeredPayloadSchema = z.object({
+  /** ISO 8601 year-month, e.g. "2026-05". */
+  period: z.string().regex(/^\d{4}-\d{2}$/, {
+    message: "BAReturnGenerationTriggered.period must be YYYY-MM",
+  }),
+  /**
+   * event_id of the PeriodClosed event that gates this trigger.
+   * Must match an existing PeriodClosed for (period, entity).
+   */
+  triggerEventId: z.string().min(1),
+  /** Legal entity for which the BA return is being generated. */
+  entity: z.string().min(1),
+  /** ISO 8601 timestamp when the trigger was emitted. */
+  triggeredAt: z.string().min(1),
+});
+
+export type BAReturnGenerationTriggeredPayload = z.infer<
+  typeof baReturnGenerationTriggeredPayloadSchema
+>;
+
+export function makeBAReturnGenerationTriggered(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BAReturnGenerationTriggeredPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BAReturnGenerationTriggered",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: baReturnGenerationTriggeredPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
 export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "BankAccountOpened",
   "BankAccountConfigured",
@@ -425,5 +479,6 @@ export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "AccountingPeriodClosed",
   "TrialBalanceSnapshotted",
   "BalanceSheetSubstantiationCompleted",
+  "BAReturnGenerationTriggered",
 ] as const;
 export type AccountingEventType = (typeof ACCOUNTING_TYPED_EVENT_TYPES)[number];
