@@ -240,12 +240,47 @@ export function renderBa310ToJson(
       bandingMapFingerprint: output.meta.bandingMapFingerprint,
       renderedAt: opts.renderedAt,
     },
-    netInterestIncome: output.netInterestIncome,
-    almBanding: output.almBanding,
+    netInterestIncome: {
+      ...output.netInterestIncome,
+      byInstrumentClass: output.netInterestIncome.byInstrumentClass.map((c) => ({
+        ...c,
+        lineItems: [...c.lineItems].map((l) => ({
+          ...l,
+          contributingAccounts: [...l.contributingAccounts],
+        })),
+      })),
+      byMaturityBand: output.netInterestIncome.byMaturityBand.map((b) => ({
+        ...b,
+        lineItems: [...b.lineItems].map((l) => ({
+          ...l,
+          contributingAccounts: [...l.contributingAccounts],
+        })),
+      })),
+      bandingGaps: [...output.netInterestIncome.bandingGaps],
+    },
+    almBanding: {
+      ...output.almBanding,
+      bands: output.almBanding.bands.map((b) => ({
+        ...b,
+        lineItems: [...b.lineItems].map((l) => ({
+          ...l,
+          contributingAccounts: [...l.contributingAccounts],
+        })),
+      })),
+    },
     netInterestMargin: renderedNim,
-    nonInterestIncome: output.nonInterestIncome,
+    nonInterestIncome: {
+      ...output.nonInterestIncome,
+      lineItems: [...output.nonInterestIncome.lineItems].map((l) => ({
+        ...l,
+        contributingAccounts: [...l.contributingAccounts],
+      })),
+    },
     operatingEfficiency: renderedEfficiency,
-    lineItems: [...output.lineItems],
+    lineItems: [...output.lineItems].map((l) => ({
+      ...l,
+      contributingAccounts: [...l.contributingAccounts],
+    })),
     classificationGaps: [...output.classificationGaps],
     periodStart: output.periodStart,
     periodEnd: output.periodEnd,

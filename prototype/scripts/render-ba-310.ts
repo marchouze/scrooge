@@ -41,6 +41,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 
+import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
 import type {
   Ba300ClassificationMap,
   Ba300GeneratorInput,
@@ -53,7 +54,6 @@ import type {
 } from "../platform/reporting/ba-310-income-detail";
 import { generateBa310IncomeDetail } from "../platform/reporting/ba-310-income-detail";
 import { renderBa310Canonical } from "../platform/reporting/ba-310-render";
-import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
 
 // ---------------------------------------------------------------------------
 // Build-phase default BA 300 classifications — synthetic fixtures covering
@@ -225,7 +225,7 @@ function parseArgs(argv: readonly string[]): CliArgs {
   const ftpRatesPath = get("--ftp-rates");
   const avgEarningAssetsStr = get("--avg-earning-assets");
   const avgEarningAssets = avgEarningAssetsStr
-    ? parseInt(avgEarningAssetsStr, 10)
+    ? Number.parseInt(avgEarningAssetsStr, 10)
     : BUILD_PHASE_AVG_EARNING_ASSETS;
   if (!Number.isFinite(avgEarningAssets) || avgEarningAssets < 0) {
     throw new Error(

@@ -41,27 +41,27 @@
 
 import { describe, expect, it } from "bun:test";
 
+import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
 import type {
   Ba300ClassificationMap,
   Ba300GeneratorInput,
+  Ba300IncomeStatement,
 } from "../platform/reporting/ba-300-income-statement";
 import { generateBa300IncomeStatement } from "../platform/reporting/ba-300-income-statement";
 import {
   BA_310_BANK_ENTITIES,
-  Ba310GeneratorError,
   type Ba310BandingMap,
   type Ba310FtpRates,
+  Ba310GeneratorError,
   type Ba310GeneratorInput,
   generateBa310IncomeDetail,
 } from "../platform/reporting/ba-310-income-detail";
 import {
   BA_310_SCHEMA_URL,
   Ba310RenderSchema,
-  canonicaliseBa310,
   renderBa310Canonical,
   renderBa310ToJson,
 } from "../platform/reporting/ba-310-render";
-import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -206,6 +206,36 @@ function buildBa310Input(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Test helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * `find` that throws instead of returning undefined — avoids non-null
+ * assertions (Biome noNonNullAssertion rule) in test assertions.
+ */
+function findOrThrow<T>(arr: ReadonlyArray<T>, pred: (x: T) => boolean, label: string): T {
+  const found = arr.find(pred);
+  if (found === undefined) {
+    throw new Error(`findOrThrow: no element found matching predicate for '${label}'`);
+  }
+  return found;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: build a minimal fake Ba300IncomeStatement for a non-bank entity,
+// bypassing the BA 300 guard so we can test the BA 310 guard directly.
+// ---------------------------------------------------------------------------
+
+function fakeBa300ForEntity(entity: string): Ba300IncomeStatement {
+  const validOut = buildBa300();
+  // Patch the meta to inject a non-bank entity — type-cast only for test isolation.
+  return {
+    ...validOut,
+    meta: { ...validOut.meta, entity },
+  } as Ba300IncomeStatement;
+}
+
 // =====================================================================
 // 1. Per-entity isolation
 // =====================================================================
@@ -216,16 +246,14 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 per-entity isolation", () => 
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
-    const ba300 = buildBa300({ entity: ENTITY_SECURITIES });
     expect(() =>
-      generateBa310IncomeDetail(buildBa310Input(ba300)),
+      generateBa310IncomeDetail(buildBa310Input(fakeBa300ForEntity(ENTITY_SECURITIES))),
     ).toThrow(Ba310GeneratorError);
   });
 
   it("rejects LE-ZA-HOZ-GROUP (consolidated not in scope)", () => {
-    const ba300 = buildBa300({ entity: ENTITY_GROUP });
     expect(() =>
-      generateBa310IncomeDetail(buildBa310Input(ba300)),
+      generateBa310IncomeDetail(buildBa310Input(fakeBa300ForEntity(ENTITY_GROUP))),
     ).toThrow(Ba310GeneratorError);
   });
 });
@@ -261,9 +289,11 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 end-to-end", () => {
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by instrument class", () => {
   it("interbank NII = interest income interbank − interest expense deposits", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const interbank = output.netInterestIncome.byInstrumentClass.find(
+    const interbank = findOrThrow(
+      output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "interbank",
-    )!;
+      "interbank class",
+    );
     // ACC-ii-interbank contributes 50_000_000 income; ACC-ie-deposits contributes 20_000_000 expense
     expect(interbank.interestIncomeMinor).toBe(50_000_000);
     expect(interbank.interestExpenseMinor).toBe(20_000_000);
@@ -272,9 +302,11 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by instrument class", () 
 
   it("sovereign NII = 30_000_000 income − 0 expense", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const sovereign = output.netInterestIncome.byInstrumentClass.find(
+    const sovereign = findOrThrow(
+      output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "sovereign",
-    )!;
+      "sovereign class",
+    );
     expect(sovereign.interestIncomeMinor).toBe(30_000_000);
     expect(sovereign.interestExpenseMinor).toBe(0);
     expect(sovereign.netInterestIncomeMinor).toBe(30_000_000);
@@ -282,12 +314,16 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by instrument class", () 
 
   it("corporate + retail-placeholder are zero (no accounts mapped)", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const corporate = output.netInterestIncome.byInstrumentClass.find(
+    const corporate = findOrThrow(
+      output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "corporate",
-    )!;
-    const retail = output.netInterestIncome.byInstrumentClass.find(
+      "corporate class",
+    );
+    const retail = findOrThrow(
+      output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "retail-placeholder",
-    )!;
+      "retail-placeholder class",
+    );
     expect(corporate.netInterestIncomeMinor).toBe(0);
     expect(retail.netInterestIncomeMinor).toBe(0);
   });
@@ -310,9 +346,11 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by instrument class", () 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by maturity band", () => {
   it("overnight band holds only the interest expense (ACC-ie-deposits)", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const overnight = output.netInterestIncome.byMaturityBand.find(
+    const overnight = findOrThrow(
+      output.netInterestIncome.byMaturityBand,
       (b) => b.maturityBand === "overnight",
-    )!;
+      "overnight band",
+    );
     expect(overnight.interestIncomeMinor).toBe(0);
     expect(overnight.interestExpenseMinor).toBe(20_000_000);
     expect(overnight.netInterestIncomeMinor).toBe(-20_000_000);
@@ -321,9 +359,11 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by maturity band", () => 
 
   it("1-7d band holds interbank income (ACC-ii-interbank)", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const band = output.netInterestIncome.byMaturityBand.find(
+    const band = findOrThrow(
+      output.netInterestIncome.byMaturityBand,
       (b) => b.maturityBand === "1-7d",
-    )!;
+      "1-7d band",
+    );
     expect(band.interestIncomeMinor).toBe(50_000_000);
     expect(band.interestExpenseMinor).toBe(0);
     expect(band.netInterestIncomeMinor).toBe(50_000_000);
@@ -332,9 +372,11 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 NII by maturity band", () => 
 
   it(">1y band holds sovereign income (ACC-ii-sovereign)", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const band = output.netInterestIncome.byMaturityBand.find(
+    const band = findOrThrow(
+      output.netInterestIncome.byMaturityBand,
       (b) => b.maturityBand === ">1y",
-    )!;
+      ">1y band",
+    );
     expect(band.interestIncomeMinor).toBe(30_000_000);
     expect(band.interestExpenseMinor).toBe(0);
     expect(band.netInterestIncomeMinor).toBe(30_000_000);
@@ -392,15 +434,17 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 FTP split", () => {
   it("clientNim and structuralNim are non-null when FTP rates supplied", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
     // At least one band with volume and FTP rate should produce a client/structural split.
-    const hasClientNim = output.netInterestMargin.byBand.some(
-      (b) => b.clientNim !== null,
-    );
+    const hasClientNim = output.netInterestMargin.byBand.some((b) => b.clientNim !== null);
     expect(hasClientNim).toBe(true);
   });
 
   it("1-7d band: nim = 50_000_000 / 200_000_000 = 0.25; FTP = 75bps = 0.0075; clientNim = 0.25 − 0.0075", () => {
     const output = generateBa310IncomeDetail(buildBa310Input());
-    const band = output.netInterestMargin.byBand.find((b) => b.maturityBand === "1-7d")!;
+    const band = findOrThrow(
+      output.netInterestMargin.byBand,
+      (b) => b.maturityBand === "1-7d",
+      "1-7d NIM band",
+    );
     // NII for band = 50_000_000; volume = 200_000_000
     expect(band.nim).toBeCloseTo(0.25, 10);
     expect(band.structuralNim).toBeCloseTo(0.0075, 10);
@@ -603,7 +647,12 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 boundary errors", () => {
   it("throws on duplicate banding-map entries", () => {
     const dupBandingMap: Ba310BandingMap = [
       ...BANDING_MAP,
-      { leafAccountId: "ACC-ii-interbank", instrumentClass: "interbank", maturityBand: "1-7d", volumeMinor: 0 },
+      {
+        leafAccountId: "ACC-ii-interbank",
+        instrumentClass: "interbank",
+        maturityBand: "1-7d",
+        volumeMinor: 0,
+      },
     ];
     expect(() =>
       generateBa310IncomeDetail(buildBa310Input(undefined, { bandingMap: dupBandingMap })),
@@ -612,15 +661,18 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 boundary errors", () => {
 
   it("throws on negative averageEarningAssetsMinor", () => {
     expect(() =>
-      generateBa310IncomeDetail(
-        buildBa310Input(undefined, { averageEarningAssetsMinor: -1 }),
-      ),
+      generateBa310IncomeDetail(buildBa310Input(undefined, { averageEarningAssetsMinor: -1 })),
     ).toThrow(Ba310GeneratorError);
   });
 
   it("throws on banding-map entry with negative volumeMinor", () => {
     const badBandingMap: Ba310BandingMap = [
-      { leafAccountId: "ACC-ii-interbank", instrumentClass: "interbank", maturityBand: "1-7d", volumeMinor: -100 },
+      {
+        leafAccountId: "ACC-ii-interbank",
+        instrumentClass: "interbank",
+        maturityBand: "1-7d",
+        volumeMinor: -100,
+      },
     ];
     expect(() =>
       generateBa310IncomeDetail(buildBa310Input(undefined, { bandingMap: badBandingMap })),
@@ -634,17 +686,13 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 boundary errors", () => {
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 FTP rates null", () => {
   it("clientNim and structuralNim are null in NimSection when ftpRates = null", () => {
-    const output = generateBa310IncomeDetail(
-      buildBa310Input(undefined, { ftpRates: null }),
-    );
+    const output = generateBa310IncomeDetail(buildBa310Input(undefined, { ftpRates: null }));
     expect(output.netInterestMargin.clientNim).toBeNull();
     expect(output.netInterestMargin.structuralNim).toBeNull();
   });
 
   it("per-band clientNim and structuralNim are null when ftpRates = null", () => {
-    const output = generateBa310IncomeDetail(
-      buildBa310Input(undefined, { ftpRates: null }),
-    );
+    const output = generateBa310IncomeDetail(buildBa310Input(undefined, { ftpRates: null }));
     for (const band of output.netInterestMargin.byBand) {
       expect(band.clientNim).toBeNull();
       expect(band.structuralNim).toBeNull();
@@ -652,19 +700,13 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 FTP rates null", () => {
   });
 
   it("overall NIM is still computed (not FTP-dependent)", () => {
-    const output = generateBa310IncomeDetail(
-      buildBa310Input(undefined, { ftpRates: null }),
-    );
+    const output = generateBa310IncomeDetail(buildBa310Input(undefined, { ftpRates: null }));
     expect(output.netInterestMargin.overallNim).toBeCloseTo(0.12, 10);
   });
 
   it("placeholders include FTP-not-supplied marker when ftpRates = null", () => {
-    const output = generateBa310IncomeDetail(
-      buildBa310Input(undefined, { ftpRates: null }),
-    );
-    const hasFtpPlaceholder = output.placeholders.some(
-      (p) => p.includes("FTP rates not supplied"),
-    );
+    const output = generateBa310IncomeDetail(buildBa310Input(undefined, { ftpRates: null }));
+    const hasFtpPlaceholder = output.placeholders.some((p) => p.includes("FTP rates not supplied"));
     expect(hasFtpPlaceholder).toBe(true);
   });
 });
@@ -699,9 +741,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 310 provenance passthrough", () =
   it("ba300ClassificationsFingerprint is forwarded into BA 310 meta", () => {
     const ba300 = buildBa300();
     const output = generateBa310IncomeDetail(buildBa310Input(ba300));
-    expect(output.meta.ba300ClassificationsFingerprint).toBe(
-      ba300.meta.classificationsFingerprint,
-    );
+    expect(output.meta.ba300ClassificationsFingerprint).toBe(ba300.meta.classificationsFingerprint);
   });
 
   it("bandingMapFingerprint is a non-empty string", () => {

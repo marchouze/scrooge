@@ -86,11 +86,7 @@ import type { Ba300IncomeStatement, Ba300LineItem } from "./ba-300-income-statem
  * categories (mortgage / personal / SME) at a future slice once the
  * loan-book substrate lands.
  */
-export type Ba310InstrumentClass =
-  | "interbank"
-  | "corporate"
-  | "sovereign"
-  | "retail-placeholder";
+export type Ba310InstrumentClass = "interbank" | "corporate" | "sovereign" | "retail-placeholder";
 
 // ---------------------------------------------------------------------------
 // ALM maturity bands
@@ -101,14 +97,7 @@ export type Ba310InstrumentClass =
  * contractual repricing / maturity schedule. v0 banding is caller-supplied
  * (Ravi's ALM cashflow engine downstream).
  */
-export type Ba310MaturityBand =
-  | "overnight"
-  | "1-7d"
-  | "8-30d"
-  | "1-3m"
-  | "3-6m"
-  | "6-12m"
-  | ">1y";
+export type Ba310MaturityBand = "overnight" | "1-7d" | "8-30d" | "1-3m" | "3-6m" | "6-12m" | ">1y";
 
 // ---------------------------------------------------------------------------
 // Banding map
@@ -407,6 +396,21 @@ const ORDERED_CLASSES: readonly Ba310InstrumentClass[] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Non-null safe get from a Map that is known to contain all keys. Throws
+ * a descriptive `Ba310GeneratorError` on the impossible code path instead
+ * of using a non-null assertion (Biome `noNonNullAssertion` rule).
+ */
+function mustGet<K, V>(map: Map<K, V>, key: K, context: string): V {
+  const v = map.get(key);
+  if (v === undefined) {
+    throw new Ba310GeneratorError(
+      `BA 310 generator: internal error — expected '${String(key)}' in ${context}`,
+    );
+  }
+  return v;
+}
+
 function fingerprintBandingMap(map: Ba310BandingMap): string {
   const sorted = [...map].sort((a, b) =>
     a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
@@ -519,10 +523,7 @@ export function generateBa310IncomeDetail(input: Ba310GeneratorInput): Ba310Inco
     ORDERED_CLASSES.map((c) => [c, { interestIncome: 0, interestExpense: 0, lines: [] }]),
   );
   const bandBuckets = new Map<Ba310MaturityBand, BandBucket>(
-    ORDERED_BANDS.map((b) => [
-      b,
-      { interestIncome: 0, interestExpense: 0, volume: 0, lines: [] },
-    ]),
+    ORDERED_BANDS.map((b) => [b, { interestIncome: 0, interestExpense: 0, volume: 0, lines: [] }]),
   );
 
   const bandingGaps = new Set<string>();
@@ -573,7 +574,7 @@ export function generateBa310IncomeDetail(input: Ba310GeneratorInput): Ba310Inco
 
   // Build NII by class.
   const byInstrumentClass: Ba310NiiByClass[] = ORDERED_CLASSES.map((cls) => {
-    const b = classBuckets.get(cls)!;
+    const b = mustGet(classBuckets, cls, "classBuckets");
     return {
       instrumentClass: cls,
       interestIncomeMinor: b.interestIncome,
@@ -585,7 +586,7 @@ export function generateBa310IncomeDetail(input: Ba310GeneratorInput): Ba310Inco
 
   // Build NII by band.
   const byMaturityBand: Ba310NiiByBand[] = ORDERED_BANDS.map((band) => {
-    const b = bandBuckets.get(band)!;
+    const b = mustGet(bandBuckets, band, "bandBuckets");
     return {
       maturityBand: band,
       interestIncomeMinor: b.interestIncome,
@@ -634,7 +635,7 @@ export function generateBa310IncomeDetail(input: Ba310GeneratorInput): Ba310Inco
   let structuralNimTotal: number | null = null;
 
   const nimByBand = ORDERED_BANDS.map((band) => {
-    const bData = bandBuckets.get(band)!;
+    const bData = mustGet(bandBuckets, band, "bandBuckets");
     const bandNii = bData.interestIncome - bData.interestExpense;
     const bandVolume = bData.volume;
     const bandNim = bandVolume > 0 ? bandNii / bandVolume : null;
@@ -728,7 +729,8 @@ export function generateBa310IncomeDetail(input: Ba310GeneratorInput): Ba310Inco
   // ---------------------------------------------------------------------------
 
   const opExpMinor = ba300Output.operatingExpenses.totalMinor;
-  const totalOpIncome = totalNiiMinor + feeMinor + tradingMinor + otherIncomeMinor - otherExpenseMinor;
+  const totalOpIncome =
+    totalNiiMinor + feeMinor + tradingMinor + otherIncomeMinor - otherExpenseMinor;
   const cir = totalOpIncome !== 0 ? opExpMinor / totalOpIncome : null;
 
   const efficiencySection: Ba310EfficiencySection = {
