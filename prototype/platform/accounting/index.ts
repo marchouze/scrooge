@@ -67,3 +67,22 @@ export type {
   ZeroBalanceFinding,
   ZeroBalanceResult,
 } from "./gl-subledger-recon";
+
+// MC2 — pre-close unposted-trades check (PROC-FIN-MC-01 §5 MC2).
+export { checkUnpostedTrades } from "./unposted-trades-check";
+export type {
+  UnpostedTrade,
+  UnpostedTradeEvent,
+  UnpostedTradesResult,
+} from "./unposted-trades-check";
+
+// MC3 — pre-close suspense account report (PROC-FIN-MC-01 §5 MC3).
+export { generateSuspenseReport } from "./suspense-report";
+export type {
+  SuspenseAccountFinding,
+  SuspenseChartEntry,
+  SuspenseReportResult,
+} from "./suspense-report";
+
+// MC14 — BA return generation trigger (PROC-FIN-MC-01 §5 MC14).
+export { triggerBAReturnGeneration } from "./ba-return-trigger";

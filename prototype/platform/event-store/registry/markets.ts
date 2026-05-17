@@ -55,7 +55,10 @@ import {
   trialBalanceSnapshottedPayloadSchema,
 } from "../event-types";
 import { cdmBindingsRegeneratedPayloadSchema } from "../event-types-cdm";
-import { balanceSheetSubstantiationCompletedPayloadSchema } from "../event-types/accounting";
+import {
+  baReturnGenerationTriggeredPayloadSchema,
+  balanceSheetSubstantiationCompletedPayloadSchema,
+} from "../event-types/accounting";
 import {
   accountsSetupCompletedPayloadSchema,
   beneficialOwnerResolvedPayloadSchema,
@@ -669,6 +672,28 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "platform/event-store/event-types/accounting.ts (factory); PROC-FIN-BSS-01 — Procedures/balance-sheet-substantiation.md",
+  },
+  {
+    // MC14 trigger — emitted by the month-end close engine after PeriodClosed
+    // to kick off BA-return generation (PROC-FIN-BA-01). The idempotency check
+    // in ba-return-trigger.ts prevents duplicate triggers per (period, entity).
+    // PA submission deadline: 20 calendar days after month-end (Banks Act s90;
+    // PA BA return submission requirements).
+    type: "BAReturnGenerationTriggered",
+    class: "markets",
+    payloadSchema: baReturnGenerationTriggeredPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Mira", "Vera", "dashboard"],
+    replay: "idempotent-terminal",
+    citationsHint: [
+      "PROC-FIN-MC-01",
+      "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "BANKS-ACT-94-1990-S90",
+      "IAS-1",
+    ],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "platform/accounting/ba-return-trigger.ts; PROC-FIN-MC-01 §5 MC14; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
   },
 ];
 
