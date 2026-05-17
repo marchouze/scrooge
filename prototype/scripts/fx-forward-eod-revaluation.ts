@@ -41,7 +41,7 @@ console.log(`[eod-fx-forward-revaluation] Running for valuationDate=${valuationD
 const result = runEodFxForwardRevaluation(store, valuationDate, staticForwardRateSource);
 
 if (result.errors.length > 0) {
-  console.warn(`[eod-fx-forward-revaluation] Errors encountered:`);
+  console.warn("[eod-fx-forward-revaluation] Errors encountered:");
   for (const err of result.errors) {
     console.warn(`  - ${err}`);
   }

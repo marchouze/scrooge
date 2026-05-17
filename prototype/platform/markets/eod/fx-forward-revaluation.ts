@@ -120,9 +120,7 @@ export function makeStubForwardRateSource(
       // Find nearest key.
       const keys = Object.keys(pairRates).map(Number);
       if (keys.length === 0) {
-        throw new Error(
-          `StubForwardRateSource: pair "${currencyPair}" has no tenor entries`,
-        );
+        throw new Error(`StubForwardRateSource: pair "${currencyPair}" has no tenor entries`);
       }
       const nearest = keys.reduce((prev, curr) =>
         Math.abs(curr - tenorDays) < Math.abs(prev - tenorDays) ? curr : prev,
@@ -357,11 +355,7 @@ export function runEodFxForwardRevaluation(
         const bookedRate = farLeg.rate.amount;
         const notionalBaseMinor = farLeg.notional.amountMinor;
 
-        const pnlDeltaMinor = computeMtmPnlMinor(
-          forwardRateMinor,
-          bookedRate,
-          notionalBaseMinor,
-        );
+        const pnlDeltaMinor = computeMtmPnlMinor(forwardRateMinor, bookedRate, notionalBaseMinor);
 
         const payload: FxPositionRevaluedPayload = {
           tradeId,
@@ -411,11 +405,7 @@ export function runEodFxForwardRevaluation(
         // NDF settlement amount in ndfSettlementCurrency minor units.
         // Formula: (currentForwardRate − bookedRate) × notional / currentForwardRate
         // ([GAP-FWD-4]: at v0 forward rate from ForwardRateSource; live fixing deferred)
-        const ndfPnlMinor = computeMtmPnlMinor(
-          forwardRateMinor,
-          bookedRate,
-          notionalBaseMinor,
-        );
+        const ndfPnlMinor = computeMtmPnlMinor(forwardRateMinor, bookedRate, notionalBaseMinor);
 
         const payload: FxPositionRevaluedPayload = {
           tradeId,
@@ -458,11 +448,7 @@ export function runEodFxForwardRevaluation(
         const bookedRate = nearLeg.rate.amount;
         const notionalBaseMinor = nearLeg.notional.amountMinor;
 
-        const pnlDeltaMinor = computeMtmPnlMinor(
-          forwardRateMinor,
-          bookedRate,
-          notionalBaseMinor,
-        );
+        const pnlDeltaMinor = computeMtmPnlMinor(forwardRateMinor, bookedRate, notionalBaseMinor);
 
         const payload: FxPositionRevaluedPayload = {
           tradeId,

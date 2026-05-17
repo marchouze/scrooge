@@ -44,11 +44,7 @@ const ACTOR = { type: "service" as const, id: "test:fx-forward-reval" };
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION", "IAS-21-§28"];
 
 // Stub rate source: 90d forward for ZAR/USD at 19_000_000 minor units (19.0)
-function makeSimpleStub(
-  pair = "ZAR/USD",
-  tenorDays = 90,
-  rate = 19_000_000n,
-): ForwardRateSource {
+function makeSimpleStub(pair = "ZAR/USD", tenorDays = 90, rate = 19_000_000n): ForwardRateSource {
   return makeStubForwardRateSource({ [pair]: { [tenorDays]: rate } });
 }
 
@@ -551,8 +547,8 @@ describe("TC-MIX-1: mixed portfolio — forward + swap + NDF", () => {
 
     const stub = makeStubForwardRateSource({
       "ZAR/USD": {
-        90: 19_000_000n,  // FWD-MIX: 2026-08-15 = 90d from 2026-05-17
-        94: 19_100_000n,  // SWP far + NDF: 2026-08-19 = 94d
+        90: 19_000_000n, // FWD-MIX: 2026-08-15 = 90d from 2026-05-17
+        94: 19_100_000n, // SWP far + NDF: 2026-08-19 = 94d
       },
     });
 
