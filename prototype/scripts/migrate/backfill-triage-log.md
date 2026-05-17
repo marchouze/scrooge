@@ -1,6 +1,6 @@
 # Backfill triage log — D-DECISIONS-FRAMEWORK-REDESIGN Slice C
 
-Generated: 2026-05-17T08:05:50.123Z
+Generated: 2026-05-17T08:12:37.525Z
 
 ---
 
