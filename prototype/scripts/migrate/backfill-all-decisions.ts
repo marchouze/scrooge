@@ -248,8 +248,8 @@ export interface BackfillStats {
 export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
   const { dryRun = false } = opts;
 
-  const ownerInbox = join(REPO_ROOT, "Owner Inbox");
-  const teamInboxActioned = join(REPO_ROOT, "Team Inbox", "actioned");
+  const ownerInbox = join(REPO_ROOT, "archive", "owner-inbox");
+  const teamInboxActioned = join(REPO_ROOT, "archive", "team-inbox", "actioned");
 
   // 1. Build existing projection to skip already-covered (decisionId, phase) pairs.
   const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
