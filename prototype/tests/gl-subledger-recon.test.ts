@@ -8,7 +8,6 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
 import type { ChartOfAccountsEntry } from "../platform/accounting/gl-subledger-recon";
 import {
   assertZeroBalance,
@@ -18,6 +17,7 @@ import {
   verifyIfrsClassification,
 } from "../platform/accounting/gl-subledger-recon";
 import type { TrialBalance } from "../platform/accounting/period-close";
+import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -40,7 +40,6 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     currency: "ZAR",
     ifrsClassification: "amortised-cost",
     ifrsClassificationStatus: "in-force",
-    clearanceHorizonDays: undefined,
     shouldNetToZeroAtPeriodEnd: false,
     sourceEventTypes: ["BankAccountOpened", "FxSettlementConfirmed"],
   },
@@ -90,7 +89,6 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     currency: "ZAR",
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "superseded",
-    clearanceHorizonDays: undefined,
     shouldNetToZeroAtPeriodEnd: false,
     sourceEventTypes: ["FxPositionRevalued", "FxSettlementConfirmed"],
   },
@@ -98,7 +96,12 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
 
 function makePosting(
   sourceEventId: string,
-  accountIds: Array<{ accountId: string; debitCredit: "debit" | "credit"; currency: string; amountMinor: number }>,
+  accountIds: Array<{
+    accountId: string;
+    debitCredit: "debit" | "credit";
+    currency: string;
+    amountMinor: number;
+  }>,
   postedAt = "2026-05-01T10:00:00.000Z",
 ): SubLedgerPostingEmittedPayload {
   return {
@@ -120,16 +123,12 @@ function makePosting(
 
 describe("tracePostingToSourceEvent", () => {
   it("ok=true when all postings trace to known source events with matching types", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 100_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 100_000 }]);
     const posting = makePosting("evt-001", [
       { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 100_000 },
       { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 100_000 },
     ]);
-    const primaryEvents = new Map([
-      ["evt-001", { type: "FxTradeExecuted", payload: {} }],
-    ]);
+    const primaryEvents = new Map([["evt-001", { type: "FxTradeExecuted", payload: {} }]]);
     const accountSourceMap = new Map([
       ["ACC-2100-001", ["FxTradeExecuted", "SubLedgerPostingEmitted"]],
     ]);
@@ -147,9 +146,7 @@ describe("tracePostingToSourceEvent", () => {
   });
 
   it("flags posting with null sourceEventId as untraced with reason null-source-id", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 50_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 50_000 }]);
     const posting: SubLedgerPostingEmittedPayload = {
       sourceEventId: "",
       postingType: "trade-booking",
@@ -167,13 +164,11 @@ describe("tracePostingToSourceEvent", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.untraced[0].reason).toBe("null-source-id");
+    expect(result.untraced[0]?.reason).toBe("null-source-id");
   });
 
   it("flags posting with phantom sourceEventId as untraced with reason phantom-source-event", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 200_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 200_000 }]);
     const posting = makePosting("evt-phantom", [
       { accountId: "ACC-1100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 200_000 },
       { accountId: "ACC-1100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 200_000 },
@@ -186,20 +181,16 @@ describe("tracePostingToSourceEvent", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.untraced[0].reason).toBe("phantom-source-event");
+    expect(result.untraced[0]?.reason).toBe("phantom-source-event");
   });
 
   it("flags posting with unrecognised source type as untraced with reason unrecognised-source-type", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 50_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 50_000 }]);
     const posting = makePosting("evt-002", [
       { accountId: "ACC-1100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 50_000 },
       { accountId: "ACC-1100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 50_000 },
     ]);
-    const primaryEvents = new Map([
-      ["evt-002", { type: "UnexpectedEventType", payload: {} }],
-    ]);
+    const primaryEvents = new Map([["evt-002", { type: "UnexpectedEventType", payload: {} }]]);
     const result = tracePostingToSourceEvent({
       trialBalance: tb,
       postingEvents: [posting],
@@ -208,13 +199,11 @@ describe("tracePostingToSourceEvent", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.untraced[0].reason).toBe("unrecognised-source-type");
+    expect(result.untraced[0]?.reason).toBe("unrecognised-source-type");
   });
 
   it("skips postings that don't touch any active TB account", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 10_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 10_000 }]);
     const posting = makePosting("evt-003", [
       // Different account — not in TB
       { accountId: "ACC-2100-003", debitCredit: "debit", currency: "ZAR", amountMinor: 10_000 },
@@ -262,24 +251,20 @@ describe("verifyIfrsClassification", () => {
   });
 
   it("fails accounts with superseded classification", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-2100-005", currency: "ZAR", amountMinor: 10_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-2100-005", currency: "ZAR", amountMinor: 10_000 }]);
     const result = verifyIfrsClassification({ trialBalance: tb, chartOfAccounts: COA_FIXTURES });
 
     expect(result.ok).toBe(false);
-    expect(result.failed[0].accountId).toBe("ACC-2100-005");
-    expect(result.failed[0].reason).toBe("classification-superseded");
+    expect(result.failed[0]?.accountId).toBe("ACC-2100-005");
+    expect(result.failed[0]?.reason).toBe("classification-superseded");
   });
 
   it("fails accounts not found in the chart of accounts", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-9999-999", currency: "ZAR", amountMinor: 1_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-9999-999", currency: "ZAR", amountMinor: 1_000 }]);
     const result = verifyIfrsClassification({ trialBalance: tb, chartOfAccounts: COA_FIXTURES });
 
     expect(result.ok).toBe(false);
-    expect(result.failed[0].reason).toBe("account-not-in-chart");
+    expect(result.failed[0]?.reason).toBe("account-not-in-chart");
   });
 
   it("fails accounts with under-review classification", () => {
@@ -293,19 +278,15 @@ describe("verifyIfrsClassification", () => {
         sourceEventTypes: ["FxTradeExecuted"],
       },
     ];
-    const tb = makeTB([
-      { leafAccountId: "ACC-2100-002", currency: "USD", amountMinor: 300_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-2100-002", currency: "USD", amountMinor: 300_000 }]);
     const result = verifyIfrsClassification({ trialBalance: tb, chartOfAccounts: underReviewCoa });
 
     expect(result.ok).toBe(false);
-    expect(result.failed[0].reason).toBe("classification-under-review");
+    expect(result.failed[0]?.reason).toBe("classification-under-review");
   });
 
   it("skips zero-balance rows", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-2100-005", currency: "ZAR", amountMinor: 0 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-2100-005", currency: "ZAR", amountMinor: 0 }]);
     const result = verifyIfrsClassification({ trialBalance: tb, chartOfAccounts: COA_FIXTURES });
     // Zero balance row skipped — no failure
     expect(result.ok).toBe(true);
@@ -319,9 +300,7 @@ describe("verifyIfrsClassification", () => {
 
 describe("checkAgedItems", () => {
   it("returns ok=true when no accounts exceed clearance horizon", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 50_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 50_000 }]);
     // Posting date and asOf within 2 days
     const posting = makePosting(
       "evt-010",
@@ -343,9 +322,7 @@ describe("checkAgedItems", () => {
   });
 
   it("flags accounts where age exceeds clearance horizon", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 50_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 50_000 }]);
     // Posting date 5 days before asOf — exceeds 2-day horizon
     const posting = makePosting(
       "evt-011",
@@ -364,21 +341,29 @@ describe("checkAgedItems", () => {
 
     expect(result.ok).toBe(false);
     expect(result.aged.length).toBe(1);
-    expect(result.aged[0].accountId).toBe("ACC-1100-004");
-    expect(result.aged[0].ageCalendarDays).toBe(5);
-    expect(result.aged[0].clearanceHorizonDays).toBe(2);
+    expect(result.aged[0]?.accountId).toBe("ACC-1100-004");
+    expect(result.aged[0]?.ageCalendarDays).toBe(5);
+    expect(result.aged[0]?.clearanceHorizonDays).toBe(2);
   });
 
   it("does not flag accounts with no clearance horizon defined", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 }]);
     // Very old posting — but no clearance horizon
     const posting = makePosting(
       "evt-012",
       [
-        { accountId: "ACC-1100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 1_000_000 },
-        { accountId: "ACC-1100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 1_000_000 },
+        {
+          accountId: "ACC-1100-001",
+          debitCredit: "debit",
+          currency: "ZAR",
+          amountMinor: 1_000_000,
+        },
+        {
+          accountId: "ACC-1100-001",
+          debitCredit: "credit",
+          currency: "ZAR",
+          amountMinor: 1_000_000,
+        },
       ],
       "2025-01-01T00:00:00.000Z",
     );
@@ -394,15 +379,18 @@ describe("checkAgedItems", () => {
   });
 
   it("uses oldest posting date when multiple postings exist for same account", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 100_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 100_000 }]);
     const postings = [
       makePosting(
         "evt-013a",
         [
           { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 60_000 },
-          { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 60_000 },
+          {
+            accountId: "ACC-2100-001",
+            debitCredit: "credit",
+            currency: "ZAR",
+            amountMinor: 60_000,
+          },
         ],
         "2026-05-12T08:00:00.000Z", // Older
       ),
@@ -410,7 +398,12 @@ describe("checkAgedItems", () => {
         "evt-013b",
         [
           { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 40_000 },
-          { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 40_000 },
+          {
+            accountId: "ACC-2100-001",
+            debitCredit: "credit",
+            currency: "ZAR",
+            amountMinor: 40_000,
+          },
         ],
         "2026-05-14T12:00:00.000Z", // Newer
       ),
@@ -424,8 +417,8 @@ describe("checkAgedItems", () => {
 
     // Oldest is May 12; asOf May 15 = 3 days; horizon = 2 days → aged
     expect(result.ok).toBe(false);
-    expect(result.aged[0].oldestPostingDate).toBe("2026-05-12");
-    expect(result.aged[0].ageCalendarDays).toBe(3);
+    expect(result.aged[0]?.oldestPostingDate).toBe("2026-05-12");
+    expect(result.aged[0]?.ageCalendarDays).toBe(3);
   });
 });
 
@@ -448,16 +441,14 @@ describe("assertZeroBalance", () => {
   });
 
   it("fails when a suspense account has non-zero balance", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 25_000 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 25_000 }]);
     const result = assertZeroBalance({ trialBalance: tb, chartOfAccounts: COA_FIXTURES });
 
     expect(result.ok).toBe(false);
     expect(result.failed.length).toBe(1);
-    expect(result.failed[0].accountId).toBe("ACC-1100-004");
-    expect(result.failed[0].amountMinor).toBe(25_000);
-    expect(result.failed[0].reason).toBe("non-zero-suspense");
+    expect(result.failed[0]?.accountId).toBe("ACC-1100-004");
+    expect(result.failed[0]?.amountMinor).toBe(25_000);
+    expect(result.failed[0]?.reason).toBe("non-zero-suspense");
   });
 
   it("passes non-suspense accounts even if they have non-zero balances", () => {
@@ -472,9 +463,7 @@ describe("assertZeroBalance", () => {
   });
 
   it("passes suspense account with explicit zero balance row in TB", () => {
-    const tb = makeTB([
-      { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 0 },
-    ]);
+    const tb = makeTB([{ leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 0 }]);
     const result = assertZeroBalance({ trialBalance: tb, chartOfAccounts: COA_FIXTURES });
 
     // amountMinor === 0 → passed
@@ -533,7 +522,7 @@ describe("triageException", () => {
     });
 
     expect(result.unexplained.length).toBe(1);
-    expect(result.unexplained[0].exceptionKind).toBe("unexplained");
+    expect(result.unexplained[0]?.exceptionKind).toBe("unexplained");
   });
 
   it("classifies trace unrecognised-source-type as substrate-gap", () => {
@@ -568,7 +557,7 @@ describe("triageException", () => {
     });
 
     expect(result.unexplained.length).toBe(1);
-    expect(result.unexplained[0].exceptionKind).toBe("unexplained");
+    expect(result.unexplained[0]?.exceptionKind).toBe("unexplained");
   });
 
   it("classifies aged item within clearance horizon as timing-difference", () => {

@@ -111,9 +111,7 @@ export function tracePostingToSourceEvent(args: {
     const accountIdsInPosting = new Set(posting.legs.map((l) => l.accountId));
 
     // Only check postings that touch at least one account active in the TB.
-    const relevantAccountIds = [...accountIdsInPosting].filter((id) =>
-      activeAccountIds.has(id),
-    );
+    const relevantAccountIds = [...accountIdsInPosting].filter((id) => activeAccountIds.has(id));
     if (relevantAccountIds.length === 0) continue;
 
     const srcId = posting.sourceEventId;
@@ -178,7 +176,10 @@ export interface ClassificationFinding {
   readonly currency: string;
   readonly ifrsClassification: string;
   readonly ifrsClassificationStatus: string;
-  readonly reason: "classification-superseded" | "classification-under-review" | "account-not-in-chart";
+  readonly reason:
+    | "classification-superseded"
+    | "classification-under-review"
+    | "account-not-in-chart";
 }
 
 export interface ClassificationResult {
@@ -417,9 +418,7 @@ export function assertZeroBalance(args: {
 
   // Build a set of zero-balance-required account IDs.
   const zeroBalanceRequired = new Set(
-    chartOfAccounts
-      .filter((e) => e.shouldNetToZeroAtPeriodEnd === true)
-      .map((e) => e.accountId),
+    chartOfAccounts.filter((e) => e.shouldNetToZeroAtPeriodEnd === true).map((e) => e.accountId),
   );
 
   const passed: string[] = [];
@@ -550,10 +549,7 @@ export function triageException(args: {
   /** ZAR minor units. Default: 5_000_000_00n (ZAR 50,000). */
   materialityThresholdMinor?: bigint;
 }): TriageResult {
-  const {
-    exceptions,
-    materialityThresholdMinor = 5_000_000_00n,
-  } = args;
+  const { exceptions, materialityThresholdMinor = 5_000_000_00n } = args;
 
   const timingDifference: TriagedExceptionItem[] = [];
   const substrateGap: TriagedExceptionItem[] = [];
@@ -566,27 +562,20 @@ export function triageException(args: {
     if (exc.step === "trace" && exc.hint === "unrecognised-source-type") {
       // Substrate gap — posting engine not wired for this event type.
       kind = "substrate-gap";
-      rationale =
-        `Account ${exc.accountId}: SubLedgerPostingEmitted source event type not ` +
-        `in account's expected source types (PROC-FIN-BSS-01 §5 step 3a). ` +
-        `Document as posting-rule substrate gap; emit SubstrateAlert.`;
+      rationale = `Account ${exc.accountId}: SubLedgerPostingEmitted source event type not in account's expected source types (PROC-FIN-BSS-01 §5 step 3a). Document as posting-rule substrate gap; emit SubstrateAlert.`;
     } else if (exc.step === "trace") {
       // null-source-id or phantom-source-event — Principle 1 violation.
       kind = "unexplained";
-      rationale =
-        `Account ${exc.accountId}: Principle 1 violation — ` +
-        (exc.hint === "null-source-id"
+      rationale = `Account ${exc.accountId}: Principle 1 violation — ${
+        exc.hint === "null-source-id"
           ? "SubLedgerPostingEmitted has no sourceEventId."
-          : "sourceEventId resolves to a phantom (non-existent) event.") +
-        " Immediate escalation to Camille (CFO, finance) required.";
+          : "sourceEventId resolves to a phantom (non-existent) event."
+      } Immediate escalation to Camille (CFO, finance) required.`;
     } else if (exc.step === "classification") {
       // IFRS classification issue — unexplained (may be P1 violation).
       kind = "unexplained";
       const reason = exc.hint ?? "unknown classification issue";
-      rationale =
-        `Account ${exc.accountId}: IFRS classification check failed (${reason}). ` +
-        `Per PROC-FIN-BSS-01 §5 step 3b — escalate to Camille. ` +
-        `Do not proceed to sign-off until reclassification event is emitted and substantiated.`;
+      rationale = `Account ${exc.accountId}: IFRS classification check failed (${reason}). Per PROC-FIN-BSS-01 §5 step 3b — escalate to Camille. Do not proceed to sign-off until reclassification event is emitted and substantiated.`;
     } else if (exc.step === "aged" || exc.step === "zero-balance") {
       const ageDays = exc.ageCalendarDays ?? 0;
       const horizon = exc.clearanceHorizonDays ?? 0;
@@ -600,12 +589,11 @@ export function triageException(args: {
       } else {
         // Beyond horizon — unexplained.
         kind = "unexplained";
-        rationale =
-          `Account ${exc.accountId}: balance outstanding ${ageDays}d > ` +
-          `clearance horizon ${horizon}d. Escalate to ` +
-          (exc.step === "zero-balance"
+        rationale = `Account ${exc.accountId}: balance outstanding ${ageDays}d > clearance horizon ${horizon}d. Escalate to ${
+          exc.step === "zero-balance"
             ? "Tomas (Operations & payments engineer) + Camille (CFO, finance)."
-            : "Camille (CFO, finance).");
+            : "Camille (CFO, finance)."
+        }`;
       }
     } else {
       // Catch-all safety net.
