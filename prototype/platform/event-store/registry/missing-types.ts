@@ -33,27 +33,167 @@
 //   M — Readiness snapshots (various)
 //   N — Tax (Yael)
 
-import { z } from "zod";
-
 import { tokenUsageRecordedPayloadSchema } from "../event-types/agent-ops";
+import {
+  agentCapabilityChangedPayloadSchema,
+  eventSchemaProposalPayloadSchema,
+  eventSchemaPublishedPayloadSchema,
+  mandateGapDetectedPayloadSchema,
+  mergeRequestedPayloadSchema,
+  personaSpecChangedPayloadSchema,
+  riskRunCompletedPayloadSchema,
+  roleBriefDeliveredPayloadSchema,
+  roleResearchQueueSnapshotPayloadSchema,
+  roleResearchRequestedPayloadSchema,
+} from "../event-types/agent-substrate-extended";
+import {
+  adverseMediaPublishedPayloadSchema,
+  adviceRecordRequestedPayloadSchema,
+  clientCandidateRegisteredPayloadSchema,
+  clientReviewTriggeredPayloadSchema,
+  consentWithdrawnPayloadSchema,
+  counterpartyEventPayloadSchema,
+  crossBorderTransferRequestedPayloadSchema,
+  dsarReceivedPayloadSchema,
+  faisConductBreachSuspectedPayloadSchema,
+  informationRegulatorInquiryPayloadSchema,
+  leadCapturedPayloadSchema,
+  newProcessingPurposeProposedPayloadSchema,
+  onboardingHandoffPendingPayloadSchema,
+  paiaRequestPayloadSchema,
+  pepListPublishedPayloadSchema,
+  pepMatchExceedsThresholdPayloadSchema,
+  personalInformationCompromiseSuspectedPayloadSchema,
+  popiaControlsSnapshotPayloadSchema,
+  sanctionsHitPayloadSchema,
+  sanctionsHoldRaisedPayloadSchema,
+  sanctionsListPublishedPayloadSchema,
+  strCandidatePayloadSchema,
+  suitabilityAssessmentRequiredPayloadSchema,
+  suspiciousAuthEventPayloadSchema,
+} from "../event-types/aml-popia-extended";
 import {
   fxPositionRevaluedPayloadSchema,
   fxSettlementConfirmedPayloadSchema,
 } from "../event-types/fx-accounting";
+import {
+  alertOpenedPayloadSchema,
+  auditCommitteePackPreppedPayloadSchema,
+  auditIssueClosedPayloadSchema,
+  auditIssueOpenedPayloadSchema,
+  capacityBreachPayloadSchema,
+  changeApprovalRequestedPayloadSchema,
+  conflictDeclaredPayloadSchema,
+  disciplinaryActionRequestedPayloadSchema,
+  externalAuditorInquiryPayloadSchema,
+  hireConfirmedPayloadSchema,
+  identityPermissionChangeProposalPayloadSchema,
+  incidentRaisedPayloadSchema,
+  leaveGrantedPayloadSchema,
+  licenceGrantedPayloadSchema,
+  modelRiskDecisionRequiredPayloadSchema,
+  policyChangePayloadSchema,
+  regulatorCyberInquiryPayloadSchema,
+  regulatorInquiryPayloadSchema,
+  regulatorRequestPayloadSchema,
+  resilienceTestResultPayloadSchema,
+  resolutionRequiredPayloadSchema,
+  riskPolicyChangePayloadSchema,
+  riskPolicyChangeProposalPayloadSchema,
+  sloBudgetBurnPayloadSchema,
+  supervisoryLetterReceivedPayloadSchema,
+  terminationPayloadSchema,
+  whistleblowingDisclosurePayloadSchema,
+} from "../event-types/governance-extended";
+import {
+  accrualBookedPayloadSchema,
+  clauseChangeProposedPayloadSchema,
+  contractDraftRequestedPayloadSchema,
+  depositReceivedPayloadSchema,
+  ectaExceptionFlaggedPayloadSchema,
+  exchangeRuleChangePayloadSchema,
+  financialPositionSnapshotPayloadSchema,
+  fundingDrawnDownPayloadSchema,
+  fundingDrawnPayloadSchema,
+  ifrs9ECLChangePayloadSchema,
+  ifrs9ECLPublishedPayloadSchema,
+  interEntityTransactionProposedPayloadSchema,
+  legalEntityChangePayloadSchema,
+  loanBookedPayloadSchema,
+  materialIFRSClassificationChangePayloadSchema,
+  moiChangeProposedPayloadSchema,
+  portfolioReclassificationPayloadSchema,
+  regulatoryInstrumentUpdatePayloadSchema,
+  relatedPartyTransactionProposedPayloadSchema,
+  restatementProposedPayloadSchema,
+  sarsGuidanceUpdatePayloadSchema,
+  schemeRuleChangePayloadSchema,
+  signatureRequestedPayloadSchema,
+  taxClassificationPublishedPayloadSchema,
+} from "../event-types/ifrs-accounting-extended";
+import {
+  collateralUpdatedPayloadSchema,
+  dealerMandateBreachPayloadSchema,
+  fxPositionBreachPayloadSchema,
+  hedgeIneffectivePayloadSchema,
+  marketDataOutagePayloadSchema,
+  orderFilledPayloadSchema,
+  orderRoutingAnomalyPayloadSchema,
+  orderSubmittedPayloadSchema,
+  positionAdjustedPayloadSchema,
+  preTradeGatewayBlockPayloadSchema,
+  surveillanceAlertPayloadSchema,
+  surveillanceFeedGapPayloadSchema,
+  tradeBooedPayloadSchema,
+  tradePostedPayloadSchema,
+  transactionPostedPayloadSchema,
+} from "../event-types/markets-trading-extended";
 import {
   paymentInitiatedPayloadSchema,
   paymentSettledPayloadSchema,
   reconciliationBreakPayloadSchema,
   settlementInstructionReceivedPayloadSchema,
 } from "../event-types/payments";
+import {
+  almReadinessSnapshotPayloadSchema,
+  appetiteBreachPayloadSchema,
+  backtestTriggeredPayloadSchema,
+  capitalActionTriggerPayloadSchema,
+  capitalEventPayloadSchema,
+  curveSourceAnomalyPayloadSchema,
+  cutOffBreachPayloadSchema,
+  cyberResilienceSnapshotPayloadSchema,
+  hqlaCompositionDriftPayloadSchema,
+  icaapIlaapInputReadyPayloadSchema,
+  irrbBExcursionPayloadSchema,
+  lcrRatioProjectionPayloadSchema,
+  legalReadinessSnapshotPayloadSchema,
+  limitBreachActionedPayloadSchema,
+  limitBreachProposedPayloadSchema,
+  liquiditySnapshotPayloadSchema,
+  marketsReadinessSnapshotPayloadSchema,
+  modelRegisteredPayloadSchema,
+  nsfrRatioProjectionPayloadSchema,
+  operationalResilienceSnapshotPayloadSchema,
+  paymentsReadinessSnapshotPayloadSchema,
+  rasCalibrationChangePayloadSchema,
+  riskAppetiteSnapshotPayloadSchema,
+  samosFundingShortfallPayloadSchema,
+  taxReadinessSnapshotPayloadSchema,
+} from "../event-types/risk-treasury-extended";
+import {
+  cspAttestationDuePayloadSchema,
+  dependencyVulnDetectedPayloadSchema,
+  keyCeremonyScheduledPayloadSchema,
+  keyRotationDuePayloadSchema,
+  sbomAcceptanceRequiredPayloadSchema,
+  sbomRequiredPayloadSchema,
+  securityIncidentRaisedPayloadSchema,
+  threatModelExceptionRequestedPayloadSchema,
+  threatModelGateDecisionPayloadSchema,
+  vendorSecurityReviewPayloadSchema,
+} from "../event-types/security-devops-extended";
 import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
-
-// ---------------------------------------------------------------------------
-// Build-phase passthrough schema — satisfies F-032 Zod-schema-coverage gate
-// for types that have no dedicated factory yet. Passthrough allows any extra
-// fields so future typed schemas can be added without breaking existing events.
-// ---------------------------------------------------------------------------
-const PT = z.object({}).passthrough();
 
 // ---------------------------------------------------------------------------
 // A — FX / markets / trading events
@@ -93,7 +233,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Ravi (ftp-attribution), Rohan (event-triage).
     type: "TradeBooked",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: tradeBooedPayloadSchema,
     issuer: "Kai",
     subscribers: ["Ravi", "Rohan"],
     replay: "append-only-audit",
@@ -105,7 +245,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Bea (event-triage), Ravi (event-triage).
     type: "TradePosted",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: tradePostedPayloadSchema,
     issuer: "Bea",
     subscribers: ["Bea", "Ravi"],
     replay: "append-only-audit",
@@ -117,7 +257,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Bea (event-triage), Ravi (event-triage).
     type: "FundingDrawn",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: fundingDrawnPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Bea", "Ravi"],
     replay: "append-only-audit",
@@ -129,7 +269,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // (Ravi:ftp-attribution subscribes separately).
     type: "FundingDrawnDown",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: fundingDrawnDownPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",
@@ -141,7 +281,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // execution venue / OMS.
     type: "OrderSubmitted",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: orderSubmittedPayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -152,7 +292,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when an order fill is confirmed by the exchange / OMS.
     type: "OrderFilled",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: orderFilledPayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -164,7 +304,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // risk / limit / compliance gate.
     type: "PreTradeGatewayBlock",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: preTradeGatewayBlockPayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -176,7 +316,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // latency, wrong venue, misrouted order).
     type: "OrderRoutingAnomaly",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: orderRoutingAnomalyPayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -188,7 +328,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // a gap (missing ticks, disconnection).
     type: "SurveillanceFeedGap",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: surveillanceFeedGapPayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -200,7 +340,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // instrument / venue (escalation of SurveillanceFeedGap).
     type: "MarketDataOutage",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: marketDataOutagePayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -212,7 +352,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // the bank's trading or membership obligations.
     type: "ExchangeRuleChange",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: exchangeRuleChangePayloadSchema,
     issuer: "Kai",
     subscribers: ["Kai"],
     replay: "append-only-audit",
@@ -224,7 +364,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // corporate action or an erroneous trade correction).
     type: "PositionAdjusted",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: positionAdjustedPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Rohan"],
     replay: "latest-wins-per-key",
@@ -236,7 +376,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // collateral posted, haircuts reapplied).
     type: "CollateralUpdated",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: collateralUpdatedPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Rohan"],
     replay: "latest-wins-per-key",
@@ -248,7 +388,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // for response.
     type: "LimitBreachProposed",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: limitBreachProposedPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Rohan"],
     replay: "append-only-audit",
@@ -259,7 +399,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a limit breach response action has been decided and enacted.
     type: "LimitBreachActioned",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: limitBreachActionedPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Rohan"],
     replay: "append-only-audit",
@@ -271,7 +411,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // per IFRS 9 reclassification rules).
     type: "PortfolioReclassification",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: portfolioReclassificationPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Rohan"],
     replay: "append-only-audit",
@@ -283,7 +423,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Ravi (ftp-attribution).
     type: "LoanBooked",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: loanBookedPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",
@@ -295,7 +435,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Ravi (ftp-attribution + event-triage).
     type: "DepositReceived",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: depositReceivedPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",
@@ -307,7 +447,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // instrument class, size, or counterparty).
     type: "DealerMandateBreach",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: dealerMandateBreachPayloadSchema,
     issuer: "Saskia",
     subscribers: ["Saskia"],
     replay: "append-only-audit",
@@ -319,7 +459,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // (e.g. layering, spoofing, front-running indicators).
     type: "SurveillanceAlert",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: surveillanceAlertPayloadSchema,
     issuer: "Saskia",
     subscribers: ["Saskia"],
     replay: "append-only-audit",
@@ -331,7 +471,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // (stale, missing, or implausible data point).
     type: "CurveSourceAnomaly",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: curveSourceAnomalyPayloadSchema,
     issuer: "Saskia",
     subscribers: ["Saskia"],
     replay: "append-only-audit",
@@ -344,7 +484,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // a sub-type in the payload.
     type: "CounterpartyEvent",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: counterpartyEventPayloadSchema,
     issuer: "Saskia",
     subscribers: ["Saskia"],
     replay: "append-only-audit",
@@ -356,7 +496,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // takes effect.
     type: "RASCalibrationChange",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: rasCalibrationChangePayloadSchema,
     issuer: "Saskia",
     subscribers: ["Saskia"],
     replay: "latest-wins-per-key",
@@ -368,7 +508,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // FSP licence, etc.).
     type: "LicenceGranted",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: licenceGrantedPayloadSchema,
     issuer: "Owen",
     subscribers: ["Saskia", "Owen", "dashboard"],
     replay: "idempotent-terminal",
@@ -376,25 +516,10 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source: "runtime/agents/metadata/saskia.ts",
   },
   {
-    // Saskia-specific alias for CeoDecision (uppercase variant referenced in
-    // her metadata). The canonical type is CeoDecision; this row covers the
-    // historical reference until callers are migrated.
-    // NOTE: this is NOT a duplicate of CeoDecision — it is a distinct string
-    // referenced in saskia's subscribesTo. Filed as a substrate gap.
-    type: "CEODecision",
-    class: "governance",
-    payloadSchema: PT,
-    issuer: "human",
-    subscribers: ["Saskia"],
-    replay: "latest-wins-per-key",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/saskia.ts; substrate gap — should migrate to CeoDecision",
-  },
-  {
     // Emitted when accrual entries (interest, fee, dividend) are booked.
     type: "AccrualBooked",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: accrualBookedPayloadSchema,
     issuer: "Bea",
     subscribers: ["Bea"],
     replay: "append-only-audit",
@@ -424,7 +549,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // at the central bank settlement window.
     type: "SAMOSFundingShortfall",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: samosFundingShortfallPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",
@@ -435,7 +560,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when HQLA composition drifts outside the LCR buffer policy band.
     type: "HQLACompositionDrift",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: hqlaCompositionDriftPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",
@@ -447,7 +572,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // appetite threshold.
     type: "IRRBBExcursion",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: irrbBExcursionPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Ravi", "Eitan"],
     replay: "append-only-audit",
@@ -458,7 +583,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when an FX position breaches the approved limit.
     type: "FXPositionBreach",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: fxPositionBreachPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Ravi", "Eitan"],
     replay: "append-only-audit",
@@ -469,7 +594,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a hedge is assessed as ineffective under IFRS 9 §6.4.
     type: "HedgeIneffective",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: hedgeIneffectivePayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",
@@ -481,7 +606,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // next N days.
     type: "LCRRatioProjection",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: lcrRatioProjectionPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Eitan"],
     replay: "latest-wins-per-key",
@@ -492,7 +617,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Eitan: projected NSFR ratio.
     type: "NSFRRatioProjection",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: nsfrRatioProjectionPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Eitan"],
     replay: "latest-wins-per-key",
@@ -504,7 +629,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // bail-in trigger, CET1 breach of buffer).
     type: "CapitalActionTrigger",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: capitalActionTriggerPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Eitan"],
     replay: "append-only-audit",
@@ -516,7 +641,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // injection, tier-2 issuance).
     type: "CapitalEvent",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: capitalEventPayloadSchema,
     issuer: "Camille",
     subscribers: ["Camille"],
     replay: "append-only-audit",
@@ -528,7 +653,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // balance sheet totals, capital ratios).
     type: "FinancialPositionSnapshot",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: financialPositionSnapshotPayloadSchema,
     issuer: "Camille",
     subscribers: ["Camille", "dashboard"],
     replay: "latest-wins-per-key",
@@ -539,7 +664,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Eitan's liquidity engine: point-in-time liquidity snapshot.
     type: "LiquiditySnapshot",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: liquiditySnapshotPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Eitan", "dashboard"],
     replay: "latest-wins-per-key",
@@ -551,7 +676,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // financial instrument (e.g. AFS → FVTPL per IFRS 9 §4.4).
     type: "MaterialIFRSClassificationChange",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: materialIFRSClassificationChangePayloadSchema,
     issuer: "Bea",
     subscribers: ["Camille"],
     replay: "append-only-audit",
@@ -563,7 +688,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // per IAS 8).
     type: "RestatementProposed",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: restatementProposedPayloadSchema,
     issuer: "Camille",
     subscribers: ["Camille", "Bea"],
     replay: "append-only-audit",
@@ -575,7 +700,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // received from SARB / FSCA / FIC.
     type: "RegulatorRequest",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: regulatorRequestPayloadSchema,
     issuer: "Owen",
     subscribers: ["Camille", "Owen"],
     replay: "append-only-audit",
@@ -594,7 +719,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Helena (event-triage), Thandiwe.
     type: "AppetiteBreach",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: appetiteBreachPayloadSchema,
     issuer: "Helena",
     subscribers: ["Helena", "Thandiwe"],
     replay: "append-only-audit",
@@ -605,7 +730,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a model risk event requires CRO-level decision.
     type: "ModelRiskDecisionRequired",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: modelRiskDecisionRequiredPayloadSchema,
     issuer: "Helena",
     subscribers: ["Helena"],
     replay: "pair-coupled",
@@ -616,7 +741,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a SARB supervisory letter is received.
     type: "SupervisoryLetterReceived",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: supervisoryLetterReceivedPayloadSchema,
     issuer: "Owen",
     subscribers: ["Helena", "Owen"],
     replay: "append-only-audit",
@@ -627,7 +752,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when ICAAP / ILAAP input data is ready for Helena's review.
     type: "IcaapIlaapInputReady",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: icaapIlaapInputReadyPayloadSchema,
     issuer: "Eitan",
     subscribers: ["Helena"],
     replay: "append-only-audit",
@@ -638,7 +763,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a risk policy change is proposed for CRO / Board approval.
     type: "RiskPolicyChangeProposal",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: riskPolicyChangeProposalPayloadSchema,
     issuer: "Helena",
     subscribers: ["Helena"],
     replay: "append-only-audit",
@@ -649,7 +774,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when Nadia's model validation run completes.
     type: "RiskRunCompleted",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: riskRunCompletedPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Rohan"],
     replay: "append-only-audit",
@@ -660,7 +785,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Snapshot of risk-appetite metrics (VaR, stress PnL, concentration).
     type: "RiskAppetiteSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: riskAppetiteSnapshotPayloadSchema,
     issuer: "Helena",
     subscribers: ["Helena", "dashboard"],
     replay: "latest-wins-per-key",
@@ -671,7 +796,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a risk policy changes (approved version bump).
     type: "RiskPolicyChange",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: riskPolicyChangePayloadSchema,
     issuer: "Helena",
     subscribers: ["Nadia", "Rohan"],
     replay: "append-only-audit",
@@ -682,7 +807,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a model is formally registered in the model inventory.
     type: "ModelRegistered",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: modelRegisteredPayloadSchema,
     issuer: "Nadia",
     subscribers: ["Nadia"],
     replay: "append-only-audit",
@@ -693,7 +818,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Rohan's backtest engine to trigger a model validation run.
     type: "BacktestTriggered",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: backtestTriggeredPayloadSchema,
     issuer: "Rohan",
     subscribers: ["Nadia"],
     replay: "append-only-audit",
@@ -711,7 +836,7 @@ const ACCOUNTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Bea when an IFRS 9 ECL estimate is published for the loan book.
     type: "IFRS9ECLPublished",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: ifrs9ECLPublishedPayloadSchema,
     issuer: "Bea",
     subscribers: ["Bea"],
     replay: "latest-wins-per-key",
@@ -722,7 +847,7 @@ const ACCOUNTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Yael / Bea when an IFRS 9 ECL model output changes materially.
     type: "IFRS9ECLChange",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: ifrs9ECLChangePayloadSchema,
     issuer: "Bea",
     subscribers: ["Yael"],
     replay: "append-only-audit",
@@ -734,7 +859,7 @@ const ACCOUNTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // or transaction type.
     type: "TaxClassificationPublished",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: taxClassificationPublishedPayloadSchema,
     issuer: "Yael",
     subscribers: ["Bea"],
     replay: "latest-wins-per-key",
@@ -752,7 +877,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a sanctions list update is published by UNSC / OFAC / EU.
     type: "SanctionsListPublished",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: sanctionsListPublishedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Mira", "Zara"],
     replay: "latest-wins-per-key",
@@ -763,7 +888,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a PEP list update is published.
     type: "PepListPublished",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: pepListPublishedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Mira", "Zara"],
     replay: "latest-wins-per-key",
@@ -774,7 +899,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when adverse media is published about a client / counterparty.
     type: "AdverseMediaPublished",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: adverseMediaPublishedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Mira"],
     replay: "append-only-audit",
@@ -785,7 +910,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when an AML / compliance alert is opened for investigation.
     type: "AlertOpened",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: alertOpenedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Mira"],
     replay: "pair-coupled",
@@ -797,7 +922,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // engine for screening.
     type: "TransactionPosted",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: transactionPostedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Mira"],
     replay: "append-only-audit",
@@ -809,7 +934,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Report review by the MLRO.
     type: "STRCandidate",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: strCandidatePayloadSchema,
     issuer: "Mira",
     subscribers: ["Zara"],
     replay: "append-only-audit",
@@ -820,7 +945,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a sanctions screening run produces a hit.
     type: "SanctionsHit",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: sanctionsHitPayloadSchema,
     issuer: "Mira",
     subscribers: ["Zara"],
     replay: "append-only-audit",
@@ -831,7 +956,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a PEP match score exceeds the configured threshold.
     type: "PEPMatchExceedsThreshold",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: pepMatchExceedsThresholdPayloadSchema,
     issuer: "Mira",
     subscribers: ["Zara"],
     replay: "append-only-audit",
@@ -842,7 +967,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a suspected FAIS conduct breach is detected.
     type: "FAISConductBreachSuspected",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: faisConductBreachSuspectedPayloadSchema,
     issuer: "Zara",
     subscribers: ["Zara"],
     replay: "append-only-audit",
@@ -853,7 +978,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a regulatory enquiry is received from a regulator.
     type: "RegulatorInquiry",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: regulatorInquiryPayloadSchema,
     issuer: "Owen",
     subscribers: ["Zara", "Owen"],
     replay: "append-only-audit",
@@ -864,7 +989,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a sanctions hold is raised on a payment pending resolution.
     type: "SanctionsHoldRaised",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: sanctionsHoldRaisedPayloadSchema,
     issuer: "Zara",
     subscribers: ["Tomas"],
     replay: "pair-coupled",
@@ -875,7 +1000,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Iris when a POPIA data breach or suspected compromise is detected.
     type: "PersonalInformationCompromiseSuspected",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: personalInformationCompromiseSuspectedPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris", "Rashida"],
     replay: "append-only-audit",
@@ -886,7 +1011,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Data Subject Access Request received by Iris (POPIA s.23).
     type: "DSARReceived",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: dsarReceivedPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris"],
     replay: "pair-coupled",
@@ -897,7 +1022,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a new processing purpose is proposed for personal information.
     type: "NewProcessingPurposeProposed",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: newProcessingPurposeProposedPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris"],
     replay: "append-only-audit",
@@ -908,7 +1033,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a data subject withdraws consent.
     type: "ConsentWithdrawn",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: consentWithdrawnPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris", "Niko"],
     replay: "append-only-audit",
@@ -919,7 +1044,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a cross-border personal information transfer is requested.
     type: "CrossBorderTransferRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: crossBorderTransferRequestedPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris"],
     replay: "append-only-audit",
@@ -930,7 +1055,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when the Information Regulator (POPIA) issues an inquiry.
     type: "InformationRegulatorInquiry",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: informationRegulatorInquiryPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris"],
     replay: "append-only-audit",
@@ -942,7 +1067,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // is received.
     type: "PAIARequest",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: paiaRequestPayloadSchema,
     issuer: "Owen",
     subscribers: ["Owen"],
     replay: "pair-coupled",
@@ -954,7 +1079,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // breach log).
     type: "POPIAControlsSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: popiaControlsSnapshotPayloadSchema,
     issuer: "Iris",
     subscribers: ["Iris", "dashboard"],
     replay: "latest-wins-per-key",
@@ -972,7 +1097,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a dispute resolution or arbitration requirement arises.
     type: "ResolutionRequired",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: resolutionRequiredPayloadSchema,
     issuer: "Owen",
     subscribers: ["Owen"],
     replay: "pair-coupled",
@@ -983,7 +1108,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a conflict of interest is declared by a director / officer.
     type: "ConflictDeclared",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: conflictDeclaredPayloadSchema,
     issuer: "Owen",
     subscribers: ["Owen"],
     replay: "append-only-audit",
@@ -994,7 +1119,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a related-party transaction is proposed (Companies Act s.75 / s.76).
     type: "RelatedPartyTransactionProposed",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: relatedPartyTransactionProposedPayloadSchema,
     issuer: "Owen",
     subscribers: ["Owen"],
     replay: "append-only-audit",
@@ -1005,7 +1130,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a protected disclosure / whistleblowing incident is raised.
     type: "WhistleblowingDisclosure",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: whistleblowingDisclosurePayloadSchema,
     issuer: "Owen",
     subscribers: ["Owen", "Thandiwe"],
     replay: "append-only-audit",
@@ -1017,7 +1142,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Incorporation.
     type: "MOIChangeProposed",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: moiChangeProposedPayloadSchema,
     issuer: "Owen",
     subscribers: ["Owen"],
     replay: "append-only-audit",
@@ -1028,7 +1153,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Imani when a contract draft is requested.
     type: "ContractDraftRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: contractDraftRequestedPayloadSchema,
     issuer: "Imani",
     subscribers: ["Imani"],
     replay: "pair-coupled",
@@ -1039,7 +1164,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a change to a contract clause is proposed.
     type: "ClauseChangeProposed",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: clauseChangeProposedPayloadSchema,
     issuer: "Imani",
     subscribers: ["Imani"],
     replay: "append-only-audit",
@@ -1050,7 +1175,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a document requires a digital signature under ECTA.
     type: "SignatureRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: signatureRequestedPayloadSchema,
     issuer: "Imani",
     subscribers: ["Imani"],
     replay: "pair-coupled",
@@ -1062,7 +1187,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // exception is flagged in a contract or transaction.
     type: "ECTAExceptionFlagged",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: ectaExceptionFlaggedPayloadSchema,
     issuer: "Imani",
     subscribers: ["Imani"],
     replay: "append-only-audit",
@@ -1074,7 +1199,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // shareholder, directorship).
     type: "LegalEntityChange",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: legalEntityChangePayloadSchema,
     issuer: "Imani",
     subscribers: ["Imani"],
     replay: "append-only-audit",
@@ -1085,7 +1210,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Thandiwe when an audit issue is opened following a finding.
     type: "AuditIssueOpened",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: auditIssueOpenedPayloadSchema,
     issuer: "Thandiwe",
     subscribers: ["Thandiwe"],
     replay: "pair-coupled",
@@ -1097,7 +1222,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // action verified.
     type: "AuditIssueClosed",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: auditIssueClosedPayloadSchema,
     issuer: "Thandiwe",
     subscribers: ["Thandiwe"],
     replay: "pair-coupled",
@@ -1108,7 +1233,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when an external auditor formal inquiry is received.
     type: "ExternalAuditorInquiry",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: externalAuditorInquiryPayloadSchema,
     issuer: "Thandiwe",
     subscribers: ["Thandiwe"],
     replay: "append-only-audit",
@@ -1120,7 +1245,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // pack.
     type: "AuditCommitteePackPrepped",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: auditCommitteePackPreppedPayloadSchema,
     issuer: "Thandiwe",
     subscribers: ["Thandiwe", "Owen"],
     replay: "append-only-audit",
@@ -1132,7 +1257,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // is updated and takes effect.
     type: "PolicyChange",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: policyChangePayloadSchema,
     issuer: "Owen",
     subscribers: ["Anya", "Zara", "Rohan", "Eitan"],
     replay: "append-only-audit",
@@ -1144,7 +1269,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // SARB / Companies Act review).
     type: "InterEntityTransactionProposed",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: interEntityTransactionProposedPayloadSchema,
     issuer: "Owen",
     subscribers: ["Yael"],
     replay: "append-only-audit",
@@ -1197,7 +1322,7 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a settlement cut-off time breach is detected.
     type: "CutOffBreach",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: cutOffBreachPayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas"],
     replay: "append-only-audit",
@@ -1208,7 +1333,7 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a payment scheme rule change is published.
     type: "SchemeRuleChange",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: schemeRuleChangePayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas"],
     replay: "append-only-audit",
@@ -1219,7 +1344,7 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a CSP (Common Secure Platform) attestation is due.
     type: "CSPAttestationDue",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: cspAttestationDuePayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas"],
     replay: "append-only-audit",
@@ -1237,7 +1362,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when Atlas proposes a new event schema for review and approval.
     type: "EventSchemaProposal",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: eventSchemaProposalPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Atlas"],
     replay: "pair-coupled",
@@ -1248,7 +1373,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when Atlas proposes an identity / permission change for review.
     type: "IdentityPermissionChangeProposal",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: identityPermissionChangeProposalPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Atlas"],
     replay: "pair-coupled",
@@ -1259,7 +1384,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when Atlas publishes a reviewed and approved event schema.
     type: "EventSchemaPublished",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: eventSchemaPublishedPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Anya", "Anya"],
     replay: "append-only-audit",
@@ -1270,7 +1395,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when an operational incident is raised (SRE / security).
     type: "IncidentRaised",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: incidentRaisedPayloadSchema,
     issuer: "Devon",
     subscribers: ["Devon"],
     replay: "pair-coupled",
@@ -1281,7 +1406,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when the SLO error budget burn rate exceeds the alert threshold.
     type: "SLOBudgetBurn",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: sloBudgetBurnPayloadSchema,
     issuer: "Devon",
     subscribers: ["Devon"],
     replay: "append-only-audit",
@@ -1292,7 +1417,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when infrastructure capacity is projected to breach a threshold.
     type: "CapacityBreach",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: capacityBreachPayloadSchema,
     issuer: "Devon",
     subscribers: ["Devon"],
     replay: "append-only-audit",
@@ -1304,7 +1429,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // process.
     type: "ChangeApprovalRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: changeApprovalRequestedPayloadSchema,
     issuer: "Devon",
     subscribers: ["Devon"],
     replay: "pair-coupled",
@@ -1316,7 +1441,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // is recorded.
     type: "ResilienceTestResult",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: resilienceTestResultPayloadSchema,
     issuer: "Devon",
     subscribers: ["Devon"],
     replay: "append-only-audit",
@@ -1328,7 +1453,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // exfiltration, unauthorised access).
     type: "SecurityIncidentRaised",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: securityIncidentRaisedPayloadSchema,
     issuer: "Senna",
     subscribers: ["Senna", "Rashida"],
     replay: "pair-coupled",
@@ -1339,7 +1464,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a cryptographic key rotation is due.
     type: "KeyRotationDue",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: keyRotationDuePayloadSchema,
     issuer: "Senna",
     subscribers: ["Senna"],
     replay: "append-only-audit",
@@ -1350,7 +1475,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a dependency vulnerability is detected via SCA scanning.
     type: "DependencyVulnDetected",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: dependencyVulnDetectedPayloadSchema,
     issuer: "Senna",
     subscribers: ["Senna"],
     replay: "append-only-audit",
@@ -1362,7 +1487,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // force, credential stuffing, anomalous login).
     type: "SuspiciousAuthEvent",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: suspiciousAuthEventPayloadSchema,
     issuer: "Senna",
     subscribers: ["Senna"],
     replay: "append-only-audit",
@@ -1374,7 +1499,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // dependency / component before it can be merged.
     type: "SBOMRequired",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: sbomRequiredPayloadSchema,
     issuer: "Senna",
     subscribers: ["Senna"],
     replay: "pair-coupled",
@@ -1385,7 +1510,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a merge request is submitted for security review.
     type: "MergeRequested",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: mergeRequestedPayloadSchema,
     issuer: "Senna",
     subscribers: ["Senna"],
     replay: "pair-coupled",
@@ -1397,7 +1522,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // vendor / supplier before onboarding.
     type: "SBOMAcceptanceRequired",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: sbomAcceptanceRequiredPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida"],
     replay: "pair-coupled",
@@ -1408,7 +1533,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a key ceremony is scheduled (HSM key generation / ceremony).
     type: "KeyCeremonyScheduled",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: keyCeremonyScheduledPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida"],
     replay: "append-only-audit",
@@ -1419,7 +1544,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a vendor security review is triggered (third-party risk).
     type: "VendorSecurityReview",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: vendorSecurityReviewPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida"],
     replay: "append-only-audit",
@@ -1431,7 +1556,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // inquiry.
     type: "RegulatorCyberInquiry",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: regulatorCyberInquiryPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida"],
     replay: "append-only-audit",
@@ -1443,7 +1568,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // CRO / CISO.
     type: "ThreatModelGateDecision",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: threatModelGateDecisionPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida"],
     replay: "pair-coupled",
@@ -1455,7 +1580,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // the approved threat model).
     type: "ThreatModelExceptionRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: threatModelExceptionRequestedPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida"],
     replay: "pair-coupled",
@@ -1467,7 +1592,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // posture.
     type: "CyberResilienceSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: cyberResilienceSnapshotPayloadSchema,
     issuer: "Rashida",
     subscribers: ["Rashida", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1478,7 +1603,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Operational resilience snapshot (BCP / DR / SLO status).
     type: "OperationalResilienceSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: operationalResilienceSnapshotPayloadSchema,
     issuer: "Devon",
     subscribers: ["Devon", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1508,7 +1633,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // removed).
     type: "AgentCapabilityChanged",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: agentCapabilityChangedPayloadSchema,
     issuer: "Sade",
     subscribers: ["Sade"],
     replay: "latest-wins-per-key",
@@ -1520,7 +1645,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // cadence update).
     type: "PersonaSpecChanged",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: personaSpecChangedPayloadSchema,
     issuer: "Sade",
     subscribers: ["Sade"],
     replay: "append-only-audit",
@@ -1531,7 +1656,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when Nolan / Scrooge confirms a hire (new agent registered).
     type: "HireConfirmed",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: hireConfirmedPayloadSchema,
     issuer: "Nolan",
     subscribers: ["Sade", "Scrooge"],
     replay: "append-only-audit",
@@ -1542,7 +1667,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when an agent or human employee is terminated.
     type: "Termination",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: terminationPayloadSchema,
     issuer: "Nolan",
     subscribers: ["Sade"],
     replay: "append-only-audit",
@@ -1553,7 +1678,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when leave is granted to an employee / agent.
     type: "LeaveGranted",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: leaveGrantedPayloadSchema,
     issuer: "Nolan",
     subscribers: ["Sade"],
     replay: "append-only-audit",
@@ -1564,7 +1689,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a disciplinary action is requested for an agent / employee.
     type: "DisciplinaryActionRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: disciplinaryActionRequestedPayloadSchema,
     issuer: "Nolan",
     subscribers: ["Sade"],
     replay: "pair-coupled",
@@ -1575,7 +1700,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when Nolan delivers a role brief (persona spec) for a new hire.
     type: "RoleBriefDelivered",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: roleBriefDeliveredPayloadSchema,
     issuer: "Nolan",
     subscribers: ["Nolan"],
     replay: "append-only-audit",
@@ -1586,7 +1711,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a mandate gap is detected (agent lacks a required capability).
     type: "MandateGapDetected",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: mandateGapDetectedPayloadSchema,
     issuer: "any-agent",
     subscribers: ["Nolan", "PAX", "Scrooge"],
     replay: "append-only-audit",
@@ -1597,7 +1722,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by PAX when a role research task is requested.
     type: "RoleResearchRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: roleResearchRequestedPayloadSchema,
     issuer: "PAX",
     subscribers: ["PAX"],
     replay: "pair-coupled",
@@ -1608,7 +1733,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Snapshot of PAX's role research queue state.
     type: "RoleResearchQueueSnapshot",
     class: "runtime",
-    payloadSchema: PT,
+    payloadSchema: roleResearchQueueSnapshotPayloadSchema,
     issuer: "PAX",
     subscribers: ["PAX", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1630,7 +1755,7 @@ const REGULATORY_HORIZON_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // amended standard, new circular).
     type: "RegulatoryInstrumentUpdate",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: regulatoryInstrumentUpdatePayloadSchema,
     issuer: "Mira",
     subscribers: ["Mira"],
     replay: "append-only-audit",
@@ -1641,7 +1766,7 @@ const REGULATORY_HORIZON_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Yael when SARS issues new tax guidance.
     type: "SARSGuidanceUpdate",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: sarsGuidanceUpdatePayloadSchema,
     issuer: "Yael",
     subscribers: ["Yael"],
     replay: "append-only-audit",
@@ -1659,7 +1784,7 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a prospective client lead is captured.
     type: "LeadCaptured",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: leadCapturedPayloadSchema,
     issuer: "Niko",
     subscribers: ["Niko"],
     replay: "append-only-audit",
@@ -1670,7 +1795,7 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a suitability assessment is required for a client.
     type: "SuitabilityAssessmentRequired",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: suitabilityAssessmentRequiredPayloadSchema,
     issuer: "Niko",
     subscribers: ["Niko"],
     replay: "pair-coupled",
@@ -1682,7 +1807,7 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // (FAIS §7 obligation).
     type: "AdviceRecordRequested",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: adviceRecordRequestedPayloadSchema,
     issuer: "Niko",
     subscribers: ["Niko"],
     replay: "pair-coupled",
@@ -1694,7 +1819,7 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Niko to Mira (KYC gate).
     type: "OnboardingHandoffPending",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: onboardingHandoffPendingPayloadSchema,
     issuer: "Niko",
     subscribers: ["Niko"],
     replay: "pair-coupled",
@@ -1706,7 +1831,7 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // KYC pipeline.
     type: "ClientCandidateRegistered",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: clientCandidateRegisteredPayloadSchema,
     issuer: "Niko",
     subscribers: ["Mira", "Yael"],
     replay: "append-only-audit",
@@ -1717,7 +1842,7 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a periodic client review cycle is triggered.
     type: "ClientReviewTriggered",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: clientReviewTriggeredPayloadSchema,
     issuer: "Mira",
     subscribers: ["Yael"],
     replay: "append-only-audit",
@@ -1736,7 +1861,7 @@ const MODEL_VALIDATION_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // (Distinct from BacktestRequested which Rohan consumes.)
     type: "BacktestTriggered",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: backtestTriggeredPayloadSchema,
     issuer: "Nadia",
     subscribers: ["Nadia"],
     replay: "append-only-audit",
@@ -1754,7 +1879,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // ALM / Treasury readiness snapshot.
     type: "ALMReadinessSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: almReadinessSnapshotPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1765,7 +1890,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Markets / Saskia readiness snapshot.
     type: "MarketsReadinessSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: marketsReadinessSnapshotPayloadSchema,
     issuer: "Saskia",
     subscribers: ["Saskia", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1776,7 +1901,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Payments / Tomas readiness snapshot.
     type: "PaymentsReadinessSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: paymentsReadinessSnapshotPayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1787,7 +1912,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Legal / Imani readiness snapshot.
     type: "LegalReadinessSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: legalReadinessSnapshotPayloadSchema,
     issuer: "Imani",
     subscribers: ["Imani", "dashboard"],
     replay: "latest-wins-per-key",
@@ -1798,7 +1923,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Tax / Yael readiness snapshot.
     type: "TaxReadinessSnapshot",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: taxReadinessSnapshotPayloadSchema,
     issuer: "Yael",
     subscribers: ["Yael", "dashboard"],
     replay: "latest-wins-per-key",
