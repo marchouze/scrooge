@@ -377,7 +377,7 @@ function contentTypeFor(path: string): string {
 }
 
 function serveStatic(pathname: string): Response {
-  const requested = pathname === "/" ? "/index.html" : pathname;
+  const requested = pathname === "/" ? "/home.html" : pathname;
   const safe = normalize(requested).replace(/^\/+/, "");
   const filePath = join(PUBLIC_DIR, safe);
   if (!filePath.startsWith(PUBLIC_DIR) || !existsSync(filePath)) {

@@ -43,7 +43,6 @@
       <h2>Reference</h2>
       <ul>
         <li><a href="/home.html">Home</a></li>
-        <li><a href="/index.html">Legacy dashboard</a></li>
         <li><a href="/api/rms">/api/rms (JSON)</a></li>
       </ul>
     </nav>
@@ -54,24 +53,17 @@
         <p class="shell-page-lede" id="rmsLede">
           The seven canonical registers projected from the event log per
           <code>D-RMS-PHASE-1</code>. Each register is a typed projection
-          (<a href="/api/rms">/api/rms</a>) — Phase 1 dual-render keeps the
-          legacy Owner Inbox feed visible alongside.
+          (<a href="/api/rms">/api/rms</a>).
         </p>
       </div>
 
       <!-- Hub view (no ?register= query param) -->
       <section id="rmsHubSection" class="rms-section" hidden>
         <div class="shell-tiles" id="rmsHubTiles"></div>
-        <aside class="shell-callout" aria-labelledby="rms-callout-dual">
-          <h3 id="rms-callout-dual">Phase 1 dual-render</h3>
-          <p>
-            The seven registers below render <em>alongside</em> the legacy
-            Owner Inbox feed at <a href="/index.html">/index.html</a>. No
-            legacy view is touched. Phase 4 is when the legacy folders
-            archive and the registers become sole canonical.
-          </p>
+        <aside class="shell-callout" aria-labelledby="rms-callout-gaps">
+          <h3 id="rms-callout-gaps">Substrate gaps</h3>
           <p class="rms-callout-meta">
-            Substrate gaps tracked: Slice 5 e2e round-trip · Phase 2 dual-render
+            Tracked: Slice 5 e2e round-trip · Phase 2 dual-render
             maturation (Decisions Desk keystrokes, side-panel records browser,
             mode-toggle filter chips) · Phase 3 cutover · Phase 4 archive.
           </p>
@@ -104,7 +96,7 @@
   <footer class="shell-footer" role="contentinfo">
     Bank UI · RMS register render (Slice 4) · derived from
     <a href="/api/rms">/api/rms</a> ·
-    <a href="/Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md">spec</a>
+    authority: <code>D-RMS-PHASE-1</code>
   </footer>
 
   <!-- RMS document preview modal -->
