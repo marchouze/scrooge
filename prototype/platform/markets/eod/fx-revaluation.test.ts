@@ -244,6 +244,97 @@ describe("TC-5: settled position excluded from revaluation", () => {
 // TC-6: Multiple open positions — all revalued
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// TC-7: FX Forward positions are revalued via the same EOD cycle as spot
+// (forwards reuse FxTradeExecuted; the runner is product-agnostic).
+// ---------------------------------------------------------------------------
+
+/** Append one FX-forward FxTradeExecuted (USD/ZAR, T+90 settlement). */
+function appendFxForwardTrade(
+  store: EventStore,
+  tradeId: string,
+  bookRateAmount = 18.7,
+  forwardSettleDate = "2026-08-12",
+): void {
+  store.append(
+    makeFxTradeExecuted({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: { scheme: "internal", value: tradeId },
+        productTaxonomy: "FX-forward",
+        currencyPair: { base: "ZAR", quote: "USD" },
+        side: "buy",
+        legs: [
+          {
+            legKind: "near",
+            payCurrency: "ZAR",
+            receiveCurrency: "USD",
+            notional: { currency: "ZAR", amountMinor: 1_000_000_00 },
+            counterNotional: { currency: "USD", amountMinor: 53_476 },
+            rate: { currency: "USD", amount: bookRateAmount },
+            settlementDate: { iso: forwardSettleDate, calendar: "JIHCAL" },
+          },
+        ],
+        tradeDate: { iso: AS_OF, calendar: "JIHCAL" },
+        counterparty: { partyId: "CP-FWD", name: "FWD Counterparty", role: "counterparty" },
+        venue: "OTC",
+        trader: "TRADER-FWD",
+        bookType: "trading",
+        bookId: "BOOK-FX-FWD-001",
+        settlementForm: "physical" as const,
+        settlementPath: "correspondent" as const,
+      },
+    }),
+  );
+}
+
+describe("TC-7: FX Forward positions enter the EOD revaluation cycle", () => {
+  it("revalues an open forward exactly like a spot (mid-life MtM)", () => {
+    const store = makeStore();
+    // Book a 3-month forward at 18.7; mid-life rate moves to 18.85.
+    appendFxForwardTrade(store, "TRD-FWD-MID", 18.7);
+
+    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_850_000 } });
+    const result = runEodFxRevaluation(store, AS_OF, rateSource);
+
+    expect(result.revalued).toBe(1);
+    expect(result.skipped).toBe(0);
+
+    let payload: { tradeId: string; unrealisedPnlZarMinor: number } | undefined;
+    for (const e of store.replay({ type: "FxPositionRevalued" })) {
+      payload = e.payload as { tradeId: string; unrealisedPnlZarMinor: number };
+    }
+    expect(payload?.tradeId).toBe("TRD-FWD-MID");
+    // (18.85 - 18.70) × 1M ZAR minor = 0.15 × 100_000_000 = 15_000_000
+    expect(payload?.unrealisedPnlZarMinor).toBe(15_000_000);
+  });
+
+  it("settled forward (at maturity) is excluded — closes the MtM cycle", () => {
+    const store = makeStore();
+    appendFxForwardTrade(store, "TRD-FWD-SETTLED", 18.7);
+    appendSettlementConfirmed(store, "TRD-FWD-SETTLED");
+
+    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_850_000 } });
+    const result = runEodFxRevaluation(store, AS_OF, rateSource);
+    expect(result.revalued).toBe(0);
+  });
+
+  it("idempotency holds for forwards across multiple EOD runs on the same date", () => {
+    const store = makeStore();
+    appendFxForwardTrade(store, "TRD-FWD-IDEM", 18.7);
+
+    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_850_000 } });
+    const first = runEodFxRevaluation(store, AS_OF, rateSource);
+    const second = runEodFxRevaluation(store, AS_OF, rateSource);
+    expect(first.revalued).toBe(1);
+    expect(second.revalued).toBe(0);
+    expect(second.skipped).toBe(1);
+  });
+});
+
 describe("TC-6: multiple open positions — all revalued", () => {
   it("revalues all open positions and returns correct counts", () => {
     const store = makeStore();

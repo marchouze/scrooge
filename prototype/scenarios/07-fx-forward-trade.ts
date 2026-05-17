@@ -367,11 +367,7 @@ function buildNdfFixingObserved(asOf: string): Event {
     asOf,
     entity: ENTITY,
     actor: SASKIA,
-    citations: [
-      "D-FX-AD-STATUS",
-      "ORG-EXCON-ODP-001",
-      "IFRS-9-§3.2.3",
-    ],
+    citations: ["D-FX-AD-STATUS", "ORG-EXCON-ODP-001", "IFRS-9-§3.2.3"],
     payload: {
       tradeId: "TRD-FX-NDF-M4-001",
       currencyPair: "USD/ZAR",
