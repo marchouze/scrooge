@@ -565,11 +565,8 @@ const TARGET_DECISION_ID = "D-MARKETS-SCHEMA-FOUNDATION";
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
-  // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: accept both legacy CeoDecision
-  // and the unified Decision event type.
-  const ceoDecisions = triggering.filter(
-    (e) => e.type === "CeoDecision" || e.type === "Decision",
-  );
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: accept both legacy CeoDecision and the unified Decision event type.
+  const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision" || e.type === "Decision");
 
   // Locate the authorising decision in the triggering set. The handler
   // is event-driven on `CeoDecision` / `Decision`; we register the M1 URN
