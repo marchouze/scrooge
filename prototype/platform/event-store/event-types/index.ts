@@ -68,6 +68,11 @@ export * from "./performance";
 export * from "./analytics";
 // AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
 export * from "./agent-ops";
+// Governance-snapshot schemas — Atlas (Core banking platform architect, engineering).
+// CeoDecision, ReconResult, SubstrateStateSnapshot, GovernanceCyclePrep,
+// DataProjectionSnapshot, InboxHygieneSweep, ObligationsRegisterSnapshot,
+// SecuritySubstrateSnapshot.
+export * from "./governance-snapshots";
 // Intranet event family — Noa (Intranet Product Owner & UI Architect).
 export * from "./intranet";
 // FTP event family — Ravi (Treasury/ALM Engineer).
@@ -158,6 +163,7 @@ import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
+import { GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES } from "./governance-snapshots";
 import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
@@ -194,6 +200,7 @@ export const TYPED_EVENT_TYPES = [
   ...FTP_TYPED_EVENT_TYPES,
   ...PAYMENTS_TYPED_EVENT_TYPES,
   ...GOVERNANCE_TYPED_EVENT_TYPES,
+  ...GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES,
   ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
   ...PARTY_EVENT_TYPES,
   ...REGULATORY_REPORTING_TYPED_EVENT_TYPES,
