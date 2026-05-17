@@ -102,6 +102,7 @@ function buildBriefEventIndex(): BriefEventIndex {
     const agentName = typeof issuedTo?.name === "string" ? issuedTo.name.toLowerCase() : "";
 
     if (!byDate.has(date)) byDate.set(date, new Set());
+    // biome-ignore lint/style/noNonNullAssertion: guarded by byDate.has(date) above
     if (agentName) byDate.get(date)!.add(agentName);
   }
 
@@ -205,32 +206,21 @@ export function run(): ReconResult {
       // Empty store: downgrade all to warn (fresh runner / first boot).
       violations.push({
         subject: filePath,
-        message:
-          `No AgentBriefIssued event found for Team Inbox file \`${filename}\`. ` +
-          `Event store has no AgentBriefIssued events — fresh runner detected. ` +
-          `Citations: D-RMS-PHASE-2, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No AgentBriefIssued event found for Team Inbox file \`${filename}\`. Event store has no AgentBriefIssued events — fresh runner detected. Citations: D-RMS-PHASE-2, D-RMS-PHASE-2-3-ACCELERATE.`,
         severity: "warn",
       });
     } else if (postPhase2) {
       // Post-Phase-2: hard fail — Principle 1 violation.
       violations.push({
         subject: filePath,
-        message:
-          `No AgentBriefIssued event found for Team Inbox file \`${filename}\` ` +
-          `(created on or after Phase 2 activation 2026-05-17). ` +
-          `Every agent dispatch from Phase 2 onward requires a backing AgentBriefIssued event. ` +
-          `Run \`bun run dispatch:open-brief\` before the Agent(...) call, or backfill the event. ` +
-          `Citations: D-RMS-PHASE-2, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No AgentBriefIssued event found for Team Inbox file \`${filename}\` (created on or after Phase 2 activation 2026-05-17). Every agent dispatch from Phase 2 onward requires a backing AgentBriefIssued event. Run \`bun run dispatch:open-brief\` before the Agent(...) call, or backfill the event. Citations: D-RMS-PHASE-2, D-RMS-PHASE-2-3-ACCELERATE.`,
         severity: "fail",
       });
     } else {
       // Pre-Phase-2: warn only (historical expected gap).
       violations.push({
         subject: filePath,
-        message:
-          `No AgentBriefIssued event found for Team Inbox file \`${filename}\` ` +
-          `(pre-Phase-2 file; historical gap expected). ` +
-          `Citations: D-RMS-PHASE-2, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No AgentBriefIssued event found for Team Inbox file \`${filename}\` (pre-Phase-2 file; historical gap expected). Citations: D-RMS-PHASE-2, D-RMS-PHASE-2-3-ACCELERATE.`,
         severity: "warn",
       });
     }

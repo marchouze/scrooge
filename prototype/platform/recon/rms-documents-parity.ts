@@ -113,6 +113,7 @@ function buildDocumentEventIndex(): DocumentEventIndex {
     if (date) {
       const fragment = (metaPath ?? "").toLowerCase();
       if (!byDate.has(date)) byDate.set(date, new Set());
+      // biome-ignore lint/style/noNonNullAssertion: guarded by byDate.has(date) above
       if (fragment) byDate.get(date)!.add(fragment);
     }
   }
@@ -215,32 +216,21 @@ export function run(): ReconResult {
       // Empty store: downgrade all to warn (fresh runner / first boot).
       violations.push({
         subject: filePath,
-        message:
-          `No RecordFiled event found for Owner Inbox file \`${filename}\`. ` +
-          `Event store has no RecordFiled(documents) events — fresh runner detected. ` +
-          `Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No RecordFiled event found for Owner Inbox file \`${filename}\`. Event store has no RecordFiled(documents) events — fresh runner detected. Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
         severity: "warn",
       });
     } else if (postPhase3) {
       // Post-Phase-3: hard fail — Principle 1 violation.
       violations.push({
         subject: filePath,
-        message:
-          `No RecordFiled event found for Owner Inbox file \`${filename}\` ` +
-          `(created on or after Phase 3 activation 2026-05-17). ` +
-          `Every deliverable from Phase 3 onward requires a backing RecordFiled event. ` +
-          `Run \`bun run dispatch:close-run --deliverable <path>\` or backfill the event. ` +
-          `Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No RecordFiled event found for Owner Inbox file \`${filename}\` (created on or after Phase 3 activation 2026-05-17). Every deliverable from Phase 3 onward requires a backing RecordFiled event. Run \`bun run dispatch:close-run --deliverable <path>\` or backfill the event. Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
         severity: "fail",
       });
     } else {
       // Pre-Phase-3: warn only (historical expected gap).
       violations.push({
         subject: filePath,
-        message:
-          `No RecordFiled event found for Owner Inbox file \`${filename}\` ` +
-          `(pre-Phase-3 file; historical gap expected). ` +
-          `Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No RecordFiled event found for Owner Inbox file \`${filename}\` (pre-Phase-3 file; historical gap expected). Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
         severity: "warn",
       });
     }
