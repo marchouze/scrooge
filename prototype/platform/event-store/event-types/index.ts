@@ -90,6 +90,16 @@ export * from "./regulatory-reporting";
 // BestExecutionAnalysisCompleted, ConductDisclosureEmitted.
 // Authority: D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
 export * from "./conduct";
+// F-032 extended event-type files — typed Zod schemas replacing PT placeholders.
+// Authority: F-032 (event-type-registry-coverage recon, 2026-05-16).
+// Author: Atlas (Core banking platform architect, engineering)
+export * from "./agent-substrate-extended";
+export * from "./governance-extended";
+export * from "./risk-treasury-extended";
+export * from "./aml-popia-extended";
+export * from "./ifrs-accounting-extended";
+export * from "./security-devops-extended";
+export * from "./markets-trading-extended";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -164,6 +174,8 @@ import { PARTY_EVENT_TYPES } from "../../../domains/party";
 import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
+import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
+import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
@@ -172,9 +184,12 @@ import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
 import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
+import { GOVERNANCE_EXTENDED_TYPED_EVENT_TYPES } from "./governance-extended";
 import { GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES } from "./governance-snapshots";
+import { IFRS_ACCOUNTING_EXTENDED_TYPED_EVENT_TYPES } from "./ifrs-accounting-extended";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
+import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
@@ -183,7 +198,9 @@ import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
+import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
+import { SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES } from "./security-devops-extended";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 
 export const TYPED_EVENT_TYPES = [
@@ -212,7 +229,14 @@ export const TYPED_EVENT_TYPES = [
   ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
   ...PARTY_EVENT_TYPES,
   ...REGULATORY_REPORTING_TYPED_EVENT_TYPES,
-  // ← new agent adds one spread line here
+  // F-032 extended typed event types — replacing PT placeholder rows
+  ...AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES,
+  ...GOVERNANCE_EXTENDED_TYPED_EVENT_TYPES,
+  ...RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES,
+  ...AML_POPIA_EXTENDED_TYPED_EVENT_TYPES,
+  ...IFRS_ACCOUNTING_EXTENDED_TYPED_EVENT_TYPES,
+  ...SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES,
+  ...MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

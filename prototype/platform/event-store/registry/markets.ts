@@ -61,6 +61,7 @@ import {
   baReturnGenerationTriggeredPayloadSchema,
   balanceSheetSubstantiationCompletedPayloadSchema,
 } from "../event-types/accounting";
+import { ifrsClassificationAppliedPayloadSchema } from "../event-types/agent-substrate-extended";
 import {
   accountsSetupCompletedPayloadSchema,
   beneficialOwnerResolvedPayloadSchema,
@@ -74,6 +75,7 @@ import {
   ftpAttributionRecordedPayloadSchema,
   ftpCurvePublishedPayloadSchema,
 } from "../event-types/ftp";
+import { tradeExecutedPayloadSchema } from "../event-types/markets-trading-extended";
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
@@ -102,9 +104,9 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     type: "TradeExecuted",
     class: "markets",
     // Polymorphic on the embedded `contract` shape — per-product variants
-    // validate at factory level. PT passthrough satisfies F-032 coverage gate;
+    // validate at factory level. Base schema validates envelope fields;
     // Vera Wave-4 cross-validator will reconcile against per-variant schemas.
-    payloadSchema: PT,
+    payloadSchema: tradeExecutedPayloadSchema,
     issuer: "any-agent",
     subscribers: ["Position", "Bea", "Rohan", "Mira", "Tomas"],
     replay: "latest-wins-per-key",
@@ -303,7 +305,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "IfrsClassificationApplied",
     class: "markets",
-    payloadSchema: PT,
+    payloadSchema: ifrsClassificationAppliedPayloadSchema,
     issuer: "Bea",
     subscribers: ["Anya", "Camille", "Bea", "Vera", "dashboard"],
     replay: "append-only-audit",

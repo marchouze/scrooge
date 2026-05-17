@@ -70,6 +70,19 @@ import {
   agentOpsReadinessSnapshotPayloadSchema,
   mlroAttestationPayloadSchema,
 } from "../event-types-readiness-snapshots";
+import {
+  citationGateFailedPayloadSchema,
+  citationGatePassedPayloadSchema,
+  dashboardProjectionRefreshedPayloadSchema,
+  m1CitationTrancheRegisteredPayloadSchema,
+  marketsProjectionRefreshedPayloadSchema,
+  marketsProjectionRegisteredPayloadSchema,
+  obligationRegisteredPayloadSchema,
+  securityGateRegisteredPayloadSchema,
+  threatModelDimensionRegisteredPayloadSchema,
+  workstreamCompletedPayloadSchema,
+  workstreamStartedPayloadSchema,
+} from "../event-types/agent-substrate-extended";
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingPayloadSchema } from "../event-types/audit";
 import {
@@ -94,12 +107,6 @@ import {
   RETENTION_RUNTIME_1Y,
 } from "./types";
 
-// ---------------------------------------------------------------------------
-// Build-phase passthrough schema — satisfies F-032 Zod-schema-coverage gate
-// for types that have no dedicated factory yet.
-// ---------------------------------------------------------------------------
-const PT = z.object({}).passthrough();
-
 // Governance / audit / observation event types currently in flight.
 // These predate A0 (already emitted by handlers); registered here for
 // completeness so the registry covers what the event store actually
@@ -112,7 +119,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // type Decision carries the strict schema. Use PT passthrough so the
     // registry satisfies the F-032 Zod-coverage gate without constraining
     // historical CeoDecision payload shapes.
-    payloadSchema: PT,
+    payloadSchema: z.object({}).passthrough(),
     issuer: "human",
     subscribers: ["Owen", "dashboard", "Vera"],
     replay: "latest-wins-per-key",
@@ -123,7 +130,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "WorkstreamStarted",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: workstreamStartedPayloadSchema,
     issuer: "any-agent",
     subscribers: ["dashboard"],
     replay: "pair-coupled",
@@ -134,7 +141,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "WorkstreamCompleted",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: workstreamCompletedPayloadSchema,
     issuer: "any-agent",
     subscribers: ["dashboard"],
     replay: "pair-coupled",
@@ -200,7 +207,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "CitationGatePassed",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: citationGatePassedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Thandiwe", "Vera"],
     replay: "append-only-audit",
@@ -211,7 +218,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "CitationGateFailed",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: citationGateFailedPayloadSchema,
     issuer: "Mira",
     subscribers: ["Thandiwe", "Vera", "Atlas"],
     replay: "append-only-audit",
@@ -234,7 +241,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "DashboardProjectionRefreshed",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: dashboardProjectionRefreshedPayloadSchema,
     issuer: "Anya",
     subscribers: ["Atlas", "dashboard"],
     replay: "append-only-audit",
@@ -294,7 +301,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "ObligationRegistered",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: obligationRegisteredPayloadSchema,
     issuer: "Mira",
     subscribers: ["Vera", "Anya", "dashboard"],
     replay: "append-only-audit",
@@ -315,7 +322,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "M1CitationTrancheRegistered",
     class: "governance",
-    payloadSchema: PT,
+    payloadSchema: m1CitationTrancheRegisteredPayloadSchema,
     issuer: "Mira",
     subscribers: ["Vera", "Anya", "dashboard"],
     replay: "append-only-audit",
@@ -362,7 +369,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "MarketsProjectionRegistered",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: marketsProjectionRegisteredPayloadSchema,
     issuer: "Anya",
     subscribers: ["Bea", "Kai", "Saskia", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
@@ -375,7 +382,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "MarketsProjectionRefreshed",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: marketsProjectionRefreshedPayloadSchema,
     issuer: "Anya",
     subscribers: ["Vera", "dashboard"],
     replay: "append-only-audit",
@@ -388,7 +395,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "ThreatModelDimensionRegistered",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: threatModelDimensionRegisteredPayloadSchema,
     issuer: "Senna",
     subscribers: ["Rashida", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
@@ -399,7 +406,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "SecurityGateRegistered",
     class: "audit",
-    payloadSchema: PT,
+    payloadSchema: securityGateRegisteredPayloadSchema,
     issuer: "Senna",
     subscribers: ["Rashida", "Atlas", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
