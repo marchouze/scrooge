@@ -123,11 +123,7 @@ const CATEGORY_B: AgentSpec[] = [
   makeSubAgentSpec("agent:atlas:event-trigger-bus", ["BusDispatched", "SubstrateAlert"]),
 
   // AgentRegistry — platform/agent-runtime/registry.ts
-  makeSubAgentSpec("agent:atlas:registry", [
-    "AgentRegistered",
-    "AgentRetired",
-    "SubstrateAlert",
-  ]),
+  makeSubAgentSpec("agent:atlas:registry", ["AgentRegistered", "AgentRetired", "SubstrateAlert"]),
 
   // PermissionPolicyPublisher — platform/agent-identity/permission-policy.ts
   makeSubAgentSpec("agent:atlas:permission-policy", [
@@ -152,16 +148,10 @@ const CATEGORY_B: AgentSpec[] = [
   ]),
 
   // ScheduledTriggerConsumer — platform/event-trigger-bus/scheduled-trigger-consumer.ts
-  makeSubAgentSpec("agent:atlas:scheduled-trigger-consumer", [
-    "ScheduledTick",
-    "SubstrateAlert",
-  ]),
+  makeSubAgentSpec("agent:atlas:scheduled-trigger-consumer", ["ScheduledTick", "SubstrateAlert"]),
 
   // Substrate-state reporter — runtime/agents/atlas-substrate-state.ts
-  makeSubAgentSpec("agent:atlas:substrate-state", [
-    "SecuritySubstrateSnapshot",
-    "SubstrateAlert",
-  ]),
+  makeSubAgentSpec("agent:atlas:substrate-state", ["SecuritySubstrateSnapshot", "SubstrateAlert"]),
 ];
 
 // ---------------------------------------------------------------------------
@@ -248,10 +238,7 @@ const CATEGORY_D: AgentSpec[] = [
   ]),
 
   // Anya — projection drift detection
-  makeSubAgentSpec("agent:anya:projection-drift", [
-    "MasterDataReconciled",
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:anya:projection-drift", ["MasterDataReconciled", "AgentEscalation"]),
 
   // Owen (CoSec, governance) — governance cycle prep
   // Owen §11: AgentDecision, ResolutionRecorded, ConflictRegistered,
@@ -302,10 +289,7 @@ const CATEGORY_D: AgentSpec[] = [
   //   SanctionsHitDisposed, SanctionsRuleApproved, PEPHandlingDecided,
   //   ConductBreachDisposed, RMCPVersionApproved, RegulatorResponseApproved,
   //   AgentEscalation, AgentDecision, SanctionsClearancePassed
-  makeSubAgentSpec("agent:zara:mlro-supervision", [
-    "AgentDecision",
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:zara:mlro-supervision", ["AgentDecision", "AgentEscalation"]),
 
   // Thandiwe (CAE, governance) — audit committee prep
   // Thandiwe §11: ThirdLineOpinionSigned, AuditPlanRevisionApproved,
@@ -338,10 +322,7 @@ const CATEGORY_D: AgentSpec[] = [
   //   CrossBorderTransferApproved, PAIAManualVersionApproved,
   //   ConsentTemplateApproved, RetentionScheduleApproved, AgentEscalation,
   //   AgentDecision
-  makeSubAgentSpec("agent:iris:popia-controls-snapshot", [
-    "AgentDecision",
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:iris:popia-controls-snapshot", ["AgentDecision", "AgentEscalation"]),
 
   // Eitan (Treasury, engineering) — liquidity snapshot
   // Eitan §11: AgentDecision, AgentEscalation, RiskRaised, WorkstreamRegistered
@@ -371,10 +352,7 @@ const CATEGORY_E: AgentSpec[] = [
   //   JournalEntryPosted, SubLedgerReconciled, CloseCycleCompleted,
   //   BalanceSheetSubstantiationCompleted, BAReturnCellMapped, BAReturnGenerated,
   //   AuditPackReady, RestatementBooked, AgentEscalation, AgentDecision
-  makeSubAgentSpec("agent:bea:accounting-readiness", [
-    "AgentDecision",
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:bea:accounting-readiness", ["AgentDecision", "AgentEscalation"]),
 
   // Bea — period-close run (Category G in source, same parent)
   makeSubAgentSpec("agent:bea:period-close", [
@@ -388,20 +366,14 @@ const CATEGORY_E: AgentSpec[] = [
   // Scrooge (Chief of Staff, governance) — inbox hygiene sweep
   // Scrooge §11: InboxHygieneSweep, WorkRoutedToAgent, RoleResearchRequested,
   //   AgentEscalationFromScrooge, SubstrateGapInventoried
-  makeSubAgentSpec("agent:scrooge:inbox-hygiene", [
-    "InboxHygieneSweep",
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:scrooge:inbox-hygiene", ["InboxHygieneSweep", "AgentEscalation"]),
 
   // Yael (Tax, governance) — tax readiness
   // Yael §11: TaxClassificationPublished, VATApportionmentBasisApproved,
   //   FATCAClassificationAssigned, CRSClassificationAssigned, TaxReturnDrafted,
   //   TaxPositionTaken, TransferPricingDocumented, SARSGuidanceScanned,
   //   AgentEscalation, AgentDecision
-  makeSubAgentSpec("agent:yael:tax-readiness", [
-    "AgentDecision",
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:yael:tax-readiness", ["AgentDecision", "AgentEscalation"]),
 
   // Tomas (Payments, engineering) — payments readiness
   // Tomas §11: PaymentInitiated, PaymentSettled, PaymentRetried, PaymentFailed,
@@ -409,17 +381,13 @@ const CATEGORY_E: AgentSpec[] = [
   //   CutOffAdjusted, CutOffBreach, NostroFunded, NostroSwept,
   //   SchemeConnectivityChanged, CalendarEntryPosted, CSPAttestationLodged,
   //   AgentEscalation
-  makeSubAgentSpec("agent:tomas:payments-readiness", [
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:tomas:payments-readiness", ["AgentEscalation"]),
 
   // Imani (GC, governance) — legal readiness
   // Imani §11 (build-phase active): ClauseLibraryRevised,
   //   ContractTemplateVersioned, CounterpartyClassified, EctaExecutionApproved,
   //   LegalEntityChanged, NegotiationPositionRecorded, AgentEscalation
-  makeSubAgentSpec("agent:imani:legal-readiness", [
-    "AgentEscalation",
-  ]),
+  makeSubAgentSpec("agent:imani:legal-readiness", ["AgentEscalation"]),
 
   // Ravi (ALM, engineering) — ALM readiness
   // Ravi §11: ALMRunCompleted, SAMOSFundingPlanned, RepoExecuted, HedgeExecuted,
@@ -543,10 +511,7 @@ async function main(): Promise<number> {
     return "unknown";
   };
 
-  logger.info(
-    { total: ALL_SUB_AGENT_SPECS.length },
-    "publish:sub-agent-policies — starting",
-  );
+  logger.info({ total: ALL_SUB_AGENT_SPECS.length }, "publish:sub-agent-policies — starting");
 
   for (const spec of ALL_SUB_AGENT_SPECS) {
     const category = categoryOf(spec.agentUrn);

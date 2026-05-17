@@ -155,20 +155,27 @@ describe("permission-gate-default recon (F-031)", () => {
     ).toBe(true);
   });
 
-  it("downgrades accepted-no-policy actors to info", () => {
+  it("T-12: ACCEPTED_NO_POLICY_ACTORS is empty — any actor without a policy is warn (not info)", () => {
+    // Post-T-12 (2026-05-17): the carve-out set is intentionally empty.
+    // Previously `agent:substrate-runner` was in ACCEPTED_NO_POLICY_ACTORS
+    // and produced `info` severity. Now it is published via
+    // `bun run publish:sub-agent-policies`, so in production it resolves
+    // to hasPolicy: true. This unit test simulates the hypothetical case
+    // where a policy is missing — it should produce `warn`, not `info`,
+    // because the carve-out set is empty.
     const r = run({
       legacyBypass: new Set(),
       knownEventTypes: new Set(),
       appendedAgentActors: [{ agentUrn: "agent:substrate-runner", hasPolicy: false }],
       constructionSites: [],
     });
-    expect(r.ok).toBe(true);
+    expect(r.ok).toBe(true); // warn does not fail the pipeline
     expect(
       r.violations.some(
         (v) =>
-          v.severity === "info" &&
+          v.severity === "warn" &&
           v.subject === "actor:agent:substrate-runner" &&
-          v.message.includes("Accepted today"),
+          v.message.includes("PermissionPolicy"),
       ),
     ).toBe(true);
   });

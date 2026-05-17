@@ -814,7 +814,7 @@ function handleOwnerInboxFetch(filename: string): Response {
   if (!allowed) {
     return jsonResponse({ error: `not in current Owner Inbox feed: ${filename}` }, 404);
   }
-  const filePath = join(REPO_ROOT, "Owner Inbox", filename);
+  const filePath = join(REPO_ROOT, "archive", "owner-inbox", filename);
   if (!existsSync(filePath)) {
     return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
   }
@@ -925,10 +925,10 @@ function handlePolicyFetch(filename: string): Response {
     return jsonResponse({ error: `not in current policy register: ${filename}` }, 404);
   }
   // Resolve to disk: qualified Policies/ paths are repo-relative; bare basenames
-  // live under Owner Inbox/.
+  // live under archive/owner-inbox/ (Phase 4: legacy inboxes archived).
   const filePath = isPoliciesQualified
     ? join(REPO_ROOT, filename)
-    : join(REPO_ROOT, "Owner Inbox", filename);
+    : join(REPO_ROOT, "archive", "owner-inbox", filename);
   if (!existsSync(filePath)) {
     return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
   }

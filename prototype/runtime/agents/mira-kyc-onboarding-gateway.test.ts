@@ -49,7 +49,7 @@ function makeContext(args: {
     },
     asOf: args.asOf,
     repoRoot: REPO_ROOT,
-    ownerInboxDir: join(REPO_ROOT, "Owner Inbox"),
+    ownerInboxDir: join(REPO_ROOT, "archive", "owner-inbox"),
     dryRun: args.dryRun ?? false,
   };
 }

@@ -543,7 +543,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     trigger: { kind: entry.metadata.kind, id: opts.trigger },
     asOf: startedAt,
     repoRoot,
-    ownerInboxDir: resolve(repoRoot, "Owner Inbox"),
+    ownerInboxDir: resolve(repoRoot, "archive", "owner-inbox"),
     dryRun: opts.dryRun,
   };
 
@@ -794,7 +794,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
           },
           asOf: clock.now(),
           repoRoot,
-          ownerInboxDir: resolve(repoRoot, "Owner Inbox"),
+          ownerInboxDir: resolve(repoRoot, "archive", "owner-inbox"),
           dryRun: ctx.dryRun,
         };
         logger.info(

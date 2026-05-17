@@ -35,11 +35,14 @@ function repoRoot(): string {
 
 const REPO = repoRoot();
 const OBLIGATIONS_PATH = resolve(REPO, "Regulations/_obligations-register.md");
-const RAS_PATH = resolve(REPO, "Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md");
+const RAS_PATH = resolve(
+  REPO,
+  "archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md",
+);
 
-/** Build a synthetic policy file path under `Owner Inbox/` for fixtures. */
+/** Build a synthetic policy file path under `archive/owner-inbox/` for fixtures (Phase 4). */
 function policyPath(name: string): string {
-  return resolve(REPO, "Owner Inbox", name);
+  return resolve(REPO, "archive", "owner-inbox", name);
 }
 
 describe("risk-taxonomy-coverage recon (Vera Wave-5, enforcing v2)", () => {
@@ -59,7 +62,7 @@ describe("risk-taxonomy-coverage recon (Vera Wave-5, enforcing v2)", () => {
     const r = run({
       fileOverrides: new Map([[path, content]]),
       scopes: ["policies"],
-      policyDirOverride: resolve(REPO, "Owner Inbox"),
+      policyDirOverride: resolve(REPO, "archive", "owner-inbox"),
     });
     expect(r.pipeline).toBe("risk-taxonomy-coverage");
     expect(r.asserted).toBe(1);
@@ -80,7 +83,7 @@ describe("risk-taxonomy-coverage recon (Vera Wave-5, enforcing v2)", () => {
     const r = run({
       fileOverrides: new Map([[path, content]]),
       scopes: ["policies"],
-      policyDirOverride: resolve(REPO, "Owner Inbox"),
+      policyDirOverride: resolve(REPO, "archive", "owner-inbox"),
     });
     expect(r.asserted).toBe(1);
     expect(r.violations).toEqual([]);
@@ -100,7 +103,7 @@ describe("risk-taxonomy-coverage recon (Vera Wave-5, enforcing v2)", () => {
     const r = run({
       fileOverrides: new Map([[path, content]]),
       scopes: ["policies"],
-      policyDirOverride: resolve(REPO, "Owner Inbox"),
+      policyDirOverride: resolve(REPO, "archive", "owner-inbox"),
     });
     expect(r.asserted).toBe(1);
     expect(r.violations.length).toBe(1);
@@ -125,7 +128,7 @@ describe("risk-taxonomy-coverage recon (Vera Wave-5, enforcing v2)", () => {
     const r = run({
       fileOverrides: new Map([[path, content]]),
       scopes: ["policies"],
-      policyDirOverride: resolve(REPO, "Owner Inbox"),
+      policyDirOverride: resolve(REPO, "archive", "owner-inbox"),
     });
     expect(r.asserted).toBe(1);
     expect(r.violations.length).toBe(1);
@@ -148,7 +151,7 @@ describe("risk-taxonomy-coverage recon (Vera Wave-5, enforcing v2)", () => {
     const r = run({
       fileOverrides: new Map([[path, content]]),
       scopes: ["policies"],
-      policyDirOverride: resolve(REPO, "Owner Inbox"),
+      policyDirOverride: resolve(REPO, "archive", "owner-inbox"),
     });
     expect(r.asserted).toBe(1);
     // Only the invalid code emits a finding; the valid one is silent.

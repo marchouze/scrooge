@@ -74,7 +74,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   const violations: ReconViolation[] = [];
   const files: string[] = [];
-  walkMarkdown(resolve(repoRoot, "Owner Inbox"), files);
+  walkMarkdown(resolve(repoRoot, "archive", "owner-inbox"), files);
 
   for (const path of files) {
     const id = readDecisionId(path);

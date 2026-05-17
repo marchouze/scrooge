@@ -3,9 +3,12 @@
 // D-OWNER-INBOX-AUTO-ARCHIVE — round-trip tests for the event-driven
 // auto-archiver handler.
 //
+// Phase 4 update: Owner Inbox has been moved to archive/owner-inbox/ per
+// D-RMS-PHASE-4. Tests now use archive paths.
+//
 // Asserts that the handler:
-//   1. Moves a `decision-required: true` source card from `Owner Inbox/`
-//      to `Owner Inbox/actioned/` on a CeoDecision event with sourceDoc.
+//   1. Moves a `decision-required: true` source card from `archive/owner-inbox/`
+//      to `archive/owner-inbox/actioned/` on a CeoDecision event with sourceDoc.
 //   2. Emits a typed `RecordFiled` event with the correct shape
 //      (registerKey: "decisions", classification: "ceo-only", BLAKE3 hash).
 //   3. Idempotent: a second invocation against the same CeoDecision event
@@ -14,7 +17,7 @@
 //   5. Skips `sourceDoc` not-found cases without failing the handler
 //      (logs warn, returns ok: true).
 //   6. Skips events without `sourceDoc` (no-op).
-//   7. Skips `sourceDoc` paths outside `Owner Inbox/` (no-op).
+//   7. Skips `sourceDoc` paths outside `archive/owner-inbox/` (no-op).
 //
 // Authority: D-RMS-PHASE-1 (CEO-approved 2026-05-09); slice authorisation
 // under the no-pause rule.
@@ -42,10 +45,10 @@ let ownerInboxDir: string;
 let actionedDir: string;
 
 beforeEach(() => {
-  // Fresh per-test repo root with the Owner Inbox/actioned/ structure
-  // the handler expects.
+  // Fresh per-test repo root with the archive/owner-inbox/actioned/ structure
+  // the Phase 4 handler expects. Legacy "Owner Inbox/" has been archived.
   repoRoot = mkdtempSync(join(tmpdir(), "owner-inbox-archiver-"));
-  ownerInboxDir = resolve(repoRoot, "Owner Inbox");
+  ownerInboxDir = resolve(repoRoot, "archive", "owner-inbox");
   actionedDir = resolve(ownerInboxDir, "actioned");
   mkdirSync(actionedDir, { recursive: true });
 });
@@ -147,7 +150,7 @@ describe("scrooge:owner-inbox-archiver", () => {
     const sourcePath = decisionRequiredCard(filename, "D-TEST-ARCHIVE-MOVE");
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-ARCHIVE-MOVE",
-      sourceDoc: `Owner Inbox/${filename}`,
+      sourceDoc: `archive/owner-inbox/${filename}`,
     });
 
     const recordedBefore = countRecordFiled();
@@ -183,7 +186,7 @@ describe("scrooge:owner-inbox-archiver", () => {
     decisionRequiredCard(filename, "D-TEST-ARCHIVE-IDEMPOTENT");
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-ARCHIVE-IDEMPOTENT",
-      sourceDoc: `Owner Inbox/${filename}`,
+      sourceDoc: `archive/owner-inbox/${filename}`,
     });
 
     // First invocation moves + emits.
@@ -210,7 +213,7 @@ describe("scrooge:owner-inbox-archiver", () => {
     const sourcePath = informationalCard(filename);
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-NOT-A-DECISION",
-      sourceDoc: `Owner Inbox/${filename}`,
+      sourceDoc: `archive/owner-inbox/${filename}`,
     });
 
     const recordedBefore = countRecordFiled();
@@ -220,7 +223,7 @@ describe("scrooge:owner-inbox-archiver", () => {
 
     expect(result.ok).toBe(true);
     expect(result.eventsEmitted).toBe(0);
-    // File still in Owner Inbox/, not in actioned/.
+    // File still in archive/owner-inbox/, not in actioned/.
     expect(existsSync(sourcePath)).toBe(true);
     expect(existsSync(resolve(actionedDir, filename))).toBe(false);
     // No RecordFiled emitted.
@@ -230,7 +233,7 @@ describe("scrooge:owner-inbox-archiver", () => {
   it("logs warn and returns ok when sourceDoc does not resolve", async () => {
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-MISSING-SOURCE",
-      sourceDoc: "Owner Inbox/2026-05-10_does-not-exist.md",
+      sourceDoc: "archive/owner-inbox/2026-05-10_does-not-exist.md",
     });
 
     const recordedBefore = countRecordFiled();
@@ -255,16 +258,16 @@ describe("scrooge:owner-inbox-archiver", () => {
     expect(countRecordFiled()).toBe(recordedBefore);
   });
 
-  it("skips sourceDoc paths outside Owner Inbox/", async () => {
+  it("skips sourceDoc paths outside archive/owner-inbox/", async () => {
     // A Team Inbox source — out of scope; the handler must not touch it.
-    const teamInboxDir = resolve(repoRoot, "Team Inbox");
+    const teamInboxDir = resolve(repoRoot, "archive", "team-inbox");
     mkdirSync(teamInboxDir, { recursive: true });
     const teamPath = resolve(teamInboxDir, "2026-05-10_test-team-inbox.md");
     writeFileSync(teamPath, "---\ndecision-required: true\n---\n# x\n", "utf8");
 
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-OUT-OF-SCOPE",
-      sourceDoc: "Team Inbox/2026-05-10_test-team-inbox.md",
+      sourceDoc: "archive/team-inbox/2026-05-10_test-team-inbox.md",
     });
 
     const recordedBefore = countRecordFiled();
@@ -279,7 +282,7 @@ describe("scrooge:owner-inbox-archiver", () => {
     expect(countRecordFiled()).toBe(recordedBefore);
   });
 
-  it("skips sourceDoc paths already in Owner Inbox/actioned/", async () => {
+  it("skips sourceDoc paths already in archive/owner-inbox/actioned/", async () => {
     // File already in actioned/ — second-line idempotency layer.
     const filename = "2026-05-10_atlas_test-already-actioned.md";
     const actionedPath = resolve(actionedDir, filename);
@@ -287,7 +290,7 @@ describe("scrooge:owner-inbox-archiver", () => {
 
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-ALREADY-ACTIONED",
-      sourceDoc: `Owner Inbox/actioned/${filename}`,
+      sourceDoc: `archive/owner-inbox/actioned/${filename}`,
     });
 
     const recordedBefore = countRecordFiled();
@@ -314,7 +317,7 @@ describe("scrooge:owner-inbox-archiver", () => {
     const sourcePath = decisionRequiredCard(filename, "D-TEST-ARCHIVE-DRYRUN");
     const event = ceoDecisionEvent({
       decisionId: "D-TEST-ARCHIVE-DRYRUN",
-      sourceDoc: `Owner Inbox/${filename}`,
+      sourceDoc: `archive/owner-inbox/${filename}`,
     });
 
     const recordedBefore = countRecordFiled();

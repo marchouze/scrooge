@@ -120,7 +120,7 @@ function findRepoRoot(start: string): string {
 }
 
 const REPO_ROOT = findRepoRoot(import.meta.dir);
-const OWNER_INBOX_DIR = resolve(REPO_ROOT, "Owner Inbox");
+const OWNER_INBOX_DIR = resolve(REPO_ROOT, "archive", "owner-inbox");
 const DEFAULT_DB_PATH = resolve(REPO_ROOT, "prototype/.local/event.db");
 
 // ---------------------------------------------------------------------------

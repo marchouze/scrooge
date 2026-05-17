@@ -83,7 +83,7 @@ export interface SourcePaths {
   readonly teamDir: string; // /Team — persona files
   readonly teamRoster: string; // /Team/_team-roster.json — canonical roster (Principle 2)
   readonly principlesDir: string; // /Principles — one file per principle (Principle 2 single-graph)
-  readonly ownerInboxDir: string; // /Owner Inbox — deliverables
+  readonly ownerInboxDir: string; // archive/owner-inbox — legacy deliverables (Phase 4 archive)
   readonly bankNameRegister: string; // /Regulations/_bank-name.md — canonical bank-name register
   readonly policiesDir?: string; // /Policies — canonical policy document store (D-POLICY-DOCUMENT-HOME)
 }
@@ -190,7 +190,7 @@ export function defaultSourcePaths(repoRoot: string): SourcePaths {
   return {
     repoRoot,
     claudeMd: join(repoRoot, "CLAUDE.md"),
-    policyRegister: join(repoRoot, "Owner Inbox", "2026-05-06_policy-register.md"),
+    policyRegister: join(repoRoot, "archive", "owner-inbox", "2026-05-06_policy-register.md"),
     obligationsRegister: join(repoRoot, "Regulations", "_obligations-register.md"),
     regulationsIndex: join(repoRoot, "Regulations", "_index.md"),
     regulationsRoot: join(repoRoot, "Regulations"),
@@ -199,7 +199,7 @@ export function defaultSourcePaths(repoRoot: string): SourcePaths {
     teamDir: join(repoRoot, "Team"),
     teamRoster: join(repoRoot, "Team", "_team-roster.json"),
     principlesDir: join(repoRoot, "Principles"),
-    ownerInboxDir: join(repoRoot, "Owner Inbox"),
+    ownerInboxDir: join(repoRoot, "archive", "owner-inbox"),
     bankNameRegister: join(repoRoot, "Regulations", "_bank-name.md"),
     policiesDir: join(repoRoot, "Policies"),
   };
@@ -993,7 +993,7 @@ export function parseOwnerInboxFile(filename: string, content: string): OwnerInb
   const group: OwnerInboxGroup = decisionRequired ? "decision-open" : "informational";
   const item: OwnerInboxItem = {
     filename,
-    path: `Owner Inbox/${filename}`,
+    path: `archive/owner-inbox/${filename}`,
     date,
     title,
     displayTitle,
@@ -1235,7 +1235,7 @@ function recentDeliverablesFor(ownerInboxDir: string, name: string, limit = 5): 
     if (!matched) continue;
     out.push({
       date,
-      path: `Owner Inbox/${filename}`,
+      path: `archive/owner-inbox/${filename}`,
       title: humaniseSlug(filename),
     });
   }

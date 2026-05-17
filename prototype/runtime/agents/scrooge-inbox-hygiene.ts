@@ -258,7 +258,7 @@ function buildReportMarkdown(
 }
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
-  const teamInboxDir = resolve(ctx.repoRoot, "Team Inbox");
+  const teamInboxDir = resolve(ctx.repoRoot, "archive", "team-inbox");
   const teamInboxActionedDir = resolve(teamInboxDir, "actioned");
   const teamDir = resolve(ctx.repoRoot, "Team");
   const ownerInboxDir = ctx.ownerInboxDir;

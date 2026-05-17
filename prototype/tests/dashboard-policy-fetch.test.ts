@@ -102,7 +102,7 @@ beforeAll(async () => {
     for (const f of p.sourceFiles ?? []) allowlist.add(f);
   }
   for (const f of allowlist) {
-    const filePath = resolve(REPO_ROOT, "Owner Inbox", f);
+    const filePath = resolve(REPO_ROOT, "archive", "owner-inbox", f);
     if (existsSync(filePath)) {
       sampleFilename = f;
       sampleDiskBody = readFileSync(filePath, "utf8");
@@ -118,7 +118,7 @@ beforeAll(async () => {
   // register. We pick a real Owner-Inbox file the policy register does
   // not name, falling back to a synthesised basename if none qualifies
   // (extremely unlikely given the inbox size).
-  const ownerInboxDir = resolve(REPO_ROOT, "Owner Inbox");
+  const ownerInboxDir = resolve(REPO_ROOT, "archive", "owner-inbox");
   if (existsSync(ownerInboxDir)) {
     const entries = readdirSync(ownerInboxDir, { withFileTypes: true })
       .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".md"))

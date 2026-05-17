@@ -248,7 +248,7 @@ function readMarketsDomainEvents(sinceIso: string): MarketsDomainEvents {
 }
 
 function readM1Readiness(repoRoot: string): M1ReadinessState {
-  const ownerInbox = resolve(repoRoot, "Owner Inbox");
+  const ownerInbox = resolve(repoRoot, "archive", "owner-inbox");
   const schemaDecision = resolve(
     ownerInbox,
     "2026-05-07_ceo-decision_markets-schema-foundation.md",

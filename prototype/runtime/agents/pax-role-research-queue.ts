@@ -312,7 +312,7 @@ function findPendingHireBriefs(
   repoRoot: string,
   resolved: ReadonlySet<string> = resolvedDecisionIds(),
 ): readonly PendingHireBrief[] {
-  const inboxDir = resolve(repoRoot, "Owner Inbox");
+  const inboxDir = resolve(repoRoot, "archive", "owner-inbox");
   if (!existsSync(inboxDir)) return [];
   const out: PendingHireBrief[] = [];
   for (const name of readdirSync(inboxDir).sort()) {

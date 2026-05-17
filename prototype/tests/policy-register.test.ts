@@ -23,7 +23,7 @@ import {
 } from "../dashboard/policy-register";
 
 const REPO_ROOT = join(import.meta.dir, "..", "..");
-const REAL_REGISTER = join(REPO_ROOT, "Owner Inbox", "2026-05-06_policy-register.md");
+const REAL_REGISTER = join(REPO_ROOT, "archive", "owner-inbox", "2026-05-06_policy-register.md");
 const REAL_OBLIGATIONS = join(REPO_ROOT, "Regulations", "_obligations-register.md");
 
 describe("policy-register — classifiers", () => {
