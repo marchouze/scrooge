@@ -497,7 +497,7 @@ export function makeAgentRunStarted(args: {
 // AgentRunCompleted (RMS-3)
 
 export const agentRunCompletedFollowOnRouteSchema = z.object({
-  kind: z.enum(["agent", "decision", "register-update"]),
+  kind: z.enum(["agent", "decision", "register-update", "code-pr"]),
   target: z.string().min(1),
   directive: z.string().min(1),
 });

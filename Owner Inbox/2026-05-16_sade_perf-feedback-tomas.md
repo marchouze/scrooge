@@ -3,37 +3,37 @@ title: "Performance Feedback — Tomas (2026-05-16)"
 date: 2026-05-16
 author: "Sade (AgentOps engineer, engineering)"
 agentId: tomas
-tier: unsatisfactory
-overallScore: 0.2000
+tier: needs-improvement
+overallScore: 0.5644
 decision-required: false
 ---
 ## Performance Summary
 
 **Agent:** Tomas  
 **Evaluation period:** 2026-05-16  
-**Tier:** Unsatisfactory  
-**Overall score:** 20%
+**Tier:** Needs Improvement  
+**Overall score:** 56%
 
-Agent tomas is unsatisfactory for the evaluation period (overall score: 20%). Top strength: No activity recorded this period — no runs started, no PRs merged, no decisions advanced. Focus area: Agent was completely inactive this period — zero runs, zero PRs, zero decisions, zero workstreams. An autonomous agent must generate output on its own cadence (Principle 6). Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.
+Agent tomas needs improvement for the evaluation period (overall score: 56%). Top strength: Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline. Focus area: Low delivery rate of 22% — more than half of started runs did not deliver. Investigate blockers.
 
 ## Scores
 
 | Dimension | Score | Weight |
 |-----------|-------|--------|
-| Delivery  | 0% | 40% |
-| Quality   | 50% | 40% |
-| Strategic | 0% | 20% |
-| **Overall** | **20%** | — |
+| Delivery  | 11% | 40% |
+| Quality   | 100% | 40% |
+| Strategic | 60% | 20% |
+| **Overall** | **56%** | — |
 
 ## Run Metrics
 
 | Metric | Value |
 |--------|-------|
-| Runs started | 0 |
-| Runs delivered | 0 |
+| Runs started | 2 |
+| Runs delivered | 2 |
 | Runs blocked | 0 |
-| Runs failed | 0 |
-| Delivery rate | 0% |
+| Runs failed | 7 |
+| Delivery rate | 22% |
 
 ## Quality Metrics
 
@@ -55,19 +55,20 @@ Agent tomas is unsatisfactory for the evaluation period (overall score: 20%). To
 | Decisions advanced | — |
 | Workstreams progressed | — |
 | Compliance artifacts | 0 |
-| PRs merged (proxy) | 0 |
+| PRs merged (proxy) | 2 |
 
 ## Strengths
 
-- No activity recorded this period — no runs started, no PRs merged, no decisions advanced.
+- Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline.
+- 2 PR(s) merged in the evaluation period.
 
 ## Areas for Improvement
 
-- Agent was completely inactive this period — zero runs, zero PRs, zero decisions, zero workstreams. An autonomous agent must generate output on its own cadence (Principle 6). Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.
+- Low delivery rate of 22% — more than half of started runs did not deliver. Investigate blockers.
 
 ## Suggested Focus for Next Period
 
-Tomas is performing at an unsatisfactory level. An AgentEscalation has been raised to Devon (COO) and Vera (internal audit engineer, governance) for review. Immediate action required: identify the root cause of non-delivery, resolve critical audit findings, and confirm mandate is still valid.
+Tomas requires improvement. Priority: resolve all open audit findings, eliminate CI and worktree violations, and ensure every started run reaches a delivered outcome. Review mandate alignment — if runs are blocking due to substrate gaps, escalate via AgentEscalation.
 
 ---
 

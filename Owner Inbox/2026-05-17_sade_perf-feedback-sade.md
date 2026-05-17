@@ -3,33 +3,33 @@ title: "Performance Feedback — Sade (2026-05-17)"
 date: 2026-05-17
 author: "Sade (AgentOps engineer, engineering)"
 agentId: sade
-tier: needs-improvement
-overallScore: 0.4000
+tier: unsatisfactory
+overallScore: 0.2000
 decision-required: false
 ---
 ## Performance Summary
 
 **Agent:** Sade  
 **Evaluation period:** 2026-05-17  
-**Tier:** Needs Improvement  
-**Overall score:** 40%
+**Tier:** Unsatisfactory  
+**Overall score:** 20%
 
-Agent sade needs improvement for the evaluation period (overall score: 40%). Top strength: Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline. Focus area: Low delivery rate of 0% — more than half of started runs did not deliver. Investigate blockers.
+Agent sade is unsatisfactory for the evaluation period (overall score: 20%). Top strength: No activity recorded this period — no runs started, no PRs merged, no decisions advanced. Focus area: Agent was completely inactive this period — zero runs, zero PRs, zero decisions, zero workstreams. An autonomous agent must generate output on its own cadence (Principle 6). Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.
 
 ## Scores
 
 | Dimension | Score | Weight |
 |-----------|-------|--------|
 | Delivery  | 0% | 40% |
-| Quality   | 100% | 40% |
+| Quality   | 50% | 40% |
 | Strategic | 0% | 20% |
-| **Overall** | **40%** | — |
+| **Overall** | **20%** | — |
 
 ## Run Metrics
 
 | Metric | Value |
 |--------|-------|
-| Runs started | 1 |
+| Runs started | 0 |
 | Runs delivered | 0 |
 | Runs blocked | 0 |
 | Runs failed | 0 |
@@ -59,16 +59,15 @@ Agent sade needs improvement for the evaluation period (overall score: 40%). Top
 
 ## Strengths
 
-- Zero CI violations, worktree isolation violations, and audit findings — clean operational discipline.
+- No activity recorded this period — no runs started, no PRs merged, no decisions advanced.
 
 ## Areas for Improvement
 
-- Low delivery rate of 0% — more than half of started runs did not deliver. Investigate blockers.
-- No strategic contribution recorded — no decisions advanced, workstreams progressed, or PRs merged. Review mandate alignment.
+- Agent was completely inactive this period — zero runs, zero PRs, zero decisions, zero workstreams. An autonomous agent must generate output on its own cadence (Principle 6). Review whether the scheduler is firing, whether the mandate is clear, and escalate if a substrate gap is blocking dispatch.
 
 ## Suggested Focus for Next Period
 
-Sade requires improvement. Priority: resolve all open audit findings, eliminate CI and worktree violations, and ensure every started run reaches a delivered outcome. Review mandate alignment — if runs are blocking due to substrate gaps, escalate via AgentEscalation.
+Sade is performing at an unsatisfactory level. An AgentEscalation has been raised to Devon (COO) and Vera (internal audit engineer, governance) for review. Immediate action required: identify the root cause of non-delivery, resolve critical audit findings, and confirm mandate is still valid.
 
 ---
 

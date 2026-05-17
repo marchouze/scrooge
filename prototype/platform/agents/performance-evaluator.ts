@@ -369,20 +369,26 @@ function collectRunMetrics(agentId: string, evaluationPeriod: string): RunMetric
       }
     }
 
-    if (e.type === "SubstrateAgentRunStarted") {
-      const agentStr = String(p.agent ?? "").toLowerCase();
-      if (agentStr === agentLower || agentStr === `agent:${agentLower}`) {
-        runsStarted++;
-      }
-    }
-
+    // SubstrateAgentRunStarted — launchd scheduler ticks have no deliverable and must not
+    // be counted as runs; they dilute the delivery rate with noise. Only count a substrate
+    // run as started when the corresponding Completed event carries a deliverable or an
+    // explicit outcome. We therefore count start+delivery together on the Completed event.
     if (e.type === "SubstrateAgentRunCompleted") {
       const agentStr = String(p.agent ?? "").toLowerCase();
       if (agentStr === agentLower || agentStr === `agent:${agentLower}`) {
         const outcome = String(p.outcome ?? "");
-        if (outcome === "delivered") runsDelivered++;
-        else if (outcome === "blocked") runsBlocked++;
-        else if (outcome === "failed") runsFailed++;
+        const hasDeliverable = !!p.deliverable;
+        if (outcome === "delivered" || hasDeliverable) {
+          runsStarted++;
+          runsDelivered++;
+        } else if (outcome === "blocked") {
+          runsStarted++;
+          runsBlocked++;
+        } else if (outcome === "failed") {
+          runsStarted++;
+          runsFailed++;
+        }
+        // No outcome + no deliverable = launchd tick; ignore entirely.
       }
     }
 
@@ -461,7 +467,7 @@ function collectStrategicMetrics(agentId: string, evaluationPeriod: string): Str
     if (!e.as_of.startsWith(evaluationPeriod)) continue;
     const p = e.payload as Record<string, unknown>;
 
-    // CeoDecision events where this agent submitted or advanced
+    // CeoDecision events where this agent submitted or advanced (legacy type)
     if (e.type === "CeoDecision") {
       const actorId = String(e.actor?.id ?? "").toLowerCase();
       const advancedBy = String(p.advancedBy ?? "").toLowerCase();
@@ -472,6 +478,15 @@ function collectStrategicMetrics(agentId: string, evaluationPeriod: string): Str
         advancedBy.includes(agentLower) ||
         decidedBy.includes(agentLower)
       ) {
+        const decisionId = String(p.decisionId ?? e.event_id);
+        if (!decisionsAdvanced.includes(decisionId)) decisionsAdvanced.push(decisionId);
+      }
+    }
+
+    // Decision events (D-DECISIONS-FRAMEWORK-REDESIGN) where actor is this agent
+    if (e.type === "Decision") {
+      const actorId = String(e.actor?.id ?? "").toLowerCase();
+      if (actorId === agentUrn || actorId === agentLower) {
         const decisionId = String(p.decisionId ?? e.event_id);
         if (!decisionsAdvanced.includes(decisionId)) decisionsAdvanced.push(decisionId);
       }
@@ -496,15 +511,16 @@ function collectStrategicMetrics(agentId: string, evaluationPeriod: string): Str
           ? p.deliverableDocumentHashes
           : [];
         complianceArtifacts += hashes.length;
-        // followOnRoutes with kind "code-pr" count as PRs merged (best-effort proxy)
+        // followOnRoutes — kind "code-pr" counts as prsMerged; kind "decision" counts as decisionsAdvanced
         const followOn = Array.isArray(p.followOnRoutes) ? p.followOnRoutes : [];
         for (const r of followOn) {
-          if (
-            typeof r === "object" &&
-            r !== null &&
-            (r as Record<string, unknown>).kind === "code-pr"
-          ) {
+          if (typeof r !== "object" || r === null) continue;
+          const route = r as Record<string, unknown>;
+          if (route.kind === "code-pr") {
             prsMerged++;
+          } else if (route.kind === "decision") {
+            const decId = String(route.target ?? "");
+            if (decId && !decisionsAdvanced.includes(decId)) decisionsAdvanced.push(decId);
           }
         }
       }

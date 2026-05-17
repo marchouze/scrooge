@@ -108,7 +108,9 @@ function hasExistingRun(agentId: string, period: string): boolean {
   const agentLower = agentId.toLowerCase();
   for (const e of eventStore.replay({})) {
     if (!e.as_of.startsWith(period)) continue;
-    if (e.type !== "AgentRunStarted" && e.type !== "SubstrateAgentRunStarted") continue;
+    // Only AgentRunStarted (RMS/backfill form) counts — SubstrateAgentRunStarted are
+    // launchd scheduler ticks, not PR deliveries, and must not block backfill.
+    if (e.type !== "AgentRunStarted") continue;
     const p = e.payload as Record<string, unknown>;
     // AgentRunStarted (RMS form) — agent is a ref object
     const agentRef = p.agent as Record<string, unknown> | undefined;
@@ -117,7 +119,7 @@ function hasExistingRun(agentId: string, period: string): boolean {
       const agentIdField = String(agentRef.agentId ?? "").toLowerCase();
       if (name === agentLower || agentIdField === `agent:${agentLower}`) return true;
     }
-    // SubstrateAgentRunStarted — agent is a plain string
+    // Plain-string agent field (older backfill form)
     const agentStr = String(p.agent ?? "").toLowerCase();
     if (agentStr === agentLower || agentStr === `agent:${agentLower}`) return true;
   }
@@ -175,7 +177,7 @@ function main(): void {
   const followOnRoutes: Array<{ kind: string; target: string; directive: string }> = [];
   if (pr !== undefined) {
     followOnRoutes.push({
-      kind: "agent",
+      kind: "code-pr",
       target: `github:pr:${pr}`,
       directive: `PR #${pr} merged to main`,
     });
