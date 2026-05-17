@@ -449,7 +449,11 @@ function buildReportMarkdown(
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
-  const ceoDecisions = triggering.filter((e): e is Event => e.type === "CeoDecision");
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: accept both legacy CeoDecision
+  // and the unified Decision event type.
+  const ceoDecisions = triggering.filter(
+    (e): e is Event => e.type === "CeoDecision" || e.type === "Decision",
+  );
 
   // Filter for the specific decision that authorises this handler.
   const matched = ceoDecisions.filter((e) => {

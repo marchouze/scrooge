@@ -116,10 +116,14 @@ const POSTING_CITATIONS: readonly string[] = [
 /**
  * The four CDM equity event types this handler subscribes to plus the
  * lifecycle anchor `CdmBindingsRegenerated` and the activation anchor
- * `CeoDecision`. Mirrored in `runtime/handlers-metadata.ts`.
+ * `CeoDecision` / `Decision`. Mirrored in `runtime/handlers-metadata.ts`.
+ *
+ * D-DECISIONS-FRAMEWORK-REDESIGN Slice C: `Decision` added alongside
+ * the legacy `CeoDecision` alias.
  */
 const SUBSCRIBED_TYPES = new Set<string>([
   "CeoDecision",
+  "Decision", // D-DECISIONS-FRAMEWORK-REDESIGN Slice C unified type
   "CdmBindingsRegenerated",
   "EquityTradeBooked",
   "EquitySettlementInstructed",
@@ -455,7 +459,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let eventsEmitted = 0;
 
   for (const e of relevant) {
-    if (e.type === "CeoDecision" || e.type === "CdmBindingsRegenerated") {
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: accept both legacy CeoDecision
+    // and the unified Decision event type as lifecycle anchors.
+    if (e.type === "CeoDecision" || e.type === "Decision" || e.type === "CdmBindingsRegenerated") {
       sum.lifecycleAnchorsSeen += 1;
       // Lifecycle anchors don't emit per-event; they activate / refresh the
       // rule set. The rule set itself is code (this module) — re-running

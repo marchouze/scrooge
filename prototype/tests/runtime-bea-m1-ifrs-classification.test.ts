@@ -28,6 +28,7 @@ import { join } from "node:path";
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeCdmBindingsRegenerated } from "../platform/event-store/event-types-cdm";
+import { makeDecision } from "../platform/event-store/event-types/decision";
 import type { Event } from "../platform/event-store/types";
 import { makeEquitySettlementInstructed, makeEquityTradeBooked } from "../platform/markets/cdm";
 import beaM1IfrsClassificationRules, {
@@ -367,15 +368,28 @@ describe("runtime — bea:m1-ifrs-classification-rules", () => {
   });
 
   it("counts lifecycle anchors but does not emit per-event for them", async () => {
-    const ceoDecision: Event = {
-      event_id: newEventId(),
-      type: "CeoDecision",
-      as_of: "2026-05-07T00:00:00.000Z",
+    // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from raw CeoDecision
+    // construction to makeDecision with the unified Decision payload.
+    const ceoDecision: Event = makeDecision({
+      asOf: "2026-05-07T00:00:00.000Z",
       entity: "BANK-ZA-001",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
-      payload: { decisionId: "D-MARKETS-SCHEMA-FOUNDATION" },
-    };
+      eventId: newEventId(),
+      payload: {
+        decisionId: "D-MARKETS-SCHEMA-FOUNDATION",
+        phase: "approved",
+        authority: "CEO",
+        authorityRef: "marc@tgv.co.za",
+        title: "Markets schema foundation approval",
+        category: "governance",
+        recommendation: "Approved.",
+        rationale: "Lifecycle anchor test fixture.",
+        sourceDocHashes: [],
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+        recordedVia: "authoring-ui",
+      },
+    });
     const cdmRefresh: Event = makeCdmBindingsRegenerated({
       asOf: "2026-05-09T00:00:00.000Z",
       entity: "BANK-ZA-001",

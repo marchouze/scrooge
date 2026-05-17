@@ -54,10 +54,7 @@ function makeContext(overrides: Partial<AgentRunContext> = {}): AgentRunContext 
 
 // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from raw CeoDecision
 // construction to makeDecision with the unified Decision payload.
-function appendCeoDecision(
-  decisionId: string,
-  phase: DecisionPhase,
-): { event_id: string } {
+function appendCeoDecision(decisionId: string, phase: DecisionPhase): { event_id: string } {
   const event_id = newEventId();
   eventStore.append(
     makeDecision({

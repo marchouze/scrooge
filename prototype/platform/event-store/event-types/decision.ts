@@ -188,29 +188,10 @@ export const DECISION_TYPED_EVENT_TYPES = ["Decision"] as const;
 export type DecisionEventType = (typeof DECISION_TYPED_EVENT_TYPES)[number];
 
 // ---------------------------------------------------------------------------
-// D-DECISIONS-FRAMEWORK-REDESIGN Slice C — legacy type aliases.
+// D-DECISIONS-FRAMEWORK-REDESIGN Phase 3 PR B — deprecated aliases removed.
 //
-// `CeoDecision` and `AgentDecision` are now aliases for `Decision`.
-// The old event types remain in `.local/event.db`; the projection at
-// `projections/decisions.ts` reads both. Do NOT delete these aliases —
-// they serve as the canonical deprecation marker while old events persist
-// in the store.
-//
-// New code must use `Decision` / `makeDecision` directly.
+// `CeoDecisionPayload` and `makeCeoDecision` aliases have been removed.
+// All test call sites have been migrated to `makeDecision` / `DecisionPayload`.
+// The old `CeoDecision` event type remains in `.local/event.db`; the projection
+// at `projections/decisions.ts` reads both `CeoDecision` and `Decision` events.
 // ---------------------------------------------------------------------------
-
-/**
- * @deprecated D-DECISIONS-FRAMEWORK-REDESIGN Slice C — use `DecisionPayload`.
- * `CeoDecision` events are now unified under the `Decision` event family.
- * Legacy events in `.local/event.db` continue to be read by the projection;
- * new authoring must use `recordDecision` / `makeDecision`.
- */
-export type CeoDecisionPayload = DecisionPayload;
-
-/**
- * @deprecated D-DECISIONS-FRAMEWORK-REDESIGN Slice C — use `makeDecision`.
- * Alias for `makeDecision` with `authority: 'CEO'` semantics. Kept for
- * build compatibility during transition; remove after all legacy call sites
- * migrate to `recordDecision`.
- */
-export const makeCeoDecision = makeDecision;
