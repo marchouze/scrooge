@@ -10,8 +10,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { triggerBAReturnGeneration } from "../platform/accounting/ba-return-trigger";
-import { EventStore } from "../platform/event-store/store";
 import { simulatedTag } from "../platform/event-store/provenance";
+import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 
 // ---------------------------------------------------------------------------
@@ -23,7 +23,11 @@ const PERIOD = "2026-05";
 const TRIGGER_EVENT_ID = "evt-period-closed-001";
 const AS_OF = "2026-06-01T00:00:00.000Z";
 const ACTOR = { type: "service" as const, id: "agent:Bea" };
-const CITATIONS = ["PROC-FIN-MC-01", "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN", "BANKS-ACT-94-1990-S90"];
+const CITATIONS = [
+  "PROC-FIN-MC-01",
+  "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+  "BANKS-ACT-94-1990-S90",
+];
 
 const PROVENANCE = simulatedTag({
   scenario: "ba-return-trigger-tests",
@@ -103,7 +107,11 @@ describe("triggerBAReturnGeneration", () => {
 
     const events = [...store.replay({ entity: ENTITY, type: "BAReturnGenerationTriggered" })];
     expect(events).toHaveLength(1);
-    const payload = events[0]!.payload as { period: string; triggerEventId: string; entity: string };
+    const payload = events[0]?.payload as {
+      period: string;
+      triggerEventId: string;
+      entity: string;
+    };
     expect(payload.period).toBe(PERIOD);
     expect(payload.triggerEventId).toBe(TRIGGER_EVENT_ID);
     expect(payload.entity).toBe(ENTITY);
@@ -159,7 +167,7 @@ describe("triggerBAReturnGeneration", () => {
     });
 
     const events = [...store.replay({ entity: ENTITY, type: "BAReturnGenerationTriggered" })];
-    const payload = events[0]!.payload as { triggeredAt: string };
+    const payload = events[0]?.payload as { triggeredAt: string };
     expect(payload.triggeredAt).toBe(customTriggeredAt);
   });
 });

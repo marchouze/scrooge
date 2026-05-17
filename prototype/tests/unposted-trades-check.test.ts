@@ -10,9 +10,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { checkUnpostedTrades } from "../platform/accounting/unposted-trades-check";
-import type {
-  UnpostedTradeEvent,
-} from "../platform/accounting/unposted-trades-check";
+import type { UnpostedTradeEvent } from "../platform/accounting/unposted-trades-check";
 import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
 
 // ---------------------------------------------------------------------------
@@ -54,7 +52,11 @@ describe("checkUnpostedTrades", () => {
     ];
     const postings = [makePosting("evt-001"), makePosting("evt-002")];
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(true);
     expect(result.count).toBe(0);
@@ -68,12 +70,16 @@ describe("checkUnpostedTrades", () => {
     ];
     const postings = [makePosting("evt-001")];
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(false);
     expect(result.count).toBe(1);
-    expect(result.unposted[0]!.eventId).toBe("evt-002");
-    expect(result.unposted[0]!.tradeId).toBe("TRD-002");
+    expect(result.unposted[0]?.eventId).toBe("evt-002");
+    expect(result.unposted[0]?.tradeId).toBe("TRD-002");
   });
 
   it("excludes trades with valueDate after periodEnd", () => {
@@ -83,12 +89,16 @@ describe("checkUnpostedTrades", () => {
     ];
     const postings: SubLedgerPostingEmittedPayload[] = []; // no postings
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     // Only evt-001 falls within the period — evt-002 is excluded.
     expect(result.ok).toBe(false);
     expect(result.count).toBe(1);
-    expect(result.unposted[0]!.eventId).toBe("evt-001");
+    expect(result.unposted[0]?.eventId).toBe("evt-001");
   });
 
   it("returns ok:true with no trades in the period", () => {
@@ -97,14 +107,22 @@ describe("checkUnpostedTrades", () => {
     ];
     const postings: SubLedgerPostingEmittedPayload[] = [];
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(true);
     expect(result.count).toBe(0);
   });
 
   it("returns ok:true with empty trade and posting arrays", () => {
-    const result = checkUnpostedTrades({ tradeEvents: [], postingEvents: [], periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: [],
+      postingEvents: [],
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(true);
     expect(result.count).toBe(0);
@@ -120,7 +138,11 @@ describe("checkUnpostedTrades", () => {
     ];
     const postings = [makePosting("evt-001"), makePosting("evt-004")];
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(false);
     expect(result.count).toBe(2);
@@ -129,15 +151,17 @@ describe("checkUnpostedTrades", () => {
   });
 
   it("respects different event types (not only FxTradeExecuted)", () => {
-    const trades = [
-      makeTrade("evt-bond-001", "BOND-001", "2026-05-10", "BondTradeBooked"),
-    ];
+    const trades = [makeTrade("evt-bond-001", "BOND-001", "2026-05-10", "BondTradeBooked")];
     const postings: SubLedgerPostingEmittedPayload[] = []; // no posting
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(false);
-    expect(result.unposted[0]!.eventType).toBe("BondTradeBooked");
+    expect(result.unposted[0]?.eventType).toBe("BondTradeBooked");
   });
 
   it("correctly matches by eventId not tradeId", () => {
@@ -149,11 +173,15 @@ describe("checkUnpostedTrades", () => {
     // Only evt-a has a posting
     const postings = [makePosting("evt-a")];
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.ok).toBe(false);
     expect(result.count).toBe(1);
-    expect(result.unposted[0]!.eventId).toBe("evt-b");
+    expect(result.unposted[0]?.eventId).toBe("evt-b");
   });
 
   it("count matches unposted array length", () => {
@@ -164,7 +192,11 @@ describe("checkUnpostedTrades", () => {
     ];
     const postings: SubLedgerPostingEmittedPayload[] = [];
 
-    const result = checkUnpostedTrades({ tradeEvents: trades, postingEvents: postings, periodEnd: PERIOD_END });
+    const result = checkUnpostedTrades({
+      tradeEvents: trades,
+      postingEvents: postings,
+      periodEnd: PERIOD_END,
+    });
 
     expect(result.count).toBe(result.unposted.length);
     expect(result.count).toBe(3);

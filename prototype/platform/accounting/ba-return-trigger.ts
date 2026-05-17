@@ -20,8 +20,8 @@
 //   reports to Camille, CFO)
 
 import {
-  makeBAReturnGenerationTriggered,
   type BAReturnGenerationTriggeredPayload,
+  makeBAReturnGenerationTriggered,
 } from "../event-store/event-types/accounting";
 import type { EventStore } from "../event-store/store";
 import type { Actor, ProvenanceTag } from "../event-store/types";
