@@ -42,3 +42,28 @@ export type { ComputeTrialBalanceArgs } from "./period-close";
 
 // FX accounting types (existing module).
 export type { SubLedgerLeg } from "./fx-accounting-types";
+
+// GL ↔ sub-ledger reconciliation engine — PROC-FIN-BSS-01 steps 3a–3d + 4.
+export {
+  assertZeroBalance,
+  checkAgedItems,
+  tracePostingToSourceEvent,
+  triageException,
+  verifyIfrsClassification,
+} from "./gl-subledger-recon";
+
+export type {
+  AgedItem,
+  AgedItemsResult,
+  ChartOfAccountsEntry,
+  ClassificationFinding,
+  ClassificationResult,
+  ReconException,
+  TracedPosting,
+  TraceResult,
+  TriagedExceptionItem,
+  TriageResult,
+  UntracedPosting,
+  ZeroBalanceFinding,
+  ZeroBalanceResult,
+} from "./gl-subledger-recon";
