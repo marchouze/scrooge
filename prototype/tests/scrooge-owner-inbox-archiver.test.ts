@@ -30,6 +30,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
+import { makeDecision } from "../platform/event-store/event-types/decision";
 import type { Event } from "../platform/event-store/types";
 import scroogeOwnerInboxArchiver from "../runtime/agents/scrooge-owner-inbox-archiver";
 import type { AgentRunContext } from "../runtime/types";
@@ -97,23 +98,29 @@ function informationalCard(filename: string): string {
   return path;
 }
 
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from raw CeoDecision
+// construction to makeDecision with the unified Decision payload.
 function ceoDecisionEvent(opts: { decisionId: string; sourceDoc?: string }): Event {
-  return {
-    event_id: newEventId(),
-    type: "CeoDecision",
-    as_of: "2026-05-10T12:00:00.000Z",
+  return makeDecision({
+    asOf: "2026-05-10T12:00:00.000Z",
     entity: ENTITY,
     actor: { type: "human", id: "marc@tgv.co.za" },
     citations: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
+    eventId: newEventId(),
     payload: {
       decisionId: opts.decisionId,
+      phase: "approved",
+      authority: "CEO",
+      authorityRef: "marc@tgv.co.za",
       title: `Test ${opts.decisionId}`,
-      action: "approve",
-      outcome: "Approved.",
-      ...(opts.sourceDoc !== undefined ? { sourceDoc: opts.sourceDoc } : {}),
-      recordedVia: "test:scrooge-owner-inbox-archiver",
+      category: "governance",
+      recommendation: "Approved.",
+      rationale: "Approved.",
+      sourceDocHashes: [],
+      citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+      recordedVia: "authoring-ui",
     },
-  };
+  });
 }
 
 function makeContext(

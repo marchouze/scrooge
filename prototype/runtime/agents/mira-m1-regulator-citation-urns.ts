@@ -565,17 +565,21 @@ const TARGET_DECISION_ID = "D-MARKETS-SCHEMA-FOUNDATION";
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggering = ctx.trigger.triggeringEvents ?? [];
-  const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision");
+  // D-DECISIONS-FRAMEWORK-REDESIGN Slice C: accept both legacy CeoDecision and the unified Decision event type.
+  const ceoDecisions = triggering.filter((e) => e.type === "CeoDecision" || e.type === "Decision");
 
   // Locate the authorising decision in the triggering set. The handler
-  // is event-driven on `CeoDecision`; we register the M1 URN tranche
-  // only when the parent decision is the markets-schema-foundation
-  // approval. Other CeoDecision events are no-ops (the event-driven
+  // is event-driven on `CeoDecision` / `Decision`; we register the M1 URN
+  // tranche only when the parent decision is the markets-schema-foundation
+  // approval. Other decision events are no-ops (the event-driven
   // fan-out is shared with Anya's projection-refresh / Scrooge's
   // follow-on-router).
   const authorising = ceoDecisions.find((e) => {
-    const p = e.payload as { decisionId?: unknown; action?: unknown };
-    return p.decisionId === TARGET_DECISION_ID && p.action === "approve";
+    const p = e.payload as { decisionId?: unknown; action?: unknown; phase?: unknown };
+    const isApproved =
+      p.action === "approve" || // legacy CeoDecision shape
+      p.phase === "approved"; // unified Decision shape
+    return p.decisionId === TARGET_DECISION_ID && isApproved;
   });
 
   if (!authorising) {

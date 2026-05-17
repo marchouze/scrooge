@@ -23,6 +23,7 @@ import { join } from "node:path";
 
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
+import { makeDecision } from "../platform/event-store/event-types/decision";
 import type { Event } from "../platform/event-store/types";
 import sennaM1TradingStackThreatModel from "../runtime/agents/senna-m1-trading-stack-threat-model";
 import type { AgentRunContext } from "../runtime/types";
@@ -53,22 +54,29 @@ function makeContext(args: {
   };
 }
 
+// D-DECISIONS-FRAMEWORK-REDESIGN Slice C: migrated from raw CeoDecision
+// construction to makeDecision with the unified Decision payload.
 function syntheticCeoDecision(args: { decisionId: string; asOf: string }): Event {
-  return {
-    event_id: newEventId(),
-    type: "CeoDecision",
-    as_of: args.asOf,
+  return makeDecision({
+    asOf: args.asOf,
     entity: "BANK-ZA-001",
     actor: TEST_ACTOR,
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+    eventId: newEventId(),
     payload: {
       decisionId: args.decisionId,
+      phase: "approved",
+      authority: "CEO",
+      authorityRef: "marc@tgv.co.za",
       title: "Synthetic CEO decision for test",
-      decision: "approve",
-      decisionDate: args.asOf,
-      author: "test",
+      category: "governance",
+      recommendation: "Approved.",
+      rationale: "Synthetic decision for threat-model test.",
+      sourceDocHashes: [],
+      citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+      recordedVia: "authoring-ui",
     },
-  };
+  });
 }
 
 function countDimensionsFor(decisionId: string): number {
