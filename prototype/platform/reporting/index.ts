@@ -37,6 +37,64 @@ export {
 } from "./ba-325-render";
 
 // ---------------------------------------------------------------------------
+// WS-FINANCE-BA-RETURNS-QUINTET — BA 100 (Balance Sheet) + BA 300 (Income
+// Statement) projections. Standing authority D-REPORTING-CAPABILITY-M2-M3-
+// BUILD-PLAN extended 2026-05-17 by Marc's directive.
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba100BalanceSheet,
+  type Ba100BalanceCheck,
+  type Ba100ClassificationGap,
+  type Ba100ClassificationMap,
+  type Ba100GeneratorInput,
+  Ba100GeneratorError,
+  type Ba100LineClassification,
+  type Ba100LineItem,
+  type Ba100PerCurrencyTotal,
+  type Ba100Section,
+  type Ba100Section_Output,
+  BA_100_BANK_ENTITIES,
+  generateBa100BalanceSheet,
+} from "./ba-100-balance-sheet";
+
+export {
+  Ba100RenderSchema,
+  type Ba100Render,
+  BA_100_SCHEMA_URL,
+  BA_100_RENDERER_VERSION,
+  canonicaliseBa100,
+  renderBa100Canonical,
+  renderBa100ToJson,
+  type RenderBa100Options,
+} from "./ba-100-render";
+
+export {
+  type Ba300ClassificationGap,
+  type Ba300ClassificationMap,
+  type Ba300GeneratorInput,
+  Ba300GeneratorError,
+  type Ba300IncomeStatement,
+  type Ba300LineCategory,
+  type Ba300LineCategorySection,
+  type Ba300LineClassification,
+  type Ba300LineItem,
+  BA_300_BANK_ENTITIES,
+  generateBa300IncomeStatement,
+} from "./ba-300-income-statement";
+
+export {
+  Ba300RenderSchema,
+  type Ba300Render,
+  BA_300_SCHEMA_URL,
+  BA_300_RENDERER_VERSION,
+  canonicaliseBa300,
+  renderBa300Canonical,
+  renderBa300ToJson,
+  type RenderBa300Options,
+} from "./ba-300-render";
+
+// ---------------------------------------------------------------------------
 // Slice 4 — BA 700 Capital Adequacy Return
 // ---------------------------------------------------------------------------
 
