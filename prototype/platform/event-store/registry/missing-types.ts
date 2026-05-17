@@ -33,6 +33,17 @@
 //   M — Readiness snapshots (various)
 //   N — Tax (Yael)
 
+import { tokenUsageRecordedPayloadSchema } from "../event-types/agent-ops";
+import {
+  fxPositionRevaluedPayloadSchema,
+  fxSettlementConfirmedPayloadSchema,
+} from "../event-types/fx-accounting";
+import {
+  paymentInitiatedPayloadSchema,
+  paymentSettledPayloadSchema,
+  reconciliationBreakPayloadSchema,
+  settlementInstructionReceivedPayloadSchema,
+} from "../event-types/payments";
 import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -46,24 +57,24 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Subscribes: Bea (fx-posting-engine).
     type: "FxPositionRevalued",
     class: "markets",
+    payloadSchema: fxPositionRevaluedPayloadSchema,
     issuer: "Kai",
     subscribers: ["Bea"],
     replay: "latest-wins-per-key",
-    // TODO F-032: replace with typed FxPositionRevalued Zod schema + make factory
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/bea.ts; Team/Kai.md",
+    source: "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
   },
   {
     // Emitted when FX settlement is confirmed by the counterparty / correspondent bank.
     // Subscribes: Bea (fx-posting-engine).
     type: "FxSettlementConfirmed",
     class: "markets",
+    payloadSchema: fxSettlementConfirmedPayloadSchema,
     issuer: "Kai",
     subscribers: ["Bea"],
     replay: "idempotent-terminal",
-    // TODO F-032: replace with typed schema + make factory
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/bea.ts; Team/Kai.md",
+    source: "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
   },
   {
     // Emitted by Ravi / Kai when a trade (bond, equity, IRS) is booked into the
@@ -357,11 +368,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when payment is settled by correspondent / NPS participant.
     type: "PaymentSettled",
     class: "markets",
+    payloadSchema: paymentSettledPayloadSchema,
     issuer: "Tomas",
     subscribers: ["Bea"],
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/bea.ts",
+    source: "runtime/agents/metadata/bea.ts; platform/event-store/event-types/payments.ts",
   },
 ];
 
@@ -1051,33 +1063,36 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted when a settlement instruction is received from a counterparty.
     type: "SettlementInstructionReceived",
     class: "markets",
+    payloadSchema: settlementInstructionReceivedPayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas"],
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/tomas.ts",
+    source: "runtime/agents/metadata/tomas.ts; platform/event-store/event-types/payments.ts",
   },
   {
     // Emitted when a payment instruction is initiated via the correspondent
     // bank channel.
     type: "PaymentInitiated",
     class: "markets",
+    payloadSchema: paymentInitiatedPayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas"],
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/tomas.ts",
+    source: "runtime/agents/metadata/tomas.ts; platform/event-store/event-types/payments.ts",
   },
   {
     // Emitted when a reconciliation break is detected between the bank's
     // records and the correspondent's statement.
     type: "ReconciliationBreak",
     class: "audit",
+    payloadSchema: reconciliationBreakPayloadSchema,
     issuer: "Tomas",
     subscribers: ["Tomas"],
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/tomas.ts",
+    source: "runtime/agents/metadata/tomas.ts; platform/event-store/event-types/payments.ts",
   },
   {
     // Emitted when a settlement cut-off time breach is detected.
@@ -1357,11 +1372,12 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Emitted by Sade when an agent token usage event is recorded.
     type: "TokenUsageRecorded",
     class: "runtime",
+    payloadSchema: tokenUsageRecordedPayloadSchema,
     issuer: "Sade",
     subscribers: ["Sade"],
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/sade.ts",
+    source: "runtime/agents/metadata/sade.ts; platform/event-store/event-types/agent-ops.ts",
   },
   {
     // Emitted when an agent's capability set changes (new handler added /

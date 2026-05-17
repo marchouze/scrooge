@@ -13,6 +13,8 @@
 //   - ScheduledTrigger, BusDispatched, LegacyFanoutShadowed, SubstrateAlert
 //   - Goal-loop planning trace (AgentGoalEvaluated, AgentGoalSelected, AgentGoalDeferred)
 
+import { z } from "zod";
+
 import {
   agentDecisionPayloadSchema,
   agentEscalationAcknowledgedPayloadSchema,
@@ -38,6 +40,38 @@ import {
   substrateAlertPayloadSchema,
   workstreamRegisteredPayloadSchema,
 } from "../event-types";
+
+// ---------------------------------------------------------------------------
+// Inline schemas for AgentRetired and AgentRunFailed — no standalone factory
+// exists yet; these are minimal schemas that document the envelope-level shape.
+// F-032: adding typed schemas so append-time validation covers these types.
+// ---------------------------------------------------------------------------
+
+const agentRetiredPayloadSchema = z
+  .object({
+    agentUrn: z
+      .string()
+      .min(1)
+      .regex(/^agent:[a-z0-9-]+$/, {
+        message: "agentUrn must be `agent:<lowercased-persona-name>`",
+      }),
+    retiredAt: z.string().min(1),
+    reason: z.string().min(1),
+    retiredBy: z.string().min(1),
+    supersededBy: z.string().min(1).optional(),
+  })
+  .passthrough();
+
+const agentRunFailedPayloadSchema = z
+  .object({
+    runId: z.string().min(1),
+    briefId: z.string().min(1).optional(),
+    agent: z.string().min(1),
+    failedAt: z.string().min(1),
+    errorMessage: z.string().min(1),
+    errorClass: z.enum(["exception", "structured", "timeout", "unknown"]).optional(),
+  })
+  .passthrough();
 import {
   agentEfficiencyAdvisoryIssuedPayloadSchema,
   agentPromptOptimizationAppliedPayloadSchema,
@@ -118,6 +152,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRetired",
     class: "runtime",
+    payloadSchema: agentRetiredPayloadSchema,
     issuer: "Atlas",
     subscribers: ["Vera", "Anya", "Iris"],
     replay: "latest-wins-per-key",
@@ -200,6 +235,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     type: "AgentRunFailed",
     class: "runtime",
+    payloadSchema: agentRunFailedPayloadSchema,
     issuer: "substrate",
     subscribers: ["Vera", "Devon"],
     replay: "pair-coupled",
