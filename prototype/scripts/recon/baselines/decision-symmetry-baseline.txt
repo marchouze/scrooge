@@ -12,3 +12,20 @@
 # If they re-appear after the fix, investigate the projection's dedup logic.
 #
 # If new violations appear after removing Group B, add them here with a comment.
+
+# ── Group C: Legacy pre-D-* numeric sprint IDs ──────────────────────────────
+# These IDs (S3, S5, S6, S7, S8) were assigned before the D-* slug convention.
+# They fail the slug validator and cannot receive synthetic `requested` openers
+# via recordDecision / requestDecision. They map to canonical D-* decisions:
+#   S3 → D-S7-TARGETED-3-5-OPEN-QUESTIONS
+#   S5 → D-FIRST-DRY-RUN-SCENARIO
+#   S6 → D-FLEET-ROLLOUT-SEQUENCING
+#   S7 → D-AGENT-RUNTIME-AUTHORIZE
+#   S8 → D-AGENT-AUTONOMY-OPERATIONAL
+# The canonical IDs have correct symmetry; the S-prefixed projection entries
+# are legacy artefacts from CeoDecision events that predate slug enforcement.
+S3
+S5
+S6
+S7
+S8

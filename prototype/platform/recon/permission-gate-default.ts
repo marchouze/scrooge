@@ -303,6 +303,12 @@ const ACCEPTED_NO_POLICY_ACTORS: ReadonlySet<string> = new Set([
   "agent:vera:codebase-quality-review", // Vera — codebase quality review run
   "agent:mira:fais-horizon-scan", // Mira — FAIS horizon scan
   "agent:sade:performance-evaluator", // Sade — performance evaluator
+
+  // ── G: Period-close task actors ───────────────────────────────────────────
+  // T-01 build-phase carve-out; policies derive from Bea's persona §11 once
+  // T-12 wires per-sub-agent publication. Citations: P4-SECURITY-DESIGNED-IN,
+  // ORG-CY-09, T-01 threat-model.
+  "agent:bea:period-close", // Bea (Finance Engineer, engineering) — period-close run
 ]);
 
 function listTsFiles(dir: string, base: string, out: string[]): void {
