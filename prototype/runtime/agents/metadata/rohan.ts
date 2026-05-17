@@ -17,6 +17,11 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Rohan", "backtest-harness", "event-driven", {
     subscribesTo: ["BacktestRequested"],
   }),
+  // Slice 4 — market risk limit check handler (pre-trade gateway).
+  // Authority: ORG-PR-01 (ICAAP), RAS-B1, RAS-B2.
+  entry("Rohan", "market-risk-limit-check", "event-driven", {
+    subscribesTo: ["GatewayCheckRequested"],
+  }),
   entry("Rohan", "event-triage", "event-driven", {
     subscribesTo: [
       "TradeBooked",

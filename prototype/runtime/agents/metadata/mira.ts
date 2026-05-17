@@ -30,6 +30,16 @@ export const MIRA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Mira", "kyc-onboarding-gateway", "event-driven", {
     subscribesTo: ["ClientCandidateRegistered"],
   }),
+  // Slice 2 — sanctions check handler (pre-trade gateway).
+  // Authority: ORG-FC-08 (POCDATARA), ORG-FC-13 (UN/OFAC/EU/HMT).
+  entry("Mira", "sanctions-gateway-check", "event-driven", {
+    subscribesTo: ["GatewayCheckRequested"],
+  }),
+  // Slice 3 — counterparty eligibility check handler (pre-trade gateway).
+  // Authority: ORG-CD-01 (FAIS Act 37/2002 §4), GOV-FRAMEWORK-CEO-RESERVED.
+  entry("Mira", "counterparty-eligibility-check", "event-driven", {
+    subscribesTo: ["GatewayCheckRequested"],
+  }),
   entry("Mira", "event-triage", "event-driven", {
     subscribesTo: [
       "ClientCandidateRegistered",

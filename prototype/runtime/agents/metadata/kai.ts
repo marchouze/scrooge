@@ -11,7 +11,7 @@ export const KAI_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cronExpression: "27 6 * * MON",
   }),
   entry("Kai", "pre-trade-gateway-aggregator", "event-driven", {
-    subscribesTo: ["OrderProposed"],
+    subscribesTo: ["OrderProposed", "GatewayCheckCompleted"],
   }),
   // kai:goal-loop — cohort-3 (on-request only).
   entry("Kai", "goal-loop", "on-request"),
