@@ -86,8 +86,11 @@ export * from "./payments";
 // Regulatory reporting event family — Mira + Anya (FinSurv TradeReportSubmitted).
 export * from "./regulatory-reporting";
 // M3 Slice 9 — Conduct events (FSCA/FSR Act market conduct framework).
-// ConductComplaintFiled, ConductComplaintResolved, ConductIncidentLogged,
-// BestExecutionAnalysisCompleted, ConductDisclosureEmitted.
+// Period-level: ConductComplaintFiled, ConductComplaintResolved,
+//   ConductIncidentLogged, BestExecutionAnalysisCompleted, ConductDisclosureEmitted.
+// Trade-level: ConductObligationFlagged, BestExecutionVerified,
+//   BestExecutionBreached, MarketConductAlertRaised,
+//   FaisClassificationSuitabilityChecked, ConflictOfInterestDisclosed.
 // Authority: D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
 export * from "./conduct";
 // F-032 extended event-type files — typed Zod schemas replacing PT placeholders.
@@ -178,6 +181,7 @@ import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-ex
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
+import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
@@ -237,6 +241,9 @@ export const TYPED_EVENT_TYPES = [
   ...IFRS_ACCOUNTING_EXTENDED_TYPED_EVENT_TYPES,
   ...SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES,
   ...MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES,
+  // M3 Slice 9 — conduct risk event types (trade-level + period-level).
+  // Authority: D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+  ...CONDUCT_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

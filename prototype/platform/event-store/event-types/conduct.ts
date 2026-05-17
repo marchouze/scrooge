@@ -444,3 +444,392 @@ export function makeConductDisclosureEmitted(args: {
     payload: conductDisclosureEmittedPayloadSchema.parse(args.payload),
   });
 }
+
+// ---------------------------------------------------------------------------
+// Trade-level conduct risk event types (M3 Slice 9 extension)
+//
+// These six typed events are emitted per-trade by `rohan:conduct-risk-events`
+// on receipt of FxTradeExecuted (and other trade events). They feed:
+//   - The conduct period disclosure (BestExecutionAnalysisCompleted is
+//     aggregated upstream; individual trade-level events flow here).
+//   - Vera's Wave-4 conduct-obligation recon.
+//   - FSCA market conduct reporting under FSRA §131.
+//
+// Citations:
+//   FAIS Act 37/2002 §§16–17 (best execution);
+//   FAIS Act 37/2002 §1 (client classification);
+//   Financial Markets Act 19 of 2012 §§78–82 (market abuse);
+//   FSRA §131 (FSCA conduct mandate);
+//   FSB Treating Customers Fairly 2012 (TCF framework);
+//   D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// ConductObligationFlagged — generic conduct rule triggered on a trade
+// ---------------------------------------------------------------------------
+
+export const conductObligationFlaggedPayloadSchema = z.object({
+  /**
+   * The trade (or other business event) this flag relates to.
+   * Convention: the `tradeId` field from `FxTradeExecuted.payload.tradeId.id`.
+   */
+  tradeId: z.string().min(1),
+  /** ISO 8601 — when the obligation was evaluated. */
+  evaluatedAt: z.string().min(1),
+  /**
+   * The conduct rule / obligation that was triggered.
+   * Examples: "best-execution", "conflict-of-interest", "market-abuse",
+   * "fais-suitability", "disclosure".
+   */
+  obligationCode: z.string().min(1),
+  /**
+   * Brief human-readable description of why the flag was raised.
+   * Max 2 000 chars.
+   */
+  reason: z.string().max(2000),
+  /**
+   * Severity of the flagged obligation.
+   * "advisory" — informational; no mandatory action.
+   * "warning"  — requires review; escalation may follow.
+   * "breach"   — clear breach; immediate action / notification required.
+   */
+  severity: z.enum(["advisory", "warning", "breach"]),
+  /** Counterparty involved (Party register ID). */
+  counterpartyId: z.string().min(1).optional(),
+});
+
+export type ConductObligationFlaggedPayload = z.infer<typeof conductObligationFlaggedPayloadSchema>;
+
+export function makeConductObligationFlagged(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ConductObligationFlaggedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ConductObligationFlagged",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: conductObligationFlaggedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// BestExecutionVerified — trade received best available terms
+// ---------------------------------------------------------------------------
+
+export const bestExecutionVerifiedPayloadSchema = z.object({
+  /** Internal trade identifier. */
+  tradeId: z.string().min(1),
+  /** ISO 8601 — when verification was completed. */
+  verifiedAt: z.string().min(1),
+  /** Asset class of the trade (e.g. "FX-spot", "ZA-GOV-BOND"). */
+  assetClass: z.string().min(1),
+  /** Execution venue (e.g. "JSE", "OTC-bilateral", "EBS"). */
+  venue: z.string().min(1),
+  /**
+   * The execution rate / price achieved.
+   * For FX: the all-in rate (base/quote).
+   */
+  executedRate: z.number(),
+  /**
+   * The reference market rate at time of execution (mid-market or
+   * composite benchmark rate used for comparison).
+   */
+  referenceRate: z.number(),
+  /**
+   * Spread of executed rate vs reference rate in basis points (bps).
+   * Positive = worse than reference (cost to client);
+   * Negative = better than reference (benefit to client).
+   * A spread within tolerance constitutes "best execution".
+   */
+  spreadBps: z.number(),
+  /**
+   * The maximum allowable spread (in bps) for this asset class / venue.
+   * Sourced from the bank's best-execution policy schedule.
+   */
+  toleranceBps: z.number().nonnegative(),
+});
+
+export type BestExecutionVerifiedPayload = z.infer<typeof bestExecutionVerifiedPayloadSchema>;
+
+export function makeBestExecutionVerified(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BestExecutionVerifiedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BestExecutionVerified",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: bestExecutionVerifiedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// BestExecutionBreached — trade did not receive best available terms
+// ---------------------------------------------------------------------------
+
+export const bestExecutionBreachedPayloadSchema = z.object({
+  /** Internal trade identifier. */
+  tradeId: z.string().min(1),
+  /** ISO 8601 — when the breach was detected. */
+  detectedAt: z.string().min(1),
+  /** Asset class of the trade. */
+  assetClass: z.string().min(1),
+  /** Execution venue. */
+  venue: z.string().min(1),
+  /** The execution rate / price achieved. */
+  executedRate: z.number(),
+  /** The reference market rate used for comparison. */
+  referenceRate: z.number(),
+  /**
+   * Spread achieved in basis points (worse than tolerance).
+   */
+  spreadBps: z.number(),
+  /** The maximum allowable spread (bps) — threshold exceeded. */
+  toleranceBps: z.number().nonnegative(),
+  /**
+   * Counterparty affected. Best-execution is a duty owed to the
+   * counterparty (client) under FAIS §16.
+   */
+  counterpartyId: z.string().min(1).optional(),
+  /**
+   * Whether a remedial communication is required to the counterparty
+   * (e.g. a disclosure of slippage beyond tolerance).
+   */
+  remedialCommunicationRequired: z.boolean(),
+});
+
+export type BestExecutionBreachedPayload = z.infer<typeof bestExecutionBreachedPayloadSchema>;
+
+export function makeBestExecutionBreached(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BestExecutionBreachedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BestExecutionBreached",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: bestExecutionBreachedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// MarketConductAlertRaised — trading pattern that could indicate market abuse
+// ---------------------------------------------------------------------------
+
+export const marketConductAlertRaisedPayloadSchema = z.object({
+  /** Internal trade identifier that triggered the alert. */
+  tradeId: z.string().min(1),
+  /** ISO 8601 — when the alert was raised. */
+  raisedAt: z.string().min(1),
+  /**
+   * Alert category — the type of potential market misconduct detected.
+   * Citation: Financial Markets Act 19 of 2012 §§78–82.
+   *   "front-running"         — trading ahead of a pending client order.
+   *   "wash-trading"          — self-matched trades to create false activity.
+   *   "layering"              — placing and cancelling orders to mislead.
+   *   "spoofing"              — placing orders without intent to fill.
+   *   "insider-trading"       — trading on material non-public information.
+   *   "benchmark-manipulation" — influencing a benchmark or reference rate.
+   *   "other"                 — any other pattern requiring review.
+   */
+  alertCategory: z.enum([
+    "front-running",
+    "wash-trading",
+    "layering",
+    "spoofing",
+    "insider-trading",
+    "benchmark-manipulation",
+    "other",
+  ]),
+  /**
+   * Human-readable description of the pattern detected. Max 2 000 chars.
+   */
+  description: z.string().max(2000),
+  /**
+   * Whether the alert has been automatically escalated to the MLRO.
+   * Citation: FIC Act 38 of 2001 §29 (suspicious activity reporting).
+   */
+  escalatedToMlro: z.boolean(),
+  /** Trader identifier (the trader whose activity triggered the alert). */
+  traderId: z.string().min(1).optional(),
+  /** Counterparty involved. */
+  counterpartyId: z.string().min(1).optional(),
+});
+
+export type MarketConductAlertRaisedPayload = z.infer<typeof marketConductAlertRaisedPayloadSchema>;
+
+export function makeMarketConductAlertRaised(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: MarketConductAlertRaisedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "MarketConductAlertRaised",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: marketConductAlertRaisedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// FaisClassificationSuitabilityChecked — product suitability for FAIS class
+// ---------------------------------------------------------------------------
+
+export const faisClassificationSuitabilityCheckedPayloadSchema = z.object({
+  /** Internal trade identifier. */
+  tradeId: z.string().min(1),
+  /** ISO 8601 — when the suitability check was completed. */
+  checkedAt: z.string().min(1),
+  /** The counterparty's FAIS classification used in the check. */
+  counterpartyFaisCategory: z.enum(["professional-client", "retail-client", "market-counterparty"]),
+  /**
+   * The product involved (e.g. "FX-spot", "OTC-IRD", "ZA-GOV-BOND").
+   */
+  productCode: z.string().min(1),
+  /**
+   * Whether the product is suitable for this FAIS classification.
+   * Citation: FAIS Act 37/2002 §8D (product suitability requirements).
+   */
+  suitable: z.boolean(),
+  /**
+   * Reason for the suitability determination (required when suitable=false).
+   * Max 1 000 chars.
+   */
+  reason: z.string().max(1000).optional(),
+  /** Counterparty Party register ID. */
+  counterpartyId: z.string().min(1),
+});
+
+export type FaisClassificationSuitabilityCheckedPayload = z.infer<
+  typeof faisClassificationSuitabilityCheckedPayloadSchema
+>;
+
+export function makeFaisClassificationSuitabilityChecked(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FaisClassificationSuitabilityCheckedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FaisClassificationSuitabilityChecked",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: faisClassificationSuitabilityCheckedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ConflictOfInterestDisclosed — bank disclosed principal vs agent role
+// ---------------------------------------------------------------------------
+
+export const conflictOfInterestDisclosedPayloadSchema = z.object({
+  /** Internal trade identifier. */
+  tradeId: z.string().min(1),
+  /** ISO 8601 — when the disclosure was made. */
+  disclosedAt: z.string().min(1),
+  /**
+   * The bank's role in the transaction.
+   * "principal" — bank traded on its own account (risk taker).
+   * "agent"     — bank acted on behalf of the counterparty.
+   * "riskless-principal" — bank arranged matched trades, no net position.
+   */
+  bankRole: z.enum(["principal", "agent", "riskless-principal"]),
+  /**
+   * Whether a potential conflict of interest exists between the bank's
+   * proprietary position and its duty to the counterparty.
+   */
+  conflictExists: z.boolean(),
+  /**
+   * Description of the conflict (required when conflictExists=true).
+   * Max 2 000 chars.
+   */
+  conflictDescription: z.string().max(2000).optional(),
+  /**
+   * How the disclosure was communicated.
+   * Citation: FAIS Act 37/2002 §4 (disclosure obligations);
+   *           FAISAIS GN 2018 §6.
+   */
+  disclosureChannel: z.enum(["pre-trade-term-sheet", "verbal", "email", "system-generated"]),
+  /** Counterparty Party register ID. */
+  counterpartyId: z.string().min(1),
+});
+
+export type ConflictOfInterestDisclosedPayload = z.infer<
+  typeof conflictOfInterestDisclosedPayloadSchema
+>;
+
+export function makeConflictOfInterestDisclosed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ConflictOfInterestDisclosedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ConflictOfInterestDisclosed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: conflictOfInterestDisclosedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CONDUCT_TYPED_EVENT_TYPES — registry of all conduct domain event types.
+//
+// To add a new conduct event type:
+//   (1) define its payload schema + factory above,
+//   (2) add its name to this array,
+//   (3) add a spread of CONDUCT_TYPED_EVENT_TYPES in event-types/index.ts.
+// ---------------------------------------------------------------------------
+
+export const CONDUCT_TYPED_EVENT_TYPES = [
+  // Period-level conduct reporting events
+  "ConductComplaintFiled",
+  "ConductComplaintResolved",
+  "ConductIncidentLogged",
+  "BestExecutionAnalysisCompleted",
+  "ConductDisclosureEmitted",
+  // Trade-level conduct risk events (M3 Slice 9 extension)
+  "ConductObligationFlagged",
+  "BestExecutionVerified",
+  "BestExecutionBreached",
+  "MarketConductAlertRaised",
+  "FaisClassificationSuitabilityChecked",
+  "ConflictOfInterestDisclosed",
+] as const;

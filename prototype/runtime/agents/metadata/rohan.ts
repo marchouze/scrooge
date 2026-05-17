@@ -34,4 +34,12 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "PortfolioReclassification",
     ],
   }),
+  // M3 Slice 9 — conduct risk events handler.
+  // Evaluates best execution, FAIS suitability, and conflict-of-interest on
+  // every FxTradeExecuted event.
+  // Authority: FAIS Act 37/2002 §§16–17; D-MARKET-CONDUCT;
+  //            D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+  entry("Rohan", "conduct-risk-events", "event-driven", {
+    subscribesTo: ["FxTradeExecuted"],
+  }),
 ];
