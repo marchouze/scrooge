@@ -24,3 +24,9 @@ D-REGULATORY-READINESS-W2
 D-S7-TARGETED-3-5
 D-RAS
 D-EVENT-STORE-SCALING
+# D-RMS-PHASE-2: the original acceleration decision was emitted as
+# D-RMS-PHASE-2-3-ACCELERATE (session 2026-05-17) before the prefix-shadow
+# recon caught it. The ID was renamed to D-RMS-SOAK-WAIVER; the old event
+# remains in the store and creates the shadow. Suppressed here as a known
+# historical rename — not a live authoring gap.
+D-RMS-PHASE-2
