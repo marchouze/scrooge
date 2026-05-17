@@ -11,7 +11,6 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import type { DecisionsRegister, DecisionRow } from "../projections/decisions";
 import {
   type EventSource,
   type SourcePaths,
@@ -25,6 +24,7 @@ import {
   parseOwnerInbox,
   parseOwnerInboxFile,
 } from "../dashboard/derive";
+import type { DecisionRow, DecisionsRegister } from "../projections/decisions";
 
 // ---------------------------------------------------------------------------
 // Minimal helpers to build mock DecisionsRegister instances for tests
@@ -72,10 +72,7 @@ function mockOpenRow(decisionId: string, title: string, asOf: string): DecisionR
   };
 }
 
-function mockRegister(
-  open: DecisionRow[],
-  resolved: DecisionRow[],
-): DecisionsRegister {
+function mockRegister(open: DecisionRow[], resolved: DecisionRow[]): DecisionsRegister {
   const byId = new Map<string, import("../projections/decisions").DecisionHistory>();
   for (const row of [...open, ...resolved]) {
     byId.set(row.decisionId, { decisionId: row.decisionId, events: [row], head: row });
@@ -371,7 +368,14 @@ describe("deriveState — event reductions", () => {
     const f = makeFixture();
     const register = mockRegister(
       [],
-      [mockResolvedRow("TEST-OPEN", "Open decision", "2026-05-06T10:00:00.000Z", "Approved as drafted.")],
+      [
+        mockResolvedRow(
+          "TEST-OPEN",
+          "Open decision",
+          "2026-05-06T10:00:00.000Z",
+          "Approved as drafted.",
+        ),
+      ],
     );
     const state = deriveState({
       sources: f.sources,
@@ -461,7 +465,6 @@ describe("deriveState — event reductions", () => {
     expect(b?.completedAt).toBe("2026-05-06");
     expect(b?.outcomeNote).toBe("latest");
   });
-
 });
 
 describe("deriveState — per-agent mini-dashboards", () => {

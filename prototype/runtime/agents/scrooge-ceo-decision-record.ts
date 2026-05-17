@@ -121,9 +121,7 @@ function readInput(): DecisionRecordInput {
   const obj = parsed as Record<string, unknown>;
   const action = String(obj.action ?? "");
   if (!isValidAction(action)) {
-    throw new Error(
-      `Invalid action "${action}" — must be one of ${VALID_ACTIONS.join(" | ")}`,
-    );
+    throw new Error(`Invalid action "${action}" — must be one of ${VALID_ACTIONS.join(" | ")}`);
   }
   const decisionId = String(obj.decisionId ?? "");
   if (!decisionId) throw new Error("decisionId is required");

@@ -45,7 +45,12 @@ const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"];
 
 // Legacy action vocabulary used by historical scripts (now inlined).
 type LegacyCeoAction = "approve" | "defer" | "modify" | "request-revision";
-const VALID_CEO_ACTIONS: readonly LegacyCeoAction[] = ["approve", "defer", "modify", "request-revision"];
+const VALID_CEO_ACTIONS: readonly LegacyCeoAction[] = [
+  "approve",
+  "defer",
+  "modify",
+  "request-revision",
+];
 function isValidCeoAction(s: string): s is LegacyCeoAction {
   return (VALID_CEO_ACTIONS as readonly string[]).includes(s);
 }

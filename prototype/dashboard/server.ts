@@ -455,7 +455,17 @@ async function handleDecide(req: Request): Promise<Response> {
         authority: "CEO",
         authorityRef: actor,
         title: openDecision.title,
-        category: openDecision.category ?? "governance",
+        category:
+          openDecision.category === "governance" ||
+          openDecision.category === "risk" ||
+          openDecision.category === "compliance" ||
+          openDecision.category === "engineering" ||
+          openDecision.category === "people" ||
+          openDecision.category === "finance" ||
+          openDecision.category === "product" ||
+          openDecision.category === "other"
+            ? openDecision.category
+            : "governance",
         recommendation: body.outcome,
         rationale: body.comment ?? body.outcome,
         sourceDocHashes: [],
