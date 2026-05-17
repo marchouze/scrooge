@@ -151,7 +151,7 @@
       );
     });
     if (!financeDecisions.length) {
-      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No open finance-tagged decisions. <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all decisions →</a></p>`;
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No open finance-tagged decisions. <a href="/decisions.html" style="color:var(--accent-ink)">View all decisions →</a></p>`;
     }
     const rows = financeDecisions
       .map((d) => {
@@ -172,7 +172,7 @@
   </table>
 </div>
 <p style="margin-top:var(--space-3);font-size:var(--type-small)">
-  <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all open decisions →</a>
+  <a href="/decisions.html" style="color:var(--accent-ink)">View all open decisions →</a>
 </p>`;
   }
 

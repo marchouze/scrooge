@@ -101,8 +101,8 @@
       id: "activity",
       category: "dashboards",
       title: "Activity",
-      blurb: "Recent events from the log — appended workstreams, decisions, audit findings.",
-      href: "/activity.html",
+      blurb: "Recent agent runs and dispatches from the log — workstreams, briefs, outcomes.",
+      href: "/rms.html?register=agent-runs",
     },
     {
       id: "events",
@@ -169,10 +169,10 @@
     {
       id: "owner-inbox",
       category: "reports",
-      title: "Owner Inbox",
+      title: "Documents (RMS)",
       blurb:
-        "Every deliverable for the CEO — board-pack drafts, decision briefs, agent run reports.",
-      href: "/index.html",
+        "Every deliverable for the CEO — board-pack drafts, decision briefs, agent run reports. Routed through the Records Management Substrate.",
+      href: "/documents.html",
     },
     {
       id: "ba-returns",
@@ -218,7 +218,7 @@
       category: "decisions",
       title: "CEO decisions",
       blurb: "Open decisions for the CEO. Approve, defer, modify, request revision.",
-      href: "/index.html#decisionsOpen",
+      href: "/decisions.html",
     },
     {
       id: "decisions-board",

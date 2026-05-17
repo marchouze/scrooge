@@ -172,7 +172,7 @@
       dept: "Executive",
       pages: [
         { label: "Home / Dashboard", href: "/home.html" },
-        { label: "Decisions", href: "/index.html#decisionsOpen" },
+        { label: "Decisions", href: "/decisions.html" },
       ],
     },
     {

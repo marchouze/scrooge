@@ -85,7 +85,7 @@
 
   function renderDecisions(decisions) {
     if (!Array.isArray(decisions) || !decisions.length) {
-      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No open risk decisions. <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all decisions →</a></p>`;
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No open risk decisions. <a href="/decisions.html" style="color:var(--accent-ink)">View all decisions →</a></p>`;
     }
     const riskDecisions = decisions.filter((d) => {
       const id = (d.decisionId || d.id || "").toUpperCase();
@@ -100,7 +100,7 @@
       );
     });
     if (!riskDecisions.length) {
-      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No risk-tagged decisions open. <a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all decisions →</a></p>`;
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No risk-tagged decisions open. <a href="/decisions.html" style="color:var(--accent-ink)">View all decisions →</a></p>`;
     }
     const rows = riskDecisions
       .map((d) => {
@@ -120,7 +120,7 @@
     <tbody>${rows}</tbody>
   </table>
 </div>
-<p style="margin-top:var(--space-3);font-size:var(--type-small)"><a href="/index.html#decisionsOpen" style="color:var(--accent-ink)">View all open decisions →</a></p>`;
+<p style="margin-top:var(--space-3);font-size:var(--type-small)"><a href="/decisions.html" style="color:var(--accent-ink)">View all open decisions →</a></p>`;
   }
 
   function setMetric(id, text, dataTone) {

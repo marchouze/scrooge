@@ -104,10 +104,10 @@ flowchart LR
   subgraph SRC["Curated source registers (markdown — canonical authoring)"]
     direction TB
     REG_OBL["Regulations/_obligations-register.md<br/>~181 obligations"]:::source
-    REG_POL["Owner Inbox/2026-05-06_policy-register.md<br/>112 policies"]:::source
+    REG_POL["Policies/_policy-register.md<br/>112 policies"]:::source
     REG_PROC["Procedures/_index.md + by-policy/ + validation/"]:::source
     REG_TEAM["Team/&lt;Name&gt;.md (29 personas)<br/>§11 = canonical permission policy"]:::source
-    REG_OWN["Owner Inbox/*.md<br/>(decisions, briefs, papers)"]:::source
+    REG_OWN["RMS event store<br/>(decisions · briefs · documents)"]:::source
     REG_CL["CLAUDE.md (constitutional)<br/>+ Procedures/_*.md indexes"]:::source
   end
 
@@ -138,7 +138,7 @@ flowchart LR
     direction TB
     DASH_API["/api/state · /api/obligations<br/>/api/decide · /api/policies"]:::presentation
     DASH_UI["Dashboard pages<br/>policies · agents · decisions · activity<br/>obligations · escalations"]:::presentation
-    OWNER_INBOX_VIEW["Owner Inbox feed<br/>(decision-required: true → Decisions panel)"]:::presentation
+    OWNER_INBOX_VIEW["RMS registers<br/>(Decisions · Documents · Briefs · Agent Runs)"]:::presentation
   end
 
   REG_OBL -- "parsed by obligations-view.ts" --> DASH_CACHE
@@ -240,10 +240,10 @@ flowchart LR
   classDef view fill:#ede7f6,stroke:#5c4ba0
 
   R1["Regulations/_obligations-register.md<br/>(Mira — curates · v1.2)"]:::src
-  R2["Owner Inbox/2026-05-06_policy-register.md<br/>(Owen — 112 rows)"]:::src
+  R2["Policies/_policy-register.md<br/>(Owen — 112 rows)"]:::src
   R3["Procedures/_index.md + by-policy/<br/>+ validation/_methodology-tier-1.md (Nadia)"]:::src
   R4["Team/&lt;Name&gt;.md ×29<br/>(persona §11 = events emitted)"]:::src
-  R5["Owner Inbox/*ceo-decision-record_*.md"]:::src
+  R5["Decision events (event store)<br/>(authoritative — D-RMS-PHASE-1)"]:::src
   R6["CLAUDE.md + memory/MEMORY.md"]:::src
 
   P1["obligations-view.ts"]:::parser
@@ -261,7 +261,7 @@ flowchart LR
   PR6["state.principles + state.bank"]:::proj
 
   V_API["/api/state<br/>/api/obligations<br/>/api/decide"]:::view
-  V_HTML["dashboard pages<br/>policies.html · obligations.html<br/>decision.html · agents.html · activity.html"]:::view
+  V_HTML["dashboard pages<br/>policies.html · obligations.html<br/>decisions.html · agents.html · rms.html"]:::view
 
   R1 --> P1 --> PR1
   R2 --> P2 --> PR2
@@ -287,12 +287,12 @@ flowchart LR
     </p>
     <div class="mermaid">
 flowchart TB
-  L5["<b>Layer 5 — Presentations</b><br/>Owner Inbox briefs · Dashboard UI · CEO decision packs · Audit committee deliverables"]
+  L5["<b>Layer 5 — Presentations</b><br/>RMS registers · Dashboard UI · CEO decision packs · Audit committee deliverables"]
   L4["<b>Layer 4 — Projections / caches</b><br/>seeds/dashboard-state.json · model registry · semantic layer · permission policies"]
   L3["<b>Layer 3 — Handlers (~30 personas)</b><br/>governance · markets · risk · accounting · compliance · security · ops · audit"]
   L2["<b>Layer 2 — Substrate</b><br/>LocalEventTriggerBus · Scheduler · Identity issuer · Citation gate · Recon (×8)"]
   L1["<b>Layer 1 — Event store</b><br/>append-only · 78 typed event types · zod-validated · citation-required"]
-  L0["<b>Layer 0 — Curated source registers (markdown)</b><br/>Regulations · Policies · Procedures · Team · CLAUDE.md · Owner Inbox · memory"]
+  L0["<b>Layer 0 — Curated source registers (markdown)</b><br/>Regulations · Policies · Procedures · Team · CLAUDE.md · memory"]
 
   L5 --> L4 --> L3 --> L2 --> L1 --> L0
 
