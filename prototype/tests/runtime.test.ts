@@ -48,7 +48,7 @@ describe("runtime — Vera overnight-recon handler", () => {
     // check fails. Pre-seed the temp store with terminal CeoDecision events
     // for every actioned file that has decision-required: true + decision-id.
     const repoRoot = join(import.meta.dir, "..", "..");
-    const actionedDir = resolve(repoRoot, "Owner Inbox", "actioned");
+    const actionedDir = resolve(repoRoot, "archive", "owner-inbox", "actioned");
     try {
       for (const name of readdirSync(actionedDir)) {
         if (!name.endsWith(".md")) continue;

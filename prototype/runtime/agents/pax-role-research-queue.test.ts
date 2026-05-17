@@ -26,7 +26,7 @@ const { findPendingHireBriefs } = __testing;
 
 function makeRepoRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "pax-queue-test-"));
-  mkdirSync(join(root, "Owner Inbox"), { recursive: true });
+  mkdirSync(join(root, "archive", "owner-inbox"), { recursive: true });
   return root;
 }
 
@@ -46,7 +46,7 @@ function writeBrief(
     "",
     "Body.",
   ].join("\n");
-  writeFileSync(join(root, "Owner Inbox", filename), content, "utf8");
+  writeFileSync(join(root, "archive", "owner-inbox", filename), content, "utf8");
 }
 
 describe("pax:role-research-queue — findPendingHireBriefs", () => {
@@ -117,7 +117,7 @@ describe("pax:role-research-queue — findPendingHireBriefs", () => {
       "_Source: filtered to `decision-required: true` ..._",
     ].join("\n");
     writeFileSync(
-      join(root, "Owner Inbox", "2026-05-15_pax_role-research-queue.md"),
+      join(root, "archive", "owner-inbox", "2026-05-15_pax_role-research-queue.md"),
       content,
       "utf8",
     );
