@@ -24,7 +24,6 @@ import {
   ownerInboxToOpenDecisions,
   parseOwnerInbox,
   parseOwnerInboxFile,
-  synthesizeCeoDecisionsFromRecords,
 } from "../dashboard/derive";
 
 interface Fixture {
@@ -1073,73 +1072,6 @@ describe("deriveState — Owner Inbox decision lift", () => {
     );
     expect(item?.kind).toBe("decision-record");
     expect(item?.displayTitle).toBe("Decision record · D-FOO-BAR");
-  });
-});
-
-describe("Owner Inbox decision records — synthesised CeoDecision events", () => {
-  it("synthesises a CeoDecision for a single-id record", () => {
-    const f = makeFixture();
-    writeFileSync(
-      join(f.sources.ownerInboxDir, "2026-05-10_scrooge_ceo-decision-record_d-foo.md"),
-      [
-        "---",
-        "agent: Scrooge",
-        "trigger: ceo-decision-record",
-        "asOf: 2026-05-10T11:00:00.000Z",
-        "decision-required: false",
-        "---",
-        "",
-        "# Scrooge — CEO decision record: D-FOO, 2026-05-10",
-        "",
-        "## Outcome",
-        "",
-        "- **Decision ID:** `D-FOO`",
-        "- **Title:** Foo policy — adopt",
-        "- **Action:** approve as drafted",
-        "- **Outcome:** Foo transitions PLANNED to IN FORCE.",
-        '- **Comment:** "looks good"',
-        "",
-      ].join("\n"),
-    );
-    const events = synthesizeCeoDecisionsFromRecords(f.sources.ownerInboxDir);
-    const e = events.find((x) => x.decisionId === "D-FOO");
-    expect(e).toBeDefined();
-    expect(e?.action).toBe("approve");
-    expect(e?.title).toBe("Foo policy — adopt");
-    expect(e?.outcome).toContain("Foo transitions");
-    expect(e?.asOf).toBe("2026-05-10T11:00:00.000Z");
-    expect(e?.comment).toBe("looks good");
-  });
-
-  it("synthesises one event per id for a multi-id record", () => {
-    const f = makeFixture();
-    writeFileSync(
-      join(f.sources.ownerInboxDir, "2026-05-10_scrooge_ceo-decision-record_d-pack.md"),
-      [
-        "---",
-        "asOf: 2026-05-10T12:00:00.000Z",
-        "---",
-        "# Pack",
-        "- **Decision IDs resolved:** `D-A` + `D-B` + `D-C`",
-        "- **Action:** approve",
-        "- **Title:** Six-pack",
-      ].join("\n"),
-    );
-    const events = synthesizeCeoDecisionsFromRecords(f.sources.ownerInboxDir);
-    const ids = events.map((e) => e.decisionId).sort();
-    expect(ids).toEqual(["D-A", "D-B", "D-C"]);
-  });
-
-  it("recognises sessional ids like S7 from the filename", () => {
-    const f = makeFixture();
-    writeFileSync(
-      join(f.sources.ownerInboxDir, "2026-05-08_scrooge_ceo-decision-record_s7.md"),
-      ["---", "asOf: 2026-05-08T12:00:00.000Z", "---", "# S7 record", "- **Action:** approve"].join(
-        "\n",
-      ),
-    );
-    const events = synthesizeCeoDecisionsFromRecords(f.sources.ownerInboxDir);
-    expect(events.find((e) => e.decisionId === "S7")).toBeDefined();
   });
 });
 
