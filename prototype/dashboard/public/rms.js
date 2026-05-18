@@ -60,6 +60,10 @@
   };
   const CLASSIFICATIONS_DISPLAY = (cs) => (Array.isArray(cs) ? cs.join(", ") : "");
   const ROUTED_TO_DISPLAY = (rt) => (Array.isArray(rt) ? rt.map(AGENT_DISPLAY).join("; ") : "");
+  const EXPECTED_OUTPUTS_DISPLAY = (arr) => {
+    if (!Array.isArray(arr) || arr.length === 0) return "";
+    return arr.map((o) => `[${o.kind}] ${o.description}`).join("; ");
+  };
 
   const COLUMNS = {
     decisions: [
@@ -132,6 +136,13 @@
       { key: "status", label: "Status", isStatus: true },
       { key: "runId", label: "Run id" },
       { key: "issuedAt", label: "Issued at", format: TS_DISPLAY },
+      { key: "scheduledFor", label: "Scheduled for", format: TS_DISPLAY },
+      { key: "expectedOutputs", label: "Expected outputs", format: EXPECTED_OUTPUTS_DISPLAY },
+      { key: "directiveDocumentHash", label: "Directive document", format: HASH_DISPLAY },
+      { key: "supersedes", label: "Supersedes" },
+      { key: "supersedingBriefId", label: "Superseded by" },
+      { key: "supersessionReason", label: "Supersession reason" },
+      { key: "issuedEventId", label: "Event id" },
     ],
     workstreams: [
       { key: "workstreamId", label: "Workstream id" },
@@ -414,7 +425,7 @@
   }
 
   async function openRmsDocPreview(row, register) {
-    const hash = row.documentHash || row.documentHashes?.[0] || null;
+    const hash = row.documentHash || row.directiveDocumentHash || row.documentHashes?.[0] || null;
     const token = (hash || register) + Math.random();
 
     const modal = $("rmsDocPreviewModal");
