@@ -101,6 +101,7 @@
     "dispatch:open-brief": "bun run scripts/dispatch/open-brief.ts",
     "dispatch:start-run": "bun run scripts/dispatch/start-run.ts",
     "dispatch:close-run": "bun run scripts/dispatch/close-run.ts",
+    "kyc:sim": "bun run scripts/kyc/sim.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-codebase-quality-review": "bun run runtime/run.ts --agent Vera --trigger codebase-quality-review",
