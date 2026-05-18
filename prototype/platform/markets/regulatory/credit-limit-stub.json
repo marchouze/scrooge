@@ -1,0 +1,9 @@
+{
+  "_comment": "Build-phase stub — counterparty credit limits (per-LEI, ZAR). Production: derive from live credit-assessment register. Authority: RAS-B3 (counterparty credit risk appetite).",
+  "defaultCreditLimitZAR": 50000000,
+  "perCounterpartyLimits": {
+    "LEIVALIDINSTITUTION0": 100000000,
+    "LEIRETAILCLIENTTEST0": 10000000
+  },
+  "blockedCounterparties": []
+}

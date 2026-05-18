@@ -40,7 +40,10 @@ import {
 } from "../platform/event-store/event-types";
 import type { GatewayCheckCompletedPayload } from "../platform/event-store/event-types/trading";
 import type { Event } from "../platform/event-store/types";
+import kaiCreditCapitalFundingCheck from "../runtime/agents/kai-credit-capital-funding-check";
+import kaiIdentityGatewayCheck from "../runtime/agents/kai-identity-gateway-check";
 import kaiPreTradeGatewayAggregator from "../runtime/agents/kai-pre-trade-gateway-aggregator";
+import kaiSuitabilityGatewayCheck from "../runtime/agents/kai-suitability-gateway-check";
 import miraCounterpartyEligibilityCheck from "../runtime/agents/mira-counterparty-eligibility-check";
 import miraSanctionsGatewayCheck from "../runtime/agents/mira-sanctions-gateway-check";
 import rohanMarketRiskLimitCheck from "../runtime/agents/rohan-market-risk-limit-check";
@@ -150,6 +153,26 @@ function makeRohanCtx(args: {
   };
 }
 
+function makeKaiCheckCtx(args: {
+  asOf: string;
+  handlerId: string;
+  triggeringEvents: readonly Event[];
+  dryRun?: boolean;
+}): AgentRunContext {
+  return {
+    agent: "Kai",
+    trigger: {
+      kind: "event-driven",
+      id: args.handlerId,
+      triggeringEvents: args.triggeringEvents,
+    },
+    asOf: args.asOf,
+    repoRoot: REPO_ROOT,
+    ownerInboxDir: join(REPO_ROOT, "Owner Inbox"),
+    dryRun: args.dryRun ?? false,
+  };
+}
+
 function makeOrder(args: {
   orderId: string;
   counterpartyLei: string;
@@ -207,8 +230,11 @@ function countCheckCompletions(orderId: string, checkKind: string): number {
 // Aggregator tests
 // ---------------------------------------------------------------------------
 
-describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
-  it("fans out three GatewayCheckRequested on OrderProposed", async () => {
+// Total check kinds wired in the aggregator (slices 2–7).
+const TOTAL_CHECK_KINDS = 8;
+
+describe("kai:pre-trade-gateway-aggregator (slices 2–7)", () => {
+  it(`fans out ${TOTAL_CHECK_KINDS} GatewayCheckRequested on OrderProposed`, async () => {
     const orderId = uniqueId("agg-fanout");
     const order = makeOrder({
       orderId,
@@ -224,11 +250,17 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(result.eventsEmitted).toBe(3); // 3 fan-out events
+    expect(result.eventsEmitted).toBe(TOTAL_CHECK_KINDS);
 
     expect(countCheckRequests(orderId, "sanctions")).toBe(1);
     expect(countCheckRequests(orderId, "counterparty-eligibility")).toBe(1);
     expect(countCheckRequests(orderId, "market-risk")).toBe(1);
+    // Slices 5–7 additions:
+    expect(countCheckRequests(orderId, "identity")).toBe(1);
+    expect(countCheckRequests(orderId, "suitability")).toBe(1);
+    expect(countCheckRequests(orderId, "credit-limit")).toBe(1);
+    expect(countCheckRequests(orderId, "capital-impact")).toBe(1);
+    expect(countCheckRequests(orderId, "funding")).toBe(1);
   });
 
   it("does not re-fan-out when check requests already exist", async () => {
@@ -254,7 +286,7 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
     expect(second.ok).toBe(true);
   });
 
-  it("emits OrderApprovedAtGateway when all 3 checks pass", async () => {
+  it(`emits OrderApprovedAtGateway when all ${TOTAL_CHECK_KINDS} checks pass`, async () => {
     const orderId = uniqueId("agg-approve");
     const orderEventId = newEventId();
     const order = {
@@ -278,7 +310,7 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
       const p = e.payload as { orderId?: unknown };
       if (p.orderId === orderId) checkReqEvents.push(e);
     }
-    expect(checkReqEvents.length).toBe(3);
+    expect(checkReqEvents.length).toBe(TOTAL_CHECK_KINDS);
 
     const getReq = (kind: string) =>
       checkReqEvents.find((e) => (e.payload as { checkKind: string }).checkKind === kind) ??
@@ -286,7 +318,7 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
         throw new Error(`No check request found for kind: ${kind}`);
       })();
 
-    // Append all 3 passing completions
+    // Append all passing completions (all 8 check kinds)
     const makeComp = (checkKind: string, srcEventId: string): Event =>
       makeGatewayCheckCompleted({
         asOf: AS_OF_CHECKS,
@@ -303,11 +335,17 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
         },
       });
 
-    const comps = [
-      makeComp("sanctions", getReq("sanctions").event_id),
-      makeComp("counterparty-eligibility", getReq("counterparty-eligibility").event_id),
-      makeComp("market-risk", getReq("market-risk").event_id),
+    const allCheckKinds = [
+      "sanctions",
+      "counterparty-eligibility",
+      "market-risk",
+      "identity",
+      "suitability",
+      "credit-limit",
+      "capital-impact",
+      "funding",
     ];
+    const comps = allCheckKinds.map((kind) => makeComp(kind, getReq(kind).event_id));
     for (const c of comps) eventStore.append(c);
 
     // Aggregate
@@ -320,7 +358,7 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
     expect(countEventsOfType("OrderRejectedAtGateway", orderId)).toBe(0);
   });
 
-  it("emits OrderRejectedAtGateway when a check fails", async () => {
+  it("emits OrderRejectedAtGateway when a check fails (sanctions) with all checks completed", async () => {
     const orderId = uniqueId("agg-reject");
     const orderEventId = newEventId();
     const order = {
@@ -349,7 +387,24 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
         throw new Error(`No check request found for kind: ${kind}`);
       })();
 
-    // Sanctions FAILS; other two pass
+    // Helper for passing completions
+    const makePassComp = (checkKind: string): Event =>
+      makeGatewayCheckCompleted({
+        asOf: AS_OF_CHECKS,
+        entity: ENTITY,
+        actor: MIRA_SANCTIONS_ACTOR,
+        citations: SANCTIONS_CITATIONS,
+        payload: {
+          orderId,
+          checkKind: checkKind as GatewayCheckCompletedPayload["checkKind"],
+          outcome: "approve",
+          sourceCheckRequestEventId: getReq(checkKind).event_id,
+          completedAt: AS_OF_CHECKS,
+          durationMs: 70,
+        },
+      });
+
+    // Sanctions FAILS; all other 7 checks pass.
     const failComp = makeGatewayCheckCompleted({
       asOf: AS_OF_CHECKS,
       entity: ENTITY,
@@ -366,38 +421,21 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
         citationToRule: "ORG-FC-13",
       },
     });
-    const passComp1 = makeGatewayCheckCompleted({
-      asOf: AS_OF_CHECKS,
-      entity: ENTITY,
-      actor: MIRA_ELIGIBILITY_ACTOR,
-      citations: ELIGIBILITY_CITATIONS,
-      payload: {
-        orderId,
-        checkKind: "counterparty-eligibility",
-        outcome: "approve",
-        sourceCheckRequestEventId: getReq("counterparty-eligibility").event_id,
-        completedAt: AS_OF_CHECKS,
-        durationMs: 60,
-      },
-    });
-    const passComp2 = makeGatewayCheckCompleted({
-      asOf: AS_OF_CHECKS,
-      entity: ENTITY,
-      actor: ROHAN_RISK_ACTOR,
-      citations: RISK_CITATIONS,
-      payload: {
-        orderId,
-        checkKind: "market-risk",
-        outcome: "approve",
-        sourceCheckRequestEventId: getReq("market-risk").event_id,
-        completedAt: AS_OF_CHECKS,
-        durationMs: 70,
-      },
-    });
-    for (const c of [failComp, passComp1, passComp2]) eventStore.append(c);
+
+    const allComps = [
+      failComp,
+      makePassComp("counterparty-eligibility"),
+      makePassComp("market-risk"),
+      makePassComp("identity"),
+      makePassComp("suitability"),
+      makePassComp("credit-limit"),
+      makePassComp("capital-impact"),
+      makePassComp("funding"),
+    ];
+    for (const c of allComps) eventStore.append(c);
 
     const result = await kaiPreTradeGatewayAggregator(
-      makeKaiCtx({ asOf: AS_OF_TERMINAL, triggeringEvents: [failComp, passComp1, passComp2] }),
+      makeKaiCtx({ asOf: AS_OF_TERMINAL, triggeringEvents: allComps }),
     );
 
     expect(result.ok).toBe(true);
@@ -414,7 +452,7 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
     }
   });
 
-  it("is a no-op when fewer than 3 checks have completed", async () => {
+  it(`is a no-op when fewer than ${TOTAL_CHECK_KINDS} checks have completed`, async () => {
     const orderId = uniqueId("agg-incomplete");
     const orderEventId = newEventId();
     const order = {
@@ -443,7 +481,7 @@ describe("kai:pre-trade-gateway-aggregator (slices 2–4)", () => {
         throw new Error(`No check request found for kind: ${kind}`);
       })();
 
-    // Only 2 completions — not all 3
+    // Only 2 completions — not all 8
     const comp1 = makeGatewayCheckCompleted({
       asOf: AS_OF_CHECKS,
       entity: ENTITY,
@@ -1140,5 +1178,572 @@ describe("scenario 09 — gateway real checks integration", () => {
     expect((events.checkCompRisk.payload as { outcome: string }).outcome).toBe("reject");
     expect((events.checkCompSanctions.payload as { outcome: string }).outcome).toBe("approve");
     expect((events.checkCompEligibility.payload as { outcome: string }).outcome).toBe("approve");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 5 — identity gateway check handler tests
+// ---------------------------------------------------------------------------
+
+describe("kai:identity-gateway-check (slice 5)", () => {
+  it("approves an order with a known agent actor and valid instrument", async () => {
+    const orderId = uniqueId("ident-pass");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({
+        orderId,
+        counterpartyLei: CP_INSTITUTIONAL_LEI,
+        instrument: INSTRUMENT_OK,
+        quantity: 100,
+        price: 2500,
+      }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "identity",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiIdentityGatewayCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "identity-gateway-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+    expect(countCheckCompletions(orderId, "identity")).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "identity") {
+        expect(p.outcome).toBe("approve");
+        break;
+      }
+    }
+  });
+
+  it("rejects an order with an unknown / unauthorised instrument class", async () => {
+    const orderId = uniqueId("ident-bad-inst");
+    const orderEventId = newEventId();
+    // Build a manual order with an unrecognised instrument
+    const order = makeOrderProposed({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ORDER_CITATIONS,
+      eventId: orderEventId,
+      payload: {
+        orderId,
+        counterpartyLei: CP_INSTITUTIONAL_LEI,
+        instrument: "CRYPTO:BTC", // Not in allowlist
+        side: "buy",
+        quantity: 1,
+        price: 500000,
+        priceCurrency: "ZAR",
+        bookingEntity: ENTITY,
+        requestedActor: "agent:saskia:auto-quote",
+      },
+    });
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "identity",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiIdentityGatewayCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "identity-gateway-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown; citationToRule?: unknown };
+      if (p.orderId === orderId && p.checkKind === "identity") {
+        expect(p.outcome).toBe("reject");
+        expect(p.citationToRule).toBe("FMA-S5");
+        break;
+      }
+    }
+  });
+
+  it("is idempotent — second invocation is a no-op", async () => {
+    const orderId = uniqueId("ident-idem");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "identity", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    await kaiIdentityGatewayCheck(makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "identity-gateway-check", triggeringEvents: [checkReq] }));
+    expect(countCheckCompletions(orderId, "identity")).toBe(1);
+
+    const second = await kaiIdentityGatewayCheck(makeKaiCheckCtx({ asOf: AS_OF_TERMINAL, handlerId: "identity-gateway-check", triggeringEvents: [checkReq] }));
+    expect(second.eventsEmitted).toBe(0);
+    expect(countCheckCompletions(orderId, "identity")).toBe(1);
+  });
+
+  it("dry-run mode does not emit", async () => {
+    const orderId = uniqueId("ident-dry");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "identity", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    const result = await kaiIdentityGatewayCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "identity-gateway-check", triggeringEvents: [checkReq], dryRun: true }),
+    );
+    expect(result.eventsEmitted).toBe(0);
+    expect(countCheckCompletions(orderId, "identity")).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 6 — suitability gateway check handler tests
+// ---------------------------------------------------------------------------
+
+describe("kai:suitability-gateway-check (slice 6)", () => {
+  it("approves a market-counterparty (institutional) for any in-scope product", async () => {
+    const orderId = uniqueId("suit-pass");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+
+    // Register the FAIS classification
+    const faisEvent = makeCounterpartyFaisClassified({
+      asOf: AS_OF, entity: ENTITY,
+      actor: NIKO_ACTOR, citations: ["ORG-CD-01"],
+      payload: { counterpartyId: CP_INSTITUTIONAL_LEI, faisCategory: "market-counterparty", classifiedAt: AS_OF, classifiedBy: NIKO_ACTOR.id },
+    });
+    eventStore.append(faisEvent);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "suitability", sourceOrderEventId: orderEventId, requestedAt: AS_OF, timeoutMs: 30000 },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiSuitabilityGatewayCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "suitability-gateway-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+    expect(countCheckCompletions(orderId, "suitability")).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "suitability") {
+        expect(p.outcome).toBe("approve");
+        break;
+      }
+    }
+  });
+
+  it("rejects a retail-client counterparty (institutional-only bank, D-FAIS-SCOPE)", async () => {
+    const orderId = uniqueId("suit-retail-fail");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_RETAIL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+
+    // Register retail FAIS classification
+    const faisEvent = makeCounterpartyFaisClassified({
+      asOf: AS_OF, entity: ENTITY, actor: NIKO_ACTOR, citations: ["ORG-CD-01"],
+      payload: { counterpartyId: CP_RETAIL_LEI, faisCategory: "retail-client", classifiedAt: AS_OF, classifiedBy: NIKO_ACTOR.id },
+    });
+    eventStore.append(faisEvent);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "suitability", sourceOrderEventId: orderEventId, requestedAt: AS_OF, timeoutMs: 30000 },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiSuitabilityGatewayCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "suitability-gateway-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown; citationToRule?: unknown };
+      if (p.orderId === orderId && p.checkKind === "suitability") {
+        expect(p.outcome).toBe("reject");
+        expect(p.citationToRule).toBe("FAIS-ACT-37-2002");
+        break;
+      }
+    }
+  });
+
+  it("rejects an unclassified counterparty (no CounterpartyFaisClassified on record)", async () => {
+    const orderId = uniqueId("suit-unclassified");
+    const orderEventId = newEventId();
+    const unknownLei = "LEINOCLASSIFICATION00"; // 20 chars, no FAIS event
+    const order = makeOrderProposed({
+      asOf: AS_OF, entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ORDER_CITATIONS, eventId: orderEventId,
+      payload: { orderId, counterpartyLei: unknownLei, instrument: INSTRUMENT_OK, side: "buy", quantity: 100, price: 2500, priceCurrency: "ZAR", bookingEntity: ENTITY, requestedActor: "agent:saskia:auto-quote" },
+    });
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "suitability", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiSuitabilityGatewayCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "suitability-gateway-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "suitability") {
+        expect(p.outcome).toBe("reject");
+        break;
+      }
+    }
+  });
+
+  it("is idempotent — second invocation is a no-op", async () => {
+    const orderId = uniqueId("suit-idem");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+    eventStore.append(makeCounterpartyFaisClassified({
+      asOf: AS_OF, entity: ENTITY, actor: NIKO_ACTOR, citations: ["ORG-CD-01"],
+      payload: { counterpartyId: CP_INSTITUTIONAL_LEI, faisCategory: "market-counterparty", classifiedAt: AS_OF, classifiedBy: NIKO_ACTOR.id },
+    }));
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "suitability", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    await kaiSuitabilityGatewayCheck(makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "suitability-gateway-check", triggeringEvents: [checkReq] }));
+    expect(countCheckCompletions(orderId, "suitability")).toBe(1);
+
+    const second = await kaiSuitabilityGatewayCheck(makeKaiCheckCtx({ asOf: AS_OF_TERMINAL, handlerId: "suitability-gateway-check", triggeringEvents: [checkReq] }));
+    expect(second.eventsEmitted).toBe(0);
+    expect(countCheckCompletions(orderId, "suitability")).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 7 — credit-limit, capital-impact, funding gateway check handler tests
+// ---------------------------------------------------------------------------
+
+describe("kai:credit-capital-funding-check (slice 7)", () => {
+  // ----- Credit-limit -----
+
+  it("approves credit-limit check for an order within the counterparty limit", async () => {
+    const orderId = uniqueId("credit-pass");
+    const orderEventId = newEventId();
+    // 100 shares * 2500 ZAR = 250k ZAR << 100m LEIVALIDINSTITUTION0 limit
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "credit-limit", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+    expect(countCheckCompletions(orderId, "credit-limit")).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "credit-limit") {
+        expect(p.outcome).toBe("approve");
+        break;
+      }
+    }
+  });
+
+  it("rejects credit-limit check when notional would breach counterparty limit", async () => {
+    const orderId = uniqueId("credit-fail");
+    const orderEventId = newEventId();
+    // 50,000 shares * 2500 ZAR = 125m ZAR > 100m LEIVALIDINSTITUTION0 limit
+    const order = makeOrderProposed({
+      asOf: AS_OF, entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ORDER_CITATIONS, eventId: orderEventId,
+      payload: { orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, side: "buy", quantity: 50000, price: 2500, priceCurrency: "ZAR", bookingEntity: ENTITY, requestedActor: "agent:saskia:auto-quote" },
+    });
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "credit-limit", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown; citationToRule?: unknown };
+      if (p.orderId === orderId && p.checkKind === "credit-limit") {
+        expect(p.outcome).toBe("reject");
+        expect(p.citationToRule).toBe("RAS-B3");
+        break;
+      }
+    }
+  });
+
+  // ----- Capital-impact -----
+
+  it("approves capital-impact check for an order within RWA headroom", async () => {
+    const orderId = uniqueId("capital-pass");
+    const orderEventId = newEventId();
+    // 100 shares * 2500 ZAR = 250k ZAR * 0.35 JSE-EQUITY weight = 87.5k ZAR RWA
+    // currentRwaZAR=200m, totalRwaLimitZAR=1000m → 200m + 87.5k << 1000m
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "capital-impact", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "capital-impact") {
+        expect(p.outcome).toBe("approve");
+        break;
+      }
+    }
+  });
+
+  it("rejects capital-impact check when RWA would exceed BA 325 limit", async () => {
+    const orderId = uniqueId("capital-fail");
+    const orderEventId = newEventId();
+    // 3,000,000 shares * 2500 ZAR = 7.5 billion ZAR * 0.35 = 2.625bn RWA
+    // currentRwaZAR=200m, totalRwaLimitZAR=1000m → breach
+    const order = makeOrderProposed({
+      asOf: AS_OF, entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ORDER_CITATIONS, eventId: orderEventId,
+      payload: { orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, side: "buy", quantity: 3000000, price: 2500, priceCurrency: "ZAR", bookingEntity: ENTITY, requestedActor: "agent:saskia:auto-quote" },
+    });
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "capital-impact", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "capital-impact") {
+        expect(p.outcome).toBe("reject");
+        break;
+      }
+    }
+  });
+
+  // ----- Funding (LCR) -----
+
+  it("approves funding check for a small order with adequate LCR headroom", async () => {
+    const orderId = uniqueId("funding-pass");
+    const orderEventId = newEventId();
+    // 100 shares * 2500 ZAR = 250k ZAR = 0.25m
+    // LCR impact: 0.25 * 0.5 = 0.125% → post-trade LCR = 150 - 0.125 = 149.875% >> 100%
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "funding", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "funding") {
+        expect(p.outcome).toBe("approve");
+        break;
+      }
+    }
+  });
+
+  it("rejects funding check when LCR would fall below 100% minimum", async () => {
+    const orderId = uniqueId("funding-fail");
+    const orderEventId = newEventId();
+    // Need LCR impact > 50% (to drop from 150% to below 100%).
+    // outflowPerMillionNotionalZAR=0.5, so need notional > 100m ZAR.
+    // 100,000 shares * 2500 ZAR = 250m ZAR = 250 million → LCR impact = 125% → post = 25% < 100%.
+    const order = makeOrderProposed({
+      asOf: AS_OF, entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ORDER_CITATIONS, eventId: orderEventId,
+      payload: { orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, side: "buy", quantity: 100000, price: 2500, priceCurrency: "ZAR", bookingEntity: ENTITY, requestedActor: "agent:saskia:auto-quote" },
+    });
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "funding", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "funding") {
+        expect(p.outcome).toBe("reject");
+        break;
+      }
+    }
+  });
+
+  it("is idempotent — second invocation is a no-op for credit-limit", async () => {
+    const orderId = uniqueId("credit-idem");
+    const orderEventId = newEventId();
+    const order = {
+      ...makeOrder({ orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, quantity: 100, price: 2500 }),
+      event_id: orderEventId,
+    };
+    eventStore.append(order);
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "credit-limit", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    await kaiCreditCapitalFundingCheck(makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }));
+    expect(countCheckCompletions(orderId, "credit-limit")).toBe(1);
+
+    const second = await kaiCreditCapitalFundingCheck(makeKaiCheckCtx({ asOf: AS_OF_TERMINAL, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }));
+    expect(second.eventsEmitted).toBe(0);
+    expect(countCheckCompletions(orderId, "credit-limit")).toBe(1);
+  });
+
+  it("sell orders always pass credit-limit check (exposure decreases)", async () => {
+    const orderId = uniqueId("credit-sell-pass");
+    const orderEventId = newEventId();
+    const order = makeOrderProposed({
+      asOf: AS_OF, entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ORDER_CITATIONS, eventId: orderEventId,
+      payload: { orderId, counterpartyLei: CP_INSTITUTIONAL_LEI, instrument: INSTRUMENT_OK, side: "sell", quantity: 100000, price: 2500, priceCurrency: "ZAR", bookingEntity: ENTITY, requestedActor: "agent:saskia:auto-quote" },
+    });
+    eventStore.append(order);
+
+    const checkReq = makeGatewayCheckRequested({
+      asOf: AS_OF, entity: ENTITY, actor: AGGREGATOR_ACTOR, citations: FANOUT_CITATIONS,
+      payload: { orderId, checkKind: "credit-limit", sourceOrderEventId: orderEventId, requestedAt: AS_OF },
+    });
+    eventStore.append(checkReq);
+
+    const result = await kaiCreditCapitalFundingCheck(
+      makeKaiCheckCtx({ asOf: AS_OF_CHECKS, handlerId: "credit-capital-funding-check", triggeringEvents: [checkReq] }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.eventsEmitted).toBe(1);
+
+    for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
+      const p = e.payload as { orderId?: unknown; checkKind?: unknown; outcome?: unknown };
+      if (p.orderId === orderId && p.checkKind === "credit-limit") {
+        expect(p.outcome).toBe("approve");
+        break;
+      }
+    }
   });
 });
