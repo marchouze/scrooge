@@ -18,7 +18,11 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { makeRiskRaised, makeWorkstreamRegistered } from "../../platform/event-store/event-types";
+import {
+  makeAgentEscalation,
+  makeRiskRaised,
+  makeWorkstreamRegistered,
+} from "../../platform/event-store/event-types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import { HANDLERS_METADATA } from "../handlers-metadata";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -372,6 +376,76 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       },
     });
     eventsEmitted = 1;
+
+    // -------------------------------------------------------------------------
+    // AgentEscalation — two highest-blast-radius substrate gaps.
+    //
+    // Gap 1: Bus is in-process only → Vera audit pipelines #14/#15 are gated.
+    //   Escalate to Vera so the dependency is visible in her audit stream.
+    // Gap 2: GH Actions cron drift (A2.1) → cross-host scheduler unreliability.
+    //   Self-escalate to Atlas so it surfaces on Atlas's own inbound queue.
+    //
+    // Pattern mirrors RiskRaised below; both unblock downstream consumers
+    // that subscribe to AgentEscalation events (Vera pipelines, dashboard).
+    // -------------------------------------------------------------------------
+    const atlasEscActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
+
+    eventStore.append(
+      makeAgentEscalation({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: atlasEscActor,
+        citations: EVENT_CITATIONS,
+        payload: {
+          escalationId: `esc:atlas:bus-in-process-${fmtDateUTC(ctx.asOf)}`,
+          raisedBy: "Atlas",
+          question:
+            "Event-driven dispatch is in-process only (no cross-process bus). " +
+            "Vera audit pipelines #14 and #15 are gated on AgentEscalation events " +
+            "flowing from a running handler to Vera's subscriber — which requires at " +
+            "minimum in-process fan-out to be wired. Are pipelines #14/#15 now unblocked, " +
+            "or does Vera need an explicit integration test before marking them green?",
+          options: [
+            "Confirm in-process fan-out satisfies pipelines #14/#15 for now; track cross-process bus as M8 work only.",
+            "Vera runs integration test against the emitted AgentEscalation events before closing #14/#15.",
+            "Defer: keep #14/#15 blocked until the full cross-process bus lands (M8 cloud lift).",
+          ],
+          blockedBy: "M8 cloud-lift (cross-process event bus)",
+          severity: "medium",
+          routedTo: "Vera",
+        },
+      }),
+    );
+    eventsEmitted++;
+
+    eventStore.append(
+      makeAgentEscalation({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: atlasEscActor,
+        citations: EVENT_CITATIONS,
+        payload: {
+          escalationId: `esc:atlas:cron-drift-a2-1-${fmtDateUTC(ctx.asOf)}`,
+          raisedBy: "Atlas",
+          question:
+            "GH Actions cron reliability is an ongoing substrate gap (A2.1). " +
+            "Scheduled runs have been observed to drift by hours or be silently dropped. " +
+            "Workaround (distinct off-the-hour minutes per workflow) is in place but is " +
+            "not a permanent fix. Should Atlas prioritise the A2.1 substrate scheduler " +
+            "(Bun process emitting typed ScheduledTrigger events) ahead of other " +
+            "planned M-phase work, or continue with the workaround through the build phase?",
+          options: [
+            "Prioritise A2.1 substrate scheduler ahead of other M-phase items.",
+            "Continue with the cron-minute workaround; revisit at M8 cloud lift.",
+            "Accept residual drift risk and document it in Atlas's substrate-gap register.",
+          ],
+          blockedBy: "A2.1 substrate scheduler not yet built",
+          severity: "medium",
+          routedTo: "Atlas",
+        },
+      }),
+    );
+    eventsEmitted++;
 
     // Emit one RiskRaised + one WorkstreamRegistered per substrate gap.
     // Each gap is simultaneously (a) a forward risk — a control not yet
