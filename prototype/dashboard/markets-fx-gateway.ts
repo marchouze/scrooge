@@ -18,7 +18,6 @@
 //         Saskia, Head of Global Markets)
 
 import { newEventId } from "../platform/core/types";
-import { simulatedTag } from "../platform/event-store/provenance";
 import {
   makeGatewayCheckCompleted,
   makeGatewayCheckRequested,
@@ -26,6 +25,7 @@ import {
   makeOrderProposed,
   makeOrderRejectedAtGateway,
 } from "../platform/event-store/event-types/trading";
+import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import type { RfqInput, SyntheticQuote } from "./markets-fx-trade";
 import { isCounterpartyEligible } from "./markets-fx-trade";
@@ -45,8 +45,8 @@ export interface GatewayOrderResult {
   status: "approved" | "rejected" | "timeout";
   orderId: string;
   checks: GatewayCheckResult[];
-  rejectingCheck?: string;
-  rejectionReason?: string;
+  rejectingCheck?: string | undefined;
+  rejectionReason?: string | undefined;
   asOf: string;
 }
 
@@ -56,10 +56,7 @@ export interface GatewayOrderResult {
 
 const GATEWAY_ENTITY = "BANK-ZA-001";
 const GATEWAY_ACTOR = { type: "service" as const, id: "agent:kai:fx-gateway" };
-const GATEWAY_CITATIONS = [
-  "D-FX-SALES-TRADING-FRONTEND",
-  "D-MARKETS-SCHEMA-FOUNDATION",
-] as const;
+const GATEWAY_CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"] as const;
 
 /** The seven pre-trade gateway check kinds run for every order. */
 const CHECK_KINDS = [
@@ -94,12 +91,20 @@ function toSyntheticLei(counterpartyId: string): string {
 // Idempotency guard
 // ---------------------------------------------------------------------------
 
+function replayToArray(store: Pick<EventStore, "replay">, opts: { type: string }) {
+  const out = [];
+  for (const e of store.replay(opts)) {
+    out.push(e);
+  }
+  return out;
+}
+
 function findExistingTerminalEvent(
   store: Pick<EventStore, "replay">,
   orderId: string,
 ): GatewayOrderResult | null {
-  const events = store.replay({ type: "OrderApprovedAtGateway" });
-  const approvedEvent = events.find((e) => {
+  const approvedEvents = replayToArray(store, { type: "OrderApprovedAtGateway" });
+  const approvedEvent = approvedEvents.find((e) => {
     const p = e.payload as Record<string, unknown>;
     return p.orderId === orderId;
   });
@@ -113,21 +118,24 @@ function findExistingTerminalEvent(
     };
   }
 
-  const rejectedEvents = store.replay({ type: "OrderRejectedAtGateway" });
+  const rejectedEvents = replayToArray(store, { type: "OrderRejectedAtGateway" });
   const rejectedEvent = rejectedEvents.find((e) => {
     const p = e.payload as Record<string, unknown>;
     return p.orderId === orderId;
   });
   if (rejectedEvent) {
     const p = rejectedEvent.payload as Record<string, unknown>;
-    return {
+    const rejectingCheck = typeof p.rejectingCheck === "string" ? p.rejectingCheck : undefined;
+    const rejectionReason = typeof p.rejectionReason === "string" ? p.rejectionReason : undefined;
+    const result: GatewayOrderResult = {
       status: "rejected",
       orderId,
       checks: [],
-      rejectingCheck: p.rejectingCheck as string | undefined,
-      rejectionReason: p.rejectionReason as string | undefined,
       asOf: rejectedEvent.as_of,
     };
+    if (rejectingCheck !== undefined) result.rejectingCheck = rejectingCheck;
+    if (rejectionReason !== undefined) result.rejectionReason = rejectionReason;
+    return result;
   }
 
   return null;
@@ -281,14 +289,15 @@ export function routeOrderToGateway(args: {
     });
     store.append({ ...rejectedEvent, provenance });
 
-    return {
+    const rejResult: GatewayOrderResult = {
       status: "rejected",
       orderId,
       checks: checkResults,
       rejectingCheck,
-      rejectionReason,
       asOf,
     };
+    if (rejectionReason !== undefined) rejResult.rejectionReason = rejectionReason;
+    return rejResult;
   }
 
   // All checks passed

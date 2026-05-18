@@ -42,19 +42,14 @@ import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
-import {
-  type GatewayCheckResult,
-  type GatewayOrderResult,
-  getExistingGatewayResult,
-  routeOrderToGateway,
-} from "../dashboard/markets-fx-gateway";
+import { getExistingGatewayResult, routeOrderToGateway } from "../dashboard/markets-fx-gateway";
 import { quoteRfq } from "../dashboard/markets-fx-trade";
+import { newEventId } from "../platform/core/types";
 import {
   makeCounterpartyEligibilityScreened,
   makeOrderApprovedAtGateway,
   makeOrderRejectedAtGateway,
 } from "../platform/event-store/event-types";
-import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 
@@ -98,6 +93,12 @@ function freshStore(): EventStore {
   return new EventStore(path);
 }
 
+function replayToArray(store: EventStore, type: string) {
+  const out = [];
+  for (const e of store.replay({ type })) out.push(e);
+  return out;
+}
+
 function seedEligibleCounterparty(store: EventStore, counterpartyId: string): void {
   store.append(
     makeCounterpartyEligibilityScreened({
@@ -129,11 +130,11 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const quote = quoteRfq(VALID_RFQ);
     routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
-    const proposed = store.replay({ type: "OrderProposed" });
-    const checkRequested = store.replay({ type: "GatewayCheckRequested" });
-    const checkCompleted = store.replay({ type: "GatewayCheckCompleted" });
-    const approved = store.replay({ type: "OrderApprovedAtGateway" });
-    const rejected = store.replay({ type: "OrderRejectedAtGateway" });
+    const proposed = replayToArray(store, "OrderProposed");
+    const checkRequested = replayToArray(store, "GatewayCheckRequested");
+    const checkCompleted = replayToArray(store, "GatewayCheckCompleted");
+    const approved = replayToArray(store, "OrderApprovedAtGateway");
+    const rejected = replayToArray(store, "OrderRejectedAtGateway");
 
     expect(proposed).toHaveLength(1);
     expect(checkRequested).toHaveLength(7);
@@ -176,14 +177,15 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
-    const proposed = store.replay({ type: "OrderProposed" });
+    const proposed = replayToArray(store, "OrderProposed");
     expect(proposed).toHaveLength(1);
-    const p = proposed[0].payload as Record<string, unknown>;
+    // biome-ignore lint/style/noNonNullAssertion: length checked above
+    const p = proposed[0]!.payload as Record<string, unknown>;
 
     expect(typeof p.orderId).toBe("string");
-    expect(p.orderId).toMatch(/^ord:/);
+    expect(p.orderId as string).toMatch(/^ord:/);
     // LEI must be exactly 20 uppercase alphanumeric chars
-    expect(p.counterpartyLei).toMatch(/^[A-Z0-9]{20}$/);
+    expect(p.counterpartyLei as string).toMatch(/^[A-Z0-9]{20}$/);
     expect(typeof p.instrument).toBe("string");
     expect(p.instrument).toContain("FX-spot");
     expect(p.side).toBe("buy");
@@ -203,7 +205,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
-    const checkRequested = store.replay({ type: "GatewayCheckRequested" });
+    const checkRequested = replayToArray(store, "GatewayCheckRequested");
     expect(checkRequested).toHaveLength(7);
 
     const EXPECTED_KINDS = [
@@ -215,13 +217,15 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
       "capital-impact",
       "funding",
     ];
-    const actualKinds = checkRequested.map((e) => (e.payload as Record<string, unknown>).checkKind);
+    const actualKinds = checkRequested.map(
+      (e) => (e.payload as Record<string, unknown>).checkKind as string,
+    );
     for (const kind of EXPECTED_KINDS) {
       expect(actualKinds).toContain(kind);
     }
     for (const event of checkRequested) {
       const p = event.payload as Record<string, unknown>;
-      expect(p.orderId).toBe(result.orderId);
+      expect(p.orderId as string).toBe(result.orderId);
     }
   });
 
@@ -232,13 +236,13 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const quote = quoteRfq(VALID_RFQ);
     routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
-    const checkCompleted = store.replay({ type: "GatewayCheckCompleted" });
+    const checkCompleted = replayToArray(store, "GatewayCheckCompleted");
     expect(checkCompleted).toHaveLength(7);
 
     for (const event of checkCompleted) {
       const p = event.payload as Record<string, unknown>;
       expect(typeof p.outcome).toBe("string");
-      expect(["approve", "reject", "timeout"]).toContain(p.outcome);
+      expect(["approve", "reject", "timeout"]).toContain(p.outcome as string);
       expect(typeof p.durationMs).toBe("number");
       expect(p.durationMs as number).toBeGreaterThanOrEqual(0);
     }
@@ -251,9 +255,10 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
-    const approved = store.replay({ type: "OrderApprovedAtGateway" });
+    const approved = replayToArray(store, "OrderApprovedAtGateway");
     expect(approved).toHaveLength(1);
-    const p = approved[0].payload as Record<string, unknown>;
+    // biome-ignore lint/style/noNonNullAssertion: length checked above
+    const p = approved[0]!.payload as Record<string, unknown>;
 
     expect(p.orderId).toBe(result.orderId);
     expect(typeof p.passedAt).toBe("string");
@@ -286,9 +291,9 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
     const result = routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
 
     expect(result.status).toBe("rejected");
-    const rejected = store.replay({ type: "OrderRejectedAtGateway" });
+    const rejected = replayToArray(store, "OrderRejectedAtGateway");
     expect(rejected).toHaveLength(1);
-    const approved = store.replay({ type: "OrderApprovedAtGateway" });
+    const approved = replayToArray(store, "OrderApprovedAtGateway");
     expect(approved).toHaveLength(0);
   });
 
@@ -298,9 +303,9 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
     const quote = quoteRfq(INELIGIBLE_RFQ);
     routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
 
-    const checkRequested = store.replay({ type: "GatewayCheckRequested" });
-    const checkCompleted = store.replay({ type: "GatewayCheckCompleted" });
-    const rejected = store.replay({ type: "OrderRejectedAtGateway" });
+    const checkRequested = replayToArray(store, "GatewayCheckRequested");
+    const checkCompleted = replayToArray(store, "GatewayCheckCompleted");
+    const rejected = replayToArray(store, "OrderRejectedAtGateway");
 
     expect(checkRequested).toHaveLength(7);
     expect(checkCompleted).toHaveLength(7);
@@ -332,7 +337,7 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
     const result = routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
 
     expect(result.status).toBe("rejected");
-    const approved = store.replay({ type: "OrderApprovedAtGateway" });
+    const approved = replayToArray(store, "OrderApprovedAtGateway");
     expect(approved).toHaveLength(0);
   });
 });
