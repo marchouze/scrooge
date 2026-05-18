@@ -93,6 +93,11 @@ export * from "./regulatory-reporting";
 //   FaisClassificationSuitabilityChecked, ConflictOfInterestDisclosed.
 // Authority: D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
 export * from "./conduct";
+// M3 Slice 10 — Counterparty-exposure events (large-exposure framework).
+// CounterpartyExposureCalculated — per-counterparty, per-exposure-type snapshot
+//   with netting, collateral, uncovered exposure, and limit utilisation.
+// Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+export * from "./counterparty-exposure";
 // F-032 extended event-type files — typed Zod schemas replacing PT placeholders.
 // Authority: F-032 (event-type-registry-coverage recon, 2026-05-16).
 // Author: Atlas (Core banking platform architect, engineering)
@@ -182,6 +187,7 @@ import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
+import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
@@ -244,6 +250,9 @@ export const TYPED_EVENT_TYPES = [
   // M3 Slice 9 — conduct risk event types (trade-level + period-level).
   // Authority: D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
   ...CONDUCT_TYPED_EVENT_TYPES,
+  // M3 Slice 10 — counterparty-exposure event types (large-exposure framework).
+  // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+  ...COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
