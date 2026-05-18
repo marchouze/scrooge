@@ -1,5 +1,10 @@
 {
   "accounts": [
+    { "id": "ACC-1000-001", "name": "Bank — ZAR",                       "category": "asset",  "side": "debit" },
+
+    { "id": "ACC-5000-001", "name": "Share Capital",                    "category": "equity", "side": "credit" },
+    { "id": "ACC-5000-002", "name": "Retained Earnings",                "category": "equity", "side": "credit" },
+
     { "id": "ACC-1100-001", "name": "Nostro — ZAR (SARB operational)", "category": "asset", "side": "debit" },
     { "id": "ACC-1100-002", "name": "Nostro — USD (correspondent)",     "category": "asset", "side": "debit" },
     { "id": "ACC-1100-003", "name": "Nostro — EUR (correspondent)",     "category": "asset", "side": "debit" },
