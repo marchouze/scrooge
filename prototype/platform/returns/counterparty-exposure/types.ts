@@ -44,8 +44,8 @@ export interface CounterpartyExposureSnapshot {
   readonly grossExposure: number;
   /** Net exposure in ZAR minor units after bilateral netting. */
   readonly netExposure: number;
-  /** Netting agreement ID applied (if any). */
-  readonly nettingAgreementId?: string;
+  /** Netting agreement ID applied (if any). Undefined when no netting agreement exists. */
+  readonly nettingAgreementId: string | undefined;
   /** Market value of collateral held (ZAR minor units). */
   readonly collateralHeld: number;
   /** Uncovered exposure = max(0, netExposure − collateralHeld). */

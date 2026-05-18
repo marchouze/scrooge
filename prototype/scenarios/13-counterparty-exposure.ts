@@ -41,13 +41,15 @@
 // Author: Atlas (Principal Software Engineer, engineering)
 
 import { BANK_ZA_001, newEventId } from "@platform/core/types";
+import {
+  type CounterpartyExposureCalculatedPayload,
+  makeCounterpartyExposureCalculated,
+} from "@platform/event-store/event-types/counterparty-exposure";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
 import { EventStore } from "@platform/event-store/store";
-import { makeCounterpartyExposureCalculated } from "@platform/event-store/event-types/counterparty-exposure";
 import { logger } from "@platform/observability/logger";
-import { deriveCounterpartyExposureRegister } from "@platform/returns/counterparty-exposure/register";
 import { run as reconRun } from "@platform/recon/counterparty-exposure-coverage";
-import type { CounterpartyExposureCalculatedPayload } from "@platform/event-store/event-types/counterparty-exposure";
+import { deriveCounterpartyExposureRegister } from "@platform/returns/counterparty-exposure/register";
 
 // ---------------------------------------------------------------------------
 // Scenario constants
@@ -242,8 +244,7 @@ async function main(): Promise<void> {
   if (!reconResult.ok) {
     const failViolations = reconResult.violations.filter((v) => v.severity === "fail");
     throw new Error(
-      `Assertion failed: recon:counterparty-exposure-coverage failed with ${failViolations.length} violation(s):\n` +
-        failViolations.map((v) => `  - ${v.message}`).join("\n"),
+      `Assertion failed: recon:counterparty-exposure-coverage failed with ${failViolations.length} violation(s):\n${failViolations.map((v) => `  - ${v.message}`).join("\n")}`,
     );
   }
 
@@ -266,18 +267,12 @@ async function main(): Promise<void> {
   console.log("\n=== Scenario 13: Counterparty-Exposure Summary ===");
   console.log(`Entries: ${register.metrics.totalEntries}`);
   console.log(`Breached: ${register.metrics.breachedCount}`);
-  console.log(
-    `Distinct counterparties: ${register.metrics.distinctCounterparties}`,
-  );
-  console.log(
-    `Exposure types: ${register.metrics.exposureTypesPresent.join(", ")}`,
-  );
+  console.log(`Distinct counterparties: ${register.metrics.distinctCounterparties}`);
+  console.log(`Exposure types: ${register.metrics.exposureTypesPresent.join(", ")}`);
   console.log(
     `Total uncovered exposure: ZAR ${(register.metrics.totalUncoveredExposure / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}`,
   );
-  console.log(
-    `Max limit utilisation: ${register.metrics.maxLimitUtilisationPct.toFixed(1)}%`,
-  );
+  console.log(`Max limit utilisation: ${register.metrics.maxLimitUtilisationPct.toFixed(1)}%`);
   for (const entry of register.breached) {
     console.log(
       `  ⚠ BREACH: ${entry.latest.counterpartyId} [${entry.latest.exposureType}] ` +

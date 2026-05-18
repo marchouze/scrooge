@@ -114,11 +114,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `exposure-type:${exposureType}`,
         severity: "fail",
-        message:
-          `Exposure type '${exposureType}' has no CounterpartyExposureCalculated events. ` +
-          "All four exposure types (pre-settlement, settlement, issuer, replacement-cost) " +
-          "must be represented in the event store. " +
-          "Citations: BCBS 283 §3; RRB Regulation 23; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.",
+        message: `Exposure type '${exposureType}' has no CounterpartyExposureCalculated events. All four exposure types (pre-settlement, settlement, issuer, replacement-cost) must be represented in the event store. Citations: BCBS 283 §3; RRB Regulation 23; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.`,
       });
     }
   }
@@ -174,6 +170,4 @@ if (result.violations.length > 0) {
   }
 }
 
-console.log(
-  `[PASS] ${PIPELINE}: ${result.asserted} assertions checked.`,
-);
+console.log(`[PASS] ${PIPELINE}: ${result.asserted} assertions checked.`);

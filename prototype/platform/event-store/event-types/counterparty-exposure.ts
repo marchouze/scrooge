@@ -178,6 +178,4 @@ export function makeCounterpartyExposureCalculated(args: {
 //   (3) add a spread in event-types/index.ts.
 // ---------------------------------------------------------------------------
 
-export const COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES = [
-  "CounterpartyExposureCalculated",
-] as const;
+export const COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES = ["CounterpartyExposureCalculated"] as const;

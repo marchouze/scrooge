@@ -153,7 +153,9 @@ export function deriveCounterpartyExposureRegister(
 // Metrics builder
 // ---------------------------------------------------------------------------
 
-function buildMetrics(entries: readonly CounterpartyExposureRegisterEntry[]): CounterpartyExposureMetrics {
+function buildMetrics(
+  entries: readonly CounterpartyExposureRegisterEntry[],
+): CounterpartyExposureMetrics {
   if (entries.length === 0) {
     return {
       totalEntries: 0,

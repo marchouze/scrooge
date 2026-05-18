@@ -38,8 +38,8 @@ import {
   makeCounterpartyExposureCalculated,
 } from "../platform/event-store/event-types/counterparty-exposure";
 import { EventStore } from "../platform/event-store/store";
-import { deriveCounterpartyExposureRegister } from "../platform/returns/counterparty-exposure/register";
 import { run as reconRun } from "../platform/recon/counterparty-exposure-coverage";
+import { deriveCounterpartyExposureRegister } from "../platform/returns/counterparty-exposure/register";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -142,12 +142,7 @@ describe("CounterpartyExposureCalculated EventStore integration", () => {
 // ---------------------------------------------------------------------------
 
 describe("CounterpartyExposureCalculated — exposureType enum coverage", () => {
-  const exposureTypes = [
-    "pre-settlement",
-    "settlement",
-    "issuer",
-    "replacement-cost",
-  ] as const;
+  const exposureTypes = ["pre-settlement", "settlement", "issuer", "replacement-cost"] as const;
 
   for (const exposureType of exposureTypes) {
     it(`accepts exposureType=${exposureType}`, () => {
@@ -221,12 +216,12 @@ describe("deriveCounterpartyExposureRegister — single event", () => {
     const register = deriveCounterpartyExposureRegister({ asOf: AS_OF, eventStore: store });
     expect(register.entries).toHaveLength(1);
     const entry = register.entries[0];
-    expect(entry).toBeDefined();
-    expect(entry!.latest.counterpartyId).toBe("CP-SINGLE-001");
-    expect(entry!.latest.exposureType).toBe("settlement");
-    expect(entry!.latest.uncoveredExposure).toBe(5_000_000_00);
-    expect(entry!.latest.limitUtilisationPct).toBe(50);
-    expect(entry!.calculationCount).toBe(1);
+    if (!entry) throw new Error("Expected at least one register entry");
+    expect(entry.latest.counterpartyId).toBe("CP-SINGLE-001");
+    expect(entry.latest.exposureType).toBe("settlement");
+    expect(entry.latest.uncoveredExposure).toBe(5_000_000_00);
+    expect(entry.latest.limitUtilisationPct).toBe(50);
+    expect(entry.calculationCount).toBe(1);
   });
 });
 
@@ -271,8 +266,9 @@ describe("deriveCounterpartyExposureRegister — latest-wins deduplication", () 
     const register = deriveCounterpartyExposureRegister({ asOf: AS_OF, eventStore: store });
     expect(register.entries).toHaveLength(1);
     const entry = register.entries[0];
-    expect(entry!.latest.limitUtilisationPct).toBe(55); // newest wins
-    expect(entry!.calculationCount).toBe(2); // both tracked in history
+    if (!entry) throw new Error("Expected at least one register entry");
+    expect(entry.latest.limitUtilisationPct).toBe(55); // newest wins
+    expect(entry.calculationCount).toBe(2); // both tracked in history
   });
 });
 
@@ -284,8 +280,18 @@ describe("deriveCounterpartyExposureRegister — breached filter", () => {
   it("breached array contains only breached entries", () => {
     const store = storeWithEvents([
       { counterpartyId: "CP-SAFE", exposureType: "pre-settlement", breached: false },
-      { counterpartyId: "CP-BREACH-A", exposureType: "issuer", breached: true, limitUtilisationPct: 130 },
-      { counterpartyId: "CP-BREACH-B", exposureType: "replacement-cost", breached: true, limitUtilisationPct: 105 },
+      {
+        counterpartyId: "CP-BREACH-A",
+        exposureType: "issuer",
+        breached: true,
+        limitUtilisationPct: 130,
+      },
+      {
+        counterpartyId: "CP-BREACH-B",
+        exposureType: "replacement-cost",
+        breached: true,
+        limitUtilisationPct: 105,
+      },
     ]);
     const register = deriveCounterpartyExposureRegister({ asOf: AS_OF, eventStore: store });
     expect(register.entries).toHaveLength(3);
@@ -393,7 +399,12 @@ describe("recon:counterparty-exposure-coverage — missing exposure types", () =
     const events = toReconInput([
       { counterpartyId: "CP-A", exposureType: "pre-settlement", breached: false },
       { counterpartyId: "CP-B", exposureType: "settlement", breached: false },
-      { counterpartyId: "CP-D", exposureType: "replacement-cost", breached: true, limitUtilisationPct: 110 },
+      {
+        counterpartyId: "CP-D",
+        exposureType: "replacement-cost",
+        breached: true,
+        limitUtilisationPct: 110,
+      },
     ]);
     const result = reconRun({ events });
     expect(result.ok).toBe(false);
@@ -409,10 +420,25 @@ describe("recon:counterparty-exposure-coverage — missing exposure types", () =
 describe("recon:counterparty-exposure-coverage — breach coverage gaps", () => {
   it("fails when only breached=true events present (no normal exposure)", () => {
     const events = toReconInput([
-      { counterpartyId: "CP-A", exposureType: "pre-settlement", breached: true, limitUtilisationPct: 110 },
-      { counterpartyId: "CP-B", exposureType: "settlement", breached: true, limitUtilisationPct: 115 },
+      {
+        counterpartyId: "CP-A",
+        exposureType: "pre-settlement",
+        breached: true,
+        limitUtilisationPct: 110,
+      },
+      {
+        counterpartyId: "CP-B",
+        exposureType: "settlement",
+        breached: true,
+        limitUtilisationPct: 115,
+      },
       { counterpartyId: "CP-C", exposureType: "issuer", breached: true, limitUtilisationPct: 140 },
-      { counterpartyId: "CP-D", exposureType: "replacement-cost", breached: true, limitUtilisationPct: 105 },
+      {
+        counterpartyId: "CP-D",
+        exposureType: "replacement-cost",
+        breached: true,
+        limitUtilisationPct: 105,
+      },
     ]);
     const result = reconRun({ events });
     expect(result.ok).toBe(false);
@@ -472,7 +498,9 @@ describe("recon:counterparty-exposure-coverage — empty synthetic source", () =
     expect(result.ok).toBe(false);
     const fails = result.violations.filter((v) => v.severity === "fail");
     expect(fails.length).toBeGreaterThan(0);
-    expect(fails[0]!.subject).toBe("event-store:CounterpartyExposureCalculated");
+    const firstFail = fails[0];
+    if (!firstFail) throw new Error("Expected at least one fail violation");
+    expect(firstFail.subject).toBe("event-store:CounterpartyExposureCalculated");
   });
 });
 
@@ -505,11 +533,15 @@ describe("deriveCounterpartyExposureRegister — history sort", () => {
 
     const register = deriveCounterpartyExposureRegister({ asOf: AS_OF, eventStore: store });
     expect(register.entries).toHaveLength(1);
-    const history = register.entries[0]!.history;
+    const entry0 = register.entries[0];
+    if (!entry0) throw new Error("Expected at least one register entry");
+    const history = entry0.history;
     expect(history).toHaveLength(3);
     // Newest-first
-    expect(history[0]!.calculatedAt).toBe("2026-05-18T17:00:00.000Z");
-    expect(history[1]!.calculatedAt).toBe("2026-05-18T15:00:00.000Z");
-    expect(history[2]!.calculatedAt).toBe("2026-05-18T09:00:00.000Z");
+    const [h0, h1, h2] = history;
+    if (!h0 || !h1 || !h2) throw new Error("Expected three history entries");
+    expect(h0.calculatedAt).toBe("2026-05-18T17:00:00.000Z");
+    expect(h1.calculatedAt).toBe("2026-05-18T15:00:00.000Z");
+    expect(h2.calculatedAt).toBe("2026-05-18T09:00:00.000Z");
   });
 });
