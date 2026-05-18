@@ -214,7 +214,8 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
       if (postedAt > asOf) continue;
       const legs = Array.isArray(p.legs) ? p.legs : [];
       const journalId = typeof p.journalId === "string" ? p.journalId : event.event_id;
-      const description = typeof p.description === "string" ? p.description : "Manual journal entry";
+      const description =
+        typeof p.description === "string" ? p.description : "Manual journal entry";
       for (const leg of legs) {
         const l = leg as {
           accountId: string;
@@ -250,7 +251,8 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
     if (!accountBalances[entry.accountId]) {
       accountBalances[entry.accountId] = {};
     }
-    const byAcct = accountBalances[entry.accountId];
+    // biome-ignore lint/style/noNonNullAssertion: we just assigned it above
+    const byAcct = accountBalances[entry.accountId]!;
     if (!byAcct[entry.currency]) {
       const coa = getCoaEntry(entry.accountId);
       byAcct[entry.currency] = {
@@ -288,7 +290,8 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
         totalCreditsMinor: 0,
       });
     }
-    const row = tbMap.get(key)!;
+    const row = tbMap.get(key);
+    if (!row) continue;
     if (entry.debitCredit === "debit") row.totalDebitsMinor += entry.amountMinor;
     else row.totalCreditsMinor += entry.amountMinor;
   }

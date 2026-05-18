@@ -87,8 +87,8 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
-import { registerGraphRoutes } from "./graph-view";
 import { registerGlRoutes } from "./gl-view";
+import { registerGraphRoutes } from "./graph-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
 import {
   buildKycCandidateDetailView,

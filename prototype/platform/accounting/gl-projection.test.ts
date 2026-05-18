@@ -12,14 +12,16 @@
 // Authority: General-ledger substrate (Devon COO, engineering).
 
 import { describe, expect, it } from "bun:test";
-import { buildGlView } from "./gl-projection";
 import type { Event } from "../event-store/types";
+import { buildGlView } from "./gl-projection";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeEvent(overrides: Partial<Event> & { type: string; payload: Record<string, unknown> }): Event {
+function makeEvent(
+  overrides: Partial<Event> & { type: string; payload: Record<string, unknown> },
+): Event {
   return {
     event_id: `evt-${Math.random().toString(36).slice(2)}`,
     type: overrides.type,
@@ -129,7 +131,7 @@ describe("buildGlView — asOf filtering", () => {
       payload: {
         sourceEventId: "evt-future",
         postingType: "trade-booking",
-        postedAt: "2026-06-01T00:00:00.000Z",  // after asOf
+        postedAt: "2026-06-01T00:00:00.000Z", // after asOf
         legs: [
           { accountId: ACCOUNT_DR, debitCredit: "debit", amountMinor: 999999, currency: "ZAR" },
           { accountId: ACCOUNT_CR, debitCredit: "credit", amountMinor: 999999, currency: "ZAR" },
@@ -170,7 +172,7 @@ describe("buildGlView — asOf filtering", () => {
       payload: {
         sourceEventId: "evt-after",
         postingType: "trade-booking",
-        postedAt: "2026-05-18T12:00:01.000Z",  // 1 second after
+        postedAt: "2026-05-18T12:00:01.000Z", // 1 second after
         legs: [
           { accountId: ACCOUNT_DR, debitCredit: "debit", amountMinor: 1000, currency: "ZAR" },
           { accountId: ACCOUNT_CR, debitCredit: "credit", amountMinor: 1000, currency: "ZAR" },
@@ -348,7 +350,7 @@ describe("buildGlView — mixed event sources", () => {
     // Account balances should have both accounts
     expect(view.accountBalances[ACCOUNT_DR]).toBeDefined();
     expect(view.accountBalances[ACCOUNT_CR]).toBeDefined();
-    expect(view.accountBalances[ACCOUNT_DR]?.["ZAR"]?.totalDebitsMinor).toBe(175000);
-    expect(view.accountBalances[ACCOUNT_CR]?.["ZAR"]?.totalCreditsMinor).toBe(175000);
+    expect(view.accountBalances[ACCOUNT_DR]?.ZAR?.totalDebitsMinor).toBe(175000);
+    expect(view.accountBalances[ACCOUNT_CR]?.ZAR?.totalCreditsMinor).toBe(175000);
   });
 });

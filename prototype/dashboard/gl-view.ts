@@ -11,11 +11,11 @@
 // Authority: General-ledger substrate (Devon COO, engineering).
 // Authors: Devon (COO, engineering)
 
-import { nowUtc } from "../platform/core/types";
-import type { EventStore } from "../platform/event-store/store";
-import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
+import { nowUtc } from "../platform/core/types";
+import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
+import type { EventStore } from "../platform/event-store/store";
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -28,16 +28,16 @@ function jsonResponse(data: unknown, status = 200): Response {
 // GET /api/gl/entries
 // ---------------------------------------------------------------------------
 
-function handleGlEntries(
-  searchParams: URLSearchParams,
-  eventStore: EventStore,
-): Response {
+function handleGlEntries(searchParams: URLSearchParams, eventStore: EventStore): Response {
   const asOf = searchParams.get("asOf") ?? nowUtc();
   const accountFilter = searchParams.get("account") ?? "";
   const from = searchParams.get("from") ?? "";
   const to = searchParams.get("to") ?? "";
-  const limit = Math.max(1, Math.min(500, parseInt(searchParams.get("limit") ?? "50", 10) || 50));
-  const offset = Math.max(0, parseInt(searchParams.get("offset") ?? "0", 10) || 0);
+  const limit = Math.max(
+    1,
+    Math.min(500, Number.parseInt(searchParams.get("limit") ?? "50", 10) || 50),
+  );
+  const offset = Math.max(0, Number.parseInt(searchParams.get("offset") ?? "0", 10) || 0);
 
   const events = [...eventStore.replay({})];
   const view = buildGlView(events, asOf);
@@ -64,10 +64,7 @@ function handleGlEntries(
 // GET /api/gl/trial-balance
 // ---------------------------------------------------------------------------
 
-function handleGlTrialBalance(
-  searchParams: URLSearchParams,
-  eventStore: EventStore,
-): Response {
+function handleGlTrialBalance(searchParams: URLSearchParams, eventStore: EventStore): Response {
   const asOf = searchParams.get("asOf") ?? nowUtc();
   const events = [...eventStore.replay({})];
   const view = buildGlView(events, asOf);
@@ -78,10 +75,7 @@ function handleGlTrialBalance(
 // GET /api/gl/accounts
 // ---------------------------------------------------------------------------
 
-function handleGlAccounts(
-  searchParams: URLSearchParams,
-  eventStore: EventStore,
-): Response {
+function handleGlAccounts(searchParams: URLSearchParams, eventStore: EventStore): Response {
   const asOf = searchParams.get("asOf") ?? nowUtc();
   const events = [...eventStore.replay({})];
   const view = buildGlView(events, asOf);
@@ -140,11 +134,7 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
   if (!body.postedBy || typeof body.postedBy !== "string" || body.postedBy.trim() === "") {
     return jsonResponse({ error: "postedBy is required" }, 400);
   }
-  if (
-    !body.period ||
-    typeof body.period !== "string" ||
-    !/^\d{4}-\d{2}$/.test(body.period)
-  ) {
+  if (!body.period || typeof body.period !== "string" || !/^\d{4}-\d{2}$/.test(body.period)) {
     return jsonResponse({ error: "period must be YYYY-MM" }, 400);
   }
   if (!Array.isArray(body.legs) || body.legs.length < 2) {
@@ -154,17 +144,25 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
   // Validate each leg
   for (const leg of body.legs) {
     const l = leg as Partial<JournalLeg>;
-    if (!l.accountId || typeof l.accountId !== "string" || !/^ACC-[0-9]{4}-[0-9]{3}$/.test(l.accountId)) {
+    if (
+      !l.accountId ||
+      typeof l.accountId !== "string" ||
+      !/^ACC-[0-9]{4}-[0-9]{3}$/.test(l.accountId)
+    ) {
       return jsonResponse({ error: `invalid accountId in leg: ${String(l.accountId)}` }, 400);
     }
     if (l.debitCredit !== "debit" && l.debitCredit !== "credit") {
       return jsonResponse({ error: `debitCredit must be 'debit' or 'credit' in leg` }, 400);
     }
-    if (typeof l.amountMinor !== "number" || !Number.isInteger(l.amountMinor) || l.amountMinor < 0) {
-      return jsonResponse({ error: `amountMinor must be a non-negative integer in leg` }, 400);
+    if (
+      typeof l.amountMinor !== "number" ||
+      !Number.isInteger(l.amountMinor) ||
+      l.amountMinor < 0
+    ) {
+      return jsonResponse({ error: "amountMinor must be a non-negative integer in leg" }, 400);
     }
     if (!l.currency || typeof l.currency !== "string" || l.currency.length !== 3) {
-      return jsonResponse({ error: `currency must be a 3-letter ISO code in leg` }, 400);
+      return jsonResponse({ error: "currency must be a 3-letter ISO code in leg" }, 400);
     }
   }
 
