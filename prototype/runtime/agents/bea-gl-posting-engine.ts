@@ -9,6 +9,12 @@
 //   - PaymentInitiated              → PR-PAY-001: paymentInitiatedJournals()
 //   - PaymentSettled                → PR-PAY-002: paymentSettledJournals()
 //   - SettlementInstructionReceived → PR-SET-001: settlementInstructionJournals()
+//   - ConfirmationMatched           → log only, no SubLedgerPostingEmitted
+//   - ConfirmationMismatch          → log only, no SubLedgerPostingEmitted
+//   - SettlementFailed              → log only, no SubLedgerPostingEmitted
+//   - SettlementReversed            → PR-FX-REV: fxSettlementReversalJournals()
+//   - TradeCancelled                → PR-FX-CANCEL: fxCancellationJournals()
+//   - TradeAmended                  → PR-FX-AMD: fxAmendmentJournals()
 //
 //   FX trade lifecycle:
 //   - FxTradeExecuted               → PR-FX-001: fxTradeBookingJournals()
@@ -39,8 +45,11 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import {
+  fxAmendmentJournals,
+  fxCancellationJournals,
   fxRevaluationJournals,
   fxSettlementJournals,
+  fxSettlementReversalJournals,
   fxTradeBookingJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
 import {
@@ -53,8 +62,13 @@ import { newEventId } from "../../platform/core/types";
 import {
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,
+  type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
+import type {
+  TradeAmendedPayload,
+  TradeCancelledPayload,
+} from "../../platform/event-store/event-types/markets-trading-extended";
 import type {
   PaymentInitiatedPayload,
   PaymentSettledPayload,
@@ -81,6 +95,12 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
   "FxSettlementConfirmed",
+  "ConfirmationMatched",
+  "ConfirmationMismatch",
+  "SettlementFailed",
+  "SettlementReversed",
+  "TradeCancelled",
+  "TradeAmended",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -124,6 +144,12 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "FxTradeExecuted" }),
     ...eventStore.replay({ type: "FxPositionRevalued" }),
     ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+    ...eventStore.replay({ type: "ConfirmationMatched" }),
+    ...eventStore.replay({ type: "ConfirmationMismatch" }),
+    ...eventStore.replay({ type: "SettlementFailed" }),
+    ...eventStore.replay({ type: "SettlementReversed" }),
+    ...eventStore.replay({ type: "TradeCancelled" }),
+    ...eventStore.replay({ type: "TradeAmended" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -145,8 +171,44 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     if (!SUBSCRIBED_TYPES.has(e.type)) continue;
 
     try {
+      // -----------------------------------------------------------------------
+      // Audit/control-only events — log and record idempotency key but emit
+      // no SubLedgerPostingEmitted.
+      // -----------------------------------------------------------------------
+      if (
+        e.type === "ConfirmationMatched" ||
+        e.type === "ConfirmationMismatch" ||
+        e.type === "SettlementFailed"
+      ) {
+        const postingType =
+          e.type === "ConfirmationMatched"
+            ? "confirmation-matched"
+            : e.type === "ConfirmationMismatch"
+              ? "confirmation-mismatch"
+              : "settlement-failed";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        logger.info(
+          { eventId: e.event_id, eventType: e.type },
+          `bea:gl-posting-engine — ${e.type}: audit/control event acknowledged, no GL posting`,
+        );
+        // Record idempotency key even for no-GL events so replay does not
+        // log them again. We store the key in the in-memory set only (not the
+        // event store) — these events have no GL footprint.
+        postedKeys.add(key);
+        // Count as "processed" rather than "emitted" — reflected in summary.
+        skipped += 1;
+        continue;
+      }
+
+      // -----------------------------------------------------------------------
+      // GL-generating events
+      // -----------------------------------------------------------------------
       let postingType: string;
-      let legs: ReturnType<typeof paymentInitiatedJournals>;
+      let legs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
 
       if (e.type === "PaymentInitiated") {
         postingType = "payment-initiation";
@@ -216,16 +278,121 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as FxSettlementConfirmedPayload;
         legs = fxSettlementJournals(payload);
+      } else if (e.type === "SettlementReversed") {
+        postingType = "settlement-reversal";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as SettlementReversedPayload;
+        // Look up the original FxSettlementConfirmed event.
+        const origEvents = [
+          ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+        ].filter((ev) => ev.event_id === payload.originalSettlementEventId);
+        if (origEvents.length === 0) {
+          throw new Error(
+            `SettlementReversed: original FxSettlementConfirmed event '${payload.originalSettlementEventId}' not found in store`,
+          );
+        }
+        const origPayload = origEvents[0]?.payload as FxSettlementConfirmedPayload;
+        legs = fxSettlementReversalJournals({
+          tradeId: payload.tradeId,
+          originalSettlement: origPayload,
+        });
+      } else if (e.type === "TradeCancelled") {
+        postingType = "cancellation";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as TradeCancelledPayload;
+        // Gather all prior SubLedgerPostingEmitted for this trade to reconstruct
+        // booking legs and cumulative unrealised P&L.
+        const allPostings = [...eventStore.replay({ type: "SubLedgerPostingEmitted" })];
+        const tradePostings = allPostings.filter((ev) => {
+          const p = ev.payload as { sourceEventId?: unknown };
+          return typeof p.sourceEventId === "string" && ev.payload !== undefined;
+        });
+        // For cancellation we need to compute cumulative net unrealised P&L.
+        // We do this by summing all revaluation postings linked to this tradeId.
+        let cumulativeUnrealisedPnlZarMinor = 0;
+        const bookingLegs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[] =
+          [];
+        for (const p of tradePostings) {
+          const pp = p.payload as {
+            postingType?: string;
+            legs?: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
+            tradeId?: string;
+          };
+          if (typeof pp.postingType !== "string" || !Array.isArray(pp.legs)) continue;
+          const sourceEventId = (p.payload as { sourceEventId?: string }).sourceEventId;
+          if (!sourceEventId) continue;
+          // Look up the source event to check tradeId
+          const srcEvents = [...eventStore.replay({})].filter(
+            (ev) => ev.event_id === sourceEventId,
+          );
+          if (srcEvents.length === 0) continue;
+          const srcPayload = srcEvents[0]?.payload as { tradeId?: string };
+          if (srcPayload.tradeId !== payload.tradeId) continue;
+
+          if (pp.postingType === "trade-booking") {
+            bookingLegs.push(...pp.legs);
+          } else if (pp.postingType === "revaluation") {
+            // Accumulate net unrealised P&L from ZAR legs
+            for (const leg of pp.legs) {
+              if (leg.currency === "ZAR") {
+                // The UNREALISED_PNL account credit = gain, debit = loss
+                if (leg.accountId === "ACC-2100-005") {
+                  cumulativeUnrealisedPnlZarMinor +=
+                    leg.debitCredit === "credit" ? leg.amountMinor : -leg.amountMinor;
+                }
+              }
+            }
+          }
+        }
+        legs = fxCancellationJournals({
+          tradeId: payload.tradeId,
+          cumulativeUnrealisedPnlZarMinor,
+          bookingLegs,
+        });
+      } else if (e.type === "TradeAmended") {
+        postingType = "amendment";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as TradeAmendedPayload;
+        // For rate/notional amendments, compute the delta from old/new values.
+        // Values are stored as strings in the event; parse to numbers.
+        let deltaZarMinor = 0;
+        if (payload.field === "rate" || payload.field === "notional") {
+          const oldVal = Number.parseFloat(payload.oldValue);
+          const newVal = Number.parseFloat(payload.newValue);
+          if (!Number.isNaN(oldVal) && !Number.isNaN(newVal)) {
+            // deltaZarMinor is the difference in ZAR minor units.
+            // Convention: values are already in ZAR minor units (integer).
+            deltaZarMinor = Math.round(newVal - oldVal);
+          }
+        }
+        legs = fxAmendmentJournals({
+          tradeId: payload.tradeId,
+          field: payload.field,
+          deltaZarMinor,
+        });
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above.
         continue;
       }
 
       if (legs.length === 0) {
-        logger.warn(
-          { eventId: e.event_id, eventType: e.type },
-          "bea:gl-posting-engine — posting rule produced zero legs; skipping",
+        logger.info(
+          { eventId: e.event_id, eventType: e.type, postingType },
+          "bea:gl-posting-engine — posting rule produced zero legs (expected for non-economic amendments); skipping",
         );
+        postedKeys.add(`${e.event_id}:${postingType}`);
         skipped += 1;
         continue;
       }
@@ -246,7 +413,10 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
               | "settlement-instruction"
               | "trade-booking"
               | "revaluation"
-              | "settlement",
+              | "settlement"
+              | "settlement-reversal"
+              | "cancellation"
+              | "amendment",
             legs,
             postedAt: ctx.asOf,
           },

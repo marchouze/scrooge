@@ -75,6 +75,8 @@ import {
 import {
   fxPositionRevaluedPayloadSchema,
   fxSettlementConfirmedPayloadSchema,
+  settlementFailedPayloadSchema,
+  settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
 import {
   alertOpenedPayloadSchema,
@@ -133,6 +135,8 @@ import {
 } from "../event-types/ifrs-accounting-extended";
 import {
   collateralUpdatedPayloadSchema,
+  confirmationMatchedPayloadSchema,
+  confirmationMismatchPayloadSchema,
   dealerMandateBreachPayloadSchema,
   fxPositionBreachPayloadSchema,
   hedgeIneffectivePayloadSchema,
@@ -144,7 +148,9 @@ import {
   preTradeGatewayBlockPayloadSchema,
   surveillanceAlertPayloadSchema,
   surveillanceFeedGapPayloadSchema,
+  tradeAmendedPayloadSchema,
   tradeBooedPayloadSchema,
+  tradeCancelledPayloadSchema,
   tradePostedPayloadSchema,
   transactionPostedPayloadSchema,
 } from "../event-types/markets-trading-extended";
@@ -536,6 +542,92 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/bea.ts; platform/event-store/event-types/payments.ts",
+  },
+  // ---------------------------------------------------------------------------
+  // FX trade lifecycle extension — D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved
+  // 2026-05-18). Six new event types covering confirmation, settlement failure,
+  // cancellation, and amendment.
+  // ---------------------------------------------------------------------------
+  {
+    // Emitted when trade confirmation with a counterparty is matched (both
+    // sides agree). SWIFT MT300 / ISDA CONFIRM. No GL impact; audit/control only.
+    type: "ConfirmationMatched",
+    class: "markets",
+    payloadSchema: confirmationMatchedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Bea", "Kai", "Vera"],
+    replay: "idempotent-terminal",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
+  },
+  {
+    // Emitted when a confirmation field mismatches between bank and counterparty.
+    // Triggers dispute/escalation workflow. No GL impact; audit/control only.
+    type: "ConfirmationMismatch",
+    class: "markets",
+    payloadSchema: confirmationMismatchPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Bea", "Kai", "Saskia", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
+  },
+  {
+    // Emitted when a scheduled settlement fails. Settlement was never posted,
+    // so no GL entries. IFRS 9 §3.2.1 — asset/liability not derecognised.
+    type: "SettlementFailed",
+    class: "markets",
+    payloadSchema: settlementFailedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Bea", "Kai", "Rohan", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
+  },
+  {
+    // Emitted when a previously confirmed settlement is reversed (SWIFT recall
+    // accepted). Triggers PR-FX-REV: full reversal of PR-FX-003 entries.
+    // IFRS 9 §3.2.1 (derecognition reversed).
+    type: "SettlementReversed",
+    class: "markets",
+    payloadSchema: settlementReversedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Bea", "Kai", "Rohan", "Vera"],
+    replay: "pair-coupled",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
+  },
+  {
+    // Emitted when a trade is cancelled post-booking. Triggers PR-FX-CANCEL:
+    // full reversal of PR-FX-001 + cumulative PR-FX-002 entries — net zero GL.
+    // IFRS 9 §3.2.3 (derecognition on cancellation).
+    type: "TradeCancelled",
+    class: "markets",
+    payloadSchema: tradeCancelledPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Bea", "Tomas", "Rohan", "Vera"],
+    replay: "idempotent-terminal",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
+  },
+  {
+    // Emitted when a trade parameter is amended post-booking. Rate/notional
+    // amendments trigger PR-FX-AMD (delta GL posting). Settlement-date and
+    // counterparty amendments have no GL impact. IFRS 9 §3.2.
+    type: "TradeAmended",
+    class: "markets",
+    payloadSchema: tradeAmendedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Bea", "Tomas", "Rohan", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
   },
 ];
 

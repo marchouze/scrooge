@@ -1,12 +1,15 @@
 // platform/accounting/posting-rules/fx-spot.ts
 //
-// FX Spot posting rules — three pure functions mapping FX lifecycle
-// events to balanced double-entry GL postings.
+// FX Spot posting rules — pure functions mapping FX lifecycle events to
+// balanced double-entry GL postings.
 //
 // Posting rules implemented (per FX Spec §C):
-//   PR-FX-001: fxTradeBookingJournals  — FxTradeExecuted (spot booking)
-//   PR-FX-002: fxRevaluationJournals   — FxPositionRevalued (daily FVTPL)
-//   PR-FX-003: fxSettlementJournals    — FxSettlementConfirmed (T+2 cash)
+//   PR-FX-001: fxTradeBookingJournals     — FxTradeExecuted (spot booking)
+//   PR-FX-002: fxRevaluationJournals      — FxPositionRevalued (daily FVTPL)
+//   PR-FX-003: fxSettlementJournals       — FxSettlementConfirmed (T+2 cash)
+//   PR-FX-REV: fxSettlementReversalJournals — SettlementReversed (mirrors PR-FX-003)
+//   PR-FX-CANCEL: fxCancellationJournals  — TradeCancelled (net-zero reversal)
+//   PR-FX-AMD: fxAmendmentJournals        — TradeAmended (delta for rate/notional)
 //
 // All functions return SubLedgerLeg[] that balance per currency.
 // Balance invariant: sum(debit.amountMinor) == sum(credit.amountMinor)
@@ -41,6 +44,47 @@ import type {
 } from "../../event-store/event-types/fx-accounting";
 import type { FxLeg, FxTradeExecutedPayload } from "../../markets/cdm/fx";
 import type { SubLedgerLeg } from "../fx-accounting-types";
+
+// ---------------------------------------------------------------------------
+// Types for new posting rules
+// ---------------------------------------------------------------------------
+
+export interface FxSettlementReversalInput {
+  /** The tradeId of the reversed trade. */
+  tradeId: string;
+  /** Full payload of the original FxSettlementConfirmed event. */
+  originalSettlement: FxSettlementConfirmedPayload;
+}
+
+export interface FxCancellationInput {
+  /** The tradeId being cancelled. */
+  tradeId: string;
+  /**
+   * Cumulative unrealised P&L (ZAR minor) accumulated across all prior
+   * PR-FX-002 revaluation postings since trade date. Pass 0 if no
+   * revaluations have been posted.
+   */
+  cumulativeUnrealisedPnlZarMinor: number;
+  /**
+   * Original booking legs from PR-FX-001 (the fxTradeBookingJournals output
+   * for this trade). Passed in by the engine which has access to the event
+   * store.
+   */
+  bookingLegs: SubLedgerLeg[];
+}
+
+export interface FxAmendmentInput {
+  /** The tradeId being amended. */
+  tradeId: string;
+  /** Which field was amended. */
+  field: "rate" | "notional" | "settlement-date" | "counterparty";
+  /**
+   * Delta amount in ZAR minor units (new carrying amount minus old carrying
+   * amount). Only relevant for rate/notional amendments; ignored for
+   * settlement-date/counterparty.
+   */
+  deltaZarMinor: number;
+}
 
 // ---------------------------------------------------------------------------
 // Account ID constants — chart-of-accounts leaf IDs
@@ -324,4 +368,126 @@ export function fxSettlementJournals(event: FxSettlementConfirmedPayload): SubLe
   }
 
   return legs;
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-REV: Settlement reversal journals
+//
+// On SettlementReversed: full mirror of the original PR-FX-003 entries —
+// every debit becomes a credit and every credit becomes a debit.
+// Re-opens the FX Trading Receivable/Payable that was derecognised.
+//
+// This is a pure function: it takes the original settlement payload and
+// inverts every leg direction.
+//
+// IFRS authority: IFRS 9 §3.2.1 (derecognition reversed when conditions
+// not met for transfer of risks and rewards).
+// ---------------------------------------------------------------------------
+
+export function fxSettlementReversalJournals(input: FxSettlementReversalInput): SubLedgerLeg[] {
+  // Get the original settlement legs and invert each direction.
+  const originalLegs = fxSettlementJournals(input.originalSettlement);
+
+  return originalLegs.map((leg) => ({
+    ...leg,
+    debitCredit: leg.debitCredit === "debit" ? "credit" : "debit",
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-CANCEL: Trade cancellation journals
+//
+// On TradeCancelled:
+//   (i) Reverse all booking legs (invert each debit/credit in bookingLegs).
+//   (ii) Reverse any cumulative unrealised P&L revaluation entries.
+//
+// Net result: all GL entries from this trade sum to zero per account.
+//
+// IFRS authority: IFRS 9 §3.2.3 (derecognition when contractual rights/
+// obligations extinguished by cancellation).
+// ---------------------------------------------------------------------------
+
+export function fxCancellationJournals(input: FxCancellationInput): SubLedgerLeg[] {
+  const legs: SubLedgerLeg[] = [];
+
+  // (i) Reverse original booking legs (PR-FX-001 reversal)
+  for (const leg of input.bookingLegs) {
+    legs.push({
+      ...leg,
+      debitCredit: leg.debitCredit === "debit" ? "credit" : "debit",
+    });
+  }
+
+  // (ii) Reverse cumulative unrealised P&L (net of all PR-FX-002 entries)
+  // We reverse the net cumulative position: if net was a gain, the reversal
+  // is a credit to ZAR receivable and debit to unrealised P&L (and vice versa).
+  const cumPnl = input.cumulativeUnrealisedPnlZarMinor;
+  if (cumPnl !== 0) {
+    const absAmount = Math.abs(cumPnl);
+    const wasGain = cumPnl > 0;
+    // Original gain entry: Dr RECEIVABLE_ZAR / Cr UNREALISED_PNL
+    // Reversal:            Cr RECEIVABLE_ZAR / Dr UNREALISED_PNL
+    legs.push({
+      accountId: wasGain ? FX_ACCOUNTS.UNREALISED_PNL : FX_ACCOUNTS.RECEIVABLE_ZAR,
+      debitCredit: "debit",
+      amountMinor: absAmount,
+      currency: "ZAR",
+    });
+    legs.push({
+      accountId: wasGain ? FX_ACCOUNTS.RECEIVABLE_ZAR : FX_ACCOUNTS.UNREALISED_PNL,
+      debitCredit: "credit",
+      amountMinor: absAmount,
+      currency: "ZAR",
+    });
+  }
+
+  return legs;
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-AMD: Trade amendment journals
+//
+// On TradeAmended:
+//   - If field == "rate" or "notional": post the delta in ZAR minor units.
+//     A positive delta (new > old) means the carrying amount increased:
+//       Dr  FX Trading Receivable ZAR  [deltaZarMinor]
+//       Cr  Unrealised FX P&L           [deltaZarMinor]
+//     A negative delta (new < old):
+//       Dr  Unrealised FX P&L           [|deltaZarMinor|]
+//       Cr  FX Trading Receivable ZAR  [|deltaZarMinor|]
+//   - If field == "settlement-date" or "counterparty": return empty array
+//     (no GL impact).
+//
+// IFRS authority: IFRS 9 §3.2 (modification not resulting in derecognition
+// → adjust carrying amount of the financial instrument).
+// ---------------------------------------------------------------------------
+
+export function fxAmendmentJournals(input: FxAmendmentInput): SubLedgerLeg[] {
+  // Non-economic amendments: no GL entries.
+  if (input.field === "settlement-date" || input.field === "counterparty") {
+    return [];
+  }
+
+  const delta = input.deltaZarMinor;
+  if (delta === 0) return [];
+
+  const absAmount = Math.abs(delta);
+  const isIncrease = delta > 0;
+
+  // Increase in carrying amount: Dr RECEIVABLE_ZAR / Cr UNREALISED_PNL
+  // Decrease in carrying amount: Dr UNREALISED_PNL  / Cr RECEIVABLE_ZAR
+  return [
+    {
+      accountId: isIncrease ? FX_ACCOUNTS.RECEIVABLE_ZAR : FX_ACCOUNTS.UNREALISED_PNL,
+      debitCredit: "debit",
+      amountMinor: absAmount,
+      currency: "ZAR",
+    },
+    {
+      accountId: isIncrease ? FX_ACCOUNTS.UNREALISED_PNL : FX_ACCOUNTS.RECEIVABLE_ZAR,
+      debitCredit: "credit",
+      amountMinor: absAmount,
+      currency: "ZAR",
+    },
+  ];
 }
