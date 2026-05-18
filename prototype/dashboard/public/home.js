@@ -143,10 +143,10 @@
     {
       id: "onboarding",
       category: "dashboards",
-      title: "Onboarding",
+      title: "KYC Onboarding Queue",
       blurb:
-        "Niko's counterparty-onboarding pipeline — 21-phase lifecycle from sounding to activated.",
-      href: "/onboarding.html",
+        "PROC-FC-01 KYC pipeline — candidate queue, identity/sanctions/PEP checks, risk rating, EDD, MLRO decision gate.",
+      href: "/kyc-onboarding",
     },
     {
       id: "regulatory",
@@ -366,10 +366,18 @@
     {
       id: "cmp-kyc",
       category: "compliance",
-      title: "KYC / onboarding",
+      title: "KYC Onboarding",
       blurb:
-        "Counterparty-onboarding pipeline — 21-phase lifecycle, CDD, sanctions, FATCA/CRS, POPIA.",
-      href: "/onboarding.html",
+        "FIC Act CDD pipeline — PROC-FC-01 candidate queue, sanctions / PEP screening, risk rating, EDD, MLRO gate. Start a new onboarding or run a simulation.",
+      href: "/kyc-onboarding",
+    },
+    {
+      id: "cmp-kyc-clients",
+      category: "compliance",
+      title: "Client Register",
+      blurb:
+        "Accepted KYC clients — risk band, category (EC / PC), onboarded date, next periodic-review due. Filterable; CSV export.",
+      href: "/kyc-clients",
     },
     {
       id: "cmp-conduct",
@@ -431,6 +439,7 @@
     fleet,
     escalations,
     onboarding,
+    kycCandidates,
     forwardObligations,
     regulatory,
     taxonomies,
@@ -549,7 +558,29 @@
       counts["sub-escalations"] = counts.escalations;
     }
 
-    if (onboarding) {
+    if (kycCandidates?.counts) {
+      const c = kycCandidates.counts;
+      const total = safeNum(c.total);
+      const inProgress =
+        safeNum(c.pending) + safeNum(c.screening) + safeNum(c.riskRating) + safeNum(c.eddPending);
+      const accepted = safeNum(c.accepted);
+      const tone = total === 0 ? "muted" : inProgress > 0 ? "default" : "success";
+      counts.onboarding = {
+        text: String(total),
+        tone,
+        aria: `${total} KYC candidates; ${inProgress} in progress; ${accepted} accepted`,
+        meta: [
+          { label: `${inProgress} in progress`, tone: inProgress > 0 ? "default" : "muted" },
+          { label: `${accepted} accepted`, tone: accepted > 0 ? "success" : "muted" },
+        ],
+      };
+      counts["cmp-kyc"] = counts.onboarding;
+      counts["cmp-kyc-clients"] = {
+        text: String(accepted),
+        tone: accepted > 0 ? "success" : "muted",
+        aria: `${accepted} accepted KYC clients`,
+      };
+    } else if (onboarding) {
       const total = safeNum(onboarding.totalCounterparties);
       const active = safeNum(onboarding.activeCounterparties);
       const inProgress = safeNum(onboarding.inProgressCounterparties);
@@ -671,6 +702,7 @@
       escalations,
       rms,
       onboarding,
+      kycCandidates,
       forwardObligations,
       regulatory,
       taxonomies,
@@ -688,6 +720,10 @@
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
       fetch("/api/onboarding", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      // KYC candidate pipeline tile data — PROC-FC-01 queue counts.
+      fetch("/api/kyc/candidates", { headers: { Accept: "application/json" } })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
       // Forward obligations tile data — planning view, 30-day horizon.
@@ -723,6 +759,7 @@
       fleet,
       escalations,
       onboarding,
+      kycCandidates,
       forwardObligations,
       regulatory,
       taxonomies,
