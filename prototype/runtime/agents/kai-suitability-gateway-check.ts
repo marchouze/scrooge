@@ -47,10 +47,7 @@ const HANDLER_ACTOR = {
   id: "agent:kai:suitability-gateway-check",
 };
 
-const SUITABILITY_CITATIONS: readonly string[] = [
-  "FAIS-ACT-37-2002",
-  "ORG-CD-01",
-];
+const SUITABILITY_CITATIONS: readonly string[] = ["FAIS-ACT-37-2002", "ORG-CD-01"];
 
 // ---------------------------------------------------------------------------
 // FAIS suitability rules (build-phase — D-FAIS-SCOPE)
@@ -122,8 +119,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   if (suitabilityCheckRequests.length === 0) {
     return {
       eventsEmitted: 0,
-      summary:
-        "no GatewayCheckRequested[suitability] events in triggering set; nothing to check",
+      summary: "no GatewayCheckRequested[suitability] events in triggering set; nothing to check",
       ok: true,
     };
   }
@@ -172,8 +168,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
             counterpartyLei?: unknown;
             instrument?: unknown;
           };
-          counterpartyId =
-            typeof op.counterpartyLei === "string" ? op.counterpartyLei : null;
+          counterpartyId = typeof op.counterpartyLei === "string" ? op.counterpartyLei : null;
           instrument = typeof op.instrument === "string" ? op.instrument : null;
           break;
         }
@@ -200,10 +195,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         // The counterparty must complete Niko's onboarding flow (Phase 3:
         // fais-categorised gate) before trading.
         outcome = "reject";
-        rejectionReason =
-          `Counterparty '${counterpartyId}' has no FAIS classification on record. ` +
-          "Counterparty must complete FAIS onboarding (CounterpartyFaisClassified event) " +
-          "before pre-trade gateway will approve suitability (FAIS Act 37/2002 §8D).";
+        rejectionReason = `Counterparty '${counterpartyId}' has no FAIS classification on record. Counterparty must complete FAIS onboarding (CounterpartyFaisClassified event) before pre-trade gateway will approve suitability (FAIS Act 37/2002 §8D).`;
         citationToRule = "FAIS-ACT-37-2002";
       } else {
         const productCode = instrument ?? "unknown";

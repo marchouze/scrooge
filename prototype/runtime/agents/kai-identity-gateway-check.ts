@@ -48,11 +48,7 @@ const HANDLER_ACTOR = {
   id: "agent:kai:identity-gateway-check",
 };
 
-const IDENTITY_CITATIONS: readonly string[] = [
-  "FAIS-ACT-37-2002",
-  "FMA-S5",
-  "D-PARTY-REGISTER",
-];
+const IDENTITY_CITATIONS: readonly string[] = ["FAIS-ACT-37-2002", "FMA-S5", "D-PARTY-REGISTER"];
 
 // ---------------------------------------------------------------------------
 // Instrument-class authorisation allowlist (build-phase stub)
@@ -66,13 +62,13 @@ const IDENTITY_CITATIONS: readonly string[] = [
 // ---------------------------------------------------------------------------
 
 const ALLOWED_INSTRUMENT_PREFIXES: readonly string[] = [
-  "JSE:",     // JSE-listed equities (e.g. JSE:NPN)
-  "ZAE",      // JSE ISIN prefix for SA equities
-  "ZAG",      // JSE ISIN prefix for SA government bonds
-  "FX-",      // FX instruments (FX-spot, FX-forward, FX-swap, NDF)
-  "IRS-",     // Interest rate swaps (ZAR denominated)
-  "OTC-",     // Generic OTC instruments
-  "BOND-",    // Generic bond instruments
+  "JSE:", // JSE-listed equities (e.g. JSE:NPN)
+  "ZAE", // JSE ISIN prefix for SA equities
+  "ZAG", // JSE ISIN prefix for SA government bonds
+  "FX-", // FX instruments (FX-spot, FX-forward, FX-swap, NDF)
+  "IRS-", // Interest rate swaps (ZAR denominated)
+  "OTC-", // Generic OTC instruments
+  "BOND-", // Generic bond instruments
 ];
 
 function isInstrumentAuthorised(instrument: string): boolean {
@@ -197,22 +193,15 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
     if (!requestedActor) {
       outcome = "reject";
-      rejectionReason =
-        "OrderProposed missing requestedActor field; identity check cannot proceed";
+      rejectionReason = "OrderProposed missing requestedActor field; identity check cannot proceed";
       citationToRule = "FAIS-ACT-37-2002";
     } else if (!isActorInPartyRegister(requestedActor)) {
       outcome = "reject";
-      rejectionReason =
-        `Requesting actor '${requestedActor}' is not found in the Party register ` +
-        "or the authorised agent namespace. Trade requires an authorised FSP representative " +
-        "(FAIS Act 37/2002 §8A).";
+      rejectionReason = `Requesting actor '${requestedActor}' is not found in the Party register or the authorised agent namespace. Trade requires an authorised FSP representative (FAIS Act 37/2002 §8A).`;
       citationToRule = "FAIS-ACT-37-2002";
     } else if (instrument && !isInstrumentAuthorised(instrument)) {
       outcome = "reject";
-      rejectionReason =
-        `Instrument '${instrument}' is not within the actor's authorised instrument scope. ` +
-        "The instrument prefix does not match any approved instrument class for this entity " +
-        "(FMA §5 — authorised participant requirement).";
+      rejectionReason = `Instrument '${instrument}' is not within the actor's authorised instrument scope. The instrument prefix does not match any approved instrument class for this entity (FMA §5 — authorised participant requirement).`;
       citationToRule = "FMA-S5";
     }
 

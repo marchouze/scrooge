@@ -157,12 +157,8 @@ function computeCounterpartyExposure(): Map<string, number> {
     const cpId = p.counterparty?.partyId;
     if (!cpId) continue;
 
-    const nearLeg = Array.isArray(p.legs)
-      ? p.legs.find((l) => l.legKind === "near")
-      : undefined;
-    const notionalZAR = nearLeg?.notional?.amountMinor
-      ? nearLeg.notional.amountMinor / 100
-      : 0;
+    const nearLeg = Array.isArray(p.legs) ? p.legs.find((l) => l.legKind === "near") : undefined;
+    const notionalZAR = nearLeg?.notional?.amountMinor ? nearLeg.notional.amountMinor / 100 : 0;
     if (notionalZAR > 0) {
       exposure.set(cpId, (exposure.get(cpId) ?? 0) + notionalZAR);
     }
@@ -186,7 +182,11 @@ function computeCurrentRwaZAR(stub: CapitalFundingStub): number {
  * Determine instrument class from instrument string for RWA weight lookup.
  */
 function instrumentClass(instrument: string): string {
-  if (instrument.startsWith("JSE:") || instrument.startsWith("ZAE") || instrument.startsWith("ZAG")) {
+  if (
+    instrument.startsWith("JSE:") ||
+    instrument.startsWith("ZAE") ||
+    instrument.startsWith("ZAG")
+  ) {
     return "JSE-EQUITY";
   }
   if (instrument.startsWith("ZAG")) return "ZA-GOV-BOND";
@@ -203,11 +203,7 @@ function instrumentClass(instrument: string): string {
 function alreadyChecked(orderId: string, checkKind: string): boolean {
   for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
     const p = e.payload as { orderId?: unknown; checkKind?: unknown };
-    if (
-      typeof p.orderId === "string" &&
-      p.orderId === orderId &&
-      p.checkKind === checkKind
-    ) {
+    if (typeof p.orderId === "string" && p.orderId === orderId && p.checkKind === checkKind) {
       return true;
     }
   }
@@ -463,8 +459,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const proposedNotionalZAR = order.price * order.quantity;
       const instClass = instrumentClass(order.instrument);
       const rwaWeightByClass = capitalFundingStub.rwa.rwaWeightByInstrumentClass;
-      const rwaWeight =
-        rwaWeightByClass[instClass] ?? rwaWeightByClass["default"] ?? 0.35;
+      const rwaWeight = rwaWeightByClass[instClass] ?? rwaWeightByClass.default ?? 0.35;
 
       const proposedRwaZAR = proposedNotionalZAR * rwaWeight;
       const proFormaRwaZAR = currentRwaZAR + proposedRwaZAR;
