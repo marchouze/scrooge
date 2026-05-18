@@ -220,6 +220,9 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "payment-initiation",
       "payment-settlement",
       "settlement-instruction",
+      "settlement-reversal",
+      "cancellation",
+      "amendment",
     ]),
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */
@@ -267,6 +270,93 @@ export function makeSubLedgerPostingEmitted(args: {
 }
 
 // ---------------------------------------------------------------------------
+// SettlementFailed
+//
+// Emitted when a scheduled settlement fails — counterparty default, nostro
+// insufficient funds, or correspondent rejection. Settlement was never posted,
+// so NO GL entries are generated. Triggers operational escalation.
+//
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
+// IFRS 9 §3.2.1 (derecognition only if substantially all risks transferred —
+// a failed settlement means the asset/liability is NOT derecognised).
+// ---------------------------------------------------------------------------
+
+export const settlementFailedPayloadSchema = z.object({
+  tradeId: z.string().min(1),
+  legKind: z.enum(["near", "far", "spot"]),
+  reason: z.enum([
+    "counterparty-default",
+    "nostro-insufficient-funds",
+    "correspondent-rejection",
+    "other",
+  ]),
+  failedAt: z.string().min(1),
+  scheduledSettlementDate: z.string().min(1),
+});
+
+export type SettlementFailedPayload = z.infer<typeof settlementFailedPayloadSchema>;
+
+export function makeSettlementFailed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SettlementFailedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SettlementFailed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: settlementFailedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SettlementReversed
+//
+// Emitted when a previously confirmed settlement is reversed — e.g. a T+2
+// SWIFT recall is accepted. Triggers PR-FX-REV: full reversal of the
+// original PR-FX-003 entries (debit↔credit swapped), re-opening the
+// FX Trading Receivable/Payable that was derecognised.
+//
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
+// IFRS 9 §3.2.1 (derecognition reversed when conditions not met).
+// ---------------------------------------------------------------------------
+
+export const settlementReversedPayloadSchema = z.object({
+  tradeId: z.string().min(1),
+  /** Event ID of the original FxSettlementConfirmed event being reversed. */
+  originalSettlementEventId: z.string().min(1),
+  reversedAt: z.string().min(1),
+  reason: z.string().min(1),
+});
+
+export type SettlementReversedPayload = z.infer<typeof settlementReversedPayloadSchema>;
+
+export function makeSettlementReversed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SettlementReversedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SettlementReversed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: settlementReversedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -274,6 +364,8 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   "FxPositionRevalued",
   "FxSettlementConfirmed",
   "SubLedgerPostingEmitted",
+  "SettlementFailed",
+  "SettlementReversed",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];

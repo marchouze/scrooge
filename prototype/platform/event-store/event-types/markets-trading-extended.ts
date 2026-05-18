@@ -661,6 +661,184 @@ export function makeSurveillanceFeedGap(args: {
 }
 
 // ---------------------------------------------------------------------------
+// ConfirmationMatched
+//
+// Emitted when trade confirmation with a counterparty is matched (both sides
+// agree on all economic terms). No GL impact — audit/control event only.
+//
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
+// SWIFT MT300 / ISDA CONFIRM protocol.
+// ---------------------------------------------------------------------------
+
+export const confirmationMatchedPayloadSchema = z.object({
+  tradeId: z.string().min(1),
+  /** SWIFT MT300 ref or ISDA confirm ref from the counterparty. */
+  counterpartyRef: z.string().min(1),
+  /** ISO 8601 timestamp when confirmation was matched. */
+  matchedAt: z.string().min(1),
+  confirmationMethod: z.enum(["swift-mt300", "isda-email", "manual"]),
+});
+
+export type ConfirmationMatchedPayload = z.infer<typeof confirmationMatchedPayloadSchema>;
+
+export function makeConfirmationMatched(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ConfirmationMatchedPayload;
+  eventId?: string;
+}): Event {
+  const aggregateLabel = makeAggregateLabel("trade", args.payload.tradeId);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ConfirmationMatched",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: confirmationMatchedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ConfirmationMismatch
+//
+// Emitted when a field in the counterparty confirmation does not match the
+// bank's booking. Triggers escalation/dispute workflow. No GL impact.
+//
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
+// ---------------------------------------------------------------------------
+
+export const confirmationMismatchPayloadSchema = z.object({
+  tradeId: z.string().min(1),
+  counterpartyRef: z.string().min(1),
+  /** Which field mismatched (e.g. "rate", "notional", "settlement-date"). */
+  field: z.string().min(1),
+  bankValue: z.string().min(1),
+  counterpartyValue: z.string().min(1),
+  detectedAt: z.string().min(1),
+  escalatedTo: z.string().min(1),
+});
+
+export type ConfirmationMismatchPayload = z.infer<typeof confirmationMismatchPayloadSchema>;
+
+export function makeConfirmationMismatch(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ConfirmationMismatchPayload;
+  eventId?: string;
+}): Event {
+  const aggregateLabel = makeAggregateLabel("trade", args.payload.tradeId);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ConfirmationMismatch",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: confirmationMismatchPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// TradeCancelled
+//
+// Emitted when a trade is cancelled post-booking (mutual agreement, error,
+// regulatory, or counterparty default). Triggers full GL reversal:
+// PR-FX-CANCEL reverses PR-FX-001 booking entries plus any cumulative
+// PR-FX-002 revaluation entries — net GL effect is zero.
+//
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
+// IFRS 9 §3.2.3 (derecognition when contractual rights/obligations
+// extinguished by cancellation).
+// ---------------------------------------------------------------------------
+
+export const tradeCancelledPayloadSchema = z.object({
+  tradeId: z.string().min(1),
+  /** ISO 8601 timestamp of cancellation. */
+  cancelledAt: z.string().min(1),
+  reason: z.enum(["mutual-agreement", "error", "regulatory", "counterparty-default"]),
+  cancelledBy: z.string().min(1),
+});
+
+export type TradeCancelledPayload = z.infer<typeof tradeCancelledPayloadSchema>;
+
+export function makeTradeCancelled(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: TradeCancelledPayload;
+  eventId?: string;
+}): Event {
+  const aggregateLabel = makeAggregateLabel("trade", args.payload.tradeId);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "TradeCancelled",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: tradeCancelledPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// TradeAmended
+//
+// Emitted when a trade parameter is amended post-booking. Rate or notional
+// amendments trigger a delta GL posting (PR-FX-AMD). Settlement-date and
+// counterparty amendments have no GL impact.
+//
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
+// IFRS 9 §3.2 (modification that does not result in derecognition →
+// adjust carrying amount).
+// ---------------------------------------------------------------------------
+
+export const tradeAmendedPayloadSchema = z.object({
+  tradeId: z.string().min(1),
+  /** ISO 8601 timestamp of amendment. */
+  amendedAt: z.string().min(1),
+  field: z.enum(["rate", "notional", "settlement-date", "counterparty"]),
+  oldValue: z.string().min(1),
+  newValue: z.string().min(1),
+  amendedBy: z.string().min(1),
+});
+
+export type TradeAmendedPayload = z.infer<typeof tradeAmendedPayloadSchema>;
+
+export function makeTradeAmended(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: TradeAmendedPayload;
+  eventId?: string;
+}): Event {
+  const aggregateLabel = makeAggregateLabel("trade", args.payload.tradeId);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "TradeAmended",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: tradeAmendedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Typed event types list
 // ---------------------------------------------------------------------------
 
@@ -681,4 +859,8 @@ export const MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES = [
   "PreTradeGatewayBlock",
   "SurveillanceAlert",
   "SurveillanceFeedGap",
+  "ConfirmationMatched",
+  "ConfirmationMismatch",
+  "TradeCancelled",
+  "TradeAmended",
 ] as const;
