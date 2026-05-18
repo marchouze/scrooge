@@ -1,7 +1,7 @@
 ---
 policy-id: FIN-ACCT-01
 title: Accounting Policies — IFRS v1
-version: "1.0"
+version: "1.1"
 status: DRAFT
 owner: Camille (CFO, governance)
 effective-from: 2026-05-13
@@ -251,6 +251,80 @@ Where a financial instrument is recognised at fair value on initial recognition 
 If the fair value uses **significant unobservable inputs** (Level 3), the Day-1 difference is **deferred** and recognised in profit or loss only as and when the inputs become observable, or on derecognition of the instrument. The deferred Day-1 P&L balance is disclosed in the notes to the financial statements.
 
 Register row: [`ORG-AC-09`](../Regulations/_obligations-register.md) (Day-1 P&L).
+
+### 3.1A Trade-date accounting election (IFRS 9 B3.1.3)
+
+The Bank **elects trade-date accounting** for all financial instruments. Recognition occurs when the Bank becomes party to the contractual provisions on the **trade date**, not the settlement date. This election applies consistently to all initial recognition and derecognition arising from regular-way purchases or sales.
+
+Instruments in scope:
+
+| Instrument | Trade-date recognition event | Settlement window |
+|---|---|---|
+| FX spot | `FxTradeExecuted` (T0) | T+2 |
+| FX forwards / swaps | `FxTradeExecuted` (T0) | T+N (forward date) |
+| FX NDF | `FxTradeExecuted` (T0) | T+N (net cash settlement) |
+| JSE bonds | `BondTradeExecuted` (T0) | T+3 (JSE convention) |
+| JSE equities | `EquityTradeExecuted` (T0) | T+3 (JSE convention) |
+
+Posting rules PR-FX-001, PR-BOND-001, PR-EQ-001 implement the trade-date bookings. The settlement leg (T+2 / T+3) does not create additional P&L recognition — it is a balance-sheet reclassification from trade receivable/payable to nostro/cash.
+
+Register row: [`ORG-AC-01`](../Regulations/_obligations-register.md) (classification — recognition timing).  
+Procedure refs: [`Procedures/markets/fx-forwards-trade-lifecycle.md`](../Procedures/markets/fx-forwards-trade-lifecycle.md); [`Procedures/finance/trade-lifecycle-system-capability-register.md`](../Procedures/finance/trade-lifecycle-system-capability-register.md).
+
+### 3.1B Derecognition (IFRS 9 §3.2)
+
+A **financial asset** is derecognised when:
+
+(a) The contractual rights to receive cash flows from the asset expire; **or**  
+(b) The Bank transfers the financial asset and the transfer qualifies for derecognition — i.e. the Bank transfers substantially all the risks and rewards of ownership.
+
+A **financial liability** is derecognised when the obligation is discharged, cancelled, or expires.
+
+The Bank does not employ pass-through arrangements or partial transfers. Derecognition is always whole-instrument.
+
+**Instrument-level derecognition triggers:**
+
+| Instrument | Derecognition trigger | Derecognition event | Posting rule |
+|---|---|---|---|
+| FX spot / forward (buy leg) | T+2/T+N settlement confirmation | `FxSettlementConfirmed` | PR-FX-003 |
+| FX NDF | Net cash settlement on fixing date | `FxSettlementConfirmed` | PR-FX-003 |
+| JSE bond (FVTPL / FVOCI) — maturity | Final coupon + principal received | `BondMatured` | PR-BOND-MAT |
+| JSE bond (FVTPL / FVOCI) — sale | Sale settlement T+3 | `BondSold` | PR-BOND-SALE |
+| JSE equity — sale | Sale settlement T+3 | `EquitySold` | PR-EQ-SALE / PR-EQ-SALE-F |
+| OTC IRD swap — termination | Termination payment settled | `IrdSwapTerminated` | PR-IRD-TERM |
+
+**Settlement failure and reversal.** If settlement fails (`SettlementFailed` event), no derecognition occurs — the prior carrying amount is maintained. If a subsequent `SettlementReversed` event is emitted after an incorrect derecognition, posting rule PR-FX-REV reinstates the prior carrying amount per IFRS 9 §3.2.1. The reversal is recognised at the original derecognition date to preserve period accuracy.
+
+**Gains and losses on derecognition.** On derecognition:
+- **FVTPL instruments:** the difference between the carrying amount and the sum of consideration received plus any cumulative unrealised P&L is recognised in profit or loss.
+- **FVOCI equity instruments (irrevocable election):** the cumulative OCI balance is transferred directly to **retained earnings** (no P&L recycling per IFRS 9 §5.7.5).
+- **Amortised-cost instruments:** any gain or loss (carrying amount vs. proceeds net of transaction costs) is recognised in profit or loss.
+
+Register row: [`ORG-AC-02`](../Regulations/_obligations-register.md) (measurement — derecognition).  
+Procedure refs: [`Procedures/finance/trade-lifecycle-system-capability-register.md`](../Procedures/finance/trade-lifecycle-system-capability-register.md).
+
+### 3.1C Fair value measurement hierarchy (IFRS 13 §72)
+
+The fair value hierarchy classifies inputs into three levels based on observability. The level assigned is determined by the **lowest-level input that is significant to the measurement as a whole**:
+
+| Level | Input type | Bank instruments at this level | Rate source (build phase) |
+|---|---|---|---|
+| **Level 1** | Quoted prices in active markets for identical assets or liabilities — no adjustment | JSE-listed equities; JSE-listed on-the-run government bonds with active secondary market | JSE closing price; daily closing price feed |
+| **Level 1** | Major FX pairs at closing rates | USD/ZAR, EUR/ZAR, GBP/ZAR, JPY/ZAR | WM-Fix / Bloomberg BFIX closing rates (production); FX sim `FxPositionRevalued.revalRate` (build phase) |
+| **Level 2** | Observable inputs other than Level 1; model inputs derived principally from observable market data | FX forward rates from observable yield curves; OTC IRD NPV from JIBAR / SOFR swap curves; off-the-run government bonds from observable credit spreads | Observable forward curve (Rohan's M5 risk substrate); Bloomberg / Reuters JIBAR curve |
+| **Level 3** | Significant unobservable inputs — Camille (CFO, governance) approval required | None currently; any Level 3 exposure requires CFO approval and separate IFRS 13 §93 disclosure | N/A |
+
+**Rate source for daily MTM during the build phase:** FX sim (`FxPositionRevalued.revalRate`). This is a synthetic rate injected by the build-phase scenario framework. At commencement of trading, the rate source transitions to WM-Fix / Bloomberg BFIX closing rates (Level 1) or observable curve inputs (Level 2).
+
+**Level 3 governance.** The Bank aims to hold zero Level 3 instruments. Any Level 3 designation:
+1. Requires written approval from Camille (CFO, governance);
+2. Is subject to enhanced IPV per [`Policies/pricing-policy-v1.md`](pricing-policy-v1.md) §5.3;
+3. Requires IFRS 13 §93 disclosure in the annual financial statements (sensitivity analysis; description of unobservable inputs; quantitative range).
+
+**No Day-1 P&L from Level 3 inputs.** Per §3.3.4 (Day-1 P&L policy), any Day-1 difference on a Level 3 instrument is deferred to profit or loss until observable confirmation.
+
+Register row: [`ORG-AC-08`](../Regulations/_obligations-register.md) (fair value hierarchy).  
+Procedure ref: [`Procedures/finance/trade-lifecycle-system-capability-register.md`](../Procedures/finance/trade-lifecycle-system-capability-register.md).
 
 ### 3.4 IFRS 9 — hedge accounting
 
@@ -544,6 +618,7 @@ Any departure from these accounting policies (e.g. application of a different IF
 | Version | Date | Author | Note |
 |---|---|---|---|
 | v1.0 | 2026-05-13 | Owen (Company Secretary, governance) on behalf of Camille (CFO, governance) | Initial IFRS accounting policies. Sections: (3.1) IFRS 9 classification and measurement — business model test, amortised cost, FVOCI, FVTPL; (3.2) IFRS 9 ECL — three-stage model, SICR triggers, PD/LGD/EAD methodology, forward-looking adjustments; (3.3) IFRS 13 fair value — hierarchy Levels 1/2/3, valuation techniques, CVA/DVA/FVA, Day-1 P&L policy; (3.4) IFRS 9 hedge accounting — fair value hedges, cash flow hedges, documentation; (3.5) IAS 1 presentation — going concern, materiality, comparative periods; (3.6) IAS 12 income taxes — current and deferred tax, effective-rate reconciliation; (3.7) IAS 24 related-party disclosures — definitions, transactions, board approval thresholds; (5) External audit engagement — auditor requirements, ISA 700, independence, rotation. Closes obligations ORG-AC-01 through ORG-AC-16. LICENCE-BIND. DRAFT pending BAC constitution at licence-day. |
+| v1.1 | 2026-05-18 | Owen (Company Secretary, governance) | Added §3.1A (trade-date accounting election — IFRS 9 B3.1.3; recognition on trade date for FX/bonds/equities; PR-FX-001/PR-BOND-001/PR-EQ-001 mapping); §3.1B (derecognition — IFRS 9 §3.2; instrument-level derecognition triggers; settlement failure/reversal; FVOCI equity no-recycle rule); §3.1C (IFRS 13 §72 fair value measurement hierarchy — Level 1/2/3 for all instrument types; build-phase rate source; Level 3 governance). Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. |
 
 ---
 

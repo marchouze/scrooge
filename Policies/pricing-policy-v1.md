@@ -89,6 +89,27 @@ This policy establishes the bank's framework for pricing financial transactions,
 - **Spread to benchmark:** negotiated with counterparty; spread schedule for secondary-market trading approved by Saskia
 - **Price transparency:** bid price, offer price, and mid are disclosed to counterparties on request per CS 3/2018 §8
 
+### 3.3A Multi-instrument measurement summary
+
+The table below is the authoritative cross-instrument reference for classification, measurement basis, MTM frequency, P&L routing, and IFRS authority. Posting-rule assignments and GL account references are detailed in [`Procedures/finance/trade-lifecycle-system-capability-register.md`](../Procedures/finance/trade-lifecycle-system-capability-register.md).
+
+| Instrument | Classification | Measurement basis | MTM frequency | P&L routing | IFRS ref |
+|---|---|---|---|---|---|
+| FX spot (trading book) | FVTPL | Closing mid-market rate | Daily | P&L | IFRS 9 §5.7.1; IAS 21 §23 |
+| FX forwards / swaps (trading book) | FVTPL | Observable forward curve | Daily | P&L | IFRS 9 §5.7.1 |
+| FX NDF (trading book) | FVTPL | Observable NDF curve | Daily | P&L | IFRS 9 §5.7.1 |
+| JSE bonds (trading book) | FVTPL | JSE closing clean price | Daily | P&L | IFRS 9 §5.7.1 |
+| JSE bonds (banking book) | Amortised cost | EIR; no fair value change | EIR accrual daily | P&L (interest income) | IFRS 9 §5.4.1 |
+| JSE equities — FVTPL election | FVTPL | JSE closing price | Daily | P&L | IFRS 9 §5.7.1 |
+| JSE equities — FVOCI election | FVOCI (irrevocable) | JSE closing price | Daily | OCI (no P&L recycling) | IFRS 9 §5.7.5 |
+| OTC IRD swaps (trading book) | FVTPL | NPV via JIBAR/SOFR curve | Daily | P&L | IFRS 9 §5.7.1 |
+
+Notes:
+- **Build-phase rate source for FX:** FX sim (`FxPositionRevalued.revalRate`). At commencement of trading: WM-Fix / Bloomberg BFIX (Level 1).
+- **Forward curve substrate:** Rohan (Market risk engineer)'s M5 risk substrate. Until live, spot rates are used as proxy for forward MTM (disclosed as a substrate gap in PROC-MK-FXFL-01 §8).
+- **FVOCI equity irrevocable election:** made at initial recognition; approved by Camille (CFO, governance). Once elected, the OCI balance on sale transfers to retained earnings, not P&L (IFRS 9 §5.7.5 — no recycling).
+- **Amortised-cost bonds EIR:** effective interest rate accrual daily; fair value changes not recognised in P&L. ECL provision applies per [`Policies/ifrs9-ecl-provisioning-policy-v1.md`](ifrs9-ecl-provisioning-policy-v1.md).
+
 ### 3.4 Repo / Reverse-Repo
 
 - **Repo rate:** agreed bilaterally; benchmarked to SARB repo rate and overnight JIBAR
@@ -209,3 +230,4 @@ The bank is committed to TCF Outcome 4: that customers receive products and serv
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1 | 2026-05-14 | Mira (Compliance / RegTech engineer) | Initial version — closes ORG-CD-06, ORG-FAIS-RK-FEE-DISCLOSURE, ORG-MK-07 (pricing), ORG-CS3-006 |
+| 2 | 2026-05-18 | Owen (Company Secretary, governance) | Added §3.3A multi-instrument measurement table — classification, measurement basis, MTM frequency, P&L routing, IFRS ref for all instrument types (FX spot/fwd/swap/NDF, JSE bonds trading/banking, JSE equities FVTPL/FVOCI, OTC IRD); cross-referenced trade-lifecycle-system-capability-register. Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. |
