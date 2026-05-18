@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
   <style>
     /* FX Simulator page styles */
     .sim-controls {
@@ -250,6 +251,11 @@
         <span class="shell-wordmark">Hoz</span>
       </a>
       <div class="shell-meta">
+        <span
+          data-provenance-badge="page-top"
+          data-provenance-source="/api/fx-sim/status"
+          aria-label="Provenance badge"
+        ></span>
         <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh status now">Refresh</button>
         <span class="shell-as-of" id="asOf" aria-live="polite">connecting…</span>
         <div class="shell-identity" role="status" aria-label="Signed in"></div>
@@ -390,6 +396,7 @@
     </main>
   </div>
 
+  <script src="/provenance-badge.js"></script>
   <script>
     // ---------------------------------------------------------------------------
     // FX Simulator control panel

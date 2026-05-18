@@ -144,15 +144,18 @@ describe("FxSimEngine", () => {
   });
 
   it("after running for 200ms with minInterval=10 maxInterval=20, store.append was called at least once", async () => {
+    // Use real timers for this test — fake timer async advance not available in Bun.
+    vi.useRealTimers();
     engine.start({ minIntervalMs: 10, maxIntervalMs: 20 });
-    // Advance time 200ms to allow at least several fires
-    await vi.advanceTimersByTimeAsync(200);
+    await new Promise<void>((resolve) => setTimeout(resolve, 250));
     expect(store.append).toHaveBeenCalled();
   });
 
   it("append is called with type FxTradeExecuted", async () => {
+    // Use real timers for this test.
+    vi.useRealTimers();
     engine.start({ minIntervalMs: 10, maxIntervalMs: 20 });
-    await vi.advanceTimersByTimeAsync(100);
+    await new Promise<void>((resolve) => setTimeout(resolve, 150));
     const calls = store.append.mock.calls;
     expect(calls.length).toBeGreaterThan(0);
     const firstCall = calls[0]?.[0] as { type: string } | undefined;
