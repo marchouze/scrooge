@@ -1,34 +1,129 @@
 {
   "accounts": [
-    { "id": "ACC-1000-001", "name": "Bank — ZAR",                       "category": "asset",  "side": "debit" },
+    { "id": "ACC-1000-001", "name": "Bank — ZAR", "category": "asset", "side": "debit" },
 
-    { "id": "ACC-5000-001", "name": "Share Capital",                    "category": "equity", "side": "credit" },
-    { "id": "ACC-5000-002", "name": "Retained Earnings",                "category": "equity", "side": "credit" },
+    { "id": "ACC-5000-001", "name": "Share Capital", "category": "equity", "side": "credit" },
+    { "id": "ACC-5000-002", "name": "Retained Earnings", "category": "equity", "side": "credit" },
 
-    { "id": "ACC-1100-001", "name": "Nostro — ZAR (SARB operational)", "category": "asset", "side": "debit" },
-    { "id": "ACC-1100-002", "name": "Nostro — USD (correspondent)",     "category": "asset", "side": "debit" },
-    { "id": "ACC-1100-003", "name": "Nostro — EUR (correspondent)",     "category": "asset", "side": "debit" },
-    { "id": "ACC-1100-004", "name": "FX Settlement Suspense — ZAR",    "category": "asset", "side": "debit" },
-    { "id": "ACC-1100-005", "name": "FX Settlement Suspense — USD",    "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-1100-001",
+      "name": "Nostro — ZAR (SARB operational)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-002",
+      "name": "Nostro — USD (correspondent)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-003",
+      "name": "Nostro — EUR (correspondent)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-004",
+      "name": "FX Settlement Suspense — ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-005",
+      "name": "FX Settlement Suspense — USD",
+      "category": "asset",
+      "side": "debit"
+    },
 
-    { "id": "ACC-1200-001", "name": "Nostro — ZAR (correspondent)",    "category": "asset", "side": "debit" },
-    { "id": "ACC-1200-002", "name": "Nostro — USD (correspondent)",    "category": "asset", "side": "debit" },
-    { "id": "ACC-1200-003", "name": "Nostro — EUR (correspondent)",    "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-1200-001",
+      "name": "Nostro — ZAR (correspondent)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-002",
+      "name": "Nostro — USD (correspondent)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-003",
+      "name": "Nostro — EUR (correspondent)",
+      "category": "asset",
+      "side": "debit"
+    },
 
-    { "id": "ACC-2100-001", "name": "FX Trading Receivable — ZAR",     "category": "asset", "side": "debit" },
-    { "id": "ACC-2100-002", "name": "FX Trading Receivable — FCY",     "category": "asset", "side": "debit" },
-    { "id": "ACC-2100-003", "name": "FX Trading Payable — ZAR",        "category": "liability", "side": "credit" },
-    { "id": "ACC-2100-004", "name": "FX Trading Payable — FCY",        "category": "liability", "side": "credit" },
-    { "id": "ACC-2100-005", "name": "Unrealised FX P&L — FVTPL",       "category": "income", "side": "credit" },
-    { "id": "ACC-2100-006", "name": "Realised FX P&L",                 "category": "income", "side": "credit" },
+    {
+      "id": "ACC-2100-001",
+      "name": "FX Trading Receivable — ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-002",
+      "name": "FX Trading Receivable — FCY",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-003",
+      "name": "FX Trading Payable — ZAR",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-004",
+      "name": "FX Trading Payable — FCY",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-005",
+      "name": "Unrealised FX P&L — FVTPL",
+      "category": "income",
+      "side": "credit"
+    },
+    { "id": "ACC-2100-006", "name": "Realised FX P&L", "category": "income", "side": "credit" },
 
-    { "id": "ACC-2200-001", "name": "Customer Payables — ZAR",         "category": "liability", "side": "credit" },
-    { "id": "ACC-2200-002", "name": "Customer Payables — USD",         "category": "liability", "side": "credit" },
+    {
+      "id": "ACC-2200-001",
+      "name": "Customer Payables — ZAR",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2200-002",
+      "name": "Customer Payables — USD",
+      "category": "liability",
+      "side": "credit"
+    },
 
-    { "id": "ACC-3100-001", "name": "Payment Suspense — ZAR",          "category": "asset", "side": "debit" },
-    { "id": "ACC-3100-002", "name": "Payment Suspense — USD",          "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-3100-001",
+      "name": "Payment Suspense — ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-002",
+      "name": "Payment Suspense — USD",
+      "category": "asset",
+      "side": "debit"
+    },
 
-    { "id": "ACC-4100-001", "name": "Settlement Receivable — ZAR",     "category": "asset", "side": "debit" },
-    { "id": "ACC-4100-002", "name": "Settlement Receivable — USD",     "category": "asset", "side": "debit" }
+    {
+      "id": "ACC-4100-001",
+      "name": "Settlement Receivable — ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-4100-002",
+      "name": "Settlement Receivable — USD",
+      "category": "asset",
+      "side": "debit"
+    }
   ]
 }
