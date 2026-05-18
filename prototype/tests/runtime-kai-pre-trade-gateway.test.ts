@@ -1,19 +1,21 @@
 // tests/runtime-kai-pre-trade-gateway.test.ts
 //
-// Gateway aggregator tests — updated for slices 2–4 multi-check fan-out.
+// Gateway aggregator tests — updated for slices 2–7 multi-check fan-out.
 //
-// Slices 2–4 replace the slice-1 default-approve logic with real multi-check
-// aggregation. The aggregator now:
-//   - Fans out 3 GatewayCheckRequested events on OrderProposed (not 1 approval)
-//   - Emits OrderApprovedAtGateway only after all 3 checks complete and pass
+// Slices 2–4 replaced the slice-1 default-approve logic with real multi-check
+// aggregation. Slices 5–7 extend the fan-out from 3 to 8 checks.
+// The aggregator now:
+//   - Fans out 8 GatewayCheckRequested events on OrderProposed
+//     (3 from slices 2–4 + 5 from slices 5–7)
+//   - Emits OrderApprovedAtGateway only after all 8 checks complete and pass
 //   - Emits OrderRejectedAtGateway if any check fails
 //
 // Tests updated accordingly:
-//   - eventsEmitted=3 (fan-out) replaces eventsEmitted=1 (default-approve)
+//   - eventsEmitted=8 (fan-out) replaces eventsEmitted=3 (slices 2–4)
 //   - Idempotency: second invocation with same OrderProposed skips (check requests exist)
 //   - Empty triggering set is a clean no-op.
 //
-// Author: Kai · Saskia. Updated for slices 2–4 (Rohan + Mira).
+// Author: Kai · Saskia. Updated for slices 2–7.
 
 import { describe, expect, it } from "bun:test";
 import { join } from "node:path";
@@ -82,8 +84,11 @@ function countApprovalsFor(orderId: string): number {
   return n;
 }
 
-describe("runtime — kai:pre-trade-gateway-aggregator (slice 1)", () => {
-  it("fans out 3 GatewayCheckRequested for a synthetic OrderProposed (slices 2-4 fan-out)", async () => {
+// Total check kinds wired in the aggregator (slices 2–7).
+const TOTAL_CHECK_KINDS = 8;
+
+describe("runtime — kai:pre-trade-gateway-aggregator (slices 2–7)", () => {
+  it(`fans out ${TOTAL_CHECK_KINDS} GatewayCheckRequested for a synthetic OrderProposed`, async () => {
     const orderId = `test-order-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const op = syntheticOrderProposed({ orderId, asOf: "2026-05-09T00:00:00.000Z" });
     eventStore.append(op);
@@ -95,19 +100,19 @@ describe("runtime — kai:pre-trade-gateway-aggregator (slice 1)", () => {
     const result = await kaiPreTradeGatewayAggregator(ctx);
 
     expect(result.ok).toBe(true);
-    // Slices 2-4: fan-out emits 3 GatewayCheckRequested (not 1 default approval)
-    expect(result.eventsEmitted).toBe(3);
+    // Slices 2–7: fan-out emits 8 GatewayCheckRequested
+    expect(result.eventsEmitted).toBe(TOTAL_CHECK_KINDS);
 
     // No terminal approval yet — waiting for check completions
     expect(countApprovalsFor(orderId)).toBe(0);
 
-    // Check that 3 fan-out events were emitted (one per check kind)
+    // Check that 8 fan-out events were emitted (one per check kind)
     let checkReqCount = 0;
     for (const e of eventStore.replay({ type: "GatewayCheckRequested" })) {
       const p = e.payload as { orderId?: unknown };
       if (typeof p.orderId === "string" && p.orderId === orderId) checkReqCount++;
     }
-    expect(checkReqCount).toBe(3);
+    expect(checkReqCount).toBe(TOTAL_CHECK_KINDS);
 
     // Citation chain on fan-out events (Principle 2).
     for (const e of eventStore.replay({ type: "GatewayCheckRequested" })) {
@@ -128,14 +133,14 @@ describe("runtime — kai:pre-trade-gateway-aggregator (slice 1)", () => {
     const op = syntheticOrderProposed({ orderId, asOf: "2026-05-09T00:01:00.000Z" });
     eventStore.append(op);
 
-    // First fire: fan-out 3 check requests.
+    // First fire: fan-out 8 check requests.
     const first = await kaiPreTradeGatewayAggregator(
       makeContext({
         asOf: "2026-05-09T00:01:00.500Z",
         triggeringEvents: [op],
       }),
     );
-    expect(first.eventsEmitted).toBe(3);
+    expect(first.eventsEmitted).toBe(TOTAL_CHECK_KINDS);
 
     // Re-fire — check requests already exist for this orderId,
     // so the aggregator skips re-fan-out (idempotency).
@@ -147,13 +152,13 @@ describe("runtime — kai:pre-trade-gateway-aggregator (slice 1)", () => {
     );
     expect(second.eventsEmitted).toBe(0);
 
-    // Still only 3 check requests, not 6.
+    // Still only 8 check requests, not 16.
     let checkReqCount = 0;
     for (const e of eventStore.replay({ type: "GatewayCheckRequested" })) {
       const p = e.payload as { orderId?: unknown };
       if (typeof p.orderId === "string" && p.orderId === orderId) checkReqCount++;
     }
-    expect(checkReqCount).toBe(3);
+    expect(checkReqCount).toBe(TOTAL_CHECK_KINDS);
   });
 
   it("clean no-op when triggering set has no OrderProposed events", async () => {

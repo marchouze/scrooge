@@ -1,6 +1,6 @@
 // runtime/agents/kai-pre-trade-gateway-aggregator.ts
 //
-// Kai's pre-trade gateway aggregator — slices 2–4 upgrade (real multi-check).
+// Kai's pre-trade gateway aggregator — slices 2–7 (full 7-check gateway).
 //
 // Authority:
 //   - S7-Targeted critical-path item #5; CEO decision
@@ -15,29 +15,38 @@
 //   - `Team/Kai.md` §10 (override-request → AgentEscalation), §12
 //     (`@platform/markets/pre-trade-gateway` co-owned with Rohan), §15
 //     (architectural non-bypassability — single dispatch point).
+//   - Brief brief:kai:pre-trade-gateway-slices-5-7-identity-suitabilit:2026-05-18
+//     — slices 5–7 identity/suitability/credit-limit/capital-impact/funding.
 //
-// What this handler does (slices 2–4):
+// What this handler does (slices 2–7):
 //
 //   On OrderProposed:
 //   1. Idempotency check — skip if OrderApprovedAtGateway or
 //      OrderRejectedAtGateway already exists for orderId.
 //   2. Skip if GatewayCheckRequested events already exist for this orderId
 //      (fan-out already happened — don't double-fan-out on re-trigger).
-//   3. Fan out three GatewayCheckRequested events:
-//        - sanctions (Mira: mira:sanctions-gateway-check)
-//        - counterparty-eligibility (Mira: mira:counterparty-eligibility-check)
-//        - market-risk (Rohan: rohan:market-risk-limit-check)
+//   3. Fan out seven GatewayCheckRequested events:
+//        Slices 2–4 (existing):
+//          - sanctions              (Mira: mira:sanctions-gateway-check)
+//          - counterparty-eligibility (Mira: mira:counterparty-eligibility-check)
+//          - market-risk            (Rohan: rohan:market-risk-limit-check)
+//        Slices 5–7 (new):
+//          - identity               (Kai: kai:identity-gateway-check)
+//          - suitability            (Kai: kai:suitability-gateway-check)
+//          - credit-limit           (Kai: kai:credit-capital-funding-check)
+//          - capital-impact         (Kai: kai:credit-capital-funding-check)
+//          - funding                (Kai: kai:credit-capital-funding-check)
 //
 //   On GatewayCheckCompleted (for a pending order):
 //   1. Collect all GatewayCheckCompleted events for the orderId.
 //   2. Build-phase timeout: if checks were requested >30 seconds ago and
-//      not all three have completed, emit OrderRejectedAtGateway with
+//      not all 8 have completed, emit OrderRejectedAtGateway with
 //      reason "gateway-timeout".
-//   3. If all 3 checks present and all have outcome "approve" →
+//   3. If all 8 checks present and all have outcome "approve" →
 //      emit OrderApprovedAtGateway.
 //   4. If any check has outcome "reject" → emit OrderRejectedAtGateway
 //      with the first failing check's rejectionReason.
-//   5. If not all 3 checks present yet → no-op (wait for next trigger).
+//   5. If not all 8 checks present yet → no-op (wait for next trigger).
 //
 // Non-bypassability (Kai.md §15): the aggregator is the single dispatch
 // point that emits OrderApprovedAtGateway / OrderRejectedAtGateway. No
@@ -49,8 +58,12 @@
 //   - "counterparty-eligibility"→ mira:counterparty-eligibility-check
 //   - "market-risk"             → rohan:market-risk-limit-check
 //
-// Remaining slices (5–7): identity, suitability, credit-limit, capital-impact,
-// funding, surveillance, soft-flag overlay — not yet wired.
+// Check kinds wired in slices 5–7:
+//   - "identity"                → kai:identity-gateway-check
+//   - "suitability"             → kai:suitability-gateway-check
+//   - "credit-limit"            → kai:credit-capital-funding-check
+//   - "capital-impact"          → kai:credit-capital-funding-check
+//   - "funding"                 → kai:credit-capital-funding-check
 //
 // Author: Kai (handler) · Saskia (franchise + governance) · Atlas (runtime
 // substrate) · Mira (compliance) · Rohan (market risk).
@@ -77,7 +90,7 @@ const AGGREGATOR_ACTOR = {
 
 /**
  * Citation chain for gateway approval emissions.
- * Slices 2–4 union all per-check approval citations into this set.
+ * Slices 2–7 union all per-check approval citations into this set.
  */
 const APPROVAL_CITATIONS: readonly string[] = [
   "ORG-CD-01",
@@ -89,6 +102,10 @@ const APPROVAL_CITATIONS: readonly string[] = [
   "ORG-PR-01",
   "RAS-B1",
   "RAS-B2",
+  // Slices 5–7 additions:
+  "FAIS-ACT-37-2002",
+  "D-PARTY-REGISTER",
+  "RAS-B3",
 ];
 
 const FANOUT_CITATIONS: readonly string[] = [
@@ -100,8 +117,19 @@ const FANOUT_CITATIONS: readonly string[] = [
   "GOV-FRAMEWORK-CEO-RESERVED",
 ];
 
-// The three check kinds wired in slices 2–4.
-const CHECK_KINDS = ["sanctions", "counterparty-eligibility", "market-risk"] as const;
+// All eight check kinds wired in slices 2–7.
+// Slices 2–4: sanctions, counterparty-eligibility, market-risk.
+// Slices 5–7: identity, suitability, credit-limit, capital-impact, funding.
+const CHECK_KINDS = [
+  "sanctions",
+  "counterparty-eligibility",
+  "market-risk",
+  "identity",
+  "suitability",
+  "credit-limit",
+  "capital-impact",
+  "funding",
+] as const;
 type CheckKind = (typeof CHECK_KINDS)[number];
 
 // Build-phase gateway timeout: 30 seconds (synchronous-reject-on-timeout per
@@ -258,7 +286,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
     fanOutCount += 1;
     logger.info(
-      { orderId, checkKinds: CHECK_KINDS },
+      { orderId, checkKinds: CHECK_KINDS, checkCount: CHECK_KINDS.length },
       "kai:pre-trade-gateway-aggregator — fanned out GatewayCheckRequested",
     );
   }
@@ -415,8 +443,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventsEmitted += 1;
       ordersApproved += 1;
       logger.info(
-        { orderId },
-        "kai:pre-trade-gateway-aggregator — OrderApprovedAtGateway emitted (all 3 checks passed)",
+        { orderId, checkCount: CHECK_KINDS.length },
+        "kai:pre-trade-gateway-aggregator — OrderApprovedAtGateway emitted (all checks passed)",
       );
     }
   }
