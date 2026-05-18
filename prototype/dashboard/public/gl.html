@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>General Ledger · Hoz</title>
+<meta name="description" content="General Ledger — ledger entries, trial balance, and manual journal posting.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  /* GL page local overrides */
+  .gl-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin: 0 var(--space-6) var(--space-4);
+  }
+  .gl-tab {
+    padding: 10px 18px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .gl-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 500;
+  }
+  .gl-panel {
+    display: none;
+    padding: 0 var(--space-6);
+  }
+  .gl-panel.active {
+    display: block;
+  }
+  .gl-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: flex-end;
+    margin-bottom: var(--space-4);
+  }
+  .gl-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .gl-control-group label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .gl-control-group input,
+  .gl-control-group select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background: var(--bg);
+    color: var(--text);
+    min-width: 120px;
+  }
+  .gl-btn {
+    padding: 6px 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .gl-btn:hover { background: var(--accent-deep); }
+  .gl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .gl-btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .gl-btn-secondary:hover { background: var(--bg-soft); }
+
+  /* Table */
+  .gl-table-wrap { overflow-x: auto; }
+  .gl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .gl-table th {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .gl-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .gl-table tr:hover td { background: var(--bg-soft); }
+  .gl-table .dr { color: var(--danger); }
+  .gl-table .cr { color: var(--good); }
+  .gl-table .mono { font-family: var(--mono); font-size: 0.8rem; }
+
+  /* Trial balance */
+  .tb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .tb-badge.balanced { background: var(--good-soft); color: var(--good); }
+  .tb-badge.unbalanced { background: var(--danger-soft); color: var(--danger); }
+  .tb-totals td { font-weight: 700; border-top: 2px solid var(--border); }
+
+  /* Journal form */
+  .journal-form { max-width: 760px; }
+  .journal-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .journal-form .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 160px;
+  }
+  .journal-form label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .journal-form input,
+  .journal-form select,
+  .journal-form textarea {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+  }
+  .journal-form input:focus,
+  .journal-form select:focus,
+  .journal-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+  .leg-rows { margin-bottom: var(--space-3); }
+  .leg-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: var(--space-2);
+    align-items: end;
+    margin-bottom: var(--space-2);
+  }
+  .leg-row label { display: none; }
+  .leg-row .leg-col { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; color: var(--text-muted); }
+  .leg-row .leg-col input,
+  .leg-row .leg-col select { width: 100%; }
+  .leg-remove-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 6px 10px;
+    color: var(--danger);
+    font-size: 0.85rem;
+    align-self: flex-end;
+  }
+  .leg-remove-btn:hover { background: var(--danger-soft); }
+  .balance-summary {
+    display: flex;
+    gap: var(--space-4);
+    padding: 10px 12px;
+    background: var(--bg-soft);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-3);
+  }
+  .balance-summary .bal-item { display: flex; gap: 6px; align-items: center; }
+  .balance-summary .bal-label { color: var(--text-muted); }
+  .balance-summary .bal-value { font-family: var(--mono); font-weight: 600; }
+  .balance-summary.balanced .bal-status { color: var(--good); font-weight: 600; }
+  .balance-summary.unbalanced .bal-status { color: var(--danger); font-weight: 600; }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    margin-top: var(--space-3);
+    font-size: 0.85rem;
+  }
+  .page-info { color: var(--text-muted); }
+
+  .success-box {
+    padding: 12px 16px;
+    background: var(--good-soft);
+    border: 1px solid var(--good);
+    border-radius: 4px;
+    color: var(--good);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-3);
+  }
+  .error-box {
+    padding: 12px 16px;
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+    border-radius: 4px;
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-3);
+  }
+
+  :root {
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· General Ledger</span>
+    </div>
+    <div class="meta">
+      <a class="nav-link" href="/home.html">Home</a>
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/finance.html">Finance</a>
+      <a class="nav-link" href="/decisions">Decisions</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">–</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+  <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
+    <div style="display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-3);">
+      <h1 style="margin:0;">General Ledger</h1>
+      <div class="gl-control-group" style="margin-left:auto;">
+        <label for="asof-picker">As of</label>
+        <input type="datetime-local" id="asof-picker" />
+      </div>
+      <button class="gl-btn" id="refreshBtn">Refresh</button>
+    </div>
+    <p class="muted" style="margin:0 0 var(--space-3);">
+      Ledger entries, trial balance, and journal posting. Sources:
+      <code>SubLedgerPostingEmitted</code>, <code>JournalEntryPosted</code>,
+      <code>ManualJournalEntry</code>.
+    </p>
+  </div>
+
+  <div class="gl-tabs">
+    <button class="gl-tab active" data-tab="entries">Ledger Entries</button>
+    <button class="gl-tab" data-tab="trial-balance">Trial Balance</button>
+    <button class="gl-tab" data-tab="post-journal">Post Journal</button>
+  </div>
+
+  <!-- ======== Tab: Ledger Entries ======== -->
+  <div class="gl-panel active" id="tab-entries">
+    <div class="gl-controls">
+      <div class="gl-control-group">
+        <label for="accountFilter">Account</label>
+        <select id="accountFilter">
+          <option value="">All accounts</option>
+        </select>
+      </div>
+      <div class="gl-control-group">
+        <label for="fromFilter">From</label>
+        <input type="date" id="fromFilter" />
+      </div>
+      <div class="gl-control-group">
+        <label for="toFilter">To</label>
+        <input type="date" id="toFilter" />
+      </div>
+      <button class="gl-btn" id="applyFiltersBtn">Apply</button>
+    </div>
+
+    <div id="entriesStatus" class="muted" style="margin-bottom:var(--space-2);font-size:0.85rem;"></div>
+
+    <div class="gl-table-wrap">
+      <table class="gl-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Account</th>
+            <th style="text-align:right">Debit</th>
+            <th style="text-align:right">Credit</th>
+            <th>Currency</th>
+          </tr>
+        </thead>
+        <tbody id="entriesBody">
+          <tr><td colspan="7" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button class="gl-btn gl-btn-secondary" id="prevPageBtn" disabled>← Prev</button>
+      <span class="page-info" id="pageInfo">–</span>
+      <button class="gl-btn gl-btn-secondary" id="nextPageBtn" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- ======== Tab: Trial Balance ======== -->
+  <div class="gl-panel" id="tab-trial-balance">
+    <div id="tbStatus" class="muted" style="margin-bottom:var(--space-3);font-size:0.85rem;"></div>
+
+    <div class="gl-table-wrap">
+      <table class="gl-table">
+        <thead>
+          <tr>
+            <th>Account Code</th>
+            <th>Account Name</th>
+            <th>Category</th>
+            <th>Currency</th>
+            <th style="text-align:right">Debit Total</th>
+            <th style="text-align:right">Credit Total</th>
+          </tr>
+        </thead>
+        <tbody id="tbBody">
+          <tr><td colspan="6" class="muted">Loading…</td></tr>
+        </tbody>
+        <tfoot>
+          <tr class="tb-totals" id="tbTotalsRow">
+            <td colspan="4"><strong>Total</strong></td>
+            <td style="text-align:right" id="tbTotalDebits" class="mono">–</td>
+            <td style="text-align:right" id="tbTotalCredits" class="mono">–</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== Tab: Post Journal ======== -->
+  <div class="gl-panel" id="tab-post-journal">
+    <div class="journal-form">
+      <div id="journalSuccess" hidden></div>
+      <div id="journalError" hidden></div>
+
+      <div class="form-row">
+        <div class="form-field" style="flex:2">
+          <label for="jDescription">Description *</label>
+          <input type="text" id="jDescription" placeholder="e.g. Month-end accrual — interest receivable" />
+        </div>
+        <div class="form-field">
+          <label for="jPeriod">Period (YYYY-MM) *</label>
+          <input type="text" id="jPeriod" placeholder="2026-05" maxlength="7" />
+        </div>
+        <div class="form-field">
+          <label for="jPostedBy">Posted by *</label>
+          <input type="text" id="jPostedBy" placeholder="bea@bank.local" />
+        </div>
+      </div>
+
+      <div style="margin-bottom:var(--space-2);font-size:0.8rem;color:var(--text-muted);">
+        Legs (min. 2 required — amounts in decimal units, e.g. 1000.00 = R1 000)
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:var(--space-2);margin-bottom:var(--space-1);font-size:0.72rem;color:var(--text-muted);padding:0 2px;">
+        <span>Account</span><span>Dr / Cr</span><span>Amount</span><span>Currency</span><span></span>
+      </div>
+      <div class="leg-rows" id="legRows"></div>
+      <button class="gl-btn gl-btn-secondary" id="addLegBtn" style="margin-bottom:var(--space-3);">+ Add Leg</button>
+
+      <div class="balance-summary" id="balanceSummary">
+        <div class="bal-item"><span class="bal-label">Total Debits:</span><span class="bal-value" id="totalDebits">0.00</span></div>
+        <div class="bal-item"><span class="bal-label">Total Credits:</span><span class="bal-value" id="totalCredits">0.00</span></div>
+        <div class="bal-item"><span class="bal-status" id="balanceStatus">Add legs to check balance</span></div>
+      </div>
+
+      <button class="gl-btn" id="submitJournalBtn" disabled>Post Journal</button>
+    </div>
+  </div>
+</main>
+
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script>
+(() => {
+  // ---- utilities ----
+  const esc = (s) => String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const fmt = (minor) => (minor / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtDate = (iso) => iso ? iso.slice(0, 10) : "–";
+
+  // ---- as-of picker ----
+  const asofPicker = document.getElementById("asof-picker");
+  asofPicker.value = new Date().toISOString().slice(0, 16);
+
+  // ---- tab switching ----
+  const tabs = document.querySelectorAll(".gl-tab");
+  const panels = document.querySelectorAll(".gl-panel");
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      panels.forEach(p => p.classList.remove("active"));
+      tab.classList.add("active");
+      const panelId = "tab-" + tab.dataset.tab;
+      const panel = document.getElementById(panelId);
+      if (panel) panel.classList.add("active");
+    });
+  });
+
+  // ---- accounts list (shared for filters + journal form) ----
+  let accountsList = [];
+  let entriesOffset = 0;
+  const ENTRIES_LIMIT = 50;
+
+  function getAsOf() {
+    const v = asofPicker.value;
+    return v ? new Date(v).toISOString() : new Date().toISOString();
+  }
+
+  // ---- Load accounts ----
+  async function loadAccounts() {
+    try {
+      const r = await fetch(`/api/gl/accounts?asOf=${encodeURIComponent(getAsOf())}`);
+      if (!r.ok) return;
+      const data = await r.json();
+      accountsList = data.accounts ?? [];
+      populateAccountDropdowns();
+    } catch {}
+  }
+
+  function populateAccountDropdowns() {
+    const accountFilter = document.getElementById("accountFilter");
+    const prev = accountFilter.value;
+    accountFilter.innerHTML = '<option value="">All accounts</option>';
+    for (const a of accountsList) {
+      const opt = document.createElement("option");
+      opt.value = a.accountId;
+      opt.textContent = `${a.accountId} — ${a.name}`;
+      accountFilter.appendChild(opt);
+    }
+    if (prev) accountFilter.value = prev;
+    // Also populate journal leg dropdowns
+    populateLegAccountSelects();
+  }
+
+  function populateLegAccountSelects() {
+    for (const sel of document.querySelectorAll(".leg-account-select")) {
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">— select account —</option>';
+      for (const a of accountsList) {
+        const opt = document.createElement("option");
+        opt.value = a.accountId;
+        opt.textContent = `${a.accountId} — ${a.name}`;
+        sel.appendChild(opt);
+      }
+      if (prev) sel.value = prev;
+    }
+  }
+
+  // ---- Ledger Entries ----
+  async function loadEntries() {
+    const asOf = getAsOf();
+    const account = document.getElementById("accountFilter").value;
+    const from = document.getElementById("fromFilter").value;
+    const to = document.getElementById("toFilter").value;
+
+    let url = `/api/gl/entries?asOf=${encodeURIComponent(asOf)}&limit=${ENTRIES_LIMIT}&offset=${entriesOffset}`;
+    if (account) url += `&account=${encodeURIComponent(account)}`;
+    if (from) url += `&from=${encodeURIComponent(from)}`;
+    if (to) url += `&to=${encodeURIComponent(to + "T23:59:59Z")}`;
+
+    const tbody = document.getElementById("entriesBody");
+    tbody.innerHTML = '<tr><td colspan="7" class="muted">Loading…</td></tr>';
+    document.getElementById("entriesStatus").textContent = "";
+
+    try {
+      const r = await fetch(url);
+      if (!r.ok) {
+        tbody.innerHTML = `<tr><td colspan="7" class="muted">Error ${r.status}</td></tr>`;
+        return;
+      }
+      const data = await r.json();
+      const entries = data.entries ?? [];
+      const total = data.total ?? 0;
+
+      if (entries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="muted">No entries match the current filters.</td></tr>';
+      } else {
+        tbody.innerHTML = entries.map(e => `
+          <tr>
+            <td class="mono">${esc(fmtDate(e.postedAt))}</td>
+            <td><code>${esc(e.source)}</code></td>
+            <td title="${esc(e.journalId ?? e.eventId)}">${esc(e.description)}</td>
+            <td class="mono" title="${esc(e.accountName)}">${esc(e.accountId)}</td>
+            <td style="text-align:right" class="mono ${e.debitCredit === 'debit' ? 'dr' : ''}">${e.debitCredit === 'debit' ? fmt(e.amountMinor) : ''}</td>
+            <td style="text-align:right" class="mono ${e.debitCredit === 'credit' ? 'cr' : ''}">${e.debitCredit === 'credit' ? fmt(e.amountMinor) : ''}</td>
+            <td>${esc(e.currency)}</td>
+          </tr>
+        `).join("");
+      }
+
+      const shown = Math.min(entriesOffset + ENTRIES_LIMIT, total);
+      document.getElementById("entriesStatus").textContent =
+        `Showing ${entriesOffset + 1}–${shown} of ${total} entries`;
+
+      document.getElementById("prevPageBtn").disabled = entriesOffset === 0;
+      document.getElementById("nextPageBtn").disabled = (entriesOffset + ENTRIES_LIMIT) >= total;
+      document.getElementById("pageInfo").textContent =
+        `Page ${Math.floor(entriesOffset / ENTRIES_LIMIT) + 1} / ${Math.max(1, Math.ceil(total / ENTRIES_LIMIT))}`;
+
+      document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString();
+      document.getElementById("liveDot").className = "live-dot live";
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" class="muted">Failed to load: ${esc(String(err))}</td></tr>`;
+    }
+  }
+
+  // ---- Trial Balance ----
+  async function loadTrialBalance() {
+    const asOf = getAsOf();
+    const tbody = document.getElementById("tbBody");
+    tbody.innerHTML = '<tr><td colspan="6" class="muted">Loading…</td></tr>';
+    document.getElementById("tbStatus").textContent = "";
+
+    try {
+      const r = await fetch(`/api/gl/trial-balance?asOf=${encodeURIComponent(asOf)}`);
+      if (!r.ok) {
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">Error ${r.status}</td></tr>`;
+        return;
+      }
+      const tb = await r.json();
+
+      const badge = tb.balanced
+        ? '<span class="tb-badge balanced">BALANCED</span>'
+        : '<span class="tb-badge unbalanced">UNBALANCED</span>';
+      document.getElementById("tbStatus").innerHTML =
+        `Trial balance as of ${esc(tb.asOf?.slice(0, 19) ?? asOf)} ${badge}`;
+
+      const entries = tb.entries ?? [];
+      if (entries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">No postings found before this date.</td></tr>';
+      } else {
+        tbody.innerHTML = entries.map(row => `
+          <tr>
+            <td class="mono">${esc(row.accountId)}</td>
+            <td>${esc(row.accountName)}</td>
+            <td>${esc(row.accountCategory)}</td>
+            <td>${esc(row.currency)}</td>
+            <td style="text-align:right" class="mono ${row.totalDebitsMinor > 0 ? 'dr' : ''}">${fmt(row.totalDebitsMinor)}</td>
+            <td style="text-align:right" class="mono ${row.totalCreditsMinor > 0 ? 'cr' : ''}">${fmt(row.totalCreditsMinor)}</td>
+          </tr>
+        `).join("");
+      }
+
+      document.getElementById("tbTotalDebits").textContent = fmt(tb.totalDebits ?? 0);
+      document.getElementById("tbTotalCredits").textContent = fmt(tb.totalCredits ?? 0);
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to load: ${esc(String(err))}</td></tr>`;
+    }
+  }
+
+  // ---- Manual Journal ----
+  let legCount = 0;
+
+  function addLeg(preset = {}) {
+    legCount++;
+    const id = legCount;
+    const row = document.createElement("div");
+    row.className = "leg-row";
+    row.dataset.legId = String(id);
+    row.innerHTML = `
+      <div class="leg-col">
+        <select class="leg-account-select" data-field="accountId">
+          <option value="">— select account —</option>
+        </select>
+      </div>
+      <div class="leg-col">
+        <select data-field="debitCredit">
+          <option value="debit">Debit</option>
+          <option value="credit">Credit</option>
+        </select>
+      </div>
+      <div class="leg-col">
+        <input type="number" min="0" step="0.01" placeholder="0.00" data-field="amount" style="width:100%;" />
+      </div>
+      <div class="leg-col">
+        <input type="text" maxlength="3" placeholder="ZAR" data-field="currency" style="width:100%;text-transform:uppercase;" />
+      </div>
+      <button type="button" class="leg-remove-btn" data-leg-id="${id}">✕</button>
+    `;
+    document.getElementById("legRows").appendChild(row);
+    populateLegAccountSelects();
+
+    if (preset.accountId) row.querySelector('[data-field="accountId"]').value = preset.accountId;
+    if (preset.debitCredit) row.querySelector('[data-field="debitCredit"]').value = preset.debitCredit;
+    if (preset.amount) row.querySelector('[data-field="amount"]').value = preset.amount;
+    if (preset.currency) row.querySelector('[data-field="currency"]').value = preset.currency;
+
+    // Remove button
+    row.querySelector(".leg-remove-btn").addEventListener("click", () => {
+      row.remove();
+      updateBalanceSummary();
+    });
+
+    // Live balance update
+    for (const input of row.querySelectorAll("input, select")) {
+      input.addEventListener("input", updateBalanceSummary);
+    }
+
+    updateBalanceSummary();
+  }
+
+  function getLegs() {
+    const legs = [];
+    for (const row of document.querySelectorAll(".leg-row")) {
+      const accountId = row.querySelector('[data-field="accountId"]').value;
+      const debitCredit = row.querySelector('[data-field="debitCredit"]').value;
+      const amountDecimal = parseFloat(row.querySelector('[data-field="amount"]').value) || 0;
+      const currency = row.querySelector('[data-field="currency"]').value.toUpperCase();
+      if (accountId && currency && amountDecimal > 0) {
+        legs.push({ accountId, debitCredit, amountMinor: Math.round(amountDecimal * 100), currency });
+      }
+    }
+    return legs;
+  }
+
+  function updateBalanceSummary() {
+    const legs = getLegs();
+    const totals = new Map();
+    for (const leg of legs) {
+      const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
+      if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
+      else t.credit += leg.amountMinor;
+      totals.set(leg.currency, t);
+    }
+
+    // For simplicity, show single-currency totals (first currency found)
+    // or aggregate totals across all currencies
+    let totalDebit = 0, totalCredit = 0;
+    for (const t of totals.values()) {
+      totalDebit += t.debit;
+      totalCredit += t.credit;
+    }
+
+    document.getElementById("totalDebits").textContent = fmt(totalDebit);
+    document.getElementById("totalCredits").textContent = fmt(totalCredit);
+
+    const balanced = totalDebit > 0 && totalDebit === totalCredit;
+    const desc = document.getElementById("jDescription").value.trim();
+    const period = document.getElementById("jPeriod").value.trim();
+    const postedBy = document.getElementById("jPostedBy").value.trim();
+
+    const summary = document.getElementById("balanceSummary");
+    const status = document.getElementById("balanceStatus");
+
+    if (legs.length === 0) {
+      summary.classList.remove("balanced", "unbalanced");
+      status.textContent = "Add legs to check balance";
+    } else if (balanced) {
+      summary.classList.add("balanced");
+      summary.classList.remove("unbalanced");
+      status.textContent = "Balanced ✓";
+    } else {
+      summary.classList.remove("balanced");
+      summary.classList.add("unbalanced");
+      status.textContent = totalDebit === totalCredit ? "Balanced ✓" : `Out of balance: ${fmt(Math.abs(totalDebit - totalCredit))}`;
+    }
+
+    const canSubmit = balanced && desc.length > 0 && /^\d{4}-\d{2}$/.test(period) && postedBy.length > 0;
+    document.getElementById("submitJournalBtn").disabled = !canSubmit;
+  }
+
+  document.getElementById("addLegBtn").addEventListener("click", () => addLeg());
+
+  // Wire description/period/postedBy to balance summary update (for submit-button enable/disable)
+  for (const id of ["jDescription", "jPeriod", "jPostedBy"]) {
+    document.getElementById(id).addEventListener("input", updateBalanceSummary);
+  }
+
+  // Add 2 starter legs
+  addLeg({ debitCredit: "debit", currency: "ZAR" });
+  addLeg({ debitCredit: "credit", currency: "ZAR" });
+
+  // Submit journal
+  document.getElementById("submitJournalBtn").addEventListener("click", async () => {
+    const description = document.getElementById("jDescription").value.trim();
+    const period = document.getElementById("jPeriod").value.trim();
+    const postedBy = document.getElementById("jPostedBy").value.trim();
+    const legs = getLegs();
+
+    const successBox = document.getElementById("journalSuccess");
+    const errorBox = document.getElementById("journalError");
+    successBox.hidden = true;
+    errorBox.hidden = true;
+
+    try {
+      const r = await fetch("/api/gl/journal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description, postedBy, period, legs }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        errorBox.className = "error-box";
+        errorBox.textContent = data.error ?? `HTTP ${r.status}`;
+        errorBox.hidden = false;
+        return;
+      }
+      successBox.className = "success-box";
+      successBox.innerHTML = `Journal posted. ID: <code>${esc(data.journalId)}</code> at ${esc(data.postedAt?.slice(0, 19) ?? "–")}`;
+      successBox.hidden = false;
+      // Reset form
+      document.getElementById("jDescription").value = "";
+      document.getElementById("jPeriod").value = "";
+      document.getElementById("legRows").innerHTML = "";
+      legCount = 0;
+      addLeg({ debitCredit: "debit", currency: "ZAR" });
+      addLeg({ debitCredit: "credit", currency: "ZAR" });
+    } catch (err) {
+      errorBox.className = "error-box";
+      errorBox.textContent = String(err);
+      errorBox.hidden = false;
+    }
+  });
+
+  // ---- Pagination ----
+  document.getElementById("prevPageBtn").addEventListener("click", () => {
+    entriesOffset = Math.max(0, entriesOffset - ENTRIES_LIMIT);
+    loadEntries();
+  });
+  document.getElementById("nextPageBtn").addEventListener("click", () => {
+    entriesOffset += ENTRIES_LIMIT;
+    loadEntries();
+  });
+
+  // ---- Filter / refresh ----
+  document.getElementById("applyFiltersBtn").addEventListener("click", () => {
+    entriesOffset = 0;
+    loadEntries();
+  });
+  document.getElementById("refreshBtn").addEventListener("click", async () => {
+    await loadAccounts();
+    loadEntries();
+    loadTrialBalance();
+  });
+
+  // ---- Initial load ----
+  async function init() {
+    await loadAccounts();
+    loadEntries();
+    loadTrialBalance();
+  }
+  init();
+})();
+</script>
+</body>
+</html>

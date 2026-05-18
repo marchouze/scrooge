@@ -28,6 +28,14 @@
       href: "/finance.html",
     },
     {
+      id: "general-ledger",
+      category: "intranet",
+      title: "General Ledger",
+      blurb:
+        "Devon (COO) — ledger entries, trial balance, and manual journal posting. Sources: SubLedgerPostingEmitted, JournalEntryPosted, ManualJournalEntry.",
+      href: "/gl",
+    },
+    {
       id: "risk",
       category: "intranet",
       title: "Risk Watch",

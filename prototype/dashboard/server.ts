@@ -88,6 +88,7 @@ import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { registerGraphRoutes } from "./graph-view";
+import { registerGlRoutes } from "./gl-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
 import {
   buildKycCandidateDetailView,
@@ -2032,6 +2033,20 @@ const server = Bun.serve({
     if (req.method === "GET" && (url.pathname === "/documents" || url.pathname === "/documents/")) {
       return serveStatic("/documents.html");
     }
+    // ── General Ledger endpoints — /api/gl/* ──────────────────────────────
+    // Authority: General-ledger substrate (Devon COO, engineering).
+    // Routes: GET /api/gl/entries, GET /api/gl/trial-balance,
+    //         GET /api/gl/accounts, POST /api/gl/journal.
+    {
+      const glResponse = await registerGlRoutes(
+        url.pathname,
+        req.method,
+        url.searchParams,
+        req,
+        eventStore,
+      );
+      if (glResponse) return glResponse;
+    }
     // ── Regulatory knowledge graph endpoints ──────────────────────────────
     // Authority: PR #424 (graph substrate); Principle 2 (single-graph
     // discipline). The graph DB is lazy-initialised; endpoints handle
@@ -2039,6 +2054,9 @@ const server = Bun.serve({
     {
       const graphResponse = registerGraphRoutes(url.pathname, req.method, url.searchParams);
       if (graphResponse) return graphResponse;
+    }
+    if (req.method === "GET" && url.pathname === "/gl") {
+      return serveStatic("/gl.html");
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname);

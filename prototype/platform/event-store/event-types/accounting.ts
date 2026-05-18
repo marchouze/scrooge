@@ -471,6 +471,103 @@ export function makeBAReturnGenerationTriggered(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// ManualJournalEntry
+//
+// Emitted when an authorised agent or human posts a manual journal entry
+// to the GL. Carries multi-leg double-entry legs (reuses subLedgerLegSchema
+// from fx-accounting.ts for the same balanced-legs pattern) and enforces
+// debits = credits per currency.
+//
+// Authority: General-ledger substrate (Devon COO, engineering).
+// Authors: Devon (COO, engineering); Bea (Accounting & financial reporting
+//   engineer, engineering)
+// ---------------------------------------------------------------------------
+
+export const manualJournalEntryPayloadSchema = z
+  .object({
+    /** Unique journal identifier (use crypto.randomUUID() at emit time). */
+    journalId: z.string().min(1),
+    /** Human-readable description of the journal entry purpose. */
+    description: z.string().min(1),
+    /** Agent or user reference who posted this entry. */
+    postedBy: z.string().min(1),
+    /** ISO 8601 timestamp when the entry was posted. */
+    postedAt: z.string().min(1),
+    /** Accounting period in YYYY-MM format. */
+    period: z.string().regex(/^\d{4}-\d{2}$/, {
+      message: "ManualJournalEntry.period must be YYYY-MM",
+    }),
+    /**
+     * Balanced double-entry legs.
+     * Minimum 2 legs required; debits must equal credits per currency.
+     * Re-uses SubLedgerLeg shape from fx-accounting.ts.
+     */
+    legs: z
+      .array(
+        z.object({
+          accountId: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/, {
+            message: "ManualJournalEntry leg.accountId must match ACC-NNNN-NNN",
+          }),
+          debitCredit: z.enum(["debit", "credit"]),
+          amountMinor: z.number().int().nonnegative(),
+          currency: z
+            .string()
+            .length(3)
+            .regex(/^[A-Z]{3}$/),
+        }),
+      )
+      .min(2),
+    /** "posted" = live; "reversed" = this entry reverses a prior one. */
+    status: z.enum(["posted", "reversed"]),
+    /** If this entry reverses another, the journalId of the reversed entry. */
+    reversalOf: z.string().optional(),
+    /** Principle 2 citations (optional — manual entries may not have regulatory citations). */
+    citations: z.array(z.string()).optional(),
+  })
+  .superRefine((p, ctx) => {
+    // Validate: debits = credits per currency (same logic as SubLedgerPostingEmitted).
+    const totals = new Map<string, { debit: number; credit: number }>();
+    for (const leg of p.legs) {
+      const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
+      if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
+      else t.credit += leg.amountMinor;
+      totals.set(leg.currency, t);
+    }
+    for (const [ccy, t] of totals.entries()) {
+      if (t.debit !== t.credit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `ManualJournalEntry unbalanced in ${ccy}: debit=${t.debit} credit=${t.credit}`,
+          path: ["legs"],
+        });
+      }
+    }
+  });
+
+export type ManualJournalEntryPayload = z.infer<typeof manualJournalEntryPayloadSchema>;
+
+export function makeManualJournalEntry(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ManualJournalEntryPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ManualJournalEntry",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: manualJournalEntryPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
 export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "BankAccountOpened",
   "BankAccountConfigured",
@@ -480,5 +577,6 @@ export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "TrialBalanceSnapshotted",
   "BalanceSheetSubstantiationCompleted",
   "BAReturnGenerationTriggered",
+  "ManualJournalEntry",
 ] as const;
 export type AccountingEventType = (typeof ACCOUNTING_TYPED_EVENT_TYPES)[number];
