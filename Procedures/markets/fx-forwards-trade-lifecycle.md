@@ -5,8 +5,8 @@ author: Saskia (Markets franchise lead, engineering) · Rohan (Market risk quant
 date: 2026-05-17
 owner: Saskia (Markets franchise lead, engineering)
 status: POPULATED
-version: "0.1"
-last-updated: "2026-05-17"
+version: "0.2"
+last-updated: "2026-05-18"
 policy-cited: TRADING-MANDATE-V1
 system-capability: "@platform/markets/cdm/fx + @platform/markets/eod/fx-revaluation + @platform/finance/ifrs9/classifier"
 citations:
@@ -91,6 +91,110 @@ Out of scope (substrate gaps):
 | T+N | `PrincipalPayment` (receive) | Tomas | Correspondent confirms counter-currency received (deliverable only). |
 | T+N | `SettlementConfirmed` | Tomas | Lifecycle closed; realised P&L crystallised. |
 
+## 4A. Step-level event / posting-rule / IFRS annotations
+
+The following annotates each procedural step with the canonical event type, GL posting rule, and IFRS authority. This section is the primary input to the [Trade Lifecycle System Capability Register](../finance/trade-lifecycle-system-capability-register.md).
+
+---
+
+### Step 1 — Pre-trade mandate check
+
+**Event:** (control gate — no event emitted) | **Posting rule:** — | **IFRS:** IFRS 9 §3.1.1 preamble
+
+The dealer confirms the trade is within the approved mandate (TRADING-MANDATE-V1: product scope, counterparty limits, tenor limits, book assignment). This is a pre-condition for recognition; no accounting entry is created. Gate failure blocks trade execution.
+
+Policy ref: [`Policies/trading-mandate-v1.md`](../../Policies/trading-mandate-v1.md); Procedure ref: [`Procedures/markets/dealer-mandate-issuance.md`](dealer-mandate-issuance.md).
+
+---
+
+### Step 2 — Trade execution (T0)
+
+**Event:** `FxTradeExecuted` | **Posting rule:** PR-FX-001 | **IFRS:** IFRS 9 §3.1.1 (trade-date recognition); IFRS 9 §5.1.1 (initial recognition at fair value)
+
+The bank becomes party to the contractual provisions on the trade date (trade-date accounting election per [`Policies/accounting-policies-ifrs-v1.md`](../../Policies/accounting-policies-ifrs-v1.md) §3.1A). PR-FX-001 books:
+- **Debit:** FX receivable (ACC-2100-001) at notional foreign-currency amount × trade rate
+- **Credit:** FX payable (ACC-2100-003) at notional ZAR equivalent
+
+For NDFs: the net forward fair value is initially zero at trade date (arm's-length execution); no Day-1 P&L arises if the rate is a market rate (IFRS 9 §5.1.1 + Day-1 P&L policy §3.3.4).
+
+---
+
+### Step 3 — Confirmation matching
+
+**Event:** `ConfirmationMatched` (matched) or `ConfirmationMismatch` (disputed) | **Posting rule:** — (audit trail only) | **IFRS / Legal:** ISDA Master Agreement §1; no additional GL entry
+
+Confirmation matching validates trade economics against the counterparty's confirm. A `ConfirmationMatched` event is an audit-trail marker. A `ConfirmationMismatch` event triggers the [OTC dispute resolution procedure](../markets/dealer-mandate-breach-handling.md). No GL impact until resolved.
+
+---
+
+### Step 4 — Daily MTM revaluation (each business day T+1 … T+(N-1))
+
+**Event:** `FxPositionRevalued` | **Posting rule:** PR-FX-002 | **IFRS:** IAS 21 §23 (closing-rate translation); IFRS 9 §5.7.1 (FVTPL — changes in fair value through P&L)
+
+Anya's EOD runner (`runEodFxRevaluation`) emits one `FxPositionRevalued` per open position per valuation date. PR-FX-002 books the unrealised P&L delta:
+- **Gain (rate moved in bank's favour):** Debit FX receivable (ACC-2100-001) | Credit Unrealised FX P&L (ACC-2100-005)
+- **Loss (rate moved against bank):** Debit Unrealised FX P&L (ACC-2100-005) | Credit FX receivable (ACC-2100-001)
+
+Rate source during build phase: FX sim `revalRate`. Production: WM-Fix / Bloomberg BFIX Level 1 rates per §3.1C of the accounting policy.
+
+---
+
+### Step 5 — Settlement instruction
+
+**Event:** `SettlementInstructionReceived` | **Posting rule:** PR-SET-001 (suspense transfer) | **IFRS:** IFRS 9 §3.2 (derecognition conditions met at T+N only, not at instruction time)
+
+Tomas issues pacs.009 settlement instructions to the correspondent bank. The trade receivable/payable moves from open-trade status to settlement-pending status. PR-SET-001 transfers the balance to a settlement suspense account (ACC-2100-004) to flag pending settlement without completing derecognition prematurely.
+
+---
+
+### Step 6 — Settlement confirmation / derecognition (T+N)
+
+**Event:** `FxSettlementConfirmed` | **Posting rule:** PR-FX-003 | **IFRS:** IFRS 9 §3.2.3 (derecognition on transfer of risks and rewards)
+
+Settlement confirmation triggers derecognition of the FX receivable/payable. PR-FX-003 books:
+- **Debit:** Nostro / cash account (ACC-1100-x) — foreign currency received
+- **Credit:** FX receivable (ACC-2100-001) — derecognise buy leg
+- **Debit:** FX payable (ACC-2100-003) — derecognise sell leg
+- **Credit:** Nostro / cash account (ACC-1100-x) — ZAR delivered
+- Any residual between cumulative unrealised P&L and the realised settlement difference is booked to Realised FX P&L (ACC-2100-006).
+
+---
+
+### Step 7 — Settlement failure path
+
+**Settlement failure — no GL:**  
+**Event:** `SettlementFailed` | **Posting rule:** — (no GL entry) | **IFRS:** IFRS 9 §3.2.1 (derecognition does not occur; asset/liability continues)
+
+When settlement fails, the bank retains the FX receivable/payable on the balance sheet. The `SettlementFailed` event is an operational marker; no P&L impact.
+
+**Settlement reversal — if incorrect derecognition occurred:**  
+**Event:** `SettlementReversed` | **Posting rule:** PR-FX-REV | **IFRS:** IFRS 9 §3.2.1 (reinstate prior carrying amount)
+
+PR-FX-REV mirrors PR-FX-003 in reverse (reinstate receivable/payable; reverse nostro entries). The reversal is recognised at the original derecognition date.
+
+---
+
+### Step 8 — Cancellation path
+
+**Event:** `TradeCancelled` | **Posting rule:** PR-FX-CANCEL | **IFRS:** IFRS 9 §3.2.3 (extinguishment of contractual rights/obligations)
+
+If the trade is cancelled before settlement:
+- PR-FX-CANCEL reverses the PR-FX-001 initial booking (net-zero reversal).
+- If MTM postings were made (PR-FX-002), the cumulative unrealised P&L balance is closed to Realised FX P&L.
+- Any termination payment made/received is booked to Realised FX P&L.
+
+---
+
+### Step 9 — Amendment path
+
+**Event:** `TradeAmended` | **Posting rule:** PR-FX-AMD (delta booking) | **IFRS:** IFRS 9 §3.2 (modification analysis)
+
+Trade amendments (notional, rate, tenor) are assessed under IFRS 9 §3.2 modification analysis:
+- **Quantitative change not substantial** — the existing trade is modified in-place; PR-FX-AMD books only the delta (difference between original and amended carrying amount).
+- **Substantial modification** — the original trade is derecognised (PR-FX-CANCEL logic) and a new trade is recognised (PR-FX-001 logic) at the amended terms.
+
+The modification assessment is performed by Bea (Finance / treasury engineer, engineering).
+
 ## 5. Daily MtM revaluation cycle
 
 Anya's EOD runner (`platform/markets/eod/fx-revaluation.ts`) walks the event store nightly:
@@ -134,3 +238,4 @@ All forwards in this PR are FVTPL (trading book). FVOCI / hedge-accounting desig
 ## 9. Change log
 
 - 2026-05-17 — v0.1 POPULATED. Initial draft mirroring the FX spot lifecycle procedure with forward-specific extensions (MtM cycle + NDF fixing path). Author: Saskia (Markets franchise lead, engineering).
+- 2026-05-18 — v0.2 ANNOTATED. Added §4A (step-level event / posting-rule / IFRS annotations for all 9 steps: pre-trade mandate check, trade execution, confirmation matching, daily MTM, settlement instruction, settlement confirmation/derecognition, settlement failure/reversal, cancellation, amendment). Cross-referenced trade-lifecycle-system-capability-register. Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. Author: Owen (Company Secretary, governance).

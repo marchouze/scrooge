@@ -5,8 +5,8 @@ author: Bea (Financial-Reporting Engineer) · Anya (Data Engineer)
 date: 2026-05-16
 owner: Bea (Financial-Reporting Engineer) · Anya (Data Engineer)
 status: POPULATED
-version: "0.1"
-last-updated: "2026-05-16"
+version: "0.2"
+last-updated: "2026-05-18"
 policy-cited: Financial Reporting Policy (planned)
 system-capability: "@platform/finance/fx-subledger (PLANNED)"
 citations:
@@ -51,6 +51,21 @@ Regulation (IAS 21 — closing-rate method; IFRS 9 §4.1.4 — FVTPL daily marki
 | IFRS 9 §4.1.4 | Financial instruments classified as FVTPL are measured at fair value at each reporting date; changes in fair value are recognised immediately in profit or loss. |
 | IFRS 9 §5.7.1 | Gains and losses on FVTPL financial instruments are recognised in profit or loss in the period in which they arise. |
 | Banks Act 94 (BA returns) | Daily positions must feed into the BA 325 (market risk) and BA 700 (balance sheet) returns; subledger must be current at COB each day. |
+
+## System event chain (automated)
+
+The following runs automatically via Bea's GL posting engine before manual steps begin:
+
+1. Rate feed → `FxPositionRevalued` emitted per open trade (rate source: FX sim in build phase; WM-Fix / Bloomberg BFIX in production)
+2. `bea-gl-posting-engine` processes `FxPositionRevalued` → PR-FX-002 → `SubLedgerPostingEmitted`
+3. `computeTrialBalance` reads `SubLedgerPostingEmitted` → trial balance updated (unrealised P&L per currency pair)
+4. Period-close projection aggregates all `SubLedgerPostingEmitted` events → current GL state
+
+Manual runbook steps begin after step 4 completes.
+
+**Policy authority:** [`Policies/accounting-policies-ifrs-v1.md`](../../Policies/accounting-policies-ifrs-v1.md) §3.1C (rate hierarchy); §3.1B (derecognition on `FxSettlementConfirmed`).  
+**Posting rules:** PR-FX-002 (daily MTM revaluation); PR-FX-003 (settlement / derecognition).  
+**System capability:** `@platform/finance/bea-gl-posting-engine` (live — Slice 2 / PR #550); `computeTrialBalance` (live).
 
 ## 3. Purpose
 
@@ -135,3 +150,4 @@ Regulation (IAS 21 — closing-rate method; IFRS 9 §4.1.4 — FVTPL daily marki
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-16 | Devon (Chief Operating Officer, governance) | Initial POPULATED — 16:30 SAST EOD trigger, closing-rate fetch, position revaluation, fxSubLedgerProjection, IFRS 9 classifier, trial balance, Bea FVTPL review, correcting entries, EOD sign-off, period-close; IAS 21 + IFRS 9 §4.1.4 sourcing. |
+| v0.2 | 2026-05-18 | Owen (Company Secretary, governance) | Added "System event chain (automated)" section: four-step automated sequence (rate feed → FxPositionRevalued → bea-gl-posting-engine → PR-FX-002 → SubLedgerPostingEmitted → computeTrialBalance → GL state) that precedes manual steps. Cross-referenced accounting policy §3.1B/§3.1C and posting rules PR-FX-002/PR-FX-003. Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. |
