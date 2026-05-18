@@ -75,6 +75,7 @@ import {
   rebuildCorrespondentRouting,
   rebuildLimitUtilisation,
 } from "../platform/projections/markets";
+import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
@@ -96,7 +97,6 @@ import {
   buildKycClientDetailView,
   buildKycClientsView,
 } from "./kyc-clients-view";
-import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type GatewayOrderResult, routeOrderToGateway } from "./markets-fx-gateway";
 import { buildHeadroomView } from "./markets-fx-headroom";
