@@ -58,12 +58,6 @@ function statusClass(status) {
   return "oblig-tag";
 }
 
-function urnDisplay(o) {
-  // Show URN if it has content and isn't a placeholder; fall back to ID.
-  const u = (o.urn || "").trim();
-  return u && u !== "[TBD]" ? u : o.id;
-}
-
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
@@ -315,7 +309,7 @@ function renderTable(rows) {
   const body = $("obligBody");
   const sub = $("obligListSub");
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="6" style="padding:18px;text-align:center;color:var(--neutral-stone)">No obligations match the current filter.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" style="padding:18px;text-align:center;color:var(--neutral-stone)">No obligations match the current filter.</td></tr>`;
     sub.textContent = `0 of ${allObligations.length}`;
     return;
   }
@@ -323,30 +317,28 @@ function renderTable(rows) {
   body.innerHTML = rows
     .map((o) => {
       const gapClass = (o.gaps ?? []).length > 0 ? "oblig-gap-row" : "";
-      const bindHtml = o.bind
-        ? `<span class="oblig-tag oblig-tag-bind" style="white-space:nowrap">${esc(o.bind)}</span>`
+      const regulatorHtml = o.regulator
+        ? `<span style="font-size:11.5px;font-weight:500">${esc(o.regulator)}</span>`
         : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
-      const famHtml =
-        o.family && o.family !== "OTHER"
-          ? `<button class="oblig-reg-btn" data-family="${esc(o.family)}">${esc(o.family)}</button>`
-          : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
+      const instrumentHtml = o.instrument
+        ? `<span style="font-size:11.5px">${esc(o.instrument)}</span>`
+        : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
       const linkedHtml =
         (o.linkedPolicies ?? []).length === 0
           ? '<span style="color:var(--neutral-stone);font-size:11px;">—</span>'
           : (o.linkedPolicies ?? [])
               .map(
                 (p) =>
-                  `<a href="policies.html?policy=${encodeURIComponent(p)}" class="oblig-tag oblig-policy-link">${esc(p)}</a>`,
+                  `<a href="policies.html?policy=${encodeURIComponent(p)}" class="oblig-tag oblig-policy-link" onclick="event.stopPropagation()">${esc(p)}</a>`,
               )
               .join(" ");
       const statusHtml = o.status
         ? `<span class="${statusClass(o.status)}">${esc(o.status)}</span>`
         : '<span style="color:var(--neutral-stone)">—</span>';
       return `
-      <tr class="${gapClass}">
-        <td><button class="oblig-id-btn" data-id="${esc(o.id)}">${esc(urnDisplay(o))}</button></td>
-        <td>${bindHtml}</td>
-        <td>${famHtml}</td>
+      <tr class="oblig-clickable-row ${gapClass}" data-id="${esc(o.id)}" style="cursor:pointer" title="View ${esc(o.id)}">
+        <td>${regulatorHtml}</td>
+        <td>${instrumentHtml}</td>
         <td>${esc(o.requirement)}</td>
         <td>${linkedHtml}</td>
         <td>${statusHtml}</td>
@@ -354,11 +346,8 @@ function renderTable(rows) {
     })
     .join("");
 
-  for (const btn of body.querySelectorAll(".oblig-id-btn")) {
-    btn.addEventListener("click", () => openDrawer(btn.dataset.id));
-  }
-  for (const btn of body.querySelectorAll(".oblig-reg-btn")) {
-    btn.addEventListener("click", () => drillToFamily(btn.dataset.family));
+  for (const row of body.querySelectorAll(".oblig-clickable-row")) {
+    row.addEventListener("click", () => openDrawer(row.dataset.id));
   }
 }
 

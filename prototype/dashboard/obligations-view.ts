@@ -56,12 +56,49 @@ function parseScopeCell(raw: string): string[] {
   return parts.length > 0 ? parts : ["universal"];
 }
 
+// ---------------------------------------------------------------------------
+// Regulator classifier — maps the derived family label to the issuing body.
+// ---------------------------------------------------------------------------
+
+const REGULATOR_MAP: Record<string, string> = {
+  "Joint Standard 2 of 2024": "PA / FSCA",
+  "Joint Standard 2 of 2020": "PA / FSCA",
+  "Joint Standard": "PA / FSCA",
+  "Banks Act + Regs": "SARB (PA)",
+  BCBS: "BCBS / Basel Committee",
+  "FIC Act": "FIC",
+  FATF: "FATF",
+  "Sanctions (UN/OFAC/HMT/EU/DTI)": "Sanctions (multi)",
+  FAIS: "FSCA",
+  "FSCA Conduct": "FSCA",
+  "FMA / Financial Markets Act": "FSCA",
+  JSE: "JSE",
+  POPIA: "Information Regulator",
+  "IFRS / IAS": "IASB",
+  "Companies Act / King IV": "CIPC",
+  ECTA: "DTPS",
+  "FATCA / CRS": "SARS / OECD",
+  "Tax (other)": "SARS",
+  "BCEA / LRA / EE": "Dept of Labour",
+  "PA Directive / Guidance": "SARB (PA)",
+  "PRECCA / Bribery": "NPA",
+  "Internal RAS / Objective": "Internal",
+};
+
+function pickRegulator(family: string): string {
+  return REGULATOR_MAP[family] ?? "Other";
+}
+
 interface ObligationDetail {
   id: string;
   citation: string;
   requirement: string;
   fulfilment: string;
   owner: string;
+  /** Derived: issuing regulatory body (e.g. "SARB (PA)", "FSCA", "FIC"). */
+  regulator: string;
+  /** Derived: specific published instrument (e.g. "BCBS 239", "Banks Act 94/1990", "Joint Standard 2 of 2024"). */
+  instrument: string;
   /** Derived: REGULATORY / OBJECTIVE / BOTH / "" — joined comma if both. */
   source: string;
   /** Derived: first matching bind class — empty when no rule matches. */
@@ -157,6 +194,77 @@ function pickSource(citation: string): string {
 function pickBind(citation: string): string {
   const binds = classifyBinds(citation);
   return binds[0] ?? "";
+}
+
+// ---------------------------------------------------------------------------
+// Published-instrument extractor.
+//
+// Goal: surface the specific named instrument (e.g. "BCBS 239",
+// "Banks Act 94/1990", "Joint Standard 2 of 2024", "PA Directive 1 of 2015")
+// rather than the broad family label.
+//
+// Strategy (in priority order):
+//   1. Inline [citation: X] marker — these are curated by Mira and are the
+//      most reliable; take the first semicolon-delimited token, strip section
+//      refs, and return it.
+//   2. Short-form citations that are already concise (≤ 40 chars before any
+//      section/paragraph ref): trim section refs and return as-is.
+//   3. Verbose free-text: take the first compound token before any " + ",
+//      " — ", or parenthetical expansion, then strip section refs.
+// ---------------------------------------------------------------------------
+
+// Strip section / paragraph / regulation suffixes: s.XX, §XX, ss.XX, Reg XX,
+// Regulation XX, Art XX, Principle XX — keep the base instrument identifier.
+function stripSectionRefs(s: string): string {
+  return s
+    .replace(/\s+(ss?\.|§|Reg(?:ulation)?s?\.?\s|Art(?:icle)?\s|Principle\s)\S.*$/i, "")
+    .replace(/\s*\([^)]*\)\s*$/, "") // trailing parenthetical like "(used as reference)"
+    .trim();
+}
+
+function pickInstrument(citation: string): string {
+  // Strip markdown formatting noise
+  let raw = citation
+    .replace(/\*\*/g, "")
+    .replace(/\*([^*]+)\*/g, "$1") // unwrap italic *text*
+    .replace(/`[^`]+`/g, "")
+    .trim();
+
+  // 1. Prefer an explicit [citation: X] inline marker if not [TBD]
+  const citationMatch = raw.match(/\[citation:\s*([^\]]+)\]/i);
+  if (citationMatch) {
+    const inner = (citationMatch[1] ?? "").trim();
+    if (inner && !/^TBC/i.test(inner)) {
+      const lead = (inner.split(";")[0] ?? inner).trim();
+      const cleaned = stripSectionRefs(lead);
+      if (cleaned.length >= 3) return cleaned;
+    }
+  }
+
+  // 2. Strip [citation: ...] blocks and everything from the first
+  //    parenthetical expansion marker onwards.
+  raw = raw.replace(/\s*\[citation:[^\]]*\]/gi, "").trim();
+  raw = raw.replace(/\s*\([^)]*\)\s*$/g, "").trim(); // trailing (...)
+
+  // 3. For compound citations (A + B), take only the first instrument.
+  raw = (raw.split(/\s+\+\s+/)[0] ?? raw).trim();
+
+  // 4. Truncate to the year boundary when one is present:
+  //    "SARB PA — Prudential Communication 18 of 2024 — Description" → keep to "2024"
+  //    "Banks Act 94/1990 + ..." → "Banks Act 94/1990" (already split above)
+  //    Falls back to em-dash strip for unnumbered instruments (e.g. "BCBS 239").
+  const yearBoundary = raw.match(/^(.*?\b\d{4}\b)/s);
+  if (yearBoundary) {
+    return (yearBoundary[1] ?? "")
+      .replace(/\s*\([^)]*$/, "") // strip unclosed leading parenthetical (e.g. "(revised July 2015")
+      .replace(/\s+—\s+$/, "") // trailing " — " left over after year
+      .replace(/[,;—\s]+$/, "")
+      .trim();
+  }
+
+  // 5. No year: strip em-dash explanatory suffix and section refs.
+  const cleaned = stripSectionRefs(raw.replace(/\s+—\s+.*$/s, "").trim());
+  return cleaned.replace(/[,;—\s]+$/, "").trim() || raw;
 }
 
 // ---------------------------------------------------------------------------
@@ -279,6 +387,8 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     const family = pickFamily(citation);
     const status = (cells[6] ?? "").replace(/\*\*/g, "").trim();
     const bind = pickBind(citation);
+    const regulator = pickRegulator(family);
+    const instrument = pickInstrument(citation);
     const linkedPolicies = parseLinkedPolicies(fulfilment);
     const gaps = detectGaps({ fulfilment, owner, family });
 
@@ -313,6 +423,8 @@ export function getObligationsView(repoRoot: string): ObligationsView {
       requirement: cells[3] ?? "",
       fulfilment,
       owner,
+      regulator,
+      instrument,
       source: pickSource(citation),
       bind,
       status,
