@@ -180,7 +180,6 @@ export interface AgentDeliverable {
   title: string; // humanised filename
 }
 
-
 export interface SubordinateMini {
   name: string;
   role: string;
