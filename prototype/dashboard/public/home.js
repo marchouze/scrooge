@@ -308,6 +308,14 @@
       href: "/markets/fx/desk.html",
     },
     {
+      id: "mkts-fx-risk",
+      category: "markets",
+      title: "FX risk view",
+      blurb:
+        "B-cluster · rejections · routing — risk-officer surface for the FX desk (Slice 5 of D-FX-SALES-TRADING-FRONTEND).",
+      href: "/markets/fx/risk.html",
+    },
+    {
       id: "mkts-desks",
       category: "markets",
       title: "Trading desks (other)",

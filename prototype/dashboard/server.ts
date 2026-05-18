@@ -97,6 +97,7 @@ import {
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { buildHeadroomView } from "./markets-fx-headroom";
 import { buildNpaView } from "./markets-fx-npa";
+import { buildRiskView } from "./markets-fx-risk";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
@@ -1659,6 +1660,28 @@ const server = Bun.serve({
       // project_product_lifecycle_npa_vs_engineering.md).
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 7.
       return jsonResponse(buildNpaView(eventStore));
+    }
+    if (url.pathname === "/api/markets/fx/risk" && req.method === "GET") {
+      // FX desk Slice 5 — risk-officer view: rejection feed + correspondent
+      // routing status. Replays the event store, folds CorrespondentRouting,
+      // collects OrderRejectedAtGateway events (newest-first, ≤50).
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+      return jsonResponse(buildRiskView(eventStore));
+    }
+    if (url.pathname === "/api/markets/fx/rejections" && req.method === "GET") {
+      // FX desk Slice 5 — rejection feed sub-slice. Convenience endpoint that
+      // returns only the rejections array + asOf from the full risk view.
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+      const view = buildRiskView(eventStore);
+      return jsonResponse({ rejections: view.rejections, asOf: view.asOf });
+    }
+    if (url.pathname === "/api/markets/fx/correspondent-routing" && req.method === "GET") {
+      // FX desk Slice 5 — correspondent-routing status endpoint (FX-scoped alias
+      // for /api/correspondent-routing; used by risk.js on the risk page).
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
+      //            D-FX-CORRESPONDENT-PAIR-NAMING (CEO-approved 2026-05-09).
+      const view = buildRiskView(eventStore);
+      return jsonResponse({ correspondentStatus: view.correspondentStatus, asOf: view.asOf });
     }
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.
