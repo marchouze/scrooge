@@ -1,9 +1,12 @@
 #!/usr/bin/env bun
 // scripts/gl/backfill-postings.ts
 //
-// Backfill script: replays all PaymentInitiated, PaymentSettled, and
-// SettlementInstructionReceived events from the event store and emits
-// SubLedgerPostingEmitted events for each, idempotently.
+// Backfill script: replays all payment and FX lifecycle events from the event
+// store and emits SubLedgerPostingEmitted events for each, idempotently.
+//
+// Engines run:
+//   - beaGlPostingEngine  → PaymentInitiated / PaymentSettled / SettlementInstructionReceived
+//   - beaFxPostingEngine  → FxTradeExecuted / FxPositionRevalued / FxSettlementConfirmed
 //
 // Usage:
 //   bun run gl:backfill-postings
@@ -20,6 +23,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { clock } from "../../platform/composition";
+import { beaFxPostingEngine } from "../../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../../runtime/types";
 
@@ -51,11 +55,18 @@ console.log(`\nGL Backfill Postings — ${dryRun ? "DRY RUN" : "LIVE"}`);
 console.log(`As-of: ${asOf}`);
 console.log("─".repeat(60));
 
-const result = await beaGlPostingEngine(ctx);
+const [glResult, fxResult] = await Promise.all([beaGlPostingEngine(ctx), beaFxPostingEngine(ctx)]);
 
-console.log(`\n${result.summary}`);
+console.log(`\n${glResult.summary}`);
+console.log(`${fxResult.summary}`);
 
-if (result.ok) {
+const ok = glResult.ok && fxResult.ok;
+const allErrors = [
+  ...((glResult as { errors?: string[] }).errors ?? []),
+  ...((fxResult as { errors?: string[] }).errors ?? []),
+];
+
+if (ok) {
   console.log("\n✓ Completed successfully");
   if (dryRun) {
     console.log("  (dry-run: no events were appended to the event store)");
@@ -63,8 +74,7 @@ if (result.ok) {
   process.exit(0);
 } else {
   console.error("\n✗ Completed with errors:");
-  const errors = (result as { errors?: string[] }).errors ?? [];
-  for (const err of errors) {
+  for (const err of allErrors) {
     console.error(`  - ${err}`);
   }
   process.exit(1);

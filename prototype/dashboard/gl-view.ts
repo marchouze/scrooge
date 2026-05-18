@@ -18,6 +18,7 @@ import { clock } from "../platform/composition";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import type { EventStore } from "../platform/event-store/store";
+import { beaFxPostingEngine } from "../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 
@@ -230,16 +231,20 @@ async function handleRunPostingEngine(): Promise<Response> {
       dryRun: false,
     };
 
-    const result = await beaGlPostingEngine(ctx);
-    const errors = (result as { errors?: string[] }).errors ?? [];
+    const [glResult, fxResult] = await Promise.all([
+      beaGlPostingEngine(ctx),
+      beaFxPostingEngine(ctx),
+    ]);
 
-    return jsonResponse({
-      ok: result.ok,
-      eventsEmitted: result.eventsEmitted,
-      skipped: 0,
-      errors,
-      summary: result.summary,
-    });
+    const ok = glResult.ok && fxResult.ok;
+    const eventsEmitted = glResult.eventsEmitted + fxResult.eventsEmitted;
+    const errors = [
+      ...((glResult as { errors?: string[] }).errors ?? []),
+      ...((fxResult as { errors?: string[] }).errors ?? []),
+    ];
+    const summary = `${glResult.summary}; ${fxResult.summary}`;
+
+    return jsonResponse({ ok, eventsEmitted, skipped: 0, errors, summary });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return jsonResponse(

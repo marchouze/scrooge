@@ -60,44 +60,45 @@ const SUBSCRIBED_TYPES = new Set<string>([
 // Idempotency helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Check whether a SubLedgerPostingEmitted has already been emitted for a
- * given (sourceEventId, postingType) pair. Prevents duplicate postings on
- * replay.
- */
-function postingAlreadyEmitted(sourceEventId: string, postingType: string): boolean {
+type IdempotencyKey = string;
+
+function buildPostedKeySet(): Set<IdempotencyKey> {
+  const keys = new Set<IdempotencyKey>();
   for (const e of eventStore.replay({ type: "SubLedgerPostingEmitted" })) {
-    const p = e.payload as {
-      sourceEventId?: unknown;
-      postingType?: unknown;
-    };
-    if (
-      typeof p.sourceEventId === "string" &&
-      p.sourceEventId === sourceEventId &&
-      typeof p.postingType === "string" &&
-      p.postingType === postingType
-    ) {
-      return true;
+    const p = e.payload as { sourceEventId?: unknown; postingType?: unknown };
+    if (typeof p.sourceEventId === "string" && typeof p.postingType === "string") {
+      keys.add(`${p.sourceEventId}:${p.postingType}`);
     }
   }
-  return false;
+  return keys;
 }
 
 // ---------------------------------------------------------------------------
-// Handler
+// Engine (named export for on-request / backfill callers)
 // ---------------------------------------------------------------------------
 
-const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
-  const triggering = ctx.trigger.triggeringEvents ?? [];
-  const relevant = triggering.filter((e) => SUBSCRIBED_TYPES.has(e.type));
+export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRunOutput> {
+  // On-request mode: replay all FX events from store.
+  // Event-driven mode: use only the triggering set.
+  const triggeringEvents = ctx.trigger.triggeringEvents ?? [];
+  const relevant =
+    triggeringEvents.length > 0
+      ? triggeringEvents.filter((e) => SUBSCRIBED_TYPES.has(e.type))
+      : [
+          ...eventStore.replay({ type: "FxTradeExecuted" }),
+          ...eventStore.replay({ type: "FxPositionRevalued" }),
+          ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+        ];
 
   if (relevant.length === 0) {
     return {
       eventsEmitted: 0,
-      summary: "no FX lifecycle events in triggering set; nothing to post",
+      summary: "FX posting engine: 0 posted, 0 skipped, 0 errors",
       ok: true,
     };
   }
+
+  const postedKeys = buildPostedKeySet();
 
   let eventsEmitted = 0;
   let skipped = 0;
@@ -107,7 +108,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     try {
       if (e.type === "FxTradeExecuted") {
         // PR-FX-001: initial recognition of the FX trade at trade date.
-        if (postingAlreadyEmitted(e.event_id, "trade-booking")) {
+        if (postedKeys.has(`${e.event_id}:trade-booking`)) {
           skipped += 1;
           continue;
         }
@@ -145,12 +146,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
               eventId: newEventId(),
             }),
           );
+          postedKeys.add(`${e.event_id}:trade-booking`);
           eventsEmitted += 1;
         }
       } else if (e.type === "FxPositionRevalued") {
         // PR-FX-002: daily FVTPL revaluation. Zero-delta → fxRevaluationJournals
         // returns [] and we skip emission (no-op revaluation).
-        if (postingAlreadyEmitted(e.event_id, "revaluation")) {
+        if (postedKeys.has(`${e.event_id}:revaluation`)) {
           skipped += 1;
           continue;
         }
@@ -185,12 +187,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
               eventId: newEventId(),
             }),
           );
+          postedKeys.add(`${e.event_id}:revaluation`);
           eventsEmitted += 1;
         }
       } else if (e.type === "FxSettlementConfirmed") {
         // PR-FX-003: T+2 settlement — derecognises receivable/payable,
         // recognises nostro cash legs, crystallises realised P&L.
-        if (postingAlreadyEmitted(e.event_id, "settlement")) {
+        if (postedKeys.has(`${e.event_id}:settlement`)) {
           skipped += 1;
           continue;
         }
@@ -223,6 +226,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
               eventId: newEventId(),
             }),
           );
+          postedKeys.add(`${e.event_id}:settlement`);
           eventsEmitted += 1;
         }
       }
@@ -237,14 +241,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   const ok = errors.length === 0;
-  const summary = [
-    `${relevant.length} FX events processed`,
-    `${eventsEmitted} SubLedgerPostingEmitted`,
-    skipped > 0 ? `${skipped} skipped (idempotent / zero-delta)` : null,
-    errors.length > 0 ? `${errors.length} errors` : null,
-  ]
-    .filter(Boolean)
-    .join("; ");
+  const summary = `FX posting engine: ${eventsEmitted} posted, ${skipped} skipped, ${errors.length} errors`;
 
   logger.info({ eventsEmitted, skipped, errors: errors.length }, "bea:fx-posting-engine — done");
 
@@ -254,6 +251,6 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     ok,
     ...(errors.length > 0 ? { errors } : {}),
   };
-};
+}
 
-export default handler;
+export default beaFxPostingEngine;
