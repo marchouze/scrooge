@@ -19,6 +19,7 @@ import { resolve } from "node:path";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import {
+  makeAgentDecision,
   makeAgentEscalation,
   makeRiskRaised,
   makeWorkstreamRegistered,
@@ -442,6 +443,73 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
           blockedBy: "A2.1 substrate scheduler not yet built",
           severity: "medium",
           routedTo: "Atlas",
+        },
+      }),
+    );
+    eventsEmitted++;
+
+    // -------------------------------------------------------------------------
+    // AgentDecision — classify the event bus as in-process-only.
+    //
+    // This is a genuine architectural decision Atlas makes on each run:
+    // the cross-process event bus is not yet built (M8 cloud lift); the
+    // handler operates on the in-process fan-out path only. Recording this
+    // as an AgentDecision makes the classification visible in the event log
+    // and consumable by Vera's audit pipelines #14/#15.
+    // -------------------------------------------------------------------------
+    eventStore.append(
+      makeAgentDecision({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: atlasEscActor,
+        citations: EVENT_CITATIONS,
+        payload: {
+          decisionId: `dec:atlas:bus-classification-${fmtDateUTC(ctx.asOf)}`,
+          decidedBy: "Atlas",
+          what: "Classify event-driven dispatch bus as in-process-only for build phase",
+          inScopeBy: "Atlas operating spec § 11 (Outputs) — platform-state event + report",
+          options: [
+            "in-process-only (no cross-process bus; fan-out within a single agent run)",
+            "cross-process bus via Redis/NATS (requires M8 cloud lift)",
+            "deferred: no classification until M8 design is finalised",
+          ],
+          chosen: "in-process-only (no cross-process bus; fan-out within a single agent run)",
+          rationale:
+            "The cross-process event bus is an M8 cloud-lift deliverable. " +
+            "For the build phase, in-process fan-out within a single agent run is " +
+            "sufficient and keeps the substrate minimal. Vera audit pipelines #14/#15 " +
+            "can consume AgentEscalation events emitted in-process; cross-process " +
+            "delivery is tracked as substrate gap and escalated separately.",
+        },
+      }),
+    );
+    eventsEmitted++;
+
+    // -------------------------------------------------------------------------
+    // WorkstreamRegistered — A2.1 substrate scheduler (dedicated entry).
+    //
+    // The generic gap-loop below emits a WorkstreamRegistered per gap line, but
+    // A2.1 warrants a first-class registration with a stable workstreamId so
+    // downstream subscribers (dashboard inFlight panel, Vera pipeline #15) can
+    // reference it by a canonical ID rather than a positional index.
+    // -------------------------------------------------------------------------
+    eventStore.append(
+      makeWorkstreamRegistered({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: atlasEscActor,
+        citations: EVENT_CITATIONS,
+        payload: {
+          workstreamId: "A2.1-substrate-scheduler",
+          title: "A2.1 — Substrate scheduler: Bun process emitting typed ScheduledTrigger events",
+          owner: "atlas",
+          status: "planned",
+          summary:
+            "Replace GitHub Actions cron with a Bun process that emits typed ScheduledTrigger " +
+            "events on the configured schedule. Eliminates GH Actions cron drift (observed " +
+            "silent drops + multi-hour delays). Cron workflow files become thin shims or " +
+            "retire entirely. Dependency: none; blocks cross-host scheduler reliability.",
+          scopedBy: "prototype/runtime/agents/atlas-substrate-state.ts — KNOWN_SUBSTRATE_GAPS[6]",
         },
       }),
     );
