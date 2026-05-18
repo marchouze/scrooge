@@ -34,6 +34,12 @@
 //   - EquityDividendAccrued         → PR-EQ-003: equityDividendJournals()
 //   - EquitySold                    → PR-EQ-004: equitySaleJournals()
 //
+//   IRD swap lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR C):
+//   - IrdSwapTradeExecuted          → PR-IRS-001: irdSwapTradeBookingJournals()
+//   - IrdSwapPositionRevalued       → PR-IRS-002: irdSwapRevaluationJournals()
+//   - IrdSwapCouponSettled          → PR-IRS-003: irdSwapCouponJournals()
+//   - IrdSwapTerminated             → PR-IRS-TERM: irdSwapTerminationJournals()
+//
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
 // projection (computeTrialBalance) consumes.
@@ -81,6 +87,12 @@ import {
   fxTradeBookingJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
 import {
+  irdSwapCouponJournals,
+  irdSwapRevaluationJournals,
+  irdSwapTerminationJournals,
+  irdSwapTradeBookingJournals,
+} from "../../platform/accounting/posting-rules/ird-swaps";
+import {
   paymentInitiatedJournals,
   paymentSettledJournals,
   settlementInstructionJournals,
@@ -104,6 +116,12 @@ import {
   type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
+import type {
+  IrdSwapCouponSettledPayload,
+  IrdSwapPositionRevaluedPayload,
+  IrdSwapTerminatedPayload,
+  IrdSwapTradeExecutedPayload,
+} from "../../platform/event-store/event-types/ird-accounting";
 import type {
   TradeAmendedPayload,
   TradeCancelledPayload,
@@ -155,6 +173,11 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "EquityPositionRevalued",
   "EquityDividendAccrued",
   "EquitySold",
+  // IRD swap lifecycle events (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR C)
+  "IrdSwapTradeExecuted",
+  "IrdSwapPositionRevalued",
+  "IrdSwapCouponSettled",
+  "IrdSwapTerminated",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -215,6 +238,11 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "EquityPositionRevalued" }),
     ...eventStore.replay({ type: "EquityDividendAccrued" }),
     ...eventStore.replay({ type: "EquitySold" }),
+    // IRD swap lifecycle events
+    ...eventStore.replay({ type: "IrdSwapTradeExecuted" }),
+    ...eventStore.replay({ type: "IrdSwapPositionRevalued" }),
+    ...eventStore.replay({ type: "IrdSwapCouponSettled" }),
+    ...eventStore.replay({ type: "IrdSwapTerminated" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -543,6 +571,46 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as EquitySoldPayload;
         legs = equitySaleJournals(payload);
+      } else if (e.type === "IrdSwapTradeExecuted") {
+        // PR-IRS-001: Initial recognition — IFRS 9 §4.1.4
+        postingType = "ird-swap-trade-booking";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as IrdSwapTradeExecutedPayload;
+        legs = irdSwapTradeBookingJournals(payload);
+      } else if (e.type === "IrdSwapPositionRevalued") {
+        // PR-IRS-002: FVTPL NPV re-measurement — IFRS 9 §5.7.1
+        postingType = "ird-swap-revaluation";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as IrdSwapPositionRevaluedPayload;
+        legs = irdSwapRevaluationJournals(payload);
+      } else if (e.type === "IrdSwapCouponSettled") {
+        // PR-IRS-003: Net coupon cash settlement
+        postingType = "ird-swap-coupon-settlement";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as IrdSwapCouponSettledPayload;
+        legs = irdSwapCouponJournals(payload);
+      } else if (e.type === "IrdSwapTerminated") {
+        // PR-IRS-TERM: Derecognition on termination — IFRS 9 §3.2.3
+        postingType = "ird-swap-termination";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as IrdSwapTerminatedPayload;
+        legs = irdSwapTerminationJournals(payload);
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above.
         continue;
@@ -586,7 +654,11 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
               | "equity-trade-booking"
               | "equity-revaluation"
               | "equity-dividend-accrual"
-              | "equity-sale",
+              | "equity-sale"
+              | "ird-swap-trade-booking"
+              | "ird-swap-revaluation"
+              | "ird-swap-coupon-settlement"
+              | "ird-swap-termination",
             legs,
             postedAt: ctx.asOf,
           },
