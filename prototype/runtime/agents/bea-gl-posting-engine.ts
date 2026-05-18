@@ -28,6 +28,12 @@
 //   - BondMatured                   → PR-BOND-004: bondMaturityJournals()
 //   - BondSold                      → PR-BOND-005: bondSaleJournals()
 //
+//   Equity lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR B):
+//   - EquityTradeExecuted           → PR-EQ-001: equityTradeFvtplJournals() / equityTradeFvociJournals()
+//   - EquityPositionRevalued        → PR-EQ-002: equityRevaluationJournals()
+//   - EquityDividendAccrued         → PR-EQ-003: equityDividendJournals()
+//   - EquitySold                    → PR-EQ-004: equitySaleJournals()
+//
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
 // projection (computeTrialBalance) consumes.
@@ -61,6 +67,12 @@ import {
   bondTradingBookJournals,
 } from "../../platform/accounting/posting-rules/bonds";
 import {
+  equityDividendJournals,
+  equityRevaluationJournals,
+  equitySaleJournals,
+  equityTradeBookingJournals,
+} from "../../platform/accounting/posting-rules/equities";
+import {
   fxAmendmentJournals,
   fxCancellationJournals,
   fxRevaluationJournals,
@@ -82,6 +94,10 @@ import type {
   BondSoldPayload,
   BondTradeExecutedPayload,
 } from "../../platform/event-store/event-types/bond-accounting";
+import type {
+  EquityDividendAccruedPayload,
+  EquitySoldPayload,
+} from "../../platform/event-store/event-types/equity-accounting";
 import {
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,
@@ -97,6 +113,10 @@ import type {
   PaymentSettledPayload,
   SettlementInstructionReceivedPayload,
 } from "../../platform/event-store/event-types/payments";
+import type {
+  EquityPositionRevaluedPayload,
+  EquityTradeExecutedPayload,
+} from "../../platform/markets/cdm/equity";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -130,6 +150,11 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "BondPositionRevalued",
   "BondMatured",
   "BondSold",
+  // Equity lifecycle events (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR B)
+  "EquityTradeExecuted",
+  "EquityPositionRevalued",
+  "EquityDividendAccrued",
+  "EquitySold",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -185,6 +210,11 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "BondPositionRevalued" }),
     ...eventStore.replay({ type: "BondMatured" }),
     ...eventStore.replay({ type: "BondSold" }),
+    // Equity lifecycle events
+    ...eventStore.replay({ type: "EquityTradeExecuted" }),
+    ...eventStore.replay({ type: "EquityPositionRevalued" }),
+    ...eventStore.replay({ type: "EquityDividendAccrued" }),
+    ...eventStore.replay({ type: "EquitySold" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -473,6 +503,46 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         const payload = e.payload as BondSoldPayload;
         // Portfolio comes from position state; default trading-book for sales
         legs = bondSaleJournals(payload, "trading-book");
+      } else if (e.type === "EquityTradeExecuted") {
+        // PR-EQ-001: Initial recognition — IFRS 9 §4.1.4 (FVTPL via CDM trading-book)
+        postingType = "equity-trade-booking";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as EquityTradeExecutedPayload;
+        legs = equityTradeBookingJournals(payload);
+      } else if (e.type === "EquityPositionRevalued") {
+        // PR-EQ-002: FVTPL → P&L (§5.7.1); FVOCI → OCI reserve (§5.7.5)
+        postingType = "equity-revaluation";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as EquityPositionRevaluedPayload;
+        legs = equityRevaluationJournals(payload);
+      } else if (e.type === "EquityDividendAccrued") {
+        // PR-EQ-003: Dividend accrual — IFRS 9 §5.7.1A; IAS 32 §35
+        postingType = "equity-dividend-accrual";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as EquityDividendAccruedPayload;
+        legs = equityDividendJournals(payload);
+      } else if (e.type === "EquitySold") {
+        // PR-EQ-004: Derecognition on sale — IFRS 9 §3.2.3; FVOCI no-recycling §5.7.5
+        postingType = "equity-sale";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as EquitySoldPayload;
+        legs = equitySaleJournals(payload);
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above.
         continue;
@@ -512,7 +582,11 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
               | "bond-interest-accrual"
               | "bond-revaluation"
               | "bond-maturity"
-              | "bond-sale",
+              | "bond-sale"
+              | "equity-trade-booking"
+              | "equity-revaluation"
+              | "equity-dividend-accrual"
+              | "equity-sale",
             legs,
             postedAt: ctx.asOf,
           },

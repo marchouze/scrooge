@@ -76,6 +76,8 @@ export { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
 export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
+// D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
+export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -85,6 +87,7 @@ export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
+import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -163,6 +166,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...BOND_ACCOUNTING_EVENT_TYPES_REGISTRY,
+  // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
+  // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+  ...EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
