@@ -217,7 +217,11 @@ export function buildGlView(
   // Build lookup map for source events referenced by SubLedgerPostingEmitted
   const sourceEventMap = new Map<string, Record<string, unknown>>();
   for (const e of events) {
-    if (e.type === "FxTradeExecuted" || e.type === "FxPositionRevalued" || e.type === "FxSettlementConfirmed") {
+    if (
+      e.type === "FxTradeExecuted" ||
+      e.type === "FxPositionRevalued" ||
+      e.type === "FxSettlementConfirmed"
+    ) {
       sourceEventMap.set(e.event_id, e.payload as Record<string, unknown>);
     }
   }
