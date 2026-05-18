@@ -23,7 +23,6 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import { buildFxSummaryView } from "../dashboard/markets-fx-summary";
-import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import {
   makeOrderApprovedAtGateway,
   makeOrderRejectedAtGateway,
@@ -32,6 +31,7 @@ import {
 } from "../platform/event-store/event-types/trading";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
+import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -88,7 +88,7 @@ function appendFxTrade(store: EventStore, counterpartyId: string): void {
       actor: KAI_ACTOR,
       citations: CITATIONS,
       payload: {
-        tradeId: { id: `trade:${Math.random().toString(36).slice(2)}`, source: "test" },
+        tradeId: { scheme: "internal", value: `trade:${Math.random().toString(36).slice(2)}` },
         productTaxonomy: "FX-spot",
         currencyPair: { base: "USD", quote: "ZAR" },
         side: "buy",
@@ -99,12 +99,16 @@ function appendFxTrade(store: EventStore, counterpartyId: string): void {
             receiveCurrency: "ZAR",
             notional: { currency: "USD", amountMinor: 100_000_00 }, // 1,000,000 USD (minor)
             counterNotional: { currency: "ZAR", amountMinor: 18_500_000_00 }, // ZAR minor
-            rate: { value: 18.5, currency: "ZAR" },
-            settlementDate: "2026-05-20",
+            rate: { currency: "ZAR", amount: 18.5 },
+            settlementDate: { iso: "2026-05-20", calendar: "JIHCAL" },
           },
         ],
-        tradeDate: "2026-05-18",
-        counterparty: { partyId: counterpartyId, name: `Counterparty ${counterpartyId}` },
+        tradeDate: { iso: "2026-05-18", calendar: "JIHCAL" },
+        counterparty: {
+          partyId: counterpartyId,
+          name: `Counterparty ${counterpartyId}`,
+          role: "counterparty",
+        },
         venue: "OTC",
         trader: "trader:kai",
         bookId: "book:fx-spot-1",

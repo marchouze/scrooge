@@ -110,7 +110,10 @@ export function buildFxSummaryView(store: Pick<EventStore, "replay">): FxSummary
   const b3UtilisationPct = b3Row?.utilisationPct ?? 0;
   const b3RagStatus: "green" | "amber" | "red" = b3Row?.ragStatus ?? "green";
 
-  const asOf = events.length > 0 ? (events[events.length - 1]?.as_of ?? new Date().toISOString()) : new Date().toISOString();
+  const asOf =
+    events.length > 0
+      ? (events[events.length - 1]?.as_of ?? new Date().toISOString())
+      : new Date().toISOString();
 
   return {
     rfqCount,

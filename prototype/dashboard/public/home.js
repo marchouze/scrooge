@@ -694,12 +694,14 @@
     if (fxSummary) {
       const trades = safeNum(fxSummary.tradeCount);
       const rfqs = safeNum(fxSummary.rfqCount);
-      const b3Pct = typeof fxSummary.b3UtilisationPct === "number"
-        ? Math.round(fxSummary.b3UtilisationPct * 100)
-        : 0;
+      const b3Pct =
+        typeof fxSummary.b3UtilisationPct === "number"
+          ? Math.round(fxSummary.b3UtilisationPct * 100)
+          : 0;
       const b3Rag = fxSummary.b3RagStatus ?? "green";
       const b3Tone = b3Rag === "red" ? "error" : b3Rag === "amber" ? "warn" : "success";
-      const tone = trades > 0 ? (b3Rag === "red" ? "error" : b3Rag === "amber" ? "warn" : "default") : "muted";
+      const tone =
+        trades > 0 ? (b3Rag === "red" ? "error" : b3Rag === "amber" ? "warn" : "default") : "muted";
       counts["mkts-fx-desk"] = {
         text: String(trades),
         tone,
