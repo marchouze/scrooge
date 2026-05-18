@@ -789,49 +789,6 @@ function handleRmsCatalogue(): Response {
   });
 }
 
-// Stream the raw markdown body for a single Owner-Inbox deliverable so the
-// home-dashboard inline-preview modal can render it without leaving the
-// page. Authored by Anya (Data / analytics engineer) as part of the Owner
-// Inbox feed polish; not a substitute for the decision-brief flow.
-//
-// Safety:
-//   • Filename must be exactly a basename (no `/`, no `..`).
-//   • Filename must end in `.md`.
-//   • Filename must be present in the current `cachedState.ownerInboxFeed`
-//     allow-list — this prevents directory traversal and keeps the
-//     surface bounded to items already exposed via /api/state.
-function handleOwnerInboxFetch(filename: string): Response {
-  // Reject path-segment chars outright. The allow-list check below would
-  // catch traversal, but failing fast keeps the response semantics tight.
-  if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
-    return jsonResponse({ error: "invalid filename" }, 400);
-  }
-  if (!filename.toLowerCase().endsWith(".md")) {
-    return jsonResponse({ error: "only .md files are previewable" }, 400);
-  }
-  // Allow-list check against the live feed.
-  const allowed = cachedState.ownerInboxFeed.some((i) => i.filename === filename);
-  if (!allowed) {
-    return jsonResponse({ error: `not in current Owner Inbox feed: ${filename}` }, 404);
-  }
-  const filePath = join(REPO_ROOT, "archive", "owner-inbox", filename);
-  if (!existsSync(filePath)) {
-    return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
-  }
-  let content: string;
-  try {
-    content = readFileSync(filePath, "utf8");
-  } catch (err) {
-    return jsonResponse(
-      { error: `failed to read file: ${err instanceof Error ? err.message : String(err)}` },
-      500,
-    );
-  }
-  return new Response(content, {
-    headers: { "Content-Type": "text/markdown; charset=utf-8" },
-  });
-}
-
 // Stream the raw markdown body for a single procedure file under
 // `Procedures/by-policy/` so the procedures-page inline-preview modal can
 // render it without leaving the page. Mirrors the Owner Inbox endpoint
@@ -1060,20 +1017,6 @@ const server = Bun.serve({
       // event-store-derived projections → build phase resolves to
       // simulated-only; licence-day flips automatically.
       return jsonResponse({ ...cachedState, pageProvenance: eventDerivedPageProvenance() });
-    }
-    // Owner-Inbox markdown body fetch for the inline-preview modal on the
-    // home dashboard. Polish-layer endpoint authored by Anya
-    // (Data / analytics engineer); does not mutate state and does not
-    // change the OwnerInboxItem shape. Returns the raw markdown body for a
-    // *single* file under `Owner Inbox/` (top-level only — `actioned/`
-    // children are not previewable). Filename must be a basename that
-    // matches a current `state.ownerInboxFeed` entry — this prevents path
-    // traversal and avoids leaking files outside the curated feed.
-    {
-      const oiMatch = url.pathname.match(/^\/api\/owner-inbox\/(.+)$/);
-      if (oiMatch?.[1] && req.method === "GET") {
-        return handleOwnerInboxFetch(decodeURIComponent(oiMatch[1]));
-      }
     }
     // Procedure markdown body fetch for the procedures-page inline-preview
     // modal. Mirrors the Owner Inbox endpoint above; allow-list bound to

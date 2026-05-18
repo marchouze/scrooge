@@ -35,7 +35,6 @@ import {
 } from "../../dashboard/derive";
 import type { DashboardState, OpenDecision, ResolvedDecision } from "../../dashboard/types";
 import { EventStore } from "../event-store/store";
-import { isTestFixtureId, loadBaseline } from "./decisions-baseline";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 function findRepoRoot(start: string): string {
@@ -252,27 +251,10 @@ function assertOpenDecisionsHaveBackingSource(ctx: AssertionContext): {
     }
   }
 
-  // D-DECISIONS-FRAMEWORK-REDESIGN Slice B: re-promoted to `fail`, but
-  // grandfathered through the shared baseline file at
-  // `prototype/scripts/recon/baselines/decisions-events-only-baseline.txt`
-  // (same set as the dedicated recon — Owner-Inbox refs share the same
-  // Slice-C-pending decisionIds). Slice C empties the baseline.
-  const openIds = new Set(state.decisionsOpen.map((d) => d.id));
-  const resolvedIds = new Set(state.decisionsResolved.map((d) => d.id));
-  const ownerInboxBaseline = loadBaseline(REPO_ROOT, "decisions-events-only");
-  for (const item of state.ownerInboxFeed) {
-    if (!item.decisionRequired) continue;
-    if (!item.decisionId) continue;
-    if (isTestFixtureId(item.decisionId)) continue;
-    asserted++;
-    if (!openIds.has(item.decisionId) && !resolvedIds.has(item.decisionId)) {
-      violations.push({
-        subject: item.decisionId,
-        message: `Owner Inbox file ${item.path} declares decision-id ${item.decisionId} but it appears in neither decisionsOpen nor decisionsResolved. D-DECISIONS-FRAMEWORK-REDESIGN Slice C backfill will close this gap.`,
-        severity: ownerInboxBaseline.has(item.decisionId) ? "warn" : "fail",
-      });
-    }
-  }
+  // D-RMS-PHASE-4 (2026-05-18): ownerInboxFeed removed from DashboardState.
+  // The Owner Inbox markdown parser has been retired. Decisions are now
+  // sourced exclusively from Decision events. The per-item check below is
+  // no longer necessary.
 
   return { asserted, violations };
 }

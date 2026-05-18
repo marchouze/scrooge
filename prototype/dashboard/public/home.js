@@ -451,11 +451,12 @@
           },
         ],
       };
-      const inboxLen = state.ownerInboxFeed?.length || 0;
+      // D-RMS-PHASE-4: ownerInboxFeed retired. Documents tile badge uses
+      // a placeholder since the count now comes from the RMS Document register.
       counts["owner-inbox"] = {
-        text: String(inboxLen),
+        text: "RMS",
         tone: "default",
-        aria: `${inboxLen} inbox items`,
+        aria: "Documents — see RMS register",
       };
 
       const m = state.bank?.metrics ? state.bank.metrics : null;

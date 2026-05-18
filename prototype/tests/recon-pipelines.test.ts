@@ -50,7 +50,6 @@ function fixtureState(
     principles: [],
     directReports: [],
     openSeats: [],
-    ownerInboxFeed: [],
     findings: [],
     agents: [],
     policies: [],
