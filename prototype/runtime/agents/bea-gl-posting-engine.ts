@@ -39,21 +39,21 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import {
-  paymentInitiatedJournals,
-  paymentSettledJournals,
-  settlementInstructionJournals,
-} from "../../platform/accounting/posting-rules/payments";
-import {
   fxRevaluationJournals,
   fxSettlementJournals,
   fxTradeBookingJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
+import {
+  paymentInitiatedJournals,
+  paymentSettledJournals,
+  settlementInstructionJournals,
+} from "../../platform/accounting/posting-rules/payments";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import {
-  makeSubLedgerPostingEmitted,
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,
+  makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
 import type {
   PaymentInitiatedPayload,

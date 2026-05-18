@@ -43,16 +43,16 @@ import { EventStore } from "../../platform/event-store/store";
 // ---------------------------------------------------------------------------
 
 import {
+  FX_ACCOUNTS,
+  fxRevaluationJournals,
+  fxSettlementJournals,
+  fxTradeBookingJournals,
+} from "../../platform/accounting/posting-rules/fx-spot";
+import {
   paymentInitiatedJournals,
   paymentSettledJournals,
   settlementInstructionJournals,
 } from "../../platform/accounting/posting-rules/payments";
-import {
-  fxRevaluationJournals,
-  fxSettlementJournals,
-  fxTradeBookingJournals,
-  FX_ACCOUNTS,
-} from "../../platform/accounting/posting-rules/fx-spot";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:bea:gl-posting-engine" };
@@ -293,7 +293,7 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     legKind: "near" as const,
     payCurrency: "ZAR",
     receiveCurrency: "USD",
-    notional: { amountMinor: 1800000_00, currency: "ZAR" },   // ZAR 1,800,000.00
+    notional: { amountMinor: 1800000_00, currency: "ZAR" }, // ZAR 1,800,000.00
     counterNotional: { amountMinor: 100000_00, currency: "USD" }, // USD 100,000.00
     rate: { value: 18.0, currency: "ZAR" },
     settlementDate: { date: "2026-05-20", convention: "T+2", calendar: "SAST" },
@@ -313,8 +313,12 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     // Balance check per currency
     for (const ccy of ["ZAR", "USD"]) {
       const ccyLegs = legs.filter((l) => l.currency === ccy);
-      const debit = ccyLegs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-      const credit = ccyLegs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+      const debit = ccyLegs
+        .filter((l) => l.debitCredit === "debit")
+        .reduce((s, l) => s + l.amountMinor, 0);
+      const credit = ccyLegs
+        .filter((l) => l.debitCredit === "credit")
+        .reduce((s, l) => s + l.amountMinor, 0);
       expect(debit).toBe(credit);
     }
   });
@@ -326,7 +330,7 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
       bookRate: 18.0,
       revalRate: 18.5,
       notionalBaseMinor: 1800000_00,
-      unrealisedPnlZarMinor: 50000_00,  // ZAR 500 gain
+      unrealisedPnlZarMinor: 50000_00, // ZAR 500 gain
       revaluedAt: "2026-05-18T17:00:00Z",
       rateSource: "stub",
     };
@@ -334,14 +338,20 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     expect(legs).toHaveLength(2);
 
     // Balance in ZAR
-    const debit = legs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+    const debit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const credit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     expect(debit).toBe(50000_00);
 
     // Gain: Dr Receivable ZAR, Cr Unrealised P&L
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
-    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe(FX_ACCOUNTS.UNREALISED_PNL);
+    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe(
+      FX_ACCOUNTS.UNREALISED_PNL,
+    );
   });
 
   it("PR-FX-002 (loss): FxPositionRevalued → revaluation, Dr UnrealisedPnL / Cr Receivable", () => {
@@ -351,7 +361,7 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
       bookRate: 18.0,
       revalRate: 17.5,
       notionalBaseMinor: 1800000_00,
-      unrealisedPnlZarMinor: -25000_00,  // ZAR 250 loss
+      unrealisedPnlZarMinor: -25000_00, // ZAR 250 loss
       revaluedAt: "2026-05-18T17:00:00Z",
       rateSource: "stub",
     };
@@ -359,14 +369,20 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     expect(legs).toHaveLength(2);
 
     // Balance in ZAR
-    const debit = legs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+    const debit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const credit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     expect(debit).toBe(25000_00);
 
     // Loss: Dr Unrealised P&L, Cr Receivable ZAR
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe(FX_ACCOUNTS.UNREALISED_PNL);
-    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe(FX_ACCOUNTS.RECEIVABLE_ZAR);
+    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe(
+      FX_ACCOUNTS.RECEIVABLE_ZAR,
+    );
   });
 
   it("PR-FX-002 (zero delta): FxPositionRevalued → returns empty legs", () => {
@@ -389,12 +405,12 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
       tradeId: "FX-TRADE-001",
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
-      settledBaseCurrencyMinor: 1800000_00,   // bank received ZAR 1,800,000
-      settledQuoteCurrencyMinor: -100000_00,  // bank paid USD 100,000
+      settledBaseCurrencyMinor: 1800000_00, // bank received ZAR 1,800,000
+      settledQuoteCurrencyMinor: -100000_00, // bank paid USD 100,000
       settledAt: "2026-05-20T10:00:00Z",
       nostroAccountBase: FX_ACCOUNTS.NOSTRO_ZAR,
       nostroAccountQuote: FX_ACCOUNTS.NOSTRO_USD,
-      realisedPnlZarMinor: 5000_00,           // ZAR 50 gain
+      realisedPnlZarMinor: 5000_00, // ZAR 50 gain
     };
     const legs = fxSettlementJournals(settlementPayload);
     // Expect: ZAR legs (receive + P&L) + USD legs
@@ -404,8 +420,12 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     const currencies = [...new Set(legs.map((l) => l.currency))];
     for (const ccy of currencies) {
       const ccyLegs = legs.filter((l) => l.currency === ccy);
-      const debit = ccyLegs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-      const credit = ccyLegs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+      const debit = ccyLegs
+        .filter((l) => l.debitCredit === "debit")
+        .reduce((s, l) => s + l.amountMinor, 0);
+      const credit = ccyLegs
+        .filter((l) => l.debitCredit === "credit")
+        .reduce((s, l) => s + l.amountMinor, 0);
       expect(debit).toBe(credit);
     }
   });
