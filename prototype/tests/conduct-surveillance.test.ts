@@ -37,7 +37,7 @@ import {
 import { run as runRecon } from "../platform/recon/conduct-surveillance-coverage";
 import {
   SCENARIO_ID,
-  SCENARIO_PROVENANCE,
+  type SCENARIO_PROVENANCE,
   buildConductSurveillanceScenarioEvents,
   runConductSurveillanceScenario,
 } from "../scenarios/12-conduct-surveillance";
@@ -396,9 +396,7 @@ describe("recon:conduct-surveillance-coverage — missing category", () => {
     expect(result.ok).toBe(false);
     const failViolations = result.violations.filter((v) => v.severity === "fail");
     expect(failViolations.length).toBeGreaterThan(0);
-    expect(
-      failViolations.some((v) => v.subject.includes("market-manipulation-alert")),
-    ).toBe(true);
+    expect(failViolations.some((v) => v.subject.includes("market-manipulation-alert"))).toBe(true);
   });
 });
 

@@ -32,10 +32,10 @@
 import { unlinkSync } from "node:fs";
 
 import { BANK_ZA_001, newEventId } from "@platform/core/types";
+import { makeConductEventRecorded } from "@platform/event-store/event-types/conduct";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
 import { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
-import { makeConductEventRecorded } from "@platform/event-store/event-types/conduct";
 import { logger } from "@platform/observability/logger";
 
 // ---------------------------------------------------------------------------

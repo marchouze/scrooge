@@ -156,11 +156,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!categoriesPresent.has(required)) {
       violations.push({
         subject: `ConductEventRecorded:category:${required}`,
-        message:
-          `No ConductEventRecorded with category="${required}" found. ` +
-          `The conduct surveillance register must cover all mandatory ` +
-          `observation categories (FMA §§78–82; D-MARKET-CONDUCT). ` +
-          `Add a scenario event with category="${required}".`,
+        message: `No ConductEventRecorded with category="${required}" found. The conduct surveillance register must cover all mandatory observation categories (FMA §§78–82; D-MARKET-CONDUCT). Add a scenario event with category="${required}".`,
         severity: "fail",
       });
     }
@@ -179,11 +175,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!statusesPresent.has(required)) {
       violations.push({
         subject: `ConductEventRecorded:status:${required}`,
-        message:
-          `No ConductEventRecorded with status="${required}" found. ` +
-          `The scenario seed must exercise the full observation lifecycle ` +
-          `(flag-raised → under-investigation → resolved | escalated). ` +
-          `Add a ConductEventRecorded event with status="${required}".`,
+        message: `No ConductEventRecorded with status="${required}" found. The scenario seed must exercise the full observation lifecycle (flag-raised → under-investigation → resolved | escalated). Add a ConductEventRecorded event with status="${required}".`,
         severity: "fail",
       });
     }
@@ -198,11 +190,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!hasCitation) {
       violations.push({
         subject: `ConductEventRecorded:${e.event_id}`,
-        message:
-          `ConductEventRecorded event ${e.event_id} does not cite ` +
-          `D-MARKET-CONDUCT, FINANCIAL-MARKETS-ACT, or FSRA. ` +
-          `Principle 2 requires every conduct observation to trace to its ` +
-          `regulatory source. Add the required citation.`,
+        message: `ConductEventRecorded event ${e.event_id} does not cite D-MARKET-CONDUCT, FINANCIAL-MARKETS-ACT, or FSRA. Principle 2 requires every conduct observation to trace to its regulatory source. Add the required citation.`,
         severity: "fail",
       });
     }
@@ -223,10 +211,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       if (typeof value !== "string" || value.length === 0) {
         violations.push({
           subject: `ConductEventRecorded:${e.event_id}:${field}`,
-          message:
-            `Required field \`${field}\` is missing or empty on ` +
-            `ConductEventRecorded event ${e.event_id}. ` +
-            `Payload may be from an older schema version — re-emit via the scenario seed.`,
+          message: `Required field \`${field}\` is missing or empty on ConductEventRecorded event ${e.event_id}. Payload may be from an older schema version — re-emit via the scenario seed.`,
           severity: "fail",
         });
       }
@@ -241,10 +226,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!Array.isArray(e.payload.tradeIds)) {
       violations.push({
         subject: `ConductEventRecorded:${e.event_id}:tradeIds`,
-        message:
-          `Required field \`tradeIds\` is not an array on ` +
-          `ConductEventRecorded event ${e.event_id}. ` +
-          `Must be an array (may be empty for model-raised alerts).`,
+        message: `Required field \`tradeIds\` is not an array on ConductEventRecorded event ${e.event_id}. Must be an array (may be empty for model-raised alerts).`,
         severity: "fail",
       });
     }
