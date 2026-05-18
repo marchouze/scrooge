@@ -15,6 +15,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
+import { deterministicAggregateId, makeAggregateLabel } from "../aggregate";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -451,6 +452,7 @@ export function makeAgentBriefIssued(args: {
   payload: AgentBriefIssuedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("brief", args.payload.briefId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "AgentBriefIssued",
@@ -459,6 +461,8 @@ export function makeAgentBriefIssued(args: {
     actor: args.actor,
     citations: args.citations,
     payload: agentBriefIssuedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -483,6 +487,7 @@ export function makeAgentRunStarted(args: {
   payload: AgentRunStartedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("agent-run", args.payload.runId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "AgentRunStarted",
@@ -491,6 +496,8 @@ export function makeAgentRunStarted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: agentRunStartedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -526,6 +533,7 @@ export function makeAgentRunCompleted(args: {
   payload: AgentRunCompletedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("agent-run", args.payload.runId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "AgentRunCompleted",
@@ -534,6 +542,8 @@ export function makeAgentRunCompleted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: agentRunCompletedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 

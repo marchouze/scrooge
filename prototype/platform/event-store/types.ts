@@ -43,6 +43,12 @@ export const eventSchema = z.object({
   // legacy untagged appends; the store's append() enforces presence when
   // the substrate-active flag is true.
   provenance: provenanceTagSchema.optional(),
+  // Aggregate identity — groups all events that belong to the same business
+  // object (trade, decision, KYC case, …). Optional so existing emitters
+  // need not change immediately; the backfill script derives deterministic
+  // UUID v5s for historical events.
+  aggregateId: z.string().uuid().optional(),
+  aggregateLabel: z.string().min(1).optional(), // "<type>:<natural-id>"
 });
 
 export type Event = z.infer<typeof eventSchema>;

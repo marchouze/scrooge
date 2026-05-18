@@ -27,6 +27,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
+import { deterministicAggregateId, makeAggregateLabel } from "../aggregate";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -100,6 +101,7 @@ export function makeKYCIdentityCollected(args: {
   payload: KYCIdentityCollectedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCIdentityCollected",
@@ -108,6 +110,8 @@ export function makeKYCIdentityCollected(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycIdentityCollectedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -133,6 +137,7 @@ export function makeKYCIdentityVerified(args: {
   payload: KYCIdentityVerifiedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCIdentityVerified",
@@ -141,6 +146,8 @@ export function makeKYCIdentityVerified(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycIdentityVerifiedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -168,6 +175,7 @@ export function makeKYCIdentityVerificationFailed(args: {
   payload: KYCIdentityVerificationFailedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCIdentityVerificationFailed",
@@ -176,6 +184,8 @@ export function makeKYCIdentityVerificationFailed(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycIdentityVerificationFailedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -204,6 +214,7 @@ export function makeKYCSanctionsPEPScreened(args: {
   payload: KYCSanctionsPEPScreenedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCSanctionsPEPScreened",
@@ -212,6 +223,8 @@ export function makeKYCSanctionsPEPScreened(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycSanctionsPEPScreenedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -237,6 +250,7 @@ export function makeKYCUBOResolved(args: {
   payload: KYCUBOResolvedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCUBOResolved",
@@ -245,6 +259,8 @@ export function makeKYCUBOResolved(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycUBOResolvedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -271,6 +287,7 @@ export function makeKYCRiskRated(args: {
   payload: KYCRiskRatedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCRiskRated",
@@ -279,6 +296,8 @@ export function makeKYCRiskRated(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycRiskRatedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -310,6 +329,7 @@ export function makeKYCEDDInitiated(args: {
   payload: KYCEDDInitiatedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCEDDInitiated",
@@ -318,6 +338,8 @@ export function makeKYCEDDInitiated(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycEDDInitiatedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -344,6 +366,7 @@ export function makeKYCEDDCompleted(args: {
   payload: KYCEDDCompletedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCEDDCompleted",
@@ -352,6 +375,8 @@ export function makeKYCEDDCompleted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycEDDCompletedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -378,6 +403,7 @@ export function makeKYCDecisionMade(args: {
   payload: KYCDecisionMadePayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCDecisionMade",
@@ -386,6 +412,8 @@ export function makeKYCDecisionMade(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycDecisionMadePayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -424,6 +452,7 @@ export function makeClientAccepted(args: {
   payload: ClientAcceptedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "ClientAccepted",
@@ -432,6 +461,8 @@ export function makeClientAccepted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: clientAcceptedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -456,6 +487,7 @@ export function makeClientRejected(args: {
   payload: ClientRejectedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.candidateId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "ClientRejected",
@@ -464,6 +496,8 @@ export function makeClientRejected(args: {
     actor: args.actor,
     citations: args.citations,
     payload: clientRejectedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -492,6 +526,7 @@ export function makeLawfulProcessingRegistered(args: {
   payload: LawfulProcessingRegisteredPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.clientId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "LawfulProcessingRegistered",
@@ -500,6 +535,8 @@ export function makeLawfulProcessingRegistered(args: {
     actor: args.actor,
     citations: args.citations,
     payload: lawfulProcessingRegisteredPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -526,6 +563,7 @@ export function makeKYCRefreshScheduled(args: {
   payload: KYCRefreshScheduledPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.clientId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCRefreshScheduled",
@@ -534,6 +572,8 @@ export function makeKYCRefreshScheduled(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycRefreshScheduledPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -559,6 +599,7 @@ export function makeKYCRefreshCompleted(args: {
   payload: KYCRefreshCompletedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.clientId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCRefreshCompleted",
@@ -567,6 +608,8 @@ export function makeKYCRefreshCompleted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycRefreshCompletedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
@@ -607,6 +650,7 @@ export function makeKYCRatingRevised(args: {
   payload: KYCRatingRevisedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("kyc", args.payload.clientId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "KYCRatingRevised",
@@ -615,6 +659,8 @@ export function makeKYCRatingRevised(args: {
     actor: args.actor,
     citations: args.citations,
     payload: kycRatingRevisedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 

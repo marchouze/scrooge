@@ -16,6 +16,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
+import { deterministicAggregateId, makeAggregateLabel } from "../aggregate";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -48,6 +49,8 @@ export function makeTradeExecuted(args: {
   payload: TradeExecutedPayload;
   eventId?: string;
 }): Event {
+  const tradeId = args.payload.tradeId;
+  const aggregateLabel = tradeId ? makeAggregateLabel("trade", tradeId) : undefined;
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "TradeExecuted",
@@ -56,6 +59,9 @@ export function makeTradeExecuted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: tradeExecutedPayloadSchema.parse(args.payload),
+    ...(aggregateLabel
+      ? { aggregateId: deterministicAggregateId(aggregateLabel), aggregateLabel }
+      : {}),
   });
 }
 
@@ -92,6 +98,8 @@ export function makeTradeBooked(args: {
   payload: TradeBookedPayload;
   eventId?: string;
 }): Event {
+  const tradeId = args.payload.tradeId;
+  const aggregateLabel = tradeId ? makeAggregateLabel("trade", tradeId) : undefined;
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "TradeBooked",
@@ -100,6 +108,9 @@ export function makeTradeBooked(args: {
     actor: args.actor,
     citations: args.citations,
     payload: tradeBooedPayloadSchema.parse(args.payload),
+    ...(aggregateLabel
+      ? { aggregateId: deterministicAggregateId(aggregateLabel), aggregateLabel }
+      : {}),
   });
 }
 
@@ -127,6 +138,7 @@ export function makeTradePosted(args: {
   payload: TradePostedPayload;
   eventId?: string;
 }): Event {
+  const aggregateLabel = makeAggregateLabel("trade", args.payload.tradeId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "TradePosted",
@@ -135,6 +147,8 @@ export function makeTradePosted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: tradePostedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   });
 }
 
