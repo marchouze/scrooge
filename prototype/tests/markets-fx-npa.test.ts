@@ -271,19 +271,19 @@ describe("FX Slice 7 — GET /api/markets/fx/products/attestation (server smoke)
 
   it("8. returns 200 with correct shape (attestations array, 4 rows, asOf)", async () => {
     if (!booted) throw new Error("server not booted");
-    const res = await fetch(
-      `http://127.0.0.1:${booted.port}/api/markets/fx/products/attestation`,
-      { headers: { Accept: "application/json" } },
-    );
+    const res = await fetch(`http://127.0.0.1:${booted.port}/api/markets/fx/products/attestation`, {
+      headers: { Accept: "application/json" },
+    });
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = (await res.json()) as Record<string, unknown>;
     // Shape checks.
     expect(body).toHaveProperty("attestations");
     expect(body).toHaveProperty("asOf");
     expect(Array.isArray(body.attestations)).toBe(true);
-    expect(body.attestations).toHaveLength(4);
+    const attestations = body.attestations as Array<{ productCode: string; status: string }>;
+    expect(attestations).toHaveLength(4);
     // Fresh empty store → all pending.
-    for (const att of body.attestations as Array<{ productCode: string; status: string }>) {
+    for (const att of attestations) {
       expect(att).toHaveProperty("productCode");
       expect(att).toHaveProperty("status");
       expect(att.status).toBe("pending");

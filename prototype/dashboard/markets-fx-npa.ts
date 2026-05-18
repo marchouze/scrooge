@@ -64,7 +64,7 @@ export function buildNpaView(
   type Fold = {
     status: NpaStatus;
     timestamp: string;
-    withheldReason?: string;
+    withheldReason?: string | undefined;
   };
 
   const byProduct = new Map<string, Fold>();
@@ -87,7 +87,9 @@ export function buildNpaView(
     } else {
       // ProductWithheld — capture the reason field.
       const reason = typeof payload.reason === "string" ? payload.reason : undefined;
-      byProduct.set(productId, { status: "withheld", timestamp, withheldReason: reason });
+      const withheldEntry: Fold = { status: "withheld", timestamp };
+      if (reason !== undefined) withheldEntry.withheldReason = reason;
+      byProduct.set(productId, withheldEntry);
     }
   }
 
