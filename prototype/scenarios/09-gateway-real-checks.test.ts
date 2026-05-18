@@ -68,15 +68,12 @@ const FANOUT_CITATIONS = [
 ];
 const SANCTIONS_CITATIONS = ["ORG-FC-08", "ORG-FC-13"];
 const ELIGIBILITY_CITATIONS = ["ORG-CD-01", "GOV-FRAMEWORK-CEO-RESERVED"];
-const RISK_CITATIONS = ["ORG-PR-01", "RAS-B1", "RAS-B2"];
-
 const AGGREGATOR_ACTOR = { type: "service" as const, id: "agent:kai:pre-trade-gateway-aggregator" };
 const MIRA_SANCTIONS_ACTOR = { type: "service" as const, id: "agent:mira:sanctions-gateway-check" };
 const MIRA_ELIGIBILITY_ACTOR = {
   type: "service" as const,
   id: "agent:mira:counterparty-eligibility-check",
 };
-const ROHAN_RISK_ACTOR = { type: "service" as const, id: "agent:rohan:market-risk-limit-check" };
 const NIKO_ACTOR = { type: "service" as const, id: "agent:niko:onboarding" };
 
 const AS_OF = "2026-05-17T09:00:00.000Z";
