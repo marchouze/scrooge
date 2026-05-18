@@ -99,6 +99,7 @@ import { type GatewayOrderResult, routeOrderToGateway } from "./markets-fx-gatew
 import { buildHeadroomView } from "./markets-fx-headroom";
 import { buildNpaView } from "./markets-fx-npa";
 import { buildRiskView } from "./markets-fx-risk";
+import { buildFxSummaryView } from "./markets-fx-summary";
 import {
   type RfqInput,
   type TradeEmitResult,
@@ -1727,6 +1728,15 @@ const server = Bun.serve({
       //            D-FX-CORRESPONDENT-PAIR-NAMING (CEO-approved 2026-05-09).
       const view = buildRiskView(eventStore);
       return jsonResponse({ correspondentStatus: view.correspondentStatus, asOf: view.asOf });
+    }
+    if (url.pathname === "/api/markets/fx/summary" && req.method === "GET") {
+      // FX desk Slice 6 — CEO oversight tile source. Single-pass replay
+      // counting RfqRequested, FxTradeExecuted, OrderApprovedAtGateway,
+      // OrderRejectedAtGateway events; top-3 counterparties by trade count;
+      // B3 (Market Risk) utilisation RAG status from the limit-utilisation
+      // projection. Powers the live metrics on the FX desk tile in home.html.
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+      return jsonResponse(buildFxSummaryView(eventStore));
     }
     if (url.pathname === "/api/markets/fx/order" && req.method === "POST") {
       // FX desk Slice 4 — order acceptance + gateway pipeline. Routes

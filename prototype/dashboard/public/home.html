@@ -197,5 +197,20 @@
   -->
   <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
   <script src="/home.js"></script>
+  <!-- FX desk Slice 6 — CEO oversight tile live metrics.
+       Fetches /api/markets/fx/summary and populates data-fx-sum-* spans
+       injected by home.js into the FX desk tile meta block. Runs after
+       home.js so the tile DOM is present. Authority: D-FX-SALES-TRADING-FRONTEND. -->
+  <script>
+    (async () => {
+      try {
+        const d = await fetch("/api/markets/fx/summary").then(r => r.json());
+        const set = (sel, v) => { const el = document.querySelector(sel); if (el) el.textContent = v; };
+        set("[data-fx-sum-rfqs]", d.rfqCount ?? "—");
+        set("[data-fx-sum-trades]", d.tradeCount ?? "—");
+        set("[data-fx-sum-b3]", d.b3RagStatus ? `${(d.b3UtilisationPct * 100).toFixed(0)}% ${d.b3RagStatus}` : "—");
+      } catch {}
+    })();
+  </script>
 </body>
 </html>
