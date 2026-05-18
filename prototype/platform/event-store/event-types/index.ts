@@ -122,6 +122,11 @@ export * from "./markets-trading-extended";
 //   BondMatured, BondSold.
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
 export * from "./bond-accounting";
+// D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
+// EquityTradeExecuted, EquityPositionRevalued,
+//   EquityDividendAccrued, EquitySold.
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+export * from "./equity-accounting";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -206,6 +211,7 @@ import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
+import { EQUITY_ACCOUNTING_EVENT_TYPES } from "./equity-accounting";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
 import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
@@ -275,6 +281,9 @@ export const TYPED_EVENT_TYPES = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting event types.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...BOND_ACCOUNTING_EVENT_TYPES,
+  // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting event types.
+  // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+  ...EQUITY_ACCOUNTING_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
