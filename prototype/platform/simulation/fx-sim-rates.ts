@@ -13,16 +13,16 @@
 
 const SEED_MID_RATES: Record<string, number> = {
   "ZAR/USD": 0.0541,
-  "ZAR/EUR": 0.0500,
+  "ZAR/EUR": 0.05,
   "ZAR/GBP": 0.0435,
-  "EUR/USD": 1.0800,
-  "EUR/ZAR": 20.00,
-  "GBP/ZAR": 23.00,
+  "EUR/USD": 1.08,
+  "EUR/ZAR": 20.0,
+  "GBP/ZAR": 23.0,
   "USD/EUR": 0.9259,
-  "USD/ZAR": 18.50,
-  "GBP/USD": 1.2650,
+  "USD/ZAR": 18.5,
+  "GBP/USD": 1.265,
   // Derived convenience pairs
-  "GBP/EUR": 1.1500,
+  "GBP/EUR": 1.15,
 };
 
 // ---------------------------------------------------------------------------
