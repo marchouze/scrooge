@@ -60,8 +60,10 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // Bumped 48 → 50: dashboard/agent-runs.ts:218 added fetchedAt: Date.now() and
 // dashboard/agent-runs.ts:230 now also annotated — both are wall-clock cache
 // TTL tracking patterns at the dashboard-infra boundary (approved pattern).
+// Bumped 50 → 51: dashboard/markets-fx-headroom.ts:72 asOf fallback — pre-existing
+// callsite at the dashboard-infra boundary (approved pattern).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 50;
+const KNOWN_VIOLATIONS_SNAPSHOT = 51;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
