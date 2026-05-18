@@ -715,6 +715,420 @@ export function buildScenarioCEvents(): ScenarioCEvents {
 }
 
 // ---------------------------------------------------------------------------
+// Scenario D: valid institutional counterparty + within limits, all 8 checks → APPROVED
+// ---------------------------------------------------------------------------
+
+export const SCENARIO_D_ID = "gateway-real-checks-scenario-d";
+
+// New actors for slices 5–7
+const KAI_IDENTITY_ACTOR = { type: "service" as const, id: "agent:kai:identity-gateway-check" };
+const KAI_SUITABILITY_ACTOR = {
+  type: "service" as const,
+  id: "agent:kai:suitability-gateway-check",
+};
+const KAI_CREDIT_CAPITAL_FUNDING_ACTOR = {
+  type: "service" as const,
+  id: "agent:kai:credit-capital-funding-check",
+};
+
+export interface ScenarioDEvents {
+  readonly faisClassified: Event;
+  readonly orderProposed: Event;
+  readonly checkReqSanctions: Event;
+  readonly checkReqEligibility: Event;
+  readonly checkReqRisk: Event;
+  readonly checkReqIdentity: Event;
+  readonly checkReqSuitability: Event;
+  readonly checkReqCreditLimit: Event;
+  readonly checkReqCapitalImpact: Event;
+  readonly checkReqFunding: Event;
+  readonly checkCompSanctions: Event;
+  readonly checkCompEligibility: Event;
+  readonly checkCompRisk: Event;
+  readonly checkCompIdentity: Event;
+  readonly checkCompSuitability: Event;
+  readonly checkCompCreditLimit: Event;
+  readonly checkCompCapitalImpact: Event;
+  readonly checkCompFunding: Event;
+  readonly approval: Event;
+  readonly all: ReadonlyArray<Event>;
+}
+
+export function buildScenarioDEvents(): ScenarioDEvents {
+  const orderId = "ORD-SCENARIO-D-001";
+  const orderEventId = newEventId();
+
+  // Counterparty has FAIS classification: market-counterparty (institutional)
+  const faisClassified = {
+    ...makeCounterpartyFaisClassified({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: NIKO_ACTOR,
+      citations: ["ORG-CD-01"],
+      payload: {
+        counterpartyId: CP_INSTITUTIONAL_LEI,
+        faisCategory: "market-counterparty",
+        classifiedAt: AS_OF,
+        classifiedBy: NIKO_ACTOR.id,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+
+  // Order proposed: institutional counterparty, instrument within all limits
+  const orderProposed = {
+    ...makeOrderProposed({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
+      citations: ["JSE-RULES-EQUITIES", "FMA-S5"],
+      eventId: orderEventId,
+      payload: {
+        orderId,
+        counterpartyLei: CP_INSTITUTIONAL_LEI,
+        instrument: INSTRUMENT_WITHIN_LIMIT,
+        side: "buy",
+        quantity: 100,
+        price: 2500.0,
+        priceCurrency: "ZAR",
+        bookingEntity: ENTITY,
+        requestedActor: "agent:saskia:auto-quote",
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+
+  // Fan-out: all 8 GatewayCheckRequested
+  const checkReqSanctions = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "sanctions",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqEligibility = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "counterparty-eligibility",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqRisk = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "market-risk",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqIdentity = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "identity",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqSuitability = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "suitability",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqCreditLimit = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "credit-limit",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqCapitalImpact = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "capital-impact",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkReqFunding = {
+    ...makeGatewayCheckRequested({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "funding",
+        sourceOrderEventId: orderEventId,
+        requestedAt: AS_OF,
+        timeoutMs: 30000,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+
+  // Check completions: all 8 pass
+  const checkCompSanctions = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: MIRA_SANCTIONS_ACTOR,
+      citations: SANCTIONS_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "sanctions",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqSanctions.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompEligibility = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: MIRA_ELIGIBILITY_ACTOR,
+      citations: ELIGIBILITY_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "counterparty-eligibility",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqEligibility.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompRisk = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: ROHAN_RISK_ACTOR,
+      citations: RISK_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "market-risk",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqRisk.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompIdentity = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: KAI_IDENTITY_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "identity",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqIdentity.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompSuitability = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: KAI_SUITABILITY_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "suitability",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqSuitability.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompCreditLimit = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: KAI_CREDIT_CAPITAL_FUNDING_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "credit-limit",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqCreditLimit.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompCapitalImpact = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: KAI_CREDIT_CAPITAL_FUNDING_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "capital-impact",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqCapitalImpact.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+  const checkCompFunding = {
+    ...makeGatewayCheckCompleted({
+      asOf: AS_OF_CHECKS,
+      entity: ENTITY,
+      actor: KAI_CREDIT_CAPITAL_FUNDING_ACTOR,
+      citations: FANOUT_CITATIONS,
+      payload: {
+        orderId,
+        checkKind: "funding",
+        outcome: "approve",
+        sourceCheckRequestEventId: checkReqFunding.event_id,
+        completedAt: AS_OF_CHECKS,
+        durationMs: 1000,
+      } satisfies GatewayCheckCompletedPayload,
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+
+  // Terminal: OrderApprovedAtGateway
+  const approval = {
+    ...makeOrderApprovedAtGateway({
+      asOf: AS_OF_TERMINAL,
+      entity: ENTITY,
+      actor: AGGREGATOR_ACTOR,
+      citations: APPROVAL_CITATIONS,
+      payload: {
+        orderId,
+        approvalCitations: APPROVAL_CITATIONS,
+        passedAt: AS_OF_TERMINAL,
+      },
+    }),
+    provenance: scenarioTag(SCENARIO_D_ID),
+  };
+
+  const all = [
+    faisClassified,
+    orderProposed,
+    checkReqSanctions,
+    checkReqEligibility,
+    checkReqRisk,
+    checkReqIdentity,
+    checkReqSuitability,
+    checkReqCreditLimit,
+    checkReqCapitalImpact,
+    checkReqFunding,
+    checkCompSanctions,
+    checkCompEligibility,
+    checkCompRisk,
+    checkCompIdentity,
+    checkCompSuitability,
+    checkCompCreditLimit,
+    checkCompCapitalImpact,
+    checkCompFunding,
+    approval,
+  ];
+
+  return {
+    faisClassified,
+    orderProposed,
+    checkReqSanctions,
+    checkReqEligibility,
+    checkReqRisk,
+    checkReqIdentity,
+    checkReqSuitability,
+    checkReqCreditLimit,
+    checkReqCapitalImpact,
+    checkReqFunding,
+    checkCompSanctions,
+    checkCompEligibility,
+    checkCompRisk,
+    checkCompIdentity,
+    checkCompSuitability,
+    checkCompCreditLimit,
+    checkCompCapitalImpact,
+    checkCompFunding,
+    approval,
+    all,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Scenario runner
 // ---------------------------------------------------------------------------
 
@@ -723,6 +1137,7 @@ export interface GatewayRealChecksResult {
   readonly scenarioA: { approved: boolean; eventCount: number };
   readonly scenarioB: { rejected: boolean; reason: string; eventCount: number };
   readonly scenarioC: { rejected: boolean; rejectingCheck: string; eventCount: number };
+  readonly scenarioD: { approved: boolean; eventCount: number };
 }
 
 export function runGatewayRealChecksScenario(opts: {
@@ -741,8 +1156,14 @@ export function runGatewayRealChecksScenario(opts: {
   const scenarioA = buildScenarioAEvents();
   const scenarioB = buildScenarioBEvents();
   const scenarioC = buildScenarioCEvents();
+  const scenarioD = buildScenarioDEvents();
 
-  store.appendAll([...scenarioA.all, ...scenarioB.all, ...scenarioC.all]);
+  store.appendAll([
+    ...scenarioA.all,
+    ...scenarioB.all,
+    ...scenarioC.all,
+    ...scenarioD.all,
+  ]);
 
   // Verify Scenario A: OrderApprovedAtGateway present
   let approvedA = false;
@@ -782,6 +1203,16 @@ export function runGatewayRealChecksScenario(opts: {
     }
   }
 
+  // Verify Scenario D: OrderApprovedAtGateway for all-8-checks pass
+  let approvedD = false;
+  for (const e of store.replay({ type: "OrderApprovedAtGateway" })) {
+    const p = e.payload as { orderId?: unknown };
+    if (p.orderId === "ORD-SCENARIO-D-001") {
+      approvedD = true;
+      break;
+    }
+  }
+
   store.close();
   if (opts.cleanup) {
     try {
@@ -791,7 +1222,7 @@ export function runGatewayRealChecksScenario(opts: {
     }
   }
 
-  const ok = approvedA && rejectedB && rejectedC;
+  const ok = approvedA && rejectedB && rejectedC && approvedD;
 
   return {
     ok,
@@ -802,6 +1233,7 @@ export function runGatewayRealChecksScenario(opts: {
       rejectingCheck: rejectingCheckC,
       eventCount: scenarioC.all.length,
     },
+    scenarioD: { approved: approvedD, eventCount: scenarioD.all.length },
   };
 }
 
@@ -826,6 +1258,7 @@ if (import.meta.main) {
       scenarioA: result.scenarioA,
       scenarioB: result.scenarioB,
       scenarioC: result.scenarioC,
+      scenarioD: result.scenarioD,
     },
     result.ok
       ? "scenario 09 — gateway real checks — PASSED"

@@ -52,6 +52,7 @@ import {
   buildScenarioAEvents,
   buildScenarioBEvents,
   buildScenarioCEvents,
+  buildScenarioDEvents,
 } from "./09-gateway-real-checks";
 
 const REPO_ROOT = join(import.meta.dir, "..", "..");
@@ -2098,6 +2099,40 @@ describe("kai:credit-capital-funding-check (slice 7)", () => {
         expect(p.outcome).toBe("approve");
         break;
       }
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Scenario D — all 8 checks pass → OrderApprovedAtGateway
+// ---------------------------------------------------------------------------
+
+describe("scenario 09 — Scenario D: all 8 checks pass → OrderApprovedAtGateway", () => {
+  it("Scenario D: all 8 check kinds pass → OrderApprovedAtGateway", () => {
+    const events = buildScenarioDEvents();
+    for (const e of events.all) eventStore.append(e);
+
+    expect(events.approval.type).toBe("OrderApprovedAtGateway");
+    const approvalPayload = events.approval.payload as { orderId?: unknown; approvalCitations?: unknown };
+    expect(approvalPayload.orderId).toBe("ORD-SCENARIO-D-001");
+
+    // All 8 checks requested
+    expect(events.checkReqSanctions.payload).toMatchObject({ checkKind: "sanctions" });
+    expect(events.checkReqEligibility.payload).toMatchObject({ checkKind: "counterparty-eligibility" });
+    expect(events.checkReqRisk.payload).toMatchObject({ checkKind: "market-risk" });
+    expect(events.checkReqIdentity.payload).toMatchObject({ checkKind: "identity" });
+    expect(events.checkReqSuitability.payload).toMatchObject({ checkKind: "suitability" });
+    expect(events.checkReqCreditLimit.payload).toMatchObject({ checkKind: "credit-limit" });
+    expect(events.checkReqCapitalImpact.payload).toMatchObject({ checkKind: "capital-impact" });
+    expect(events.checkReqFunding.payload).toMatchObject({ checkKind: "funding" });
+
+    // All 8 checks pass
+    for (const comp of [
+      events.checkCompSanctions, events.checkCompEligibility, events.checkCompRisk,
+      events.checkCompIdentity, events.checkCompSuitability, events.checkCompCreditLimit,
+      events.checkCompCapitalImpact, events.checkCompFunding,
+    ]) {
+      expect((comp.payload as { outcome: string }).outcome).toBe("approve");
     }
   });
 });
