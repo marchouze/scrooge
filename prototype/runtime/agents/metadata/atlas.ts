@@ -19,4 +19,11 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Atlas", "event-triage", "event-driven", {
     subscribesTo: ["EventSchemaProposal", "IdentityPermissionChangeProposal", "SubstrateAlert"],
   }),
+  // atlas:permission-policy-refresh — T-12 mitigation. Fires on AgentRegistered to auto-publish
+  // PermissionPolicyPublished for newly-registered (or re-registered) agents. Also sweeps the
+  // full registry on each invocation to catch stale policies.
+  // Authority: T-12, D-T01-PERMISSION-GATE-SECURE-DEFAULT, P4-SECURITY-DESIGNED-IN, ORG-CY-09.
+  entry("Atlas", "permission-policy-refresh", "event-driven", {
+    subscribesTo: ["AgentRegistered"],
+  }),
 ];

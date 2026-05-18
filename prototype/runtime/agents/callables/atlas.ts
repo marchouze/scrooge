@@ -5,10 +5,12 @@
 import type { AgentRunHandler } from "../../types";
 import atlasEventTriage from "../atlas-event-triage";
 import atlasGoalLoop from "../atlas-goal-loop";
+import atlasPermissionPolicyRefresh from "../atlas-permission-policy-refresh";
 import atlasSubstrateState from "../atlas-substrate-state";
 
 export const ATLAS_CALLABLES: Record<string, AgentRunHandler> = {
   "atlas:substrate-state": atlasSubstrateState,
   "atlas:goal-loop": atlasGoalLoop,
   "atlas:event-triage": atlasEventTriage,
+  "atlas:permission-policy-refresh": atlasPermissionPolicyRefresh,
 };
