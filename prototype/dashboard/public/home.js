@@ -326,6 +326,14 @@
       href: "/markets/fx/risk.html",
     },
     {
+      id: "mkts-fx-sim",
+      category: "markets",
+      title: "FX Simulator",
+      blurb:
+        "Build-phase random-trade generator — start/stop a market-making simulation that emits FxTradeExecuted events at a configurable interval.",
+      href: "/fx-sim",
+    },
+    {
       id: "mkts-desks",
       category: "markets",
       title: "Trading desks (other)",
