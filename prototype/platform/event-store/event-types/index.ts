@@ -127,6 +127,11 @@ export * from "./bond-accounting";
 //   EquityDividendAccrued, EquitySold.
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
 export * from "./equity-accounting";
+// D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
+// IrdSwapTradeExecuted, IrdSwapPositionRevalued,
+//   IrdSwapCouponSettled, IrdSwapTerminated.
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+export * from "./ird-accounting";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -219,6 +224,7 @@ import { GOVERNANCE_EXTENDED_TYPED_EVENT_TYPES } from "./governance-extended";
 import { GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES } from "./governance-snapshots";
 import { IFRS_ACCOUNTING_EXTENDED_TYPED_EVENT_TYPES } from "./ifrs-accounting-extended";
 import { INTRANET_EVENT_TYPES } from "./intranet";
+import { IRD_ACCOUNTING_EVENT_TYPES } from "./ird-accounting";
 import { KYC_TYPED_EVENT_TYPES } from "./kyc";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
@@ -284,6 +290,9 @@ export const TYPED_EVENT_TYPES = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting event types.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES,
+  // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting event types.
+  // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+  ...IRD_ACCOUNTING_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
