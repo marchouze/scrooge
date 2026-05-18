@@ -152,13 +152,15 @@ function apply(event: Event): void {
     case "FxTradeExecuted": {
       // FX trades contribute to both B3 (market risk — FX notional) and
       // B1 (credit risk — counterparty exposure).
+      // The CDM payload encodes notional inside legs[0].notional.amountMinor
+      // (minor units = major * 100). Divide by 100 to get major-unit exposure.
       const p = event.payload as Record<string, unknown>;
-      const notional =
-        typeof p.baseCurrencyAmount === "number"
-          ? p.baseCurrencyAmount
-          : typeof p.notional === "number"
-            ? p.notional
-            : 0;
+      const legs = Array.isArray(p.legs) ? p.legs : [];
+      const leg0 = legs[0] as Record<string, unknown> | undefined;
+      const legNotional = leg0?.notional as Record<string, unknown> | undefined;
+      const amountMinor =
+        typeof legNotional?.amountMinor === "number" ? legNotional.amountMinor : 0;
+      const notional = amountMinor / 100;
       if (notional > 0) {
         _state = addExposure(_state, "B3", notional, asOf);
         // Counterparty credit exposure: 10% of notional (simplified pre-settlement risk)

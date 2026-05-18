@@ -351,13 +351,9 @@ describe("buildHeadroomView", () => {
   });
 
   it("after RasLimitSchedulePublished + FxTradeExecuted: all 5 rows are present with valid structure", () => {
-    // The LimitUtilisationProjection reads `baseCurrencyAmount` or `notional`
-    // from FxTradeExecuted payload. The FX CDM encodes notional inside
-    // legs[0].notional.amountMinor — not at the top level — so the projection
-    // currently accumulates 0 from FxTradeExecuted events (a substrate gap,
-    // not a bug in this slice). This test documents that behavior: the
-    // headroom view is structurally correct after the trade, even if
-    // utilisation is zero until the projection is updated.
+    // The LimitUtilisationProjection reads legs[0].notional.amountMinor from
+    // FxTradeExecuted (CDM structure) and divides by 100 to get major-unit
+    // exposure. B3 utilisation must be > 0 after a trade fires.
     const store = freshStore();
     const CP_ID = "cp:headroom-active-1";
     seedRasSchedule(store);
@@ -380,9 +376,9 @@ describe("buildHeadroomView", () => {
     expect(view.rows).toHaveLength(5);
     const b3 = view.rows.find((r) => r.cluster === "B3");
     expect(b3).toBeDefined();
-    // Limit is set from the schedule; exposure is 0 due to CDM legs-encoding gap.
     expect(b3?.limitValue).toBe(100_000_000);
     expect(typeof b3?.utilisationPct).toBe("number");
+    expect(b3?.utilisationPct).toBeGreaterThan(0);
   });
 
   it("ragStatus green when utilisationPct < 0.70", () => {
@@ -399,12 +395,7 @@ describe("buildHeadroomView", () => {
     // Inject a PositionUpdated-style scenario: emit a large trade that
     // pushes B3 into the amber band. B3 limit = 100,000,000 ZAR;
     // amber threshold = 0.70. Need notional * some_fx_rate > 70,000,000.
-    // The projection adds FxTradeExecuted.baseCurrencyAmount to B3.
-    // With the current projection, it uses legs[0].notional.amountMinor ÷ 100
-    // as an approximation — actually it reads `baseCurrencyAmount` or `notional`.
-    // The projection reads p.baseCurrencyAmount or p.notional — neither is set
-    // directly on FxTradeExecutedPayload (which has legs). So B3 gets 0 from
-    // FxTradeExecuted in the current projection. This test documents the zero path.
+    // No FX trades fired — zero exposure across all clusters; all green.
     const store = freshStore();
     seedRasSchedule(store);
     // Emit events but check the projection correctly handles them.
