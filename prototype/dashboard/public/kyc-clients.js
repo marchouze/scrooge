@@ -51,27 +51,30 @@ async function fetchClients() {
 
 function renderSummary(counts) {
   const cards = [
-    { num: counts.total ?? 0,  lbl: "Total" },
-    { num: counts.low ?? 0,    lbl: "Low risk" },
+    { num: counts.total ?? 0, lbl: "Total" },
+    { num: counts.low ?? 0, lbl: "Low risk" },
     { num: counts.medium ?? 0, lbl: "Medium risk" },
-    { num: counts.high ?? 0,   lbl: "High risk" },
-    { num: counts.ec ?? 0,     lbl: "EC" },
-    { num: counts.pc ?? 0,     lbl: "PC" },
+    { num: counts.high ?? 0, lbl: "High risk" },
+    { num: counts.ec ?? 0, lbl: "EC" },
+    { num: counts.pc ?? 0, lbl: "PC" },
   ];
-  $("summaryCards").innerHTML = cards.map(c => `
+  $("summaryCards").innerHTML = cards
+    .map(
+      (c) => `
     <div class="kyc-card">
       <div class="kyc-card-num">${c.num}</div>
       <div class="kyc-card-lbl">${c.lbl}</div>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function filteredClients() {
   const risk = $("riskFilter")?.value ?? "all";
-  const cat  = $("catFilter")?.value  ?? "all";
-  return allClients.filter(c =>
-    (risk === "all" || c.riskBand === risk) &&
-    (cat  === "all" || c.category === cat)
+  const cat = $("catFilter")?.value ?? "all";
+  return allClients.filter(
+    (c) => (risk === "all" || c.riskBand === risk) && (cat === "all" || c.category === cat),
   );
 }
 
@@ -93,9 +96,10 @@ function renderTable(clients) {
   empty.hidden = true;
   if (subtitle) subtitle.textContent = `${clients.length} client${clients.length !== 1 ? "s" : ""}`;
 
-  tbody.innerHTML = clients.map(c => {
-    const truncId = c.clientId.length > 16 ? c.clientId.slice(0, 16) + "…" : c.clientId;
-    return `<tr onclick="window.location.href='/kyc-clients/${encodeURIComponent(c.clientId)}'" title="${esc(c.clientId)}">
+  tbody.innerHTML = clients
+    .map((c) => {
+      const truncId = c.clientId.length > 16 ? `${c.clientId.slice(0, 16)}…` : c.clientId;
+      return `<tr onclick="window.location.href='/kyc-clients/${encodeURIComponent(c.clientId)}'" title="${esc(c.clientId)}">
       <td><code>${esc(truncId)}</code></td>
       <td>${esc(c.entityName ?? "—")}</td>
       <td>${esc(c.entityType ?? "—")}</td>
@@ -106,14 +110,16 @@ function renderTable(clients) {
       <td>${fmtDate(c.nextRefreshDue)}</td>
       <td><a class="btn btn-outline btn-sm" href="/kyc-clients/${encodeURIComponent(c.clientId)}" onclick="event.stopPropagation()">View</a></td>
     </tr>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function applyFilters() {
   renderTable(filteredClients());
   const subtitle = $("tableSubtitle");
   const shown = filteredClients().length;
-  if (subtitle) subtitle.textContent = `${shown} of ${allClients.length} client${allClients.length !== 1 ? "s" : ""}`;
+  if (subtitle)
+    subtitle.textContent = `${shown} of ${allClients.length} client${allClients.length !== 1 ? "s" : ""}`;
 }
 window.applyFilters = applyFilters;
 
@@ -122,10 +128,24 @@ window.applyFilters = applyFilters;
 
 function exportCSV() {
   const clients = filteredClients();
-  if (clients.length === 0) { alert("No clients to export."); return; }
+  if (clients.length === 0) {
+    alert("No clients to export.");
+    return;
+  }
 
-  const headers = ["clientId", "entityName", "entityType", "jurisdiction", "riskBand", "category", "onboardedAt", "nextRefreshDue"];
-  const rows = clients.map(c => headers.map(h => `"${String(c[h] ?? "").replace(/"/g, '""')}"`).join(","));
+  const headers = [
+    "clientId",
+    "entityName",
+    "entityType",
+    "jurisdiction",
+    "riskBand",
+    "category",
+    "onboardedAt",
+    "nextRefreshDue",
+  ];
+  const rows = clients.map((c) =>
+    headers.map((h) => `"${String(c[h] ?? "").replace(/"/g, '""')}"`).join(","),
+  );
   const csv = [headers.join(","), ...rows].join("\n");
 
   const blob = new Blob([csv], { type: "text/csv" });

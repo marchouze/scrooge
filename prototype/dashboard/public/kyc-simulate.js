@@ -13,7 +13,7 @@ const $ = (id) => document.getElementById(id);
 // Scenario descriptions
 
 const SCENARIO_DESCS = {
-  "clean":
+  clean:
     "Registers a clean low-risk entity (Meridian Capital). All checks pass; auto-accept expected on full run.",
   "pep-linked":
     "UBO name starts with 'LINKED' → PEP-linked flag → EDD initiated → human gate required.",
@@ -51,7 +51,9 @@ function showToast(msg, type = "error") {
   const t = $("toast");
   t.textContent = msg;
   t.className = `toast show ${type}`;
-  setTimeout(() => { t.className = "toast"; }, 4000);
+  setTimeout(() => {
+    t.className = "toast";
+  }, 4000);
 }
 
 function outcomeBadge(outcome) {
@@ -79,10 +81,16 @@ async function runSimulation() {
   const count = Math.max(1, Math.min(10, Number($("countInput")?.value) || 1));
   const runFull = $("runFullToggle")?.checked ?? false;
 
-  if (!scenario) { showToast("Select a scenario first."); return; }
+  if (!scenario) {
+    showToast("Select a scenario first.");
+    return;
+  }
 
   const btn = $("generateBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Running…"; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Running…";
+  }
 
   $("resultsSection").hidden = false;
   $("loadingState").className = "loading-state show";
@@ -99,12 +107,18 @@ async function runSimulation() {
     if (!res.ok) throw new Error(data.error ?? `Server error ${res.status}`);
 
     renderResults(data.results ?? []);
-    showToast(`Simulation complete — ${(data.results ?? []).length} candidate(s) generated.`, "success");
+    showToast(
+      `Simulation complete — ${(data.results ?? []).length} candidate(s) generated.`,
+      "success",
+    );
   } catch (e) {
     showToast(`Simulation failed: ${e.message}`);
     $("loadingState").className = "loading-state";
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "▶ Generate"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "▶ Generate";
+    }
   }
 }
 window.runSimulation = runSimulation;
@@ -115,13 +129,13 @@ window.runSimulation = runSimulation;
 function renderResults(results) {
   $("loadingState").className = "loading-state";
   $("resultsTableWrap").hidden = false;
-  $("resultsSubtitle").textContent = `${results.length} candidate${results.length !== 1 ? "s" : ""} generated`;
+  $("resultsSubtitle").textContent =
+    `${results.length} candidate${results.length !== 1 ? "s" : ""} generated`;
 
-  $("resultsBody").innerHTML = results.map(r => {
-    const truncId = r.candidateId.length > 16
-      ? r.candidateId.slice(0, 16) + "…"
-      : r.candidateId;
-    return `<tr>
+  $("resultsBody").innerHTML = results
+    .map((r) => {
+      const truncId = r.candidateId.length > 16 ? `${r.candidateId.slice(0, 16)}…` : r.candidateId;
+      return `<tr>
       <td><code title="${esc(r.candidateId)}">${esc(truncId)}</code></td>
       <td>${esc(r.entityName ?? "—")}</td>
       <td><code>${esc(r.scenario)}</code></td>
@@ -129,12 +143,15 @@ function renderResults(results) {
       <td>${outcomeBadge(r.outcome)}</td>
       <td>${riskBadge(r.riskBand)}</td>
       <td>
-        ${r.candidateId && r.candidateId !== `error-0`
-          ? `<a class="btn btn-outline btn-sm" href="/kyc-onboarding/${encodeURIComponent(r.candidateId)}">View</a>`
-          : ""}
+        ${
+          r.candidateId && r.candidateId !== "error-0"
+            ? `<a class="btn btn-outline btn-sm" href="/kyc-onboarding/${encodeURIComponent(r.candidateId)}">View</a>`
+            : ""
+        }
       </td>
     </tr>`;
-  }).join("");
+    })
+    .join("");
 }
 
 // ---------------------------------------------------------------------------

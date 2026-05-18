@@ -11,10 +11,10 @@ const $ = (id) => document.getElementById(id);
 // ---------------------------------------------------------------------------
 // State
 
-let currentStep = 1;
-const directors = [];   // { name, idNumber, role }
-const ubos = [];        // { name, idNumber, nationality, ownershipPct, basisOfControl }
-const fileHashes = [];  // { name, hash, sha256 }
+let _currentStep = 1;
+const directors = []; // { name, idNumber, role }
+const ubos = []; // { name, idNumber, nationality, ownershipPct, basisOfControl }
+const fileHashes = []; // { name, hash, sha256 }
 
 // ---------------------------------------------------------------------------
 // Step navigation
@@ -33,10 +33,10 @@ function goStep(n) {
     if (el) el.hidden = i !== n;
     const nav = document.querySelector(`.step-item[data-step="${i}"]`);
     if (nav) {
-      nav.className = "step-item" + (i === n ? " active" : i < n ? " done" : "");
+      nav.className = `step-item${i === n ? " active" : i < n ? " done" : ""}`;
     }
   }
-  currentStep = n;
+  _currentStep = n;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 window.goStep = goStep;
@@ -48,11 +48,19 @@ function showToast(msg, type = "error") {
   const t = $("toast");
   t.textContent = msg;
   t.className = `toast show ${type}`;
-  setTimeout(() => { t.className = "toast"; }, 4000);
+  setTimeout(() => {
+    t.className = "toast";
+  }, 4000);
 }
 
 function validateStep1() {
-  const fields = ["entityName", "entityType", "jurisdiction", "registrationNumber", "registeredAddress"];
+  const fields = [
+    "entityName",
+    "entityType",
+    "jurisdiction",
+    "registrationNumber",
+    "registeredAddress",
+  ];
   for (const f of fields) {
     const el = $(f);
     if (!el || !el.value.trim()) {
@@ -99,7 +107,10 @@ function validateStep3() {
 function validateStep4() {
   // Documents are recommended but not blocking — emit warning only
   if (fileHashes.length === 0) {
-    showToast("No documents uploaded. At least one document is recommended (CIPC certificate).", "error");
+    showToast(
+      "No documents uploaded. At least one document is recommended (CIPC certificate).",
+      "error",
+    );
     return false;
   }
   return true;
@@ -110,7 +121,9 @@ function validateStep4() {
 
 function renderDirectors() {
   const c = $("directorsContainer");
-  c.innerHTML = directors.map((d, i) => `
+  c.innerHTML = directors
+    .map(
+      (d, i) => `
     <div class="repeat-row" id="dir-${i}">
       <button class="remove-btn" onclick="removeDirector(${i})" title="Remove">×</button>
       <div class="form-row">
@@ -128,7 +141,9 @@ function renderDirectors() {
         <input type="text" value="${esc(d.role)}" onchange="directors[${i}].role=this.value" placeholder="e.g. Director, CEO, Trustee">
       </div>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function addDirector() {
@@ -148,7 +163,9 @@ window.removeDirector = removeDirector;
 
 function renderUBOs() {
   const c = $("ubosContainer");
-  c.innerHTML = ubos.map((u, i) => `
+  c.innerHTML = ubos
+    .map(
+      (u, i) => `
     <div class="repeat-row" id="ubo-${i}">
       <button class="remove-btn" onclick="removeUBO(${i})" title="Remove">×</button>
       <div class="form-row">
@@ -176,7 +193,9 @@ function renderUBOs() {
         <input type="text" value="${esc(u.basisOfControl)}" onchange="ubos[${i}].basisOfControl=this.value" placeholder="e.g. direct-ownership, nominee arrangement">
       </div>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function addUBO() {
@@ -197,7 +216,9 @@ window.removeUBO = removeUBO;
 async function hashFile(file) {
   const buf = await file.arrayBuffer();
   const hashBuf = await window.crypto.subtle.digest("SHA-256", buf);
-  const hex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const hex = Array.from(new Uint8Array(hashBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
   return `sha256:${hex}`;
 }
 
@@ -205,7 +226,7 @@ $("fileInput").addEventListener("change", async (e) => {
   const files = Array.from(e.target.files ?? []);
   for (const file of files) {
     const hash = await hashFile(file);
-    if (!fileHashes.find(f => f.hash === hash)) {
+    if (!fileHashes.find((f) => f.hash === hash)) {
       fileHashes.push({ name: file.name, hash });
     }
   }
@@ -214,13 +235,17 @@ $("fileInput").addEventListener("change", async (e) => {
 });
 
 function renderFileList() {
-  $("fileList").innerHTML = fileHashes.map((f, i) => `
+  $("fileList").innerHTML = fileHashes
+    .map(
+      (f, i) => `
     <div class="upload-file-item">
       <span>${esc(f.name)}</span>
       <span class="file-hash">${f.hash.slice(0, 20)}…</span>
       <button class="file-remove" onclick="removeFile(${i})" title="Remove">×</button>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function removeFile(i) {
@@ -233,7 +258,11 @@ window.removeFile = removeFile;
 // Review
 
 function esc(s) {
-  return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function renderReview() {
@@ -250,28 +279,40 @@ function renderReview() {
     </div>
     <div class="review-section">
       <h3>Directors (${directors.length})</h3>
-      ${directors.map(d => `<dl class="review-dl">
+      ${directors
+        .map(
+          (d) => `<dl class="review-dl">
         <dt>Name</dt><dd>${esc(d.name)}</dd>
         <dt>ID number</dt><dd>${esc(d.idNumber)}</dd>
         <dt>Role</dt><dd>${esc(d.role)}</dd>
-      </dl>`).join("<hr style='border:none;border-top:1px solid #eee;margin:8px 0'>")}
+      </dl>`,
+        )
+        .join("<hr style='border:none;border-top:1px solid #eee;margin:8px 0'>")}
     </div>
     <div class="review-section">
       <h3>UBOs (${ubos.length})</h3>
-      ${ubos.map(u => `<dl class="review-dl">
+      ${ubos
+        .map(
+          (u) => `<dl class="review-dl">
         <dt>Name</dt><dd>${esc(u.name)}</dd>
         <dt>ID number</dt><dd>${esc(u.idNumber)}</dd>
         <dt>Nationality</dt><dd>${esc(u.nationality)}</dd>
         <dt>Ownership</dt><dd>${u.ownershipPct}%</dd>
         <dt>Basis</dt><dd>${esc(u.basisOfControl)}</dd>
-      </dl>`).join("<hr style='border:none;border-top:1px solid #eee;margin:8px 0'>")}
+      </dl>`,
+        )
+        .join("<hr style='border:none;border-top:1px solid #eee;margin:8px 0'>")}
     </div>
     <div class="review-section">
       <h3>Documents (${fileHashes.length})</h3>
-      ${fileHashes.map(f => `<div style="font-size:12.5px;margin-bottom:4px">
+      ${fileHashes
+        .map(
+          (f) => `<div style="font-size:12.5px;margin-bottom:4px">
         <strong>${esc(f.name)}</strong>
         <span style="font-family:var(--mono);font-size:11px;color:#666;margin-left:8px">${esc(f.hash.slice(0, 30))}…</span>
-      </div>`).join("")}
+      </div>`,
+        )
+        .join("")}
     </div>
   `;
   $("reviewContent").innerHTML = html;
@@ -291,13 +332,16 @@ async function submitForm() {
     registrationNumber: $("registrationNumber").value.trim(),
     jurisdiction: $("jurisdiction").value.trim(),
     registeredAddress: $("registeredAddress").value.trim(),
-    directors: directors.map(d => ({ name: d.name, idNumber: d.idNumber, role: d.role })),
-    ubos: ubos.map(u => ({
-      name: u.name, idNumber: u.idNumber, nationality: u.nationality,
-      ownershipPct: u.ownershipPct, basisOfControl: u.basisOfControl,
+    directors: directors.map((d) => ({ name: d.name, idNumber: d.idNumber, role: d.role })),
+    ubos: ubos.map((u) => ({
+      name: u.name,
+      idNumber: u.idNumber,
+      nationality: u.nationality,
+      ownershipPct: u.ownershipPct,
+      basisOfControl: u.basisOfControl,
     })),
-    documentHashes: fileHashes.map(f => f.hash),
-    submittedBy: (window.bankShell?.user?.id) ?? "marc@tgv.co.za",
+    documentHashes: fileHashes.map((f) => f.hash),
+    submittedBy: window.bankShell?.user?.id ?? "marc@tgv.co.za",
   };
 
   try {

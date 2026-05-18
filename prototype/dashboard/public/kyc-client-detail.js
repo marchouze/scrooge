@@ -29,14 +29,16 @@ function fmtDate(iso) {
 
 function fmtTs(iso) {
   if (!iso) return "—";
-  return iso.slice(0, 16).replace("T", " ") + "Z";
+  return `${iso.slice(0, 16).replace("T", " ")}Z`;
 }
 
 function showToast(msg, type = "error") {
   const t = $("toast");
   t.textContent = msg;
   t.className = `toast show ${type}`;
-  setTimeout(() => { t.className = "toast"; }, 4000);
+  setTimeout(() => {
+    t.className = "toast";
+  }, 4000);
 }
 
 function riskBadge(band) {
@@ -50,7 +52,12 @@ function catBadge(cat) {
 }
 
 function checkStatusBadge(status) {
-  const map = { passed: "badge-green", flagged: "badge-amber", failed: "badge-red", pending: "badge-grey" };
+  const map = {
+    passed: "badge-green",
+    flagged: "badge-amber",
+    failed: "badge-red",
+    pending: "badge-grey",
+  };
   return `<span class="badge ${map[status] ?? "badge-grey"}">${esc(status)}</span>`;
 }
 
@@ -81,14 +88,19 @@ function renderHeader(client) {
     client.jurisdiction ? `<code>${esc(client.jurisdiction)}</code>` : "",
     riskBadge(client.riskBand),
     catBadge(client.category),
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 // ---------------------------------------------------------------------------
 // Render detail grid
 
 function renderDetails(client) {
-  if (!client) { $("detailGrid").innerHTML = ""; return; }
+  if (!client) {
+    $("detailGrid").innerHTML = "";
+    return;
+  }
   $("detailGrid").innerHTML = `
     <dt>Client ID</dt><dd><code>${esc(client.clientId)}</code></dd>
     <dt>Entity name</dt><dd>${esc(client.entityName ?? "—")}</dd>
@@ -110,7 +122,7 @@ const CHECK_LABELS = {
   "sanctions-pep-screening": "Sanctions / PEP",
   "ubo-resolution": "UBO Resolution",
   "risk-rating": "Risk Rating",
-  "edd": "Enhanced Due Diligence",
+  edd: "Enhanced Due Diligence",
 };
 
 function renderChecks(kycChecks) {
@@ -126,10 +138,11 @@ function renderChecks(kycChecks) {
   grid.hidden = false;
   empty.hidden = true;
 
-  grid.innerHTML = Object.entries(kycChecks.checks).map(([key, check]) => {
-    const label = CHECK_LABELS[key] ?? key;
-    const raw = JSON.stringify(check.result, null, 2);
-    return `<div class="check-card">
+  grid.innerHTML = Object.entries(kycChecks.checks)
+    .map(([key, check]) => {
+      const label = CHECK_LABELS[key] ?? key;
+      const raw = JSON.stringify(check.result, null, 2);
+      return `<div class="check-card">
       <div class="check-card-head">
         <span class="check-card-name">${esc(label)}</span>
         ${checkStatusBadge(check.status)}
@@ -140,7 +153,8 @@ function renderChecks(kycChecks) {
         <pre>${esc(raw)}</pre>
       </details>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 // ---------------------------------------------------------------------------
@@ -168,13 +182,17 @@ function renderTimeline(kycChecks) {
     return;
   }
 
-  tl.innerHTML = events.map(e => `
+  tl.innerHTML = events
+    .map(
+      (e) => `
     <div class="timeline-item">
       <span class="timeline-ts">${fmtTs(e.ts)}</span>
       <span class="timeline-event">${esc(e.type)}</span>
       <span>${checkStatusBadge(e.status)}</span>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 // ---------------------------------------------------------------------------
@@ -182,7 +200,10 @@ function renderTimeline(kycChecks) {
 
 async function triggerRefresh() {
   const btn = $("refreshBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Scheduling…"; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Scheduling…";
+  }
   try {
     const res = await fetch(`/api/kyc/clients/${encodeURIComponent(clientId)}/refresh`, {
       method: "POST",
@@ -193,7 +214,10 @@ async function triggerRefresh() {
   } catch (e) {
     showToast(`Refresh failed: ${e.message}`);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "↻ Trigger early refresh"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "↻ Trigger early refresh";
+    }
   }
 }
 window.triggerRefresh = triggerRefresh;

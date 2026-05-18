@@ -66,6 +66,8 @@ import {
 } from "../platform/forward-obligations";
 import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
+import { KYCOrchestrator } from "../platform/kyc/orchestrator";
+import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import {
   getCorrespondentRouting,
@@ -92,8 +94,6 @@ import {
   buildKycClientDetailView,
   buildKycClientsView,
 } from "./kyc-clients-view";
-import { KYCOrchestrator } from "../platform/kyc/orchestrator";
-import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
@@ -623,7 +623,10 @@ async function handleKycStart(req: Request): Promise<Response> {
   try {
     const result = await kycOrchestrator.startOnboarding(input);
     refresh("kyc-start");
-    logger.info({ candidateId: result.candidateId, entityName: input.entityName }, "KYC candidate registered via dashboard");
+    logger.info(
+      { candidateId: result.candidateId, entityName: input.entityName },
+      "KYC candidate registered via dashboard",
+    );
     return jsonResponse(result, 201);
   } catch (e) {
     return jsonResponse({ error: (e as Error).message }, 500);
@@ -634,7 +637,10 @@ async function handleKycAdvance(candidateId: string): Promise<Response> {
   try {
     const state = await kycOrchestrator.advanceStep(candidateId);
     refresh("kyc-advance");
-    logger.info({ candidateId, currentStep: state.currentStep, status: state.status }, "KYC step advanced via dashboard");
+    logger.info(
+      { candidateId, currentStep: state.currentStep, status: state.status },
+      "KYC step advanced via dashboard",
+    );
     return jsonResponse(state);
   } catch (e) {
     const msg = (e as Error).message ?? String(e);
@@ -665,7 +671,12 @@ async function handleKycDecide(req: Request, candidateId: string): Promise<Respo
     return jsonResponse({ error: "decidedBy is required" }, 400);
   }
   try {
-    const state = await kycOrchestrator.recordHumanDecision(candidateId, decision, decidedBy, mlroSignOffId);
+    const state = await kycOrchestrator.recordHumanDecision(
+      candidateId,
+      decision,
+      decidedBy,
+      mlroSignOffId,
+    );
     refresh("kyc-decide");
     logger.info({ candidateId, decision, decidedBy }, "KYC human decision recorded via dashboard");
     return jsonResponse(state);
@@ -707,7 +718,11 @@ async function handleKycSimulate(req: Request): Promise<Response> {
   if (typeof body !== "object" || body === null) {
     return jsonResponse({ error: "body must be a JSON object" }, 400);
   }
-  const { scenario, count = 1, runFull = false } = body as {
+  const {
+    scenario,
+    count = 1,
+    runFull = false,
+  } = body as {
     scenario?: string;
     count?: number;
     runFull?: boolean;
@@ -724,7 +739,8 @@ async function handleKycSimulate(req: Request): Promise<Response> {
     return jsonResponse({ error: "sim module not available" }, 500);
   }
 
-  const SCENARIOS = (simModule as { SCENARIOS?: Record<string, () => NewCandidateInput> }).SCENARIOS;
+  const SCENARIOS = (simModule as { SCENARIOS?: Record<string, () => NewCandidateInput> })
+    .SCENARIOS;
   if (!SCENARIOS || !(scenario in SCENARIOS)) {
     const available = SCENARIOS ? Object.keys(SCENARIOS).join(", ") : "(unknown)";
     return jsonResponse({ error: `unknown scenario "${scenario}". Available: ${available}` }, 400);
@@ -742,7 +758,7 @@ async function handleKycSimulate(req: Request): Promise<Response> {
   }> = [];
 
   for (let i = 0; i < safeCount; i++) {
-    const input = SCENARIOS[scenario]!();
+    const input = SCENARIOS[scenario]?.();
     if (safeCount > 1) input.entityName = `${input.entityName} #${i + 1}`;
     try {
       const { candidateId } = await orchestrator.startOnboarding(input);
@@ -758,7 +774,7 @@ async function handleKycSimulate(req: Request): Promise<Response> {
         outcome: state.status,
         riskBand: state.riskBand,
       });
-    } catch (e) {
+    } catch (_e) {
       results.push({
         candidateId: `error-${i}`,
         entityName: "error",
@@ -770,7 +786,10 @@ async function handleKycSimulate(req: Request): Promise<Response> {
   }
 
   refresh("kyc-simulate");
-  logger.info({ scenario, count: safeCount, runFull }, `KYC simulation completed: ${results.length} candidates`);
+  logger.info(
+    { scenario, count: safeCount, runFull },
+    `KYC simulation completed: ${results.length} candidates`,
+  );
   return jsonResponse({ results });
 }
 
@@ -1866,7 +1885,10 @@ const server = Bun.serve({
     }
     // KYC accepted clients register.
     // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
-    if (req.method === "GET" && (url.pathname === "/kyc-clients" || url.pathname === "/kyc-clients/")) {
+    if (
+      req.method === "GET" &&
+      (url.pathname === "/kyc-clients" || url.pathname === "/kyc-clients/")
+    ) {
       return serveStatic("/kyc-clients.html");
     }
     if (req.method === "GET" && url.pathname.startsWith("/kyc-clients/")) {
