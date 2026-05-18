@@ -82,7 +82,6 @@ export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
-import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -96,6 +95,7 @@ import {
   RMS_EVENT_TYPES,
 } from "./governance";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
+import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
   CUSTOMER_LIFECYCLE_EVENT_TYPES,

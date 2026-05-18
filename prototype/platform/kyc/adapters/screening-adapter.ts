@@ -52,9 +52,7 @@ export interface ScreeningAdapterResult {
 const ALL_LISTS: SanctionsList[] = ["un", "ofac", "eu", "uk-hmt", "sa-pocdatara"];
 
 export class ScreeningAdapter implements KYCAdapter<ScreeningAdapterInput, ScreeningAdapterResult> {
-  async check(
-    input: ScreeningAdapterInput,
-  ): Promise<KYCAdapterResult<ScreeningAdapterResult>> {
+  async check(input: ScreeningAdapterInput): Promise<KYCAdapterResult<ScreeningAdapterResult>> {
     try {
       if (adapterMode() === "live") {
         // TODO: integrate with real sanctions/PEP vendor at licence-day.
@@ -76,9 +74,7 @@ export class ScreeningAdapter implements KYCAdapter<ScreeningAdapterInput, Scree
     }
   }
 
-  private _simulate(
-    input: ScreeningAdapterInput,
-  ): KYCAdapterResult<ScreeningAdapterResult> {
+  private _simulate(input: ScreeningAdapterInput): KYCAdapterResult<ScreeningAdapterResult> {
     const upper = input.name.toUpperCase();
 
     if (upper.startsWith("SANCTION")) {

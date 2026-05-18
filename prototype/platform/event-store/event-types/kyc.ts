@@ -396,16 +396,23 @@ export function makeKYCDecisionMade(args: {
 // ClientAccepted event. This invariant is enforced at the projection layer.
 // ---------------------------------------------------------------------------
 
-export const clientAcceptedPayloadSchema = z.object({
-  candidateId: z.string().min(1),
-  clientId: z.string().min(1), // new UUID — primary key in clients projection
-  entityName: z.string().min(1),
-  entityType: z.enum(["company", "trust", "partnership", "individual-sole-trader"]),
-  jurisdiction: z.string().min(1),
-  riskBand: z.enum(["low", "medium", "high"]),
-  category: z.enum(["EC", "PC"]), // Eligible Counterparty | Professional Client
-  acceptedAt: z.string().min(1),
-});
+// NOTE: clientAcceptedPayloadSchema uses passthrough + optional new fields to
+// remain backward-compatible with the legacy `domains/customer/onboarding.ts`
+// gateway which emits `ClientAccepted` with { candidateId, riskRating,
+// kycTier, acceptedBy }. New gateway authoring uses the full shape below.
+// Both payload shapes are valid at the registry level.
+export const clientAcceptedPayloadSchema = z
+  .object({
+    candidateId: z.string().min(1),
+    clientId: z.string().min(1).optional(), // new UUID — primary key in clients projection
+    entityName: z.string().min(1).optional(),
+    entityType: z.enum(["company", "trust", "partnership", "individual-sole-trader"]).optional(),
+    jurisdiction: z.string().min(1).optional(),
+    riskBand: z.enum(["low", "medium", "high"]).optional(),
+    category: z.enum(["EC", "PC"]).optional(), // Eligible Counterparty | Professional Client
+    acceptedAt: z.string().min(1).optional(),
+  })
+  .passthrough();
 
 export type ClientAcceptedPayload = z.infer<typeof clientAcceptedPayloadSchema>;
 

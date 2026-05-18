@@ -199,10 +199,7 @@ function countryRiskScore(jurisdiction: string): number {
  *
  * Shell-company indicator overrides to 90 (FATF Rec 24 — corporate vehicles).
  */
-function entityTypeRiskScore(
-  entityType: string,
-  shellCompanyIndicator: boolean,
-): number {
+function entityTypeRiskScore(entityType: string, shellCompanyIndicator: boolean): number {
   if (shellCompanyIndicator) return 90;
   switch (entityType) {
     case "trust":
@@ -211,7 +208,6 @@ function entityTypeRiskScore(
       return 40;
     case "individual-sole-trader":
       return 30;
-    case "company":
     default:
       return 20;
   }
@@ -228,10 +224,7 @@ function entityTypeRiskScore(
  */
 export function computeRiskScore(input: RiskScoringInput): RiskScoringResult {
   const countryScore = countryRiskScore(input.jurisdiction);
-  const entityScore = entityTypeRiskScore(
-    input.entityType,
-    input.shell_company_indicator ?? false,
-  );
+  const entityScore = entityTypeRiskScore(input.entityType, input.shell_company_indicator ?? false);
 
   // PEP score: direct PEP = 100, linked PEP = 70, clean = 0.
   const pepScore = input.pep_flag ? 100 : input.pep_linked ? 70 : 0;

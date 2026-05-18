@@ -122,10 +122,7 @@ function updateClient(
 // Per-event-type handlers
 // ---------------------------------------------------------------------------
 
-function applyClientAccepted(
-  state: ClientsProjectionState,
-  e: Event,
-): ClientsProjectionState {
+function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsProjectionState {
   const p = e.payload as Record<string, unknown>;
   const clientId = typeof p.clientId === "string" ? p.clientId : undefined;
   const candidateId = typeof p.candidateId === "string" ? p.candidateId : undefined;
@@ -165,10 +162,7 @@ function applyClientAccepted(
   });
 }
 
-function applyKYCRefreshCompleted(
-  state: ClientsProjectionState,
-  e: Event,
-): ClientsProjectionState {
+function applyKYCRefreshCompleted(state: ClientsProjectionState, e: Event): ClientsProjectionState {
   const p = e.payload as Record<string, unknown>;
   const clientId = typeof p.clientId === "string" ? p.clientId : undefined;
   if (!clientId) return state;
@@ -181,18 +175,13 @@ function applyKYCRefreshCompleted(
   });
 }
 
-function applyKYCRatingRevised(
-  state: ClientsProjectionState,
-  e: Event,
-): ClientsProjectionState {
+function applyKYCRatingRevised(state: ClientsProjectionState, e: Event): ClientsProjectionState {
   const p = e.payload as Record<string, unknown>;
   const clientId = typeof p.clientId === "string" ? p.clientId : undefined;
   if (!clientId) return state;
 
   const newBand: ClientRiskBand | undefined =
-    p.newBand === "low" || p.newBand === "medium" || p.newBand === "high"
-      ? p.newBand
-      : undefined;
+    p.newBand === "low" || p.newBand === "medium" || p.newBand === "high" ? p.newBand : undefined;
 
   if (!newBand) return state;
 

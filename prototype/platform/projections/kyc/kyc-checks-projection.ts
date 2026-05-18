@@ -117,11 +117,17 @@ function applyKYCIdentityVerified(
   const candidateId = getCandidateId(p);
   if (!candidateId) return state;
 
-  return setCheck(state, candidateId, "identity-verification", {
-    status: "passed",
-    result: p,
-    checkedAt: typeof p.verifiedAt === "string" ? p.verifiedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "identity-verification",
+    {
+      status: "passed",
+      result: p,
+      checkedAt: typeof p.verifiedAt === "string" ? p.verifiedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
 function applyKYCIdentityVerificationFailed(
@@ -133,14 +139,19 @@ function applyKYCIdentityVerificationFailed(
   if (!candidateId) return state;
 
   const reason = typeof p.reason === "string" ? p.reason : "";
-  const status: CheckStatus =
-    reason === "adapter-unavailable" ? "failed" : "failed";
+  const status: CheckStatus = reason === "adapter-unavailable" ? "failed" : "failed";
 
-  return setCheck(state, candidateId, "identity-verification", {
-    status,
-    result: p,
-    checkedAt: typeof p.failedAt === "string" ? p.failedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "identity-verification",
+    {
+      status,
+      result: p,
+      checkedAt: typeof p.failedAt === "string" ? p.failedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
 function applyKYCSanctionsPEPScreened(
@@ -155,17 +166,20 @@ function applyKYCSanctionsPEPScreened(
   const checkStatus: CheckStatus =
     result === "clean" ? "passed" : result === "false-positive" ? "flagged" : "flagged";
 
-  return setCheck(state, candidateId, "sanctions-pep-screening", {
-    status: checkStatus,
-    result: p,
-    checkedAt: typeof p.screenedAt === "string" ? p.screenedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "sanctions-pep-screening",
+    {
+      status: checkStatus,
+      result: p,
+      checkedAt: typeof p.screenedAt === "string" ? p.screenedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
-function applyKYCUBOResolved(
-  state: KYCChecksProjectionState,
-  e: Event,
-): KYCChecksProjectionState {
+function applyKYCUBOResolved(state: KYCChecksProjectionState, e: Event): KYCChecksProjectionState {
   const p = e.payload as Record<string, unknown>;
   const candidateId = getCandidateId(p);
   if (!candidateId) return state;
@@ -173,17 +187,20 @@ function applyKYCUBOResolved(
   const opaqueStructure = p.ubo_opaque_structure === true;
   const checkStatus: CheckStatus = opaqueStructure ? "flagged" : "passed";
 
-  return setCheck(state, candidateId, "ubo-resolution", {
-    status: checkStatus,
-    result: p,
-    checkedAt: typeof p.resolvedAt === "string" ? p.resolvedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "ubo-resolution",
+    {
+      status: checkStatus,
+      result: p,
+      checkedAt: typeof p.resolvedAt === "string" ? p.resolvedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
-function applyKYCRiskRated(
-  state: KYCChecksProjectionState,
-  e: Event,
-): KYCChecksProjectionState {
+function applyKYCRiskRated(state: KYCChecksProjectionState, e: Event): KYCChecksProjectionState {
   const p = e.payload as Record<string, unknown>;
   const candidateId = getCandidateId(p);
   if (!candidateId) return state;
@@ -191,32 +208,38 @@ function applyKYCRiskRated(
   const band = typeof p.band === "string" ? p.band : "";
   const checkStatus: CheckStatus = band === "high" ? "flagged" : "passed";
 
-  return setCheck(state, candidateId, "risk-rating", {
-    status: checkStatus,
-    result: p,
-    checkedAt: typeof p.ratedAt === "string" ? p.ratedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "risk-rating",
+    {
+      status: checkStatus,
+      result: p,
+      checkedAt: typeof p.ratedAt === "string" ? p.ratedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
-function applyKYCEDDInitiated(
-  state: KYCChecksProjectionState,
-  e: Event,
-): KYCChecksProjectionState {
+function applyKYCEDDInitiated(state: KYCChecksProjectionState, e: Event): KYCChecksProjectionState {
   const p = e.payload as Record<string, unknown>;
   const candidateId = getCandidateId(p);
   if (!candidateId) return state;
 
-  return setCheck(state, candidateId, "edd", {
-    status: "pending",
-    result: p,
-    checkedAt: typeof p.initiatedAt === "string" ? p.initiatedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "edd",
+    {
+      status: "pending",
+      result: p,
+      checkedAt: typeof p.initiatedAt === "string" ? p.initiatedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
-function applyKYCEDDCompleted(
-  state: KYCChecksProjectionState,
-  e: Event,
-): KYCChecksProjectionState {
+function applyKYCEDDCompleted(state: KYCChecksProjectionState, e: Event): KYCChecksProjectionState {
   const p = e.payload as Record<string, unknown>;
   const candidateId = getCandidateId(p);
   if (!candidateId) return state;
@@ -224,11 +247,17 @@ function applyKYCEDDCompleted(
   const outcome = typeof p.outcome === "string" ? p.outcome : "";
   const checkStatus: CheckStatus = outcome === "proceed" ? "passed" : "failed";
 
-  return setCheck(state, candidateId, "edd", {
-    status: checkStatus,
-    result: p,
-    checkedAt: typeof p.completedAt === "string" ? p.completedAt : e.as_of,
-  }, e.as_of);
+  return setCheck(
+    state,
+    candidateId,
+    "edd",
+    {
+      status: checkStatus,
+      result: p,
+      checkedAt: typeof p.completedAt === "string" ? p.completedAt : e.as_of,
+    },
+    e.as_of,
+  );
 }
 
 // ---------------------------------------------------------------------------

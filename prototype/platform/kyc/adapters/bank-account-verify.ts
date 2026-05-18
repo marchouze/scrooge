@@ -36,9 +36,7 @@ export interface BankAccountVerifyResult {
 export class BankAccountVerifyAdapter
   implements KYCAdapter<BankAccountVerifyInput, BankAccountVerifyResult>
 {
-  async check(
-    input: BankAccountVerifyInput,
-  ): Promise<KYCAdapterResult<BankAccountVerifyResult>> {
+  async check(input: BankAccountVerifyInput): Promise<KYCAdapterResult<BankAccountVerifyResult>> {
     try {
       if (adapterMode() === "live") {
         // TODO: integrate with BankservAfrica AVS or correspondent bank
@@ -61,9 +59,7 @@ export class BankAccountVerifyAdapter
     }
   }
 
-  private _simulate(
-    input: BankAccountVerifyInput,
-  ): KYCAdapterResult<BankAccountVerifyResult> {
+  private _simulate(input: BankAccountVerifyInput): KYCAdapterResult<BankAccountVerifyResult> {
     const lastDigit = input.accountNumber.slice(-1);
 
     if (lastDigit === "0") {
