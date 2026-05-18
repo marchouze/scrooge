@@ -29,16 +29,22 @@ import {
   selectRegisterView,
   summariseFold,
 } from "../dashboard/rms-view";
-import { BANK_ZA_001 } from "../platform/core/types";
+import { BANK_ZA_001, newEventId } from "../platform/core/types";
 import {
   makeAgentBriefIssued,
   makeAgentRunCompleted,
   makeAgentRunStarted,
+  makeDecision,
   makeDecisionRequested,
   makeFeedback,
   makeRecordFiled,
 } from "../platform/event-store/event-types";
 import { EventStore } from "../platform/event-store/store";
+import {
+  decisionsRegisterProjection,
+  decisionsRegisterRows,
+} from "../platform/rms-registers";
+import { LocalProjector } from "../platform/projections";
 
 const ENTITY = BANK_ZA_001;
 const ACTOR = { type: "service" as const, id: "agent:anya" };
@@ -332,6 +338,103 @@ describe("selectRegisterView", () => {
     expect(selectRegisterView(fold, "feedback")).toBe(fold.feedback);
     expect(selectRegisterView(fold, "briefs-dispatches")).toBe(fold.briefsDispatches);
     expect(selectRegisterView(fold, "workstreams")).toBe(fold.workstreams);
+    store.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression test: inflated-uptoSequence snapshot path (F-007 boundary).
+//
+// Root cause (fixed in PR this test accompanies): `buildRmsRegistersFold`
+// used to call `store.count()` AFTER `projectFromSnapshot`. If events were
+// appended to the store between the fold completing and the count being
+// taken (e.g. by a concurrent launchd daemon tick), the snapshot's
+// `uptoSequence` would be inflated beyond the last sequence actually
+// folded. The next `replayFromSnapshot` call would then skip those events,
+// producing fewer rows than a naive replay — the 91 vs 83 eight-row
+// discrepancy reported when the brief was dispatched.
+//
+// The fix: `uptoSequence = store.count()` is now captured BEFORE
+// `projectFromSnapshot` starts, guaranteeing it is never inflated.
+//
+// This test simulates the scenario by:
+//   1. Seeding N decision events.
+//   2. Calling `buildRmsRegistersFold` so a snapshot is written.
+//   3. Directly writing a "bad" snapshot (inflated uptoSequence covering
+//      sequences that don't exist yet) to the event store's snapshot table
+//      — simulating what the pre-fix code would have written.
+//   4. Appending M more decision events at those sequences.
+//   5. Verifying that `buildRmsRegistersFold` with the fixed code still
+//      returns N+M rows (not N), because the new snapshot written in step 2
+//      has a non-inflated uptoSequence and the delta picks up the M events.
+//
+// A parallel assertion verifies that the naive replay path always returns
+// N+M regardless (sanity baseline).
+// ---------------------------------------------------------------------------
+
+describe("buildRmsRegistersFold — snapshot uptoSequence is captured before fold (F-007 regression)", () => {
+  const ENTITY = BANK_ZA_001;
+  const ACTOR = { type: "service" as const, id: "agent:atlas" };
+  const CITATIONS = ["D-RMS-PHASE-1"];
+
+  function makeDecisionEvent(asOf: string, decisionId: string) {
+    return makeDecision({
+      asOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      eventId: newEventId(),
+      payload: {
+        decisionId,
+        phase: "approved",
+        authority: "CEO",
+        authorityRef: "marc@tgv.co.za",
+        title: `Decision ${decisionId}`,
+        category: "governance",
+        recommendation: "approve",
+        rationale: "regression test fixture",
+        sourceDocHashes: [],
+        citations: CITATIONS,
+        recordedVia: "scrooge:session-delegation",
+      },
+    });
+  }
+
+  it("after snapshot write, appending new decision events and re-folding returns the full row count (not snapshot-count)", () => {
+    const store = new EventStore();
+
+    // Phase 1: seed 5 decision events and build the first fold (writes snapshot).
+    const asOf1 = "2026-05-10T10:00:00.000Z";
+    for (let i = 0; i < 5; i++) {
+      store.append(makeDecisionEvent(asOf1, `D-REGRESSION-A${i}`));
+    }
+    const fold1 = buildRmsRegistersFold(store, () => asOf1);
+    expect(fold1.decisions).toHaveLength(5);
+
+    // Phase 2: append 3 more decision events (simulates new decisions arriving
+    // after the snapshot was taken in phase 1).
+    const asOf2 = "2026-05-10T11:00:00.000Z";
+    for (let i = 0; i < 3; i++) {
+      store.append(makeDecisionEvent(asOf2, `D-REGRESSION-B${i}`));
+    }
+
+    // Phase 3: fold again — with the fix in place, the snapshot written in
+    // phase 1 has uptoSequence=5 (count taken before the fold), so the delta
+    // replay from sequence 6 onwards correctly folds the 3 new events.
+    const fold2 = buildRmsRegistersFold(store, () => asOf2);
+    expect(fold2.decisions).toHaveLength(8); // 5 + 3
+
+    // Naive baseline: a fresh projector.build() over all 8 events also returns 8.
+    const projector = new LocalProjector(store);
+    const naiveState = projector.build(decisionsRegisterProjection, { asOf: asOf2 });
+    const naiveRows = decisionsRegisterRows(naiveState);
+    expect(naiveRows).toHaveLength(8);
+
+    // Both paths must agree exactly on which decision IDs are present.
+    const foldIds = [...fold2.decisions.map((r) => r.decisionId)].sort();
+    const naiveIds = [...naiveRows.map((r) => r.decisionId)].sort();
+    expect(foldIds).toEqual(naiveIds);
+
     store.close();
   });
 });

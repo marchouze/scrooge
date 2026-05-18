@@ -277,6 +277,21 @@ export function buildRmsRegistersFold(
   // store (no snapshot yet) it degrades gracefully to a full naive replay.
   // After folding, `maybeSnapshot` persists a new snapshot when the cadence
   // rule fires (CeoDecision cadence from the event-type registry).
+  //
+  // uptoSequence is captured BEFORE the fold starts (not after) to close a
+  // race condition: if events are appended concurrently during the fold, a
+  // post-fold `store.count()` would exceed the max sequence actually folded.
+  // Persisting a snapshot with an inflated uptoSequence causes the next
+  // `replayFromSnapshot` delta to start AFTER those events, silently skipping
+  // them — which is the F-007 Principle 1 boundary violation this recon
+  // asserts against (reported as 91 naive vs 83 live, 8-row discrepancy).
+  //
+  // Taking the count BEFORE the fold is conservative: any events appended
+  // after this point will either be at sequences > uptoSequence (safe — they
+  // appear in the next delta replay) or at sequences ≤ uptoSequence with
+  // as_of > asOf (excluded by the temporal bound — also safe). Either way,
+  // the snapshot can never claim to cover events it has not folded.
+  const uptoSequence = store.count();
   const { state: decisionsState, deltaCount: decisionsDelta } = projector.projectFromSnapshot(
     decisionsRegisterProjection,
     { streamKey: DECISIONS_STREAM_KEY, asOf, provenanceFilter: provFilter },
@@ -284,10 +299,6 @@ export function buildRmsRegistersFold(
 
   // Attempt snapshot emission after the fold — persists state when the
   // cadence rule (K events or T seconds since last snapshot) fires.
-  // The uptoSequence is the current store count; close enough for the
-  // cadence rule (the store does not expose the exact last-event sequence
-  // without an additional query, and the cadence rule's threshold is coarse).
-  const uptoSequence = store.count();
   projector.maybeSnapshot(decisionsRegisterProjection, {
     streamKey: DECISIONS_STREAM_KEY,
     asOf,
