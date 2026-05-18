@@ -113,21 +113,13 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!policy) {
       violations.push({
         subject: `agent:${agentUrn}`,
-        message:
-          `Registered agent \`${agentUrn}\` has no published \`PermissionPolicyPublished\` event. ` +
-          `Run \`bun run identity:issue\` to publish a policy for all registered agents. ` +
-          `Citations: ${CITATIONS.join(", ")}.`,
+        message: `Registered agent \`${agentUrn}\` has no published \`PermissionPolicyPublished\` event. Run \`bun run identity:issue\` to publish a policy for all registered agents. Citations: ${CITATIONS.join(", ")}.`,
         severity: "fail",
       });
     } else if (specHash && policy.derivedFromSpecHash && policy.derivedFromSpecHash !== specHash) {
       violations.push({
         subject: `agent:${agentUrn}`,
-        message:
-          `Registered agent \`${agentUrn}\` has a policy derived from spec hash ` +
-          `\`${policy.derivedFromSpecHash.slice(0, 12)}\` but the current spec hash is ` +
-          `\`${specHash.slice(0, 12)}\`. The policy is stale. ` +
-          `Run \`bun run identity:issue\` to refresh. ` +
-          `Citations: ${CITATIONS.join(", ")}.`,
+        message: `Registered agent \`${agentUrn}\` has a policy derived from spec hash \`${policy.derivedFromSpecHash.slice(0, 12)}\` but the current spec hash is \`${specHash.slice(0, 12)}\`. The policy is stale. Run \`bun run identity:issue\` to refresh. Citations: ${CITATIONS.join(", ")}.`,
         severity: "warn",
       });
     }

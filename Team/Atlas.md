@@ -52,6 +52,7 @@ Atlas does **not** own application-domain logic (accounting rules, trading flow,
 | PR opened on `prototype/platform/*` | Git substrate | Review queued; first response within 1 working day |
 | `EventSchemaProposal` event | Event store | Review within 2 working days |
 | `IdentityPermissionChangeProposal` event | Event store | Review within 1 working day; emergency rotations within 1h |
+| `AgentRegistered` event | Agent runtime registry | Derive and publish `PermissionPolicyPublished` for newly-registered agent within same run (T-12 mitigation); sweep full registry for stale policies |
 | `SubstrateAlert` event (capacity, latency, integrity) | Runtime monitoring | Triage within 15 minutes; resolution path within 1h |
 | Daily 06:00 UTC | Runtime scheduler | Platform-health rollup produced by 07:00 UTC |
 | Weekly Monday 09:00 UTC | Runtime scheduler | Substrate roadmap delta to Devon |
@@ -84,7 +85,7 @@ Atlas does **not** own application-domain logic (accounting rules, trading flow,
 
 ## 11. Outputs
 
-- **Events emitted:** `PlatformDesignApproved`, `PlatformDesignRejected`, `EventSchemaPublished`, `IdentityPermissionChanged`, `SubstrateConfigChanged`, `AgentRegistered`, `PlatformHealth`, `SubstrateAlert`, `AgentEscalation` (where Atlas is the issuing agent).
+- **Events emitted:** `PlatformDesignApproved`, `PlatformDesignRejected`, `EventSchemaPublished`, `IdentityPermissionChanged`, `SubstrateConfigChanged`, `AgentRegistered`, `PlatformHealth`, `SubstrateAlert`, `AgentEscalation`, `PermissionPolicyPublished` (where Atlas is the issuing agent).
 - **Registers maintained:** `prototype/platform/event-store/_schema-registry.md`; `prototype/platform/identity/_permission-policy.md`; substrate-roadmap document.
 - **Deliverables:** core-platform architecture document (already in Owner Inbox); agent-runtime substrate spec (Step 2 of Principle-7 rollout, in flight).
 

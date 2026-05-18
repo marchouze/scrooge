@@ -88,9 +88,7 @@ describe("permission-policy-coverage recon (T-12)", () => {
     const warns = r.violations.filter((v) => v.severity === "warn");
     expect(warns.length).toBeGreaterThan(0);
     expect(
-      warns.some(
-        (v) => v.subject === "agent:agent:atlas" && v.message.includes("stale"),
-      ),
+      warns.some((v) => v.subject === "agent:agent:atlas" && v.message.includes("stale")),
     ).toBe(true);
   });
 
@@ -108,9 +106,7 @@ describe("permission-policy-coverage recon (T-12)", () => {
     const infos = r.violations.filter((v) => v.severity === "info");
     expect(
       infos.some(
-        (v) =>
-          v.subject === "permission-policy:coverage-summary" &&
-          v.message.includes("1 of 2"),
+        (v) => v.subject === "permission-policy:coverage-summary" && v.message.includes("1 of 2"),
       ),
     ).toBe(true);
   });
@@ -132,9 +128,7 @@ describe("permission-policy-coverage recon (T-12)", () => {
       registeredAgents: [
         { agentUrn: "agent:atlas", specHash: "" }, // empty hash
       ],
-      publishedPolicies: new Map([
-        ["agent:atlas", { policyHash: "p1", derivedFromSpecHash: "" }],
-      ]),
+      publishedPolicies: new Map([["agent:atlas", { policyHash: "p1", derivedFromSpecHash: "" }]]),
     });
     expect(r.ok).toBe(true);
     const warns = r.violations.filter((v) => v.severity === "warn");

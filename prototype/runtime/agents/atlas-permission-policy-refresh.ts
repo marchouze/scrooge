@@ -41,8 +41,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const triggeredUrns = new Set<string>();
   for (const e of triggeringEvents) {
     if (e.type === "AgentRegistered") {
-      const body = e.body as Record<string, unknown>;
-      const agentUrn = body?.agentUrn ?? (e as unknown as Record<string, unknown>)?.payload?.agentUrn;
+      const agentUrn = (e.payload as Record<string, unknown>)?.agentUrn;
       if (typeof agentUrn === "string" && agentUrn) {
         triggeredUrns.add(agentUrn);
       }
