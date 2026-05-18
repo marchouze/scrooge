@@ -3,6 +3,7 @@
 // To add a handler: add the import and entry here, then add one spread in handler-callables.ts.
 
 import type { AgentRunHandler } from "../../types";
+import sadeAgentRetirement from "../sade-agent-retirement";
 import sadeAgentopsReadiness from "../sade-agentops-readiness";
 import sadeEfficiencyAdvisory from "../sade-efficiency-advisory";
 import sadeEventTriage from "../sade-event-triage";
@@ -15,4 +16,5 @@ export const SADE_CALLABLES: Record<string, AgentRunHandler> = {
   "sade:efficiency-advisory": sadeEfficiencyAdvisory,
   "sade:fleet-optimisation": sadeFleetOptimisation,
   "sade:event-triage": sadeEventTriage,
+  "sade:agent-retirement": sadeAgentRetirement,
 };

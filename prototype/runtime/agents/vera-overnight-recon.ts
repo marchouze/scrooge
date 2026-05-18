@@ -27,9 +27,11 @@ import {
   type AuditFindingSeverity,
   makeAuditFinding,
 } from "../../platform/event-store/event-types/audit";
+import { run as runAgentScope } from "../../platform/recon/agent-scope";
 import { run as runDashboardDerivation } from "../../platform/recon/dashboard-derivation-recon";
 import { run as runDecisionEvent } from "../../platform/recon/decision-event-recon";
 import { run as runDecisionRequiredEventPairing } from "../../platform/recon/decision-required-event-pairing";
+import { run as runEscalationChannel } from "../../platform/recon/escalation-channel";
 import { run as runEventTypeRegistryCoverage } from "../../platform/recon/event-type-registry-coverage";
 import { run as runMandateOwnership } from "../../platform/recon/mandate-ownership";
 import { run as runPermissionGateDefault } from "../../platform/recon/permission-gate-default";
@@ -67,6 +69,16 @@ const PIPELINES: PipelineEntry[] = [
     key: "decision-required-event-pairing",
     title: "Decision-required → CeoDecision pairing (F-033)",
     run: runDecisionRequiredEventPairing,
+  },
+  {
+    key: "escalation-channel",
+    title: "Escalation-channel integrity (Wave-4 #14)",
+    run: runEscalationChannel,
+  },
+  {
+    key: "agent-scope",
+    title: "Agent-scope integrity (Wave-4 #15)",
+    run: runAgentScope,
   },
 ];
 

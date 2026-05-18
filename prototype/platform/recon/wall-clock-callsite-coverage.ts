@@ -91,6 +91,9 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // is the correct API for monotonic TTL arithmetic. The cache does not
   // affect event provenance or Principle 1 correctness.
   "dashboard/substrate-gaps.ts",
+  // Agent-runs TTL cache: Date.now() used for cache-age elapsed-time comparison
+  // only (not as an event timestamp). Same rationale as dashboard/substrate-gaps.ts.
+  "dashboard/agent-runs.ts",
   // Dashboard registry, onboarding view, and rms-view: default parameter values
   // for `now` inject points. The `// wall-clock: default; inject now for
   // deterministic scenarios` comment pattern signals an injectable default —

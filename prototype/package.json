@@ -132,6 +132,7 @@
     "agent:sade-token-usage-analysis": "bun run runtime/run.ts --agent Sade --trigger token-usage-analysis",
     "agent:sade-efficiency-advisory": "bun run runtime/run.ts --agent Sade --trigger efficiency-advisory",
     "agent:sade-fleet-optimisation": "bun run runtime/run.ts --agent Sade --trigger fleet-optimisation",
+    "agent:sade-agent-retirement": "bun run runtime/run.ts --agent Sade --trigger agent-retirement",
     "agent:pax-role-research-queue": "bun run runtime/run.ts --agent PAX --trigger role-research-queue",
     "agent:rohan-backtest-harness": "bun run runtime/run.ts --agent Rohan --trigger backtest-harness",
     "agent:anya-m1-projection-runtime-mapping": "bun run runtime/run.ts --agent Anya --trigger m1-projection-runtime-mapping",

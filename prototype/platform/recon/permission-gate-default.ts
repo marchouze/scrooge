@@ -143,6 +143,10 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   "platform/recon/decision-symmetry.ts",
   "platform/recon/decision-id-hygiene.ts",
   "platform/recon/decision-authority-coverage.ts",
+  // Vera Wave-4 #14 + #15 — read-only replay of AgentEscalation /
+  // AgentDecision events; gate is a no-op on replay.
+  "platform/recon/escalation-channel.ts",
+  "platform/recon/agent-scope.ts",
   // M2 Slice 2 — period-close handler unit tests. Co-located with the module
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.
