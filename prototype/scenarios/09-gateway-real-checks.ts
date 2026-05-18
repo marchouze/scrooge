@@ -1158,12 +1158,7 @@ export function runGatewayRealChecksScenario(opts: {
   const scenarioC = buildScenarioCEvents();
   const scenarioD = buildScenarioDEvents();
 
-  store.appendAll([
-    ...scenarioA.all,
-    ...scenarioB.all,
-    ...scenarioC.all,
-    ...scenarioD.all,
-  ]);
+  store.appendAll([...scenarioA.all, ...scenarioB.all, ...scenarioC.all, ...scenarioD.all]);
 
   // Verify Scenario A: OrderApprovedAtGateway present
   let approvedA = false;

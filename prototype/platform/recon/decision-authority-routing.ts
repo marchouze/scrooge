@@ -17,7 +17,6 @@ import { resolve } from "node:path";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../../projections/decisions";
 import type { DecisionAuthority } from "../event-store/event-types/decision";
 import { EventStore } from "../event-store/store";
-import { applyBaselineToResult, loadBaseline } from "./decisions-baseline";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 function findRepoRoot(start: string): string {
@@ -40,11 +39,12 @@ const PIPELINE = "decision-authority-routing";
 const CEO_VALID_CATEGORIES = new Set(["engineering", "strategic", "build", "product", "other"]);
 
 // Canonical category → expected authority (governance seat) mapping.
-// Only categories that have a named governance seat are listed.
-// "other", "product", "engineering", "people" are CEO/Agent territory during build phase.
+// Only categories that have a single unambiguous governance seat are listed.
+// "governance" is intentionally excluded — it is shared by CoSec AND CAE so
+// either authority is correct.  "other", "product", "engineering", "people"
+// are CEO/Agent territory during the build phase.
 const CATEGORY_TO_AUTHORITY: Partial<Record<string, DecisionAuthority>> = {
   finance: "CFO",
-  governance: "CoSec",
   risk: "CRO",
   compliance: "CCO",
 };
@@ -99,10 +99,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         // A governance seat is attributed, but it's the wrong one.
         violations.push({
           subject: decisionId,
-          message:
-            `decision \`${decisionId}\` has category \`${category}\` (natural authority: \`${expectedAuthority}\`) ` +
-            `but is attributed to \`${authority}\`. Expected \`${expectedAuthority}\` for this category. ` +
-            `Check whether the decision was routed to the correct seat.`,
+          message: `decision \`${decisionId}\` has category \`${category}\` (natural authority: \`${expectedAuthority}\`) but is attributed to \`${authority}\`. Expected \`${expectedAuthority}\` for this category. Check whether the decision was routed to the correct seat.`,
           severity: "warn",
         });
       } else if (authority === "CEO" && !CEO_VALID_CATEGORIES.has(category)) {
@@ -110,18 +107,17 @@ export function run(opts: RunOpts = {}): ReconResult {
         // Valid during build phase when that seat may not yet be active.
         violations.push({
           subject: decisionId,
-          message:
-            `decision \`${decisionId}\` has category \`${category}\` (natural authority: \`${expectedAuthority}\`) ` +
-            `but is attributed to CEO. Consider delegating to \`${expectedAuthority}\` once that seat is active. ` +
-            `This is expected during the build phase when governance seats are not yet fully operational.`,
+          message: `decision \`${decisionId}\` has category \`${category}\` (natural authority: \`${expectedAuthority}\`) but is attributed to CEO. Consider delegating to \`${expectedAuthority}\` once that seat is active. This is expected during the build phase when governance seats are not yet fully operational.`,
           severity: "warn",
         });
       }
     }
   }
 
-  const baseline = loadBaseline(repoRoot, PIPELINE);
-  applyBaselineToResult(result, violations, baseline);
+  // Slice A: all violations are warn-only. ok=true unless there are fail-severity entries
+  // (which this slice never emits). Slice B will promote specific violations to fail.
+  result.violations = violations;
+  result.ok = !violations.some((v) => v.severity === "fail");
   return result;
 }
 

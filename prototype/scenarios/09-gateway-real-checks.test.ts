@@ -2113,12 +2113,17 @@ describe("scenario 09 — Scenario D: all 8 checks pass → OrderApprovedAtGatew
     for (const e of events.all) eventStore.append(e);
 
     expect(events.approval.type).toBe("OrderApprovedAtGateway");
-    const approvalPayload = events.approval.payload as { orderId?: unknown; approvalCitations?: unknown };
+    const approvalPayload = events.approval.payload as {
+      orderId?: unknown;
+      approvalCitations?: unknown;
+    };
     expect(approvalPayload.orderId).toBe("ORD-SCENARIO-D-001");
 
     // All 8 checks requested
     expect(events.checkReqSanctions.payload).toMatchObject({ checkKind: "sanctions" });
-    expect(events.checkReqEligibility.payload).toMatchObject({ checkKind: "counterparty-eligibility" });
+    expect(events.checkReqEligibility.payload).toMatchObject({
+      checkKind: "counterparty-eligibility",
+    });
     expect(events.checkReqRisk.payload).toMatchObject({ checkKind: "market-risk" });
     expect(events.checkReqIdentity.payload).toMatchObject({ checkKind: "identity" });
     expect(events.checkReqSuitability.payload).toMatchObject({ checkKind: "suitability" });
@@ -2128,9 +2133,14 @@ describe("scenario 09 — Scenario D: all 8 checks pass → OrderApprovedAtGatew
 
     // All 8 checks pass
     for (const comp of [
-      events.checkCompSanctions, events.checkCompEligibility, events.checkCompRisk,
-      events.checkCompIdentity, events.checkCompSuitability, events.checkCompCreditLimit,
-      events.checkCompCapitalImpact, events.checkCompFunding,
+      events.checkCompSanctions,
+      events.checkCompEligibility,
+      events.checkCompRisk,
+      events.checkCompIdentity,
+      events.checkCompSuitability,
+      events.checkCompCreditLimit,
+      events.checkCompCapitalImpact,
+      events.checkCompFunding,
     ]) {
       expect((comp.payload as { outcome: string }).outcome).toBe("approve");
     }

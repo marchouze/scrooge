@@ -16,7 +16,7 @@ recordDecision(
     authority: "COO",
     authorityRef: "devon@bank",
     title: "COO CAB approval: ScheduledTrigger emitter (A2.1) — approved for substrate deployment",
-    category: "governance",
+    category: "other",
     recommendation:
       "Approve deployment of the Bun-based substrate scheduler (ScheduledTrigger emitter, A2.1) to the build-phase substrate. Change is infrastructure-only; no customer-facing impact.",
     rationale:

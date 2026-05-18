@@ -15,7 +15,8 @@ recordDecision(
     phase: "approved",
     authority: "CCO",
     authorityRef: "zara@bank",
-    title: "CCO attestation: RMCP v1 programme — build-phase controls are adequate for pre-commencement stage",
+    title:
+      "CCO attestation: RMCP v1 programme — build-phase controls are adequate for pre-commencement stage",
     category: "compliance",
     recommendation:
       "Attest that RMCP v1 controls are adequate for the current build phase. No customer onboarding has commenced; STR/CTR/TPR obligations are not yet triggered; the programme is ready for licence-application review.",
