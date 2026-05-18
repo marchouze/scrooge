@@ -12,11 +12,6 @@ const $ = (id) => document.getElementById(id);
 // ---------------------------------------------------------------------------
 // Utilities
 
-function fmtDate(iso) {
-  if (!iso) return "—";
-  return iso.slice(0, 10);
-}
-
 function daysOpen(registeredAt) {
   if (!registeredAt) return "—";
   const ms = Date.now() - new Date(registeredAt).getTime();
@@ -71,12 +66,16 @@ function renderSummary(counts) {
     { num: counts.accepted, lbl: "Accepted" },
     { num: counts.rejected, lbl: "Rejected" },
   ];
-  $("summaryCards").innerHTML = cards.map(c => `
+  $("summaryCards").innerHTML = cards
+    .map(
+      (c) => `
     <div class="kyc-card">
       <div class="kyc-card-num">${c.num}</div>
       <div class="kyc-card-lbl">${c.lbl}</div>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function renderTable(candidates) {
@@ -90,13 +89,15 @@ function renderTable(candidates) {
   }
   $("tableWrap").hidden = false;
   $("emptyState").hidden = true;
-  $("tableSubtitle").textContent = `${candidates.length} candidate${candidates.length !== 1 ? "s" : ""}`;
+  $("tableSubtitle").textContent =
+    `${candidates.length} candidate${candidates.length !== 1 ? "s" : ""}`;
 
-  tbody.innerHTML = candidates.map(c => {
-    const entityName = c.entityName ?? c.candidateId.slice(0, 12) + "…";
-    const entityType = c.entityType ?? "—";
-    const jurisdiction = c.jurisdiction ?? "—";
-    return `<tr>
+  tbody.innerHTML = candidates
+    .map((c) => {
+      const entityName = c.entityName ?? `${c.candidateId.slice(0, 12)}…`;
+      const entityType = c.entityType ?? "—";
+      const jurisdiction = c.jurisdiction ?? "—";
+      return `<tr>
       <td><a href="/kyc-onboarding/${encodeURIComponent(c.candidateId)}">${entityName}</a></td>
       <td>${entityType}</td>
       <td>${jurisdiction}</td>
@@ -106,7 +107,8 @@ function renderTable(candidates) {
       <td>${statusBadge(c.status)}</td>
       <td><a class="btn btn-outline btn-sm" href="/kyc-onboarding/${encodeURIComponent(c.candidateId)}">View</a></td>
     </tr>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function renderAsOf(asOf) {

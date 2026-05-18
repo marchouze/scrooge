@@ -18,22 +18,22 @@ const candidateId = decodeURIComponent(window.location.pathname.replace(/^\/kyc-
 // PROC-FC-01 step definitions (ordered)
 
 const PROC_STEPS = [
-  { key: "candidate-registered",    label: "Registered" },
-  { key: "identity-collected",      label: "Identity Collected" },
-  { key: "identity-verified",       label: "Identity Verified" },
-  { key: "sanctions-pep-screened",  label: "Sanctions/PEP Screened" },
-  { key: "ubo-resolved",            label: "UBO Resolved" },
-  { key: "risk-rated",              label: "Risk Rated" },
-  { key: "edd-in-progress",         label: "EDD" },
-  { key: "decision-pending",        label: "Decision" },
-  { key: "accepted",                label: "Accepted" },
+  { key: "candidate-registered", label: "Registered" },
+  { key: "identity-collected", label: "Identity Collected" },
+  { key: "identity-verified", label: "Identity Verified" },
+  { key: "sanctions-pep-screened", label: "Sanctions/PEP Screened" },
+  { key: "ubo-resolved", label: "UBO Resolved" },
+  { key: "risk-rated", label: "Risk Rated" },
+  { key: "edd-in-progress", label: "EDD" },
+  { key: "decision-pending", label: "Decision" },
+  { key: "accepted", label: "Accepted" },
 ];
 
 // ---------------------------------------------------------------------------
 // State
 
 let pendingDecision = null; // 'accept' | 'reject'
-let candidateState = null;
+let _candidateState = null;
 
 // ---------------------------------------------------------------------------
 // Utilities
@@ -48,7 +48,7 @@ function esc(s) {
 
 function fmtTs(iso) {
   if (!iso) return "—";
-  return iso.slice(0, 16).replace("T", " ") + "Z";
+  return `${iso.slice(0, 16).replace("T", " ")}Z`;
 }
 
 function daysOpen(registeredAt) {
@@ -61,7 +61,9 @@ function showToast(msg, type = "error") {
   const t = $("toast");
   t.textContent = msg;
   t.className = `toast show ${type}`;
-  setTimeout(() => { t.className = "toast"; }, 4000);
+  setTimeout(() => {
+    t.className = "toast";
+  }, 4000);
 }
 
 function statusBadge(status) {
@@ -81,7 +83,12 @@ function riskBadge(band) {
 }
 
 function checkStatusBadge(status) {
-  const map = { passed: "badge-green", flagged: "badge-amber", failed: "badge-red", pending: "badge-grey" };
+  const map = {
+    passed: "badge-green",
+    flagged: "badge-amber",
+    failed: "badge-red",
+    pending: "badge-grey",
+  };
   return `<span class="badge ${map[status] ?? "badge-grey"}">${esc(status)}</span>`;
 }
 
@@ -96,7 +103,7 @@ async function fetchCandidate() {
   ]);
   if (!listRes.ok) throw new Error(`/api/kyc/candidates returned ${listRes.status}`);
   const listData = await listRes.json();
-  const candidate = (listData.candidates ?? []).find(c => c.candidateId === candidateId) ?? null;
+  const candidate = (listData.candidates ?? []).find((c) => c.candidateId === candidateId) ?? null;
 
   let kycChecks = null;
   if (checksRes.ok) {
@@ -126,7 +133,9 @@ function renderHeader(candidate) {
     `<span class="muted">Days open: ${daysOpen(candidate.registeredAt)}</span>`,
     statusBadge(candidate.status),
     riskBadge(candidate.riskBand ?? candidate.riskRating),
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // "Advance" button — visible when not at human gate and not terminal
   const terminal = candidate.status === "accepted" || candidate.status === "rejected";
@@ -143,9 +152,12 @@ function renderHeader(candidate) {
 // Render stepper
 
 function renderStepper(candidate) {
-  if (!candidate) { $("kysStepper").innerHTML = ""; return; }
+  if (!candidate) {
+    $("kysStepper").innerHTML = "";
+    return;
+  }
   const currentStep = candidate.currentStep ?? candidate.status;
-  const currentIdx = PROC_STEPS.findIndex(s => s.key === currentStep);
+  const currentIdx = PROC_STEPS.findIndex((s) => s.key === currentStep);
   const isTerminalReject = candidate.status === "rejected";
   const isTerminalAccept = candidate.status === "accepted";
 
@@ -189,14 +201,15 @@ function renderChecks(kycChecks) {
     "sanctions-pep-screening": "Sanctions / PEP",
     "ubo-resolution": "UBO Resolution",
     "risk-rating": "Risk Rating",
-    "edd": "Enhanced Due Diligence",
+    edd: "Enhanced Due Diligence",
   };
 
   const entries = Object.entries(kycChecks.checks);
-  grid.innerHTML = entries.map(([key, check]) => {
-    const label = CHECK_LABELS[key] ?? key;
-    const raw = JSON.stringify(check.result, null, 2);
-    return `<div class="check-card">
+  grid.innerHTML = entries
+    .map(([key, check]) => {
+      const label = CHECK_LABELS[key] ?? key;
+      const raw = JSON.stringify(check.result, null, 2);
+      return `<div class="check-card">
       <div class="check-card-head">
         <span class="check-card-name">${esc(label)}</span>
         ${checkStatusBadge(check.status)}
@@ -207,7 +220,8 @@ function renderChecks(kycChecks) {
         <pre>${esc(raw)}</pre>
       </details>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 // ---------------------------------------------------------------------------
@@ -215,14 +229,18 @@ function renderChecks(kycChecks) {
 
 function renderEDD(candidate) {
   const section = $("eddSection");
-  if (!candidate) { section.hidden = true; return; }
+  if (!candidate) {
+    section.hidden = true;
+    return;
+  }
 
-  const checks = candidate;
+  const _checks = candidate;
   const isEDDStep = candidate.currentStep === "edd-in-progress" && candidate.requiresHuman;
   section.hidden = !isEDDStep;
 
   if (isEDDStep) {
-    $("eddReason").textContent = `EDD initiated — reason: ${candidate.humanGateReason ?? "high-risk or PEP-linked"}. Complete EDD review and provide MLRO sign-off to proceed.`;
+    $("eddReason").textContent =
+      `EDD initiated — reason: ${candidate.humanGateReason ?? "high-risk or PEP-linked"}. Complete EDD review and provide MLRO sign-off to proceed.`;
   }
 }
 
@@ -231,17 +249,20 @@ function renderEDD(candidate) {
 
 function renderDecision(candidate) {
   const section = $("decisionSection");
-  if (!candidate) { section.hidden = true; return; }
+  if (!candidate) {
+    section.hidden = true;
+    return;
+  }
 
-  const needsDecision = candidate.requiresHuman &&
+  const needsDecision =
+    candidate.requiresHuman &&
     candidate.status === "in-progress" &&
     candidate.currentStep !== "edd-in-progress";
 
   section.hidden = !needsDecision;
   if (needsDecision) {
     $("decisionReason").textContent =
-      `Risk band: ${candidate.riskBand ?? "unknown"} — reason: ${candidate.humanGateReason ?? "review-required"}. ` +
-      "Accept or reject this candidate after reviewing all KYC checks.";
+      `Risk band: ${candidate.riskBand ?? "unknown"} — reason: ${candidate.humanGateReason ?? "review-required"}. Accept or reject this candidate after reviewing all KYC checks.`;
   }
 }
 
@@ -254,12 +275,16 @@ function renderEventLog(candidate) {
     log.innerHTML = `<div class="muted" style="font-family:var(--sans);font-size:13px;">No events yet.</div>`;
     return;
   }
-  log.innerHTML = candidate.events.map((evtId, i) => `
+  log.innerHTML = candidate.events
+    .map(
+      (evtId, i) => `
     <div class="event-log-item">
       <span class="event-log-ts">#${i + 1}</span>
       <span class="event-log-type">${esc(evtId)}</span>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +292,10 @@ function renderEventLog(candidate) {
 
 async function advanceStep() {
   const btn = $("advanceBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Advancing…"; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Advancing…";
+  }
   try {
     const res = await fetch(`/api/kyc/candidates/${encodeURIComponent(candidateId)}/advance`, {
       method: "POST",
@@ -278,7 +306,10 @@ async function advanceStep() {
     await load();
   } catch (e) {
     showToast(`Advance failed: ${e.message}`);
-    if (btn) { btn.disabled = false; btn.textContent = "▶ Advance"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "▶ Advance";
+    }
   }
 }
 window.advanceStep = advanceStep;
@@ -288,13 +319,20 @@ window.advanceStep = advanceStep;
 
 async function completeEDD() {
   const btn = $("completeEDDBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Completing EDD…"; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Completing EDD…";
+  }
   try {
-    const decidedBy = (window.bankShell?.user?.id) ?? "marc@tgv.co.za";
+    const decidedBy = window.bankShell?.user?.id ?? "marc@tgv.co.za";
     const res = await fetch(`/api/kyc/candidates/${encodeURIComponent(candidateId)}/decide`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ decision: "accept", decidedBy, mlroSignOffId: "manual-mlro-approval" }),
+      body: JSON.stringify({
+        decision: "accept",
+        decidedBy,
+        mlroSignOffId: "manual-mlro-approval",
+      }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error ?? `Server error ${res.status}`);
@@ -302,7 +340,10 @@ async function completeEDD() {
     await load();
   } catch (e) {
     showToast(`EDD completion failed: ${e.message}`);
-    if (btn) { btn.disabled = false; btn.textContent = "Complete EDD (MLRO sign-off)"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Complete EDD (MLRO sign-off)";
+    }
   }
 }
 window.completeEDD = completeEDD;
@@ -313,9 +354,10 @@ window.completeEDD = completeEDD;
 function openDecisionDialog(decision) {
   pendingDecision = decision;
   $("dialogTitle").textContent = decision === "accept" ? "Accept Candidate" : "Reject Candidate";
-  $("dialogBody").textContent = decision === "accept"
-    ? "Confirm acceptance of this candidate as a KYC-approved client. This will emit ClientAccepted and cannot be undone."
-    : "Confirm rejection of this candidate. This will emit ClientRejected and cannot be undone.";
+  $("dialogBody").textContent =
+    decision === "accept"
+      ? "Confirm acceptance of this candidate as a KYC-approved client. This will emit ClientAccepted and cannot be undone."
+      : "Confirm rejection of this candidate. This will emit ClientRejected and cannot be undone.";
   const confirmBtn = $("dialogConfirmBtn");
   confirmBtn.textContent = decision === "accept" ? "Accept" : "Reject";
   confirmBtn.className = `btn ${decision === "accept" ? "btn-success" : "btn-danger"}`;
@@ -335,7 +377,7 @@ async function confirmDecision() {
   closeDecisionDialog();
 
   try {
-    const decidedBy = (window.bankShell?.user?.id) ?? "marc@tgv.co.za";
+    const decidedBy = window.bankShell?.user?.id ?? "marc@tgv.co.za";
     const res = await fetch(`/api/kyc/candidates/${encodeURIComponent(candidateId)}/decide`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -345,7 +387,7 @@ async function confirmDecision() {
     if (!res.ok) throw new Error(data.error ?? `Server error ${res.status}`);
     showToast(
       decision === "accept" ? "Candidate accepted → client register." : "Candidate rejected.",
-      "success"
+      "success",
     );
     await load();
   } catch (e) {
@@ -360,7 +402,7 @@ window.confirmDecision = confirmDecision;
 async function load() {
   try {
     const { candidate, kycChecks } = await fetchCandidate();
-    candidateState = candidate;
+    _candidateState = candidate;
 
     renderHeader(candidate);
     renderStepper(candidate);
