@@ -473,6 +473,87 @@ const CATEGORY_F: AgentSpec[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Category G — Persona-level governance actors
+// ---------------------------------------------------------------------------
+// These are the top-level persona URNs (agent:<name>) that appear as event
+// actors in the live event store from goal-loop runs and in-session agent
+// dispatches. They are NOT sub-agents; the PermissionPolicy scope mirrors
+// the full §11 events-emitted list from the persona's operating spec.
+//
+// Vera overnight-recon 2026-05-17 flagged agent:helena and agent:owen as
+// appending events without a published PermissionPolicy (T-12 enforcement).
+//
+// Authority: T-12 (Senna), brief:senna:issue-permissionpolicy-for-agent-helena-and-agen:2026-05-18
+
+const CATEGORY_G: AgentSpec[] = [
+  // Helena (CRO, governance) — top-level persona actor
+  // Helena §11: AppetiteLineApproved, AppetiteBreachDisposed, ModelRiskApproved,
+  //   BrcPaperApproved, StressScenarioApproved, SupervisoryResponseApproved,
+  //   RiskPolicyChanged, AgentEscalation
+  // Containment: superset of agent:helena:risk-appetite-watch
+  makeSubAgentSpec(
+    "agent:helena",
+    [
+      "AppetiteLineApproved",
+      "AppetiteBreachDisposed",
+      "ModelRiskApproved",
+      "BrcPaperApproved",
+      "StressScenarioApproved",
+      "SupervisoryResponseApproved",
+      "RiskPolicyChanged",
+      "AgentEscalation",
+    ],
+    [
+      "@platform/risk-appetite-monitoring",
+      "@platform/icaap-ilaap-engine",
+      "@platform/board-papers-generator",
+      "@platform/stress-testing",
+      "@platform/obligations-register",
+      "@platform/event-store",
+    ],
+    [
+      "RiskAppetiteSnapshot",
+      "AppetiteLineApproved",
+      "AppetiteBreachDisposed",
+      "RiskRunCompleted",
+      "LimitUtilisationCheckpoint",
+    ],
+  ),
+
+  // Owen (CoSec, governance) — top-level persona actor
+  // Owen §11: AgentDecision, ResolutionRecorded, ConflictRegistered,
+  //   RelatedPartyRegistered, ActionClosed, AgentEscalation, WorkstreamRegistered
+  // Containment: superset of agent:owen:governance-cycle-prep
+  makeSubAgentSpec(
+    "agent:owen",
+    [
+      "AgentDecision",
+      "ResolutionRecorded",
+      "ConflictRegistered",
+      "RelatedPartyRegistered",
+      "ActionClosed",
+      "AgentEscalation",
+      "WorkstreamRegistered",
+    ],
+    [
+      "@platform/event-store",
+      "@platform/citation/gate",
+      "@platform/recon/decision-event-recon",
+      "@platform/recon/dashboard-derivation-recon",
+      "@platform/recon/prose-duplication",
+      "@platform/register",
+    ],
+    [
+      "AgentBriefIssued",
+      "RecordFiled",
+      "AgentDecision",
+      "ResolutionRecorded",
+      "WorkstreamRegistered",
+    ],
+  ),
+];
+
+// ---------------------------------------------------------------------------
 // All sub-agent specs
 // ---------------------------------------------------------------------------
 
@@ -483,6 +564,7 @@ const ALL_SUB_AGENT_SPECS: AgentSpec[] = [
   ...CATEGORY_D,
   ...CATEGORY_E,
   ...CATEGORY_F,
+  ...CATEGORY_G,
 ];
 
 // ---------------------------------------------------------------------------
@@ -508,6 +590,7 @@ async function main(): Promise<number> {
     if (CATEGORY_D.some((s) => s.agentUrn === urn)) return "D:governance-snapshot";
     if (CATEGORY_E.some((s) => s.agentUrn === urn)) return "E:operations-readiness";
     if (CATEGORY_F.some((s) => s.agentUrn === urn)) return "F:recon-quality";
+    if (CATEGORY_G.some((s) => s.agentUrn === urn)) return "G:persona-level";
     return "unknown";
   };
 
