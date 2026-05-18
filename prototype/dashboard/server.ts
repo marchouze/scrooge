@@ -66,6 +66,8 @@ import {
 } from "../platform/forward-obligations";
 import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
+import { KYCOrchestrator } from "../platform/kyc/orchestrator";
+import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import {
   getCorrespondentRouting,
@@ -588,6 +590,207 @@ async function handleComment(req: Request): Promise<Response> {
     "decision comment recorded via dashboard",
   );
   return jsonResponse({ ok: true, eventId: result.eventId });
+}
+
+// ---------------------------------------------------------------------------
+// KYC mutation handlers — D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18).
+//
+// POST /api/kyc/start           — register a new candidate; returns { candidateId }
+// POST /api/kyc/candidates/:id/advance — advance one step; returns CandidateState
+// POST /api/kyc/candidates/:id/decide  — record human decision; returns CandidateState
+// POST /api/kyc/clients/:id/refresh    — emit KYCRefreshScheduled; returns { ok }
+// POST /api/kyc/simulate               — run sim scenario(s); returns array of results
+//
+// Authority: D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+// ---------------------------------------------------------------------------
+
+const kycOrchestrator = new KYCOrchestrator();
+
+async function handleKycStart(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof body !== "object" || body === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const input = body as NewCandidateInput;
+  if (!input.entityName || !input.entityType || !input.jurisdiction) {
+    return jsonResponse({ error: "entityName, entityType, jurisdiction are required" }, 400);
+  }
+  try {
+    const result = await kycOrchestrator.startOnboarding(input);
+    refresh("kyc-start");
+    logger.info(
+      { candidateId: result.candidateId, entityName: input.entityName },
+      "KYC candidate registered via dashboard",
+    );
+    return jsonResponse(result, 201);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 500);
+  }
+}
+
+async function handleKycAdvance(candidateId: string): Promise<Response> {
+  try {
+    const state = await kycOrchestrator.advanceStep(candidateId);
+    refresh("kyc-advance");
+    logger.info(
+      { candidateId, currentStep: state.currentStep, status: state.status },
+      "KYC step advanced via dashboard",
+    );
+    return jsonResponse(state);
+  } catch (e) {
+    const msg = (e as Error).message ?? String(e);
+    if (msg.includes("not found")) return jsonResponse({ error: msg }, 404);
+    return jsonResponse({ error: msg }, 500);
+  }
+}
+
+async function handleKycDecide(req: Request, candidateId: string): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof body !== "object" || body === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const { decision, decidedBy, mlroSignOffId } = body as {
+    decision?: string;
+    decidedBy?: string;
+    mlroSignOffId?: string;
+  };
+  if (decision !== "accept" && decision !== "reject") {
+    return jsonResponse({ error: "decision must be 'accept' or 'reject'" }, 400);
+  }
+  if (!decidedBy || typeof decidedBy !== "string") {
+    return jsonResponse({ error: "decidedBy is required" }, 400);
+  }
+  try {
+    const state = await kycOrchestrator.recordHumanDecision(
+      candidateId,
+      decision,
+      decidedBy,
+      mlroSignOffId,
+    );
+    refresh("kyc-decide");
+    logger.info({ candidateId, decision, decidedBy }, "KYC human decision recorded via dashboard");
+    return jsonResponse(state);
+  } catch (e) {
+    const msg = (e as Error).message ?? String(e);
+    if (msg.includes("not found")) return jsonResponse({ error: msg }, 404);
+    return jsonResponse({ error: msg }, 500);
+  }
+}
+
+function handleKycClientRefresh(clientId: string): Response {
+  const asOf = nowUtc();
+  const evt = {
+    event_id: newEventId(),
+    type: "KYCRefreshScheduled",
+    as_of: asOf,
+    entity: "BANK-ZA-001",
+    actor: { type: "human" as const, id: "marc@tgv.co.za" },
+    citations: ["D-KYC-ONBOARDING-BUILD", "AML-CFT-POLICY-V1", "FIC-ACT-38-2001"],
+    payload: {
+      clientId,
+      scheduledAt: asOf,
+      reason: "early-refresh-requested",
+    },
+  };
+  eventStore.append(evt);
+  refresh("kyc-client-refresh");
+  logger.info({ clientId, eventId: evt.event_id }, "KYCRefreshScheduled emitted via dashboard");
+  return jsonResponse({ ok: true, clientId, eventId: evt.event_id });
+}
+
+async function handleKycSimulate(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof body !== "object" || body === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const {
+    scenario,
+    count = 1,
+    runFull = false,
+  } = body as {
+    scenario?: string;
+    count?: number;
+    runFull?: boolean;
+  };
+  if (!scenario || typeof scenario !== "string") {
+    return jsonResponse({ error: "scenario is required" }, 400);
+  }
+
+  // Import sim module dynamically to avoid circular dependencies.
+  let simModule: { SCENARIOS?: Record<string, () => NewCandidateInput> };
+  try {
+    simModule = await import("../scripts/kyc/sim");
+  } catch {
+    return jsonResponse({ error: "sim module not available" }, 500);
+  }
+
+  const SCENARIOS = (simModule as { SCENARIOS?: Record<string, () => NewCandidateInput> })
+    .SCENARIOS;
+  if (!SCENARIOS || !(scenario in SCENARIOS)) {
+    const available = SCENARIOS ? Object.keys(SCENARIOS).join(", ") : "(unknown)";
+    return jsonResponse({ error: `unknown scenario "${scenario}". Available: ${available}` }, 400);
+  }
+
+  const safeCount = Math.max(1, Math.min(10, Number(count) || 1));
+  const orchestrator = new KYCOrchestrator();
+  const results: Array<{
+    candidateId: string;
+    entityName: string;
+    scenario: string;
+    finalStep: string;
+    outcome: string;
+    riskBand?: string;
+  }> = [];
+
+  for (let i = 0; i < safeCount; i++) {
+    const input = SCENARIOS[scenario]?.();
+    if (safeCount > 1) input.entityName = `${input.entityName} #${i + 1}`;
+    try {
+      const { candidateId } = await orchestrator.startOnboarding(input);
+      let state = await orchestrator.getCandidateState(candidateId);
+      if (runFull) {
+        state = await orchestrator.runFull(candidateId);
+      }
+      results.push({
+        candidateId,
+        entityName: input.entityName,
+        scenario,
+        finalStep: state.currentStep,
+        outcome: state.status,
+        riskBand: state.riskBand,
+      });
+    } catch (_e) {
+      results.push({
+        candidateId: `error-${i}`,
+        entityName: "error",
+        scenario,
+        finalStep: "error",
+        outcome: "error",
+      });
+    }
+  }
+
+  refresh("kyc-simulate");
+  logger.info(
+    { scenario, count: safeCount, runFull },
+    `KYC simulation completed: ${results.length} candidates`,
+  );
+  return jsonResponse({ results });
 }
 
 // ---------------------------------------------------------------------------
@@ -1194,6 +1397,45 @@ const server = Bun.serve({
       });
     }
 
+    // POST /api/kyc/start — register a new KYC candidate.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    if (url.pathname === "/api/kyc/start" && req.method === "POST") {
+      return handleKycStart(req);
+    }
+
+    // POST /api/kyc/simulate — run a simulation scenario.
+    // D-KYC-ONBOARDING-BUILD.
+    if (url.pathname === "/api/kyc/simulate" && req.method === "POST") {
+      return handleKycSimulate(req);
+    }
+
+    // POST /api/kyc/candidates/:id/advance — advance one KYC step.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    {
+      const advMatch = url.pathname.match(/^\/api\/kyc\/candidates\/([^/]+)\/advance$/);
+      if (advMatch?.[1] && req.method === "POST") {
+        return handleKycAdvance(decodeURIComponent(advMatch[1]));
+      }
+    }
+
+    // POST /api/kyc/candidates/:id/decide — record human decision.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    {
+      const decMatch = url.pathname.match(/^\/api\/kyc\/candidates\/([^/]+)\/decide$/);
+      if (decMatch?.[1] && req.method === "POST") {
+        return handleKycDecide(req, decodeURIComponent(decMatch[1]));
+      }
+    }
+
+    // POST /api/kyc/clients/:id/refresh — emit KYCRefreshScheduled.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    {
+      const refMatch = url.pathname.match(/^\/api\/kyc\/clients\/([^/]+)\/refresh$/);
+      if (refMatch?.[1] && req.method === "POST") {
+        return handleKycClientRefresh(decodeURIComponent(refMatch[1]));
+      }
+    }
+
     if (url.pathname === "/api/forward-obligations" && req.method === "GET") {
       // Forward Obligations projection — multi-source derived view of future events.
       //
@@ -1626,6 +1868,31 @@ const server = Bun.serve({
         status: 302,
         headers: { Location: "/home.html" },
       });
+    }
+    // KYC onboarding queue + subpages.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    if (req.method === "GET" && url.pathname === "/kyc-onboarding") {
+      return serveStatic("/kyc-onboarding.html");
+    }
+    if (req.method === "GET" && url.pathname === "/kyc-onboarding/new") {
+      return serveStatic("/kyc-onboarding-new.html");
+    }
+    if (req.method === "GET" && url.pathname === "/kyc-onboarding/simulate") {
+      return serveStatic("/kyc-simulate.html");
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/kyc-onboarding/")) {
+      return serveStatic("/kyc-candidate.html");
+    }
+    // KYC accepted clients register.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    if (
+      req.method === "GET" &&
+      (url.pathname === "/kyc-clients" || url.pathname === "/kyc-clients/")
+    ) {
+      return serveStatic("/kyc-clients.html");
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/kyc-clients/")) {
+      return serveStatic("/kyc-client-detail.html");
     }
     if (req.method === "GET" && url.pathname === "/fleet") {
       return serveStatic("/fleet.html");

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KYC Candidate · Hoz</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-blue   { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+  .badge-amber  { background: #fff3e0; color: #8a4a00; border: 1px solid #f5d5a0; }
+  .badge-green  { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+  .badge-red    { background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; }
+  .badge-grey   { background: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
+
+  .btn { display: inline-block; padding: 7px 14px; border-radius: 4px; border: 1px solid; font-size: 13px; cursor: pointer; font-family: var(--sans); }
+  .btn-primary  { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--accent-deep); }
+  .btn-success  { background: var(--good); color: #fff; border-color: var(--good); }
+  .btn-danger   { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-outline  { background: #fff; color: var(--primary); border-color: var(--border-strong); }
+  .btn-outline:hover { background: var(--accent-soft); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Stepper */
+  .kyc-stepper { display: flex; gap: 0; margin-bottom: 24px; }
+  .kyc-step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+  .kyc-step::before { content: ""; position: absolute; top: 14px; left: -50%; right: 50%; height: 2px; background: #e0e0e0; z-index: 0; }
+  .kyc-step:first-child::before { display: none; }
+  .kyc-step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; z-index: 1; position: relative; border: 2px solid; }
+  .kyc-step-dot.complete { background: var(--good); border-color: var(--good); color: #fff; }
+  .kyc-step-dot.active  { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .kyc-step-dot.pending { background: #fff; border-color: #ccc; color: #bbb; }
+  .kyc-step-label { font-size: 10px; margin-top: 4px; text-align: center; color: #666; max-width: 72px; line-height: 1.2; }
+  .kyc-step.complete .kyc-step-label { color: var(--good); }
+  .kyc-step.active .kyc-step-label  { color: var(--primary); font-weight: 600; }
+  .kyc-step::after { content: ""; position: absolute; top: 14px; left: 50%; right: -50%; height: 2px; background: #e0e0e0; z-index: 0; }
+  .kyc-step:last-child::after { display: none; }
+  .kyc-step.complete::after { background: var(--good); }
+
+  /* Check cards */
+  .checks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .check-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 14px; }
+  .check-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .check-card-name { font-weight: 600; font-size: 13px; color: var(--primary); }
+  .check-card-ts { font-size: 11px; color: #999; margin-top: 4px; }
+  .check-card-detail { font-size: 12px; color: #555; }
+  details.check-raw summary { font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 6px; }
+  details.check-raw pre { font-size: 10.5px; background: #f5f5f5; padding: 8px; border-radius: 3px; overflow-x: auto; margin: 4px 0 0; }
+
+  /* Decision panel */
+  .decision-panel { background: #fff8e8; border: 1px solid #f5d5a0; border-radius: 6px; padding: 18px 20px; }
+  .decision-panel h3 { margin: 0 0 8px; font-size: 15px; color: #8a4a00; }
+  .decision-panel .actions { display: flex; gap: 10px; margin-top: 14px; }
+
+  /* EDD panel */
+  .edd-panel { background: #fff3e0; border: 1px solid #f5d5a0; border-radius: 6px; padding: 18px 20px; }
+  .edd-panel h3 { margin: 0 0 8px; font-size: 15px; color: #8a4a00; }
+
+  /* Event log */
+  .event-log { font-family: var(--mono); font-size: 11.5px; }
+  .event-log-item { padding: 4px 0; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; }
+  .event-log-ts { color: #999; white-space: nowrap; }
+  .event-log-type { color: var(--accent-deep); font-weight: 600; }
+
+  .header-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+
+  /* Confirm dialog */
+  .dialog-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; align-items:center; justify-content:center; }
+  .dialog-overlay.show { display:flex; }
+  .dialog-box { background:#fff; border-radius:8px; padding:28px 32px; max-width:420px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+  .dialog-box h3 { margin:0 0 12px; font-family:var(--serif); font-size:20px; color:var(--primary); }
+  .dialog-box p { color:#555; margin:0 0 20px; font-size:14px; }
+  .dialog-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:#222; color:#fff; padding:12px 20px; border-radius:6px; font-size:13.5px; z-index:999; display:none; }
+  .toast.show { display:block; }
+  .toast.success { background: var(--good); }
+  .toast.error { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· KYC Candidate</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/kyc/candidates"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/kyc-onboarding">← Queue</a>
+      <a class="nav-link" href="/home.html">Home</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app" style="max-width:1100px;margin:0 auto;padding:22px 24px 80px;">
+
+  <section class="band">
+    <div class="band-head">
+      <div>
+        <h1 id="entityNameTitle" style="margin:0;font-family:var(--serif);color:var(--primary);">Loading…</h1>
+        <div class="header-meta" id="headerMeta"></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;" id="headerActions"></div>
+    </div>
+  </section>
+
+  <!-- Step tracker -->
+  <section class="band">
+    <div class="band-head"><h2>PROC-FC-01 Step Tracker</h2></div>
+    <div class="kyc-stepper" id="kysStepper"></div>
+  </section>
+
+  <!-- KYC Checks -->
+  <section class="band" id="checksSection">
+    <div class="band-head"><h2>KYC Checks</h2></div>
+    <div class="checks-grid" id="checksGrid"></div>
+    <div id="checksEmpty" hidden><p class="muted">No KYC checks run yet. Use "Advance" to run the next step.</p></div>
+  </section>
+
+  <!-- EDD Panel -->
+  <section class="band" id="eddSection" hidden>
+    <div class="band-head"><h2>Enhanced Due Diligence (EDD)</h2></div>
+    <div class="edd-panel">
+      <h3>EDD Required</h3>
+      <p id="eddReason" style="color:#555;margin:0 0 12px;font-size:14px;"></p>
+      <button class="btn btn-outline" id="completeEDDBtn" onclick="completeEDD()">Complete EDD (MLRO sign-off)</button>
+    </div>
+  </section>
+
+  <!-- Decision Panel -->
+  <section class="band" id="decisionSection" hidden>
+    <div class="band-head"><h2>Human Decision Required</h2></div>
+    <div class="decision-panel">
+      <h3>MLRO / Compliance Review</h3>
+      <p id="decisionReason" style="color:#555;margin:0;font-size:14px;"></p>
+      <div class="actions">
+        <button class="btn btn-success" onclick="openDecisionDialog('accept')">✓ Accept</button>
+        <button class="btn btn-danger" onclick="openDecisionDialog('reject')">✗ Reject</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Event Log -->
+  <section class="band">
+    <div class="band-head"><h2>Event Log</h2></div>
+    <details>
+      <summary style="cursor:pointer;font-size:13px;color:var(--accent);">Show event log</summary>
+      <div class="event-log" id="eventLog" style="margin-top:10px;max-height:300px;overflow-y:auto;"></div>
+    </details>
+  </section>
+
+</main>
+
+<!-- Decision confirm dialog -->
+<div class="dialog-overlay" id="decisionDialog">
+  <div class="dialog-box">
+    <h3 id="dialogTitle">Confirm Decision</h3>
+    <p id="dialogBody">Are you sure you want to proceed?</p>
+    <div class="dialog-actions">
+      <button class="btn btn-outline" onclick="closeDecisionDialog()">Cancel</button>
+      <button class="btn" id="dialogConfirmBtn" onclick="confirmDecision()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script src="/kyc-candidate.js"></script>
+<script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+</body>
+</html>
