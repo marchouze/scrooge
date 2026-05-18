@@ -195,7 +195,10 @@ function boot(): void {
     `substrate-scheduler — syncRegistry: ${sync.count} entries, ${sync.parseFailures.length} failures`,
   );
   for (const f of sync.parseFailures) {
-    logger.error(f, `substrate-scheduler — parse failure at boot: ${f.agentUrn} (${f.triggerId}): ${f.reason}`);
+    logger.error(
+      f,
+      `substrate-scheduler — parse failure at boot: ${f.agentUrn} (${f.triggerId}): ${f.reason}`,
+    );
   }
 
   // Immediate first tick so the process fires any due triggers without
