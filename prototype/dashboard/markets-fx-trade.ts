@@ -31,13 +31,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { newEventId } from "../platform/core/types";
+import { makeQuoteResponded, makeRfqRequested } from "../platform/event-store/event-types/trading";
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import type { Event, ProvenanceTag } from "../platform/event-store/types";
-import {
-  makeQuoteResponded,
-  makeRfqRequested,
-} from "../platform/event-store/event-types/trading";
 import { type FxTradeExecutedPayload, makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 
@@ -211,10 +208,7 @@ export function loadSeedRate(currencyPair: string): number {
  * @param input       RFQ side (buy = bank buys USD; sell = bank sells USD).
  * @param currencyPair Seed-file lookup key (default "ZAR/USD").
  */
-export function quoteRfq(
-  input: Pick<RfqInput, "side">,
-  currencyPair: string = "ZAR/USD",
-): SyntheticQuote {
+export function quoteRfq(input: Pick<RfqInput, "side">, currencyPair = "ZAR/USD"): SyntheticQuote {
   const midRate = loadSeedRate(currencyPair);
   const halfSpread = SYNTHETIC_HALF_SPREAD;
   const bidRate = midRate - halfSpread;

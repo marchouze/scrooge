@@ -62,7 +62,8 @@
       <ul>
         <li><a href="#counterparties" data-shell-nav="sidebar:counterparties">Counterparties</a></li>
         <li><a href="#rfq" data-shell-nav="sidebar:rfq">RFQ (Slice 2)</a></li>
-        <li><a href="#workflow" data-shell-nav="sidebar:workflow">Workflow (next slices)</a></li>
+        <li><a href="#headroom" data-shell-nav="sidebar:headroom">Headroom (Slice 3)</a></li>
+        <li><a href="#workflow" data-shell-nav="sidebar:workflow">Next slices</a></li>
         <li><a href="#substrate" data-shell-nav="sidebar:substrate">Substrate trail</a></li>
       </ul>
       <h2>Reference</h2>
@@ -76,13 +77,15 @@
       <div class="shell-page-header">
         <h1 class="shell-page-title">FX sales & trading desk</h1>
         <p class="shell-page-lede">
-          Slice 1 surface (live): counterparty picker filtered to institutional-eligibility-passing
+          Slice 1 (live): counterparty picker filtered to institutional-eligibility-passing
           parties (Niko's screening events), the substrate-mode banner, and the page shell.
-          Slice 2 surface (live, this slice): RFQ form + synthetic-quote stub + trade-emit button
-          firing <code>FxTradeExecuted</code> events with the
-          <code>first-dry-run-2026-Q1</code> simulated provenance tag.
-          Real pricer (Slice 3), gateway visualisation (Slice 4), and risk-officer view (Slice 5)
-          land in subsequent slices per the eight-slice plan in the parent pack.
+          Slice 2 (live): RFQ form + trade-emit button firing <code>FxTradeExecuted</code>
+          events tagged <code>first-dry-run-2026-Q1</code>.
+          Slice 3 (live, this slice): seed-data pricer replaces the fixed-spread stub;
+          <code>RfqRequested</code> + <code>QuoteResponded</code> events emitted before
+          <code>FxTradeExecuted</code>; headroom panel against Helena's RAS B-cluster limits.
+          Gateway visualisation (Slice 4) and risk-officer view (Slice 5) land in subsequent
+          slices per the eight-slice plan in the parent pack.
         </p>
       </div>
 
@@ -252,27 +255,50 @@
         </article>
       </section>
 
+      <!-- ============= Headroom panel (Slice 3) ============= -->
+      <section class="shell-category" id="headroom" aria-labelledby="cat-headroom">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-headroom">Limit headroom — RAS B-clusters (Slice 3)</h2>
+          <span class="shell-category-kind" data-kind="live">Live · event-derived</span>
+        </div>
+        <p class="shell-category-blurb">
+          Derived from <code>RasLimitSchedulePublished</code> (Helena's RAS framework) +
+          <code>FxTradeExecuted</code> / <code>TradeExecuted</code> / <code>EquityTradeBooked</code>
+          events via the <code>LimitUtilisationProjection</code>
+          (<a href="/api/markets/fx/headroom">/api/markets/fx/headroom</a>).
+          Zero-state (no schedule published): all rows show zero exposure and green status.
+          Emit a <code>RasLimitSchedulePublished</code> event to activate the limits.
+        </p>
+
+        <table class="fx-headroom-table" data-fx-headroom-table>
+          <caption class="visually-hidden">RAS B-cluster limit headroom and RAG status.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Cluster</th>
+              <th scope="col">Limit name</th>
+              <th scope="col">Exposure</th>
+              <th scope="col">Limit</th>
+              <th scope="col">Utilisation %</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody data-fx-headroom-tbody>
+            <tr><td colspan="6" class="fx-cp-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
       <!-- ============= Workflow placeholders (next slices) ============= -->
       <section class="shell-category" id="workflow" aria-labelledby="cat-workflow">
         <div class="shell-category-head">
           <h2 class="shell-category-title" id="cat-workflow">Next-slice surfaces</h2>
-          <span class="shell-category-kind" data-kind="placeholders">Slices 3–7</span>
+          <span class="shell-category-kind" data-kind="placeholders">Slices 4–7</span>
         </div>
         <p class="shell-category-blurb">
-          Each placeholder names the slice that lands the surface and the substrate it consumes.
-          Slice 2 (RFQ form + trade-emit) is now live above; the cards below stay placeholder
+          Slice 3 (pricer + headroom) is now live above; the cards below stay placeholder
           until their slices land.
         </p>
         <div class="fx-placeholders">
-          <article class="fx-placeholder is-placeholder">
-            <h3>Trader pricer + headroom</h3>
-            <p>
-              Real pricer (replaces the synthetic stub above) +
-              <code>RfqRequested</code> / <code>QuoteResponded</code> events
-              + headroom panel against Helena's RAS B-cluster.
-            </p>
-            <span class="fx-placeholder-flag">Slice 3 — Kai + Rohan</span>
-          </article>
           <article class="fx-placeholder is-placeholder">
             <h3>Order acceptance + gateway visualisation</h3>
             <p>Counterparty acceptance → <code>OrderProposed</code>; gateway fan-out tiles.</p>

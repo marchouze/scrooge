@@ -229,21 +229,28 @@ function makeRfqRequested(args: {
   actor: Actor;
   rfqId: string;
 }): Event {
+  // Updated to the typed RfqRequestedPayload schema (Slice 3 — Kai, 2026-05-18).
+  // Previously used an untyped object payload; now uses the canonical string
+  // fields required by the rfqRequestedPayloadSchema Zod validator.
   return {
     event_id: newEventId(),
     type: "RfqRequested",
     as_of: args.asOf,
     entity: ENTITY,
     actor: args.actor,
-    citations: ["D-MARKETS-SCHEMA-FOUNDATION", "INTERNAL-NPA-FX-SPOT"],
+    citations: [
+      "D-MARKETS-SCHEMA-FOUNDATION",
+      "INTERNAL-NPA-FX-SPOT",
+      "D-FX-SALES-TRADING-FRONTEND",
+    ],
     payload: {
       rfqId: args.rfqId,
       counterpartyId: String(COUNTERPARTY_ID),
-      productTaxonomy: "FX-spot",
-      currencyPair: { base: "USD", quote: "ZAR" },
+      currencyPair: "USD/ZAR",
       side: "buy",
-      notional: { currency: "USD", amountMinor: 5_000_000_00 }, // USD 5m in cents
+      notional: 5_000_000, // USD 5m in major units
       valueDate: "2026-01-07", // T+2 from 2026-01-05
+      requestedAt: args.asOf,
     },
     provenance: SCENARIO_PROVENANCE,
   };

@@ -64,7 +64,7 @@ export interface HeadroomView {
  * @returns      HeadroomView with five cluster rows.
  */
 export function buildHeadroomView(store: Pick<EventStore, "replay">): HeadroomView {
-  const events = store.replay();
+  const events = [...store.replay()];
   rebuildLimitUtilisation(events);
   const rows = getLimitUtilisations();
   return {
