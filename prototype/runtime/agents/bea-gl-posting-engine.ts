@@ -1,13 +1,19 @@
 // runtime/agents/bea-gl-posting-engine.ts
 //
-// Bea's universal GL posting engine — wires payment lifecycle events to
-// balanced double-entry GL postings via the three pure posting-rule functions
-// in `platform/accounting/posting-rules/payments.ts`.
+// Bea's universal GL posting engine — wires payment and FX trade lifecycle
+// events to balanced double-entry GL postings via posting-rule functions
+// in `platform/accounting/posting-rules/`.
 //
 // Subscriptions:
+//   Payment lifecycle:
 //   - PaymentInitiated              → PR-PAY-001: paymentInitiatedJournals()
 //   - PaymentSettled                → PR-PAY-002: paymentSettledJournals()
 //   - SettlementInstructionReceived → PR-SET-001: settlementInstructionJournals()
+//
+//   FX trade lifecycle:
+//   - FxTradeExecuted               → PR-FX-001: fxTradeBookingJournals()
+//   - FxPositionRevalued            → PR-FX-002: fxRevaluationJournals()
+//   - FxSettlementConfirmed         → PR-FX-003: fxSettlementJournals()
 //
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
@@ -22,12 +28,21 @@
 // Authority:
 //   - PROC-PAY-RBH-01 (three-way reconciliation procedure)
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//   - D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
 //   - Banks Act 94 of 1990
 //   - IFRS 9 §3.1.1 (initial recognition of financial instruments)
+//   - IFRS 9 §3.2.3 (derecognition of financial instruments)
+//   - IFRS 9 §5.7.1 (FVTPL gains/losses through P&L)
+//   - IAS 21 §23 (translation of monetary items at closing rate)
 //   - IAS 32 §11 (recognition criteria)
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import {
+  fxRevaluationJournals,
+  fxSettlementJournals,
+  fxTradeBookingJournals,
+} from "../../platform/accounting/posting-rules/fx-spot";
 import {
   paymentInitiatedJournals,
   paymentSettledJournals,
@@ -35,12 +50,17 @@ import {
 } from "../../platform/accounting/posting-rules/payments";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { makeSubLedgerPostingEmitted } from "../../platform/event-store/event-types/fx-accounting";
+import {
+  type FxPositionRevaluedPayload,
+  type FxSettlementConfirmedPayload,
+  makeSubLedgerPostingEmitted,
+} from "../../platform/event-store/event-types/fx-accounting";
 import type {
   PaymentInitiatedPayload,
   PaymentSettledPayload,
   SettlementInstructionReceivedPayload,
 } from "../../platform/event-store/event-types/payments";
+import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -58,6 +78,9 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "PaymentInitiated",
   "PaymentSettled",
   "SettlementInstructionReceived",
+  "FxTradeExecuted",
+  "FxPositionRevalued",
+  "FxSettlementConfirmed",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -98,6 +121,9 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "PaymentInitiated" }),
     ...eventStore.replay({ type: "PaymentSettled" }),
     ...eventStore.replay({ type: "SettlementInstructionReceived" }),
+    ...eventStore.replay({ type: "FxTradeExecuted" }),
+    ...eventStore.replay({ type: "FxPositionRevalued" }),
+    ...eventStore.replay({ type: "FxSettlementConfirmed" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -149,6 +175,47 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as SettlementInstructionReceivedPayload;
         legs = settlementInstructionJournals(payload);
+      } else if (e.type === "FxTradeExecuted") {
+        // PR-FX-001: Initial recognition — IFRS 9 §3.1.1
+        // postingType must match SubLedgerPostingEmitted schema enum
+        postingType = "trade-booking";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as FxTradeExecutedPayload;
+        // fxTradeBookingJournals expects tradeId as string; FxTradeExecutedPayload
+        // uses identifierSchema (object). Normalise to string value.
+        legs = fxTradeBookingJournals({
+          tradeId:
+            typeof payload.tradeId === "string"
+              ? payload.tradeId
+              : (payload.tradeId as { value: string }).value,
+          side: payload.side,
+          legs: payload.legs,
+          currencyPair: payload.currencyPair,
+        });
+      } else if (e.type === "FxPositionRevalued") {
+        // PR-FX-002: Daily MTM — IAS 21 §23; IFRS 9 §5.7.1
+        postingType = "revaluation";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as FxPositionRevaluedPayload;
+        legs = fxRevaluationJournals(payload);
+      } else if (e.type === "FxSettlementConfirmed") {
+        // PR-FX-003: Derecognition — IFRS 9 §3.2.3
+        postingType = "settlement";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as FxSettlementConfirmedPayload;
+        legs = fxSettlementJournals(payload);
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above.
         continue;
@@ -176,7 +243,10 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
             postingType: postingType as
               | "payment-initiation"
               | "payment-settlement"
-              | "settlement-instruction",
+              | "settlement-instruction"
+              | "trade-booking"
+              | "revaluation"
+              | "settlement",
             legs,
             postedAt: ctx.asOf,
           },
