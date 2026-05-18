@@ -35,7 +35,7 @@ type ScenarioName =
   | "complex-ubo"
   | "credit-adverse";
 
-const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
+export const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
   /**
    * clean — low risk; all checks clean; auto-accept expected.
    * Entity name: Meridian Capital (Pty) Ltd
@@ -371,7 +371,8 @@ async function main(): Promise<void> {
   printTable(tableRows);
 }
 
-main().catch((err) => {
-  console.error("KYC sim error:", err);
-  process.exit(1);
-});
+if (import.meta.main)
+  main().catch((err) => {
+    console.error("KYC sim error:", err);
+    process.exit(1);
+  });
