@@ -29,13 +29,14 @@ function main(): number {
   // Idempotency check: skip if a terminal phase is already recorded.
   const source = decisionsSourceFromStore(eventStore);
   const register = buildDecisionsRegister(source);
-  const existing = register.find((d) => d.decisionId === DECISION_ID);
+  const existing = register.byId.get(DECISION_ID);
 
-  if (existing && existing.phase !== "requested" && existing.phase !== "open") {
-    console.log(
-      `[SKIP] ${DECISION_ID} already has terminal phase "${existing.phase}" — skipping.`,
-    );
-    return 0;
+  if (existing) {
+    const headPhase = existing.head?.phase;
+    if (headPhase && headPhase !== "requested" && headPhase !== "open") {
+      console.log(`[SKIP] ${DECISION_ID} already has terminal phase "${headPhase}" — skipping.`);
+      return 0;
+    }
   }
 
   recordDecision(
