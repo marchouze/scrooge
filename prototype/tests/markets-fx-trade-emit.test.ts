@@ -37,7 +37,6 @@ import {
   FIRST_DRY_RUN_SCENARIO,
   KAI_FX_RFQ_LINEAGE,
   SYNTHETIC_HALF_SPREAD,
-  SYNTHETIC_USDZAR_MID,
   buildSpotPayload,
   emitTrade,
   isCounterpartyEligible,
@@ -163,13 +162,15 @@ describe("FX Slice 2 — validateRfqInput", () => {
 // quoteRfq — synthetic stub
 // ---------------------------------------------------------------------------
 
-describe("FX Slice 2 — quoteRfq synthetic stub", () => {
-  it("returns the documented fixed mid + symmetric half-spread", () => {
+describe("FX Slice 2+3 — quoteRfq (seed-data pricer)", () => {
+  it("returns a plausible ZAR/USD mid-rate from the seed with symmetric half-spread", () => {
     const q = quoteRfq({ side: "buy" });
-    expect(q.midRate).toBe(SYNTHETIC_USDZAR_MID);
+    // Seed-data pricer (Slice 3) replaces the fixed stub — mid is now ~18.5–19.5 ZAR/USD.
+    expect(q.midRate).toBeGreaterThan(17.0);
+    expect(q.midRate).toBeLessThan(22.0);
     expect(q.halfSpread).toBe(SYNTHETIC_HALF_SPREAD);
-    expect(q.bidRate).toBeCloseTo(SYNTHETIC_USDZAR_MID - SYNTHETIC_HALF_SPREAD, 8);
-    expect(q.offerRate).toBeCloseTo(SYNTHETIC_USDZAR_MID + SYNTHETIC_HALF_SPREAD, 8);
+    expect(q.bidRate).toBeCloseTo(q.midRate - SYNTHETIC_HALF_SPREAD, 8);
+    expect(q.offerRate).toBeCloseTo(q.midRate + SYNTHETIC_HALF_SPREAD, 8);
     expect(q.bidRate).toBeLessThan(q.midRate);
     expect(q.offerRate).toBeGreaterThan(q.midRate);
   });
@@ -182,9 +183,8 @@ describe("FX Slice 2 — quoteRfq synthetic stub", () => {
     expect(buy.rateUsed).toBeGreaterThan(sell.rateUsed);
   });
 
-  it("source label names the stub explicitly so v1 is auditable", () => {
-    expect(quoteRfq({ side: "buy" }).source).toContain("synthetic");
-    expect(quoteRfq({ side: "buy" }).source).toContain("stub");
+  it("source label is seed-data-pricer-v1 (Slice 3 replaced the stub)", () => {
+    expect(quoteRfq({ side: "buy" }).source).toBe("seed-data-pricer-v1");
   });
 });
 
@@ -332,7 +332,9 @@ describe("FX Slice 2 — quoteOnly", () => {
     const r = quoteOnly(VALID_RFQ);
     expect(r.status).toBe("ok");
     if (r.status !== "ok") throw new Error("expected ok");
-    expect(r.quote.midRate).toBe(SYNTHETIC_USDZAR_MID);
+    // Slice 3: seed-data pricer; mid-rate is seed-derived (~18.5–19.5 ZAR/USD).
+    expect(r.quote.midRate).toBeGreaterThan(17.0);
+    expect(r.quote.midRate).toBeLessThan(22.0);
     expect(r.currencyPair).toBe("USD/ZAR");
   });
 

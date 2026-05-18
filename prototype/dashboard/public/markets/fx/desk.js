@@ -1,4 +1,4 @@
-// dashboard/public/markets/fx/desk.js — FX desk Slices 1 + 2.
+// dashboard/public/markets/fx/desk.js — FX desk Slices 1 + 2 + 3.
 //
 // Slice 1 — reads `/api/markets/fx/counterparties` and renders the
 //   eligibility-passing counterparty list (read-only). Re-uses
@@ -7,11 +7,17 @@
 //
 // Slice 2 — wires the RFQ form: populates the counterparty select from
 //   the live picker, calls POST /api/markets/fx/quote on input changes
-//   to render the synthetic bid/offer/mid, and on submit calls
-//   POST /api/markets/fx/trade which appends an FxTradeExecuted event
-//   to the local event store with the simulated provenance tag for
-//   the first-dry-run-2026-Q1 scenario. The confirmation panel renders
-//   the emitted tradeId + eventId + provenance.
+//   to render the seed-data-driven bid/offer/mid (Slice 3 pricer), and
+//   on submit calls POST /api/markets/fx/trade which appends
+//   RfqRequested + QuoteResponded + FxTradeExecuted events to the local
+//   event store with the simulated provenance tag for the
+//   first-dry-run-2026-Q1 scenario. The confirmation panel renders the
+//   emitted tradeId + eventId + provenance.
+//
+// Slice 3 — `loadHeadroom()` fetches GET /api/markets/fx/headroom and
+//   renders the five RAS B-cluster rows with RAG status in the
+//   #headroom table. Called on page load and on Refresh alongside
+//   `loadCounterparties()`.
 //
 // Author: Kai (Trading systems engineer, engineering — reports to Saskia,
 //         Head of Global Markets) · Saskia (Head of Global Markets,
@@ -324,23 +330,87 @@
     refreshQuote().catch((e) => console.warn("[fx-desk] initial quote", e));
   }
 
+  // ============================================================
+  // Slice 3 — Headroom panel
+  // ============================================================
+
+  function fmtExposure(n, currency) {
+    if (typeof n !== "number" || !Number.isFinite(n)) return "—";
+    return `${currency ?? ""} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`.trim();
+  }
+
+  function renderHeadroomEmpty(message) {
+    const tbody = $("[data-fx-headroom-tbody]");
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="6" class="fx-cp-empty">${escapeHtml(message)}</td></tr>`;
+  }
+
+  function renderHeadroom(payload) {
+    const tbody = $("[data-fx-headroom-tbody]");
+    if (!tbody) return;
+
+    if (!payload || !Array.isArray(payload.rows) || payload.rows.length === 0) {
+      renderHeadroomEmpty("Headroom data unavailable.");
+      return;
+    }
+
+    tbody.innerHTML = payload.rows
+      .map((row) => {
+        const ragClass = `fx-rag-${row.ragStatus ?? "green"}`;
+        const ragLabel = (row.ragStatus ?? "green").toUpperCase();
+        const utilisationLabel =
+          typeof row.utilisationPct === "number"
+            ? `${(row.utilisationPct * 100).toFixed(1)}%`
+            : "—";
+        return [
+          "<tr>",
+          `<td><strong>${escapeHtml(row.cluster ?? "—")}</strong></td>`,
+          `<td>${escapeHtml(row.limitName ?? "—")}</td>`,
+          `<td>${escapeHtml(fmtExposure(row.currentExposure, row.currency))}</td>`,
+          `<td>${escapeHtml(fmtExposure(row.limitValue, row.currency))}</td>`,
+          `<td>${escapeHtml(utilisationLabel)}</td>`,
+          `<td><span class="${ragClass}">${ragLabel}</span></td>`,
+          "</tr>",
+        ].join("");
+      })
+      .join("");
+  }
+
+  async function loadHeadroom() {
+    try {
+      const res = await fetch("/api/markets/fx/headroom", {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const payload = await res.json();
+      renderHeadroom(payload);
+    } catch (e) {
+      console.warn("[fx-desk] headroom fetch failed", e);
+      renderHeadroomEmpty("Headroom data unavailable.");
+    }
+  }
+
   async function boot() {
     // Render skeleton immediately so the shell chrome lays out even
     // before the first API call returns.
     renderEmpty("Loading…");
-    await loadDesk();
+    renderHeadroomEmpty("Loading…");
+    await Promise.all([loadDesk(), loadHeadroom()]);
     bindForm();
     if (typeof window.registerPagePoll === "function") {
-      window.registerPagePoll(loadDesk, 30_000);
+      window.registerPagePoll(() => Promise.all([loadDesk(), loadHeadroom()]), 30_000);
     } else {
       setInterval(() => {
-        loadDesk().catch((e) => console.warn("[fx-desk] refresh failed", e));
+        Promise.all([
+          loadDesk().catch((e) => console.warn("[fx-desk] counterparty refresh failed", e)),
+          loadHeadroom().catch((e) => console.warn("[fx-desk] headroom refresh failed", e)),
+        ]);
       }, 30_000);
     }
   }
 
   // Expose for the shell header refresh button + future tests.
-  window.bankFxDesk = { loadDesk };
+  window.bankFxDesk = { loadDesk, loadHeadroom };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

@@ -60,7 +60,9 @@ import {
   orderRejectedAtGatewayPayloadSchema,
   orderRejectedPayloadSchema,
   preTradeLimitChangedPayloadSchema,
+  quoteRespondedPayloadSchema,
   rasLimitSchedulePublishedPayloadSchema,
+  rfqRequestedPayloadSchema,
   switchTestActivatedPayloadSchema,
   switchTestEndedPayloadSchema,
   switchTestReportPayloadSchema,
@@ -982,5 +984,47 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Attribution record: governance-grade 7y (ALCO / NII-at-risk audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/ftp/attribution.ts; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
+  },
+  // ---------------------------------------------------------------------------
+  // FX desk Slice 3 — RFQ lifecycle events (Kai, 2026-05-18)
+  //
+  // RfqRequested — emitted when the FX desk receives an RFQ from a counterparty.
+  //   Precedes QuoteResponded and FxTradeExecuted in the trade lifecycle.
+  //
+  // QuoteResponded — emitted when the seed-data pricer (v1) responds with a
+  //   bid/offer/mid. Slice 3 replaces the fixed-spread stub with a market-
+  //   data-driven quote sourced from seeds/fx-rates.json.
+  //
+  // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
+  // Authors: Kai (Trading systems engineer, engineering) + Saskia (Head of
+  //          Global Markets, governance) + Rohan (Risk engineer)
+  // ---------------------------------------------------------------------------
+  {
+    type: "RfqRequested",
+    class: "markets",
+    payloadSchema: rfqRequestedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Saskia", "Rohan", "Mira", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-FX-SALES-TRADING-FRONTEND", "ORG-JSE-IRC-01", "FIC-ACT-38-2001"],
+    // JSE trade record — 7y per JSE Integrated Risk Controls record-retention
+    // obligations (ORG-JSE-IRC-01).
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "dashboard/markets-fx-trade.ts; D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10); Slice 3",
+  },
+  {
+    type: "QuoteResponded",
+    class: "markets",
+    payloadSchema: quoteRespondedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Saskia", "Rohan", "Mira", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-FX-SALES-TRADING-FRONTEND", "ORG-JSE-IRC-01"],
+    // JSE trade record — 7y per JSE Integrated Risk Controls record-retention
+    // obligations (ORG-JSE-IRC-01). Quote audit trail for best-execution review.
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "dashboard/markets-fx-trade.ts; D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10); Slice 3",
   },
 ];
