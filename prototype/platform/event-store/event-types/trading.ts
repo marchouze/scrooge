@@ -247,6 +247,83 @@ export function makePreTradeLimitChanged(args: {
 }
 
 // ---------------------------------------------------------------------------
+// FX desk Slice 3 — RFQ lifecycle events (Kai, 2026-05-18)
+//
+// RfqRequested — emitted when the desk receives an RFQ from a counterparty.
+// QuoteResponded — emitted when the pricer responds with a bid/offer/mid.
+//
+// Both events precede FxTradeExecuted in the trade lifecycle and provide
+// the audit trail for the quote-to-trade chain required by FIC Act s.22
+// and JSE IRC record-retention obligations (7 years per ORG-JSE-IRC-01).
+//
+// Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
+// Authors: Kai (Trading systems engineer, engineering) + Saskia (Head of
+//          Global Markets, governance) + Rohan (Risk engineer)
+// ---------------------------------------------------------------------------
+
+export const rfqRequestedPayloadSchema = z.object({
+  rfqId: z.string().min(1),
+  counterpartyId: z.string().min(1),
+  currencyPair: z.string().min(1),
+  side: z.enum(["buy", "sell"]),
+  notional: z.number().positive(),
+  valueDate: z.string().min(1),
+  requestedAt: z.string().min(1),
+});
+
+export type RfqRequestedPayload = z.infer<typeof rfqRequestedPayloadSchema>;
+
+export function makeRfqRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RfqRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RfqRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: rfqRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+export const quoteRespondedPayloadSchema = z.object({
+  rfqId: z.string().min(1),
+  bidRate: z.number(),
+  midRate: z.number(),
+  offerRate: z.number(),
+  halfSpread: z.number().nonnegative(),
+  source: z.string().min(1),
+  quotedAt: z.string().min(1),
+});
+
+export type QuoteRespondedPayload = z.infer<typeof quoteRespondedPayloadSchema>;
+
+export function makeQuoteResponded(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: QuoteRespondedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "QuoteResponded",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: quoteRespondedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // CRM — counterparty institutional-eligibility screening (Niko, v0)
 // ---------------------------------------------------------------------------
 
@@ -577,5 +654,7 @@ export const TRADING_TYPED_EVENT_TYPES = [
   "SwitchTestReport",
   "OrderRejected",
   "RasLimitSchedulePublished",
+  "RfqRequested",
+  "QuoteResponded",
 ] as const;
 export type TradingEventType = (typeof TRADING_TYPED_EVENT_TYPES)[number];

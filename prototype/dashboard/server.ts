@@ -95,6 +95,7 @@ import {
   buildKycClientsView,
 } from "./kyc-clients-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
+import { buildHeadroomView } from "./markets-fx-headroom";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
@@ -1631,14 +1632,23 @@ const server = Bun.serve({
     if (url.pathname === "/api/markets/fx/trade" && req.method === "POST") {
       // FX desk Slice 2 — trade-emit endpoint. Validates the RFQ form
       // input, gates on counterparty eligibility (pack §3 G1), prices a
-      // synthetic quote, appends an FxTradeExecuted event from the FX
-      // CDM (event-types intentionally untouched per dispatch brief
-      // constraint; new RfqRequested / QuoteResponded events queue
-      // behind RMS Slice 2 per pack §9 #2), and returns the trade-id
-      // + event-id for the UI confirmation panel. Provenance tag is
+      // seed-data-driven quote (Slice 3 pricer replaces fixed stub),
+      // appends RfqRequested + QuoteResponded + FxTradeExecuted events
+      // from the FX CDM, and returns the trade-id + event-id for the UI
+      // confirmation panel. Provenance tag is
       // simulated/first-dry-run-2026-Q1/agent-runtime:kai-fx-rfq.
       // Authority: D-FX-SALES-TRADING-FRONTEND-SLICE-2.
       return handleFxTrade(req);
+    }
+    if (url.pathname === "/api/markets/fx/headroom" && req.method === "GET") {
+      // FX desk Slice 3 — headroom panel source. Replays the event store,
+      // rebuilds the LimitUtilisationProjection, and returns the five
+      // B-cluster rows with RAG status for the #headroom section of the
+      // FX desk page. Zero-state (no RAS schedule emitted): all rows
+      // green with zero exposure.
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
+      //            D-MARKETS-SCHEMA-FOUNDATION Slice 5.
+      return jsonResponse(buildHeadroomView(eventStore));
     }
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.

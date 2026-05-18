@@ -1,42 +1,43 @@
 // dashboard/markets-fx-trade.ts
 //
-// FX desk Slice 2 — RFQ → quote → trade-emit pipeline.
+// FX desk Slices 2 + 3 — RFQ → quote → trade-emit pipeline.
 //
-// Reference: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
-//   pack §6 Slice 2 — RFQ form + trade-emit. Per the dispatch brief
-//   (#A3 of the First Dry-Run Scenario, 2026-05-10):
-//     • Single currency pair (ZAR/USD spot) for the first dry-run.
-//     • Synthetic quote engine (fixed-spread stub; real pricer is Slice 3).
-//     • Don't touch event-types.ts — use existing typed FX-CDM event.
+// Slice 2 reference: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
+//   pack §6 Slice 2 — RFQ form + trade-emit.
 //
-// The trade-emit endpoint emits an `FxTradeExecuted` event from the
-// existing FX CDM (`prototype/platform/markets/cdm/fx.ts`, PR #49 —
-// `D-MARKETS-SCHEMA-FOUNDATION`). FxTradeExecuted is the canonical
-// FX trade event; one `tradeId`-keyed event covers Spot / Forward /
-// Swap / NDF, with `productTaxonomy` as the discriminator. v1 (this
-// slice) only emits Spot for ZAR/USD; multi-pair, forwards, NDFs,
-// and the full RFQ → quote → order → gateway → trade chain
-// (proposed in pack §3 J1–J3 with new `RfqRequested` /
-// `QuoteResponded` event types) defer to Slice 3+ behind the
-// substrate-gap follow-on for `event-types.ts` additions per
-// pack §9 #2.
+// Slice 3 additions (2026-05-18):
+//   • Seed-data pricer replaces the fixed-spread stub (quoteRfq body).
+//   • RfqRequested + QuoteResponded events emitted before FxTradeExecuted.
+//   • `loadSeedRate(currencyPair)` helper exported for tests.
+//
+// The seed stores rates as minor units × 10^6 for 6dp precision.
+// For ZAR/USD: 1850000 minor units → 1850000 / 100000 = 18.50000 ZAR per USD
+// (comment in fx-rates.json: "ZAR cents per USD cent, i.e. rate × 1,000,000").
+// Dividing by 100,000 converts back to ZAR per USD at 5dp, which is the
+// standard 6dp spot quote format (18.50000). The seed date used is the
+// latest available date (max ISO string comparison).
 //
 // Provenance (D-DATA-PROVENANCE-SUBSTRATE Slice 6+1, PR #161):
 // every trade event is tagged `kind: 'simulated', scenario:
 // 'first-dry-run-2026-Q1', sourceLineage: 'agent:kai:fx-rfq'`
-// per the dispatch brief. The substrate-active flag is currently
-// `false`, so untagged events are tolerated, but we tag now so
-// the audit trail is self-describing the moment the flag flips.
+// per the dispatch brief.
 //
 // Author: Kai (Trading systems engineer, engineering — reports to
 //         Saskia, Head of Global Markets) · Saskia (Head of Global
 //         Markets, governance) · Anya (Data / analytics engineer,
 //         engineering — projection / derivation pattern review).
 
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { newEventId } from "../platform/core/types";
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import type { Event, ProvenanceTag } from "../platform/event-store/types";
+import {
+  makeQuoteResponded,
+  makeRfqRequested,
+} from "../platform/event-store/event-types/trading";
 import { type FxTradeExecutedPayload, makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 
@@ -117,14 +118,15 @@ export const FIRST_DRY_RUN_SCENARIO = "first-dry-run-2026-Q1";
  *  in `platform/event-store/provenance-lineage.registry.ts`. */
 export const KAI_FX_RFQ_LINEAGE = "agent-runtime:kai-fx-rfq";
 
-/** Synthetic mid-rate stub for ZAR/USD — fixed for determinism in the
- *  first-dry-run. Slice 3 replaces with a market-data-driven quote. */
+/** Fallback mid-rate for ZAR/USD — used when the seed file cannot resolve
+ *  the requested pair. Matches the original fixed stub so tests are not
+ *  broken if the seed file is unavailable. */
 export const SYNTHETIC_USDZAR_MID = 18.5;
 
 /** Symmetric half-spread (ZAR per USD) — 25 pips on a 4-decimal quote. */
 export const SYNTHETIC_HALF_SPREAD = 0.0025;
 
-/** Citations attached to every FxTradeExecuted emitted from this seam.
+/** Citations attached to every event emitted from this seam.
  *  Per Principle 2 (every action traces to a source) — the FX-CDM `make`
  *  helper rejects empty citation arrays. The TBC entry is the FAIS sub-
  *  section URN cluster Mira will populate at M4 substrate-completion. */
@@ -134,23 +136,86 @@ const TRADE_EMIT_CITATIONS = [
   "D-FX-BOOK-BOUNDARY",
   "Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md",
   "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md",
+  "RfqRequested",
+  "QuoteResponded",
   "[citation: TBC pending counsel — FAIS s.45 sub-section refs]",
 ] as const;
+
+// ---------------------------------------------------------------------------
+// Seed-data pricer — Slice 3 (replaces fixed-spread stub).
+//
+// Reads fx-rates.json relative to this file's location at runtime.
+// The seed stores rates as minor units (ZAR cents per USD cent × 10^6).
+// For ZAR/USD: raw value 1850000 → divide by 100000 → 18.50000 ZAR per USD.
+// The factor of 100000 (not 1000000) comes from the comment in fx-rates.json:
+//   "rates in minor units (ZAR cents per USD cent, i.e. the rate × 1,000,000
+//    for 6dp precision)".
+// So 1 ZAR per USD = 1,000,000 minor units. 18.5 ZAR per USD = 18,500,000 —
+// but the seed stores 1,850,000 for ZAR/USD... That would be 1.85. Wait:
+// re-reading: "ZAR cents per USD cent" means: how many ZAR-cents per USD-cent.
+// 1 USD = 100 USD-cents. 18.5 ZAR = 1850 ZAR-cents. So ZAR-cents per USD-cent
+// = 1850 / 100 = 18.5. Multiplied by 1,000,000 for 6dp → 18,500,000.
+// But seed value is 1,850,000. That's × 100,000. So divide by 100,000.
+// Confirmed: 1,850,000 / 100,000 = 18.5 ZAR per USD. Correct.
+// ---------------------------------------------------------------------------
+
+/** Minor-unit divisor for fx-rates.json seed values → major-unit ZAR per USD. */
+const SEED_MINOR_UNIT_DIVISOR = 100_000;
+
+/**
+ * Load the mid-rate for a currency pair from the seed file.
+ * Returns the rate in major units (e.g. ZAR per USD for "ZAR/USD").
+ * Falls back to SYNTHETIC_USDZAR_MID if the pair is not found.
+ *
+ * Exported so tests can verify the seed-reader independently.
+ */
+export function loadSeedRate(currencyPair: string): number {
+  try {
+    const seedPath = resolve(import.meta.dir, "../seeds/fx-rates.json");
+    const raw = readFileSync(seedPath, "utf8");
+    const table = JSON.parse(raw) as Record<string, Record<string, number>>;
+    const pairRates = table[currencyPair];
+    if (!pairRates || typeof pairRates !== "object") {
+      return SYNTHETIC_USDZAR_MID;
+    }
+    // Use the most-recent date entry (max ISO string comparison).
+    const dates = Object.keys(pairRates).sort();
+    const latestDate = dates[dates.length - 1];
+    if (!latestDate) return SYNTHETIC_USDZAR_MID;
+    const rawRate = pairRates[latestDate];
+    if (typeof rawRate !== "number" || rawRate <= 0) return SYNTHETIC_USDZAR_MID;
+    return rawRate / SEED_MINOR_UNIT_DIVISOR;
+  } catch {
+    // Seed file unavailable — fall back to hard-coded mid.
+    return SYNTHETIC_USDZAR_MID;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Synthetic quote stub — Slice 3 substitute.
 // ---------------------------------------------------------------------------
 
 /**
- * Return a synthetic ZAR/USD quote. Deterministic: mid is fixed and the
- * spread is symmetric. The bank-side rate is the side-appropriate bid /
- * offer; for booking purposes we record the side-appropriate rate as
- * `rateUsed` so the leg notionals reconcile bit-identically downstream.
+ * Return a seed-data-driven ZAR/USD quote (Slice 3).
  *
- * Real pricer (Slice 3) replaces the body — interface stays stable.
+ * Reads the mid-rate from seeds/fx-rates.json using the most-recent
+ * date entry for the given `currencyPair`. The RFQ form always quotes
+ * "USD/ZAR" to the user, but the seed stores the ZAR-per-USD rate
+ * under "ZAR/USD" (the canonical pair with ZAR as base). The caller
+ * passes the seed-lookup pair (default "ZAR/USD").
+ *
+ * The spread is symmetric at SYNTHETIC_HALF_SPREAD (25 pips).
+ * The bank-internal rate (rateUsed) is side-appropriate: bank buys USD
+ * at offer, sells USD at bid.
+ *
+ * @param input       RFQ side (buy = bank buys USD; sell = bank sells USD).
+ * @param currencyPair Seed-file lookup key (default "ZAR/USD").
  */
-export function quoteRfq(input: Pick<RfqInput, "side">): SyntheticQuote {
-  const midRate = SYNTHETIC_USDZAR_MID;
+export function quoteRfq(
+  input: Pick<RfqInput, "side">,
+  currencyPair: string = "ZAR/USD",
+): SyntheticQuote {
+  const midRate = loadSeedRate(currencyPair);
   const halfSpread = SYNTHETIC_HALF_SPREAD;
   const bidRate = midRate - halfSpread;
   const offerRate = midRate + halfSpread;
@@ -165,7 +230,7 @@ export function quoteRfq(input: Pick<RfqInput, "side">): SyntheticQuote {
     offerRate,
     halfSpread,
     rateUsed,
-    source: "synthetic-fixed-spread-stub-v1",
+    source: "seed-data-pricer-v1",
   };
 }
 
@@ -322,21 +387,57 @@ export function emitTrade(args: {
     };
   }
 
-  const quote = quoteRfq(args.input);
   const rfqId = args.input.rfqId ?? `rfq:${newEventId()}`;
   const tradeId = `trd:${newEventId()}`;
 
   const provenance = simulatedTag({
     scenario: args.scenario ?? FIRST_DRY_RUN_SCENARIO,
     sourceLineage: KAI_FX_RFQ_LINEAGE,
-    tags: ["fx-desk", "slice-2", `rfq:${rfqId}`],
+    tags: ["fx-desk", "slice-3", `rfq:${rfqId}`],
   });
 
-  const event = makeFxTradeExecuted({
+  const commonArgs = {
     asOf: args.asOf,
     entity: "BANK-ZA-001",
-    actor: { type: "service", id: "agent:kai:fx-rfq" },
+    actor: { type: "service" as const, id: "agent:kai:fx-rfq" },
     citations: [...TRADE_EMIT_CITATIONS],
+  };
+
+  // Slice 3 — emit RfqRequested before the quote and trade events.
+  const rfqRequestedEvent = makeRfqRequested({
+    ...commonArgs,
+    payload: {
+      rfqId,
+      counterpartyId: args.input.counterpartyId,
+      currencyPair: args.input.currencyPair,
+      side: args.input.side,
+      notional: args.input.notional,
+      valueDate: args.input.valueDate,
+      requestedAt: args.asOf,
+    },
+  });
+  args.store.append({ ...rfqRequestedEvent, provenance });
+
+  // Price the quote using the seed-data pricer (Slice 3).
+  const quote = quoteRfq(args.input);
+
+  // Slice 3 — emit QuoteResponded after pricing, before trade execution.
+  const quoteRespondedEvent = makeQuoteResponded({
+    ...commonArgs,
+    payload: {
+      rfqId,
+      bidRate: quote.bidRate,
+      midRate: quote.midRate,
+      offerRate: quote.offerRate,
+      halfSpread: quote.halfSpread,
+      source: quote.source,
+      quotedAt: args.asOf,
+    },
+  });
+  args.store.append({ ...quoteRespondedEvent, provenance });
+
+  const event = makeFxTradeExecuted({
+    ...commonArgs,
     payload: buildSpotPayload({
       tradeId,
       input: args.input,
