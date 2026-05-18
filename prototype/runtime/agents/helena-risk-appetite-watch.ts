@@ -40,6 +40,7 @@ import { resolve } from "node:path";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
+import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -250,7 +251,10 @@ interface AppetiteSnapshot {
   readonly daysSinceRasReview: number;
 }
 
-function statusForLine(line: AppetiteLine): LineState {
+function statusForLine(
+  line: AppetiteLine,
+  capitalMetrics?: ReturnType<typeof computeCapitalMetrics>,
+): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
   // zero-appetite lines (sanctions, STR judgement, TCF) where the
@@ -265,6 +269,19 @@ function statusForLine(line: AppetiteLine): LineState {
       note: "Zero-appetite line; Mira's gate enforces. No override events observed in this run.",
     };
   }
+
+  // appetite:capital:cet1-buffer — measured by Bea's capital-metrics module.
+  // Returns an actual status (green/amber/red) from the ICAAP v1 build-phase
+  // baseline or from live CapitalEvent events when they exist.
+  // Authority: D-RAS (2026-05-06), D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12).
+  if (line.id === "appetite:capital:cet1-buffer" && capitalMetrics !== undefined) {
+    return {
+      line,
+      status: capitalMetrics.status,
+      note: capitalMetrics.note,
+    };
+  }
+
   // Everything else: unmeasured pending Rohan / Bea / Ravi measurement
   // substrate. Build-phase n/a is *not* the same as unmeasured — n/a
   // means structurally not applicable yet (no book, no portfolio); we
@@ -320,7 +337,13 @@ function daysSince(asOfIso: string, sinceIso: string): number {
 }
 
 function buildSnapshot(asOfIso: string): AppetiteSnapshot {
-  const lineStates = APPETITE_LINES.map(statusForLine);
+  // Compute CET1 capital headroom metrics (Bea's module — closes the
+  // appetite:capital:cet1-buffer unmeasured gap). Build-phase fallback
+  // to ICAAP v1 confirmed figures when no live CapitalEvent events exist.
+  // Authority: D-RAS (2026-05-06), D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12).
+  const capitalMetrics = computeCapitalMetrics(eventStore, asOfIso);
+
+  const lineStates = APPETITE_LINES.map((line) => statusForLine(line, capitalMetrics));
   const measuredCount = lineStates.filter(
     (s) => s.status === "green" || s.status === "amber" || s.status === "red",
   ).length;
@@ -423,7 +446,13 @@ function buildReportMarkdown(
   lines.push("## Substrate gaps surfaced this run");
   lines.push("");
   lines.push(
-    `- **Measurement substrate** — ${snap.unmeasuredCount} of ${APPETITE_LINES.length} lines are unmeasured pending Rohan / Bea / Ravi engineering (next handler #5 in the fleet-rollout plan).`,
+    `- **Measurement substrate** — ${snap.unmeasuredCount} of ${APPETITE_LINES.length} lines are unmeasured pending Rohan / Bea / Ravi engineering (next handler #5 in the fleet-rollout plan). Note: \`appetite:capital:cet1-buffer\` is now measured (Bea's capital-metrics module, D-MARKETS-CAPITAL-TIME-SHAPE).`,
+  );
+  lines.push(
+    "- **Live capital events** — CET1 metrics currently use ICAAP v1 build-phase baseline (D-MARKETS-CAPITAL-TIME-SHAPE). Substrate gap: no live CapitalEvent events (CapitalContributionRecorded / equity-issuance) in the store. When real capital is raised at licence-day, the module auto-switches to live-event mode.",
+  );
+  lines.push(
+    "- **RWA engine** — CET1 ratio denominator uses build-phase ICAAP v1 RWA (R73.75m) until W2 Slice 3 RWA engine lands. Owner: Bea + Rohan.",
   );
   lines.push(
     "- **Structured RAS register** — appetite lines are read from a hand-curated shadow in this handler's source. A structured RAS register (parseable, citation-bound) replaces the shadow when Helena + Atlas ship it.",
