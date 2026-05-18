@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Event } from "../event-store/types";
+import { buildRateMap, convertMinor } from "./fx-rate-projection";
 
 // ---------------------------------------------------------------------------
 // Chart-of-accounts loader
@@ -93,6 +94,10 @@ export interface GlLedgerEntry {
   currency: string;
   /** For ManualJournalEntry: the journal ID */
   journalId?: string;
+  /** Reporting currency equivalent (undefined = no reporting currency requested; null = rate not available) */
+  reportingAmountMinor?: number | null;
+  /** ISO 4217 reporting currency */
+  reportingCurrency?: string;
 }
 
 export interface GlAccountBalance {
@@ -113,6 +118,12 @@ export interface GlTrialBalanceRow {
   currency: string;
   totalDebitsMinor: number;
   totalCreditsMinor: number;
+  /** Sum of debit amounts converted to reporting currency (entries with no rate contribute 0) */
+  reportingDebitsMinor?: number;
+  /** Sum of credit amounts converted to reporting currency (entries with no rate contribute 0) */
+  reportingCreditsMinor?: number;
+  /** ISO 4217 reporting currency */
+  reportingCurrency?: string;
 }
 
 export interface GlView {
@@ -138,9 +149,32 @@ type AnyEvent = Event;
 /**
  * Build a complete GL view from the event log, scoped to postings at or
  * before `asOf` (ISO 8601 string).
+ *
+ * When `reportingCurrency` is provided, each ledger entry will be tagged with
+ * `reportingAmountMinor` (null if no rate available) and trial-balance rows
+ * will include `reportingDebitsMinor` / `reportingCreditsMinor` sums.
  */
-export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
+export function buildGlView(
+  events: readonly AnyEvent[],
+  asOf: string,
+  reportingCurrency?: string,
+): GlView {
   const ledgerEntries: GlLedgerEntry[] = [];
+
+  // Build rate map once if reporting currency requested
+  const rateMap = reportingCurrency ? buildRateMap(events) : null;
+
+  /** Returns reporting currency fields to merge into a ledger entry */
+  function rptFields(
+    amountMinor: number,
+    currency: string,
+  ): Pick<GlLedgerEntry, "reportingAmountMinor" | "reportingCurrency"> {
+    if (!reportingCurrency || !rateMap) return {};
+    return {
+      reportingCurrency,
+      reportingAmountMinor: convertMinor(amountMinor, currency, reportingCurrency, rateMap),
+    };
+  }
 
   for (const event of events) {
     const p = event.payload as Record<string, unknown>;
@@ -168,6 +202,7 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
           debitCredit: l.debitCredit,
           amountMinor: l.amountMinor,
           currency: l.currency,
+          ...rptFields(l.amountMinor, l.currency),
         });
       }
     } else if (event.type === "JournalEntryPosted") {
@@ -192,6 +227,7 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
           debitCredit: "debit",
           amountMinor,
           currency,
+          ...rptFields(amountMinor, currency),
         });
       }
       if (accountCredit) {
@@ -207,6 +243,7 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
           debitCredit: "credit",
           amountMinor,
           currency,
+          ...rptFields(amountMinor, currency),
         });
       }
     } else if (event.type === "ManualJournalEntry") {
@@ -236,6 +273,7 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
           amountMinor: l.amountMinor,
           currency: l.currency,
           journalId,
+          ...rptFields(l.amountMinor, l.currency),
         });
       }
     }
@@ -281,19 +319,34 @@ export function buildGlView(events: readonly AnyEvent[], asOf: string): GlView {
   for (const entry of ledgerEntries) {
     const key = `${entry.accountId}|${entry.currency}`;
     if (!tbMap.has(key)) {
-      tbMap.set(key, {
+      const row: GlTrialBalanceRow = {
         accountId: entry.accountId,
         accountName: entry.accountName,
         accountCategory: entry.accountCategory,
         currency: entry.currency,
         totalDebitsMinor: 0,
         totalCreditsMinor: 0,
-      });
+      };
+      if (reportingCurrency) {
+        row.reportingCurrency = reportingCurrency;
+        row.reportingDebitsMinor = 0;
+        row.reportingCreditsMinor = 0;
+      }
+      tbMap.set(key, row);
     }
     const row = tbMap.get(key);
     if (!row) continue;
-    if (entry.debitCredit === "debit") row.totalDebitsMinor += entry.amountMinor;
-    else row.totalCreditsMinor += entry.amountMinor;
+    if (entry.debitCredit === "debit") {
+      row.totalDebitsMinor += entry.amountMinor;
+      if (reportingCurrency && row.reportingDebitsMinor !== undefined) {
+        row.reportingDebitsMinor += entry.reportingAmountMinor ?? 0;
+      }
+    } else {
+      row.totalCreditsMinor += entry.amountMinor;
+      if (reportingCurrency && row.reportingCreditsMinor !== undefined) {
+        row.reportingCreditsMinor += entry.reportingAmountMinor ?? 0;
+      }
+    }
   }
 
   const tbEntries = [...tbMap.values()].sort((a, b) => a.accountId.localeCompare(b.accountId));

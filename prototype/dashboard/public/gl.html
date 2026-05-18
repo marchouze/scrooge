@@ -275,6 +275,16 @@
         <label for="asof-picker">As of</label>
         <input type="datetime-local" id="asof-picker" />
       </div>
+      <div class="gl-control-group">
+        <label for="rpt-currency">Reporting Currency</label>
+        <select id="rpt-currency">
+          <option value="">None</option>
+          <option value="ZAR" selected>ZAR</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
       <button class="gl-btn" id="refreshBtn">Refresh</button>
     </div>
     <p class="muted" style="margin:0 0 var(--space-3);">
@@ -323,6 +333,7 @@
             <th style="text-align:right">Debit</th>
             <th style="text-align:right">Credit</th>
             <th>Currency</th>
+            <th style="text-align:right" id="rptEquivHeader" hidden>Rpt Equiv.</th>
           </tr>
         </thead>
         <tbody id="entriesBody">
@@ -352,6 +363,8 @@
             <th>Currency</th>
             <th style="text-align:right">Debit Total</th>
             <th style="text-align:right">Credit Total</th>
+            <th style="text-align:right" id="tbRptDrHeader" hidden>Rpt Dr</th>
+            <th style="text-align:right" id="tbRptCrHeader" hidden>Rpt Cr</th>
           </tr>
         </thead>
         <tbody id="tbBody">
@@ -362,6 +375,8 @@
             <td colspan="4"><strong>Total</strong></td>
             <td style="text-align:right" id="tbTotalDebits" class="mono">–</td>
             <td style="text-align:right" id="tbTotalCredits" class="mono">–</td>
+            <td style="text-align:right" id="tbTotalRptDebits" class="mono" hidden>–</td>
+            <td style="text-align:right" id="tbTotalRptCredits" class="mono" hidden>–</td>
           </tr>
         </tfoot>
       </table>
@@ -423,6 +438,37 @@
   const asofPicker = document.getElementById("asof-picker");
   const _now = new Date();
   asofPicker.value = new Date(_now - _now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+  // ---- reporting currency ----
+  const rptCurrencySelect = document.getElementById("rpt-currency");
+  function getReportingCurrency() { return rptCurrencySelect.value || null; }
+  rptCurrencySelect.addEventListener("change", () => {
+    // toggle visibility of reporting columns
+    const hasCcy = !!rptCurrencySelect.value;
+    document.getElementById("rptEquivHeader").hidden = !hasCcy;
+    document.getElementById("tbRptDrHeader").hidden = !hasCcy;
+    document.getElementById("tbRptCrHeader").hidden = !hasCcy;
+    document.getElementById("tbTotalRptDebits").hidden = !hasCcy;
+    document.getElementById("tbTotalRptCredits").hidden = !hasCcy;
+    // Update header label to include currency code
+    if (hasCcy) {
+      document.getElementById("rptEquivHeader").textContent = `Rpt Equiv. (${rptCurrencySelect.value})`;
+      document.getElementById("tbRptDrHeader").textContent = `Rpt Dr (${rptCurrencySelect.value})`;
+      document.getElementById("tbRptCrHeader").textContent = `Rpt Cr (${rptCurrencySelect.value})`;
+    }
+    entriesOffset = 0;
+    loadEntries();
+    loadTrialBalance();
+  });
+  // Set initial header state (ZAR is selected by default)
+  document.getElementById("rptEquivHeader").hidden = false;
+  document.getElementById("rptEquivHeader").textContent = "Rpt Equiv. (ZAR)";
+  document.getElementById("tbRptDrHeader").hidden = false;
+  document.getElementById("tbRptDrHeader").textContent = "Rpt Dr (ZAR)";
+  document.getElementById("tbRptCrHeader").hidden = false;
+  document.getElementById("tbRptCrHeader").textContent = "Rpt Cr (ZAR)";
+  document.getElementById("tbTotalRptDebits").hidden = false;
+  document.getElementById("tbTotalRptCredits").hidden = false;
 
   // ---- tab switching ----
   const tabs = document.querySelectorAll(".gl-tab");
@@ -494,20 +540,23 @@
     const account = document.getElementById("accountFilter").value;
     const from = document.getElementById("fromFilter").value;
     const to = document.getElementById("toFilter").value;
+    const rptCcy = getReportingCurrency();
 
     let url = `/api/gl/entries?asOf=${encodeURIComponent(asOf)}&limit=${ENTRIES_LIMIT}&offset=${entriesOffset}`;
     if (account) url += `&account=${encodeURIComponent(account)}`;
     if (from) url += `&from=${encodeURIComponent(from)}`;
     if (to) url += `&to=${encodeURIComponent(to + "T23:59:59Z")}`;
+    if (rptCcy) url += `&reportingCurrency=${encodeURIComponent(rptCcy)}`;
 
+    const colCount = rptCcy ? 8 : 7;
     const tbody = document.getElementById("entriesBody");
-    tbody.innerHTML = '<tr><td colspan="7" class="muted">Loading…</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">Loading…</td></tr>`;
     document.getElementById("entriesStatus").textContent = "";
 
     try {
       const r = await fetch(url);
       if (!r.ok) {
-        tbody.innerHTML = `<tr><td colspan="7" class="muted">Error ${r.status}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">Error ${r.status}</td></tr>`;
         return;
       }
       const data = await r.json();
@@ -515,9 +564,13 @@
       const total = data.total ?? 0;
 
       if (entries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="muted">No entries match the current filters.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">No entries match the current filters.</td></tr>`;
       } else {
-        tbody.innerHTML = entries.map(e => `
+        tbody.innerHTML = entries.map(e => {
+          const rptCell = rptCcy
+            ? `<td style="text-align:right" class="mono">${e.reportingAmountMinor != null ? fmt(e.reportingAmountMinor) + ' ' + esc(e.reportingCurrency ?? rptCcy) : '—'}</td>`
+            : '';
+          return `
           <tr>
             <td class="mono">${esc(fmtDate(e.postedAt))}</td>
             <td><code>${esc(e.source)}</code></td>
@@ -526,8 +579,9 @@
             <td style="text-align:right" class="mono ${e.debitCredit === 'debit' ? 'dr' : ''}">${e.debitCredit === 'debit' ? fmt(e.amountMinor) : ''}</td>
             <td style="text-align:right" class="mono ${e.debitCredit === 'credit' ? 'cr' : ''}">${e.debitCredit === 'credit' ? fmt(e.amountMinor) : ''}</td>
             <td>${esc(e.currency)}</td>
-          </tr>
-        `).join("");
+            ${rptCell}
+          </tr>`;
+        }).join("");
       }
 
       const shown = Math.min(entriesOffset + ENTRIES_LIMIT, total);
@@ -549,14 +603,19 @@
   // ---- Trial Balance ----
   async function loadTrialBalance() {
     const asOf = getAsOf();
+    const rptCcy = getReportingCurrency();
+    const colCount = rptCcy ? 8 : 6;
     const tbody = document.getElementById("tbBody");
-    tbody.innerHTML = '<tr><td colspan="6" class="muted">Loading…</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">Loading…</td></tr>`;
     document.getElementById("tbStatus").textContent = "";
 
+    let url = `/api/gl/trial-balance?asOf=${encodeURIComponent(asOf)}`;
+    if (rptCcy) url += `&reportingCurrency=${encodeURIComponent(rptCcy)}`;
+
     try {
-      const r = await fetch(`/api/gl/trial-balance?asOf=${encodeURIComponent(asOf)}`);
+      const r = await fetch(url);
       if (!r.ok) {
-        tbody.innerHTML = `<tr><td colspan="6" class="muted">Error ${r.status}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">Error ${r.status}</td></tr>`;
         return;
       }
       const tb = await r.json();
@@ -569,9 +628,16 @@
 
       const entries = tb.entries ?? [];
       if (entries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="muted">No postings found before this date.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">No postings found before this date.</td></tr>`;
       } else {
-        tbody.innerHTML = entries.map(row => `
+        tbody.innerHTML = entries.map(row => {
+          const rptDrCell = rptCcy
+            ? `<td style="text-align:right" class="mono">${row.reportingDebitsMinor != null ? fmt(row.reportingDebitsMinor) : '—'}</td>`
+            : '';
+          const rptCrCell = rptCcy
+            ? `<td style="text-align:right" class="mono">${row.reportingCreditsMinor != null ? fmt(row.reportingCreditsMinor) : '—'}</td>`
+            : '';
+          return `
           <tr>
             <td class="mono">${esc(row.accountId)}</td>
             <td>${esc(row.accountName)}</td>
@@ -579,14 +645,26 @@
             <td>${esc(row.currency)}</td>
             <td style="text-align:right" class="mono ${row.totalDebitsMinor > 0 ? 'dr' : ''}">${fmt(row.totalDebitsMinor)}</td>
             <td style="text-align:right" class="mono ${row.totalCreditsMinor > 0 ? 'cr' : ''}">${fmt(row.totalCreditsMinor)}</td>
-          </tr>
-        `).join("");
+            ${rptDrCell}${rptCrCell}
+          </tr>`;
+        }).join("");
       }
 
       document.getElementById("tbTotalDebits").textContent = fmt(tb.totalDebits ?? 0);
       document.getElementById("tbTotalCredits").textContent = fmt(tb.totalCredits ?? 0);
+
+      // Reporting currency totals
+      if (rptCcy) {
+        let totalRptDr = 0, totalRptCr = 0;
+        for (const row of entries) {
+          totalRptDr += row.reportingDebitsMinor ?? 0;
+          totalRptCr += row.reportingCreditsMinor ?? 0;
+        }
+        document.getElementById("tbTotalRptDebits").textContent = fmt(totalRptDr);
+        document.getElementById("tbTotalRptCredits").textContent = fmt(totalRptCr);
+      }
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to load: ${esc(String(err))}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${colCount}" class="muted">Failed to load: ${esc(String(err))}</td></tr>`;
     }
   }
 

@@ -14,6 +14,7 @@
 
 import { buildGlView } from "../platform/accounting/gl-projection";
 import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
+import { availableCurrencies, buildRateMap } from "../platform/accounting/fx-rate-projection";
 import { clock } from "../platform/composition";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
@@ -38,6 +39,7 @@ function handleGlEntries(searchParams: URLSearchParams, eventStore: EventStore):
   const accountFilter = searchParams.get("account") ?? "";
   const from = searchParams.get("from") ?? "";
   const to = searchParams.get("to") ?? "";
+  const reportingCurrency = searchParams.get("reportingCurrency") ?? undefined;
   const limit = Math.max(
     1,
     Math.min(500, Number.parseInt(searchParams.get("limit") ?? "50", 10) || 50),
@@ -45,7 +47,7 @@ function handleGlEntries(searchParams: URLSearchParams, eventStore: EventStore):
   const offset = Math.max(0, Number.parseInt(searchParams.get("offset") ?? "0", 10) || 0);
 
   const events = [...eventStore.replay({})];
-  const view = buildGlView(events, asOf);
+  const view = buildGlView(events, asOf, reportingCurrency);
 
   let entries: GlLedgerEntry[] = view.ledgerEntries;
 
@@ -71,8 +73,9 @@ function handleGlEntries(searchParams: URLSearchParams, eventStore: EventStore):
 
 function handleGlTrialBalance(searchParams: URLSearchParams, eventStore: EventStore): Response {
   const asOf = searchParams.get("asOf") ?? nowUtc();
+  const reportingCurrency = searchParams.get("reportingCurrency") ?? undefined;
   const events = [...eventStore.replay({})];
-  const view = buildGlView(events, asOf);
+  const view = buildGlView(events, asOf, reportingCurrency);
   return jsonResponse(view.trialBalance);
 }
 
@@ -216,6 +219,27 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
 }
 
 // ---------------------------------------------------------------------------
+// GET /api/gl/fx-rates
+// ---------------------------------------------------------------------------
+
+function handleGlFxRates(eventStore: EventStore): Response {
+  const events = [...eventStore.replay({})];
+  const rateMap = buildRateMap(events);
+  const currencies = availableCurrencies(rateMap);
+
+  const rates: Array<{ from: string; to: string; rate: number }> = [];
+  for (const [from, toMap] of rateMap) {
+    for (const [to, rate] of toMap) {
+      rates.push({ from, to, rate });
+    }
+  }
+
+  rates.sort((a, b) => `${a.from}/${a.to}`.localeCompare(`${b.from}/${b.to}`));
+
+  return jsonResponse({ rates, currencies, asOf: nowUtc() });
+}
+
+// ---------------------------------------------------------------------------
 // POST /api/gl/run-posting-engine
 // ---------------------------------------------------------------------------
 
@@ -270,6 +294,10 @@ export async function registerGlRoutes(
   eventStore: EventStore,
 ): Promise<Response | null> {
   if (!pathname.startsWith("/api/gl")) return null;
+
+  if (pathname === "/api/gl/fx-rates" && method === "GET") {
+    return handleGlFxRates(eventStore);
+  }
 
   if (pathname === "/api/gl/entries" && method === "GET") {
     return handleGlEntries(searchParams, eventStore);
