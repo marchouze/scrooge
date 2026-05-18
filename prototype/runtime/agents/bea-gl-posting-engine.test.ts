@@ -12,14 +12,13 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { EventStore } from "../../platform/event-store/store";
+import { newEventId } from "../../platform/core/types";
 import {
   makePaymentInitiated,
   makePaymentSettled,
   makeSettlementInstructionReceived,
 } from "../../platform/event-store/event-types/payments";
-import { newEventId } from "../../platform/core/types";
-import type { AgentRunContext } from "../types";
+import { EventStore } from "../../platform/event-store/store";
 
 // ---------------------------------------------------------------------------
 // We need to test beaGlPostingEngine against an in-memory event store,
@@ -39,22 +38,6 @@ import {
   paymentSettledJournals,
   settlementInstructionJournals,
 } from "../../platform/accounting/posting-rules/payments";
-
-// ---------------------------------------------------------------------------
-// Test context factory
-// ---------------------------------------------------------------------------
-
-function makeCtx(overrides: Partial<AgentRunContext> = {}): AgentRunContext {
-  return {
-    agent: "Bea",
-    trigger: { kind: "on-request", id: "gl-posting-engine" },
-    asOf: "2026-05-18T12:00:00.000Z",
-    repoRoot: "/tmp/test-repo",
-    ownerInboxDir: "/tmp/test-repo/Owner Inbox",
-    dryRun: false,
-    ...overrides,
-  };
-}
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:bea:gl-posting-engine" };
@@ -77,8 +60,12 @@ describe("GL posting engine — posting rule integration", () => {
     const legs = paymentInitiatedJournals(payload);
     expect(legs).toHaveLength(2);
     // Legs must balance
-    const debit = legs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+    const debit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const credit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     // Debit suspense, credit nostro
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-3100-001");
@@ -97,8 +84,12 @@ describe("GL posting engine — posting rule integration", () => {
     };
     const legs = paymentSettledJournals(payload);
     expect(legs).toHaveLength(2);
-    const debit = legs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+    const debit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const credit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     // Debit customer payable, credit suspense
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-2200-002");
@@ -117,8 +108,12 @@ describe("GL posting engine — posting rule integration", () => {
     };
     const legs = settlementInstructionJournals(payload);
     expect(legs).toHaveLength(2);
-    const debit = legs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+    const debit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const credit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     // Debit settlement receivable, credit suspense
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-4100-001");
@@ -131,13 +126,13 @@ describe("GL posting engine — posting rule integration", () => {
 // ---------------------------------------------------------------------------
 
 describe("GL posting engine — idempotency logic", () => {
-  it("Empty event store: no postings emitted", () => {
+  it("Empty event store: no payments events", () => {
     const store = new EventStore(":memory:");
     // No payments events in store
     const payments = [
-      ...store.replay({ type: "PaymentInitiated" }),
-      ...store.replay({ type: "PaymentSettled" }),
-      ...store.replay({ type: "SettlementInstructionReceived" }),
+      ...[...store.replay({ type: "PaymentInitiated" })],
+      ...[...store.replay({ type: "PaymentSettled" })],
+      ...[...store.replay({ type: "SettlementInstructionReceived" })],
     ];
     expect(payments).toHaveLength(0);
   });
@@ -164,14 +159,20 @@ describe("GL posting engine — idempotency logic", () => {
       }),
     );
 
-    const events = store.replay({ type: "PaymentInitiated" });
+    const events = [...store.replay({ type: "PaymentInitiated" })];
     expect(events).toHaveLength(1);
 
-    const legs = paymentInitiatedJournals(events[0].payload as Parameters<typeof paymentInitiatedJournals>[0]);
+    const legs = paymentInitiatedJournals(
+      events[0].payload as Parameters<typeof paymentInitiatedJournals>[0],
+    );
     expect(legs).toHaveLength(2);
 
-    const debit = legs.filter((l) => l.debitCredit === "debit").reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs.filter((l) => l.debitCredit === "credit").reduce((s, l) => s + l.amountMinor, 0);
+    const debit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const credit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     expect(debit).toBe(500000);
   });
@@ -213,18 +214,20 @@ describe("GL posting engine — idempotency logic", () => {
     );
 
     // In dryRun, we don't call eventStore.append for SubLedgerPostingEmitted
-    const beforeCount = store.replay({ type: "SubLedgerPostingEmitted" }).length;
+    const beforeCount = [...store.replay({ type: "SubLedgerPostingEmitted" })].length;
 
     // Simulate dry-run: compute legs but don't append
-    const events = store.replay({ type: "PaymentSettled" });
+    const events = [...store.replay({ type: "PaymentSettled" })];
     expect(events).toHaveLength(1);
 
     // dryRun = true means we compute but don't append
-    const legs = paymentSettledJournals(events[0].payload as Parameters<typeof paymentSettledJournals>[0]);
+    const legs = paymentSettledJournals(
+      events[0].payload as Parameters<typeof paymentSettledJournals>[0],
+    );
     expect(legs).toHaveLength(2); // computed
 
     // Nothing appended
-    const afterCount = store.replay({ type: "SubLedgerPostingEmitted" }).length;
+    const afterCount = [...store.replay({ type: "SubLedgerPostingEmitted" })].length;
     expect(afterCount).toBe(beforeCount);
     expect(afterCount).toBe(0);
   });
@@ -252,7 +255,7 @@ describe("GL posting engine — idempotency logic", () => {
       }),
     );
 
-    const events = store.replay({ type: "SettlementInstructionReceived" });
+    const events = [...store.replay({ type: "SettlementInstructionReceived" })];
     expect(events).toHaveLength(1);
 
     const legs = settlementInstructionJournals(

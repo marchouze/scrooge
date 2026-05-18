@@ -267,7 +267,9 @@
     const banner = document.createElement("div");
     banner.id = "gl-engine-banner";
     const isOk = result.ok;
-    const bgColor = isOk ? "var(--semantic-success-bg, #d1fae5)" : "var(--semantic-error-bg, #fee2e2)";
+    const bgColor = isOk
+      ? "var(--semantic-success-bg, #d1fae5)"
+      : "var(--semantic-error-bg, #fee2e2)";
     const textColor = isOk ? "var(--semantic-success, #065f46)" : "var(--semantic-error, #991b1b)";
     banner.style.cssText = [
       `background:${bgColor}`,
@@ -283,7 +285,8 @@
     ].join(";");
 
     const icon = isOk ? "✓" : "✗";
-    const summary = result.summary || (isOk ? `Posted ${result.eventsEmitted} entries` : "Engine error");
+    const summary =
+      result.summary || (isOk ? `Posted ${result.eventsEmitted} entries` : "Engine error");
     banner.textContent = `${icon} ${summary}`;
 
     if (!isOk && result.errors && result.errors.length > 0) {
@@ -328,14 +331,28 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
-        const data = res.ok ? await res.json() : { ok: false, eventsEmitted: 0, skipped: 0, errors: [`HTTP ${res.status}`], summary: `HTTP error ${res.status}` };
+        const data = res.ok
+          ? await res.json()
+          : {
+              ok: false,
+              eventsEmitted: 0,
+              skipped: 0,
+              errors: [`HTTP ${res.status}`],
+              summary: `HTTP error ${res.status}`,
+            };
         showEngineBanner(data);
         // Refresh page data after a successful run
         if (data.ok) {
           load().catch((e) => console.warn("[finance] post-engine refresh failed", e));
         }
       } catch (e) {
-        showEngineBanner({ ok: false, eventsEmitted: 0, skipped: 0, errors: [e.message], summary: `Network error: ${e.message}` });
+        showEngineBanner({
+          ok: false,
+          eventsEmitted: 0,
+          skipped: 0,
+          errors: [e.message],
+          summary: `Network error: ${e.message}`,
+        });
       } finally {
         btn.disabled = false;
         btn.textContent = "Run Posting Engine";
@@ -352,7 +369,10 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => { load(); wireRunEngineButton(); });
+    document.addEventListener("DOMContentLoaded", () => {
+      load();
+      wireRunEngineButton();
+    });
   } else {
     load();
     wireRunEngineButton();

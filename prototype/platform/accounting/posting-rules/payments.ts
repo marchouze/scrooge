@@ -75,8 +75,7 @@ export function nostroAccountForCurrency(ccy: string): string {
       return PAYMENT_ACCOUNTS.NOSTRO_EUR;
     default:
       throw new Error(
-        `nostroAccountForCurrency: no nostro account for currency '${ccy}'. ` +
-          `Add an ACC-1200-NNN entry to the chart of accounts (Principle 5).`,
+        `nostroAccountForCurrency: no nostro account for currency '${ccy}'. Add an ACC-1200-NNN entry to the chart of accounts (Principle 5).`,
       );
   }
 }
@@ -93,8 +92,7 @@ export function suspenseAccountForCurrency(ccy: string): string {
       return PAYMENT_ACCOUNTS.SUSPENSE_USD;
     default:
       throw new Error(
-        `suspenseAccountForCurrency: no suspense account for currency '${ccy}'. ` +
-          `Add an ACC-3100-NNN entry to the chart of accounts (Principle 5).`,
+        `suspenseAccountForCurrency: no suspense account for currency '${ccy}'. Add an ACC-3100-NNN entry to the chart of accounts (Principle 5).`,
       );
   }
 }
@@ -111,8 +109,7 @@ export function customerPayableAccountForCurrency(ccy: string): string {
       return PAYMENT_ACCOUNTS.CUSTOMER_PAYABLE_USD;
     default:
       throw new Error(
-        `customerPayableAccountForCurrency: no customer payable account for currency '${ccy}'. ` +
-          `Add an ACC-2200-NNN entry to the chart of accounts (Principle 5).`,
+        `customerPayableAccountForCurrency: no customer payable account for currency '${ccy}'. Add an ACC-2200-NNN entry to the chart of accounts (Principle 5).`,
       );
   }
 }
@@ -129,8 +126,7 @@ export function settlementReceivableAccountForCurrency(ccy: string): string {
       return PAYMENT_ACCOUNTS.SETTLEMENT_RECEIVABLE_USD;
     default:
       throw new Error(
-        `settlementReceivableAccountForCurrency: no settlement receivable account for currency '${ccy}'. ` +
-          `Add an ACC-4100-NNN entry to the chart of accounts (Principle 5).`,
+        `settlementReceivableAccountForCurrency: no settlement receivable account for currency '${ccy}'. Add an ACC-4100-NNN entry to the chart of accounts (Principle 5).`,
       );
   }
 }
@@ -151,8 +147,7 @@ function assertBalanced(legs: SubLedgerLeg[], ruleId: string): void {
   for (const [ccy, t] of totals.entries()) {
     if (t.debit !== t.credit) {
       throw new Error(
-        `${ruleId}: unbalanced in ${ccy}: debit=${t.debit} credit=${t.credit}. ` +
-          `This is a programming error in the posting rule — fix the rule, not the data.`,
+        `${ruleId}: unbalanced in ${ccy}: debit=${t.debit} credit=${t.credit}. This is a programming error in the posting rule — fix the rule, not the data.`,
       );
     }
   }

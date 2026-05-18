@@ -52,10 +52,7 @@ const HANDLER_ACTOR = {
   id: "agent:bea:gl-posting-engine",
 };
 
-const GL_POSTING_CITATIONS: readonly string[] = [
-  "PROC-PAY-RBH-01",
-  "D-MARKETS-SCHEMA-FOUNDATION",
-];
+const GL_POSTING_CITATIONS: readonly string[] = ["PROC-PAY-RBH-01", "D-MARKETS-SCHEMA-FOUNDATION"];
 
 const SUBSCRIBED_TYPES = new Set<string>([
   "PaymentInitiated",
@@ -205,10 +202,7 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
   const ok = errors.length === 0;
   const summary = `GL posting engine: ${eventsEmitted} posted, ${skipped} skipped, ${errors.length} errors`;
 
-  logger.info(
-    { eventsEmitted, skipped, errors: errors.length },
-    "bea:gl-posting-engine — done",
-  );
+  logger.info({ eventsEmitted, skipped, errors: errors.length }, "bea:gl-posting-engine — done");
 
   return {
     eventsEmitted,
