@@ -53,9 +53,6 @@ import type {
   LimitUtilisationStateSummary,
   OpenDecision,
   OpenSeat,
-  OwnerInboxGroup,
-  OwnerInboxItem,
-  OwnerInboxKind,
   Person,
   Policy,
   Principle,
@@ -917,192 +914,6 @@ function fallbackSummary(body: string): string | undefined {
   return joined.length > 240 ? `${joined.slice(0, 237).trimEnd()}…` : joined;
 }
 
-function decisionIdFromFilename(filename: string): string {
-  const slug = filename.replace(/^\d{4}-\d{2}-\d{2}_/, "").replace(/\.md$/i, "");
-  return `D-OI-${slug
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")}`;
-}
-
-// Filename-based classification. Used by the renderer for grouping and by
-// `displayTitleFor` for title cleanup. See `OwnerInboxKind` in types.ts.
-export function ownerInboxKindFromFilename(filename: string): OwnerInboxKind {
-  // `*_ceo-decision-record_*.md` (any agent prefix)
-  if (/_ceo-decision-record[_-]/i.test(filename)) return "decision-record";
-  // `*_ceo-decision-pack_*.md` (any agent prefix)
-  if (/_ceo-decision-pack[_-]/i.test(filename)) return "decision-pack";
-  return "deliverable";
-}
-
-// Extract the decision id (D-XXX) from a decision-record / decision-pack
-// filename. Returns null if no D-XXX slug is present. Used by
-// `displayTitleFor` to build short titles like "Decision record · D-FOO".
-function decisionIdFromRecordFilename(filename: string): string | null {
-  // Examples:
-  //   2026-05-10_scrooge_ceo-decision-record_d-product-construction-substrate.md
-  //   2026-05-10_scrooge_ceo-decision-pack_d-hire-six-seats.md
-  const m = filename.match(/_(d-[a-z0-9-]+?)(?:\.md|_)/i);
-  if (!m || !m[1]) return null;
-  return m[1].toUpperCase();
-}
-
-// Build a short, scannable title for the Owner Inbox feed. Verbose
-// agent-prefixed titles like
-//   "Scrooge (Chief of Staff / Orchestrator) — CEO decision record:
-//    D-PRODUCT-CONSTRUCTION-SUBSTRATE, 2026-05-10"
-// collapse to "Decision record · D-PRODUCT-CONSTRUCTION-SUBSTRATE".
-// Returns the original title when no rule applies.
-export function displayTitleFor(title: string, filename: string, kind: OwnerInboxKind): string {
-  if (kind === "decision-record") {
-    const id = decisionIdFromRecordFilename(filename);
-    if (id) return `Decision record · ${id}`;
-    // Fallback: try to extract the id out of the title itself.
-    const m = title.match(/(D-[A-Z0-9][A-Z0-9-]+)/);
-    if (m?.[1]) return `Decision record · ${m[1]}`;
-    return "Decision record";
-  }
-  if (kind === "decision-pack") {
-    const id = decisionIdFromRecordFilename(filename);
-    if (id) return `Decision pack · ${id}`;
-    const m = title.match(/(D-[A-Z0-9][A-Z0-9-]+)/);
-    if (m?.[1]) return `Decision pack · ${m[1]}`;
-  }
-  return title;
-}
-
-export function parseOwnerInboxFile(filename: string, content: string): OwnerInboxItem {
-  const { fm, body } = parseFrontmatter(content);
-  const date = fm.date ?? fileDate(filename) ?? "";
-  const title = fm.title ?? fallbackTitle(body, filename);
-  const author = fm.author ?? fallbackAuthor(body);
-  const summary = fm.summary ?? fallbackSummary(body);
-  const decisionRequired = fm.decisionRequired ?? false;
-  const kind = ownerInboxKindFromFilename(filename);
-  const displayTitle = displayTitleFor(title, filename, kind);
-  // `group` is computed conservatively here — `decision-open` if
-  // `decisionRequired` is set, otherwise `informational`. `deriveState`
-  // upgrades this to `decision-resolved` once it has the CeoDecision
-  // event set for the run.
-  const group: OwnerInboxGroup = decisionRequired ? "decision-open" : "informational";
-  const item: OwnerInboxItem = {
-    filename,
-    path: `archive/owner-inbox/${filename}`,
-    date,
-    title,
-    displayTitle,
-    kind,
-    decisionRequired,
-    group,
-    ...(author ? { author } : {}),
-    ...(summary ? { summary } : {}),
-  };
-  if (decisionRequired) {
-    item.decisionId = fm.decisionId ?? decisionIdFromFilename(filename);
-    if (fm.decisionCategory) item.decisionCategory = fm.decisionCategory;
-    if (fm.decisionForCEO) item.decisionForCEO = fm.decisionForCEO;
-    if (fm.decisionRecommendation) item.decisionRecommendation = fm.decisionRecommendation;
-    if (fm.decisionOwner) item.decisionOwner = fm.decisionOwner;
-  }
-  return item;
-}
-
-// DEPRECATED — RMS Phase 4 (D-RMS-PHASE-1) retires this parser.
-// Block B (this PR) wires the events-first replacement via RecordFiled
-// + Document register. Block C deletes this function once one full
-// agent-week passes with zero Owner Inbox files authored without a
-// matching RecordFiled event. Tracked: D-RMS-PHASE-1 §15.
-//
-// Read /Owner Inbox/, return items most-recent-first (cap retains tidy UI).
-export function parseOwnerInbox(dir: string, limit = 25): OwnerInboxItem[] {
-  if (!existsSync(dir)) return [];
-  const items: OwnerInboxItem[] = [];
-  for (const filename of readdirSync(dir)) {
-    if (filename.startsWith(".") || filename.startsWith("_")) continue;
-    if (!filename.toLowerCase().endsWith(".md")) continue;
-    const full = join(dir, filename);
-    try {
-      if (!statSync(full).isFile()) continue;
-    } catch {
-      continue;
-    }
-    const content = readFileSync(full, "utf8");
-    items.push(parseOwnerInboxFile(filename, content));
-  }
-  items.sort((a, b) => {
-    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
-    return a.filename < b.filename ? 1 : -1;
-  });
-  return items.slice(0, limit);
-}
-
-// Split a free-form `decision-recommendation:` string into the structured
-// `{ stance, reasoning }` shape consumed by `OpenDecision.recommendation`
-// and the `decision-recommendation` recon pipeline. The first sentence is
-// the stance; remaining sentences are the reasoning. Strings without a
-// sentence break go entirely into stance with empty reasoning.
-function splitRecommendation(text: string): DecisionRecommendation {
-  const trimmed = text.trim();
-  const idx = trimmed.indexOf(". ");
-  if (idx === -1) return { stance: trimmed, reasoning: "" };
-  return {
-    stance: trimmed.slice(0, idx + 1),
-    reasoning: trimmed.slice(idx + 2).trim(),
-  };
-}
-
-// Comparator for the rendered Owner Inbox feed. Groups items into three
-// buckets — open decisions first, informational second, resolved last —
-// and within each group orders most-recent-first (date desc, then filename
-// desc for stability within a date).
-//
-// Rationale (Anya + Atlas, 2026-05-10): pure date-sort interleaves open
-// decisions with informational records and resolved items, which makes the
-// "what does the CEO need to action?" queue hard to scan. Grouping puts
-// open work at the top and demotes resolved noise to the bottom without
-// hiding it (audit trail intact).
-const GROUP_ORDER: Record<OwnerInboxGroup, number> = {
-  "decision-open": 0,
-  informational: 1,
-  "decision-resolved": 2,
-};
-export function ownerInboxFeedSort(a: OwnerInboxItem, b: OwnerInboxItem): number {
-  const ag = GROUP_ORDER[a.group];
-  const bg = GROUP_ORDER[b.group];
-  if (ag !== bg) return ag - bg;
-  if (a.date !== b.date) return a.date < b.date ? 1 : -1;
-  return a.filename < b.filename ? 1 : -1;
-}
-
-// @deprecated — D-DECISIONS-FRAMEWORK-REDESIGN: Owner Inbox `decision-required: true`
-// is no longer a valid authoring channel for decisions. New decisions must be opened
-// via `requestDecision()` in `runtime/decisions/record.ts`, which emits a
-// `Decision(requested)` event. This function is retained for reference only;
-// it is no longer called from the main derivation pipeline.
-export function ownerInboxToOpenDecisions(
-  items: readonly OwnerInboxItem[],
-  resolvedIds: ReadonlySet<string>,
-): OpenDecision[] {
-  const out: OpenDecision[] = [];
-  for (const item of items) {
-    if (!item.decisionRequired || !item.decisionId) continue;
-    if (resolvedIds.has(item.decisionId)) continue;
-    out.push({
-      id: item.decisionId,
-      title: item.title,
-      category: item.decisionCategory ?? "near-term",
-      owner: item.decisionOwner ?? item.author ?? "(unassigned)",
-      trigger: item.summary ?? `Deliverable: ${item.path}`,
-      decisionForCEO: item.decisionForCEO ?? `See ${item.path}`,
-      sourceDocs: [item.path],
-      ...(item.decisionRecommendation
-        ? { recommendation: splitRecommendation(item.decisionRecommendation) }
-        : {}),
-    });
-  }
-  return out;
-}
-
 // ---------------------------------------------------------------------------
 // Per-agent mini-dashboard derivation
 // ---------------------------------------------------------------------------
@@ -1600,41 +1411,15 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     : { resolved: [], remainingOpen: [], reopenedFromEvents: [] };
   const inFlight = reduceInFlight(curated.inFlight, wsStarts, wsCompletions, wsRegistrations);
 
-  // Owner Inbox feed (Marc, 2026-05-07): every deliverable in /Owner Inbox/
-  // surfaces in the dashboard, and `decision-required: true` items are lifted
-  // into decisionsOpen alongside the curated set. Resolved status is read off
-  // the CeoDecision event stream.
-  //
-  // Presentation grouping (Anya + Atlas, 2026-05-10): the rendered feed
-  // groups items into three buckets — open decisions first, informational
-  // second, resolved decisions last — and within each group sorts most-
-  // recent-first. This replaces the prior pure date-sort which interleaved
-  // open / resolved / informational and made the queue hard to scan.
+  // D-RMS-PHASE-4 (approved 2026-05-18): Owner Inbox markdown parser retired.
+  // ownerInboxFeed has been removed from DashboardState. Decisions are now
+  // sourced exclusively from the events-only projection (Decision events).
   const resolvedIds = new Set(resolved.map((r) => r.id));
-  // Cap at 200 (was 25 default). Autonomous agent runs now produce dozens of
-  // deliverables per scheduler tick (per S8 Tier 1 substrate, PRs #185-#190);
-  // 25 dropped legitimate items within a single tick. The renderer adds
-  // "Show older" pagination on top of this cap so the visual feed stays
-  // scannable without losing audit-trail items.
-  //
-  // Decision scanning is unbounded — we must not miss an open decision just
-  // because it falls outside the UI feed window. The 200-item cap applies
-  // only to the rendered feed; `ownerInboxToOpenDecisions` sees all items.
-  const allOwnerInboxItems = parseOwnerInbox(opts.sources.ownerInboxDir, Number.POSITIVE_INFINITY);
-  const rawOwnerInbox = allOwnerInboxItems.slice(0, 200);
-  const ownerInboxFeed: OwnerInboxItem[] = rawOwnerInbox
-    .map((item): OwnerInboxItem => {
-      if (!item.decisionRequired || !item.decisionId) return item;
-      const isResolved = resolvedIds.has(item.decisionId);
-      const decisionStatus: "open" | "resolved" = isResolved ? "resolved" : "open";
-      const group: OwnerInboxGroup = isResolved ? "decision-resolved" : "decision-open";
-      return { ...item, decisionStatus, group };
-    })
-    .sort(ownerInboxFeedSort);
-  // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — Owner Inbox markdown is no
-  // longer an authoring channel for open decisions. The feed above still
-  // renders the inbox items, but the lift into `decisionsOpen` is gone.
-  // Slice C backfills any historical D-* ids that lived only in markdown.
+
+  // D-DECISIONS-FRAMEWORK-REDESIGN — Owner Inbox markdown is retired as an
+  // authoring channel. ownerInboxOpenDecisions is always empty; kept for the
+  // ownerByDecisionId call which preserves owner attribution for resolved
+  // decisions sourced from the curated seed.
   const ownerInboxOpenDecisions: OpenDecision[] = [];
 
   // Lift AgentEscalation events into open decisions (Atlas substrate-gap
@@ -1746,7 +1531,6 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     decisionsResolved: resolved,
     inFlight,
     agents,
-    ownerInboxFeed,
     policies,
     prototype: curated.prototype,
     risks: curated.risks,
@@ -1800,7 +1584,6 @@ export function watchTargets(s: SourcePaths): string[] {
     s.regulationsIndex,
     s.proceduresIndex,
     s.curated,
-    s.ownerInboxDir, // fires on any deliverable add/change so the feed stays live
     s.bankNameRegister, // re-derive `state.bankName` if the canonical register is edited
   ];
   // Walking entire /Regulations/ would be noisy; the index is the
