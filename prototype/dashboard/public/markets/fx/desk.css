@@ -402,3 +402,29 @@
   color: var(--color-danger, #dc2626);
   font-weight: 600;
 }
+
+/* ===== NPA attestation badges (Slice 7) ===== */
+.fx-npa-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.fx-npa-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.fx-npa-approved {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.fx-npa-withheld {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.fx-npa-pending {
+  background: #fef9c3;
+  color: #854d0e;
+}

@@ -81,9 +81,13 @@
           parties (Niko's screening events), the substrate-mode banner, and the page shell.
           Slice 2 (live): RFQ form + trade-emit button firing <code>FxTradeExecuted</code>
           events tagged <code>first-dry-run-2026-Q1</code>.
-          Slice 3 (live, this slice): seed-data pricer replaces the fixed-spread stub;
+          Slice 3 (live): seed-data pricer replaces the fixed-spread stub;
           <code>RfqRequested</code> + <code>QuoteResponded</code> events emitted before
           <code>FxTradeExecuted</code>; headroom panel against Helena's RAS B-cluster limits.
+          Slice 7 (live, this slice): NPA attestation badge strip above the RFQ form — one
+          badge per FX product code reflecting the latest
+          <code>ProductApproved</code> / <code>ProductWithheld</code> event (pending in
+          build phase; gates v2 at licence-day).
           Gateway visualisation (Slice 4) and risk-officer view (Slice 5) land in subsequent
           slices per the eight-slice plan in the parent pack.
         </p>
@@ -149,6 +153,10 @@
           <code>OrderApprovedAtGateway</code>) is Slice 4. The form re-checks
           counterparty eligibility at emit time (pack §3 G1).
         </p>
+
+        <div class="fx-npa-badges" data-fx-npa-badges aria-label="NPA attestation badges" aria-live="polite">
+          <!-- populated by desk.js -->
+        </div>
 
         <form class="fx-rfq-form" data-fx-rfq-form aria-label="FX RFQ form">
           <div class="fx-rfq-grid">

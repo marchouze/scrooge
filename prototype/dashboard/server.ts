@@ -96,6 +96,7 @@ import {
 } from "./kyc-clients-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { buildHeadroomView } from "./markets-fx-headroom";
+import { buildNpaView } from "./markets-fx-npa";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
@@ -1649,6 +1650,15 @@ const server = Bun.serve({
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
       //            D-MARKETS-SCHEMA-FOUNDATION Slice 5.
       return jsonResponse(buildHeadroomView(eventStore));
+    }
+    if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {
+      // FX desk Slice 7 — NPA attestation badge source. Replays the event
+      // store, folds the latest ProductApproved / ProductWithheld event per
+      // FX product code, and returns a 4-row attestation view. Products with
+      // no NPA event → status: "pending" (expected build-phase state per
+      // project_product_lifecycle_npa_vs_engineering.md).
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 7.
+      return jsonResponse(buildNpaView(eventStore));
     }
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.

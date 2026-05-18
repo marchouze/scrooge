@@ -390,27 +390,73 @@
     }
   }
 
+  // ============================================================
+  // Slice 7 — NPA attestation badge strip
+  // ============================================================
+
+  async function loadNpaAttestations() {
+    try {
+      const res = await fetch("/api/markets/fx/products/attestation", {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const data = await res.json();
+      const container = document.querySelector("[data-fx-npa-badges]");
+      if (!container || !data.attestations) return;
+      container.innerHTML = data.attestations
+        .map((a) => {
+          const cls =
+            a.status === "approved"
+              ? "fx-npa-approved"
+              : a.status === "withheld"
+                ? "fx-npa-withheld"
+                : "fx-npa-pending";
+          const label =
+            a.status === "approved"
+              ? `${escapeHtml(a.productCode)}: NPA approved ✓`
+              : a.status === "withheld"
+                ? `${escapeHtml(a.productCode)}: withheld ✗`
+                : `${escapeHtml(a.productCode)}: pre-go-live (pending NPA)`;
+          return `<span class="fx-npa-badge ${cls}" title="${escapeHtml(a.status)}">${label}</span>`;
+        })
+        .join("");
+    } catch (e) {
+      console.warn("[fx-desk] NPA attestation fetch failed", e);
+      const container = document.querySelector("[data-fx-npa-badges]");
+      if (container) {
+        container.innerHTML =
+          '<span class="fx-npa-badge fx-npa-pending">NPA attestation unavailable</span>';
+      }
+    }
+  }
+
   async function boot() {
     // Render skeleton immediately so the shell chrome lays out even
     // before the first API call returns.
     renderEmpty("Loading…");
     renderHeadroomEmpty("Loading…");
-    await Promise.all([loadDesk(), loadHeadroom()]);
+    await Promise.all([loadDesk(), loadHeadroom(), loadNpaAttestations()]);
     bindForm();
     if (typeof window.registerPagePoll === "function") {
-      window.registerPagePoll(() => Promise.all([loadDesk(), loadHeadroom()]), 30_000);
+      window.registerPagePoll(
+        () => Promise.all([loadDesk(), loadHeadroom(), loadNpaAttestations()]),
+        30_000,
+      );
     } else {
       setInterval(() => {
         Promise.all([
           loadDesk().catch((e) => console.warn("[fx-desk] counterparty refresh failed", e)),
           loadHeadroom().catch((e) => console.warn("[fx-desk] headroom refresh failed", e)),
+          loadNpaAttestations().catch((e) =>
+            console.warn("[fx-desk] NPA attestation refresh failed", e),
+          ),
         ]);
       }, 30_000);
     }
   }
 
   // Expose for the shell header refresh button + future tests.
-  window.bankFxDesk = { loadDesk, loadHeadroom };
+  window.bankFxDesk = { loadDesk, loadHeadroom, loadNpaAttestations };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
