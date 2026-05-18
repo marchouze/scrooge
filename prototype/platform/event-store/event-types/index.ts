@@ -117,6 +117,11 @@ export * from "./aml-popia-extended";
 export * from "./ifrs-accounting-extended";
 export * from "./security-devops-extended";
 export * from "./markets-trading-extended";
+// D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
+// BondTradeExecuted, BondInterestAccrued, BondPositionRevalued,
+//   BondMatured, BondSold.
+// Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+export * from "./bond-accounting";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -195,6 +200,7 @@ import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-ex
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
+import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
@@ -266,6 +272,9 @@ export const TYPED_EVENT_TYPES = [
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle event types.
   // Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18).
   ...KYC_TYPED_EVENT_TYPES,
+  // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting event types.
+  // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+  ...BOND_ACCOUNTING_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
