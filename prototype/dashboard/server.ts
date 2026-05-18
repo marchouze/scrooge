@@ -2034,9 +2034,11 @@ const server = Bun.serve({
       return serveStatic("/documents.html");
     }
     // ── General Ledger endpoints — /api/gl/* ──────────────────────────────
-    // Authority: General-ledger substrate (Devon COO, engineering).
+    // Authority: General-ledger substrate (Devon COO, engineering);
+    //            GL posting engine (Bea CFO, governance).
     // Routes: GET /api/gl/entries, GET /api/gl/trial-balance,
-    //         GET /api/gl/accounts, POST /api/gl/journal.
+    //         GET /api/gl/accounts, POST /api/gl/journal,
+    //         POST /api/gl/run-posting-engine.
     {
       const glResponse = await registerGlRoutes(
         url.pathname,

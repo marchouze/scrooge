@@ -20,6 +20,10 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Bea", "fx-posting-engine", "event-driven", {
     subscribesTo: ["FxTradeExecuted", "FxPositionRevalued", "FxSettlementConfirmed"],
   }),
+  // B-2 — Bea universal GL posting engine. Authority: PROC-PAY-RBH-01.
+  entry("Bea", "gl-posting-engine", "event-driven", {
+    subscribesTo: ["PaymentInitiated", "PaymentSettled", "SettlementInstructionReceived"],
+  }),
   // M1 — Bea IFRS-9 classification rules.
   entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
     subscribesTo: [
