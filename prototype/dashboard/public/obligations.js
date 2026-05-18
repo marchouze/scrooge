@@ -327,8 +327,8 @@ function renderTable(rows) {
         ? `<span style="font-size:11.5px;font-weight:500">${esc(o.regulator)}</span>`
         : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
       const instrumentHtml =
-        o.family && o.family !== "OTHER"
-          ? `<span style="font-size:11.5px">${esc(o.family)}</span>`
+        o.instrument
+          ? `<span style="font-size:11.5px">${esc(o.instrument)}</span>`
           : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
       const linkedHtml =
         (o.linkedPolicies ?? []).length === 0
