@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New KYC Onboarding · Hoz</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  .form-card { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 24px 28px; margin-bottom: 20px; }
+  .form-card h2 { font-family: var(--serif); font-size: 20px; color: var(--primary); margin: 0 0 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12.5px; font-weight: 600; color: #444; margin-bottom: 5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 4px;
+    font-size: 13.5px; font-family: var(--sans); box-sizing: border-box;
+    background: #fff; color: var(--text);
+  }
+  .form-group input:focus, .form-group select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+  .form-note { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+  .repeat-row { background: #fafaf8; border: 1px solid #e8e5dc; border-radius: 4px; padding: 12px 14px; margin-bottom: 10px; position: relative; }
+  .repeat-row .remove-btn { position: absolute; top: 10px; right: 12px; background: none; border: none; color: #999; cursor: pointer; font-size: 16px; line-height: 1; }
+  .repeat-row .remove-btn:hover { color: var(--danger); }
+  .add-row-btn { margin-top: 4px; background: none; border: 1px dashed var(--border-strong); border-radius: 4px; padding: 7px 14px; color: var(--accent); cursor: pointer; font-size: 12.5px; width: 100%; }
+  .add-row-btn:hover { background: var(--accent-soft); }
+
+  .step-nav { display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--border-strong); border-radius: 6px; overflow: hidden; }
+  .step-item { flex: 1; padding: 10px 8px; text-align: center; font-size: 12px; color: #888; background: #fafafa; border-right: 1px solid var(--border-strong); }
+  .step-item:last-child { border-right: none; }
+  .step-item.active { background: var(--primary); color: #fff; font-weight: 600; }
+  .step-item.done { background: var(--good-soft); color: var(--good); }
+  .step-item .step-num { display: block; font-size: 16px; font-weight: 700; }
+
+  .upload-area { border: 2px dashed var(--border-strong); border-radius: 4px; padding: 20px; text-align: center; cursor: pointer; background: #fafafa; }
+  .upload-area:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .upload-area input[type="file"] { display: none; }
+  .upload-file-list { margin-top: 12px; }
+  .upload-file-item { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; background: #f0f4f8; border-radius: 3px; margin-bottom: 5px; font-size: 12.5px; }
+  .upload-file-item .file-hash { font-family: var(--mono); font-size: 11px; color: #666; }
+  .upload-file-item .file-remove { background: none; border: none; cursor: pointer; color: #999; margin-left: 8px; }
+  .upload-file-item .file-remove:hover { color: var(--danger); }
+
+  .review-section { margin-bottom: 16px; }
+  .review-section h3 { font-size: 13.5px; font-weight: 600; color: var(--accent-deep); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .review-dl { display: grid; grid-template-columns: 160px 1fr; gap: 4px 12px; font-size: 13px; }
+  .review-dl dt { font-weight: 600; color: #555; }
+  .review-dl dd { margin: 0; }
+
+  .btn { display: inline-block; padding: 9px 18px; border-radius: 4px; border: 1px solid; font-size: 13.5px; cursor: pointer; font-family: var(--sans); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--accent-deep); }
+  .btn-secondary { background: #fff; color: var(--primary); border-color: var(--border-strong); }
+  .btn-secondary:hover { background: var(--accent-soft); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-actions { display: flex; justify-content: space-between; margin-top: 24px; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #222; color: #fff; padding: 12px 20px; border-radius: 6px; font-size: 13.5px; z-index: 999; display: none; }
+  .toast.show { display: block; }
+  .toast.success { background: var(--good); }
+  .toast.error { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· New KYC Onboarding</span>
+    </div>
+    <div class="meta">
+      <a class="nav-link" href="/kyc-onboarding">← Onboarding Queue</a>
+      <a class="nav-link" href="/home.html">Home</a>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app" style="max-width: 760px; margin: 0 auto; padding: 22px 24px 80px;">
+
+  <div style="margin-bottom: 24px;">
+    <h1 style="margin: 0 0 6px; font-family: var(--serif); color: var(--primary);">Start KYC Onboarding</h1>
+    <p class="muted" style="margin: 0;">Register a new client candidate — PROC-FC-01 gateway.
+    Complete all 5 steps then submit for KYC processing.</p>
+  </div>
+
+  <!-- Step navigator -->
+  <div class="step-nav" id="stepNav">
+    <div class="step-item active" data-step="1"><span class="step-num">1</span>Entity</div>
+    <div class="step-item" data-step="2"><span class="step-num">2</span>Directors</div>
+    <div class="step-item" data-step="3"><span class="step-num">3</span>UBOs</div>
+    <div class="step-item" data-step="4"><span class="step-num">4</span>Documents</div>
+    <div class="step-item" data-step="5"><span class="step-num">5</span>Review</div>
+  </div>
+
+  <!-- Step 1: Entity -->
+  <div id="step1" class="form-card">
+    <h2>Entity Details</h2>
+    <div class="form-group">
+      <label for="entityName">Entity name <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="entityName" placeholder="e.g. Meridian Capital (Pty) Ltd">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="entityType">Entity type <span style="color:var(--danger)">*</span></label>
+        <select id="entityType">
+          <option value="">Select…</option>
+          <option value="company">Company</option>
+          <option value="trust">Trust</option>
+          <option value="partnership">Partnership</option>
+          <option value="individual-sole-trader">Individual / Sole trader</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="jurisdiction">Jurisdiction <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="jurisdiction" placeholder="e.g. ZA">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="registrationNumber">Registration number <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="registrationNumber" placeholder="e.g. 2020-001234">
+    </div>
+    <div class="form-group">
+      <label for="registeredAddress">Registered address <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="registeredAddress" placeholder="e.g. 100 Main Street, Johannesburg, 2001">
+    </div>
+    <div class="form-actions">
+      <span></span>
+      <button class="btn btn-primary" onclick="goStep(2)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Directors -->
+  <div id="step2" class="form-card" hidden>
+    <h2>Directors</h2>
+    <p class="form-note" style="margin-bottom: 14px;">At least one director is required. Add full name as per ID document.</p>
+    <div id="directorsContainer"></div>
+    <button class="add-row-btn" onclick="addDirector()">+ Add director</button>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: UBOs -->
+  <div id="step3" class="form-card" hidden>
+    <h2>Ultimate Beneficial Owners (UBOs)</h2>
+    <p class="form-note" style="margin-bottom: 14px;">
+      Identify all UBOs holding 25% or more of ownership or control
+      (FIC Act s.21B; FATF Rec 10). At least one UBO is required.
+    </p>
+    <div id="ubosContainer"></div>
+    <button class="add-row-btn" onclick="addUBO()">+ Add UBO</button>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Documents -->
+  <div id="step4" class="form-card" hidden>
+    <h2>Supporting Documents</h2>
+    <p class="form-note" style="margin-bottom: 14px;">
+      Upload CIPC certificate, director ID copies, proof of address, and source-of-funds
+      declaration. Files are hashed client-side (SHA-256) — no file content is uploaded.
+    </p>
+    <div class="upload-area" onclick="$('fileInput').click()">
+      <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.png,.jpeg,.docx">
+      <div>Click to select files, or drag and drop</div>
+      <div class="form-note">PDF, JPG, PNG, DOCX accepted</div>
+    </div>
+    <div class="upload-file-list" id="fileList"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(5)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Review & Submit -->
+  <div id="step5" class="form-card" hidden>
+    <h2>Review &amp; Submit</h2>
+    <div id="reviewContent"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="goStep(4)">← Back</button>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">Submit for KYC →</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="/_failure-banner.js"></script>
+<script src="/kyc-onboarding-new.js"></script>
+</body>
+</html>

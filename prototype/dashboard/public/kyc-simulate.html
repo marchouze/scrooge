@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KYC Simulate · Hoz</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  .sim-panel { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 24px 28px; max-width: 560px; }
+  .sim-panel h2 { font-family: var(--serif); font-size: 20px; color: var(--primary); margin: 0 0 18px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12.5px; font-weight: 600; color: #444; margin-bottom: 5px; }
+  .form-group select, .form-group input[type="number"] {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 4px;
+    font-size: 13.5px; font-family: var(--sans); box-sizing: border-box; background: #fff;
+  }
+  .form-group select:focus, .form-group input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .toggle-row label { font-size: 13.5px; font-weight: 600; color: #444; cursor: pointer; }
+  .toggle-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+
+  .btn { display: inline-block; padding: 9px 20px; border-radius: 4px; border: 1px solid; font-size: 13.5px; cursor: pointer; font-family: var(--sans); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--accent-deep); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .scenario-desc { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.4; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .badge-blue   { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+  .badge-amber  { background: #fff3e0; color: #8a4a00; border: 1px solid #f5d5a0; }
+  .badge-green  { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+  .badge-red    { background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; }
+  .badge-grey   { background: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
+
+  .results-table-wrap { overflow-x: auto; margin-top: 20px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.results-table th, table.results-table td {
+    border-bottom: 1px solid #eee; padding: 7px 9px; vertical-align: top; text-align: left;
+  }
+  table.results-table th { background: #fafafa; font-weight: 600; color: #444; }
+  table.results-table code { font-size: 11px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
+  table.results-table tr:hover { background: #fafcff; }
+
+  .loading-state { display: none; align-items: center; gap: 10px; color: #555; font-size: 14px; padding: 20px 0; }
+  .loading-state.show { display: flex; }
+  .spinner { width: 20px; height: 20px; border: 2px solid #ccc; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #222; color: #fff; padding: 12px 20px; border-radius: 6px; font-size: 13.5px; z-index: 999; display: none; }
+  .toast.show { display: block; }
+  .toast.success { background: var(--good); }
+  .toast.error { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· KYC Simulation</span>
+    </div>
+    <div class="meta">
+      <a class="nav-link" href="/kyc-onboarding">← Onboarding Queue</a>
+      <a class="nav-link" href="/kyc-clients">Clients</a>
+      <a class="nav-link" href="/home.html">Home</a>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <section class="band">
+    <div class="band-head">
+      <h1>KYC Simulation Panel</h1>
+    </div>
+    <p class="muted">
+      Generate simulated KYC candidates to test the onboarding pipeline.
+      Each run calls the real <code>KYCOrchestrator</code> server-side and emits events into the event store.
+      Authority: <code>D-KYC-ONBOARDING-BUILD</code> · <code>PROC-FC-01</code>.
+    </p>
+  </section>
+
+  <section class="band">
+    <div class="band-head"><h2>Configure</h2></div>
+    <div class="sim-panel">
+      <div class="form-group">
+        <label for="scenarioPicker">Scenario</label>
+        <select id="scenarioPicker" onchange="updateScenarioDesc()">
+          <option value="clean">clean — Low risk, auto-accept expected</option>
+          <option value="pep-linked">pep-linked — PEP-linked UBO → EDD → human gate</option>
+          <option value="sanctions-exact">sanctions-exact — Exact sanctions hit → auto-reject</option>
+          <option value="sanctions-fuzzy">sanctions-fuzzy — Fuzzy sanctions hit → human gate</option>
+          <option value="high-risk-jurisdiction">high-risk-jurisdiction — FATF grey list → EDD → human gate</option>
+          <option value="complex-ubo">complex-ubo — Opaque UBO structure → human gate</option>
+          <option value="credit-adverse">credit-adverse — Adverse credit → human gate</option>
+        </select>
+        <div class="scenario-desc" id="scenarioDesc"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="countInput">Count (1–10)</label>
+        <input type="number" id="countInput" value="1" min="1" max="10">
+      </div>
+
+      <div class="toggle-row">
+        <input type="checkbox" id="runFullToggle">
+        <label for="runFullToggle">Run full flow (advance all automated steps)</label>
+      </div>
+
+      <button class="btn btn-primary" id="generateBtn" onclick="runSimulation()">▶ Generate</button>
+    </div>
+  </section>
+
+  <section class="band" id="resultsSection" hidden>
+    <div class="band-head">
+      <h2>Results</h2>
+      <span class="band-sub muted" id="resultsSubtitle"></span>
+    </div>
+    <div class="loading-state" id="loadingState">
+      <div class="spinner"></div>
+      <span>Running simulation…</span>
+    </div>
+    <div class="results-table-wrap" id="resultsTableWrap" hidden>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Candidate ID</th>
+            <th>Entity Name</th>
+            <th>Scenario</th>
+            <th>Final Step</th>
+            <th>Outcome</th>
+            <th>Risk Band</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="/_failure-banner.js"></script>
+<script src="/kyc-simulate.js"></script>
+</body>
+</html>

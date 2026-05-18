@@ -191,6 +191,15 @@
       ],
     },
     {
+      dept: "KYC & Clients",
+      pages: [
+        { label: "Onboarding Queue", href: "/kyc-onboarding" },
+        { label: "New Onboarding", href: "/kyc-onboarding/new" },
+        { label: "Simulate", href: "/kyc-onboarding/simulate" },
+        { label: "Client Register", href: "/kyc-clients" },
+      ],
+    },
+    {
       dept: "Compliance & Legal",
       pages: [
         { label: "Obligations & Compliance", href: "/compliance.html" },

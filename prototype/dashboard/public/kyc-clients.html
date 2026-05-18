@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KYC Client Register · Hoz</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  .kyc-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kyc-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 14px; }
+  .kyc-card-num { font-size: 24px; font-weight: 600; line-height: 1.1; }
+  .kyc-card-lbl { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .badge-blue   { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+  .badge-amber  { background: #fff3e0; color: #8a4a00; border: 1px solid #f5d5a0; }
+  .badge-green  { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+  .badge-red    { background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; }
+  .badge-grey   { background: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
+  .badge-purple { background: #f3e5f5; color: #6a1b9a; border: 1px solid #d1b3e0; }
+
+  .btn { display: inline-block; padding: 7px 14px; border-radius: 4px; border: 1px solid; font-size: 13px; cursor: pointer; font-family: var(--sans); }
+  .btn-primary  { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--accent-deep); }
+  .btn-outline  { background: #fff; color: var(--primary); border-color: var(--border-strong); }
+  .btn-outline:hover { background: var(--accent-soft); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .filter-bar label { font-size: 12.5px; font-weight: 600; color: #555; }
+  .filter-bar select { padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 4px; font-size: 13px; }
+
+  .kyc-table-wrap { overflow-x: auto; }
+  table.kyc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.kyc-table th, table.kyc-table td {
+    border-bottom: 1px solid #eee; padding: 7px 9px; vertical-align: top; text-align: left;
+  }
+  table.kyc-table th { background: #fafafa; font-weight: 600; color: #444; }
+  table.kyc-table tr:hover { background: #fafcff; cursor: pointer; }
+  table.kyc-table code { font-size: 11px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
+
+  .empty-state { padding: 40px 24px; text-align: center; color: #666; font-size: 14px; }
+  .empty-state strong { display: block; font-size: 16px; margin-bottom: 8px; color: #333; }
+
+  .page-actions { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>The Bank</strong>
+      <span class="muted">· Client Register</span>
+    </div>
+    <div class="meta">
+      <span
+        data-provenance-badge="page-top"
+        data-provenance-source="/api/kyc/clients"
+        aria-label="Provenance badge"
+      ></span>
+      <a class="nav-link" href="/kyc-onboarding">Onboarding</a>
+      <a class="nav-link" href="/home.html">Home</a>
+      <span id="liveDot" class="live-dot"></span>
+      <span id="lastUpdated" class="muted">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<div id="failureBanner" class="failure-banner" hidden></div>
+
+<main id="app">
+
+  <section class="band">
+    <div class="band-head">
+      <h1>Accepted Client Register</h1>
+      <span class="band-sub muted" id="asOfLabel"></span>
+    </div>
+    <p class="muted">
+      Authoritative register of accepted KYC clients. Only clients with a <code>ClientAccepted</code>
+      event appear here. Authority: <code>D-KYC-ONBOARDING-BUILD</code> · <code>AML-CFT-POLICY-V1</code> · <code>FIC-ACT-38-2001</code>.
+    </p>
+  </section>
+
+  <section class="band">
+    <div class="band-head"><h2>At a glance</h2></div>
+    <div class="kyc-summary" id="summaryCards"></div>
+  </section>
+
+  <section class="band">
+    <div class="band-head">
+      <h2>Clients</h2>
+      <span class="band-sub muted" id="tableSubtitle"></span>
+    </div>
+
+    <div class="filter-bar">
+      <label for="riskFilter">Risk band</label>
+      <select id="riskFilter" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <label for="catFilter">Category</label>
+      <select id="catFilter" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="EC">EC (Eligible Counterparty)</option>
+        <option value="PC">PC (Professional Client)</option>
+      </select>
+    </div>
+
+    <div class="page-actions">
+      <button class="btn btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+
+    <div id="emptyState" hidden>
+      <div class="empty-state">
+        <strong>No accepted clients yet.</strong>
+        Clients appear here once a candidate completes KYC and receives a <code>ClientAccepted</code> event.
+        Use the <a href="/kyc-onboarding/simulate">Simulate panel</a> to generate test data.
+      </div>
+    </div>
+
+    <div class="kyc-table-wrap" id="tableWrap">
+      <table class="kyc-table" id="clientsTable">
+        <thead>
+          <tr>
+            <th>Client ID</th>
+            <th>Entity Name</th>
+            <th>Type</th>
+            <th>Jurisdiction</th>
+            <th>Risk Band</th>
+            <th>Category</th>
+            <th>Onboarded</th>
+            <th>Next Refresh</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="clientsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="/_failure-banner.js"></script>
+<script src="/provenance-badge.js"></script>
+<script src="/kyc-clients.js"></script>
+<script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+</body>
+</html>
