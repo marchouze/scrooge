@@ -74,12 +74,15 @@ export { CONDUCT_EVENT_TYPES } from "./conduct";
 export { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
 export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
+// D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
+export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
 // that the original registry.ts exported as EVENT_TYPE_REGISTRY.
 // ---------------------------------------------------------------------------
 
+import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import {
@@ -157,6 +160,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events. Placed last so
   // typed schema rows override any placeholder rows from missing-types.ts.
   ...KYC_EVENT_TYPES_REGISTRY,
+  // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
+  // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+  ...BOND_ACCOUNTING_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

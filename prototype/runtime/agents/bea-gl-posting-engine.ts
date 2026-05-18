@@ -21,6 +21,13 @@
 //   - FxPositionRevalued            → PR-FX-002: fxRevaluationJournals()
 //   - FxSettlementConfirmed         → PR-FX-003: fxSettlementJournals()
 //
+//   Bond lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A):
+//   - BondTradeExecuted             → PR-BOND-001: bondBankingBookJournals() / bondTradingBookJournals()
+//   - BondInterestAccrued           → PR-BOND-002: bondInterestAccrualJournals()
+//   - BondPositionRevalued          → PR-BOND-003: bondRevaluationJournals()
+//   - BondMatured                   → PR-BOND-004: bondMaturityJournals()
+//   - BondSold                      → PR-BOND-005: bondSaleJournals()
+//
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
 // projection (computeTrialBalance) consumes.
@@ -38,12 +45,21 @@
 //   - Banks Act 94 of 1990
 //   - IFRS 9 §3.1.1 (initial recognition of financial instruments)
 //   - IFRS 9 §3.2.3 (derecognition of financial instruments)
+//   - IFRS 9 §5.4.1 (EIR method for amortised cost instruments)
 //   - IFRS 9 §5.7.1 (FVTPL gains/losses through P&L)
 //   - IAS 21 §23 (translation of monetary items at closing rate)
 //   - IAS 32 §11 (recognition criteria)
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import {
+  bondBankingBookJournals,
+  bondInterestAccrualJournals,
+  bondMaturityJournals,
+  bondRevaluationJournals,
+  bondSaleJournals,
+  bondTradingBookJournals,
+} from "../../platform/accounting/posting-rules/bonds";
 import {
   fxAmendmentJournals,
   fxCancellationJournals,
@@ -59,6 +75,13 @@ import {
 } from "../../platform/accounting/posting-rules/payments";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import type {
+  BondInterestAccruedPayload,
+  BondMaturedPayload,
+  BondPositionRevaluedPayload,
+  BondSoldPayload,
+  BondTradeExecutedPayload,
+} from "../../platform/event-store/event-types/bond-accounting";
 import {
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,
@@ -101,6 +124,12 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "SettlementReversed",
   "TradeCancelled",
   "TradeAmended",
+  // Bond lifecycle events (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A)
+  "BondTradeExecuted",
+  "BondInterestAccrued",
+  "BondPositionRevalued",
+  "BondMatured",
+  "BondSold",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -150,6 +179,12 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "SettlementReversed" }),
     ...eventStore.replay({ type: "TradeCancelled" }),
     ...eventStore.replay({ type: "TradeAmended" }),
+    // Bond lifecycle events
+    ...eventStore.replay({ type: "BondTradeExecuted" }),
+    ...eventStore.replay({ type: "BondInterestAccrued" }),
+    ...eventStore.replay({ type: "BondPositionRevalued" }),
+    ...eventStore.replay({ type: "BondMatured" }),
+    ...eventStore.replay({ type: "BondSold" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -382,6 +417,62 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           field: payload.field,
           deltaZarMinor,
         });
+      } else if (e.type === "BondTradeExecuted") {
+        // PR-BOND-001: Initial recognition — IFRS 9 §3.1.1, §5.1.1
+        postingType = "bond-trade-booking";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as BondTradeExecutedPayload;
+        legs =
+          payload.portfolio === "banking-book"
+            ? bondBankingBookJournals(payload)
+            : bondTradingBookJournals(payload);
+      } else if (e.type === "BondInterestAccrued") {
+        // PR-BOND-002: EIR accrual — IFRS 9 §5.4.1
+        postingType = "bond-interest-accrual";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as BondInterestAccruedPayload;
+        legs = bondInterestAccrualJournals(payload);
+      } else if (e.type === "BondPositionRevalued") {
+        // PR-BOND-003: Trading-book FVTPL revaluation — IFRS 9 §5.7.1
+        postingType = "bond-revaluation";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as BondPositionRevaluedPayload;
+        legs = bondRevaluationJournals(payload);
+      } else if (e.type === "BondMatured") {
+        // PR-BOND-004: Derecognition at maturity — IFRS 9 §3.2.3
+        postingType = "bond-maturity";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as BondMaturedPayload;
+        // Portfolio tracked via position projection; default banking-book for maturity
+        // (trading-book bonds are typically sold, not held to maturity)
+        legs = bondMaturityJournals(payload, "banking-book");
+      } else if (e.type === "BondSold") {
+        // PR-BOND-005: Derecognition on sale — IFRS 9 §3.2.3
+        postingType = "bond-sale";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as BondSoldPayload;
+        // Portfolio comes from position state; default trading-book for sales
+        legs = bondSaleJournals(payload, "trading-book");
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above.
         continue;
@@ -416,7 +507,12 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
               | "settlement"
               | "settlement-reversal"
               | "cancellation"
-              | "amendment",
+              | "amendment"
+              | "bond-trade-booking"
+              | "bond-interest-accrual"
+              | "bond-revaluation"
+              | "bond-maturity"
+              | "bond-sale",
             legs,
             postedAt: ctx.asOf,
           },

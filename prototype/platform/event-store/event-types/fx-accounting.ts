@@ -223,6 +223,22 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "settlement-reversal",
       "cancellation",
       "amendment",
+      // Bond lifecycle posting types (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A)
+      "bond-trade-booking",
+      "bond-interest-accrual",
+      "bond-revaluation",
+      "bond-maturity",
+      "bond-sale",
+      // Equity lifecycle posting types (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR B)
+      "equity-trade-booking",
+      "equity-revaluation",
+      "equity-dividend-accrual",
+      "equity-sale",
+      // IRD swap lifecycle posting types (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR C)
+      "ird-swap-trade-booking",
+      "ird-swap-revaluation",
+      "ird-swap-coupon-settlement",
+      "ird-swap-termination",
     ]),
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */

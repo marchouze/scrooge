@@ -124,6 +124,91 @@
       "name": "Settlement Receivable — USD",
       "category": "asset",
       "side": "debit"
+    },
+
+    {
+      "id": "ACC-3100-001",
+      "name": "Bond Asset — Banking Book (Amortised Cost)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-002",
+      "name": "Bond Asset — Trading Book (FVTPL)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-003",
+      "name": "Accrued Interest Receivable — Bonds",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-004",
+      "name": "Bond Discount/Premium Unamortised",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-005",
+      "name": "Unrealised P&L — Bonds (FVTPL)",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3100-006",
+      "name": "Realised P&L — Bonds",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-4101-001",
+      "name": "Interest Income (EIR) — Bonds",
+      "category": "income",
+      "side": "credit"
+    },
+
+    { "id": "ACC-3200-001", "name": "Equity Asset — FVTPL", "category": "asset", "side": "debit" },
+    { "id": "ACC-3200-002", "name": "Equity Asset — FVOCI", "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-3200-003",
+      "name": "Unrealised P&L — Equities (FVTPL)",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3200-004",
+      "name": "OCI Reserve — Equities (FVOCI)",
+      "category": "equity",
+      "side": "credit"
+    },
+    { "id": "ACC-3200-005", "name": "Dividend Receivable", "category": "asset", "side": "debit" },
+    { "id": "ACC-3200-006", "name": "Dividend Income", "category": "income", "side": "credit" },
+    {
+      "id": "ACC-3200-007",
+      "name": "Withholding Tax Payable — Dividends",
+      "category": "liability",
+      "side": "credit"
+    },
+
+    {
+      "id": "ACC-3300-001",
+      "name": "Swap Asset — FVTPL (Positive NPV)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3300-002",
+      "name": "Swap Liability — FVTPL (Negative NPV)",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3300-003",
+      "name": "Unrealised P&L — IRD (FVTPL)",
+      "category": "income",
+      "side": "credit"
     }
   ]
 }
