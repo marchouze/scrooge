@@ -36,4 +36,8 @@ export const SADE_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "DisciplinaryActionRequested",
     ],
   }),
+  // On-request agent-retirement handler. Invoke with trigger id
+  // 'agent-retirement:<name>:<position>' to retire a specific agent.
+  // Without a target, reports roster state only.
+  entry("Sade", "agent-retirement", "on-request", {}),
 ];
