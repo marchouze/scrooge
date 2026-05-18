@@ -1,4 +1,4 @@
-// dashboard/public/markets/fx/desk.js — FX desk Slices 1 + 2 + 3.
+// dashboard/public/markets/fx/desk.js — FX desk Slices 1 + 2 + 3 + 4.
 //
 // Slice 1 — reads `/api/markets/fx/counterparties` and renders the
 //   eligibility-passing counterparty list (read-only). Re-uses
@@ -18,6 +18,11 @@
 //   renders the five RAS B-cluster rows with RAG status in the
 //   #headroom table. Called on page load and on Refresh alongside
 //   `loadCounterparties()`.
+//
+// Slice 4 — wires the "Route to gateway" button: collects the same form
+//   values as the trade button, POSTs to /api/markets/fx/order, and
+//   renders the gateway result panel with status (APPROVED / REJECTED)
+//   and a 7-row check table. Does not interfere with trade confirmation.
 //
 // Author: Kai (Trading systems engineer, engineering — reports to Saskia,
 //         Head of Global Markets) · Saskia (Head of Global Markets,
@@ -246,9 +251,11 @@
 
   function refreshFormState() {
     const submitBtn = $("[data-fx-rfq-submit]");
-    if (!submitBtn) return;
+    const gatewayBtn = $("[data-fx-rfq-gateway]");
     const input = readForm();
-    submitBtn.disabled = !isFormFillable(input);
+    const fillable = isFormFillable(input);
+    if (submitBtn) submitBtn.disabled = !fillable;
+    if (gatewayBtn) gatewayBtn.disabled = !fillable;
   }
 
   function showConfirmation(result) {
@@ -309,6 +316,87 @@
     }
   }
 
+  // ============================================================
+  // Slice 4 — Gateway visualisation
+  // ============================================================
+
+  function showGatewayPanel(result) {
+    const panel = $("[data-fx-gateway-panel]");
+    const statusEl = $("[data-fx-gw-status]");
+    const tbody = $("[data-fx-gw-checks-tbody]");
+    if (!panel) return;
+
+    panel.hidden = false;
+
+    if (statusEl) {
+      const approved = result.status === "approved";
+      statusEl.textContent = approved
+        ? "APPROVED — all gateway checks passed"
+        : `REJECTED — check: ${escapeHtml(result.rejectingCheck ?? "unknown")} · ${escapeHtml(result.rejectionReason ?? "")}`;
+      statusEl.className = `fx-gw-status ${approved ? "fx-gw-approve" : "fx-gw-reject"}`;
+    }
+
+    if (tbody) {
+      const checks = Array.isArray(result.checks) ? result.checks : [];
+      tbody.innerHTML = checks
+        .map((c) => {
+          const cls = c.outcome === "approve" ? "fx-gw-approve" : "fx-gw-reject";
+          const icon = c.outcome === "approve" ? "✓" : "✗";
+          const latency = typeof c.latencyMs === "number" ? `${c.latencyMs}ms` : "—";
+          return [
+            `<tr class="${cls}">`,
+            `<td>${escapeHtml(c.checkKind)}</td>`,
+            `<td>${icon} ${escapeHtml(c.outcome)}</td>`,
+            `<td>${escapeHtml(latency)}</td>`,
+            "</tr>",
+          ].join("");
+        })
+        .join("");
+    }
+  }
+
+  async function routeToGateway() {
+    const input = readForm();
+    if (!isFormFillable(input)) {
+      setStatus("Form is incomplete.", true);
+      return;
+    }
+    setStatus("Routing to gateway…");
+    const gatewayBtn = $("[data-fx-rfq-gateway]");
+    if (gatewayBtn) gatewayBtn.disabled = true;
+    try {
+      const res = await fetch("/api/markets/fx/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data && (data.status === "approved" || data.status === "rejected")) {
+        setStatus(
+          data.status === "approved"
+            ? `Gateway: APPROVED (orderId: ${data.orderId})`
+            : `Gateway: REJECTED — ${data.rejectionReason ?? "check failed"}`,
+          data.status === "rejected",
+        );
+        showGatewayPanel(data);
+        if (window.bankShell?.audit) {
+          window.bankShell.audit.log("fx-desk.gateway.result", {
+            orderId: data.orderId,
+            status: data.status,
+          });
+        }
+      } else {
+        const reason = data?.reason ?? data?.error ?? `HTTP ${res.status}`;
+        setStatus(`Gateway error: ${reason}`, true);
+      }
+    } catch (e) {
+      console.warn("[fx-desk] gateway route failed", e);
+      setStatus(`Network error: ${e?.message ?? e}`, true);
+    } finally {
+      refreshFormState();
+    }
+  }
+
   function bindForm() {
     const form = $("[data-fx-rfq-form]");
     if (!form) return;
@@ -326,6 +414,13 @@
       refreshFormState();
       refreshQuote().catch((e) => console.warn("[fx-desk] quote refresh", e));
     });
+    // Slice 4 — gateway button (outside the form submit path)
+    const gatewayBtn = $("[data-fx-rfq-gateway]");
+    if (gatewayBtn) {
+      gatewayBtn.addEventListener("click", () => {
+        routeToGateway().catch((e) => console.warn("[fx-desk] gateway route", e));
+      });
+    }
     refreshFormState();
     refreshQuote().catch((e) => console.warn("[fx-desk] initial quote", e));
   }

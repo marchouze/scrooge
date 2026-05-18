@@ -428,3 +428,85 @@
   background: #fef9c3;
   color: #854d0e;
 }
+
+/* ===== Gateway button (Slice 4) ===== */
+.fx-rfq-gateway-btn {
+  margin-left: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--brand-fg, #1a1a1f);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  color: var(--brand-fg, #1a1a1f);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.fx-rfq-gateway-btn:disabled {
+  background: var(--surface-subtle, #f4f4f6);
+  border-color: var(--text-muted, #5f5f6b);
+  color: var(--text-muted, #5f5f6b);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.fx-rfq-gateway-btn:not(:disabled):hover {
+  background: var(--surface-subtle, #f4f4f6);
+}
+
+/* ===== Gateway result panel (Slice 4) ===== */
+.fx-gateway-panel {
+  background: var(--color-surface, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+.fx-gateway-panel[hidden] {
+  display: none;
+}
+.fx-gateway-panel h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #5f5f6b);
+}
+.fx-gw-approve {
+  color: var(--color-success, #16a34a);
+}
+.fx-gw-reject {
+  color: var(--color-danger, #dc2626);
+}
+.fx-gw-status {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+  display: block;
+}
+.fx-gw-checks-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.88rem;
+}
+.fx-gw-checks-table th,
+.fx-gw-checks-table td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  text-align: left;
+}
+.fx-gw-checks-table th {
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #5f5f6b);
+  background: var(--surface-subtle, #f4f4f6);
+}
+.fx-gw-checks-table tr.fx-gw-approve td {
+  color: var(--color-success, #16a34a);
+}
+.fx-gw-checks-table tr.fx-gw-reject td {
+  color: var(--color-danger, #dc2626);
+  font-weight: 600;
+}
