@@ -52,11 +52,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "agent-scope";
 
-const CITATIONS = [
-  "P6-AUTONOMOUS-BY-DEFAULT",
-  "P2-SINGLE-GRAPH-DISCIPLINE",
-  "IIA-IPPF",
-];
+const CITATIONS = ["P6-AUTONOMOUS-BY-DEFAULT", "P2-SINGLE-GRAPH-DISCIPLINE", "IIA-IPPF"];
 
 function findRepoRoot(start: string): string {
   let dir = start;
@@ -146,8 +142,11 @@ export function run(opts: RunOpts = {}): ReconResult {
 
       // Assertion 1: decidedBy must resolve to a registered agent.
       // Accept match on agentUrn (exact) or personaName (case-insensitive).
-      const byUrnKey = decidedBy.startsWith("agent:") ? decidedBy : `agent:${decidedBy.toLowerCase()}`;
-      let agentRecord = byUrn.get(byUrnKey) ?? byUrn.get(decidedBy) ?? byPersona.get(decidedBy.toLowerCase());
+      const byUrnKey = decidedBy.startsWith("agent:")
+        ? decidedBy
+        : `agent:${decidedBy.toLowerCase()}`;
+      const agentRecord =
+        byUrn.get(byUrnKey) ?? byUrn.get(decidedBy) ?? byPersona.get(decidedBy.toLowerCase());
 
       if (!agentRecord) {
         violations.push({

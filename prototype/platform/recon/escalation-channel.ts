@@ -53,11 +53,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "escalation-channel";
 
-const CITATIONS = [
-  "IIA-IPPF",
-  "P6-AUTONOMOUS-BY-DEFAULT",
-  "BCBS-223",
-];
+const CITATIONS = ["IIA-IPPF", "P6-AUTONOMOUS-BY-DEFAULT", "BCBS-223"];
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
