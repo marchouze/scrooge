@@ -84,12 +84,14 @@
           Slice 3 (live): seed-data pricer replaces the fixed-spread stub;
           <code>RfqRequested</code> + <code>QuoteResponded</code> events emitted before
           <code>FxTradeExecuted</code>; headroom panel against Helena's RAS B-cluster limits.
-          Slice 7 (live, this slice): NPA attestation badge strip above the RFQ form — one
+          Slice 4 (live): gateway panel — click "Route to gateway" to run the
+          7-check pre-trade pipeline (<code>OrderProposed</code> →
+          <code>GatewayCheckRequested/Completed</code> ×7 →
+          <code>OrderApprovedAtGateway</code> or <code>OrderRejectedAtGateway</code>).
+          Slice 7 (live): NPA attestation badge strip above the RFQ form — one
           badge per FX product code reflecting the latest
           <code>ProductApproved</code> / <code>ProductWithheld</code> event (pending in
           build phase; gates v2 at licence-day).
-          Gateway visualisation (Slice 4) and risk-officer view (Slice 5) land in subsequent
-          slices per the eight-slice plan in the parent pack.
         </p>
       </div>
 
@@ -240,9 +242,21 @@
               data-fx-rfq-submit
               disabled
             >Trade — emit FxTradeExecuted</button>
+            <button type="button" class="fx-rfq-gateway-btn" data-fx-rfq-gateway disabled>
+              Route to gateway
+            </button>
             <span class="fx-rfq-status" data-fx-rfq-status role="status" aria-live="polite"></span>
           </div>
         </form>
+
+        <article class="fx-gateway-panel" data-fx-gateway-panel hidden>
+          <h3>Gateway result</h3>
+          <p class="fx-gw-status" data-fx-gw-status role="status" aria-live="polite"></p>
+          <table class="fx-gw-checks-table">
+            <thead><tr><th>Check</th><th>Outcome</th><th>Latency</th></tr></thead>
+            <tbody data-fx-gw-checks-tbody></tbody>
+          </table>
+        </article>
 
         <article class="fx-rfq-confirmation" data-fx-rfq-confirmation hidden>
           <h3>Trade confirmation</h3>

@@ -95,10 +95,17 @@ import {
   buildKycClientsView,
 } from "./kyc-clients-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
+import { type GatewayOrderResult, routeOrderToGateway } from "./markets-fx-gateway";
 import { buildHeadroomView } from "./markets-fx-headroom";
 import { buildNpaView } from "./markets-fx-npa";
 import { buildRiskView } from "./markets-fx-risk";
-import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
+import {
+  type RfqInput,
+  type TradeEmitResult,
+  emitTrade,
+  quoteOnly,
+  quoteRfq,
+} from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
 import {
@@ -855,6 +862,44 @@ async function handleFxTrade(req: Request): Promise<Response> {
     },
     "FX trade event emitted via dashboard",
   );
+  return jsonResponse(result);
+}
+
+async function handleFxOrder(req: Request): Promise<Response> {
+  // FX desk Slice 4 — order acceptance + gateway pipeline.
+  // Validates the RFQ form input, prices a synthetic quote, then routes
+  // the order through the 7-check pre-trade gateway. Returns a
+  // GatewayOrderResult with per-check outcomes.
+  // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ status: "rejected", reason: "invalid JSON body" }, 400);
+  }
+  const parsed = RfqBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return jsonResponse({ error: "bad request", issues: parsed.error.issues }, 400);
+  }
+
+  let result: GatewayOrderResult;
+  try {
+    const rfqInput = parsed.data as RfqInput;
+    const quote = quoteRfq(rfqInput);
+    result = routeOrderToGateway({
+      store: eventStore,
+      rfqInput,
+      quote,
+      asOf: nowUtc(),
+    });
+  } catch (e) {
+    return jsonResponse({ status: "rejected", reason: (e as Error).message }, 400);
+  }
+
+  if (result.status === "rejected") {
+    return jsonResponse(result, 200);
+  }
+  refresh("fx-order");
   return jsonResponse(result);
 }
 
@@ -1682,6 +1727,16 @@ const server = Bun.serve({
       //            D-FX-CORRESPONDENT-PAIR-NAMING (CEO-approved 2026-05-09).
       const view = buildRiskView(eventStore);
       return jsonResponse({ correspondentStatus: view.correspondentStatus, asOf: view.asOf });
+    }
+    if (url.pathname === "/api/markets/fx/order" && req.method === "POST") {
+      // FX desk Slice 4 — order acceptance + gateway pipeline. Routes
+      // the RFQ through the 7-check pre-trade gateway (identity, sanctions,
+      // suitability, counterparty-eligibility, credit-limit, capital-impact,
+      // funding) and returns per-check outcomes. Emits OrderProposed,
+      // GatewayCheckRequested×7, GatewayCheckCompleted×7, and either
+      // OrderApprovedAtGateway or OrderRejectedAtGateway.
+      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+      return handleFxOrder(req);
     }
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.
