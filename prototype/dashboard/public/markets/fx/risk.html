@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FX risk view · Hoz</title>
+  <meta name="description" content="Risk-officer surface for the FX desk — live B-cluster RAG, rejection feed, and correspondent routing status.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/markets/fx/desk.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body>
+  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+
+  <header class="shell-header" role="banner">
+    <div class="shell-header-inner">
+      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
+        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <span class="shell-wordmark">Hoz</span>
+      </a>
+      <div class="shell-meta">
+        <span
+          data-provenance-badge="page-top"
+          data-provenance-source="/api/markets/fx/risk"
+          aria-label="Provenance badge"
+        ></span>
+        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh risk view now">Refresh</button>
+        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
+        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
+      </div>
+    </div>
+  </header>
+
+  <!--
+    Substrate-mode banner — same posture as desk.html (J7 — pack §3).
+    BUILD MODE / SYNTHETIC DATA pinned top per D-INTERIM-OPERATING-POSTURE.
+  -->
+  <div class="fx-mode-banner" role="status" aria-live="polite">
+    <strong>BUILD MODE — SYNTHETIC DATA — NO REAL COUNTERPARTIES.</strong>
+    <span class="fx-mode-banner-detail">
+      Rehearsal artefact under
+      <a href="/Owner Inbox/2026-05-06_ceo-decision_interim-operating-posture.md">D-INTERIM-OPERATING-POSTURE</a>.
+      No live trading until SARB licence-day.
+    </span>
+  </div>
+
+  <div class="shell-layout">
+    <nav class="shell-sidebar" aria-label="Section navigation">
+      <h2>FX risk view</h2>
+      <ul>
+        <li><a href="#headroom" data-shell-nav="sidebar:headroom">Headroom</a></li>
+        <li><a href="#rejections" data-shell-nav="sidebar:rejections">Rejections</a></li>
+        <li><a href="#correspondent" data-shell-nav="sidebar:correspondent">Correspondent routing</a></li>
+      </ul>
+      <h2>Reference</h2>
+      <ul>
+        <li><a href="/home.html" data-shell-nav="ref:home">Home</a></li>
+        <li><a href="/markets/fx/desk.html" data-shell-nav="ref:desk">FX desk</a></li>
+        <li><a href="/Owner Inbox/2026-05-10_kai-saskia_fx-sales-trading-front-end-proposal.md" data-shell-nav="ref:pack">Pack (D-FX-SALES-TRADING-FRONTEND)</a></li>
+      </ul>
+    </nav>
+
+    <main class="shell-main" id="shell-main" tabindex="-1">
+      <div class="shell-page-header">
+        <h1 class="shell-page-title">FX risk view</h1>
+        <p class="shell-page-lede">
+          Risk-officer surface for the FX desk. Live B-cluster RAG, rejection feed, and correspondent routing status.
+          Slice 5 of D-FX-SALES-TRADING-FRONTEND — co-owned by Kai (Trading systems engineer, engineering),
+          Helena (Chief Risk Officer, governance), and Tomas (Operations &amp; payments engineer, engineering).
+        </p>
+      </div>
+
+      <!-- ============= Headroom (B-cluster RAG) ============= -->
+      <section class="shell-category" id="headroom" aria-labelledby="cat-headroom">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-headroom">Headroom (B-cluster RAG)</h2>
+          <span class="shell-category-kind" data-kind="live">Live</span>
+        </div>
+        <p class="shell-category-blurb">
+          RAS utilisation per cluster sourced from
+          <code>LimitUtilisationProjection</code> (Rohan + Helena).
+          Thresholds: green &lt; 70 %, amber 70–90 %, red ≥ 90 %.
+          Zero-state (no <code>RasLimitSchedulePublished</code> emitted): all clusters green with zero exposure.
+        </p>
+        <table class="fx-headroom-table" data-fx-headroom-table>
+          <caption class="visually-hidden">B-cluster RAS limit utilisation, newest data.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Cluster</th>
+              <th scope="col">Limit</th>
+              <th scope="col">Exposure</th>
+              <th scope="col">Limit value</th>
+              <th scope="col">Utilisation</th>
+              <th scope="col">RAG</th>
+              <th scope="col">CCY</th>
+            </tr>
+          </thead>
+          <tbody data-fx-headroom-tbody>
+            <tr><td colspan="7" class="fx-cp-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ============= Rejection feed ============= -->
+      <section class="shell-category" id="rejections" aria-labelledby="cat-rejections">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-rejections">Rejection feed</h2>
+          <span class="shell-category-kind" data-kind="live">Live</span>
+        </div>
+        <p class="shell-category-blurb">
+          Gateway rejections from <code>OrderRejectedAtGateway</code> events — newest first, capped at 50.
+          Each row identifies the order, the failing pre-trade check, and the rejection reason.
+        </p>
+        <table class="fx-rejections-table">
+          <caption class="visually-hidden">Gateway rejections, newest first.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Order ID</th>
+              <th scope="col">Rejecting check</th>
+              <th scope="col">Reason</th>
+              <th scope="col">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody data-fx-rejections-tbody>
+            <tr><td colspan="4" class="fx-cp-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ============= Correspondent routing ============= -->
+      <section class="shell-category" id="correspondent" aria-labelledby="cat-correspondent">
+        <div class="shell-category-head">
+          <h2 class="shell-category-title" id="cat-correspondent">Correspondent routing</h2>
+          <span class="shell-category-kind" data-kind="live">Live</span>
+        </div>
+        <p class="shell-category-blurb">
+          Derived from the <code>CorrespondentRoutingProjection</code> (Tomas).
+          Per the bank's indirect-participant posture
+          (<a href="/api/correspondent-routing">/api/correspondent-routing</a>):
+          ZAR settles via SARB/SAMOS; USD/EUR/GBP/JPY via CLS-member correspondents.
+          Switch-test status reflects <code>SwitchTestActivated</code> /
+          <code>SwitchTestEnded</code> events.
+        </p>
+        <dl class="fx-correspondent-grid" data-fx-correspondent-grid>
+          <dt>Primary</dt><dd data-fx-corr-primary>—</dd>
+          <dt>Backup</dt><dd data-fx-corr-backup>—</dd>
+          <dt>Switch test</dt><dd data-fx-corr-switch>—</dd>
+        </dl>
+      </section>
+    </main>
+  </div>
+
+  <footer class="shell-footer" role="contentinfo">
+    Bank UI v0 · FX risk view Slice 5 · derived from
+    <a href="/api/markets/fx/risk">/api/markets/fx/risk</a> ·
+    <a href="/api/markets/fx/headroom">/api/markets/fx/headroom</a>.
+    Authored under D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
+    Co-owners: Kai (Trading systems engineer) + Helena (Chief Risk Officer) + Tomas (Operations &amp; payments engineer).
+  </footer>
+
+  <script src="/_shell.js"></script>
+  <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/markets/fx/risk.js"></script>
+</body>
+</html>
