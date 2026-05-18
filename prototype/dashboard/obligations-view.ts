@@ -56,12 +56,47 @@ function parseScopeCell(raw: string): string[] {
   return parts.length > 0 ? parts : ["universal"];
 }
 
+// ---------------------------------------------------------------------------
+// Regulator classifier — maps the derived family label to the issuing body.
+// ---------------------------------------------------------------------------
+
+const REGULATOR_MAP: Record<string, string> = {
+  "Joint Standard 2 of 2024": "PA / FSCA",
+  "Joint Standard 2 of 2020": "PA / FSCA",
+  "Joint Standard": "PA / FSCA",
+  "Banks Act + Regs": "SARB (PA)",
+  "BCBS": "BCBS / Basel Committee",
+  "FIC Act": "FIC",
+  "FATF": "FATF",
+  "Sanctions (UN/OFAC/HMT/EU/DTI)": "Sanctions (multi)",
+  "FAIS": "FSCA",
+  "FSCA Conduct": "FSCA",
+  "FMA / Financial Markets Act": "FSCA",
+  "JSE": "JSE",
+  "POPIA": "Information Regulator",
+  "IFRS / IAS": "IASB",
+  "Companies Act / King IV": "CIPC",
+  "ECTA": "DTPS",
+  "FATCA / CRS": "SARS / OECD",
+  "Tax (other)": "SARS",
+  "BCEA / LRA / EE": "Dept of Labour",
+  "PA Directive / Guidance": "SARB (PA)",
+  "PRECCA / Bribery": "NPA",
+  "Internal RAS / Objective": "Internal",
+};
+
+function pickRegulator(family: string): string {
+  return REGULATOR_MAP[family] ?? "Other";
+}
+
 interface ObligationDetail {
   id: string;
   citation: string;
   requirement: string;
   fulfilment: string;
   owner: string;
+  /** Derived: issuing regulatory body (e.g. "SARB (PA)", "FSCA", "FIC"). */
+  regulator: string;
   /** Derived: REGULATORY / OBJECTIVE / BOTH / "" — joined comma if both. */
   source: string;
   /** Derived: first matching bind class — empty when no rule matches. */
@@ -279,6 +314,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     const family = pickFamily(citation);
     const status = (cells[6] ?? "").replace(/\*\*/g, "").trim();
     const bind = pickBind(citation);
+    const regulator = pickRegulator(family);
     const linkedPolicies = parseLinkedPolicies(fulfilment);
     const gaps = detectGaps({ fulfilment, owner, family });
 
@@ -313,6 +349,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
       requirement: cells[3] ?? "",
       fulfilment,
       owner,
+      regulator,
       source: pickSource(citation),
       bind,
       status,
