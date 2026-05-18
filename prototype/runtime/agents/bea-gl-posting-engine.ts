@@ -287,9 +287,9 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as SettlementReversedPayload;
         // Look up the original FxSettlementConfirmed event.
-        const origEvents = [
-          ...eventStore.replay({ type: "FxSettlementConfirmed" }),
-        ].filter((ev) => ev.event_id === payload.originalSettlementEventId);
+        const origEvents = [...eventStore.replay({ type: "FxSettlementConfirmed" })].filter(
+          (ev) => ev.event_id === payload.originalSettlementEventId,
+        );
         if (origEvents.length === 0) {
           throw new Error(
             `SettlementReversed: original FxSettlementConfirmed event '${payload.originalSettlementEventId}' not found in store`,
