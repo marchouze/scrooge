@@ -30,3 +30,8 @@ D-EVENT-STORE-SCALING
 # remains in the store and creates the shadow. Suppressed here as a known
 # historical rename — not a live authoring gap.
 D-RMS-PHASE-2
+# D-RMS-PHASE-4: root-level decision requesting Phase 4 dashboard parser cutover.
+# D-RMS-PHASE-4-ARCHIVE-SCOPE is a sibling scope decision (approved 2026-05-17).
+# Both are canonical decisions in their own right; the naming collision is the
+# same root-level-vs-scope-id design gap as other D-RMS-PHASE-* pairs.
+D-RMS-PHASE-4

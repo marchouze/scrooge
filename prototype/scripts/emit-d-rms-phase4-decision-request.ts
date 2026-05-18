@@ -10,10 +10,9 @@
 //
 // Author: Owen (Company Secretary, governance)
 
-import { eventStore } from "../platform/composition";
+import { clock, eventStore } from "../platform/composition";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
-import { clock } from "../platform/composition";
 
 const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
 
@@ -24,9 +23,7 @@ function hasPhase(decisionId: string, phase: string): boolean {
 }
 
 if (hasPhase("D-RMS-PHASE-4", "requested")) {
-  console.log(
-    JSON.stringify({ level: "info", msg: "D-RMS-PHASE-4: already requested — skip" }),
-  );
+  console.log(JSON.stringify({ level: "info", msg: "D-RMS-PHASE-4: already requested — skip" }));
 } else {
   recordDecision(
     {
@@ -47,11 +44,7 @@ if (hasPhase("D-RMS-PHASE-4", "requested")) {
     },
     clock.now(),
   );
-  console.log(
-    JSON.stringify({ level: "info", msg: "D-RMS-PHASE-4: decision requested" }),
-  );
+  console.log(JSON.stringify({ level: "info", msg: "D-RMS-PHASE-4: decision requested" }));
 }
 
-console.log(
-  JSON.stringify({ level: "info", msg: "emit-d-rms-phase4-decision-request: complete" }),
-);
+console.log(JSON.stringify({ level: "info", msg: "emit-d-rms-phase4-decision-request: complete" }));
