@@ -1,0 +1,104 @@
+# Substrate Scheduler — A2.1 long-lived Bun process
+#
+# This workflow is the GitHub Actions entry-point for the A2.1 substrate
+# scheduler (long-lived Bun process). It runs `bun run substrate:scheduler`
+# which stays alive, evaluates the cron manifest on every interval, and
+# emits `ScheduledTrigger` events to the event store for any due fire-times.
+#
+# IMPORTANT — trigger model:
+#   This workflow is `workflow_dispatch`-only (manual trigger). It is NOT
+#   scheduled via `schedule.cron` — the scheduler is designed to run as a
+#   long-lived process (e.g. under launchd or a container supervisor), not
+#   as a GH Actions cron job. Manual dispatch here is for ad-hoc
+#   bootstrap / testing runs only.
+#
+#   The launchd plist `com.scrooge.scheduler-tick` (installed on the
+#   host Mac by `scripts/install-launchd-scheduler.sh`) is the canonical
+#   production cadence mechanism for the local substrate.
+#
+# Outputs:
+#   - ScheduledTrigger events appended to the event store for any agent
+#     triggers that were due when the workflow ran.
+#   - Logs emitted via pino; visible in the GH Actions run log.
+#
+# A2.1 is the long-term replacement for the per-agent `agent-runtime-*.yml`
+# scheduled workflows (which were decommissioned from schedule.cron blocks
+# on 2026-05-11; they now run workflow_dispatch-only). Once the A2.1
+# long-lived scheduler substrate is fully operational, a single instance of
+# this scheduler covers all agent cadences.
+#
+# Authority: Atlas (Core banking platform architect, engineering), A2.1.
+# Citations: GOV-FRAMEWORK-CEO-RESERVED, JOINT-STANDARD-2-2024, ORG-CY-01.
+
+name: Substrate Scheduler (A2.1)
+
+on:
+  workflow_dispatch:
+    inputs:
+      interval_ms:
+        description: "Poll interval in milliseconds (default 60000). The process runs for timeout-minutes so set this appropriately."
+        required: false
+        default: "60000"
+      run_duration_minutes:
+        description: "Approximate duration to run the scheduler before GH Actions kills it (must be <= job timeout-minutes - 2). Default: 8."
+        required: false
+        default: "8"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    # Allow up to 10 minutes; the scheduler process is killed when the job ends.
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: prototype
+        run: bun install --frozen-lockfile
+
+      - name: Sync event store from Neon (pre-run)
+        working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
+
+      - name: Run substrate scheduler (long-lived)
+        working-directory: prototype
+        env:
+          BANK_SCHEDULER_INTERVAL_MS: ${{ github.event.inputs.interval_ms || '60000' }}
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        # The scheduler runs indefinitely; we use `timeout` to cap it at
+        # run_duration_minutes. GH Actions will then proceed to post-run steps.
+        # Exit code 124 = timeout (normal); any other non-zero = failure.
+        run: |
+          DURATION_MINS="${{ github.event.inputs.run_duration_minutes || '8' }}"
+          DURATION_SECS=$((DURATION_MINS * 60))
+          echo "Starting substrate scheduler for ${DURATION_MINS} minutes (${DURATION_SECS}s)..."
+          timeout ${DURATION_SECS} bun run substrate:scheduler || EXIT=$?
+          if [ "${EXIT:-0}" = "124" ]; then
+            echo "Scheduler ran for ${DURATION_MINS} minutes and was stopped by timeout (expected)."
+            exit 0
+          fi
+          exit ${EXIT:-0}
+
+      - name: Sync event store to Neon (post-run)
+        working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
