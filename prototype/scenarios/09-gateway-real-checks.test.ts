@@ -1418,7 +1418,7 @@ describe("kai:suitability-gateway-check (slice 6)", () => {
   it("rejects an unclassified counterparty (no CounterpartyFaisClassified on record)", async () => {
     const orderId = uniqueId("suit-unclassified");
     const orderEventId = newEventId();
-    const unknownLei = "LEINOCLASSIFICATION00"; // 20 chars, no FAIS event
+    const unknownLei = "LEINOUNCLASSIFIED00X"; // 20 chars, no FAIS event
     const order = makeOrderProposed({
       asOf: AS_OF, entity: ENTITY,
       actor: { type: "service" as const, id: "agent:saskia:auto-quote" },
