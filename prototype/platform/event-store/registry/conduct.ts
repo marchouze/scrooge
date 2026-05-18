@@ -24,6 +24,7 @@ import {
   conductComplaintFiledPayloadSchema,
   conductComplaintResolvedPayloadSchema,
   conductDisclosureEmittedPayloadSchema,
+  conductEventRecordedPayloadSchema,
   conductIncidentLoggedPayloadSchema,
   conductObligationFlaggedPayloadSchema,
   conflictOfInterestDisclosedPayloadSchema,
@@ -168,5 +169,35 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: conflictOfInterestDisclosedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+  },
+  // ---------------------------------------------------------------------------
+  // ConductEventRecorded — counterparty conduct surveillance observation record.
+  //
+  // High-level conduct observation spanning multiple trades or raised by an
+  // automated surveillance model. Primary input to the conduct surveillance
+  // register and the recon:conduct-surveillance-coverage pipeline.
+  //
+  // Citations:
+  //   Financial Markets Act 19 of 2012 §§78–82;
+  //   FSRA §131; FSB TCF 2012; FAIS Act 37/2002 §§16–17;
+  //   D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+  // Author: Atlas (Principal Software Engineer, engineering) +
+  //   Mira (Compliance / RegTech engineer, engineering).
+  // ---------------------------------------------------------------------------
+  {
+    type: "ConductEventRecorded",
+    class: "audit",
+    issuer: "Mira",
+    subscribers: ["Mira", "Helena", "Devon", "Rohan"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: conductEventRecordedPayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+    citationsHint: [
+      "D-MARKET-CONDUCT",
+      "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "FINANCIAL-MARKETS-ACT-19-2012-S78",
+      "FSRA-S131",
+    ],
   },
 ];
