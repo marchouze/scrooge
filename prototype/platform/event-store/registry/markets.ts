@@ -72,6 +72,7 @@ import { cdmBindingsRegeneratedPayloadSchema } from "../event-types-cdm";
 import {
   baReturnGenerationTriggeredPayloadSchema,
   balanceSheetSubstantiationCompletedPayloadSchema,
+  manualJournalEntryPayloadSchema,
 } from "../event-types/accounting";
 import { ifrsClassificationAppliedPayloadSchema } from "../event-types/agent-substrate-extended";
 import {
@@ -835,6 +836,25 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "platform/accounting/ba-return-trigger.ts; PROC-FIN-MC-01 §5 MC14; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+  },
+  {
+    // ManualJournalEntry — an authorised agent or human posts a manual
+    // double-entry journal to the GL. Carries balanced legs (debits = credits
+    // per currency). Consumed by the GL projection (gl-projection.ts) to
+    // build the ledger view at any asOf.
+    //
+    // Authority: General-ledger substrate (Devon COO, engineering).
+    // Issuers: Bea (Accounting & financial reporting engineer, engineering);
+    //          authorised human via the dashboard POST /api/gl/journal.
+    type: "ManualJournalEntry",
+    class: "markets",
+    payloadSchema: manualJournalEntryPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["IAS-1", "IAS-8", "PROC-FIN-MC-01"],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source: "platform/accounting/gl-projection.ts; dashboard/gl-view.ts",
   },
 ];
 
