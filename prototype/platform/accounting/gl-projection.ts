@@ -45,7 +45,7 @@ let _coaCache: Map<string, CoaEntry> | null = null;
 function loadCoa(): Map<string, CoaEntry> {
   if (_coaCache) return _coaCache;
   try {
-    const filePath = join(import.meta.dir, "chart-of-accounts.schema.json");
+    const filePath = join(import.meta.dir, "chart-of-accounts.json");
     const raw = readFileSync(filePath, "utf8");
     const parsed = JSON.parse(raw) as CoaFile;
     const entries: CoaEntry[] = parsed.items ?? parsed.accounts ?? [];
