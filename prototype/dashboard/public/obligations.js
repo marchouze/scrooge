@@ -58,12 +58,6 @@ function statusClass(status) {
   return "oblig-tag";
 }
 
-function urnDisplay(o) {
-  // Show URN if it has content and isn't a placeholder; fall back to ID.
-  const u = (o.urn || "").trim();
-  return u && u !== "[TBD]" ? u : o.id;
-}
-
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
@@ -326,10 +320,9 @@ function renderTable(rows) {
       const regulatorHtml = o.regulator
         ? `<span style="font-size:11.5px;font-weight:500">${esc(o.regulator)}</span>`
         : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
-      const instrumentHtml =
-        o.instrument
-          ? `<span style="font-size:11.5px">${esc(o.instrument)}</span>`
-          : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
+      const instrumentHtml = o.instrument
+        ? `<span style="font-size:11.5px">${esc(o.instrument)}</span>`
+        : '<span style="color:var(--neutral-stone);font-size:11px;">—</span>';
       const linkedHtml =
         (o.linkedPolicies ?? []).length === 0
           ? '<span style="color:var(--neutral-stone);font-size:11px;">—</span>'

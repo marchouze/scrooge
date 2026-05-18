@@ -65,18 +65,18 @@ const REGULATOR_MAP: Record<string, string> = {
   "Joint Standard 2 of 2020": "PA / FSCA",
   "Joint Standard": "PA / FSCA",
   "Banks Act + Regs": "SARB (PA)",
-  "BCBS": "BCBS / Basel Committee",
+  BCBS: "BCBS / Basel Committee",
   "FIC Act": "FIC",
-  "FATF": "FATF",
+  FATF: "FATF",
   "Sanctions (UN/OFAC/HMT/EU/DTI)": "Sanctions (multi)",
-  "FAIS": "FSCA",
+  FAIS: "FSCA",
   "FSCA Conduct": "FSCA",
   "FMA / Financial Markets Act": "FSCA",
-  "JSE": "JSE",
-  "POPIA": "Information Regulator",
+  JSE: "JSE",
+  POPIA: "Information Regulator",
   "IFRS / IAS": "IASB",
   "Companies Act / King IV": "CIPC",
-  "ECTA": "DTPS",
+  ECTA: "DTPS",
   "FATCA / CRS": "SARS / OECD",
   "Tax (other)": "SARS",
   "BCEA / LRA / EE": "Dept of Labour",
@@ -256,8 +256,8 @@ function pickInstrument(citation: string): string {
   const yearBoundary = raw.match(/^(.*?\b\d{4}\b)/s);
   if (yearBoundary) {
     return (yearBoundary[1] ?? "")
-      .replace(/\s*\([^)]*$/, "")  // strip unclosed leading parenthetical (e.g. "(revised July 2015")
-      .replace(/\s+—\s+$/, "")    // trailing " — " left over after year
+      .replace(/\s*\([^)]*$/, "") // strip unclosed leading parenthetical (e.g. "(revised July 2015")
+      .replace(/\s+—\s+$/, "") // trailing " — " left over after year
       .replace(/[,;—\s]+$/, "")
       .trim();
   }
