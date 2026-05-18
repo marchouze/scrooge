@@ -87,6 +87,11 @@ import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { registerGraphRoutes } from "./graph-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
+import {
+  buildKycCandidateDetailView,
+  buildKycClientDetailView,
+  buildKycClientsView,
+} from "./kyc-clients-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type RfqInput, type TradeEmitResult, emitTrade, quoteOnly } from "./markets-fx-trade";
 import { getObligationsView } from "./obligations-view";
@@ -1151,6 +1156,44 @@ const server = Bun.serve({
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
+    // GET /api/kyc/candidates/:id — single candidate with KYC checks.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    if (
+      url.pathname.startsWith("/api/kyc/candidates/") &&
+      req.method === "GET" &&
+      url.pathname !== "/api/kyc/candidates/"
+    ) {
+      const candidateId = decodeURIComponent(url.pathname.replace("/api/kyc/candidates/", ""));
+      return jsonResponse({
+        ...buildKycCandidateDetailView(eventStore, candidateId),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+
+    // GET /api/kyc/clients — accepted clients register (master).
+    // CRITICAL: only clients with a ClientAccepted event appear here.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    if (url.pathname === "/api/kyc/clients" && req.method === "GET") {
+      return jsonResponse({
+        ...buildKycClientsView(eventStore),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+
+    // GET /api/kyc/clients/:id — single client with KYC checks.
+    // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
+    if (
+      url.pathname.startsWith("/api/kyc/clients/") &&
+      req.method === "GET" &&
+      url.pathname !== "/api/kyc/clients/"
+    ) {
+      const clientId = decodeURIComponent(url.pathname.replace("/api/kyc/clients/", ""));
+      return jsonResponse({
+        ...buildKycClientDetailView(eventStore, clientId),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+
     if (url.pathname === "/api/forward-obligations" && req.method === "GET") {
       // Forward Obligations projection — multi-source derived view of future events.
       //

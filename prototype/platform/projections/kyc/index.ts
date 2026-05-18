@@ -13,3 +13,20 @@ export type {
   KycCandidateState,
   KycCandidateStatus,
 } from "./types";
+// D-KYC-ONBOARDING-BUILD — additional gateway projections.
+export { clientsProjection } from "./clients-projection";
+export type {
+  ClientCategory,
+  ClientEntityType,
+  ClientRiskBand,
+  ClientState,
+  ClientsProjectionState,
+} from "./clients-projection";
+export { kycChecksProjection } from "./kyc-checks-projection";
+export type {
+  CheckStatus,
+  KYCCheckResult,
+  KYCChecksProjectionState,
+  KYCChecksState,
+  KYCCheckType,
+} from "./kyc-checks-projection";
