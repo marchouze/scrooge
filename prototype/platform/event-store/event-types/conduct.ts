@@ -810,6 +810,156 @@ export function makeConflictOfInterestDisclosed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// ConductEventRecorded — high-level counterparty conduct observation record.
+//
+// This event type captures discrete counterparty conduct observations emitted
+// by the market conduct surveillance system. It is the primary input to the
+// conduct surveillance register and the `recon:conduct-surveillance-coverage`
+// pipeline.
+//
+// Unlike the trade-level events above (BestExecutionBreached, etc.), this
+// event represents a consolidated observation that may span multiple trades
+// or be raised by an automated surveillance model without a single tradeId
+// anchor.
+//
+// Lifecycle: flag raised → under-investigation → resolved | escalated.
+// Citations:
+//   Financial Markets Act 19 of 2012 §§78–82 (market abuse prohibitions);
+//   FSRA §131 (FSCA conduct mandate);
+//   FSB Treating Customers Fairly 2012 (TCF framework);
+//   FAIS Act 37/2002 §§16–17 (best execution, conflict of interest);
+//   D-MARKET-CONDUCT; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+// ---------------------------------------------------------------------------
+
+/**
+ * Category of conduct observation captured in ConductEventRecorded.
+ *
+ * "best-execution-failure"   — counterparty did not receive best available
+ *                              terms per FAIS §16; spread exceeded tolerance.
+ * "front-running-flag"       — potential trading-ahead-of-client-order
+ *                              pattern detected per FMA §78.
+ * "wash-trade-flag"          — suspected self-matched trades to create false
+ *                              liquidity per FMA §78.
+ * "market-manipulation-alert" — price or benchmark distortion pattern per
+ *                              FMA §§78–80.
+ */
+export const conductObservationCategorySchema = z.enum([
+  "best-execution-failure",
+  "front-running-flag",
+  "wash-trade-flag",
+  "market-manipulation-alert",
+]);
+
+export type ConductObservationCategory = z.infer<typeof conductObservationCategorySchema>;
+
+/**
+ * Lifecycle status of the conduct observation.
+ * Mirrors ConductStatus but with explicit "flag-raised" initial state.
+ */
+export const conductObservationStatusSchema = z.enum([
+  "flag-raised",
+  "under-investigation",
+  "resolved",
+  "escalated",
+]);
+
+export type ConductObservationStatus = z.infer<typeof conductObservationStatusSchema>;
+
+export const conductEventRecordedPayloadSchema = z.object({
+  /**
+   * Unique observation reference. Convention: `CER-<YYYY-MM>-<seq>`.
+   * Issuer generates and guarantees uniqueness within entity scope.
+   */
+  observationId: z.string().min(1),
+
+  /**
+   * ISO 8601 — when the conduct observation was raised.
+   */
+  observedAt: z.string().min(1),
+
+  /**
+   * Category of conduct concern detected.
+   */
+  category: conductObservationCategorySchema,
+
+  /**
+   * Current lifecycle status of the observation.
+   */
+  status: conductObservationStatusSchema,
+
+  /**
+   * Party register ID of the counterparty under observation.
+   * Must be a registered Party of kind `legal-entity` or `counterparty`.
+   * Citation: D-PARTY-REGISTER (CEO-approved 2026-05-11).
+   */
+  counterpartyId: z.string().min(1),
+
+  /**
+   * Severity of the conduct observation.
+   * "advisory" — informational; no mandatory action.
+   * "warning"  — requires investigation; regulatory notification possible.
+   * "critical" — immediate escalation required; FSCA notification likely.
+   */
+  severity: z.enum(["advisory", "warning", "critical"]),
+
+  /**
+   * Internal trade identifiers implicated in the observation.
+   * May be empty for model-raised alerts with no single trade anchor.
+   */
+  tradeIds: z.array(z.string().min(1)),
+
+  /**
+   * Plain-text description of the conduct observation. Max 2 000 chars.
+   */
+  description: z.string().max(2000),
+
+  /**
+   * Whether the observation has been automatically escalated to the MLRO.
+   * Citation: FIC Act 38 of 2001 §29 (suspicious activity reporting).
+   */
+  escalatedToMlro: z.boolean(),
+
+  /**
+   * ISO 8601 — when the observation was resolved or escalated. Optional;
+   * populated when status transitions to "resolved" or "escalated".
+   */
+  closedAt: z.string().optional(),
+
+  /**
+   * Resolution summary (required when status = "resolved" or "escalated").
+   * Max 2 000 chars.
+   */
+  resolutionSummary: z.string().max(2000).optional(),
+
+  /**
+   * Surveillance model that raised the flag.
+   * Examples: "spread-monitor-v1", "pattern-matcher-v2", "manual-review".
+   */
+  sourceModel: z.string().min(1).optional(),
+});
+
+export type ConductEventRecordedPayload = z.infer<typeof conductEventRecordedPayloadSchema>;
+
+export function makeConductEventRecorded(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ConductEventRecordedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ConductEventRecorded",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: conductEventRecordedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // CONDUCT_TYPED_EVENT_TYPES — registry of all conduct domain event types.
 //
 // To add a new conduct event type:
@@ -832,4 +982,6 @@ export const CONDUCT_TYPED_EVENT_TYPES = [
   "MarketConductAlertRaised",
   "FaisClassificationSuitabilityChecked",
   "ConflictOfInterestDisclosed",
+  // Counterparty conduct observation record — surveillance register input
+  "ConductEventRecorded",
 ] as const;
