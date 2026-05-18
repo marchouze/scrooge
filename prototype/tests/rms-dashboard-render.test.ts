@@ -40,11 +40,8 @@ import {
   makeRecordFiled,
 } from "../platform/event-store/event-types";
 import { EventStore } from "../platform/event-store/store";
-import {
-  decisionsRegisterProjection,
-  decisionsRegisterRows,
-} from "../platform/rms-registers";
 import { LocalProjector } from "../platform/projections";
+import { decisionsRegisterProjection, decisionsRegisterRows } from "../platform/rms-registers";
 
 const ENTITY = BANK_ZA_001;
 const ACTOR = { type: "service" as const, id: "agent:anya" };
