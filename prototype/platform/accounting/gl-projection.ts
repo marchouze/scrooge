@@ -154,6 +154,56 @@ type AnyEvent = Event;
  * `reportingAmountMinor` (null if no rate available) and trial-balance rows
  * will include `reportingDebitsMinor` / `reportingCreditsMinor` sums.
  */
+function formatMinorAmount(amountMinor: number, currency: string): string {
+  const major = amountMinor / 100;
+  return `${currency} ${major.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function buildFxTradeDescription(
+  postingType: string,
+  sourcePayload: Record<string, unknown>,
+): string {
+  const cp = sourcePayload.currencyPair as { base?: string; quote?: string } | undefined;
+  const base = cp?.base ?? "";
+  const quote = cp?.quote ?? "";
+  const pair = base && quote ? `${base}/${quote}` : "?/?";
+
+  const tradeIdObj = sourcePayload.tradeId as { value?: string } | undefined;
+  const tradeId = tradeIdObj?.value ?? String(sourcePayload.tradeId ?? "");
+
+  const side = typeof sourcePayload.side === "string" ? sourcePayload.side : "";
+
+  const legs = Array.isArray(sourcePayload.legs) ? sourcePayload.legs : [];
+  const firstLeg = legs[0] as
+    | {
+        payCurrency?: string;
+        receiveCurrency?: string;
+        notional?: { amountMinor?: number; currency?: string };
+        counterNotional?: { amountMinor?: number; currency?: string };
+        rate?: { currency?: string; amount?: number };
+      }
+    | undefined;
+
+  if (postingType === "trade-booking" && firstLeg) {
+    const notionalMinor = firstLeg.notional?.amountMinor ?? 0;
+    const notionalCcy = firstLeg.notional?.currency ?? base;
+    const rate = firstLeg.rate?.amount;
+    const rateStr = rate !== undefined ? ` @ ${rate.toFixed(4)}` : "";
+    const sideLabel = side ? ` — ${side.charAt(0).toUpperCase()}${side.slice(1)} ` : " — ";
+    return `FX Spot ${pair}${sideLabel}${formatMinorAmount(notionalMinor, notionalCcy)}${rateStr}`;
+  }
+
+  if (postingType === "revaluation") {
+    return `FX Reval ${pair}${tradeId ? ` (${tradeId})` : ""}`;
+  }
+
+  if (postingType === "settlement") {
+    return `FX Settlement ${pair}${tradeId ? ` (${tradeId})` : ""}`;
+  }
+
+  return `FX ${postingType} ${pair}${tradeId ? ` (${tradeId})` : ""}`;
+}
+
 export function buildGlView(
   events: readonly AnyEvent[],
   asOf: string,
@@ -163,6 +213,14 @@ export function buildGlView(
 
   // Build rate map once if reporting currency requested
   const rateMap = reportingCurrency ? buildRateMap(events) : null;
+
+  // Build lookup map for source events referenced by SubLedgerPostingEmitted
+  const sourceEventMap = new Map<string, Record<string, unknown>>();
+  for (const e of events) {
+    if (e.type === "FxTradeExecuted" || e.type === "FxPositionRevalued" || e.type === "FxSettlementConfirmed") {
+      sourceEventMap.set(e.event_id, e.payload as Record<string, unknown>);
+    }
+  }
 
   /** Returns reporting currency fields to merge into a ledger entry */
   function rptFields(
@@ -191,11 +249,17 @@ export function buildGlView(
           currency: string;
         };
         const coa = getCoaEntry(l.accountId);
+        const postingType = String(p.postingType ?? "unknown");
+        const sourceEventId = typeof p.sourceEventId === "string" ? p.sourceEventId : undefined;
+        const sourcePayload = sourceEventId ? sourceEventMap.get(sourceEventId) : undefined;
+        const description = sourcePayload
+          ? buildFxTradeDescription(postingType, sourcePayload)
+          : `SubLedger posting (${postingType})`;
         ledgerEntries.push({
           eventId: event.event_id,
           source: "SubLedgerPostingEmitted",
           postedAt,
-          description: `SubLedger posting (${String(p.postingType ?? "unknown")})`,
+          description,
           accountId: l.accountId,
           accountName: coa.name,
           accountCategory: coa.category,
