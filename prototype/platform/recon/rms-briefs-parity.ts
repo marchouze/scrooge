@@ -97,13 +97,18 @@ function buildBriefEventIndex(): BriefEventIndex {
     if (!date) continue;
 
     const payload = e.payload as Record<string, unknown>;
-    // AgentBriefIssued payload has `issuedTo: { name, position }` (rmsAgentRefSchema)
+    // Index both issuedTo and issuedBy so briefs authored by an agent
+    // (where the author's name is the filename's second segment) also match.
     const issuedTo = payload.issuedTo as Record<string, unknown> | undefined;
-    const agentName = typeof issuedTo?.name === "string" ? issuedTo.name.toLowerCase() : "";
+    const issuedBy = payload.issuedBy as Record<string, unknown> | undefined;
+    const toName = typeof issuedTo?.name === "string" ? issuedTo.name.toLowerCase() : "";
+    const byName = typeof issuedBy?.name === "string" ? issuedBy.name.toLowerCase() : "";
 
     if (!byDate.has(date)) byDate.set(date, new Set());
     // biome-ignore lint/style/noNonNullAssertion: guarded by byDate.has(date) above
-    if (agentName) byDate.get(date)!.add(agentName);
+    const names = byDate.get(date)!;
+    if (toName) names.add(toName);
+    if (byName) names.add(byName);
   }
 
   return { byDate, totalEvents };
