@@ -20,6 +20,7 @@
 // Author: Atlas (substrate) · Scrooge (handler caller)
 
 import { clock, eventStore } from "../../platform/composition";
+import { deterministicAggregateId, makeAggregateLabel } from "../../platform/event-store/aggregate";
 import { makeDecisionComment } from "../../platform/event-store/event-types";
 import {
   type DecisionAuthority,
@@ -234,9 +235,12 @@ export function recordDecision(input: RecordDecisionInput, asOf?: string): Recor
       recordedVia: input.recordedVia,
     }),
   });
+  const aggregateLabel = makeAggregateLabel("decision", input.decisionId);
   const withProvenance: Event = {
     ...event,
     provenance: PRODUCTION_CARVE_OUTS.Decision,
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
   };
   eventStore.append(withProvenance);
   return { event: withProvenance, eventId: withProvenance.event_id };

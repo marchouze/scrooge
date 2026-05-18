@@ -144,6 +144,9 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   "platform/recon/decision-id-hygiene.ts",
   "platform/recon/decision-authority-coverage.ts",
   "platform/recon/decision-authority-routing.ts",
+  // Aggregate-ID coverage recon — read-only replay that checks aggregate_id
+  // presence on must-have event types; gate is a no-op on replay.
+  "platform/recon/aggregate-id-coverage.ts",
   // Vera Wave-4 #14 + #15 — read-only replay of AgentEscalation /
   // AgentDecision events; gate is a no-op on replay.
   "platform/recon/escalation-channel.ts",

@@ -54,11 +54,16 @@ CREATE TABLE IF NOT EXISTS events (
   -- ProvenanceTag. NULL until the Slice-6 backfill / soft-tagger runs;
   -- substrate-active flag (off in tests, on at composition root + after
   -- backfill) gates append-rejection of unset values.
-  provenance  TEXT
+  provenance      TEXT,
+  -- Aggregate identity — groups all events for one business object.
+  -- UUID v5 (deterministic from namespace + label) for backfill safety.
+  aggregate_id    TEXT,
+  aggregate_label TEXT
 );
-CREATE INDEX IF NOT EXISTS idx_events_type   ON events(type);
-CREATE INDEX IF NOT EXISTS idx_events_entity ON events(entity);
-CREATE INDEX IF NOT EXISTS idx_events_as_of  ON events(as_of);
+CREATE INDEX IF NOT EXISTS idx_events_type         ON events(type);
+CREATE INDEX IF NOT EXISTS idx_events_entity       ON events(entity);
+CREATE INDEX IF NOT EXISTS idx_events_as_of        ON events(as_of);
+CREATE INDEX IF NOT EXISTS idx_events_aggregate_id ON events(aggregate_id);
 
 -- D-EVENT-STORE-SCALING Slice 2 — per-stream snapshot substrate.
 -- A snapshot caches a projection's state for a logical stream
@@ -85,6 +90,7 @@ export interface ReplayOpts {
   entity?: string;
   type?: string;
   asOf?: string; // upper bound (inclusive) on event.as_of
+  aggregateId?: string; // filter: only events for this aggregate UUID
 }
 
 /**
@@ -183,6 +189,22 @@ export class EventStore {
     } catch {
       // column already present; pre-Slice-1 path doesn't need this.
     }
+    // Aggregate identity columns — additive migration for pre-aggregate stores.
+    try {
+      this.db.exec("ALTER TABLE events ADD COLUMN aggregate_id TEXT");
+    } catch {
+      // already present
+    }
+    try {
+      this.db.exec("ALTER TABLE events ADD COLUMN aggregate_label TEXT");
+    } catch {
+      // already present
+    }
+    try {
+      this.db.exec("CREATE INDEX IF NOT EXISTS idx_events_aggregate_id ON events(aggregate_id)");
+    } catch {
+      // already present
+    }
     // D-DATA-PROVENANCE-SUBSTRATE Slice 6 — soft-tagger. If the store
     // contains untagged events (column NULL), apply the carve-out lookup
     // + build-phase default. Idempotent: zero-untagged ⇒ no-op. The
@@ -270,8 +292,9 @@ export class EventStore {
     this.db
       .prepare(
         `INSERT INTO events
-           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload, provenance)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload, provenance,
+            aggregate_id, aggregate_label)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         e.event_id,
@@ -283,6 +306,8 @@ export class EventStore {
         JSON.stringify(e.citations),
         JSON.stringify(e.payload),
         provenance ? JSON.stringify(provenance) : null,
+        e.aggregateId ?? null,
+        e.aggregateLabel ?? null,
       );
   }
 
@@ -351,6 +376,10 @@ export class EventStore {
       where.push("as_of <= ?");
       params.push(opts.asOf);
     }
+    if (opts.aggregateId) {
+      where.push("aggregate_id = ?");
+      params.push(opts.aggregateId);
+    }
     const sql = `SELECT * FROM events ${
       where.length ? `WHERE ${where.join(" AND ")}` : ""
     } ORDER BY sequence ASC`;
@@ -365,6 +394,8 @@ export class EventStore {
         citations: JSON.parse(row.citations) as string[],
         payload: JSON.parse(row.payload) as Record<string, unknown>,
         ...(row.provenance ? { provenance: JSON.parse(row.provenance) as ProvenanceTag } : {}),
+        ...(row.aggregate_id ? { aggregateId: row.aggregate_id } : {}),
+        ...(row.aggregate_label ? { aggregateLabel: row.aggregate_label } : {}),
       };
     }
   }
@@ -641,4 +672,6 @@ interface RowShape {
   payload: string;
   recorded_at: string;
   provenance: string | null;
+  aggregate_id: string | null;
+  aggregate_label: string | null;
 }
