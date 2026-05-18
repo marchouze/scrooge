@@ -306,6 +306,8 @@
       blurb:
         "Sales / trading rehearsal surface — counterparty picker (eligibility-passing only). Slice 1 of D-FX-SALES-TRADING-FRONTEND.",
       href: "/markets/fx/desk.html",
+      // Slice 6 live metrics injected by the fxSummary fetch below.
+      // Populated via data-fx-sum-* spans rendered into the count/meta blocks.
     },
     {
       id: "mkts-fx-risk",
@@ -452,6 +454,7 @@
     regulatory,
     taxonomies,
     performance,
+    fxSummary,
   ) {
     const counts = {};
 
@@ -687,6 +690,29 @@
       }
     }
 
+    // Slice 6 — FX desk CEO oversight tile live metrics.
+    if (fxSummary) {
+      const trades = safeNum(fxSummary.tradeCount);
+      const rfqs = safeNum(fxSummary.rfqCount);
+      const b3Pct =
+        typeof fxSummary.b3UtilisationPct === "number"
+          ? Math.round(fxSummary.b3UtilisationPct * 100)
+          : 0;
+      const b3Rag = fxSummary.b3RagStatus ?? "green";
+      const b3Tone = b3Rag === "red" ? "error" : b3Rag === "amber" ? "warn" : "success";
+      const tone =
+        trades > 0 ? (b3Rag === "red" ? "error" : b3Rag === "amber" ? "warn" : "default") : "muted";
+      counts["mkts-fx-desk"] = {
+        text: String(trades),
+        tone,
+        aria: `${trades} FX trades; ${rfqs} RFQs; B3 ${b3Pct}% ${b3Rag}`,
+        meta: [
+          { label: `${rfqs} RFQs`, tone: rfqs > 0 ? "default" : "muted" },
+          { label: `B3 ${b3Pct}% ${b3Rag}`, tone: b3Tone },
+        ],
+      };
+    }
+
     return counts;
   }
 
@@ -700,7 +726,7 @@
 
     // Parallel fetch — five existing endpoints + the RMS catalogue
     // (Slice 4) + onboarding pipeline (PR #272) + forward obligations + regulatory
-    // + taxonomy explorer.
+    // + taxonomy explorer + FX summary (Slice 6).
     // One round-trip wall-clock per tick.
     const [
       state,
@@ -715,6 +741,7 @@
       regulatory,
       taxonomies,
       performance,
+      fxSummary,
     ] = await Promise.all([
       window.bankShell.fetch.state(),
       window.bankShell.fetch.obligations(),
@@ -752,6 +779,10 @@
       fetch("/api/performance", { headers: { Accept: "application/json" } })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
+      // FX desk Slice 6 — CEO oversight tile metrics (RFQs, trades, B3 RAG).
+      fetch("/api/markets/fx/summary", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
     ]);
 
     if (window.bankShell.render && state && state.asOf) {
@@ -772,6 +803,7 @@
       regulatory,
       taxonomies,
       performance,
+      fxSummary,
     );
     if (rms?.counts) {
       const total =
