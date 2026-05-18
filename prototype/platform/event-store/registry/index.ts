@@ -72,6 +72,8 @@ export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 export { CONDUCT_EVENT_TYPES } from "./conduct";
 // M3 Slice 10 — counterparty-exposure events (large-exposure framework).
 export { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
+// D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
+export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -80,6 +82,7 @@ export { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
+import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -151,6 +154,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // M3 Slice 10 — counterparty-exposure events. Placed after MISSING_EVENT_TYPES
   // so that typed schema rows override any placeholder rows.
   ...COUNTERPARTY_EXPOSURE_EVENT_TYPES,
+  // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events. Placed last so
+  // typed schema rows override any placeholder rows from missing-types.ts.
+  ...KYC_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

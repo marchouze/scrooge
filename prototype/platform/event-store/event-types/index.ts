@@ -98,6 +98,15 @@ export * from "./conduct";
 //   with netting, collateral, uncovered exposure, and limit utilisation.
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
 export * from "./counterparty-exposure";
+// D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
+// KYCIdentityCollected, KYCIdentityVerified, KYCIdentityVerificationFailed,
+//   KYCSanctionsPEPScreened, KYCUBOResolved, KYCRiskRated,
+//   KYCEDDInitiated, KYCEDDCompleted, KYCDecisionMade,
+//   ClientAccepted, ClientRejected, LawfulProcessingRegistered,
+//   KYCRefreshScheduled, KYCRefreshCompleted, KYCRatingRevised,
+//   CounterpartyCategorised, CounterpartyDeclined.
+// Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18).
+export * from "./kyc";
 // F-032 extended event-type files — typed Zod schemas replacing PT placeholders.
 // Authority: F-032 (event-type-registry-coverage recon, 2026-05-16).
 // Author: Atlas (Core banking platform architect, engineering)
@@ -189,6 +198,7 @@ import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
+import { KYC_TYPED_EVENT_TYPES } from "./kyc";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
@@ -253,6 +263,9 @@ export const TYPED_EVENT_TYPES = [
   // M3 Slice 10 — counterparty-exposure event types (large-exposure framework).
   // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
   ...COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES,
+  // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle event types.
+  // Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18).
+  ...KYC_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
