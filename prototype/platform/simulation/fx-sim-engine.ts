@@ -147,7 +147,11 @@ export class FxSimEngine {
 
   private async fireTrade(): Promise<void> {
     try {
-      const payload = generateSimTrade(this.rateEngine, SIM_COUNTERPARTIES, this.status.config.bookId);
+      const payload = generateSimTrade(
+        this.rateEngine,
+        SIM_COUNTERPARTIES,
+        this.status.config.bookId,
+      );
       const eventId = `sim-trade-${randomUUID()}`;
       const asOf = nowUtc();
 

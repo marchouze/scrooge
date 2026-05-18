@@ -10,9 +10,9 @@ import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:te
 const vi = { fn: mock, spyOn, useFakeTimers: () => {}, useRealTimers: () => {} };
 
 import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
+import { FxSimEngine } from "./fx-sim-engine";
 import { generateSimTrade } from "./fx-sim-generator";
 import { FxRateEngine } from "./fx-sim-rates";
-import { FxSimEngine } from "./fx-sim-engine";
 
 // ---------------------------------------------------------------------------
 // Mock event store
