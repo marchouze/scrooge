@@ -251,7 +251,10 @@ interface AppetiteSnapshot {
   readonly daysSinceRasReview: number;
 }
 
-function statusForLine(line: AppetiteLine, capitalMetrics?: ReturnType<typeof computeCapitalMetrics>): LineState {
+function statusForLine(
+  line: AppetiteLine,
+  capitalMetrics?: ReturnType<typeof computeCapitalMetrics>,
+): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
   // zero-appetite lines (sanctions, STR judgement, TCF) where the

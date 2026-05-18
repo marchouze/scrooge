@@ -42,13 +42,13 @@ import type { EventStore } from "../event-store/store";
 // ---------------------------------------------------------------------------
 
 /** ZAR cents — R300,000,000 total capital envelope (ICAAP v1 build-phase) */
-export const BUILD_PHASE_TOTAL_CAPITAL_MINOR = 300_000_000_00;
+export const BUILD_PHASE_TOTAL_CAPITAL_MINOR = 30_000_000_000;
 
 /** ZAR cents — R73,750,000 total RWA at franchise-design scale (ICAAP v1) */
-export const BUILD_PHASE_TOTAL_RWA_MINOR = 7_375_000_00;
+export const BUILD_PHASE_TOTAL_RWA_MINOR = 7_375_000_000;
 
 /** ZAR cents — R36,675,000 Total Internal Capital Requirement (TICR / ICAAP v1) */
-export const TICR_MINOR = 3_667_500_00;
+export const TICR_MINOR = 3_667_500_000;
 
 /** ZAR cents — R263,325,000 capital headroom in build phase (ICAAP v1) */
 export const BUILD_PHASE_HEADROOM_MINOR = BUILD_PHASE_TOTAL_CAPITAL_MINOR - TICR_MINOR;
@@ -58,10 +58,10 @@ export const BUILD_PHASE_HEADROOM_MINOR = BUILD_PHASE_TOTAL_CAPITAL_MINOR - TICR
 // ---------------------------------------------------------------------------
 
 /** CEO escalation trigger (< R100m headroom) in ZAR cents */
-export const THRESHOLD_CEO_ESCALATION_MINOR = 100_000_000_00;
+export const THRESHOLD_CEO_ESCALATION_MINOR = 10_000_000_000;
 
 /** Board notification trigger (< R50m headroom) in ZAR cents */
-export const THRESHOLD_BOARD_NOTIFICATION_MINOR = 50_000_000_00;
+export const THRESHOLD_BOARD_NOTIFICATION_MINOR = 5_000_000_000;
 
 /** TICR floor — critical breach when headroom < R36.675m (= TICR_MINOR) */
 export const THRESHOLD_CRITICAL_MINOR = TICR_MINOR;
@@ -236,7 +236,8 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
 
   const headroomMinor = availableCapitalMinor - TICR_MINOR - accruedChargesMinor;
   const headroomZar = headroomMinor / 100;
-  const cet1Ratio = totalRwaMinor > 0 ? availableCapitalMinor / totalRwaMinor : Number.POSITIVE_INFINITY;
+  const cet1Ratio =
+    totalRwaMinor > 0 ? availableCapitalMinor / totalRwaMinor : Number.POSITIVE_INFINITY;
   const cet1RatioPct = formatPct(cet1Ratio);
   const { status, critical } = computeStatus(headroomMinor);
 

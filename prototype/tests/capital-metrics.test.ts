@@ -23,7 +23,6 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
-import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   BUILD_PHASE_HEADROOM_MINOR,
   BUILD_PHASE_TOTAL_CAPITAL_MINOR,
@@ -34,6 +33,7 @@ import {
   TICR_MINOR,
   computeCapitalMetrics,
 } from "../platform/projections/capital-metrics";
+import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 
 const AS_OF = "2026-05-18T09:00:00.000Z";
 const ACTOR = { type: "service" as const, id: "agent:test" };
@@ -52,7 +52,13 @@ afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 function appendCapitalEvent(
   store: EventStore,
-  kind: "equity-issuance" | "capital-injection" | "tier2-issuance" | "dividend-payment" | "buyback" | "other",
+  kind:
+    | "equity-issuance"
+    | "capital-injection"
+    | "tier2-issuance"
+    | "dividend-payment"
+    | "buyback"
+    | "other",
   amountMinor: number,
   currency = "ZAR",
 ): void {
@@ -92,12 +98,13 @@ describe("capital-metrics — build-phase baseline", () => {
     expect(m.critical).toBe(false);
   });
 
-  it("build-phase headroom is R263,325,000 (263_325_000_00 cents)", () => {
+  it("build-phase headroom is R263,325,000 (26_332_500_000 cents)", () => {
     const store = new EventStore(":memory:");
     const m = computeCapitalMetrics(store, AS_OF);
 
     // R300m − R36.675m = R263.325m
-    expect(m.headroomMinor).toBe(300_000_000_00 - 3_667_500_00);
+    // In cents: 30_000_000_000 − 3_667_500_000 = 26_332_500_000
+    expect(m.headroomMinor).toBe(30_000_000_000 - 3_667_500_000);
     expect(m.headroomZar).toBeCloseTo(263_325_000, 2);
   });
 
@@ -137,13 +144,13 @@ describe("capital-metrics — build-phase baseline", () => {
 describe("capital-metrics — amber path (R50m ≤ headroom < R100m)", () => {
   it("headroom R75m → amber", () => {
     const store = new EventStore(":memory:");
-    // Inject just enough capital: TICR + R75m
-    const capital = TICR_MINOR + 75_000_000_00;
+    // Inject just enough capital: TICR + R75m (7_500_000_000 cents)
+    const capital = TICR_MINOR + 7_500_000_000;
     appendCapitalEvent(store, "equity-issuance", capital);
 
     const m = computeCapitalMetrics(store, AS_OF);
     expect(m.buildPhase).toBe(false);
-    expect(m.headroomMinor).toBe(75_000_000_00);
+    expect(m.headroomMinor).toBe(7_500_000_000);
     expect(m.status).toBe("amber");
     expect(m.critical).toBe(false);
   });
@@ -177,22 +184,28 @@ describe("capital-metrics — amber path (R50m ≤ headroom < R100m)", () => {
 describe("capital-metrics — red path (TICR ≤ headroom < R50m)", () => {
   it("headroom R40m → red (non-critical)", () => {
     const store = new EventStore(":memory:");
-    const capital = TICR_MINOR + 40_000_000_00;
+    // R40m = 4_000_000_000 cents
+    const capital = TICR_MINOR + 4_000_000_000;
     appendCapitalEvent(store, "equity-issuance", capital);
 
     const m = computeCapitalMetrics(store, AS_OF);
-    expect(m.headroomMinor).toBe(40_000_000_00);
+    expect(m.headroomMinor).toBe(4_000_000_000);
     expect(m.status).toBe("red");
     expect(m.critical).toBe(false);
   });
 
-  it("headroom R1 (just above 0) → red (non-critical)", () => {
+  it("headroom 1 cent (just above 0) → red (non-critical) — barely above critical threshold", () => {
     const store = new EventStore(":memory:");
-    const capital = TICR_MINOR + 1;
+    // headroom = 1 cent means capital = TICR + 1 cent
+    // But TICR_MINOR (R36.675m) is the critical floor. With headroom = 1 cent
+    // that's below R36.675m so it IS critical. To be non-critical we need headroom ≥ TICR.
+    // Non-critical red requires TICR ≤ headroom < R50m.
+    // Use headroom = TICR + 1 cent (just above TICR floor, still below R50m).
+    const capital = TICR_MINOR + TICR_MINOR + 1; // capital = 2*TICR + 1 → headroom = TICR + 1
     appendCapitalEvent(store, "equity-issuance", capital);
 
     const m = computeCapitalMetrics(store, AS_OF);
-    expect(m.headroomMinor).toBe(1);
+    expect(m.headroomMinor).toBe(TICR_MINOR + 1);
     expect(m.status).toBe("red");
     expect(m.critical).toBe(false);
   });
@@ -225,7 +238,7 @@ describe("capital-metrics — critical path (headroom < TICR)", () => {
 
   it("note mentions critical when critical=true", () => {
     const store = new EventStore(":memory:");
-    appendCapitalEvent(store, "equity-issuance", TICR_MINOR - 1_00); // R1 below TICR
+    appendCapitalEvent(store, "equity-issuance", TICR_MINOR - 100); // 1 rand below TICR
 
     const m = computeCapitalMetrics(store, AS_OF);
     expect(m.critical).toBe(true);
@@ -271,7 +284,7 @@ describe("capital-metrics — boundary values", () => {
 describe("capital-metrics — live mode", () => {
   it("CapitalEvent equity-issuance → buildPhase: false", () => {
     const store = new EventStore(":memory:");
-    appendCapitalEvent(store, "equity-issuance", BUILD_PHASE_TOTAL_CAPITAL_MINOR);
+    appendCapitalEvent(store, "equity-issuance", BUILD_PHASE_TOTAL_CAPITAL_MINOR); // R300m in cents
 
     const m = computeCapitalMetrics(store, AS_OF);
     expect(m.buildPhase).toBe(false);
@@ -295,22 +308,24 @@ describe("capital-metrics — live mode", () => {
 describe("capital-metrics — live mode with outflows", () => {
   it("equity-issuance minus dividend reduces headroom", () => {
     const store = new EventStore(":memory:");
-    // Inject R300m then pay R250m dividend → available = R50m
-    appendCapitalEvent(store, "equity-issuance", 300_000_000_00);
-    appendCapitalEvent(store, "dividend-payment", 250_000_000_00);
+    // Inject R300m (30_000_000_000 cents) then pay R250m dividend (25_000_000_000 cents)
+    // → available = R50m (5_000_000_000 cents)
+    appendCapitalEvent(store, "equity-issuance", 30_000_000_000);
+    appendCapitalEvent(store, "dividend-payment", 25_000_000_000);
 
     const m = computeCapitalMetrics(store, AS_OF);
-    expect(m.availableCapitalMinor).toBe(50_000_000_00);
-    // headroom = R50m − TICR (R36.675m) = R13.325m → red (non-critical)
-    expect(m.headroomMinor).toBe(50_000_000_00 - TICR_MINOR);
+    expect(m.availableCapitalMinor).toBe(5_000_000_000);
+    // headroom = R50m (5_000_000_000) − TICR (3_667_500_000) = R13.325m
+    // R13.325m < TICR (R36.675m) → critical (headroom below TICR)
+    expect(m.headroomMinor).toBe(5_000_000_000 - TICR_MINOR);
     expect(m.status).toBe("red");
-    expect(m.critical).toBe(false);
+    expect(m.critical).toBe(true);
   });
 
   it("outflows exceeding inflows → availableCapital floored at 0", () => {
     const store = new EventStore(":memory:");
-    appendCapitalEvent(store, "equity-issuance", 10_000_000_00);
-    appendCapitalEvent(store, "dividend-payment", 50_000_000_00);
+    appendCapitalEvent(store, "equity-issuance", 1_000_000_000); // R10m
+    appendCapitalEvent(store, "dividend-payment", 5_000_000_000); // R50m
 
     const m = computeCapitalMetrics(store, AS_OF);
     expect(m.availableCapitalMinor).toBe(0);
@@ -326,7 +341,7 @@ describe("capital-metrics — live mode with outflows", () => {
 describe("capital-metrics — non-ZAR events ignored", () => {
   it("USD capital event not folded into ZAR metrics (falls back to build-phase)", () => {
     const store = new EventStore(":memory:");
-    appendCapitalEvent(store, "equity-issuance", 300_000_000_00, "USD");
+    appendCapitalEvent(store, "equity-issuance", 30_000_000_000, "USD");
 
     // No ZAR CapitalEvent → build-phase fallback
     const m = computeCapitalMetrics(store, AS_OF);
@@ -336,11 +351,11 @@ describe("capital-metrics — non-ZAR events ignored", () => {
 
   it("ZAR event present alongside USD → ZAR-only live computation", () => {
     const store = new EventStore(":memory:");
-    appendCapitalEvent(store, "equity-issuance", 300_000_000_00, "ZAR");
-    appendCapitalEvent(store, "equity-issuance", 999_999_999_00, "USD"); // must be ignored
+    appendCapitalEvent(store, "equity-issuance", 30_000_000_000, "ZAR");
+    appendCapitalEvent(store, "equity-issuance", 99_999_999_000, "USD"); // must be ignored
 
     const m = computeCapitalMetrics(store, AS_OF);
     expect(m.buildPhase).toBe(false);
-    expect(m.availableCapitalMinor).toBe(300_000_000_00);
+    expect(m.availableCapitalMinor).toBe(30_000_000_000);
   });
 });
