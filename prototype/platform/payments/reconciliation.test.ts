@@ -273,21 +273,22 @@ describe("TC-4: nostro break — payment settled but ledger leg missing after 4h
 describe("TC-5: nostro break — payment leg missing after 4h past settlementDate", () => {
   it("returns break.kind=nostro when settlementDate is >4h in the past", () => {
     const store = makeStore();
-    // settlementDate is well in the past (yesterday).
-    const yesterday = new Date();
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+    // settlementDate is well in the past — one day before AS_OF.
+    // Use a fixed date relative to AS_OF (not wall-clock) so the test
+    // is stable regardless of when it runs. The settlement instruction's
+    // asOf must also be <= AS_OF for the reconciliation reader to pick it up.
+    const dayBeforeAsOf = "2026-05-15"; // one day before AS_OF = "2026-05-16"
 
     store.append(
       makeSettlementInstructionReceived({
-        asOf: yesterdayStr,
+        asOf: dayBeforeAsOf,
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
           tradeId: "TRADE-005",
           legKind: "receive",
-          settlementDate: yesterdayStr,
+          settlementDate: dayBeforeAsOf,
           currency: "ZAR",
           netCash: 200000,
           correspondent: { name: "Standard Bank", bic: "SBZAZAJJ" },
