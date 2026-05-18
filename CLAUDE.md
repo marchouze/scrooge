@@ -72,6 +72,22 @@ Every Scrooge-coordinated agent dispatch follows these rules. Dispatch prompts c
 - **One dispatch path per scope.** Never run `spawn_task` chip AND background `Agent` for the same scope — that produces duplicate PRs. Pick one.
 - **Concurrency on shared files.** Parallel dispatches that touch shared infrastructure files (handlers-metadata.ts, handler-callables.ts, package.json) collide deterministically. Resolve manually + run `recon:runtime-handler-sync` before pushing.
 
+#### Decision authority routing
+
+Every `Decision(approved)` event must be attributed to the seat that holds natural authority for that category. The table below is the canonical routing standard (authority: Owen, operationalised 2026-05-18 per brief `brief:owen:operationalise-decision-authority-routing-5-gove:2026-05-18`). A future `recon:decision-authority-routing` pipeline will assert these attributions and surface violations as findings.
+
+| Category | Typical authority | CEO escalation trigger |
+|---|---|---|
+| Finance close, BA returns, AFS, IFRS accounting policy, tax submissions | CFO | Material restatement; going-concern; capital plan breach |
+| CAB sign-off, SLO calibration, DR/BC, capacity-spend, incident triage | COO | Regulatory-reportable outage; RAS Tier-1 breach; major hire |
+| Threat-model gate, SBOM, key-ceremony, vendor-security, JS-2 programme | CISO | Regulator-reportable cyber; strategic deployment refusal; quorum failure |
+| Audit findings, audit plan, third-line opinion, QAIP, investigations | CAE | Material fraud → AC pathway (not CEO) |
+| RMCP attestation, STR/CTR/TPR filing, obligation interpretation, EDD sign-off | CCO | Sanctions true-positive; material exposure; PA/FIC notification |
+| Strategic decisions crossing RAS or Board thresholds | CEO | All seats escalate here |
+| Engineering build decisions (substrate, platform, schema) | CEO (build phase) | Build-phase norm until governance-seat authorities active |
+| Risk-appetite calibration | CRO | Already active; no gap |
+| Governance / procedure register | CoSec | Already active; no gap |
+
 ### Session delegation
 
 Marc's explicit in-session approval ("y", "yes", or equivalent clear confirmation) of a Scrooge-asked question constitutes CEO authorization. Scrooge must, in the same turn:
