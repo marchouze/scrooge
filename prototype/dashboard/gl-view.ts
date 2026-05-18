@@ -12,9 +12,9 @@
 // Authority: General-ledger substrate (Devon COO, engineering);
 //            GL posting engine (Bea CFO, governance).
 
-import { clock } from "../platform/composition";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
+import { clock } from "../platform/composition";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import type { EventStore } from "../platform/event-store/store";
