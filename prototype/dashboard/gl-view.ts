@@ -2,20 +2,24 @@
 //
 // Registers the /api/gl/* endpoints for the General Ledger dashboard (/gl).
 //
-// Four endpoints:
-//   GET  /api/gl/entries       — ledger entries, filterable by account / date range.
-//   GET  /api/gl/trial-balance — trial balance at asOf.
-//   GET  /api/gl/accounts      — per-account balances at asOf.
-//   POST /api/gl/journal       — post a manual journal entry (emits ManualJournalEntry event).
+// Endpoints:
+//   GET  /api/gl/entries            — ledger entries, filterable by account / date range.
+//   GET  /api/gl/trial-balance      — trial balance at asOf.
+//   GET  /api/gl/accounts           — per-account balances at asOf.
+//   POST /api/gl/journal            — post a manual journal entry (emits ManualJournalEntry event).
+//   POST /api/gl/run-posting-engine — run the universal GL posting engine.
 //
-// Authority: General-ledger substrate (Devon COO, engineering).
-// Authors: Devon (COO, engineering)
+// Authority: General-ledger substrate (Devon COO, engineering);
+//            GL posting engine (Bea CFO, governance).
 
+import { clock } from "../platform/composition";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import type { EventStore } from "../platform/event-store/store";
+import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
+import type { AgentRunContext } from "../runtime/types";
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -141,7 +145,6 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
     return jsonResponse({ error: "legs must be an array with at least 2 entries" }, 400);
   }
 
-  // Validate each leg
   for (const leg of body.legs) {
     const l = leg as Partial<JournalLeg>;
     if (
@@ -168,7 +171,6 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
 
   const legs = body.legs as JournalLeg[];
 
-  // Validate balanced — debits must equal credits per currency
   const totals = new Map<string, { debit: number; credit: number }>();
   for (const leg of legs) {
     const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
@@ -179,9 +181,7 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
   for (const [ccy, t] of totals.entries()) {
     if (t.debit !== t.credit) {
       return jsonResponse(
-        {
-          error: `Unbalanced legs in currency ${ccy}: debits=${t.debit} credits=${t.credit}`,
-        },
+        { error: `Unbalanced legs in currency ${ccy}: debits=${t.debit} credits=${t.credit}` },
         400,
       );
     }
@@ -193,7 +193,6 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
     ? (body.citations as string[]).filter((c) => typeof c === "string")
     : ["[citation: TBC]"];
 
-  // Principle 1: emit event before returning.
   const event = makeManualJournalEntry({
     asOf: postedAt,
     entity: "BANK-ZA-001",
@@ -216,15 +215,47 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
 }
 
 // ---------------------------------------------------------------------------
+// POST /api/gl/run-posting-engine
+// ---------------------------------------------------------------------------
+
+async function handleRunPostingEngine(): Promise<Response> {
+  try {
+    const asOf = clock.now();
+    const ctx: AgentRunContext = {
+      agent: "Bea",
+      trigger: { kind: "on-request", id: "gl-posting-engine-dashboard" },
+      asOf,
+      repoRoot: process.cwd(),
+      ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+      dryRun: false,
+    };
+
+    const result = await beaGlPostingEngine(ctx);
+    const errors = (result as { errors?: string[] }).errors ?? [];
+
+    return jsonResponse({
+      ok: result.ok,
+      eventsEmitted: result.eventsEmitted,
+      skipped: 0,
+      errors,
+      summary: result.summary,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return jsonResponse(
+      { ok: false, eventsEmitted: 0, skipped: 0, errors: [message], summary: `Error: ${message}` },
+      500,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // registerGlRoutes
 // ---------------------------------------------------------------------------
 
 /**
  * Register GL API routes. Call from server.ts before the catch-all handler.
  * Returns a Response if the URL is handled, null otherwise.
- *
- * The POST /api/gl/journal route is async (reads request body), so the
- * return type is Promise<Response | null>.
  */
 export async function registerGlRoutes(
   pathname: string,
@@ -249,6 +280,10 @@ export async function registerGlRoutes(
 
   if (pathname === "/api/gl/journal" && method === "POST") {
     return handleGlPostJournal(req, eventStore);
+  }
+
+  if (pathname === "/api/gl/run-posting-engine" && method === "POST") {
+    return handleRunPostingEngine();
   }
 
   return null;

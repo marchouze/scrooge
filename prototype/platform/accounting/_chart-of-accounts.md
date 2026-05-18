@@ -389,6 +389,269 @@ citations:
 
 ---
 
+## Payment processing accounts — added 2026-05-18
+
+**Authority:** PROC-PAY-RBH-01 (three-way reconciliation procedure); D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+**Approved by:** Bea (Accounting & financial reporting engineer, engineering)
+
+### ACC-1200-001 — Nostro — ZAR correspondent
+
+```yaml
+id: ACC-1200-001
+name: "Nostro — ZAR correspondent"
+category: asset-cash
+side: debit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Cash and balances at banks (Item 1 / Item 2)"
+    side: positive
+    note: "ZAR nostro at correspondent bank for payment settlement."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.2 — amortised-cost classification (held-to-collect, SPPI)"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+    note: "Correspondent banking arrangement for payment settlement."
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§3 — nostro account mapping"
+```
+
+### ACC-1200-002 — Nostro — USD correspondent
+
+```yaml
+id: ACC-1200-002
+name: "Nostro — USD correspondent"
+category: asset-cash
+side: debit
+ifrsClassification: amortised-cost
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Cash and balances at banks (Item 1 / Item 2)"
+    side: positive
+    note: "USD nostro at correspondent bank. IAS 21 §28 retranslation at closing rate."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.2 — amortised-cost classification"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate monetary item at closing rate"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§3 — nostro account mapping"
+```
+
+### ACC-1200-003 — Nostro — EUR correspondent
+
+```yaml
+id: ACC-1200-003
+name: "Nostro — EUR correspondent"
+category: asset-cash
+side: debit
+ifrsClassification: amortised-cost
+currencies: [EUR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Cash and balances at banks (Item 1 / Item 2)"
+    side: positive
+    note: "EUR nostro at correspondent bank."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.1.2 — amortised-cost classification"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate monetary item at closing rate"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§3 — nostro account mapping"
+```
+
+### ACC-2200-001 — Customer Payables — ZAR
+
+```yaml
+id: ACC-2200-001
+name: "Customer Payables — ZAR"
+category: liability-payable
+side: credit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other liabilities (Item 20 or similar)"
+    side: positive
+    note: "ZAR customer payment obligations — discharged on settlement confirmation."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.1.1 — initial recognition of financial liabilities"
+  - type: ifrs
+    ifrsRef: "IAS 32 §11 — financial liability definition"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§4 — customer payable recognition"
+```
+
+### ACC-2200-002 — Customer Payables — USD
+
+```yaml
+id: ACC-2200-002
+name: "Customer Payables — USD"
+category: liability-payable
+side: credit
+ifrsClassification: amortised-cost
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other liabilities (Item 20 or similar)"
+    side: positive
+    note: "USD customer payment obligations."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.1.1 — initial recognition of financial liabilities"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate at closing rate"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§4 — customer payable recognition"
+```
+
+### ACC-3100-001 — Payment Suspense — ZAR
+
+```yaml
+id: ACC-3100-001
+name: "Payment Suspense — ZAR"
+category: liability-suspense
+side: credit
+ifrsClassification: n-a
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other liabilities / suspense (Item 20 or similar)"
+    side: positive
+    note: "ZAR payment suspense — bridging account between payment initiation and settlement. Must net to zero at period-end."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §B3.1.3 — trade-date settlement mechanics; suspense bridges initiation and settlement"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§5 — suspense account mechanics"
+```
+
+### ACC-3100-002 — Payment Suspense — USD
+
+```yaml
+id: ACC-3100-002
+name: "Payment Suspense — USD"
+category: liability-suspense
+side: credit
+ifrsClassification: n-a
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other liabilities / suspense"
+    side: positive
+    note: "USD payment suspense. Must net to zero at period-end."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §B3.1.3 — settlement suspense mechanics"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§5 — suspense account mechanics"
+```
+
+### ACC-4100-001 — Settlement Receivable — ZAR
+
+```yaml
+id: ACC-4100-001
+name: "Settlement Receivable — ZAR"
+category: asset-receivable
+side: debit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other assets / receivables (Item 5 or similar)"
+    side: positive
+    note: "ZAR settlement receivable — recognised at instruction date (IFRS 9 §3.1.1). Cleared when funds received."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.1.1 — initial recognition at trade date"
+  - type: ifrs
+    ifrsRef: "IAS 32 §11 — financial asset definition (contractual right to receive cash)"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§6 — settlement receivable recognition"
+```
+
+### ACC-4100-002 — Settlement Receivable — USD
+
+```yaml
+id: ACC-4100-002
+name: "Settlement Receivable — USD"
+category: asset-receivable
+side: debit
+ifrsClassification: amortised-cost
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other assets / receivables"
+    side: positive
+    note: "USD settlement receivable. IAS 21 §28 retranslation at closing rate."
+version: v1.0
+status: in-force
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §3.1.1 — initial recognition at trade date"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate at closing rate"
+  - type: statute
+    statuteRef: "Banks Act 94 of 1990"
+  - type: policy
+    policyRef: "PROC-PAY-RBH-01"
+    section: "§6 — settlement receivable recognition"
+```
+
+---
+
 ## Coverage update (post-FX-Spot slice)
 
 | GL family | In v1 | Gap (target slice) |

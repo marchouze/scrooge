@@ -182,10 +182,13 @@ export function makeFxSettlementConfirmed(args: {
 // construct type-safe events.
 //
 // postingType discriminator:
-//   "trade-booking"  — FxTradeExecuted source; initial recognition
-//   "revaluation"    — FxPositionRevalued source; FVTPL P&L movement
-//   "settlement"     — FxSettlementConfirmed source; derecognition + nostro
-//   "reversal"       — period-open reversal of a prior accrual/revaluation
+//   "trade-booking"         — FxTradeExecuted source; initial recognition
+//   "revaluation"           — FxPositionRevalued source; FVTPL P&L movement
+//   "settlement"            — FxSettlementConfirmed source; derecognition + nostro
+//   "reversal"              — period-open reversal of a prior accrual/revaluation
+//   "payment-initiation"    — PaymentInitiated source; suspense DR / nostro CR
+//   "payment-settlement"    — PaymentSettled source; payable DR / suspense CR
+//   "settlement-instruction"— SettlementInstructionReceived; receivable DR / suspense CR
 // ---------------------------------------------------------------------------
 
 export const subLedgerLegSchema = z.object({
@@ -209,7 +212,15 @@ export const subLedgerPostingEmittedPayloadSchema = z
   .object({
     /** Event ID of the source business event that triggered this posting. */
     sourceEventId: z.string().min(1),
-    postingType: z.enum(["trade-booking", "revaluation", "settlement", "reversal"]),
+    postingType: z.enum([
+      "trade-booking",
+      "revaluation",
+      "settlement",
+      "reversal",
+      "payment-initiation",
+      "payment-settlement",
+      "settlement-instruction",
+    ]),
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */
     postedAt: z.string().min(1),

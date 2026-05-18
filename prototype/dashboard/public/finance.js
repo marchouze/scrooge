@@ -258,6 +258,91 @@
     }
   }
 
+  // ── Run Posting Engine button ─────────────────────────────────────────────
+  function showEngineBanner(result) {
+    // Remove any previous banner
+    const prev = document.getElementById("gl-engine-banner");
+    if (prev) prev.remove();
+
+    const banner = document.createElement("div");
+    banner.id = "gl-engine-banner";
+    const isOk = result.ok;
+    const bgColor = isOk ? "var(--semantic-success-bg, #d1fae5)" : "var(--semantic-error-bg, #fee2e2)";
+    const textColor = isOk ? "var(--semantic-success, #065f46)" : "var(--semantic-error, #991b1b)";
+    banner.style.cssText = [
+      `background:${bgColor}`,
+      `color:${textColor}`,
+      "padding:var(--space-3) var(--space-4)",
+      "border-radius:var(--radius-sm)",
+      "margin:var(--space-4) 0",
+      "font-size:var(--type-small)",
+      "font-weight:var(--weight-medium)",
+      "display:flex",
+      "align-items:center",
+      "gap:var(--space-3)",
+    ].join(";");
+
+    const icon = isOk ? "✓" : "✗";
+    const summary = result.summary || (isOk ? `Posted ${result.eventsEmitted} entries` : "Engine error");
+    banner.textContent = `${icon} ${summary}`;
+
+    if (!isOk && result.errors && result.errors.length > 0) {
+      const errList = document.createElement("ul");
+      errList.style.cssText = "margin:var(--space-2) 0 0 var(--space-4);list-style:disc";
+      for (const err of result.errors) {
+        const li = document.createElement("li");
+        li.textContent = err;
+        errList.appendChild(li);
+      }
+      const wrap = document.createElement("div");
+      wrap.appendChild(banner);
+      wrap.appendChild(errList);
+
+      const main = document.getElementById("shell-main");
+      if (main) {
+        const firstSection = main.querySelector("section");
+        if (firstSection) main.insertBefore(wrap, firstSection);
+        else main.prepend(wrap);
+      }
+      setTimeout(() => wrap.remove(), 15_000);
+      return;
+    }
+
+    const main = document.getElementById("shell-main");
+    if (main) {
+      const firstSection = main.querySelector("section");
+      if (firstSection) main.insertBefore(banner, firstSection);
+      else main.prepend(banner);
+    }
+    setTimeout(() => banner.remove(), 8_000);
+  }
+
+  function wireRunEngineButton() {
+    const btn = document.getElementById("run-engine-btn");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "Running…";
+      try {
+        const res = await fetch("/api/gl/run-posting-engine", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = res.ok ? await res.json() : { ok: false, eventsEmitted: 0, skipped: 0, errors: [`HTTP ${res.status}`], summary: `HTTP error ${res.status}` };
+        showEngineBanner(data);
+        // Refresh page data after a successful run
+        if (data.ok) {
+          load().catch((e) => console.warn("[finance] post-engine refresh failed", e));
+        }
+      } catch (e) {
+        showEngineBanner({ ok: false, eventsEmitted: 0, skipped: 0, errors: [e.message], summary: `Network error: ${e.message}` });
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Run Posting Engine";
+      }
+    });
+  }
+
   window.bankFinance = { load };
 
   if (typeof window.registerPagePoll === "function") {
@@ -267,8 +352,9 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", load);
+    document.addEventListener("DOMContentLoaded", () => { load(); wireRunEngineButton(); });
   } else {
     load();
+    wireRunEngineButton();
   }
 })();
