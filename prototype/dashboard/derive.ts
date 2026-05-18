@@ -698,23 +698,18 @@ function reduceInFlight(
     if (!prev || prev.asOf <= r.asOf) registrationMap.set(r.workstreamId, r);
   }
 
-  const baseIds = new Set(base.map((b) => b.id));
+  // Any workstreamId present in the event registry is canonical — the
+  // static seed entry for the same ID is suppressed to avoid duplicates.
+  // Event data (title, owner, status) wins over the curated carry-forward.
+  const registeredIds = new Set(registrationMap.keys());
 
-  const folded = base.map((item) => {
+  const folded: InFlightItem[] = [];
+  for (const item of base) {
+    // Suppress seed entries whose ID is covered by a WorkstreamRegistered event.
+    // The event-derived item is emitted below in `newFromRegistrations`.
+    if (registeredIds.has(item.id)) continue;
+
     let next: InFlightItem = item;
-    const reg = registrationMap.get(item.id);
-    if (reg) {
-      // Registered status overlays the base description; the curated seed
-      // is the human-readable carry-forward, the event payload is the
-      // authoritative latest.
-      next = {
-        ...next,
-        what: reg.title || next.what,
-        owner: reg.owner || next.owner,
-        active: reg.status !== "blocked",
-        ...(reg.scopedBy ? { briefDoc: reg.scopedBy } : {}),
-      };
-    }
     const eventStart = startMap.get(item.id);
     if (eventStart) {
       next = { ...next, active: true, startedAt: eventStart.slice(0, 10) };
@@ -729,14 +724,13 @@ function reduceInFlight(
         ...(completion.outcomeNote ? { outcomeNote: completion.outcomeNote } : {}),
       };
     }
-    return next;
-  });
+    folded.push(next);
+  }
 
-  // Registrations that aren't in the curated base appear here as new
-  // inFlight items. Started/completed events for them apply normally.
+  // All registered workstreams appear here as canonical items, whether or not
+  // a matching seed entry existed. Started/completed events apply normally.
   const newFromRegistrations: InFlightItem[] = [];
   for (const [id, reg] of registrationMap) {
-    if (baseIds.has(id)) continue;
     const eventStart = startMap.get(id);
     const completion = completionMap.get(id);
     const item: InFlightItem = {

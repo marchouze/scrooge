@@ -465,6 +465,75 @@ describe("deriveState — event reductions", () => {
     expect(b?.completedAt).toBe("2026-05-06");
     expect(b?.outcomeNote).toBe("latest");
   });
+
+  it("WorkstreamRegistered event wins over curated seed — seed entry is suppressed, no duplicate", () => {
+    // The fixture curated seed has WS-A and WS-B. Emitting a WorkstreamRegistered
+    // for WS-A means the event-derived entry replaces the seed entry — there
+    // must be exactly one WS-A item, with event-authoritative title and owner.
+    const f = makeFixture();
+    const reg = {
+      workstreamId: "WS-A",
+      title: "Workstream A (event-authoritative title)",
+      owner: "Atlas (event owner)",
+      status: "in-flight" as const,
+      summary: "Event summary for WS-A.",
+      asOf: "2026-05-10T08:00:00.000Z",
+    };
+    const state = deriveState({
+      sources: f.sources,
+      events: {
+        workstreamStarts: () => [],
+        workstreamCompletions: () => [],
+        workstreamRegistrations: () => [reg],
+        agentEscalations: () => [],
+        auditFindings: () => [],
+        decisionComments: () => [],
+      },
+    });
+    // Exactly one WS-A item — seed suppressed, event-derived item in its place.
+    const wsA = state.inFlight.filter((i) => i.id === "WS-A");
+    expect(wsA).toHaveLength(1);
+    expect(wsA[0]?.what).toBe("Workstream A (event-authoritative title)");
+    expect(wsA[0]?.owner).toBe("Atlas (event owner)");
+    expect(wsA[0]?.active).toBe(true); // status "in-flight" → active
+
+    // WS-B has no registration event — it is still present from the seed.
+    const wsB = state.inFlight.filter((i) => i.id === "WS-B");
+    expect(wsB).toHaveLength(1);
+    expect(wsB[0]?.what).toBe("Workstream B"); // unchanged from seed
+  });
+
+  it("WorkstreamRegistered event for a workstream not in the seed creates a new inFlight item", () => {
+    const f = makeFixture();
+    const reg = {
+      workstreamId: "WS-NEW-EVENT-ONLY",
+      title: "New event-only workstream",
+      owner: "Anya",
+      status: "planned" as const,
+      summary: "Brand new from events.",
+      asOf: "2026-05-10T08:00:00.000Z",
+    };
+    const state = deriveState({
+      sources: f.sources,
+      events: {
+        workstreamStarts: () => [],
+        workstreamCompletions: () => [],
+        workstreamRegistrations: () => [reg],
+        agentEscalations: () => [],
+        auditFindings: () => [],
+        decisionComments: () => [],
+      },
+    });
+    const wsNew = state.inFlight.filter((i) => i.id === "WS-NEW-EVENT-ONLY");
+    expect(wsNew).toHaveLength(1);
+    expect(wsNew[0]?.what).toBe("New event-only workstream");
+    expect(wsNew[0]?.owner).toBe("Anya");
+    // planned → active=true (not blocked and not completed)
+    expect(wsNew[0]?.active).toBe(true);
+    // Seed entries WS-A and WS-B are still present.
+    expect(state.inFlight.some((i) => i.id === "WS-A")).toBe(true);
+    expect(state.inFlight.some((i) => i.id === "WS-B")).toBe(true);
+  });
 });
 
 describe("deriveState — per-agent mini-dashboards", () => {
