@@ -10,7 +10,6 @@
 
 import { randomUUID } from "node:crypto";
 
-import type { EventStore } from "../event-store/store";
 import { nowUtc } from "../core/types";
 import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
 import { generateSimTrade } from "./fx-sim-generator";

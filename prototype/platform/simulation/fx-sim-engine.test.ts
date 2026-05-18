@@ -5,7 +5,9 @@
 //
 // Author: Devon (Chief Operating Officer, engineering)
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
+
+const vi = { fn: mock, spyOn, useFakeTimers: () => {}, useRealTimers: () => {} };
 
 import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
 import { generateSimTrade } from "./fx-sim-generator";
