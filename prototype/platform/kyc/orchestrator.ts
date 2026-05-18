@@ -38,31 +38,31 @@
 // Authors: Atlas (Core banking platform architect, engineering) +
 //   Mira (Compliance / RegTech engineer, engineering).
 
+import { eventStore } from "../composition";
 import { newEventId, nowUtc } from "../core/types";
-import { eventStore, projector } from "../composition";
-import type { Actor } from "../event-store/types";
+import { makeClientCandidateRegistered } from "../event-store/event-types/aml-popia-extended";
 import {
-  makeKYCIdentityCollected,
-  makeKYCIdentityVerified,
-  makeKYCIdentityVerificationFailed,
-  makeKYCSanctionsPEPScreened,
-  makeKYCUBOResolved,
-  makeKYCRiskRated,
-  makeKYCEDDInitiated,
-  makeKYCEDDCompleted,
-  makeKYCDecisionMade,
   makeClientAccepted,
   makeClientRejected,
+  makeKYCDecisionMade,
+  makeKYCEDDCompleted,
+  makeKYCEDDInitiated,
+  makeKYCIdentityCollected,
+  makeKYCIdentityVerificationFailed,
+  makeKYCIdentityVerified,
+  makeKYCRiskRated,
+  makeKYCSanctionsPEPScreened,
+  makeKYCUBOResolved,
   makeLawfulProcessingRegistered,
 } from "../event-store/event-types/kyc";
-import { makeClientCandidateRegistered } from "../event-store/event-types/aml-popia-extended";
+import type { Actor } from "../event-store/types";
+// clientsProjection and kycChecksProjection are used by consumers (tests, dashboard).
+// They're exported from their own modules; no imports needed here.
 import { CIPCCompanyAdapter } from "./adapters/cipc-company";
-import { ScreeningAdapter } from "./adapters/screening-adapter";
-import { PEPAdverseMediaAdapter } from "./adapters/pep-adverse-media";
 import { DHAIdentityAdapter } from "./adapters/dha-identity";
+import { PEPAdverseMediaAdapter } from "./adapters/pep-adverse-media";
+import { ScreeningAdapter } from "./adapters/screening-adapter";
 import { computeRiskScore } from "./risk-rating-engine";
-import { kycChecksProjection } from "../projections/kyc/kyc-checks-projection";
-import { clientsProjection } from "../projections/kyc/clients-projection";
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -266,10 +266,7 @@ function deriveState(candidateId: string): CandidateState | null {
 // Step implementations
 // ---------------------------------------------------------------------------
 
-async function stepIdentityCollected(
-  candidateId: string,
-  input: NewCandidateInput,
-): Promise<void> {
+async function stepIdentityCollected(candidateId: string, input: NewCandidateInput): Promise<void> {
   const asOf = nowUtc();
   const evt = makeKYCIdentityCollected({
     asOf,
@@ -317,7 +314,10 @@ async function stepIdentityVerified(
 
   if (!cipcResult.result.active) {
     // Identity verification failed.
-    const reasonMap: Record<string, "not-found" | "expired" | "name-mismatch" | "adapter-unavailable"> = {
+    const reasonMap: Record<
+      string,
+      "not-found" | "expired" | "name-mismatch" | "adapter-unavailable"
+    > = {
       deregistered: "not-found",
       "name-mismatch": "name-mismatch",
       "not-found": "not-found",
@@ -481,7 +481,11 @@ async function stepUBOResolved(
   for (const ubo of input.ubos) {
     // Check for opaque structure indicators.
     const basisLower = ubo.basisOfControl.toLowerCase();
-    if (basisLower.includes("nominee") || basisLower.includes("opaque") || basisLower.includes("trust")) {
+    if (
+      basisLower.includes("nominee") ||
+      basisLower.includes("opaque") ||
+      basisLower.includes("trust")
+    ) {
       opaqueStructure = true;
     }
 
@@ -524,16 +528,21 @@ async function stepUBOResolved(
     citations: KYC_CITATIONS,
     payload: {
       candidateId,
-      ubo_chain: uboChain.length > 0 ? uboChain : [{
-        name: "SOLE OWNER",
-        id_number: "0000000000000",
-        nationality: "ZA",
-        residence_country: "ZA",
-        ownership_pct: 100,
-        basis_of_control: "direct-ownership",
-        dha_verified: false,
-        pep_flag: false,
-      }],
+      ubo_chain:
+        uboChain.length > 0
+          ? uboChain
+          : [
+              {
+                name: "SOLE OWNER",
+                id_number: "0000000000000",
+                nationality: "ZA",
+                residence_country: "ZA",
+                ownership_pct: 100,
+                basis_of_control: "direct-ownership",
+                dha_verified: false,
+                pep_flag: false,
+              },
+            ],
       ubo_opaque_structure: opaqueStructure,
       resolvedAt: asOf,
     },
@@ -665,11 +674,7 @@ async function stepDecisionMade(
       payload: {
         clientId,
         lawful_basis: "legal-obligation",
-        processing_purposes: [
-          "kyc-cdd",
-          "aml-monitoring",
-          "regulatory-reporting",
-        ],
+        processing_purposes: ["kyc-cdd", "aml-monitoring", "regulatory-reporting"],
         registeredAt: asOf,
       },
     });
@@ -729,19 +734,14 @@ export class KYCOrchestrator {
     }
 
     // Already terminal or waiting for human — return as-is.
-    if (
-      state.status === "accepted" ||
-      state.status === "rejected" ||
-      state.requiresHuman
-    ) {
+    if (state.status === "accepted" || state.status === "rejected" || state.requiresHuman) {
       return state;
     }
 
     const input = candidateInputRegistry.get(candidateId);
     if (!input) {
       throw new Error(
-        `KYCOrchestrator: candidate ${candidateId} input not found in registry — ` +
-          "startOnboarding must be called in the same process session before advanceStep",
+        `KYCOrchestrator: candidate ${candidateId} input not found in registry — startOnboarding must be called in the same process session before advanceStep`,
       );
     }
 
@@ -1009,9 +1009,7 @@ export class KYCOrchestrator {
       !state.requiresHuman &&
       automatedSteps.includes(state.currentStep)
     ) {
-      console.log(
-        `  [KYC] ${candidateId.slice(0, 8)}... step: ${state.currentStep}`,
-      );
+      console.log(`  [KYC] ${candidateId.slice(0, 8)}... step: ${state.currentStep}`);
       state = await this.advanceStep(candidateId);
     }
 

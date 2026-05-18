@@ -49,9 +49,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-001234",
     jurisdiction: "ZA",
     registeredAddress: "100 Main Street, Johannesburg, 2001",
-    directors: [
-      { name: "SMITH Thomas Andrew", idNumber: "8001015009087", role: "Director" },
-    ],
+    directors: [{ name: "SMITH Thomas Andrew", idNumber: "8001015009087", role: "Director" }],
     ubos: [
       {
         name: "SMITH Thomas Andrew",
@@ -61,9 +59,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "direct-ownership",
       },
     ],
-    documentHashes: [
-      "sha256:abc123clean000000000000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123clean000000000000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 
@@ -77,9 +73,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-005678",
     jurisdiction: "ZA",
     registeredAddress: "200 Sandton Drive, Sandton, 2196",
-    directors: [
-      { name: "JONES Peter", idNumber: "7501015028083", role: "Managing Director" },
-    ],
+    directors: [{ name: "JONES Peter", idNumber: "7501015028083", role: "Managing Director" }],
     ubos: [
       {
         name: "LINKED Mokoena James",
@@ -96,9 +90,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "direct-ownership",
       },
     ],
-    documentHashes: [
-      "sha256:abc123peplinked0000000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123peplinked0000000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 
@@ -112,9 +104,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-009900",
     jurisdiction: "ZA",
     registeredAddress: "999 Unknown Road, Cape Town, 8001",
-    directors: [
-      { name: "UNKNOWN Entity", idNumber: "6001015026081", role: "Director" },
-    ],
+    directors: [{ name: "UNKNOWN Entity", idNumber: "6001015026081", role: "Director" }],
     ubos: [
       {
         name: "UNKNOWN Entity",
@@ -124,9 +114,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "direct-ownership",
       },
     ],
-    documentHashes: [
-      "sha256:abc123sanctionexact000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123sanctionexact000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 
@@ -140,9 +128,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-007777",
     jurisdiction: "ZA",
     registeredAddress: "77 Grey Street, Durban, 4001",
-    directors: [
-      { name: "PATEL Arjun", idNumber: "8201025036081", role: "Director" },
-    ],
+    directors: [{ name: "PATEL Arjun", idNumber: "8201025036081", role: "Director" }],
     ubos: [
       {
         name: "PATEL Arjun",
@@ -152,9 +138,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "direct-ownership",
       },
     ],
-    documentHashes: [
-      "sha256:abc123sanctionfuzzy000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123sanctionfuzzy000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 
@@ -168,9 +152,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-003344",
     jurisdiction: "NG",
     registeredAddress: "10 Victoria Island, Lagos, NG",
-    directors: [
-      { name: "OKONKWO Chidi Emmanuel", idNumber: "8505155026081", role: "CEO" },
-    ],
+    directors: [{ name: "OKONKWO Chidi Emmanuel", idNumber: "8505155026081", role: "CEO" }],
     ubos: [
       {
         name: "OKONKWO Chidi Emmanuel",
@@ -180,9 +162,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "direct-ownership",
       },
     ],
-    documentHashes: [
-      "sha256:abc123highriskjuris000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123highriskjuris000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 
@@ -196,9 +176,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-IT-0055",
     jurisdiction: "ZA",
     registeredAddress: "1 Trust Avenue, Stellenbosch, 7600",
-    directors: [
-      { name: "VAN DER BERG Pieter", idNumber: "7801015026081", role: "Trustee" },
-    ],
+    directors: [{ name: "VAN DER BERG Pieter", idNumber: "7801015026081", role: "Trustee" }],
     ubos: [
       {
         name: "VAN DER BERG Pieter",
@@ -215,9 +193,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "beneficial interest via offshore trust",
       },
     ],
-    documentHashes: [
-      "sha256:abc123complexubo000000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123complexubo000000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 
@@ -231,9 +207,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
     registrationNumber: "2020-008899",
     jurisdiction: "ZA",
     registeredAddress: "33 Commerce Street, Pretoria, 0002",
-    directors: [
-      { name: "DLAMINI Sipho Bongani", idNumber: "8101015026089", role: "CEO" },
-    ],
+    directors: [{ name: "DLAMINI Sipho Bongani", idNumber: "8101015026089", role: "CEO" }],
     ubos: [
       {
         name: "DLAMINI Sipho Bongani",
@@ -243,9 +217,7 @@ const SCENARIOS: Record<ScenarioName, () => NewCandidateInput> = {
         basisOfControl: "direct-ownership",
       },
     ],
-    documentHashes: [
-      "sha256:abc123creditadverse000000000000000000000000000000000000000000001",
-    ],
+    documentHashes: ["sha256:abc123creditadverse000000000000000000000000000000000000000000001"],
     submittedBy: "mira@bank.test",
   }),
 };
@@ -270,7 +242,7 @@ function parseArgs(): CliArgs {
     if (args[i] === "--scenario" && i + 1 < args.length) {
       scenario = args[++i] as ScenarioName;
     } else if (args[i] === "--count" && i + 1 < args.length) {
-      count = parseInt(args[++i], 10);
+      count = Number.parseInt(args[++i] ?? "1", 10);
     } else if (args[i] === "--run-full") {
       runFull = true;
     }
@@ -314,16 +286,16 @@ function printTable(
   const widths = headers.map((h) => h.length);
 
   for (const row of rows) {
-    widths[0] = Math.max(widths[0]!, row.candidateId.length);
-    widths[1] = Math.max(widths[1]!, row.entityName.length);
-    widths[2] = Math.max(widths[2]!, row.scenario.length);
-    widths[3] = Math.max(widths[3]!, row.currentStep.length);
-    widths[4] = Math.max(widths[4]!, row.status.length);
-    widths[5] = Math.max(widths[5]!, row.riskBand.length);
+    widths[0] = Math.max(widths[0] ?? 0, row.candidateId.length);
+    widths[1] = Math.max(widths[1] ?? 0, row.entityName.length);
+    widths[2] = Math.max(widths[2] ?? 0, row.scenario.length);
+    widths[3] = Math.max(widths[3] ?? 0, row.currentStep.length);
+    widths[4] = Math.max(widths[4] ?? 0, row.status.length);
+    widths[5] = Math.max(widths[5] ?? 0, row.riskBand.length);
   }
 
   const sep = widths.map((w) => "-".repeat(w)).join("-+-");
-  const header = headers.map((h, i) => h.padEnd(widths[i]!)).join(" | ");
+  const header = headers.map((h, i) => h.padEnd(widths[i] ?? 0)).join(" | ");
 
   console.log();
   console.log(header);
@@ -337,7 +309,7 @@ function printTable(
       row.status,
       row.riskBand,
     ];
-    console.log(cols.map((c, i) => c.padEnd(widths[i]!)).join(" | "));
+    console.log(cols.map((c, i) => c.padEnd(widths[i] ?? 0)).join(" | "));
   }
   console.log();
 }
@@ -379,9 +351,7 @@ async function main(): Promise<void> {
       state = await orchestrator.runFull(candidateId);
 
       if (state.requiresHuman) {
-        console.log(
-          `  ⚠  Human gate — reason: ${state.humanGateReason ?? "review-required"}`,
-        );
+        console.log(`  ⚠  Human gate — reason: ${state.humanGateReason ?? "review-required"}`);
         console.log(
           `     To accept: orchestrator.recordHumanDecision('${candidateId}', 'accept', 'mlro@bank.test')`,
         );
