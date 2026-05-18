@@ -78,6 +78,8 @@ export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
 export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
+// D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
+export { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -101,6 +103,7 @@ import {
   RMS_EVENT_TYPES,
 } from "./governance";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
+import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
@@ -169,6 +172,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY,
+  // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
+  // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
+  ...IRD_ACCOUNTING_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
