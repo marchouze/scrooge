@@ -70,6 +70,8 @@ export { MISSING_EVENT_TYPES } from "./missing-types";
 export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 // M3 Slice 9 — conduct events (FSCA/FSR Act market conduct framework).
 export { CONDUCT_EVENT_TYPES } from "./conduct";
+// M3 Slice 10 — counterparty-exposure events (large-exposure framework).
+export { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -77,6 +79,7 @@ export { CONDUCT_EVENT_TYPES } from "./conduct";
 // ---------------------------------------------------------------------------
 
 import { CONDUCT_EVENT_TYPES } from "./conduct";
+import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -145,6 +148,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // M3 Slice 9 — conduct events. Placed after MISSING_EVENT_TYPES so that
   // typed schema rows override any placeholder rows from missing-types.ts.
   ...CONDUCT_EVENT_TYPES,
+  // M3 Slice 10 — counterparty-exposure events. Placed after MISSING_EVENT_TYPES
+  // so that typed schema rows override any placeholder rows.
+  ...COUNTERPARTY_EXPOSURE_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
