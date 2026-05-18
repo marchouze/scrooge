@@ -75,6 +75,7 @@ import {
   rebuildCorrespondentRouting,
   rebuildLimitUtilisation,
 } from "../platform/projections/markets";
+import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
@@ -87,6 +88,7 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
+import { registerFxSimRoutes } from "./fx-sim-view";
 import { registerGlRoutes } from "./gl-view";
 import { registerGraphRoutes } from "./graph-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
@@ -175,6 +177,10 @@ function ensureRuntimeDir(path: string): void {
 }
 
 let cachedState: DashboardState = bootDerive();
+
+// FX market-making simulation engine — module-level singleton.
+// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
+const fxSimEngine = new FxSimEngine(eventStore);
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
@@ -2059,6 +2065,22 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/gl") {
       return serveStatic("/gl.html");
+    }
+    // FX market-making simulation engine routes.
+    // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
+    {
+      const simResponse = await registerFxSimRoutes(
+        url.pathname,
+        req.method,
+        url.searchParams,
+        req,
+        fxSimEngine,
+      );
+      if (simResponse) return simResponse;
+    }
+    // FX simulator control panel page.
+    if (req.method === "GET" && url.pathname === "/fx-sim") {
+      return serveStatic("/fx-sim.html");
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname);
