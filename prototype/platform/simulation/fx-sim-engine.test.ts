@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:te
 
 const vi = { fn: mock, spyOn, useFakeTimers: () => {}, useRealTimers: () => {} };
 
+import type { EventStore } from "../event-store/store";
 import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
 import { FxSimEngine } from "./fx-sim-engine";
 import { generateSimTrade } from "./fx-sim-generator";
@@ -19,9 +20,10 @@ import { FxRateEngine } from "./fx-sim-rates";
 // ---------------------------------------------------------------------------
 
 function makeMockStore() {
-  return {
+  const mockStore = {
     append: vi.fn(),
   };
+  return mockStore as unknown as EventStore & { append: ReturnType<typeof mock> };
 }
 
 // ---------------------------------------------------------------------------

@@ -22,6 +22,8 @@ export interface SimCounterparty extends Party {
   minNotionalMinor: number;
   /** Maximum notional for a single trade, in the first pair's base currency minor units. */
   maxNotionalMinor: number;
+  /** SWIFT BIC (11 chars) for this counterparty. Used in MT300 FX confirmation. */
+  bic: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -36,6 +38,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     name: "Standard Simulated Bank SA",
     role: "counterparty",
     jurisdiction: "ZA",
+    bic: "SBZAZAJJXXX",
     eligiblePairs: ["ZAR/USD", "ZAR/EUR", "ZAR/GBP"],
     minNotionalMinor: 100_000_00, // 1M ZAR in cents
     maxNotionalMinor: 5_000_000_00, // 50M ZAR in cents
@@ -45,6 +48,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     name: "Absa Simulated Bank SA",
     role: "counterparty",
     jurisdiction: "ZA",
+    bic: "ABSAZAJJXXX",
     eligiblePairs: ["ZAR/USD", "ZAR/EUR"],
     minNotionalMinor: 50_000_00, // 500K ZAR in cents
     maxNotionalMinor: 2_000_000_00, // 20M ZAR in cents
@@ -54,6 +58,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     name: "Barclays Simulated London",
     role: "counterparty",
     jurisdiction: "GB",
+    bic: "BARCGB22XXX",
     eligiblePairs: ["ZAR/USD", "GBP/ZAR", "EUR/USD"],
     minNotionalMinor: 200_000_00, // 2M GBP/ZAR minor (using cents as representative)
     maxNotionalMinor: 10_000_000_00, // 100M
@@ -63,6 +68,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     name: "Deutsche Simulated Frankfurt",
     role: "counterparty",
     jurisdiction: "DE",
+    bic: "DEUTDEDBXXX",
     eligiblePairs: ["EUR/ZAR", "EUR/USD", "ZAR/EUR"],
     minNotionalMinor: 100_000_00, // 1M EUR/ZAR minor
     maxNotionalMinor: 8_000_000_00, // 80M
@@ -72,6 +78,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     name: "JPMorgan Simulated New York",
     role: "counterparty",
     jurisdiction: "US",
+    bic: "CHASUS33XXX",
     eligiblePairs: ["ZAR/USD", "USD/EUR", "ZAR/EUR"],
     minNotionalMinor: 500_000_00, // 5M ZAR minor
     maxNotionalMinor: 20_000_000_00, // 200M
@@ -81,6 +88,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     name: "Nedbank Simulated SA",
     role: "counterparty",
     jurisdiction: "ZA",
+    bic: "NEDSZAJJXXX",
     eligiblePairs: ["ZAR/USD", "ZAR/GBP"],
     minNotionalMinor: 50_000_00, // 500K ZAR minor
     maxNotionalMinor: 3_000_000_00, // 30M ZAR
