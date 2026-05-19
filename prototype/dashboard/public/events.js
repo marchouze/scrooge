@@ -183,7 +183,7 @@
   function showDetail(ev) {
     detailType.textContent = ev.type;
     detailJson.textContent = JSON.stringify(ev, null, 2);
-    detailPanel.style.display = "";
+    detailPanel.style.display = "block";
     detailHint.style.display = "none";
     detailPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
