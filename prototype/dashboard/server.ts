@@ -145,6 +145,7 @@ import {
 } from "./server-schemas";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
+import { registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
@@ -2065,6 +2066,17 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/gl") {
       return serveStatic("/gl.html");
+    }
+    // Manual FX trade booking route.
+    // Authority: D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19).
+    {
+      const tradeBookResponse = await registerTradeBookRoutes(
+        url.pathname,
+        req.method,
+        req,
+        eventStore,
+      );
+      if (tradeBookResponse) return tradeBookResponse;
     }
     // FX market-making simulation engine routes.
     // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.

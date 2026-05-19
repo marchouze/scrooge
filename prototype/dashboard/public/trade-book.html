@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book Trade · Hoz</title>
+<meta name="description" content="Manual FX trade booking — enter a real trade directly into the event store.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/provenance-badge.css">
+<style>
+  .tb-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: var(--space-6);
+  }
+  .tb-page h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .tb-page .tb-lede {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-6);
+  }
+  .tb-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  .tb-form-full {
+    grid-column: 1 / -1;
+  }
+  .tb-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tb-field label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .tb-field label .tb-optional {
+    font-weight: 400;
+    color: var(--text-muted);
+    text-transform: none;
+    letter-spacing: 0;
+    font-style: italic;
+  }
+  .tb-field input,
+  .tb-field select {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .tb-field input:focus,
+  .tb-field select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+  .tb-side-group {
+    display: flex;
+    gap: 8px;
+  }
+  .tb-side-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.1s;
+  }
+  .tb-side-label:has(input:checked) {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .tb-side-label input { display: none; }
+  .tb-submit-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-2);
+  }
+  .tb-btn {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .tb-btn:hover { background: var(--accent-deep); }
+  .tb-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .tb-result {
+    display: none;
+    margin-top: var(--space-4);
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
+  .tb-result.success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+  .tb-result.error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+  .tb-authority {
+    margin-top: var(--space-6);
+    padding: 10px 14px;
+    background: var(--surface);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="page-header-inner">
+    <a href="/home.html" class="brand">Hoz</a>
+    <span class="page-title">Book Trade</span>
+  </div>
+  <div class="meta">
+    <span
+      data-provenance-badge="page-top"
+      data-provenance-source="/api/gl/trial-balance"
+      aria-label="Provenance badge"
+    ></span>
+  </div>
+</div>
+
+<div class="tb-page">
+  <h1>Manual FX Trade Booking</h1>
+  <p class="tb-lede">
+    Enter a real FX spot trade directly. On submit, the system emits an
+    <code>FxTradeExecuted</code> event with <code>provenance.kind: "production"</code>
+    and immediately posts the GL booking entry.
+    Authority: <strong>D-MANUAL-TRADE-BOOKING</strong>.
+  </p>
+
+  <form class="tb-form" id="tb-form" autocomplete="off" novalidate>
+
+    <!-- Currency pair -->
+    <div class="tb-field">
+      <label for="tb-base">Base currency</label>
+      <select id="tb-base" name="base" required>
+        <option value="">— select —</option>
+        <option value="ZAR" selected>ZAR</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+      </select>
+    </div>
+
+    <div class="tb-field">
+      <label for="tb-quote">Quote currency</label>
+      <select id="tb-quote" name="quote" required>
+        <option value="">— select —</option>
+        <option value="ZAR">ZAR</option>
+        <option value="USD" selected>USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+      </select>
+    </div>
+
+    <!-- Side -->
+    <div class="tb-field tb-form-full">
+      <label>Side</label>
+      <div class="tb-side-group">
+        <label class="tb-side-label">
+          <input type="radio" name="side" value="buy" checked>
+          Buy base
+        </label>
+        <label class="tb-side-label">
+          <input type="radio" name="side" value="sell">
+          Sell base
+        </label>
+      </div>
+    </div>
+
+    <!-- Notional -->
+    <div class="tb-field">
+      <label for="tb-notional">Notional amount</label>
+      <input type="number" id="tb-notional" name="notionalAmount" min="1" step="1" placeholder="1000000" required>
+    </div>
+
+    <div class="tb-field">
+      <label for="tb-notional-ccy">Notional currency</label>
+      <select id="tb-notional-ccy" name="notionalCurrency" required>
+        <option value="ZAR" selected>ZAR</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+      </select>
+    </div>
+
+    <!-- Rate and settlement -->
+    <div class="tb-field">
+      <label for="tb-rate">Spot rate</label>
+      <input type="number" id="tb-rate" name="rate" min="0.000001" step="any" placeholder="18.50" required>
+    </div>
+
+    <div class="tb-field">
+      <label for="tb-settlement">Settlement date</label>
+      <input type="date" id="tb-settlement" name="settlementDate" required>
+    </div>
+
+    <!-- Counterparty -->
+    <div class="tb-field tb-form-full">
+      <label for="tb-cpty-name">Counterparty name</label>
+      <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Standard Bank of South Africa" required>
+    </div>
+
+    <div class="tb-field">
+      <label for="tb-cpty-lei">Counterparty LEI <span class="tb-optional">(optional)</span></label>
+      <input type="text" id="tb-cpty-lei" name="counterpartyLei" placeholder="e.g. 529900T8BM49AURSDO55" maxlength="20">
+    </div>
+
+    <div class="tb-field">
+      <label for="tb-trader-ref">Trader ref <span class="tb-optional">(optional)</span></label>
+      <input type="text" id="tb-trader-ref" name="traderRef" placeholder="manual-desk">
+    </div>
+
+    <!-- Submit -->
+    <div class="tb-submit-row">
+      <button type="submit" class="tb-btn" id="tb-submit">Book Trade</button>
+    </div>
+  </form>
+
+  <div class="tb-result" id="tb-result" role="alert"></div>
+
+  <div class="tb-authority">
+    Authority: D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19) ·
+    D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18) ·
+    GL posting: PR-FX-001 (trade-booking).
+  </div>
+</div>
+
+<script>
+(function () {
+  // Default settlement date = today + 2 business days (simplified: T+2)
+  const settlementInput = document.getElementById('tb-settlement');
+  const today = new Date();
+  today.setDate(today.getDate() + 2);
+  const pad = (n) => String(n).padStart(2, '0');
+  settlementInput.value = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  settlementInput.min = new Date().toISOString().slice(0, 10);
+
+  // Sync notional currency options to base/quote selection
+  const baseSelect = document.getElementById('tb-base');
+  const quoteSelect = document.getElementById('tb-quote');
+  const notionalCcySelect = document.getElementById('tb-notional-ccy');
+
+  function syncNotionalCcy() {
+    const base = baseSelect.value;
+    const quote = quoteSelect.value;
+    const prev = notionalCcySelect.value;
+    notionalCcySelect.innerHTML = '';
+    [base, quote].filter(Boolean).forEach((ccy) => {
+      const opt = document.createElement('option');
+      opt.value = ccy;
+      opt.textContent = ccy;
+      if (ccy === prev) opt.selected = true;
+      notionalCcySelect.appendChild(opt);
+    });
+    // Default to base if previous selection gone
+    if (base && !notionalCcySelect.value) notionalCcySelect.value = base;
+  }
+  baseSelect.addEventListener('change', syncNotionalCcy);
+  quoteSelect.addEventListener('change', syncNotionalCcy);
+  syncNotionalCcy();
+
+  // Form submit
+  const form = document.getElementById('tb-form');
+  const submitBtn = document.getElementById('tb-submit');
+  const resultDiv = document.getElementById('tb-result');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    resultDiv.style.display = 'none';
+    resultDiv.className = 'tb-result';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Booking…';
+
+    const data = new FormData(form);
+    const body = {
+      currencyPair: {
+        base: data.get('base'),
+        quote: data.get('quote'),
+      },
+      side: data.get('side'),
+      notionalAmount: parseFloat(data.get('notionalAmount')),
+      notionalCurrency: data.get('notionalCurrency'),
+      rate: parseFloat(data.get('rate')),
+      settlementDate: data.get('settlementDate'),
+      counterpartyName: data.get('counterpartyName'),
+      counterpartyLei: data.get('counterpartyLei') || undefined,
+      traderRef: data.get('traderRef') || undefined,
+    };
+
+    try {
+      const res = await fetch('/api/trades/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+
+      resultDiv.style.display = 'block';
+      if (json.ok) {
+        resultDiv.className = 'tb-result success';
+        resultDiv.innerHTML = `Booked: <strong>${json.tradeId}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;event: <code>${json.eventId}</code>${json.glWarning ? '<br><em>GL warning: ' + json.glWarning + '</em>' : ''}`;
+      } else {
+        resultDiv.className = 'tb-result error';
+        resultDiv.textContent = json.error ?? 'Unknown error';
+      }
+    } catch (err) {
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'tb-result error';
+      resultDiv.textContent = 'Network error: ' + err.message;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Book Trade';
+    }
+  });
+})();
+</script>
+<script src="/provenance-badge.js"></script>
+</body>
+</html>

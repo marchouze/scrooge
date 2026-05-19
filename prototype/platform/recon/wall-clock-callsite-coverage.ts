@@ -62,8 +62,11 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // TTL tracking patterns at the dashboard-infra boundary (approved pattern).
 // Bumped 50 → 51: dashboard/markets-fx-headroom.ts:72 asOf fallback — pre-existing
 // callsite at the dashboard-infra boundary (approved pattern).
+// Reduced 51 → 49: dashboard/markets-fx-summary.ts:113-116 (2× new Date() replaced
+// with nowUtc()); dashboard/trade-book-view.ts todayIso() + Date.now() replaced with
+// clock.now()-derived values. D-MANUAL-TRADE-BOOKING (Devon, 2026-05-19).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 51;
+const KNOWN_VIOLATIONS_SNAPSHOT = 49;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
