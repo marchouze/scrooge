@@ -1,44 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Briefs / dispatches register · Hoz</title>
-<meta name="description" content="Briefs / dispatches register — every Scrooge dispatch as an AgentBriefIssued event (D-RMS-PHASE-1, Phase 2 Block A — events-first dispatch).">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/_brand.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Briefs / dispatches register — Scrooge Bank</title>
+  <meta name="description" content="Briefs / dispatches register — every Scrooge dispatch as an AgentBriefIssued event (D-RMS-PHASE-1, Phase 2 Block A — events-first dispatch).">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
-<link rel="stylesheet" href="/provenance-badge.css">
 </head>
 <body>
   <div id="shell"></div>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Briefs / dispatches</span>
-    </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/rms/briefs-dispatches"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/home.html">Home</a>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/decisions">Decisions</a>
-      <a class="nav-link" href="/rms.html">RMS registers</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-
-<main id="app" class="main-content">
+  <main id="content" class="main-content">
 
   <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
     <h1 style="margin:0 0 var(--space-2);">Briefs / dispatches register</h1>
@@ -92,15 +65,6 @@
     <p class="muted">Loading…</p>
   </div>
 
-  <footer class="foot">
-    <span class="muted">
-      Briefs register derives from <code>AgentBriefIssued</code> + <code>AgentRunStarted</code> +
-      <code>AgentRunCompleted</code> + <code>BriefSuperseded</code> events
-      (D-RMS-PHASE-1 spec §6.6). Phase 2 Block A — events-first dispatch
-      (D-RMS-PHASE-2-4-AUTHORSHIP).
-      <a href="/api/rms/briefs-dispatches">/api/rms/briefs-dispatches</a>
-    </span>
-  </footer>
 
 </main>
 
@@ -118,12 +82,10 @@
   </div>
 </div>
 
-<script src="/_refresh-controls.js"></script>
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/briefs.js"></script>
   <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
   <script src="/_components.js"></script>
+  <script src="/briefs.js"></script>
   <script>initShell({ title: "Briefs" });</script>
 </body>
 </html>

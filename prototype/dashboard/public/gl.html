@@ -1,14 +1,13 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>General Ledger · Hoz</title>
-<meta name="description" content="General Ledger — ledger entries, trial balance, and manual journal posting.">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/_brand.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>General Ledger — Scrooge Bank</title>
+  <meta name="description" content="General Ledger — ledger entries, trial balance, and manual journal posting.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
-<link rel="stylesheet" href="/provenance-badge.css">
 <style>
   /* GL page local overrides */
   .gl-tabs {
@@ -243,33 +242,9 @@
 </head>
 <body>
   <div id="shell"></div>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· General Ledger</span>
-    </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/gl/trial-balance"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/home.html">Home</a>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/finance.html">Finance</a>
-      <a class="nav-link" href="/decisions">Decisions</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">–</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-
-<main id="app" class="main-content">
+  <span id="liveDot" hidden></span>
+  <span id="lastUpdated" hidden></span>
+  <main id="content" class="main-content">
   <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
     <div style="display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-3);">
       <h1 style="margin:0;">General Ledger</h1>
@@ -426,8 +401,9 @@
   </div>
 </main>
 
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
 <script>
 (() => {
   // ---- utilities ----
@@ -864,8 +840,6 @@
   init();
 })();
 </script>
-  <script src="/_shell.js"></script>
-  <script src="/_components.js"></script>
   <script>initShell({ title: "General Ledger" });</script>
 </body>
 </html>
