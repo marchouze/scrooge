@@ -13,13 +13,17 @@
       group: "Executive",
       pages: [
         { label: "Home", href: "/home.html" },
-        { label: "Decisions", href: "/decision.html" },
+        { label: "Decisions", href: "/decisions" },
         { label: "Escalations", href: "/escalations.html" },
       ],
     },
     {
       group: "Finance",
-      pages: [{ label: "Finance", href: "/finance.html" }],
+      pages: [
+        { label: "Finance", href: "/finance.html" },
+        { label: "General Ledger", href: "/gl" },
+        { label: "Trade Booking", href: "/trade-book.html" },
+      ],
     },
     {
       group: "Risk",
@@ -29,7 +33,10 @@
       group: "Markets",
       pages: [
         { label: "FX Desk", href: "/markets/fx/desk.html" },
-        { label: "Onboarding", href: "/onboarding.html" },
+        { label: "FX Risk", href: "/markets/fx/risk.html" },
+        { label: "FX Simulator", href: "/fx-sim" },
+        { label: "KYC Onboarding", href: "/kyc-onboarding" },
+        { label: "KYC Clients", href: "/kyc-clients" },
       ],
     },
     {
@@ -39,6 +46,7 @@
         { label: "Obligations", href: "/obligations.html" },
         { label: "Forward Obligations", href: "/forward-obligations.html" },
         { label: "Policies", href: "/policies.html" },
+        { label: "Regulatory", href: "/regulatory.html" },
       ],
     },
     {
@@ -55,7 +63,11 @@
     {
       group: "Governance",
       pages: [
+        { label: "Decisions Register", href: "/decisions" },
         { label: "Party Registry", href: "/party.html" },
+        { label: "Party Graph", href: "/graph.html" },
+        { label: "Briefs", href: "/briefs" },
+        { label: "Documents", href: "/documents" },
         { label: "RMS Registers", href: "/rms.html" },
       ],
     },
@@ -69,6 +81,9 @@
         { label: "Fleet", href: "/fleet.html" },
         { label: "Activity", href: "/activity.html" },
         { label: "Architecture", href: "/architecture.html" },
+        { label: "Performance", href: "/performance.html" },
+        { label: "Taxonomy", href: "/taxonomy.html" },
+        { label: "Roadmap", href: "/roadmap.html" },
       ],
     },
   ];
