@@ -121,11 +121,15 @@ async function main(): Promise<void> {
     const tradeRate = nearLeg.rate.currency === p.currencyPair.quote ? legRate : 1 / legRate;
 
     // -----------------------------------------------------------------------
-    // Step 2: Find closest MarketDataStore tick (as_of <= trade.as_of, any provenance).
+    // Step 2: Find closest production MarketDataStore tick (as_of <= trade.as_of).
+    // Using provenance: "production" to benchmark against live rates only
+    // (provenance filter required — D-MARKETS-SCHEMA-FOUNDATION;
+    // Policies/valuation-policy-v1.md §4.3).
     // -----------------------------------------------------------------------
     const ticks = mdStore.query({
       instrument: pair,
       dataType: "fx-quote",
+      provenance: "production",
       to: e.as_of,
       limit: 1,
     });
