@@ -27,28 +27,42 @@
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
       document.getElementById("obl-table").innerHTML = SC.renderSkeleton(8);
       const data = await sf("/api/obligations");
-      const all = Array.isArray(data) ? data : (data?.items ?? data?.obligations ?? []);
-      const tabs = ["All","Open","Overdue","Closed"];
-      let active = "All";
+      const all = Array.isArray(data) ? data : Object.values(data?.byId ?? {});
+      const sc = data?.statusCounts ?? {};
+      const TABS = [
+        { label: `All (${all.length})`, filter: null },
+        { label: `In Force (${sc.IN_FORCE??0})`, filter: "IN_FORCE" },
+        { label: `Partial (${sc.PARTIAL??0})`, filter: "PARTIAL" },
+        { label: `Drafting (${sc.DRAFTING??0})`, filter: "DRAFTING" },
+        { label: `Planned (${sc.PLANNED??0})`, filter: "PLANNED" },
+      ];
+      let activeFilter = null;
       const tabsEl = document.getElementById("obl-tabs");
       function render() {
-        const rows = active === "All" ? all : all.filter(o => (o.status||"").toLowerCase() === active.toLowerCase());
+        const rows = activeFilter ? all.filter(o => o.status === activeFilter) : all;
         SC.renderTable({
           container: document.getElementById("obl-table"),
-          headers: ["ID","Title","Regulation","Due Date","Status"],
+          headers: ["ID","Requirement","Citation","Bind","Status","Linked Policies"],
           rows: rows.map(o => ({
-            cells: [SC.esc(o.id||o.obligationId||""), SC.esc(o.title||""), SC.esc(o.regulation||o.source||""), SC.esc((o.dueDate||o.due||"").slice(0,10)), SC.renderBadge(o.status||"open")],
+            cells: [
+              SC.esc(o.id||""),
+              SC.esc((o.requirement||"").slice(0,80) + ((o.requirement||"").length>80?"…":"")),
+              SC.esc(o.citation||o.instrument||""),
+              SC.renderBadge(o.bind||""),
+              SC.renderBadge(o.status||"open"),
+              SC.esc(Array.isArray(o.linkedPolicies) ? o.linkedPolicies.join(", ") : (o.linkedPolicies||"")),
+            ],
             data: o,
           })),
-          onRowClick: o => SC.openModal({ title: o.title||"Obligation", body: SC.renderDefList(o) }),
+          onRowClick: o => SC.openModal({ title: o.id||"Obligation", body: SC.renderDefList(o) }),
           emptyMessage: "No obligations",
         });
       }
-      tabsEl.innerHTML = tabs.map(t => `<button class="tab-btn${t===active?" active":""}" data-tab="${t}">${t}</button>`).join("");
+      tabsEl.innerHTML = TABS.map(t => `<button class="tab-btn${t.filter===activeFilter?" active":""}" data-filter="${t.filter??""}">${SC.esc(t.label)}</button>`).join("");
       tabsEl.addEventListener("click", e => {
         const b = e.target.closest(".tab-btn"); if (!b) return;
-        active = b.dataset.tab;
-        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", x.dataset.tab===active));
+        activeFilter = b.dataset.filter || null;
+        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", (x.dataset.filter||null) === activeFilter));
         render();
       });
       render();
