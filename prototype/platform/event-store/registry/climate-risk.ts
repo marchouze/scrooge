@@ -37,32 +37,24 @@ import type { EventTypeMetadata } from "./types";
 export const CLIMATE_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
   {
     type: "ClimateScenarioRun",
-    class: "risk",
+    class: "governance",
     issuer: "Helena",
     subscribers: ["Helena", "Rohan", "Camille", "Atlas"],
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: climateScenarioRunPayloadSchema,
-    citationsHint: [
-      "D-RAS-CLIMATE-SCENARIO-FRAMEWORK",
-      "PA-GN1-2024",
-      "PROC-RISK-CR-01",
-    ],
+    citationsHint: ["D-RAS-CLIMATE-SCENARIO-FRAMEWORK", "PA-GN1-2024", "PROC-RISK-CR-01"],
     source: "platform/event-store/event-types/climate-risk.ts",
   },
   {
     type: "ClimateExposureRevalued",
-    class: "risk",
+    class: "governance",
     issuer: "Rohan",
     subscribers: ["Helena", "Rohan", "Atlas"],
     replay: "latest-wins-per-key",
     retention: RETENTION_BANKING_5Y,
     payloadSchema: climateExposureRevaluedPayloadSchema,
-    citationsHint: [
-      "D-RAS-CLIMATE-SCENARIO-FRAMEWORK",
-      "PA-GN1-2024",
-      "PROC-RISK-CR-01",
-    ],
+    citationsHint: ["D-RAS-CLIMATE-SCENARIO-FRAMEWORK", "PA-GN1-2024", "PROC-RISK-CR-01"],
     source: "platform/event-store/event-types/climate-risk.ts",
   },
 ];
