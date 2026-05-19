@@ -59,6 +59,19 @@ export interface FxSummaryView {
 export function buildFxSummaryView(store: Pick<EventStore, "replay">): FxSummaryView {
   const events = [...store.replay()];
 
+  // Build a set of cancelled trade IDs from FxTradeCancelled events so we can
+  // filter out cancelled trades from all aggregates (Principle 1: the event log
+  // is truth; a cancellation event is the correction mechanism).
+  const cancelledTradeIds = new Set<string>();
+  for (const event of events) {
+    if (event.type === "FxTradeCancelled") {
+      const p = event.payload as Record<string, unknown>;
+      if (typeof p.tradeId === "string") {
+        cancelledTradeIds.add(p.tradeId);
+      }
+    }
+  }
+
   let rfqCount = 0;
   let tradeCount = 0;
   let approvalCount = 0;
@@ -74,9 +87,19 @@ export function buildFxSummaryView(store: Pick<EventStore, "replay">): FxSummary
         break;
 
       case "FxTradeExecuted": {
+        // Skip cancelled trades
+        const p = event.payload as Record<string, unknown>;
+        const tradeIdRaw = p.tradeId as Record<string, unknown> | string | undefined;
+        const tradeIdValue =
+          typeof tradeIdRaw === "string"
+            ? tradeIdRaw
+            : typeof tradeIdRaw?.value === "string"
+              ? tradeIdRaw.value
+              : null;
+        if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) break;
+
         tradeCount++;
         // Extract counterpartyId from payload.counterparty.partyId (partySchema shape)
-        const p = event.payload as Record<string, unknown>;
         const cp = p.counterparty as Record<string, unknown> | undefined;
         const counterpartyId = typeof cp?.partyId === "string" ? cp.partyId : null;
         if (counterpartyId) {

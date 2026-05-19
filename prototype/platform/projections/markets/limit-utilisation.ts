@@ -154,6 +154,9 @@ function apply(event: Event): void {
       // B1 (credit risk — counterparty exposure).
       // The CDM payload encodes notional inside legs[0].notional.amountMinor
       // (minor units = major * 100). Divide by 100 to get major-unit exposure.
+      //
+      // Cancelled trades are pre-filtered by rebuildLimitUtilisation before
+      // calling apply(), so no cancellation check is needed here.
       const p = event.payload as Record<string, unknown>;
       const legs = Array.isArray(p.legs) ? p.legs : [];
       const leg0 = legs[0] as Record<string, unknown> | undefined;
@@ -205,9 +208,29 @@ function apply(event: Event): void {
 /**
  * Rebuild the projection by replaying all relevant events from the store.
  * Call this before reading `getLimitUtilisations()` if you need a fresh view.
+ *
+ * Two-pass approach for cancellations (Principle 1 — the event log is truth):
+ *   Pass 1: collect all FxTradeCancelled tradeIds into a Set.
+ *   Pass 2: apply all relevant events, skipping FxTradeExecuted whose tradeId
+ *           is in the cancelled set.
+ * This ensures cancellations work correctly regardless of event ordering in
+ * the store (cancellations always arrive after executions chronologically,
+ * but the fold must be order-independent for replay correctness).
  */
 export function rebuildLimitUtilisation(events: readonly Event[]): void {
   reset();
+
+  // Pass 1 — collect cancelled trade IDs.
+  const cancelledTradeIds = new Set<string>();
+  for (const e of events) {
+    if (e.type === "FxTradeCancelled") {
+      const p = e.payload as Record<string, unknown>;
+      if (typeof p.tradeId === "string") {
+        cancelledTradeIds.add(p.tradeId);
+      }
+    }
+  }
+
   const relevant = new Set([
     "RasLimitSchedulePublished",
     "TradeExecuted",
@@ -217,9 +240,22 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
     "PositionUpdated",
   ]);
   for (const e of events) {
-    if (relevant.has(e.type)) {
-      apply(e);
+    if (!relevant.has(e.type)) continue;
+
+    // Pass 2 — skip cancelled FX trades before applying.
+    if (e.type === "FxTradeExecuted") {
+      const p = e.payload as Record<string, unknown>;
+      const tradeIdRaw = p.tradeId as Record<string, unknown> | string | undefined;
+      const tradeIdValue =
+        typeof tradeIdRaw === "string"
+          ? tradeIdRaw
+          : typeof tradeIdRaw?.value === "string"
+            ? tradeIdRaw.value
+            : null;
+      if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) continue;
     }
+
+    apply(e);
   }
 }
 

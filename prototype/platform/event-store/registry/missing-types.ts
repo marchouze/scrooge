@@ -76,6 +76,7 @@ import {
 import {
   fxPositionRevaluedPayloadSchema,
   fxSettlementConfirmedPayloadSchema,
+  fxTradeCancelledPayloadSchema,
   settlementFailedPayloadSchema,
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
@@ -601,6 +602,21 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
+  },
+  {
+    // Emitted to cancel an FX trade booked with incorrect data (e.g. wrong seed
+    // rate convention). Projections filter cancelled tradeIds from FxTradeExecuted
+    // and FxPositionRevalued folds. No GL entries are produced — the trade is
+    // simply excluded from all position/P&L projections.
+    // Authority: CEO instruction 2026-05-19 (cancel 15 bad simulated trades).
+    type: "FxTradeCancelled",
+    class: "markets",
+    payloadSchema: fxTradeCancelledPayloadSchema,
+    issuer: "Devon",
+    subscribers: ["Bea", "Kai", "Rohan", "Vera", "Anya"],
+    replay: "idempotent-terminal",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "platform/event-store/event-types/fx-accounting.ts; CEO instruction 2026-05-19",
   },
   {
     // Emitted when a trade is cancelled post-booking. Triggers PR-FX-CANCEL:
