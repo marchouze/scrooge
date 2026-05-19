@@ -31,7 +31,7 @@ const _TILE_CATALOGUE = [
     // ── Metric tiles ──────────────────────────────────────────
     const tilesEl = $("metric-tiles");
     if (tilesEl) {
-      const decisions = state?.decisionsOpen ?? state?.openDecisions ?? "—";
+      const decisions = state?.decisionsOpen?.length ?? "—";
       const workstreams = state?.inflightWorkstreams ?? state?.workstreams?.length ?? "—";
       const findings = state?.openFindings ?? "—";
       const obligations = state?.obligationsDueSoon ?? "—";
@@ -40,7 +40,7 @@ const _TILE_CATALOGUE = [
         SC.renderTile({
           label: "Open Decisions",
           value: decisions,
-          href: "/decision.html",
+          href: "/decisions",
           status: decisions > 0 ? "warn" : "ok",
         }),
         SC.renderTile({
@@ -71,9 +71,9 @@ const _TILE_CATALOGUE = [
     if (decisionsSection) {
       $("decisions-header").innerHTML = SC.renderSectionHeader("Decisions for CEO", {
         label: "All decisions →",
-        href: "/decision.html",
+        href: "/decisions",
       });
-      const openList = state?.decisionsForCeo ?? state?.ceoDecisions ?? [];
+      const openList = state?.decisionsOpen ?? [];
       const cardsEl = $("decisions-cards");
       if (openList.length === 0) {
         cardsEl.innerHTML = `<p style="color:var(--color-text-secondary);font:var(--text-body)">No decisions pending.</p>`;
@@ -82,7 +82,7 @@ const _TILE_CATALOGUE = [
           .slice(0, 6)
           .map(
             (d) => `
-          <div class="decision-card" onclick="window.location='/decision.html?id=${SC.esc(d.decisionId || d.id)}'">
+          <div class="decision-card" onclick="window.location='/decisions/${encodeURIComponent(d.decisionId || d.id)}'">
             <div class="decision-card-id">${SC.esc(d.decisionId || d.id || "")}</div>
             <div class="decision-card-title">${SC.esc(d.title || "")}</div>
             <div class="decision-card-rec">${SC.esc((d.recommendation || d.summary || "").slice(0, 120))}</div>
