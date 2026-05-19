@@ -39,6 +39,7 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { EventStore } from "../../platform/event-store/store";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying substrate-state handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
@@ -68,10 +69,71 @@ const ATLAS_PROCEDURE_PATH = "Procedures/by-policy/agent-runtime-deploy.md";
 const ATLAS_PROCEDURE_STEP_ID = "agent-runtime-deploy:step-1";
 
 const SUBSTRATE_STATE_GOAL = "Approve substrate-config changes (non-invariant-affecting)" as const;
+const ATLAS_PR_GOAL = "Approve / reject a platform-design PR" as const;
+const ATLAS_SCHEMA_GOAL = "Approve a new event schema" as const;
 
 // ---------------------------------------------------------------------------
 // Goal-derivation rule engine
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Event-reactive helpers (Candidates 0a–0b)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the count of open (not yet completed/started) briefs addressed to
+ * Atlas that are older than 2 hours.
+ */
+export function openBriefsAddressedToAtlas(store: EventStore = eventStore): number {
+  const handledBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const p = e.payload as Record<string, unknown>;
+    const id = String(p.briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const p = e.payload as Record<string, unknown>;
+    const id = String(p.briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  let count = 0;
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as Record<string, unknown>;
+    const briefId = String(p.briefId ?? e.id);
+    const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
+    if (!toName.toLowerCase().includes("atlas")) continue;
+    if (handledBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && Date.now() - t > TWO_HOURS_MS) count++;
+  }
+  return count;
+}
+
+/**
+ * Returns the count of open AuditFinding events owned by Atlas (owner or
+ * recommendedOwner contains "atlas"), not yet disposed/acknowledged.
+ */
+export function openFindingsOwnedByAtlas(store: EventStore = eventStore): number {
+  const disposed = new Set<string>();
+  for (const e of store.replay({ type: "AuditFindingDisposed" })) {
+    const p = e.payload as Record<string, unknown>;
+    disposed.add(String(p.findingId ?? ""));
+  }
+  for (const e of store.replay({ type: "AuditFindingAcknowledged" })) {
+    const p = e.payload as Record<string, unknown>;
+    disposed.add(String(p.findingId ?? ""));
+  }
+  let count = 0;
+  for (const e of store.replay({ type: "AuditFinding" })) {
+    const p = e.payload as Record<string, unknown>;
+    const owner = String(p.owner ?? p.recommendedOwner ?? "").toLowerCase();
+    if (!owner.includes("atlas")) continue;
+    const findingId = String(p.findingId ?? e.id);
+    if (!disposed.has(findingId)) count++;
+  }
+  return count;
+}
 
 function lastSubstrateSnapshotMs(): number | undefined {
   let latest: number | undefined;
@@ -108,6 +170,70 @@ export const atlasGoalDeriver: GoalDeriver = async (
     "atlas-goal-deriver: evaluating candidates",
   );
 
+  // Build shared citations for event-reactive candidates.
+  const specHash = spec.specHash;
+  const procedureEntry0 = spec.procedureSteps.find(
+    (s) => s.procedurePath === ATLAS_PROCEDURE_PATH,
+  );
+  const stepId0 =
+    procedureEntry0 && procedureEntry0.stepIds.length > 0
+      ? (procedureEntry0.stepIds[0] ?? ATLAS_PROCEDURE_STEP_ID)
+      : ATLAS_PROCEDURE_STEP_ID;
+
+  // -------------------------------------------------------------------------
+  // Event-reactive candidates (0a–0b) — check before cadence candidates.
+  // -------------------------------------------------------------------------
+
+  // Candidate 0a: open briefs addressed to Atlas not yet started/completed.
+  const pendingBriefCount = openBriefsAddressedToAtlas();
+  if (pendingBriefCount > 0) {
+    if (spec.decisionsInScope.includes(ATLAS_PR_GOAL)) {
+      logger.info(
+        { agentUrn: args.agent.urn, pendingBriefCount },
+        "atlas-goal-deriver: candidate-0a — open unhandled briefs addressed to Atlas — selecting platform-design PR goal",
+      );
+      return {
+        kind: "decision",
+        chosen: ATLAS_PR_GOAL,
+        rationale: `Candidate 0a: ${pendingBriefCount} open brief(s) addressed to Atlas (older than 2h) not yet started or completed. Atlas's §9 decision row "Approve / reject a platform-design PR" is the broadest in-scope decision covering open engineering work. Picking up pending briefs.`,
+        mandateCitations: [
+          { section: "9-decisions-in-scope", rowKey: ATLAS_PR_GOAL, specHash },
+        ],
+        procedureCitations: [
+          { procedurePath: ATLAS_PROCEDURE_PATH, stepId: stepId0, procedureHash: specHash },
+        ],
+        plannedEvents: [{ type: "SubstrateStateSnapshot" }],
+      };
+    }
+  }
+
+  // Candidate 0b: open AuditFindings owned by Atlas not yet disposed.
+  const openAtlasFindings = openFindingsOwnedByAtlas();
+  if (openAtlasFindings > 0) {
+    if (spec.decisionsInScope.includes(ATLAS_SCHEMA_GOAL)) {
+      logger.info(
+        { agentUrn: args.agent.urn, openAtlasFindings },
+        "atlas-goal-deriver: candidate-0b — open AuditFindings owned by Atlas — selecting event-schema goal",
+      );
+      return {
+        kind: "decision",
+        chosen: ATLAS_SCHEMA_GOAL,
+        rationale: `Candidate 0b: ${openAtlasFindings} open AuditFinding event(s) owned by Atlas (not yet disposed/acknowledged). Atlas's §9 decision row "Approve a new event schema" covers schema/registry remediation, the most common Vera finding category for Atlas. Running substrate-state to surface current state.`,
+        mandateCitations: [
+          { section: "9-decisions-in-scope", rowKey: ATLAS_SCHEMA_GOAL, specHash },
+        ],
+        procedureCitations: [
+          { procedurePath: ATLAS_PROCEDURE_PATH, stepId: stepId0, procedureHash: specHash },
+        ],
+        plannedEvents: [{ type: "SubstrateStateSnapshot" }],
+      };
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Cadence candidates (1–2) — fallback if no event-reactive condition fires.
+  // -------------------------------------------------------------------------
+
   // Candidate 1: if there are open audit findings addressed to Atlas, prioritise.
   const hasFindings =
     worldState.auditFindingsForMe.length > 0 || hasOpenAuditFindings(args.agent.urn);
@@ -141,18 +267,7 @@ export const atlasGoalDeriver: GoalDeriver = async (
       return null;
     }
 
-    const specHash = spec.specHash;
-
-    // Build procedure citations — use coverage-gap form per §3.4 contract.
-    // The procedure file may not have step anchors yet (pre-backfill).
-    const procedureEntry = spec.procedureSteps.find(
-      (s) => s.procedurePath === ATLAS_PROCEDURE_PATH,
-    );
-    const stepId =
-      procedureEntry && procedureEntry.stepIds.length > 0
-        ? (procedureEntry.stepIds[0] ?? ATLAS_PROCEDURE_STEP_ID)
-        : ATLAS_PROCEDURE_STEP_ID;
-
+    // specHash and stepId0 already declared above (shared with event-reactive candidates).
     return {
       kind: "decision",
       chosen: SUBSTRATE_STATE_GOAL,
@@ -167,7 +282,7 @@ export const atlasGoalDeriver: GoalDeriver = async (
       procedureCitations: [
         {
           procedurePath: ATLAS_PROCEDURE_PATH,
-          stepId,
+          stepId: stepId0,
           // SHA-256 of the procedure file is unknown at runtime without
           // reading it; use the spec hash as a proxy (coverage-gap).
           procedureHash: specHash,

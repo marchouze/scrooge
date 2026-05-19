@@ -49,6 +49,7 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { EventStore } from "../../platform/event-store/store";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying overnight-recon handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
@@ -112,12 +113,73 @@ function lastOvernightReconMs(): number | undefined {
   return latest;
 }
 
-function hasOpenFailSeverityAuditFindings(): boolean {
-  for (const e of eventStore.replay({ type: "AuditFinding" })) {
+// ---------------------------------------------------------------------------
+// Event-reactive helpers (Candidates 0a–0c)
+// ---------------------------------------------------------------------------
+
+/** Returns the set of open (not yet disposed/acknowledged) AuditFinding IDs. */
+export function openAuditFindingIds(store: EventStore = eventStore): Set<string> {
+  const open = new Set<string>();
+  for (const e of store.replay({ type: "AuditFinding" })) {
     const p = e.payload as Record<string, unknown>;
-    if (String(p.severity ?? "") === "fail") return true;
+    const id = String(p.findingId ?? e.id);
+    open.add(id);
+  }
+  for (const e of store.replay({ type: "AuditFindingDisposed" })) {
+    const p = e.payload as Record<string, unknown>;
+    open.delete(String(p.findingId ?? ""));
+  }
+  for (const e of store.replay({ type: "AuditFindingAcknowledged" })) {
+    const p = e.payload as Record<string, unknown>;
+    open.delete(String(p.findingId ?? ""));
+  }
+  return open;
+}
+
+/** Returns true if any ReconResult with violations > 0 was emitted in the last 4h. */
+export function reconViolationsInLast4h(store: EventStore = eventStore): boolean {
+  const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+  const cutoff = Date.now() - FOUR_HOURS_MS;
+  for (const e of store.replay({ type: "ReconResult" })) {
+    const t = new Date(e.as_of).getTime();
+    if (Number.isNaN(t) || t < cutoff) continue;
+    const p = e.payload as Record<string, unknown>;
+    const violations = Number(p.violations ?? p.fails ?? 0);
+    if (violations > 0) return true;
   }
   return false;
+}
+
+/**
+ * Returns the count of open (not yet completed/started) briefs addressed to any
+ * of the given agent names, older than `staleAfterMs` milliseconds.
+ */
+export function staleBriefCountForAgents(
+  agentNames: string[],
+  staleAfterMs: number,
+  store: EventStore = eventStore,
+): number {
+  const closedBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const p = e.payload as Record<string, unknown>;
+    const id = String(p.briefId ?? "");
+    if (id) closedBriefIds.add(id);
+  }
+  let count = 0;
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as Record<string, unknown>;
+    const briefId = String(p.briefId ?? e.id);
+    const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
+    if (!agentNames.some((n) => toName.toLowerCase().includes(n.toLowerCase()))) continue;
+    if (closedBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && Date.now() - t > staleAfterMs) count++;
+  }
+  return count;
+}
+
+function hasOpenFailSeverityAuditFindings(): boolean {
+  return openAuditFindingIds().size > 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -182,12 +244,88 @@ export const veraGoalDeriver: GoalDeriver = async (
     },
   ];
 
+  // -------------------------------------------------------------------------
+  // Event-reactive candidates (0a–0c) — check before cadence candidates.
+  // These fire in response to new events in the store rather than the clock.
+  // -------------------------------------------------------------------------
+
+  // Candidate 0a: open AuditFindings not yet disposed/acknowledged.
+  // Improves on the original check: uses the proper open/closed set rather
+  // than simply scanning for any AuditFinding event.
+  const openFindingCount = openAuditFindingIds().size;
+  if (openFindingCount > 0) {
+    logger.info(
+      { agentUrn: args.agent.urn, openFindingCount },
+      "vera-goal-deriver: candidate-0a — open undisposed audit findings — selecting classify-pipeline goal",
+    );
+    return {
+      kind: "decision",
+      chosen: VERA_PIPELINE_CLASSIFY_GOAL,
+      rationale: `Candidate 0a: ${openFindingCount} open (not yet disposed/acknowledged) AuditFinding event(s) detected in the event store. Vera's §10 escalation policy requires fail findings to be routed to Thandiwe (CAE, governance) within 1h. Running overnight-recon to produce a current ReconResult + AuditFinding event stream for escalation.`,
+      mandateCitations,
+      procedureCitations,
+      plannedEvents: [{ type: "ReconResult" }, { type: "AuditFinding" }],
+    };
+  }
+
+  // Candidate 0b: ReconResult violations in last 4h AND last overnight recon > 1h ago.
+  // Avoids tight loops by requiring the overnight recon to be at least 1h old.
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const lastOvernightForReact = lastOvernightReconMs();
+  const overnightOldEnough =
+    lastOvernightForReact === undefined || Date.now() - lastOvernightForReact > ONE_HOUR_MS;
+  if (reconViolationsInLast4h() && overnightOldEnough) {
+    logger.info(
+      { agentUrn: args.agent.urn },
+      "vera-goal-deriver: candidate-0b — recent ReconResult violations in last 4h — selecting classify-pipeline goal",
+    );
+    return {
+      kind: "decision",
+      chosen: VERA_PIPELINE_CLASSIFY_GOAL,
+      rationale:
+        "Candidate 0b: A ReconResult with violations > 0 was emitted in the last 4h, and the last overnight recon is > 1h old (avoiding tight loops). Running overnight-recon to surface the current violation state.",
+      mandateCitations,
+      procedureCitations,
+      plannedEvents: [{ type: "ReconResult" }, { type: "AuditFinding" }],
+    };
+  }
+
+  // Candidate 0c: stale open briefs addressed to governance/audit agents (> 48h).
+  const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
+  const staleBriefCount = staleBriefCountForAgents(
+    ["Vera", "Thandiwe", "Owen", "Helena", "Rashida"],
+    FORTY_EIGHT_HOURS_MS,
+  );
+  if (staleBriefCount > 0) {
+    logger.info(
+      { agentUrn: args.agent.urn, staleBriefCount },
+      "vera-goal-deriver: candidate-0c — stale open briefs for governance/audit agents — selecting classify-pipeline goal",
+    );
+    return {
+      kind: "decision",
+      chosen: VERA_PIPELINE_CLASSIFY_GOAL,
+      rationale: `Candidate 0c: ${staleBriefCount} open brief(s) addressed to governance/audit agents (Vera, Thandiwe, Owen, Helena, Rashida) older than 48h. Vera's classify-pipeline goal covers dispatch-hygiene assurance. Running overnight-recon to surface the stale-dispatch state.`,
+      mandateCitations,
+      procedureCitations,
+      plannedEvents: [{ type: "ReconResult" }],
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // Cadence candidates (1–3) — fallback if no event-reactive condition fires.
+  // -------------------------------------------------------------------------
+
   // Candidate 1: open fail-severity audit findings — highest priority.
   // Per §10: fail-severity findings crossing materiality threshold must be
   // escalated to Thandiwe (CAE). For the goal-loop, we select
   // "Classify pipeline result `ok` / `warn` / `fail`" (the in-scope §9
   // decision that covers ongoing finding management), then run overnight
   // recon to surface the current state.
+  // NOTE: hasOpenFailSeverityAuditFindings() now delegates to openAuditFindingIds(),
+  // which is the same check as Candidate 0a above. This branch is kept for
+  // the cadence log message distinction only — it will be hit only if Candidate 0a
+  // was skipped (which cannot happen since 0a checks the same condition). In
+  // practice Candidate 0a fires first, so this is a belt-and-suspenders guard.
   const hasFailFindings =
     worldState.auditFindingsForMe.length > 0 || hasOpenFailSeverityAuditFindings();
   if (hasFailFindings) {
