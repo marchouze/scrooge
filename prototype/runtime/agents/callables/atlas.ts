@@ -3,6 +3,7 @@
 // To add a handler: add the import and entry here, then add one spread in handler-callables.ts.
 
 import type { AgentRunHandler } from "../../types";
+import atlasCollateralSnapshot from "../atlas-collateral-snapshot";
 import atlasEventTriage from "../atlas-event-triage";
 import atlasGoalLoop from "../atlas-goal-loop";
 import atlasPermissionPolicyRefresh from "../atlas-permission-policy-refresh";
@@ -13,4 +14,5 @@ export const ATLAS_CALLABLES: Record<string, AgentRunHandler> = {
   "atlas:goal-loop": atlasGoalLoop,
   "atlas:event-triage": atlasEventTriage,
   "atlas:permission-policy-refresh": atlasPermissionPolicyRefresh,
+  "atlas:collateral-snapshot": atlasCollateralSnapshot,
 };

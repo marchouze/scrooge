@@ -145,7 +145,7 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 - **Intraday liquidity watch (live)** — partial. Liquidity snapshot filed 2026-05-15 (`2026-05-15_eitan_liquidity-snapshot.md`); settlement-account watch exists; intraday HQLA-stress projection is not live. Owner: Ravi + Tomas + Anya.
 - **ALM engine** — ✅ closed 2026-05-19. Repricing gap (BCBS 319), ΔEVE (6 BCBS d365 shocks), and ΔNII (4 parallel shocks, 12-month horizon) engines live in `platform/alm/`. Daily handler `ravi:alm-run` emits `ALMRunCompleted` + `IRRBBChecked` events. Zero-position posture in build phase; wired to produce live outputs when trades land. Authority: D-TREASURY-GAPS-WAVE1. Owner: Ravi.
 - **Liquidity projection engine** — under build by Anya. Owner: Anya.
-- **Collateral inventory substrate** — not yet built. Owner: Tomas + Atlas.
+- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (BA 325 Annex 1 L1/L2a/L2b), inventory projection, `CollateralInventorySnapshot` + `CollateralUpdated` event types, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Build-phase: zero positions (expected); buffer populates at licence-day. Owner: Tomas + Atlas.
 - **FTP curve generator** — not yet built. Owner: Ravi + Anya.
 - **ILAAP engine** — not yet built (Helena's gap, Eitan co-owns the liquidity slice). Owner: Helena + Eitan + Anya + Atlas.
 - **Agent-runtime substrate** — Atlas's runtime is live; daily and intraday triggers operate. Eitan's autonomous cadence is substrate-supported; remaining gaps are domain-specific engines.
@@ -159,3 +159,4 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 | v1.1 | 2026-05-14 | Eitan (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
 | v1.2 | 2026-05-17 | Owen (via Scrooge) | §16 updated: ALCO charter v1 filed 2026-05-15 (ALCO-pack gap retained); liquidity snapshot filed 2026-05-15 (intraday-watch partial gap retained). File references added to relevant gap entries. |
 | v1.3 | 2026-05-19 | Ravi (via Scrooge) | §16 updated: ALM engine gap closed — repricing gap, ΔEVE, ΔNII engines live; `ravi:alm-run` handler registered; authority D-TREASURY-GAPS-WAVE1. |
+| v1.4 | 2026-05-19 | Atlas (via Scrooge) | §16 updated: collateral inventory substrate gap closed — HQLA classifier + inventory projection + `atlas:collateral-snapshot` handler live (D-TREASURY-GAPS-WAVE1). |
