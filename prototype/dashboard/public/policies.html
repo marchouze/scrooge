@@ -48,6 +48,22 @@
       const owners = [...new Set(all.map(p => p.owner||"").filter(Boolean))].sort();
       owners.forEach(o => { const opt = document.createElement("option"); opt.value = o; opt.textContent = o; ownerEl.appendChild(opt); });
 
+      function mdToHtml(md) {
+        const body = md.replace(/^---[\s\S]*?---\n?/, "");
+        return body
+          .replace(/^#### (.+)$/gm, "<h4 style='font:var(--text-h3);margin:var(--space-4) 0 var(--space-2)'>$1</h4>")
+          .replace(/^### (.+)$/gm, "<h3 style='font:var(--text-h2);margin:var(--space-5) 0 var(--space-2)'>$1</h3>")
+          .replace(/^## (.+)$/gm, "<h2 style='font:var(--text-h1);margin:var(--space-6) 0 var(--space-3);border-bottom:1px solid var(--color-border);padding-bottom:var(--space-2)'>$1</h2>")
+          .replace(/^# (.+)$/gm, "")
+          .replace(/^> (.+)$/gm, "<blockquote style='border-left:3px solid var(--color-border);margin:var(--space-3) 0;padding:var(--space-2) var(--space-4);color:var(--color-text-secondary);font:var(--text-body)'>$1</blockquote>")
+          .replace(/^- (.+)$/gm, "<li style='margin:var(--space-1) 0'>$1</li>")
+          .replace(/(<li[\s\S]*?<\/li>)/g, "<ul style='margin:var(--space-2) 0;padding-left:var(--space-5)'>$1</ul>")
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/`([^`]+)`/g, "<code style='font-family:monospace;background:var(--color-surface-raised);padding:1px 4px;border-radius:3px;font-size:0.875em'>$1</code>")
+          .replace(/^(?!<[h|u|b|l])(.+)$/gm, "<p style='font:var(--text-body);margin:var(--space-2) 0'>$1</p>")
+          .replace(/<p[^>]*>\s*<\/p>/g, "");
+      }
+
       function policyModal(p) {
         const row = (label, val) => val ? `<dt style="font-weight:600;color:var(--color-text-secondary);white-space:nowrap">${SC.esc(label)}</dt><dd style="word-break:break-word">${val}</dd>` : "";
         const meta = `<dl style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-2) var(--space-4);font:var(--text-body);margin-bottom:var(--space-6)">
@@ -58,7 +74,6 @@
           ${row("Status", SC.renderBadge(p.status||""))}
           ${row("Citation", SC.esc(p.citation||""))}
           ${row("Binds", (p.binds||[]).map(b => SC.renderBadge(b)).join(" "))}
-          ${row("Sources", (p.sources||[]).map(s => SC.esc(s)).join(", "))}
           ${row("MVP", p.mvp != null ? SC.esc(String(p.mvp)) : "")}
           ${row("Status detail", SC.esc(p.statusRaw||""))}
         </dl>`;
@@ -71,12 +86,19 @@
               return `<dt style="font-weight:600;color:var(--color-text-secondary);white-space:nowrap">${SC.esc(id)}</dt><dd style="word-break:break-word">${SC.esc(o?.requirement||"—")}</dd>`;
             }).join("")}
           </dl>` : "";
-        const srcSection = (p.sourceFiles||[]).length ? `
-          <div style="font:var(--text-h3);margin-bottom:var(--space-3)">Source Files</div>
-          <ul style="margin:0;padding-left:var(--space-5);font:var(--text-body)">
-            ${(p.sourceFiles||[]).map(f => `<li>${SC.esc(f)}</li>`).join("")}
-          </ul>` : "";
-        return meta + oblSection + srcSection;
+        const docFile = (p.sourceFiles||[]).find(f => f.startsWith("Policies/"));
+        if (docFile) {
+          const container = document.createElement("div");
+          container.innerHTML = meta + oblSection + `<div style="font:var(--text-h3);margin-bottom:var(--space-3)">Policy Document</div><div id="pol-doc-body">${SC.renderSkeleton(4)}</div>`;
+          fetch(`/api/policy/${encodeURIComponent(docFile)}`)
+            .then(r => r.ok ? r.text() : null)
+            .then(md => {
+              const el = container.querySelector("#pol-doc-body");
+              if (el) el.innerHTML = md ? mdToHtml(md) : `<p style="color:var(--color-text-secondary)">Document not available.</p>`;
+            });
+          return container;
+        }
+        return meta + oblSection;
       }
 
       function render() {
