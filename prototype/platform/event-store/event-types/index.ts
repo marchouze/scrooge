@@ -163,6 +163,10 @@ export * from "./ilaap";
 // IntradayHQLAStressProjection — intraday HQLA stress-scenario output.
 // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
 export * from "./alco";
+// Product Control — daily FX P&L report event.
+// DailyPnLReportGenerated — aggregated unrealised + realised P&L by pair/counterparty/book.
+// Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1; D-MARKETS-SCHEMA-FOUNDATION.
+export * from "./product-control";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -270,6 +274,7 @@ import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
+import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
@@ -349,6 +354,10 @@ export const TYPED_EVENT_TYPES = [
   // ALCOPackGenerated, IntradayHQLAStressProjection.
   // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
   ...ALCO_TYPED_EVENT_TYPES,
+  // Product Control — daily FX P&L report event.
+  // DailyPnLReportGenerated — aggregated unrealised + realised P&L.
+  // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+  ...PRODUCT_CONTROL_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

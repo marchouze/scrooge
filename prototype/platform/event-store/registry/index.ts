@@ -90,6 +90,8 @@ export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
 export { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
+// Product Control — daily FX P&L report event.
+export { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -129,6 +131,7 @@ import {
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
+import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import {
@@ -205,6 +208,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
   // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
   ...ALCO_EVENT_TYPES_REGISTRY,
+  // Product Control — daily FX P&L report event.
+  // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+  ...PRODUCT_CONTROL_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
