@@ -29,6 +29,7 @@ import {
   conductObligationFlaggedPayloadSchema,
   conflictOfInterestDisclosedPayloadSchema,
   faisClassificationSuitabilityCheckedPayloadSchema,
+  feeDisclosureEventPayloadSchema,
   marketConductAlertRaisedPayloadSchema,
 } from "../event-types/conduct";
 import { RETENTION_BANKING_5Y, RETENTION_GOVERNANCE_7Y } from "./types";
@@ -198,6 +199,37 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
       "FINANCIAL-MARKETS-ACT-19-2012-S78",
       "FSRA-S131",
+    ],
+  },
+  // ---------------------------------------------------------------------------
+  // FeeDisclosureEvent — fee / spread transparency disclosure record.
+  //
+  // Emitted by Zara (MLRO / conduct officer) per FAIS Act §8(1)(d)(i) +
+  // General Code of Conduct §7. Records the pre-trade or post-trade
+  // disclosure method, instrument, counterparty, and spread/fee charged.
+  //
+  // Citations:
+  //   FAIS-ACT-37-2002-S8-1-D-I (disclosure of remuneration);
+  //   FAIS-GCC-S7 (costs and charges);
+  //   D-MARKET-CONDUCT; D-FX-SALES-TRADING-FRONTEND; PROC-PAY-RBH-01.
+  // Author: Zara (MLRO / conduct officer, governance).
+  // ---------------------------------------------------------------------------
+  {
+    type: "FeeDisclosureEvent",
+    class: "conduct",
+    issuer: "Zara",
+    subscribers: ["Zara", "Mira", "Bea"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: feeDisclosureEventPayloadSchema,
+    source:
+      "platform/event-store/event-types/conduct.ts; PROC-PAY-RBH-01; Policies/valuation-policy-v1.md",
+    citationsHint: [
+      "FAIS-ACT-37-2002-S8-1-D-I",
+      "FAIS-GCC-S7",
+      "D-MARKET-CONDUCT",
+      "D-FX-SALES-TRADING-FRONTEND",
+      "PROC-PAY-RBH-01",
     ],
   },
 ];
