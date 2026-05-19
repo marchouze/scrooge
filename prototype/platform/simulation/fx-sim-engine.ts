@@ -11,9 +11,11 @@
 import { randomUUID } from "node:crypto";
 
 import { nowUtc } from "../core/types";
+import type { EventStore } from "../event-store/store";
 import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
 import { generateSimTrade } from "./fx-sim-generator";
 import { FxRateEngine } from "./fx-sim-rates";
+import { runPostTradeLifecycle } from "./post-trade-lifecycle";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -53,26 +55,16 @@ export interface SimStatus {
 // FxSimEngine
 // ---------------------------------------------------------------------------
 
-/** Minimal event store interface required by the sim engine. */
-export interface IEventStore {
-  append(event: {
-    event_id: string;
-    type: string;
-    as_of: string;
-    entity: string;
-    actor: { type: "service" | "human" | "system"; id: string };
-    citations: string[];
-    payload: Record<string, unknown>;
-  }): void;
-}
+/** @deprecated Use EventStore directly. Kept for backward compatibility only. */
+export type IEventStore = EventStore;
 
 export class FxSimEngine {
-  private readonly store: IEventStore;
+  private readonly store: EventStore;
   private readonly rateEngine: FxRateEngine;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private status: SimStatus;
 
-  constructor(store: IEventStore) {
+  constructor(store: EventStore) {
     this.store = store;
     this.rateEngine = new FxRateEngine();
     this.status = {
@@ -164,6 +156,11 @@ export class FxSimEngine {
         citations: ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"],
         payload: payload as unknown as Record<string, unknown>,
       });
+
+      // Wire full post-trade production event chain (CEO directive).
+      const cp = SIM_COUNTERPARTIES.find((c) => c.partyId === payload.counterparty.partyId);
+      const counterpartyBic = cp?.bic ?? "SBZAZAJJXXX";
+      runPostTradeLifecycle(this.store, payload, asOf, "BANKZAJJXXX", counterpartyBic);
 
       const tradeIdValue = payload.tradeId.value;
       const pair = `${payload.currencyPair.base}/${payload.currencyPair.quote}`;
