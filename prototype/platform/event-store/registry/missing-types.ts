@@ -616,8 +616,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Bea", "Kai", "Rohan", "Vera", "Anya"],
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source:
-      "platform/event-store/event-types/fx-accounting.ts; CEO instruction 2026-05-19",
+    source: "platform/event-store/event-types/fx-accounting.ts; CEO instruction 2026-05-19",
   },
   {
     // Emitted when a trade is cancelled post-booking. Triggers PR-FX-CANCEL:
