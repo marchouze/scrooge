@@ -46,6 +46,7 @@ import {
   roleResearchQueueSnapshotPayloadSchema,
   roleResearchRequestedPayloadSchema,
 } from "../event-types/agent-substrate-extended";
+import { almRunCompletedPayloadSchema, irrbBCheckedPayloadSchema } from "../event-types/alm";
 import {
   adverseMediaPublishedPayloadSchema,
   adviceRecordRequestedPayloadSchema,
@@ -762,6 +763,32 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/eitan.ts",
+  },
+  {
+    // Emitted at the end of Ravi's daily ALM run. Summarises repricing gap
+    // status, worst-case ΔEVE, and worst-case ΔNII across all shock scenarios.
+    // D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+    type: "ALMRunCompleted",
+    class: "markets",
+    payloadSchema: almRunCompletedPayloadSchema,
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan", "dashboard"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "runtime/agents/metadata/ravi.ts",
+  },
+  {
+    // Emitted once per IRRBB metric/shock combination in each ALM run.
+    // Records EVE or NII sensitivity delta and appetite-check status.
+    // D-TREASURY-GAPS-WAVE1; BCBS d365 §4 (outlier threshold 15% Tier 1).
+    type: "IRRBBChecked",
+    class: "markets",
+    payloadSchema: irrbBCheckedPayloadSchema,
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "runtime/agents/metadata/ravi.ts",
   },
   {
     // Emitted when a material IFRS classification change is made to a

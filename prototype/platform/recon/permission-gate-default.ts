@@ -223,6 +223,10 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // assertion). Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN,
   // P4-SECURITY-DESIGNED-IN.
   "platform/returns/climate/",
+  // ALM engine — per-module unit tests build in-memory stores for zero-position
+  // baseline assertion. T-01 carve-out; no production access path.
+  // Citation: D-TREASURY-GAPS-WAVE1, P4-SECURITY-DESIGNED-IN.
+  "platform/alm/__tests__/",
   // EOD FX revaluation — per-module unit tests build in-memory stores for
   // revaluation scenario assertion. T-01 carve-out; no production access path.
   // Citation: D-MARKETS-CAPITAL-TIME-SHAPE, P4-SECURITY-DESIGNED-IN.

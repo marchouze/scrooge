@@ -138,6 +138,11 @@ export * from "./ird-accounting";
 // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19);
 //   PA Guidance Note 1 of 2024; PROC-RISK-CR-01.
 export * from "./climate-risk";
+// D-TREASURY-GAPS-WAVE1 — ALM engine event types.
+// ALMRunCompleted — daily ALM run summary (repricing gap, ΔEVE, ΔNII).
+// IRRBBChecked — per-metric/shock IRRBB sensitivity check.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+export * from "./alm";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -213,6 +218,7 @@ import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
+import { ALM_TYPED_EVENT_TYPES } from "./alm";
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
@@ -303,6 +309,9 @@ export const TYPED_EVENT_TYPES = [
   // D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy event types.
   // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19).
   ...CLIMATE_RISK_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — ALM engine event types (repricing gap, ΔEVE, ΔNII).
+  // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+  ...ALM_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

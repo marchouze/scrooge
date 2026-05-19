@@ -4,6 +4,7 @@
 
 import type { AgentRunHandler } from "../../types";
 import raviAlmReadiness from "../ravi-alm-readiness";
+import raviAlmRun from "../ravi-alm-run";
 import raviEventTriage from "../ravi-event-triage";
 import raviFtpAttribution from "../ravi-ftp-attribution";
 import raviFtpCurvePublish from "../ravi-ftp-curve-publish";
@@ -11,6 +12,7 @@ import raviGoalLoop from "../ravi-goal-loop";
 
 export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:alm-readiness": raviAlmReadiness,
+  "ravi:alm-run": raviAlmRun,
   "ravi:ftp-curve-publish": raviFtpCurvePublish,
   "ravi:ftp-attribution": raviFtpAttribution,
   "ravi:goal-loop": raviGoalLoop,

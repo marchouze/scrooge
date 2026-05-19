@@ -27,6 +27,12 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "FundingDrawnDown",
     ],
   }),
+  // Ravi: daily ALM run — repricing gap, ΔEVE, ΔNII sensitivities.
+  // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365.
+  entry("Ravi", "alm-run", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "50 5 * * *",
+  }),
   // ravi:goal-loop — cohort-3 (on-request only).
   entry("Ravi", "goal-loop", "on-request"),
   entry("Ravi", "event-triage", "event-driven", {
