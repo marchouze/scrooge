@@ -38,8 +38,11 @@ import {
   makePrincipalPayment,
   makeSettlementConfirmed,
 } from "@platform/markets/cdm/fx";
+import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import { M4_FX_SPOT_FIXTURE } from "@platform/markets/products/fixtures";
 import { logger } from "@platform/observability/logger";
+import { simulateInboundMessages } from "@platform/payments/inbound-simulator";
+import { generateMt300 } from "@platform/payments/swift-mt/mt300";
 
 // ---------------------------------------------------------------------------
 // Scenario constants
@@ -367,6 +370,8 @@ export interface FxSpotScenarioResult {
   readonly emitted: number;
   readonly countsByType: Record<string, number>;
   readonly productId: string;
+  readonly outboundMt300Fields: number;
+  readonly inboundMessageTypes: string[];
 }
 
 export function runFxSpotScenario(opts: {
@@ -402,6 +407,26 @@ export function runFxSpotScenario(opts: {
     countsByType[e.type] = (countsByType[e.type] ?? 0) + 1;
   }
 
+  // ---------------------------------------------------------------------------
+  // Message generation — outbound MT300 + inbound message set
+  // ---------------------------------------------------------------------------
+  const tradePayload = events.trade.payload as FxTradeExecutedPayload;
+  const BANK_BIC = "BANKZAJJXXX";
+  const COUNTERPARTY_BIC = "SBZAZAJJXXX";
+
+  // Outbound: bank sends MT300 FX confirmation to counterparty
+  const outboundMt300 = generateMt300(tradePayload, BANK_BIC, COUNTERPARTY_BIC);
+
+  // Inbound: simulate messages the correspondent/counterparty sends back
+  const settlementDate = new Date("2026-05-14T10:00:00.000Z");
+  const nostroBalance = 10_000_000_00n; // USD 100,000 opening nostro
+  const inboundMessages = simulateInboundMessages(
+    tradePayload,
+    settlementDate,
+    nostroBalance,
+    COUNTERPARTY_BIC,
+  );
+
   store.close();
   if (opts.cleanup) {
     try {
@@ -411,11 +436,21 @@ export function runFxSpotScenario(opts: {
     }
   }
 
+  const inboundMessageTypes = [
+    inboundMessages.mt300Confirmation ? "MT300" : null,
+    inboundMessages.mt202ReceiveLeg ? "MT202" : null,
+    inboundMessages.mt940Statement ? "MT940" : null,
+    inboundMessages.pacs009ReceiveLeg ? "pacs.009" : null,
+    inboundMessages.camt053Statement ? "camt.053" : null,
+  ].filter((t): t is string => t !== null);
+
   return {
     ok: provenanceOk && total === events.all.length,
     emitted: total,
     countsByType,
     productId: M4_FX_SPOT_FIXTURE.productId,
+    outboundMt300Fields: outboundMt300.block4.length,
+    inboundMessageTypes,
   };
 }
 
@@ -487,6 +522,14 @@ if (import.meta.main) {
       emitted: result.emitted,
       countsByType: result.countsByType,
       productId: result.productId,
+      outboundMessages: {
+        mt300FieldCount: result.outboundMt300Fields,
+        description: "MT300 FX confirmation sent to counterparty",
+      },
+      inboundMessages: {
+        messageTypes: result.inboundMessageTypes,
+        description: "Simulated inbound messages from correspondent/counterparty",
+      },
       authority: [
         "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
         "D-FX-CLS-MEMBERSHIP",

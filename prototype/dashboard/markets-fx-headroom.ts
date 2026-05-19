@@ -25,6 +25,7 @@
 // Authors: Kai (Trading systems engineer, engineering) + Rohan (Risk engineer)
 //          + Helena (Chief Risk Officer, governance)
 
+import { clock } from "../platform/composition";
 import type { EventStore } from "../platform/event-store/store";
 import {
   getLimitUtilisations,
@@ -69,6 +70,6 @@ export function buildHeadroomView(store: Pick<EventStore, "replay">): HeadroomVi
   const rows = getLimitUtilisations();
   return {
     rows,
-    asOf: rows[0]?.asOf ?? new Date().toISOString(),
+    asOf: rows[0]?.asOf ?? clock.now(),
   };
 }
