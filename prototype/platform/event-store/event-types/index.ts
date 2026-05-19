@@ -153,6 +153,11 @@ export * from "./collateral";
 // NSFRComputed — result of a single NSFR computation (BA 326 / Basel III).
 // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
 export * from "./liquidity";
+// D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
+// ILAAPScenarioRun — per-scenario liquidity stress result (4 scenarios).
+// ILAAPSummaryCompleted — aggregated worst-case ILAAP assessment.
+// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+export * from "./ilaap";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -247,6 +252,7 @@ import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
 import { GOVERNANCE_EXTENDED_TYPED_EVENT_TYPES } from "./governance-extended";
 import { GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES } from "./governance-snapshots";
 import { IFRS_ACCOUNTING_EXTENDED_TYPED_EVENT_TYPES } from "./ifrs-accounting-extended";
+import { ILAAP_TYPED_EVENT_TYPES } from "./ilaap";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES } from "./ird-accounting";
 import { KYC_TYPED_EVENT_TYPES } from "./kyc";
@@ -330,6 +336,9 @@ export const TYPED_EVENT_TYPES = [
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine event types (LCR/NSFR).
   // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
   ...LIQUIDITY_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — ILAAP engine event types (stress scenarios + survival horizon).
+  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+  ...ILAAP_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

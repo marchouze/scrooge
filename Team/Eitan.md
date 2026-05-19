@@ -147,7 +147,7 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 - **Liquidity projection engine** — ✅ closed 2026-05-19. LCR (BA 325) and NSFR (BA 326) computation engines live at `platform/liquidity/`; `anya:liquidity-projection` handler registered; `LCRComputed` and `NSFRComputed` event types in registry. Build-phase baseline emits `no-positions`; positions will populate once collateral inventory (Atlas) and ALM position substrate (Ravi) land. Owner: Anya.
 - **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (BA 325 Annex 1 L1/L2a/L2b), inventory projection, `CollateralInventorySnapshot` + `CollateralUpdated` event types, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Build-phase: zero positions (expected); buffer populates at licence-day. Owner: Tomas + Atlas.
 - **FTP curve generator** — not yet built. Owner: Ravi + Anya.
-- **ILAAP engine** — not yet built (Helena's gap, Eitan co-owns the liquidity slice). Owner: Helena + Eitan + Anya + Atlas.
+- **ILAAP engine** — ✅ closed 2026-05-19. ILAAP engine live at `platform/ilaap/`; four stress scenarios (idiosyncratic, market-wide, combined, reverse-stress); `ILAAPScenarioRun` + `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.
 - **Agent-runtime substrate** — Atlas's runtime is live; daily and intraday triggers operate. Eitan's autonomous cadence is substrate-supported; remaining gaps are domain-specific engines.
 
 ## 17. Change log
@@ -161,3 +161,4 @@ Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) 
 | v1.3 | 2026-05-19 | Ravi (via Scrooge) | §16 updated: ALM engine gap closed — repricing gap, ΔEVE, ΔNII engines live; `ravi:alm-run` handler registered; authority D-TREASURY-GAPS-WAVE1. |
 | v1.4 | 2026-05-19 | Atlas (via Scrooge) | §16 updated: collateral inventory substrate gap closed — HQLA classifier + inventory projection + `atlas:collateral-snapshot` handler live (D-TREASURY-GAPS-WAVE1). |
 | v1.5 | 2026-05-19 | Anya (via Scrooge) | §16 updated: liquidity projection engine gap closed — LCR/NSFR engines live at `platform/liquidity/`; `anya:liquidity-projection` handler registered; `LCRComputed` + `NSFRComputed` event types in registry. Authority: D-TREASURY-GAPS-WAVE1. |
+| v1.7 | 2026-05-19 | Atlas (via Scrooge) | §16 updated: ILAAP engine gap closed — four stress scenarios + survival horizon + summary handler. Authority: D-TREASURY-GAPS-WAVE1. |
