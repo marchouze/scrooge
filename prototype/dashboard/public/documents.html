@@ -6,10 +6,12 @@
 <title>Document register · Hoz</title>
 <meta name="description" content="Document register — every documentHash ever cited by an RMS event (D-RMS-PHASE-1, Phase 2 Block B — RecordFiled wiring).">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
 <link rel="stylesheet" href="/provenance-badge.css">
 </head>
 <body>
+  <div id="shell"></div>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -37,7 +39,7 @@
 
 <div id="failureBanner" class="failure-banner" hidden></div>
 
-<main id="app">
+<main id="app" class="main-content">
 
   <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
     <h1 style="margin:0 0 var(--space-2);">Document register</h1>
@@ -132,5 +134,8 @@
 <script src="/_failure-banner.js"></script>
 <script src="/provenance-badge.js"></script>
 <script src="/documents.js"></script>
+  <script src="/_shell.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Documents" });</script>
 </body>
 </html>

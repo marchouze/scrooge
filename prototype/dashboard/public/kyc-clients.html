@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KYC Client Register · Hoz</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
 <link rel="stylesheet" href="/provenance-badge.css">
 <style>
   .kyc-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
@@ -48,6 +49,7 @@
 </style>
 </head>
 <body>
+  <div id="shell"></div>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -72,7 +74,7 @@
 
 <div id="failureBanner" class="failure-banner" hidden></div>
 
-<main id="app">
+<main id="app" class="main-content">
 
   <section class="band">
     <div class="band-head">
@@ -150,5 +152,8 @@
 <script src="/provenance-badge.js"></script>
 <script src="/kyc-clients.js"></script>
 <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  <script src="/_shell.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "KYC Clients" });</script>
 </body>
 </html>
