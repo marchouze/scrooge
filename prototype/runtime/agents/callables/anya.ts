@@ -5,6 +5,7 @@
 import type { AgentRunHandler } from "../../types";
 import anyaEventTriage from "../anya-event-triage";
 import anyaGoalLoop from "../anya-goal-loop";
+import anyaLiquidityProjection from "../anya-liquidity-projection";
 import anyaM1ProjectionRuntimeMapping from "../anya-m1-projection-runtime-mapping";
 import anyaProjectionDrift from "../anya-projection-drift";
 import anyaProjectionRefresh from "../anya-projection-refresh";
@@ -15,4 +16,5 @@ export const ANYA_CALLABLES: Record<string, AgentRunHandler> = {
   "anya:projection-refresh": anyaProjectionRefresh,
   "anya:m1-projection-runtime-mapping": anyaM1ProjectionRuntimeMapping,
   "anya:event-triage": anyaEventTriage,
+  "anya:liquidity-projection": anyaLiquidityProjection,
 };

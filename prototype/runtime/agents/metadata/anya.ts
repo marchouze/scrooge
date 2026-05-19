@@ -28,4 +28,12 @@ export const ANYA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Anya", "event-triage", "event-driven", {
     subscribesTo: ["EventSchemaPublished", "ObligationRegistered", "PolicyChange"],
   }),
+  // D-TREASURY-GAPS-WAVE1 — daily LCR / NSFR projection run.
+  // Runs at 04:00 SAST (02:00 UTC) each business day, after Ravi's FTP curve
+  // publication (03:17 UTC). Cadence aligned to ALCO daily pack cycle.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326.
+  entry("Anya", "liquidity-projection", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 2 * * 1-5",
+  }),
 ];
