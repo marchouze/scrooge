@@ -23,15 +23,18 @@ const _TILE_CATALOGUE = [
   }
 
   async function load() {
-    const [state, events] = await Promise.all([
+    const [state, events, decisionReg] = await Promise.all([
       safeFetch("/api/state"),
       safeFetch("/api/events?limit=5"),
+      safeFetch("/api/decisions-register"),
     ]);
+
+    const openDecisions = decisionReg?.open ?? [];
 
     // ── Metric tiles ──────────────────────────────────────────
     const tilesEl = $("metric-tiles");
     if (tilesEl) {
-      const decisions = state?.decisionsOpen?.length ?? "—";
+      const decisions = openDecisions.length;
       const workstreams = state?.inflightWorkstreams ?? state?.workstreams?.length ?? "—";
       const findings = state?.openFindings ?? "—";
       const obligations = state?.obligationsDueSoon ?? "—";
@@ -73,7 +76,7 @@ const _TILE_CATALOGUE = [
         label: "All decisions →",
         href: "/decisions",
       });
-      const openList = state?.decisionsOpen ?? [];
+      const openList = openDecisions;
       const cardsEl = $("decisions-cards");
       if (openList.length === 0) {
         cardsEl.innerHTML = `<p style="color:var(--color-text-secondary);font:var(--text-body)">No decisions pending.</p>`;
@@ -82,10 +85,10 @@ const _TILE_CATALOGUE = [
           .slice(0, 6)
           .map(
             (d) => `
-          <div class="decision-card" onclick="window.location='/decisions/${encodeURIComponent(d.decisionId || d.id)}'">
-            <div class="decision-card-id">${SC.esc(d.decisionId || d.id || "")}</div>
+          <div class="decision-card" onclick="window.location='/decisions/${encodeURIComponent(d.id || d.decisionId)}'">
+            <div class="decision-card-id">${SC.esc(d.id || d.decisionId || "")}</div>
             <div class="decision-card-title">${SC.esc(d.title || "")}</div>
-            <div class="decision-card-rec">${SC.esc((d.recommendation || d.summary || "").slice(0, 120))}</div>
+            <div class="decision-card-rec">${SC.esc((d.recommendation || d.summary || d.rationale || "").slice(0, 120))}</div>
           </div>`,
           )
           .join("");
