@@ -355,9 +355,15 @@ export function makeFxTradeExecuted(args: {
 
 export const fxSettlementMessageStandardSchema = z.enum([
   "SWIFT-MT202",
+  "SWIFT-MT103",
   "SWIFT-MT300",
+  "SWIFT-MT940",
   "ISO-20022-pacs.008",
   "ISO-20022-pacs.009",
+  "ISO-20022-pacs.002",
+  "ISO-20022-camt.052",
+  "ISO-20022-camt.053",
+  "ISO-20022-camt.054",
 ]);
 
 export type FxSettlementMessageStandard = z.infer<typeof fxSettlementMessageStandardSchema>;
