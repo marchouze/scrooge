@@ -121,7 +121,7 @@
   }
 
   // ── renderTable ────────────────────────────────────────────────
-  // Renders a full table into a container element.
+  // Renders a sortable table into a container element.
   // headers: string[]
   // rows: Array<{cells: string[], data: any}>
   // onRowClick: (data) => void
@@ -134,25 +134,64 @@
       return;
     }
 
-    const ths = headers.map((h) => `<th>${esc(h)}</th>`).join("");
-    const trs = rows
-      .map((row) => {
+    let sortCol = -1;
+    let sortDir = "asc";
+
+    function sortedRows() {
+      if (sortCol < 0) return rows;
+      return [...rows].sort((a, b) => {
+        const av = (a.cells[sortCol] ?? "").replace(/<[^>]+>/g, "").trim();
+        const bv = (b.cells[sortCol] ?? "").replace(/<[^>]+>/g, "").trim();
+        const an = Number(av.replace(/[^0-9.-]/g, ""));
+        const bn = Number(bv.replace(/[^0-9.-]/g, ""));
+        const cmp = (!isNaN(an) && !isNaN(bn) && av !== "" && bv !== "")
+          ? an - bn
+          : av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    function renderBody(table) {
+      const clickable = typeof onRowClick === "function";
+      const sorted = sortedRows();
+      const trs = sorted.map((row) => {
         const tds = row.cells.map((c) => `<td>${c}</td>`).join("");
-        const clickable = typeof onRowClick === "function" ? ' data-clickable="1"' : "";
-        return `<tr${clickable}>${tds}</tr>`;
-      })
-      .join("");
+        return `<tr${clickable ? ' data-clickable="1"' : ""}>${tds}</tr>`;
+      }).join("");
+      table.querySelector("tbody").innerHTML = trs;
+      if (clickable) {
+        table.querySelectorAll("tbody tr[data-clickable]").forEach((tr, i) => {
+          tr.addEventListener("click", () => onRowClick(sorted[i].data));
+        });
+      }
+    }
+
+    const ths = headers.map((h, i) =>
+      `<th data-col="${i}" data-sortable>${esc(h)}</th>`
+    ).join("");
 
     container.innerHTML = `<div class="table-wrap"><table>
       <thead><tr>${ths}</tr></thead>
-      <tbody>${trs}</tbody>
+      <tbody></tbody>
     </table></div>`;
 
-    if (typeof onRowClick === "function") {
-      container.querySelectorAll("tbody tr[data-clickable]").forEach((tr, i) => {
-        tr.addEventListener("click", () => onRowClick(rows[i].data));
+    const table = container.querySelector("table");
+    renderBody(table);
+
+    table.querySelectorAll("th[data-sortable]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const col = Number(th.dataset.col);
+        if (sortCol === col) {
+          sortDir = sortDir === "asc" ? "desc" : "asc";
+        } else {
+          sortCol = col;
+          sortDir = "asc";
+        }
+        table.querySelectorAll("th[data-sortable]").forEach((t) => t.removeAttribute("data-sort"));
+        th.setAttribute("data-sort", sortDir);
+        renderBody(table);
       });
-    }
+    });
   }
 
   // ── renderSkeleton ─────────────────────────────────────────────
