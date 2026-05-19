@@ -6,6 +6,7 @@ import type { AgentRunHandler } from "../../types";
 import atlasCollateralSnapshot from "../atlas-collateral-snapshot";
 import atlasEventTriage from "../atlas-event-triage";
 import atlasGoalLoop from "../atlas-goal-loop";
+import atlasIlaapRun from "../atlas-ilaap-run";
 import atlasPermissionPolicyRefresh from "../atlas-permission-policy-refresh";
 import atlasSubstrateState from "../atlas-substrate-state";
 
@@ -15,4 +16,5 @@ export const ATLAS_CALLABLES: Record<string, AgentRunHandler> = {
   "atlas:event-triage": atlasEventTriage,
   "atlas:permission-policy-refresh": atlasPermissionPolicyRefresh,
   "atlas:collateral-snapshot": atlasCollateralSnapshot,
+  "atlas:ilaap-run": atlasIlaapRun,
 };

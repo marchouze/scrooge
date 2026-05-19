@@ -86,6 +86,8 @@ export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
 export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
+// D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
+export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -113,6 +115,7 @@ import {
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
+import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
@@ -193,6 +196,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
   // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
   ...LIQUIDITY_EVENT_TYPES_REGISTRY,
+  // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
+  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+  ...ILAAP_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

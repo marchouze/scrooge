@@ -35,4 +35,14 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "30 6 * * *",
   }),
+  // atlas:ilaap-run — quarterly ILAAP stress scenario engine.
+  // Runs 4 scenarios (idiosyncratic, market-wide, combined, reverse-stress).
+  // Emits ILAAPScenarioRun (×4) + ILAAPSummaryCompleted + IcaapIlaapInputReady.
+  // Escalates via AgentEscalation if overallStatus === "inadequate".
+  // Closes Eitan's substrate gap "ILAAP engine — not yet built."
+  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+  entry("Atlas", "ilaap-run", "scheduled", {
+    cadenceHours: 24 * 90,
+    cronExpression: "0 7 1 1,4,7,10 *",
+  }),
 ];
