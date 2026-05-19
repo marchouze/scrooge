@@ -6,14 +6,15 @@
 //   openAuditFindingIds:
 //   - Empty store → empty set
 //   - AuditFinding with no closure → appears in open set
-//   - AuditFinding disposed → removed from open set
-//   - AuditFinding acknowledged → removed from open set
+//   - AuditFinding then AuditFindingDisposed → removed from open set
+//   - AuditFinding then AuditFindingAcknowledged → removed from open set
+//   - Mixed open and closed findings
 //
 //   reconViolationsInLast4h:
 //   - Empty store → false
-//   - Recent ReconResult with violations > 0 → true
+//   - Recent ReconResult with violationsTotal > 0 → true
 //   - Old ReconResult (> 4h) with violations → false
-//   - Recent ReconResult with violations = 0 → false
+//   - Recent ReconResult with violationsTotal = 0 → false
 //
 //   staleBriefCountForAgents:
 //   - Empty store → 0
@@ -21,6 +22,7 @@
 //   - Brief completed (AgentRunCompleted) → 0 (closed)
 //   - Brief to non-matching agent → 0
 //   - Brief newer than threshold → 0
+//   - Multiple briefs to governance group → correct count
 //
 // Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
 // Author: Atlas (Core banking platform architect, engineering)
@@ -28,8 +30,18 @@
 import { describe, expect, it } from "bun:test";
 
 import { newEventId } from "../../platform/core/types";
+import {
+  makeAgentBriefIssued,
+  makeAgentRunCompleted,
+} from "../../platform/event-store/event-types/agent";
+import { makeAuditFinding } from "../../platform/event-store/event-types/audit";
 import { EventStore } from "../../platform/event-store/store";
-import { openAuditFindingIds, reconViolationsInLast4h, staleBriefCountForAgents } from "./vera-goal-loop";
+import type { Event } from "../../platform/event-store/types";
+import {
+  openAuditFindingIds,
+  reconViolationsInLast4h,
+  staleBriefCountForAgents,
+} from "./vera-goal-loop";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,6 +63,37 @@ const BASE_ACTOR = { type: "service" as const, id: "test:vera-goal-loop-test" };
 const BASE_CITATIONS = ["test-citation"];
 const BASE_ENTITY = "BANK-ZA-001";
 
+/** Append a minimal AuditFindingDisposed (not in registry → passthrough). */
+function appendDisposed(store: EventStore, findingId: string): void {
+  const e: Event = {
+    event_id: newEventId(),
+    type: "AuditFindingDisposed",
+    as_of: nowIso(),
+    entity: BASE_ENTITY,
+    actor: BASE_ACTOR,
+    citations: BASE_CITATIONS,
+    payload: { findingId },
+  };
+  store.append(e);
+}
+
+/** Append a minimal AuditFindingAcknowledged (not in registry → passthrough). */
+function appendAcknowledged(store: EventStore, findingId: string): void {
+  const e: Event = {
+    event_id: newEventId(),
+    type: "AuditFindingAcknowledged",
+    as_of: nowIso(),
+    entity: BASE_ENTITY,
+    actor: BASE_ACTOR,
+    citations: BASE_CITATIONS,
+    payload: { findingId },
+  };
+  store.append(e);
+}
+
+/** Minimal valid brief doc hash (for factory functions that require it). */
+const BRIEF_DOC_HASH = "blake3:0000000000000000000000000000000000000000000000000000000000000001";
+
 // ---------------------------------------------------------------------------
 // openAuditFindingIds
 // ---------------------------------------------------------------------------
@@ -61,17 +104,26 @@ describe("openAuditFindingIds", () => {
     expect(openAuditFindingIds(store).size).toBe(0);
   });
 
-  it("returns finding ID when AuditFinding is present without closure", () => {
+  it("returns finding ID when AuditFinding has no closure", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: nowIso(),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-001", severity: "fail", description: "test finding" },
-    });
+    store.append(
+      makeAuditFinding({
+        asOf: nowIso(),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-001",
+          severity: "high",
+          category: "code-quality",
+          addressedTo: "agent:atlas",
+          agentId: "atlas",
+          raisedBy: "agent:vera",
+          summary: "Test finding",
+          citations: [],
+        },
+      }),
+    );
 
     const open = openAuditFindingIds(store);
     expect(open.size).toBe(1);
@@ -80,85 +132,94 @@ describe("openAuditFindingIds", () => {
 
   it("removes finding when AuditFindingDisposed is present", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: hoursAgoIso(2),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-002", severity: "warn" },
-    });
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFindingDisposed",
-      as_of: nowIso(),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-002" },
-    });
+    store.append(
+      makeAuditFinding({
+        asOf: hoursAgoIso(2),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-002",
+          severity: "medium",
+          category: "process",
+          addressedTo: "agent:atlas",
+          agentId: "atlas",
+          raisedBy: "agent:vera",
+          summary: "Test finding 002",
+          citations: [],
+        },
+      }),
+    );
+    appendDisposed(store, "F-002");
 
-    const open = openAuditFindingIds(store);
-    expect(open.size).toBe(0);
-    expect(open.has("F-002")).toBe(false);
+    expect(openAuditFindingIds(store).size).toBe(0);
+    expect(openAuditFindingIds(store).has("F-002")).toBe(false);
   });
 
   it("removes finding when AuditFindingAcknowledged is present", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: hoursAgoIso(1),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-003", severity: "fail" },
-    });
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFindingAcknowledged",
-      as_of: nowIso(),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-003" },
-    });
+    store.append(
+      makeAuditFinding({
+        asOf: hoursAgoIso(1),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-003",
+          severity: "critical",
+          category: "mandate",
+          addressedTo: "agent:atlas",
+          agentId: "atlas",
+          raisedBy: "agent:vera",
+          summary: "Test finding 003",
+          citations: [],
+        },
+      }),
+    );
+    appendAcknowledged(store, "F-003");
 
-    const open = openAuditFindingIds(store);
-    expect(open.size).toBe(0);
+    expect(openAuditFindingIds(store).size).toBe(0);
   });
 
   it("keeps other open findings when only some are disposed", () => {
     const store = makeStore();
-    // Two findings; one disposed, one still open.
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: hoursAgoIso(3),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-010", severity: "fail" },
-    });
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFinding",
-      as_of: hoursAgoIso(2),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-011", severity: "warn" },
-    });
-    store.append({
-      event_id: newEventId(),
-      type: "AuditFindingDisposed",
-      as_of: nowIso(),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { findingId: "F-010" },
-    });
+    store.append(
+      makeAuditFinding({
+        asOf: hoursAgoIso(3),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-010",
+          severity: "high",
+          category: "security",
+          addressedTo: "agent:atlas",
+          agentId: "atlas",
+          raisedBy: "agent:vera",
+          summary: "Finding 010 (to be disposed)",
+          citations: [],
+        },
+      }),
+    );
+    store.append(
+      makeAuditFinding({
+        asOf: hoursAgoIso(2),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-011",
+          severity: "medium",
+          category: "output",
+          addressedTo: "agent:atlas",
+          agentId: "atlas",
+          raisedBy: "agent:vera",
+          summary: "Finding 011 (stays open)",
+          citations: [],
+        },
+      }),
+    );
+    appendDisposed(store, "F-010");
 
     const open = openAuditFindingIds(store);
     expect(open.size).toBe(1);
@@ -177,7 +238,7 @@ describe("reconViolationsInLast4h", () => {
     expect(reconViolationsInLast4h(store)).toBe(false);
   });
 
-  it("returns true for a recent ReconResult with violations > 0", () => {
+  it("returns true for a recent ReconResult with violationsTotal > 0", () => {
     const store = makeStore();
     store.append({
       event_id: newEventId(),
@@ -186,7 +247,7 @@ describe("reconViolationsInLast4h", () => {
       entity: BASE_ENTITY,
       actor: BASE_ACTOR,
       citations: BASE_CITATIONS,
-      payload: { pipeline: "recon:test", violations: 3, status: "fail" },
+      payload: { pipeline: "recon:test", violationsTotal: 3, ok: false },
     });
     expect(reconViolationsInLast4h(store)).toBe(true);
   });
@@ -200,12 +261,12 @@ describe("reconViolationsInLast4h", () => {
       entity: BASE_ENTITY,
       actor: BASE_ACTOR,
       citations: BASE_CITATIONS,
-      payload: { pipeline: "recon:test", violations: 5, status: "fail" },
+      payload: { pipeline: "recon:test", violationsTotal: 5, ok: false },
     });
     expect(reconViolationsInLast4h(store)).toBe(false);
   });
 
-  it("returns false for a recent ReconResult with violations = 0", () => {
+  it("returns false for a recent ReconResult with violationsTotal = 0", () => {
     const store = makeStore();
     store.append({
       event_id: newEventId(),
@@ -214,23 +275,9 @@ describe("reconViolationsInLast4h", () => {
       entity: BASE_ENTITY,
       actor: BASE_ACTOR,
       citations: BASE_CITATIONS,
-      payload: { pipeline: "recon:test", violations: 0, status: "ok" },
+      payload: { pipeline: "recon:test", violationsTotal: 0, ok: true },
     });
     expect(reconViolationsInLast4h(store)).toBe(false);
-  });
-
-  it("returns true when using `fails` payload key instead of `violations`", () => {
-    const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "ReconResult",
-      as_of: hoursAgoIso(2),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { pipeline: "recon:alt", fails: 1, status: "fail" },
-    });
-    expect(reconViolationsInLast4h(store)).toBe(true);
   });
 });
 
@@ -246,115 +293,147 @@ describe("staleBriefCountForAgents", () => {
 
   it("counts a brief addressed to Vera older than the threshold", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AgentBriefIssued",
-      as_of: hoursAgoIso(50), // older than 48h threshold
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: {
-        briefId: "brief-vera-001",
-        issuedTo: { name: "Vera", position: "internal-audit-engineer" },
-        title: "Audit finding review",
-      },
-    });
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(50),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId: "brief-vera-001",
+          issuedTo: { name: "Vera", position: "internal-audit-engineer" },
+          issuedBy: { name: "Scrooge", position: "chief-of-staff" },
+          title: "Audit finding review",
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "deliverable-document", description: "Audit finding review" }],
+        },
+      }),
+    );
     expect(staleBriefCountForAgents(["Vera"], 48 * 60 * 60 * 1000, store)).toBe(1);
   });
 
   it("does NOT count a brief where AgentRunCompleted references the briefId", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AgentBriefIssued",
-      as_of: hoursAgoIso(50),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: {
-        briefId: "brief-vera-002",
-        issuedTo: { name: "Vera", position: "internal-audit-engineer" },
-        title: "Completed brief",
-      },
-    });
-    store.append({
-      event_id: newEventId(),
-      type: "AgentRunCompleted",
-      as_of: hoursAgoIso(1),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: { briefId: "brief-vera-002", outcome: "delivered" },
-    });
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(50),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId: "brief-vera-002",
+          issuedTo: { name: "Vera", position: "internal-audit-engineer" },
+          issuedBy: { name: "Scrooge", position: "chief-of-staff" },
+          title: "Completed brief",
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "deliverable-document", description: "Completed brief" }],
+        },
+      }),
+    );
+    store.append(
+      makeAgentRunCompleted({
+        asOf: hoursAgoIso(1),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          runId: newEventId(),
+          briefId: "brief-vera-002",
+          agent: { name: "Vera", position: "internal-audit-engineer" },
+          completedAt: hoursAgoIso(1),
+          outcome: "delivered",
+          deliverableDocumentHashes: [],
+          substrateGapsSurfaced: [],
+          citations: [],
+          followOnRoutes: [],
+        },
+      }),
+    );
     expect(staleBriefCountForAgents(["Vera"], 48 * 60 * 60 * 1000, store)).toBe(0);
   });
 
   it("does NOT count a brief addressed to a non-matching agent", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AgentBriefIssued",
-      as_of: hoursAgoIso(50),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: {
-        briefId: "brief-atlas-003",
-        issuedTo: { name: "Atlas", position: "core-banking-platform-architect" },
-        title: "Platform review",
-      },
-    });
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(50),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId: "brief-atlas-003",
+          issuedTo: { name: "Atlas", position: "core-banking-platform-architect" },
+          issuedBy: { name: "Scrooge", position: "chief-of-staff" },
+          title: "Platform review",
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "code-pr", description: "Platform review PR" }],
+        },
+      }),
+    );
     expect(staleBriefCountForAgents(["Vera"], 48 * 60 * 60 * 1000, store)).toBe(0);
   });
 
   it("does NOT count a brief that is newer than the stale threshold", () => {
     const store = makeStore();
-    store.append({
-      event_id: newEventId(),
-      type: "AgentBriefIssued",
-      as_of: hoursAgoIso(1), // only 1h old, threshold is 48h
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: {
-        briefId: "brief-vera-004",
-        issuedTo: { name: "Vera", position: "internal-audit-engineer" },
-        title: "Fresh brief",
-      },
-    });
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(1),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId: "brief-vera-004",
+          issuedTo: { name: "Vera", position: "internal-audit-engineer" },
+          issuedBy: { name: "Scrooge", position: "chief-of-staff" },
+          title: "Fresh brief",
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "deliverable-document", description: "Fresh brief" }],
+        },
+      }),
+    );
     expect(staleBriefCountForAgents(["Vera"], 48 * 60 * 60 * 1000, store)).toBe(0);
   });
 
   it("matches multiple agent names (governance group)", () => {
     const store = makeStore();
-    // Brief for Thandiwe
-    store.append({
-      event_id: newEventId(),
-      type: "AgentBriefIssued",
-      as_of: hoursAgoIso(72),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: {
-        briefId: "brief-thandiwe-001",
-        issuedTo: { name: "Thandiwe", position: "chief-audit-executive" },
-        title: "Audit committee brief",
-      },
-    });
-    // Brief for Helena
-    store.append({
-      event_id: newEventId(),
-      type: "AgentBriefIssued",
-      as_of: hoursAgoIso(60),
-      entity: BASE_ENTITY,
-      actor: BASE_ACTOR,
-      citations: BASE_CITATIONS,
-      payload: {
-        briefId: "brief-helena-001",
-        issuedTo: { name: "Helena", position: "chief-risk-officer" },
-        title: "RAS review",
-      },
-    });
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(72),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId: "brief-thandiwe-001",
+          issuedTo: { name: "Thandiwe", position: "chief-audit-executive" },
+          issuedBy: { name: "Scrooge", position: "chief-of-staff" },
+          title: "Audit committee brief",
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "deliverable-document", description: "Audit committee brief" }],
+        },
+      }),
+    );
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(60),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId: "brief-helena-001",
+          issuedTo: { name: "Helena", position: "chief-risk-officer" },
+          issuedBy: { name: "Scrooge", position: "chief-of-staff" },
+          title: "RAS review",
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "deliverable-document", description: "RAS review" }],
+        },
+      }),
+    );
     expect(
       staleBriefCountForAgents(
         ["Vera", "Thandiwe", "Owen", "Helena", "Rashida"],

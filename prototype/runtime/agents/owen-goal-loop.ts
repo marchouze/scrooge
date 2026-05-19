@@ -200,7 +200,7 @@ export function openBriefsAddressedToOwen(store: EventStore = eventStore): numbe
   const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
   for (const e of store.replay({ type: "AgentBriefIssued" })) {
     const p = e.payload as Record<string, unknown>;
-    const briefId = String(p.briefId ?? e.id);
+    const briefId = String(p.briefId ?? e.event_id);
     const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
     if (!toName.toLowerCase().includes("owen")) continue;
     if (closedOrStarted.has(briefId)) continue;
@@ -309,10 +309,17 @@ export const owenGoalDeriver: GoalDeriver = async (
           { section: "9-decisions-in-scope", rowKey: GOAL_APPROVE_CANONICAL_REGISTRY, specHash },
         ],
         procedureCitations: [
-          { procedurePath: PROCEDURE_CANONICAL_REGISTRY_CYCLE, stepId: stepId0a, procedureHash: specHash },
+          {
+            procedurePath: PROCEDURE_CANONICAL_REGISTRY_CYCLE,
+            stepId: stepId0a,
+            procedureHash: specHash,
+          },
         ],
         plannedEvents: [
-          { type: "GovernanceCyclePrep", payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" } },
+          {
+            type: "GovernanceCyclePrep",
+            payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" },
+          },
         ],
       };
     }
@@ -335,10 +342,17 @@ export const owenGoalDeriver: GoalDeriver = async (
           { section: "9-decisions-in-scope", rowKey: GOAL_APPROVE_FORUM_AGENDAS, specHash },
         ],
         procedureCitations: [
-          { procedurePath: PROCEDURE_CEO_DECISION_REVIEW, stepId: stepId0b, procedureHash: specHash },
+          {
+            procedurePath: PROCEDURE_CEO_DECISION_REVIEW,
+            stepId: stepId0b,
+            procedureHash: specHash,
+          },
         ],
         plannedEvents: [
-          { type: "GovernanceCyclePrep", payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" } },
+          {
+            type: "GovernanceCyclePrep",
+            payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" },
+          },
         ],
       };
     }
@@ -362,10 +376,17 @@ export const owenGoalDeriver: GoalDeriver = async (
           { section: "9-decisions-in-scope", rowKey: GOAL_APPROVE_FORUM_AGENDAS, specHash },
         ],
         procedureCitations: [
-          { procedurePath: PROCEDURE_CEO_DECISION_REVIEW, stepId: stepId0c, procedureHash: specHash },
+          {
+            procedurePath: PROCEDURE_CEO_DECISION_REVIEW,
+            stepId: stepId0c,
+            procedureHash: specHash,
+          },
         ],
         plannedEvents: [
-          { type: "GovernanceCyclePrep", payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" } },
+          {
+            type: "GovernanceCyclePrep",
+            payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" },
+          },
         ],
       };
     }

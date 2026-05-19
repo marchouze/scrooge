@@ -122,7 +122,7 @@ export function openAuditFindingIds(store: EventStore = eventStore): Set<string>
   const open = new Set<string>();
   for (const e of store.replay({ type: "AuditFinding" })) {
     const p = e.payload as Record<string, unknown>;
-    const id = String(p.findingId ?? e.id);
+    const id = String(p.findingId ?? e.event_id);
     open.add(id);
   }
   for (const e of store.replay({ type: "AuditFindingDisposed" })) {
@@ -144,8 +144,23 @@ export function reconViolationsInLast4h(store: EventStore = eventStore): boolean
     const t = new Date(e.as_of).getTime();
     if (Number.isNaN(t) || t < cutoff) continue;
     const p = e.payload as Record<string, unknown>;
-    const violations = Number(p.violations ?? p.fails ?? 0);
-    if (violations > 0) return true;
+    // `violationsTotal` is the canonical count field (new schema).
+    // `violations` in old payloads may be a number or an array — handle both.
+    // `fails` is a legacy alias.
+    const vTotal = p.violationsTotal;
+    const vLegacy = p.violations;
+    const vFails = p.fails;
+    const count =
+      typeof vTotal === "number"
+        ? vTotal
+        : Array.isArray(vLegacy)
+          ? vLegacy.length
+          : typeof vLegacy === "number"
+            ? vLegacy
+            : typeof vFails === "number"
+              ? vFails
+              : 0;
+    if (count > 0) return true;
   }
   return false;
 }
@@ -168,7 +183,7 @@ export function staleBriefCountForAgents(
   let count = 0;
   for (const e of store.replay({ type: "AgentBriefIssued" })) {
     const p = e.payload as Record<string, unknown>;
-    const briefId = String(p.briefId ?? e.id);
+    const briefId = String(p.briefId ?? e.event_id);
     const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
     if (!agentNames.some((n) => toName.toLowerCase().includes(n.toLowerCase()))) continue;
     if (closedBriefIds.has(briefId)) continue;

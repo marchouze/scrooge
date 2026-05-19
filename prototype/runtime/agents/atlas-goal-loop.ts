@@ -100,7 +100,7 @@ export function openBriefsAddressedToAtlas(store: EventStore = eventStore): numb
   const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
   for (const e of store.replay({ type: "AgentBriefIssued" })) {
     const p = e.payload as Record<string, unknown>;
-    const briefId = String(p.briefId ?? e.id);
+    const briefId = String(p.briefId ?? e.event_id);
     const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
     if (!toName.toLowerCase().includes("atlas")) continue;
     if (handledBriefIds.has(briefId)) continue;
@@ -127,9 +127,17 @@ export function openFindingsOwnedByAtlas(store: EventStore = eventStore): number
   let count = 0;
   for (const e of store.replay({ type: "AuditFinding" })) {
     const p = e.payload as Record<string, unknown>;
+    // The auditFindingPayloadSchema defines `agentId` (bare agent name) and
+    // `addressedTo` (agent URN). Check both for "atlas" (case-insensitive).
+    // Also check legacy `owner` / `recommendedOwner` fields in case older
+    // events used them before the strict schema was enforced.
+    const agentId = String(p.agentId ?? "").toLowerCase();
+    const addressedTo = String(p.addressedTo ?? "").toLowerCase();
     const owner = String(p.owner ?? p.recommendedOwner ?? "").toLowerCase();
-    if (!owner.includes("atlas")) continue;
-    const findingId = String(p.findingId ?? e.id);
+    const isAtlas =
+      agentId.includes("atlas") || addressedTo.includes("atlas") || owner.includes("atlas");
+    if (!isAtlas) continue;
+    const findingId = String(p.findingId ?? e.event_id);
     if (!disposed.has(findingId)) count++;
   }
   return count;
@@ -172,9 +180,7 @@ export const atlasGoalDeriver: GoalDeriver = async (
 
   // Build shared citations for event-reactive candidates.
   const specHash = spec.specHash;
-  const procedureEntry0 = spec.procedureSteps.find(
-    (s) => s.procedurePath === ATLAS_PROCEDURE_PATH,
-  );
+  const procedureEntry0 = spec.procedureSteps.find((s) => s.procedurePath === ATLAS_PROCEDURE_PATH);
   const stepId0 =
     procedureEntry0 && procedureEntry0.stepIds.length > 0
       ? (procedureEntry0.stepIds[0] ?? ATLAS_PROCEDURE_STEP_ID)
@@ -196,9 +202,7 @@ export const atlasGoalDeriver: GoalDeriver = async (
         kind: "decision",
         chosen: ATLAS_PR_GOAL,
         rationale: `Candidate 0a: ${pendingBriefCount} open brief(s) addressed to Atlas (older than 2h) not yet started or completed. Atlas's §9 decision row "Approve / reject a platform-design PR" is the broadest in-scope decision covering open engineering work. Picking up pending briefs.`,
-        mandateCitations: [
-          { section: "9-decisions-in-scope", rowKey: ATLAS_PR_GOAL, specHash },
-        ],
+        mandateCitations: [{ section: "9-decisions-in-scope", rowKey: ATLAS_PR_GOAL, specHash }],
         procedureCitations: [
           { procedurePath: ATLAS_PROCEDURE_PATH, stepId: stepId0, procedureHash: specHash },
         ],
