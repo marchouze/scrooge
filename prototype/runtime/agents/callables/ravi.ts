@@ -9,6 +9,7 @@ import raviEventTriage from "../ravi-event-triage";
 import raviFtpAttribution from "../ravi-ftp-attribution";
 import raviFtpCurvePublish from "../ravi-ftp-curve-publish";
 import raviGoalLoop from "../ravi-goal-loop";
+import raviIntradayStress from "../ravi-intraday-stress";
 
 export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:alm-readiness": raviAlmReadiness,
@@ -17,4 +18,5 @@ export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:ftp-attribution": raviFtpAttribution,
   "ravi:goal-loop": raviGoalLoop,
   "ravi:event-triage": raviEventTriage,
+  "ravi:intraday-stress": raviIntradayStress,
 };

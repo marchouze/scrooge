@@ -110,7 +110,63 @@ export function makeIRRBBChecked(args: {
 }
 
 // ---------------------------------------------------------------------------
+// IntradayHQLAStressProjection
+// ---------------------------------------------------------------------------
+
+export const intradayHQLAStressProjectionPayloadSchema = z.object({
+  /** Unique projection identifier — e.g. "INTRADAY-BAU-09:00-2026-05-19". */
+  projectionId: z.string().min(1),
+  /** ISO 8601 business date for which the projection was computed. */
+  asOf: z.string().min(1),
+  /** Stress scenario. */
+  scenario: z.enum(["BAU", "stress"]),
+  /** SAMOS settlement window label (SA clock time). */
+  windowLabel: z.string().min(1),
+  /** Projected HQLA buffer at end of this window (ZAR). */
+  projectedHQLAZar: z.number(),
+  /** RAS intraday floor (ZAR). */
+  floorZar: z.number(),
+  /**
+   * Traffic-light status:
+   *   "green"         — projectedHQLAZar > floorZar
+   *   "amber"         — 0 < projectedHQLAZar ≤ floorZar
+   *   "red"           — projectedHQLAZar ≤ 0
+   *   "no-positions"  — starting HQLA = 0 (build phase)
+   */
+  status: z.enum(["green", "amber", "red", "no-positions"]),
+  /** ISO 4217 currency code. */
+  currency: z.string().min(3).max(3),
+});
+
+export type IntradayHQLAStressProjectionPayload = z.infer<
+  typeof intradayHQLAStressProjectionPayloadSchema
+>;
+
+export function makeIntradayHQLAStressProjection(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: IntradayHQLAStressProjectionPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "IntradayHQLAStressProjection",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: intradayHQLAStressProjectionPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Typed event types list
 // ---------------------------------------------------------------------------
 
-export const ALM_TYPED_EVENT_TYPES = ["ALMRunCompleted", "IRRBBChecked"] as const;
+export const ALM_TYPED_EVENT_TYPES = [
+  "ALMRunCompleted",
+  "IRRBBChecked",
+  "IntradayHQLAStressProjection",
+] as const;
