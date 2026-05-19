@@ -26,25 +26,21 @@
     initShell({ title: "Operations" });
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
-      const [settlement, inflight] = await Promise.all([sf("/api/ops/settlement"), sf("/api/inflight")]);
+      const state = await sf("/api/state");
       const tilesEl = document.getElementById("ops-tiles");
-      const s = settlement ?? {};
-      tilesEl.appendChild(SC.renderTile({
-        label: "Settlement Status", value: s.status||s.overallStatus||"—",
-        status: s.status==="ok"?"ok":s.status==="warn"?"warn":s.status?"danger":null,
-        onClick: () => SC.openModal({ title:"Settlement Detail", body: SC.renderDefList(s) }),
-      }));
+      const ws = state?.inFlight ?? [];
+      const active = ws.filter(w => w.active).length;
+      tilesEl.appendChild(SC.renderTile({ label:"Active Workstreams", value:active, status:active>0?"info":"ok" }));
       tilesEl.appendChild(SC.renderTile({ label:"Procedures", value:"View", href:"/procedures.html", status:"info" }));
       document.getElementById("ws-header").innerHTML = SC.renderSectionHeader("In-Flight Workstreams", null);
-      const ws = Array.isArray(inflight) ? inflight : (inflight?.workstreams ?? inflight?.items ?? []);
       SC.renderTable({
         container: document.getElementById("ws-table"),
-        headers: ["Owner","Title","Started","Status"],
+        headers: ["Owner","Workstream","Due","Status"],
         rows: ws.map(w => ({
-          cells: [SC.esc(w.owner||""), SC.esc(w.title||w.name||""), SC.esc((w.startedAt||w.started||"").slice(0,10)), SC.renderBadge(w.status||"active")],
+          cells: [SC.esc(w.owner||""), SC.esc(w.what||w.title||""), SC.esc((w.due||"").slice(0,10)), SC.renderBadge(w.active?"active":"idle")],
           data: w,
         })),
-        onRowClick: w => SC.openModal({ title: w.title||w.name||"Workstream", body: SC.renderDefList(w) }),
+        onRowClick: w => SC.openModal({ title: w.what||w.title||"Workstream", body: SC.renderDefList(w) }),
         emptyMessage: "No in-flight workstreams",
       });
     })();

@@ -26,13 +26,13 @@
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
       const el = document.getElementById("agents-table");
       el.innerHTML = SC.renderSkeleton(8);
-      const data = await sf("/api/agents");
-      const all = Array.isArray(data) ? data : (data?.agents ?? data?.items ?? []);
+      const data = await sf("/api/state");
+      const all = data?.agents ?? [];
       SC.renderTable({
         container: el,
-        headers: ["Name","Position","Status","Workstream","Last Run"],
+        headers: ["Name","Role","Type","Active Workstreams","Open Decisions"],
         rows: all.map(a => ({
-          cells: [SC.esc(a.name||a.agentName||""), SC.esc(a.position||a.role||""), SC.renderBadge(a.status||a.buildPhaseStatus||"active"), SC.esc(a.workstream||""), SC.esc((a.lastRun||a.lastRunAt||"").slice(0,19).replace("T"," "))],
+          cells: [SC.esc(a.name||""), SC.esc(a.role||""), SC.renderBadge(a.type||"functional"), SC.esc(String(a.totalActive??0)), SC.esc(String(a.totalOpenDecisions??0))],
           data: a,
         })),
         onRowClick: a => SC.openModal({ title: a.name||"Agent", body: SC.renderDefList(a) }),

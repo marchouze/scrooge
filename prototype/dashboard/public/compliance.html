@@ -24,14 +24,17 @@
     initShell({ title: "Compliance" });
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
-      const data = await sf("/api/compliance/metrics");
-      const m = data ?? {};
+      const [oblData, state] = await Promise.all([sf("/api/obligations"), sf("/api/state")]);
+      const open = oblData?.statusCounts?.open ?? oblData?.count ?? 0;
+      const overdue = oblData?.statusCounts?.overdue ?? 0;
+      const policies = state?.policies?.length ?? 0;
+      const alerts = state?.findings?.length ?? 0;
       const el = document.getElementById("comp-tiles");
       [
-        SC.renderTile({ label:"Open Obligations", value:m.openObligations??m.open??"—", href:"/obligations.html", status:(m.openObligations??m.open??0)>0?"warn":"ok" }),
-        SC.renderTile({ label:"Overdue", value:m.overdueObligations??m.overdue??"—", href:"/obligations.html", status:(m.overdueObligations??m.overdue??0)>0?"danger":"ok" }),
-        SC.renderTile({ label:"Policies", value:m.policiesCount??m.policies??"—", href:"/policies.html", status:"info" }),
-        SC.renderTile({ label:"Alerts", value:m.alertsCount??m.alerts??"—", href:"/obligations.html", status:(m.alertsCount??m.alerts??0)>0?"warn":"ok" }),
+        SC.renderTile({ label:"Open Obligations", value:open, href:"/obligations.html", status:open>0?"warn":"ok" }),
+        SC.renderTile({ label:"Overdue", value:overdue, href:"/obligations.html", status:overdue>0?"danger":"ok" }),
+        SC.renderTile({ label:"Policies", value:policies, href:"/policies.html", status:"info" }),
+        SC.renderTile({ label:"Vera Alerts", value:alerts, href:"/audit.html", status:alerts>0?"warn":"ok" }),
       ].forEach(t => el.appendChild(t));
     })();
   </script>

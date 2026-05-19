@@ -25,12 +25,13 @@
     initShell({ title: "Audit" });
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
-      const data = await sf("/api/audit/findings");
-      const all = Array.isArray(data) ? data : (data?.findings ?? data?.items ?? []);
+      const data = await sf("/api/state");
+      const all = data?.findings ?? [];
+      const sevMap = { high: "P1", medium: "P2", low: "P3" };
       let sevFilter = null;
       const tilesEl = document.getElementById("aud-tiles");
       const counts = { P1: 0, P2: 0, P3: 0 };
-      all.forEach(f => { const s = (f.severity||"").toUpperCase(); if (counts[s] !== undefined) counts[s]++; });
+      all.forEach(f => { const p = sevMap[(f.severity||"").toLowerCase()]; if (p) counts[p]++; });
       [["P1","danger"],["P2","warn"],["P3","info"]].forEach(([sev, status]) => {
         const t = SC.renderTile({ label: `${sev} Findings`, value: counts[sev], status, onClick: () => {
           sevFilter = sevFilter === sev ? null : sev;
@@ -39,15 +40,15 @@
         tilesEl.appendChild(t);
       });
       function render() {
-        const rows = sevFilter ? all.filter(f => (f.severity||"").toUpperCase() === sevFilter) : all;
+        const rows = sevFilter ? all.filter(f => sevMap[(f.severity||"").toLowerCase()] === sevFilter) : all;
         SC.renderTable({
           container: document.getElementById("aud-table"),
-          headers: ["ID","Title","Severity","Owner","Status","Due"],
+          headers: ["ID","Principle","Severity","Source","As Of"],
           rows: rows.map(f => ({
-            cells: [SC.esc(f.id||f.findingId||""), SC.esc(f.title||""), SC.renderBadge(f.severity||""), SC.esc(f.owner||""), SC.renderBadge(f.status||"open"), SC.esc((f.dueDate||f.due||"").slice(0,10))],
+            cells: [SC.esc(f.id||""), SC.esc(f.principle||""), SC.renderBadge(f.severity||""), SC.esc(f.source||""), SC.esc((f.asOf||"").slice(0,10))],
             data: f,
           })),
-          onRowClick: f => SC.openModal({ title: f.title||"Finding", body: SC.renderDefList(f) }),
+          onRowClick: f => SC.openModal({ title: f.id||"Finding", body: SC.renderDefList(f) }),
           emptyMessage: "No findings",
         });
       }

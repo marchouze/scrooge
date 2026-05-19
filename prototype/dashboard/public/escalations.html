@@ -30,23 +30,23 @@
       async function safeFetch(u) {
         try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
       }
-      const data = await safeFetch("/api/risk/ras");
-      const clusters = Array.isArray(data) ? data : (data?.clusters ?? data?.items ?? []);
-      const escalated = clusters.filter(c => c.breachStatus && c.breachStatus !== "ok");
+      const data = await safeFetch("/api/state");
+      const clusters = data?.limitUtilisations ?? [];
+      const escalated = clusters.filter(c => c.ragStatus && c.ragStatus !== "green");
       SC.renderTable({
         container: el,
-        headers: ["Cluster ID", "Title", "Severity", "Owner", "Last Updated"],
+        headers: ["Cluster", "Limit", "Utilisation", "RAG", "As Of"],
         rows: escalated.map(c => ({
           cells: [
-            SC.esc(c.clusterId || c.id || ""),
-            SC.esc(c.title || c.name || ""),
-            SC.renderBadge(c.severity || c.breachStatus || "warn"),
-            SC.esc(c.owner || ""),
-            SC.esc((c.lastUpdated || c.updatedAt || "").slice(0, 10)),
+            SC.esc(c.cluster || ""),
+            SC.esc(c.limitName || ""),
+            SC.esc(c.utilisationPct != null ? `${c.utilisationPct}%` : "—"),
+            SC.renderBadge(c.ragStatus || "warn"),
+            SC.esc((c.asOf || "").slice(0, 10)),
           ],
           data: c,
         })),
-        onRowClick: c => SC.openModal({ title: c.title || c.name || "Cluster", body: SC.renderDefList(c) }),
+        onRowClick: c => SC.openModal({ title: c.cluster || "Cluster", body: SC.renderDefList(c) }),
         emptyMessage: "No escalations — all RAS clusters within limits",
       });
     })();
