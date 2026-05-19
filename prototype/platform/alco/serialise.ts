@@ -54,7 +54,10 @@ function pct(value: number | null): string {
   return `${value.toFixed(2)}`;
 }
 
-function rateLookup(curve: { tenors: Array<{ tenor: string; rate: number }> }, tenor: string): string {
+function rateLookup(
+  curve: { tenors: Array<{ tenor: string; rate: number }> },
+  tenor: string,
+): string {
   const found = curve.tenors.find((t) => t.tenor === tenor);
   if (found === undefined) return "N/A";
   return `${(found.rate * 100).toFixed(3)}`;
@@ -89,7 +92,9 @@ export function serialiseALCOPack(pack: ALCOPack): string {
     lines.push(
       `LCR: ${pct(lcr.lcrRatioPct)}% (${liqStatus(lcr.status)}) | NSFR: ${pct(nsfr.nsfrRatioPct)}% (${liqStatus(nsfr.status)})`,
     );
-    lines.push(`HQLA: ZAR ${zarMillions(lcr.hqlaZar)}m | Net cash outflows: ZAR ${zarMillions(lcr.netCashOutflowsZar)}m`);
+    lines.push(
+      `HQLA: ZAR ${zarMillions(lcr.hqlaZar)}m | Net cash outflows: ZAR ${zarMillions(lcr.netCashOutflowsZar)}m`,
+    );
     lines.push(`ASF: ZAR ${zarMillions(nsfr.asfZar)}m | RSF: ZAR ${zarMillions(nsfr.rsfZar)}m`);
   } else {
     lines.push("No data — build phase (no LCRComputed or NSFRComputed events in store).");
@@ -115,9 +120,7 @@ export function serialiseALCOPack(pack: ALCOPack): string {
     );
     lines.push(`Securities: ${s.securityCount}`);
   } else {
-    lines.push(
-      "No data — build phase (no CollateralInventorySnapshot events in store).",
-    );
+    lines.push("No data — build phase (no CollateralInventorySnapshot events in store).");
   }
   lines.push("");
 
@@ -152,9 +155,7 @@ export function serialiseALCOPack(pack: ALCOPack): string {
       `Peak gross outflows: ZAR ${zarMillions(proj.peakGrossOutflowsZar)}m | Scenario: ${proj.scenario}`,
     );
   } else {
-    lines.push(
-      "No data — build phase (no IntradayHQLAStressProjection events in store).",
-    );
+    lines.push("No data — build phase (no IntradayHQLAStressProjection events in store).");
   }
   lines.push("");
 
@@ -165,7 +166,9 @@ export function serialiseALCOPack(pack: ALCOPack): string {
   lines.push("");
   if (pack.ftpCurve !== null) {
     const curve = pack.ftpCurve.curve;
-    lines.push(`Curve ID: ${curve.curveId} | Effective: ${curve.effectiveDate} | Methodology: ${curve.methodology}`);
+    lines.push(
+      `Curve ID: ${curve.curveId} | Effective: ${curve.effectiveDate} | Methodology: ${curve.methodology}`,
+    );
     lines.push(
       `ON: ${rateLookup(curve, "1D")}% | 3M: ${rateLookup(curve, "3M")}% | 1Y: ${rateLookup(curve, "1Y")}% | 5Y: ${rateLookup(curve, "5Y")}% | 10Y: ${rateLookup(curve, "10Y")}%`,
     );
@@ -197,7 +200,7 @@ export function serialiseALCOPack(pack: ALCOPack): string {
   lines.push("");
   const items = pack.openRiskItems.items;
   if (items.length === 0) {
-    lines.push(`0 open items: None`);
+    lines.push("0 open items: None");
   } else {
     lines.push(`${items.length} open item${items.length === 1 ? "" : "s"}:`);
     lines.push("");
@@ -222,9 +225,7 @@ export function serialiseALCOPack(pack: ALCOPack): string {
   // -----------------------------------------------------------------------
   lines.push("---");
   if (pack.sectionsWithNoData.length > 0) {
-    lines.push(
-      `Sections with no data (build phase): ${pack.sectionsWithNoData.join(", ")}`,
-    );
+    lines.push(`Sections with no data (build phase): ${pack.sectionsWithNoData.join(", ")}`);
   } else {
     lines.push("All sections have data.");
   }

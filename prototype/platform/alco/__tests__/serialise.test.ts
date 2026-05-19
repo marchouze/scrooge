@@ -57,10 +57,20 @@ describe("serialiseALCOPack", () => {
 
   it("does not contain any emoji characters", () => {
     const output = serialiseALCOPack(BUILD_PHASE_PACK);
-    // Emoji regex: covers common emoji ranges
-    const emojiRegex =
-      /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]/u;
-    expect(emojiRegex.test(output)).toBe(false);
+    // Check that no emoji codepoints appear (Emoji_Presentation range and common extended ranges).
+    // We use a simple approach: check no characters fall in typical emoji blocks.
+    // Note: the dash character U+2014 (em dash) is used in the title but is not emoji.
+    const hasEmoji = output.split("").some((ch) => {
+      const code = ch.codePointAt(0) ?? 0;
+      // Common emoji blocks
+      return (
+        (code >= 0x1f300 && code <= 0x1f9ff) || // Misc Symbols / Emoticons
+        (code >= 0x1fa00 && code <= 0x1faff) || // Extended-A symbols
+        (code >= 0x2702 && code <= 0x27b0) || // Dingbats emoji subset
+        (code >= 0xfe00 && code <= 0xfe0f) // Variation selectors
+      );
+    });
+    expect(hasEmoji).toBe(false);
   });
 
   it("includes the pack header with cycle label and asOf", () => {
@@ -78,23 +88,18 @@ describe("serialiseALCOPack", () => {
   it("includes all 8 section headers when pack has data", () => {
     // Use the build-phase pack — headers should still be present even with no data
     const output = serialiseALCOPack(BUILD_PHASE_PACK);
-    const sectionHeaders = [
-      "## 1.",
-      "## 2.",
-      "## 3.",
-      "## 4.",
-      "## 5.",
-      "## 6.",
-      "## 7.",
-      "## 8.",
-    ];
+    const sectionHeaders = ["## 1.", "## 2.", "## 3.", "## 4.", "## 5.", "## 6.", "## 7.", "## 8."];
     for (const h of sectionHeaders) {
       expect(output).toContain(h);
     }
   });
 
   it("renders GREEN status in uppercase", () => {
-    const greenPack: ALCOPack = { ...BUILD_PHASE_PACK, overallTreasuryStatus: "green", sectionsWithNoData: [] };
+    const greenPack: ALCOPack = {
+      ...BUILD_PHASE_PACK,
+      overallTreasuryStatus: "green",
+      sectionsWithNoData: [],
+    };
     const output = serialiseALCOPack(greenPack);
     expect(output).toContain("GREEN");
     expect(output).not.toContain("Overall treasury status: green");

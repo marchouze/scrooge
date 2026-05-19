@@ -45,7 +45,7 @@ export const ALCO_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     class: "governance",
     issuer: "Atlas",
     subscribers: ["Eitan", "Helena", "Camille", "Owen", "Ravi", "Anya", "Atlas"],
-    replay: "append-only",
+    replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: alcoPackGeneratedPayloadSchema,
     citationsHint: ["D-TREASURY-GAPS-WAVE1", "BA-325", "BA-326", "BCBS-D365-IRRBB"],

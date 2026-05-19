@@ -26,8 +26,8 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { eventStore } from "../composition";
-import type { ALMRunCompletedPayload } from "../event-store/event-types/alm";
 import type { IntradayHQLAStressProjectionPayload } from "../event-store/event-types/alco";
+import type { ALMRunCompletedPayload } from "../event-store/event-types/alm";
 import type { CollateralInventorySnapshotPayload } from "../event-store/event-types/collateral";
 import type { FtpCurvePublishedPayload } from "../event-store/event-types/ftp";
 import type { ILAAPSummaryCompletedPayload } from "../event-store/event-types/ilaap";
