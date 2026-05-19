@@ -88,12 +88,15 @@ export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
 export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
+// D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
+export { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
 // that the original registry.ts exported as EVENT_TYPE_REGISTRY.
 // ---------------------------------------------------------------------------
 
+import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
@@ -199,6 +202,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
   ...ILAAP_EVENT_TYPES_REGISTRY,
+  // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+  ...ALCO_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
