@@ -150,7 +150,16 @@ const SLUG_TO_FILE: Record<string, string> = {
   excon: "Regulations/SARB-FinSurv/source-docs/excon-structured.json",
 };
 
-const ALL_SLUGS = ["banks-act", "rrb", "fic-act", "popia", "fais-act", "js2", "fais-gcc", "excon"] as const;
+const ALL_SLUGS = [
+  "banks-act",
+  "rrb",
+  "fic-act",
+  "popia",
+  "fais-act",
+  "js2",
+  "fais-gcc",
+  "excon",
+] as const;
 
 // ---------------------------------------------------------------------------
 // Loaders
