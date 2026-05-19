@@ -13,9 +13,13 @@
 //   D-FX-CLS-MEMBERSHIP — correspondent settlement via MT300 FX confirmation
 //   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
 //   SWIFT-MT300-SPEC — SWIFT Standards MT300 specification
+//   D-FX-MESSAGE-EVENTS — event-log wiring for message dispatch
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
+import { BANK_ZA_001 } from "@platform/core/types";
+import { makeOutboundMessageDispatched } from "@platform/event-store/event-types/payments";
+import type { EventStore } from "@platform/event-store/store";
 import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import {
   type SwiftBlock4,
@@ -185,4 +189,58 @@ export function generateMt300(
   const serialised = serialiseSwiftMessage(msg);
 
   return { ...msg, serialised };
+}
+
+// ---------------------------------------------------------------------------
+// Event-emitting wrapper
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate an MT300 FX Confirmation and emit an OutboundMessageDispatched
+ * event to the event store (Principle 1 compliance, D-FX-MESSAGE-EVENTS).
+ *
+ * The pure {@link generateMt300} function is called internally; its signature
+ * is unchanged. This wrapper is additive.
+ *
+ * @param store        Event store to append to.
+ * @param trade        The FX trade payload.
+ * @param senderBic    BIC of the sending institution (the bank).
+ * @param receiverBic  BIC of the receiving institution (the counterparty).
+ * @param asOf         ISO 8601 timestamp for the event.
+ * @param commonRef    Optional common reference.
+ */
+export function generateAndEmitMt300(
+  store: EventStore,
+  trade: FxTradeExecutedPayload,
+  senderBic: string,
+  receiverBic: string,
+  asOf: string,
+  commonRef?: string,
+): Mt300Message {
+  const msg = generateMt300(trade, senderBic, receiverBic, commonRef);
+
+  // Extract the :20: TRN field (Sequence A) as the messageId.
+  const trnField = msg.block4.find((f) => f.tag === "20");
+  const messageId = trnField?.value ?? trade.tradeId.value.slice(-16);
+
+  store.append(
+    makeOutboundMessageDispatched({
+      asOf,
+      entity: BANK_ZA_001,
+      actor: { type: "service", id: "tomas@bank.local" },
+      citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      payload: {
+        tradeId: trade.tradeId.value,
+        messageId,
+        messageStandard: "SWIFT-MT300",
+        direction: "outbound",
+        serialisedMessage: msg.serialised,
+        correspondentBic: receiverBic,
+        dispatchedAt: asOf,
+        citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      },
+    }),
+  );
+
+  return msg;
 }

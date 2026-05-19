@@ -24,9 +24,16 @@
 //   D-FX-CLS-MEMBERSHIP — correspondent settlement path
 //   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
 //   PROC-PAY-RBH-01 — three-way reconciliation procedure
+//   D-FX-MESSAGE-EVENTS — event-log wiring for inbound message receipt
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
+import { BANK_ZA_001 } from "@platform/core/types";
+import {
+  makeInboundMessageReceived,
+  makeMessageCorrelated,
+} from "@platform/event-store/event-types/payments";
+import type { EventStore } from "@platform/event-store/store";
 import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import type { Camt053Entry } from "./iso20022/camt053";
 import { type Camt053Document, generateCamt053 } from "./iso20022/camt053";
@@ -100,12 +107,22 @@ function receivedAmountMinor(trade: FxTradeExecutedPayload): bigint {
  * Simulate all inbound messages the correspondent/counterparty would send
  * back after an FX trade is agreed and settled.
  *
+ * When `opts.store` and `opts.asOf` are provided, each simulated message
+ * is recorded as an InboundMessageReceived event, and a MessageCorrelated
+ * event is emitted linking the message to the trade's outbound message
+ * (Principle 1 compliance, D-FX-MESSAGE-EVENTS).
+ *
  * @param trade             The FX trade payload (from FxTradeExecuted event).
  * @param settledAt         The date/time settlement is confirmed.
  * @param nostroBalance     The opening nostro balance in minor units (positive = credit).
  * @param correspondentBic  BIC of the correspondent bank. Defaults to SBZAZAJJXXX.
  * @param nostroAccountId   Nostro account identifier at the correspondent.
  * @param bankBic           The bank's own BIC.
+ * @param opts.store        Optional event store to emit InboundMessageReceived
+ *                          and MessageCorrelated events to.
+ * @param opts.asOf         ISO 8601 timestamp used for emitted events.
+ * @param opts.outboundMessageId  The messageId from the corresponding
+ *                          OutboundMessageDispatched event (used for correlation).
  */
 export function simulateInboundMessages(
   trade: FxTradeExecutedPayload,
@@ -114,6 +131,11 @@ export function simulateInboundMessages(
   correspondentBic: string = DEFAULT_CORRESPONDENT_BIC,
   nostroAccountId: string = NOSTRO_IBAN_TEMPLATE,
   bankBic: string = BANK_BIC,
+  opts?: {
+    store?: EventStore;
+    asOf?: string;
+    outboundMessageId?: string;
+  },
 ): InboundMessageSet {
   const tradeId = trade.tradeId.value;
   const nearLeg = trade.legs[0];
@@ -230,7 +252,7 @@ export function simulateInboundMessages(
     currency: receiveCcy,
   });
 
-  return {
+  const result: InboundMessageSet = {
     tradeId,
     mt300Confirmation,
     mt202ReceiveLeg,
@@ -238,4 +260,93 @@ export function simulateInboundMessages(
     pacs009ReceiveLeg,
     camt053Statement,
   };
+
+  // -------------------------------------------------------------------------
+  // Event emission — when an event store is provided, record each inbound
+  // message and correlate it back to the outbound dispatch (D-FX-MESSAGE-EVENTS).
+  // -------------------------------------------------------------------------
+  if (opts?.store && opts.asOf) {
+    const { store, asOf, outboundMessageId } = opts;
+    const outboundRef = outboundMessageId ?? tradeId.slice(-16);
+    const CITATIONS = ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"];
+    const SYSTEM_ACTOR = { type: "service" as const, id: "tomas@bank.local" };
+
+    // Helper: emit InboundMessageReceived + MessageCorrelated pair.
+    function emitInbound(
+      messageId: string,
+      messageStandard: string,
+      serialisedMessage: string,
+      correlationType: "confirmation" | "receive-leg" | "statement-entry",
+    ): void {
+      store.append(
+        makeInboundMessageReceived({
+          asOf,
+          entity: BANK_ZA_001,
+          actor: SYSTEM_ACTOR,
+          citations: CITATIONS,
+          payload: {
+            tradeId,
+            messageId,
+            messageStandard,
+            direction: "inbound",
+            serialisedMessage,
+            senderBic: correspondentBic,
+            receivedAt: asOf,
+            citations: CITATIONS,
+          },
+        }),
+      );
+      store.append(
+        makeMessageCorrelated({
+          asOf,
+          entity: BANK_ZA_001,
+          actor: SYSTEM_ACTOR,
+          citations: CITATIONS,
+          payload: {
+            outboundMessageId: outboundRef,
+            inboundMessageId: messageId,
+            tradeId,
+            correlationType,
+            correlatedAt: asOf,
+            citations: CITATIONS,
+          },
+        }),
+      );
+    }
+
+    // MT300 — FX trade confirmation (counterparty confirms the trade terms)
+    if (mt300Confirmation) {
+      const trnField = mt300Confirmation.block4.find((f) => f.tag === "20");
+      const mt300Id = trnField?.value ?? `${tradeId.slice(-12)}-MT300-CONF`;
+      emitInbound(mt300Id, "MT300", mt300Confirmation.serialised, "confirmation");
+    }
+
+    // MT202 — receive leg credit to nostro
+    if (mt202ReceiveLeg) {
+      const trnField = mt202ReceiveLeg.block4.find((f) => f.tag === "20");
+      const mt202Id = trnField?.value ?? `${tradeId.slice(-12)}-MT202-RCV`;
+      emitInbound(mt202Id, "MT202", mt202ReceiveLeg.serialised, "receive-leg");
+    }
+
+    // MT940 — nostro statement entry
+    if (mt940Statement) {
+      const refField = mt940Statement.block4.find((f) => f.tag === "28C");
+      const mt940Id = refField?.value ?? `${tradeId.slice(-12)}-MT940-STMT`;
+      emitInbound(mt940Id, "MT940", mt940Statement.serialised, "statement-entry");
+    }
+
+    // pacs.009 — receive leg (ISO 20022)
+    if (pacs009ReceiveLeg) {
+      const pacs009Id = pacs009ReceiveLeg.GrpHdr.MsgId;
+      emitInbound(pacs009Id, "pacs.009", pacs009ReceiveLeg.serialisedXml, "receive-leg");
+    }
+
+    // camt.053 — end-of-day statement (ISO 20022)
+    if (camt053Statement) {
+      const camt053Id = camt053Statement.Stmt[0]?.Id ?? `${tradeId.slice(-12)}-CAMT053-STMT`;
+      emitInbound(camt053Id, "camt.053", camt053Statement.serialisedXml ?? "", "statement-entry");
+    }
+  }
+
+  return result;
 }

@@ -20,10 +20,16 @@
 //   D-FX-CLS-MEMBERSHIP — correspondent settlement path
 //   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
 //   SWIFT-MT103-SPEC — SWIFT Standards MT103 specification
+//   D-FX-MESSAGE-EVENTS — event-log wiring for message dispatch
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
-import type { PaymentInitiatedPayload } from "@platform/event-store/event-types/payments";
+import { BANK_ZA_001 } from "@platform/core/types";
+import {
+  type PaymentInitiatedPayload,
+  makeOutboundMessageDispatched,
+} from "@platform/event-store/event-types/payments";
+import type { EventStore } from "@platform/event-store/store";
 import {
   type SwiftBlock4,
   type SwiftMessage,
@@ -143,4 +149,73 @@ export function generateMt103(
   const serialised = serialiseSwiftMessage(msg);
 
   return { ...msg, serialised };
+}
+
+// ---------------------------------------------------------------------------
+// Event-emitting wrapper
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate an MT103 Single Customer Credit Transfer and emit an
+ * OutboundMessageDispatched event to the event store (Principle 1 compliance,
+ * D-FX-MESSAGE-EVENTS).
+ *
+ * The pure {@link generateMt103} function is called internally; its signature
+ * is unchanged. This wrapper is additive.
+ *
+ * @param store             Event store to append to.
+ * @param payment           The PaymentInitiated event payload.
+ * @param senderBic         BIC of the sending bank.
+ * @param receiverBic       BIC of the receiving bank.
+ * @param asOf              ISO 8601 timestamp for the event.
+ * @param orderingCustomer  Ordering customer details.
+ * @param beneficiary       Beneficiary customer details.
+ * @param charges           Charge allocation: OUR | SHA | BEN. Default "SHA".
+ * @param remittanceInfo    Optional remittance information.
+ */
+export function generateAndEmitMt103(
+  store: EventStore,
+  payment: PaymentInitiatedPayload,
+  senderBic: string,
+  receiverBic: string,
+  asOf: string,
+  orderingCustomer?: Mt103PartyInfo,
+  beneficiary?: Mt103PartyInfo,
+  charges?: Mt103Charges,
+  remittanceInfo?: string,
+): Mt103Message {
+  const msg = generateMt103(
+    payment,
+    senderBic,
+    receiverBic,
+    orderingCustomer,
+    beneficiary,
+    charges,
+    remittanceInfo,
+  );
+
+  // Extract the :20: sender reference as messageId.
+  const refField = msg.block4.find((f) => f.tag === "20");
+  const messageId = refField?.value ?? payment.paymentRef.slice(0, 16);
+
+  store.append(
+    makeOutboundMessageDispatched({
+      asOf,
+      entity: BANK_ZA_001,
+      actor: { type: "service", id: "tomas@bank.local" },
+      citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      payload: {
+        tradeId: payment.tradeId,
+        messageId,
+        messageStandard: "SWIFT-MT103",
+        direction: "outbound",
+        serialisedMessage: msg.serialised,
+        correspondentBic: receiverBic,
+        dispatchedAt: asOf,
+        citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      },
+    }),
+  );
+
+  return msg;
 }
