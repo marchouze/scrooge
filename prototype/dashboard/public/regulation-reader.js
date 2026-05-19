@@ -159,10 +159,11 @@
               ? `<div class="rr-section-text verbatim" style="margin-bottom:var(--space-2)">${esc(section.verbatimOpening)}</div>
                  <div class="rr-summary-note" style="margin-bottom:var(--space-2)">Opening subregulations above are verbatim. Full regulation summarised below.</div>`
               : "";
+            const summaryText = section.summary || (!section.verbatim ? section.text : null);
             const bodyHtml = section.verbatim
               ? `<div class="rr-section-text verbatim">${esc(section.text)}</div>`
-              : section.summary
-              ? `${verbatimOpeningHtml}<div class="rr-section-text" style="font-style:italic;color:var(--color-text-muted)">${esc(section.summary)}</div>`
+              : summaryText
+              ? `${verbatimOpeningHtml}<div class="rr-section-text" style="font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</div>`
               : `<div class="rr-section-text" style="color:var(--color-text-muted)">Full text not reproduced.</div>`;
             const subsectionsHtml =
               section.subsections && section.subsections.length > 0
