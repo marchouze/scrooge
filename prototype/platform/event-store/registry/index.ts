@@ -92,6 +92,8 @@ export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 export { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 // Product Control — daily FX P&L report event.
 export { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
+// Market-data domain control-plane events (stale-data alerts, model validation).
+export { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -122,6 +124,7 @@ import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
+import { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
   CUSTOMER_LIFECYCLE_EVENT_TYPES,
@@ -211,6 +214,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Product Control — daily FX P&L report event.
   // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
   ...PRODUCT_CONTROL_EVENT_TYPES_REGISTRY,
+  // Market-data domain control-plane events (stale-data alerts, model validation).
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §5.
+  ...MARKET_DATA_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

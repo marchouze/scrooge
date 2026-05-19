@@ -960,6 +960,80 @@ export function makeConductEventRecorded(args: {
 }
 
 // ---------------------------------------------------------------------------
+// FeeDisclosureEvent
+//
+// Emitted by Zara (MLRO / conduct officer) when a fee or spread disclosure
+// is made to a counterparty in respect of an FX or structured product trade.
+// Records the pre-trade or post-trade disclosure method, the spread/fee
+// charged, and the counterparty to whom disclosure was made.
+//
+// This event type satisfies the fee-transparency obligation under FAIS
+// Act 37/2002 §8(1)(d)(i) (disclosure of remuneration, benefit or other
+// valuable consideration) and the General Code of Conduct §7 (costs and
+// charges). It is also a conduct-quality input to the FSCA CMS disclosure.
+//
+// Authority:
+//   D-MARKET-CONDUCT; D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
+//   PROC-PAY-RBH-01 (pricing disclosure step).
+//
+// Citations:
+//   FAIS Act 37/2002 §8(1)(d)(i) (disclosure of remuneration);
+//   FAIS General Code of Conduct §7 (costs and charges);
+//   D-MARKET-CONDUCT; D-FX-SALES-TRADING-FRONTEND.
+// ---------------------------------------------------------------------------
+
+export const feeDisclosureEventPayloadSchema = z.object({
+  /** Party register ID of the counterparty to whom disclosure was made. */
+  counterpartyId: z.string(),
+  /** Instrument identifier (e.g. "USD/ZAR", "ZA-SAGB-2030"). */
+  instrument: z.string(),
+  /** Notional amount of the trade in the base currency. */
+  notional: z.number(),
+  /** ISO 4217 currency of the notional. */
+  currency: z.string(),
+  /**
+   * Spread charged in basis points. Null if fee is a flat amount rather
+   * than a percentage of notional.
+   */
+  spreadBps: z.number().nullable(),
+  /**
+   * Flat fee amount in the currency of the trade. Null if fee is expressed
+   * as a spread.
+   */
+  feeAmount: z.number().nullable(),
+  /**
+   * How the fee/spread was disclosed to the counterparty.
+   * "pre-trade"    — disclosed before trade execution (FAIS GCC §7 requirement).
+   * "term-sheet"   — embedded in the trade term sheet.
+   * "fee-schedule" — counterparty was referred to the published fee schedule.
+   */
+  disclosureMethod: z.enum(["pre-trade", "term-sheet", "fee-schedule"]),
+  /** ISO 8601 timestamp when the disclosure was made. */
+  disclosedAt: z.string(),
+});
+
+export type FeeDisclosureEventPayload = z.infer<typeof feeDisclosureEventPayloadSchema>;
+
+export function makeFeeDisclosureEvent(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FeeDisclosureEventPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FeeDisclosureEvent",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: feeDisclosureEventPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // CONDUCT_TYPED_EVENT_TYPES — registry of all conduct domain event types.
 //
 // To add a new conduct event type:
@@ -984,4 +1058,6 @@ export const CONDUCT_TYPED_EVENT_TYPES = [
   "ConflictOfInterestDisclosed",
   // Counterparty conduct observation record — surveillance register input
   "ConductEventRecorded",
+  // Fee/spread transparency disclosure per FAIS Act §8(1)(d)(i) + GCC §7
+  "FeeDisclosureEvent",
 ] as const;
