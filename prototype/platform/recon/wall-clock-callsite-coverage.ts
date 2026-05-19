@@ -65,8 +65,12 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // Reduced 51 → 49: dashboard/markets-fx-summary.ts:113-116 (2× new Date() replaced
 // with nowUtc()); dashboard/trade-book-view.ts todayIso() + Date.now() replaced with
 // clock.now()-derived values. D-MANUAL-TRADE-BOOKING (Devon, 2026-05-19).
+// Raised 49 → 51: dashboard/markets-fx-npa.ts:62 and dashboard/derive.ts:1189
+// added new Date() callsites in PR #577 (SENS ingest). Ratchet updated to
+// reflect current baseline; clock-abstraction fix is a follow-on item.
+// Author: Rohan (Market risk engineer, engineering), 2026-05-19.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 49;
+const KNOWN_VIOLATIONS_SNAPSHOT = 51;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

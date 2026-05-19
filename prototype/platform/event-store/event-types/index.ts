@@ -167,6 +167,10 @@ export * from "./alco";
 // DailyPnLReportGenerated — aggregated unrealised + realised P&L by pair/counterparty/book.
 // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1; D-MARKETS-SCHEMA-FOUNDATION.
 export * from "./product-control";
+// MTM engine events — MtmRunCompleted, IpvExceptionRaised.
+// Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
+// Author: Rohan (Market risk engineer, engineering)
+export * from "./mtm";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -270,6 +274,7 @@ import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
 import { LIQUIDITY_TYPED_EVENT_TYPES } from "./liquidity";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
+import { MTM_TYPED_EVENT_TYPES } from "./mtm";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
@@ -358,6 +363,9 @@ export const TYPED_EVENT_TYPES = [
   // DailyPnLReportGenerated — aggregated unrealised + realised P&L.
   // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
   ...PRODUCT_CONTROL_EVENT_TYPES,
+  // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
+  ...MTM_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
