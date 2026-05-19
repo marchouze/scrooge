@@ -11,9 +11,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-(function () {
-  "use strict";
-
+(() => {
   // ── State ────────────────────────────────────────────────────────
   let currentSlug = null;
   let currentDetail = null;
@@ -54,7 +52,8 @@
     if (s.includes("partial")) return "rr-obl-status-partial";
     if (s.includes("draft")) return "rr-obl-status-drafting";
     if (s.includes("plan")) return "rr-obl-status-planned";
-    if (s.includes("not-applicable") || s.includes("not_applicable")) return "rr-obl-status-not-applicable";
+    if (s.includes("not-applicable") || s.includes("not_applicable"))
+      return "rr-obl-status-not-applicable";
     return "";
   }
 
@@ -88,7 +87,7 @@
       .join("");
 
     // Attach click handlers
-    listEl.querySelectorAll(".rr-instrument-item").forEach((el) => {
+    for (const el of listEl.querySelectorAll(".rr-instrument-item")) {
       el.addEventListener("click", () => {
         const slug = el.dataset.slug;
         if (slug) selectInstrument(slug);
@@ -100,13 +99,13 @@
           if (slug) selectInstrument(slug);
         }
       });
-    });
+    }
   }
 
   function setActiveSidebarItem(slug) {
-    listEl.querySelectorAll(".rr-instrument-item").forEach((el) => {
+    for (const el of listEl.querySelectorAll(".rr-instrument-item")) {
       el.classList.toggle("active", el.dataset.slug === slug);
-    });
+    }
   }
 
   // ── Detail rendering ─────────────────────────────────────────────
@@ -159,17 +158,18 @@
             const summaryNote = !section.verbatim
               ? '<div class="rr-summary-note">Summary — full statutory text pending</div>'
               : "";
-            const subsectionsHtml = section.subsections && section.subsections.length > 0
-              ? section.subsections
-                  .map(
-                    (sub) =>
-                      `<div style="margin-top:var(--space-2);padding-left:var(--space-3);border-left:2px solid var(--color-border)">
+            const subsectionsHtml =
+              section.subsections && section.subsections.length > 0
+                ? section.subsections
+                    .map(
+                      (sub) =>
+                        `<div style="margin-top:var(--space-2);padding-left:var(--space-3);border-left:2px solid var(--color-border)">
                         <span style="font-weight:600;color:var(--color-text-muted);font-size:0.85em">${esc(sub.number)}</span>
                         <span class="rr-section-text${sub.verbatim ? " verbatim" : ""}" style="display:block;margin-top:var(--space-1)">${esc(sub.text)}</span>
                       </div>`,
-                  )
-                  .join("")
-              : "";
+                    )
+                    .join("")
+                : "";
 
             const obligationsHtml = renderObligations(section.obligations);
 
@@ -203,11 +203,11 @@
     const allSections = sectionsEl.querySelectorAll(".rr-section");
     let visibleCount = 0;
 
-    allSections.forEach((el) => {
+    for (const el of allSections) {
       if (!term) {
         el.classList.remove("hidden");
         visibleCount++;
-        return;
+        continue;
       }
       const text = el.textContent.toLowerCase();
       if (text.includes(term)) {
@@ -216,7 +216,7 @@
       } else {
         el.classList.add("hidden");
       }
-    });
+    }
 
     if (searchCountEl) {
       searchCountEl.textContent = term

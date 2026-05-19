@@ -14,19 +14,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const REPO_ROOT =
-  process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
+const REPO_ROOT = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
 
-const REGISTER_PATH = resolve(
-  REPO_ROOT,
-  "Regulations",
-  "_obligations-register.md",
-);
-const OUTPUT_PATH = resolve(
-  REPO_ROOT,
-  "Regulations",
-  "_section-obligation-index.json",
-);
+const REGISTER_PATH = resolve(REPO_ROOT, "Regulations", "_obligations-register.md");
+const OUTPUT_PATH = resolve(REPO_ROOT, "Regulations", "_section-obligation-index.json");
 
 // ---------------------------------------------------------------------------
 // Instrument slug detection
@@ -80,8 +71,7 @@ function extractSectionRefs(citation: string): string[] {
 
   for (const pattern of SECTION_PATTERNS) {
     const regex = new RegExp(pattern.source, pattern.flags);
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(citation)) !== null) {
+    for (let match = regex.exec(citation); match !== null; match = regex.exec(citation)) {
       const raw = match[1] ?? match[0];
       // Normalise: lowercase s prefix, remove dots
       const normalised = raw.toLowerCase().replace(/\./g, "");
@@ -146,11 +136,7 @@ export interface SectionObligationIndex {
 }
 
 export function buildIndex(repoRoot: string): SectionObligationIndex {
-  const registerPath = resolve(
-    repoRoot,
-    "Regulations",
-    "_obligations-register.md",
-  );
+  const registerPath = resolve(repoRoot, "Regulations", "_obligations-register.md");
 
   if (!existsSync(registerPath)) {
     throw new Error(`Obligations register not found at: ${registerPath}`);
@@ -194,8 +180,7 @@ export function buildIndex(repoRoot: string): SectionObligationIndex {
 // ---------------------------------------------------------------------------
 
 if (import.meta.main) {
-  const repoRoot =
-    process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
+  const repoRoot = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "..");
 
   console.log("Generating section-obligation index...");
   console.log(`  Register: ${REGISTER_PATH}`);

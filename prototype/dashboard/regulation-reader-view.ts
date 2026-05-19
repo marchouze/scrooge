@@ -15,7 +15,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
 // ---------------------------------------------------------------------------
@@ -140,37 +140,21 @@ export interface InstrumentDetailView {
 // ---------------------------------------------------------------------------
 
 const SLUG_TO_FILE: Record<string, string> = {
-  "banks-act":
-    "Regulations/SARB-PA/source-docs/banks-act-structured.json",
-  "fic-act":
-    "Regulations/FIC/source-docs/fic-act-structured.json",
-  popia:
-    "Regulations/Information-Regulator/source-docs/popia-structured.json",
-  "fais-act":
-    "Regulations/FSCA/source-docs/fais-act-structured.json",
-  js2:
-    "Regulations/Joint-Standards/source-docs/js2-structured.json",
-  "fais-gcc":
-    "Regulations/FSCA/source-docs/fais-gcc-structured.json",
+  "banks-act": "Regulations/SARB-PA/source-docs/banks-act-structured.json",
+  "fic-act": "Regulations/FIC/source-docs/fic-act-structured.json",
+  popia: "Regulations/Information-Regulator/source-docs/popia-structured.json",
+  "fais-act": "Regulations/FSCA/source-docs/fais-act-structured.json",
+  js2: "Regulations/Joint-Standards/source-docs/js2-structured.json",
+  "fais-gcc": "Regulations/FSCA/source-docs/fais-gcc-structured.json",
 };
 
-const ALL_SLUGS = [
-  "banks-act",
-  "fic-act",
-  "popia",
-  "fais-act",
-  "js2",
-  "fais-gcc",
-] as const;
+const ALL_SLUGS = ["banks-act", "fic-act", "popia", "fais-act", "js2", "fais-gcc"] as const;
 
 // ---------------------------------------------------------------------------
 // Loaders
 // ---------------------------------------------------------------------------
 
-function loadStructuredDoc(
-  repoRoot: string,
-  slug: string,
-): RegStructuredDoc | null {
+function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | null {
   const rel = SLUG_TO_FILE[slug];
   if (!rel) return null;
 
@@ -195,8 +179,6 @@ function loadSectionIndex(repoRoot: string): SectionObligationIndex {
     return { generatedAt: "", obligationCount: 0, sectionCount: 0, index: {} };
   }
 }
-
-const TABLE_ROW = /^\|\s*(ORG[^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|/;
 
 function loadObligationsMap(repoRoot: string): Record<string, ObligationRow> {
   const path = resolve(repoRoot, "Regulations", "_obligations-register.md");
@@ -269,10 +251,7 @@ function loadPolicies(repoRoot: string): Map<string, ResolvedPolicy> {
   return _policyCache;
 }
 
-function resolvePolicy(
-  urn: string,
-  repoRoot: string,
-): ResolvedPolicy | null {
+function resolvePolicy(urn: string, repoRoot: string): ResolvedPolicy | null {
   if (!urn) return null;
 
   const policies = loadPolicies(repoRoot);
@@ -309,10 +288,7 @@ function resolvePolicy(
   return null;
 }
 
-function resolveObligationPolicy(
-  fulfilment: string,
-  repoRoot: string,
-): ResolvedPolicy | null {
+function resolveObligationPolicy(fulfilment: string, repoRoot: string): ResolvedPolicy | null {
   if (!fulfilment) return null;
 
   // Extract URNs from fulfilment text (format: `urn:policy:...`)
@@ -354,18 +330,19 @@ function getObligationsForSection(
   const rootIds = sectionIndex.index[slug] ?? [];
   const allIds = [...new Set([...ids, ...rootIds])];
 
-  return allIds
-    .filter((id) => obligationsMap[id])
-    .map((id) => {
-      const obl = obligationsMap[id]!;
-      const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
-      return {
-        id: obl.id,
-        requirement: obl.requirement.slice(0, 400),
-        status: obl.status,
-        policy,
-      };
+  const result: ObligationOnSection[] = [];
+  for (const id of allIds) {
+    const obl = obligationsMap[id];
+    if (!obl) continue;
+    const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
+    result.push({
+      id: obl.id,
+      requirement: obl.requirement.slice(0, 400),
+      status: obl.status,
+      policy,
     });
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -404,9 +381,7 @@ export function buildInstrumentsListView(repoRoot: string): InstrumentsListView 
       priority: doc.priority,
       obligationCount: oblIds.size,
       sectionCount,
-      hasFullText: doc.chapters.some((ch) =>
-        ch.sections.some((s) => s.verbatim),
-      ),
+      hasFullText: doc.chapters.some((ch) => ch.sections.some((s) => s.verbatim)),
     });
   }
 
