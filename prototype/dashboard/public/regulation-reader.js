@@ -179,10 +179,12 @@
 
             const obligationsHtml = renderObligations(section.obligations);
 
+            const sNum = section.sectionNumber || section.number || section.id;
+            const sHead = section.title || section.heading || "";
             return `<div class="rr-section" id="${esc(section.id)}" data-section-id="${esc(section.id)}">
   <div class="rr-section-header">
-    <span class="rr-section-number">§ ${esc(section.number)}</span>
-    <span class="rr-section-heading">${esc(section.heading)}</span>
+    <span class="rr-section-number">${esc(sNum)}</span>
+    <span class="rr-section-heading">${esc(sHead)}</span>
   </div>
   ${bodyHtml}
   ${subsectionsHtml}
@@ -191,8 +193,10 @@
           })
           .join("");
 
+        const chNum = chapter.number || chapter.id || "";
+        const chHead = chapter.heading || chapter.title || "";
         return `<div class="rr-chapter">
-  <div class="rr-chapter-heading">Chapter ${esc(chapter.number)} — ${esc(chapter.heading)}</div>
+  <div class="rr-chapter-heading">${esc(chNum)}${chNum && chHead ? " — " : ""}${esc(chHead)}</div>
   ${sectionsHtml}
 </div>`;
       })
