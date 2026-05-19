@@ -94,6 +94,8 @@ export { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 export { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 // Market-data domain control-plane events (stale-data alerts, model validation).
 export { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
+// MTM engine event-type registry rows.
+export { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -133,6 +135,7 @@ import {
 } from "./markets";
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
+import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
@@ -217,6 +220,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Market-data domain control-plane events (stale-data alerts, model validation).
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §5.
   ...MARKET_DATA_EVENT_TYPES_REGISTRY,
+  // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
+  ...MTM_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

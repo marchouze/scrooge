@@ -147,6 +147,10 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Aggregate-ID coverage recon — read-only replay that checks aggregate_id
   // presence on must-have event types; gate is a no-op on replay.
   "platform/recon/aggregate-id-coverage.ts",
+  // Spread-benchmarking advisory recon — read-only replay of FxTradeExecuted +
+  // MarketDataStore query; gate is a no-op on the replay path. Advisory-only:
+  // not wired into the CI chain. Citation: D-MARKETS-SCHEMA-FOUNDATION; ORG-MK-08.
+  "platform/recon/spread-benchmarking.ts",
   // Vera Wave-4 #14 + #15 — read-only replay of AgentEscalation /
   // AgentDecision events; gate is a no-op on replay.
   "platform/recon/escalation-channel.ts",
