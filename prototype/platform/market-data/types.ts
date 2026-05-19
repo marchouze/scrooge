@@ -30,6 +30,7 @@ export interface SensAnnouncementPayload {
   category: string; // "Results" | "Dividend" | "RightsIssue" | "TradeStatement" | "Other"
   body: string;
   sensPdfUrl?: string; // when available from real feed
+  sensDetailUrl?: string; // link to Sharenet detail page
 }
 
 // ---------------------------------------------------------------------------
