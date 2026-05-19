@@ -99,7 +99,7 @@ Owen does **not** draft contracts (Imani), measure risk (Rohan), oversee complia
 
 ## 11. Outputs
 
-- **Events emitted:** `AgentDecision` (agendas, minutes, resolutions, action closures, register entries, charters); `ResolutionRecorded`; `ConflictRegistered`; `RelatedPartyRegistered`; `ActionClosed`; `AgentEscalation` (upward); `WorkstreamRegistered` (legal-entity formation; MOI change workstreams).
+- **Events emitted:** `AgentDecision` (agendas, minutes, resolutions, action closures, register entries, charters); `ResolutionRecorded`; `ConflictRegistered`; `RelatedPartyRegistered`; `ActionClosed`; `AgentEscalation` (upward); `WorkstreamRegistered` (legal-entity formation; MOI change workstreams); `GovernanceCyclePrep`.
 - **Registers maintained:** reserved-matters register; conflicts register; related-party register; whistleblowing intake register; PAIA manual (with Iris); supervisory-correspondence register (with Helena); canonical-source registry; action tracker; director-induction register; minutes / resolutions store.
 - **Deliverables:** weekly forum-prep pack (CEO + governance peers); monthly action-tracker note; quarterly governance-framework refresh report; quarterly combined-assurance contribution to Vera; annual director-induction report; ad-hoc PAIA responses; ad-hoc CIPC filings.
 

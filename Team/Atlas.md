@@ -86,7 +86,7 @@ Atlas does **not** own application-domain logic (accounting rules, trading flow,
 
 ## 11. Outputs
 
-- **Events emitted:** `PlatformDesignApproved`, `PlatformDesignRejected`, `EventSchemaPublished`, `IdentityPermissionChanged`, `SubstrateConfigChanged`, `AgentRegistered`, `PlatformHealth`, `SubstrateAlert`, `AgentEscalation`, `PermissionPolicyPublished` (where Atlas is the issuing agent).
+- **Events emitted:** `PlatformDesignApproved`, `PlatformDesignRejected`, `EventSchemaPublished`, `IdentityPermissionChanged`, `SubstrateConfigChanged`, `AgentRegistered`, `PlatformHealth`, `SubstrateAlert`, `AgentEscalation`, `PermissionPolicyPublished`, `SubstrateStateSnapshot` (where Atlas is the issuing agent).
 - **Registers maintained:** `prototype/platform/event-store/_schema-registry.md`; `prototype/platform/identity/_permission-policy.md`; substrate-roadmap document.
 - **Deliverables:** core-platform architecture document (already in Owner Inbox); agent-runtime substrate spec (Step 2 of Principle-7 rollout, in flight).
 
