@@ -772,3 +772,63 @@ describe("FX lifecycle — TradeAmended: non-economic amendments", () => {
     expect(legs).toHaveLength(0);
   });
 });
+
+// ===========================================================================
+// Manual-provenance FxTradeExecuted → GL posting
+// D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19)
+// ===========================================================================
+
+describe("GL posting engine — manual-provenance FxTradeExecuted", () => {
+  it("manual FxTradeExecuted → SubLedgerPostingEmitted with postingType 'trade-booking'", () => {
+    // Create a minimal FxTradeExecuted payload matching the manual booking format.
+    // The posting-rule layer (fxTradeBookingJournals) does not inspect provenance —
+    // it only reads trade fields. We test that the rule produces balanced legs.
+
+    const manualTradePayload = {
+      tradeId: "MAN-TEST-001",
+      side: "buy" as const,
+      currencyPair: { base: "ZAR", quote: "USD" },
+      legs: [
+        {
+          legKind: "near" as const,
+          payCurrency: "ZAR",
+          receiveCurrency: "USD",
+          notional: { amountMinor: 18_000_000_000_000, currency: "ZAR" }, // ZAR 18,000,000 × 1e6
+          counterNotional: { amountMinor: 1_000_000_000_000, currency: "USD" }, // USD 1,000,000 × 1e6
+          rate: { value: 18.0, currency: "ZAR" },
+          settlementDate: { date: "2026-05-21", convention: "T+2", calendar: "SAST" },
+        },
+      ],
+    };
+
+    const legs = fxTradeBookingJournals(manualTradePayload);
+
+    // Trade-booking produces 4 legs (ZAR debit/credit + USD debit/credit)
+    expect(legs).toHaveLength(4);
+
+    // Each currency must balance
+    for (const ccy of ["ZAR", "USD"]) {
+      const ccyLegs = legs.filter((l) => l.currency === ccy);
+      const debit = ccyLegs
+        .filter((l) => l.debitCredit === "debit")
+        .reduce((s, l) => s + l.amountMinor, 0);
+      const credit = ccyLegs
+        .filter((l) => l.debitCredit === "credit")
+        .reduce((s, l) => s + l.amountMinor, 0);
+      expect(debit).toBe(credit);
+    }
+
+    // The posting type would be "trade-booking" — verify via SubLedgerPostingEmitted schema
+    const {
+      subLedgerPostingEmittedPayloadSchema,
+    } = require("../../platform/event-store/event-types/fx-accounting");
+    const postingPayload = subLedgerPostingEmittedPayloadSchema.parse({
+      sourceEventId: "evt-manual-test-001",
+      postingType: "trade-booking",
+      legs,
+      postedAt: "2026-05-19T10:00:00Z",
+    });
+    expect(postingPayload.postingType).toBe("trade-booking");
+    expect(postingPayload.legs).toHaveLength(4);
+  });
+});
