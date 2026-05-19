@@ -1,13 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KYC Simulate · Hoz</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/_brand.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KYC Simulate — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
-<link rel="stylesheet" href="/provenance-badge.css">
 <style>
   .sim-panel { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 24px 28px; max-width: 560px; }
   .sim-panel h2 { font-family: var(--serif); font-size: 20px; color: var(--primary); margin: 0 0 18px; }
@@ -60,25 +59,7 @@
 </head>
 <body data-provenance-content="none">
   <div id="shell"></div>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· KYC Simulation</span>
-    </div>
-    <div class="meta">
-      <a class="nav-link" href="/kyc-onboarding">← Onboarding Queue</a>
-      <a class="nav-link" href="/kyc-clients">Clients</a>
-      <a class="nav-link" href="/home.html">Home</a>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-
-<main id="app" class="main-content">
+  <main id="content" class="main-content">
 
   <section class="band">
     <div class="band-head">
@@ -153,11 +134,10 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/kyc-simulate.js"></script>
   <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
   <script src="/_components.js"></script>
+  <script src="/kyc-simulate.js"></script>
   <script>initShell({ title: "KYC Simulate" });</script>
 </body>
 </html>

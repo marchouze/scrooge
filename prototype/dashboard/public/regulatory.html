@@ -3,15 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Regulatory Intelligence · Hoz</title>
+  <title>Regulatory Intelligence — Scrooge Bank</title>
   <meta name="description" content="Regulatory horizon-scanning — instruments registered, concepts extracted, high-applicability sections.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
   <link rel="stylesheet" href="/_brand.css">
-  <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
   <style>
     :root {
       --surface-base:   #ffffff;
@@ -205,42 +201,18 @@
   </style>
 </head>
 <body>
-  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
-
-  <header class="shell-header" role="banner">
-    <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
-        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-        </svg>
-        <span class="shell-wordmark">Hoz</span>
-        <span class="shell-wordmark-suffix">Regulatory</span>
-      </a>
-      <div class="shell-meta">
-        <span data-provenance-badge="page-top" data-provenance-source="/api/regulatory/instruments" aria-label="Provenance badge"></span>
-        <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh data">Refresh</button>
-        <span class="shell-as-of" id="lastUpdated" aria-live="polite">connecting…</span>
-        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
-      </div>
+  <div id="shell"></div>
+  <span id="lastUpdated" hidden></span>
+  <main id="content" class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Regulatory Intelligence</h1>
+      <p class="muted">
+        Mira's horizon-scanning substrate — every instrument registered, every section
+        AI-extracted into a scored obligation concept. Click an instrument card to explore
+        its concepts. Data: event-derived projection over
+        <code>RegulatoryInstrumentRegistered</code> + <code>RegulatoryConceptExtracted</code>.
+      </p>
     </div>
-  </header>
-
-  <div class="shell-layout">
-    <nav class="shell-sidebar" aria-label="Department navigation">
-      <div data-shell-dept-nav></div>
-    </nav>
-
-    <main class="shell-main" id="shell-main" tabindex="-1">
-      <div class="shell-page-header">
-        <h1 class="shell-page-title">Regulatory Intelligence</h1>
-        <p class="shell-page-lede">
-          Mira's horizon-scanning substrate — every instrument registered, every section
-          AI-extracted into a scored obligation concept. Click an instrument card to explore
-          its concepts. Data: event-derived projection over
-          <code>RegulatoryInstrumentRegistered</code> + <code>RegulatoryConceptExtracted</code>.
-        </p>
-      </div>
 
       <!-- ── Summary bar ── -->
       <div class="reg-summary" id="regSummary">
@@ -336,12 +308,12 @@
           </table>
         </div>
       </div>
-    </main>
-  </div>
+  </main>
 
-  <script src="/_failure-banner.js"></script>
+  <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
   <script src="/regulatory.js"></script>
-  <script src="/_shell.js" defer onerror="this.remove();"></script>
+  <script>initShell({ title: "Regulatory Intelligence" });</script>
 </body>
 </html>
