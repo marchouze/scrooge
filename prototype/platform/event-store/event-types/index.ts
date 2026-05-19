@@ -143,6 +143,11 @@ export * from "./climate-risk";
 // IRRBBChecked — per-metric/shock IRRBB sensitivity check.
 // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
 export * from "./alm";
+// D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
+// CollateralInventorySnapshot (daily HQLA buffer snapshot + cap checks),
+//   CollateralUpdated (per-security inventory change — add/remove/revalue).
+// Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+export * from "./collateral";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -224,6 +229,7 @@ import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
+import { COLLATERAL_TYPED_EVENT_TYPES } from "./collateral";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
@@ -312,6 +318,9 @@ export const TYPED_EVENT_TYPES = [
   // D-TREASURY-GAPS-WAVE1 — ALM engine event types (repricing gap, ΔEVE, ΔNII).
   // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
   ...ALM_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
+  // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  ...COLLATERAL_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

@@ -26,4 +26,13 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Atlas", "permission-policy-refresh", "event-driven", {
     subscribesTo: ["AgentRegistered"],
   }),
+  // atlas:collateral-snapshot — daily HQLA collateral inventory snapshot.
+  // Classifies security positions per BA 325 Annex 1, checks L2/L2b caps,
+  // emits CollateralInventorySnapshot and (if caps breached) HQLACompositionDrift.
+  // Closes Eitan's substrate gap "Collateral inventory substrate — not yet built."
+  // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  entry("Atlas", "collateral-snapshot", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "30 6 * * *",
+  }),
 ];

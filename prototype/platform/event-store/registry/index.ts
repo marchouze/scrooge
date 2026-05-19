@@ -82,6 +82,8 @@ export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 export { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 // D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy events.
 export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
+// D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
+export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -90,6 +92,7 @@ export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
+import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
@@ -181,6 +184,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy events.
   // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19).
   ...CLIMATE_RISK_EVENT_TYPES_REGISTRY,
+  // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
+  // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  ...COLLATERAL_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

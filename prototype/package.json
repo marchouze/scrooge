@@ -108,6 +108,7 @@
     "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-codebase-quality-review": "bun run runtime/run.ts --agent Vera --trigger codebase-quality-review",
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
+    "agent:atlas-collateral-snapshot": "bun run runtime/run.ts --agent Atlas --trigger collateral-snapshot",
     "agent:helena-risk-appetite-watch": "bun run runtime/run.ts --agent Helena --trigger risk-appetite-watch",
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",
     "agent:camille-financial-position-snapshot": "bun run runtime/run.ts --agent Camille --trigger financial-position-snapshot",
