@@ -1,115 +1,66 @@
 /*
- * _brand.css — Hoz brand tokens.
+ * _brand.css — Fintech Minimal design system tokens.
  *
- * Rendered, not authored. Substance is in
- * `Owner Inbox/2026-05-07_linnea_inaugural-brand-package.md`. Every
- * token below maps to a row in §3 (palette), §4 (typography), or §6
- * (overall feel) of that package — no improvisation.
+ * Clean, professional fintech aesthetic. Every component in the intranet
+ * derives colour, typography, spacing, and elevation from these tokens only.
+ * No raw hex values, font names, or bare px should appear in component CSS.
  *
- * The bank's name is **Hoz** (D-BANK-NAME-SELECTION revised 2026-05-09;
- * decision record `Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-bank-name-hoz.md`,
- * PR #57). Canonical bank-name register at `Regulations/_bank-name.md`
- * (URN `urn:obligation:bank:gv:bank-name-registered:v1`).
- * Supersession chain: v1 Cadens → v2 Lucet (closed PR #55) → v3 Hoz.
- *
- * Palette tokens retain the inaugural brand-package palette names
- * (Slate, Slate Deep). Linnea's v3 brand-supplement may rename the
- * palette to align with the Hoz wordmark; until then, the colour
- * values are the substance and the palette names are labels.
- *
- * Authored under CEO directive 2026-05-09 (bank-UI v0); updated
- * 2026-05-09 to apply the Hoz name. Cited by `_shell.css`. No
- * component file should bypass these tokens.
- *
- * Author: Linnea (Brand & design lead) — tokens lift from inaugural
- * brand package §3, §4.
+ * Author: Atlas (Platform Engineering Lead) — Fintech Minimal rebuild
+ * under brief:atlas:intranet-rebuild-fintech-minimal-design-all-doma:2026-05-19.
  */
 
 :root {
-  /* ---------------- Bank-name token --------------------------- */
-  /* Mirror of the canonical-source bank-name register at
-   * `Regulations/_bank-name.md`. Surfaced here for legacy components
-   * that don't read `/api/state.bankName`; modern components read the
-   * `/api/state` value directly. Drift between this token and the
-   * register is reportable under Vera Wave-4 #16 prose-duplication
-   * recon. */
-  --brand-name: "Hoz";
+  /* ── Colour palette ─────────────────────────────────────────── */
+  --color-bg:             #ffffff;
+  --color-surface:        #f8fafc;
+  --color-surface-raised: #f1f5f9;
+  --color-border:         #e2e8f0;
+  --color-border-strong:  #cbd5e1;
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-disabled:  #94a3b8;
+  --color-accent:         #2563eb;
+  --color-accent-hover:   #1d4ed8;
+  --color-accent-bg:      #eff6ff;
+  --color-success:        #16a34a;
+  --color-success-bg:     #f0fdf4;
+  --color-warning:        #d97706;
+  --color-warning-bg:     #fffbeb;
+  --color-danger:         #dc2626;
+  --color-danger-bg:      #fef2f2;
+  --color-info:           #0284c7;
+  --color-info-bg:        #f0f9ff;
 
-  /* ---------------- §3.1 Primary ------------------------------ */
-  --brand-primary: #1f2a37; /* Slate */
-  --brand-primary-emphasis: #0f1722; /* Slate Deep */
+  /* ── Typography ─────────────────────────────────────────────── */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
 
-  /* ---------------- §3.2 Secondary (accents) ------------------ */
-  --accent-clay: #b8654a;
-  --accent-moss: #5c7c66;
-  --accent-ink: #3a4f6b;
+  --text-display: 600 24px/1.3 var(--font-sans);
+  --text-h1:      600 20px/1.4 var(--font-sans);
+  --text-h2:      600 16px/1.4 var(--font-sans);
+  --text-h3:      600 14px/1.5 var(--font-sans);
+  --text-body:    400 14px/1.5 var(--font-sans);
+  --text-caption: 400 12px/1.4 var(--font-sans);
 
-  /* ---------------- §3.3 Neutrals ----------------------------- */
-  --neutral-paper: #f7f4ee;
-  --neutral-mist: #e5e2db;
-  --neutral-stone: #9aa0a6;
-  --neutral-graphite: #3c4248;
+  /* ── Border radius ──────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 
-  /* ---------------- §3.4 Semantic ----------------------------- */
-  --semantic-success: #2f6b47; /* Forest */
-  --semantic-warning: #9a6b16; /* Amber */
-  --semantic-error: #a33442; /* Crimson */
-  --semantic-info: #2d5ba8; /* Cobalt */
+  /* ── Shadows ────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
 
-  /* ---------------- §4 Typography ----------------------------- */
-  /* Inter = display weights; IBM Plex Sans = body/UI; IBM Plex Mono = monospace.
-   * All SIL OFL 1.1, suitable for build-phase static dashboard.
-   * Self-hosting is M8 cloud-lift work (Atlas).
-   */
-  --font-display: "Inter", "Inter Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* ── Shell dimensions ───────────────────────────────────────── */
+  --sidebar-width: 220px;
+  --topbar-height: 52px;
 
-  /* §4.2 Type scale — modular, ratio 1.250 */
-  --type-caption: 12px;
-  --type-small: 14px;
-  --type-body: 16px;
-  --type-lead: 20px;
-  --type-h3: 25px;
-  --type-h2: 31px;
-  --type-h1: 39px;
-  --type-display: 49px;
-
-  /* §4.3 Weights */
-  --weight-light: 300;
-  --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
-
-  /* ---------------- Spacing scale (4-base) -------------------- */
-  --space-1: 4px;
-  --space-2: 8px;
+  /* ── Spacing ────────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-
-  /* ---------------- Elevation -------------------------------- */
-  --elevation-0: none;
-  --elevation-1: 0 1px 2px rgba(15, 23, 34, 0.05);
-  --elevation-2: 0 2px 8px rgba(15, 23, 34, 0.08);
-  --elevation-3: 0 8px 24px rgba(15, 23, 34, 0.12);
-
-  /* ---------------- Borders / radius ------------------------- */
-  --border-subtle: 1px solid var(--neutral-mist);
-  --border-strong: 1px solid var(--neutral-stone);
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 8px;
-
-  /* ---------------- Motion ----------------------------------- */
-  /* Linnea §2.1 — "the chord settles into place"; nothing bouncy */
-  --motion-duration-fast: 120ms;
-  --motion-duration-base: 200ms;
-  --motion-easing: ease-out;
 }
