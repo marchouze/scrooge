@@ -63,11 +63,11 @@ describe("computeNSFR", () => {
     it("applies correct ASF weights for each category", () => {
       const result = computeNSFR(
         [
-          { amountZar: 100_000_000, category: "tier1-capital" },            // 100%
-          { amountZar: 100_000_000, category: "tier2-capital-gt1y" },       // 100%
-          { amountZar: 100_000_000, category: "retail-stable-lt1y" },       // 95%
-          { amountZar: 100_000_000, category: "retail-less-stable-lt1y" },  // 90%
-          { amountZar: 100_000_000, category: "wholesale-gt1y" },           // 100%
+          { amountZar: 100_000_000, category: "tier1-capital" }, // 100%
+          { amountZar: 100_000_000, category: "tier2-capital-gt1y" }, // 100%
+          { amountZar: 100_000_000, category: "retail-stable-lt1y" }, // 95%
+          { amountZar: 100_000_000, category: "retail-less-stable-lt1y" }, // 90%
+          { amountZar: 100_000_000, category: "wholesale-gt1y" }, // 100%
           { amountZar: 100_000_000, category: "wholesale-lt1y-operational" }, // 50%
           { amountZar: 100_000_000, category: "wholesale-lt1y-non-operational" }, // 0%
         ],
@@ -82,14 +82,14 @@ describe("computeNSFR", () => {
       const result = computeNSFR(
         [{ amountZar: 1_000_000_000, category: "tier1-capital" }], // R1bn ASF
         [
-          { amountZar: 100_000_000, category: "hqla-l1" },              // 5%
-          { amountZar: 100_000_000, category: "hqla-l2a" },             // 15%
-          { amountZar: 100_000_000, category: "hqla-l2b" },             // 50%
-          { amountZar: 100_000_000, category: "loan-lt6m" },            // 10%
-          { amountZar: 100_000_000, category: "loan-6m-1y" },           // 50%
-          { amountZar: 100_000_000, category: "loan-gt1y-standard" },   // 65%
+          { amountZar: 100_000_000, category: "hqla-l1" }, // 5%
+          { amountZar: 100_000_000, category: "hqla-l2a" }, // 15%
+          { amountZar: 100_000_000, category: "hqla-l2b" }, // 50%
+          { amountZar: 100_000_000, category: "loan-lt6m" }, // 10%
+          { amountZar: 100_000_000, category: "loan-6m-1y" }, // 50%
+          { amountZar: 100_000_000, category: "loan-gt1y-standard" }, // 65%
           { amountZar: 100_000_000, category: "loan-gt1y-residential" }, // 85%
-          { amountZar: 100_000_000, category: "security-lt1y" },        // 10%
+          { amountZar: 100_000_000, category: "security-lt1y" }, // 10%
           { amountZar: 100_000_000, category: "security-gt1y-non-hqla" }, // 85%
         ],
       );
@@ -152,7 +152,7 @@ describe("computeNSFR", () => {
       // NSFR = exactly 102% — should be "at-minimum"
       // Need ASF / RSF = 1.02 → ASF = 102, RSF = 100 units
       const result = computeNSFR(
-        [{ amountZar: 102_000_000, category: "tier1-capital" }],  // ASF = R102m
+        [{ amountZar: 102_000_000, category: "tier1-capital" }], // ASF = R102m
         [{ amountZar: 100_000_000, category: "loan-gt1y-standard" }], // RSF = R100m × 65% = R65m
       );
       // ASF = 102m, RSF = 65m → NSFR = 156.9% (above tolerance band)

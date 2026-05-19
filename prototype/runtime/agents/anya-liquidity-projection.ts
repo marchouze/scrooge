@@ -27,19 +27,17 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { makeLCRComputed, makeNSFRComputed } from "../../platform/event-store/event-types/liquidity";
+import {
+  makeLCRComputed,
+  makeNSFRComputed,
+} from "../../platform/event-store/event-types/liquidity";
 import { makeLCRRatioProjection } from "../../platform/event-store/event-types/risk-treasury-extended";
 import { computeLCR } from "../../platform/liquidity/lcr";
 import { computeNSFR } from "../../platform/liquidity/nsfr";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = [
-  "D-TREASURY-GAPS-WAVE1",
-  "BANKS-ACT-94-1990",
-  "BA-325",
-  "BA-326",
-];
+const EVENT_CITATIONS = ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-325", "BA-326"];
 
 /** Regulatory minimum LCR: 100%. Near-minimum threshold for alert: 105%. */
 const LCR_NEAR_MINIMUM_THRESHOLD_PCT = 105;
@@ -159,10 +157,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // -----------------------------------------------------------------------
     // Emit LCRRatioProjection if LCR is near or below minimum
     // -----------------------------------------------------------------------
-    if (
-      lcrT30.lcrRatioPct !== null &&
-      lcrT30.lcrRatioPct < LCR_NEAR_MINIMUM_THRESHOLD_PCT
-    ) {
+    if (lcrT30.lcrRatioPct !== null && lcrT30.lcrRatioPct < LCR_NEAR_MINIMUM_THRESHOLD_PCT) {
       const lcrProjectionEvent = makeLCRRatioProjection({
         asOf: ctx.asOf,
         entity: "BANK-ZA-001",
@@ -200,8 +195,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push("");
     lines.push("## LCR (Liquidity Coverage Ratio)");
     lines.push("");
-    lines.push(`| Horizon | HQLA (ZAR) | Net Outflows (ZAR) | LCR Ratio | Status |`);
-    lines.push(`|---|---|---|---|---|`);
+    lines.push("| Horizon | HQLA (ZAR) | Net Outflows (ZAR) | LCR Ratio | Status |");
+    lines.push("|---|---|---|---|---|");
     for (const [horizon, result] of [
       ["T+0", lcrT0],
       ["T+30", lcrT30],
@@ -214,8 +209,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push("");
     lines.push("## NSFR (Net Stable Funding Ratio)");
     lines.push("");
-    lines.push(`| Horizon | ASF (ZAR) | RSF (ZAR) | NSFR Ratio | Status |`);
-    lines.push(`|---|---|---|---|---|`);
+    lines.push("| Horizon | ASF (ZAR) | RSF (ZAR) | NSFR Ratio | Status |");
+    lines.push("|---|---|---|---|---|");
     for (const [horizon, result] of [
       ["T+0", nsfrT0],
       ["T+30", nsfrT30],
@@ -243,7 +238,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     );
     lines.push("");
     lines.push(`**Events emitted:** ${eventsEmitted}`);
-    lines.push(`**Authority:** D-TREASURY-GAPS-WAVE1; BA 325; BA 326`);
+    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1; BA 325; BA 326");
     lines.push("");
     writeFileSync(resolve(ctx.ownerInboxDir, filename), lines.join("\n"), "utf8");
   }

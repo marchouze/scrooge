@@ -96,7 +96,6 @@ import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
-import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import {
@@ -114,6 +113,7 @@ import {
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
+import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
   CUSTOMER_LIFECYCLE_EVENT_TYPES,

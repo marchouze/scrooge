@@ -13,8 +13,8 @@
 // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
-import { type HQLAPosition, type FundingPosition, computeLCR, type LCRResult } from "./lcr";
-import { type ASFItem, type RSFItem, computeNSFR, type NSFRResult } from "./nsfr";
+import { type FundingPosition, type HQLAPosition, type LCRResult, computeLCR } from "./lcr";
+import { type ASFItem, type NSFRResult, type RSFItem, computeNSFR } from "./nsfr";
 
 // ---------------------------------------------------------------------------
 // Horizon types
@@ -79,17 +79,11 @@ const STATUS_SEVERITY: Record<string, number> = {
   "below-minimum": 3,
 };
 
-function worseLCRStatus(
-  a: LCRResult["status"],
-  b: LCRResult["status"],
-): LCRResult["status"] {
+function worseLCRStatus(a: LCRResult["status"], b: LCRResult["status"]): LCRResult["status"] {
   return (STATUS_SEVERITY[a] ?? 0) >= (STATUS_SEVERITY[b] ?? 0) ? a : b;
 }
 
-function worseNSFRStatus(
-  a: NSFRResult["status"],
-  b: NSFRResult["status"],
-): NSFRResult["status"] {
+function worseNSFRStatus(a: NSFRResult["status"], b: NSFRResult["status"]): NSFRResult["status"] {
   return (STATUS_SEVERITY[a] ?? 0) >= (STATUS_SEVERITY[b] ?? 0) ? a : b;
 }
 

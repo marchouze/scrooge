@@ -58,23 +58,23 @@ export interface FundingPosition {
 
 const RUNOFF_RATES: Record<string, number> = {
   "retail-stable": 0.03,
-  "retail-less-stable": 0.10,
+  "retail-less-stable": 0.1,
   "wholesale-operational": 0.25,
-  "wholesale-non-operational": 1.00,
-  "secured-level1": 0.00,
+  "wholesale-non-operational": 1.0,
+  "secured-level1": 0.0,
   "secured-level2": 0.15,
 };
 
 /** Inflow rate cap under BA 325: inflows recognised at 100% of contractual amounts. */
-const INFLOW_RATE_CONTRACTUAL = 1.00;
-const INFLOW_RATE_OTHER = 0.50;
+const INFLOW_RATE_CONTRACTUAL = 1.0;
+const INFLOW_RATE_OTHER = 0.5;
 
 // ---------------------------------------------------------------------------
 // HQLA haircut rates (BA 325 Annex 1)
 // ---------------------------------------------------------------------------
 
 const HAIRCUT_RATES: Record<string, number> = {
-  L1: 0.00,
+  L1: 0.0,
   L2a: 0.15,
   L2b: 0.25, // minimum; build phase uses floor; actual can be up to 50%
 };
@@ -120,7 +120,7 @@ export interface LCRDetail {
 // ---------------------------------------------------------------------------
 
 /** Regulatory minimum LCR as a ratio (1.00 = 100%). */
-export const LCR_MINIMUM_RATIO = 1.00;
+export const LCR_MINIMUM_RATIO = 1.0;
 
 /** "At-minimum" tolerance band: within 5 percentage points of the minimum. */
 const AT_MINIMUM_TOLERANCE_PCT = 5;
@@ -191,7 +191,7 @@ export function computeLCR(
   // Similarly L2b ≤ 0.15 × H → L2b ≤ (15/85) × L1.
 
   const l2bCap = (15 / 85) * l1Raw;
-  let l2bCapped = Math.min(l2bRaw, l2bCap);
+  const l2bCapped = Math.min(l2bRaw, l2bCap);
   const l2bCapBinding = l2bRaw > l2bCap;
 
   const l2Cap = (40 / 60) * l1Raw;
@@ -225,7 +225,8 @@ export function computeLCR(
   for (const pos of fundingPositions) {
     if (pos.category.startsWith("inflow-")) {
       // Inflows
-      const rate = pos.category === "inflow-contractual" ? INFLOW_RATE_CONTRACTUAL : INFLOW_RATE_OTHER;
+      const rate =
+        pos.category === "inflow-contractual" ? INFLOW_RATE_CONTRACTUAL : INFLOW_RATE_OTHER;
       stressedInflows += pos.amountZar * rate;
     } else {
       // Outflows
@@ -252,7 +253,7 @@ export function computeLCR(
     lcrRatioPct = (hqla / netCashOutflows) * 100;
     if (lcrRatioPct < LCR_MINIMUM_RATIO * 100) {
       status = "below-minimum";
-    } else if (lcrRatioPct <= (LCR_MINIMUM_RATIO * 100) + AT_MINIMUM_TOLERANCE_PCT) {
+    } else if (lcrRatioPct <= LCR_MINIMUM_RATIO * 100 + AT_MINIMUM_TOLERANCE_PCT) {
       status = "at-minimum";
     } else {
       status = "above-minimum";

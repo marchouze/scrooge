@@ -70,27 +70,27 @@ export interface RSFItem {
 // ---------------------------------------------------------------------------
 
 const ASF_WEIGHTS: Record<string, number> = {
-  "tier1-capital": 1.00,
-  "tier2-capital-gt1y": 1.00,
+  "tier1-capital": 1.0,
+  "tier2-capital-gt1y": 1.0,
   "retail-stable-lt1y": 0.95,
-  "retail-less-stable-lt1y": 0.90,
-  "wholesale-gt1y": 1.00,
-  "wholesale-lt1y-operational": 0.50,
-  "wholesale-lt1y-non-operational": 0.00,
+  "retail-less-stable-lt1y": 0.9,
+  "wholesale-gt1y": 1.0,
+  "wholesale-lt1y-operational": 0.5,
+  "wholesale-lt1y-non-operational": 0.0,
 };
 
 const RSF_WEIGHTS: Record<string, number> = {
   "hqla-l1": 0.05,
   "hqla-l2a": 0.15,
-  "hqla-l2b": 0.50,
-  "loan-lt6m": 0.10,
-  "loan-6m-1y": 0.50,
+  "hqla-l2b": 0.5,
+  "loan-lt6m": 0.1,
+  "loan-6m-1y": 0.5,
   "loan-gt1y-standard": 0.65,
   "loan-gt1y-residential": 0.85,
-  "security-lt1y": 0.10,
+  "security-lt1y": 0.1,
   "security-gt1y-non-hqla": 0.85,
-  "operational-deposit-at-fi": 0.10,
-  "derivative-net": 1.00,
+  "operational-deposit-at-fi": 0.1,
+  "derivative-net": 1.0,
 };
 
 // ---------------------------------------------------------------------------
@@ -128,7 +128,7 @@ export interface NSFRDetail {
 // ---------------------------------------------------------------------------
 
 /** Regulatory minimum NSFR ratio. */
-export const NSFR_MINIMUM_RATIO = 1.00;
+export const NSFR_MINIMUM_RATIO = 1.0;
 
 /** "At-minimum" tolerance band: within 5 percentage points. */
 const AT_MINIMUM_TOLERANCE_PCT = 5;
@@ -148,8 +148,7 @@ export function computeNSFR(asfItems: ASFItem[], rsfItems: RSFItem[]): NSFRResul
   // Zero-position early exit (build phase)
   // -------------------------------------------------------------------------
   const totalPositions =
-    asfItems.reduce((s, p) => s + p.amountZar, 0) +
-    rsfItems.reduce((s, p) => s + p.amountZar, 0);
+    asfItems.reduce((s, p) => s + p.amountZar, 0) + rsfItems.reduce((s, p) => s + p.amountZar, 0);
 
   if (totalPositions === 0) {
     return {
@@ -194,7 +193,7 @@ export function computeNSFR(asfItems: ASFItem[], rsfItems: RSFItem[]): NSFRResul
     nsfrRatioPct = (asf / rsf) * 100;
     if (nsfrRatioPct < NSFR_MINIMUM_RATIO * 100) {
       status = "below-minimum";
-    } else if (nsfrRatioPct <= (NSFR_MINIMUM_RATIO * 100) + AT_MINIMUM_TOLERANCE_PCT) {
+    } else if (nsfrRatioPct <= NSFR_MINIMUM_RATIO * 100 + AT_MINIMUM_TOLERANCE_PCT) {
       status = "at-minimum";
     } else {
       status = "above-minimum";

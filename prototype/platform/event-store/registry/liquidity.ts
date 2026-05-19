@@ -17,10 +17,7 @@
 //
 // Author: Anya (Liquidity & projections engineer, engineering)
 
-import {
-  lcrComputedPayloadSchema,
-  nsfrComputedPayloadSchema,
-} from "../event-types/liquidity";
+import { lcrComputedPayloadSchema, nsfrComputedPayloadSchema } from "../event-types/liquidity";
 import { RETENTION_GOVERNANCE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
 
