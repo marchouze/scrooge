@@ -88,6 +88,7 @@ import {
   ftpAttributionRecordedPayloadSchema,
   ftpCurvePublishedPayloadSchema,
 } from "../event-types/ftp";
+import { marketDataTickReceivedPayloadSchema } from "../event-types/markets";
 import { tradeExecutedPayloadSchema } from "../event-types/markets-trading-extended";
 import {
   type EventTypeMetadata,
@@ -1046,5 +1047,27 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "dashboard/markets-fx-trade.ts; D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10); Slice 3",
+  },
+  // ---------------------------------------------------------------------------
+  // MarketDataTickReceived — emitted by EnvSim's MarketDataSimulator on each
+  // scheduled tick. Carries bid/mid/ask for one currency pair. Source field
+  // distinguishes simulated ticks ("env-sim") from future live feed ticks.
+  //
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION.
+  // Author: Env (External Environment Simulator); Devon (COO, engineering).
+  // ---------------------------------------------------------------------------
+  {
+    type: "MarketDataTickReceived",
+    class: "markets",
+    payloadSchema: marketDataTickReceivedPayloadSchema,
+    issuer: "Env",
+    subscribers: ["Kai", "Saskia", "Rohan", "Bea", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION"],
+    // Market data: governance-grade 7y (price-record audit trail for
+    // best-execution and IFRS-13 fair-value hierarchy documentation).
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "platform/simulation/env-sim/market-data-sim.ts; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07)",
   },
 ];

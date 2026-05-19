@@ -18,8 +18,9 @@
 //   D-FX-MESSAGE-EVENTS.
 // Author: Devon (Chief Operating Officer, engineering)
 
-import { newEventId } from "../core/types";
+import { newEventId, nowUtc } from "../core/types";
 import type { EventStore } from "../event-store/store";
+import { makeInboundMessageReceived } from "../event-store/event-types/payments";
 import {
   makeFxSettlementInstructed,
   makePrincipalPayment,
@@ -28,6 +29,7 @@ import {
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { simulateInboundMessages } from "../payments/inbound-simulator";
 import { generateAndEmitMt300 } from "../payments/swift-mt/mt300";
+import type { CounterpartyBehaviorProfile } from "./env-sim/counterparty-profiles";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -55,11 +57,13 @@ const SIM_CORRESPONDENT = {
  * + 2x PrincipalPayment + 1x SettlementConfirmed + outbound MT300 + inbound
  * message set.
  *
- * @param store            The event store to append events to.
- * @param trade            The FxTradeExecutedPayload from the sim trade.
- * @param asOf             ISO 8601 timestamp for all emitted events.
- * @param bankBic          The bank's own SWIFT BIC (e.g. "BANKZAJJXXX").
- * @param counterpartyBic  The counterparty's SWIFT BIC.
+ * @param store                       The event store to append events to.
+ * @param trade                       The FxTradeExecutedPayload from the sim trade.
+ * @param asOf                        ISO 8601 timestamp for all emitted events.
+ * @param bankBic                     The bank's own SWIFT BIC (e.g. "BANKZAJJXXX").
+ * @param counterpartyBic             The counterparty's SWIFT BIC.
+ * @param profileForCounterparty      Optional callback returning the behavior profile for a given partyId.
+ * @param rng                         Optional seeded PRNG. Defaults to Math.random.
  */
 export function runPostTradeLifecycle(
   store: EventStore,
@@ -67,6 +71,8 @@ export function runPostTradeLifecycle(
   asOf: string,
   bankBic: string,
   counterpartyBic: string,
+  profileForCounterparty?: (partyId: string) => CounterpartyBehaviorProfile | undefined,
+  rng?: () => number,
 ): void {
   const nearLeg = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
   if (!nearLeg) {
@@ -80,8 +86,41 @@ export function runPostTradeLifecycle(
   const currencyPairStr = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
   const tradeIdValue = trade.tradeId.value;
 
-  // T+2 settlement date (simple calendar +2 days for sim).
-  const settlementDateIso = nearLeg.settlementDate?.iso ?? addTwoCalendarDays(trade.tradeDate.iso);
+  // Resolve stochastic parameters.
+  const rand = rng ?? Math.random;
+  const profile = profileForCounterparty?.(trade.counterparty.partyId);
+
+  // T+2 settlement date + optional delay days from profile.
+  const baseSettlementIso = nearLeg.settlementDate?.iso ?? addTwoCalendarDays(trade.tradeDate.iso);
+  const delayDays = profile?.settlementDelayDays ?? 0;
+  const settlementDateIso = delayDays > 0 ? addCalendarDays(baseSettlementIso, delayDays) : baseSettlementIso;
+
+  // Stochastic rejection branch: skip PrincipalPayments + SettlementConfirmed.
+  const isRejected = rand() < (profile?.rejectionProbability ?? 0);
+  if (isRejected) {
+    store.append(
+      makeInboundMessageReceived({
+        asOf,
+        entity: ENTITY,
+        actor: { type: "service" as const, id: "agent:env:counterparty-sim" },
+        citations: CITATIONS,
+        payload: {
+          tradeId: tradeIdValue,
+          messageId: `REJECTION-${tradeIdValue.slice(-12)}-${nowUtc()}`,
+          messageStandard: "REJECTION",
+          direction: "inbound",
+          serialisedMessage: `Trade confirmation rejected by counterparty for trade ${tradeIdValue}`,
+          senderBic: counterpartyBic,
+          receivedAt: asOf,
+          citations: CITATIONS,
+        },
+      }),
+    );
+    // Still emit settlement instructions but no payment/confirmation events.
+  }
+
+  // Stochastic settlement failure: checked later after PrincipalPayments.
+  const isSettlementFailed = !isRejected && rand() < (profile?.settlementFailureProbability ?? 0);
 
   // -------------------------------------------------------------------------
   // 1. FxSettlementInstructed — pay leg (bank delivers payCurrency)
@@ -135,80 +174,104 @@ export function runPostTradeLifecycle(
 
   // -------------------------------------------------------------------------
   // 3. PrincipalPayment — deliver leg (bank pays payCurrency)
+  // Skip if trade was rejected by counterparty.
   // -------------------------------------------------------------------------
-  store.append(
-    makePrincipalPayment({
-      asOf: settlementDateIso,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: {
-        tradeId: tradeIdValue,
-        legKind: "deliver",
-        currencyPair: currencyPairStr,
-        currency: payCurrency,
-        netCash: payNotionalMinor,
-        settlementDate: settlementDateIso,
-        settlementPath: "correspondent",
-        correspondent: {
-          name: SIM_CORRESPONDENT.name,
-          bic: counterpartyBic,
-        },
-        settlementConfirmationRef: `CONF-SIM-${tradeIdValue}-DEL`,
+  if (!isRejected) {
+    store.append(
+      makePrincipalPayment({
+        asOf: settlementDateIso,
+        entity: ENTITY,
+        actor: ACTOR,
         citations: CITATIONS,
-      },
-      eventId: newEventId(),
-    }),
-  );
+        payload: {
+          tradeId: tradeIdValue,
+          legKind: "deliver",
+          currencyPair: currencyPairStr,
+          currency: payCurrency,
+          netCash: payNotionalMinor,
+          settlementDate: settlementDateIso,
+          settlementPath: "correspondent",
+          correspondent: {
+            name: SIM_CORRESPONDENT.name,
+            bic: counterpartyBic,
+          },
+          settlementConfirmationRef: `CONF-SIM-${tradeIdValue}-DEL`,
+          citations: CITATIONS,
+        },
+        eventId: newEventId(),
+      }),
+    );
+
+    // -------------------------------------------------------------------------
+    // 4. PrincipalPayment — receive leg (bank receives receiveCurrency)
+    // -------------------------------------------------------------------------
+    store.append(
+      makePrincipalPayment({
+        asOf: settlementDateIso,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: tradeIdValue,
+          legKind: "receive",
+          currencyPair: currencyPairStr,
+          currency: receiveCurrency,
+          netCash: receiveNotionalMinor,
+          settlementDate: settlementDateIso,
+          settlementPath: "correspondent",
+          correspondent: {
+            name: SIM_CORRESPONDENT.name,
+            bic: counterpartyBic,
+          },
+          settlementConfirmationRef: `CONF-SIM-${tradeIdValue}-RCV`,
+          citations: CITATIONS,
+        },
+        eventId: newEventId(),
+      }),
+    );
+  }
 
   // -------------------------------------------------------------------------
-  // 4. PrincipalPayment — receive leg (bank receives receiveCurrency)
+  // 5. SettlementConfirmed or SettlementFailed (stochastic)
   // -------------------------------------------------------------------------
-  store.append(
-    makePrincipalPayment({
-      asOf: settlementDateIso,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: {
-        tradeId: tradeIdValue,
-        legKind: "receive",
-        currencyPair: currencyPairStr,
-        currency: receiveCurrency,
-        netCash: receiveNotionalMinor,
-        settlementDate: settlementDateIso,
-        settlementPath: "correspondent",
-        correspondent: {
-          name: SIM_CORRESPONDENT.name,
-          bic: counterpartyBic,
+  if (!isRejected && isSettlementFailed) {
+    store.append(
+      makeInboundMessageReceived({
+        asOf: settlementDateIso,
+        entity: ENTITY,
+        actor: { type: "service" as const, id: "agent:env:counterparty-sim" },
+        citations: CITATIONS,
+        payload: {
+          tradeId: tradeIdValue,
+          messageId: `SETTLEMENT-FAILED-${tradeIdValue.slice(-12)}`,
+          messageStandard: "SETTLEMENT-FAILED",
+          direction: "inbound",
+          serialisedMessage: `Settlement failed — counterparty did not deliver for trade ${tradeIdValue}`,
+          senderBic: counterpartyBic,
+          receivedAt: settlementDateIso,
+          citations: CITATIONS,
         },
-        settlementConfirmationRef: `CONF-SIM-${tradeIdValue}-RCV`,
+      }),
+    );
+  } else if (!isRejected) {
+    store.append(
+      makeSettlementConfirmed({
+        asOf: settlementDateIso,
+        entity: ENTITY,
+        actor: ACTOR,
         citations: CITATIONS,
-      },
-      eventId: newEventId(),
-    }),
-  );
-
-  // -------------------------------------------------------------------------
-  // 5. SettlementConfirmed
-  // -------------------------------------------------------------------------
-  store.append(
-    makeSettlementConfirmed({
-      asOf: settlementDateIso,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: {
-        tradeId: tradeIdValue,
-        currencyPair: currencyPairStr,
-        settledDate: settlementDateIso,
-        realisedPnlDelta: 0,
-        settlementRef: `SWIFT-CONF-SIM-${tradeIdValue.slice(-12)}`,
-        citations: CITATIONS,
-      },
-      eventId: newEventId(),
-    }),
-  );
+        payload: {
+          tradeId: tradeIdValue,
+          currencyPair: currencyPairStr,
+          settledDate: settlementDateIso,
+          realisedPnlDelta: 0,
+          settlementRef: `SWIFT-CONF-SIM-${tradeIdValue.slice(-12)}`,
+          citations: CITATIONS,
+        },
+        eventId: newEventId(),
+      }),
+    );
+  }
 
   // -------------------------------------------------------------------------
   // 6. Outbound MT300 — bank sends FX confirmation to counterparty
@@ -244,7 +307,12 @@ export function runPostTradeLifecycle(
 
 /** Add 2 calendar days to an ISO date string (YYYY-MM-DD). */
 function addTwoCalendarDays(isoDate: string): string {
+  return addCalendarDays(isoDate, 2);
+}
+
+/** Add N calendar days to an ISO date string (YYYY-MM-DD). */
+function addCalendarDays(isoDate: string, days: number): string {
   const d = new Date(`${isoDate}T00:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + 2);
+  d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
