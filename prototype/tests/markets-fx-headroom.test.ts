@@ -148,21 +148,18 @@ function seedRasSchedule(store: EventStore): void {
 // ---------------------------------------------------------------------------
 
 describe("loadSeedRate", () => {
-  it("resolves ZAR/USD rate close to 18.5 from the seed file", () => {
+  it("resolves ZAR/USD as USD-per-ZAR (standard Forex convention, ~0.054)", () => {
     const rate = loadSeedRate("ZAR/USD");
-    // The seed's most-recent ZAR/USD entry is 1,897,000 minor units (2026-08-12)
-    // → 1,897,000 / 100,000 = 18.97. Allow ±1.0 for seed changes.
-    expect(rate).toBeGreaterThan(17.5);
-    expect(rate).toBeLessThan(22.0);
+    // Standard: ZAR/USD = how many USD buys 1 ZAR ≈ 0.054 (1/18.5).
+    expect(rate).toBeGreaterThan(0.04);
+    expect(rate).toBeLessThan(0.1);
   });
 
-  it("returns a rate within 0.01 of 18.5 for the 2026-05-16 seed entry if it is the latest", () => {
-    // Relaxed test: seed may have later dates added; just verify the function
-    // returns a plausible ZAR/USD rate (not the fallback for known pair).
-    const rate = loadSeedRate("ZAR/USD");
-    expect(typeof rate).toBe("number");
-    expect(Number.isFinite(rate)).toBe(true);
-    expect(rate).toBeGreaterThan(0);
+  it("resolves USD/ZAR as ZAR-per-USD (~18.5)", () => {
+    const rate = loadSeedRate("USD/ZAR");
+    // Standard: USD/ZAR = how many ZAR buys 1 USD ≈ 18.5.
+    expect(rate).toBeGreaterThan(17.5);
+    expect(rate).toBeLessThan(22.0);
   });
 
   it("falls back to SYNTHETIC_USDZAR_MID for unknown pair", () => {

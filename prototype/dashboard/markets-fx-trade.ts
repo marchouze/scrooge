@@ -142,22 +142,14 @@ const TRADE_EMIT_CITATIONS = [
 // Seed-data pricer — Slice 3 (replaces fixed-spread stub).
 //
 // Reads fx-rates.json relative to this file's location at runtime.
-// The seed stores rates as minor units (ZAR cents per USD cent × 10^6).
-// For ZAR/USD: raw value 1850000 → divide by 100000 → 18.50000 ZAR per USD.
-// The factor of 100000 (not 1000000) comes from the comment in fx-rates.json:
-//   "rates in minor units (ZAR cents per USD cent, i.e. the rate × 1,000,000
-//    for 6dp precision)".
-// So 1 ZAR per USD = 1,000,000 minor units. 18.5 ZAR per USD = 18,500,000 —
-// but the seed stores 1,850,000 for ZAR/USD... That would be 1.85. Wait:
-// re-reading: "ZAR cents per USD cent" means: how many ZAR-cents per USD-cent.
-// 1 USD = 100 USD-cents. 18.5 ZAR = 1850 ZAR-cents. So ZAR-cents per USD-cent
-// = 1850 / 100 = 18.5. Multiplied by 1,000,000 for 6dp → 18,500,000.
-// But seed value is 1,850,000. That's × 100,000. So divide by 100,000.
-// Confirmed: 1,850,000 / 100,000 = 18.5 ZAR per USD. Correct.
+// Seed rates are standard Forex convention × 10^6:
+//   ZAR/USD = USD per ZAR (e.g. 54054 → 0.054054 USD per 1 ZAR)
+//   USD/ZAR = ZAR per USD (e.g. 18500000 → 18.5 ZAR per 1 USD)
+// The RFQ pricer uses USD/ZAR to quote how many ZAR the bank pays per USD.
 // ---------------------------------------------------------------------------
 
-/** Minor-unit divisor for fx-rates.json seed values → major-unit ZAR per USD. */
-const SEED_MINOR_UNIT_DIVISOR = 100_000;
+/** Minor-unit divisor for fx-rates.json seed values → decimal rate. */
+const SEED_MINOR_UNIT_DIVISOR = 1_000_000;
 
 /**
  * Load the mid-rate for a currency pair from the seed file.
@@ -208,7 +200,7 @@ export function loadSeedRate(currencyPair: string): number {
  * @param input       RFQ side (buy = bank buys USD; sell = bank sells USD).
  * @param currencyPair Seed-file lookup key (default "ZAR/USD").
  */
-export function quoteRfq(input: Pick<RfqInput, "side">, currencyPair = "ZAR/USD"): SyntheticQuote {
+export function quoteRfq(input: Pick<RfqInput, "side">, currencyPair = "USD/ZAR"): SyntheticQuote {
   const midRate = loadSeedRate(currencyPair);
   const halfSpread = SYNTHETIC_HALF_SPREAD;
   const bidRate = midRate - halfSpread;

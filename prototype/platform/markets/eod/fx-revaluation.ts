@@ -219,17 +219,20 @@ export function runEodFxRevaluation(
     const revalRate = rateSource.getRate(currencyPairStr, valuationDate);
 
     // Step 4b: Compute the unrealised P&L delta.
-    // Book rate from the leg (as a number — the rate amount in major units).
-    const bookRate = nearLeg.rate.amount;
+    // The CDM leg rate is expressed as "receiveCurrency per pay-unit", which is
+    // side-dependent: sell → quote/base (standard direction); buy → base/quote (inverted).
+    // Normalise to standard direction (quote per base) so it is comparable to the
+    // seed reval rate, which is always expressed as quote per base × 10^6.
+    const legRate = nearLeg.rate.amount;
+    const bookRate =
+      nearLeg.rate.currency === trade.currencyPair.quote
+        ? legRate // already quote-per-base (sell side)
+        : 1 / legRate; // base-per-quote → invert to quote-per-base (buy side)
     const notionalBaseMinor = nearLeg.notional.amountMinor;
 
-    // Unrealised P&L delta = notional × (revalRate - bookRate) / rateScale
-    // The revalRate is in minor units (× 10^6), bookRate is the leg's decimal rate.
-    // We need to convert: revalRate_minor is in (minor quote per minor base × 10^6).
-    // For simplicity: P&L = notionalBaseMinor × (revalRate/1_000_000 - bookRate)
-    // This gives the P&L in quote-currency minor units.
-    // Then for ZAR P&L (when base=ZAR): no conversion; when base=USD multiply by ZAR/USD rate.
-    // Build-phase simplification: report P&L in ZAR minor units directly.
+    // P&L = notional_base × (revalRate − bookRate), both in quote-per-base decimal.
+    // Build-phase simplification: result is in quote-currency minor units, reported as
+    // ZAR minor units (accurate when base=ZAR; approximation for cross pairs).
     const revalRateDecimal = revalRate / 1_000_000;
     const unrealisedPnlZarMinor = Math.round(notionalBaseMinor * (revalRateDecimal - bookRate));
 

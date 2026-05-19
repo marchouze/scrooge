@@ -163,9 +163,9 @@ describe("FX Slice 2 — validateRfqInput", () => {
 // ---------------------------------------------------------------------------
 
 describe("FX Slice 2+3 — quoteRfq (seed-data pricer)", () => {
-  it("returns a plausible ZAR/USD mid-rate from the seed with symmetric half-spread", () => {
+  it("returns a plausible USD/ZAR mid-rate from the seed with symmetric half-spread", () => {
     const q = quoteRfq({ side: "buy" });
-    // Seed-data pricer (Slice 3) replaces the fixed stub — mid is now ~18.5–19.5 ZAR/USD.
+    // Default pair is USD/ZAR (ZAR per USD) — seed gives ~18.5.
     expect(q.midRate).toBeGreaterThan(17.0);
     expect(q.midRate).toBeLessThan(22.0);
     expect(q.halfSpread).toBe(SYNTHETIC_HALF_SPREAD);
@@ -332,7 +332,7 @@ describe("FX Slice 2 — quoteOnly", () => {
     const r = quoteOnly(VALID_RFQ);
     expect(r.status).toBe("ok");
     if (r.status !== "ok") throw new Error("expected ok");
-    // Slice 3: seed-data pricer; mid-rate is seed-derived (~18.5–19.5 ZAR/USD).
+    // Slice 3: seed-data pricer; mid-rate is USD/ZAR seed-derived (~18.5 ZAR per USD).
     expect(r.quote.midRate).toBeGreaterThan(17.0);
     expect(r.quote.midRate).toBeLessThan(22.0);
     expect(r.currencyPair).toBe("USD/ZAR");
