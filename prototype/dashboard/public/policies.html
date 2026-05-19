@@ -29,31 +29,39 @@
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
       document.getElementById("pol-table").innerHTML = SC.renderSkeleton(8);
-      const data = await sf("/api/policies");
-      const all = Array.isArray(data) ? data : (data?.items ?? data?.policies ?? []);
-      const tabs = ["All","Active","Draft","Retired"];
-      let activeTab = "All", ownerFilter = "";
+      const data = await sf("/api/state");
+      const all = data?.policies ?? [];
+      const sc = Object.fromEntries(Object.entries(
+        all.reduce((acc, p) => { acc[p.status||""]=(acc[p.status||""]||0)+1; return acc; }, {})
+      ));
+      const TABS = [
+        { label: `All (${all.length})`, filter: null },
+        { label: `In Force (${sc["IN FORCE"]??0})`, filter: "IN FORCE" },
+        { label: `Drafting (${sc.DRAFTING??0})`, filter: "DRAFTING" },
+        { label: `Planned (${sc.PLANNED??0})`, filter: "PLANNED" },
+        { label: `Exists (${sc.EXISTS??0})`, filter: "EXISTS" },
+      ];
+      let activeFilter = null, ownerFilter = "";
       const tabsEl = document.getElementById("pol-tabs");
       const ownerEl = document.getElementById("pol-owner");
-      // Populate owner dropdown
       const owners = [...new Set(all.map(p => p.owner||"").filter(Boolean))].sort();
       owners.forEach(o => { const opt = document.createElement("option"); opt.value = o; opt.textContent = o; ownerEl.appendChild(opt); });
       function render() {
-        let rows = activeTab === "All" ? all : all.filter(p => (p.status||"").toLowerCase() === activeTab.toLowerCase());
+        let rows = activeFilter ? all.filter(p => p.status === activeFilter) : all;
         if (ownerFilter) rows = rows.filter(p => p.owner === ownerFilter);
         SC.renderTable({
           container: document.getElementById("pol-table"),
-          headers: ["ID","Title","Owner","Status","Version"],
+          headers: ["Name","Domain","Owner","Approval","Status","Obligations"],
           rows: rows.map(p => ({
-            cells: [SC.esc(p.id||p.policyId||""), SC.esc(p.title||""), SC.esc(p.owner||""), SC.renderBadge(p.status||"active"), SC.esc(p.version||"1")],
+            cells: [SC.esc(p.name||""), SC.esc((p.domain||"").replace(/^\d+\.\s*/,"")), SC.esc(p.owner||""), SC.esc(p.approval||""), SC.renderBadge(p.status||""), SC.esc(Array.isArray(p.linkedObligations)?String(p.linkedObligations.length):"—")],
             data: p,
           })),
-          onRowClick: p => SC.openModal({ title: p.title||"Policy", body: SC.renderDefList(p) }),
+          onRowClick: p => SC.openModal({ title: p.name||"Policy", body: SC.renderDefList(p) }),
           emptyMessage: "No policies",
         });
       }
-      tabsEl.innerHTML = tabs.map(t => `<button class="tab-btn${t===activeTab?" active":""}" data-tab="${t}">${t}</button>`).join("");
-      tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab-btn"); if (!b) return; activeTab = b.dataset.tab; tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", x.dataset.tab===activeTab)); render(); });
+      tabsEl.innerHTML = TABS.map(t => `<button class="tab-btn${t.filter===activeFilter?" active":""}" data-filter="${t.filter??""}">${SC.esc(t.label)}</button>`).join("");
+      tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab-btn"); if (!b) return; activeFilter = b.dataset.filter||null; tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", (x.dataset.filter||null)===activeFilter)); render(); });
       ownerEl.addEventListener("change", e => { ownerFilter = e.target.value; render(); });
       render();
     })();
