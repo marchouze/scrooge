@@ -220,7 +220,6 @@ export {
 
 import { PARTY_EVENT_TYPES } from "../../../domains/party";
 import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
-import { COLLATERAL_TYPED_EVENT_TYPES } from "./collateral";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
@@ -230,6 +229,7 @@ import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
+import { COLLATERAL_TYPED_EVENT_TYPES } from "./collateral";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";

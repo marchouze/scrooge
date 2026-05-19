@@ -5,10 +5,11 @@
 // Covers:
 //   CollateralInventorySnapshot — daily snapshot of the HQLA buffer position,
 //     cap check results, and aggregate totals.
-//   CollateralUpdated — per-security inventory change event (add/remove/revalue).
 //
-// Note: `CollateralUpdated` is referenced in `runtime/agents/ravi-alm-readiness.ts`
-// as a zero-count event type — this file provides the typed schema registration.
+// Note: `CollateralUpdated` is already defined in `markets-trading-extended.ts`
+// (markets/margin schema). The Ravi ALM readiness handler references
+// `CollateralUpdated` as a zero-count event type via that existing definition.
+// The inventory-specific per-security change event uses `CollateralInventorySnapshot`.
 //
 // Authority: BA 325 Annex 1; Banks Act Reg 26 (LCR); D-TREASURY-GAPS-WAVE1.
 // Author: Atlas (Core banking platform architect, engineering)
@@ -59,46 +60,7 @@ export function makeCollateralInventorySnapshot(args: {
 }
 
 // ---------------------------------------------------------------------------
-// CollateralUpdated
-// ---------------------------------------------------------------------------
-
-export const collateralUpdatedPayloadSchema = z.object({
-  updateId: z.string().min(1),
-  asOf: z.string().min(1),
-  isin: z.string().min(1),
-  updateKind: z.enum(["added", "removed", "revalued"]),
-  marketValueZar: z.number().nonnegative(),
-  hqlaLevel: z.enum(["L1", "L2a", "L2b", "non-HQLA"]),
-  haircut: z.number().min(0).max(1),
-  currency: z.string().min(3).max(3),
-});
-
-export type CollateralUpdatedPayload = z.infer<typeof collateralUpdatedPayloadSchema>;
-
-export function makeCollateralUpdated(args: {
-  asOf: string;
-  entity: string;
-  actor: Actor;
-  citations: string[];
-  payload: CollateralUpdatedPayload;
-  eventId?: string;
-}): Event {
-  return eventSchema.parse({
-    event_id: args.eventId ?? newEventId(),
-    type: "CollateralUpdated",
-    as_of: args.asOf,
-    entity: args.entity,
-    actor: args.actor,
-    citations: args.citations,
-    payload: collateralUpdatedPayloadSchema.parse(args.payload),
-  });
-}
-
-// ---------------------------------------------------------------------------
 // Typed event types list
 // ---------------------------------------------------------------------------
 
-export const COLLATERAL_TYPED_EVENT_TYPES = [
-  "CollateralInventorySnapshot",
-  "CollateralUpdated",
-] as const;
+export const COLLATERAL_TYPED_EVENT_TYPES = ["CollateralInventorySnapshot"] as const;

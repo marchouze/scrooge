@@ -24,10 +24,10 @@ export interface SecurityDescriptor {
   isin: string;
   issuer: string;
   assetClass: "sovereign-bond" | "corporate-bond" | "equity" | "covered-bond" | "cash" | "other";
-  creditRating?: string; // e.g. "AAA", "AA+", "BBB-"
-  riskWeight?: number; // 0, 20, 50, 100
+  creditRating?: string | undefined; // e.g. "AAA", "AA+", "BBB-"
+  riskWeight?: number | undefined; // 0, 20, 50, 100
   currency: string;
-  residualMaturityDays?: number;
+  residualMaturityDays?: number | undefined;
 }
 
 export interface HQLAClassification {
@@ -106,8 +106,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
     return {
       level: "L1",
       haircut: 0,
-      eligibilityRationale:
-        "ZAR cash equivalent — L1 per BA 325 Annex 1 para 1(a). Zero haircut.",
+      eligibilityRationale: "ZAR cash equivalent — L1 per BA 325 Annex 1 para 1(a). Zero haircut.",
     };
   }
 

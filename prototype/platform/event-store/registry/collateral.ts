@@ -4,21 +4,18 @@
 //
 // Covers:
 //   CollateralInventorySnapshot — daily HQLA buffer snapshot with cap checks.
-//   CollateralUpdated           — per-security inventory change (add/remove/revalue).
+//
+// Note: CollateralUpdated is registered in the markets-trading-extended module
+// (markets/margin shape). The Ravi ALM readiness handler references it there.
 //
 // Retention classification:
 //   - CollateralInventorySnapshot → RETENTION_BANKING_5Y
 //     (prudential record; regulatory LCR measurement once trading commences)
-//   - CollateralUpdated → RETENTION_BANKING_5Y
-//     (position-level audit trail required for BA 325 compliance)
 //
 // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 // Author: Atlas (Core banking platform architect, engineering)
 
-import {
-  collateralInventorySnapshotPayloadSchema,
-  collateralUpdatedPayloadSchema,
-} from "../event-types/collateral";
+import { collateralInventorySnapshotPayloadSchema } from "../event-types/collateral";
 import { RETENTION_BANKING_5Y } from "./types";
 import type { EventTypeMetadata } from "./types";
 
@@ -40,17 +37,6 @@ export const COLLATERAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_BANKING_5Y,
     payloadSchema: collateralInventorySnapshotPayloadSchema,
-    citationsHint: ["BA-325-ANNEX-1", "BANKS-REG-26", "D-TREASURY-GAPS-WAVE1"],
-    source: "platform/event-store/event-types/collateral.ts",
-  },
-  {
-    type: "CollateralUpdated",
-    class: "markets",
-    issuer: "Atlas",
-    subscribers: ["Eitan", "Ravi", "Helena", "Atlas"],
-    replay: "append",
-    retention: RETENTION_BANKING_5Y,
-    payloadSchema: collateralUpdatedPayloadSchema,
     citationsHint: ["BA-325-ANNEX-1", "BANKS-REG-26", "D-TREASURY-GAPS-WAVE1"],
     source: "platform/event-store/event-types/collateral.ts",
   },

@@ -71,38 +71,34 @@ interface RawPosition {
  * Attempt to extract security position from a TradeBooked or TradeSettled payload.
  * Returns null if the payload does not describe a security position.
  */
-function extractPosition(
-  type: string,
-  payload: Record<string, unknown>,
-): RawPosition | null {
+function extractPosition(type: string, payload: Record<string, unknown>): RawPosition | null {
   // Only process trade events that carry security position data
   if (type !== "TradeBooked" && type !== "TradeSettled") return null;
 
-  const isin = typeof payload["isin"] === "string" ? payload["isin"] : null;
+  const isin = typeof payload.isin === "string" ? payload.isin : null;
   if (!isin) return null;
 
   const faceValue =
-    typeof payload["faceValue"] === "number"
-      ? payload["faceValue"]
-      : typeof payload["notional"] === "number"
-        ? payload["notional"]
+    typeof payload.faceValue === "number"
+      ? payload.faceValue
+      : typeof payload.notional === "number"
+        ? payload.notional
         : 0;
 
   const marketValueZar =
-    typeof payload["marketValueZar"] === "number"
-      ? payload["marketValueZar"]
-      : typeof payload["marketValue"] === "number"
-        ? payload["marketValue"]
+    typeof payload.marketValueZar === "number"
+      ? payload.marketValueZar
+      : typeof payload.marketValue === "number"
+        ? payload.marketValue
         : faceValue;
 
-  const currency =
-    typeof payload["currency"] === "string" ? payload["currency"] : "ZAR";
+  const currency = typeof payload.currency === "string" ? payload.currency : "ZAR";
 
   const description =
-    typeof payload["description"] === "string"
-      ? payload["description"]
-      : typeof payload["instrumentName"] === "string"
-        ? payload["instrumentName"]
+    typeof payload.description === "string"
+      ? payload.description
+      : typeof payload.instrumentName === "string"
+        ? payload.instrumentName
         : isin;
 
   return { isin, description, faceValue, marketValueZar, currency };
@@ -112,12 +108,9 @@ function extractPosition(
  * Build a SecurityDescriptor from the raw position for HQLA classification.
  * Uses heuristics on ISIN prefix and payload fields if available.
  */
-function buildDescriptor(
-  raw: RawPosition,
-  payload: Record<string, unknown>,
-): SecurityDescriptor {
+function buildDescriptor(raw: RawPosition, payload: Record<string, unknown>): SecurityDescriptor {
   const assetClass = ((): SecurityDescriptor["assetClass"] => {
-    const ac = typeof payload["assetClass"] === "string" ? payload["assetClass"] : "";
+    const ac = typeof payload.assetClass === "string" ? payload.assetClass : "";
     if (ac === "sovereign-bond") return "sovereign-bond";
     if (ac === "corporate-bond") return "corporate-bond";
     if (ac === "equity") return "equity";
@@ -129,22 +122,18 @@ function buildDescriptor(
     return "other";
   })();
 
-  const creditRating =
-    typeof payload["creditRating"] === "string" ? payload["creditRating"] : undefined;
-  const riskWeight =
-    typeof payload["riskWeight"] === "number" ? payload["riskWeight"] : undefined;
+  const creditRating = typeof payload.creditRating === "string" ? payload.creditRating : undefined;
+  const riskWeight = typeof payload.riskWeight === "number" ? payload.riskWeight : undefined;
 
   return {
     isin: raw.isin,
-    issuer: typeof payload["issuer"] === "string" ? payload["issuer"] : "unknown",
+    issuer: typeof payload.issuer === "string" ? payload.issuer : "unknown",
     assetClass,
     creditRating,
     riskWeight,
     currency: raw.currency,
     residualMaturityDays:
-      typeof payload["residualMaturityDays"] === "number"
-        ? payload["residualMaturityDays"]
-        : undefined,
+      typeof payload.residualMaturityDays === "number" ? payload.residualMaturityDays : undefined,
   };
 }
 
@@ -204,10 +193,7 @@ export function computeInventoryTotals(
  */
 export function getCollateralInventory(asOf: string): CollateralInventoryResult {
   // Aggregate positions by ISIN (latest trade event wins)
-  const positionMap = new Map<
-    string,
-    { raw: RawPosition; payload: Record<string, unknown> }
-  >();
+  const positionMap = new Map<string, { raw: RawPosition; payload: Record<string, unknown> }>();
 
   for (const event of eventStore.replay({ type: "TradeBooked" })) {
     if (event.as_of > asOf) continue;

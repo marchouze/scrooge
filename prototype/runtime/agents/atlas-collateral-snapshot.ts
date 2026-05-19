@@ -24,9 +24,9 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { getCollateralInventory } from "../../platform/collateral";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { getCollateralInventory } from "../../platform/collateral";
 import { makeCollateralInventorySnapshot } from "../../platform/event-store/event-types/collateral";
 import { makeHQLACompositionDrift } from "../../platform/event-store/event-types/risk-treasury-extended";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -73,12 +73,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // 2. Emit HQLACompositionDrift if caps are breached
     if (inventory.l2CapBreached || inventory.l2bCapBreached) {
       const totalHQLA = inventory.totalHQLAZar;
-      const l2PctOfTotal =
-        totalHQLA > 0 ? ((inventory.l2aZar + inventory.l2bZar) / totalHQLA) * 100 : 0;
-      const l2bPctOfTotal =
-        totalHQLA > 0 ? (inventory.l2bZar / totalHQLA) * 100 : 0;
-      const l1PctOfTotal =
-        totalHQLA > 0 ? (inventory.l1Zar / totalHQLA) * 100 : 0;
+      const l2bPctOfTotal = totalHQLA > 0 ? (inventory.l2bZar / totalHQLA) * 100 : 0;
+      const l1PctOfTotal = totalHQLA > 0 ? (inventory.l1Zar / totalHQLA) * 100 : 0;
 
       const breachedBand = inventory.l2bCapBreached
         ? "L2b > 15% of total HQLA (BA 325 Annex 1 cap)"
@@ -94,9 +90,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
           alertId: `HQLA-DRIFT-${date}`,
           detectedAt: ctx.asOf,
           l1HQLAPct: l1PctOfTotal,
-          l2aHQLAPct: inventory.totalHQLAZar > 0
-            ? (inventory.l2aZar / inventory.totalHQLAZar) * 100
-            : 0,
+          l2aHQLAPct:
+            inventory.totalHQLAZar > 0 ? (inventory.l2aZar / inventory.totalHQLAZar) * 100 : 0,
           l2bHQLAPct: l2bPctOfTotal,
           policyBandBreached: breachedBand,
           severity: "breach",
@@ -123,7 +118,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push("|---|---|---|");
 
     const fmt = (n: number): string =>
-      n === 0 ? "0" : `R ${n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      n === 0
+        ? "0"
+        : `R ${n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const pct = (n: number, total: number): string =>
       total === 0 ? "—" : `${((n / total) * 100).toFixed(1)}%`;
 
@@ -136,18 +133,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push(
       `| L2b (25–50% haircut) | ${fmt(inventory.l2bZar)} | ${pct(inventory.l2bZar, inventory.totalHQLAZar)} |`,
     );
-    lines.push(
-      `| **Total HQLA buffer** | **${fmt(inventory.totalHQLAZar)}** | 100% |`,
-    );
+    lines.push(`| **Total HQLA buffer** | **${fmt(inventory.totalHQLAZar)}** | 100% |`);
     lines.push("");
     lines.push("## BA 325 cap checks");
     lines.push("");
-    lines.push(
-      `- **L2 cap (max 40% of HQLA):** ${inventory.l2CapBreached ? "BREACHED" : "OK"}`,
-    );
-    lines.push(
-      `- **L2b cap (max 15% of HQLA):** ${inventory.l2bCapBreached ? "BREACHED" : "OK"}`,
-    );
+    lines.push(`- **L2 cap (max 40% of HQLA):** ${inventory.l2CapBreached ? "BREACHED" : "OK"}`);
+    lines.push(`- **L2b cap (max 15% of HQLA):** ${inventory.l2bCapBreached ? "BREACHED" : "OK"}`);
     lines.push("");
 
     if (inventory.positions.length === 0) {

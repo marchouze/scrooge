@@ -11,17 +11,18 @@ import type { CollateralPosition } from "../inventory";
 const AS_OF = "2026-05-19T06:30:00.000Z";
 
 function makePosition(
-  overrides: Partial<CollateralPosition> & Pick<CollateralPosition, "isin" | "marketValueZar" | "hqlaLevel" | "haircut">,
+  overrides: Partial<CollateralPosition> &
+    Pick<CollateralPosition, "isin" | "marketValueZar" | "hqlaLevel" | "haircut">,
 ): CollateralPosition {
-  const haircutAdjustedValueZar = overrides.marketValueZar * (1 - overrides.haircut);
+  const computedAdjusted = overrides.marketValueZar * (1 - overrides.haircut);
+  const haircutAdjustedValueZar = overrides.haircutAdjustedValueZar ?? computedAdjusted;
   return {
     description: overrides.isin,
     faceValue: overrides.marketValueZar,
     currency: "ZAR",
     eligibilityRationale: "test",
-    haircutAdjustedValueZar,
     ...overrides,
-    haircutAdjustedValueZar: overrides.haircutAdjustedValueZar ?? haircutAdjustedValueZar,
+    haircutAdjustedValueZar,
   };
 }
 
@@ -49,16 +50,36 @@ describe("computeInventoryTotals", () => {
 
   it("3 L1 bonds + 1 L2a → correct totals + haircuts, no cap breaches", () => {
     // L1 bonds: 0% haircut → adjusted = market value
-    const l1a = makePosition({ isin: "ZAG000001", marketValueZar: 10_000_000, hqlaLevel: "L1", haircut: 0 });
-    const l1b = makePosition({ isin: "ZAG000002", marketValueZar: 20_000_000, hqlaLevel: "L1", haircut: 0 });
-    const l1c = makePosition({ isin: "ZAG000003", marketValueZar: 30_000_000, hqlaLevel: "L1", haircut: 0 });
+    const l1a = makePosition({
+      isin: "ZAG000001",
+      marketValueZar: 10_000_000,
+      hqlaLevel: "L1",
+      haircut: 0,
+    });
+    const l1b = makePosition({
+      isin: "ZAG000002",
+      marketValueZar: 20_000_000,
+      hqlaLevel: "L1",
+      haircut: 0,
+    });
+    const l1c = makePosition({
+      isin: "ZAG000003",
+      marketValueZar: 30_000_000,
+      hqlaLevel: "L1",
+      haircut: 0,
+    });
     // L2a: 15% haircut
-    const l2a = makePosition({ isin: "ZAE000100", marketValueZar: 10_000_000, hqlaLevel: "L2a", haircut: 0.15 });
+    const l2a = makePosition({
+      isin: "ZAE000100",
+      marketValueZar: 10_000_000,
+      hqlaLevel: "L2a",
+      haircut: 0.15,
+    });
 
     const result = computeInventoryTotals(AS_OF, [l1a, l1b, l1c, l2a]);
 
     expect(result.l1Zar).toBeCloseTo(60_000_000, 0); // 10M + 20M + 30M (no haircut)
-    expect(result.l2aZar).toBeCloseTo(8_500_000, 0);  // 10M × 0.85
+    expect(result.l2aZar).toBeCloseTo(8_500_000, 0); // 10M × 0.85
     expect(result.l2bZar).toBe(0);
     expect(result.totalHQLAZar).toBeCloseTo(68_500_000, 0);
     expect(result.l2CapBreached).toBe(false); // L2a = 8.5M / 68.5M ≈ 12.4% < 40%
@@ -71,11 +92,21 @@ describe("computeInventoryTotals", () => {
 
   it("L2a > 40% of total HQLA → l2CapBreached: true", () => {
     // L1: 10M (adjusted)
-    const l1 = makePosition({ isin: "ZAG000001", marketValueZar: 10_000_000, hqlaLevel: "L1", haircut: 0 });
+    const l1 = makePosition({
+      isin: "ZAG000001",
+      marketValueZar: 10_000_000,
+      hqlaLevel: "L1",
+      haircut: 0,
+    });
     // L2a: 8M market value × 0.85 haircut = 6.8M adjusted
     // To breach: L2 > 40% of total. Let L1 = 10M, L2a needs > 40/60 * 10M ≈ 6.67M adjusted.
     // Use market value 10M → adjusted 8.5M. Total = 18.5M. L2a/total = 8.5/18.5 ≈ 45.9% > 40%.
-    const l2a = makePosition({ isin: "ZAE000200", marketValueZar: 10_000_000, hqlaLevel: "L2a", haircut: 0.15 });
+    const l2a = makePosition({
+      isin: "ZAE000200",
+      marketValueZar: 10_000_000,
+      hqlaLevel: "L2a",
+      haircut: 0.15,
+    });
 
     const result = computeInventoryTotals(AS_OF, [l1, l2a]);
 
@@ -96,8 +127,18 @@ describe("computeInventoryTotals", () => {
     // Total = 110M. L2b / total = 10 / 110 ≈ 9.1% → OK.
     // To breach: L1 small enough relative to L2b.
     // L1 = 30M, L2b = 30M × (1-0.5) = 15M adjusted. Total = 45M. L2b/total = 15/45 = 33.3% > 15%.
-    const l1 = makePosition({ isin: "ZAG000001", marketValueZar: 30_000_000, hqlaLevel: "L1", haircut: 0 });
-    const l2b = makePosition({ isin: "ZAE000300", marketValueZar: 30_000_000, hqlaLevel: "L2b", haircut: 0.5 });
+    const l1 = makePosition({
+      isin: "ZAG000001",
+      marketValueZar: 30_000_000,
+      hqlaLevel: "L1",
+      haircut: 0,
+    });
+    const l2b = makePosition({
+      isin: "ZAE000300",
+      marketValueZar: 30_000_000,
+      hqlaLevel: "L2b",
+      haircut: 0.5,
+    });
 
     const result = computeInventoryTotals(AS_OF, [l1, l2b]);
 
@@ -115,7 +156,12 @@ describe("computeInventoryTotals", () => {
   // -----------------------------------------------------------------------
 
   it("non-HQLA positions are excluded from the HQLA buffer", () => {
-    const l1 = makePosition({ isin: "ZAG000001", marketValueZar: 10_000_000, hqlaLevel: "L1", haircut: 0 });
+    const l1 = makePosition({
+      isin: "ZAG000001",
+      marketValueZar: 10_000_000,
+      hqlaLevel: "L1",
+      haircut: 0,
+    });
     const nonHQLA = makePosition({
       isin: "ZAE000999",
       marketValueZar: 50_000_000,
