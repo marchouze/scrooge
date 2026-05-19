@@ -110,6 +110,7 @@
     "agent:atlas-substrate-state": "bun run runtime/run.ts --agent Atlas --trigger substrate-state",
     "agent:atlas-collateral-snapshot": "bun run runtime/run.ts --agent Atlas --trigger collateral-snapshot",
     "agent:atlas-ilaap-run": "bun run runtime/run.ts --agent Atlas --trigger ilaap-run",
+    "agent:atlas-alco-pack": "bun run runtime/run.ts --agent Atlas --trigger alco-pack",
     "agent:helena-risk-appetite-watch": "bun run runtime/run.ts --agent Helena --trigger risk-appetite-watch",
     "agent:devon-operational-resilience-snapshot": "bun run runtime/run.ts --agent Devon --trigger operational-resilience-snapshot",
     "agent:camille-financial-position-snapshot": "bun run runtime/run.ts --agent Camille --trigger financial-position-snapshot",

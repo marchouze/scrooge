@@ -158,6 +158,11 @@ export * from "./liquidity";
 // ILAAPSummaryCompleted — aggregated worst-case ILAAP assessment.
 // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
 export * from "./ilaap";
+// D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
+// ALCOPackGenerated — monthly ALCO pack generation event (8 sections).
+// IntradayHQLAStressProjection — intraday HQLA stress-scenario output.
+// Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+export * from "./alco";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -233,6 +238,7 @@ import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
+import { ALCO_TYPED_EVENT_TYPES } from "./alco";
 import { ALM_TYPED_EVENT_TYPES } from "./alm";
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
@@ -339,6 +345,10 @@ export const TYPED_EVENT_TYPES = [
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine event types (stress scenarios + survival horizon).
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
   ...ILAAP_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
+  // ALCOPackGenerated, IntradayHQLAStressProjection.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+  ...ALCO_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
