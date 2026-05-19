@@ -1,0 +1,270 @@
+{
+  "slug": "fais-act",
+  "title": "Financial Advisory and Intermediary Services Act 37 of 2002",
+  "shortTitle": "FAIS Act",
+  "regulator": "FSCA (formerly FSB)",
+  "year": 2002,
+  "citationPatterns": ["FAIS Act", "FAIS Act 37", "FAIS Act s.", "FAIS Act §", "Financial Advisory and Intermediary Services Act"],
+  "priority": 4,
+  "chapters": [
+    {
+      "id": "intro",
+      "number": "Intro",
+      "heading": "Introductory Provisions",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Definitions and application",
+          "text": "Defines key terms: 'advice' means any recommendation, guidance or proposal of a financial nature furnished to a client in respect of the purchase of, investment in, or transaction concerning any financial product. 'Authorised financial services provider' or 'provider' means a person granted authorisation by the issue of a licence under section 8. 'Financial product' includes securities, instruments, money-market instruments, insurance contracts, pension fund benefits, foreign currency denominated investment instruments, and deposits. 'Financial service' means any service involving advice or intermediary services. 'Financial services provider' means any person who, as a regular feature of business, furnishes advice and/or renders intermediary services. 'Key individual' means any natural person responsible for managing or overseeing the activities of the provider relating to the rendering of any financial service. 'Representative' means any person who renders a financial service to a client for or on behalf of a financial services provider under conditions of employment or mandatory agreement.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1(1)",
+              "text": "In this Act, unless the context indicates otherwise— 'advice' means, subject to subsection (3)(a), any recommendation, guidance or proposal of a financial nature furnished, by any means or medium, to any client or group of clients in respect of the purchase of any financial product; or in respect of the investment in any financial product; or on the conclusion of any other transaction, including a loan or cession, aimed at the incurring of any liability or the acquisition of any right or benefit in respect of any financial product.",
+              "verbatim": true
+            },
+            {
+              "id": "s1-4",
+              "number": "1(4)",
+              "text": "The provisions of this Act only apply to the rendering of a financial service in respect of a deposit referred to in paragraph (f) of the definition of 'financial product' in subsection (1) with a term not exceeding 12 months by a provider which is a bank as defined in the Banks Act, 1990, or a mutual bank as defined in the Mutual Banks Act, 1993, to the extent that such application is regulated in the code of conduct contemplated in section 15(2)(b).",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ch1",
+      "number": "I",
+      "heading": "Administration of Act",
+      "sections": [
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Registrar and deputy registrar of financial services providers",
+          "text": "The executive officer and deputy executive officer of the Board are respectively the registrar and deputy registrar of financial services providers and have the powers and duties provided for by or under this Act or any other law.",
+          "verbatim": true
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "General provisions concerning registrar",
+          "text": "Subject to the provisions of this Act, any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision taken by the registrar under an enabling provision of this Act, is valid only if it is reduced to a durable written or printed form or, where communicated electronically, has been correctly transmitted in a legible form.",
+          "verbatim": true
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "Special provisions concerning powers of registrar",
+          "text": "When anything is required or permitted to be done by the registrar in terms of this Act within a particular period, the registrar may on application or on own initiative before the expiry of that period, extend it for any sufficient cause. The registrar may direct authorised financial services providers to furnish information, and may apply to court for orders restraining persons contravening the Act.",
+          "verbatim": true
+        },
+        {
+          "id": "s5",
+          "number": "5",
+          "heading": "Advisory Committee on Financial Services Providers",
+          "text": "Establishes the Advisory Committee on Financial Services Providers to advise the registrar on matters relating to the authorisation, suspension, and withdrawal of licences, and on codes of conduct.",
+          "verbatim": true
+        },
+        {
+          "id": "s6",
+          "number": "6",
+          "heading": "Delegations and authorisations",
+          "text": "The Minister may, on such conditions as determined, delegate or assign any power or duty conferred or imposed on the Minister under this Act to any officer in the public service or to any other person.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "number": "II",
+      "heading": "Authorisation of Financial Services Providers",
+      "sections": [
+        {
+          "id": "s7",
+          "number": "7",
+          "heading": "Authorisation of financial services providers",
+          "text": "With effect from a date determined by the Minister by notice in the Gazette, no person may render financial services as a financial services provider unless that person holds a licence. The registrar must grant a licence to a person who is a fit and proper person and who complies with the requirements of this Act.",
+          "verbatim": true
+        },
+        {
+          "id": "s8",
+          "number": "8",
+          "heading": "Application for authorisation",
+          "text": "An application for an authorisation referred to in section 7(1), including the licence of a key individual, must be made to the registrar in the prescribed form. The registrar must consider whether the applicant is a fit and proper person and whether the applicant complies with the requirements of this Act.",
+          "verbatim": true
+        },
+        {
+          "id": "s9",
+          "number": "9",
+          "heading": "Suspension of authorisation",
+          "text": "The registrar may, subject to subsection (2), at any time suspend any licence if the licensee or any key individual of the licensee no longer complies with the fit-and-proper requirements, or if the licensee has contravened or failed to comply with any provision of this Act.",
+          "verbatim": true
+        },
+        {
+          "id": "s10",
+          "number": "10",
+          "heading": "Withdrawal of authorisation",
+          "text": "The registrar may at any time withdraw any licence (including the licence of a key individual) on the grounds of non-compliance with fit-and-proper requirements, contravention of the Act, insolvency, or other prescribed grounds.",
+          "verbatim": true
+        },
+        {
+          "id": "s11",
+          "number": "11",
+          "heading": "Lapsing of licence",
+          "text": "A licence lapses where the licensee, being a natural person, becomes permanently incapable of carrying on any business due to physical or mental condition, is sequestrated, or dies.",
+          "verbatim": true
+        },
+        {
+          "id": "s12",
+          "number": "12",
+          "heading": "Exemptions in respect of product suppliers",
+          "text": "The registrar may exempt a product supplier who is authorised or approved under another law from specified requirements of this Act where the rendering of financial services is already regulated by or under that other law.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "number": "III",
+      "heading": "Representatives of Authorised Financial Services Providers",
+      "sections": [
+        {
+          "id": "s13",
+          "number": "13",
+          "heading": "Qualifications of representatives and duties of authorised financial services providers",
+          "text": "An authorised financial services provider must ensure that any representative acting on its behalf is a fit and proper person and complies with the requirements of the Act. The provider must take reasonable steps to ensure that representatives are properly qualified and supervised.",
+          "verbatim": true
+        },
+        {
+          "id": "s14",
+          "number": "14",
+          "heading": "Debarment of representatives",
+          "text": "An authorised financial services provider must debar a representative if the representative is no longer a fit and proper person, or has contravened or failed to comply with any provision of this Act. The provider must notify the registrar of any debarment.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch4",
+      "number": "IV",
+      "heading": "Codes of Conduct",
+      "sections": [
+        {
+          "id": "s15",
+          "number": "15",
+          "heading": "Publication of codes of conduct",
+          "text": "The registrar must, after consultation with the Advisory Committee and publishing the draft code for public comment, publish codes of conduct for authorised financial services providers and representatives by means of a Board Notice. The general code of conduct (Board Notice 80 of 2003, as amended) applies to all providers and representatives. Specific codes may be published for particular categories of providers or financial products.",
+          "verbatim": true
+        },
+        {
+          "id": "s16",
+          "number": "16",
+          "heading": "Principles of codes of conduct",
+          "text": "A code of conduct must be drafted in such a manner as to ensure that the clients of authorised financial services providers are provided with adequate and appropriate information, are treated equitably, are made aware of the purpose and scope of the financial service, are protected against incomplete and misleading information, and have access to proper recourse against the provider.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch5",
+      "number": "V",
+      "heading": "Duties of Authorised Financial Services Providers",
+      "sections": [
+        {
+          "id": "s17",
+          "number": "17",
+          "heading": "Compliance officers and compliance arrangements",
+          "text": "An authorised financial services provider must have a compliance officer in the manner determined by the registrar. The compliance officer is responsible for monitoring compliance with the provisions of this Act and reporting to the registrar on prescribed matters.",
+          "verbatim": true
+        },
+        {
+          "id": "s18",
+          "number": "18",
+          "heading": "Maintenance of records",
+          "text": "An authorised financial services provider must maintain records of all financial services rendered, all advice given, all intermediary services performed, and all transactions in financial products, for the prescribed period.",
+          "verbatim": true
+        },
+        {
+          "id": "s19",
+          "number": "19",
+          "heading": "Accounting and audit requirements",
+          "text": "An authorised financial services provider must comply with all applicable requirements relating to accounting and audit, and must submit financial statements to the registrar in the prescribed form and within the prescribed period.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch6",
+      "number": "VI",
+      "heading": "Enforcement",
+      "sections": [
+        {
+          "id": "s20",
+          "number": "20",
+          "heading": "Office of Ombud for Financial Services Providers",
+          "text": "Establishes the Office of the Ombud for Financial Services Providers as a juristic person to resolve complaints by clients against authorised financial services providers.",
+          "verbatim": true
+        },
+        {
+          "id": "s33",
+          "number": "33",
+          "heading": "Civil remedies",
+          "text": "Sets out civil remedies available to the registrar and clients against financial services providers who contravene the Act, including applications to court for injunctions and damages.",
+          "verbatim": true
+        },
+        {
+          "id": "s35",
+          "number": "35",
+          "heading": "Regulations",
+          "text": "The Minister may, after consultation with the Advisory Committee, make regulations prescribing matters required by this Act, including fit-and-proper requirements, qualifications, experience, and conduct of business.",
+          "verbatim": true
+        },
+        {
+          "id": "s36",
+          "number": "36",
+          "heading": "Offences and penalties",
+          "text": "Sets out offences and penalties for contraventions of the Act, including rendering financial services without authorisation, failure to comply with the code of conduct, making false statements, and failure to maintain required records.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch7",
+      "number": "VII",
+      "heading": "Miscellaneous",
+      "sections": [
+        {
+          "id": "s41",
+          "number": "41",
+          "heading": "Fees and penalties",
+          "text": "Prescribes fees payable for applications and other services, and the penalties applicable to administrative matters under the Act.",
+          "verbatim": true
+        },
+        {
+          "id": "s42",
+          "number": "42",
+          "heading": "Exchange of information",
+          "text": "Sets out the circumstances under which the registrar may exchange information with other regulatory and supervisory authorities, both domestic and foreign.",
+          "verbatim": true
+        },
+        {
+          "id": "s44",
+          "number": "44",
+          "heading": "Exemptions by registrar and Minister",
+          "text": "Empowers the registrar and the Minister to grant exemptions from specified provisions of the Act in appropriate circumstances, including where the rendering of financial services is already regulated by another law.",
+          "verbatim": true
+        },
+        {
+          "id": "s46",
+          "number": "46",
+          "heading": "Commencement and short title",
+          "text": "This Act is called the Financial Advisory and Intermediary Services Act, 2002, and comes into operation on a date determined by the President by proclamation in the Gazette.",
+          "verbatim": true
+        }
+      ]
+    }
+  ]
+}

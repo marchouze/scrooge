@@ -1,0 +1,249 @@
+{
+  "slug": "js2",
+  "title": "Joint Standard 2 of 2024 — Cybersecurity and Cyber Resilience Requirements for Financial Institutions",
+  "shortTitle": "JS 2/2024",
+  "regulator": "SARB PA + FSCA (Joint)",
+  "year": 2024,
+  "citationPatterns": ["Joint Standard 2 of 2024", "JS 2/2024", "JS 2 of 2024", "Joint Standard 2", "JS-2", "JS 2"],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "intro",
+      "number": "Intro",
+      "heading": "Introduction and Scope",
+      "sections": [
+        {
+          "id": "s-intro",
+          "number": "Intro",
+          "heading": "Background and publication",
+          "text": "Joint Standard 2 of 2024 on Cybersecurity and Cyber Resilience Requirements for Financial Institutions was jointly published by the South African Reserve Bank Prudential Authority (PA) and the Financial Sector Conduct Authority (FSCA) under the Financial Sector Regulation Act 9 of 2017. Published via Joint Communication 2 of 2024 on 17 May 2024; effective 1 June 2025. Applies to financial institutions designated under the FSR Act, including banks, insurers, and authorised financial services providers.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std1",
+      "number": "Standard 1",
+      "heading": "Governance and Accountability",
+      "sections": [
+        {
+          "id": "std1-1",
+          "number": "1.1",
+          "heading": "Named accountable executive",
+          "text": "A financial institution must designate a senior management person ('responsible person') who is accountable for cybersecurity and cyber resilience. The responsible person must have direct access to the board or board risk committee, must be of sufficient seniority to discharge the accountability, and must be explicitly named in board-approved documentation.",
+          "verbatim": true
+        },
+        {
+          "id": "std1-2",
+          "number": "1.2",
+          "heading": "Board-approved cyber strategy",
+          "text": "The board of directors must approve a cybersecurity and cyber resilience strategy that is integrated with the financial institution's overall risk management framework and business strategy. The strategy must be reviewed at least annually or when material changes occur.",
+          "verbatim": true
+        },
+        {
+          "id": "std1-3",
+          "number": "1.3",
+          "heading": "Resource adequacy",
+          "text": "A financial institution must ensure adequate resources — including people, technology, and budget — are allocated to the cybersecurity and cyber resilience programme in proportion to the nature, scale, and complexity of the institution's operations.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std2",
+      "number": "Standard 2",
+      "heading": "Cyber Risk Management Framework",
+      "sections": [
+        {
+          "id": "std2-1",
+          "number": "2.1",
+          "heading": "Documented framework",
+          "text": "A financial institution must implement and maintain a documented cyber risk management framework covering identification, protection, detection, response, and recovery. The framework must be aligned to an internationally recognised standard (such as the NIST Cybersecurity Framework) and must be integrated with the institution's enterprise risk management.",
+          "verbatim": true
+        },
+        {
+          "id": "std2-2",
+          "number": "2.2",
+          "heading": "Risk assessment",
+          "text": "A financial institution must conduct regular cyber risk assessments covering all systems, processes, and third-party dependencies. Risk assessments must be documented, reviewed at least annually, and updated following material changes to the institution's technology landscape.",
+          "verbatim": true
+        },
+        {
+          "id": "std2-3",
+          "number": "2.3",
+          "heading": "Threat modelling",
+          "text": "A financial institution must conduct threat modelling on new systems, products, and integrations before deployment. Threat modelling outcomes must be documented and used to inform control design.",
+          "verbatim": true
+        },
+        {
+          "id": "std2-4",
+          "number": "2.4",
+          "heading": "Vulnerability management",
+          "text": "A financial institution must maintain a vulnerability management programme with documented identification, assessment, prioritisation, and remediation processes. Critical vulnerabilities must be remediated within prescribed timeframes.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std3",
+      "number": "Standard 3",
+      "heading": "ICT Security Controls",
+      "sections": [
+        {
+          "id": "std3-1",
+          "number": "3.1",
+          "heading": "Identity and access management",
+          "text": "A financial institution must implement controls for identity and access management including least-privilege access, multi-factor authentication for privileged access and remote access, just-in-time access provisioning, and regular access reviews. Privileged accounts must be separately managed and monitored.",
+          "verbatim": true
+        },
+        {
+          "id": "std3-2",
+          "number": "3.2",
+          "heading": "Cryptographic controls",
+          "text": "A financial institution must implement cryptographic controls including encryption of sensitive data in transit and at rest, a documented cryptographic key management programme, and regular review of cryptographic standards to ensure continued fitness for purpose.",
+          "verbatim": true
+        },
+        {
+          "id": "std3-3",
+          "number": "3.3",
+          "heading": "Secure software development lifecycle",
+          "text": "A financial institution must implement a secure software development lifecycle (SSDLC) including security testing (SAST/DAST), code review, software composition analysis, and supply-chain integrity controls. Security requirements must be incorporated from the design phase.",
+          "verbatim": true
+        },
+        {
+          "id": "std3-4",
+          "number": "3.4",
+          "heading": "Network and endpoint protection",
+          "text": "A financial institution must implement controls for network segmentation, perimeter security, endpoint protection, and monitoring. Network access must be restricted based on the principle of least privilege.",
+          "verbatim": true
+        },
+        {
+          "id": "std3-5",
+          "number": "3.5",
+          "heading": "Logging and monitoring",
+          "text": "A financial institution must implement centralised logging, security monitoring, and anomaly detection capabilities. Logs must be retained for a sufficient period to support investigation of incidents and meet regulatory requirements.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std4",
+      "number": "Standard 4",
+      "heading": "Cyber Incident Management",
+      "sections": [
+        {
+          "id": "std4-1",
+          "number": "4.1",
+          "heading": "Incident response plan",
+          "text": "A financial institution must maintain a documented cyber incident response plan covering detection, classification, containment, eradication, recovery, and post-incident review. The plan must define roles, responsibilities, escalation paths, and communication protocols for each phase.",
+          "verbatim": true
+        },
+        {
+          "id": "std4-2",
+          "number": "4.2",
+          "heading": "Severity classification and regulatory reporting",
+          "text": "A financial institution must maintain a documented severity classification framework for cyber incidents. Material cyber incidents must be reported to the PA and FSCA within the stipulated timelines per severity tier. Regulatory notification templates and channels must be established and tested before they are needed.",
+          "verbatim": true
+        },
+        {
+          "id": "std4-3",
+          "number": "4.3",
+          "heading": "Incident response exercises",
+          "text": "A financial institution must conduct regular incident response exercises to test and validate the effectiveness of its incident response plan. Exercises must include tabletop exercises and, periodically, live-fire simulations. Lessons learned must be documented and remediated.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std5",
+      "number": "Standard 5",
+      "heading": "Third-Party Cyber Risk",
+      "sections": [
+        {
+          "id": "std5-1",
+          "number": "5.1",
+          "heading": "Third-party risk assessment",
+          "text": "A financial institution must assess the cyber risk of all third parties providing material services before engagement and on a continuous basis. The assessment must cover the third party's security controls, data handling practices, incident response capability, and financial resilience.",
+          "verbatim": true
+        },
+        {
+          "id": "std5-2",
+          "number": "5.2",
+          "heading": "Contractual requirements",
+          "text": "Contracts with material third-party service providers must include cybersecurity requirements including minimum security standards, audit rights, incident notification obligations, and right to terminate for material security failure.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std6",
+      "number": "Standard 6",
+      "heading": "Penetration Testing",
+      "sections": [
+        {
+          "id": "std6-1",
+          "number": "6.1",
+          "heading": "Regular penetration testing",
+          "text": "A financial institution must conduct regular penetration testing of its critical systems, networks, and applications. Testing must be conducted by suitably qualified and independent testers. Findings must be documented, risk-rated, and remediated within prescribed timeframes. Results must be reported to the board or board risk committee.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std7",
+      "number": "Standard 7",
+      "heading": "Cyber Threat Intelligence",
+      "sections": [
+        {
+          "id": "std7-1",
+          "number": "7.1",
+          "heading": "Threat intelligence programme",
+          "text": "A financial institution must maintain a cyber threat intelligence programme to collect, analyse, and act on information about current and emerging threats. The institution must participate in relevant sector threat-intelligence sharing arrangements.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std8",
+      "number": "Standard 8",
+      "heading": "Cyber Recovery",
+      "sections": [
+        {
+          "id": "std8-1",
+          "number": "8.1",
+          "heading": "Recovery objectives",
+          "text": "A financial institution must define recovery time objectives (RTOs) and recovery point objectives (RPOs) for all critical systems and test these objectives at least annually. Recovery tests must simulate realistic cyber-induced disruption scenarios.",
+          "verbatim": true
+        },
+        {
+          "id": "std8-2",
+          "number": "8.2",
+          "heading": "Backup and restoration",
+          "text": "A financial institution must maintain secure, tested backups of all critical systems and data. Backups must be isolated from the production environment and protected against ransomware and other destruction attacks. Restoration from backup must be regularly tested.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "std9",
+      "number": "Standard 9",
+      "heading": "Regulatory Reporting",
+      "sections": [
+        {
+          "id": "std9-1",
+          "number": "9.1",
+          "heading": "Periodic reporting",
+          "text": "A financial institution must submit periodic reports on its cyber posture to the PA and/or FSCA as prescribed. Reports must cover key risk indicators, incident statistics, control effectiveness, and material developments in the institution's cyber risk profile.",
+          "verbatim": true
+        },
+        {
+          "id": "std9-2",
+          "number": "9.2",
+          "heading": "Independent assurance",
+          "text": "A financial institution must obtain independent assurance over its cybersecurity and cyber resilience programme. Assurance may be provided by internal audit, supplemented by external assessments where appropriate. Assurance reports must be submitted to the board and, as required, to the PA/FSCA.",
+          "verbatim": true
+        }
+      ]
+    }
+  ]
+}

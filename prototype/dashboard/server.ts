@@ -131,6 +131,10 @@ import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import {
+  buildInstrumentsListView,
+  buildInstrumentDetailView,
+} from "./regulation-reader-view";
+import {
   RMS_REGISTER_KEYS,
   buildRmsRegistersFold,
   isRmsRegisterKey,
@@ -1608,6 +1612,30 @@ const server = Bun.serve({
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
+    // ── Regulation Reader endpoints ────────────────────────────────────────
+    // GET /api/regulation-reader/instruments — list of all structured regulation instruments
+    if (url.pathname === "/api/regulation-reader/instruments" && req.method === "GET") {
+      return jsonResponse({
+        ...buildInstrumentsListView(REPO_ROOT),
+        pageProvenance: proseAuthoredPageProvenance(),
+      });
+    }
+    // GET /api/regulation-reader/:slug — full structured detail for one instrument
+    {
+      const readerMatch = url.pathname.match(/^\/api\/regulation-reader\/([a-z0-9-]+)$/);
+      if (readerMatch?.[1] && req.method === "GET") {
+        const slug = readerMatch[1];
+        const detail = buildInstrumentDetailView(REPO_ROOT, slug);
+        if (!detail) {
+          return jsonResponse({ error: `Instrument not found: ${slug}` }, 404);
+        }
+        return jsonResponse({
+          ...detail,
+          pageProvenance: proseAuthoredPageProvenance(),
+        });
+      }
+    }
+
     if (url.pathname === "/api/taxonomies" && req.method === "GET") {
       // Canonical taxonomy explorer — all four taxonomies (risk, activity,
       // domain, product scope) bundled in one response. Pure read; no event

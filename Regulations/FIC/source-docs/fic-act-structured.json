@@ -1,0 +1,232 @@
+{
+  "slug": "fic-act",
+  "title": "Financial Intelligence Centre Act 38 of 2001",
+  "shortTitle": "FIC Act",
+  "regulator": "Financial Intelligence Centre",
+  "year": 2001,
+  "citationPatterns": ["FIC Act", "FIC Act 38", "FIC Act §", "FIC Act s.", "FICA", "Financial Intelligence Centre Act"],
+  "priority": 2,
+  "chapters": [
+    {
+      "id": "ch1",
+      "number": "I",
+      "heading": "Introductory Provisions",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Definitions",
+          "text": "Defines 'accountable institution', 'business relationship', 'cash threshold report', 'client', 'domestic prominent influential person', 'financial intelligence', 'money laundering', 'property', 'reporting institution', 'single transaction', 'suspicious transaction', 'terrorist financing', and related terms.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "number": "II",
+      "heading": "Financial Intelligence Centre",
+      "sections": [
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Establishment of Financial Intelligence Centre",
+          "text": "Establishes the Financial Intelligence Centre as a juristic person. The FIC is responsible for collecting, processing, analysing, and disseminating financial intelligence to relevant authorities.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "number": "III",
+      "heading": "Duties of Accountable Institutions, Reporting Institutions and Other Persons",
+      "sections": [
+        {
+          "id": "s21",
+          "number": "21",
+          "heading": "Customer due diligence — identification and verification",
+          "text": "An accountable institution must identify its clients and verify their identities before establishing a business relationship or concluding a single transaction with the client. The identification and verification must be done by reference to prescribed information and documents. The institution must establish and verify the identity of every person acting on behalf of the client. If the client is a legal person, the institution must identify and verify the legal person and the persons who control it.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s21-1",
+              "number": "21(1)",
+              "text": "An accountable institution must, in the prescribed manner, establish and verify the identity of the client before establishing a business relationship or concluding a single transaction with the client.",
+              "verbatim": true
+            },
+            {
+              "id": "s21-2",
+              "number": "21(2)",
+              "text": "An accountable institution must, in the prescribed manner, establish and verify the identity of any person acting on behalf of the client in relation to the business relationship or single transaction.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s21A",
+          "number": "21A",
+          "heading": "Enhanced due diligence — high-risk clients",
+          "text": "An accountable institution must apply enhanced measures to establish and verify the identity of a client and to understand the purpose and intended nature of the business relationship, and to conduct enhanced ongoing monitoring of the business relationship, if the risk assessment of the client, the business relationship or the transaction indicates that the client or business relationship or transaction presents a higher risk of money laundering or terrorist financing. Enhanced due diligence applies to politically exposed persons, foreign correspondent banking relationships, and other prescribed high-risk categories.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s21A-1",
+              "number": "21A(1)",
+              "text": "An accountable institution must apply enhanced due diligence measures in respect of a client if that client, the business relationship or any transaction with the client presents a higher risk of money laundering activities or the financing of terrorist or related activities.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s21B",
+          "number": "21B",
+          "heading": "Beneficial ownership verification",
+          "text": "An accountable institution must take reasonable steps to verify the beneficial owner of a client that is a legal person, partnership, trust or similar arrangement, and to understand the ownership and control structure of the client. Beneficial ownership must be resolved recursively to the natural persons who ultimately own or control the client. Where the beneficial owner cannot be identified, the institution must apply enhanced due diligence.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s21B-1",
+              "number": "21B(1)",
+              "text": "An accountable institution must take reasonable steps to verify the identity of the beneficial owner of a client and understand the ownership and control structure of the client.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s21C",
+          "number": "21C",
+          "heading": "Ongoing monitoring of business relationships",
+          "text": "An accountable institution must conduct ongoing due diligence in respect of a business relationship, including scrutinising transactions conducted throughout the course of the relationship, ensuring that documents, data and information collected and held in respect of the client are kept up to date, and where appropriate, identifying the source of funds and wealth of the client. The frequency and intensity of ongoing monitoring must be commensurate with the risk profile of the client.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s21C-1",
+              "number": "21C(1)",
+              "text": "An accountable institution must conduct ongoing due diligence in respect of a business relationship, including scrutinising transactions conducted throughout the course of the relationship.",
+              "verbatim": true
+            },
+            {
+              "id": "s21C-2",
+              "number": "21C(2)",
+              "text": "An accountable institution must ensure that documents, data and information collected in respect of a client are kept up to date and relevant.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s22",
+          "number": "22",
+          "heading": "Record-keeping obligations",
+          "text": "An accountable institution must keep records of all information obtained in the course of establishing and verifying the identity of a client, and records of all transactions entered into with or on behalf of the client, for a period of at least five years after the business relationship has ended or after the transaction has been concluded. Records must be kept in a manner that allows the information to be accessed and provided to the FIC or a supervisory body on request.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s22-1",
+              "number": "22(1)",
+              "text": "An accountable institution must keep records of all identification and verification information obtained in terms of sections 21, 21A, 21B, 21C, 21D, 21E, 21F, 21G and 21H for a period of at least five years after the business relationship has been terminated or the transaction has been concluded.",
+              "verbatim": true
+            },
+            {
+              "id": "s22-2",
+              "number": "22(2)",
+              "text": "An accountable institution must keep records of all transactions entered into with or on behalf of a client for a period of at least five years after the transaction has been concluded.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s26",
+          "number": "26",
+          "heading": "Reports of property associated with terrorist and related activities",
+          "text": "An accountable institution and reporting institution must, if it knows or ought reasonably to have known or suspected that property in its possession or under its control is the proceeds of unlawful activities, or is connected to terrorist activities or financing, report this to the FIC as soon as possible and in the prescribed format. The report must contain all available information about the transaction, the property, and the persons involved.",
+          "verbatim": true
+        },
+        {
+          "id": "s28",
+          "number": "28",
+          "heading": "Cash threshold reports",
+          "text": "An accountable institution and reporting institution must report to the FIC every cash transaction equal to or above the prescribed threshold (currently R 24,999.99). The report must be submitted within the prescribed period and contain the prescribed information about the transaction, the client, and any person acting on behalf of the client. Cash transactions below the threshold that appear to be structured to avoid the reporting requirement must be treated as suspicious.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s28-1",
+              "number": "28(1)",
+              "text": "An accountable institution and a reporting institution must report to the FIC every cash transaction equal to or above the prescribed threshold.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s29",
+          "number": "29",
+          "heading": "Suspicious transaction reports",
+          "text": "An accountable institution and reporting institution must report to the FIC a transaction or attempted transaction if the institution knows, suspects or has reasonable grounds to suspect that the transaction or information about the transaction is relevant to an investigation of money laundering or terrorist financing. Reports must be submitted as soon as reasonably possible, and in any event within 15 days after the institution becomes suspicious.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s29-1",
+              "number": "29(1)",
+              "text": "An accountable institution and a reporting institution must report to the FIC a transaction or an attempt to enter into a transaction if that institution knows, suspects or has reasonable grounds to suspect that the transaction involves the proceeds of unlawful activities or is relevant to an investigation of money laundering or the financing of terrorist or related activities.",
+              "verbatim": true
+            },
+            {
+              "id": "s29-3",
+              "number": "29(3)",
+              "text": "A person who has made a report in terms of subsection (1) must not disclose to any person the information contained in the report or the fact that such a report has been made. Any person who contravenes this subsection commits an offence.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s42",
+          "number": "42",
+          "heading": "Risk management and compliance programme",
+          "text": "An accountable institution must develop, document, maintain and implement a risk management and compliance programme that adequately identifies, assesses, monitors and manages the risks for money laundering, the financing of terrorist and related activities and proliferation financing. The programme must include policies, procedures and processes to comply with the provisions of this Act. The programme must be proportionate to the nature, scale and complexity of the business.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s42-1",
+              "number": "42(1)",
+              "text": "An accountable institution must develop, document, maintain and implement a risk management and compliance programme that identifies, assesses, monitors and manages the risks faced by the accountable institution for money laundering, the financing of terrorist and related activities and proliferation financing.",
+              "verbatim": true
+            },
+            {
+              "id": "s42-2",
+              "number": "42(2)",
+              "text": "An accountable institution's risk management and compliance programme must include policies, procedures and processes that address customer due diligence, ongoing monitoring, record-keeping, reporting, training, employee screening, and other prescribed matters.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s42A",
+          "number": "42A",
+          "heading": "Designated compliance officer",
+          "text": "An accountable institution that employs more than one person must designate a person with sufficient seniority and operational experience to be responsible for the development, implementation, monitoring and ongoing management of the risk management and compliance programme. The designated person (commonly referred to as the MLRO or FIC Compliance Officer) must have access to the board and senior management and must be independent of the business lines.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s42A-1",
+              "number": "42A(1)",
+              "text": "An accountable institution that employs more than one person must designate a person as the compliance officer responsible for the risk management and compliance programme.",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "schedule1",
+      "number": "Sch. 1",
+      "heading": "Schedule 1 — Accountable Institutions",
+      "sections": [
+        {
+          "id": "sch1",
+          "number": "Schedule 1",
+          "heading": "List of accountable institutions",
+          "text": "Schedule 1 lists the categories of persons who are 'accountable institutions' for purposes of the Act and therefore subject to all CDD, record-keeping, reporting, and RMCP obligations. Item 6 of Schedule 1 covers banks registered under the Banks Act. Item 22 covers authorised financial services providers under the FAIS Act. Both Hoz Bank Limited and Hoz Securities Limited are accountable institutions.",
+          "verbatim": true
+        }
+      ]
+    }
+  ]
+}

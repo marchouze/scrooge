@@ -48,6 +48,7 @@
         { label: "Forward Obligations", href: "/forward-obligations.html" },
         { label: "Policies", href: "/policies.html" },
         { label: "Regulatory", href: "/regulatory.html" },
+        { label: "Regulation Reader", href: "/regulation-reader.html" },
       ],
     },
     {
