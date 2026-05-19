@@ -46,11 +46,8 @@ import {
   roleResearchQueueSnapshotPayloadSchema,
   roleResearchRequestedPayloadSchema,
 } from "../event-types/agent-substrate-extended";
-import {
-  almRunCompletedPayloadSchema,
-  intradayHQLAStressProjectionPayloadSchema,
-  irrbBCheckedPayloadSchema,
-} from "../event-types/alm";
+import { intradayHQLAStressProjectionPayloadSchema } from "../event-types/alco";
+import { almRunCompletedPayloadSchema, irrbBCheckedPayloadSchema } from "../event-types/alm";
 import {
   adverseMediaPublishedPayloadSchema,
   adviceRecordRequestedPayloadSchema,

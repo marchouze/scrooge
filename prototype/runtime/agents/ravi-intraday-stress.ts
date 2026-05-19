@@ -29,7 +29,7 @@
 import { runIntradayStress } from "../../platform/alm";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { makeIntradayHQLAStressProjection } from "../../platform/event-store/event-types/alm";
+import { makeIntradayHQLAStressProjection } from "../../platform/event-store/event-types/alco";
 import { makeHQLACompositionDrift } from "../../platform/event-store/event-types/risk-treasury-extended";
 import { recordFiled } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";

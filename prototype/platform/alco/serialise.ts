@@ -149,11 +149,9 @@ export function serialiseALCOPack(pack: ALCOPack): string {
   if (pack.intradayLiquidity !== null) {
     const proj = pack.intradayLiquidity.projection;
     lines.push(
-      `Stress scenario worst window: ${proj.worstWindowLabel} | HQLA buffer: ZAR ${zarMillions(proj.hqlaBufferZar)}m | Status: ${proj.status.toUpperCase()}`,
+      `Stress scenario window: ${proj.windowLabel} | HQLA projected: ZAR ${zarMillions(proj.projectedHQLAZar)}m | Floor: ZAR ${zarMillions(proj.floorZar)}m | Status: ${proj.status.toUpperCase()}`,
     );
-    lines.push(
-      `Peak gross outflows: ZAR ${zarMillions(proj.peakGrossOutflowsZar)}m | Scenario: ${proj.scenario}`,
-    );
+    lines.push(`Scenario: ${proj.scenario}`);
   } else {
     lines.push("No data — build phase (no IntradayHQLAStressProjection events in store).");
   }
