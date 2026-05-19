@@ -87,6 +87,7 @@ async function main(): Promise<void> {
       source: "jse-sens",
       instrument: ann.scode,
       dataType: "sens-announcement",
+      provenance: "production",
       asOf: ann.asOfUtc,
       payload: payload as unknown as Record<string, unknown>,
     });
