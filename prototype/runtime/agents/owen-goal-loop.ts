@@ -38,6 +38,7 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { EventStore } from "../../platform/event-store/store";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import Owen's underlying handler directly to avoid circular dependency
 // (handler-callables.ts → this file → handler-callables.ts).
@@ -83,6 +84,10 @@ const STEP_CANONICAL_REGISTRY = "canonical-source-registry-cycle:step-1";
 // ---------------------------------------------------------------------------
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+// ---------------------------------------------------------------------------
+// Event-reactive helpers (Candidates 0a–0c)
+// ---------------------------------------------------------------------------
 
 /** Returns the timestamp (ms) of the most recent GovernanceCyclePrep event, or undefined. */
 function lastGovernanceCyclePrepMs(): number | undefined {
@@ -155,6 +160,75 @@ function hasOpenConflictOrRelatedPartyItems(): boolean {
 }
 
 /**
+ * Returns the count of Decision events approved since the last GovernanceCyclePrep.
+ * Used by Candidate 0a.
+ */
+export function approvedDecisionsSinceLastGovPrep(store: EventStore = eventStore): number {
+  // Derive lastPrep from the provided store
+  let lastPrep = 0;
+  for (const e of store.replay({ type: "GovernanceCyclePrep" })) {
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && t > lastPrep) lastPrep = t;
+  }
+  let count = 0;
+  for (const e of store.replay({ type: "Decision" })) {
+    const p = e.payload as Record<string, unknown>;
+    if (String(p.phase ?? "") !== "approved") continue;
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && t > lastPrep) count++;
+  }
+  return count;
+}
+
+/**
+ * Returns the count of open (not yet completed/started) briefs addressed to
+ * Owen that are older than 4 hours.
+ */
+export function openBriefsAddressedToOwen(store: EventStore = eventStore): number {
+  const closedOrStarted = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const p = e.payload as Record<string, unknown>;
+    const id = String(p.briefId ?? "");
+    if (id) closedOrStarted.add(id);
+  }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const p = e.payload as Record<string, unknown>;
+    const id = String(p.briefId ?? "");
+    if (id) closedOrStarted.add(id);
+  }
+  let count = 0;
+  const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as Record<string, unknown>;
+    const briefId = String(p.briefId ?? e.event_id);
+    const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
+    if (!toName.toLowerCase().includes("owen")) continue;
+    if (closedOrStarted.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && Date.now() - t > FOUR_HOURS_MS) count++;
+  }
+  return count;
+}
+
+/**
+ * Returns the count of WorkstreamRegistered events since the last GovernanceCyclePrep.
+ * Used by Candidate 0c.
+ */
+export function newWorkstreamsSinceLastGovPrep(store: EventStore = eventStore): number {
+  let lastPrep = 0;
+  for (const e of store.replay({ type: "GovernanceCyclePrep" })) {
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && t > lastPrep) lastPrep = t;
+  }
+  let count = 0;
+  for (const e of store.replay({ type: "WorkstreamRegistered" })) {
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && t > lastPrep) count++;
+  }
+  return count;
+}
+
+/**
  * Returns the timestamp (ms) of the most recent canonical-source-registry
  * activity proxy (GovernanceCyclePrep or CeoDecision), or undefined.
  *
@@ -214,6 +288,114 @@ export const owenGoalDeriver: GoalDeriver = async (
   }
 
   // -------------------------------------------------------------------------
+  // Event-reactive candidates (0a–0c) — check before cadence candidates.
+  // -------------------------------------------------------------------------
+
+  // Candidate 0a: Decision events approved since last GovernanceCyclePrep.
+  // Each approved decision may affect canonical sources; Owen validates registry.
+  const approvedDecisionCount = approvedDecisionsSinceLastGovPrep();
+  if (approvedDecisionCount > 0) {
+    if (inClosedSet(GOAL_APPROVE_CANONICAL_REGISTRY)) {
+      const stepId0a = resolveStepId(PROCEDURE_CANONICAL_REGISTRY_CYCLE, STEP_CANONICAL_REGISTRY);
+      logger.info(
+        { agentUrn: args.agent.urn, approvedDecisionCount },
+        "owen-goal-deriver: candidate-0a — approved decisions since last gov-cycle-prep — selecting canonical-registry goal",
+      );
+      return {
+        kind: "decision",
+        chosen: GOAL_APPROVE_CANONICAL_REGISTRY,
+        rationale: `Candidate 0a: ${approvedDecisionCount} Decision event(s) approved since last GovernanceCyclePrep. Each approved decision may have affected canonical sources; Owen's standing curation mandate requires registry validation after each approval. Selecting canonical-source-registry entries goal.`,
+        mandateCitations: [
+          { section: "9-decisions-in-scope", rowKey: GOAL_APPROVE_CANONICAL_REGISTRY, specHash },
+        ],
+        procedureCitations: [
+          {
+            procedurePath: PROCEDURE_CANONICAL_REGISTRY_CYCLE,
+            stepId: stepId0a,
+            procedureHash: specHash,
+          },
+        ],
+        plannedEvents: [
+          {
+            type: "GovernanceCyclePrep",
+            payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" },
+          },
+        ],
+      };
+    }
+  }
+
+  // Candidate 0b: open briefs addressed to Owen (> 4h old, not yet started/completed).
+  const pendingOwenBriefs = openBriefsAddressedToOwen();
+  if (pendingOwenBriefs > 0) {
+    if (inClosedSet(GOAL_APPROVE_FORUM_AGENDAS)) {
+      const stepId0b = resolveStepId(PROCEDURE_CEO_DECISION_REVIEW, STEP_GOVERNANCE_CYCLE);
+      logger.info(
+        { agentUrn: args.agent.urn, pendingOwenBriefs },
+        "owen-goal-deriver: candidate-0b — open unhandled briefs for Owen — selecting forum-agenda goal",
+      );
+      return {
+        kind: "decision",
+        chosen: GOAL_APPROVE_FORUM_AGENDAS,
+        rationale: `Candidate 0b: ${pendingOwenBriefs} open brief(s) addressed to Owen (older than 4h) not yet started or completed. Owen's forum/committee agenda goal is the broadest in-scope decision for picking up open dispatch work.`,
+        mandateCitations: [
+          { section: "9-decisions-in-scope", rowKey: GOAL_APPROVE_FORUM_AGENDAS, specHash },
+        ],
+        procedureCitations: [
+          {
+            procedurePath: PROCEDURE_CEO_DECISION_REVIEW,
+            stepId: stepId0b,
+            procedureHash: specHash,
+          },
+        ],
+        plannedEvents: [
+          {
+            type: "GovernanceCyclePrep",
+            payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" },
+          },
+        ],
+      };
+    }
+  }
+
+  // Candidate 0c: new WorkstreamRegistered events since last GovernanceCyclePrep.
+  // New workstreams require forum/committee agenda updates.
+  const newWorkstreamCount = newWorkstreamsSinceLastGovPrep();
+  if (newWorkstreamCount > 0) {
+    if (inClosedSet(GOAL_APPROVE_FORUM_AGENDAS)) {
+      const stepId0c = resolveStepId(PROCEDURE_CEO_DECISION_REVIEW, STEP_GOVERNANCE_CYCLE);
+      logger.info(
+        { agentUrn: args.agent.urn, newWorkstreamCount },
+        "owen-goal-deriver: candidate-0c — new workstreams since last gov-cycle-prep — selecting forum-agenda goal",
+      );
+      return {
+        kind: "decision",
+        chosen: GOAL_APPROVE_FORUM_AGENDAS,
+        rationale: `Candidate 0c: ${newWorkstreamCount} WorkstreamRegistered event(s) since last GovernanceCyclePrep. New workstreams require forum/committee agenda updates. Selecting forum/committee agendas goal.`,
+        mandateCitations: [
+          { section: "9-decisions-in-scope", rowKey: GOAL_APPROVE_FORUM_AGENDAS, specHash },
+        ],
+        procedureCitations: [
+          {
+            procedurePath: PROCEDURE_CEO_DECISION_REVIEW,
+            stepId: stepId0c,
+            procedureHash: specHash,
+          },
+        ],
+        plannedEvents: [
+          {
+            type: "GovernanceCyclePrep",
+            payloadPreview: { agentUrn: args.agent.urn, trigger: "owen-goal-loop" },
+          },
+        ],
+      };
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Cadence candidates (1–3) — fallback if no event-reactive condition fires.
+  // -------------------------------------------------------------------------
+
   // Candidate 1: no GovernanceCyclePrep in the last 24h → forum-agenda goal.
   // Owen's weekly cadence (§6) requires a governance-cycle-prep event at
   // minimum each business week; absence > 24h in any run triggers the goal.
