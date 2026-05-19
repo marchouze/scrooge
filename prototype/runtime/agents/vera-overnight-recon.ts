@@ -387,12 +387,18 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   const totalFails = results.reduce((s, r) => s + severityCount(r.violations, "fail"), 0);
-  const ok = runErrors === 0 && results.every((r) => r.ok);
+  const allPipelinesPass = results.every((r) => r.ok);
+  // ok=true means the handler executed successfully (no run errors/crashes).
+  // Recon violations are surfaced via ReconResult + AuditFinding events — not
+  // via ok=false. Returning ok=false here causes the bus to emit
+  // SubstrateAlert{alertClass:"integrity"} per dispatch, masking the real
+  // signal with false-positive bus integrity alerts.
+  const ok = runErrors === 0;
 
   return {
     eventsEmitted,
     ...(deliverable ? { deliverable } : {}),
-    summary: ok
+    summary: allPipelinesPass
       ? `${results.length} pipelines pass; 0 findings.`
       : `${results.length} pipelines run; ${totalFails} fail violations across ${results.filter((r) => !r.ok).length} pipelines.`,
     ok,
