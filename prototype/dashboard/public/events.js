@@ -234,7 +234,6 @@
     load();
   });
 
-
   refreshBtn?.addEventListener("click", () => load());
 
   // Populate type dropdown after initial load

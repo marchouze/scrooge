@@ -144,9 +144,10 @@
         const bv = (b.cells[sortCol] ?? "").replace(/<[^>]+>/g, "").trim();
         const an = Number(av.replace(/[^0-9.-]/g, ""));
         const bn = Number(bv.replace(/[^0-9.-]/g, ""));
-        const cmp = (!isNaN(an) && !isNaN(bn) && av !== "" && bv !== "")
-          ? an - bn
-          : av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
+        const cmp =
+          !Number.isNaN(an) && !Number.isNaN(bn) && av !== "" && bv !== ""
+            ? an - bn
+            : av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
         return sortDir === "asc" ? cmp : -cmp;
       });
     }
@@ -154,21 +155,21 @@
     function renderBody(table) {
       const clickable = typeof onRowClick === "function";
       const sorted = sortedRows();
-      const trs = sorted.map((row) => {
-        const tds = row.cells.map((c) => `<td>${c}</td>`).join("");
-        return `<tr${clickable ? ' data-clickable="1"' : ""}>${tds}</tr>`;
-      }).join("");
+      const trs = sorted
+        .map((row) => {
+          const tds = row.cells.map((c) => `<td>${c}</td>`).join("");
+          return `<tr${clickable ? ' data-clickable="1"' : ""}>${tds}</tr>`;
+        })
+        .join("");
       table.querySelector("tbody").innerHTML = trs;
       if (clickable) {
-        table.querySelectorAll("tbody tr[data-clickable]").forEach((tr, i) => {
+        for (const [i, tr] of [...table.querySelectorAll("tbody tr[data-clickable]")].entries()) {
           tr.addEventListener("click", () => onRowClick(sorted[i].data));
-        });
+        }
       }
     }
 
-    const ths = headers.map((h, i) =>
-      `<th data-col="${i}" data-sortable>${esc(h)}</th>`
-    ).join("");
+    const ths = headers.map((h, i) => `<th data-col="${i}" data-sortable>${esc(h)}</th>`).join("");
 
     container.innerHTML = `<div class="table-wrap"><table>
       <thead><tr>${ths}</tr></thead>
@@ -178,7 +179,7 @@
     const table = container.querySelector("table");
     renderBody(table);
 
-    table.querySelectorAll("th[data-sortable]").forEach((th) => {
+    for (const th of table.querySelectorAll("th[data-sortable]")) {
       th.addEventListener("click", () => {
         const col = Number(th.dataset.col);
         if (sortCol === col) {
@@ -187,11 +188,13 @@
           sortCol = col;
           sortDir = "asc";
         }
-        table.querySelectorAll("th[data-sortable]").forEach((t) => t.removeAttribute("data-sort"));
+        for (const t of table.querySelectorAll("th[data-sortable]")) {
+          t.removeAttribute("data-sort");
+        }
         th.setAttribute("data-sort", sortDir);
         renderBody(table);
       });
-    });
+    }
   }
 
   // ── renderSkeleton ─────────────────────────────────────────────
