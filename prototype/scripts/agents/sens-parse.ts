@@ -60,8 +60,9 @@ export function parseAnnouncementsFromHtml(html: string): RawAnnouncement[] {
   const detailPattern =
     /href="\/v3\/sens_display\.php\?tdate=(\d{14})&(?:amp;)?seq=(\d+)&(?:amp;)?scode=([A-Z0-9]+)"[^>]*>([^<]+)<\/a>/g;
 
-  let match: RegExpExecArray | null;
-  while ((match = detailPattern.exec(html)) !== null) {
+  for (;;) {
+    const match = detailPattern.exec(html);
+    if (match === null) break;
     const [, tdate, seq, scode, linkText] = match;
 
     // Dedup within parse pass

@@ -78,23 +78,23 @@ describe("parseAnnouncementsFromHtml", () => {
   it("extracts RMH announcement correctly", () => {
     const result = parseAnnouncementsFromHtml(FIXTURE_HTML);
     const rmh = result.find((a) => a.scode === "RMH");
-    expect(rmh).toBeDefined();
-    expect(rmh!.tdate).toBe("20260519103000");
-    expect(rmh!.seq).toBe("28");
-    expect(rmh!.scode).toBe("RMH");
-    expect(rmh!.headline).toContain("Interim Results");
-    expect(rmh!.company).toContain("RMH HOLDINGS");
-    expect(rmh!.asOfUtc).toBe("2026-05-19T08:30:00.000Z");
+    if (!rmh) throw new Error("RMH announcement not found");
+    expect(rmh.tdate).toBe("20260519103000");
+    expect(rmh.seq).toBe("28");
+    expect(rmh.scode).toBe("RMH");
+    expect(rmh.headline).toContain("Interim Results");
+    expect(rmh.company).toContain("RMH HOLDINGS");
+    expect(rmh.asOfUtc).toBe("2026-05-19T08:30:00.000Z");
   });
 
   it("extracts AGL announcement with &amp; encoded params", () => {
     const result = parseAnnouncementsFromHtml(FIXTURE_HTML);
     const agl = result.find((a) => a.scode === "AGL");
-    expect(agl).toBeDefined();
-    expect(agl!.tdate).toBe("20260519091500");
-    expect(agl!.seq).toBe("12");
-    expect(agl!.headline).toContain("Trading Statement");
-    expect(agl!.asOfUtc).toBe("2026-05-19T07:15:00.000Z");
+    if (!agl) throw new Error("AGL announcement not found");
+    expect(agl.tdate).toBe("20260519091500");
+    expect(agl.seq).toBe("12");
+    expect(agl.headline).toContain("Trading Statement");
+    expect(agl.asOfUtc).toBe("2026-05-19T07:15:00.000Z");
   });
 
   it("deduplicates identical announcements in the same HTML", () => {
@@ -112,9 +112,10 @@ describe("parseAnnouncementsFromHtml", () => {
   it("splits headline correctly on first ` - ` separator", () => {
     const result = parseAnnouncementsFromHtml(FIXTURE_HTML);
     const rmh = result.find((a) => a.scode === "RMH");
+    if (!rmh) throw new Error("RMH announcement not found");
     // company is everything before first " - "
-    expect(rmh!.company).toBe("RMH HOLDINGS LIMITED");
+    expect(rmh.company).toBe("RMH HOLDINGS LIMITED");
     // headline is everything after first " - "
-    expect(rmh!.headline).toBe("Interim Results for the six months ended 31 March 2026");
+    expect(rmh.headline).toBe("Interim Results for the six months ended 31 March 2026");
   });
 });
