@@ -132,6 +132,13 @@
       "reportsTo": "Devon"
     },
     {
+      "name": "Env",
+      "role": "External environment simulator",
+      "type": "engineering",
+      "expertise": ["simulation", "market-data", "swift-messaging", "correspondent-banking"],
+      "reportsTo": "Devon"
+    },
+    {
       "id": "noa",
       "name": "Noa",
       "title": "Intranet Product Owner & UI Architect",

@@ -1,0 +1,54 @@
+// platform/market-data/types.ts
+//
+// Typed payload shapes for the initial set of market data types stored in
+// MarketDataStore. These are reference/time-series data, NOT business domain
+// events — they must not enter the event store.
+//
+// Authority: D-MARKETS-SCHEMA-FOUNDATION.
+// Author: Devon (Chief Operating Officer, engineering)
+
+// ---------------------------------------------------------------------------
+// FX spot/forward quote from sim or external feed
+// ---------------------------------------------------------------------------
+
+export interface FxQuotePayload {
+  pair: string; // "USDZAR"
+  mid: number;
+  bid: number;
+  ask: number;
+  source: "fx-sim" | string;
+}
+
+// ---------------------------------------------------------------------------
+// JSE SENS announcement stub
+// ---------------------------------------------------------------------------
+
+export interface SensAnnouncementPayload {
+  ticker: string; // "AGL" (no exchange suffix in payload)
+  exchange: "JSE";
+  headline: string;
+  category: string; // "Results" | "Dividend" | "RightsIssue" | "TradeStatement" | "Other"
+  body: string;
+  sensPdfUrl?: string; // when available from real feed
+}
+
+// ---------------------------------------------------------------------------
+// Generic news item (future: Bloomberg, Reuters, etc.)
+// ---------------------------------------------------------------------------
+
+export interface NewsPayload {
+  headline: string;
+  body: string;
+  source: string; // "reuters" | "bloomberg" | "env-sim"
+  relatedInstruments?: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Canonical source identifiers
+// ---------------------------------------------------------------------------
+
+export const MarketDataSources = {
+  FX_SIM: "fx-sim",
+  JSE_SENS: "jse-sens",
+  NEWS: "news",
+} as const;

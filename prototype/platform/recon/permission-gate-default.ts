@@ -235,6 +235,11 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // regulatory reporting scenario assertion. T-01 carve-out.
   // Citation: D-FX-AD-STATUS, EXCON-SARB-CIRC-3-2020, P4-SECURITY-DESIGNED-IN.
   "platform/markets/regulatory/",
+  // EnvSim unit tests — per-module tests build in-memory stores for
+  // deterministic replay and stochastic-profile scenario assertion. T-01 carve-out;
+  // no production access path.
+  // Citation: D-MARKETS-SCHEMA-FOUNDATION, P4-SECURITY-DESIGNED-IN.
+  "platform/simulation/env-sim/",
 ];
 
 // T-12 mitigation COMPLETE (2026-05-17, Atlas):
