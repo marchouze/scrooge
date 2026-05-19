@@ -61,8 +61,19 @@ export function computeILAAPSummary(results: ILAAPScenarioResult[]): ILAAPSummar
 
   const allNoPositions = results.every((r) => r.status === "no-positions");
 
-  let worstCaseSurvivalDays = results[0].survivalHorizonDays;
-  let worstCaseScenario = results[0].scenario;
+  const firstResult = results[0];
+  // results.length > 0 is checked by the guard above (returns early when empty)
+  if (!firstResult) {
+    return {
+      worstCaseSurvivalDays: 0,
+      worstCaseScenario: "none",
+      overallStatus: "no-positions",
+      recommendedAction: "Monitor — zero-position baseline until licence-day.",
+    };
+  }
+
+  let worstCaseSurvivalDays = firstResult.survivalHorizonDays;
+  let worstCaseScenario = firstResult.scenario;
 
   for (const result of results) {
     if (result.survivalHorizonDays < worstCaseSurvivalDays) {

@@ -268,7 +268,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       payload: {
         recordId: `${runPrefix}-RECORD`,
         registerKey: "agent-runs",
-        documentHash: { algorithm: "BLAKE3", hex: "0".repeat(64) },
+        documentHash: `blake3:${"0".repeat(64)}`,
         classification: "governance-seat",
         retention: {
           citationRef: "D-TREASURY-GAPS-WAVE1",
