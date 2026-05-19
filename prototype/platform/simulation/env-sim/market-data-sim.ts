@@ -87,6 +87,7 @@ export class MarketDataSimulator {
           source: MarketDataSources.FX_SIM,
           instrument: pair,
           dataType: "fx-quote",
+          provenance: "simulated",
           asOf,
           payload: payload as unknown as Record<string, unknown>,
         });

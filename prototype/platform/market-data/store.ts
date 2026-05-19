@@ -28,12 +28,17 @@ CREATE TABLE IF NOT EXISTS market_data_ticks (
   source       TEXT NOT NULL,
   instrument   TEXT NOT NULL,
   data_type    TEXT NOT NULL,
+  provenance   TEXT NOT NULL DEFAULT 'production',
   as_of        TEXT NOT NULL,
   payload      TEXT NOT NULL,
   ingested_at  TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS mdt_source_instrument_asof
   ON market_data_ticks(source, instrument, as_of DESC);
+`;
+
+const MIGRATION_ADD_PROVENANCE = `
+  ALTER TABLE market_data_ticks ADD COLUMN provenance TEXT NOT NULL DEFAULT 'production';
 `;
 
 // ---------------------------------------------------------------------------
@@ -45,6 +50,7 @@ export interface MarketDataTick {
   source: string; // "fx-sim" | "jse-sens" | "news" | string
   instrument: string; // "USDZAR" | "AGL.JSE" | etc.
   dataType: string; // "fx-quote" | "equity-quote" | "sens-announcement" | "news"
+  provenance: "production" | "simulated";
   asOf: string; // ISO 8601
   payload: Record<string, unknown>;
   ingestedAt: string; // ISO 8601
@@ -54,6 +60,7 @@ export interface MarketDataQueryOptions {
   source?: string;
   instrument?: string;
   dataType?: string;
+  provenance?: "production" | "simulated";
   from?: string;
   to?: string;
   limit?: number;
@@ -76,6 +83,11 @@ export class MarketDataStore {
     }
     this.db = new Database(dbPath);
     this.db.exec(DDL);
+    try {
+      this.db.exec(MIGRATION_ADD_PROVENANCE);
+    } catch {
+      /* column already exists */
+    }
   }
 
   /**
@@ -88,14 +100,15 @@ export class MarketDataStore {
     this.db
       .prepare(
         `INSERT OR IGNORE INTO market_data_ticks
-           (id, source, instrument, data_type, as_of, payload, ingested_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           (id, source, instrument, data_type, provenance, as_of, payload, ingested_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         id,
         tick.source,
         tick.instrument,
         tick.dataType,
+        tick.provenance,
         tick.asOf,
         JSON.stringify(tick.payload),
         ingestedAt,
@@ -147,6 +160,10 @@ export class MarketDataStore {
       conditions.push("data_type = ?");
       params.push(opts.dataType);
     }
+    if (opts.provenance !== undefined) {
+      conditions.push("provenance = ?");
+      params.push(opts.provenance);
+    }
     if (opts.from !== undefined) {
       conditions.push("as_of >= ?");
       params.push(opts.from);
@@ -181,6 +198,7 @@ export class MarketDataStore {
       source: row.source as string,
       instrument: row.instrument as string,
       dataType: row.data_type as string,
+      provenance: (row.provenance as "production" | "simulated") ?? "production",
       asOf: row.as_of as string,
       payload: JSON.parse(row.payload as string) as Record<string, unknown>,
       ingestedAt: row.ingested_at as string,
