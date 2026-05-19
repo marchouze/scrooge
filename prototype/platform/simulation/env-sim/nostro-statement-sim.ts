@@ -37,11 +37,7 @@ export class NostroStatementSimulator {
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
-  constructor(
-    store: EventStore,
-    rng: () => number,
-    options: { intervalMs: number },
-  ) {
+  constructor(store: EventStore, rng: () => number, options: { intervalMs: number }) {
     this.store = store;
     this.rng = rng;
     this.intervalMs = options.intervalMs;
@@ -72,7 +68,7 @@ export class NostroStatementSimulator {
 
   private emitStatement(): void {
     const now = nowUtc();
-    const statementDate = new Date();
+    const statementDate = new Date(now); // derives from nowUtc() captured above — no direct wall-clock read
 
     // Look up settled trades since last tick.
     const settledEvents: Array<{ payload: Record<string, unknown> }> = [];
@@ -87,9 +83,10 @@ export class NostroStatementSimulator {
     // Build MT940 entries from settled trades.
     const mt940Entries: Mt940Entry[] = settledEvents.map((evt) => {
       const payload = evt.payload as Record<string, unknown>;
-      const currency = typeof payload.currencyPair === "string"
-        ? payload.currencyPair.split("/")[0] ?? NOSTRO_CURRENCY
-        : NOSTRO_CURRENCY;
+      const currency =
+        typeof payload.currencyPair === "string"
+          ? (payload.currencyPair.split("/")[0] ?? NOSTRO_CURRENCY)
+          : NOSTRO_CURRENCY;
       return {
         valueDate: statementDate,
         creditDebitMark: "C" as const,
@@ -140,6 +137,7 @@ export class NostroStatementSimulator {
     // Generate camt.053 entries.
     const camt053Entries: Camt053Entry[] = settledEvents.map((evt) => {
       const payload = evt.payload as Record<string, unknown>;
+      const tradeId = String(payload.tradeId ?? "SIM");
       return {
         amountMinor: 100_000_00n,
         currency: NOSTRO_CURRENCY,
@@ -150,8 +148,12 @@ export class NostroStatementSimulator {
           Prtry: { Cd: "FXCF", Issr: "INTERNAL" },
         },
         NtryDtls: {
-          TxRef: String(payload.tradeId ?? "SIM"),
-          Ustrd: `FX settlement — trade ${String(payload.tradeId ?? "SIM")}`,
+          TxDtls: [
+            {
+              Refs: { EndToEndId: tradeId, TxId: tradeId },
+              RmtInf: { Ustrd: `FX settlement — trade ${tradeId}` },
+            },
+          ],
         },
       };
     });
@@ -178,7 +180,7 @@ export class NostroStatementSimulator {
           messageId: `CAMT053-${statementDate.toISOString().slice(0, 10)}-${newEventId().slice(-8)}`,
           messageStandard: "camt.053",
           direction: "inbound",
-          serialisedMessage: camt053.serialised,
+          serialisedMessage: camt053.serialisedXml,
           senderBic: CORRESPONDENT_BIC,
           receivedAt: now,
           citations: CITATIONS,

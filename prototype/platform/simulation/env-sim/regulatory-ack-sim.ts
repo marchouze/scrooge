@@ -83,8 +83,7 @@ export class RegulatoryAckSim {
       const payload = evt.payload as Record<string, unknown>;
       const messageType = String(payload.messageType ?? "");
       const isRegulatory =
-        messageType.startsWith("BA-") ||
-        messageType.toLowerCase().includes("regulatory");
+        messageType.startsWith("BA-") || messageType.toLowerCase().includes("regulatory");
 
       if (!isRegulatory) continue;
 

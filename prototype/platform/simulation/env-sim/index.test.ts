@@ -5,18 +5,14 @@
 // Uses in-memory event store (same pattern as fx-sim-engine.test.ts).
 // Author: Devon (Chief Operating Officer, engineering)
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { EventStore } from "../../event-store/store";
+import { FxRateEngine } from "../fx-sim-rates";
+import { type CounterpartyBehaviorProfile, mulberry32 } from "./counterparty-profiles";
+import { EnvSimEngine } from "./index";
 import { MarketDataSimulator } from "./market-data-sim";
 import { NostroStatementSimulator } from "./nostro-statement-sim";
-import { EnvSimEngine } from "./index";
-import {
-  ALWAYS_SETTLE,
-  mulberry32,
-  type CounterpartyBehaviorProfile,
-} from "./counterparty-profiles";
-import { FxRateEngine } from "../fx-sim-rates";
 
 // ---------------------------------------------------------------------------
 // In-memory event store helper
@@ -163,7 +159,7 @@ describe("NostroStatementSimulator", () => {
   let store: EventStore;
   let sim: NostroStatementSimulator;
 
-    beforeEach(() => {
+  beforeEach(() => {
     store = makeInMemoryStore();
     sim = new NostroStatementSimulator(store, mulberry32(42), { intervalMs: 50 });
   });

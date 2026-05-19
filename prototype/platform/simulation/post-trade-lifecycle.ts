@@ -19,8 +19,8 @@
 // Author: Devon (Chief Operating Officer, engineering)
 
 import { newEventId, nowUtc } from "../core/types";
-import type { EventStore } from "../event-store/store";
 import { makeInboundMessageReceived } from "../event-store/event-types/payments";
+import type { EventStore } from "../event-store/store";
 import {
   makeFxSettlementInstructed,
   makePrincipalPayment,
@@ -93,7 +93,8 @@ export function runPostTradeLifecycle(
   // T+2 settlement date + optional delay days from profile.
   const baseSettlementIso = nearLeg.settlementDate?.iso ?? addTwoCalendarDays(trade.tradeDate.iso);
   const delayDays = profile?.settlementDelayDays ?? 0;
-  const settlementDateIso = delayDays > 0 ? addCalendarDays(baseSettlementIso, delayDays) : baseSettlementIso;
+  const settlementDateIso =
+    delayDays > 0 ? addCalendarDays(baseSettlementIso, delayDays) : baseSettlementIso;
 
   // Stochastic rejection branch: skip PrincipalPayments + SettlementConfirmed.
   const isRejected = rand() < (profile?.rejectionProbability ?? 0);

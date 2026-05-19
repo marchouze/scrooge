@@ -100,17 +100,17 @@ export class CorrespondentAdviceSim {
 
     const mt202Body = [
       `{1:F01${senderBic}0000000000}`,
-      `{2:I202BANKZAJJXXXXN}`,
-      `{4:`,
+      "{2:I202BANKZAJJXXXXN}",
+      "{4:",
       `:20:${trn.slice(0, 16)}`,
       `:21:${relatedRef.slice(0, 16)}`,
       `:32A:${dateTag}${currency}${amountStr.replace(".", ",")}`,
       `:53B:/${senderBic}`,
-      `:57A:BANKZAJJXXX`,
-      `:58A:BANKZAJJXXX`,
-      `:72:/BNF/FX SETTLEMENT RECEIVE LEG`,
+      ":57A:BANKZAJJXXX",
+      ":58A:BANKZAJJXXX",
+      ":72:/BNF/FX SETTLEMENT RECEIVE LEG",
       `//TRADE ${tradeId}`,
-      `-}`,
+      "-}",
     ].join("\n");
 
     try {

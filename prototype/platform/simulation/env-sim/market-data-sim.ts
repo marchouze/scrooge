@@ -7,8 +7,8 @@
 // Author: Env (External Environment Simulator) / Devon (Chief Operating Officer, engineering)
 
 import { nowUtc } from "../../core/types";
-import type { EventStore } from "../../event-store/store";
 import { makeMarketDataTickReceived } from "../../event-store/event-types/markets";
+import type { EventStore } from "../../event-store/store";
 import type { FxRateEngine } from "../fx-sim-rates";
 
 // ---------------------------------------------------------------------------
@@ -30,7 +30,6 @@ export class MarketDataSimulator {
   private readonly store: EventStore;
   private readonly rateEngine: FxRateEngine;
   private readonly intervalMs: number;
-  private readonly rng: () => number;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
@@ -42,7 +41,8 @@ export class MarketDataSimulator {
     this.store = store;
     this.rateEngine = rateEngine;
     this.intervalMs = options.intervalMs;
-    this.rng = options.rng;
+    // rng accepted for interface symmetry with other sub-simulators; rate engine manages its own randomness.
+    void options.rng;
   }
 
   /** Start emitting market data ticks. Idempotent. */

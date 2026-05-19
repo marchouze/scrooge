@@ -8,7 +8,7 @@
 
 import { z } from "zod";
 
-import { newEventId, nowUtc } from "../../core/types";
+import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------

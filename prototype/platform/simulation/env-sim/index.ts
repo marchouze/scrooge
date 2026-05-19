@@ -21,9 +21,9 @@ import { SIM_COUNTERPARTIES } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
 import { FxRateEngine } from "../fx-sim-rates";
 import { runPostTradeLifecycle } from "../post-trade-lifecycle";
+import { CorrespondentAdviceSim } from "./correspondent-advice-sim";
 import type { CounterpartyBehaviorProfile } from "./counterparty-profiles";
 import { mulberry32 } from "./counterparty-profiles";
-import { CorrespondentAdviceSim } from "./correspondent-advice-sim";
 import { MarketDataSimulator } from "./market-data-sim";
 import { NostroStatementSimulator } from "./nostro-statement-sim";
 import { RegulatoryAckSim } from "./regulatory-ack-sim";
@@ -93,7 +93,12 @@ const DEFAULTS = {
 
 export class EnvSimEngine {
   private readonly store: EventStore;
-  private opts: Required<Omit<EnvSimOptions, "seed" | "counterpartyProfiles">> & {
+  private opts: {
+    minIntervalMs: number;
+    maxIntervalMs: number;
+    bookId: string;
+    marketDataIntervalMs: number;
+    nostroStatementIntervalMs: number;
     seed?: number;
     counterpartyProfiles?: CounterpartyBehaviorProfile[];
   };
@@ -118,8 +123,10 @@ export class EnvSimEngine {
       marketDataIntervalMs: options?.marketDataIntervalMs ?? DEFAULTS.marketDataIntervalMs,
       nostroStatementIntervalMs:
         options?.nostroStatementIntervalMs ?? DEFAULTS.nostroStatementIntervalMs,
-      seed: options?.seed,
-      counterpartyProfiles: options?.counterpartyProfiles,
+      ...(options?.seed !== undefined ? { seed: options.seed } : {}),
+      ...(options?.counterpartyProfiles !== undefined
+        ? { counterpartyProfiles: options.counterpartyProfiles }
+        : {}),
     };
 
     // Seeded PRNG or Math.random.
@@ -173,7 +180,11 @@ export class EnvSimEngine {
    * Start the engine and all sub-simulators. Idempotent.
    * Optional `config` overrides accepted for backward compatibility with FxSimEngine callers.
    */
-  start(config?: { minIntervalMs?: number; maxIntervalMs?: number; bookId?: string }): EnvSimStatus {
+  start(config?: {
+    minIntervalMs?: number;
+    maxIntervalMs?: number;
+    bookId?: string;
+  }): EnvSimStatus {
     if (this.status.running) return { ...this.status };
 
     // Apply config overrides for backward compat.
@@ -272,7 +283,7 @@ export class EnvSimEngine {
       asOf,
       "BANKZAJJXXX",
       counterpartyBic,
-      (partyId) => this.profileMap.get(partyId),
+      (partyId) => this.profileMap.get(partyId) ?? this.profileMap.get("*"),
       this.rng,
     );
 
@@ -317,9 +328,5 @@ export class EnvSimEngine {
     if (this.status.running) {
       this.scheduleNext();
     }
-  }
-
-  private profileForCounterparty(partyId: string): CounterpartyBehaviorProfile | undefined {
-    return this.profileMap.get(partyId) ?? this.profileMap.get("*");
   }
 }
