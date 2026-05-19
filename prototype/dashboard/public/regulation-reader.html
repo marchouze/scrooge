@@ -12,8 +12,13 @@
     .rr-layout {
       display: flex;
       gap: var(--space-4);
-      height: calc(100vh - 56px - 56px);
+      height: calc(100vh - var(--topbar-height) - 110px);
       overflow: hidden;
+    }
+
+    #rr-detail {
+      flex: 1;
+      min-height: 0;
     }
 
     /* Left sidebar */
@@ -332,7 +337,7 @@
           <div class="rr-skeleton" id="rr-placeholder">
             Select an instrument to read.
           </div>
-          <div id="rr-detail" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+          <div id="rr-detail" style="display:none;flex-direction:column;overflow:hidden">
             <div class="rr-main-header" id="rr-header"></div>
             <div class="rr-search-bar">
               <input
