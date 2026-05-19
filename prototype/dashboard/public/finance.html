@@ -30,7 +30,7 @@
       async function sf(u) {
         try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
       }
-      const state = await sf("/api/state");
+      const [state, glData] = await Promise.all([sf("/api/state"), sf("/api/gl/accounts")]);
       const fin = state?.finance ?? state?.capitalMetrics ?? state ?? {};
 
       function pctStatus(val, threshold) {
@@ -62,8 +62,7 @@
       const glHeader = document.getElementById("fin-gl-header");
       const glTable  = document.getElementById("fin-gl-table");
       glHeader.innerHTML = SC.renderSectionHeader("GL Summary", { label: "Events →", href: "/events.html?type=GLPosting" });
-      const gl = state?.gl ?? state?.generalLedger ?? state?.accounts ?? [];
-      const rows = Array.isArray(gl) ? gl : (Array.isArray(state?.glAccounts) ? state.glAccounts : []);
+      const rows = glData?.accounts ?? [];
       SC.renderTable({
         container: glTable,
         headers: ["Account", "Name", "Debit", "Credit", "Balance"],

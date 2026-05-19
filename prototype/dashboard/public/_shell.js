@@ -22,7 +22,6 @@
       pages: [
         { label: "Finance", href: "/finance.html" },
         { label: "General Ledger", href: "/gl" },
-        { label: "Trade Booking", href: "/trade-book.html" },
         { label: "Product Control", href: "/product-control.html" },
       ],
     },
@@ -33,6 +32,7 @@
     {
       group: "Markets",
       pages: [
+        { label: "Trade Booking", href: "/trade-book.html" },
         { label: "FX Desk", href: "/markets/fx/desk.html" },
         { label: "FX Risk", href: "/markets/fx/risk.html" },
         { label: "FX Simulator", href: "/fx-sim" },

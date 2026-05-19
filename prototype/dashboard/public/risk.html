@@ -31,40 +31,40 @@
       async function sf(u) {
         try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
       }
-      const [rasData, stressData] = await Promise.all([sf("/api/risk/ras"), sf("/api/risk/stress")]);
+      const state = await sf("/api/state");
 
-      // RAS clusters
+      // RAS clusters — limitUtilisations (B1–B5)
       document.getElementById("ras-header").innerHTML = SC.renderSectionHeader("RAS Clusters (B1–B5)", null);
-      const clusters = Array.isArray(rasData) ? rasData : (rasData?.clusters ?? rasData?.items ?? []);
+      const clusters = state?.limitUtilisations ?? [];
       const tilesEl = document.getElementById("ras-tiles");
       if (clusters.length === 0) {
         tilesEl.innerHTML = `<p style="color:var(--color-text-secondary)">No RAS data available.</p>`;
       } else {
+        const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
         clusters.forEach(c => {
-          const status = c.breachStatus === "ok" ? "ok" : c.breachStatus === "warn" ? "warn" : c.breachStatus ? "danger" : null;
           const t = SC.renderTile({
-            label: c.clusterId || c.id || "",
-            value: c.current != null ? SC.fmt(c.current) : (c.status || "—"),
-            sub: c.limit != null ? `limit: ${SC.fmt(c.limit)}` : (c.title || ""),
-            status,
-            onClick: () => SC.openModal({ title: c.title || c.clusterId || "Cluster", body: SC.renderDefList(c) }),
+            label: c.cluster || c.limitName || "",
+            value: c.utilisationPct != null ? `${c.utilisationPct}%` : "—",
+            sub: c.limitValue ? `limit: ${c.limitValue.toLocaleString()} ${c.currency}` : c.limitName,
+            status: ragToStatus[c.ragStatus] ?? null,
+            onClick: () => SC.openModal({ title: c.cluster || "Cluster", body: SC.renderDefList(c) }),
           });
           tilesEl.appendChild(t);
         });
       }
 
-      // Stress scenarios
-      document.getElementById("stress-header").innerHTML = SC.renderSectionHeader("Stress Scenarios", null);
-      const scenarios = Array.isArray(stressData) ? stressData : (stressData?.scenarios ?? stressData?.results ?? stressData?.items ?? []);
+      // Vera findings
+      document.getElementById("stress-header").innerHTML = SC.renderSectionHeader("Vera Findings", null);
+      const findings = state?.findings ?? [];
       SC.renderTable({
         container: document.getElementById("stress-table"),
-        headers: ["Scenario", "Metric", "Result", "Status"],
-        rows: scenarios.map(s => ({
-          cells: [SC.esc(s.name || s.scenario || ""), SC.esc(s.metric || ""), SC.esc(SC.fmt(s.result ?? s.value)), SC.renderBadge(s.status || s.outcome || "info")],
-          data: s,
+        headers: ["Finding", "Principle", "Severity", "As Of"],
+        rows: findings.map(f => ({
+          cells: [SC.esc(f.id || ""), SC.esc(f.principle || ""), SC.renderBadge(f.severity || "info"), SC.esc((f.asOf || "").slice(0, 10))],
+          data: f,
         })),
-        onRowClick: s => SC.openModal({ title: s.name || s.scenario || "Scenario", body: SC.renderDefList(s) }),
-        emptyMessage: "No stress scenario data",
+        onRowClick: f => SC.openModal({ title: f.id || "Finding", body: SC.renderDefList(f) }),
+        emptyMessage: "No findings",
       });
     })();
   </script>
