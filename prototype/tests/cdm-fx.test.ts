@@ -596,13 +596,15 @@ describe("Scenario 06 — full 6-event FX Spot lifecycle", () => {
     expect((confirmed.payload as { tradeId: string }).tradeId).toBe("TRD-FX-SPOT-M4-001");
   });
 
-  it("runFxSpotScenario stores exactly 6 events and returns ok", () => {
+  it("runFxSpotScenario stores trade lifecycle events and message events, returns ok", () => {
     const result = runFxSpotScenario({
       dbPath: ".local/test-scenario-fx-spot-6events.db",
       cleanup: true,
     });
     expect(result.ok).toBe(true);
-    expect(result.emitted).toBe(6);
+    // 6 trade lifecycle + 1 OutboundMessageDispatched + 5 InboundMessageReceived
+    // + 5 MessageCorrelated = 17 events total (D-FX-MESSAGE-EVENTS).
+    expect(result.emitted).toBe(17);
     expect(result.countsByType.FxTradeExecuted).toBe(1);
     expect(result.countsByType.FxSettlementInstructed).toBe(2);
     expect(result.countsByType.PrincipalPayment).toBe(2);

@@ -175,7 +175,7 @@ export function generateAndEmitMt202(
     makeOutboundMessageDispatched({
       asOf,
       entity: BANK_ZA_001,
-      actor: { type: "agent", id: "tomas@bank.local" },
+      actor: { type: "service", id: "tomas@bank.local" },
       citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
       payload: {
         tradeId: trade.tradeId.value,

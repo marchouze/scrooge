@@ -42,7 +42,7 @@ import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import { M4_FX_SPOT_FIXTURE } from "@platform/markets/products/fixtures";
 import { logger } from "@platform/observability/logger";
 import { simulateInboundMessages } from "@platform/payments/inbound-simulator";
-import { generateMt300 } from "@platform/payments/swift-mt/mt300";
+import { generateAndEmitMt300 } from "@platform/payments/swift-mt/mt300";
 
 // ---------------------------------------------------------------------------
 // Scenario constants
@@ -372,6 +372,7 @@ export interface FxSpotScenarioResult {
   readonly productId: string;
   readonly outboundMt300Fields: number;
   readonly inboundMessageTypes: string[];
+  readonly messageEventTypes: string[];
 }
 
 export function runFxSpotScenario(opts: {
@@ -390,8 +391,6 @@ export function runFxSpotScenario(opts: {
   const store = new EventStore(opts.dbPath);
   store.appendAll([...events.all]);
 
-  const total = store.count();
-
   // Provenance recon — all events must carry the scenario tag.
   let provenanceOk = true;
   for (const e of store.replay({ entity: ENTITY })) {
@@ -408,24 +407,60 @@ export function runFxSpotScenario(opts: {
   }
 
   // ---------------------------------------------------------------------------
-  // Message generation — outbound MT300 + inbound message set
+  // Message generation — outbound MT300 (emit) + inbound message set (emit)
+  // Events are appended to the store, resolving the Principle 1 violation
+  // from PR #563 per D-FX-MESSAGE-EVENTS.
   // ---------------------------------------------------------------------------
   const tradePayload = events.trade.payload as FxTradeExecutedPayload;
   const BANK_BIC = "BANKZAJJXXX";
   const COUNTERPARTY_BIC = "SBZAZAJJXXX";
+  const messageAsOf = "2026-05-14T10:00:00.000Z";
 
-  // Outbound: bank sends MT300 FX confirmation to counterparty
-  const outboundMt300 = generateMt300(tradePayload, BANK_BIC, COUNTERPARTY_BIC);
+  // Outbound: bank sends MT300 FX confirmation to counterparty — emits
+  // OutboundMessageDispatched to the event store.
+  const outboundMt300 = generateAndEmitMt300(
+    store,
+    tradePayload,
+    BANK_BIC,
+    COUNTERPARTY_BIC,
+    messageAsOf,
+  );
 
-  // Inbound: simulate messages the correspondent/counterparty sends back
-  const settlementDate = new Date("2026-05-14T10:00:00.000Z");
+  // Extract the outbound MT300 messageId for inbound correlation.
+  const outboundMt300MessageId =
+    outboundMt300.block4.find((f) => f.tag === "20")?.value ??
+    tradePayload.tradeId.value.slice(-16);
+
+  // Inbound: simulate messages the correspondent/counterparty sends back.
+  // Emits InboundMessageReceived + MessageCorrelated for each message.
+  const settlementDate = new Date(messageAsOf);
   const nostroBalance = 10_000_000_00n; // USD 100,000 opening nostro
   const inboundMessages = simulateInboundMessages(
     tradePayload,
     settlementDate,
     nostroBalance,
     COUNTERPARTY_BIC,
+    undefined,
+    undefined,
+    { store, asOf: messageAsOf, outboundMessageId: outboundMt300MessageId },
   );
+
+  // Count total events — must be done after message events are appended.
+  const total = store.count();
+
+  // Collect all message-related event types for the result breakdown log.
+  const messageEventTypes = [
+    ...new Set(
+      [...store.replay({})]
+        .map((e) => e.type)
+        .filter(
+          (t) =>
+            t === "OutboundMessageDispatched" ||
+            t === "InboundMessageReceived" ||
+            t === "MessageCorrelated",
+        ),
+    ),
+  ];
 
   store.close();
   if (opts.cleanup) {
@@ -445,12 +480,13 @@ export function runFxSpotScenario(opts: {
   ].filter((t): t is string => t !== null);
 
   return {
-    ok: provenanceOk && total === events.all.length,
+    ok: provenanceOk && total >= events.all.length,
     emitted: total,
     countsByType,
     productId: M4_FX_SPOT_FIXTURE.productId,
     outboundMt300Fields: outboundMt300.block4.length,
     inboundMessageTypes,
+    messageEventTypes,
   };
 }
 
@@ -529,6 +565,11 @@ if (import.meta.main) {
       inboundMessages: {
         messageTypes: result.inboundMessageTypes,
         description: "Simulated inbound messages from correspondent/counterparty",
+      },
+      messageEvents: {
+        eventTypes: result.messageEventTypes,
+        description:
+          "Message-dispatch event types emitted (OutboundMessageDispatched, InboundMessageReceived, MessageCorrelated)",
       },
       authority: [
         "D-PRODUCT-CONSTRUCTION-SUBSTRATE",

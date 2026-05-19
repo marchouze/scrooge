@@ -26,8 +26,8 @@
 
 import { BANK_ZA_001 } from "@platform/core/types";
 import {
-  makeOutboundMessageDispatched,
   type PaymentInitiatedPayload,
+  makeOutboundMessageDispatched,
 } from "@platform/event-store/event-types/payments";
 import type { EventStore } from "@platform/event-store/store";
 import {
@@ -202,7 +202,7 @@ export function generateAndEmitMt103(
     makeOutboundMessageDispatched({
       asOf,
       entity: BANK_ZA_001,
-      actor: { type: "agent", id: "tomas@bank.local" },
+      actor: { type: "service", id: "tomas@bank.local" },
       citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
       payload: {
         tradeId: payment.tradeId,

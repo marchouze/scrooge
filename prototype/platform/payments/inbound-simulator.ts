@@ -269,7 +269,7 @@ export function simulateInboundMessages(
     const { store, asOf, outboundMessageId } = opts;
     const outboundRef = outboundMessageId ?? tradeId.slice(-16);
     const CITATIONS = ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"];
-    const SYSTEM_ACTOR = { type: "agent" as const, id: "tomas@bank.local" };
+    const SYSTEM_ACTOR = { type: "service" as const, id: "tomas@bank.local" };
 
     // Helper: emit InboundMessageReceived + MessageCorrelated pair.
     function emitInbound(
@@ -343,8 +343,7 @@ export function simulateInboundMessages(
 
     // camt.053 — end-of-day statement (ISO 20022)
     if (camt053Statement) {
-      const camt053Id =
-        camt053Statement.Stmt[0]?.Id ?? `${tradeId.slice(-12)}-CAMT053-STMT`;
+      const camt053Id = camt053Statement.Stmt[0]?.Id ?? `${tradeId.slice(-12)}-CAMT053-STMT`;
       emitInbound(camt053Id, "camt.053", camt053Statement.serialisedXml ?? "", "statement-entry");
     }
   }
