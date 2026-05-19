@@ -3,13 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FX Market-Making Simulator · Hoz</title>
+  <title>FX Simulator — Scrooge Bank</title>
   <meta name="description" content="FX market-making simulation engine — random trade generation control panel.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-  <link rel="stylesheet" href="/_brand.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">  <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <style>
@@ -239,51 +235,12 @@
   </style>
 </head>
 <body>
-  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
+  <div id="shell"></div>
 
-  <header class="shell-header" role="banner">
-    <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
-        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-        </svg>
-        <span class="shell-wordmark">Hoz</span>
-      </a>
-      <div class="shell-meta">
-        <span
-          data-provenance-badge="page-top"
-          data-provenance-source="/api/fx-sim/status"
-          aria-label="Provenance badge"
-        ></span>
-        <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh status now">Refresh</button>
-        <span class="shell-as-of" id="asOf" aria-live="polite">connecting…</span>
-        <div class="shell-identity" role="status" aria-label="Signed in"></div>
-      </div>
-    </div>
-  </header>
-
-  <div class="shell-layout">
-    <nav class="shell-sidebar" aria-label="Section navigation">
-      <h2>FX Simulator</h2>
-      <ul>
-        <li><a href="#controls">Controls</a></li>
-        <li><a href="#stats">Stats</a></li>
-        <li><a href="#last-trade">Last Trade</a></li>
-        <li><a href="#rates">Live Rates</a></li>
-      </ul>
-      <h2>Reference</h2>
-      <ul>
-        <li><a href="/home.html">Home</a></li>
-        <li><a href="/markets/fx/desk.html">FX desk</a></li>
-        <li><a href="/events.html?type=FxTradeExecuted">FX trade events</a></li>
-      </ul>
-    </nav>
-
-    <main class="shell-main" id="shell-main" tabindex="-1">
-      <div class="shell-page-header">
-        <h1 class="shell-page-title">FX Market-Making Simulator</h1>
-        <p class="shell-page-lede">
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">FX Market-Making Simulator</h1>
+        <p style="font:var(--text-body);color:var(--color-text-secondary);margin:var(--space-1) 0 var(--space-6)">
           Build-phase rehearsal engine. Generates random FX spot trades at a configurable interval
           and appends them as <code>FxTradeExecuted</code> events to the event store.
           Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
@@ -292,7 +249,7 @@
 
       <!-- Controls -->
       <section id="controls" aria-labelledby="controls-title">
-        <h2 id="controls-title" class="shell-section-title">Controls</h2>
+        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Controls</h2>
         <div class="sim-card">
           <div class="sim-controls">
             <button type="button" class="sim-btn sim-btn-start" id="startBtn">
@@ -330,7 +287,7 @@
 
       <!-- Stats -->
       <section id="stats" aria-labelledby="stats-title">
-        <h2 id="stats-title" class="shell-section-title">Stats</h2>
+        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Stats</h2>
         <div class="sim-card">
           <div class="sim-stats-grid">
             <div class="sim-stat">
@@ -355,7 +312,7 @@
 
       <!-- Last Trade -->
       <section id="last-trade" aria-labelledby="last-trade-title">
-        <h2 id="last-trade-title" class="shell-section-title">Last Trade</h2>
+        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Last Trade</h2>
         <div class="sim-card">
           <div class="sim-last-trade">
             <div class="sim-stat">
@@ -384,7 +341,7 @@
 
       <!-- Live Rates -->
       <section id="rates" aria-labelledby="rates-title">
-        <h2 id="rates-title" class="shell-section-title">Live Rates (last observed)</h2>
+        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Live Rates (last observed)</h2>
         <div class="sim-card">
           <div class="sim-rates-grid" id="ratesGrid">
             <p style="color: var(--color-text-secondary, #6b7280); font-size: 0.875rem;">
@@ -394,8 +351,10 @@
         </div>
       </section>
     </main>
-  </div>
 
+  <script src="/_shell.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "FX Simulator" });</script>
   <script src="/provenance-badge.js"></script>
   <script>
     // ---------------------------------------------------------------------------
