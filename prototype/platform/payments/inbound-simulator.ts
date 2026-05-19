@@ -29,12 +29,12 @@
 
 import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import type { Camt053Entry } from "./iso20022/camt053";
-import { generateCamt053, type Camt053Document } from "./iso20022/camt053";
-import { generatePacs009, type Pacs009Document } from "./iso20022/pacs009";
+import { type Camt053Document, generateCamt053 } from "./iso20022/camt053";
+import { type Pacs009Document, generatePacs009 } from "./iso20022/pacs009";
 import type { FIIdentification } from "./iso20022/types";
-import { generateMt202, type Mt202Message } from "./swift-mt/mt202";
-import { generateMt300, type Mt300Message } from "./swift-mt/mt300";
-import { generateMt940, type Mt940Message } from "./swift-mt/mt940";
+import { type Mt202Message, generateMt202 } from "./swift-mt/mt202";
+import { type Mt300Message, generateMt300 } from "./swift-mt/mt300";
+import { type Mt940Message, generateMt940 } from "./swift-mt/mt940";
 import type { Mt940Entry } from "./swift-mt/mt940";
 
 // ---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ export function simulateInboundMessages(
   const mt300Confirmation = generateMt300(
     trade,
     correspondentBic, // counterparty sends
-    bankBic,          // to us
+    bankBic, // to us
   );
 
   // -------------------------------------------------------------------------
@@ -140,7 +140,7 @@ export function simulateInboundMessages(
   const mt202ReceiveLeg = generateMt202(
     trade,
     "receive",
-    bankBic,          // correspondent sends to bank
+    bankBic, // correspondent sends to bank
     correspondentBic, // sender BIC is correspondent
   );
 
@@ -184,13 +184,7 @@ export function simulateInboundMessages(
 
   // pacs.009 from counterparty's perspective: they are delivering the receive leg to us
   // We model the receive leg as if the counterparty is the sender
-  const pacs009ReceiveLeg = generatePacs009(
-    trade,
-    "receive",
-    counterpartyFI,
-    bankFI,
-    settledAt,
-  );
+  const pacs009ReceiveLeg = generatePacs009(trade, "receive", counterpartyFI, bankFI, settledAt);
 
   // -------------------------------------------------------------------------
   // camt.053 — ISO 20022 equivalent of MT940 (nostro statement)

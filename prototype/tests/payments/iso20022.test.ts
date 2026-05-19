@@ -89,12 +89,14 @@ describe("pacs.008 generator", () => {
   test("IntrBkSttlmAmt.Ccy matches payment currency", () => {
     const doc = generatePacs008(PAYMENT_FIXTURE, SENDER_FI, RECEIVER_FI);
     expect(doc.CdtTrfTxInf).toHaveLength(1);
-    expect(doc.CdtTrfTxInf[0]!.IntrBkSttlmAmt.Ccy).toBe("ZAR");
+    const [txInfo] = doc.CdtTrfTxInf;
+    expect(txInfo?.IntrBkSttlmAmt.Ccy).toBe("ZAR");
   });
 
   test("IntrBkSttlmAmt.value is formatted with period separator", () => {
     const doc = generatePacs008(PAYMENT_FIXTURE, SENDER_FI, RECEIVER_FI);
-    const amount = doc.CdtTrfTxInf[0]!.IntrBkSttlmAmt.value;
+    const [txInfo] = doc.CdtTrfTxInf;
+    const amount = txInfo?.IntrBkSttlmAmt.value ?? "";
     expect(amount).toContain(".");
     expect(amount).not.toContain(",");
   });
@@ -106,7 +108,8 @@ describe("pacs.008 generator", () => {
 
   test("Dbtr is sender FI", () => {
     const doc = generatePacs008(PAYMENT_FIXTURE, SENDER_FI, RECEIVER_FI);
-    expect(doc.CdtTrfTxInf[0]!.Dbtr.Nm).toBe("THE BANK ZA");
+    const [txInfo] = doc.CdtTrfTxInf;
+    expect(txInfo?.Dbtr.Nm).toBe("THE BANK ZA");
   });
 
   test("serialisedXml contains Document element", () => {
@@ -128,26 +131,32 @@ describe("pacs.008 generator", () => {
 describe("pacs.009 generator", () => {
   test("deliver leg currency matches trade pay currency (ZAR)", () => {
     const doc = generatePacs009(TRADE_FIXTURE, "deliver", SENDER_FI, RECEIVER_FI);
-    expect(doc.CdtTrfTxInf[0]!.IntrBkSttlmAmt.Ccy).toBe("ZAR");
+    const [txInfo] = doc.CdtTrfTxInf;
+    expect(txInfo?.IntrBkSttlmAmt.Ccy).toBe("ZAR");
   });
 
   test("receive leg currency matches trade receive currency (USD)", () => {
     const doc = generatePacs009(TRADE_FIXTURE, "receive", SENDER_FI, RECEIVER_FI);
-    expect(doc.CdtTrfTxInf[0]!.IntrBkSttlmAmt.Ccy).toBe("USD");
+    const [txInfo] = doc.CdtTrfTxInf;
+    expect(txInfo?.IntrBkSttlmAmt.Ccy).toBe("USD");
   });
 
   test("deliver leg amount matches trade notional", () => {
     const doc = generatePacs009(TRADE_FIXTURE, "deliver", SENDER_FI, RECEIVER_FI);
-    const amount = doc.CdtTrfTxInf[0]!.IntrBkSttlmAmt.value;
-    // ZAR 92,500,000 = 9250000000 minor units → 92500000.00
-    expect(parseFloat(amount)).toBeCloseTo(92_500_000_000, -2);
+    const [txInfo] = doc.CdtTrfTxInf;
+    const amount = txInfo?.IntrBkSttlmAmt.value ?? "0";
+    // notional.amountMinor = 9_250_000_000_00 = 925000000000 minor units
+    // ISO 20022 decimal: 9250000000.00
+    expect(Number.parseFloat(amount)).toBeCloseTo(9_250_000_000, 0);
   });
 
   test("receive leg amount matches trade counter-notional", () => {
     const doc = generatePacs009(TRADE_FIXTURE, "receive", SENDER_FI, RECEIVER_FI);
-    const amount = doc.CdtTrfTxInf[0]!.IntrBkSttlmAmt.value;
-    // USD 5,000,000 = 500000000 minor units → 5000000.00
-    expect(parseFloat(amount)).toBeCloseTo(5_000_000_000, -2);
+    const [txInfo] = doc.CdtTrfTxInf;
+    const amount = txInfo?.IntrBkSttlmAmt.value ?? "0";
+    // counterNotional.amountMinor = 5_000_000_00 = 500000000 minor units
+    // ISO 20022 decimal: 5000000.00
+    expect(Number.parseFloat(amount)).toBeCloseTo(5_000_000, 0);
   });
 
   test("GrpHdr.NbOfTxs is 1", () => {
@@ -157,7 +166,8 @@ describe("pacs.009 generator", () => {
 
   test("Purp.Cd is FXNT (FX net transfer)", () => {
     const doc = generatePacs009(TRADE_FIXTURE, "deliver", SENDER_FI, RECEIVER_FI);
-    expect(doc.CdtTrfTxInf[0]!.Purp?.Cd).toBe("FXNT");
+    const [txInfo] = doc.CdtTrfTxInf;
+    expect(txInfo?.Purp?.Cd).toBe("FXNT");
   });
 
   test("serialisedXml contains pacs.009 namespace", () => {
@@ -190,61 +200,59 @@ describe("camt.053 generator", () => {
     },
   };
 
+  const BASE_PARAMS = {
+    accountIban: "ZA00BANK00000000000001",
+    correspondentBic: "SBZAZAJJXXX",
+    statementDate: new Date("2026-05-14T00:00:00.000Z"),
+    currency: "USD",
+  };
+
   test("Ntry count matches input entries", () => {
     const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
+      ...BASE_PARAMS,
       openingBalance: 1_000_000_000n,
       entries: [USD_ENTRY],
-      currency: "USD",
     });
-
-    expect(doc.Stmt[0]!.Ntry).toHaveLength(1);
+    const [stmt] = doc.Stmt;
+    expect(stmt?.Ntry).toHaveLength(1);
   });
 
   test("CdtDbtInd is CRDT for credit entry", () => {
     const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
+      ...BASE_PARAMS,
       openingBalance: 1_000_000_000n,
       entries: [USD_ENTRY],
-      currency: "USD",
     });
-
-    expect(doc.Stmt[0]!.Ntry[0]!.CdtDbtInd).toBe("CRDT");
+    const [stmt] = doc.Stmt;
+    const [ntry] = stmt?.Ntry ?? [];
+    expect(ntry?.CdtDbtInd).toBe("CRDT");
   });
 
   test("opening balance (OPBD) is present", () => {
     const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
+      ...BASE_PARAMS,
       openingBalance: 1_000_000_000n,
       entries: [USD_ENTRY],
-      currency: "USD",
     });
-
-    const opBal = doc.Stmt[0]!.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "OPBD");
+    const [stmt] = doc.Stmt;
+    const opBal = stmt?.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "OPBD");
     expect(opBal).toBeDefined();
-    expect(opBal!.CdtDbtInd).toBe("CRDT");
+    expect(opBal?.CdtDbtInd).toBe("CRDT");
   });
 
   test("closing balance (CLBD) = opening + credit entry", () => {
     const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
-      openingBalance: 1_000_000_000n, // 10,000,000 USD
-      entries: [USD_ENTRY],           // + 5,000,000 USD
-      currency: "USD",
+      ...BASE_PARAMS,
+      openingBalance: 1_000_000_000n,
+      entries: [USD_ENTRY],
     });
-
-    const clBal = doc.Stmt[0]!.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
+    const [stmt] = doc.Stmt;
+    const clBal = stmt?.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
     expect(clBal).toBeDefined();
-    // Closing = 15,000,000 USD = 1_500_000_000 minor → "15000000.00"
-    expect(parseFloat(clBal!.Amt.value)).toBeCloseTo(15_000_000, 0);
+    // Opening: 1_000_000_000 minor = 10,000,000 USD
+    // Entry: 500_000_000 minor = 5,000,000 USD
+    // Closing: 1_500_000_000 minor → "15000000.00"
+    expect(Number.parseFloat(clBal?.Amt.value ?? "0")).toBeCloseTo(15_000_000, 0);
   });
 
   test("DBIT entry reduces closing balance", () => {
@@ -255,44 +263,30 @@ describe("camt.053 generator", () => {
     };
 
     const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
-      openingBalance: 1_000_000_000n, // 10,000,000
-      entries: [debitEntry],           // - 1,000,000
-      currency: "USD",
+      ...BASE_PARAMS,
+      openingBalance: 1_000_000_000n,
+      entries: [debitEntry],
     });
-
-    const clBal = doc.Stmt[0]!.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
-    // 9,000,000
-    expect(parseFloat(clBal!.Amt.value)).toBeCloseTo(9_000_000, 0);
+    const [stmt] = doc.Stmt;
+    const clBal = stmt?.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
+    // 9,000,000 USD
+    expect(Number.parseFloat(clBal?.Amt.value ?? "0")).toBeCloseTo(9_000_000, 0);
   });
 
   test("serialisedXml contains camt.053 namespace", () => {
     const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
+      ...BASE_PARAMS,
       openingBalance: 1_000_000_000n,
       entries: [USD_ENTRY],
-      currency: "USD",
     });
-
     expect(doc.serialisedXml).toContain("camt.053");
   });
 
   test("empty entries: closing = opening", () => {
-    const doc = generateCamt053({
-      accountIban: "ZA00BANK00000000000001",
-      correspondentBic: "SBZAZAJJXXX",
-      statementDate: new Date("2026-05-14T00:00:00.000Z"),
-      openingBalance: 1_000_000_000n,
-      entries: [],
-      currency: "USD",
-    });
-
-    const clBal = doc.Stmt[0]!.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
-    const opBal = doc.Stmt[0]!.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "OPBD");
-    expect(clBal!.Amt.value).toBe(opBal!.Amt.value);
+    const doc = generateCamt053({ ...BASE_PARAMS, openingBalance: 1_000_000_000n, entries: [] });
+    const [stmt] = doc.Stmt;
+    const clBal = stmt?.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
+    const opBal = stmt?.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "OPBD");
+    expect(clBal?.Amt.value).toBe(opBal?.Amt.value);
   });
 });

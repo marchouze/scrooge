@@ -31,9 +31,9 @@
 import {
   type ActiveCurrencyAndAmount,
   type CashAccount,
-  formatIso20022Amount,
   formatIso8601Date,
   formatIso8601DateTime,
+  formatIso20022Amount,
   serialiseToXml,
 } from "./types";
 
@@ -223,10 +223,7 @@ export function generateCamt053(params: {
   };
 
   const docBody = { GrpHdr: grpHdr, Stmt: [stmt] };
-  const serialisedXml = serialiseToXml(
-    { BkToCstmrStmt: docBody },
-    CAMT053_NAMESPACE,
-  );
+  const serialisedXml = serialiseToXml({ BkToCstmrStmt: docBody }, CAMT053_NAMESPACE);
 
   return {
     GrpHdr: grpHdr,

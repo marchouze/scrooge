@@ -72,14 +72,18 @@ export function generateMt300(
     .map(Number) as [number, number, number];
 
   const tradeDateParts = trade.tradeDate.iso.split("-").map(Number) as [number, number, number];
-  const tradeDateObj = new Date(Date.UTC(tradeDateParts[0], tradeDateParts[1] - 1, tradeDateParts[2]));
+  const tradeDateObj = new Date(
+    Date.UTC(tradeDateParts[0], tradeDateParts[1] - 1, tradeDateParts[2]),
+  );
 
   const valueDateParts = nearLeg.settlementDate.iso.split("-").map(Number) as [
     number,
     number,
     number,
   ];
-  const valueDateObj = new Date(Date.UTC(valueDateParts[0], valueDateParts[1] - 1, valueDateParts[2]));
+  const valueDateObj = new Date(
+    Date.UTC(valueDateParts[0], valueDateParts[1] - 1, valueDateParts[2]),
+  );
 
   void tradeYear;
   void tradeMon;

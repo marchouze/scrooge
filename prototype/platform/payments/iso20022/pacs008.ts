@@ -33,9 +33,9 @@ import {
   type FinancialInstitutionIdentification,
   type GroupHeader,
   type PaymentIdentification,
-  formatIso20022Amount,
   formatIso8601Date,
   formatIso8601DateTime,
+  formatIso20022Amount,
   generateUetr,
   serialiseToXml,
 } from "./types";
@@ -99,13 +99,13 @@ export function generatePacs008(
     InstgAgt: {
       FinInstnId: {
         BICFI: sender.bic,
-        Nm: sender.name,
+        ...(sender.name !== undefined ? { Nm: sender.name } : {}),
       },
     },
     InstdAgt: {
       FinInstnId: {
         BICFI: receiver.bic,
-        Nm: receiver.name,
+        ...(receiver.name !== undefined ? { Nm: receiver.name } : {}),
       },
     },
   };
@@ -160,10 +160,7 @@ export function generatePacs008(
   };
 
   const docBody = { GrpHdr: grpHdr, CdtTrfTxInf: [cdtTrfTxInf] };
-  const serialisedXml = serialiseToXml(
-    { FIToFICstmrCdtTrf: docBody },
-    PACS008_NAMESPACE,
-  );
+  const serialisedXml = serialiseToXml({ FIToFICstmrCdtTrf: docBody }, PACS008_NAMESPACE);
 
   return {
     GrpHdr: grpHdr,

@@ -24,10 +24,10 @@ const ZAR_USD_BUY_TRADE: FxTradeExecutedPayload = {
   legs: [
     {
       legKind: "near",
-      payCurrency: "ZAR",      // bank pays (delivers) ZAR
-      receiveCurrency: "USD",  // bank receives (buys) USD
-      notional: { currency: "ZAR", amountMinor: 9_250_000_000_00 }, // ZAR 92,500,000
-      counterNotional: { currency: "USD", amountMinor: 5_000_000_00 }, // USD 5,000,000
+      payCurrency: "ZAR", // bank pays (delivers) ZAR
+      receiveCurrency: "USD", // bank receives (buys) USD
+      notional: { currency: "ZAR", amountMinor: 9_250_000_000_00 }, // ZAR 92,500,000 (in minor)
+      counterNotional: { currency: "USD", amountMinor: 5_000_000_00 }, // USD 5,000,000 (in minor)
       rate: { currency: "ZAR", amount: 18.5 },
       settlementDate: { iso: "2026-05-14", calendar: "JIHCAL" },
     },
@@ -49,7 +49,7 @@ const ZAR_USD_BUY_TRADE: FxTradeExecutedPayload = {
 };
 
 const SETTLED_AT = new Date("2026-05-14T10:00:00.000Z");
-const NOSTRO_BALANCE = 10_000_000_00n; // USD 100,000 opening balance
+const NOSTRO_BALANCE = 10_000_000_00n; // USD 100,000 in minor units (1_000_000_000)
 const CORRESPONDENT_BIC = "SBZAZAJJXXX";
 
 // ---------------------------------------------------------------------------
@@ -79,11 +79,11 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
     expect(result.mt300Confirmation).toBeDefined();
 
     // MT300 from counterparty's perspective: :32B: sold = ZAR (they sell ZAR to bank)
-    const field32B = result.mt300Confirmation!.block4.find((f) => f.tag === "32B");
+    const field32B = result.mt300Confirmation?.block4.find((f) => f.tag === "32B");
     expect(field32B?.value).toContain("ZAR");
 
     // :33B: bought = USD (they buy USD from bank's perspective — mirrored)
-    const field33B = result.mt300Confirmation!.block4.find((f) => f.tag === "33B");
+    const field33B = result.mt300Confirmation?.block4.find((f) => f.tag === "33B");
     expect(field33B?.value).toContain("USD");
   });
 
@@ -98,7 +98,7 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
     expect(result.mt202ReceiveLeg).toBeDefined();
 
     // The receive leg carries USD (what the bank receives)
-    const field32A = result.mt202ReceiveLeg!.block4.find((f) => f.tag === "32A");
+    const field32A = result.mt202ReceiveLeg?.block4.find((f) => f.tag === "32A");
     expect(field32A?.value).toContain("USD");
   });
 
@@ -113,14 +113,15 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
     expect(result.mt940Statement).toBeDefined();
 
     // Should have exactly one :61: entry
-    const entries61 = result.mt940Statement!.block4.filter((f) => f.tag === "61");
+    const entries61 = result.mt940Statement?.block4.filter((f) => f.tag === "61") ?? [];
     expect(entries61).toHaveLength(1);
 
     // Entry should be a credit (C mark)
-    expect(entries61[0]!.value).toContain("C");
+    const [firstEntry] = entries61;
+    expect(firstEntry?.value).toContain("C");
 
     // :60F: opening balance should be in USD
-    const field60F = result.mt940Statement!.block4.find((f) => f.tag === "60F");
+    const field60F = result.mt940Statement?.block4.find((f) => f.tag === "60F");
     expect(field60F?.value).toContain("USD");
   });
 
@@ -134,9 +135,9 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
 
     expect(result.pacs009ReceiveLeg).toBeDefined();
 
-    const txInfo = result.pacs009ReceiveLeg!.CdtTrfTxInf[0];
+    const [txInfo] = result.pacs009ReceiveLeg?.CdtTrfTxInf ?? [];
     expect(txInfo).toBeDefined();
-    expect(txInfo!.IntrBkSttlmAmt.Ccy).toBe("USD");
+    expect(txInfo?.IntrBkSttlmAmt.Ccy).toBe("USD");
   });
 
   test("camt053Statement has one credit entry in USD", () => {
@@ -149,11 +150,12 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
 
     expect(result.camt053Statement).toBeDefined();
 
-    const stmt = result.camt053Statement!.Stmt[0];
+    const [stmt] = result.camt053Statement?.Stmt ?? [];
     expect(stmt).toBeDefined();
-    expect(stmt!.Ntry).toHaveLength(1);
-    expect(stmt!.Ntry[0]!.CdtDbtInd).toBe("CRDT");
-    expect(stmt!.Ntry[0]!.Amt.Ccy).toBe("USD");
+    expect(stmt?.Ntry).toHaveLength(1);
+    const [ntry] = stmt?.Ntry ?? [];
+    expect(ntry?.CdtDbtInd).toBe("CRDT");
+    expect(ntry?.Amt.Ccy).toBe("USD");
   });
 
   test("mt940 closing balance = opening + USD received", () => {
@@ -164,12 +166,12 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
       CORRESPONDENT_BIC,
     );
 
-    // Opening: USD 100,000 = 10_000_000 minor units
-    // Received: USD 5,000,000 = 5_000_000_00 minor units = 500_000_000
-    // Closing: USD 5,100,000 = 510_000_000 minor units
-    expect(result.mt940Statement!.closingBalance).toBe(
-      NOSTRO_BALANCE + 5_000_000_00n,
-    );
+    // NOSTRO_BALANCE = 10_000_000_00n = 1_000_000_000 minor units = USD 10,000,000
+    // Received: counterNotional.amountMinor = 5_000_000_00 = 500_000_000 minor = USD 5,000,000
+    // Closing: 1_000_000_000 + 500_000_000 = 1_500_000_000 minor units
+    const [nearLeg] = ZAR_USD_BUY_TRADE.legs;
+    const tradeReceiveMinor = BigInt(Math.abs(nearLeg?.counterNotional.amountMinor ?? 0));
+    expect(result.mt940Statement?.closingBalance).toBe(NOSTRO_BALANCE + tradeReceiveMinor);
   });
 
   test("camt.053 closing balance = opening + USD received", () => {
@@ -180,13 +182,14 @@ describe("simulateInboundMessages — ZAR/USD buy trade", () => {
       CORRESPONDENT_BIC,
     );
 
-    const stmt = result.camt053Statement!.Stmt[0]!;
-    const clBal = stmt.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
+    const [stmt] = result.camt053Statement?.Stmt ?? [];
+    const clBal = stmt?.Bal.find((b) => b.Tp.CdOrPrtry.Cd === "CLBD");
     expect(clBal).toBeDefined();
 
-    // Opening + received = 100,000 + 5,000,000 = 5,100,000 USD
-    // In minor units: 10_000_000 + 500_000_000 = 510_000_000 → 5100000.00
-    expect(parseFloat(clBal!.Amt.value)).toBeCloseTo(5_100_000, 0);
+    // NOSTRO_BALANCE = 10_000_000_00n = 1_000_000_000 minor units = USD 10,000,000
+    // Receive: counterNotional.amountMinor = 5_000_000_00 = 500_000_000 minor = USD 5,000,000
+    // Closing: 1_000_000_000 + 500_000_000 = 1_500_000_000 minor → 15000000.00
+    expect(Number.parseFloat(clBal?.Amt.value ?? "0")).toBeCloseTo(15_000_000, 0);
   });
 
   test("all message types are present", () => {
@@ -217,8 +220,8 @@ const USD_ZAR_SELL_TRADE: FxTradeExecutedPayload = {
   legs: [
     {
       legKind: "near",
-      payCurrency: "USD",      // bank pays (delivers) USD
-      receiveCurrency: "ZAR",  // bank receives ZAR
+      payCurrency: "USD", // bank pays (delivers) USD
+      receiveCurrency: "ZAR", // bank receives ZAR
       notional: { currency: "USD", amountMinor: 5_000_000_00 }, // USD 5,000,000
       counterNotional: { currency: "ZAR", amountMinor: 9_250_000_000_00 }, // ZAR 92,500,000
       rate: { currency: "USD", amount: 1 / 18.5 },
@@ -251,7 +254,7 @@ describe("simulateInboundMessages — USD/ZAR sell trade", () => {
     );
 
     expect(result.mt202ReceiveLeg).toBeDefined();
-    const field32A = result.mt202ReceiveLeg!.block4.find((f) => f.tag === "32A");
+    const field32A = result.mt202ReceiveLeg?.block4.find((f) => f.tag === "32A");
     expect(field32A?.value).toContain("ZAR");
   });
 
@@ -263,6 +266,7 @@ describe("simulateInboundMessages — USD/ZAR sell trade", () => {
       CORRESPONDENT_BIC,
     );
 
-    expect(result.pacs009ReceiveLeg!.CdtTrfTxInf[0]!.IntrBkSttlmAmt.Ccy).toBe("ZAR");
+    const [txInfo] = result.pacs009ReceiveLeg?.CdtTrfTxInf ?? [];
+    expect(txInfo?.IntrBkSttlmAmt.Ccy).toBe("ZAR");
   });
 });

@@ -34,9 +34,9 @@ import {
   type FinancialInstitutionIdentification,
   type GroupHeader,
   type PaymentIdentification,
-  formatIso20022Amount,
   formatIso8601Date,
   formatIso8601DateTime,
+  formatIso20022Amount,
   generateUetr,
   serialiseToXml,
 } from "./types";
@@ -94,7 +94,8 @@ export function generatePacs009(
 
   // Determine currency and amount for this leg
   const currency = leg === "deliver" ? nearLeg.payCurrency : nearLeg.receiveCurrency;
-  const amountMinor = leg === "deliver" ? nearLeg.notional.amountMinor : nearLeg.counterNotional.amountMinor;
+  const amountMinor =
+    leg === "deliver" ? nearLeg.notional.amountMinor : nearLeg.counterNotional.amountMinor;
   const absMinor = BigInt(Math.abs(amountMinor));
 
   const settlementDateIso = nearLeg.settlementDate.iso;
@@ -113,13 +114,13 @@ export function generatePacs009(
     InstgAgt: {
       FinInstnId: {
         BICFI: sender.bic,
-        Nm: sender.name,
+        ...(sender.name !== undefined ? { Nm: sender.name } : {}),
       },
     },
     InstdAgt: {
       FinInstnId: {
         BICFI: receiver.bic,
-        Nm: receiver.name,
+        ...(receiver.name !== undefined ? { Nm: receiver.name } : {}),
       },
     },
   };
@@ -135,11 +136,7 @@ export function generatePacs009(
       Ccy: currency,
       value: formatIso20022Amount(absMinor),
     },
-    IntrBkSttlmDt: formatIso8601Date(
-      new Date(
-        `${settlementDateIso}T00:00:00Z`,
-      ),
-    ),
+    IntrBkSttlmDt: formatIso8601Date(new Date(`${settlementDateIso}T00:00:00Z`)),
     InstgAgt: {
       FinInstnId: { BICFI: sender.bic },
     },
@@ -149,7 +146,7 @@ export function generatePacs009(
     Dbtr: {
       FinInstnId: {
         BICFI: sender.bic,
-        Nm: sender.name,
+        ...(sender.name !== undefined ? { Nm: sender.name } : {}),
       },
     },
     DbtrAcct: {
@@ -164,7 +161,7 @@ export function generatePacs009(
     Cdtr: {
       FinInstnId: {
         BICFI: receiver.bic,
-        Nm: receiver.name,
+        ...(receiver.name !== undefined ? { Nm: receiver.name } : {}),
       },
     },
     CdtrAcct: {
@@ -184,10 +181,7 @@ export function generatePacs009(
   };
 
   const docBody = { GrpHdr: grpHdr, CdtTrfTxInf: [cdtTrfTxInf] };
-  const serialisedXml = serialiseToXml(
-    { FICdtTrf: docBody },
-    PACS009_NAMESPACE,
-  );
+  const serialisedXml = serialiseToXml({ FICdtTrf: docBody }, PACS009_NAMESPACE);
 
   return {
     GrpHdr: grpHdr,

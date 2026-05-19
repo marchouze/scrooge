@@ -142,11 +142,7 @@ export function serialiseToXml(doc: unknown, namespace: string): string {
   return renderNode("Document", doc as Record<string, unknown>, namespace);
 }
 
-function renderNode(
-  tag: string,
-  value: unknown,
-  namespace?: string,
-): string {
+function renderNode(tag: string, value: unknown, namespace?: string): string {
   if (value === null || value === undefined) return "";
 
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {

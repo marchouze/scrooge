@@ -101,9 +101,7 @@ export function generateMt103(
     .filter(Boolean)
     .join("\n");
 
-  const beneficiaryName = [beneficiary.name, beneficiary.addressLine1]
-    .filter(Boolean)
-    .join("\n");
+  const beneficiaryName = [beneficiary.name, beneficiary.addressLine1].filter(Boolean).join("\n");
 
   const block4: Mt103Block4 = [
     { tag: "20", value: payment.paymentRef.slice(0, 16) },

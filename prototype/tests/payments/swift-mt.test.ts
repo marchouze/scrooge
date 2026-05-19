@@ -17,7 +17,11 @@ import { generateMt202 } from "@platform/payments/swift-mt/mt202";
 import { generateMt300 } from "@platform/payments/swift-mt/mt300";
 import { generateMt940 } from "@platform/payments/swift-mt/mt940";
 import type { Mt940Entry } from "@platform/payments/swift-mt/mt940";
-import { formatSwiftAmount, formatSwiftDate, serialiseSwiftMessage } from "@platform/payments/swift-mt/types";
+import {
+  formatSwiftAmount,
+  formatSwiftDate,
+  serialiseSwiftMessage,
+} from "@platform/payments/swift-mt/types";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -74,10 +78,9 @@ const SENDER_BIC = "BANKZAJJXXX";
 
 describe("formatSwiftAmount", () => {
   test("formats minor units with comma decimal separator", () => {
-    expect(formatSwiftAmount(9_250_000_000_00n)).toBe("9250000000,00");
-    expect(formatSwiftAmount(5_000_000_00n)).toBe("500000000,00");
-
-    // Wait: USD 5,000,000 in cents = 500_000_000 minor units
+    // 925000000000 minor units → "9250000000,00"
+    expect(formatSwiftAmount(925_000_000_000n)).toBe("9250000000,00");
+    // USD 5,000,000 in cents = 500_000_000 minor units → "5000000,00"
     expect(formatSwiftAmount(500_000_000n)).toBe("5000000,00");
     expect(formatSwiftAmount(100n)).toBe("1,00");
     expect(formatSwiftAmount(1n)).toBe("0,01");
@@ -110,7 +113,7 @@ describe("MT202 generator", () => {
     const field32A = mt202.block4.find((f) => f.tag === "32A");
     expect(field32A).toBeDefined();
 
-    const value = field32A!.value;
+    const value = field32A?.value ?? "";
     // Format: YYMMDD + CCY + amount
     expect(value).toMatch(/^260514ZAR/);
     // Amount should use comma notation
@@ -136,7 +139,7 @@ describe("MT202 generator", () => {
     const mt202 = generateMt202(TRADE_FIXTURE, "deliver", CORRESPONDENT_BIC, SENDER_BIC);
     const field20 = mt202.block4.find((f) => f.tag === "20");
     // The serialised string must contain ":20:<value>"
-    expect(mt202.serialised).toContain(`:20:${field20!.value}`);
+    expect(mt202.serialised).toContain(`:20:${field20?.value ?? ""}`);
   });
 
   test("message type is 202 in block2", () => {
@@ -161,7 +164,7 @@ describe("MT103 generator", () => {
     const mt103 = generateMt103(PAYMENT_FIXTURE, SENDER_BIC, CORRESPONDENT_BIC);
     const field71A = mt103.block4.find((f) => f.tag === "71A");
     expect(field71A).toBeDefined();
-    expect(["OUR", "SHA", "BEN"]).toContain(field71A?.value);
+    expect(["OUR", "SHA", "BEN"]).toContain(field71A?.value ?? "");
   });
 
   test("default charges is SHA", () => {
@@ -229,7 +232,7 @@ describe("MT300 generator", () => {
     const mt300 = generateMt300(TRADE_FIXTURE, SENDER_BIC, CORRESPONDENT_BIC);
     const field36 = mt300.block4.find((f) => f.tag === "36");
     expect(field36).toBeDefined();
-    const rate = parseFloat(field36!.value);
+    const rate = Number.parseFloat(field36?.value ?? "0");
     expect(rate).toBeCloseTo(18.5, 2);
   });
 
@@ -239,11 +242,11 @@ describe("MT300 generator", () => {
     expect(field22A?.value).toBe("NEW");
   });
 
-  test(":30T: trade date is correct", () => {
+  test(":30T: trade date is correct (2026-05-12 → 260512)", () => {
     const mt300 = generateMt300(TRADE_FIXTURE, SENDER_BIC, CORRESPONDENT_BIC);
     const field30T = mt300.block4.find((f) => f.tag === "30T");
-    // Trade date: 2026-05-14 (settlement date used in fixture) → 260514
-    expect(field30T?.value).toBe("260514");
+    // Trade date: 2026-05-12 → 260512; settlement (value) date: 2026-05-14 → 260514
+    expect(field30T?.value).toBe("260512");
   });
 
   test(":32B: sold currency is ZAR (bank pays ZAR)", () => {
@@ -372,8 +375,17 @@ describe("MT940 generator", () => {
   });
 
   test("debit entry reduces closing balance", () => {
+    const baseEntry = ENTRIES[0] ?? {
+      valueDate: new Date("2026-05-14T00:00:00.000Z"),
+      creditDebitMark: "C" as const,
+      amountMinor: 500_000_000n,
+      currency: "USD",
+      transactionTypeCode: "FXCF",
+      customerReference: "TRD-TEST-001",
+      narrative: "baseline",
+    };
     const debitEntry: Mt940Entry = {
-      ...ENTRIES[0]!,
+      ...baseEntry,
       creditDebitMark: "D",
       amountMinor: 100_000_000n, // USD 1,000,000 debit
     };

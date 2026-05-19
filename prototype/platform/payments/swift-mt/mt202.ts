@@ -78,11 +78,7 @@ export function generateMt202(
 
   // Settlement date
   const settlementDateIso = nearLeg.settlementDate.iso;
-  const [year, month, day] = settlementDateIso.split("-").map(Number) as [
-    number,
-    number,
-    number,
-  ];
+  const [year, month, day] = settlementDateIso.split("-").map(Number) as [number, number, number];
   const settlementDate = new Date(Date.UTC(year, month - 1, day));
 
   const tradeIdValue = trade.tradeId.value;
