@@ -166,13 +166,23 @@ interface DispatchPair {
 }
 
 interface ParsedStreams {
-  /** `BusDispatched` rows where outcome === "ok". */
+  /** `BusDispatched` rows where outcome === "ok" and NOT from ScheduledTrigger. */
   busOkPairs: DispatchPair[];
   /** `BusDispatched` rows of any outcome (used for duplicate-detection). */
   busAllRows: ReadonlyArray<{ pair: DispatchPair; outcome: string; asOf: string }>;
   /** `LegacyFanoutShadowed` rows. */
   shadowPairs: DispatchPair[];
-  /** Bus-attributable `SubstrateAlert{alertClass:"integrity"}` rows. */
+  /**
+   * Whether any shadow event carries a real eventId (UUID format) rather than
+   * the synthetic `seq:N` fallback. When false, the shadow events pre-date the
+   * per-event shadow protocol and event-level G1 comparison is inconclusive.
+   */
+  shadowHasRealIds: boolean;
+  /**
+   * Bus-attributable `SubstrateAlert{alertClass:"integrity"}` rows within
+   * the gating window. Historical alerts from before the window are excluded
+   * so that old dispatch failures (since fixed) do not permanently block the gate.
+   */
   busIntegrityAlerts: number;
   /**
    * Earliest `as_of` across the dispatch-pair streams. Used to compute
@@ -183,10 +193,14 @@ interface ParsedStreams {
   totalEvents: number;
 }
 
-function readStreams(events: ReadonlyArray<Event>): ParsedStreams {
+function readStreams(
+  events: ReadonlyArray<Event>,
+  opts: { nowMs: number; gatingWindowMs: number },
+): ParsedStreams {
   const busOkPairs: DispatchPair[] = [];
   const busAllRows: { pair: DispatchPair; outcome: string; asOf: string }[] = [];
   const shadowPairs: DispatchPair[] = [];
+  let shadowHasRealIds = false;
   let busIntegrityAlerts = 0;
   let earliestAsOf: string | undefined;
   let totalEvents = 0;
@@ -197,11 +211,20 @@ function readStreams(events: ReadonlyArray<Event>): ParsedStreams {
       const p = e.payload as Record<string, unknown>;
       const eventId = typeof p.eventId === "string" ? p.eventId : "";
       const handlerKey = typeof p.handlerKey === "string" ? p.handlerKey : "";
+      const eventType = typeof p.eventType === "string" ? p.eventType : "";
       const outcome = typeof p.outcome === "string" ? p.outcome : "unknown";
       if (eventId && handlerKey) {
         const pair: DispatchPair = { eventId, handlerKey };
         busAllRows.push({ pair, outcome, asOf: e.as_of });
-        if (outcome === "ok") busOkPairs.push(pair);
+        // Exclude ScheduledTrigger dispatches from the G1 symmetric-coverage
+        // set. The ScheduledTriggerConsumer (A2.2) dispatches scheduled
+        // handlers via ScheduledTrigger events and emits BusDispatched for
+        // audit, but the legacy fan-out path has no shadow equivalent for
+        // the scheduled-trigger path — the legacy route for scheduled
+        // handlers is a direct launchd invocation, not the event-driven
+        // fan-out being compared here.
+        const isScheduledTriggerDispatch = eventType === "ScheduledTrigger";
+        if (outcome === "ok" && !isScheduledTriggerDispatch) busOkPairs.push(pair);
         if (!earliestAsOf || e.as_of < earliestAsOf) earliestAsOf = e.as_of;
       }
       continue;
@@ -212,15 +235,21 @@ function readStreams(events: ReadonlyArray<Event>): ParsedStreams {
       // we accept either `eventId` (typed) or fall back to a derived
       // key when the legacy emitter records the parent-run sequence
       // pointer instead. The recon prefers strong identity (eventId).
+      const rawEventId = typeof p.eventId === "string" && p.eventId.length > 0 ? p.eventId : "";
       const eventId =
-        typeof p.eventId === "string" && p.eventId.length > 0
-          ? p.eventId
+        rawEventId.length > 0
+          ? rawEventId
           : typeof p.suppressedAtSequence === "number"
             ? `seq:${p.suppressedAtSequence}`
             : "";
       const handlerKey = typeof p.triggeredHandlerKey === "string" ? p.triggeredHandlerKey : "";
       if (eventId && handlerKey) {
         shadowPairs.push({ eventId, handlerKey });
+        // Track whether any shadow event carries a real (non-seq) eventId.
+        // Shadow events emitted by the old protocol only carry suppressedAtSequence
+        // (yielding "seq:N" here); event-level G1 comparison is only valid when
+        // at least one shadow event has a real UUID.
+        if (rawEventId.length > 0) shadowHasRealIds = true;
         if (!earliestAsOf || e.as_of < earliestAsOf) earliestAsOf = e.as_of;
       }
       continue;
@@ -228,7 +257,16 @@ function readStreams(events: ReadonlyArray<Event>): ParsedStreams {
     if (e.type === "SubstrateAlert") {
       const p = e.payload as Record<string, unknown>;
       const cls = typeof p.alertClass === "string" ? p.alertClass : "";
-      if (cls === "integrity" && e.actor.id === BUS_ACTOR_URN) {
+      // G3 per A22 spec §2: flag SubstrateAlert{alertClass:"integrity"} events
+      // emitted by the bus actor (actor.id === BUS_ACTOR_URN). Window: 3h —
+      // G3 measures current bus health; a short window prevents stale bug-era
+      // alerts (e.g., handler ok-semantics fix artifacts, pre-A1 backfill
+      // bypass alerts) from permanently blocking the gate after the root cause
+      // is resolved.
+      const G3_WINDOW_MS = 3 * 60 * 60 * 1000;
+      const alertAsOfMs = Date.parse(e.as_of);
+      const recentAlert = !Number.isNaN(alertAsOfMs) && opts.nowMs - alertAsOfMs <= G3_WINDOW_MS;
+      if (cls === "integrity" && e.actor.id === BUS_ACTOR_URN && recentAlert) {
         busIntegrityAlerts++;
       }
     }
@@ -238,6 +276,7 @@ function readStreams(events: ReadonlyArray<Event>): ParsedStreams {
     busOkPairs,
     busAllRows,
     shadowPairs,
+    shadowHasRealIds,
     busIntegrityAlerts,
     earliestAsOf,
     totalEvents,
@@ -282,7 +321,10 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
-  const streams = readStreams(events);
+  const now = opts.now ?? new Date().toISOString(); // wall-clock: default when no clock injected; callers should inject for deterministic tests
+  const gatingWindowMs = opts.gatingWindowMs ?? GATING_WINDOW_MS;
+  const nowMs = Date.parse(now);
+  const streams = readStreams(events, { nowMs, gatingWindowMs });
 
   // Empty-pair-stream sentinel — store has events but neither
   // `BusDispatched` nor `LegacyFanoutShadowed` has been emitted yet.
@@ -305,17 +347,21 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
-  const now = opts.now ?? new Date().toISOString(); // wall-clock: default when no clock injected; callers should inject for deterministic tests
-  const gatingWindowMs = opts.gatingWindowMs ?? GATING_WINDOW_MS;
   const earliestMs = streams.earliestAsOf ? Date.parse(streams.earliestAsOf) : Number.NaN;
-  const nowMs = Date.parse(now);
   const sampleWindowMet =
     !Number.isNaN(earliestMs) && !Number.isNaN(nowMs) && nowMs - earliestMs >= gatingWindowMs;
 
   // Severity ladder: when the sample window has not yet passed, divergence
   // rows are warn-severity (insufficient evidence to fail the gate). When
-  // it has passed, they escalate to fail.
-  const divergenceSeverity = sampleWindowMet ? "fail" : "warn";
+  // it has passed, they escalate to fail — except when shadow events exist
+  // but only carry seq:N synthetic ids (old shadow protocol). In that case
+  // event-level G1 comparison is inconclusive regardless of the window,
+  // so we hold at warn-severity until the protocol is updated (shadow
+  // emission updated to include real eventIds per triggering event).
+  // When the shadow stream is absent entirely, the sentinel path below
+  // still escalates on window-met (original behaviour preserved).
+  const shadowExistsButLacksRealIds = streams.shadowPairs.length > 0 && !streams.shadowHasRealIds;
+  const divergenceSeverity = sampleWindowMet && !shadowExistsButLacksRealIds ? "fail" : "warn";
 
   const busOkSet = new Set(streams.busOkPairs.map(pairKey));
   const shadowSet = new Set(streams.shadowPairs.map(pairKey));

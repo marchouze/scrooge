@@ -32,7 +32,7 @@ import { dirname, isAbsolute, resolve } from "node:path";
 
 import { defaultSourcePaths, deriveState, eventSourceFromStore } from "../../dashboard/derive";
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
+import { makeDashboardProjectionRefreshed } from "../../platform/event-store/event-types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
@@ -49,7 +49,7 @@ function resolveRuntimePath(repoRoot: string): { abs: string; rel: string } {
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const sources = defaultSourcePaths(ctx.repoRoot);
-  const { abs: cachePath, rel: cacheRel } = resolveRuntimePath(ctx.repoRoot);
+  const { abs: cachePath } = resolveRuntimePath(ctx.repoRoot);
 
   // Re-derive from canonical sources + the live event store. This is the
   // same function the dashboard server calls; running it from the runtime
@@ -73,22 +73,22 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "DashboardProjectionRefreshed",
-      as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
-      actor: { type: "service", id: "agent:anya:projection-refresh" },
-      citations: EVENT_CITATIONS,
-      payload: {
-        cachePath: cacheRel,
-        bytesWritten,
-        triggerKind: ctx.trigger.kind,
-        triggerId: ctx.trigger.id,
-        // Snapshot of the headline metrics for run-log purposes (cheap).
-        metrics: state.bank.metrics,
-      },
-    });
+    eventStore.append(
+      makeDashboardProjectionRefreshed({
+        asOf: ctx.asOf,
+        entity: "BANK-ZA-001",
+        actor: { type: "service", id: "agent:anya:projection-refresh" },
+        citations: EVENT_CITATIONS,
+        payload: {
+          refreshId: `refresh:dashboard-state:${ctx.asOf}`,
+          projectionName: "dashboard-state",
+          refreshedAt: ctx.asOf,
+          triggeredBy: `${ctx.trigger.kind}:${ctx.trigger.id}`,
+          durationMs: 0,
+          rowsRefreshed: bytesWritten > 0 ? 1 : 0,
+        },
+      }),
+    );
     eventsEmitted = 1;
   }
 
