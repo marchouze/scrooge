@@ -129,11 +129,8 @@ import {
 import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 import { getProceduresIndex } from "./procedures-index";
 import { saveState } from "./registry";
+import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
-import {
-  buildInstrumentsListView,
-  buildInstrumentDetailView,
-} from "./regulation-reader-view";
 import {
   RMS_REGISTER_KEYS,
   buildRmsRegistersFold,
