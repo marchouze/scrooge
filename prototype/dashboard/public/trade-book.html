@@ -219,9 +219,12 @@
 
     <!-- Counterparty -->
     <div class="tb-field tb-form-full">
-      <label for="tb-cpty-name">Counterparty name</label>
-      <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Start typing a client name…" list="tb-cpty-list" autocomplete="off" required>
-      <datalist id="tb-cpty-list"></datalist>
+      <label for="tb-cpty-select">Counterparty</label>
+      <!-- Populated from KYC clients; last option is "Other…" for free-text -->
+      <select id="tb-cpty-select" style="margin-bottom:var(--space-2)">
+        <option value="">Loading clients…</option>
+      </select>
+      <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Enter counterparty name" style="display:none" required>
     </div>
 
     <div class="tb-field">
@@ -259,34 +262,77 @@
   settlementInput.value = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
   settlementInput.min = new Date().toISOString().slice(0, 10);
 
-  // Populate counterparty datalist from onboarded KYC clients
+  // Populate counterparty select from onboarded KYC clients
+  const cptySelect = document.getElementById('tb-cpty-select');
+  const cptyInput  = document.getElementById('tb-cpty-name');
+  const leiInput   = document.getElementById('tb-cpty-lei');
+
+  function syncCptyName() {
+    const val = cptySelect.value;
+    if (val === '__other__') {
+      cptyInput.style.display = '';
+      cptyInput.required = true;
+      cptyInput.value = '';
+      cptyInput.focus();
+    } else {
+      cptyInput.style.display = 'none';
+      cptyInput.required = false;
+      cptyInput.value = val;
+    }
+  }
+  cptySelect.addEventListener('change', syncCptyName);
+
   (async () => {
     try {
       const res = await fetch('/api/kyc/clients');
-      if (!res.ok) return;
+      if (!res.ok) throw new Error(res.status);
       const data = await res.json();
       const clients = data.clients || data;
-      const dl = document.getElementById('tb-cpty-list');
-      const cptyInput = document.getElementById('tb-cpty-name');
-      // Map clientId → {name, lei} for auto-fill
-      const clientMap = {};
+
+      cptySelect.innerHTML = '';
+      // Blank prompt
+      const blank = document.createElement('option');
+      blank.value = '';
+      blank.textContent = '— select client —';
+      blank.disabled = true;
+      blank.selected = true;
+      cptySelect.appendChild(blank);
+
+      // One option per unique client name
+      const seen = new Set();
       clients.forEach((c) => {
         const name = c.entityName || c.legalName || c.name || '';
-        if (!name) return;
+        if (!name || seen.has(name)) return;
+        seen.add(name);
         const opt = document.createElement('option');
         opt.value = name;
-        dl.appendChild(opt);
-        clientMap[name] = { id: c.clientId, lei: c.lei || '' };
+        opt.textContent = name;
+        // Store lei as data attr for auto-fill
+        if (c.lei) opt.dataset.lei = c.lei;
+        cptySelect.appendChild(opt);
       });
-      // Auto-fill LEI when a known client is selected
-      cptyInput.addEventListener('change', () => {
-        const match = clientMap[cptyInput.value];
-        if (match) {
-          const leiInput = document.getElementById('tb-cpty-lei');
-          if (match.lei && !leiInput.value) leiInput.value = match.lei;
+
+      // "Other" free-text fallback
+      const other = document.createElement('option');
+      other.value = '__other__';
+      other.textContent = 'Other (type name)…';
+      cptySelect.appendChild(other);
+
+      // Auto-fill LEI on select
+      cptySelect.addEventListener('change', () => {
+        const selected = cptySelect.options[cptySelect.selectedIndex];
+        if (selected && selected.dataset.lei && !leiInput.value) {
+          leiInput.value = selected.dataset.lei;
         }
       });
-    } catch (_) { /* non-fatal — field still works as free text */ }
+
+    } catch (_) {
+      // Fetch failed — fall back to free-text input directly
+      cptySelect.style.display = 'none';
+      cptyInput.style.display = '';
+      cptyInput.required = true;
+      cptyInput.placeholder = 'Counterparty name';
+    }
   })();
 
   // Sync notional currency options to base/quote selection
