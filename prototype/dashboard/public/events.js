@@ -23,11 +23,7 @@
   const provenanceSelect = document.getElementById("provenance-select");
   const searchInput = document.getElementById("search-input");
   const clearBtn = document.getElementById("clear-btn");
-  const detailPanel = document.getElementById("ev-detail");
   const detailHint = document.getElementById("ev-detail-hint");
-  const detailType = document.getElementById("ev-detail-type");
-  const detailJson = document.getElementById("ev-detail-json");
-  const detailClose = document.getElementById("ev-detail-close");
   const refreshBtn = document.getElementById("refresh-btn");
 
   function esc(s) {
@@ -120,16 +116,11 @@
         })
         .join("");
 
-      // Row click → detail
+      // Row click → modal detail
       for (const row of tbody.querySelectorAll(".ev-row")) {
         row.addEventListener("click", () => {
-          const eventId = row.dataset.eventId;
-          const ev = d.events.find((e) => e.event_id === eventId);
-          if (!ev) return;
-          state.selectedEventId = eventId;
-          // Re-render rows to update selection highlight
-          render();
-          showDetail(ev);
+          const ev = d.events.find((e) => e.event_id === row.dataset.eventId);
+          if (ev) showDetail(ev);
         });
       }
     }
@@ -181,11 +172,11 @@
   }
 
   function showDetail(ev) {
-    detailType.textContent = ev.type;
-    detailJson.textContent = JSON.stringify(ev, null, 2);
-    detailPanel.style.display = "block";
-    detailHint.style.display = "none";
-    detailPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (detailHint) detailHint.style.display = "none";
+    SC.openModal({
+      title: ev.type,
+      body: `<pre style="margin:0;font:13px/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-all">${esc(JSON.stringify(ev, null, 2))}</pre>`,
+    });
   }
 
   // Populate type dropdown from first full load
@@ -243,12 +234,6 @@
     load();
   });
 
-  detailClose.addEventListener("click", () => {
-    state.selectedEventId = null;
-    detailPanel.style.display = "none";
-    detailHint.style.display = "";
-    render();
-  });
 
   refreshBtn?.addEventListener("click", () => load());
 
