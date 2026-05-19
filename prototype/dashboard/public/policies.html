@@ -29,8 +29,9 @@
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
       document.getElementById("pol-table").innerHTML = SC.renderSkeleton(8);
-      const data = await sf("/api/state");
+      const [data, oblData] = await Promise.all([sf("/api/state"), sf("/api/obligations")]);
       const all = data?.policies ?? [];
+      const oblById = oblData?.byId ?? {};
       const sc = Object.fromEntries(Object.entries(
         all.reduce((acc, p) => { acc[p.status||""]=(acc[p.status||""]||0)+1; return acc; }, {})
       ));
@@ -46,6 +47,38 @@
       const ownerEl = document.getElementById("pol-owner");
       const owners = [...new Set(all.map(p => p.owner||"").filter(Boolean))].sort();
       owners.forEach(o => { const opt = document.createElement("option"); opt.value = o; opt.textContent = o; ownerEl.appendChild(opt); });
+
+      function policyModal(p) {
+        const row = (label, val) => val ? `<dt style="font-weight:600;color:var(--color-text-secondary);white-space:nowrap">${SC.esc(label)}</dt><dd style="word-break:break-word">${val}</dd>` : "";
+        const meta = `<dl style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-2) var(--space-4);font:var(--text-body);margin-bottom:var(--space-6)">
+          ${row("Domain", SC.esc(p.domain||""))}
+          ${row("Owner", SC.esc(p.owner||""))}
+          ${row("Approval", SC.esc(p.approval||""))}
+          ${row("Cadence", SC.esc(p.cadence||""))}
+          ${row("Status", SC.renderBadge(p.status||""))}
+          ${row("Citation", SC.esc(p.citation||""))}
+          ${row("Binds", (p.binds||[]).map(b => SC.renderBadge(b)).join(" "))}
+          ${row("Sources", (p.sources||[]).map(s => SC.esc(s)).join(", "))}
+          ${row("MVP", p.mvp != null ? SC.esc(String(p.mvp)) : "")}
+          ${row("Status detail", SC.esc(p.statusRaw||""))}
+        </dl>`;
+        const oblIds = Array.isArray(p.linkedObligations) ? p.linkedObligations : [];
+        const oblSection = oblIds.length ? `
+          <div style="font:var(--text-h3);margin-bottom:var(--space-3)">Linked Obligations (${oblIds.length})</div>
+          <dl style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-2) var(--space-4);font:var(--text-body);margin-bottom:var(--space-6)">
+            ${oblIds.map(id => {
+              const o = oblById[id];
+              return `<dt style="font-weight:600;color:var(--color-text-secondary);white-space:nowrap">${SC.esc(id)}</dt><dd style="word-break:break-word">${SC.esc(o?.requirement||"—")}</dd>`;
+            }).join("")}
+          </dl>` : "";
+        const srcSection = (p.sourceFiles||[]).length ? `
+          <div style="font:var(--text-h3);margin-bottom:var(--space-3)">Source Files</div>
+          <ul style="margin:0;padding-left:var(--space-5);font:var(--text-body)">
+            ${(p.sourceFiles||[]).map(f => `<li>${SC.esc(f)}</li>`).join("")}
+          </ul>` : "";
+        return meta + oblSection + srcSection;
+      }
+
       function render() {
         let rows = activeFilter ? all.filter(p => p.status === activeFilter) : all;
         if (ownerFilter) rows = rows.filter(p => p.owner === ownerFilter);
@@ -56,7 +89,7 @@
             cells: [SC.esc(p.name||""), SC.esc((p.domain||"").replace(/^\d+\.\s*/,"")), SC.esc(p.owner||""), SC.esc(p.approval||""), SC.renderBadge(p.status||""), SC.esc(Array.isArray(p.linkedObligations)?String(p.linkedObligations.length):"—")],
             data: p,
           })),
-          onRowClick: p => SC.openModal({ title: p.name||"Policy", body: SC.renderDefList(p) }),
+          onRowClick: p => SC.openModal({ title: p.name||"Policy", body: policyModal(p) }),
           emptyMessage: "No policies",
         });
       }
