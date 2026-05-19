@@ -52,17 +52,18 @@
 
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
-      const data = await sf("/api/substrate-gaps") ?? await sf("/api/health");
-      const gaps = Array.isArray(data) ? data : (data?.substrateGaps ?? data?.gaps ?? data?.items ?? []);
-      document.getElementById("arch-gaps-header").innerHTML = SC.renderSectionHeader("Substrate Gaps", null);
+      const data = await sf("/api/substrate-gaps");
+      const raw = Array.isArray(data) ? data : (data?.substrateGaps ?? data?.gaps ?? data?.items ?? []);
+      const gaps = raw.map((g, i) => typeof g === "string" ? { id: `GAP-${String(i+1).padStart(2,"0")}`, description: g, severity: "info", status: "open" } : g);
+      document.getElementById("arch-gaps-header").innerHTML = SC.renderSectionHeader(`Substrate Gaps (${gaps.length})`, null);
       SC.renderTable({
         container: document.getElementById("arch-gaps-table"),
-        headers: ["Gap ID","Description","Severity","Status"],
+        headers: ["#","Description","Status"],
         rows: gaps.map(g => ({
-          cells: [SC.esc(g.id||g.gapId||""), SC.esc(g.description||g.title||""), SC.renderBadge(g.severity||"info"), SC.renderBadge(g.status||"open")],
+          cells: [SC.esc(g.id||""), SC.esc(g.description||g.title||""), SC.renderBadge(g.status||"open")],
           data: g,
         })),
-        onRowClick: g => SC.openModal({ title: g.id||"Gap", body: SC.renderDefList(g) }),
+        onRowClick: g => SC.openModal({ title: g.id||"Gap", body: `<p style="font:var(--text-body)">${SC.esc(g.description||"")}</p>` }),
         emptyMessage: "No substrate gaps recorded",
       });
     })();
