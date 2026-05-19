@@ -46,6 +46,7 @@ import {
   roleResearchQueueSnapshotPayloadSchema,
   roleResearchRequestedPayloadSchema,
 } from "../event-types/agent-substrate-extended";
+import { almRunCompletedPayloadSchema, irrbBCheckedPayloadSchema } from "../event-types/alm";
 import {
   adverseMediaPublishedPayloadSchema,
   adviceRecordRequestedPayloadSchema,
@@ -199,10 +200,6 @@ import {
   threatModelGateDecisionPayloadSchema,
   vendorSecurityReviewPayloadSchema,
 } from "../event-types/security-devops-extended";
-import {
-  almRunCompletedPayloadSchema,
-  irrbBCheckedPayloadSchema,
-} from "../event-types/alm";
 import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
 
 // ---------------------------------------------------------------------------

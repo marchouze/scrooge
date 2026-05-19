@@ -12,10 +12,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  REPRICING_BUCKETS,
-  computeRepricingGap,
-} from "../repricing-gap";
+import { REPRICING_BUCKETS, computeRepricingGap } from "../repricing-gap";
 import { makeTestEventStore } from "./test-utils";
 
 describe("computeRepricingGap — zero-position baseline", () => {

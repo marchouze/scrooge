@@ -10,10 +10,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  EVE_SHOCK_LABELS,
-  computeEVE,
-} from "../eve";
+import { EVE_SHOCK_LABELS, computeEVE } from "../eve";
 import { makeTestEventStore } from "./test-utils";
 
 describe("computeEVE — zero-position baseline", () => {

@@ -139,6 +139,7 @@
     "agent:tomas-daily-reconciliation": "bun run runtime/run.ts --agent Tomas --trigger daily-reconciliation",
     "agent:imani-legal-readiness": "bun run runtime/run.ts --agent Imani --trigger legal-readiness",
     "agent:ravi-alm-readiness": "bun run runtime/run.ts --agent Ravi --trigger alm-readiness",
+    "agent:ravi-alm-run": "bun run runtime/run.ts --agent Ravi --trigger alm-run",
     "agent:ravi-ftp-curve-publish": "bun run runtime/run.ts --agent Ravi --trigger ftp-curve-publish",
     "agent:ravi-ftp-attribution": "bun run runtime/run.ts --agent Ravi --trigger ftp-attribution",
     "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",

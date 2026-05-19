@@ -10,10 +10,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  NII_SHOCK_LABELS,
-  computeNII,
-} from "../nii";
+import { NII_SHOCK_LABELS, computeNII } from "../nii";
 import { makeTestEventStore } from "./test-utils";
 
 describe("computeNII — zero-position baseline", () => {

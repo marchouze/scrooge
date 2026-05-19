@@ -209,10 +209,7 @@ export function computeEVE(eventStore: EventStore, asOf: string): EVEReport {
     });
   }
 
-  const worstCase = results.reduce(
-    (min, r) => Math.min(min, r.deltaEveZar),
-    0,
-  );
+  const worstCase = results.reduce((min, r) => Math.min(min, r.deltaEveZar), 0);
 
   return {
     asOf,

@@ -39,12 +39,7 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 // Constants
 // ---------------------------------------------------------------------------
 
-const EVENT_CITATIONS = [
-  "BANKS-ACT-94-1990",
-  "BANKS-REG-26",
-  "BANKS-REG-27",
-  "BCBS-D365-IRRBB",
-];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"];
 
 /**
  * BCBS d365 outlier threshold: if |ΔEVE| > 15% of Tier 1 capital, the bank
@@ -158,10 +153,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push(frontmatter("Ravi", "alm-run", ctx.asOf));
     lines.push(`# Ravi — Daily ALM Run, ${date}`);
     lines.push("");
-    lines.push("**Run ID:** " + runId);
-    lines.push(
-      "**Authority:** D-TREASURY-GAPS-WAVE1 | BCBS d365 (IRRBB) | Banks Act Reg 26/27",
-    );
+    lines.push(`**Run ID:** ${runId}`);
+    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1 | BCBS d365 (IRRBB) | Banks Act Reg 26/27");
     lines.push("");
 
     // Repricing gap summary
@@ -188,7 +181,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push("| Scenario | ΔEVE (ZAR) | % Tier 1 | Status |");
     lines.push("|---|---|---|---|");
     for (const result of eveReport.results) {
-      const pctTier1 = result.deltaEvePctTier1 !== null ? `${result.deltaEvePctTier1.toFixed(2)}%` : "N/A (build phase)";
+      const pctTier1 =
+        result.deltaEvePctTier1 !== null
+          ? `${result.deltaEvePctTier1.toFixed(2)}%`
+          : "N/A (build phase)";
       lines.push(
         `| ${result.shockLabel} | ${result.deltaEveZar.toFixed(0)} | ${pctTier1} | within |`,
       );

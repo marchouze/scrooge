@@ -31,17 +31,7 @@ import type { EventStore } from "../event-store/store";
 // ---------------------------------------------------------------------------
 
 /** Standard BCBS 319 repricing time buckets. */
-export type RepricingBucket =
-  | "ON"
-  | "1M"
-  | "3M"
-  | "6M"
-  | "1Y"
-  | "2Y"
-  | "3Y"
-  | "5Y"
-  | "7Y"
-  | "10Y+";
+export type RepricingBucket = "ON" | "1M" | "3M" | "6M" | "1Y" | "2Y" | "3Y" | "5Y" | "7Y" | "10Y+";
 
 export const REPRICING_BUCKETS: readonly RepricingBucket[] = [
   "ON",
@@ -128,10 +118,7 @@ function classifyDays(days: number): RepricingBucket {
  * This logic is intentionally simple for the build phase. Production will
  * enrich each leg with actual cashflow schedules per BCBS d365 §4.
  */
-export function computeRepricingGap(
-  eventStore: EventStore,
-  asOf: string,
-): RepricingGapSchedule {
+export function computeRepricingGap(eventStore: EventStore, asOf: string): RepricingGapSchedule {
   // Initialise zero accumulators for each bucket.
   const rsa: Record<RepricingBucket, number> = {} as Record<RepricingBucket, number>;
   const rsl: Record<RepricingBucket, number> = {} as Record<RepricingBucket, number>;
@@ -150,12 +137,10 @@ export function computeRepricingGap(
 
   for (const ev of allEvents) {
     const p = ev.payload as Record<string, unknown>;
-    const product = typeof p["product"] === "string" ? p["product"].toUpperCase() : "";
-    const notional =
-      typeof p["notional"] === "number" ? p["notional"] : 0;
-    const maturityStr = typeof p["maturityDate"] === "string" ? p["maturityDate"] : "";
-    const resetDays =
-      typeof p["resetDays"] === "number" ? p["resetDays"] : 90; // default 3M
+    const product = typeof p.product === "string" ? p.product.toUpperCase() : "";
+    const notional = typeof p.notional === "number" ? p.notional : 0;
+    const maturityStr = typeof p.maturityDate === "string" ? p.maturityDate : "";
+    const resetDays = typeof p.resetDays === "number" ? p.resetDays : 90; // default 3M
 
     if (notional <= 0 || !maturityStr) continue;
 

@@ -29,18 +29,14 @@
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import type { EventStore } from "../event-store/store";
-import { REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
+import { type REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 /** NII shock scenario labels (parallel only, per BCBS d365). */
-export type NIIShockLabel =
-  | "parallel+200"
-  | "parallel+100"
-  | "parallel-100"
-  | "parallel-200";
+export type NIIShockLabel = "parallel+200" | "parallel+100" | "parallel-100" | "parallel-200";
 
 export const NII_SHOCK_LABELS: readonly NIIShockLabel[] = [
   "parallel+200",
@@ -164,10 +160,7 @@ export function computeNII(eventStore: EventStore, asOf: string): NIIReport {
     });
   }
 
-  const worstCase = results.reduce(
-    (min, r) => Math.min(min, r.deltaNiiZar),
-    0,
-  );
+  const worstCase = results.reduce((min, r) => Math.min(min, r.deltaNiiZar), 0);
 
   return {
     asOf,

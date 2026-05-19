@@ -215,10 +215,10 @@ export {
 
 import { PARTY_EVENT_TYPES } from "../../../domains/party";
 import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
-import { ALM_TYPED_EVENT_TYPES } from "./alm";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
+import { ALM_TYPED_EVENT_TYPES } from "./alm";
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";

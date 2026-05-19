@@ -113,7 +113,4 @@ export function makeIRRBBChecked(args: {
 // Typed event types list
 // ---------------------------------------------------------------------------
 
-export const ALM_TYPED_EVENT_TYPES = [
-  "ALMRunCompleted",
-  "IRRBBChecked",
-] as const;
+export const ALM_TYPED_EVENT_TYPES = ["ALMRunCompleted", "IRRBBChecked"] as const;
