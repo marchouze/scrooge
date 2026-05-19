@@ -252,9 +252,17 @@ function generateTradeSettlements(
 ): ForwardObligation[] {
   const results: ForwardObligation[] = [];
 
+  const cancelledIds = new Set<string>();
+  for (const e of store.replay({ type: "FxTradeCancelled", asOf })) {
+    const p = e.payload as { tradeId?: string };
+    if (p.tradeId) cancelledIds.add(p.tradeId);
+  }
+
   for (const event of store.replay({ type: "FxTradeExecuted", asOf })) {
     const payload = event.payload as FxTradePayloadRaw;
     const tradeId = payload.tradeId?.value ?? event.event_id;
+
+    if (cancelledIds.has(tradeId)) continue;
     const side = payload.side ?? "buy";
     const tradeDate = payload.tradeDate?.iso ?? asOf.slice(0, 10);
     const legs = payload.legs ?? [];
