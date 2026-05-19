@@ -1,23 +1,25 @@
 // platform/simulation/env-sim/market-data-sim.ts
 //
-// MarketDataSimulator — emits MarketDataTickReceived events at a configurable
-// interval using FxRateEngine for rate generation.
+// MarketDataSimulator — appends FX quote ticks to the MarketDataStore at a
+// configurable interval using FxRateEngine for rate generation.
+//
+// Market data ticks are reference/time-series data, NOT business domain events.
+// They must not enter the event store. This simulator writes exclusively to the
+// separate MarketDataStore (platform/market-data/store.ts).
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION.
 // Author: Env (External Environment Simulator) / Devon (Chief Operating Officer, engineering)
 
+import { randomUUID } from "node:crypto";
+
 import { nowUtc } from "../../core/types";
-import { makeMarketDataTickReceived } from "../../event-store/event-types/markets";
-import type { EventStore } from "../../event-store/store";
+import type { MarketDataStore } from "../../market-data/store";
+import { type FxQuotePayload, MarketDataSources } from "../../market-data/types";
 import type { FxRateEngine } from "../fx-sim-rates";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-const ACTOR = { type: "service" as const, id: "agent:env:market-data-sim" };
-const ENTITY = "BANK-ZA-001";
-const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION"];
 
 /** The 5 standard pairs tracked by the MarketDataSimulator. */
 const STANDARD_PAIRS = ["ZAR/USD", "ZAR/EUR", "ZAR/GBP", "EUR/USD", "GBP/ZAR"] as const;
@@ -27,18 +29,18 @@ const STANDARD_PAIRS = ["ZAR/USD", "ZAR/EUR", "ZAR/GBP", "EUR/USD", "GBP/ZAR"] a
 // ---------------------------------------------------------------------------
 
 export class MarketDataSimulator {
-  private readonly store: EventStore;
+  private readonly mdStore: MarketDataStore;
   private readonly rateEngine: FxRateEngine;
   private readonly intervalMs: number;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
   constructor(
-    store: EventStore,
+    mdStore: MarketDataStore,
     rateEngine: FxRateEngine,
     options: { intervalMs: number; rng: () => number },
   ) {
-    this.store = store;
+    this.mdStore = mdStore;
     this.rateEngine = rateEngine;
     this.intervalMs = options.intervalMs;
     // rng accepted for interface symmetry with other sub-simulators; rate engine manages its own randomness.
@@ -73,22 +75,21 @@ export class MarketDataSimulator {
     for (const pair of STANDARD_PAIRS) {
       try {
         const rate = this.rateEngine.tick(pair);
-        this.store.append(
-          makeMarketDataTickReceived({
-            asOf,
-            entity: ENTITY,
-            actor: ACTOR,
-            citations: CITATIONS,
-            payload: {
-              pair,
-              mid: rate.mid,
-              bid: rate.bid,
-              ask: rate.ask,
-              source: "env-sim",
-              asOf,
-            },
-          }),
-        );
+        const payload: FxQuotePayload = {
+          pair,
+          mid: rate.mid,
+          bid: rate.bid,
+          ask: rate.ask,
+          source: MarketDataSources.FX_SIM,
+        };
+        this.mdStore.append({
+          id: randomUUID(),
+          source: MarketDataSources.FX_SIM,
+          instrument: pair,
+          dataType: "fx-quote",
+          asOf,
+          payload: payload as unknown as Record<string, unknown>,
+        });
       } catch (err) {
         console.error(`[MarketDataSimulator] error emitting tick for ${pair}:`, err);
       }

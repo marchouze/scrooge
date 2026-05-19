@@ -17,6 +17,7 @@ import { randomUUID } from "node:crypto";
 
 import { nowUtc } from "../../core/types";
 import type { EventStore } from "../../event-store/store";
+import { MarketDataStore } from "../../market-data/store";
 import { SIM_COUNTERPARTIES } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
 import { FxRateEngine } from "../fx-sim-rates";
@@ -47,6 +48,11 @@ export interface EnvSimOptions {
   marketDataIntervalMs?: number;
   /** Nostro statement interval in ms. Default 86_400_000 (24h). */
   nostroStatementIntervalMs?: number;
+  /**
+   * External MarketDataStore instance. If not provided, an in-memory store is
+   * created internally (suitable for tests and standalone runs).
+   */
+  marketDataStore?: MarketDataStore;
 }
 
 export interface EnvSimStatus {
@@ -93,6 +99,7 @@ const DEFAULTS = {
 
 export class EnvSimEngine {
   private readonly store: EventStore;
+  readonly marketDataStore: MarketDataStore;
   private opts: {
     minIntervalMs: number;
     maxIntervalMs: number;
@@ -133,6 +140,9 @@ export class EnvSimEngine {
     this.rng = options?.seed !== undefined ? mulberry32(options.seed) : Math.random;
     this.rateEngine = new FxRateEngine();
 
+    // Market data store — use caller-supplied instance or default to in-memory.
+    this.marketDataStore = options?.marketDataStore ?? new MarketDataStore(":memory:");
+
     // Build profile lookup map.
     this.profileMap = new Map();
     for (const p of options?.counterpartyProfiles ?? []) {
@@ -140,7 +150,7 @@ export class EnvSimEngine {
     }
 
     // Sub-simulators.
-    this.marketDataSim = new MarketDataSimulator(store, this.rateEngine, {
+    this.marketDataSim = new MarketDataSimulator(this.marketDataStore, this.rateEngine, {
       intervalMs: this.opts.marketDataIntervalMs,
       rng: this.rng,
     });

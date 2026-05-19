@@ -8,6 +8,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { EventStore } from "../../event-store/store";
+import { MarketDataStore } from "../../market-data/store";
 import { FxRateEngine } from "../fx-sim-rates";
 import { type CounterpartyBehaviorProfile, mulberry32 } from "./counterparty-profiles";
 import { EnvSimEngine } from "./index";
@@ -101,18 +102,18 @@ describe("EnvSimEngine — stochastic failure", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 3: MarketDataTick — events appear after interval
+// Test 3: MarketDataTick — ticks appear in MarketDataStore after interval
 // ---------------------------------------------------------------------------
 
 describe("MarketDataSimulator", () => {
-  let store: EventStore;
+  let mdStore: MarketDataStore;
   let rateEngine: FxRateEngine;
   let sim: MarketDataSimulator;
 
   beforeEach(() => {
-    store = makeInMemoryStore();
+    mdStore = new MarketDataStore(":memory:");
     rateEngine = new FxRateEngine();
-    sim = new MarketDataSimulator(store, rateEngine, {
+    sim = new MarketDataSimulator(mdStore, rateEngine, {
       intervalMs: 50,
       rng: mulberry32(42),
     });
@@ -120,33 +121,33 @@ describe("MarketDataSimulator", () => {
 
   afterEach(() => {
     sim.stop();
+    mdStore.close();
   });
 
-  it("emits MarketDataTickReceived events within 200ms", async () => {
+  it("appends fx-quote ticks to MarketDataStore within 200ms", async () => {
     sim.start();
     await new Promise<void>((resolve) => setTimeout(resolve, 200));
     sim.stop();
 
-    const tickEvents: string[] = [];
-    for (const evt of store.replay({ type: "MarketDataTickReceived" })) {
-      tickEvents.push(evt.event_id);
-    }
-
-    expect(tickEvents.length).toBeGreaterThan(0);
+    const ticks = mdStore.query({ dataType: "fx-quote" });
+    expect(ticks.length).toBeGreaterThan(0);
   });
 
-  it("MarketDataTickReceived events have correct source field", async () => {
+  it("fx-quote ticks have correct source and numeric fields", async () => {
     sim.start();
     await new Promise<void>((resolve) => setTimeout(resolve, 100));
     sim.stop();
 
-    for (const evt of store.replay({ type: "MarketDataTickReceived" })) {
-      const payload = evt.payload as Record<string, unknown>;
-      expect(payload.source).toBe("env-sim");
-      expect(typeof payload.mid).toBe("number");
-      expect(typeof payload.bid).toBe("number");
-      expect(typeof payload.ask).toBe("number");
-      break; // check one is sufficient
+    const ticks = mdStore.query({ dataType: "fx-quote" });
+    expect(ticks.length).toBeGreaterThan(0);
+    const tick = ticks[0];
+    expect(tick).toBeDefined();
+    if (tick) {
+      expect(tick.source).toBe("fx-sim");
+      expect(tick.dataType).toBe("fx-quote");
+      expect(typeof (tick.payload as Record<string, unknown>).mid).toBe("number");
+      expect(typeof (tick.payload as Record<string, unknown>).bid).toBe("number");
+      expect(typeof (tick.payload as Record<string, unknown>).ask).toBe("number");
     }
   });
 });
