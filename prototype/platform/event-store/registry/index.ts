@@ -84,6 +84,8 @@ export { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
 export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
+// D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
+export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -94,6 +96,7 @@ import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
+import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import {
@@ -187,6 +190,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
   // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...COLLATERAL_EVENT_TYPES_REGISTRY,
+  // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
+  // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+  ...LIQUIDITY_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

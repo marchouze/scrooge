@@ -148,6 +148,11 @@ export * from "./alm";
 //   CollateralUpdated (per-security inventory change — add/remove/revalue).
 // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 export * from "./collateral";
+// D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
+// LCRComputed — result of a single LCR computation (BA 325 / Basel III).
+// NSFRComputed — result of a single NSFR computation (BA 326 / Basel III).
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+export * from "./liquidity";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -231,6 +236,7 @@ import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
 import { COLLATERAL_TYPED_EVENT_TYPES } from "./collateral";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
+import { LIQUIDITY_TYPED_EVENT_TYPES } from "./liquidity";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
@@ -321,6 +327,9 @@ export const TYPED_EVENT_TYPES = [
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
   // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...COLLATERAL_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — liquidity projection engine event types (LCR/NSFR).
+  // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+  ...LIQUIDITY_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
