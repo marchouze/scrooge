@@ -12,12 +12,19 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  makeILAAPRunInputs,
-  runILAAPStressScenarios,
-} from "../stress-scenarios";
+import type { ILAAPScenarioResult } from "../stress-scenarios";
+import { makeILAAPRunInputs, runILAAPStressScenarios } from "../stress-scenarios";
 
 const AS_OF = "2026-05-19";
+
+function findScenario(
+  results: ILAAPScenarioResult[],
+  scenario: ILAAPScenarioResult["scenario"],
+): ILAAPScenarioResult {
+  const found = results.find((r) => r.scenario === scenario);
+  if (!found) throw new Error(`Scenario ${scenario} not found in results`);
+  return found;
+}
 
 describe("ILAAP stress scenarios — zero-position baseline", () => {
   const inputs = makeILAAPRunInputs(0, 0);
@@ -65,31 +72,31 @@ describe("ILAAP stress scenarios — well-funded", () => {
   });
 
   it("idiosyncratic: survival > 30 days → adequate", () => {
-    const idio = results.find((r) => r.scenario === "idiosyncratic")!;
+    const idio = findScenario(results, "idiosyncratic");
     expect(idio.status).toBe("adequate");
     expect(idio.survivalHorizonDays).toBeGreaterThan(30);
   });
 
   it("market-wide: survival > 30 days → adequate", () => {
-    const mw = results.find((r) => r.scenario === "market-wide")!;
+    const mw = findScenario(results, "market-wide");
     expect(mw.status).toBe("adequate");
     expect(mw.survivalHorizonDays).toBeGreaterThan(30);
   });
 
   it("combined: survival > 30 days → adequate", () => {
-    const combined = results.find((r) => r.scenario === "combined")!;
+    const combined = findScenario(results, "combined");
     expect(combined.status).toBe("adequate");
     expect(combined.survivalHorizonDays).toBeGreaterThan(30);
   });
 
   it("combined: stressedHQLAZar should be reduced by additional 10% haircut", () => {
-    const combined = results.find((r) => r.scenario === "combined")!;
+    const combined = findScenario(results, "combined");
     const expectedHQLA = 200_000_000 * (1 - 0.1);
     expect(combined.stressedHQLAZar).toBeCloseTo(expectedHQLA, 0);
   });
 
   it("idiosyncratic: stressedHQLAZar should be reduced by 5% additional haircut", () => {
-    const idio = results.find((r) => r.scenario === "idiosyncratic")!;
+    const idio = findScenario(results, "idiosyncratic");
     const expectedHQLA = 200_000_000 * (1 - 0.05);
     expect(idio.stressedHQLAZar).toBeCloseTo(expectedHQLA, 0);
   });
@@ -115,20 +122,20 @@ describe("ILAAP stress scenarios — under-funded", () => {
   });
 
   it("idiosyncratic: survival < 15 days → inadequate", () => {
-    const idio = results.find((r) => r.scenario === "idiosyncratic")!;
+    const idio = findScenario(results, "idiosyncratic");
     expect(idio.status).toBe("inadequate");
     expect(idio.survivalHorizonDays).toBeLessThan(15);
   });
 
   it("combined: survival < 15 days → inadequate", () => {
-    const combined = results.find((r) => r.scenario === "combined")!;
+    const combined = findScenario(results, "combined");
     expect(combined.status).toBe("inadequate");
     expect(combined.survivalHorizonDays).toBeLessThan(15);
   });
 
   it("combined should be the worst scenario (lowest survival)", () => {
     const nonReverseResults = results.filter((r) => r.scenario !== "reverse-stress");
-    const combined = results.find((r) => r.scenario === "combined")!;
+    const combined = findScenario(results, "combined");
     const minSurvival = Math.min(...nonReverseResults.map((r) => r.survivalHorizonDays));
     expect(combined.survivalHorizonDays).toBe(minSurvival);
   });
@@ -142,7 +149,7 @@ describe("ILAAP stress scenarios — marginal zone", () => {
   const results = runILAAPStressScenarios(AS_OF, inputs);
 
   it("idiosyncratic survival: between 15 and 30 days → marginal", () => {
-    const idio = results.find((r) => r.scenario === "idiosyncratic")!;
+    const idio = findScenario(results, "idiosyncratic");
     if (idio.survivalHorizonDays >= 15 && idio.survivalHorizonDays <= 30) {
       expect(idio.status).toBe("marginal");
     }
@@ -153,7 +160,7 @@ describe("ILAAP reverse-stress scenario", () => {
   it("reverse-stress: survival should be approximately 30 days for non-zero HQLA", () => {
     const inputs = makeILAAPRunInputs(60_000_000, 10_000_000);
     const results = runILAAPStressScenarios(AS_OF, inputs);
-    const rs = results.find((r) => r.scenario === "reverse-stress")!;
+    const rs = findScenario(results, "reverse-stress");
 
     // With HQLA=60m, outflow=10m → multiplier = 60/10 = 6 → clipped to 5
     // At multiplier 5: survival = 60m / (50m/30) = 36 days
@@ -165,7 +172,7 @@ describe("ILAAP reverse-stress scenario", () => {
   it("reverse-stress multiplier field is present", () => {
     const inputs = makeILAAPRunInputs(100_000_000, 10_000_000);
     const results = runILAAPStressScenarios(AS_OF, inputs);
-    const rs = results.find((r) => r.scenario === "reverse-stress")!;
+    const rs = findScenario(results, "reverse-stress");
     expect(rs.reverseStressOutflowMultiplier).toBeDefined();
     expect(typeof rs.reverseStressOutflowMultiplier).toBe("number");
   });
@@ -176,7 +183,7 @@ describe("ILAAP reverse-stress scenario", () => {
     // 3 is within [1,5] so binary search should converge
     const inputs = makeILAAPRunInputs(30_000_000, 10_000_000);
     const results = runILAAPStressScenarios(AS_OF, inputs);
-    const rs = results.find((r) => r.scenario === "reverse-stress")!;
+    const rs = findScenario(results, "reverse-stress");
     expect(rs.survivalHorizonDays).toBeGreaterThanOrEqual(29.9);
     expect(rs.survivalHorizonDays).toBeLessThanOrEqual(30.1);
   });

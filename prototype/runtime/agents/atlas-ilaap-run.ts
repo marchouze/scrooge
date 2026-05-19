@@ -44,11 +44,7 @@ import {
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = [
-  "BANKS-ACT-94-1990",
-  "BA-325",
-  "D-TREASURY-GAPS-WAVE1",
-];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BA-325", "D-TREASURY-GAPS-WAVE1"];
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const date = fmtDateUTC(ctx.asOf);
@@ -213,8 +209,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push("");
     lines.push("## Inputs");
     lines.push("");
-    lines.push(`| Input | Value |`);
-    lines.push(`|---|---|`);
+    lines.push("| Input | Value |");
+    lines.push("|---|---|");
     lines.push(`| Base HQLA (post-haircut) | ${fmt(baseHQLAZar)} |`);
     lines.push(`| Base net 30-day outflow | ${fmt(baseNetOutflow30dZar)} |`);
     lines.push("");

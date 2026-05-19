@@ -80,9 +80,7 @@ describe("ILAAP summary — all no-positions", () => {
   });
 
   it("should include recommended action", () => {
-    expect(summary.recommendedAction).toBe(
-      "Monitor — zero-position baseline until licence-day.",
-    );
+    expect(summary.recommendedAction).toBe("Monitor — zero-position baseline until licence-day.");
   });
 });
 

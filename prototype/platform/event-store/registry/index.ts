@@ -112,10 +112,10 @@ import {
   READINESS_SNAPSHOT_EVENT_TYPES,
   RMS_EVENT_TYPES,
 } from "./governance";
+import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
-import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
