@@ -138,7 +138,7 @@ export function runPostTradeLifecycle(
   // -------------------------------------------------------------------------
   store.append(
     makePrincipalPayment({
-      asOf,
+      asOf: settlementDateIso,
       entity: ENTITY,
       actor: ACTOR,
       citations: CITATIONS,
@@ -166,7 +166,7 @@ export function runPostTradeLifecycle(
   // -------------------------------------------------------------------------
   store.append(
     makePrincipalPayment({
-      asOf,
+      asOf: settlementDateIso,
       entity: ENTITY,
       actor: ACTOR,
       citations: CITATIONS,
@@ -194,7 +194,7 @@ export function runPostTradeLifecycle(
   // -------------------------------------------------------------------------
   store.append(
     makeSettlementConfirmed({
-      asOf,
+      asOf: settlementDateIso,
       entity: ENTITY,
       actor: ACTOR,
       citations: CITATIONS,
