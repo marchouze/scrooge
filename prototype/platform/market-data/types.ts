@@ -52,4 +52,5 @@ export const MarketDataSources = {
   FX_SIM: "fx-sim",
   JSE_SENS: "jse-sens",
   NEWS: "news",
+  OPEN_ER_API: "open-er-api",
 } as const;
