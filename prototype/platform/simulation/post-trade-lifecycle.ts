@@ -81,8 +81,7 @@ export function runPostTradeLifecycle(
   const tradeIdValue = trade.tradeId.value;
 
   // T+2 settlement date (simple calendar +2 days for sim).
-  const settlementDateIso =
-    nearLeg.settlementDate?.iso ?? addTwoCalendarDays(trade.tradeDate.iso);
+  const settlementDateIso = nearLeg.settlementDate?.iso ?? addTwoCalendarDays(trade.tradeDate.iso);
 
   // -------------------------------------------------------------------------
   // 1. FxSettlementInstructed — pay leg (bank delivers payCurrency)
@@ -222,14 +221,21 @@ export function runPostTradeLifecycle(
   // 7. Inbound messages — correspondent/counterparty messages back
   // -------------------------------------------------------------------------
   const settlementDateObj = new Date(settlementDateIso);
-  const nostroBalance =
-    BigInt(Math.abs(nearLeg.counterNotional.amountMinor)) + 10_000_000_00n;
+  const nostroBalance = BigInt(Math.abs(nearLeg.counterNotional.amountMinor)) + 10_000_000_00n;
 
-  simulateInboundMessages(trade, settlementDateObj, nostroBalance, counterpartyBic, undefined, undefined, {
-    store,
-    asOf,
-    outboundMessageId,
-  });
+  simulateInboundMessages(
+    trade,
+    settlementDateObj,
+    nostroBalance,
+    counterpartyBic,
+    undefined,
+    undefined,
+    {
+      store,
+      asOf,
+      outboundMessageId,
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------

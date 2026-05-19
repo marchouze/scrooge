@@ -10,8 +10,8 @@ import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
 import { generateSimTrade } from "../platform/simulation/fx-sim-generator";
-import { runPostTradeLifecycle } from "../platform/simulation/post-trade-lifecycle";
 import { FxRateEngine } from "../platform/simulation/fx-sim-rates";
+import { runPostTradeLifecycle } from "../platform/simulation/post-trade-lifecycle";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -40,18 +40,22 @@ describe("runPostTradeLifecycle", () => {
   it("emits all required post-trade event types for a sim trade", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
@@ -66,18 +70,22 @@ describe("runPostTradeLifecycle", () => {
   it("emits exactly 2 FxSettlementInstructed events (pay + receive legs)", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
@@ -89,18 +97,22 @@ describe("runPostTradeLifecycle", () => {
   it("emits exactly 2 PrincipalPayment events (deliver + receive legs)", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
@@ -112,18 +124,22 @@ describe("runPostTradeLifecycle", () => {
   it("emits exactly 1 SettlementConfirmed event", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
@@ -135,18 +151,22 @@ describe("runPostTradeLifecycle", () => {
   it("emits exactly 1 OutboundMessageDispatched event (MT300)", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
@@ -158,25 +178,33 @@ describe("runPostTradeLifecycle", () => {
   it("PrincipalPayment pay leg has negative netCash, receive leg has positive netCash", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
     const events = [...store.replay({})];
     const payments = events.filter((e) => e.type === "PrincipalPayment");
-    const deliverLeg = payments.find((e) => (e.payload as { legKind: string }).legKind === "deliver");
-    const receiveLeg = payments.find((e) => (e.payload as { legKind: string }).legKind === "receive");
+    const deliverLeg = payments.find(
+      (e) => (e.payload as { legKind: string }).legKind === "deliver",
+    );
+    const receiveLeg = payments.find(
+      (e) => (e.payload as { legKind: string }).legKind === "receive",
+    );
 
     expect(deliverLeg).toBeDefined();
     expect(receiveLeg).toBeDefined();
@@ -187,18 +215,22 @@ describe("runPostTradeLifecycle", () => {
   it("emits 7+ total event types for a single trade (production chain completeness)", () => {
     const store = new EventStore(":memory:");
     const rateEngine = new FxRateEngine();
-    const trade = generateSimTrade(rateEngine, [
-      {
-        partyId: "SIMSAZA0000000001ZA",
-        name: "Standard Simulated Bank SA",
-        role: "counterparty",
-        jurisdiction: "ZA",
-        bic: COUNTERPARTY_BIC,
-        eligiblePairs: ["ZAR/USD"],
-        minNotionalMinor: 100_000_00,
-        maxNotionalMinor: 5_000_000_00,
-      },
-    ], "BK-TEST");
+    const trade = generateSimTrade(
+      rateEngine,
+      [
+        {
+          partyId: "SIMSAZA0000000001ZA",
+          name: "Standard Simulated Bank SA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+          bic: COUNTERPARTY_BIC,
+          eligiblePairs: ["ZAR/USD"],
+          minNotionalMinor: 100_000_00,
+          maxNotionalMinor: 5_000_000_00,
+        },
+      ],
+      "BK-TEST",
+    );
 
     runPostTradeLifecycle(store, trade, AS_OF, BANK_BIC, COUNTERPARTY_BIC);
 
