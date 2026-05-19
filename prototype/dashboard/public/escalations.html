@@ -1,84 +1,55 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escalations · Hoz</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escalations — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Escalation inbox · CEO oversight</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">Escalations</h1>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/escalations"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/agents.html">Agents</a>
-      <a class="nav-link" href="/fleet">Fleet</a>
-      <a class="nav-link" href="/activity.html">Activity</a>
-      <a class="nav-link" href="/health.html">Health</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
+    <div class="page-body">
+      <div id="esc-table"></div>
     </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-<div id="strategyBanner" class="strategy-banner muted"></div>
-
-<main id="app">
-
-  <section class="band">
-    <div class="band-head">
-      <h1>Escalation inbox</h1>
-      <span class="band-sub" id="escalationsSub"></span>
-    </div>
-    <p class="muted">
-      Read-only view of every <code>AgentEscalation</code> the channel has folded — open, acknowledged, delegated,
-      decided, plus an overdue overlay. Sorted by deadline ascending; decided items sink to the bottom.
-      Decision-emit affordances ship with the post-licence identity substrate (A3.3+); today the typed
-      <code>AgentEscalationDecided</code> events are emitted via <code>bun run escalation:enforce</code> or
-      a runtime handler.
-    </p>
-    <div id="escalationsSummary" class="agents-summary"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Open &amp; in-flight</h2>
-      <span class="band-sub" id="openSub"></span>
-    </div>
-    <div id="escalationsOpen" class="escalations-list"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Decided</h2>
-      <span class="band-sub" id="decidedSub"></span>
-    </div>
-    <div id="escalationsDecided" class="escalations-list"></div>
-  </section>
-
-  <footer class="foot">
-    <span class="muted">Each row derives from <code>platform/escalation/channel.ts</code> — folded over the event log per Principle 1. Sealed escalations show the substrate-overridden routing; the audit trail records both the seal and the resolved seat list.</span>
-  </footer>
-
-</main>
-
-<script src="/_refresh-controls.js"></script>
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/escalations.js"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Escalations" });
+    (async () => {
+      const el = document.getElementById("esc-table");
+      el.innerHTML = SC.renderSkeleton(6);
+      async function safeFetch(u) {
+        try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
+      }
+      const data = await safeFetch("/api/risk/ras");
+      const clusters = Array.isArray(data) ? data : (data?.clusters ?? data?.items ?? []);
+      const escalated = clusters.filter(c => c.breachStatus && c.breachStatus !== "ok");
+      SC.renderTable({
+        container: el,
+        headers: ["Cluster ID", "Title", "Severity", "Owner", "Last Updated"],
+        rows: escalated.map(c => ({
+          cells: [
+            SC.esc(c.clusterId || c.id || ""),
+            SC.esc(c.title || c.name || ""),
+            SC.renderBadge(c.severity || c.breachStatus || "warn"),
+            SC.esc(c.owner || ""),
+            SC.esc((c.lastUpdated || c.updatedAt || "").slice(0, 10)),
+          ],
+          data: c,
+        })),
+        onRowClick: c => SC.openModal({ title: c.title || c.name || "Cluster", body: SC.renderDefList(c) }),
+        emptyMessage: "No escalations — all RAS clusters within limits",
+      });
+    })();
+  </script>
 </body>
 </html>

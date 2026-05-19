@@ -1,205 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Forward obligations · Hoz</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
-<link rel="stylesheet" href="/_brand.css">
-<link rel="stylesheet" href="/_shell.css">
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
-<style>
-  /* ── Map semantic tokens (mirrors obligations.html :root block) ── */
-  :root {
-    --surface-base:   #ffffff;
-    --surface-raised: #f5f3ee;
-    --surface-hover:  #edeae4;
-    --neutral-rule:   var(--neutral-mist);
-    --text-primary:   var(--brand-primary);
-    --text-secondary: var(--neutral-graphite);
-  }
-
-  /* -------- Tab switcher -------- */
-  .fo-tabs {
-    display: flex; gap: 0; border-bottom: 2px solid var(--neutral-rule); margin-bottom: 20px;
-  }
-  .fo-tab-btn {
-    padding: 9px 20px; border: none; background: none; cursor: pointer;
-    font-size: 13.5px; color: var(--neutral-stone); border-bottom: 3px solid transparent;
-    margin-bottom: -2px; font-weight: 500; transition: color 0.15s;
-  }
-  .fo-tab-btn:hover { color: var(--text-primary); }
-  .fo-tab-btn.active { color: var(--accent-ink); border-bottom-color: var(--accent-ink); }
-  .fo-tab-btn:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
-
-  /* -------- Horizon selector -------- */
-  .fo-toolbar {
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-    margin-bottom: 18px;
-  }
-  .fo-horizon-label { font-size: 12px; color: var(--neutral-stone); }
-  .fo-horizon-btn {
-    padding: 4px 12px; border: 1px solid var(--neutral-rule); border-radius: var(--radius-md);
-    background: var(--surface-base); font-size: 12.5px; cursor: pointer; color: var(--text-secondary);
-    transition: background 0.1s;
-  }
-  .fo-horizon-btn:hover { background: var(--surface-hover); }
-  .fo-horizon-btn.active { background: var(--accent-ink); color: #fff; border-color: var(--accent-ink); }
-  .fo-horizon-btn:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
-
-  /* -------- Summary cards -------- */
-  .fo-summary {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px; margin-bottom: 20px;
-  }
-  .fo-card {
-    background: var(--surface-base); border: 1px solid var(--neutral-rule); border-radius: var(--radius-lg);
-    padding: 10px 14px;
-  }
-  .fo-card-num { font-size: 24px; font-weight: 600; line-height: 1.1; color: var(--text-primary); }
-  .fo-card-lbl { font-size: 11.5px; color: var(--text-secondary); margin-top: 4px; }
-
-  /* -------- Planning table -------- */
-  .fo-table-wrap { overflow-x: auto; }
-  table.fo-table {
-    width: 100%; border-collapse: collapse; font-size: 12.5px;
-  }
-  table.fo-table th, table.fo-table td {
-    border-bottom: 1px solid var(--neutral-rule); padding: 6px 10px;
-    vertical-align: top; text-align: left;
-  }
-  table.fo-table th {
-    background: var(--surface-raised); font-weight: 600; color: var(--text-secondary); white-space: nowrap;
-  }
-  table.fo-table tr:hover td { background: var(--surface-hover); }
-  table.fo-table code {
-    font-size: 11.5px; background: var(--surface-raised); padding: 1px 4px; border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-  }
-
-  /* -------- Certainty badges -------- */
-  .cert-badge {
-    display: inline-block; padding: 1px 7px; border-radius: var(--radius-sm);
-    font-size: 10.5px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-  .cert-certain  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-  .cert-probable { background: #fff8e1; color: #7c5e00; border: 1px solid #ffe082; }
-  .cert-estimated { background: var(--surface-raised); color: var(--neutral-stone); border: 1px solid var(--neutral-rule); }
-
-  /* -------- Bucket section headers in planning -------- */
-  .fo-bucket-header {
-    background: var(--surface-raised); font-size: 11.5px; font-weight: 700;
-    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .fo-bucket-header td { padding: 5px 10px !important; }
-
-  /* -------- Source badges -------- */
-  .src-badge {
-    display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm);
-    font-size: 10.5px; white-space: nowrap;
-    background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5;
-  }
-  .src-badge.trade-settlement { background: #fff3e0; color: #7c4000; border-color: #ffe0b2; }
-  .src-badge.regulatory-filing { background: #e8f5e9; color: #2e6b34; border-color: #bce0c0; }
-  .src-badge.policy-review { background: #f3e5f5; color: #5c2b7c; border-color: #e1bee7; }
-  .src-badge.manual { background: #fce4ec; color: #7d1e3c; border-color: #f8bbd9; }
-
-  /* -------- Liquidity view -------- */
-  .fo-liq-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .fo-liq-table th, .fo-liq-table td {
-    border-bottom: 1px solid var(--neutral-rule); padding: 6px 10px; vertical-align: top; text-align: left;
-  }
-  .fo-liq-table th { background: var(--surface-raised); font-weight: 600; color: var(--text-secondary); }
-  .fo-liq-table tr.fo-liq-date-row { cursor: pointer; }
-  .fo-liq-table tr.fo-liq-date-row:hover td { background: var(--surface-hover); }
-
-  .flow-positive { color: var(--semantic-success); font-weight: 600; }
-  .flow-negative { color: var(--semantic-error); font-weight: 600; }
-  .flow-zero { color: var(--neutral-stone); }
-
-  .fo-liq-items { display: none; }
-  .fo-liq-items.open { display: table-row-group; }
-  .fo-liq-items td {
-    background: var(--surface-raised); font-size: 11.5px; padding-left: 28px !important;
-    color: var(--text-secondary);
-  }
-
-  /* -------- Empty state -------- */
-  .fo-empty {
-    padding: 40px 24px; text-align: center;
-    color: var(--neutral-stone); font-size: 14px; line-height: 1.6;
-  }
-  .fo-empty strong { display: block; font-size: 16px; margin-bottom: 8px; color: var(--text-primary); }
-
-  /* -------- Error state -------- */
-  .fo-error {
-    padding: 16px; background: #fff3f3; border: 1px solid #f5c6cb;
-    border-radius: var(--radius-md); color: #721c24; font-size: 13px;
-  }
-
-  /* -------- Loading -------- */
-  .fo-loading { color: var(--neutral-stone); font-size: 13px; padding: 20px 0; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forward Obligations — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Forward obligations</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Forward Obligations</h1></div>
+    <div class="page-body">
+      <div id="fwd-content"></div>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/forward-obligations?view=planning&horizon=30"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/obligations.html">Obligations</a>
-      <a class="nav-link" href="/policies.html">Policies</a>
-    </div>
-  </div>
-</header>
-
-<main class="page-body">
-  <h1 class="page-title">Forward obligations</h1>
-  <p class="page-subtitle">
-    Multi-source derived view of future events — regulatory filings, trade settlements,
-    policy reviews. Projection folds across the event log and obligations register.
-  </p>
-
-  <!-- Horizon selector -->
-  <div class="fo-toolbar">
-    <span class="fo-horizon-label">Horizon:</span>
-    <button class="fo-horizon-btn" data-horizon="30">30 days</button>
-    <button class="fo-horizon-btn active" data-horizon="90">90 days</button>
-    <button class="fo-horizon-btn" data-horizon="180">180 days</button>
-    <button class="fo-horizon-btn" data-horizon="365">1 year</button>
-  </div>
-
-  <!-- Tab switcher (populated dynamically from view list) -->
-  <nav class="fo-tabs" id="fo-tabs" aria-label="View tabs"></nav>
-
-  <!-- Summary cards -->
-  <div class="fo-summary" id="fo-summary"></div>
-
-  <!-- Main content area — swapped by tab -->
-  <div id="fo-content">
-    <p class="fo-loading">Loading…</p>
-  </div>
-
-  <!-- Last updated -->
-  <p id="fo-last-updated" style="font-size:11px;color:#aaa;margin-top:16px;"></p>
-</main>
-
-<script src="/provenance-badge.js"></script>
-<script src="/forward-obligations.js"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Forward Obligations" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const el = document.getElementById("fwd-content");
+      el.innerHTML = SC.renderSkeleton(6);
+      const data = await sf("/api/obligations/forward");
+      const items = Array.isArray(data) ? data : (data?.items ?? data?.obligations ?? []);
+      if (items.length === 0) { el.innerHTML = `<p style="color:var(--color-text-secondary)">No forward obligations.</p>`; return; }
+      // Group by date
+      const groups = {};
+      items.forEach(o => { const d = (o.effectiveDate||o.dueDate||o.date||"Unknown").slice(0,10); (groups[d]||(groups[d]=[])).push(o); });
+      el.innerHTML = Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([date, obls]) => `
+        <div style="margin-bottom:var(--space-6)">
+          <div style="font:var(--text-h3);color:var(--color-text-secondary);margin-bottom:var(--space-3)">${SC.esc(date)}</div>
+          ${obls.map(o => `<div class="card" style="cursor:pointer" onclick='SC.openModal({title:${JSON.stringify(o.title||"Obligation")},body:SC.renderDefList(${JSON.stringify(o)})})'>
+            <div class="card-title">${SC.esc(o.title||o.id||"")}</div>
+            <div class="card-body">${SC.esc(o.regulation||o.source||"")} ${SC.renderBadge(o.status||"open")}</div>
+          </div>`).join("")}
+        </div>`).join("");
+    })();
+  </script>
 </body>
 </html>

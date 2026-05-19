@@ -1,71 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agents · Hoz</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agents — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Agents · CEO direct reports</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Agents</h1></div>
+    <div class="page-body">
+      <div id="agents-table"></div>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/state"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/activity.html">Activity</a>
-      <a class="nav-link" href="/health.html">Health</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-<div id="strategyBanner" class="strategy-banner muted"></div>
-
-<main id="app">
-
-  <section class="agents-intro band">
-    <h1>Standing autonomous agents</h1>
-    <p class="muted">
-      Per the autonomous-agents operating model (CLAUDE.md, Principle 6), every persona reporting to the CEO is a
-      standing agent that runs on its own cadence and discharges its mandate. Today, the agent runtime is partial —
-      cards flagged <span class="op-spec-tag op-spec-no">spec pending</span> still operate as Scrooge-coordinated
-      in-session runs. Cards flagged <span class="op-spec-tag op-spec-yes">spec ready</span> have a published
-      operating spec in <code>/Team/&lt;Name&gt;.md</code>.
-    </p>
-    <div id="agentsSummary" class="agents-summary"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Mini-dashboards</h2>
-      <span class="band-sub" id="agentsSub"></span>
-    </div>
-    <div class="agents-grid" id="agentsGrid"></div>
-  </section>
-
-  <footer class="foot">
-    <span class="muted">Each card is derived from <code>CLAUDE.md</code> (top-of-house roster), <code>/Team/&lt;Name&gt;.md</code> (mandate, operating spec), the in-flight workstream stream + completion events, and the <code>Owner Inbox/</code> deliverables feed.</span>
-  </footer>
-
-</main>
-
-<script src="/_refresh-controls.js"></script>
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/agents.js"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Agents" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const el = document.getElementById("agents-table");
+      el.innerHTML = SC.renderSkeleton(8);
+      const data = await sf("/api/agents");
+      const all = Array.isArray(data) ? data : (data?.agents ?? data?.items ?? []);
+      SC.renderTable({
+        container: el,
+        headers: ["Name","Position","Status","Workstream","Last Run"],
+        rows: all.map(a => ({
+          cells: [SC.esc(a.name||a.agentName||""), SC.esc(a.position||a.role||""), SC.renderBadge(a.status||a.buildPhaseStatus||"active"), SC.esc(a.workstream||""), SC.esc((a.lastRun||a.lastRunAt||"").slice(0,19).replace("T"," "))],
+          data: a,
+        })),
+        onRowClick: a => SC.openModal({ title: a.name||"Agent", body: SC.renderDefList(a) }),
+        emptyMessage: "No agents registered",
+      });
+    })();
+  </script>
 </body>
 </html>

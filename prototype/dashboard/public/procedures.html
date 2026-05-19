@@ -1,237 +1,59 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Procedures index — Hoz</title>
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
-<style>
-  /* Page-local — keep in sync with obligations.html visual conventions. */
-  .proc-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-  .proc-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 12px 14px;
-  }
-  .proc-card-num { font-size: 26px; font-weight: 600; line-height: 1.1; }
-  .proc-card-lbl { font-size: 12px; color: #666; margin-top: 4px; }
-  .proc-card-sub { font-size: 11px; color: #999; margin-top: 2px; }
-
-  .proc-status-list, .proc-domain-list {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
-  }
-  .proc-chip {
-    display: inline-flex; align-items: baseline; gap: 6px;
-    padding: 3px 8px; border-radius: 12px;
-    background: #f5f5f5; border: 1px solid #e0e0e0;
-    font-size: 11.5px;
-  }
-  .proc-chip b { font-weight: 600; }
-
-  .proc-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
-  .proc-controls .ctrl { display: flex; flex-direction: column; gap: 4px; min-width: 140px; }
-  .proc-controls label { font-size: 11.5px; color: #666; }
-  .proc-controls select, .proc-controls input[type=search] {
-    padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px;
-    font-size: 13px;
-  }
-
-  .proc-domain-block { margin-top: 18px; }
-  .proc-domain-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; margin-bottom: 6px;
-  }
-  .proc-domain-head h3 { margin: 0; font-size: 14px; font-weight: 600; color: #333; }
-  .proc-domain-count { font-size: 11.5px; color: #888; }
-
-  .proc-table-wrap { overflow-x: auto; }
-  table.proc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  table.proc-table th, table.proc-table td {
-    border-bottom: 1px solid #eee; padding: 6px 8px; vertical-align: top; text-align: left;
-  }
-  table.proc-table th { background: #fafafa; font-weight: 600; color: #444; }
-  table.proc-table tr:hover { background: #fafcff; }
-  table.proc-table code { font-size: 11.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
-  .proc-tag {
-    display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-    background: #eef; color: #335; border: 1px solid #cce;
-  }
-  .proc-tag-populated { background: #e8f5e9; color: #2e6b34; border-color: #bce0c0; }
-  .proc-tag-stub      { background: #fff3e0; color: #a04200; border-color: #ffd9a8; }
-  .proc-tag-planned   { background: #f5f5f5; color: #555;    border-color: #ddd;    }
-  .proc-tag-draft     { background: #ede7f6; color: #3d316d; border-color: #cfc3eb; }
-  .proc-verify-flag {
-    display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-    background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; margin-right: 4px;
-  }
-  .proc-verify-row { background: #fff7f6; }
-  .proc-orphan-row { background: #fff5f5; }
-
-  .proc-row-link a { color: #1c4d80; text-decoration: none; }
-  .proc-row-link a:hover { text-decoration: underline; }
-  .proc-row-meta { color: #777; font-size: 11px; margin-top: 2px; }
-
-  .proc-findings-summary { font-size: 13px; color: #444; margin: 8px 0 12px; }
-  .proc-findings-summary b { font-weight: 600; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Procedures — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Procedures · Reg → Policy → Procedure → System Capability</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Procedures</h1></div>
+    <div class="page-body">
+      <div id="proc-tabs" class="tab-bar"></div>
+      <div id="proc-table"></div>
     </div>
-    <div class="meta">
-      <!-- Procedures page consumes /api/procedures which returns
-           `pageProvenance: null` — procedures are authored markdown
-           (canonical source per Principle 6), not data. Badge
-           suppresses on null. The marker remains so recon passes
-           the data-page contract; runtime sees null and renders nothing. -->
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/procedures"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/agents.html">Agents</a>
-      <a class="nav-link" href="/obligations.html">Obligations</a>
-      <a class="nav-link" href="/policies.html">Policies</a>
-      <a class="nav-link" href="/activity.html">Activity</a>
-      <a class="nav-link" href="/health.html">Health</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-
-<main id="app">
-
-  <section class="band">
-    <h1>Procedures index</h1>
-    <p class="muted">
-      Owen + domain leads' master inventory of every procedure under each approved policy. Each row demonstrates the
-      <code>Reg → Policy → Procedure → System Capability</code> chain (CLAUDE.md Principle 6 — upward).
-      Procedures with an authored file under <code>Procedures/by-policy/</code> are enriched with frontmatter parsed
-      live (id, policy-parent, last-reviewed, reconciliation-cadence). Status values: <b>POPULATED</b> (file authored
-      and substantively complete), <b>STUB</b> (file scaffolded), <b>DRAFT</b> (in-progress), <b>PLANNED</b>
-      (identified but not yet drafted). Source: <code>Procedures/_index.md</code>, parsed live by
-      <code>prototype/dashboard/procedures-index.ts</code>.
-    </p>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Index at a glance</h2>
-      <span class="band-sub muted" id="procSummarySub"></span>
-    </div>
-    <div class="proc-summary" id="procSummary"></div>
-    <h3 style="margin: 18px 0 4px; font-size: 14px;">By status</h3>
-    <div class="proc-status-list" id="procStatusList"></div>
-    <h3 style="margin: 14px 0 4px; font-size: 14px;">By domain</h3>
-    <div class="proc-domain-list" id="procDomainList"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Filter</h2>
-      <span class="band-sub muted">Cumulative — all filters apply.</span>
-    </div>
-    <div class="proc-controls">
-      <div class="ctrl">
-        <label for="filterDomain">Domain</label>
-        <select id="filterDomain"><option value="">All domains</option></select>
-      </div>
-      <div class="ctrl">
-        <label for="filterStatus">Status</label>
-        <select id="filterStatus">
-          <option value="">Any status</option>
-          <option value="POPULATED">POPULATED</option>
-          <option value="STUB">STUB</option>
-          <option value="DRAFT">DRAFT</option>
-          <option value="PLANNED">PLANNED</option>
-        </select>
-      </div>
-      <div class="ctrl">
-        <label for="filterAuthored">Authored?</label>
-        <select id="filterAuthored">
-          <option value="">All</option>
-          <option value="AUTHORED">Authored (file exists)</option>
-          <option value="UNAUTHORED">Not authored (no file)</option>
-          <option value="ORPHAN">Orphan (cited file missing)</option>
-        </select>
-      </div>
-      <div class="ctrl">
-        <label for="filterSearch">Search</label>
-        <input type="search" id="filterSearch" placeholder="ID, file, policy, owner…">
-      </div>
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Procedures by domain</h2>
-      <span class="band-sub" id="procListSub"></span>
-    </div>
-    <div id="procDomainBlocks"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Citation-integrity findings</h2>
-      <span class="band-sub muted">Principle 6 — "no orphans" rule</span>
-    </div>
-    <p class="muted">
-      Rows whose <code>_index.md</code> cell links to a <code>by-policy/&lt;file&gt;.md</code> path that does not
-      exist on disk (orphan citations), and rows whose authored procedure file is missing expected frontmatter
-      fields. Resolving these is part of Owen's procedural-discipline cadence.
-    </p>
-    <div class="proc-findings-summary" id="procFindingsSummary"></div>
-    <div class="proc-table-wrap">
-      <table class="proc-table" id="procFindingsTable">
-        <thead>
-          <tr>
-            <th style="width: 12em;">Procedure file</th>
-            <th>Policy</th>
-            <th style="width: 12em;">Owner</th>
-            <th style="width: 14em;">Verify</th>
-          </tr>
-        </thead>
-        <tbody id="procFindingsBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-</main>
-
-<!--
-  Procedure inline-preview modal — read-only render of the markdown body
-  for an authored procedure file. Authored by Anya (Data / analytics
-  engineer); mirrors the Owner Inbox preview modal on the home dashboard.
-  Reuses the `oi-preview-*` CSS classes from `styles.css` so the look-and-
-  feel stays consistent across the surface.
--->
-<div class="modal oi-preview-modal" id="procPreviewModal" hidden>
-  <div class="oi-preview-card">
-    <div class="oi-preview-head">
-      <h2 id="procPreviewTitle">Procedure preview</h2>
-      <button class="icon-btn" id="procPreviewClose" aria-label="Close">×</button>
-    </div>
-    <div class="oi-preview-path muted small" id="procPreviewPath"></div>
-    <div class="oi-preview-body" id="procPreviewBody"></div>
-  </div>
-</div>
-
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/procedures.js"></script>
-<!-- Shared refresh + shell-back-link injection (Anya / Linnea v0). -->
-<script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Procedures" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      document.getElementById("proc-table").innerHTML = SC.renderSkeleton(8);
+      const data = await sf("/api/ops/procedures");
+      const all = Array.isArray(data) ? data : (data?.items ?? data?.procedures ?? []);
+      const tabs = ["All","Populated","Draft","Planned"];
+      let activeTab = "All";
+      const tabsEl = document.getElementById("proc-tabs");
+      function mdToHtml(md) {
+        if (!md) return "";
+        return SC.esc(md)
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\n/g, "<br>");
+      }
+      function render() {
+        const rows = activeTab === "All" ? all : all.filter(p => (p.status||"").toLowerCase() === activeTab.toLowerCase());
+        SC.renderTable({
+          container: document.getElementById("proc-table"),
+          headers: ["ID","Title","Owner","Domain","Status"],
+          rows: rows.map(p => ({
+            cells: [SC.esc(p.id||p.procedureId||""), SC.esc(p.title||""), SC.esc(p.owner||""), SC.esc(p.domain||""), SC.renderBadge(p.status||"draft")],
+            data: p,
+          })),
+          onRowClick: p => SC.openModal({ title: p.title||"Procedure", body: `<div class="def-list" style="display:block">${p.description ? `<p style="margin-bottom:var(--space-4)">${mdToHtml(p.description)}</p>` : ""}${SC.renderDefList(Object.fromEntries(Object.entries(p).filter(([k])=>k!=="description")))}</div>` }),
+          emptyMessage: "No procedures",
+        });
+      }
+      tabsEl.innerHTML = tabs.map(t => `<button class="tab-btn${t===activeTab?" active":""}" data-tab="${t}">${t}</button>`).join("");
+      tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab-btn"); if (!b) return; activeTab = b.dataset.tab; tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", x.dataset.tab===activeTab)); render(); });
+      render();
+    })();
+  </script>
 </body>
 </html>

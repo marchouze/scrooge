@@ -1,170 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Onboarding · Bank operations dashboard</title>
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
-<style>
-  /* Page-local — kept in sync with obligations.html / policies.html conventions. */
-  .ob-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-  .ob-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 12px 14px;
-  }
-  .ob-card-num { font-size: 26px; font-weight: 600; line-height: 1.1; }
-  .ob-card-lbl { font-size: 12px; color: #666; margin-top: 4px; }
-  .ob-card-sub { font-size: 11px; color: #999; margin-top: 2px; }
-
-  .ob-table-wrap { overflow-x: auto; }
-  table.ob-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  table.ob-table th, table.ob-table td {
-    border-bottom: 1px solid #eee; padding: 6px 8px; vertical-align: top; text-align: left;
-  }
-  table.ob-table th { background: #fafafa; font-weight: 600; color: #444; }
-  table.ob-table tr:hover { background: #fafcff; }
-  table.ob-table code { font-size: 11.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
-
-  /* Phase chips */
-  .ob-phase {
-    display: inline-block; padding: 2px 7px; border-radius: 10px;
-    font-size: 11px; font-weight: 500; white-space: nowrap;
-  }
-  .ob-phase-activated  { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
-  .ob-phase-offboarded { background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; }
-  .ob-phase-sounding   { background: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
-  .ob-phase-progress   { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
-
-  /* Terminal badge */
-  .ob-badge {
-    display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-  }
-  .ob-badge-yes { background: #f3f3f3; color: #444; border: 1px solid #ddd; }
-  .ob-badge-no  { background: #fff; color: #888; border: 1px solid #eee; }
-
-  /* Funnel table */
-  table.ob-funnel { border-collapse: collapse; font-size: 12.5px; min-width: 320px; }
-  table.ob-funnel th, table.ob-funnel td {
-    border-bottom: 1px solid #eee; padding: 5px 10px; text-align: left;
-  }
-  table.ob-funnel th { background: #fafafa; font-weight: 600; color: #444; }
-  table.ob-funnel .ob-funnel-zero { color: #bbb; }
-
-  .ob-empty-state {
-    padding: 40px 24px; text-align: center;
-    color: #666; font-size: 14px; line-height: 1.6;
-  }
-  .ob-empty-state strong { display: block; font-size: 16px; margin-bottom: 8px; color: #333; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Onboarding — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Onboarding pipeline</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Onboarding</h1></div>
+    <div class="page-body">
+      <div id="onb-table"></div>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/onboarding"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/agents.html">Agents</a>
-      <a class="nav-link" href="/obligations.html">Obligations</a>
-      <a class="nav-link" href="/policies.html">Policies</a>
-      <a class="nav-link" href="/activity.html">Activity</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-
-<main id="app">
-
-  <section class="band">
-    <div class="band-head">
-      <h1>Onboarding pipeline</h1>
-      <span class="band-sub muted" id="obAsOf"></span>
-    </div>
-    <p class="muted">
-      Niko's counterparty-onboarding orchestrator — 21-phase lifecycle from <em>sounding</em> through
-      <em>activated</em> to <em>offboarded</em>. Each row is a <code>CounterpartyOnboardingState</code>
-      projection over the typed event log. Authority:
-      <code>D-PARTY-REGISTER</code> · <code>AML-CFT-POLICY-V1</code> ·
-      <code>TRADING-MANDATE-V1</code> · <code>FIC-ACT-38-2001</code>.
-      Source: <code>GET /api/onboarding</code> (PR #272).
-    </p>
-  </section>
-
-  <section class="band" id="summarySection">
-    <div class="band-head">
-      <h2>At a glance</h2>
-    </div>
-    <div class="ob-summary" id="obSummary">
-      <!-- rendered by onboarding.js -->
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Phase funnel</h2>
-      <span class="band-sub muted">21-phase lifecycle sequence — phases with no counterparties are omitted</span>
-    </div>
-    <div class="ob-table-wrap">
-      <table class="ob-funnel" id="obFunnelTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Phase</th>
-            <th>Count</th>
-          </tr>
-        </thead>
-        <tbody id="obFunnelBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Counterparties</h2>
-      <span class="band-sub muted" id="obTableSub"></span>
-    </div>
-    <div id="obEmptyState" hidden>
-      <div class="ob-empty-state">
-        <strong>No counterparties in the onboarding pipeline yet.</strong>
-        Niko's rehearsal scenarios will appear here once seeded.
-      </div>
-    </div>
-    <div class="ob-table-wrap" id="obTableWrap">
-      <table class="ob-table" id="obTable">
-        <thead>
-          <tr>
-            <th>Counterparty ID</th>
-            <th>Phase</th>
-            <th>Last event type</th>
-            <th>Last advanced</th>
-            <th>Terminal?</th>
-          </tr>
-        </thead>
-        <tbody id="obBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-</main>
-
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/onboarding.js"></script>
-<script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Onboarding" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const el = document.getElementById("onb-table");
+      el.innerHTML = SC.renderSkeleton(6);
+      const data = await sf("/api/kyc/candidates");
+      const items = Array.isArray(data) ? data : (data?.candidates ?? data?.items ?? []);
+      SC.renderTable({
+        container: el,
+        headers: ["Name","Type","Status","Created"],
+        rows: items.map(c => ({
+          cells: [SC.esc(c.name||c.fullName||""), SC.esc(c.type||c.entityType||""), SC.renderBadge(c.status||"pending"), SC.esc((c.createdAt||c.created||"").slice(0,10))],
+          data: c,
+        })),
+        onRowClick: c => SC.openModal({ title: c.name||"Candidate", body: SC.renderDefList(c) }),
+        emptyMessage: "No onboarding candidates",
+      });
+    })();
+  </script>
 </body>
 </html>

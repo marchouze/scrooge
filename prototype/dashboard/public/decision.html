@@ -1,55 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Decision · Hoz</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decisions — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    /* Legacy classes used by decision.js */
+    .band { margin-bottom:var(--space-8); }
+    .band-head { display:flex; align-items:baseline; gap:var(--space-3); margin-bottom:var(--space-4); }
+    .band-head h1, .band-head h2, .band-head h3 { font:var(--text-h2); color:var(--color-text-primary); margin:0; }
+    .drill-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-5); margin-bottom:var(--space-4); box-shadow:var(--shadow-sm); }
+    .drill-card h3 { font:var(--text-h3); color:var(--color-text-primary); margin:0 0 var(--space-3); }
+    .pill { display:inline-block; padding:2px 8px; border-radius:var(--radius-sm); font:var(--text-caption); font-weight:600; background:var(--color-surface-raised); color:var(--color-text-secondary); margin-right:var(--space-2); }
+    .esc-sealed { background:var(--color-warning-bg); color:var(--color-warning); }
+    .esc-overdue { background:var(--color-danger-bg); color:var(--color-danger); }
+    .esc-sev-blocking { color:var(--color-danger); }
+    .esc-sev-high { color:var(--color-warning); }
+    .esc-sev-medium { color:var(--color-info); }
+    .esc-sev-low { color:var(--color-text-secondary); }
+    .status-badge { display:inline-block; padding:2px 8px; border-radius:var(--radius-sm); font:var(--text-caption); font-weight:600; background:var(--color-info-bg); color:var(--color-info); }
+    .status-badge[data-status="approved"] { background:var(--color-success-bg); color:var(--color-success); }
+    .status-badge[data-status="deferred"] { background:var(--color-warning-bg); color:var(--color-warning); }
+    .status-badge[data-status="open"] { background:var(--color-accent-bg); color:var(--color-accent); }
+    .kv-grid { display:grid; grid-template-columns:auto 1fr; gap:var(--space-2) var(--space-4); font:var(--text-body); }
+    .kv-label { font-weight:600; color:var(--color-text-secondary); white-space:nowrap; }
+    .timeline { list-style:none; padding:0; margin:0; }
+    .timeline li { padding:var(--space-3) 0; border-bottom:1px solid var(--color-border); font:var(--text-body); }
+    .timeline li:last-child { border-bottom:none; }
+    .cite-list { list-style:none; padding:0; margin:0; }
+    .cite-list li { padding:var(--space-2) 0; font:var(--text-body); color:var(--color-text-secondary); border-bottom:1px solid var(--color-border); }
+    .action-panel { display:flex; gap:var(--space-3); flex-wrap:wrap; margin-top:var(--space-4); }
+    .action-btn { padding:var(--space-2) var(--space-5); border:1px solid var(--color-border-strong); border-radius:var(--radius-md); font:var(--text-body); font-weight:600; cursor:pointer; background:var(--color-bg); color:var(--color-text-primary); transition:background 120ms; }
+    .action-btn:hover { background:var(--color-surface); }
+    .action-btn[data-action="approve"] { background:var(--color-success-bg); color:var(--color-success); border-color:var(--color-success); }
+    .action-btn[data-action="defer"] { background:var(--color-warning-bg); color:var(--color-warning); border-color:var(--color-warning); }
+    .foot { font:var(--text-caption); color:var(--color-text-secondary); margin-top:var(--space-8); padding-top:var(--space-4); border-top:1px solid var(--color-border); }
+    .strategy-banner { font:var(--text-caption); color:var(--color-text-secondary); margin-bottom:var(--space-4); }
+    .muted { color:var(--color-text-secondary); }
+    .nav-back { display:inline-flex; align-items:center; gap:var(--space-2); font:var(--text-body); color:var(--color-accent); text-decoration:none; margin-bottom:var(--space-4); }
+    .nav-back:hover { text-decoration:underline; }
+  </style>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Decision drill-down</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Decision</h1></div>
+    <div class="page-body">
+      <div id="strategyBanner" class="strategy-banner"></div>
+      <div id="decisionContent"></div>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/state"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/home.html">Home</a>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/decisions">Decisions</a>
-      <a class="nav-link" href="/escalations">Escalations</a>
-      <a class="nav-link" href="/fleet">Fleet</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-<div id="strategyBanner" class="strategy-banner muted"></div>
-
-<main id="app">
-
-  <div id="decisionContent"></div>
-
-  <footer class="foot">
-    <span class="muted">Drill-down view derives from <code>platform/escalation/channel.ts</code> (lifecycle fold) + <code>runtime/decisions/record.ts</code> (CeoDecision events) + the comments thread on the same id. Read-only in v1.</span>
-  </footer>
-
-</main>
-
-<script src="/_refresh-controls.js"></script>
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/decision.js"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Decision" });</script>
+  <script src="/decision.js"></script>
 </body>
 </html>

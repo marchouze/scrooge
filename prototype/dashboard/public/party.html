@@ -1,178 +1,64 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Party Register · Hoz</title>
-  <meta name="description" content="Party register view for Owen (Company Secretary, governance) — registered parties (natural persons, legal entities, counterparties, agents), relationship graph summary, registration status.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <title>Party Registry — Scrooge Bank</title>
   <link rel="stylesheet" href="/_brand.css">
-  <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
-
-  <header class="shell-header" role="banner">
-    <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
-        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-        </svg>
-        <span class="shell-wordmark">Hoz</span>
-        <span class="shell-wordmark-suffix">Party Register</span>
-      </a>
-      <div class="shell-meta">
-        <span data-provenance-badge="page-top" data-provenance-source="/api/party" aria-label="Provenance badge"></span>
-        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh data">Refresh</button>
-        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
-        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
-      </div>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Party Registry</h1></div>
+    <div class="page-body">
+      <div id="party-tiles" class="tile-row"></div>
+      <div id="party-tabs" class="tab-bar"></div>
+      <div id="party-table"></div>
     </div>
-  </header>
-
-  <div class="shell-layout">
-    <nav class="shell-sidebar" aria-label="Department navigation">
-      <div data-shell-dept-nav></div>
-    </nav>
-
-    <main class="shell-main" id="shell-main" tabindex="-1">
-      <div class="shell-page-header">
-        <h1 class="shell-page-title">Party Register</h1>
-        <p class="shell-page-lede">
-          Owen (Company Secretary, governance) — unified party register projected from the
-          Party event family (D-PARTY-REGISTER, CEO-approved 2026-05-11). Four actor kinds:
-          natural-person, legal-entity, counterparty, agent. The founding CEO seat (Marc) is
-          the first natural-person Party. Data sourced from <code>/api/party</code> (tile summary)
-          and <code>/api/rms/briefs</code> (RMS register).
-        </p>
-      </div>
-
-      <!-- Registry summary tiles -->
-      <section aria-labelledby="party-summary-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="party-summary-head">Registry summary</h2>
-          <span class="shell-category-kind">Event-derived</span>
-        </div>
-        <p class="shell-category-blurb">
-          Counts folded from the Party event stream via <code>/api/party</code>.
-          Party events: <code>PartyRegistered</code>, <code>PartyAttributeChanged</code>,
-          <code>PartyClassified</code>, <code>PartyRelationshipAsserted</code>, and more.
-          Build-phase: simulated-only (no real customers or counterparties until licence-day).
-        </p>
-        <div class="dept-metrics" id="party-summary-metrics">
-          <div class="dept-metric">
-            <p class="dept-metric-label">Natural persons</p>
-            <p class="dept-metric-value" id="party-natural" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Natural-person parties</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Legal entities</p>
-            <p class="dept-metric-value" id="party-legal" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Legal-entity parties</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Counterparties</p>
-            <p class="dept-metric-value" id="party-counter" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Institutional counterparties</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Agents</p>
-            <p class="dept-metric-value" id="party-agents" data-tone="muted">–</p>
-            <p class="dept-metric-sub">AI agent parties</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Relationships</p>
-            <p class="dept-metric-value" id="party-relationships" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Live edges in graph</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Total parties</p>
-            <p class="dept-metric-value" id="party-total" data-tone="muted">–</p>
-            <p class="dept-metric-sub">All registered</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Party table -->
-      <section aria-labelledby="party-table-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="party-table-head">Registered parties</h2>
-          <span class="shell-category-kind">PartyRegistered events</span>
-        </div>
-        <p class="shell-category-blurb">
-          All parties folded from the <code>PartyRegistered</code> event stream.
-          URN format: <code>urn:party:&lt;kind&gt;:&lt;id&gt;</code>.
-          Filter by kind using the buttons below.
-        </p>
-        <div style="margin-bottom:var(--space-4);display:flex;gap:var(--space-2);flex-wrap:wrap" id="party-filter-bar">
-          <button type="button" class="shell-btn" data-party-filter="all" aria-pressed="true">All</button>
-          <button type="button" class="shell-btn" data-party-filter="natural-person" aria-pressed="false">Natural persons</button>
-          <button type="button" class="shell-btn" data-party-filter="legal-entity" aria-pressed="false">Legal entities</button>
-          <button type="button" class="shell-btn" data-party-filter="counterparty" aria-pressed="false">Counterparties</button>
-          <button type="button" class="shell-btn" data-party-filter="agent" aria-pressed="false">Agents</button>
-        </div>
-        <div id="party-table-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- Relationship graph summary -->
-      <section aria-labelledby="party-graph-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="party-graph-head">Relationship graph summary</h2>
-          <span class="shell-category-kind">PartyRelationshipAsserted events</span>
-        </div>
-        <p class="shell-category-blurb">
-          Relationship kinds and counts from the Party graph.
-          Live (non-revoked) edges only. Sourced from <code>/api/party</code> relationship data.
-        </p>
-        <div id="party-graph-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- Recent registrations -->
-      <section aria-labelledby="party-recent-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="party-recent-head">Recent registrations</h2>
-          <span class="shell-category-kind">Last 10 PartyRegistered events</span>
-        </div>
-        <p class="shell-category-blurb">
-          Most recent <code>PartyRegistered</code> events from the event store, newest first.
-          <a href="/events.html?type=PartyRegistered" style="color:var(--accent-ink)">Browse all PartyRegistered events →</a>
-        </p>
-        <div id="party-recent-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <aside class="shell-callout" aria-labelledby="party-buildphase-note">
-        <h3 id="party-buildphase-note">Build-phase substrate gaps</h3>
-        <ul>
-          <li>Party drill-down to event history — per-party <code>/api/party/:partyId</code> endpoint is a roadmap item (raise IntranetEngineeringRequest to Atlas); today the table shows current projection state only.</li>
-          <li>Real counterparties — Niko (Sales / CRM engineer) customer lifecycle activates at licence-day; no real customers in the build phase. Counterparties visible here are seeded for infrastructure test purposes.</li>
-          <li>Beneficial ownership chains — <code>BeneficialOwnerChainAsserted</code> events are an append-only audit trail; the UBO graph visualisation is a roadmap item.</li>
-          <li>POPIA s.71 — data-subject rights (access / correction / deletion) are commencement-bind obligations under POPIA; the Party register is the system-of-record at licence-day.</li>
-          <li>RMS register view at <a href="/rms.html" style="color:var(--accent-ink)">rms.html</a> surfaces all seven RMS registers.</li>
-        </ul>
-      </aside>
-    </main>
-  </div>
-
-  <footer class="shell-footer" role="contentinfo">
-    Governance · Party Register · Hoz ·
-    data from <a href="/api/party">/api/party</a> · <a href="/api/events?type=PartyRegistered">/api/events (PartyRegistered)</a> ·
-    Owen (Company Secretary, governance) · D-PARTY-REGISTER (CEO-approved 2026-05-11).
-  </footer>
-
+  </main>
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
-  <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
-  <script src="/party.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Party Registry" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      document.getElementById("party-table").innerHTML = SC.renderSkeleton(6);
+      const [partyData, relsData] = await Promise.all([sf("/api/party"), sf("/api/party/relationships")]);
+      const all = Array.isArray(partyData) ? partyData : (partyData?.parties ?? partyData?.items ?? []);
+      const rels = Array.isArray(relsData) ? relsData : (relsData?.relationships ?? relsData?.items ?? []);
+      const kinds = ["All","natural-person","legal-entity","counterparty","agent"];
+      const tilesEl = document.getElementById("party-tiles");
+      tilesEl.appendChild(SC.renderTile({ label:"Total Parties", value:all.length, status:"info" }));
+      ["natural-person","legal-entity","counterparty","agent"].forEach(k => {
+        tilesEl.appendChild(SC.renderTile({ label:k, value: all.filter(p=>(p.kind||p.partyKind||p.type||"")==k).length }));
+      });
+      let kindFilter = "All";
+      const tabsEl = document.getElementById("party-tabs");
+      function render() {
+        const rows = kindFilter === "All" ? all : all.filter(p => (p.kind||p.partyKind||p.type||"") === kindFilter);
+        SC.renderTable({
+          container: document.getElementById("party-table"),
+          headers: ["ID","Name","Kind","LEI / ID","Status"],
+          rows: rows.map(p => ({
+            cells: [SC.esc(p.partyId||p.id||""), SC.esc(p.name||p.legalName||""), SC.renderBadge(p.kind||p.partyKind||p.type||""), SC.esc(p.lei||p.nationalId||p.identifier||""), SC.renderBadge(p.status||"active")],
+            data: p,
+          })),
+          onRowClick: p => {
+            const related = rels.filter(r => r.fromPartyId===p.partyId||r.toPartyId===p.partyId||r.fromId===p.id||r.toId===p.id);
+            const relHtml = related.length ? `<h3 style="margin:var(--space-4) 0 var(--space-2);font:var(--text-h3)">Relationships</h3>${SC.renderDefList(related)}` : "";
+            SC.openModal({ title: p.name||p.legalName||"Party", body: SC.renderDefList(p) + relHtml });
+          },
+          emptyMessage: "No parties",
+        });
+      }
+      tabsEl.innerHTML = kinds.map(k => `<button class="tab-btn${k===kindFilter?" active":""}" data-k="${k}">${k}</button>`).join("");
+      tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab-btn"); if (!b) return; kindFilter=b.dataset.k; tabsEl.querySelectorAll(".tab-btn").forEach(x=>x.classList.toggle("active",x.dataset.k===kindFilter)); render(); });
+      render();
+    })();
+  </script>
 </body>
 </html>
