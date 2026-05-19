@@ -19,7 +19,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { runIntradayStress, SAMOS_WINDOWS, INTRADAY_FLOOR_ZAR } from "../intraday-stress";
+import { INTRADAY_FLOOR_ZAR, SAMOS_WINDOWS, runIntradayStress } from "../intraday-stress";
 
 // ---------------------------------------------------------------------------
 // Helper: inject a synthetic HQLA position by appending to the singleton
@@ -189,21 +189,19 @@ describe("window status classification — thin HQLA (40m < floor 50m) → amber
     const projected = startingHQLA;
     expect(projected).toBeLessThanOrEqual(floor);
     expect(projected).toBeGreaterThan(0);
-    const status =
-      projected <= 0 ? "red" : projected <= floor ? "amber" : "green";
+    const status = projected <= 0 ? "red" : projected <= floor ? "amber" : "green";
     expect(status).toBe("amber");
   });
 
   it("stress scenario with 0 inflows/outflows: haircut/uplift have no effect on amber status", () => {
     // stress inflow = 0 * 0.80 = 0; stress outflow = 0 * 1.15 = 0
     // cumulative net = 0; projected = startingHQLA = 40m → amber
-    const stressInflow = 0 * (1 - 0.20);
+    const stressInflow = 0 * (1 - 0.2);
     const stressOutflow = 0 * (1 + 0.15);
     const projected = startingHQLA + (stressInflow - stressOutflow);
     expect(projected).toBe(startingHQLA);
 
-    const status =
-      projected <= 0 ? "red" : projected <= floor ? "amber" : "green";
+    const status = projected <= 0 ? "red" : projected <= floor ? "amber" : "green";
     expect(status).toBe("amber");
   });
 
@@ -227,7 +225,7 @@ describe("window status classification — thin HQLA (40m < floor 50m) → amber
 describe("BCBS 248 stress factor arithmetic", () => {
   it("stress inflow haircut = 20% (retains 80% of BAU inflows)", () => {
     const bauInflow = 1_000_000;
-    const stressInflow = bauInflow * (1 - 0.20);
+    const stressInflow = bauInflow * (1 - 0.2);
     expect(stressInflow).toBe(800_000);
   });
 
@@ -240,7 +238,7 @@ describe("BCBS 248 stress factor arithmetic", () => {
   it("stress scenario is always more conservative than BAU (inflow ≤ BAU, outflow ≥ BAU)", () => {
     const bauInflow = 500_000;
     const bauOutflow = 300_000;
-    const stressInflow = bauInflow * 0.80;
+    const stressInflow = bauInflow * 0.8;
     const stressOutflow = bauOutflow * 1.15;
     expect(stressInflow).toBeLessThanOrEqual(bauInflow);
     expect(stressOutflow).toBeGreaterThanOrEqual(bauOutflow);

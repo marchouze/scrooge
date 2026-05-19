@@ -150,6 +150,7 @@
     "agent:ravi-alm-run": "bun run runtime/run.ts --agent Ravi --trigger alm-run",
     "agent:ravi-ftp-curve-publish": "bun run runtime/run.ts --agent Ravi --trigger ftp-curve-publish",
     "agent:ravi-ftp-attribution": "bun run runtime/run.ts --agent Ravi --trigger ftp-attribution",
+    "agent:ravi-intraday-stress": "bun run runtime/run.ts --agent Ravi --trigger intraday-stress",
     "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",
     "agent:sade-token-usage-analysis": "bun run runtime/run.ts --agent Sade --trigger token-usage-analysis",
     "agent:sade-efficiency-advisory": "bun run runtime/run.ts --agent Sade --trigger efficiency-advisory",

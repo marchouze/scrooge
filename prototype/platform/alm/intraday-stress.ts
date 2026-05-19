@@ -110,7 +110,7 @@ export const SAMOS_WINDOWS: readonly SAMOSWindow[] = ["09:00", "12:00", "15:00",
 export const INTRADAY_FLOOR_ZAR = 50_000_000;
 
 /** BCBS 248 stress haircut on inflows: 20% delayed-settlement assumption. */
-const STRESS_INFLOW_HAIRCUT = 0.20;
+const STRESS_INFLOW_HAIRCUT = 0.2;
 
 /** BCBS 248 stress uplift on outflows: 15% margin-call assumption. */
 const STRESS_OUTFLOW_UPLIFT = 0.15;
@@ -162,10 +162,8 @@ function computeWindowsForScenario(
     const rawOutflow = windowOutflows[i] ?? 0;
 
     // Apply scenario adjustments.
-    const inflow =
-      scenario === "stress" ? rawInflow * (1 - STRESS_INFLOW_HAIRCUT) : rawInflow;
-    const outflow =
-      scenario === "stress" ? rawOutflow * (1 + STRESS_OUTFLOW_UPLIFT) : rawOutflow;
+    const inflow = scenario === "stress" ? rawInflow * (1 - STRESS_INFLOW_HAIRCUT) : rawInflow;
+    const outflow = scenario === "stress" ? rawOutflow * (1 + STRESS_OUTFLOW_UPLIFT) : rawOutflow;
 
     cumulativeNet += inflow - outflow;
     const projectedHQLAZar = startingHQLAZar + cumulativeNet;

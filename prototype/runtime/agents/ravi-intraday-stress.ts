@@ -26,14 +26,12 @@
 //   2013); Banks Act 94 of 1990 Reg 26.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
+import { runIntradayStress } from "../../platform/alm";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import {
-  makeIntradayHQLAStressProjection,
-} from "../../platform/event-store/event-types/alm";
+import { makeIntradayHQLAStressProjection } from "../../platform/event-store/event-types/alm";
 import { makeHQLACompositionDrift } from "../../platform/event-store/event-types/risk-treasury-extended";
 import { recordFiled } from "../../platform/records/helpers";
-import { runIntradayStress } from "../../platform/alm";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -41,11 +39,7 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 // Constants
 // ---------------------------------------------------------------------------
 
-const EVENT_CITATIONS = [
-  "BANKS-ACT-94-1990",
-  "BANKS-REG-26",
-  "BCBS-248-INTRADAY",
-];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-248-INTRADAY"];
 
 // ---------------------------------------------------------------------------
 // Report builder
@@ -71,7 +65,8 @@ function buildReportMarkdown(
 
   for (const scenario of ["bau", "stress"] as const) {
     const windows = result[scenario];
-    const label = scenario === "bau" ? "BAU" : "Stress (BCBS 248 — delayed settlements + margin calls)";
+    const label =
+      scenario === "bau" ? "BAU" : "Stress (BCBS 248 — delayed settlements + margin calls)";
     lines.push(`## ${label}`);
     lines.push("");
     lines.push(
@@ -103,7 +98,9 @@ function buildReportMarkdown(
       `**${redWindows.length} stress-scenario window(s) project a HQLA breach (projectedHQLAZar ≤ 0):**`,
     );
     for (const w of redWindows) {
-      lines.push(`- Window ${w.windowLabel}: projectedHQLAZar = ZAR ${w.projectedHQLAZar.toFixed(0)}`);
+      lines.push(
+        `- Window ${w.windowLabel}: projectedHQLAZar = ZAR ${w.projectedHQLAZar.toFixed(0)}`,
+      );
     }
     lines.push("");
     lines.push("`HQLACompositionDrift` event emitted with severity `breach`.");
