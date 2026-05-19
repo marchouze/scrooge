@@ -18,8 +18,9 @@ summary: >
   Valuation Policy governing market data sourcing, staleness thresholds, MTM run frequency,
   and data provenance rules for financial reporting. Applies to OTC FX, OTC IRD, and JSE-listed
   fixed income. Establishes the production-vs-simulated provenance gate and the fallback source
-  hierarchy for each instrument class. Partially closes ORG-CS3-006 (daily valuation methodology
-  under CS 3/2018 §8) and ORG-AC-08 (fair value hierarchy under IFRS 13).
+  hierarchy for each instrument class. Deepens the valuation-input methodology for ORG-CS3-006
+  (closed by pricing-policy-v1.md) and supplies operational controls for ORG-AC-08 (IFRS 13
+  fair value hierarchy, codified in accounting-policies-ifrs-v1.md).
 decision-required: false
 riskTaxonomy:
   - RT-MR.GN
@@ -71,9 +72,9 @@ This policy governs the selection of market data inputs, staleness thresholds, m
 
 **Obligations register cross-reference.**
 
-- `ORG-CS3-006` — CS 3/2018 §8 daily valuation; owner: Rohan (Market risk engineer, engineering) with Bea (Finance / treasury engineer, engineering). Status: DRAFTING → this policy partially closes it.
-- `ORG-AC-08` — IFRS 13 fair value hierarchy; owner: Camille (CFO, governance). Status: IN_FORCE → this policy supplies the operational valuation-input controls.
-- `ORG-AC-05` — IFRS 13 fair value measurement framework application; this policy is the operational instrument.
+- `ORG-CS3-006` — CS 3/2018 §8 daily valuation; **closed by `pricing-policy-v1.md`**. This policy deepens the methodology by specifying market data sources, provenance controls, and staleness thresholds — the "how do we get the inputs" layer that `pricing-policy-v1.md` assumes. No separate close claimed here.
+- `ORG-AC-08` — IFRS 13 fair value hierarchy; **codified in `accounting-policies-ifrs-v1.md §3.3`**. This policy supplies operational valuation-input controls for each hierarchy level; the hierarchy table itself is authoritative in the accounting policy and is not restated here.
+- `ORG-AC-05` — IFRS 13 fair value measurement framework application; operational instrument for the data-sourcing layer.
 
 ---
 
@@ -87,7 +88,8 @@ For each instrument class, the following ordered fallback chains apply. Source 1
 |---|---|---|
 | 1 | `MarketDataStore` where `provenance = "production"` and `dataType = "fx-quote"` | Intraday: age ≤ 15 minutes; EOD run: age ≤ 1 business day |
 | 2 | SARB published daily fixing rate (sarb.org.za) | Available by approximately 15:00 SAST each business day; used as current fallback during build phase (see §4 substrate note) |
-| 3 | Reuters / Bloomberg published fixing | Pre-go-live item — applicable once Bloomberg BFIX or Reuters WM-Fix subscription is live |
+| 3 | JSE Currency Derivatives settlement prices | Published by JSE; applicable for currency pairs with JSE-listed derivative contracts (USD/ZAR, EUR/ZAR, GBP/ZAR, JPY/ZAR) — consistent with `pricing-policy-v1.md §3.2` |
+| 4 | Reuters / Bloomberg BFIX / WM-Fix | Pre-go-live item — applicable once Bloomberg or Reuters subscription is live |
 
 **Build-phase note.** As of 2026-05-19, `MarketDataSources.FX_SIM` (`"fx-sim"`) produces `provenance = "simulated"` data only. No production FX quote feed is connected. Source 2 (SARB fixing) is the operative fallback for any real trade valuation until a production feed is integrated. See §9 (Substrate Gaps).
 
@@ -181,24 +183,17 @@ A market data tick is considered **stale** if its `asOf` timestamp exceeds the t
 
 ## 6. MTM Run Frequency
 
-### 6.1 Trading book (OTC FX and OTC IRD)
+Per-instrument measurement basis and MTM frequency are defined authoritatively in `pricing-policy-v1.md §3.3A` (multi-instrument measurement table). This section adds the operational run schedule and authorisation rules only.
 
-- **Minimum:** end-of-day MTM run, every business day
-- **Intraday:** available on demand via `bun run mtm:run` (planned — see §9, Gap 3); used for intraday risk monitoring and margin call calculations
-- **Trigger events:** any `FxTradeExecuted` or `IrdSwapExecuted` event triggers an incremental position update; the EOD run performs a full portfolio revaluation
+### 6.1 Run schedule
 
-### 6.2 Banking book (JSE bonds at amortised cost — hold-to-collect)
+| Book | Minimum frequency | Intraday |
+|---|---|---|
+| Trading book (OTC FX, OTC IRD) | End-of-day every business day | On demand via `bun run mtm:run` (planned — §9 Gap 3); used for margin call calculations and intraday risk |
+| Banking book (bonds at amortised cost) | Daily EIR accrual; quarterly IFRS 13 fair value disclosure | Not applicable |
+| FVOCI instruments | Daily fair value measurement; OCI movement posted daily | Not applicable |
 
-- **EIR accrual:** daily; performed by Bea (Finance / treasury engineer, engineering) via the accrual engine
-- **Fair value disclosure (IFRS 13 §93):** quarterly; for IFRS 7 disclosure purposes only — no P&L impact under amortised cost measurement
-- **Impairment (ECL):** per `Policies/ifrs9-ecl-provisioning-policy-v1.md` (if published); at minimum quarterly
-
-### 6.3 FVOCI instruments
-
-- **Fair value measurement:** daily; OCI movement computed daily and posted to the OCI reserve per `accounting-policies-ifrs-v1.md §3.1.3`
-- **Reclassification:** on derecognition, cumulative OCI transferred to retained earnings (equity instruments) or P&L (debt instruments) per IFRS 9 §5.7.5
-
-### 6.4 Run authorisation
+### 6.2 Run authorisation
 
 All EOD MTM runs are owned by Rohan (Market risk engineer, engineering) with outputs reviewed by Helena (CRO, governance). Any deviation from the scheduled EOD run requires Helena's written approval and is recorded as a `MtmRunException` event (planned).
 
@@ -216,13 +211,13 @@ IPV must source prices **exclusively** from `provenance = "production"` data in 
 
 ### 7.3 IPV frequency by IFRS 13 level
 
-| IFRS 13 Level | Instruments | IPV frequency |
-|---|---|---|
-| Level 1 | JSE-listed on-the-run government bonds; major FX pairs (USD/ZAR, EUR/ZAR) with observable closing rates | Daily |
-| Level 2 | OTC FX forwards / swaps; OTC IRD (IRS, basis swap, FRA) from observable yield curves; off-the-run bonds | Daily |
-| Level 3 | Bespoke structured products; instruments with significant unobservable inputs | Weekly; enhanced IPV per `pricing-policy-v1.md §5.3` |
+The IFRS 13 fair value hierarchy (Levels 1–3) and instrument classifications are defined in `accounting-policies-ifrs-v1.md §3.3` (canonical) and summarised in `pricing-policy-v1.md §5.3`. They are not restated here. IPV frequency by level:
 
-Level 3 instruments additionally require a `Level3FvApproved` event (planned) from Camille (CFO, governance) each quarter per `accounting-policies-ifrs-v1.md §3.3.2`.
+| IFRS 13 Level | IPV frequency |
+|---|---|
+| Level 1 | Daily |
+| Level 2 | Daily |
+| Level 3 | Weekly; enhanced IPV per `pricing-policy-v1.md §5.3`; `Level3FvApproved` event (planned) from Camille (CFO, governance) each quarter per `accounting-policies-ifrs-v1.md §3.3.2` |
 
 ### 7.4 Secondary source independence
 
@@ -279,4 +274,5 @@ The following gaps exist in the current build phase. Each is a pre-go-live roadm
 
 | Version | Date | Author | Change |
 |---|---|---|---|
-| 1.0 | 2026-05-19 | Helena (Chief Risk Officer, governance) | Initial draft — market data source hierarchy, staleness thresholds, provenance rules, MTM run frequency, IPV data requirements, governance table, substrate gaps. Partially closes ORG-CS3-006 and ORG-AC-08. |
+| 1.0 | 2026-05-19 | Helena (Chief Risk Officer, governance) | Initial draft — market data source hierarchy, staleness thresholds, provenance rules, MTM run frequency, IPV data requirements, governance table, substrate gaps. |
+| 1.1 | 2026-05-19 | Scrooge (cross-policy consistency review) | Remove duplicate IFRS 13 level table (canonical in accounting-policies-ifrs-v1.md); remove duplicate MTM frequency detail (canonical in pricing-policy-v1.md §3.3A); resolve ORG-CS3-006 double-close (closed by pricing-policy; this policy deepens only); add JSE Currency Derivatives settlement prices as Source 3 in §3.1 FX hierarchy (aligns with pricing-policy-v1.md §3.2). |
