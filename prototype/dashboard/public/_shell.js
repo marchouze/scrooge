@@ -90,7 +90,7 @@
         const cls = isActive(href) ? " active" : "";
         parts.push(`<a class="sidebar-link${cls}" href="${href}">${label}</a>`);
       }
-      parts.push(`</div>`);
+      parts.push("</div>");
     }
     return parts.join("");
   }
@@ -132,5 +132,7 @@
   };
 
   // Legacy: keep bankShell for pages that reference it
-  window.bankShell = window.bankShell || { user: { id: "marc@tgv.co.za", name: "Marc", role: "CEO" } };
+  window.bankShell = window.bankShell || {
+    user: { id: "marc@tgv.co.za", name: "Marc", role: "CEO" },
+  };
 })();

@@ -1,189 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Audit &amp; Recon · Hoz</title>
-  <meta name="description" content="Audit department view — Vera findings by severity P1–P3, recon pipeline status, last-run timestamps.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <title>Audit — Scrooge Bank</title>
   <link rel="stylesheet" href="/_brand.css">
-  <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
-
-  <header class="shell-header" role="banner">
-    <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
-        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-        </svg>
-        <span class="shell-wordmark">Hoz</span>
-        <span class="shell-wordmark-suffix">Audit &amp; Recon</span>
-      </a>
-      <div class="shell-meta">
-        <span data-provenance-badge="page-top" data-provenance-source="/api/state" aria-label="Provenance badge"></span>
-        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh data">Refresh</button>
-        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
-        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
-      </div>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Audit</h1></div>
+    <div class="page-body">
+      <div id="aud-tiles" class="tile-row"></div>
+      <div id="aud-table"></div>
     </div>
-  </header>
-
-  <div class="shell-layout">
-    <nav class="shell-sidebar" aria-label="Department navigation">
-      <div data-shell-dept-nav></div>
-    </nav>
-
-    <main class="shell-main" id="shell-main" tabindex="-1">
-      <div class="shell-page-header">
-        <h1 class="shell-page-title">Audit &amp; Recon</h1>
-        <p class="shell-page-lede">
-          Thandiwe (Chief Audit Executive, governance) and Vera (Internal audit engineer) —
-          open findings by severity, recon pipeline status, and last-run timestamps.
-          Vera reports functionally to Thandiwe; administratively through the CEO.
-          Third-line independence is non-negotiable.
-        </p>
-      </div>
-
-      <!-- Finding counts by severity -->
-      <section aria-labelledby="audit-findings-head" style="margin-bottom:var(--space-8)">
-        <h2 class="shell-category-title" id="audit-findings-head" style="margin-bottom:var(--space-4)">Open findings</h2>
-        <div class="dept-metrics" id="audit-finding-metrics">
-          <div class="dept-metric">
-            <p class="dept-metric-label">P1 — Critical</p>
-            <p class="dept-metric-value" id="audit-p1" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Immediate remediation</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">P2 — High</p>
-            <p class="dept-metric-value" id="audit-p2" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Next sprint</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">P3 — Medium / Advisory</p>
-            <p class="dept-metric-value" id="audit-p3" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Backlog / roadmap</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Total findings</p>
-            <p class="dept-metric-value" id="audit-total" data-tone="muted">–</p>
-            <p class="dept-metric-sub">All open</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Substrate gaps</p>
-            <p class="dept-metric-value" id="audit-gaps" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Atlas inventory</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Open decisions</p>
-            <p class="dept-metric-value" id="audit-open-decisions" data-tone="muted">–</p>
-            <p class="dept-metric-sub">CEO queue</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Last recon tick</p>
-            <p class="dept-metric-value" id="audit-last-tick" data-tone="muted" style="font-size:var(--type-small)">–</p>
-            <p class="dept-metric-sub">Derivation as-of</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Open findings table -->
-      <section aria-labelledby="audit-findings-table-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="audit-findings-table-head">Open findings</h2>
-          <span class="shell-category-kind">AuditFinding events</span>
-        </div>
-        <p class="shell-category-blurb">
-          AuditFinding events from the event store — most recent first. Severity mapping:
-          critical/high = P1, medium = P2, low/info = P3.
-          Vera (Internal audit engineer) recon pipelines and Mira (Compliance / RegTech engineer)
-          citation gate are the primary sources.
-        </p>
-        <div id="audit-findings-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- Recon pipeline status -->
-      <section aria-labelledby="audit-recon-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="audit-recon-head">Recon pipeline</h2>
-          <span class="shell-category-kind">Live</span>
-        </div>
-        <p class="shell-category-blurb">
-          Vera's recon harnesses — pass/fail per pipeline, last-run timestamp.
-          Source: <code>/api/state</code> → <code>reconPipelines</code> / <code>substrateGaps</code>.
-          Detailed view at <a href="/health.html" style="color:var(--accent-ink)">health.html</a>.
-        </p>
-        <div style="background:#fff;border:var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;" id="audit-recon-body">
-          <p style="padding:var(--space-4);color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- Substrate gaps (Atlas inventory) -->
-      <section aria-labelledby="audit-substrate-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="audit-substrate-head">Substrate gaps</h2>
-          <span class="shell-category-kind">Atlas inventory</span>
-        </div>
-        <p class="shell-category-blurb">
-          From <code>/api/substrate-gaps</code>. Each gap is a named item in Atlas's roadmap —
-          things the runtime cannot yet do autonomously. Vera raises a finding per gap that
-          blocks a Principle-6 autonomous step.
-        </p>
-        <div id="audit-gaps-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- Event store drill-down link -->
-      <section aria-labelledby="audit-events-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="audit-events-head">Event store drill-down</h2>
-          <span class="shell-category-kind">Principle 1</span>
-        </div>
-        <p class="shell-category-blurb">
-          The event log is the single durable artefact (Principle 1). Every finding, decision,
-          and agent run is traceable to a typed event.
-        </p>
-        <div style="display:flex;gap:var(--space-4);flex-wrap:wrap">
-          <a class="shell-tile" href="/events.html" data-shell-nav="audit:events" style="max-width:300px">
-            <div class="shell-tile-head"><h3 class="shell-tile-title">Event store</h3></div>
-            <p class="shell-tile-blurb">Browse, filter, and inspect every typed event — paginated, searchable by type, entity, or payload.</p>
-          </a>
-          <a class="shell-tile" href="/health.html" data-shell-nav="audit:health" style="max-width:300px">
-            <div class="shell-tile-head"><h3 class="shell-tile-title">Health</h3></div>
-            <p class="shell-tile-blurb">Recon-pipeline conclusions, last derivation tick, build status — Vera's operational view.</p>
-          </a>
-        </div>
-      </section>
-
-      <aside class="shell-callout" aria-labelledby="audit-gaps-note">
-        <h3 id="audit-gaps-note">Build-phase substrate gaps</h3>
-        <ul>
-          <li>Vera findings registry — typed <code>AuditFinding</code> event is a Wave-4 item; findings today are surfaced as substrate-gap entries and substrate-gap recon outputs, not yet as a first-class register.</li>
-          <li>Interim Audit Forum — Owen (Company Secretary, governance) chairs until a Board Audit Committee is constituted; board-level audit reporting is a licence-day obligation.</li>
-          <li>External audit appointment — licence-application moment; IRBA-registered auditor to be confirmed by Marc + Owen.</li>
-        </ul>
-      </aside>
-    </main>
-  </div>
-
-  <footer class="shell-footer" role="contentinfo">
-    Audit · Audit &amp; Recon · Hoz ·
-    data from <a href="/api/state">/api/state</a> · <a href="/api/substrate-gaps">/api/substrate-gaps</a> ·
-    cited under CEO directive 2026-05-09; Principle 1.
-  </footer>
-
+  </main>
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
-  <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
-  <script src="/audit.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Audit" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const data = await sf("/api/audit/findings");
+      const all = Array.isArray(data) ? data : (data?.findings ?? data?.items ?? []);
+      let sevFilter = null;
+      const tilesEl = document.getElementById("aud-tiles");
+      const counts = { P1: 0, P2: 0, P3: 0 };
+      all.forEach(f => { const s = (f.severity||"").toUpperCase(); if (counts[s] !== undefined) counts[s]++; });
+      [["P1","danger"],["P2","warn"],["P3","info"]].forEach(([sev, status]) => {
+        const t = SC.renderTile({ label: `${sev} Findings`, value: counts[sev], status, onClick: () => {
+          sevFilter = sevFilter === sev ? null : sev;
+          render();
+        }});
+        tilesEl.appendChild(t);
+      });
+      function render() {
+        const rows = sevFilter ? all.filter(f => (f.severity||"").toUpperCase() === sevFilter) : all;
+        SC.renderTable({
+          container: document.getElementById("aud-table"),
+          headers: ["ID","Title","Severity","Owner","Status","Due"],
+          rows: rows.map(f => ({
+            cells: [SC.esc(f.id||f.findingId||""), SC.esc(f.title||""), SC.renderBadge(f.severity||""), SC.esc(f.owner||""), SC.renderBadge(f.status||"open"), SC.esc((f.dueDate||f.due||"").slice(0,10))],
+            data: f,
+          })),
+          onRowClick: f => SC.openModal({ title: f.title||"Finding", body: SC.renderDefList(f) }),
+          emptyMessage: "No findings",
+        });
+      }
+      render();
+    })();
+  </script>
 </body>
 </html>

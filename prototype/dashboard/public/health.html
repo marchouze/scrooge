@@ -1,90 +1,66 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Health · Hoz</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/provenance-badge.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Health — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .health-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:var(--space-3); margin-bottom:var(--space-6); }
+    .health-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-4); }
+    .health-card-name { font:var(--text-h3); color:var(--color-text-primary); margin-bottom:var(--space-1); }
+    .health-card-role { font:var(--text-caption); color:var(--color-text-secondary); }
+    /* Legacy class names used by health.js */
+    .agents-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:var(--space-3); margin-bottom:var(--space-6); }
+    .agents-stat { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-4); box-shadow:var(--shadow-sm); }
+    .agents-stat-label { font:var(--text-caption); color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:.04em; }
+    .agents-stat-value { font:var(--text-display); color:var(--color-text-primary); }
+    .band { margin-bottom:var(--space-8); }
+    .band-head { display:flex; align-items:baseline; gap:var(--space-3); margin-bottom:var(--space-3); }
+    .band-head h1, .band-head h2 { font:var(--text-h2); color:var(--color-text-primary); margin:0; }
+    .band-sub { font:var(--text-caption); color:var(--color-text-secondary); }
+    .substrate-gaps-list { list-style:none; padding:0; margin:0; }
+    .substrate-gaps-list li { padding:var(--space-3) var(--space-4); border-bottom:1px solid var(--color-border); font:var(--text-body); }
+    .substrate-gaps-list li:last-child { border-bottom:none; }
+    /* status-dot classes used by health.js */
+    .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+    .status-dot-green { background:var(--color-success); }
+    .status-dot-amber { background:var(--color-warning); }
+    .status-dot-red { background:var(--color-danger); }
+    .status-dot-grey { background:var(--color-text-disabled); }
+    .agent-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-3) var(--space-4); }
+    .agent-card-name { font:var(--text-h3); color:var(--color-text-primary); }
+    .agent-card-role { font:var(--text-caption); color:var(--color-text-secondary); }
+    .agent-card-status { font:var(--text-caption); margin-top:var(--space-1); }
+  </style>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="dot"></span>
-      <strong>The Bank</strong>
-      <span class="muted">· Health · agent-fleet and substrate</span>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Health</h1></div>
+    <div class="page-body">
+      <div id="aggregateStats" class="agents-summary"></div>
+      <div class="band">
+        <div class="band-head"><h2>Agents on the runtime</h2><span class="band-sub" id="runtimeSub"></span></div>
+        <div id="runtimeAgents" class="health-grid"></div>
+      </div>
+      <div class="band">
+        <div class="band-head"><h2>Substrate gaps</h2><span class="band-sub" id="substrateGapsSub"></span></div>
+        <ul id="substrateGapsList" class="substrate-gaps-list"></ul>
+      </div>
+      <div class="band">
+        <div class="band-head"><h2>Personas without a runtime handler</h2><span class="band-sub" id="specOnlySub"></span></div>
+        <div id="specOnlyPersonas" class="health-grid"></div>
+      </div>
     </div>
-    <div class="meta">
-      <span
-        data-provenance-badge="page-top"
-        data-provenance-source="/api/state"
-        aria-label="Provenance badge"
-      ></span>
-      <a class="nav-link" href="/">Dashboard</a>
-      <a class="nav-link" href="/agents.html">Agents</a>
-      <a class="nav-link" href="/activity.html">Activity</a>
-      <span id="liveDot" class="live-dot"></span>
-      <span id="lastUpdated" class="muted">connecting…</span>
-    </div>
-  </div>
-</header>
-
-<div id="failureBanner" class="failure-banner" hidden></div>
-<div id="strategyBanner" class="strategy-banner muted"></div>
-
-<main id="app">
-
-  <section class="band">
-    <div class="band-head">
-      <h1>Fleet health</h1>
-    </div>
-    <p class="muted">
-      At-a-glance traffic-light view of the autonomous-agent fleet plus aggregate substrate stats.
-      Green = recent run within expected cadence · Amber = stale (1.5× cadence) · Red = badly stale (≥ 2× cadence) or no run on record · Grey = no runtime handler yet (spec-only persona).
-    </p>
-    <div id="aggregateStats" class="agents-summary"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Agents on the runtime</h2>
-      <span class="band-sub" id="runtimeSub"></span>
-    </div>
-    <div id="runtimeAgents" class="health-grid"></div>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Substrate gaps</h2>
-      <span class="band-sub" id="substrateGapsSub"></span>
-    </div>
-    <p class="muted">
-      Engineering items that block agents from running fully autonomously.
-      Source: Atlas's most-recent substrate-state deliverable. Each closes when the corresponding substrate work lands.
-    </p>
-    <ul id="substrateGapsList" class="substrate-gaps-list"></ul>
-  </section>
-
-  <section class="band">
-    <div class="band-head">
-      <h2>Personas without a runtime handler</h2>
-      <span class="band-sub" id="specOnlySub"></span>
-    </div>
-    <div id="specOnlyPersonas" class="health-grid"></div>
-  </section>
-
-  <footer class="foot">
-    <span class="muted">Health derived from <code>/api/state</code> — last-activity timestamps + an inline cadence map for the registered runtime handlers. Atlas's weekly substrate-state report is the source of truth for substrate gaps; this page is the at-a-glance heartbeat.</span>
-  </footer>
-
-</main>
-
-<script src="/_refresh-controls.js"></script>
-<script src="/_failure-banner.js"></script>
-<script src="/provenance-badge.js"></script>
-<script src="/health.js"></script>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Health" });</script>
+  <script src="/health.js"></script>
 </body>
 </html>

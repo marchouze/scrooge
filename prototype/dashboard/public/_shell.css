@@ -9,9 +9,16 @@
  * under brief:atlas:intranet-rebuild-fintech-minimal-design-all-doma:2026-05-19.
  */
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-html, body {
+html,
+body {
   height: 100%;
   background: var(--color-bg);
   color: var(--color-text-primary);
@@ -23,7 +30,9 @@ html, body {
 
 .topbar {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: var(--topbar-height);
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
@@ -62,7 +71,9 @@ html, body {
   flex-shrink: 0;
 }
 
-.topbar-clock { font-variant-numeric: tabular-nums; }
+.topbar-clock {
+  font-variant-numeric: tabular-nums;
+}
 
 .dev-badge {
   display: inline-block;
@@ -91,7 +102,9 @@ html, body {
   z-index: 50;
 }
 
-.sidebar-group { margin-bottom: var(--space-2); }
+.sidebar-group {
+  margin-bottom: var(--space-2);
+}
 
 .sidebar-group-label {
   display: block;
@@ -164,7 +177,9 @@ html, body {
   text-decoration: none;
 }
 
-.section-action:hover { text-decoration: underline; }
+.section-action:hover {
+  text-decoration: underline;
+}
 
 /* ── Tiles ───────────────────────────────────────────────────── */
 
@@ -188,11 +203,13 @@ html, body {
   transition: box-shadow 120ms, border-color 120ms;
 }
 
-.tile[data-href], .tile[data-clickable] {
+.tile[data-href],
+.tile[data-clickable] {
   cursor: pointer;
 }
 
-.tile[data-href]:hover, .tile[data-clickable]:hover {
+.tile[data-href]:hover,
+.tile[data-clickable]:hover {
   border-color: var(--color-border-strong);
   box-shadow: var(--shadow-md);
 }
@@ -215,15 +232,31 @@ html, body {
   color: var(--color-text-secondary);
 }
 
-.tile[data-status="ok"] { border-left: 3px solid var(--color-success); }
-.tile[data-status="warn"] { border-left: 3px solid var(--color-warning); }
-.tile[data-status="danger"] { border-left: 3px solid var(--color-danger); }
-.tile[data-status="info"] { border-left: 3px solid var(--color-info); }
+.tile[data-status="ok"] {
+  border-left: 3px solid var(--color-success);
+}
+.tile[data-status="warn"] {
+  border-left: 3px solid var(--color-warning);
+}
+.tile[data-status="danger"] {
+  border-left: 3px solid var(--color-danger);
+}
+.tile[data-status="info"] {
+  border-left: 3px solid var(--color-info);
+}
 
-.tile[data-status="ok"] .tile-value { color: var(--color-success); }
-.tile[data-status="warn"] .tile-value { color: var(--color-warning); }
-.tile[data-status="danger"] .tile-value { color: var(--color-danger); }
-.tile[data-status="info"] .tile-value { color: var(--color-info); }
+.tile[data-status="ok"] .tile-value {
+  color: var(--color-success);
+}
+.tile[data-status="warn"] .tile-value {
+  color: var(--color-warning);
+}
+.tile[data-status="danger"] .tile-value {
+  color: var(--color-danger);
+}
+.tile[data-status="info"] .tile-value {
+  color: var(--color-info);
+}
 
 /* ── Table ───────────────────────────────────────────────────── */
 
@@ -240,7 +273,11 @@ table {
   font: var(--text-body);
 }
 
-thead { background: var(--color-surface); position: sticky; top: 0; }
+thead {
+  background: var(--color-surface);
+  position: sticky;
+  top: 0;
+}
 
 th {
   padding: var(--space-2) var(--space-4);
@@ -258,12 +295,22 @@ td {
   vertical-align: middle;
 }
 
-tr:last-child td { border-bottom: none; }
+tr:last-child td {
+  border-bottom: none;
+}
 
-tbody tr { transition: background 80ms; }
-tbody tr:hover { background: var(--color-surface); }
-tbody tr[data-clickable] { cursor: pointer; }
-tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
+tbody tr {
+  transition: background 80ms;
+}
+tbody tr:hover {
+  background: var(--color-surface);
+}
+tbody tr[data-clickable] {
+  cursor: pointer;
+}
+tbody tr[data-clickable]:hover {
+  background: var(--color-accent-bg);
+}
 
 .table-empty {
   padding: var(--space-8) var(--space-4);
@@ -283,20 +330,45 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
   white-space: nowrap;
 }
 
-.badge-ok, .badge-success, .badge-active, .badge-open, .badge-populated {
-  background: var(--color-success-bg); color: var(--color-success);
+.badge-ok,
+.badge-success,
+.badge-active,
+.badge-open,
+.badge-populated {
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
-.badge-warn, .badge-warning, .badge-pending, .badge-in-progress {
-  background: var(--color-warning-bg); color: var(--color-warning);
+.badge-warn,
+.badge-warning,
+.badge-pending,
+.badge-in-progress {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
-.badge-danger, .badge-error, .badge-overdue, .badge-critical, .badge-p1, .badge-failed {
-  background: var(--color-danger-bg); color: var(--color-danger);
+.badge-danger,
+.badge-error,
+.badge-overdue,
+.badge-critical,
+.badge-p1,
+.badge-failed {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
 }
-.badge-info, .badge-draft, .badge-idle, .badge-stub, .badge-p2, .badge-p3 {
-  background: var(--color-info-bg); color: var(--color-info);
+.badge-info,
+.badge-draft,
+.badge-idle,
+.badge-stub,
+.badge-p2,
+.badge-p3 {
+  background: var(--color-info-bg);
+  color: var(--color-info);
 }
-.badge-secondary, .badge-closed, .badge-retired, .badge-paused {
-  background: var(--color-surface-raised); color: var(--color-text-secondary);
+.badge-secondary,
+.badge-closed,
+.badge-retired,
+.badge-paused {
+  background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
 }
 
 /* ── Modal ───────────────────────────────────────────────────── */
@@ -304,7 +376,7 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,.4);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -312,7 +384,9 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
   padding: var(--space-6);
 }
 
-.modal-overlay.hidden { display: none; }
+.modal-overlay.hidden {
+  display: none;
+}
 
 .modal-box {
   background: var(--color-bg);
@@ -351,7 +425,9 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
   transition: background 120ms;
 }
 
-.modal-close:hover { background: var(--color-surface-raised); }
+.modal-close:hover {
+  background: var(--color-surface-raised);
+}
 
 .modal-body {
   padding: var(--space-6);
@@ -404,7 +480,10 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
   white-space: nowrap;
 }
 
-.tab-btn:hover { background: var(--color-surface-raised); color: var(--color-text-primary); }
+.tab-btn:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+}
 .tab-btn.active {
   background: var(--color-bg);
   color: var(--color-accent);
@@ -427,11 +506,18 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
-.skeleton-row { height: 40px; margin-bottom: var(--space-2); }
+.skeleton-row {
+  height: 40px;
+  margin-bottom: var(--space-2);
+}
 
 /* ── Card ────────────────────────────────────────────────────── */
 
@@ -457,7 +543,11 @@ tbody tr[data-clickable]:hover { background: var(--color-accent-bg); }
 
 /* ── Code / pre ──────────────────────────────────────────────── */
 
-code, pre { font-family: var(--font-mono); font-size: 12px; }
+code,
+pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
 
 code {
   background: var(--color-surface-raised);
@@ -482,10 +572,22 @@ pre {
   margin-bottom: var(--space-4);
 }
 
-.alert-info { background: var(--color-info-bg); color: var(--color-info); }
-.alert-warn { background: var(--color-warning-bg); color: var(--color-warning); }
-.alert-danger { background: var(--color-danger-bg); color: var(--color-danger); }
-.alert-success { background: var(--color-success-bg); color: var(--color-success); }
+.alert-info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+.alert-warn {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+.alert-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+.alert-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
 
 /* ── Button ──────────────────────────────────────────────────── */
 
@@ -503,15 +605,22 @@ pre {
   transition: background 120ms, border-color 120ms;
 }
 
-.btn-primary { background: var(--color-accent); color: #fff; }
-.btn-primary:hover { background: var(--color-accent-hover); }
+.btn-primary {
+  background: var(--color-accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
 
 .btn-secondary {
   background: var(--color-bg);
   color: var(--color-text-primary);
   border-color: var(--color-border-strong);
 }
-.btn-secondary:hover { background: var(--color-surface); }
+.btn-secondary:hover {
+  background: var(--color-surface);
+}
 
 /* ── Principle cards (architecture page) ─────────────────────── */
 
@@ -533,7 +642,9 @@ pre {
   transition: background 120ms;
 }
 
-.principle-card-header:hover { background: var(--color-surface); }
+.principle-card-header:hover {
+  background: var(--color-surface);
+}
 
 .principle-number {
   display: flex;
@@ -561,7 +672,9 @@ pre {
   transition: transform 200ms;
 }
 
-.principle-card.open .principle-chevron { transform: rotate(90deg); }
+.principle-card.open .principle-chevron {
+  transform: rotate(90deg);
+}
 
 .principle-body {
   padding: var(--space-4) var(--space-5) var(--space-5);
@@ -571,7 +684,9 @@ pre {
   border-top: 1px solid var(--color-border);
 }
 
-.principle-card.open .principle-body { display: block; }
+.principle-card.open .principle-body {
+  display: block;
+}
 
 /* ── Decision cards ──────────────────────────────────────────── */
 
@@ -644,6 +759,10 @@ pre {
 /* ── Responsive helpers ──────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  .sidebar { display: none; }
-  .main-content { margin-left: 0; }
+  .sidebar {
+    display: none;
+  }
+  .main-content {
+    margin-left: 0;
+  }
 }

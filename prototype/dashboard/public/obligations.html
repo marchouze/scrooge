@@ -1,434 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Obligations · Hoz</title>
-  <meta name="description" content="Obligations register — every regulatory obligation mapped to the policy that fulfils it.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <title>Obligations — Scrooge Bank</title>
   <link rel="stylesheet" href="/_brand.css">
-  <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
-  <style>
-    /* ── Map semantic tokens not yet in _brand.css ── */
-    :root {
-      --surface-base:    #ffffff;
-      --surface-raised:  #f5f3ee;
-      --surface-hover:   #edeae4;
-      --neutral-rule:    var(--neutral-mist);
-      --text-primary:    var(--brand-primary);
-      --text-secondary:  var(--neutral-graphite);
-    }
-
-    /* ── Filter bar ── */
-    .oblig-filter-bar {
-      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
-      padding: 12px 0 4px;
-    }
-    .oblig-filter-bar .fc { display: flex; flex-direction: column; gap: 3px; }
-    .oblig-filter-bar label { font-size: 11px; font-weight: 500; color: var(--neutral-stone); text-transform: uppercase; letter-spacing: .04em; }
-    .oblig-filter-bar select,
-    .oblig-filter-bar input[type=search] {
-      padding: 5px 8px; border: 1px solid var(--neutral-rule); border-radius: 4px;
-      font-size: 13px; font-family: inherit; background: var(--surface-base);
-      color: var(--text-primary);
-    }
-    .oblig-filter-bar input[type=search] { min-width: 220px; }
-    .oblig-filter-bar .fc-wide { flex: 1; min-width: 180px; }
-    .oblig-filter-count {
-      font-size: 12px; color: var(--neutral-stone); align-self: flex-end; padding-bottom: 6px; white-space: nowrap;
-    }
-
-    /* ── Table ── */
-    .oblig-table-wrap { overflow-x: auto; margin-top: 8px; }
-    table.oblig-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    table.oblig-table th, table.oblig-table td {
-      border-bottom: 1px solid var(--neutral-rule); padding: 7px 10px; vertical-align: top; text-align: left;
-    }
-    table.oblig-table th { background: var(--surface-raised); font-weight: 600; color: var(--text-secondary); font-size: 11.5px; }
-    table.oblig-table tr:hover td { background: var(--surface-hover); }
-    table.oblig-table tr.oblig-clickable-row:hover td { background: var(--surface-hover); cursor: pointer; }
-    table.oblig-table code { font-size: 11px; background: var(--surface-raised); padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono); }
-    .oblig-id-btn {
-      background: none; border: none; padding: 0; cursor: pointer;
-      font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
-      color: var(--accent-ink); text-decoration: underline dotted;
-      text-align: left;
-    }
-    .oblig-id-btn:hover { color: var(--accent-ink-hover, #1a5190); }
-    .oblig-reg-btn {
-      background: #eef; border: 1px solid #cce; border-radius: 3px;
-      padding: 1px 6px; font-size: 10.5px; font-weight: 500; color: #335;
-      cursor: pointer; text-align: left; white-space: nowrap;
-      font-family: inherit; line-height: 1.5;
-    }
-    .oblig-reg-btn:hover { background: #ddf; border-color: #aac; }
-    .oblig-gap-row td { background: #fff7f6 !important; }
-
-    /* ── Tags ── */
-    .oblig-tag {
-      display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-      background: #eef; color: #335; border: 1px solid #cce;
-    }
-    .oblig-tag-bind { background: #fff3e0; color: #a04200; border-color: #ffd9a8; }
-    a.oblig-policy-link { text-decoration: underline; cursor: pointer; color: inherit; }
-    a.oblig-policy-link:hover { background: #d8d8f5; }
-    .oblig-gap-flag {
-      display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10.5px;
-      background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; margin-right: 3px;
-    }
-    .status-in-force    { background: #e8f5e9; color: #2e6b34; border-color: #bce0c0; }
-    .status-partial     { background: #fff8e1; color: #7a5a00; border-color: #ffe082; }
-    .status-drafting    { background: #e3f2fd; color: #1c4d80; border-color: #cae0f5; }
-    .status-planned     { background: #f3e5f5; color: #5c2d7e; border-color: #d9b8ed; }
-    .status-not-applicable { background: #f5f5f5; color: #666; border-color: #ddd; }
-    .status-deferred    { background: #fff3e0; color: #a04200; border-color: #ffd9a8; }
-    .status-superseded  { background: #fbe9e7; color: #7d1e10; border-color: #f3c1bc; }
-
-    /* ── Collapsible analytics panels ── */
-    details.oblig-panel { border: 1px solid var(--neutral-rule); border-radius: 6px; margin-top: 20px; }
-    details.oblig-panel summary {
-      padding: 10px 14px; font-weight: 600; font-size: 13.5px; cursor: pointer;
-      list-style: none; display: flex; align-items: center; gap: 8px;
-      color: var(--text-primary);
-    }
-    details.oblig-panel summary::before { content: "▶"; font-size: 10px; color: var(--neutral-stone); transition: transform .15s; }
-    details.oblig-panel[open] summary::before { transform: rotate(90deg); }
-    details.oblig-panel summary::-webkit-details-marker { display: none; }
-    details.oblig-panel .panel-body { padding: 0 14px 14px; }
-
-    /* ── Summary cards ── */
-    .oblig-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
-    .oblig-card {
-      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
-      border-radius: 5px; padding: 10px 12px;
-    }
-    .oblig-card-num { font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--text-primary); }
-    .oblig-card-lbl { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
-    .oblig-card-sub { font-size: 10.5px; color: var(--neutral-stone); margin-top: 2px; }
-
-    .oblig-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .oblig-chip {
-      display: inline-flex; align-items: baseline; gap: 5px;
-      padding: 3px 8px; border-radius: 10px;
-      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
-      font-size: 11.5px;
-    }
-    .oblig-chip b { font-weight: 600; }
-
-    /* ── Clickable chip buttons ── */
-    .oblig-chip--btn {
-      cursor: pointer; font-family: inherit;
-      transition: background 0.12s, border-color 0.12s, color 0.12s;
-    }
-    .oblig-chip--btn:hover {
-      background: var(--surface-hover); border-color: var(--neutral-stone);
-    }
-    .oblig-chip--btn:focus-visible {
-      outline: 2px solid var(--accent-ink); outline-offset: 2px;
-    }
-    .oblig-chip--btn.oblig-chip--active {
-      background: var(--accent-ink); border-color: var(--accent-ink);
-      color: #fff;
-    }
-    .oblig-chip--btn.oblig-chip--active b { color: #fff; }
-    .oblig-chip--btn.oblig-chip--active .oblig-chip-muted { color: rgba(255,255,255,0.75); }
-    .oblig-chip-reset {
-      margin-left: 3px; font-size: 10px; font-weight: 700; opacity: 0.85;
-      line-height: 1; cursor: pointer; vertical-align: middle;
-    }
-    .oblig-chip-reset:hover { opacity: 1; }
-
-    /* ── Mermaid map ── */
-    .mermaid {
-      background: var(--surface-raised); border: 1px solid var(--neutral-rule);
-      border-radius: 5px; padding: 14px; overflow: auto; margin-top: 10px;
-    }
-
-    /* ── Findings ── */
-    .oblig-findings-summary { font-size: 13px; color: var(--text-secondary); margin: 10px 0 12px; }
-    .oblig-findings-summary b { font-weight: 600; }
-
-    /* ── Drawer ── */
-    .oblig-drawer-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 200;
-    }
-    .oblig-drawer-overlay.open { display: block; }
-    .oblig-drawer {
-      position: fixed; top: 0; right: 0; bottom: 0; width: min(540px, 100vw);
-      background: var(--surface-base); box-shadow: -4px 0 24px rgba(0,0,0,.15);
-      display: flex; flex-direction: column; z-index: 201;
-      transform: translateX(100%); transition: transform .2s ease;
-    }
-    .oblig-drawer-overlay.open .oblig-drawer { transform: translateX(0); }
-    .oblig-drawer-head {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      padding: 16px 20px 12px; border-bottom: 1px solid var(--neutral-rule); gap: 12px;
-    }
-    .oblig-drawer-head h3 { margin: 0; font-size: 14px; word-break: break-all; font-family: var(--font-mono); }
-    .oblig-drawer-close {
-      background: none; border: none; cursor: pointer; font-size: 18px; color: var(--neutral-stone);
-      padding: 0 4px; flex-shrink: 0; line-height: 1;
-    }
-    .oblig-drawer-close:hover { color: var(--text-primary); }
-    .oblig-drawer-body { overflow-y: auto; padding: 16px 20px; flex: 1; }
-    .oblig-drawer-body dl { margin: 0; }
-    .oblig-drawer-body dt {
-      font-size: 10.5px; font-weight: 600; color: var(--neutral-stone); text-transform: uppercase;
-      letter-spacing: .04em; margin-top: 14px;
-    }
-    .oblig-drawer-body dt:first-child { margin-top: 0; }
-    .oblig-drawer-body dd {
-      margin: 3px 0 0 0; font-size: 13px; color: var(--text-primary); line-height: 1.5;
-      word-break: break-word;
-    }
-    .oblig-drawer-body dd code { font-size: 11.5px; background: var(--surface-raised); padding: 1px 5px; border-radius: 3px; }
-  </style>
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
-
-  <header class="shell-header" role="banner">
-    <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
-        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-        </svg>
-        <span class="shell-wordmark">Hoz</span>
-        <span class="shell-wordmark-suffix">Obligations</span>
-      </a>
-      <div class="shell-meta">
-        <span data-provenance-badge="page-top" data-provenance-source="/api/obligations" aria-label="Provenance badge"></span>
-        <button type="button" class="shell-refresh-btn" id="refreshBtn" aria-label="Refresh data">Refresh</button>
-        <span class="shell-as-of" id="lastUpdated" aria-live="polite">connecting…</span>
-        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
-      </div>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Obligations</h1></div>
+    <div class="page-body">
+      <div id="obl-tabs" class="tab-bar"></div>
+      <div id="obl-table"></div>
     </div>
-  </header>
-
-  <div class="shell-layout">
-    <nav class="shell-sidebar" aria-label="Department navigation">
-      <div data-shell-dept-nav></div>
-    </nav>
-
-    <main class="shell-main" id="shell-main" tabindex="-1">
-      <div class="shell-page-header">
-        <h1 class="shell-page-title">Obligations register</h1>
-        <p class="shell-page-lede">
-          Mira's curated map of every statutory and policy obligation —
-          Reg&nbsp;→&nbsp;Policy&nbsp;→&nbsp;Procedure&nbsp;→&nbsp;System&nbsp;Capability.
-          Source: <code>Regulations/_obligations-register.md</code>, parsed live.
-        </p>
-      </div>
-
-      <!-- ── Filter bar ── -->
-      <div class="oblig-filter-bar">
-        <div class="fc">
-          <label for="filterFamily">Domain</label>
-          <select id="filterFamily"><option value="">All domains</option></select>
-        </div>
-        <div class="fc">
-          <label for="filterBind">Bind</label>
-          <select id="filterBind">
-            <option value="">Any</option>
-            <option value="CORPORATE">CORPORATE</option>
-            <option value="LICENCE">LICENCE</option>
-            <option value="COMMENCEMENT">COMMENCEMENT</option>
-            <option value="CONDITIONAL">CONDITIONAL</option>
-            <option value="UNCLASSIFIED">UNCLASSIFIED</option>
-          </select>
-        </div>
-        <div class="fc">
-          <label for="filterStatus">Status</label>
-          <select id="filterStatus">
-            <option value="">Any</option>
-            <option value="IN FORCE">IN FORCE</option>
-            <option value="PARTIAL">PARTIAL</option>
-            <option value="PLANNED">PLANNED</option>
-            <option value="DRAFTING">DRAFTING</option>
-            <option value="SUPERSEDED">SUPERSEDED</option>
-          </select>
-        </div>
-        <div class="fc">
-          <label for="filterChain">Chain</label>
-          <select id="filterChain">
-            <option value="">Any</option>
-            <option value="COMPLETE">Complete</option>
-            <option value="GAP">Has gap</option>
-            <option value="NO-FULFILMENT">No policy</option>
-            <option value="NO-OWNER">No owner</option>
-          </select>
-        </div>
-        <div class="fc">
-          <label for="filterActivity">Activity</label>
-          <select id="filterActivity">
-            <option value="">All activities</option>
-            <option value="universal">Universal</option>
-            <optgroup label="Trading">
-              <option value="ACT-TRADE-FX">FX dealing</option>
-              <option value="ACT-TRADE-BOND">Bond trading</option>
-              <option value="ACT-TRADE-EQUITY">Equity trading (JSE)</option>
-              <option value="ACT-TRADE-OTC-IRD">OTC IRD</option>
-              <option value="ACT-TRADE-OTC-CREDIT">OTC credit derivatives</option>
-            </optgroup>
-            <optgroup label="Banking">
-              <option value="ACT-BANK-DEPOSIT">Deposit-taking</option>
-              <option value="ACT-BANK-PAYMENT">Payment processing</option>
-              <option value="ACT-BANK-NOSTRO">Nostro management</option>
-            </optgroup>
-            <optgroup label="Client">
-              <option value="ACT-CLIENT-ONBOARD">Client onboarding</option>
-              <option value="ACT-CLIENT-ADVICE">FAIS investment advice</option>
-              <option value="ACT-CLIENT-CATEGORISE">Client categorisation</option>
-            </optgroup>
-            <optgroup label="Reporting">
-              <option value="ACT-REPORT-PRUDENTIAL">Prudential reporting</option>
-              <option value="ACT-REPORT-CONDUCT">Conduct reporting</option>
-              <option value="ACT-REPORT-FINSURV">FX / FinSurv reporting</option>
-              <option value="ACT-REPORT-TRADE">Trade reporting</option>
-            </optgroup>
-            <optgroup label="Risk">
-              <option value="ACT-RISK-CAPITAL">Capital management</option>
-              <option value="ACT-RISK-LIQUIDITY">Liquidity management</option>
-              <option value="ACT-RISK-MARKET">Market risk</option>
-              <option value="ACT-RISK-CREDIT">Credit &amp; counterparty risk</option>
-              <option value="ACT-RISK-OPERATIONAL">Operational risk</option>
-              <option value="ACT-RISK-MODEL">Model risk &amp; validation</option>
-            </optgroup>
-            <optgroup label="Governance">
-              <option value="ACT-GOVERN-BOARD">Board &amp; committee governance</option>
-              <option value="ACT-GOVERN-AUDIT">Internal audit</option>
-              <option value="ACT-GOVERN-COMPLIANCE">Compliance monitoring</option>
-              <option value="ACT-GOVERN-REMUNER">Remuneration governance</option>
-            </optgroup>
-            <optgroup label="Technology">
-              <option value="ACT-TECH-IT">IT systems management</option>
-              <option value="ACT-TECH-CYBER">Cybersecurity</option>
-              <option value="ACT-TECH-DATA">Data management</option>
-              <option value="ACT-TECH-KEY-MGMT">Key management</option>
-            </optgroup>
-            <optgroup label="Corporate">
-              <option value="ACT-CORP-ENTITY">Legal entity management</option>
-              <option value="ACT-CORP-EMPLOYEE">Employment &amp; HR</option>
-              <option value="ACT-CORP-LEGAL">Legal &amp; contracting</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="fc">
-          <label for="filterProduct">Product</label>
-          <select id="filterProduct">
-            <option value="">All products</option>
-            <option value="universal">Universal</option>
-            <option value="listed-equity">Listed equity</option>
-            <option value="listed-bond">Listed bond</option>
-            <option value="repo">Repo</option>
-            <option value="otc-ird">OTC IRD</option>
-            <option value="fx">FX</option>
-            <option value="structured">Structured</option>
-          </select>
-        </div>
-        <div class="fc fc-wide">
-          <label for="filterSearch">Search</label>
-          <input type="search" id="filterSearch" placeholder="ID, citation, requirement, owner…" autocomplete="off">
-        </div>
-        <span class="oblig-filter-count" id="obligListSub"></span>
-      </div>
-
-      <!-- ── Main obligations table ── -->
-      <div class="oblig-table-wrap">
-        <table class="oblig-table" id="obligTable" aria-label="Obligations register">
-          <thead>
-            <tr>
-              <th style="width:10em;">Regulator</th>
-              <th style="width:14em;">Regulatory instrument</th>
-              <th>Requirement</th>
-              <th style="width:18em;">Fulfilment policy</th>
-              <th style="width:8em;">Status</th>
-            </tr>
-          </thead>
-          <tbody id="obligBody">
-            <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--neutral-stone)">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- ── Analytics (collapsible) ── -->
-      <details class="oblig-panel" id="panelSummary">
-        <summary>Register at a glance <span id="obligSummarySub" style="font-weight:400;font-size:12px;color:var(--neutral-stone);margin-left:6px;"></span></summary>
-        <div class="panel-body">
-          <div class="oblig-summary" id="obligSummary"></div>
-          <p style="margin:14px 0 2px;font-size:12.5px;font-weight:600;">By source-instrument family</p>
-          <div class="oblig-chips" id="obligFamilyList"></div>
-          <p style="margin:12px 0 2px;font-size:12.5px;font-weight:600;">By bind state</p>
-          <div class="oblig-chips" id="obligBindList"></div>
-          <p style="margin:12px 0 2px;font-size:12.5px;font-weight:600;">By status</p>
-          <div class="oblig-chips" id="obligStatusList"></div>
-        </div>
-      </details>
-
-      <details class="oblig-panel" id="panelFindings">
-        <summary>Citation-integrity findings <span id="obligFindingsBadge" style="font-weight:400;font-size:12px;color:var(--neutral-stone);margin-left:6px;"></span></summary>
-        <div class="panel-body">
-          <p style="font-size:12.5px;color:var(--text-secondary);margin:10px 0 8px;">
-            Obligations whose Reg&nbsp;→&nbsp;Policy&nbsp;→&nbsp;Procedure&nbsp;→&nbsp;Capability chain is incomplete.
-            Resolving these is part of Mira's register-maintenance cadence and Vera's continuous-controls programme.
-          </p>
-          <div class="oblig-findings-summary" id="obligFindingsSummary"></div>
-          <div class="oblig-table-wrap">
-            <table class="oblig-table" id="obligFindingsTable" aria-label="Citation-integrity findings">
-              <thead>
-                <tr>
-                  <th style="width:7em;">ID</th>
-                  <th style="width:16em;">Citation</th>
-                  <th>Requirement</th>
-                  <th style="width:12em;">Gap</th>
-                </tr>
-              </thead>
-              <tbody id="obligFindingsBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </details>
-
-      <details class="oblig-panel" id="panelMap">
-        <summary>Principle&nbsp;2 citation map <span style="font-weight:400;font-size:12px;color:var(--neutral-stone);margin-left:6px;">Reg → Policy → Procedure → Capability</span></summary>
-        <div class="panel-body">
-          <p style="font-size:12.5px;color:var(--text-secondary);margin:10px 0 6px;">
-            Representative slice — one subgraph per source-instrument family.
-            Dashed edges = chain incomplete.
-          </p>
-          <div class="mermaid" id="obligMap">flowchart LR
-  subgraph LOAD["loading…"]
-    L[expand panel to render]
-  end
-</div>
-        </div>
-      </details>
-
-    </main>
-  </div>
-
-  <!-- Detail drawer -->
-  <div class="oblig-drawer-overlay" id="drawerOverlay">
-    <div class="oblig-drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
-      <div class="oblig-drawer-head">
-        <h3 id="drawerTitle"></h3>
-        <button class="oblig-drawer-close" id="drawerClose" aria-label="Close">&#x2715;</button>
-      </div>
-      <div class="oblig-drawer-body">
-        <dl id="drawerBody"></dl>
-      </div>
-    </div>
-  </div>
-
-  <script src="/_failure-banner.js"></script>
+  </main>
+  <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script src="/obligations.js"></script>
-  <script src="/_shell.js" defer onerror="this.remove();"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Obligations" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      document.getElementById("obl-table").innerHTML = SC.renderSkeleton(8);
+      const data = await sf("/api/obligations");
+      const all = Array.isArray(data) ? data : (data?.items ?? data?.obligations ?? []);
+      const tabs = ["All","Open","Overdue","Closed"];
+      let active = "All";
+      const tabsEl = document.getElementById("obl-tabs");
+      function render() {
+        const rows = active === "All" ? all : all.filter(o => (o.status||"").toLowerCase() === active.toLowerCase());
+        SC.renderTable({
+          container: document.getElementById("obl-table"),
+          headers: ["ID","Title","Regulation","Due Date","Status"],
+          rows: rows.map(o => ({
+            cells: [SC.esc(o.id||o.obligationId||""), SC.esc(o.title||""), SC.esc(o.regulation||o.source||""), SC.esc((o.dueDate||o.due||"").slice(0,10)), SC.renderBadge(o.status||"open")],
+            data: o,
+          })),
+          onRowClick: o => SC.openModal({ title: o.title||"Obligation", body: SC.renderDefList(o) }),
+          emptyMessage: "No obligations",
+        });
+      }
+      tabsEl.innerHTML = tabs.map(t => `<button class="tab-btn${t===active?" active":""}" data-tab="${t}">${t}</button>`).join("");
+      tabsEl.addEventListener("click", e => {
+        const b = e.target.closest(".tab-btn"); if (!b) return;
+        active = b.dataset.tab;
+        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", x.dataset.tab===active));
+        render();
+      });
+      render();
+    })();
+  </script>
 </body>
 </html>

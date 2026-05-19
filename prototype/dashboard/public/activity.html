@@ -1,13 +1,69 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=/rms.html?register=agent-runs">
-<title>Redirecting — Hoz</title>
-<link rel="stylesheet" href="/provenance-badge.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Activity — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
-<body data-provenance-content="none">
-<p>Redirecting to <a href="/rms.html?register=agent-runs">RMS agent runs register</a>…</p>
-<script src="/provenance-badge.js"></script>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Activity</h1></div>
+    <div class="page-body">
+      <div id="act-table"></div>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Activity" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const el = document.getElementById("act-table");
+      el.innerHTML = SC.renderSkeleton(8);
+      const [startedData, completedData] = await Promise.all([
+        sf("/api/events?type=AgentRunStarted&limit=100"),
+        sf("/api/events?type=AgentRunCompleted&limit=100"),
+      ]);
+      const started = Array.isArray(startedData) ? startedData : (startedData?.events ?? startedData?.items ?? []);
+      const completed = Array.isArray(completedData) ? completedData : (completedData?.events ?? completedData?.items ?? []);
+      const completedMap = {};
+      completed.forEach(e => {
+        const key = e.payload?.runId ?? e.runId ?? e.correlationId;
+        if (key) completedMap[key] = e;
+      });
+      const rows = started.map(e => {
+        const runId = e.payload?.runId ?? e.runId ?? e.id;
+        const comp = completedMap[runId];
+        return {
+          agentName: e.payload?.agentName ?? e.agentName ?? "",
+          started: e.at ?? e.timestamp ?? "",
+          completed: comp ? (comp.at ?? comp.timestamp ?? "") : null,
+          outcome: comp ? (comp.payload?.outcome ?? comp.outcome ?? "completed") : "running",
+          raw: { started: e, completed: comp ?? null },
+        };
+      });
+      SC.renderTable({
+        container: el,
+        headers: ["Agent","Started","Completed","Outcome"],
+        rows: rows.map(r => ({
+          cells: [
+            SC.esc(r.agentName),
+            SC.esc(r.started.slice(0,19).replace("T"," ")),
+            r.completed ? SC.esc(r.completed.slice(0,19).replace("T"," ")) : `<span style="color:var(--color-warning)">running</span>`,
+            SC.renderBadge(r.outcome),
+          ],
+          data: r,
+        })),
+        onRowClick: r => SC.openModal({ title: `Run: ${r.agentName||"agent"}`, body: SC.renderDefList(r.raw) }),
+        emptyMessage: "No agent run activity",
+      });
+    })();
+  </script>
 </body>
 </html>

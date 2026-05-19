@@ -46,7 +46,9 @@
     if (href) {
       el.dataset.href = href;
       el.style.cursor = "pointer";
-      el.addEventListener("click", () => { window.location.href = href; });
+      el.addEventListener("click", () => {
+        window.location.href = href;
+      });
     } else if (typeof onClick === "function") {
       el.dataset.clickable = "1";
       el.addEventListener("click", onClick);
@@ -109,9 +111,10 @@
   function renderDefList(obj) {
     if (!obj || typeof obj !== "object") return `<p>${esc(fmt(obj))}</p>`;
     const rows = Object.entries(obj).map(([k, v]) => {
-      const val = typeof v === "object" && v !== null
-        ? `<pre>${esc(JSON.stringify(v, null, 2))}</pre>`
-        : esc(fmt(v));
+      const val =
+        typeof v === "object" && v !== null
+          ? `<pre>${esc(JSON.stringify(v, null, 2))}</pre>`
+          : esc(fmt(v));
       return `<dt>${esc(k)}</dt><dd>${val}</dd>`;
     });
     return `<dl class="def-list">${rows.join("")}</dl>`;
@@ -131,12 +134,14 @@
       return;
     }
 
-    const ths = headers.map(h => `<th>${esc(h)}</th>`).join("");
-    const trs = rows.map(row => {
-      const tds = row.cells.map(c => `<td>${c}</td>`).join("");
-      const clickable = typeof onRowClick === "function" ? ' data-clickable="1"' : "";
-      return `<tr${clickable}>${tds}</tr>`;
-    }).join("");
+    const ths = headers.map((h) => `<th>${esc(h)}</th>`).join("");
+    const trs = rows
+      .map((row) => {
+        const tds = row.cells.map((c) => `<td>${c}</td>`).join("");
+        const clickable = typeof onRowClick === "function" ? ' data-clickable="1"' : "";
+        return `<tr${clickable}>${tds}</tr>`;
+      })
+      .join("");
 
     container.innerHTML = `<div class="table-wrap"><table>
       <thead><tr>${ths}</tr></thead>

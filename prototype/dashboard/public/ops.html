@@ -1,159 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ops Dashboard · Hoz</title>
-  <meta name="description" content="Operations department view — settlement/clearing status, system health, recent operational events.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <title>Operations — Scrooge Bank</title>
   <link rel="stylesheet" href="/_brand.css">
-  <link rel="stylesheet" href="/_shell.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
 </head>
 <body>
-  <a class="shell-skip-link" href="#shell-main">Skip to main content</a>
-
-  <header class="shell-header" role="banner">
-    <div class="shell-header-inner">
-      <a class="shell-brand" href="/home.html" data-shell-nav="home" aria-label="Hoz — home">
-        <svg class="shell-brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="6" y1="24" x2="58" y2="24" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-        </svg>
-        <span class="shell-wordmark">Hoz</span>
-        <span class="shell-wordmark-suffix">Ops Dashboard</span>
-      </a>
-      <div class="shell-meta">
-        <span data-provenance-badge="page-top" data-provenance-source="/api/state" aria-label="Provenance badge"></span>
-        <button type="button" class="shell-refresh-btn" data-shell-refresh aria-label="Refresh data">Refresh</button>
-        <span class="shell-as-of" data-shell-asof aria-live="polite">connecting…</span>
-        <div class="shell-identity" data-shell-identity role="status" aria-label="Signed in"></div>
-      </div>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Operations</h1></div>
+    <div class="page-body">
+      <div id="ops-tiles" class="tile-row"></div>
+      <div id="ws-header"></div>
+      <div id="ws-table"></div>
     </div>
-  </header>
-
-  <div class="shell-layout">
-    <nav class="shell-sidebar" aria-label="Department navigation">
-      <div data-shell-dept-nav></div>
-    </nav>
-
-    <main class="shell-main" id="shell-main" tabindex="-1">
-      <div class="shell-page-header">
-        <h1 class="shell-page-title">Ops Dashboard</h1>
-        <p class="shell-page-lede">
-          Devon (COO, governance) — settlement and clearing status, system health indicators,
-          and recent operational events from the event log. Indirect-participant posture:
-          Hoz routes via sponsor / correspondent banks to SAMOS and CLS.
-        </p>
-      </div>
-
-      <!-- Settlement / clearing status -->
-      <section aria-labelledby="ops-settlement-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="ops-settlement-head">Settlement &amp; clearing</h2>
-          <span class="shell-category-kind">Live</span>
-        </div>
-        <p class="shell-category-blurb">
-          Hoz operates as indirect participant (CLAUDE.md — indirect-participant posture).
-          SAMOS / CLS access via sponsor bank. Status derived from settlement events.
-        </p>
-        <div style="background:#fff;border:var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;" id="ops-settlement-body">
-          <p style="padding:var(--space-4);color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- System health -->
-      <section aria-labelledby="ops-health-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="ops-health-head">System health</h2>
-          <span class="shell-category-kind">Live</span>
-        </div>
-        <p class="shell-category-blurb">
-          Recon pipeline conclusions from <code>/api/state</code>. Detailed health view at <a href="/health.html" style="color:var(--accent-ink)">health.html</a>.
-        </p>
-        <div class="dept-metrics" id="ops-health-metrics">
-          <div class="dept-metric">
-            <p class="dept-metric-label">Agent fleet</p>
-            <p class="dept-metric-value" id="ops-fleet" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Total / RAG status</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Active workstreams</p>
-            <p class="dept-metric-value" id="ops-workstreams" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Active / total</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Open escalations</p>
-            <p class="dept-metric-value" id="ops-escalations" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Awaiting CEO action</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Open decisions</p>
-            <p class="dept-metric-value" id="ops-open-decisions" data-tone="muted">–</p>
-            <p class="dept-metric-sub">CEO queue</p>
-          </div>
-          <div class="dept-metric">
-            <p class="dept-metric-label">Substrate gaps</p>
-            <p class="dept-metric-value" id="ops-gaps" data-tone="muted">–</p>
-            <p class="dept-metric-sub">Atlas inventory</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Active workstreams -->
-      <section aria-labelledby="ops-workstreams-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="ops-workstreams-head">Active workstreams</h2>
-          <span class="shell-category-kind">Live</span>
-        </div>
-        <p class="shell-category-blurb">
-          In-flight workstreams from <code>/api/state</code> → <code>inFlight</code>.
-          Each row is a <code>WorkstreamStarted</code> event that has not yet received a
-          <code>WorkstreamCompleted</code> event. Devon (COO, governance) owns workstream oversight.
-        </p>
-        <div id="ops-workstreams-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <!-- Recent operational events -->
-      <section aria-labelledby="ops-events-head" style="margin-bottom:var(--space-12)">
-        <div class="shell-category-head">
-          <h2 class="shell-category-title" id="ops-events-head">Recent operational events</h2>
-          <span class="shell-category-kind">Live</span>
-        </div>
-        <p class="shell-category-blurb">
-          Latest events from <code>/api/events</code> — FX settlements, counterparty events, agent lifecycle.
-          <a href="/events.html" style="color:var(--accent-ink)">Browse full event store →</a>
-        </p>
-        <div id="ops-events-body">
-          <p style="color:var(--neutral-stone);font-size:var(--type-small)">Loading…</p>
-        </div>
-      </section>
-
-      <aside class="shell-callout" aria-labelledby="ops-gaps-note">
-        <h3 id="ops-gaps-note">Build-phase substrate gaps</h3>
-        <ul>
-          <li>Settlement events — <code>FxSettlementCompleted</code> event type lands with M-phase FX desk substrate (Devon + Kai); until then the settlement table shows placeholder state.</li>
-          <li>SAMOS / CLS indirect-participant connectivity — licence-day item; sponsor bank agreement and correspondent mandate are commencement-bind obligations.</li>
-          <li>T2S / JSE-CSD integration — bonds/equities settlement routes to be defined by Saskia (Market infrastructure engineer) post-licence.</li>
-        </ul>
-      </aside>
-    </main>
-  </div>
-
-  <footer class="shell-footer" role="contentinfo">
-    Operations · Ops Dashboard · Hoz ·
-    data from <a href="/api/state">/api/state</a> · <a href="/api/events">/api/events</a> ·
-    cited under CEO directive 2026-05-09; Principle 1.
-  </footer>
-
+  </main>
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
-  <script src="/_refresh-controls.js" defer onerror="this.remove();"></script>
-  <script src="/ops.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Operations" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const [settlement, inflight] = await Promise.all([sf("/api/ops/settlement"), sf("/api/inflight")]);
+      const tilesEl = document.getElementById("ops-tiles");
+      const s = settlement ?? {};
+      tilesEl.appendChild(SC.renderTile({
+        label: "Settlement Status", value: s.status||s.overallStatus||"—",
+        status: s.status==="ok"?"ok":s.status==="warn"?"warn":s.status?"danger":null,
+        onClick: () => SC.openModal({ title:"Settlement Detail", body: SC.renderDefList(s) }),
+      }));
+      tilesEl.appendChild(SC.renderTile({ label:"Procedures", value:"View", href:"/procedures.html", status:"info" }));
+      document.getElementById("ws-header").innerHTML = SC.renderSectionHeader("In-Flight Workstreams", null);
+      const ws = Array.isArray(inflight) ? inflight : (inflight?.workstreams ?? inflight?.items ?? []);
+      SC.renderTable({
+        container: document.getElementById("ws-table"),
+        headers: ["Owner","Title","Started","Status"],
+        rows: ws.map(w => ({
+          cells: [SC.esc(w.owner||""), SC.esc(w.title||w.name||""), SC.esc((w.startedAt||w.started||"").slice(0,10)), SC.renderBadge(w.status||"active")],
+          data: w,
+        })),
+        onRowClick: w => SC.openModal({ title: w.title||w.name||"Workstream", body: SC.renderDefList(w) }),
+        emptyMessage: "No in-flight workstreams",
+      });
+    })();
+  </script>
 </body>
 </html>
