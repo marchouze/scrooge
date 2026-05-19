@@ -274,13 +274,13 @@ import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
+import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES } from "./security-devops-extended";
-import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 
 export const TYPED_EVENT_TYPES = [

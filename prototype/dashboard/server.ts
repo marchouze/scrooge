@@ -68,6 +68,7 @@ import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
+import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import {
   getCorrespondentRouting,
@@ -220,6 +221,14 @@ function bootDerive(): DashboardState {
     bootPartyBackfill();
     // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections.
     buildSlice5Projections();
+    // Product Control — emit DailyPnLReportGenerated on each derive cycle.
+    // Idempotent in practice (new event per cycle); API returns only the latest.
+    // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+    try {
+      runDailyPnLReport(eventStore, nowUtc);
+    } catch (pnlErr) {
+      logger.warn({ err: (pnlErr as Error).message }, "product-control: daily P&L report skipped");
+    }
     const s = deriveState({
       sources: SOURCES,
       events: EVENTS,
@@ -1756,6 +1765,43 @@ const server = Bun.serve({
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
       return handleFxOrder(req);
     }
+    // ---------- Product Control — daily FX P&L ----------
+    if (url.pathname === "/api/product-control/daily-pnl" && req.method === "GET") {
+      // Returns the latest DailyPnLReportGenerated event payload plus
+      // per-trade detail rows. If no report has been generated yet,
+      // computes one on-demand (not persisted).
+      // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+      const reportDate = nowUtc().slice(0, 10);
+      // Find the latest persisted report.
+      let latestReport: unknown = null;
+      for (const e of eventStore.replay({ type: "DailyPnLReportGenerated" })) {
+        latestReport = e.payload; // keep last (replay is oldest-first)
+      }
+      // Compute fresh trade-level detail and report on demand.
+      const { payload: freshPayload, trades } = computeDailyPnL(eventStore, reportDate);
+      return jsonResponse({
+        report: latestReport ?? freshPayload,
+        trades,
+        asOf: nowUtc(),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/product-control/report-history" && req.method === "GET") {
+      // Returns all DailyPnLReportGenerated events, newest first.
+      // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+      const reports: unknown[] = [];
+      for (const e of eventStore.replay({ type: "DailyPnLReportGenerated" })) {
+        reports.push(e.payload);
+      }
+      reports.reverse(); // newest first
+      return jsonResponse({
+        reports,
+        total: reports.length,
+        asOf: nowUtc(),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    // ---------- end Product Control ----------
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.
       // Query params:

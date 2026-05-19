@@ -23,6 +23,7 @@
         { label: "Finance", href: "/finance.html" },
         { label: "General Ledger", href: "/gl" },
         { label: "Trade Booking", href: "/trade-book.html" },
+        { label: "Product Control", href: "/product-control.html" },
       ],
     },
     {

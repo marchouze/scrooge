@@ -25,6 +25,10 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { newEventId, nowUtc } from "../core/types";
+import type {
+  FxPositionRevaluedPayload,
+  FxSettlementConfirmedPayload,
+} from "../event-store/event-types/fx-accounting";
 import { makeDailyPnLReportGenerated } from "../event-store/event-types/product-control";
 import type {
   DailyPnLReportGeneratedPayload,
@@ -32,7 +36,6 @@ import type {
   PnLByCounterparty,
   PnLByPair,
 } from "../event-store/event-types/product-control";
-import type { FxPositionRevaluedPayload, FxSettlementConfirmedPayload } from "../event-store/event-types/fx-accounting";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 
@@ -72,11 +75,7 @@ const ENGINE_ACTOR = {
   type: "service" as const,
   id: "agent:product-control-engine",
 };
-const CITATIONS = [
-  "D-FX-SALES-TRADING-FRONTEND",
-  "IFRS-9-§5.7.1",
-  "D-MARKETS-SCHEMA-FOUNDATION",
-];
+const CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "IFRS-9-§5.7.1", "D-MARKETS-SCHEMA-FOUNDATION"];
 
 /**
  * Compute the daily P&L report for `reportDate` (YYYY-MM-DD).
@@ -92,9 +91,10 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
     for (const e of store.replay({ type: "FxTradeCancelled" })) {
       const p = e.payload as { tradeId?: string | { value?: string } };
       const tid = p.tradeId;
-      const idStr = typeof tid === "object" && tid !== null && "value" in tid
-        ? (tid.value ?? "")
-        : String(tid ?? "");
+      const idStr =
+        typeof tid === "object" && tid !== null && "value" in tid
+          ? (tid.value ?? "")
+          : String(tid ?? "");
       if (idStr) cancelledIds.add(idStr);
     }
   } catch {
@@ -142,9 +142,15 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   // -------------------------------------------------------------------------
   const trades: TradeDetailRow[] = [];
   const byPairMap = new Map<string, { trades: number; unrealised: number; realised: number }>();
-  const byCounterpartyMap = new Map<string, {
-    name: string; trades: number; unrealised: number; realised: number;
-  }>();
+  const byCounterpartyMap = new Map<
+    string,
+    {
+      name: string;
+      trades: number;
+      unrealised: number;
+      realised: number;
+    }
+  >();
   const byBookMap = new Map<string, { trades: number; unrealised: number; realised: number }>();
 
   let totalUnrealised = 0;
@@ -202,7 +208,12 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
       byPairMap.set(pair, pairRow);
 
       // Aggregate by counterparty.
-      const cpRow = byCounterpartyMap.get(cid) ?? { name: cname, trades: 0, unrealised: 0, realised: 0 };
+      const cpRow = byCounterpartyMap.get(cid) ?? {
+        name: cname,
+        trades: 0,
+        unrealised: 0,
+        realised: 0,
+      };
       cpRow.trades++;
       cpRow.unrealised += unrealised;
       cpRow.realised += realised;
