@@ -33,6 +33,12 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "50 5 * * *",
   }),
+  // Ravi: intraday HQLA-stress projection — BCBS 248, 4 SAMOS windows.
+  // Authority: D-TREASURY-GAPS-WAVE1; BCBS 248.
+  entry("Ravi", "intraday-stress", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "55 5 * * *",
+  }),
   // ravi:goal-loop — cohort-3 (on-request only).
   entry("Ravi", "goal-loop", "on-request"),
   entry("Ravi", "event-triage", "event-driven", {

@@ -46,6 +46,7 @@ import {
   roleResearchQueueSnapshotPayloadSchema,
   roleResearchRequestedPayloadSchema,
 } from "../event-types/agent-substrate-extended";
+import { intradayHQLAStressProjectionPayloadSchema } from "../event-types/alco";
 import { almRunCompletedPayloadSchema, irrbBCheckedPayloadSchema } from "../event-types/alm";
 import {
   adverseMediaPublishedPayloadSchema,
@@ -802,6 +803,20 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     payloadSchema: irrbBCheckedPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi", "Eitan"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "runtime/agents/metadata/ravi.ts",
+  },
+  {
+    // Emitted once per SAMOS window per scenario (8 total per daily run:
+    // 4 windows × 2 scenarios BAU + stress). Records projected HQLA buffer
+    // against the RAS intraday floor. BCBS 248 intraday liquidity monitoring.
+    // D-TREASURY-GAPS-WAVE1; BCBS 248; Banks Act Reg 26.
+    type: "IntradayHQLAStressProjection",
+    class: "markets",
+    payloadSchema: intradayHQLAStressProjectionPayloadSchema,
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan", "Helena", "dashboard"],
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/ravi.ts",

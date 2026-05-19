@@ -75,21 +75,27 @@ export function makeALCOPackGenerated(args: {
 // ---------------------------------------------------------------------------
 
 export const intradayHQLAStressProjectionPayloadSchema = z.object({
-  /** Unique projection identifier. */
+  /** Unique projection identifier — e.g. "INTRADAY-BAU-09:00-2026-05-19". */
   projectionId: z.string().min(1),
-  /** ISO 8601 timestamp the projection was run. */
+  /** ISO 8601 business date for which the projection was computed. */
   asOf: z.string().min(1),
-  /** Scenario identifier — e.g. "stress", "base", "severe-stress". */
-  scenario: z.string().min(1),
-  /** Worst intraday funding window label — e.g. "09:00-11:00". */
-  worstWindowLabel: z.string().min(1),
-  /** HQLA buffer available during the worst window (ZAR). */
-  hqlaBufferZar: z.number().nonnegative(),
-  /** Peak intraday gross outflows projected (ZAR). */
-  peakGrossOutflowsZar: z.number().nonnegative(),
-  /** Status based on buffer vs outflow. */
-  status: z.enum(["adequate", "tight", "insufficient"]),
-  /** ISO 4217 currency. */
+  /** Stress scenario. */
+  scenario: z.enum(["BAU", "stress"]),
+  /** SAMOS settlement window label (SA clock time). */
+  windowLabel: z.string().min(1),
+  /** Projected HQLA buffer at end of this window (ZAR). */
+  projectedHQLAZar: z.number(),
+  /** RAS intraday floor (ZAR). */
+  floorZar: z.number(),
+  /**
+   * Traffic-light status:
+   *   "green"         — projectedHQLAZar > floorZar
+   *   "amber"         — 0 < projectedHQLAZar ≤ floorZar
+   *   "red"           — projectedHQLAZar ≤ 0
+   *   "no-positions"  — starting HQLA = 0 (build phase)
+   */
+  status: z.enum(["green", "amber", "red", "no-positions"]),
+  /** ISO 4217 currency code. */
   currency: z.string().min(3).max(3),
 });
 

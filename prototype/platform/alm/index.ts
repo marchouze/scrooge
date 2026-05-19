@@ -2,12 +2,14 @@
 //
 // ALM engine barrel export.
 //
-// Exports all three IRRBB measurement engines:
-//   - repricing-gap  — BCBS 319 repricing gap schedule (RSA/RSL/Gap/Cumulative)
-//   - eve            — ΔEVE sensitivities for six BCBS d365 shock scenarios
-//   - nii            — ΔNII sensitivities for four parallel shocks (12-month horizon)
+// Exports all four ALM engines:
+//   - repricing-gap    — BCBS 319 repricing gap schedule (RSA/RSL/Gap/Cumulative)
+//   - eve              — ΔEVE sensitivities for six BCBS d365 shock scenarios
+//   - nii              — ΔNII sensitivities for four parallel shocks (12-month horizon)
+//   - intraday-stress  — BCBS 248 intraday HQLA-stress projection (BAU + stress,
+//                        4 SAMOS windows)
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; BCBS 248; Banks Act Reg 26/27.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 export {
@@ -44,3 +46,17 @@ export type {
   NIIResult,
   NIIShockLabel,
 } from "./nii";
+
+export {
+  INTRADAY_FLOOR_ZAR,
+  SAMOS_WINDOWS,
+  runIntradayStress,
+} from "./intraday-stress";
+
+export type {
+  IntradayScenario,
+  IntradayStressResult,
+  IntradayWindowResult,
+  IntradayWindowStatus,
+  SAMOSWindow,
+} from "./intraday-stress";

@@ -153,7 +153,7 @@ function deriveOverallStatus(pack: {
     pack.liquidity?.nsfr.status === "below-minimum" ||
     pack.hqlaComposition?.snapshot.l2bCapBreached === true ||
     pack.almIRRBB?.run.overallStatus === "red" ||
-    pack.intradayLiquidity?.projection.status === "insufficient"
+    pack.intradayLiquidity?.projection.status === "red"
   ) {
     return "red";
   }
@@ -164,7 +164,7 @@ function deriveOverallStatus(pack: {
     pack.liquidity?.nsfr.status === "at-minimum" ||
     pack.hqlaComposition?.snapshot.l2CapBreached === true ||
     pack.almIRRBB?.run.overallStatus === "amber" ||
-    pack.intradayLiquidity?.projection.status === "tight" ||
+    pack.intradayLiquidity?.projection.status === "amber" ||
     pack.openRiskItems.items.some((i) => i.severity === "breach" || i.severity === "critical")
   ) {
     return "amber";
