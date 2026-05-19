@@ -20,9 +20,13 @@
 //   D-FX-CLS-MEMBERSHIP — correspondent settlement via SWIFT MT202
 //   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
 //   SWIFT-MT202-SPEC — SWIFT Standards MT202 specification
+//   D-FX-MESSAGE-EVENTS — event-log wiring for message dispatch
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
+import { BANK_ZA_001 } from "@platform/core/types";
+import { makeOutboundMessageDispatched } from "@platform/event-store/event-types/payments";
+import type { EventStore } from "@platform/event-store/store";
 import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import {
   type SwiftBlock4,
@@ -130,4 +134,61 @@ export function generateMt202(
   const serialised = serialiseSwiftMessage(msg);
 
   return { ...msg, serialised };
+}
+
+// ---------------------------------------------------------------------------
+// Event-emitting wrapper
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate an MT202 General Financial Institution Transfer and emit an
+ * OutboundMessageDispatched event to the event store (Principle 1 compliance,
+ * D-FX-MESSAGE-EVENTS).
+ *
+ * The pure {@link generateMt202} function is called internally; its signature
+ * is unchanged. This wrapper is additive.
+ *
+ * @param store            Event store to append to.
+ * @param trade            The FX trade payload.
+ * @param leg              "deliver" (bank pays) or "receive" (bank receives).
+ * @param correspondentBic BIC of the correspondent bank.
+ * @param asOf             ISO 8601 timestamp for the event.
+ * @param senderBic        The bank's own BIC. Defaults to "BANKZAJJXXX".
+ * @param sequenceRef      Optional sequence reference.
+ */
+export function generateAndEmitMt202(
+  store: EventStore,
+  trade: FxTradeExecutedPayload,
+  leg: "deliver" | "receive",
+  correspondentBic: string,
+  asOf: string,
+  senderBic = "BANKZAJJXXX",
+  sequenceRef?: string,
+): Mt202Message {
+  const msg = generateMt202(trade, leg, correspondentBic, senderBic, sequenceRef);
+
+  // Extract the :20: TRN field as the messageId.
+  const trnField = msg.block4.find((f) => f.tag === "20");
+  const messageId = trnField?.value ?? trade.tradeId.value.slice(-16);
+
+  store.append(
+    makeOutboundMessageDispatched({
+      asOf,
+      entity: BANK_ZA_001,
+      actor: { type: "agent", id: "tomas@bank.local" },
+      citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      payload: {
+        tradeId: trade.tradeId.value,
+        messageId,
+        messageStandard: "SWIFT-MT202",
+        direction: "outbound",
+        serialisedMessage: msg.serialised,
+        correspondentBic,
+        dispatchedAt: asOf,
+        citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      },
+    }),
+  );
+
+  return msg;
 }

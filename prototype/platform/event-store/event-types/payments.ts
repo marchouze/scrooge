@@ -374,6 +374,190 @@ export function makeDailyReconciliationReport(args: {
 }
 
 // ---------------------------------------------------------------------------
+// OutboundMessageDispatched
+//
+// Emitted when the bank dispatches an outbound SWIFT or ISO 20022 message to
+// a correspondent/counterparty. Closes the Principle 1 gap: every message
+// generation is now visible in the event log.
+//
+// Authority:
+//   D-FX-MESSAGE-EVENTS (CEO-approved 2026-05-19)
+//   urn:bank:principle:1
+// ---------------------------------------------------------------------------
+
+export const outboundMessageDispatchedPayloadSchema = z.object({
+  /** Internal trade identifier linking back to the originating FX trade. */
+  tradeId: z.string().min(1),
+  /** Unique message identifier: :20: TRN field for SWIFT MT; MsgId for ISO 20022. */
+  messageId: z.string().min(1),
+  /**
+   * Wire-message standard. Reuses the FxSettlementMessageStandard enum but
+   * expressed as a plain string here to avoid a circular cross-domain import.
+   * Valid values: SWIFT-MT202 | SWIFT-MT103 | SWIFT-MT300 | ISO-20022-pacs.008 | ISO-20022-pacs.009
+   */
+  messageStandard: z.string().min(1),
+  /** Always "outbound" — discriminator for correlated queries. */
+  direction: z.literal("outbound"),
+  /** Full serialised FIN / XML payload string. */
+  serialisedMessage: z.string().min(1),
+  /** BIC of the correspondent or counterparty receiving the message. */
+  correspondentBic: z.string().min(1),
+  /** ISO 8601 timestamp when the message was dispatched. */
+  dispatchedAt: z.string().min(1),
+  /** Minimum 1 citation required (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type OutboundMessageDispatchedPayload = z.infer<
+  typeof outboundMessageDispatchedPayloadSchema
+>;
+
+export function makeOutboundMessageDispatched(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OutboundMessageDispatchedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "OutboundMessageDispatched requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OutboundMessageDispatched",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: outboundMessageDispatchedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// InboundMessageReceived
+//
+// Emitted when the bank receives an inbound SWIFT or ISO 20022 message from
+// a correspondent or counterparty. Includes simulated messages from the
+// inbound-simulator substrate.
+//
+// Authority:
+//   D-FX-MESSAGE-EVENTS (CEO-approved 2026-05-19)
+//   urn:bank:principle:1
+// ---------------------------------------------------------------------------
+
+export const inboundMessageReceivedPayloadSchema = z.object({
+  /** Internal trade identifier linking to the originating FX trade. */
+  tradeId: z.string().min(1),
+  /** Unique message identifier extracted from the received message. */
+  messageId: z.string().min(1),
+  /**
+   * Wire-message standard of the received message.
+   * Values: MT300 | MT202 | MT940 | pacs.009 | camt.053
+   */
+  messageStandard: z.string().min(1),
+  /** Always "inbound" — discriminator for correlated queries. */
+  direction: z.literal("inbound"),
+  /** Full serialised FIN / XML payload of the received message. */
+  serialisedMessage: z.string().min(1),
+  /** BIC of the institution that sent the message. */
+  senderBic: z.string().min(1),
+  /** ISO 8601 timestamp when the message was received (or simulated). */
+  receivedAt: z.string().min(1),
+  /** Minimum 1 citation required (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type InboundMessageReceivedPayload = z.infer<typeof inboundMessageReceivedPayloadSchema>;
+
+export function makeInboundMessageReceived(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: InboundMessageReceivedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "InboundMessageReceived requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "InboundMessageReceived",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: inboundMessageReceivedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// MessageCorrelated
+//
+// Emitted when an outbound message is matched to an inbound message, closing
+// the message-level reconciliation loop. Three correlation types:
+//   - confirmation:    MT300/pacs.009 echo from counterparty confirms trade
+//   - receive-leg:     MT202/pacs.009 from correspondent credits nostro
+//   - statement-entry: MT940/camt.053 statement entry confirms booking
+//
+// Authority:
+//   D-FX-MESSAGE-EVENTS (CEO-approved 2026-05-19)
+//   PROC-PAY-RBH-01 — three-way reconciliation procedure
+//   urn:bank:principle:1
+// ---------------------------------------------------------------------------
+
+export const messageCorrelatedPayloadSchema = z.object({
+  /** event_id of the OutboundMessageDispatched event being correlated. */
+  outboundMessageId: z.string().min(1),
+  /** event_id or messageId of the InboundMessageReceived event that matches. */
+  inboundMessageId: z.string().min(1),
+  /** Internal trade identifier for cross-leg queries. */
+  tradeId: z.string().min(1),
+  /**
+   * Classification of the correlation:
+   *   confirmation    — counterparty echoes trade (MT300 / pacs.009 echo)
+   *   receive-leg     — correspondent credits nostro (MT202 / pacs.009 credit)
+   *   statement-entry — end-of-day statement entry (MT940 / camt.053)
+   */
+  correlationType: z.enum(["confirmation", "receive-leg", "statement-entry"]),
+  /** ISO 8601 timestamp when the correlation was established. */
+  correlatedAt: z.string().min(1),
+  /** Minimum 1 citation required (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type MessageCorrelatedPayload = z.infer<typeof messageCorrelatedPayloadSchema>;
+
+export function makeMessageCorrelated(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: MessageCorrelatedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "MessageCorrelated requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "MessageCorrelated",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: messageCorrelatedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Payments event-type registry
 // ---------------------------------------------------------------------------
 
@@ -384,6 +568,9 @@ export const PAYMENTS_TYPED_EVENT_TYPES = [
   "JournalEntryPosted",
   "ReconciliationBreak",
   "DailyReconciliationReport",
+  "OutboundMessageDispatched",
+  "InboundMessageReceived",
+  "MessageCorrelated",
 ] as const;
 
 export type PaymentsEventType = (typeof PAYMENTS_TYPED_EVENT_TYPES)[number];

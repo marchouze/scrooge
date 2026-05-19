@@ -22,10 +22,16 @@
 //   D-FX-CLS-MEMBERSHIP — ISO 20022 settlement path
 //   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
 //   ISO-20022 — pacs.008.001.10 message specification
+//   D-FX-MESSAGE-EVENTS — event-log wiring for message dispatch
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
-import type { PaymentInitiatedPayload } from "@platform/event-store/event-types/payments";
+import { BANK_ZA_001 } from "@platform/core/types";
+import {
+  makeOutboundMessageDispatched,
+  type PaymentInitiatedPayload,
+} from "@platform/event-store/event-types/payments";
+import type { EventStore } from "@platform/event-store/store";
 import {
   type ActiveCurrencyAndAmount,
   type CashAccount,
@@ -167,4 +173,57 @@ export function generatePacs008(
     CdtTrfTxInf: [cdtTrfTxInf],
     serialisedXml,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Event-emitting wrapper
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a pacs.008.001.10 Customer Credit Transfer and emit an
+ * OutboundMessageDispatched event to the event store (Principle 1 compliance,
+ * D-FX-MESSAGE-EVENTS).
+ *
+ * The pure {@link generatePacs008} function is called internally; its signature
+ * is unchanged. This wrapper is additive.
+ *
+ * @param store     Event store to append to.
+ * @param payment   The PaymentInitiated event payload.
+ * @param sender    Sending financial institution (the bank).
+ * @param receiver  Receiving financial institution.
+ * @param asOf      ISO 8601 timestamp for the event.
+ * @param msgId     Optional message ID.
+ */
+export function generateAndEmitPacs008(
+  store: EventStore,
+  payment: PaymentInitiatedPayload,
+  sender: FIIdentification,
+  receiver: FIIdentification,
+  asOf: string,
+  msgId?: string,
+): Pacs008Document {
+  const doc = generatePacs008(payment, sender, receiver, msgId);
+
+  const messageId = doc.GrpHdr.MsgId;
+
+  store.append(
+    makeOutboundMessageDispatched({
+      asOf,
+      entity: BANK_ZA_001,
+      actor: { type: "agent", id: "tomas@bank.local" },
+      citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      payload: {
+        tradeId: payment.tradeId,
+        messageId,
+        messageStandard: "ISO-20022-pacs.008",
+        direction: "outbound",
+        serialisedMessage: doc.serialisedXml,
+        correspondentBic: receiver.bic,
+        dispatchedAt: asOf,
+        citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      },
+    }),
+  );
+
+  return doc;
 }

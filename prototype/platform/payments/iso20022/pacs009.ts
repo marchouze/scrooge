@@ -23,9 +23,13 @@
 //   D-FX-CLS-MEMBERSHIP — pacs.009 as migration target for FX settlement
 //   D-MARKETS-SCHEMA-FOUNDATION — CDM event families
 //   ISO-20022 — pacs.009.001.10 message specification
+//   D-FX-MESSAGE-EVENTS — event-log wiring for message dispatch
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
+import { BANK_ZA_001 } from "@platform/core/types";
+import { makeOutboundMessageDispatched } from "@platform/event-store/event-types/payments";
+import type { EventStore } from "@platform/event-store/store";
 import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
 import {
   type ActiveCurrencyAndAmount,
@@ -188,4 +192,59 @@ export function generatePacs009(
     CdtTrfTxInf: [cdtTrfTxInf],
     serialisedXml,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Event-emitting wrapper
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a pacs.009.001.10 Financial Institution Credit Transfer and emit
+ * an OutboundMessageDispatched event to the event store (Principle 1
+ * compliance, D-FX-MESSAGE-EVENTS).
+ *
+ * The pure {@link generatePacs009} function is called internally; its signature
+ * is unchanged. This wrapper is additive.
+ *
+ * @param store      Event store to append to.
+ * @param trade      The FX trade payload.
+ * @param leg        "deliver" or "receive".
+ * @param sender     Sending financial institution.
+ * @param receiver   Receiving financial institution.
+ * @param asOf       ISO 8601 timestamp for the event.
+ * @param settledAt  Optional settlement timestamp.
+ */
+export function generateAndEmitPacs009(
+  store: EventStore,
+  trade: FxTradeExecutedPayload,
+  leg: "deliver" | "receive",
+  sender: FIIdentification,
+  receiver: FIIdentification,
+  asOf: string,
+  settledAt?: Date,
+): Pacs009Document {
+  const doc = generatePacs009(trade, leg, sender, receiver, settledAt);
+
+  const messageId = doc.GrpHdr.MsgId;
+
+  store.append(
+    makeOutboundMessageDispatched({
+      asOf,
+      entity: BANK_ZA_001,
+      actor: { type: "agent", id: "tomas@bank.local" },
+      citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      payload: {
+        tradeId: trade.tradeId.value,
+        messageId,
+        messageStandard: "ISO-20022-pacs.009",
+        direction: "outbound",
+        serialisedMessage: doc.serialisedXml,
+        correspondentBic: receiver.bic,
+        dispatchedAt: asOf,
+        citations: ["D-FX-MESSAGE-EVENTS", "D-FX-CLS-MEMBERSHIP", "urn:bank:principle:1"],
+      },
+    }),
+  );
+
+  return doc;
 }
