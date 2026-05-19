@@ -225,14 +225,15 @@ export const subLedgerProjection: Projection<SubLedgerState, EquityLifecycleEven
 // ---------------------------------------------------------------------------
 
 export type FxSubLedgerEvent = Event & {
-  type: "FxTradeExecuted" | "FxPositionRevalued" | "FxSettlementConfirmed";
+  type: "FxTradeExecuted" | "FxPositionRevalued" | "FxSettlementConfirmed" | "FxTradeCancelled";
 };
 
 function isFxSubLedgerEvent(event: { type: string }): event is FxSubLedgerEvent {
   return (
     event.type === "FxTradeExecuted" ||
     event.type === "FxPositionRevalued" ||
-    event.type === "FxSettlementConfirmed"
+    event.type === "FxSettlementConfirmed" ||
+    event.type === "FxTradeCancelled"
   );
 }
 
@@ -320,12 +321,83 @@ function applyFxSettlementConfirmed(state: SubLedgerState, e: Event): SubLedgerS
   return next;
 }
 
+// ---------------------------------------------------------------------------
+// buildFxSubLedger — two-pass replay with cancellation filtering.
+//
+// Replays the full event list, first collecting cancelled trade IDs from
+// FxTradeCancelled events, then folding FxTradeExecuted / FxPositionRevalued
+// / FxSettlementConfirmed events while skipping any whose tradeId is in the
+// cancelled set. Cancellations themselves produce no sub-ledger rows (the
+// original rows remain absent from the ledger, i.e. they are never added).
+//
+// Authority: CEO instruction 2026-05-19 (cancel 15 bad simulated trades).
+// ---------------------------------------------------------------------------
+
+export function buildFxSubLedger(events: readonly Event[]): SubLedgerState {
+  // Pass 1 — collect cancelled trade IDs.
+  const cancelledTradeIds = new Set<string>();
+  for (const e of events) {
+    if (e.type === "FxTradeCancelled") {
+      const p = e.payload as Record<string, unknown>;
+      if (typeof p.tradeId === "string") {
+        cancelledTradeIds.add(p.tradeId);
+      }
+    }
+  }
+
+  // Helper: extract tradeId string from a FxTradeExecuted / FxPositionRevalued payload.
+  function extractTradeId(p: Record<string, unknown>): string | null {
+    const raw = p.tradeId as Record<string, unknown> | string | undefined;
+    if (typeof raw === "string") return raw;
+    if (raw && typeof raw.value === "string") return raw.value;
+    return null;
+  }
+
+  // Pass 2 — fold events, skipping cancelled trades.
+  let state = subLedgerInitial;
+  for (const e of events) {
+    if (!isFxSubLedgerEvent(e)) continue;
+    switch (e.type) {
+      case "FxTradeCancelled":
+        // No sub-ledger rows produced for cancellations; the tradeId was collected
+        // in Pass 1 so the related FxTradeExecuted and FxPositionRevalued rows
+        // are simply never added.
+        break;
+      case "FxTradeExecuted": {
+        const tradeId = extractTradeId(e.payload as Record<string, unknown>);
+        if (tradeId && cancelledTradeIds.has(tradeId)) break;
+        state = applyFxTradeExecuted(state, e);
+        break;
+      }
+      case "FxPositionRevalued": {
+        const p = e.payload as Record<string, unknown>;
+        if (typeof p.tradeId === "string" && cancelledTradeIds.has(p.tradeId)) break;
+        state = applyFxPositionRevalued(state, e);
+        break;
+      }
+      case "FxSettlementConfirmed": {
+        const p = e.payload as Record<string, unknown>;
+        if (typeof p.tradeId === "string" && cancelledTradeIds.has(p.tradeId)) break;
+        state = applyFxSettlementConfirmed(state, e);
+        break;
+      }
+    }
+  }
+  return state;
+}
+
 export const fxSubLedgerProjection: Projection<SubLedgerState, FxSubLedgerEvent> = {
   name: "markets.fx-sub-ledger",
   initial: subLedgerInitial,
   accepts: (e): e is FxSubLedgerEvent => isFxSubLedgerEvent(e),
   reduce(state, event) {
     switch (event.type) {
+      case "FxTradeCancelled":
+        // Single-event reduce cannot perform two-pass cancellation filtering.
+        // Use buildFxSubLedger() for cancellation-aware projection.
+        // This case is included so the accepts() guard lets the event through
+        // without a TypeScript exhaustive-check error.
+        return state;
       case "FxTradeExecuted":
         return applyFxTradeExecuted(state, event);
       case "FxPositionRevalued":

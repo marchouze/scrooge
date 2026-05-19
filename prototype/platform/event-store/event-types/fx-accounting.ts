@@ -373,6 +373,59 @@ export function makeSettlementReversed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// FxTradeCancelled
+//
+// Emitted to cancel a previously-executed FX trade — typically to correct
+// trades that were booked with incorrect seed rates (wrong currency convention)
+// or data-quality errors in simulation runs.
+//
+// Once emitted, projections filter out the referenced tradeId from all
+// FxTradeExecuted and FxPositionRevalued folds, effectively voiding the
+// trade from positions, P&L, and limit utilisation.
+//
+// Authority:
+//   - CEO instruction (2026-05-19): cancel 15 bad simulated trades with
+//     synthetic P&L of ZAR −759,908,692 caused by wrong seed rate convention.
+// ---------------------------------------------------------------------------
+
+export const fxTradeCancelledPayloadSchema = z.object({
+  /** The trade ID that is being cancelled (matches tradeId.value in FxTradeExecuted). */
+  tradeId: z.string().min(1),
+  /** Human-readable reason for the cancellation. */
+  reason: z.string().min(1),
+  /** Agent or human that authorised the cancellation. */
+  cancelledBy: z.string().min(1),
+  /** Event ID of the original FxTradeExecuted event being cancelled. */
+  originalEventId: z.string().min(1),
+});
+
+export type FxTradeCancelledPayload = z.infer<typeof fxTradeCancelledPayloadSchema>;
+
+export function makeFxTradeCancelled(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxTradeCancelledPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "FxTradeCancelled requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxTradeCancelled",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: fxTradeCancelledPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -382,6 +435,7 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   "SubLedgerPostingEmitted",
   "SettlementFailed",
   "SettlementReversed",
+  "FxTradeCancelled",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];
