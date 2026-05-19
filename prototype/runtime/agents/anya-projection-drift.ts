@@ -48,7 +48,11 @@ Do not include a markdown header for your section — the calling pipeline wraps
 
 If the dashboard cache is unreachable on the runner (the common case on a fresh GitHub Actions runner), say so plainly and characterise the canonical-source counts on their own.`;
 
-const PRINCIPLE_HEADING = /^### Principle (\d+) — /;
+// CLAUDE.md lists principles as bullet points under "## Architectural principles":
+//   - **Principle 1 — Events are the only source of truth.** ...
+// The previous pattern matched `### Principle N —` (heading form) which returns 0.
+// The correct pattern matches the bullet form used in the live CLAUDE.md.
+const PRINCIPLE_HEADING = /^- \*\*Principle \d+ —/;
 const ORG_OBLIGATION_ID = /^\|\s*ORG-/i;
 const REG_INDEX_POPULATED = /\*\*POPULATED\*\*/;
 
