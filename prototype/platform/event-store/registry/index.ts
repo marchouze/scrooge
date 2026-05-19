@@ -124,6 +124,7 @@ import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
+import { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
   CUSTOMER_LIFECYCLE_EVENT_TYPES,
@@ -133,7 +134,6 @@ import {
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
-import { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";

@@ -5,6 +5,9 @@
 // Covers:
 //   MarketDataStaleAlert    — stale market-data alert for an instrument/source.
 //   ModelValidationApproved — pricing/risk model validation approval record.
+//                             Schema lives in event-types/model-risk.ts;
+//                             this registry row adds market-data governance
+//                             context (Helena as issuer for pricing models).
 //
 // Standing authority: D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07);
 //   Policies/valuation-policy-v1.md §5.
@@ -19,10 +22,8 @@
 //   Rohan (Quant Risk Engineer, markets) +
 //   Helena (Chief Risk Officer, governance).
 
-import {
-  marketDataStaleAlertPayloadSchema,
-  modelValidationApprovedPayloadSchema,
-} from "../event-types/market-data";
+import { marketDataStaleAlertPayloadSchema } from "../event-types/market-data";
+import { modelValidationApprovedPayloadSchema } from "../event-types/model-risk";
 import { RETENTION_BANKING_5Y } from "./types";
 import type { EventTypeMetadata } from "./types";
 
@@ -47,32 +48,24 @@ import type { EventTypeMetadata } from "./types";
 export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
   {
     type: "MarketDataStaleAlert",
-    class: "market-data",
+    class: "markets",
     issuer: "Rohan",
     subscribers: ["Rohan", "Helena", "Vera"],
     replay: "append-only-audit",
     retention: RETENTION_BANKING_5Y,
     payloadSchema: marketDataStaleAlertPayloadSchema,
-    source:
-      "platform/event-store/event-types/market-data.ts; Policies/valuation-policy-v1.md §5",
-    citationsHint: [
-      "BCBS-239-2013",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    source: "platform/event-store/event-types/market-data.ts; Policies/valuation-policy-v1.md §5",
+    citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
   },
   {
     type: "ModelValidationApproved",
-    class: "market-data",
+    class: "markets",
     issuer: "Helena",
     subscribers: ["Helena", "Rohan", "Vera"],
     replay: "latest-wins-per-key",
     retention: RETENTION_BANKING_5Y,
     payloadSchema: modelValidationApprovedPayloadSchema,
-    source:
-      "platform/event-store/event-types/market-data.ts; Policies/valuation-policy-v1.md §5",
-    citationsHint: [
-      "BCBS-239-2013",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    source: "platform/event-store/event-types/model-risk.ts; Policies/valuation-policy-v1.md §5",
+    citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
   },
 ];

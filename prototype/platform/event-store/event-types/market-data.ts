@@ -5,15 +5,17 @@
 // Covers:
 //   - MarketDataStaleAlert   — alert raised when a market-data source exceeds
 //                              the stale-data threshold for an instrument.
-//   - ModelValidationApproved — model validation approval record, emitted when
-//                              a pricing or risk model passes the validation
-//                              process.
 //
 // NOTE: Market data price ticks (FX quotes, equity prices, SENS announcements,
 // news) are reference/time-series data and must NOT go into the event store.
 // Use platform/market-data/store.ts (MarketDataStore) for those.
 // These events cover *control-plane* events that belong in the event log
 // (alerting, governance decisions) — not the data itself.
+//
+// NOTE: ModelValidationApproved lives in platform/event-store/event-types/model-risk.ts
+// (ModelRegistry substrate). The registry row for ModelValidationApproved with
+// Helena as issuer is in platform/event-store/registry/market-data.ts, which
+// re-uses the existing payload schema from model-risk.ts.
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07);
 //   Policies/valuation-policy-v1.md §5.
@@ -69,7 +71,7 @@ export function makeMarketDataStaleAlert(args: {
   entity: string;
   actor: Actor;
   citations: string[];
-  eventId: string;
+  eventId?: string;
   payload: MarketDataStaleAlertPayload;
 }): Event {
   return eventSchema.parse({
@@ -84,64 +86,6 @@ export function makeMarketDataStaleAlert(args: {
 }
 
 // ---------------------------------------------------------------------------
-// ModelValidationApproved
-//
-// Emitted by Helena (CRO) when a pricing or risk model passes the bank's
-// model validation process. Records the model scope, approval authority,
-// and validity window.
-//
-// Authority:
-//   D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07);
-//   Policies/valuation-policy-v1.md §5 (model risk governance).
-//   BCBS 239 (2013) §§8–11 (risk-data aggregation and validation).
-// ---------------------------------------------------------------------------
-
-export const modelValidationApprovedPayloadSchema = z.object({
-  /** Internal model identifier. Convention: `MDL-<code>-<version>`. */
-  modelId: z.string(),
-  /** Human-readable model name (e.g. "FX Spot Mid Pricer v2", "IRS DV01 Calculator"). */
-  modelName: z.string(),
-  /**
-   * Instruments or product codes in scope for this model.
-   * Examples: ["USD/ZAR", "EUR/ZAR"], ["ZA-SAGB"], ["IRS-ZAR"].
-   */
-  instrumentScope: z.array(z.string()),
-  /**
-   * Name or identifier of the approving authority (e.g. Helena's agent ID,
-   * or "Model Validation Committee"). Must be a recognised governance seat.
-   */
-  approvedBy: z.string(),
-  /**
-   * ISO 8601 date until which the approval is valid.
-   * Null if approval is indefinite (subject to annual re-validation).
-   */
-  validUntil: z.string().nullable(),
-  /** Notes from the validation process (rationale, limitations, conditions). */
-  notes: z.string(),
-});
-
-export type ModelValidationApprovedPayload = z.infer<typeof modelValidationApprovedPayloadSchema>;
-
-export function makeModelValidationApproved(args: {
-  asOf: string;
-  entity: string;
-  actor: Actor;
-  citations: string[];
-  eventId: string;
-  payload: ModelValidationApprovedPayload;
-}): Event {
-  return eventSchema.parse({
-    event_id: args.eventId ?? newEventId(),
-    type: "ModelValidationApproved",
-    as_of: args.asOf,
-    entity: args.entity,
-    actor: args.actor,
-    citations: args.citations,
-    payload: modelValidationApprovedPayloadSchema.parse(args.payload),
-  });
-}
-
-// ---------------------------------------------------------------------------
 // MARKET_DATA_TYPED_EVENT_TYPES — registry of all market-data domain event types.
 //
 // To add a new market-data event type:
@@ -150,9 +94,6 @@ export function makeModelValidationApproved(args: {
 //   (3) add a spread of MARKET_DATA_TYPED_EVENT_TYPES in event-types/index.ts.
 // ---------------------------------------------------------------------------
 
-export const MARKET_DATA_TYPED_EVENT_TYPES = [
-  "MarketDataStaleAlert",
-  "ModelValidationApproved",
-] as const;
+export const MARKET_DATA_TYPED_EVENT_TYPES = ["MarketDataStaleAlert"] as const;
 
 export type MarketDataEventType = (typeof MARKET_DATA_TYPED_EVENT_TYPES)[number];

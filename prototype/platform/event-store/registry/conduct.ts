@@ -216,7 +216,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
   // ---------------------------------------------------------------------------
   {
     type: "FeeDisclosureEvent",
-    class: "conduct",
+    class: "audit",
     issuer: "Zara",
     subscribers: ["Zara", "Mira", "Bea"],
     replay: "append-only-audit",
