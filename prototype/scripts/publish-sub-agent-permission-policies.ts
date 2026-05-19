@@ -417,6 +417,43 @@ const CATEGORY_E: AgentSpec[] = [
     "AgentEscalation",
   ]),
 
+  // Atlas — KYC orchestrator sub-agent
+  // Emits: ClientCandidateRegistered, KYCIdentityCollected, KYCIdentityVerified,
+  //   KYCIdentityVerificationFailed, KYCSanctionsPEPScreened, KYCUBOResolved,
+  //   KYCRiskRated, KYCDecisionMade, ClientAccepted, ClientRejected,
+  //   KYCEDDInitiated, KYCEDDCompleted, LawfulProcessingRegistered, AgentEscalation
+  // Parent: Atlas (Core banking platform architect, engineering)
+  // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
+  makeSubAgentSpec("agent:atlas:kyc-orchestrator", [
+    "ClientCandidateRegistered",
+    "KYCIdentityCollected",
+    "KYCIdentityVerified",
+    "KYCIdentityVerificationFailed",
+    "KYCSanctionsPEPScreened",
+    "KYCUBOResolved",
+    "KYCRiskRated",
+    "KYCDecisionMade",
+    "ClientAccepted",
+    "ClientRejected",
+    "KYCEDDInitiated",
+    "KYCEDDCompleted",
+    "LawfulProcessingRegistered",
+    "AgentEscalation",
+  ]),
+
+  // Devon — FX simulation engine sub-agent
+  // Emits: FxTradeExecuted
+  // Parent: Devon (COO, governance); build-phase simulation tool
+  // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
+  makeSubAgentSpec("agent:devon:fx-sim-engine", ["FxTradeExecuted", "AgentEscalation"]),
+
+  // Bea — FX posting engine sub-agent
+  // Emits: SubLedgerPostingEmitted (for FxTradeExecuted, FxPositionRevalued,
+  //   FxSettlementConfirmed trade events)
+  // Parent: Bea (Finance Engineer, engineering)
+  // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
+  makeSubAgentSpec("agent:bea:fx-posting-engine", ["SubLedgerPostingEmitted", "AgentEscalation"]),
+
   // PAX (Research, engineering) — role research queue
   // PAX §11: WorkstreamRegistered, RoleBriefDelivered, SourceScanCompleted,
   //   ResearchDeclined, AgentEscalation
@@ -518,6 +555,31 @@ const CATEGORY_G: AgentSpec[] = [
       "RiskRunCompleted",
       "LimitUtilisationCheckpoint",
     ],
+  ),
+
+  // Scrooge (Chief of Staff, governance) — top-level persona actor
+  // Scrooge §11: InboxHygieneSweep, WorkRoutedToAgent, RoleResearchRequested,
+  //   AgentEscalationFromScrooge, SubstrateGapInventoried
+  // Also emits: AgentBriefIssued (dispatch:open-brief CLI), Decision (recordDecision
+  //   calls in backfill / cleanup scripts run under agent:scrooge identity).
+  // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
+  // Build-phase note: agent:scrooge is the orchestration identity for in-session
+  //   agent dispatch and decision backfill; the full scope is wider than §11
+  //   at this phase. Policy extends to Decision and AgentBriefIssued accordingly.
+  makeSubAgentSpec(
+    "agent:scrooge",
+    [
+      "InboxHygieneSweep",
+      "WorkRoutedToAgent",
+      "RoleResearchRequested",
+      "AgentEscalationFromScrooge",
+      "SubstrateGapInventoried",
+      "AgentBriefIssued",
+      "Decision",
+      "AgentEscalation",
+    ],
+    ["@platform/event-store", "@platform/rms/briefs", "@platform/rms/records"],
+    ["AgentBriefIssued", "RecordFiled"],
   ),
 
   // Owen (CoSec, governance) — top-level persona actor

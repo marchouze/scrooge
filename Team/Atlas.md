@@ -72,6 +72,7 @@ Atlas does **not** own application-domain logic (accounting rules, trading flow,
 | Approve identity / permission changes within policy | Within Senna + Rashida's standing policy envelope | `IdentityPermissionChanged` event |
 | Approve substrate-config changes (non-invariant-affecting) | Within established invariants; does not alter ordering, durability, or replay semantics | `SubstrateConfigChanged` event |
 | Approve agent registration on the runtime | Agent has a valid `/Team/<name>.md` agent spec (Wave-4 #10 green); typed identity issued; permissions scoped per spec | `AgentRegistered` event |
+| Approve bus architecture and event-routing design decisions | Event-trigger bus topology, routing rules, subscription contracts, fan-out semantics; must preserve P1 ordering/durability invariants and fit within Senna + Rashida's threat model | `AgentDecision` event (bus classification subtype) |
 
 ## 10. Decisions that escalate
 
