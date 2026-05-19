@@ -141,14 +141,16 @@ export interface InstrumentDetailView {
 
 const SLUG_TO_FILE: Record<string, string> = {
   "banks-act": "Regulations/SARB-PA/source-docs/banks-act-structured.json",
+  rrb: "Regulations/SARB-PA/source-docs/rrb-structured.json",
   "fic-act": "Regulations/FIC/source-docs/fic-act-structured.json",
   popia: "Regulations/Information-Regulator/source-docs/popia-structured.json",
   "fais-act": "Regulations/FSCA/source-docs/fais-act-structured.json",
   js2: "Regulations/Joint-Standards/source-docs/js2-structured.json",
   "fais-gcc": "Regulations/FSCA/source-docs/fais-gcc-structured.json",
+  excon: "Regulations/SARB-FinSurv/source-docs/excon-structured.json",
 };
 
-const ALL_SLUGS = ["banks-act", "fic-act", "popia", "fais-act", "js2", "fais-gcc"] as const;
+const ALL_SLUGS = ["banks-act", "rrb", "fic-act", "popia", "fais-act", "js2", "fais-gcc", "excon"] as const;
 
 // ---------------------------------------------------------------------------
 // Loaders
