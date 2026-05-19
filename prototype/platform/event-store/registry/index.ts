@@ -80,6 +80,8 @@ export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
 export { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
+// D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy events.
+export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -87,6 +89,7 @@ export { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 // ---------------------------------------------------------------------------
 
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
+import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
@@ -175,6 +178,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...IRD_ACCOUNTING_EVENT_TYPES_REGISTRY,
+  // D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy events.
+  // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19).
+  ...CLIMATE_RISK_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

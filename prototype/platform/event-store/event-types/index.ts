@@ -132,6 +132,12 @@ export * from "./equity-accounting";
 //   IrdSwapCouponSettled, IrdSwapTerminated.
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
 export * from "./ird-accounting";
+// D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy events.
+// ClimateScenarioRun (quarterly PA GN 1/2024 scenario run),
+//   ClimateExposureRevalued (daily proxy climate VaR).
+// Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19);
+//   PA Guidance Note 1 of 2024; PROC-RISK-CR-01.
+export * from "./climate-risk";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -211,6 +217,7 @@ import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
+import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
@@ -293,6 +300,9 @@ export const TYPED_EVENT_TYPES = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting event types.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...IRD_ACCOUNTING_EVENT_TYPES,
+  // D-RAS-CLIMATE-SCENARIO-FRAMEWORK — climate-risk scenario and daily proxy event types.
+  // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19).
+  ...CLIMATE_RISK_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

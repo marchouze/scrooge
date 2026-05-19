@@ -41,6 +41,7 @@ import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
 import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
+import { getClimateRiskMetric } from "../../platform/projections/climate-risk-projection";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -254,6 +255,7 @@ interface AppetiteSnapshot {
 function statusForLine(
   line: AppetiteLine,
   capitalMetrics?: ReturnType<typeof computeCapitalMetrics>,
+  climateMetric?: ReturnType<typeof getClimateRiskMetric>,
 ): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
@@ -279,6 +281,41 @@ function statusForLine(
       line,
       status: capitalMetrics.status,
       note: capitalMetrics.note,
+    };
+  }
+
+  // appetite:climate:guidance-note-1-2024 — measured by the climate-risk projection.
+  // Reads ClimateScenarioRun events; computes worstCaseStressLossPct.
+  // Returns no-data in build phase (no live book, no quarterly run yet) — this is the
+  // correct posture, not a violation.
+  // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK; PA Guidance Note 1 of 2024; PROC-RISK-CR-01.
+  if (line.id === "appetite:climate:guidance-note-1-2024" && climateMetric !== undefined) {
+    if (climateMetric.status === "no-data") {
+      return {
+        line,
+        status: "n/a-build-phase",
+        note: "No ClimateScenarioRun events yet — first run due at next quarterly tick. Build-phase posture: no live book, no portfolio to stress. PA GN 1/2024 measurement substrate live (PROC-RISK-CR-01); awaiting first quarterly run.",
+      };
+    }
+    // Measured: derive RAG from worstCaseStressLossPct.
+    // RAS thresholds (BRC to calibrate at commencement; build-phase defaults per PROC-RISK-CR-01 §6.3):
+    //   green:  worstCaseStressLossPct < 5%
+    //   amber:  5% ≤ worstCaseStressLossPct ≤ 10%
+    //   red:    worstCaseStressLossPct > 10%
+    const pct = climateMetric.worstCaseStressLossPct;
+    let status: MetricStatus;
+    if (pct > 10) {
+      status = "red";
+    } else if (pct >= 5) {
+      status = "amber";
+    } else {
+      status = "green";
+    }
+    const scenariosLabel = climateMetric.scenariosRun.join(", ");
+    return {
+      line,
+      status,
+      note: `ClimateScenarioRun measured: worst-case stress loss ${pct.toFixed(2)}% of total exposure (scenarios: ${scenariosLabel}; latest run: ${climateMetric.latestRunDate}). PA GN 1/2024; PROC-RISK-CR-01.`,
     };
   }
 
@@ -343,7 +380,16 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   // Authority: D-RAS (2026-05-06), D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12).
   const capitalMetrics = computeCapitalMetrics(eventStore, asOfIso);
 
-  const lineStates = APPETITE_LINES.map((line) => statusForLine(line, capitalMetrics));
+  // Compute climate-risk metric (Helena's climate-risk projection — closes the
+  // appetite:climate:guidance-note-1-2024 unmeasured gap).
+  // Returns no-data in build phase (no ClimateScenarioRun events yet); this is
+  // the correct posture — build-phase status is n/a-build-phase, not unmeasured.
+  // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK; PA GN 1/2024; PROC-RISK-CR-01.
+  const climateMetric = getClimateRiskMetric(eventStore);
+
+  const lineStates = APPETITE_LINES.map((line) =>
+    statusForLine(line, capitalMetrics, climateMetric),
+  );
   const measuredCount = lineStates.filter(
     (s) => s.status === "green" || s.status === "amber" || s.status === "red",
   ).length;
@@ -461,7 +507,7 @@ function buildReportMarkdown(
     "- **Independent model-validation function** — RAS §B7 model-tier discipline depends on an independent validation team that is not yet staffed. Owner: PAX research / Nolan hire.",
   );
   lines.push(
-    "- **Climate-risk substrate** — PA Guidance Note 1 of 2024 governance posture is declared but the measurement substrate (climate scenario inputs, transition-risk taxonomy) is not specified. Owner: Helena.",
+    "- **Climate-risk substrate** — PA Guidance Note 1 of 2024 measurement substrate is now live (`PROC-RISK-CR-01`, `platform/projections/climate-risk-projection.ts`). The `appetite:climate:guidance-note-1-2024` line is wired; it returns `n/a-build-phase` until the first quarterly `ClimateScenarioRun` event is emitted. Remaining gap: Rohan (Risk engineer) to produce the first quarterly run and the daily `ClimateExposureRevalued` proxy.",
   );
   lines.push("");
 
