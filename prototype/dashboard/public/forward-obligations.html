@@ -26,8 +26,8 @@
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
       const el = document.getElementById("fwd-content");
       el.innerHTML = SC.renderSkeleton(6);
-      const data = await sf("/api/obligations/forward");
-      const items = Array.isArray(data) ? data : (data?.items ?? data?.obligations ?? []);
+      const data = await sf("/api/forward-obligations");
+      const items = Array.isArray(data) ? data : (data?.data?.rows ?? data?.items ?? data?.obligations ?? []);
       if (items.length === 0) { el.innerHTML = `<p style="color:var(--color-text-secondary)">No forward obligations.</p>`; return; }
       // Group by date
       const groups = {};
