@@ -1,0 +1,259 @@
+{
+  "slug": "popia",
+  "title": "Protection of Personal Information Act 4 of 2013",
+  "shortTitle": "POPIA",
+  "regulator": "Information Regulator",
+  "year": 2013,
+  "citationPatterns": ["POPIA", "POPIA s.", "POPIA §", "Protection of Personal Information Act", "POPI Act"],
+  "priority": 3,
+  "chapters": [
+    {
+      "id": "ch1",
+      "number": "1",
+      "heading": "Interpretation, Application and Rights",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Definitions",
+          "text": "Defines 'data subject', 'de-identification', 'operator', 'personal information', 'processing', 'record', 'responsible party', 'special personal information', and related terms central to the Act.",
+          "verbatim": false
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Objects of Act",
+          "text": "The objects of the Act are to give effect to the constitutional right to privacy by safeguarding personal information when processed by a responsible party, while balancing the right against other rights, particularly the right of access to information.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "number": "2",
+      "heading": "Information Regulator",
+      "sections": [
+        {
+          "id": "s39",
+          "number": "39",
+          "heading": "Establishment of Information Regulator",
+          "text": "Establishes the Information Regulator as an independent juristic person responsible for promoting and enforcing the right to access information and the protection of personal information.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "number": "3",
+      "heading": "Conditions for Lawful Processing of Personal Information",
+      "sections": [
+        {
+          "id": "s8",
+          "number": "8",
+          "heading": "Accountability",
+          "text": "The responsible party must ensure that the conditions set out in Chapter 3 and all the measures that give effect to such conditions, are complied with at the time of the determination of the purpose and means of the processing and during the processing itself.",
+          "verbatim": true
+        },
+        {
+          "id": "s9",
+          "number": "9",
+          "heading": "Processing limitation — lawfulness of processing",
+          "text": "Personal information must be processed lawfully and in a reasonable manner that does not infringe the privacy of the data subject. Personal information may only be processed if given the conditions contained in this Chapter, at least one of those conditions is met.",
+          "verbatim": true
+        },
+        {
+          "id": "s11",
+          "number": "11",
+          "heading": "Consent, justification and objection — lawful grounds for processing",
+          "text": "Personal information may only be processed if at least one of the following conditions is met: (a) the data subject or a competent person where the data subject is a child consents to the processing; (b) processing is necessary to carry out actions for the conclusion or performance of a contract to which the data subject is party; (c) processing complies with an obligation imposed by law on the responsible party; (d) processing protects a legitimate interest of the data subject; (e) processing is necessary for the proper performance of a public law duty by a public body; or (f) processing is necessary for pursuing the legitimate interests of the responsible party or of a third party to whom the information is supplied.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s11-1",
+              "number": "11(1)",
+              "text": "Personal information may only be processed if at least one of the following conditions is met: the data subject consents; processing is necessary for contract performance; processing complies with a legal obligation; processing protects a legitimate interest of the data subject; or processing is necessary for a legitimate interest of the responsible party.",
+              "verbatim": true
+            },
+            {
+              "id": "s11-3",
+              "number": "11(3)",
+              "text": "A data subject may object, at any time, to the processing of personal information in terms of subsection (1)(f), in the prescribed manner, on reasonable grounds relating to his, her or its particular situation.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s13",
+          "number": "13",
+          "heading": "Purpose specification",
+          "text": "Personal information must be collected only for a specific, explicitly defined and lawful purpose related to a function or activity of the responsible party. The data subject must be made aware of the purpose of the collection as required by section 18(1). Records of personal information must not be retained any longer than is necessary for achieving the purpose for which the information was collected or subsequently processed.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s13-1",
+              "number": "13(1)",
+              "text": "Personal information must be collected for a specific, explicitly defined and lawful purpose related to a function or activity of the responsible party.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s15",
+          "number": "15",
+          "heading": "Further processing to be compatible with purpose of collection",
+          "text": "Personal information must not be processed further in a manner that is incompatible with the purpose for which it was collected. In determining whether further processing is compatible with the purpose of collection, the responsible party must take account of the link between the purpose of collection and the intended further processing, the nature of the information, the consequences of the further processing, the manner of collection, and the contractual rights of the data subject.",
+          "verbatim": true
+        },
+        {
+          "id": "s16",
+          "number": "16",
+          "heading": "Information quality",
+          "text": "The responsible party must take reasonably practicable steps to ensure that the personal information collected is complete, accurate, not misleading and updated where necessary. When collecting personal information the responsible party must have regard to the purpose for which the information is collected.",
+          "verbatim": true
+        },
+        {
+          "id": "s17",
+          "number": "17",
+          "heading": "Openness — documentation",
+          "text": "The responsible party must maintain documentation of all processing operations under its responsibility. The responsible party must notify the Information Regulator prior to any processing where a prior authorisation is required under section 57.",
+          "verbatim": true
+        },
+        {
+          "id": "s18",
+          "number": "18",
+          "heading": "Notification to data subjects when collecting personal information",
+          "text": "If personal information is collected from the data subject, the responsible party must take reasonably practicable steps to ensure that the data subject is aware of the information being collected, the name and address of the responsible party, the purpose of collection, whether supply of the information is voluntary or mandatory, consequences of failure to provide information, recipients of the information, ability to access and correct the information, and existence of the right to object.",
+          "verbatim": true
+        },
+        {
+          "id": "s19",
+          "number": "19",
+          "heading": "Security measures on integrity and confidentiality of personal information",
+          "text": "A responsible party must secure the integrity and confidentiality of personal information in its possession or under its control by taking appropriate, reasonable technical and organisational measures to prevent loss of, damage to or unauthorised destruction of personal information and unlawful access to or processing of personal information. In particular the responsible party must take reasonable measures to identify all reasonably foreseeable internal and external risks; establish and maintain appropriate safeguards against the risks identified; regularly verify that the safeguards are effectively implemented; and ensure that the safeguards are continually updated in response to new risks or deficiencies in previously implemented safeguards.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s19-1",
+              "number": "19(1)",
+              "text": "A responsible party must secure the integrity and confidentiality of personal information in its possession or under its control by taking appropriate, reasonable technical and organisational measures to prevent loss, damage, unauthorised destruction, or unlawful access to or processing of personal information.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s20",
+          "number": "20",
+          "heading": "Safeguards for personal information processed by operator",
+          "text": "A responsible party must, in terms of a written contract between the responsible party and the operator, ensure that the operator which processes personal information for the responsible party establishes and maintains the security measures referred to in section 19. The operator must notify the responsible party immediately where there are reasonable grounds to believe that the personal information of a data subject has been accessed or acquired by any unauthorised person.",
+          "verbatim": true
+        },
+        {
+          "id": "s21",
+          "number": "21",
+          "heading": "Notification of security compromises by operator",
+          "text": "Where there are reasonable grounds to believe that the personal information of a data subject has been accessed or acquired by any unauthorised person, the operator must notify the responsible party immediately.",
+          "verbatim": true
+        },
+        {
+          "id": "s22",
+          "number": "22",
+          "heading": "Notification of security compromises by responsible party",
+          "text": "Where there are reasonable grounds to believe that the personal information of a data subject has been accessed or acquired by any unauthorised person, the responsible party must notify the Information Regulator and the data subject, unless the identity of such data subject cannot be established, as soon as reasonably possible after the discovery of the compromise, if the identity of such data subject can be established.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s22-1",
+              "number": "22(1)",
+              "text": "Where there are reasonable grounds to believe that personal information has been accessed or acquired by any unauthorised person, the responsible party must notify the Information Regulator and the affected data subject as soon as reasonably possible after discovery of the compromise.",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ch4",
+      "number": "4",
+      "heading": "Rights of Data Subjects",
+      "sections": [
+        {
+          "id": "s23",
+          "number": "23",
+          "heading": "Right of access to personal information",
+          "text": "A data subject has the right to be advised on request whether a responsible party holds personal information about the data subject and, if so, to be given access to that information. The responsible party must provide the data subject with access to the record or a description of the personal information held, the identity of all third parties who have had access to the information, and information about the source of the personal information.",
+          "verbatim": true
+        },
+        {
+          "id": "s24",
+          "number": "24",
+          "heading": "Right to have personal information corrected or deleted",
+          "text": "A data subject may request a responsible party to correct or delete personal information about the data subject that is inaccurate, irrelevant, excessive, out of date, incomplete, misleading or obtained unlawfully. The responsible party must notify any third parties to whom the information was disclosed of the correction or deletion.",
+          "verbatim": true
+        },
+        {
+          "id": "s25",
+          "number": "25",
+          "heading": "Right to object to processing of personal information",
+          "text": "A data subject may object at any time to the processing of personal information for purposes of direct marketing, and may object to the processing of personal information on the basis of one of the conditions in section 11(1)(d)-(f) if the data subject provides reasons relating to his, her or its particular situation.",
+          "verbatim": true
+        },
+        {
+          "id": "s34",
+          "number": "34",
+          "heading": "Prohibition on processing of special personal information",
+          "text": "A responsible party may not process personal information concerning the religious or philosophical beliefs, race or ethnic origin, trade union membership, political persuasion, health or sex life, or biometric information of a data subject, or the criminal behaviour of a data subject, to the extent that such information relates to an alleged commission of an offence, or any proceedings, unless one of the exceptions in section 27 applies.",
+          "verbatim": true
+        },
+        {
+          "id": "s35",
+          "number": "35",
+          "heading": "General prohibition on processing of personal information of children",
+          "text": "A responsible party may not process personal information about a child unless a competent person has consented to the processing, the processing is necessary for the establishment, exercise or defence of a right or obligation in law, the processing is necessary to comply with an obligation of international public law, the information has deliberately been made public by the child or a competent person, or one of the other exceptions in section 35(1) applies.",
+          "verbatim": true
+        },
+        {
+          "id": "s71",
+          "number": "71",
+          "heading": "Automated decision making",
+          "text": "A data subject has the right not to be subject to a decision which results in legal consequences for him, her or it, or which affects him, her or it to a substantial degree, which is based solely on the basis of automated processing of personal information intended to provide a profile of such person. The responsible party must notify the data subject of any such automated decision-making and afford the right to request human review.",
+          "verbatim": true
+        },
+        {
+          "id": "s72",
+          "number": "72",
+          "heading": "Cross-border transfers of personal information",
+          "text": "A responsible party in the Republic may not transfer personal information about a data subject to a third party in a foreign country unless the country affords an adequate level of protection, the data subject consents to the transfer, the transfer is necessary for the performance of a contract between the data subject and the responsible party, or one of the other exceptions in section 72(1) applies.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch5",
+      "number": "5",
+      "heading": "Information Officer",
+      "sections": [
+        {
+          "id": "s55",
+          "number": "55",
+          "heading": "Duties of Information Officer",
+          "text": "The Information Officer must encourage compliance by the responsible party with the conditions for the lawful processing of personal information; deal with requests made to the responsible party pursuant to the Act; work with the Information Regulator in relation to investigations; and otherwise ensure compliance with the provisions of the Act.",
+          "verbatim": false
+        },
+        {
+          "id": "s56",
+          "number": "56",
+          "heading": "Registration of Information Officer",
+          "text": "Every responsible party must register its Information Officer with the Information Regulator in the prescribed manner. Where a responsible party has designated a deputy information officer, such deputy must also be registered.",
+          "verbatim": false
+        },
+        {
+          "id": "s57",
+          "number": "57",
+          "heading": "Prior authorisation",
+          "text": "A responsible party must obtain prior authorisation from the Information Regulator before processing personal information that involves unique identifiers, information on criminal behaviour of a data subject on behalf of responsible parties, information on the financial situation of data subjects, or information on children, for purposes of credit or insurance risk assessment, and other prescribed categories.",
+          "verbatim": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,273 @@
+{
+  "slug": "fais-gcc",
+  "title": "General Code of Conduct for Authorised Financial Services Providers and Representatives (Board Notice 80 of 2003, as amended)",
+  "shortTitle": "FAIS GCC",
+  "regulator": "FSCA (formerly FSB)",
+  "year": 2003,
+  "citationPatterns": ["General Code of Conduct", "FAIS General Code", "GCC", "BN 80", "Board Notice 80", "BN 80 of 2003"],
+  "priority": 6,
+  "chapters": [
+    {
+      "id": "part1",
+      "number": "Part I",
+      "heading": "Introductory Provisions",
+      "sections": [
+        {
+          "id": "gcc1",
+          "number": "1",
+          "heading": "Definitions, construction and application",
+          "text": "In this Code: 'advertisement' means any written, printed, electronic or oral communication directed to the general public or any client on request, which is intended merely to call attention to the marketing or promotion of financial services offered, and which does not purport to provide detailed information regarding any such financial services. 'Direct marketing' means the rendering of financial services by way of telephone, internet, media insert, direct mail, or electronic mail, excluding any such means which are advertisements not containing transaction requirements. 'provider' means an authorised financial services provider, and includes a representative. 'transaction requirement' means any application, proposal, order, instruction or other contractual information required to be completed for, or submitted to, a product supplier by or on behalf of a client relating to the purchase of or investment in any financial product. The Code must be construed in conjunction with the provisions of the Act. The provisions apply to all financial services providers and representatives unless stated otherwise.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc1-3",
+              "number": "1(3)",
+              "text": "The provisions of this Code apply, unless stated otherwise in this Code or otherwise by law, to all financial services providers and representatives.",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "part2",
+      "number": "Part II",
+      "heading": "General Provisions",
+      "sections": [
+        {
+          "id": "gcc2",
+          "number": "2",
+          "heading": "General duty of provider",
+          "text": "A provider must at all times render financial services honestly, fairly, with due skill, care and diligence, and in the interests of clients and the integrity of the financial services industry.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc3",
+          "number": "3",
+          "heading": "Specific duties of provider",
+          "text": "When a provider renders a financial service, representations made and information provided to a client by the provider must be factually correct; must be provided in plain language, avoid uncertainty or confusion and not be misleading; must be adequate and appropriate in the circumstances of the particular financial service, taking into account the factually established or reasonably assumed level of knowledge of the client; must be provided timeously so as to afford the client reasonably sufficient time to make an informed decision about the proposed transaction; must, where provided in writing or by means of standard forms or format, be in a clear and readable print size, spacing and format; must, as regards all amounts, sums, values, charges, fees, remuneration or monetary obligations, be reflected in specific monetary terms or, where not reasonably predeterminable, the basis of calculation must be adequately described.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc3-1",
+              "number": "3(1)",
+              "text": "When a provider renders a financial service representations made and information provided to a client by the provider must be factually correct; must be provided in plain language, avoid uncertainty or confusion and not be misleading; must be adequate and appropriate in the circumstances of the particular financial service.",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "part3",
+      "number": "Part III",
+      "heading": "Information on Product Suppliers",
+      "sections": [
+        {
+          "id": "gcc4",
+          "number": "4",
+          "heading": "Information on product suppliers",
+          "text": "A provider must, prior to or at the commencement of rendering a financial service to a client, provide the client with written information about the product supplier (including name, registration status, physical address, and relevant licence details) to the extent required by the Act and this Code.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part4",
+      "number": "Part IV",
+      "heading": "Information on Providers",
+      "sections": [
+        {
+          "id": "gcc5",
+          "number": "5",
+          "heading": "Information on providers",
+          "text": "A provider must, prior to or at the commencement of rendering a financial service to a client, provide the client with written information about the provider including: the provider's name, licence number, and physical address; whether the provider acts as agent or principal; the provider's status regarding any conflicts of interest; and any other prescribed information.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part5",
+      "number": "Part V",
+      "heading": "Contacting of Clients",
+      "sections": [
+        {
+          "id": "gcc6",
+          "number": "6",
+          "heading": "Contacting of clients",
+          "text": "A provider who contacts a client for the purpose of rendering a financial service must, at the commencement of the contact, identify the provider and the purpose of the contact, and must comply with any applicable requirements regarding direct marketing.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part6",
+      "number": "Part VI",
+      "heading": "Information about Financial Services",
+      "sections": [
+        {
+          "id": "gcc7",
+          "number": "7",
+          "heading": "Information about financial services",
+          "text": "A provider must, prior to or at the time of rendering a financial service, provide a client with written information about the relevant financial product including: the nature and material terms of the product; the financial implications, risks, and costs; any material investment objectives; the applicable cooling-off rights; the provider's remuneration structure; and any other material information.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part7",
+      "number": "Part VII",
+      "heading": "Furnishing of Advice",
+      "sections": [
+        {
+          "id": "gcc8",
+          "number": "8",
+          "heading": "Suitability",
+          "text": "Before giving advice, a provider must conduct a needs analysis of the client and determine whether the advice given is appropriate to the client's needs, taking into account the client's financial situation, financial product experience, and financial objectives. A provider may not give advice that is not appropriate to the client's particular circumstances.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc8-1",
+              "number": "8(1)",
+              "text": "A provider must, prior to furnishing a client with advice, take reasonable steps to obtain appropriate and available information regarding the client's financial situation, financial product experience and objectives in order to enable the provider to provide the client with appropriate advice.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "gcc9",
+          "number": "9",
+          "heading": "Record of advice",
+          "text": "A provider who has given advice to a client must maintain a record of the advice given and the grounds on which the advice is based for at least five years. The record must include the financial needs of the client addressed by the advice, the basis on which the advice is appropriate, and the product recommended.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part8",
+      "number": "Part VIII",
+      "heading": "Custody of Financial Products and Funds",
+      "sections": [
+        {
+          "id": "gcc10",
+          "number": "10",
+          "heading": "Custody of financial products and funds",
+          "text": "A provider who holds financial products or funds in trust or on behalf of clients must comply with prescribed requirements for the safekeeping of such products and funds, including the maintenance of separate trust accounts and the provision of regular statements to clients.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part9",
+      "number": "Part IX",
+      "heading": "Risk Management",
+      "sections": [
+        {
+          "id": "gcc11",
+          "number": "11",
+          "heading": "Control measures",
+          "text": "A provider must have and maintain adequate and appropriate internal control measures to ensure compliance with the Act and this Code, and to minimise operational risk. Control measures must include written procedures, segregation of duties, and regular review.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc12",
+          "number": "12",
+          "heading": "Specific control objectives",
+          "text": "A provider's control measures must address specific objectives including: prevention of fraud, misappropriation and unauthorised transactions; accuracy and completeness of records; security of client information; and prompt resolution of client complaints.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc13",
+          "number": "13",
+          "heading": "Insurance",
+          "text": "Prescribes the professional indemnity and fidelity insurance requirements applicable to authorised financial services providers.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part10",
+      "number": "Part X",
+      "heading": "Advertising and Direct Marketing",
+      "sections": [
+        {
+          "id": "gcc14",
+          "number": "14",
+          "heading": "Advertising",
+          "text": "Advertisements by a provider must be factually correct, not misleading, consistent with the Act and this Code, and must include prescribed information about the provider and the financial products advertised.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc15",
+          "number": "15",
+          "heading": "Direct marketing",
+          "text": "A provider engaged in direct marketing must comply with prescribed requirements including the right of the client to be removed from contact lists, prescribed disclosure at commencement of contact, and compliance with applicable legislation governing direct marketing.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part11",
+      "number": "Part XI",
+      "heading": "Complaints",
+      "sections": [
+        {
+          "id": "gcc16",
+          "number": "16",
+          "heading": "General complaints handling",
+          "text": "A provider must have a documented complaints management system that enables clients to lodge complaints, ensures complaints are properly recorded and investigated, and provides clients with feedback on the resolution of their complaints.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc17",
+          "number": "17",
+          "heading": "Basic principles of systems and procedures",
+          "text": "A provider's complaints handling system must be accessible to clients, must not impose unreasonable burdens on clients wishing to complain, and must ensure that complaints are resolved in a fair and timely manner.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc18",
+          "number": "18",
+          "heading": "Resolution of complaints",
+          "text": "A provider must resolve complaints expeditiously and communicate outcomes to clients in a clear and understandable manner. Where a complaint cannot be resolved in favour of the client, the provider must advise the client of the right to refer the complaint to the Ombud.",
+          "verbatim": true
+        },
+        {
+          "id": "gcc19",
+          "number": "19",
+          "heading": "Specific obligations",
+          "text": "Sets out specific obligations on providers in the context of complaints resolution including maintenance of records, reporting obligations to the registrar, and obligations to cooperate with the Ombud.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part12",
+      "number": "Part XII",
+      "heading": "Termination of Agreement or Business",
+      "sections": [
+        {
+          "id": "gcc20",
+          "number": "20",
+          "heading": "Termination of agreement or business",
+          "text": "On termination of a financial services agreement or business relationship, a provider must ensure that clients are notified, that outstanding obligations to clients are discharged, and that proper arrangements are made for the transfer or return of any client funds or financial products.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "part13",
+      "number": "Part XIII",
+      "heading": "Waiver of Rights",
+      "sections": [
+        {
+          "id": "gcc21",
+          "number": "21",
+          "heading": "Waiver of rights",
+          "text": "A client may not waive any right conferred on the client by this Code unless the registrar has approved such waiver in writing in advance.",
+          "verbatim": true
+        }
+      ]
+    }
+  ]
+}

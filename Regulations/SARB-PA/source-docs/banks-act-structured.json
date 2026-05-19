@@ -1,0 +1,285 @@
+{
+  "slug": "banks-act",
+  "title": "Banks Act 94 of 1990",
+  "shortTitle": "Banks Act",
+  "regulator": "SARB Prudential Authority",
+  "year": 1990,
+  "citationPatterns": ["Banks Act", "Banks Act 94", "Banks Act 94/1990", "Banks Act s.", "Banks Act §", "Banks Act ss."],
+  "priority": 1,
+  "chapters": [
+    {
+      "id": "ch1",
+      "number": "I",
+      "heading": "Definitions and Introductory Provisions",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Definitions",
+          "text": "Defines key terms including 'bank', 'banking business', 'deposit', 'registrar', 'prudential authority', and related concepts. The definitions establish the scope of the Act and its application to registered banks and banking business in South Africa.",
+          "verbatim": false
+        },
+        {
+          "id": "s11",
+          "number": "11",
+          "heading": "Prohibition on conducting banking business without registration",
+          "text": "No person shall conduct the business of a bank or carry out any activity which, in the opinion of the Registrar, constitutes the business of a bank, unless such person is registered as a bank under this Act. 'Conducting the business of a bank' means the acceptance of deposits from the general public as a regular feature of business, whether or not such person employs or invests such deposits for its own account. Any person who, without being registered as a bank, conducts the business of a bank, is guilty of an offence.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s11-1",
+              "number": "11(1)",
+              "text": "No person shall conduct the business of a bank unless that person is registered as a bank under this Act.",
+              "verbatim": true
+            },
+            {
+              "id": "s11-2",
+              "number": "11(2)",
+              "text": "'Conducting the business of a bank' means the acceptance of deposits from the general public as a regular feature of the business of the person accepting such deposits, whether or not such person employs or invests the deposits or the proceeds thereof for his, her or its own account.",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "number": "II",
+      "heading": "Registrar of Banks",
+      "sections": [
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "Registrar and Deputy Registrar",
+          "text": "Establishes the office of the Registrar of Banks within the South African Reserve Bank. The Governor of the Reserve Bank or a Deputy Governor may serve as Registrar. Confers powers on the Registrar to supervise registered banks and enforce compliance with the Act.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "number": "III",
+      "heading": "Registration of Banks",
+      "sections": [
+        {
+          "id": "s12",
+          "number": "12",
+          "heading": "Application for registration as bank",
+          "text": "Sets out the requirements for application for registration as a bank. The applicant must be a public company, have adequate capital, demonstrate that proposed directors and senior management are fit and proper, and satisfy the Registrar that the proposed bank will conduct its business in accordance with sound banking practices.",
+          "verbatim": false
+        },
+        {
+          "id": "s13",
+          "number": "13",
+          "heading": "Consideration of application for registration",
+          "text": "The Registrar must consider applications for registration and may approve subject to conditions. The Registrar must be satisfied on capital adequacy, governance, fit-and-proper of key persons, and systemic risk before granting registration.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch4",
+      "number": "IV",
+      "heading": "Financial Year, Accounts and Audit",
+      "sections": [
+        {
+          "id": "s60",
+          "number": "60",
+          "heading": "Governance requirements — board and senior management",
+          "text": "Every registered bank must have a board of directors and ensure that governance arrangements comply with requirements prescribed by the Registrar. The board must include persons of adequate experience and fit-and-proper status. The bank must designate a chief executive officer who exercises effective control over the business. The board must establish risk, audit, remuneration and other committees as required.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s60-1",
+              "number": "60(1)",
+              "text": "Every bank must have a board of directors and the board must ensure that the bank is managed in a prudent manner.",
+              "verbatim": true
+            },
+            {
+              "id": "s60-5a",
+              "number": "60(5)(a)",
+              "text": "A bank must give the Prudential Authority written notice of the nomination of a person as chief executive officer, director or executive officer of the bank, furnishing such information as may be prescribed in respect of such nomination.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s60A",
+          "number": "60A",
+          "heading": "Risk management function",
+          "text": "Every registered bank must establish, maintain and implement a sound and comprehensive risk management function with the necessary resources, independence and access to carry out its responsibilities. The function must be separate from and independent of the operational functions it oversees. The head of risk management must have direct access to the board.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s60A-1",
+              "number": "60A(1)",
+              "text": "Every bank must establish and maintain a risk management function that is independent of the operational activities of the bank.",
+              "verbatim": true
+            },
+            {
+              "id": "s60A-2",
+              "number": "60A(2)",
+              "text": "The risk management function must be adequately resourced and have direct access to the board of directors.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s60B",
+          "number": "60B",
+          "heading": "Conduct of business",
+          "text": "A registered bank must conduct its business in a manner that is consistent with the promotion of the fair treatment of clients, market integrity, and the reputation of the banking sector. This provision interfaces with the Financial Sector Regulation Act and the mandate of the Financial Sector Conduct Authority in respect of conduct supervision.",
+          "verbatim": true
+        },
+        {
+          "id": "s61",
+          "number": "61",
+          "heading": "External auditor",
+          "text": "Every registered bank must appoint an approved external auditor. The auditor must be independent of the bank and report to the Registrar on prescribed matters. Auditor independence requirements and the duty to report contraventions to the Registrar are prescribed.",
+          "verbatim": false
+        },
+        {
+          "id": "s62",
+          "number": "62",
+          "heading": "Internal audit function",
+          "text": "Every registered bank must maintain an internal audit function that operates in accordance with the International Standards for the Professional Practice of Internal Auditing. The function must report to the audit committee and have adequate independence.",
+          "verbatim": false
+        },
+        {
+          "id": "s70",
+          "number": "70",
+          "heading": "Capital requirements",
+          "text": "Every registered bank must maintain capital and reserve funds in such amounts and of such nature as the Registrar may determine and as prescribed in the Regulations relating to Banks. The minimum capital includes Common Equity Tier 1 (CET1), Additional Tier 1 (AT1) and Tier 2 capital components. Capital adequacy ratios must at all times be maintained at not less than the prescribed minima, including any Pillar 2A add-ons determined by the Prudential Authority following the Supervisory Review and Evaluation Process.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s70-1",
+              "number": "70(1)",
+              "text": "Every bank must maintain, in the manner and to the extent prescribed, adequate capital and reserve funds.",
+              "verbatim": true
+            },
+            {
+              "id": "s70-2",
+              "number": "70(2)",
+              "text": "The Registrar may prescribe the minimum capital requirements applicable to any bank, including requirements relating to the quality and composition of capital.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s71",
+          "number": "71",
+          "heading": "Reserve funds",
+          "text": "Every registered bank must establish and maintain reserve funds as required by this Act and the Regulations. The bank must not use its reserve funds otherwise than in the manner and for the purposes permitted by this Act, and must report the composition and adequacy of reserve funds to the Registrar in the prescribed form.",
+          "verbatim": true
+        },
+        {
+          "id": "s74",
+          "number": "74",
+          "heading": "Subordination provisions and depositor preference",
+          "text": "Sets out the order of preference of creditors in the winding up of a registered bank, ensuring that depositors have a preferred claim over subordinated debt holders and shareholders.",
+          "verbatim": false
+        },
+        {
+          "id": "s75",
+          "number": "75",
+          "heading": "Annual financial statements",
+          "text": "Every registered bank must, within four months after the end of its financial year, submit to the Registrar audited annual financial statements prepared in accordance with International Financial Reporting Standards (IFRS). The financial statements must include a balance sheet, income statement, statement of changes in equity, cash flow statement, and notes. The Registrar may extend this period on application.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s75-1",
+              "number": "75(1)",
+              "text": "Every bank must, within the period specified by the Registrar, submit to the Registrar annual financial statements audited by the bank's approved auditor.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s75A",
+          "number": "75A",
+          "heading": "Disclosure requirements",
+          "text": "Every registered bank must make public disclosures in accordance with the Pillar 3 disclosure requirements prescribed in the Regulations relating to Banks. Public disclosures must include quantitative and qualitative information about capital adequacy, risk exposures, risk management practices, remuneration, and governance. Disclosures must be published at least annually, with certain items disclosed quarterly.",
+          "verbatim": true
+        },
+        {
+          "id": "s79",
+          "number": "79",
+          "heading": "Capital instruments",
+          "text": "A registered bank may only issue capital instruments (including qualifying Tier 1 and Tier 2 instruments) with the prior written approval of the Prudential Authority. The Registrar must be satisfied that the instrument meets all regulatory criteria for inclusion in qualifying capital. Redemption or repurchase of capital instruments is also subject to prior PA notification and approval.",
+          "verbatim": true
+        }
+      ]
+    },
+    {
+      "id": "ch5",
+      "number": "V",
+      "heading": "Restrictions on the Business of Banks",
+      "sections": [
+        {
+          "id": "s52",
+          "number": "52",
+          "heading": "Establishment of branches abroad",
+          "text": "A registered bank wishing to establish a branch, subsidiary or representative office outside South Africa must obtain prior written approval from the Registrar. Conditions attaching to cross-border operations are set out in Directives issued from time to time.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch6",
+      "number": "VI",
+      "heading": "Holding Companies and Controlling Companies",
+      "sections": [
+        {
+          "id": "s60plus",
+          "number": "60+",
+          "heading": "Consolidated and group supervision",
+          "text": "Sets out requirements for consolidated supervision of banking groups. The Registrar supervises the bank and its holding company, controlling company, and subsidiaries on a consolidated basis. Capital adequacy, large exposures, liquidity, and governance requirements apply at both the solo and consolidated levels.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch7",
+      "number": "VII",
+      "heading": "Winding-up and Cancellation of Registration",
+      "sections": [
+        {
+          "id": "s68",
+          "number": "68",
+          "heading": "Cancellation of registration",
+          "text": "Grounds on which the Registrar may cancel a bank's registration, including failure to maintain prescribed capital, materially false information in an application, or conduct detrimental to the interests of depositors.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch8",
+      "number": "VIII",
+      "heading": "Returns and Information",
+      "sections": [
+        {
+          "id": "s73",
+          "number": "73",
+          "heading": "Submission of returns",
+          "text": "Every registered bank must submit to the Registrar, in the prescribed form and at the prescribed times, monthly, quarterly, semi-annual and annual returns covering capital, liquidity, large exposures, interest rate risk, and other matters. The BA-series returns (BA 100, 200, 300, 325, 326, 330, 350, 600, 700) are the primary instruments.",
+          "verbatim": false
+        }
+      ]
+    },
+    {
+      "id": "ch9",
+      "number": "IX",
+      "heading": "Offences and Penalties",
+      "sections": [
+        {
+          "id": "s84",
+          "number": "84",
+          "heading": "Offences and penalties",
+          "text": "Prescribes criminal and administrative penalties for contraventions of the Act, including conducting banking business without registration, failure to maintain prescribed capital, making false statements to the Registrar, and failure to submit required returns.",
+          "verbatim": false
+        }
+      ]
+    }
+  ]
+}

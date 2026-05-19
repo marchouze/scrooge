@@ -1,0 +1,382 @@
+{
+  "generatedAt": "2026-05-19T13:07:55.001Z",
+  "obligationCount": 283,
+  "sectionCount": 84,
+  "index": {
+    "banks-act": [
+      "ORG-PR-01",
+      "ORG-PR-02",
+      "ORG-PR-03",
+      "ORG-PR-05",
+      "ORG-PR-12",
+      "ORG-PR-13",
+      "ORG-PR-14",
+      "ORG-PR-16",
+      "ORG-PR-24",
+      "ORG-PR-52",
+      "ORG-PR-56",
+      "ORG-PR-57",
+      "ORG-PR-58",
+      "ORG-PR-59",
+      "ORG-PR-60",
+      "ORG-PR-61",
+      "ORG-PR-62",
+      "ORG-PR-63",
+      "ORG-PR-64",
+      "ORG-PR-65",
+      "ORG-PR-66",
+      "ORG-GV-03",
+      "ORG-GV-05",
+      "ORG-GV-06",
+      "ORG-GV-11",
+      "ORG-GV-15",
+      "ORG-AC-13",
+      "ORG-AC-14",
+      "ORG-HR-10",
+      "ORG-HR-11"
+    ],
+    "banks-act/s27": [
+      "ORG-PR-25"
+    ],
+    "banks-act/s4": [
+      "ORG-PR-27",
+      "ORG-PR-30",
+      "ORG-PR-36",
+      "ORG-PR-46",
+      "ORG-GV-22",
+      "ORG-BNK-RECOVERY-CONS"
+    ],
+    "banks-act/s1": [
+      "ORG-PR-29",
+      "ORG-PR-36",
+      "ORG-PR-37",
+      "ORG-PR-38",
+      "ORG-PR-40",
+      "ORG-PR-42",
+      "ORG-PR-43",
+      "ORG-PR-44",
+      "ORG-PR-46",
+      "ORG-PR-47",
+      "ORG-PR-55",
+      "ORG-GV-22"
+    ],
+    "banks-act/s2": [
+      "ORG-PR-29",
+      "ORG-PR-36",
+      "ORG-PR-37",
+      "ORG-PR-38",
+      "ORG-PR-42",
+      "ORG-PR-43",
+      "ORG-PR-44",
+      "ORG-PR-46",
+      "ORG-PR-47",
+      "ORG-GV-17",
+      "ORG-GV-22",
+      "ORG-GV-CRO-INDEPENDENCE",
+      "ORG-BNK-CYBER-CONS"
+    ],
+    "banks-act/s6": [
+      "ORG-PR-30",
+      "ORG-PR-46",
+      "ORG-PR-47",
+      "ORG-GV-22",
+      "ORG-GV-CRO-INDEPENDENCE",
+      "ORG-BNK-RECOVERY-CONS"
+    ],
+    "banks-act/s60": [
+      "ORG-PR-30",
+      "ORG-PR-35",
+      "ORG-PR-42",
+      "ORG-GV-DIRECTORS-MINIMUM",
+      "ORG-GV-CRO-INDEPENDENCE",
+      "ORG-GV-CFO-INDEPENDENCE",
+      "ORG-BNK-CGPS-CONS",
+      "ORG-BNK-ICAAP-CONS",
+      "ORG-BNK-ILAAP-CONS",
+      "ORG-BNK-RECOVERY-CONS",
+      "ORG-BNK-CYBER-CONS",
+      "ORG-GRP-FINREP",
+      "ORG-GRP-PA-PARENT"
+    ],
+    "banks-act/s5": [
+      "ORG-PR-36",
+      "ORG-PR-44",
+      "ORG-PR-46",
+      "ORG-GV-22"
+    ],
+    "banks-act/s12": [
+      "ORG-PR-42",
+      "ORG-PR-46"
+    ],
+    "banks-act/s52": [
+      "ORG-PR-42"
+    ],
+    "banks-act/s3": [
+      "ORG-PR-46",
+      "ORG-GV-22",
+      "ORG-GV-CRO-INDEPENDENCE"
+    ],
+    "banks-act/s7": [
+      "ORG-PR-46",
+      "ORG-GV-22",
+      "ORG-GV-CRO-INDEPENDENCE"
+    ],
+    "banks-act/s8": [
+      "ORG-PR-46",
+      "ORG-GV-22"
+    ],
+    "banks-act/s9": [
+      "ORG-PR-46"
+    ],
+    "banks-act/s10": [
+      "ORG-PR-46"
+    ],
+    "banks-act/s11": [
+      "ORG-PR-46"
+    ],
+    "banks-act/s72": [
+      "ORG-PR-51"
+    ],
+    "banks-act/s68a": [
+      "ORG-PR-53",
+      "ORG-PR-54"
+    ],
+    "fic-act/s42": [
+      "ORG-FC-01",
+      "ORG-FC-23"
+    ],
+    "fic-act/s21": [
+      "ORG-FC-02",
+      "ORG-FC-SANCTIONS-SCREENING"
+    ],
+    "fic-act/s21a": [
+      "ORG-FC-03"
+    ],
+    "fic-act/s21b": [
+      "ORG-FC-04"
+    ],
+    "fic-act/s22": [
+      "ORG-FC-05",
+      "ORG-MK-15",
+      "ORG-RM-01"
+    ],
+    "fic-act/s28": [
+      "ORG-FC-07"
+    ],
+    "fic-act/s28a": [
+      "ORG-FC-08"
+    ],
+    "fic-act/s29": [
+      "ORG-FC-09",
+      "ORG-FC-10"
+    ],
+    "fic-act": [
+      "ORG-FC-11",
+      "ORG-FC-14"
+    ],
+    "fic-act/s43": [
+      "ORG-FC-12"
+    ],
+    "fic-act/s1": [
+      "ORG-FC-23",
+      "ORG-FC-24"
+    ],
+    "fic-act/s4": [
+      "ORG-FC-23",
+      "ORG-FC-24"
+    ],
+    "fic-act/s5": [
+      "ORG-FC-23",
+      "ORG-FC-24",
+      "ORG-MK-15"
+    ],
+    "fic-act/s2": [
+      "ORG-FC-23",
+      "ORG-FC-24"
+    ],
+    "fic-act/s43a": [
+      "ORG-FC-24",
+      "ORG-FC-11-GLOSS-CEO-MLRO-BAR",
+      "ORG-FC-MLRO-ALTERNATE"
+    ],
+    "fic-act/s62e": [
+      "ORG-FC-24"
+    ],
+    "fic-act/s3": [
+      "ORG-FC-24"
+    ],
+    "fais-act": [
+      "ORG-CD-01",
+      "ORG-CD-02",
+      "ORG-CD-03"
+    ],
+    "fais-gcc": [
+      "ORG-CD-04"
+    ],
+    "popia/s11": [
+      "ORG-PR(IV)-01"
+    ],
+    "popia/s13": [
+      "ORG-PR(IV)-02"
+    ],
+    "popia/s14": [
+      "ORG-PR(IV)-03",
+      "ORG-RM-04",
+      "ORG-RM-05"
+    ],
+    "popia/s15": [
+      "ORG-PR(IV)-04"
+    ],
+    "popia/s18": [
+      "ORG-PR(IV)-05",
+      "ORG-RM-05"
+    ],
+    "popia/s19": [
+      "ORG-PR(IV)-06"
+    ],
+    "popia/s22": [
+      "ORG-PR(IV)-07"
+    ],
+    "popia/s23": [
+      "ORG-PR(IV)-08"
+    ],
+    "popia/s24": [
+      "ORG-PR(IV)-09"
+    ],
+    "popia/s71": [
+      "ORG-PR(IV)-10"
+    ],
+    "popia/s34": [
+      "ORG-PR(IV)-11"
+    ],
+    "popia/s35": [
+      "ORG-PR(IV)-12"
+    ],
+    "popia/s55": [
+      "ORG-PR(IV)-13",
+      "ORG-PR(IV)-13-GLOSS-DEPUTY-IO"
+    ],
+    "popia/s4": [
+      "ORG-PR(IV)-13",
+      "ORG-PR(IV)-13-GLOSS-DEPUTY-IO"
+    ],
+    "popia/s57": [
+      "ORG-PR(IV)-14"
+    ],
+    "popia/s72": [
+      "ORG-PR(IV)-15"
+    ],
+    "js2/s2": [
+      "ORG-CY-01",
+      "ORG-CY-02",
+      "ORG-CY-03",
+      "ORG-CY-04",
+      "ORG-CY-05",
+      "ORG-CY-17",
+      "ORG-JS2-001",
+      "ORG-FX-FIN-08",
+      "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+    ],
+    "banks-act/s107": [
+      "ORG-GV-22"
+    ],
+    "banks-act/s105": [
+      "ORG-GV-22"
+    ],
+    "banks-act/s159": [
+      "ORG-GV-22"
+    ],
+    "banks-act/s157": [
+      "ORG-GV-22"
+    ],
+    "banks-act/s158": [
+      "ORG-GV-22"
+    ],
+    "popia": [
+      "ORG-EL-03"
+    ],
+    "js2/s4": [
+      "ORG-JS2-001"
+    ],
+    "js2/s6a": [
+      "ORG-FX-FIN-08"
+    ],
+    "fais-act/s8": [
+      "ORG-FAIS-KI",
+      "ORG-FAIS-RK-ADVICE",
+      "ORG-FAIS-RK-SUITABILITY",
+      "ORG-FAIS-RK-FEE-DISCLOSURE",
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s3": [
+      "ORG-FAIS-RK-ADVICE",
+      "ORG-FAIS-RK-FEE-DISCLOSURE",
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s7": [
+      "ORG-FAIS-RK-ADVICE",
+      "ORG-FAIS-RK-FEE-DISCLOSURE",
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s9": [
+      "ORG-FAIS-RK-ADVICE",
+      "ORG-FAIS-RK-SUITABILITY",
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s18": [
+      "ORG-FAIS-RK-COMPLAINT-HANDLING"
+    ],
+    "fais-act/s16": [
+      "ORG-FAIS-RK-COMPLAINT-HANDLING",
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s17": [
+      "ORG-FAIS-RK-COMPLAINT-HANDLING"
+    ],
+    "fais-act/s19": [
+      "ORG-FAIS-RK-COMPLAINT-HANDLING"
+    ],
+    "fais-act/s15": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s2": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s5": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s11": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s12": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s14": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "fais-act/s21": [
+      "ORG-FAIS-RK-GENERAL-CODE"
+    ],
+    "banks-act/s66": [
+      "ORG-GV-DIRECTORS-MINIMUM"
+    ],
+    "banks-act/s94": [
+      "ORG-GV-CFO-INDEPENDENCE"
+    ],
+    "js2/s6": [
+      "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+    ],
+    "js2/s7": [
+      "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+    ],
+    "js2/s3": [
+      "ORG-CY-02-RECON-CRO-INDEPENDENCE"
+    ],
+    "banks-act/s19": [
+      "ORG-BNK-CYBER-CONS"
+    ],
+    "banks-act/s28": [
+      "ORG-GRP-FINREP"
+    ]
+  }
+}
