@@ -220,7 +220,8 @@
     <!-- Counterparty -->
     <div class="tb-field tb-form-full">
       <label for="tb-cpty-name">Counterparty name</label>
-      <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Standard Bank of South Africa" required>
+      <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Start typing a client name…" list="tb-cpty-list" autocomplete="off" required>
+      <datalist id="tb-cpty-list"></datalist>
     </div>
 
     <div class="tb-field">
@@ -257,6 +258,36 @@
   const pad = (n) => String(n).padStart(2, '0');
   settlementInput.value = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
   settlementInput.min = new Date().toISOString().slice(0, 10);
+
+  // Populate counterparty datalist from onboarded KYC clients
+  (async () => {
+    try {
+      const res = await fetch('/api/kyc/clients');
+      if (!res.ok) return;
+      const data = await res.json();
+      const clients = data.clients || data;
+      const dl = document.getElementById('tb-cpty-list');
+      const cptyInput = document.getElementById('tb-cpty-name');
+      // Map clientId → {name, lei} for auto-fill
+      const clientMap = {};
+      clients.forEach((c) => {
+        const name = c.entityName || c.legalName || c.name || '';
+        if (!name) return;
+        const opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+        clientMap[name] = { id: c.clientId, lei: c.lei || '' };
+      });
+      // Auto-fill LEI when a known client is selected
+      cptyInput.addEventListener('change', () => {
+        const match = clientMap[cptyInput.value];
+        if (match) {
+          const leiInput = document.getElementById('tb-cpty-lei');
+          if (match.lei && !leiInput.value) leiInput.value = match.lei;
+        }
+      });
+    } catch (_) { /* non-fatal — field still works as free text */ }
+  })();
 
   // Sync notional currency options to base/quote selection
   const baseSelect = document.getElementById('tb-base');
