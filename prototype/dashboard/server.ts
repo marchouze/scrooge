@@ -64,6 +64,7 @@ import {
   makeProductProposalRegistered,
 } from "../platform/event-store/event-types/product";
 import type { Event } from "../platform/event-store/types";
+import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import {
   DEFAULT_HORIZON_DAYS,
   VIEWS,
@@ -93,6 +94,7 @@ import {
   recordDecision,
   recordDecisionComment,
 } from "../runtime/decisions/record";
+import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
@@ -841,6 +843,37 @@ async function handleKycSimulate(req: Request): Promise<Response> {
 // 2026-05-10).
 // ---------------------------------------------------------------------------
 
+/**
+ * One-shot bus tick after a dashboard append. Mirrors the runtime's
+ * post-run bus hook (runtime/run.ts §"Bus-tick hook"): immediately fans
+ * the just-appended event to any subscribed event-driven handler. Lets
+ * the /products narrative-request endpoint trigger
+ * atlas:product-narrative-fulfilment without waiting for the
+ * standalone `bus:tick` cron.
+ */
+let productsBusSingleton: LocalEventTriggerBus | undefined;
+async function tickBusForProducts(fromSequence: number): Promise<void> {
+  try {
+    if (!productsBusSingleton) {
+      productsBusSingleton = new LocalEventTriggerBus({
+        eventStore,
+        source: defaultBusSource(),
+        runner: async ({ agent, trigger }) => {
+          const out = await runAgent({ agent, trigger, dryRun: false });
+          return { ok: out.ok };
+        },
+      });
+      productsBusSingleton.syncSubscriptions();
+    }
+    await productsBusSingleton.tick(fromSequence, new Date()); // wall-clock: bus-tick dispatch timestamp
+  } catch (err) {
+    logger.warn(
+      { fromSequence, err: (err as Error).message },
+      "products: bus tick failed (non-fatal); event remains pending for next bus:tick",
+    );
+  }
+}
+
 const PRODUCT_FAMILY_VALUES = [
   "listed-equity",
   "listed-bond",
@@ -1126,6 +1159,7 @@ async function handleProductNarrativeRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: "dimension must be one of NPA Policy §5" }, 400);
   }
   try {
+    const seqBefore = eventStore.count();
     const evt = makeProductDimensionNarrativeRequested({
       asOf: nowUtc(),
       entity: "BANK-ZA-001",
@@ -1140,6 +1174,11 @@ async function handleProductNarrativeRequest(req: Request): Promise<Response> {
       },
     });
     eventStore.append(evt);
+    // Fan the request to atlas:product-narrative-fulfilment (and any future
+    // subscriber). The handler emits ProductDimensionNarrativeRecorded
+    // before this request returns, so the next /api/products/:id read
+    // shows the narrative.
+    await tickBusForProducts(seqBefore + 1);
     refresh("product-narrative-request");
     logger.info(
       { productId, dimension, requestedFromAgentName },
