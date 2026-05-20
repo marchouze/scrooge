@@ -35,11 +35,7 @@ import type { NettingSet, ReplacementCost } from "./types";
 // downstream `pre-deal-check.getCurrentExposure` cross-currency skip).
 // ---------------------------------------------------------------------------
 
-function assertCurrency(
-  label: string,
-  expected: string,
-  actual: Money | undefined,
-): void {
+function assertCurrency(label: string, expected: string, actual: Money | undefined): void {
   if (actual !== undefined && String(actual.currency) !== expected) {
     throw new Error(
       `SA-CCR RC currency mismatch on ${label}: expected ${expected}, got ${String(actual.currency)}`,

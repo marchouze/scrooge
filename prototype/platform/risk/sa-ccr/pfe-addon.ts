@@ -119,9 +119,10 @@ const MATURITY_FACTOR_V0 = 1.0;
 // ---------------------------------------------------------------------------
 
 export function computeAddOn(trades: TradeSummary[]): AddOnComponent[] {
-  if (trades.length === 0) return [];
+  const first = trades[0];
+  if (first === undefined) return [];
 
-  const ccy = String(trades[0].notional.currency) as Currency;
+  const ccy = String(first.notional.currency) as Currency;
   for (const t of trades) {
     if (String(t.notional.currency) !== String(ccy)) {
       throw new Error(
@@ -149,8 +150,7 @@ export function computeAddOn(trades: TradeSummary[]): AddOnComponent[] {
     // Carry computation in BigInt where possible; round half-up at the
     // last step. Scale by 1e6 to preserve precision on small SFs.
     const scaledFactor = Math.round(sf * MATURITY_FACTOR_V0 * 1_000_000);
-    const addOnMinor =
-      (totalMinor * BigInt(scaledFactor) + 500_000n) / 1_000_000n;
+    const addOnMinor = (totalMinor * BigInt(scaledFactor) + 500_000n) / 1_000_000n;
     out.push({
       assetClass: ac,
       notional: minor(totalMinor, ccy),

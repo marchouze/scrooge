@@ -24,7 +24,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { eventStore } from "../platform/composition";
-import { type Money, minor, money } from "../platform/core/money";
+import { type Money, money } from "../platform/core/money";
 import { BANK_ZA_001, ZAR, newEventId } from "../platform/core/types";
 import {
   makeCreditLimitApplicationSubmitted,
@@ -34,13 +34,13 @@ import {
 import { checkHeadroom } from "../platform/risk/credit-limit-engine";
 import {
   ALPHA_SA_CCR,
+  type NettingSet,
+  type TradeSummary,
   computeAddOn,
   computeAndEmit,
   computeEad,
   computeReplacementCost,
-  type NettingSet,
   supervisoryFactor,
-  type TradeSummary,
 } from "../platform/risk/sa-ccr";
 
 const ENTITY = BANK_ZA_001;
@@ -181,10 +181,12 @@ describe("SA-CCR computeAddOn", () => {
     ];
     const out = computeAddOn(trades);
     expect(out).toHaveLength(1);
-    expect(out[0].assetClass).toBe("ir");
-    expect(out[0].supervisoryFactor).toBe(0.005);
+    const ir = out[0];
+    if (!ir) throw new Error("ir component must be present");
+    expect(ir.assetClass).toBe("ir");
+    expect(ir.supervisoryFactor).toBe(0.005);
     // R100m × 0.5% = R500k = 50_000_000 minor (cents).
-    expect(out[0].addOn.amount).toBe(BigInt(500_000_00));
+    expect(ir.addOn.amount).toBe(BigInt(500_000_00));
   });
 
   it("FX trades: addOn = notional × 4%", () => {
@@ -198,10 +200,12 @@ describe("SA-CCR computeAddOn", () => {
     ];
     const out = computeAddOn(trades);
     expect(out).toHaveLength(1);
-    expect(out[0].assetClass).toBe("fx");
-    expect(out[0].supervisoryFactor).toBe(0.04);
+    const fx = out[0];
+    if (!fx) throw new Error("fx component must be present");
+    expect(fx.assetClass).toBe("fx");
+    expect(fx.supervisoryFactor).toBe(0.04);
     // R50m × 4% = R2m.
-    expect(out[0].addOn.amount).toBe(BigInt(2_000_000_00));
+    expect(fx.addOn.amount).toBe(BigInt(2_000_000_00));
   });
 
   it("mixed asset classes: sums per class, result in fixed order ir → fx", () => {
@@ -213,12 +217,15 @@ describe("SA-CCR computeAddOn", () => {
     ];
     const out = computeAddOn(trades);
     expect(out).toHaveLength(2);
-    expect(out[0].assetClass).toBe("ir");
+    const ir = out[0];
+    const fx = out[1];
+    if (!ir || !fx) throw new Error("ir + fx components must be present");
+    expect(ir.assetClass).toBe("ir");
     // IR aggregate notional = R50m; × 0.5% = R250k.
-    expect(out[0].addOn.amount).toBe(BigInt(250_000_00));
-    expect(out[1].assetClass).toBe("fx");
+    expect(ir.addOn.amount).toBe(BigInt(250_000_00));
+    expect(fx.assetClass).toBe("fx");
     // FX aggregate notional = R50m; × 4% = R2m.
-    expect(out[1].addOn.amount).toBe(BigInt(2_000_000_00));
+    expect(fx.addOn.amount).toBe(BigInt(2_000_000_00));
   });
 
   it("empty trade list: empty add-on list", () => {
@@ -260,7 +267,12 @@ describe("SA-CCR computeEad", () => {
     const rc = computeReplacementCost(ns, zar(10_000_000), zar(0));
     // RC = R10m.
     const trades: TradeSummary[] = [
-      { counterpartyId: "CP-EAD", nettingSetId: "NS-EAD", assetClass: "ir", notional: zar(100_000_000) },
+      {
+        counterpartyId: "CP-EAD",
+        nettingSetId: "NS-EAD",
+        assetClass: "ir",
+        notional: zar(100_000_000),
+      },
     ];
     const addOns = computeAddOn(trades);
     // PFE = R500k.
@@ -307,8 +319,18 @@ describe("SA-CCR computeAndEmit", () => {
       vMtm: zar(7_500_000),
       collateralHeld: zar(2_000_000),
       trades: [
-        { counterpartyId: cp, nettingSetId: ns.nettingSetId, assetClass: "ir", notional: zar(80_000_000) },
-        { counterpartyId: cp, nettingSetId: ns.nettingSetId, assetClass: "fx", notional: zar(20_000_000) },
+        {
+          counterpartyId: cp,
+          nettingSetId: ns.nettingSetId,
+          assetClass: "ir",
+          notional: zar(80_000_000),
+        },
+        {
+          counterpartyId: cp,
+          nettingSetId: ns.nettingSetId,
+          assetClass: "fx",
+          notional: zar(20_000_000),
+        },
       ],
       asOf: tsIso(),
     });

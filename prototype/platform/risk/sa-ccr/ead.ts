@@ -18,7 +18,7 @@
 //
 // Author: Rohan (Market risk quantitative engineer, engineering).
 
-import { type Money, minor } from "../../core/money";
+import { minor } from "../../core/money";
 import type { Currency } from "../../core/types";
 import { utcNow } from "../../types/time";
 import { ALPHA_SA_CCR, aggregatedAddOn } from "./pfe-addon";

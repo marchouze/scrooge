@@ -40,25 +40,17 @@ import { type Actor, BANK_ZA_001, newEventId } from "../../core/types";
 import { makeCcrReplacementCostComputed } from "../../event-store/event-types/counterparty-credit-risk";
 import type { Event } from "../../event-store/types";
 import { utcNow } from "../../types/time";
-import { computeAddOn } from "./pfe-addon";
 import { computeEad } from "./ead";
+import { computeAddOn } from "./pfe-addon";
 import { computeReplacementCost } from "./replacement-cost";
-import type {
-  EadComputation,
-  NettingSet,
-  ReplacementCost,
-  TradeSummary,
-} from "./types";
+import type { EadComputation, NettingSet, ReplacementCost, TradeSummary } from "./types";
 
 // ---------------------------------------------------------------------------
 // Default citations for engine-emitted events. Includes the standing
 // authority + the canonical SA-CCR / policy references.
 // ---------------------------------------------------------------------------
 
-const DEFAULT_CITATIONS = [
-  "D-CREDIT-LIMIT-ENGINE-BUILD",
-  "Policies/credit-risk-policy-v1.md#3",
-];
+const DEFAULT_CITATIONS = ["D-CREDIT-LIMIT-ENGINE-BUILD", "Policies/credit-risk-policy-v1.md#3"];
 
 // ---------------------------------------------------------------------------
 // ComputeAndEmitInput — caller-threaded inputs (see substrate-gap notes
