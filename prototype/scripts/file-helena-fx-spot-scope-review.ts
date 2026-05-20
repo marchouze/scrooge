@@ -22,14 +22,12 @@ const body = readFileSync(DOC_PATH, "utf8");
 
 const result = recordFiled(
   {
-    recordId:
-      "record:documents:helena:fx-spot-only-market-risk-scope-review:2026-05-20",
+    recordId: "record:documents:helena:fx-spot-only-market-risk-scope-review:2026-05-20",
     registerKey: "documents",
     body,
     classification: "governance-seat",
     retention: {
-      citationRef:
-        "urn:obligation:bank:org:gv:director-decision-retention:v1",
+      citationRef: "urn:obligation:bank:org:gv:director-decision-retention:v1",
       minimumYears: 7,
       archivalTier: "hot" as const,
     },
