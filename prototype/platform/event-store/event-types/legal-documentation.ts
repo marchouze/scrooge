@@ -75,9 +75,7 @@ export const legalDocumentationAgreementTypeSchema = z.enum([
   "none-listed",
 ]);
 
-export type LegalDocumentationAgreementType = z.infer<
-  typeof legalDocumentationAgreementTypeSchema
->;
+export type LegalDocumentationAgreementType = z.infer<typeof legalDocumentationAgreementTypeSchema>;
 
 export const legalDocumentationSignedPayloadSchema = z.object({
   /** Counterparty Party URN (`party:<scheme>:<id>`). */
@@ -119,9 +117,7 @@ export const legalDocumentationSignedPayloadSchema = z.object({
   nettingEnforceable: z.boolean(),
 });
 
-export type LegalDocumentationSignedPayload = z.infer<
-  typeof legalDocumentationSignedPayloadSchema
->;
+export type LegalDocumentationSignedPayload = z.infer<typeof legalDocumentationSignedPayloadSchema>;
 
 export function makeLegalDocumentationSigned(args: {
   asOf: string;
@@ -239,5 +235,4 @@ export const LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES = [
   "JurisdictionalOpinionRefreshed",
 ] as const;
 
-export type LegalDocumentationEventType =
-  (typeof LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES)[number];
+export type LegalDocumentationEventType = (typeof LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES)[number];

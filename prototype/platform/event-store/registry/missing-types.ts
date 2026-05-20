@@ -85,10 +85,6 @@ import {
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
 import {
-  jurisdictionalOpinionRefreshedPayloadSchema,
-  legalDocumentationSignedPayloadSchema,
-} from "../event-types/legal-documentation";
-import {
   alertOpenedPayloadSchema,
   auditCommitteePackPreppedPayloadSchema,
   auditIssueClosedPayloadSchema,
@@ -143,6 +139,10 @@ import {
   signatureRequestedPayloadSchema,
   taxClassificationPublishedPayloadSchema,
 } from "../event-types/ifrs-accounting-extended";
+import {
+  jurisdictionalOpinionRefreshedPayloadSchema,
+  legalDocumentationSignedPayloadSchema,
+} from "../event-types/legal-documentation";
 import {
   collateralUpdatedPayloadSchema,
   confirmationMatchedPayloadSchema,
@@ -683,7 +683,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // companion to `legalDocumentationSchema.masterAgreement` (the
     // product-class-side enum in markets/products/types.ts).
     type: "LegalDocumentationSigned",
-    class: "legal",
+    class: "governance",
     payloadSchema: legalDocumentationSignedPayloadSchema,
     issuer: "Imani",
     subscribers: ["Niko", "Owen", "Helena", "Saskia", "Rohan", "Vera"],
@@ -698,7 +698,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // G-9). Consumed by the annual-refresh recon pipeline (Vera Wave-4
     // backlog) to assert no enforceable-netting flag is stale > 12 months.
     type: "JurisdictionalOpinionRefreshed",
-    class: "legal",
+    class: "governance",
     payloadSchema: jurisdictionalOpinionRefreshedPayloadSchema,
     issuer: "Imani",
     subscribers: ["Helena", "Owen", "Mira", "Vera"],

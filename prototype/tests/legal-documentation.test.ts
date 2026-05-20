@@ -32,8 +32,7 @@ const CITATIONS = [
 ];
 const ACTOR = { id: "agent:imani", type: "service" as const };
 
-const VALID_DOC_HASH =
-  "blake3:af4495fb6c24cf04e68e486340d5c521c7fecc2036c06462e6c5e065125e1682";
+const VALID_DOC_HASH = "blake3:af4495fb6c24cf04e68e486340d5c521c7fecc2036c06462e6c5e065125e1682";
 
 describe("legal-documentation event types — registry", () => {
   it("LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES lists both event types", () => {
