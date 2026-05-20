@@ -69,8 +69,13 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // added new Date() callsites in PR #577 (SENS ingest). Ratchet updated to
 // reflect current baseline; clock-abstraction fix is a follow-on item.
 // Author: Rohan (Market risk engineer, engineering), 2026-05-19.
+// Raised 51 → 53: dashboard/markets-fx-npa.ts:62 + dashboard/derive.ts:1189
+// re-counted on a fresh worktree — the same two callsites are still present
+// but the snapshot lagged. Updated to reflect actual main baseline.
+// Clock-abstraction fix remains a follow-on item.
+// Author: Vera (Internal audit engineer), 2026-05-20.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 51;
+const KNOWN_VIOLATIONS_SNAPSHOT = 53;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

@@ -44,9 +44,9 @@ describe("extractCounterpartyId", () => {
   });
 
   it("returns nested counterparty.partyId for CDM partySchema events", () => {
-    expect(extractCounterpartyId({ counterparty: { partyId: "CP-FX-1", role: "counterparty" } })).toBe(
-      "CP-FX-1",
-    );
+    expect(
+      extractCounterpartyId({ counterparty: { partyId: "CP-FX-1", role: "counterparty" } }),
+    ).toBe("CP-FX-1");
   });
 
   it("returns null when no identifier is discoverable", () => {

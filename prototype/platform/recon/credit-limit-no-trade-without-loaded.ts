@@ -201,11 +201,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `${trade.type}:${trade.event_id}`,
         severity: "info",
-        message:
-          `Trade event ${trade.type}:${trade.event_id} carries no extractable counterpartyId ` +
-          `(checked payload.counterpartyId, payload.counterpartyLei, payload.counterparty.partyId). ` +
-          `Cannot assert credit-limit-loaded precondition. ` +
-          `Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Policies/credit-risk-policy-v1.md §1.4.`,
+        message: `Trade event ${trade.type}:${trade.event_id} carries no extractable counterpartyId (checked payload.counterpartyId, payload.counterpartyLei, payload.counterparty.partyId). Cannot assert credit-limit-loaded precondition. Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Policies/credit-risk-policy-v1.md §1.4.`,
       });
       continue;
     }
@@ -215,15 +211,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `${cpid}:${trade.type}:${trade.event_id}`,
         severity: "fail",
-        message:
-          `${trade.type} event ${trade.event_id} (as_of=${trade.as_of}) names counterparty ` +
-          `"${cpid}" but NO CreditLimitLoaded event exists for this counterparty in the ` +
-          `event store. Pre-trade limit-load is mandatory under PROC-RISK-CO-01 Step 6 ` +
-          `before any risk-attracting trade may be booked. Critical finding per ` +
-          `Policies/credit-risk-policy-v1.md §7 (line 255). Remediation: emit ` +
-          `CreditLimitLoaded({ counterpartyId, limit, currency, effectiveFrom }) before ` +
-          `the trade or unwind the trade. Authority: D-CREDIT-LIMIT-ENGINE-BUILD; ` +
-          `Procedures/by-policy/credit-origination.md §9 (PROC-RISK-CO-01 Step 6).`,
+        message: `${trade.type} event ${trade.event_id} (as_of=${trade.as_of}) names counterparty "${cpid}" but NO CreditLimitLoaded event exists for this counterparty in the event store. Pre-trade limit-load is mandatory under PROC-RISK-CO-01 Step 6 before any risk-attracting trade may be booked. Critical finding per Policies/credit-risk-policy-v1.md §7 (line 255). Remediation: emit CreditLimitLoaded({ counterpartyId, limit, currency, effectiveFrom }) before the trade or unwind the trade. Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Procedures/by-policy/credit-origination.md §9 (PROC-RISK-CO-01 Step 6).`,
       });
       continue;
     }
@@ -237,12 +225,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `${cpid}:${trade.type}:${trade.event_id}`,
         severity: "fail",
-        message:
-          `${trade.type} event ${trade.event_id} (as_of=${tradeAsOf}) for counterparty ` +
-          `"${cpid}" precedes the earliest CreditLimitLoaded (as_of=${earliestLoad}) by ` +
-          `${tradeAsOf} < ${earliestLoad}. Trade booked before limit loaded — Critical ` +
-          `finding under Policies/credit-risk-policy-v1.md §7 (line 255). Authority: ` +
-          `D-CREDIT-LIMIT-ENGINE-BUILD; PROC-RISK-CO-01 Step 6.`,
+        message: `${trade.type} event ${trade.event_id} (as_of=${tradeAsOf}) for counterparty "${cpid}" precedes the earliest CreditLimitLoaded (as_of=${earliestLoad}) by ${tradeAsOf} < ${earliestLoad}. Trade booked before limit loaded — Critical finding under Policies/credit-risk-policy-v1.md §7 (line 255). Authority: D-CREDIT-LIMIT-ENGINE-BUILD; PROC-RISK-CO-01 Step 6.`,
       });
     }
   }
