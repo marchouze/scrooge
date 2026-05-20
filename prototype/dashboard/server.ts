@@ -1159,7 +1159,7 @@ async function handleProductNarrativeRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: "dimension must be one of NPA Policy §5" }, 400);
   }
   try {
-    const seqBefore = eventStore.count();
+    const seqBefore = eventStore.highWatermark();
     const evt = makeProductDimensionNarrativeRequested({
       asOf: nowUtc(),
       entity: "BANK-ZA-001",

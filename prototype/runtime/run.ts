@@ -560,8 +560,11 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
   const t0 = Date.now(); // wall-clock: elapsed-time measurement for run duration
   // Capture the event-store sequence pointer before the run so we can
   // observe what new event types this run appended (for event-driven
-  // fan-out below).
-  const seqBefore = eventStore.count();
+  // fan-out below). MUST be `highWatermark()` — `count()` is a row count
+  // and undercounts whenever the store has a sequence gap, causing the
+  // bus tick at the end of this run to walk over stale events instead
+  // of the run's own emissions.
+  const seqBefore = eventStore.highWatermark();
 
   // Emit the substrate-runner lifecycle Started event (S8 §3.4).
   // Best-effort — a permission-gate denial here would leave the run
@@ -656,7 +659,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     result = await entry.handler(ctx);
   } catch (err) {
     const ms = Date.now() - t0; // wall-clock: elapsed-time for run duration
-    const seqAtFailure = eventStore.count();
+    const seqAtFailure = eventStore.highWatermark();
     emitSubstrateRunFailed({
       runId,
       agent: ctx.agent,
@@ -672,7 +675,7 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     throw err;
   }
   const ms = Date.now() - t0; // wall-clock: elapsed-time for run duration
-  const seqAtCompletion = eventStore.count();
+  const seqAtCompletion = eventStore.highWatermark();
   // Count the run's own emissions of decision / escalation events so the
   // closing payload carries the per-run tallies (Atlas spec §3.4 — "count
   // of decisions emitted, count of escalations emitted").

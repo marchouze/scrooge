@@ -185,17 +185,24 @@ export class LocalEventTriggerBus implements EventTriggerBus {
       dispatched.add(k);
     }
 
-    // Snapshot the count before we walk so the new cursor is stable
-    // even if a dispatched handler appends additional events. Source
-    // events for *this* tick are bounded to [fromSequence, snapshot].
+    // Snapshot the high-water sequence before we walk so the new cursor
+    // is stable even if a dispatched handler appends additional events.
+    // Source events for *this* tick are bounded to [fromSequence, snapshot].
     // New events emitted by handlers we invoke land in the next tick.
-    const snapshot = this.eventStore.count();
+    //
+    // MUST be `highWatermark()` (max sequence), not `count()`: when the
+    // store has any sequence gap (rolled-back append, replaced event),
+    // count() undercounts by the gap size and the walk-budget below
+    // truncates before reaching the just-appended event — silently
+    // dropping the dispatch.
+    const snapshot = this.eventStore.highWatermark();
 
     // Walk source events. The store's replay yields in sequence order,
     // and we only care about events in [fromSequence, snapshot]; we
     // bound below by sequence-fence using `fromSequence` and above by
-    // tracking how many we've yielded (since the count() snapshot is
-    // also in sequence order).
+    // tracking how many we've yielded (the high-water snapshot bounds
+    // the dense-sequence range; with gaps we may break a few iterations
+    // early, which is harmless — those positions held no event).
     const sourceEvents: Event[] = [];
     let walked = 0;
     for (const e of this.eventStore.replay({ fromSequence })) {
