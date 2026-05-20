@@ -42,6 +42,7 @@ import {
   creditLimitExtensionRequestedPayloadSchema,
   creditLimitLoadedPayloadSchema,
   creditLimitProposedPayloadSchema,
+  creditLimitWithdrawnPayloadSchema,
   isdaCsaAssessmentCompletedPayloadSchema,
   subInvestmentGradeCounterpartyApprovedPayloadSchema,
 } from "../event-types/credit-limit";
@@ -231,5 +232,19 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: subInvestmentGradeCounterpartyApprovedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1-S3"],
+  },
+  // -------------------------------------------------------------------------
+  // Withdrawal — explicit decommissioning of a loaded / approved limit
+  // -------------------------------------------------------------------------
+  {
+    type: "CreditLimitWithdrawn",
+    class: "audit",
+    issuer: "Helena",
+    subscribers: ["Helena", "Rohan", "Saskia", "Mira", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: creditLimitWithdrawnPayloadSchema,
+    source: "platform/event-store/event-types/credit-limit.ts",
+    citationsHint: ["POLICY:credit-risk-policy-v1-S7", "PROC-RISK-CO-01"],
   },
 ];

@@ -108,6 +108,9 @@ export * from "./credit-limit";
 // CcrReplacementCostComputed, LexUtilisationComputed, LexExceptionApproved).
 // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279 (SA-CCR); BCBS 283 (LEX).
 export * from "./counterparty-credit-risk";
+// Regulator-notification events (PaNotificationSubmitted; PA / FSCA / FIC).
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Banks Act §§ 60A + 73; FIC Act §§ 28A + 29.
+export * from "./regulatory-pa";
 // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
 // KYCIdentityCollected, KYCIdentityVerified, KYCIdentityVerificationFailed,
 //   KYCSanctionsPEPScreened, KYCUBOResolved, KYCRiskRated,
@@ -293,6 +296,7 @@ import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
 import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
+import { REGULATORY_PA_TYPED_EVENT_TYPES } from "./regulatory-pa";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
@@ -347,6 +351,9 @@ export const TYPED_EVENT_TYPES = [
   // WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs.
   // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279; BCBS 283; RRB Reg 23.
   ...COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES,
+  // Regulator-notification event types (PaNotificationSubmitted) — PA / FSCA / FIC.
+  // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Banks Act §§ 60A + 73; FIC Act §§ 28A + 29.
+  ...REGULATORY_PA_TYPED_EVENT_TYPES,
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle event types.
   // Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18).
   ...KYC_TYPED_EVENT_TYPES,

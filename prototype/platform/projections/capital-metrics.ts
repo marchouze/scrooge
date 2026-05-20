@@ -35,6 +35,8 @@
 // Authority: D-RAS (2026-05-06) · D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import { type Money, minor } from "../core/money";
+import { ZAR } from "../core/types";
 import type { EventStore } from "../event-store/store";
 
 // ---------------------------------------------------------------------------
@@ -267,4 +269,42 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
     asOf,
     note,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Eligible-capital helper — canonical source for LEX denominator
+//
+// Banks Act §73 + RRB Reg 23 + LEX Directive D3/2022 + BCBS 283 §32 define
+// "eligible capital" as Tier-1 + eligible Tier-2 capital. In the v0 build-
+// phase substrate the bank exposes a single capital envelope via
+// `computeCapitalMetrics().availableCapitalMinor` (ICAAP v1 build-phase
+// baseline of R300m; switches to live CapitalEvent fold when live events
+// exist). That single envelope IS the eligible-capital amount until the
+// Tier-1 / Tier-2 split lands as part of the BA 700 capital-adequacy
+// projection wave.
+//
+// Until the split lands, `getEligibleCapital(asOf)` returns the same
+// envelope as `availableCapitalMinor` — typed as `Money` (ZAR cents).
+// Downstream callers (Vera's `lex-cap-utilisation` recon) MUST use this
+// helper rather than re-sourcing capital from `LexUtilisationComputed`
+// payloads (cyclic dependency).
+//
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD; D-MARKETS-CAPITAL-TIME-SHAPE;
+//   Banks Act §73; RRB Reg 23; LEX D3/2022; BCBS 283 §32.
+// ---------------------------------------------------------------------------
+
+/**
+ * Return the bank's eligible LEX capital denominator at `asOf` as a
+ * currency-typed Money value (ZAR cents). Reads from the same event-source
+ * chain as `computeCapitalMetrics` — never invents new events; never reads
+ * from `LexUtilisationComputed` payloads (would create a recon cycle).
+ *
+ * v0: returns the single capital envelope (no Tier-1 / Tier-2 split). The
+ * Tier-1 / Tier-2 split is delivered by the BA 700 capital-adequacy
+ * projection wave and will refine this helper without changing its
+ * signature.
+ */
+export function getEligibleCapital(eventStore: EventStore, asOf: string): Money {
+  const metrics = computeCapitalMetrics(eventStore, asOf);
+  return minor(BigInt(metrics.availableCapitalMinor), ZAR);
 }

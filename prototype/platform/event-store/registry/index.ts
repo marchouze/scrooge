@@ -78,6 +78,9 @@ export { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 // WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs.
 // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279; BCBS 283; RRB Reg 23.
 export { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
+// Regulator-notification event types (PaNotificationSubmitted; PA / FSCA / FIC).
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Banks Act §§ 60A + 73; FIC Act §§ 28A + 29.
+export { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
 export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
@@ -147,6 +150,7 @@ import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
+import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
@@ -202,6 +206,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs.
   // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279; BCBS 283; RRB Reg 23.
   ...COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY,
+  // Regulator-notification events (PaNotificationSubmitted) — PA / FSCA / FIC.
+  // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Banks Act §§ 60A + 73; FIC Act §§ 28A + 29.
+  ...REGULATORY_PA_EVENT_TYPES_REGISTRY,
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events. Placed last so
   // typed schema rows override any placeholder rows from missing-types.ts.
   ...KYC_EVENT_TYPES_REGISTRY,

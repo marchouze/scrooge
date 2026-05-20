@@ -6,8 +6,9 @@
 //
 // "Active" = at least one `CreditLimitLoaded` exists for the counterparty
 // AND no `CreditLimitWithdrawn` event has been emitted to take it offline.
-// (CreditLimitWithdrawn is not yet in the registered event-type registry —
-// substrate gap noted; the check is forward-compatible against that name.)
+// (`CreditLimitWithdrawn` is registered in
+// `platform/event-store/event-types/credit-limit.ts`; the projection folds
+// it to status = "withdrawn" and `listActiveLimits` excludes withdrawn rows.)
 //
 // Severity ladder per Credit Risk Policy §1.4 / §7:
 //   - reviewedAt within last 13 months          → pass
@@ -118,9 +119,8 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   const loaded = loadEvents("CreditLimitLoaded", opts.loadedEvents);
   const reviews = loadEvents("CreditLimitAnnualReviewCompleted", opts.reviewEvents);
-  // CreditLimitWithdrawn is not yet registered as a typed event family member
-  // (substrate gap — Atlas's engine may register it as part of D-CREDIT-LIMIT-
-  // ENGINE-BUILD Phase 4+). Forward-compatible read.
+  // CreditLimitWithdrawn is registered as a typed event family member under
+  // D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 (closes Vera's PR #613 substrate gap).
   const withdrawn = loadEvents("CreditLimitWithdrawn", opts.withdrawnEvents);
 
   // Empty-state guard — no loads → nothing to assert.

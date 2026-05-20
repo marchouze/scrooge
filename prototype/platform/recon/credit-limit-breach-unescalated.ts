@@ -16,11 +16,11 @@
 //       the breach.
 //
 //   (c) `PaNotificationSubmitted { notificationType, notificationDate,
-//       regulatoryRef }` per Credit Risk Policy §8 line 252. This event
-//       type is not yet registered in the typed event-type registry
-//       (Helena substrate gap — noted by Owen in policy). Forward-
-//       compatible read: if the type does not exist, the pipeline does
-//       not crash, the lookup just returns empty.
+//       regulatoryRef, recipientAuthority, submittedBy, submittedAt }`
+//       per Credit Risk Policy §8 line 252. Registered under
+//       D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 at
+//       `platform/event-store/event-types/regulatory-pa.ts` (closes
+//       Vera's PR #613 substrate gap).
 //
 // Failure path:
 //   - Breach with NO disposal AND NO escalation AND NO PA notification
