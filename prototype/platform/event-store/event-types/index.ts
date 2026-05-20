@@ -98,6 +98,16 @@ export * from "./conduct";
 //   with netting, collateral, uncovered exposure, and limit utilisation.
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
 export * from "./counterparty-exposure";
+// WS-CREDIT-LIMIT-ENGINE — Credit-limit lifecycle (12 events: application,
+// analysis, ISDA/CSA assessment, proposal, approval, load, annual review,
+// breach + disposal, CRC exception, sub-IG counterparty approval).
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD (CEO-approved 2026-05-20);
+//   Policies/credit-risk-policy-v1.md; Procedures/by-policy/credit-origination.md.
+export * from "./credit-limit";
+// WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs (3 events:
+// CcrReplacementCostComputed, LexUtilisationComputed, LexExceptionApproved).
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279 (SA-CCR); BCBS 283 (LEX).
+export * from "./counterparty-credit-risk";
 // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
 // KYCIdentityCollected, KYCIdentityVerified, KYCIdentityVerificationFailed,
 //   KYCSanctionsPEPScreened, KYCUBOResolved, KYCRiskRated,
@@ -255,7 +265,9 @@ import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
 import { COLLATERAL_TYPED_EVENT_TYPES } from "./collateral";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
+import { COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure";
+import { CREDIT_LIMIT_TYPED_EVENT_TYPES } from "./credit-limit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
@@ -328,6 +340,13 @@ export const TYPED_EVENT_TYPES = [
   // M3 Slice 10 — counterparty-exposure event types (large-exposure framework).
   // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
   ...COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES,
+  // WS-CREDIT-LIMIT-ENGINE — credit-limit lifecycle event types.
+  // Authority: D-CREDIT-LIMIT-ENGINE-BUILD (CEO-approved 2026-05-20);
+  //   Policies/credit-risk-policy-v1.md; Procedures/by-policy/credit-origination.md.
+  ...CREDIT_LIMIT_TYPED_EVENT_TYPES,
+  // WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs.
+  // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279; BCBS 283; RRB Reg 23.
+  ...COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES,
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle event types.
   // Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18).
   ...KYC_TYPED_EVENT_TYPES,
