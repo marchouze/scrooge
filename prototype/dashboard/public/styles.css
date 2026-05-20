@@ -2877,11 +2877,10 @@ main {
   margin: 0 0 2px;
 }
 .decision-action-panel .action-authority {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--text-muted);
+  margin: -4px 0 0;
 }
 .decision-action-panel .action-prompt {
   font-size: 14px;
@@ -2891,12 +2890,63 @@ main {
 .decision-action-panel .action-recommendation {
   background: var(--accent-soft);
   border-left: 3px solid var(--accent);
-  padding: 8px 12px;
-  font-size: 13px;
+  padding: 14px 18px;
+  font-size: 13.5px;
   border-radius: 2px;
+  line-height: 1.55;
 }
 .decision-action-panel .action-recommendation strong {
   color: var(--accent-deep);
+}
+.decision-action-panel .action-recommendation-label {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--accent-deep);
+  margin: 12px 0 4px;
+}
+.decision-action-panel .action-recommendation-label:first-child {
+  margin-top: 0;
+}
+.decision-action-panel .action-recommendation-body {
+  margin: 0;
+}
+.decision-action-panel .action-recommendation-body > p {
+  margin: 0 0 6px;
+}
+.decision-action-panel .action-recommendation-body > p:last-child {
+  margin-bottom: 0;
+}
+.decision-action-panel .action-slice-list {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+.decision-action-panel .action-slice-list li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 0;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.decision-action-panel .action-slice-list li:last-child {
+  margin-bottom: 0;
+}
+.decision-action-panel .action-slice-marker {
+  font-weight: 600;
+  color: var(--accent-deep);
+  font-variant-numeric: tabular-nums;
+}
+.decision-action-panel .action-slice-body {
+  display: block;
+}
+.decision-action-panel .action-slice-trailer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-size: 12.5px;
 }
 .decision-action-panel .action-source-docs {
   font-size: 12.5px;
@@ -2909,26 +2959,48 @@ main {
 .decision-action-panel .action-source-docs a:hover {
   text-decoration: underline;
 }
+.action-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.action-form-heading {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--primary);
+  margin: 0;
+}
 .action-form-label {
   display: block;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 5px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--primary);
+  margin-bottom: 6px;
 }
 .action-textarea {
   width: 100%;
   font-family: var(--sans);
-  font-size: 13.5px;
-  padding: 8px 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  padding: 10px 12px;
   border: 1px solid var(--border-strong);
   border-radius: 3px;
   background: #fff;
   box-sizing: border-box;
   resize: vertical;
-  min-height: 72px;
+  min-height: 84px;
+  color: var(--text);
+}
+.action-textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
 }
 .action-textarea:focus {
   outline: 2px solid var(--accent);

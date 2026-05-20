@@ -25,6 +25,54 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+// Split a recommendation stance into an intro paragraph + bullet list when the
+// stance contains an inline slice list like "...: (A) X; (B) Y; (C) Z; (D) W. Trailer."
+// The slice markers `(A)` / `(B)` etc. (or bare `A.` / `1.` lists if we later add
+// them) are converted into <li> children; anything before the first marker is the
+// intro paragraph and anything after the last marker's terminating `.` is a trailer
+// paragraph. If no slice list is detected, the whole string is rendered as one <p>.
+function renderStanceWithSliceList(text) {
+  const sliceMarker = /\s*[;:.]?\s*\(([A-Z])\)\s+/g;
+  const matches = [...text.matchAll(sliceMarker)];
+  if (matches.length < 2) {
+    return el("p", { class: "action-recommendation-body" }, text);
+  }
+  const firstIdx = matches[0].index;
+  const intro = `${text
+    .slice(0, firstIdx)
+    .trim()
+    .replace(/[:;,.]+$/, "")}:`;
+  const items = [];
+  let trailer = "";
+  for (let i = 0; i < matches.length; i++) {
+    const m = matches[i];
+    const startBody = m.index + m[0].length;
+    const endBody = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    let body = text.slice(startBody, endBody).trim();
+    // Last slice: peel off any trailing sentences (text after the first
+    // sentence-ending `.` followed by a capital letter) into the trailer.
+    if (i === matches.length - 1) {
+      const split = body.match(/^(.+?\.)\s+([A-Z].*)$/s);
+      if (split) {
+        body = split[1];
+        trailer = split[2];
+      }
+    }
+    body = body.replace(/[.;]\s*$/, "");
+    items.push(
+      el("li", {}, [
+        el("span", { class: "action-slice-marker" }, `${m[1].toLowerCase()})`),
+        el("span", { class: "action-slice-body" }, body),
+      ]),
+    );
+  }
+  const children = [el("p", {}, intro), el("ul", { class: "action-slice-list" }, items)];
+  if (trailer) {
+    children.push(el("p", { class: "action-slice-trailer" }, trailer));
+  }
+  return el("div", { class: "action-recommendation-body" }, children);
+}
+
 function fmtDate(iso) {
   if (!iso) return "—";
   return iso.slice(0, 10);
@@ -255,23 +303,35 @@ function renderActionPanel(open, decisionId) {
   const authority = open.authority ?? "CEO";
   const authorityEl = el("div", { class: "action-authority" }, `Authority required: ${authority}`);
 
-  // Decision prompt
-  const promptEl = el(
-    "div",
-    { class: "action-prompt" },
-    open.decisionForCEO ?? "Review and act on this decision.",
-  );
+  // Decision prompt — suppressed when it duplicates the recommendation stance
+  // (the projection populates both `decisionForCEO` and `recommendation.stance`
+  // from the same source field; on this surface the recommendation block
+  // already carries the content, so the standalone prompt would be a wall of
+  // duplicate text).
+  const stance = open.recommendation?.stance ?? "";
+  const promptText = open.decisionForCEO ?? "";
+  const promptIsDuplicate = promptText && stance && promptText.trim() === stance.trim();
+  const promptEl =
+    promptText && !promptIsDuplicate ? el("div", { class: "action-prompt" }, promptText) : null;
 
-  // Recommendation (optional)
+  // Recommendation (optional). Render stance and reasoning as separate
+  // paragraphs, and split an inline slice list like
+  //   "Approve a 4-slice programme: (A) X; (B) Y; (C) Z; (D) W. Each ..."
+  // into a bulleted list so the page does not become a single wall of text.
   let recoEl = null;
-  if (open.recommendation?.stance) {
-    const recoText = open.recommendation.reasoning
-      ? `${open.recommendation.stance} — ${open.recommendation.reasoning}`
-      : open.recommendation.stance;
-    recoEl = el("div", { class: "action-recommendation" }, [
-      el("strong", {}, "Recommendation: "),
-      recoText,
-    ]);
+  if (stance) {
+    const stanceNode = renderStanceWithSliceList(stance);
+    const children = [
+      el("div", { class: "action-recommendation-label" }, "Recommendation"),
+      stanceNode,
+    ];
+    if (open.recommendation?.reasoning) {
+      children.push(el("div", { class: "action-recommendation-label" }, "Reasoning"));
+      children.push(
+        el("p", { class: "action-recommendation-body" }, open.recommendation.reasoning),
+      );
+    }
+    recoEl = el("div", { class: "action-recommendation" }, children);
   }
 
   // Source docs (optional)
@@ -369,21 +429,21 @@ function renderActionPanel(open, decisionId) {
   btnModify.addEventListener("click", () => submit("modify"));
   btnRevision.addEventListener("click", () => submit("request-revision"));
 
+  const formGroup = el("div", { class: "action-form-group" }, [
+    el("div", { class: "action-form-heading" }, "Take an action"),
+    outcomeField,
+    commentField,
+    buttonsEl,
+    statusEl,
+    successEl,
+  ]);
+
   const panel = el(
     "div",
     { class: "decision-action-panel" },
-    [
-      el("h3", {}, open.title),
-      authorityEl,
-      promptEl,
-      recoEl,
-      sourceDocsEl,
-      outcomeField,
-      commentField,
-      buttonsEl,
-      statusEl,
-      successEl,
-    ].filter(Boolean),
+    [el("h3", {}, open.title), authorityEl, promptEl, recoEl, sourceDocsEl, formGroup].filter(
+      Boolean,
+    ),
   );
 
   return el("section", { class: "band" }, [
