@@ -184,6 +184,13 @@ export * from "./product-control";
 // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
 // Author: Rohan (Market risk engineer, engineering)
 export * from "./mtm";
+// D-EVENT-VIEW-BOUNDARY-WIRE Slice A — PolicyVersionActivated.
+// Generic umbrella covering valuation / accounting-IFRS / fx-translation
+// policy-in-force activations. Slice B (OfficialMarkAdopted) and Slice C
+// (PeriodClosed) carry `policyVersionRef`(s) resolving to this stream.
+// Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+// Author: Atlas (Core banking platform architect, engineering).
+export * from "./policy-activation";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -293,6 +300,7 @@ import { MTM_TYPED_EVENT_TYPES } from "./mtm";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
+import { POLICY_ACTIVATION_TYPED_EVENT_TYPES } from "./policy-activation";
 import { PRODUCT_TYPED_EVENT_TYPES } from "./product";
 import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
@@ -392,6 +400,10 @@ export const TYPED_EVENT_TYPES = [
   // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
   ...MTM_TYPED_EVENT_TYPES,
+  // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — PolicyVersionActivated.
+  // Generic umbrella for policy-in-force events (valuation, accounting-IFRS,
+  // fx-translation today). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
+  ...POLICY_ACTIVATION_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

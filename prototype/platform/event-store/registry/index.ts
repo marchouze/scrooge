@@ -105,6 +105,9 @@ export { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 export { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 // MTM engine event-type registry rows.
 export { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
+// D-EVENT-VIEW-BOUNDARY-WIRE Slice A — policy-version-in-force registry row.
+// Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+export { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -148,6 +151,7 @@ import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
+import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
@@ -245,6 +249,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
   ...MTM_EVENT_TYPES_REGISTRY,
+  // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — policy-version-in-force registry row.
+  // PolicyVersionActivated (generic umbrella covering valuation / accounting-
+  // IFRS / fx-translation). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
+  ...POLICY_ACTIVATION_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
