@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T07:16:05.930Z",
+  "generatedAt": "2026-05-20T07:52:07.572Z",
   "obligationCount": 283,
   "sectionCount": 78,
   "index": {
@@ -277,7 +277,21 @@
     ],
     "excon": [
       "ORG-MK-08",
-      "ORG-FX-FIN-08"
+      "ORG-EXCON-ODP-001",
+      "ORG-FX-FIN-01",
+      "ORG-FX-FIN-02",
+      "ORG-FX-FIN-03",
+      "ORG-FX-FIN-04",
+      "ORG-FX-FIN-05",
+      "ORG-FX-FIN-06",
+      "ORG-FX-FIN-07",
+      "ORG-FX-FIN-08",
+      "ORG-FX-FIN-09",
+      "ORG-FX-FIN-10",
+      "ORG-FX-FIN-11",
+      "ORG-FX-FIN-12",
+      "ORG-FX-FIN-13",
+      "ORG-FX-FIN-14"
     ],
     "popia": [
       "ORG-EL-03",

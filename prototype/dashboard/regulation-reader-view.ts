@@ -18,6 +18,8 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
+import { normaliseSectionRef } from "../scripts/generate-section-obligation-index";
+
 // ---------------------------------------------------------------------------
 // Structured regulation JSON types
 // ---------------------------------------------------------------------------
@@ -31,8 +33,16 @@ interface RegSubsection {
 
 interface RegSection {
   id: string;
-  number: string;
-  heading: string;
+  /**
+   * Canonical numeric/alphanumeric section number, e.g. "1", "21A", "3.1".
+   * Some instrument files (rrb, excon) omit `number` and carry the human-
+   * readable `sectionNumber` form ("Regulation 1") instead — the view
+   * derives the canonical key via `numberFromSection`.
+   */
+  number?: string;
+  sectionNumber?: string;
+  heading?: string;
+  title?: string;
   text: string;
   verbatim: boolean;
   subsections?: RegSubsection[];
@@ -333,9 +343,76 @@ function resolveObligationPolicy(fulfilment: string, repoRoot: string): Resolved
 // Obligation lookup for a section
 // ---------------------------------------------------------------------------
 
+/**
+ * Derive the canonical number suffix for a section, identical to the form
+ * used by the index generator. Returns `null` when no usable number can be
+ * recovered.
+ *
+ * Order of precedence:
+ *   1. `section.number` if present (e.g. "60", "3.1", "21A").
+ *   2. `section.sectionNumber` parsed as "Regulation 27" → "27" (rrb, excon).
+ *   3. `section.id` stripped of known prefixes (e.g. `reg27` → "27",
+ *      `excon-reg22A` → "22A", `gcc11` → "11", `s60` → "60", `s3-1` → "3-1").
+ */
+function numberFromSection(section: RegSection): string | null {
+  if (section.number && section.number.trim() && !/^preamble/i.test(section.number)) {
+    return normaliseSectionRef(section.number.trim());
+  }
+
+  if (section.sectionNumber) {
+    const m = section.sectionNumber.match(/(\d+[A-Za-z]?(?:\.\d+)?)/);
+    if (m?.[1]) return normaliseSectionRef(m[1]);
+  }
+
+  // Strip known instrument-specific id prefixes.
+  const id = section.id;
+  const stripped = id
+    .replace(/^excon-reg/i, "")
+    .replace(/^reg/i, "")
+    .replace(/^gcc/i, "")
+    .replace(/^s/i, "");
+  if (stripped !== id && /^\d/.test(stripped)) {
+    return normaliseSectionRef(stripped);
+  }
+  return null;
+}
+
+/**
+ * Build the lookup keys that should attach an obligation to this section.
+ *
+ * For most instruments a single canonical key suffices, e.g.
+ *   - banks-act:  section.number "60"  → ["banks-act/s60"]
+ *   - rrb:        section.id "reg27"   → ["rrb/s27"]
+ *   - fais-gcc:   section.id "gcc11"   → ["fais-gcc/s11"]
+ *   - excon:      section.id "excon-reg2" → ["excon/s2"]
+ *
+ * For JS2 the structured JSON splits each Standard into compound sections
+ * (`s3-1`, `s3-2`, …, `s3-6` with `section.number` = "3.1", "3.2", …).
+ * Citations in the obligations register reference `§3` to mean Standard 3 as
+ * a whole. We therefore ALSO emit a `js2/s${prefix}` key where `prefix` is
+ * the head integer (e.g. "3"). The index entry `js2/s3` then lights up
+ * every section under Standard 3.
+ */
+function sectionLookupKeys(slug: string, section: RegSection): string[] {
+  const num = numberFromSection(section);
+  if (!num) return [];
+
+  const keys = [`${slug}/s${num}`];
+
+  // JS2 compound: section.number = "3.1" → already normalised to "31" by
+  // `normaliseSectionRef` (dots stripped). Also light up the head-integer
+  // form so a `§3` / `Standard 3` citation attaches to all `3.x` sections.
+  if (slug === "js2" && section.number?.includes(".")) {
+    const head = section.number.split(".")[0]?.trim();
+    if (head) keys.push(`${slug}/s${normaliseSectionRef(head)}`);
+  }
+
+  return keys;
+}
+
 function getObligationsForSection(
   slug: string,
-  sectionId: string,
+  section: RegSection,
   sectionIndex: SectionObligationIndex,
   obligationsMap: Record<string, ObligationRow>,
   repoRoot: string,
@@ -344,20 +421,31 @@ function getObligationsForSection(
   // payloads. They are surfaced in a dedicated `instrumentWideObligations`
   // field on the InstrumentDetailView; the section payload carries only
   // citations that anchor to *this* section.
-  const key = `${slug}/${sectionId}`;
-  const ids = sectionIndex.index[key] ?? [];
+  //
+  // Cross-instrument fix: the index keys use canonical section *numbers*
+  // (`s${normaliseSectionRef(number)}`); the structured JSON `section.id`
+  // uses instrument-specific prefixes. Derive the key from section.number
+  // (with a JS2 prefix-match) — see `sectionLookupKeys`.
+  const keys = sectionLookupKeys(slug, section);
+  if (keys.length === 0) return [];
 
+  const seen = new Set<string>();
   const result: ObligationOnSection[] = [];
-  for (const id of ids) {
-    const obl = obligationsMap[id];
-    if (!obl) continue;
-    const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
-    result.push({
-      id: obl.id,
-      requirement: obl.requirement.slice(0, 400),
-      status: obl.status,
-      policy,
-    });
+  for (const key of keys) {
+    const ids = sectionIndex.index[key] ?? [];
+    for (const id of ids) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const obl = obligationsMap[id];
+      if (!obl) continue;
+      const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
+      result.push({
+        id: obl.id,
+        requirement: obl.requirement.slice(0, 400),
+        status: obl.status,
+        policy,
+      });
+    }
   }
   return result;
 }
@@ -449,7 +537,7 @@ export function buildInstrumentDetailView(
     sections: chapter.sections.map((section) => {
       const obligations = getObligationsForSection(
         slug,
-        section.id,
+        section,
         sectionIndex,
         obligationsMap,
         repoRoot,

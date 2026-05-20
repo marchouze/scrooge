@@ -46,7 +46,15 @@ const INSTRUMENT_PATTERNS: Array<{ pattern: RegExp; slug: string }> = [
   { pattern: /Financial Intelligence Centre Act/i, slug: "fic-act" },
   { pattern: /\bPOPIA\b/i, slug: "popia" },
   { pattern: /Protection of Personal Information/i, slug: "popia" },
-  { pattern: /Exchange Control|\bExcon\b/i, slug: "excon" },
+  {
+    // Currency and Exchanges Manual is the operational manual issued under the
+    // Exchange Control Regulations 1961 (Currency and Exchanges Act 9 of 1933).
+    // We treat all three citation forms as anchoring to the `excon` instrument
+    // slug for section-attachment purposes.
+    pattern:
+      /Exchange Control|\bExcon\b|Currency and Exchanges Manual|Currency and Exchanges Act|Exchange Control Regulations/i,
+    slug: "excon",
+  },
   {
     pattern: /Joint Standard 2 of 2024|JS 2\/2024|JS 2 of 2024|Joint Standard 2|\bJS2\b/i,
     slug: "js2",
@@ -80,6 +88,20 @@ export function detectInstrumentSlug(citation: string): string | null {
   return null;
 }
 
+/**
+ * Normalise a raw section number (e.g. "1", "21A", "3.1", "60", "1A") to the
+ * canonical form used as the lookup key suffix: lowercase, dots stripped.
+ * The full canonical key is `${slug}/s${normaliseSectionRef(raw)}`.
+ *
+ * Exported so that the view (`regulation-reader-view.ts`) can derive the
+ * same key from a structured-JSON `section.number` field — keeping both
+ * sides of the lookup canonical on the *number*, not on the JSON `section.id`
+ * (which uses instrument-specific prefixes like `reg`, `gcc`, `excon-reg`).
+ */
+export function normaliseSectionRef(raw: string): string {
+  return raw.toLowerCase().replace(/\./g, "");
+}
+
 export function extractSectionRefs(citation: string): string[] {
   const refs = new Set<string>();
 
@@ -87,9 +109,7 @@ export function extractSectionRefs(citation: string): string[] {
     const regex = new RegExp(pattern.source, pattern.flags);
     for (let match = regex.exec(citation); match !== null; match = regex.exec(citation)) {
       const raw = match[1] ?? match[0];
-      // Normalise: lowercase s prefix, remove dots
-      const normalised = raw.toLowerCase().replace(/\./g, "");
-      refs.add(`s${normalised}`);
+      refs.add(`s${normaliseSectionRef(raw)}`);
     }
   }
 
