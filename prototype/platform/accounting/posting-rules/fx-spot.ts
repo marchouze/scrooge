@@ -1033,10 +1033,7 @@ export function fxSettlementFailedJournals(input: FxSettlementFailedInput): SubL
   // classification bug upstream that we refuse to post against.
   if (!event.legStatus.payLegDelivered || event.legStatus.receiveLegDelivered) {
     throw new Error(
-      "fxSettlementFailedJournals: 'one-leg-delivered' requires " +
-        "legStatus.payLegDelivered === true && legStatus.receiveLegDelivered === false; " +
-        `got payLegDelivered=${event.legStatus.payLegDelivered}, ` +
-        `receiveLegDelivered=${event.legStatus.receiveLegDelivered}`,
+      `fxSettlementFailedJournals: 'one-leg-delivered' requires legStatus.payLegDelivered === true && legStatus.receiveLegDelivered === false; got payLegDelivered=${event.legStatus.payLegDelivered}, receiveLegDelivered=${event.legStatus.receiveLegDelivered}`,
     );
   }
 
