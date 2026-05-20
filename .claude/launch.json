@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bank-dashboard",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "prototype/dashboard/server.ts"],
+      "port": 3010
+    }
+  ]
+}

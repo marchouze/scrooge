@@ -53,6 +53,8 @@ import {
   productApprovedPayloadSchema,
   productConceptualisedPayloadSchema,
   productDimensionAttestedPayloadSchema,
+  productDimensionNarrativeRecordedPayloadSchema,
+  productDimensionNarrativeRequestedPayloadSchema,
   productDueDiligenceCompletedPayloadSchema,
   productDueDiligenceWithheldPayloadSchema,
   productLaunchedPayloadSchema,
@@ -838,6 +840,37 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #12; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q5 same-productId resolution)",
+  },
+  {
+    // Narrative-request marker. Raised when the Products page (or any
+    // workflow) asks the responsible agent for the dimension to author a
+    // narrative answering: how does this product impact my domain? What do
+    // I need to do to support this product? Latest-by-asOf wins for the
+    // "pending request" UI state per dimension.
+    type: "ProductDimensionNarrativeRequested",
+    class: "runtime",
+    payloadSchema: productDimensionNarrativeRequestedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["target-agent", "Saskia", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
+  },
+  {
+    // Narrative-recorded canonical artefact (Principle 1: narrative-as-event).
+    // The responsible agent's prose answer to the two narrative questions.
+    type: "ProductDimensionNarrativeRecorded",
+    class: "governance",
+    payloadSchema: productDimensionNarrativeRecordedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Vera", "Anya", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-NEW-PRODUCT-APPROVAL-POLICY", "P2-CITATION-DISCIPLINE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
   },
 ];
 

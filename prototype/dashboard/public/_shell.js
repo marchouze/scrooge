@@ -33,6 +33,7 @@
       group: "Markets",
       pages: [
         { label: "Trade Booking", href: "/trade-book.html" },
+        { label: "Products (NPA)", href: "/products" },
         { label: "FX Desk", href: "/markets/fx/desk.html" },
         { label: "FX Risk", href: "/markets/fx/risk.html" },
         { label: "FX Simulator", href: "/fx-sim" },
