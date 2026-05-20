@@ -6,6 +6,18 @@
       "runtimeExecutable": "bun",
       "runtimeArgs": ["run", "prototype/dashboard/server.ts"],
       "port": 3010
+    },
+    {
+      "name": "bank-dashboard-preview",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "BANK_EVENT_DB=/Users/marc/.local/share/bank/event.db",
+        "BANK_DASHBOARD_PORT=3011",
+        "bun",
+        "run",
+        "prototype/dashboard/server.ts"
+      ],
+      "port": 3011
     }
   ]
 }

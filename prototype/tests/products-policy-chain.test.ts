@@ -1,0 +1,85 @@
+// tests/products-policy-chain.test.ts
+//
+// Resolver-level checks for the products /policy → procedure → function
+// chain. Uses the real `/Policies/` + `/Procedures/` trees rather than a
+// fixture so the assertions exercise the live frontmatter shape.
+
+import { describe, expect, it } from "bun:test";
+import { resolve } from "node:path";
+
+import {
+  parseSystemCapability,
+  resetPolicyChainCacheForTests,
+  resolveDimensionChain,
+} from "../dashboard/products-policy-chain";
+
+const REPO_ROOT = resolve(import.meta.dir, "..", "..");
+
+describe("parseSystemCapability", () => {
+  it("splits on +, ·, and the word `and`; extracts per-fragment status", () => {
+    const parts = parseSystemCapability(
+      "@platform/screening · @platform/case-management (PLANNED) and @platform/risk-rating (POPULATED)",
+    );
+    expect(parts.map((p) => p.name)).toEqual([
+      "@platform/screening",
+      "@platform/case-management",
+      "@platform/risk-rating",
+    ]);
+    expect(parts.map((p) => p.status)).toEqual(["unknown", "planned", "populated"]);
+  });
+
+  it("returns an empty array for blank input", () => {
+    expect(parseSystemCapability("")).toEqual([]);
+    expect(parseSystemCapability("   ")).toEqual([]);
+  });
+});
+
+describe("resolveDimensionChain — credit-risk on real Policies + Procedures", () => {
+  it("anchors on the hint policy and surfaces in-force status", () => {
+    resetPolicyChainCacheForTests();
+    const chain = resolveDimensionChain({
+      repoRoot: REPO_ROOT,
+      policyHints: ["credit-risk-policy-v1.md"],
+    });
+    expect(chain.policies.length).toBe(1);
+    const p = chain.policies[0];
+    if (!p) throw new Error("expected at least one resolved policy");
+    expect(p.filename).toBe("credit-risk-policy-v1.md");
+    expect(p.title.toLowerCase()).toContain("credit risk");
+    expect(p.source).toBe("hint");
+    expect(p.status).toBe("in-force");
+  });
+});
+
+describe("resolveDimensionChain — aml-cft anchor pulls KYC / PEP / UBO procedures", () => {
+  it("matches procedures whose policy-cited references AML-CFT-POLICY-V1 and parses their functions", () => {
+    resetPolicyChainCacheForTests();
+    const chain = resolveDimensionChain({
+      repoRoot: REPO_ROOT,
+      policyHints: ["aml-cft-policy-v1.md"],
+    });
+    expect(chain.policies.length).toBe(1);
+    // KYC, PEP and UBO procedures all cite AML-CFT-POLICY-V1.
+    const procFiles = chain.procedures.map((p) => p.filename).sort();
+    expect(procFiles).toContain("kyc-continuous.md");
+    expect(procFiles).toContain("pep-handling.md");
+    expect(procFiles).toContain("ubo-resolution.md");
+    // Each matched procedure declares its anchor policy correctly.
+    for (const proc of chain.procedures) {
+      expect(proc.policiesCited).toContain("aml-cft-policy-v1.md");
+    }
+    // Functions come through from system-capability fields.
+    const fnNames = new Set(chain.functions.map((f) => f.name));
+    expect(fnNames.has("@platform/screening")).toBe(true);
+  });
+});
+
+describe("resolveDimensionChain — empty hints yields empty chain", () => {
+  it("returns no policies / procedures / functions when no hints are given", () => {
+    resetPolicyChainCacheForTests();
+    const chain = resolveDimensionChain({ repoRoot: REPO_ROOT, policyHints: [] });
+    expect(chain.policies).toEqual([]);
+    expect(chain.procedures).toEqual([]);
+    expect(chain.functions).toEqual([]);
+  });
+});
