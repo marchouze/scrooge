@@ -422,6 +422,27 @@ export const documentHashSchema = z
 
 // AgentBriefIssued
 
+// D-DISPATCH-SYNC-PRIMITIVE (CEO-approved 2026-05-20).
+// `runRoleClass` distinguishes reviewer-class briefs (independent validation,
+// audit, peer challenge) from decider-class briefs (approval, sign-off, merge)
+// and from default executor / observer briefs. `blocksOn` lists prior briefs
+// whose `AgentRunCompleted{outcome:"delivered"}` event must exist before this
+// brief's run may close `delivered`. Both fields are optional and
+// backward-compatible: pre-primitive briefs read as `runRoleClass:"executor"`
+// and `blocksOn:[]`.
+export const dispatchRunRoleClassValues = [
+  "reviewer",
+  "decider",
+  "executor",
+  "observer",
+] as const;
+
+export const blocksOnEntrySchema = z.object({
+  briefId: z.string().min(1),
+  runRoleClass: z.enum(dispatchRunRoleClassValues),
+});
+export type BlocksOnEntry = z.infer<typeof blocksOnEntrySchema>;
+
 export const agentBriefIssuedPayloadSchema = z.object({
   briefId: z.string().min(1),
   issuedTo: rmsAgentRefSchema,
@@ -440,6 +461,9 @@ export const agentBriefIssuedPayloadSchema = z.object({
       }),
     )
     .min(1),
+  // D-DISPATCH-SYNC-PRIMITIVE additions.
+  runRoleClass: z.enum(dispatchRunRoleClassValues).optional(),
+  blocksOn: z.array(blocksOnEntrySchema).optional(),
 });
 
 export type AgentBriefIssuedPayload = z.infer<typeof agentBriefIssuedPayloadSchema>;
