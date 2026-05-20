@@ -180,11 +180,13 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
     expect(rcEvent).toBeDefined();
     expect(eadEvent).toBeDefined();
 
-    // RC = R5.5m. PFE = R1.2m. EAD = 1.4 × (R5.5m + R1.2m) = R9.38m.
+    // RC = R5.5m. PFE = R240k (v1 SA-CCR: margined MF=0.2, multiplier=1.0
+    //   because V−C ≫ 0 — see sa-ccr.test.ts for the per-asset-class
+    //   add-on breakdown). EAD = 1.4 × (R5.5m + R240k) = R8.036m.
     expect(rcEvent?.payload.rc).toBe(5_500_000_00);
     expect(eadEvent?.payload.rc).toBe(5_500_000_00);
-    expect(eadEvent?.payload.pfe).toBe(1_200_000_00);
-    expect(eadEvent?.payload.ead).toBe(9_380_000_00);
+    expect(eadEvent?.payload.pfe).toBe(240_000_00);
+    expect(eadEvent?.payload.ead).toBe(8_036_000_00);
     expect(eadEvent?.payload.alpha).toBe(1.4);
     expect(eadEvent?.payload.methodology).toBe("sa-ccr");
     expect(eadEvent?.payload.currency).toBe("ZAR");
@@ -196,7 +198,7 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
     expect(eadEvent?.payload.sourceEvents.pfeComponents).toBe(2);
 
     // computeAndEmit return shape matches the emitted EAD figures.
-    expect(result.ead.ead.amount).toBe(BigInt(9_380_000_00));
+    expect(result.ead.ead.amount).toBe(BigInt(8_036_000_00));
   });
 
   it("emits CcrEadComputed with pfeComponents = 0 when netting set has no trades", () => {
