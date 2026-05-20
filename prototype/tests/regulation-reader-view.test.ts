@@ -186,9 +186,10 @@ describe("buildInstrumentDetailView — cross-instrument canonical section looku
     if (!detail) return;
 
     let withObl = 0;
-    for (const ch of detail.chapters) for (const sec of ch.sections) {
-      if (sec.obligations.length > 0) withObl++;
-    }
+    for (const ch of detail.chapters)
+      for (const sec of ch.sections) {
+        if (sec.obligations.length > 0) withObl++;
+      }
     // fic-act had 11 section-with-obligations before; this fix should not
     // regress it. The baseline target in the brief is ~10–15.
     expect(withObl).toBeGreaterThanOrEqual(10);

@@ -355,7 +355,7 @@ function resolveObligationPolicy(fulfilment: string, repoRoot: string): Resolved
  *      `excon-reg22A` → "22A", `gcc11` → "11", `s60` → "60", `s3-1` → "3-1").
  */
 function numberFromSection(section: RegSection): string | null {
-  if (section.number && section.number.trim() && !/^preamble/i.test(section.number)) {
+  if (section.number?.trim() && !/^preamble/i.test(section.number)) {
     return normaliseSectionRef(section.number.trim());
   }
 
