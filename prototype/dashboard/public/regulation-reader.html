@@ -210,14 +210,72 @@
       margin-top: var(--space-1);
     }
 
-    /* Obligation cards */
+    /* Obligation cards — collapsed by default; expanded per-section or via global toggle. */
     .rr-obligations {
-      display: flex;
+      display: none;
       flex-direction: column;
       gap: var(--space-2);
       margin-top: var(--space-3);
       padding-top: var(--space-3);
       border-top: 1px solid var(--color-border);
+    }
+    .rr-section.rr-expanded .rr-obligations {
+      display: flex;
+    }
+
+    /* Expand chevron on the section header */
+    .rr-obl-toggle {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font: var(--text-small);
+      color: var(--color-accent);
+      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.1s;
+    }
+    .rr-obl-toggle:hover {
+      background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    }
+    .rr-obl-toggle:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 1px;
+    }
+    .rr-obl-toggle-icon {
+      display: inline-block;
+      transition: transform 0.15s;
+      font-size: 0.7em;
+    }
+    .rr-section.rr-expanded .rr-obl-toggle-icon {
+      transform: rotate(90deg);
+    }
+
+    /* Global "Show obligations" toggle in the toolbar */
+    .rr-show-obl {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: var(--space-2) var(--space-3);
+      font: var(--text-small);
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .rr-show-obl input {
+      margin: 0;
+      cursor: pointer;
+    }
+    .rr-show-obl:hover {
+      border-color: var(--color-accent);
     }
     .rr-obl-label {
       font: var(--text-label);
@@ -376,6 +434,10 @@
                 aria-label="Search sections"
               >
               <span class="rr-search-count" id="rr-search-count" aria-live="polite"></span>
+              <label class="rr-show-obl" title="Expand or collapse obligations on every section">
+                <input type="checkbox" id="rr-show-obl">
+                <span>Show obligations</span>
+              </label>
             </div>
             <div class="rr-sections-scroll" id="rr-sections"></div>
           </div>
