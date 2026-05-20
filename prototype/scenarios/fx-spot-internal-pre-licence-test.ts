@@ -109,17 +109,14 @@ import { unlinkSync } from "node:fs";
 
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
-import {
-  type CreditLimitLoadedPayload,
-  type ISDACSAAssessmentCompletedPayload,
+import type {
+  CreditLimitLoadedPayload,
+  ISDACSAAssessmentCompletedPayload,
 } from "../platform/event-store/event-types/credit-limit";
 import { makePolicyVersionActivated } from "../platform/event-store/event-types/policy-activation";
 import type { Event } from "../platform/event-store/types";
+import { makeFxSettlementInstructed, makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import { runEodFxRevaluation } from "../platform/markets/eod/fx-revaluation";
-import {
-  makeFxSettlementInstructed,
-  makeFxTradeExecuted,
-} from "../platform/markets/cdm/fx";
 import {
   type CorrespondentMessage,
   makeStaticCorrespondentFeed,
@@ -128,6 +125,7 @@ import {
 import { setDefaultProvenanceModeOverride } from "../platform/projections";
 import { computeAndEmitFor } from "../platform/risk/sa-ccr";
 
+import { run as runCounterpartyExposureRecon } from "../platform/recon/counterparty-exposure-coverage";
 // Recon pipelines — imported by named exports only. Some recon modules
 // (notably counterparty-exposure-coverage.ts) do not guard their CLI block
 // with `import.meta.main`, so they `run()` at module-load time. That call
@@ -135,7 +133,6 @@ import { computeAndEmitFor } from "../platform/risk/sa-ccr";
 // advisory) but does emit console output. We accept the noise rather than
 // touch the recon files (out of scope for this brief).
 import { run as runCreditLimitNoTradeRecon } from "../platform/recon/credit-limit-no-trade-without-loaded";
-import { run as runCounterpartyExposureRecon } from "../platform/recon/counterparty-exposure-coverage";
 import { run as runLexCapRecon } from "../platform/recon/lex-cap-utilisation";
 import { run as runMarketDataProvenanceRecon } from "../platform/recon/market-data-provenance-gate";
 import { run as runPositionRevaluedRecon } from "../platform/recon/position-revalued-cites-mark";
@@ -145,8 +142,11 @@ import type { ReconResult } from "../platform/recon/types";
 // Constants
 // ---------------------------------------------------------------------------
 
-const SCENARIO_ID = "fx-spot-internal-pre-licence-test";
-const SCENARIO_SOURCE_LINEAGE = "scenario-runner:fx-spot-internal-pre-licence-test";
+/** Identity of this scenario — used in console output and matches the
+ *  package.json `scenario:fx-spot-internal-pre-licence-test` entry. */
+export const SCENARIO_ID = "fx-spot-internal-pre-licence-test";
+/** Source-lineage tag for provenance envelopes emitted by this scenario. */
+export const SCENARIO_SOURCE_LINEAGE = "scenario-runner:fx-spot-internal-pre-licence-test";
 
 const ENTITY = "BANK-ZA-001";
 
@@ -244,7 +244,7 @@ class PhaseRecorder {
   constructor(public readonly phase: string) {}
 
   assert(description: string, ok: boolean, detail?: string): void {
-    this.assertions.push({ description, ok, detail });
+    this.assertions.push(detail !== undefined ? { description, ok, detail } : { description, ok });
   }
 
   note(line: string): void {
@@ -440,17 +440,13 @@ async function runPhase1(): Promise<PhaseResult> {
         asOf: "2026-05-19T08:00:00.000Z",
         entity: ENTITY,
         actor: { type: "service", id: "agent:helena:cro" },
-        citations: [
-          "D-EVENT-VIEW-BOUNDARY-WIRE",
-          "Policies/valuation-policy-v1.md",
-        ],
+        citations: ["D-EVENT-VIEW-BOUNDARY-WIRE", "Policies/valuation-policy-v1.md"],
         payload: {
           policyDomain: "valuation",
           policyId: "VALUATION-POLICY-V1",
           version: "1.0",
           effectiveFrom: "2026-05-19T00:00:00Z",
-          documentHash:
-            "blake3:2e3163f0f1c77812d494f646acc3e8bd9da10b8ec63a2339904609018a5300c2",
+          documentHash: "blake3:2e3163f0f1c77812d494f646acc3e8bd9da10b8ec63a2339904609018a5300c2",
           supersedes: null,
           activatedBy: "agent:helena:cro",
         },
@@ -461,7 +457,7 @@ async function runPhase1(): Promise<PhaseResult> {
       `backfill:policy-activations — VALUATION-POLICY-V1 v1.0 ${alreadyActivated ? "already activated" : "activated"}`,
     );
   } catch (err) {
-    r.assert(`policy-activations backfill ran`, false, String(err));
+    r.assert("policy-activations backfill ran", false, String(err));
   }
 
   // 2. Party register backfill (Saskia PR #639 — Standard Bank ZA + Investec ZA).
@@ -495,7 +491,7 @@ async function runPhase1(): Promise<PhaseResult> {
       `found ${investecParty.length} PartyRegistered events for ${INVESTEC_BANK_ZA}`,
     );
   } catch (err) {
-    r.assert(`party-backfill ran`, false, String(err));
+    r.assert("party-backfill ran", false, String(err));
   }
 
   // 3. SARB fixings seed (Atlas PR #643) — 29 days of USD/ZAR
@@ -505,12 +501,7 @@ async function runPhase1(): Promise<PhaseResult> {
     const marketDataStoreModule = await import("../platform/market-data/store");
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const fixturePath = path.resolve(
-      import.meta.dir,
-      "..",
-      "seeds",
-      "sarb-fixing-rates.json",
-    );
+    const fixturePath = path.resolve(import.meta.dir, "..", "seeds", "sarb-fixing-rates.json");
     const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
     const source = sarbModule.makeFixtureSarbFixingSource(fixture);
     const marketDataStore = new marketDataStoreModule.MarketDataStore(
@@ -543,7 +534,7 @@ async function runPhase1(): Promise<PhaseResult> {
       `expected ≥25 OfficialMarkAdopted events, got ${totalEvents}`,
     );
   } catch (err) {
-    r.assert(`seed:sarb-fixings ran`, false, String(err));
+    r.assert("seed:sarb-fixings ran", false, String(err));
   }
 
   // 4. Credit-limit + ISDA/CSA seed (Yael PR #642).
@@ -551,14 +542,10 @@ async function runPhase1(): Promise<PhaseResult> {
     const seedModule = await import("../scripts/seed-fx-spot-controlled-launch-limits");
     seedModule.main();
     const limitsLoaded = findEventsByPredicate("CreditLimitLoaded", (p) => {
-      return (
-        p.counterpartyId === STANDARD_BANK_ZA || p.counterpartyId === INVESTEC_BANK_ZA
-      );
+      return p.counterpartyId === STANDARD_BANK_ZA || p.counterpartyId === INVESTEC_BANK_ZA;
     });
     const isdaAssessed = findEventsByPredicate("ISDACSAAssessmentCompleted", (p) => {
-      return (
-        p.counterpartyId === STANDARD_BANK_ZA || p.counterpartyId === INVESTEC_BANK_ZA
-      );
+      return p.counterpartyId === STANDARD_BANK_ZA || p.counterpartyId === INVESTEC_BANK_ZA;
     });
     r.assert(
       "Credit limits loaded for both counterparties (Yael PR #642)",
@@ -587,7 +574,7 @@ async function runPhase1(): Promise<PhaseResult> {
       );
     }
   } catch (err) {
-    r.assert(`fx-spot:seed-controlled-launch ran`, false, String(err));
+    r.assert("fx-spot:seed-controlled-launch ran", false, String(err));
   }
 
   // 5. Recon — credit-limit-no-trade-without-loaded: must be green (no trades
@@ -602,10 +589,12 @@ async function runPhase1(): Promise<PhaseResult> {
       .join("; ")}`,
   );
 
-  r.note(`Total events after Phase 1: ${countByType()["PartyRegistered"] ?? 0} parties; ` +
-    `${countEventsOfType("OfficialMarkAdopted")} marks; ` +
-    `${countEventsOfType("CreditLimitLoaded")} credit limits; ` +
-    `${countEventsOfType("ISDACSAAssessmentCompleted")} ISDA assessments.`);
+  r.note(
+    `Total events after Phase 1: ${countByType().PartyRegistered ?? 0} parties; ` +
+      `${countEventsOfType("OfficialMarkAdopted")} marks; ` +
+      `${countEventsOfType("CreditLimitLoaded")} credit limits; ` +
+      `${countEventsOfType("ISDACSAAssessmentCompleted")} ISDA assessments.`,
+  );
 
   return r.result();
 }
@@ -636,8 +625,7 @@ async function runPhase2(): Promise<PhaseResult> {
   const tradePayload = tradeEvent.payload as Record<string, unknown>;
   r.assert(
     "FxTradeExecuted carries clientFlowRef (Atlas PR #633 — no-prop XOR satisfied)",
-    tradePayload.clientFlowRef === clientFlowRef &&
-      tradePayload.hedgeProgrammeRef === undefined,
+    tradePayload.clientFlowRef === clientFlowRef && tradePayload.hedgeProgrammeRef === undefined,
     `clientFlowRef=${String(tradePayload.clientFlowRef)} hedgeProgrammeRef=${String(tradePayload.hedgeProgrammeRef)}`,
   );
 
@@ -662,19 +650,13 @@ async function runPhase2(): Promise<PhaseResult> {
   });
   eventStore.append(usdSettlement);
   eventStore.append(zarSettlement);
-  r.note(`FxSettlementInstructed × 2 (USD + ZAR)`);
+  r.note("FxSettlementInstructed × 2 (USD + ZAR)");
 
   // 3. EOD revaluation tick — emits FxPositionRevalued citing the SARB
-  //    mark via in-window match (Slice B.1 advisory recon).
-  //    Use a date AFTER trade-date for which we have a SARB fixing.
-  const valuationDate = "2026-05-25"; // 2026-05-25 has no SARB fixing — try 2026-05-22 (the next available).
-  // The fixture has fixings up to 2026-05-20. The valuation must pick a
-  // date with a published mark. Use 2026-05-20 (the most recent fixing
-  // pre-trade) — runEodFxRevaluation accepts any valuationDate; the rate
-  // source `staticRateSource` reads from `seeds/fx-rates.json`.
-  // For the OfficialMarkAdopted recon match we instead need the mark
-  // and the FxPositionRevalued.revaluedAt to be in the ±1h window. We
-  // override revaluedAt by setting asOf at valuation time.
+  //    mark via in-window match (Slice B.1 advisory recon). The valuation
+  //    date must be a date that exists in both seeds/fx-rates.json (the
+  //    staticRateSource source-of-truth) AND seeds/sarb-fixing-rates.json
+  //    so the position-revalued-cites-mark recon window-matches the mark.
   // We pass valuationDate = "2026-05-20" so the FxPositionRevalued
   // as_of and the SARB OfficialMarkAdopted markAsOf are the same date —
   // window match holds.
@@ -730,9 +712,7 @@ async function runPhase2(): Promise<PhaseResult> {
         : `RC=${result.rc.rc.amount} EAD=${result.ead.ead.amount} ${result.ead.ead.currency}`,
     );
     if (result !== null) {
-      r.note(
-        `SA-CCR: RC=${result.rc.rc.amount} EAD=${result.ead.ead.amount} (alpha=1.4)`,
-      );
+      r.note(`SA-CCR: RC=${result.rc.rc.amount} EAD=${result.ead.ead.amount} (alpha=1.4)`);
     }
   } catch (err) {
     r.assert("SA-CCR compute-and-emit ran", false, String(err));
@@ -957,9 +937,7 @@ async function runPhase3(): Promise<PhaseResult> {
     const usdReceiveLegMinor = USD_500K_MINOR;
     const zarEquivalentMinor = Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR);
     const journals = fxSettlementFailedJournals({
-      event: failedPayload as unknown as Parameters<
-        typeof fxSettlementFailedJournals
-      >[0]["event"],
+      event: failedPayload as unknown as Parameters<typeof fxSettlementFailedJournals>[0]["event"],
       failedReceiveLeg: {
         currency: "USD",
         amountMinor: usdReceiveLegMinor,
@@ -1034,17 +1012,14 @@ async function runPhase3(): Promise<PhaseResult> {
   // events are keyed by tradeRef; clientFlowRef does NOT propagate directly
   // onto FxSettlementFailed (event-schema choice; the reverse-lookup is via
   // tradeRef → FxTradeExecuted.clientFlowRef). Assert the lookup works.
-  const failedEvents = findEventsByPredicate(
-    "FxSettlementFailed",
-    (p) => p.tradeRef === tradeId,
-  );
+  const failedEvents = findEventsByPredicate("FxSettlementFailed", (p) => p.tradeRef === tradeId);
   r.assert(
     "FxSettlementFailed.tradeRef back-links to clientFlowRef via FxTradeExecuted",
     failedEvents.length === 1 &&
-      (findEventsByPredicate("FxTradeExecuted", (p) => {
+      findEventsByPredicate("FxTradeExecuted", (p) => {
         const id = p.tradeId as { value?: string } | undefined;
         return id?.value === tradeId && p.clientFlowRef === clientFlowRef;
-      }).length === 1),
+      }).length === 1,
     `failedEvents=${failedEvents.length}`,
   );
 
@@ -1136,9 +1111,7 @@ async function runPhase4(): Promise<PhaseResult> {
       failureKind: "one-leg-delivered" | "neither-delivered" | "operational-delay";
     };
     const journals = fxSettlementFailedJournals({
-      event: failedPayload as unknown as Parameters<
-        typeof fxSettlementFailedJournals
-      >[0]["event"],
+      event: failedPayload as unknown as Parameters<typeof fxSettlementFailedJournals>[0]["event"],
     });
     r.assert(
       "PR-FX-005 (Bea PR #641) — neither-delivered branch produces zero GL postings (FVTPL out of ECL scope)",
@@ -1146,11 +1119,7 @@ async function runPhase4(): Promise<PhaseResult> {
       `journals.length=${journals.length}`,
     );
   } catch (err) {
-    r.assert(
-      "PR-FX-005 — neither-delivered branch evaluated",
-      false,
-      String(err),
-    );
+    r.assert("PR-FX-005 — neither-delivered branch evaluated", false, String(err));
   }
 
   // Classification = mutual-fail.
@@ -1161,8 +1130,7 @@ async function runPhase4(): Promise<PhaseResult> {
   r.assert(
     "Classification = mutual-fail",
     classifiedEvents[0] !== undefined &&
-      (classifiedEvents[0].payload as Record<string, unknown>).classification ===
-        "mutual-fail",
+      (classifiedEvents[0].payload as Record<string, unknown>).classification === "mutual-fail",
     `classification=${String((classifiedEvents[0]?.payload as Record<string, unknown> | undefined)?.classification)}`,
   );
 
@@ -1253,9 +1221,7 @@ async function runPhase5(): Promise<PhaseResult> {
       failureKind: "one-leg-delivered" | "neither-delivered" | "operational-delay";
     };
     const journals = fxSettlementFailedJournals({
-      event: failedPayload as unknown as Parameters<
-        typeof fxSettlementFailedJournals
-      >[0]["event"],
+      event: failedPayload as unknown as Parameters<typeof fxSettlementFailedJournals>[0]["event"],
     });
     r.assert(
       "PR-FX-005 (Bea PR #641) — operational-delay branch produces zero GL postings (no default event)",
@@ -1294,10 +1260,7 @@ interface ScenarioSummary {
   readonly status: "READY-FOR-CONTROLLED-LAUNCH" | string;
 }
 
-function renderSummary(
-  phaseResults: readonly PhaseResult[],
-  summary: ScenarioSummary,
-): string {
+function renderSummary(phaseResults: readonly PhaseResult[], summary: ScenarioSummary): string {
   const lines: string[] = [];
   lines.push("");
   lines.push("================================================================");
@@ -1313,9 +1276,7 @@ function renderSummary(
   lines.push("");
   lines.push(`Trades booked:           ${summary.tradesBooked}`);
   lines.push(`Events emitted:          ${summary.eventsEmitted}`);
-  lines.push(
-    `Recon pipelines passed:  ${summary.reconCounts.passed}/${summary.reconCounts.total}`,
-  );
+  lines.push(`Recon pipelines passed:  ${summary.reconCounts.passed}/${summary.reconCounts.total}`);
   lines.push(`Total runtime:           ${(summary.runtimeMs / 1000).toFixed(2)}s`);
   lines.push("");
   lines.push("Substrate gaps surfaced this run:");
@@ -1352,10 +1313,38 @@ export async function runFxSpotInternalPreLicenceTest(
 
   // Run phases.
   const p1 = await runPhase1();
-  const p2 = p1.ok ? await runPhase2() : { phase: "Phase 2 — Happy-path trade lifecycle", ok: false, notes: [], failures: ["skipped (Phase 1 failed)"] };
-  const p3 = p1.ok ? await runPhase3() : { phase: "Phase 3 — Herstatt-active failure", ok: false, notes: [], failures: ["skipped (Phase 1 failed)"] };
-  const p4 = p1.ok ? await runPhase4() : { phase: "Phase 4 — Mutual fail", ok: false, notes: [], failures: ["skipped (Phase 1 failed)"] };
-  const p5 = p1.ok ? await runPhase5() : { phase: "Phase 5 — Operational delay", ok: false, notes: [], failures: ["skipped (Phase 1 failed)"] };
+  const p2 = p1.ok
+    ? await runPhase2()
+    : {
+        phase: "Phase 2 — Happy-path trade lifecycle",
+        ok: false,
+        notes: [],
+        failures: ["skipped (Phase 1 failed)"],
+      };
+  const p3 = p1.ok
+    ? await runPhase3()
+    : {
+        phase: "Phase 3 — Herstatt-active failure",
+        ok: false,
+        notes: [],
+        failures: ["skipped (Phase 1 failed)"],
+      };
+  const p4 = p1.ok
+    ? await runPhase4()
+    : {
+        phase: "Phase 4 — Mutual fail",
+        ok: false,
+        notes: [],
+        failures: ["skipped (Phase 1 failed)"],
+      };
+  const p5 = p1.ok
+    ? await runPhase5()
+    : {
+        phase: "Phase 5 — Operational delay",
+        ok: false,
+        notes: [],
+        failures: ["skipped (Phase 1 failed)"],
+      };
 
   const phaseResults = [p1, p2, p3, p4, p5];
 
