@@ -111,6 +111,9 @@ export { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
 // D-EVENT-VIEW-BOUNDARY-WIRE Slice B — OfficialMarkAdopted registry row.
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 export { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
+// D-EVENT-VIEW-BOUNDARY-WIRE Slice C — PeriodClosed registry row.
+// Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+export { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -120,6 +123,7 @@ export { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
+import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
@@ -261,6 +265,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // The valuation engine's elected mark per (instrumentKey, markAsOf,
   // policyVersionRef). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
   ...VALUATION_EVENT_TYPES_REGISTRY,
+  // D-EVENT-VIEW-BOUNDARY-WIRE Slice C — PeriodClosed registry row.
+  // CFO attestation pinning policyVersionRefs + codeSha + statement hashes.
+  // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+  ...CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
