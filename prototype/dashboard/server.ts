@@ -1486,18 +1486,27 @@ function handleProcedureFetch(filename: string): Response {
   if (!filename.toLowerCase().endsWith(".md")) {
     return jsonResponse({ error: "only .md files are previewable" }, 400);
   }
-  // Allow-list check against the live procedures index. The index is the
-  // canonical source for the policy → procedure mapping (Principle 2); we
-  // never serve a `Procedures/by-policy/<file>.md` that the index does
-  // not cite, even if the file exists on disk.
+  // Allow-list check. Procedures live under two trees:
+  //   • `Procedures/by-policy/` — indexed by getProceduresIndex (the
+  //     canonical policy → procedure mapping per Principle 2).
+  //   • `Procedures/<area>/` — area-organised procedures (markets,
+  //     finance, operations, …) surfaced via listProcedures() for the
+  //     RMS Procedures register.
+  // We accept either source.
   const view = getProceduresIndex(REPO_ROOT);
-  const allowed = view.groups.some((g) =>
+  const byPolicyAllowed = view.groups.some((g) =>
     g.rows.some((r) => r.procedureFile === filename && !r.orphan),
   );
-  if (!allowed) {
+  const indexedRow = listProcedures(REPO_ROOT).find((r) => r.filename === filename);
+  if (!byPolicyAllowed && !indexedRow) {
     return jsonResponse({ error: `not in current procedures index: ${filename}` }, 404);
   }
-  const filePath = join(REPO_ROOT, "Procedures", "by-policy", filename);
+  // Resolve to disk. by-policy/ rows live there; indexed rows carry their
+  // repo-relative path; prefer the index path when available so area
+  // subfolders (markets, finance, …) work.
+  const filePath = indexedRow
+    ? join(REPO_ROOT, indexedRow.path)
+    : join(REPO_ROOT, "Procedures", "by-policy", filename);
   if (!existsSync(filePath)) {
     return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
   }
@@ -1549,19 +1558,33 @@ function handlePolicyFetch(filename: string): Response {
   if (!filename.toLowerCase().endsWith(".md")) {
     return jsonResponse({ error: "only .md files are previewable" }, 400);
   }
-  // Allow-list check against the live policy library. Each Policy carries
-  // a `sourceFiles[]` derived from the register; the union of those lists
-  // bounds the surface. Owner Inbox files are bare basenames; Policies/ files
-  // use the `Policies/<basename>` qualified form.
-  const allowed = cachedState.policies.some((p) => p.sourceFiles.includes(filename));
-  if (!allowed) {
+  // Allow-list check. Two canonical sources combine here:
+  //   • cachedState.policies[*].sourceFiles[] — the legacy register-derived
+  //     allow-list. Owner Inbox files are bare basenames; Policies/ files
+  //     use the `Policies/<basename>` qualified form.
+  //   • listPolicies() — the live filesystem index used by /rms's Policies
+  //     register. Every file there is trivially safe to serve.
+  const baseName = isPoliciesQualified ? filename.replace(/^Policies\//, "") : filename;
+  const allowedByLegacy = cachedState.policies.some(
+    (p) => p.sourceFiles.includes(filename) || p.sourceFiles.includes(`Policies/${baseName}`),
+  );
+  const allowedByIndex = listPolicies(REPO_ROOT).some((p) => p.filename === baseName);
+  if (!allowedByLegacy && !allowedByIndex) {
     return jsonResponse({ error: `not in current policy register: ${filename}` }, 404);
   }
-  // Resolve to disk: qualified Policies/ paths are repo-relative; bare basenames
-  // live under archive/owner-inbox/ (Phase 4: legacy inboxes archived).
-  const filePath = isPoliciesQualified
-    ? join(REPO_ROOT, filename)
-    : join(REPO_ROOT, "archive", "owner-inbox", filename);
+  // Resolve to disk. Resolution priority:
+  //   1. Qualified `Policies/<file>` → that exact path.
+  //   2. Bare basename present in listPolicies() → `Policies/<file>`.
+  //   3. Bare basename otherwise → `archive/owner-inbox/<file>` (legacy
+  //      Phase 4 fallback for inbox-only basenames).
+  let filePath: string;
+  if (isPoliciesQualified) {
+    filePath = join(REPO_ROOT, filename);
+  } else if (allowedByIndex) {
+    filePath = join(REPO_ROOT, "Policies", filename);
+  } else {
+    filePath = join(REPO_ROOT, "archive", "owner-inbox", filename);
+  }
   if (!existsSync(filePath)) {
     return jsonResponse({ error: `file not found on disk: ${filename}` }, 404);
   }
