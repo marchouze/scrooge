@@ -90,6 +90,8 @@ const BASE_TRADE_PAYLOAD = {
   bookType: "trading" as const,
   settlementForm: "physical" as const,
   settlementPath: "correspondent" as const,
+  // No-prop attribution (G-3) — fixtures default to client-flow.
+  clientFlowRef: "client-trade:fx-accounting-test",
 };
 
 // ---------------------------------------------------------------------------

@@ -81,6 +81,9 @@ const baseSpotPayload = {
   bookType: "trading" as const,
   settlementForm: "physical" as const,
   settlementPath: "correspondent" as const,
+  // No-prop attribution — exactly one of clientFlowRef / hedgeProgrammeRef
+  // required per the FxTradeExecuted refinement (G-3 close, no-prop invariant).
+  clientFlowRef: "client-trade:NK-2026-05-20-00001",
 };
 
 describe("CDM FX primitives", () => {
@@ -245,6 +248,79 @@ describe("FxTradeExecuted — NDF", () => {
     expect(() =>
       fxTradeExecutedPayloadSchema.parse({ ...ndfBase, settlementForm: "physical" }),
     ).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// G-3 close — no-prop attribution invariant.
+//
+// Helena (Chief Risk Officer, governance) FX-spot-only market-risk scope
+// review (2026-05-20) §6 gap G-3 + D-MARKETS-SCHEMA-FOUNDATION +
+// Policies/trading-mandate-v1.md §5.
+// ---------------------------------------------------------------------------
+
+describe("FxTradeExecuted — no-prop attribution (G-3)", () => {
+  it("accepts a trade carrying only clientFlowRef (client-driven path)", () => {
+    const trade = {
+      ...baseSpotPayload,
+      clientFlowRef: "client-trade:NK-2026-05-20-00041",
+      hedgeProgrammeRef: undefined,
+    };
+    expect(() => fxTradeExecutedPayloadSchema.parse(trade)).not.toThrow();
+  });
+
+  it("accepts a trade carrying only hedgeProgrammeRef (sanctioned-hedge path)", () => {
+    const trade = {
+      ...baseSpotPayload,
+      clientFlowRef: undefined,
+      hedgeProgrammeRef: "hedge-programme:fx-translation-zar-usd-2026Q2",
+    };
+    expect(() => fxTradeExecutedPayloadSchema.parse(trade)).not.toThrow();
+  });
+
+  it("rejects a trade with neither clientFlowRef nor hedgeProgrammeRef", () => {
+    const { clientFlowRef, hedgeProgrammeRef, ...trade } = baseSpotPayload as typeof baseSpotPayload & {
+      clientFlowRef?: string;
+      hedgeProgrammeRef?: string;
+    };
+    void clientFlowRef;
+    void hedgeProgrammeRef;
+    const result = fxTradeExecutedPayloadSchema.safeParse(trade);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => i.message.includes("no-prop"))).toBe(true);
+    }
+  });
+
+  it("rejects a trade carrying both clientFlowRef and hedgeProgrammeRef", () => {
+    const trade = {
+      ...baseSpotPayload,
+      clientFlowRef: "client-trade:NK-2026-05-20-00041",
+      hedgeProgrammeRef: "hedge-programme:fx-translation-zar-usd-2026Q2",
+    };
+    const result = fxTradeExecutedPayloadSchema.safeParse(trade);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => i.message.includes("not both"))).toBe(true);
+    }
+  });
+
+  it("rejects an empty clientFlowRef (min length 1)", () => {
+    const trade = {
+      ...baseSpotPayload,
+      clientFlowRef: "",
+      hedgeProgrammeRef: undefined,
+    };
+    expect(() => fxTradeExecutedPayloadSchema.parse(trade)).toThrow();
+  });
+
+  it("rejects an empty hedgeProgrammeRef (min length 1)", () => {
+    const trade = {
+      ...baseSpotPayload,
+      clientFlowRef: undefined,
+      hedgeProgrammeRef: "",
+    };
+    expect(() => fxTradeExecutedPayloadSchema.parse(trade)).toThrow();
   });
 });
 

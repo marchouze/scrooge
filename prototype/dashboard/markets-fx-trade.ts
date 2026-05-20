@@ -348,6 +348,15 @@ export function buildSpotPayload(args: {
     settlementForm: "physical",
     settlementPath: "correspondent",
     finsurvCategory: "[citation: TBC]",
+    // No-prop attribution (G-3). RFQ-sourced trades are by construction
+    // client-flow — the bank quoted in response to a counterparty RFQ.
+    // The rfqId is the natural client-flow correlation id; the explicit
+    // RFQ → trade lineage already enforces it. The dashboard UI does not
+    // yet surface this field separately (out of scope for G-3 — see brief).
+    // TODO(G-3 follow-on): expose a hedge-programme dropdown for the
+    // bank-as-principal hedge flow once Helena's hedge-programme register
+    // lands.
+    clientFlowRef: `client-rfq:${args.input.rfqId ?? args.tradeId}`,
   };
 }
 

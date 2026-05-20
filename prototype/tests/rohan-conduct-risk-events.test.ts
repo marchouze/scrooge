@@ -113,6 +113,8 @@ function makeTestFxSpotTrade(opts: {
       bookType: opts.bookType ?? "trading",
       settlementForm: "physical",
       settlementPath: "correspondent",
+      // No-prop attribution (G-3) — fixtures default to client-flow.
+      clientFlowRef: `client-trade:rohan-conduct-${opts.tradeId}`,
     },
   });
 }

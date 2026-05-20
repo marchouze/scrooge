@@ -73,6 +73,7 @@ function appendFxTrade(store: EventStore, tradeId: string, bookRateAmount = 18.5
         bookId: "BOOK-FX-001",
         settlementForm: "physical" as const,
         settlementPath: "correspondent" as const,
+        clientFlowRef: "client-trade:test-fx-reval",
       },
     }),
   );
@@ -286,6 +287,7 @@ function appendFxForwardTrade(
         bookId: "BOOK-FX-FWD-001",
         settlementForm: "physical" as const,
         settlementPath: "correspondent" as const,
+        clientFlowRef: "client-trade:test-fwd",
       },
     }),
   );

@@ -223,6 +223,22 @@ export const fxTradeExecutedPayloadSchema = z
      * substrate-completion.
      */
     finsurvCategory: z.string().optional(),
+    /**
+     * No-prop attribution — client-flow reference. Opaque pointer to the
+     * client trade or RFQ this position offsets (e.g.
+     * `client-trade:NK-2026-05-20-00041`). Exactly one of
+     * `clientFlowRef` or `hedgeProgrammeRef` MUST be present — this is
+     * the no-prop invariant at the type level. See refinement below.
+     */
+    clientFlowRef: z.string().min(1).optional(),
+    /**
+     * No-prop attribution — sanctioned-hedge reference. Opaque pointer
+     * to a hedge programme the position implements (e.g.
+     * `hedge-programme:fx-translation-zar-usd-2026Q2`). Exactly one of
+     * `clientFlowRef` or `hedgeProgrammeRef` MUST be present — this is
+     * the no-prop invariant at the type level. See refinement below.
+     */
+    hedgeProgrammeRef: z.string().min(1).optional(),
   })
   .superRefine((data, ctx) => {
     // FX-Swap requires exactly two legs — one "near", one "far".
@@ -313,6 +329,50 @@ export const fxTradeExecutedPayloadSchema = z
           path: ["legs", i],
         });
       }
+    }
+
+    // -----------------------------------------------------------------
+    // No-prop attribution invariant.
+    //
+    // Every FxTradeExecuted MUST carry exactly one of `clientFlowRef`
+    // or `hedgeProgrammeRef`. Neither field present means a position
+    // exists with no audit-time evidence that it is client-driven or
+    // hedge-driven — i.e. it is indistinguishable from proprietary
+    // risk-taking. Both fields present is incoherent (a single trade
+    // cannot simultaneously offset a client RFQ AND implement a
+    // sanctioned hedge programme — pick one).
+    //
+    // This refinement is the no-prop invariant at the type level.
+    // Without it, `Policies/trading-mandate-v1.md` §5 (positive
+    // enumeration; no proprietary positions) cannot be asserted from
+    // the event store at audit time, and the downstream
+    // `recon:no-prop-attribution` gate has no carrying field to read.
+    //
+    // Forward-only schema change. The production event store carries
+    // no `FxTradeExecuted` events until the first live FX trade after
+    // D-MARKETS-SCHEMA-FOUNDATION substrate goes live; no historical
+    // backfill is required. Authority:
+    //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
+    //   - Policies/trading-mandate-v1.md §5
+    //   - Helena (Chief Risk Officer, governance) FX-spot-only
+    //     market-risk scope review (2026-05-20) §6 gap G-3
+    // -----------------------------------------------------------------
+    const hasClientFlow = typeof data.clientFlowRef === "string";
+    const hasHedgeProgramme = typeof data.hedgeProgrammeRef === "string";
+    if (!hasClientFlow && !hasHedgeProgramme) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "FxTradeExecuted requires exactly one of clientFlowRef or hedgeProgrammeRef (no-prop invariant per trading-mandate-v1 §5)",
+        path: ["clientFlowRef"],
+      });
+    } else if (hasClientFlow && hasHedgeProgramme) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "FxTradeExecuted must carry exactly one of clientFlowRef or hedgeProgrammeRef, not both (no-prop invariant per trading-mandate-v1 §5)",
+        path: ["clientFlowRef"],
+      });
     }
   });
 

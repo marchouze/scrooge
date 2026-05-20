@@ -141,6 +141,9 @@ export function generateSimTrade(
     settlementForm: "physical",
     settlementPath: "correspondent",
     finsurvCategory: "SIM",
+    // No-prop attribution (G-3) — simulator emits client-flow trades; if
+    // the simulator gains a hedge-programme path later, switch on a flag.
+    clientFlowRef: `client-trade:sim-${tradeId}`,
   };
 
   return payload;
