@@ -35,7 +35,10 @@
 import { eventStore } from "../../composition";
 import type { Money } from "../../core/money";
 import { type Actor, BANK_ZA_001, newEventId } from "../../core/types";
-import { makeCcrReplacementCostComputed } from "../../event-store/event-types/counterparty-credit-risk";
+import {
+  makeCcrEadComputed,
+  makeCcrReplacementCostComputed,
+} from "../../event-store/event-types/counterparty-credit-risk";
 import type { Event } from "../../event-store/types";
 import { resolveNettingSet as resolveNsFromRegister } from "../../markets/netting-sets";
 import { utcNow } from "../../types/time";
@@ -90,15 +93,20 @@ export interface ComputeAndEmitResult {
 // computeAndEmit — top-level engine entry. Pure function up to the single
 // `eventStore.append` call.
 //
-// Returns the RC, the EAD, and the emitted event so callers + tests can
-// observe the engine's output without re-reading from the event store.
+// Returns the RC, the EAD, and the emitted RC event so callers + tests
+// can observe the engine's output without re-reading from the event store.
 //
-// Note: the emitted event carries only RC (per the event-type registered
-// in PR #612 — `CcrReplacementCostComputed`). EAD + PFE composition is
-// returned in-memory and currently consumed by `pre-deal-check.ts`
-// indirectly via RC; a dedicated `CcrEadComputed` event-type is queued
-// for the follow-on slice (Credit Risk Policy §3 line 131 already names
-// the future event).
+// Emits two events on the same call:
+//   1. `CcrReplacementCostComputed` — RC component (BCBS d317 §136);
+//      preserved at the netting-set level for audit + Vera recon.
+//   2. `CcrEadComputed` — composed EAD = α × (RC + PFE) (BCBS d317 §10 /
+//      Credit Risk Policy §3 line 131). Carries the chain back to the RC
+//      event via `sourceEvents.rcEventId`.
+//
+// The credit-limit engine (`pre-deal-check.ts`) prefers `CcrEadComputed`
+// over `CcrReplacementCostComputed` when both are present. The RC-only
+// fallback remains for back-compat with seeded fixtures and any path
+// that emits RC without composing an EAD.
 // ---------------------------------------------------------------------------
 
 export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult {
@@ -140,6 +148,34 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
   });
 
   eventStore.append(event);
+
+  // 5. Emit CcrEadComputed alongside RC. Composes EAD = α × (RC + PFE).
+  //    Chain link back to the RC event via sourceEvents.rcEventId, and
+  //    record the number of AddOnComponent rows feeding PFE.
+  const eadEvent = makeCcrEadComputed({
+    asOf,
+    entity: String(BANK_ZA_001),
+    actor,
+    citations: input.citations ?? DEFAULT_CITATIONS,
+    payload: {
+      nettingSetId: input.nettingSet.nettingSetId,
+      counterpartyId: input.nettingSet.counterpartyId,
+      rc: Number(rc.rc.amount),
+      pfe: Number(ead.pfe.amount),
+      alpha: 1.4,
+      ead: Number(ead.ead.amount),
+      currency: input.nettingSet.currency,
+      computationDate,
+      methodology: "sa-ccr",
+      sourceEvents: {
+        rcEventId: event.event_id,
+        pfeComponents: addOns.length,
+      },
+    },
+    eventId: newEventId(),
+  });
+
+  eventStore.append(eadEvent);
 
   return { rc, ead, event };
 }

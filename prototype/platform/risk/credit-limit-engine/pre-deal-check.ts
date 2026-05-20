@@ -9,19 +9,26 @@
 //
 // Computation:
 //   1. Resolve current limit via the projection (must be in `loaded` status).
-//   2. Resolve current exposure by summing the latest CcrReplacementCostComputed
-//      event per netting set for the counterparty (BCBS d317 RC floor).
-//      This is the canonical primary path now that @platform/risk/sa-ccr
-//      (D-CREDIT-LIMIT-ENGINE-BUILD Phase 4) is live and emits RC events.
-//   3. Degraded-mode fallback: if no RC events exist for the counterparty,
-//      we return zero exposure AND log a warning. The fallback is
-//      explicit, observable, and intended as a build-phase scaffold —
-//      Vera's lex-cap-utilisation recon asserts that any loaded limit
-//      with traded notional and zero RC events is a finding. Notional
-//      summation as a stand-in was considered and rejected: it produces
-//      a number that looks like an exposure but is methodologically
-//      wrong, and the explicit-zero + warning + recon assertion combo
-//      is the cleaner path.
+//   2. Resolve current exposure with a two-tier preference:
+//        (a) sum the latest CcrEadComputed event per netting set
+//            (BCBS d317 §10 EAD = α × (RC + PFE) — the canonical engine
+//            output under D-CREDIT-LIMIT-ENGINE-BUILD Phase 5);
+//        (b) fall back to the latest CcrReplacementCostComputed per
+//            netting set (RC floor — degraded mode when no EAD events
+//            are observed for the counterparty, e.g. seeded fixtures
+//            or RC-only emitters).
+//      The two-tier preference is per-netting-set: if a netting set has
+//      EAD it contributes EAD, otherwise RC; sums are aggregated in the
+//      limit currency.
+//   3. Degraded-mode fallback: if neither EAD nor RC events exist for the
+//      counterparty, we return zero exposure AND log a warning. The
+//      fallback is explicit, observable, and intended as a build-phase
+//      scaffold — Vera's lex-cap-utilisation recon asserts that any
+//      loaded limit with traded notional and zero EAD/RC events is a
+//      finding. Notional summation as a stand-in was considered and
+//      rejected: it produces a number that looks like an exposure but
+//      is methodologically wrong, and the explicit-zero + warning +
+//      recon assertion combo is the cleaner path.
 //   4. Apply traffic-light per Credit Risk Policy §1.4.
 //   5. Block when status != loaded, when headroom <= 0, when limit expired,
 //      or when annual review > 13 months stale (Policy §1.3, Banks Act Reg
@@ -37,7 +44,10 @@
 import { eventStore, logger } from "../../composition";
 import { type Money, add, minor, sub } from "../../core/money";
 import type { Currency } from "../../core/types";
-import type { CcrReplacementCostComputedPayload } from "../../event-store/event-types/counterparty-credit-risk";
+import type {
+  CcrEadComputedPayload,
+  CcrReplacementCostComputedPayload,
+} from "../../event-store/event-types/counterparty-credit-risk";
 import { utcNow } from "../../types/time";
 import { getCreditLimit } from "./projection";
 import type { CreditLimit, CreditLimitHeadroom } from "./types";
@@ -68,42 +78,81 @@ export type HeadroomCheckResult = CreditLimitHeadroom & {
 // ---------------------------------------------------------------------------
 // Current-exposure helper.
 //
-// Sums the latest CcrReplacementCostComputed event per nettingSetId for the
-// counterparty (BCBS d317 RC floor). When the SA-CCR engine has produced
-// at least one RC event for this counterparty, the sum is the canonical
-// current exposure.
+// Per netting set, prefer the latest CcrEadComputed payload (BCBS d317 §10
+// — EAD = α × (RC + PFE), the canonical engine output) over the latest
+// CcrReplacementCostComputed (RC floor). The two-tier preference is
+// applied per netting set: a netting set with an EAD event contributes
+// EAD; a netting set with only RC events contributes RC. The sum across
+// netting sets is the current exposure, in the limit's reporting
+// currency (cross-currency sets are skipped — FX conversion is the
+// caller's responsibility).
 //
-// Degraded-mode fallback: when no RC events exist for the counterparty in
-// the configured currency, the helper returns zero AND logs a
-// `degraded:no-rc-events` warning. Callers must treat zero as "no SA-CCR
-// run has been observed yet", not "no exposure". Vera's
+// Degraded-mode fallback: when neither EAD nor RC events are observed for
+// the counterparty in the configured currency, the helper returns zero
+// AND logs a `degraded:no-rc-events` warning. Callers must treat zero as
+// "no SA-CCR run has been observed yet", not "no exposure". Vera's
 // lex-cap-utilisation recon asserts that any loaded limit with traded
-// notional and zero RC events is a finding (closes the loop).
+// notional and zero EAD/RC events is a finding (closes the loop).
 //
 // SA-CCR engine: `@platform/risk/sa-ccr.computeAndEmit` — landed under
-// D-CREDIT-LIMIT-ENGINE-BUILD Phase 4.
+// D-CREDIT-LIMIT-ENGINE-BUILD Phase 4; CcrEadComputed emission added in
+// D-CREDIT-LIMIT-ENGINE-BUILD Phase 5 (Credit Risk Policy §3 line 131).
 // ---------------------------------------------------------------------------
 
 export function getCurrentExposure(counterpartyId: string, currency: string, asOf?: string): Money {
-  const latestPerNettingSet = new Map<string, CcrReplacementCostComputedPayload>();
-  const replayOpts =
+  // Tier 1: latest CcrEadComputed per netting set.
+  const latestEadPerNettingSet = new Map<string, CcrEadComputedPayload>();
+  const eadReplayOpts =
+    asOf !== undefined
+      ? ({ type: "CcrEadComputed", asOf } as const)
+      : ({ type: "CcrEadComputed" } as const);
+  for (const event of eventStore.replay(eadReplayOpts)) {
+    const p = event.payload as CcrEadComputedPayload;
+    if (p.counterpartyId !== counterpartyId) continue;
+    const prev = latestEadPerNettingSet.get(p.nettingSetId);
+    if (!prev || prev.computationDate <= p.computationDate) {
+      latestEadPerNettingSet.set(p.nettingSetId, p);
+    }
+  }
+
+  // Tier 2: latest CcrReplacementCostComputed per netting set (fallback for
+  // netting sets without a corresponding EAD event).
+  const latestRcPerNettingSet = new Map<string, CcrReplacementCostComputedPayload>();
+  const rcReplayOpts =
     asOf !== undefined
       ? ({ type: "CcrReplacementCostComputed", asOf } as const)
       : ({ type: "CcrReplacementCostComputed" } as const);
-  for (const event of eventStore.replay(replayOpts)) {
+  for (const event of eventStore.replay(rcReplayOpts)) {
     const p = event.payload as CcrReplacementCostComputedPayload;
     if (p.counterpartyId !== counterpartyId) continue;
-    const prev = latestPerNettingSet.get(p.nettingSetId);
+    const prev = latestRcPerNettingSet.get(p.nettingSetId);
     if (!prev || prev.computationDate <= p.computationDate) {
-      latestPerNettingSet.set(p.nettingSetId, p);
+      latestRcPerNettingSet.set(p.nettingSetId, p);
     }
   }
+
+  // Union of netting-set IDs across both event types; prefer EAD per set.
+  const nettingSetIds = new Set<string>([
+    ...latestEadPerNettingSet.keys(),
+    ...latestRcPerNettingSet.keys(),
+  ]);
+
   let total: Money = minor(0n, currency as Currency);
   let observedInCurrency = 0;
-  for (const p of latestPerNettingSet.values()) {
-    if (p.currency !== currency) continue; // skip cross-currency RC sets
-    total = add(total, minor(BigInt(p.rc), currency as Currency));
-    observedInCurrency += 1;
+  for (const nsId of nettingSetIds) {
+    const ead = latestEadPerNettingSet.get(nsId);
+    if (ead) {
+      if (ead.currency !== currency) continue; // skip cross-currency sets
+      total = add(total, minor(BigInt(ead.ead), currency as Currency));
+      observedInCurrency += 1;
+      continue;
+    }
+    const rc = latestRcPerNettingSet.get(nsId);
+    if (rc) {
+      if (rc.currency !== currency) continue;
+      total = add(total, minor(BigInt(rc.rc), currency as Currency));
+      observedInCurrency += 1;
+    }
   }
   if (observedInCurrency === 0) {
     logger.warn(
@@ -114,7 +163,7 @@ export function getCurrentExposure(counterpartyId: string, currency: string, asO
         asOf: asOf ?? null,
         mode: "degraded:no-rc-events",
       },
-      "SA-CCR getCurrentExposure: no CcrReplacementCostComputed events observed for counterparty; returning zero exposure. Vera lex-cap-utilisation recon will flag traded notional without RC coverage.",
+      "SA-CCR getCurrentExposure: no CcrEadComputed or CcrReplacementCostComputed events observed for counterparty; returning zero exposure. Vera lex-cap-utilisation recon will flag traded notional without EAD/RC coverage.",
     );
   }
   return total;
