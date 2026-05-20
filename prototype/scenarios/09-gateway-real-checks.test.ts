@@ -38,6 +38,11 @@ import {
   makeGatewayCheckRequested,
   makeOrderProposed,
 } from "../platform/event-store/event-types";
+import {
+  makeCreditLimitApplicationSubmitted,
+  makeCreditLimitApproved,
+  makeCreditLimitLoaded,
+} from "../platform/event-store/event-types/credit-limit";
 import type { GatewayCheckCompletedPayload } from "../platform/event-store/event-types/trading";
 import type { Event } from "../platform/event-store/types";
 import kaiCreditCapitalFundingCheck from "../runtime/agents/kai-credit-capital-funding-check";
@@ -195,6 +200,83 @@ function makeOrder(args: {
       requestedActor: "agent:saskia:auto-quote",
     },
   });
+}
+
+/**
+ * Seed a "loaded" credit-limit lifecycle for `counterpartyId` so
+ * `checkHeadroom` returns admit-eligible state. Idempotent at the
+ * event-store level (the projection collapses multiple application/load
+ * events; calling this twice is harmless but second call is wasted work).
+ *
+ * Authority: D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 — gateway tests must seed
+ * the engine lifecycle now that the credit-limit branch consumes the engine
+ * rather than a static stub.
+ */
+function seedLoadedCreditLimit(args: {
+  counterpartyId: string;
+  limitMinor: number;
+  expiryDate?: string;
+  lastReviewDate?: string;
+  asOf?: string;
+}): void {
+  const asOf = args.asOf ?? AS_OF;
+  const applicationId = `CL-APP-09-${args.counterpartyId}`;
+  eventStore.append(
+    makeCreditLimitApplicationSubmitted({
+      asOf,
+      entity: ENTITY,
+      actor: { type: "service" as const, id: "test:scenario-09" },
+      citations: ["D-CREDIT-LIMIT-ENGINE-BUILD"],
+      payload: {
+        applicationId,
+        counterpartyId: args.counterpartyId,
+        requestedLimit: args.limitMinor,
+        currency: "ZAR",
+        tenor: "364D",
+        productTypes: ["fx-spot"],
+        tradingDesk: "FX-Sales",
+        commercialRationale: "Gateway-test seeded counterparty.",
+        submittedBy: "test:scenario-09",
+        submittedAt: asOf,
+      },
+    }),
+  );
+  eventStore.append(
+    makeCreditLimitApproved({
+      asOf,
+      entity: ENTITY,
+      actor: { type: "service" as const, id: "test:scenario-09" },
+      citations: ["D-CREDIT-LIMIT-ENGINE-BUILD"],
+      payload: {
+        applicationId,
+        counterpartyId: args.counterpartyId,
+        limit: args.limitMinor,
+        currency: "ZAR",
+        tenor: "364D",
+        approvedBy: "test:helena",
+        approvalAuthority: "CRC",
+        approvedAt: args.lastReviewDate ?? asOf,
+        conditions: [],
+        expiryDate: args.expiryDate ?? "2099-12-31",
+      },
+    }),
+  );
+  eventStore.append(
+    makeCreditLimitLoaded({
+      asOf,
+      entity: ENTITY,
+      actor: { type: "service" as const, id: "test:scenario-09" },
+      citations: ["D-CREDIT-LIMIT-ENGINE-BUILD"],
+      payload: {
+        counterpartyId: args.counterpartyId,
+        limit: args.limitMinor,
+        currency: "ZAR",
+        loadedAt: asOf,
+        effectiveFrom: asOf,
+        loadedBy: "test:scenario-09",
+      },
+    }),
+  );
 }
 
 function countEventsOfType(type: string, orderId: string): number {
@@ -1658,6 +1740,13 @@ describe("kai:credit-capital-funding-check (slice 7)", () => {
   // ----- Credit-limit -----
 
   it("approves credit-limit check for an order within the counterparty limit", async () => {
+    // Seed a loaded credit limit so the engine returns admit-eligible state.
+    // Authority: D-CREDIT-LIMIT-ENGINE-BUILD Phase 4.
+    seedLoadedCreditLimit({
+      counterpartyId: CP_INSTITUTIONAL_LEI,
+      limitMinor: 100_000_000_00, // ZAR 100m
+    });
+
     const orderId = uniqueId("credit-pass");
     const orderEventId = newEventId();
     // 100 shares * 2500 ZAR = 250k ZAR << 100m LEIVALIDINSTITUTION0 limit
@@ -1709,6 +1798,11 @@ describe("kai:credit-capital-funding-check (slice 7)", () => {
   });
 
   it("rejects credit-limit check when notional would breach counterparty limit", async () => {
+    seedLoadedCreditLimit({
+      counterpartyId: CP_INSTITUTIONAL_LEI,
+      limitMinor: 100_000_000_00, // ZAR 100m
+    });
+
     const orderId = uniqueId("credit-fail");
     const orderEventId = newEventId();
     // 50,000 shares * 2500 ZAR = 125m ZAR > 100m LEIVALIDINSTITUTION0 limit
@@ -1763,10 +1857,12 @@ describe("kai:credit-capital-funding-check (slice 7)", () => {
         checkKind?: unknown;
         outcome?: unknown;
         citationToRule?: unknown;
+        blockReason?: unknown;
       };
       if (p.orderId === orderId && p.checkKind === "credit-limit") {
         expect(p.outcome).toBe("reject");
         expect(p.citationToRule).toBe("RAS-B3");
+        expect(p.blockReason).toBe("CreditLimitExhausted");
         break;
       }
     }
@@ -1998,6 +2094,11 @@ describe("kai:credit-capital-funding-check (slice 7)", () => {
   });
 
   it("is idempotent — second invocation is a no-op for credit-limit", async () => {
+    seedLoadedCreditLimit({
+      counterpartyId: CP_INSTITUTIONAL_LEI,
+      limitMinor: 100_000_000_00,
+    });
+
     const orderId = uniqueId("credit-idem");
     const orderEventId = newEventId();
     const order = {
