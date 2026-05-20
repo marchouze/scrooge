@@ -101,6 +101,8 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { minor } from "../platform/core/money";
+import { USD } from "../platform/core/types";
 import {
   ALPHA_SA_CCR,
   computeAddOn,
@@ -109,14 +111,12 @@ import {
   maturityFactor,
   supervisoryFactor,
 } from "../platform/risk/sa-ccr";
-import { minor } from "../platform/core/money";
-import { USD } from "../platform/core/types";
 
 import {
   FX_SPOT_T2_REMAINING_YEARS,
+  SA_CCR_DAYS_PER_YEAR,
   fxSpotT2NettingSet,
   fxSpotT2Trade,
-  SA_CCR_DAYS_PER_YEAR,
 } from "./fixtures/sa-ccr/fx-spot-t2";
 
 // ---------------------------------------------------------------------------

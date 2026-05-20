@@ -22,7 +22,7 @@
 // Co-author: Atlas (Core banking platform architect, engineering).
 
 import { type Money, minor } from "../../../platform/core/money";
-import { USD, type Currency } from "../../../platform/core/types";
+import { type Currency, USD } from "../../../platform/core/types";
 import type { NettingSet, TradeSummary } from "../../../platform/risk/sa-ccr";
 
 // ---------------------------------------------------------------------------
@@ -62,8 +62,7 @@ export const FX_SPOT_T2_REMAINING_DAYS = 2 as const;
 export const SA_CCR_DAYS_PER_YEAR = 365 as const;
 
 /** Remaining maturity in years used by `maturityFactor()`. */
-export const FX_SPOT_T2_REMAINING_YEARS =
-  FX_SPOT_T2_REMAINING_DAYS / SA_CCR_DAYS_PER_YEAR;
+export const FX_SPOT_T2_REMAINING_YEARS = FX_SPOT_T2_REMAINING_DAYS / SA_CCR_DAYS_PER_YEAR;
 
 /** Notional in USD minor units (cents). */
 export const FX_SPOT_T2_NOTIONAL_USD_MINOR = 1_000_000_00n;
