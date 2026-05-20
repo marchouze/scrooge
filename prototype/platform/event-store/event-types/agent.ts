@@ -430,12 +430,7 @@ export const documentHashSchema = z
 // brief's run may close `delivered`. Both fields are optional and
 // backward-compatible: pre-primitive briefs read as `runRoleClass:"executor"`
 // and `blocksOn:[]`.
-export const dispatchRunRoleClassValues = [
-  "reviewer",
-  "decider",
-  "executor",
-  "observer",
-] as const;
+export const dispatchRunRoleClassValues = ["reviewer", "decider", "executor", "observer"] as const;
 
 export const blocksOnEntrySchema = z.object({
   briefId: z.string().min(1),

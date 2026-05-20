@@ -50,7 +50,35 @@ import {
   requireString,
 } from "./args";
 
-const REPEATABLE = new Set(["cite", "expected"]);
+const REPEATABLE = new Set(["cite", "expected", "blocks-on"]);
+
+const RUN_ROLE_CLASS_VALUES = ["reviewer", "decider", "executor", "observer"] as const;
+type RunRoleClass = (typeof RUN_ROLE_CLASS_VALUES)[number];
+
+function runRoleClassFrom(value: string): RunRoleClass {
+  if (!(RUN_ROLE_CLASS_VALUES as readonly string[]).includes(value)) {
+    die(`--run-role-class must be one of ${RUN_ROLE_CLASS_VALUES.join("|")}, got: ${value}`);
+  }
+  return value as RunRoleClass;
+}
+
+function parseBlocksOn(
+  values: readonly string[],
+): { briefId: string; runRoleClass: RunRoleClass }[] {
+  // Each entry is `<briefId>:<roleClass>` where briefId may itself contain
+  // colons (Phase-2 briefIds look like `brief:atlas:...:2026-05-20`). The
+  // role-class is always the final segment.
+  return values.map((raw) => {
+    const lastColon = raw.lastIndexOf(":");
+    if (lastColon <= 0 || lastColon === raw.length - 1) {
+      die(`--blocks-on must be 'briefId:roleClass', got: ${raw}`);
+    }
+    const briefId = raw.slice(0, lastColon).trim();
+    const roleStr = raw.slice(lastColon + 1).trim();
+    if (briefId === "") die(`--blocks-on briefId must be non-empty, got: ${raw}`);
+    return { briefId, runRoleClass: runRoleClassFrom(roleStr) };
+  });
+}
 
 const SCROOGE_REF: RmsAgentRef = {
   name: "Scrooge",
@@ -137,6 +165,12 @@ function main(): void {
   const scheduledFor = optionalString(args, "scheduled-for");
   const briefIdOverride = optionalString(args, "brief-id");
 
+  // D-DISPATCH-SYNC-PRIMITIVE: optional reviewer/decider topology.
+  const runRoleClassRaw = optionalString(args, "run-role-class");
+  const runRoleClass = runRoleClassRaw ? runRoleClassFrom(runRoleClassRaw) : undefined;
+  const blocksOnRaw = optionalRepeatable(args, "blocks-on");
+  const blocksOn = blocksOnRaw.length > 0 ? parseBlocksOn(blocksOnRaw) : undefined;
+
   if (!existsSync(bodyPath)) die(`--body path not found: ${bodyPath}`);
   const directiveBody = readFileSync(bodyPath, "utf8");
   if (directiveBody.trim() === "") die(`--body file is empty: ${bodyPath}`);
@@ -181,6 +215,8 @@ function main(): void {
       expectedOutputs: expected,
       workstreamId: workstream,
       ...(scheduledFor ? { scheduledFor } : {}),
+      ...(runRoleClass ? { runRoleClass } : {}),
+      ...(blocksOn ? { blocksOn } : {}),
       citations: cites,
       actor: { type: "service", id: "agent:scrooge" },
     },

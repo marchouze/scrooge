@@ -6,15 +6,17 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { assertBlockingRunsClosed } from "./index";
 import type {
   AgentBriefIssuedPayload,
   AgentRunCompletedPayload,
 } from "../event-store/event-types/agent";
 import type { Event } from "../event-store/types";
+import { assertBlockingRunsClosed } from "./index";
 
-function mkBrief(args: Partial<AgentBriefIssuedPayload> & { briefId: string }): AgentBriefIssuedPayload {
-  return {
+function mkBrief(
+  args: Partial<AgentBriefIssuedPayload> & { briefId: string },
+): AgentBriefIssuedPayload {
+  const defaults: AgentBriefIssuedPayload = {
     briefId: args.briefId,
     issuedTo: { name: "Agent", position: "Position" },
     issuedBy: { name: "Scrooge", position: "Chief of Staff" },
@@ -22,8 +24,8 @@ function mkBrief(args: Partial<AgentBriefIssuedPayload> & { briefId: string }): 
     directiveDocumentHash: `blake3:${"0".repeat(64)}`,
     priority: "now",
     expectedOutputs: [{ kind: "deliverable-document", description: "x" }],
-    ...args,
   };
+  return { ...defaults, ...args };
 }
 
 function mkCompletion(args: {

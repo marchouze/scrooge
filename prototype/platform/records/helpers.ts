@@ -114,6 +114,9 @@ export interface RecordBriefIssuedInput {
   readonly workstreamId?: string;
   readonly scheduledFor?: string;
   readonly supersedes?: string;
+  /** D-DISPATCH-SYNC-PRIMITIVE: reviewer/decider topology. */
+  readonly runRoleClass?: AgentBriefIssuedPayload["runRoleClass"];
+  readonly blocksOn?: AgentBriefIssuedPayload["blocksOn"];
   /** Citations for the envelope (Principle 2). */
   readonly citations: readonly string[];
   readonly actor: Actor;
@@ -154,6 +157,8 @@ export function recordBriefIssued(
       ...(input.workstreamId ? { workstreamId: input.workstreamId } : {}),
       ...(input.scheduledFor ? { scheduledFor: input.scheduledFor } : {}),
       ...(input.supersedes ? { supersedes: input.supersedes } : {}),
+      ...(input.runRoleClass ? { runRoleClass: input.runRoleClass } : {}),
+      ...(input.blocksOn && input.blocksOn.length > 0 ? { blocksOn: input.blocksOn } : {}),
     },
   });
 

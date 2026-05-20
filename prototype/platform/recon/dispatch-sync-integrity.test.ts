@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { run, type DispatchSyncReconInput } from "./dispatch-sync-integrity";
+import { type DispatchSyncReconInput, run } from "./dispatch-sync-integrity";
 
 // ---------------------------------------------------------------------------
 // Helpers

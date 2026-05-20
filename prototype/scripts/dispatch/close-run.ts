@@ -47,6 +47,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { clock } from "../../platform/composition";
+import { checkDeciderMayClose } from "../../platform/dispatch";
 import type {
   AgentRunCompletedFollowOnRoute,
   AgentRunCompletedPayload,
@@ -58,7 +59,7 @@ import {
   recordAgentRunCompleted,
   recordFiled,
 } from "../../platform/records";
-import { die, emitOk, optionalRepeatable, parseArgs, requireString } from "./args";
+import { die, emitOk, optionalRepeatable, optionalString, parseArgs, requireString } from "./args";
 
 const REPEATABLE = new Set([
   "deliverable",
@@ -173,6 +174,36 @@ function main(): void {
 
   if (outcome === "delivered" && deliverablePaths.length === 0) {
     die("--outcome=delivered requires at least one --deliverable <path>");
+  }
+
+  // D-DISPATCH-SYNC-PRIMITIVE: when closing a decider-class run as delivered,
+  // verify every entry in `brief.blocksOn` has a matching delivered closing
+  // run. Bypass via --force-close-bypass-sync (surfaces in substrateGapsSurfaced).
+  const forceBypass = optionalString(args, "force-close-bypass-sync") === "true";
+  const preCloseAsOf = clock.now();
+  if (outcome === "delivered") {
+    const syncCheck = checkDeciderMayClose({ briefId, asOf: preCloseAsOf });
+    if (!syncCheck.ok) {
+      if (!forceBypass) {
+        console.error(
+          JSON.stringify({
+            ok: false,
+            error: "dispatch-sync-primitive-violation",
+            briefId,
+            blockedBy: syncCheck.blockedBy,
+            blocksOn: syncCheck.blocksOn,
+            hint: "Required reviewer run has not closed delivered. Wait for it or pass --force-close-bypass-sync true.",
+            citations: ["D-DISPATCH-SYNC-PRIMITIVE"],
+          }),
+        );
+        process.exit(1);
+      }
+      // Caller forced the bypass — surface the gap on the resulting event.
+      const bypassGap =
+        `dispatch-sync-bypass: closed delivered while ${syncCheck.blockedBy?.briefId ?? "blocking brief"} ` +
+        `was ${syncCheck.blockedBy?.reason ?? "unsatisfied"} (D-DISPATCH-SYNC-PRIMITIVE)`;
+      gaps.push(bypassGap);
+    }
   }
 
   const deliverableBodies: string[] = [];

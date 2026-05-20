@@ -56,9 +56,7 @@ export interface AssertResult {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function indexCompletionsByBrief(
-  events: Iterable<Event>,
-): Map<string, AgentRunCompletedPayload> {
+function indexCompletionsByBrief(events: Iterable<Event>): Map<string, AgentRunCompletedPayload> {
   // Earliest delivered closing wins per brief (re-dispatch case — see spec §8).
   const out = new Map<string, AgentRunCompletedPayload>();
   for (const e of events) {
@@ -156,13 +154,14 @@ export function assertBlockingRunsClosed(args: {
   }
 
   const ok = statuses.every((s) => s.satisfied);
-  return {
+  const blockedBy = ok ? undefined : statuses.find((s) => !s.satisfied);
+  const base: AssertResult = {
     briefId: args.brief.briefId,
     asOf: args.asOf,
     blocksOn: statuses,
     ok,
-    ...(ok ? {} : { blockedBy: statuses.find((s) => !s.satisfied) }),
   };
+  return blockedBy ? { ...base, blockedBy } : base;
 }
 
 // ---------------------------------------------------------------------------

@@ -131,9 +131,7 @@ interface WorkstreamGroup {
   deciderBriefs: BriefRow[];
 }
 
-function groupByWorkstream(
-  briefs: ReadonlyArray<BriefRow>,
-): Map<string, WorkstreamGroup> {
+function groupByWorkstream(briefs: ReadonlyArray<BriefRow>): Map<string, WorkstreamGroup> {
   const out = new Map<string, WorkstreamGroup>();
   for (const b of briefs) {
     const ws = b.payload.workstreamId;
@@ -205,12 +203,7 @@ function checkLegacyMode(
 
       out.push({
         subject: `agent-run:${deciderCompletion.payload.runId}`,
-        message:
-          `Decider run \`${deciderCompletion.payload.runId}\` (brief \`${decider.payload.briefId}\`, ` +
-          `workstream \`${group.workstreamId}\`) closed delivered at ${deciderCompletion.payload.completedAt} ` +
-          `but reviewer brief \`${firstReviewer.payload.briefId}\` ${reviewerCloseInfo}. ` +
-          `Legacy-mode violation — reviewer→decider topology was bracketed without sync primitive. ` +
-          `Citations: D-DISPATCH-SYNC-PRIMITIVE.`,
+        message: `Decider run \`${deciderCompletion.payload.runId}\` (brief \`${decider.payload.briefId}\`, workstream \`${group.workstreamId}\`) closed delivered at ${deciderCompletion.payload.completedAt} but reviewer brief \`${firstReviewer.payload.briefId}\` ${reviewerCloseInfo}. Legacy-mode violation — reviewer→decider topology was bracketed without sync primitive. Citations: D-DISPATCH-SYNC-PRIMITIVE.`,
         severity: "fail",
       });
     }
