@@ -416,6 +416,94 @@ export function makeProductVersionPublished(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 13. ProductDimensionNarrativeRequested
+//
+// Marker event: a request has been raised that the responsible agent for a
+// given dimension on a given product author a prose narrative answering:
+// (1) how does this product impact my domain?
+// (2) what do I need to do to support this product?
+//
+// Authority: NPA Policy v1.0 §5 (dimension owners); D-NEW-PRODUCT-APPROVAL-POLICY.
+// ---------------------------------------------------------------------------
+
+export const productDimensionNarrativeRequestedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  dimension: z.string().min(1),
+  /** Agent name expected to author the narrative (e.g. "Bea"). */
+  requestedFromAgentName: z.string().min(1),
+  /** Agent position (e.g. "Accounting policy engineer"). Pairs name + position per identity discipline. */
+  requestedFromAgentPosition: z.string().min(1),
+  /** Free-form note from the requester (typically the CEO via the Products page). */
+  note: z.string().optional(),
+});
+
+export type ProductDimensionNarrativeRequestedPayload = z.infer<
+  typeof productDimensionNarrativeRequestedPayloadSchema
+>;
+
+export function makeProductDimensionNarrativeRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductDimensionNarrativeRequestedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductDimensionNarrativeRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productDimensionNarrativeRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 14. ProductDimensionNarrativeRecorded
+//
+// The agent's prose answer to the two narrative questions, recorded as the
+// canonical artefact (Principle 1: narrative-as-event, not as a mutable field
+// on the Product). Latest-by-asOf wins in the projection.
+// ---------------------------------------------------------------------------
+
+export const productDimensionNarrativeRecordedPayloadSchema = z.object({
+  productId: z.string().min(1),
+  dimension: z.string().min(1),
+  /** Name + position pair (identity discipline — name with position on first mention). */
+  authorAgentName: z.string().min(1),
+  authorAgentPosition: z.string().min(1),
+  /** Prose answer to: how does this product impact my domain? what do I need to do to support it? */
+  narrative: z.string().min(1),
+  /** Principle 2 citation chain anchoring the narrative claims. */
+  citationChain: z.array(z.string().min(1)).min(1),
+});
+
+export type ProductDimensionNarrativeRecordedPayload = z.infer<
+  typeof productDimensionNarrativeRecordedPayloadSchema
+>;
+
+export function makeProductDimensionNarrativeRecorded(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductDimensionNarrativeRecordedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductDimensionNarrativeRecorded",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productDimensionNarrativeRecordedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const PRODUCT_TYPED_EVENT_TYPES = [
   "ProductProposalRegistered",
   "ProductConceptualised",
@@ -429,5 +517,7 @@ export const PRODUCT_TYPED_EVENT_TYPES = [
   "ProductReviewCompleted",
   "ProductRetired",
   "ProductVersionPublished",
+  "ProductDimensionNarrativeRequested",
+  "ProductDimensionNarrativeRecorded",
 ] as const;
 export type ProductEventType = (typeof PRODUCT_TYPED_EVENT_TYPES)[number];

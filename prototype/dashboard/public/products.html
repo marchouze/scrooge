@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products — New Product Approval &amp; Review</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .pp-row { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .pp-pill { font:var(--text-caption); padding:2px 8px; border-radius:999px; background:var(--color-bg-secondary); color:var(--color-text-secondary); }
+    .pp-pill.ok { background:var(--color-success-bg, #e6f4ea); color:var(--color-success, #137333); }
+    .pp-pill.warn { background:var(--color-warn-bg, #fef7e0); color:var(--color-warn, #b06000); }
+    .pp-pill.danger { background:var(--color-danger-bg, #fce8e6); color:var(--color-danger, #c5221f); }
+    .pp-section { border:1px solid var(--color-border); border-radius:8px; margin-bottom:var(--space-3); background:var(--color-bg); }
+    .pp-section-head { padding:var(--space-3); display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:var(--space-3); flex-wrap:wrap; }
+    .pp-section-head h3 { margin:0; font:var(--text-h4); }
+    .pp-section-body { padding:0 var(--space-3) var(--space-3); display:none; }
+    .pp-section.open .pp-section-body { display:block; }
+    .pp-section .pp-meta { font:var(--text-caption); color:var(--color-text-secondary); margin:var(--space-1) 0; }
+    .pp-narrative { background:var(--color-bg-secondary); border-left:3px solid var(--color-accent, #1a73e8); padding:var(--space-3); border-radius:4px; margin:var(--space-2) 0; }
+    .pp-narrative-text { white-space:pre-wrap; font:var(--text-body); margin-bottom:var(--space-2); }
+    .pp-narrative-attr { font:var(--text-caption); color:var(--color-text-secondary); }
+    .pp-grid { display:grid; grid-template-columns:max-content 1fr; gap:var(--space-1) var(--space-3); margin:var(--space-2) 0; }
+    .pp-grid dt { font:var(--text-caption); color:var(--color-text-secondary); }
+    .pp-grid dd { margin:0; font:var(--text-body); }
+    .pp-btn { font:var(--text-body); padding:6px 12px; border-radius:4px; border:1px solid var(--color-border); background:var(--color-bg); cursor:pointer; }
+    .pp-btn-primary { background:var(--color-accent, #1a73e8); color:#fff; border-color:transparent; }
+    .pp-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .pp-chip { display:inline-block; font:var(--text-caption); padding:2px 8px; border-radius:4px; background:var(--color-bg-secondary); color:var(--color-text-secondary); margin:2px; }
+    .pp-onboarding { background:#f4f9ff; border:1px solid #dceeff; padding:var(--space-2); border-radius:4px; margin-bottom:var(--space-3); }
+    .pp-onboarding h4 { margin:0 0 var(--space-1); font:var(--text-h5); }
+    .pp-table { width:100%; border-collapse:collapse; margin:var(--space-2) 0; }
+    .pp-table th, .pp-table td { border-bottom:1px solid var(--color-border); padding:var(--space-1) var(--space-2); text-align:left; font:var(--text-body); vertical-align:top; }
+    .pp-table th { font:var(--text-caption); color:var(--color-text-secondary); background:var(--color-bg-secondary); }
+    .pp-missing { color:var(--color-danger, #c5221f); font-style:italic; }
+    .pp-actions { display:flex; gap:var(--space-2); flex-wrap:wrap; margin-top:var(--space-2); }
+    .pp-product-picker { display:flex; gap:var(--space-2); align-items:center; margin-bottom:var(--space-4); flex-wrap:wrap; }
+    .pp-product-picker select { padding:6px 12px; border:1px solid var(--color-border); border-radius:4px; font:var(--text-body); min-width:380px; }
+    .pp-product-header { background:var(--color-bg-secondary); padding:var(--space-3); border-radius:8px; margin-bottom:var(--space-4); }
+    .pp-policy-cite { font:var(--text-caption); color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" data-provenance-source="/api/products" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">Products — New Product Approval &amp; Review</h1>
+      <p style="font:var(--text-body);color:var(--color-text-secondary);margin:var(--space-1) 0 0">
+        Per <a href="/policies/new-product-approval-policy-v1">D-NEW-PRODUCT-APPROVAL-POLICY</a>: 14 due-diligence dimensions, agent-attested.
+      </p>
+    </div>
+    <div class="page-body">
+      <div class="pp-product-picker" id="pp-picker"></div>
+      <div id="pp-header" class="pp-product-header"></div>
+      <div id="pp-journal" style="margin-bottom:var(--space-6)"></div>
+      <div id="pp-sections"></div>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Products" });</script>
+  <script src="/products.js"></script>
+</body>
+</html>

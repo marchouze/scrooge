@@ -56,6 +56,13 @@ import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
+import {
+  makeProductApproved,
+  makeProductDimensionAttested,
+  makeProductDimensionNarrativeRecorded,
+  makeProductDimensionNarrativeRequested,
+  makeProductProposalRegistered,
+} from "../platform/event-store/event-types/product";
 import type { Event } from "../platform/event-store/types";
 import {
   DEFAULT_HORIZON_DAYS,
@@ -129,6 +136,8 @@ import {
 } from "./page-provenance";
 import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 import { getProceduresIndex } from "./procedures-index";
+import { buildProductDetailView } from "./products-detail";
+import { buildProductListView } from "./products-view";
 import { saveState } from "./registry";
 import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
@@ -821,6 +830,325 @@ async function handleKycSimulate(req: Request): Promise<Response> {
     `KYC simulation completed: ${results.length} candidates`,
   );
   return jsonResponse({ results });
+}
+
+// ---------------------------------------------------------------------------
+// Products (NPA & review console) — five POST handlers.
+//
+// Each handler validates a JSON body, constructs the appropriate typed event
+// via the product.ts factories, appends it to the event store, and refreshes
+// the cached state. Authority: D-NEW-PRODUCT-APPROVAL-POLICY (CEO-approved
+// 2026-05-10).
+// ---------------------------------------------------------------------------
+
+const PRODUCT_FAMILY_VALUES = [
+  "listed-equity",
+  "listed-bond",
+  "repo",
+  "otc-ird",
+  "fx",
+  "structured",
+] as const;
+
+const NPA_DIMENSION_VALUES = [
+  "market-risk",
+  "credit-risk",
+  "liquidity-funding",
+  "operational-risk",
+  "operational-readiness",
+  "accounting",
+  "capital",
+  "conduct-suitability",
+  "aml-sanctions-pep",
+  "model-risk",
+  "legal-documentation",
+  "information-security",
+  "privacy",
+  "tax",
+] as const;
+
+async function handleProductPropose(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const productId = typeof body.productId === "string" ? body.productId.trim() : "";
+  const family = typeof body.family === "string" ? body.family : "";
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const description = typeof body.description === "string" ? body.description.trim() : "";
+  const currency = typeof body.currency === "string" ? body.currency : "";
+  const jurisdiction = typeof body.jurisdiction === "string" ? body.jurisdiction : "";
+  const proposedBy =
+    typeof body.proposedBy === "string" && body.proposedBy.trim().length > 0
+      ? body.proposedBy.trim()
+      : "marc@tgv.co.za";
+  if (!productId || !family || !name) {
+    return jsonResponse({ error: "productId, family, name are required" }, 400);
+  }
+  if (!PRODUCT_FAMILY_VALUES.includes(family as (typeof PRODUCT_FAMILY_VALUES)[number])) {
+    return jsonResponse(
+      { error: `family must be one of ${PRODUCT_FAMILY_VALUES.join(", ")}` },
+      400,
+    );
+  }
+  const asOf = nowUtc();
+  try {
+    const evt = makeProductProposalRegistered({
+      asOf,
+      entity: "BANK-ZA-001",
+      actor: { type: "human", id: proposedBy },
+      citations: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
+      payload: {
+        productId,
+        family: family as (typeof PRODUCT_FAMILY_VALUES)[number],
+        proposedBy,
+        asOf,
+      },
+    });
+    // Augment the payload with optional descriptive fields the projection
+    // reads (name, description, currency, jurisdiction). The schema accepts
+    // additional payload keys via z.record.
+    const enriched = {
+      ...evt,
+      payload: {
+        ...(evt.payload as Record<string, unknown>),
+        name,
+        description,
+        currency,
+        jurisdiction,
+      },
+    };
+    eventStore.append(enriched);
+    refresh("product-propose");
+    logger.info({ productId, family }, "ProductProposalRegistered emitted via dashboard");
+    return jsonResponse({ ok: true, eventId: evt.event_id, productId }, 201);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+}
+
+async function handleProductAttest(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const productId = typeof body.productId === "string" ? body.productId.trim() : "";
+  const dimension = typeof body.dimension === "string" ? body.dimension : "";
+  const result = typeof body.result === "string" ? body.result : "";
+  const citationChain = Array.isArray(body.citationChain)
+    ? (body.citationChain as unknown[]).filter((c): c is string => typeof c === "string")
+    : [];
+  const attestedBy =
+    typeof body.attestedBy === "string" && body.attestedBy.trim().length > 0
+      ? body.attestedBy.trim()
+      : "marc@tgv.co.za";
+  if (!productId || !dimension || !result) {
+    return jsonResponse({ error: "productId, dimension, result are required" }, 400);
+  }
+  if (!NPA_DIMENSION_VALUES.includes(dimension as (typeof NPA_DIMENSION_VALUES)[number])) {
+    return jsonResponse({ error: "dimension must be one of NPA Policy §5" }, 400);
+  }
+  if (!["design-attested", "implementation-attested", "failed"].includes(result)) {
+    return jsonResponse(
+      { error: "result must be design-attested | implementation-attested | failed" },
+      400,
+    );
+  }
+  if (citationChain.length === 0) {
+    return jsonResponse({ error: "citationChain must contain at least one citation" }, 400);
+  }
+  try {
+    const evt = makeProductDimensionAttested({
+      asOf: nowUtc(),
+      entity: "BANK-ZA-001",
+      actor: { type: "human", id: attestedBy },
+      citations: citationChain,
+      payload: {
+        productId,
+        dimension,
+        result: result as "design-attested" | "implementation-attested" | "failed",
+        citationChain,
+      },
+    });
+    eventStore.append(evt);
+    refresh("product-attest");
+    logger.info({ productId, dimension, result }, "ProductDimensionAttested emitted via dashboard");
+    return jsonResponse({ ok: true, eventId: evt.event_id }, 201);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+}
+
+async function handleProductApprove(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const productId = typeof body.productId === "string" ? body.productId.trim() : "";
+  const version = typeof body.version === "string" ? body.version : "1.0.0";
+  const conditions = Array.isArray(body.conditions)
+    ? (body.conditions as unknown[]).filter((c): c is string => typeof c === "string")
+    : [];
+  const approvedBy =
+    typeof body.approvedBy === "string" && body.approvedBy.trim().length > 0
+      ? body.approvedBy.trim()
+      : "marc@tgv.co.za";
+  if (!productId) {
+    return jsonResponse({ error: "productId is required" }, 400);
+  }
+  try {
+    const evt = makeProductApproved({
+      asOf: nowUtc(),
+      entity: "BANK-ZA-001",
+      actor: { type: "human", id: approvedBy },
+      citations: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+      payload: { productId, version, conditions, approvedBy },
+    });
+    eventStore.append(evt);
+    refresh("product-approve");
+    logger.info({ productId, approvedBy }, "ProductApproved emitted via dashboard");
+    return jsonResponse({ ok: true, eventId: evt.event_id }, 201);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+}
+
+async function handleProductNarrative(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const productId = typeof body.productId === "string" ? body.productId.trim() : "";
+  const dimension = typeof body.dimension === "string" ? body.dimension : "";
+  const narrative = typeof body.narrative === "string" ? body.narrative.trim() : "";
+  const authorAgentName =
+    typeof body.authorAgentName === "string" ? body.authorAgentName.trim() : "";
+  const authorAgentPosition =
+    typeof body.authorAgentPosition === "string" ? body.authorAgentPosition.trim() : "";
+  const citationChain = Array.isArray(body.citationChain)
+    ? (body.citationChain as unknown[]).filter((c): c is string => typeof c === "string")
+    : [];
+  if (!productId || !dimension || !narrative || !authorAgentName || !authorAgentPosition) {
+    return jsonResponse(
+      {
+        error: "productId, dimension, narrative, authorAgentName, authorAgentPosition are required",
+      },
+      400,
+    );
+  }
+  if (!NPA_DIMENSION_VALUES.includes(dimension as (typeof NPA_DIMENSION_VALUES)[number])) {
+    return jsonResponse({ error: "dimension must be one of NPA Policy §5" }, 400);
+  }
+  if (citationChain.length === 0) {
+    return jsonResponse({ error: "citationChain must contain at least one citation" }, 400);
+  }
+  try {
+    const evt = makeProductDimensionNarrativeRecorded({
+      asOf: nowUtc(),
+      entity: "BANK-ZA-001",
+      actor: { type: "human", id: "marc@tgv.co.za" },
+      citations: citationChain,
+      payload: {
+        productId,
+        dimension,
+        narrative,
+        authorAgentName,
+        authorAgentPosition,
+        citationChain,
+      },
+    });
+    eventStore.append(evt);
+    refresh("product-narrative");
+    logger.info(
+      { productId, dimension, authorAgentName },
+      "ProductDimensionNarrativeRecorded emitted",
+    );
+    return jsonResponse({ ok: true, eventId: evt.event_id }, 201);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+}
+
+async function handleProductNarrativeRequest(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const productId = typeof body.productId === "string" ? body.productId.trim() : "";
+  const dimension = typeof body.dimension === "string" ? body.dimension : "";
+  const requestedFromAgentName =
+    typeof body.requestedFromAgentName === "string" ? body.requestedFromAgentName.trim() : "";
+  const requestedFromAgentPosition =
+    typeof body.requestedFromAgentPosition === "string"
+      ? body.requestedFromAgentPosition.trim()
+      : "";
+  const note = typeof body.note === "string" ? body.note.trim() : undefined;
+  if (!productId || !dimension || !requestedFromAgentName || !requestedFromAgentPosition) {
+    return jsonResponse(
+      {
+        error:
+          "productId, dimension, requestedFromAgentName, requestedFromAgentPosition are required",
+      },
+      400,
+    );
+  }
+  if (!NPA_DIMENSION_VALUES.includes(dimension as (typeof NPA_DIMENSION_VALUES)[number])) {
+    return jsonResponse({ error: "dimension must be one of NPA Policy §5" }, 400);
+  }
+  try {
+    const evt = makeProductDimensionNarrativeRequested({
+      asOf: nowUtc(),
+      entity: "BANK-ZA-001",
+      actor: { type: "human", id: "marc@tgv.co.za" },
+      citations: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+      payload: {
+        productId,
+        dimension,
+        requestedFromAgentName,
+        requestedFromAgentPosition,
+        ...(note ? { note } : {}),
+      },
+    });
+    eventStore.append(evt);
+    refresh("product-narrative-request");
+    logger.info(
+      { productId, dimension, requestedFromAgentName },
+      "ProductDimensionNarrativeRequested emitted",
+    );
+    return jsonResponse({ ok: true, eventId: evt.event_id }, 201);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1846,6 +2174,45 @@ const server = Bun.serve({
       });
     }
     // ---------- end Product Control ----------
+
+    // ---------- Products (NPA & review console) ----------
+    // GET /api/products — cross-family product list with per-dimension
+    // attestation summary. Authority: D-NEW-PRODUCT-APPROVAL-POLICY.
+    if (url.pathname === "/api/products" && req.method === "GET") {
+      return jsonResponse(buildProductListView(eventStore, nowUtc()));
+    }
+    // GET /api/products/:productId — full per-product detail (14 dimensions,
+    // narratives, worked journal entries per lifecycle event).
+    {
+      const detailMatch = url.pathname.match(/^\/api\/products\/([^/]+)$/);
+      if (detailMatch?.[1] && req.method === "GET") {
+        const productId = decodeURIComponent(detailMatch[1]);
+        const view = buildProductDetailView(productId, eventStore, nowUtc());
+        if (!view) return jsonResponse({ error: `Product not found: ${productId}` }, 404);
+        return jsonResponse(view);
+      }
+    }
+    // POST /api/products/propose — emit ProductProposalRegistered.
+    if (url.pathname === "/api/products/propose" && req.method === "POST") {
+      return handleProductPropose(req);
+    }
+    // POST /api/products/attest — emit ProductDimensionAttested.
+    if (url.pathname === "/api/products/attest" && req.method === "POST") {
+      return handleProductAttest(req);
+    }
+    // POST /api/products/approve — emit ProductApproved.
+    if (url.pathname === "/api/products/approve" && req.method === "POST") {
+      return handleProductApprove(req);
+    }
+    // POST /api/products/narrative — emit ProductDimensionNarrativeRecorded.
+    if (url.pathname === "/api/products/narrative" && req.method === "POST") {
+      return handleProductNarrative(req);
+    }
+    // POST /api/products/narrative/request — emit ProductDimensionNarrativeRequested.
+    if (url.pathname === "/api/products/narrative/request" && req.method === "POST") {
+      return handleProductNarrativeRequest(req);
+    }
+    // ---------- end Products ----------
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.
       // Query params:
@@ -2056,6 +2423,11 @@ const server = Bun.serve({
     // Must be checked before the /decisions/:id drill-down route.
     if (req.method === "GET" && url.pathname === "/decisions") {
       return serveStatic("/decisions.html");
+    }
+    // New Product Approval & Review console.
+    // D-NEW-PRODUCT-APPROVAL-POLICY (CEO-approved 2026-05-10).
+    if (req.method === "GET" && (url.pathname === "/products" || url.pathname === "/products/")) {
+      return serveStatic("/products.html");
     }
     // Pretty-URL routes for drill-down — Bun serves the static HTML and the
     // page reads the decisionId from `window.location.pathname`.
