@@ -6,6 +6,8 @@
 // Covers the daily measurement outputs feeding the credit-limit engine:
 //   CcrReplacementCostComputed — SA-CCR replacement-cost per netting set
 //     (Credit Risk Policy §3 line 129).
+//   CcrEadComputed             — SA-CCR exposure-at-default per netting set
+//     (Credit Risk Policy §3 line 131; BCBS d317 §10 EAD = α × (RC + PFE)).
 //   LexUtilisationComputed     — large-exposure utilisation per counterparty
 //     or connected group (Credit Risk Policy §2 line 107).
 //   LexExceptionApproved       — sub-limit / cap exception register entry
@@ -112,6 +114,96 @@ export function makeCcrReplacementCostComputed(args: {
     actor: args.actor,
     citations: args.citations,
     payload: ccrReplacementCostComputedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CcrEadComputed — Credit Risk Policy §3 line 131
+//
+// SA-CCR Exposure-At-Default (EAD) composition over a netting set:
+//
+//   EAD = α × (RC + PFE)   with α = 1.4
+//
+// where RC is the Replacement Cost (per `CcrReplacementCostComputed`) and
+// PFE is the aggregated potential-future-exposure add-on across the asset
+// classes observed in the netting set. BCBS d317 §10 / CRE52 §52.5.
+//
+// This event is the canonical EAD figure the credit-limit engine reads.
+// Before this event existed, `pre-deal-check` had to re-derive
+// `α × (RC + PFE)` from the RC event on every call; with `CcrEadComputed`
+// the engine can read the EAD directly (and fall back to RC-only as a
+// degraded mode when no EAD event is observed).
+//
+// `sourceEvents` records the chain back to the inputs:
+//   rcEventId      — event_id of the CcrReplacementCostComputed used as input.
+//   pfeComponents  — count of AddOnComponent inputs aggregated into PFE
+//     (zero is legitimate — netting set with no trades has PFE = 0).
+// ---------------------------------------------------------------------------
+
+export const ccrEadComputedPayloadSchema = z.object({
+  /** Netting-set identifier. Convention: `NS-<counterpartyId>-<ccy>`. */
+  nettingSetId: z.string().min(1),
+
+  /** Party register ID of the counterparty under measurement. */
+  counterpartyId: z.string().min(1),
+
+  /** Replacement cost (RC) in minor units of `currency`. Non-negative —
+   * BCBS d317 §136 floors at zero. Sourced from the input
+   * `CcrReplacementCostComputed` event. */
+  rc: z.number().int().nonnegative(),
+
+  /** Aggregated PFE add-on in minor units of `currency`. Non-negative —
+   * `Σ AddOnComponent.addOn` per BCBS d317 Table 2. */
+  pfe: z.number().int().nonnegative(),
+
+  /** BCBS d317 §10 regulatory multiplier α. Constant 1.4 — recorded so the
+   * event is self-describing for audit. */
+  alpha: z.literal(1.4),
+
+  /** Exposure-at-default in minor units of `currency`. Non-negative integer.
+   * Computed as `α × (RC + PFE)` with half-up rounding to minor units. */
+  ead: z.number().int().nonnegative(),
+
+  /** ISO 4217 currency code for `rc`, `pfe`, `ead`. */
+  currency: z.string().min(3).max(3),
+
+  /** ISO 8601 — the as-of date of the measurement (T-0 close of business). */
+  computationDate: z.string().min(1),
+
+  /** Methodology marker. SA-CCR only at present; future IMM extension would
+   * be carried as a discriminated variant rather than overloading this
+   * literal. */
+  methodology: z.literal("sa-ccr"),
+
+  /** Provenance chain back to the RC + PFE inputs that produced this EAD. */
+  sourceEvents: z.object({
+    /** event_id of the `CcrReplacementCostComputed` event whose RC fed this
+     * EAD computation. Vera recon asserts the chain. */
+    rcEventId: z.string().min(1),
+    /** Count of `AddOnComponent` inputs aggregated into PFE. Zero is valid
+     * (netting set with no live trades). */
+    pfeComponents: z.number().int().nonnegative(),
+  }),
+});
+
+export type CcrEadComputedPayload = z.infer<typeof ccrEadComputedPayloadSchema>;
+
+export function makeCcrEadComputed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CcrEadComputedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CcrEadComputed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: ccrEadComputedPayloadSchema.parse(args.payload),
   });
 }
 
@@ -238,6 +330,7 @@ export function makeLexExceptionApproved(args: {
 
 export const COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES = [
   "CcrReplacementCostComputed",
+  "CcrEadComputed",
   "LexUtilisationComputed",
   "LexExceptionApproved",
 ] as const;

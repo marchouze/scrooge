@@ -444,12 +444,15 @@ describe("SA-CCR computeAndEmit", () => {
       asOf,
     });
 
-    // Now pre-deal-check should pick the RC up via getCurrentExposure.
+    // Now pre-deal-check should pick the EAD up via getCurrentExposure
+    // (computeAndEmit emits CcrEadComputed alongside CcrReplacementCostComputed
+    // under D-CREDIT-LIMIT-ENGINE-BUILD Phase 5; the engine prefers the EAD
+    // event over RC). EAD = α × (RC + PFE) = 1.4 × (R8m + R0) = R11.2m.
     const headroom = checkHeadroom(cp, zar(1_000_000), asOf);
     expect(headroom.ok).toBe(true);
-    // Limit R50m; existing exposure RC = R8m; proposed R1m → utilisation
-    // = R9m / R50m = 18%.
-    expect(headroom.currentExposure.amount).toBe(BigInt(8_000_000_00));
-    expect(headroom.utilisationPct).toBeCloseTo(18.0, 1);
+    // Limit R50m; existing EAD = R11.2m; proposed R1m → utilisation
+    // = R12.2m / R50m = 24.4%.
+    expect(headroom.currentExposure.amount).toBe(BigInt(11_200_000_00));
+    expect(headroom.utilisationPct).toBeCloseTo(24.4, 1);
   });
 });

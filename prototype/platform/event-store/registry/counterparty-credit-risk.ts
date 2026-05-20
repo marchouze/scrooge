@@ -3,7 +3,8 @@
 // WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation event-type registry rows.
 //
 // Covers:
-//   CcrReplacementCostComputed, LexUtilisationComputed, LexExceptionApproved.
+//   CcrReplacementCostComputed, CcrEadComputed, LexUtilisationComputed,
+//   LexExceptionApproved.
 //
 // Standing authority: D-CREDIT-LIMIT-ENGINE-BUILD (CEO-approved 2026-05-20).
 //
@@ -17,6 +18,7 @@
 //
 // Retention classification:
 //   - CcrReplacementCostComputed → RETENTION_BANKING_5Y (Banks Act s.60).
+//   - CcrEadComputed → RETENTION_BANKING_5Y (Banks Act s.60; BA 600 input).
 //   - LexUtilisationComputed → RETENTION_BANKING_5Y (RRB Reg 23 audit trail).
 //   - LexExceptionApproved → RETENTION_GOVERNANCE_7Y (governance / committee
 //     minutes; PA-grade approvals.).
@@ -25,6 +27,7 @@
 //   RC shapes) + Atlas (Core banking platform architect, engineering).
 
 import {
+  ccrEadComputedPayloadSchema,
   ccrReplacementCostComputedPayloadSchema,
   lexExceptionApprovedPayloadSchema,
   lexUtilisationComputedPayloadSchema,
@@ -56,6 +59,17 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     replay: "append-only-audit",
     retention: RETENTION_BANKING_5Y,
     payloadSchema: ccrReplacementCostComputedPayloadSchema,
+    source: "platform/event-store/event-types/counterparty-credit-risk.ts",
+    citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
+  },
+  {
+    type: "CcrEadComputed",
+    class: "audit",
+    issuer: "Rohan",
+    subscribers: ["Helena", "Rohan", "Mira", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: ccrEadComputedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
   },
