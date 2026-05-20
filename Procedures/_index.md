@@ -1,7 +1,7 @@
 # Procedures library — index
 
 **Curators:** Domain leads · Owen (procedural-discipline custodian) · Mira (citation linkage)
-**As-of:** 2026-05-06
+**As-of:** 2026-05-20
 
 > Master inventory of every procedure under each approved policy. Each row demonstrates the **Reg → Policy → Procedure → System Capability** chain. Status: **`POPULATED`** = procedure file authored; **`STUB`** = file scaffolded; **`PLANNED`** = identified but not yet drafted.
 
@@ -209,6 +209,53 @@
 | Internal Audit Charter | [`findings-tracking.md`](by-policy/findings-tracking.md) (PROC-AUD-FT-01 — P1-P4 classification; automated follow-up cadence; overdue escalation; Thandiwe P1/P2 closure attestation; closure verification by pipeline re-run) | Vera (internal audit engineer) · Thandiwe (Chief Audit Executive, governance) | **POPULATED** |
 | Combined Assurance | [`combined-assurance-map-cycle.md`](by-policy/combined-assurance-map-cycle.md) (PROC-AUD-CAM-01 — three-line assurance inventory; gap analysis; IIA Standards 2050 reliance decisions; Forum approval gate) | Vera (internal audit engineer) · Owen (Company Secretary, governance) | **POPULATED** |
 
+## Subdirectory procedures — domain-organised (not `by-policy/`)
+
+> *Added 2026-05-20 by Owen (Company Secretary, governance) per `brief:owen:housekeeping-sweep-cco-attribution-isda-opinion-:2026-05-20` Item 3. These procedures live under `Procedures/<domain>/` rather than `Procedures/by-policy/`. The index historically catalogued only `by-policy/` files; this section closes the discoverability gap. Domain layout is informal — most subdirectory procedures are markets-domain extensions (`markets/`), or domain-specialised runbooks (`finance/`, `financial-crime/`, `operations/`, `risk/`) that pre-date the `by-policy/` convention. A future structural decision on whether to keep, re-home into `by-policy/`, or formalise per-subdirectory indices is queued as a substrate gap.*
+
+### Finance
+
+| Policy | Procedure | Owner | Status |
+|---|---|---|---|
+| Regulatory Reporting Policy (planned) | [`finsurv-submission-schedule.md`](finance/finsurv-submission-schedule.md) (PROC-FIN-FXFS-01 — SARB FinSurv FX trade reporting submission schedule and procedure; daily reconciliation; CCO oversight) | Mira (Compliance / RegTech engineer, compliance) · Saskia (Chief Markets Officer, governance) | **POPULATED** |
+| Financial Reporting Policy (planned) | [`fx-period-close-runbook.md`](finance/fx-period-close-runbook.md) (PROC-FIN-FXPC-01 — FX spot end-of-day and period-close runbook; PeriodClosed gate) | Bea (Financial-reporting engineer, finance) · Anya (Data engineer, engineering) | **POPULATED** |
+| Settlement and Reconciliation Policy (planned) | [`fx-settlement-reconciliation.md`](finance/fx-settlement-reconciliation.md) (PROC-FIN-FXSR-01 — FX spot three-way settlement reconciliation: trade-leg / payment-leg / ledger-leg / nostro) | Tomas (Payments engineer, engineering) · Bea (Financial-reporting engineer, finance) | **POPULATED** |
+| Trade Lifecycle (cross-cutting) | [`trade-lifecycle-system-capability-register.md`](finance/trade-lifecycle-system-capability-register.md) (Trade Lifecycle System Capability Register — capability map across booking, valuation, settlement, reconciliation, period-close) | Bea (Chief Financial Officer co-author with Camille; finance) · Owen (Company Secretary, governance) | **ACTIVE** |
+
+### Financial crime
+
+| Policy | Procedure | Owner | Status |
+|---|---|---|---|
+| AML / CFT Policy v1 | [`kyc-continuous.md`](financial-crime/kyc-continuous.md) (PROC-FC-CKKYC-01 — continuous KYC re-evaluation between formal refresh cycles; signal-triggered; counterpart to by-policy `kyc-continuous.md`) | Zara (Chief Compliance Officer / MLRO, governance) · Mira (Regulatory intelligence engineer, compliance) | **POPULATED** |
+| AML / CFT Policy v1 | [`pep-handling.md`](financial-crime/pep-handling.md) (PROC-FC-PEP-01 — enhanced due diligence for politically exposed persons) | Zara (Chief Compliance Officer / MLRO, governance) · Mira (Regulatory intelligence engineer, compliance) | **POPULATED** |
+| AML / CFT Policy v1 | [`ubo-resolution.md`](financial-crime/ubo-resolution.md) (PROC-FC-UBO-01 — recursive beneficial-ownership identification per FIC Act s.21(1)(b)) | Zara (Chief Compliance Officer / MLRO, governance) · Mira (Regulatory intelligence engineer, compliance) | **POPULATED** |
+
+### Markets
+
+| Policy | Procedure | Owner | Status |
+|---|---|---|---|
+| Counterparty Credit Policy (planned) | [`corporate-issuer-inclusion-list.md`](markets/corporate-issuer-inclusion-list.md) (PROC-MK-CIL-01 — corporate issuer inclusion/exclusion from approved-counterparty list) | Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance) | **POPULATED** |
+| Trading Mandate v1 | [`dealer-mandate-breach-handling.md`](markets/dealer-mandate-breach-handling.md) (PROC-MK-MBH-01 — dealer mandate limit breach detection, triage, and resolution) | Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance) | **POPULATED** |
+| Trading Mandate v1 | [`dealer-mandate-issuance.md`](markets/dealer-mandate-issuance.md) (PROC-MK-MDI-01 — dealer mandate issuance, review, and revocation) | Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance) | **POPULATED** |
+| D-MARKETS-SCHEMA-FOUNDATION | [`franchise-posture-refresh.md`](markets/franchise-posture-refresh.md) (PROC-MK-FPR-01 — quarterly markets franchise posture refresh) | Saskia (Chief Markets Officer, governance) | **POPULATED** |
+| Trading Mandate v1 | [`fx-forwards-trade-lifecycle.md`](markets/fx-forwards-trade-lifecycle.md) (PROC-MK-FXFL-01 — FX forwards trade lifecycle: booking, MtM revaluation, fixing, settlement) | Saskia (Chief Markets Officer, governance) | **POPULATED** |
+| D-MARKETS-SCHEMA-FOUNDATION + Banks Act 94 s.11 | [`pre-licence-go-live-gate.md`](markets/pre-licence-go-live-gate.md) (PROC-MK-PLG-01 — terminal pre-licence go-live readiness gate; 5 NPA + 6 OPS conditions + regulatory approvals; CEO `GoLiveReadinessConfirmed` event) | Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance) | **POPULATED** |
+| Best Execution Policy (planned) · Conduct Policy (planned) · Credit Risk Policy v1 | [`pre-trade-conduct-gate.md`](markets/pre-trade-conduct-gate.md) (PROC-MK-PCG-01 — pre-trade conduct and suitability gate for FX spot trades) | Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech engineer, compliance) · Zara (MLRO, governance) | **POPULATED** |
+| Client Onboarding Policy (planned) | [`soft-franchise-pipeline.md`](markets/soft-franchise-pipeline.md) (PROC-MK-SFP-01 — soft-franchise pipeline management; institutional relationship onboarding stage) | Saskia (Chief Markets Officer, governance) · Niko (Client Lifecycle Manager, paused build-phase) · Imani (Chief Legal Counsel / Legal-entity & clause-library engineer) | **POPULATED** |
+
+### Operations
+
+| Policy | Procedure | Owner | Status |
+|---|---|---|---|
+| Valuation Policy v1 §3.1 · Market Risk Policy v1 (controlled-launch envelope) · Trading Mandate v1 §2.5 | [`sarb-fixing-as-fx-spot-ipv-source.md`](operations/sarb-fixing-as-fx-spot-ipv-source.md) (PROC-OPS-SARB-FIX-IPV-01 — SARB ZAR Fixing as authorised FX-spot IPV source for controlled-launch) | Saskia (Chief Markets Officer, governance) | **POPULATED** |
+| Trading Mandate v1 §6 · Market Risk Policy v1 · Business Continuity Plan (planned) | [`settlement-failure-bcp.md`](operations/settlement-failure-bcp.md) (PROC-OPS-SFBCP-01 — FX settlement failure BCP; Herstatt risk scenario; FX-spot focus; gate condition for `PROC-MK-PLG-01` Step 3.f) | Devon (Chief Operating Officer, governance); co-signs Helena (CRO) · Imani (CLC) · Saskia (CMO) · Zara (CCO) | **POPULATED** |
+
+### Risk
+
+| Policy | Procedure | Owner | Status |
+|---|---|---|---|
+| Risk Management Policy v1 (Climate-Related Risk chapter) | [`climate-risk-measurement.md`](risk/climate-risk-measurement.md) (PROC-RISK-CR-01 — climate-risk measurement; counterpart to by-policy `climate-scenario-analysis.md`) | Helena (Chief Risk Officer, governance) | **POPULATED** |
+
 ---
 
 ## Status summary
@@ -220,7 +267,7 @@
 | **STUB** | 0 | — all STUBs promoted to POPULATED 2026-05-15 |
 | SUPERSEDED / MERGED | 1 | **samos-funding-daily.md** — scope merged into PROC-RISK-ILF-01 (`intraday-liquidity-funding.md`); file not created |
 | PLANNED | ~1 | **swift-csp-attestation.md** — deferred; BIC application not yet lodged; CSP attestation cycle starts at first BIC (pre-licence milestone, Senna + Tomas) |
-| **Total identified procedures** | **~91** across 14 domains |
+| **Total identified procedures** | **~110** across 14 domains + 5 subdirectory groupings (finance · financial-crime · markets · operations · risk) |
 
 The chain `Reg → Policy → Procedure → System Capability` is now wired:
 
