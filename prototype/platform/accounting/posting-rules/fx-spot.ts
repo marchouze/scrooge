@@ -10,6 +10,10 @@
 //   PR-FX-REV: fxSettlementReversalJournals — SettlementReversed (mirrors PR-FX-003)
 //   PR-FX-CANCEL: fxCancellationJournals  — TradeCancelled (net-zero reversal)
 //   PR-FX-AMD: fxAmendmentJournals        — TradeAmended (delta for rate/notional)
+//   PR-FX-INSTRUCT: fxSettlementInstructedJournals — FxSettlementInstructed (memo; no GL)
+//   PR-FX-PRIN: fxPrincipalPaymentJournals — PrincipalPayment (memo; PR-FX-003 owns GL)
+//   PR-FX-LIFECYCLE-CLOSE: fxLifecycleCloseJournals — SettlementConfirmed (CDM; memo)
+//   PR-FX-REGREPORT: fxTradeReportSubmittedJournals — TradeReportSubmitted (memo)
 //
 // All functions return SubLedgerLeg[] that balance per currency.
 // Balance invariant: sum(debit.amountMinor) == sum(credit.amountMinor)
@@ -42,7 +46,14 @@ import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
 } from "../../event-store/event-types/fx-accounting";
-import type { FxLeg, FxTradeExecutedPayload } from "../../markets/cdm/fx";
+import type { TradeReportSubmittedPayload } from "../../event-store/event-types/regulatory-reporting";
+import type {
+  FxLeg,
+  FxSettlementInstructedPayload,
+  FxTradeExecutedPayload,
+  PrincipalPaymentPayload,
+  SettlementConfirmedPayload,
+} from "../../markets/cdm/fx";
 import type { SubLedgerLeg } from "../fx-accounting-types";
 
 // ---------------------------------------------------------------------------
@@ -490,4 +501,191 @@ export function fxAmendmentJournals(input: FxAmendmentInput): SubLedgerLeg[] {
       currency: "ZAR",
     },
   ];
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-INSTRUCT: Settlement-instruction journals
+//
+// On FxSettlementInstructed (SWIFT MT202 / pacs.009 dispatched to the
+// correspondent bank — see CDM schema at markets/cdm/fx.ts:371):
+//
+//   No GL entries are emitted by this rule.
+//
+//   Returns: [].
+//
+// Rationale (intentional no-GL-impact, NOT a substrate gap):
+//   - The instruction is a wire-message dispatch event. No cash has moved
+//     and no contractual right or obligation has changed. The receivable
+//     and payable booked at PR-FX-001 remain in place; settlement-date
+//     derecognition occurs only when the correspondent confirms cash
+//     movement (PR-FX-003 on FxSettlementConfirmed).
+//   - IFRS 9 §3.2.3 derecognition requires that the contractual rights to
+//     cash flows have either expired or been transferred such that
+//     substantially all risks and rewards have passed. Instructing the
+//     correspondent does neither.
+//   - IAS 21 §28 attaches any settlement-date FX gain/loss to the
+//     settlement event, not the instruction event.
+//   - A "suspense at instruction" treatment was considered and rejected:
+//     it would introduce a second derecognition timestamp (instruction
+//     vs confirmation) with no underlying economic substance, and would
+//     proliferate suspense-cleardown postings on every cancelled / failed
+//     instruction. The single derecognition at PR-FX-003 is cleaner.
+//
+// This rule is load-bearing: it declares the GL impact as intentionally
+// zero and pairs the event-type with a registered posting-rule code so it
+// does not surface in the worked-journal-entries register as
+// "missing — substrate gap".
+//
+// Authority:
+//   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//   - D-FX-CLS-MEMBERSHIP — correspondent-routed settlement default
+//   - IFRS 9 §3.2.3 (derecognition criteria)
+//   - IAS 21 §28 (settlement-date P&L recognition)
+// ---------------------------------------------------------------------------
+
+export function fxSettlementInstructedJournals(
+  _event: FxSettlementInstructedPayload,
+): SubLedgerLeg[] {
+  // Intentional no-GL-impact: instruction-only, no cash moved, no
+  // derecognition triggered. See header docblock for full reasoning.
+  return [];
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-PRIN: Principal-payment journals
+//
+// On PrincipalPayment (per-leg correspondent confirmation — see CDM schema
+// at markets/cdm/fx.ts:464):
+//
+//   No GL entries are emitted by this rule.
+//
+//   Returns: [].
+//
+// Rationale (intentional no-GL-impact, NOT a substrate gap):
+//   - `PrincipalPayment` is the CDM-level per-leg correspondent notification.
+//     For a Spot trade there are two `PrincipalPayment` events (one per
+//     currency leg). Both are upstream of the accounting-flavoured
+//     `FxSettlementConfirmed` event, which carries the aggregate
+//     `settledBaseCurrencyMinor`, `settledQuoteCurrencyMinor`,
+//     `realisedPnlZarMinor`, and nostro-account IDs needed to construct
+//     a balanced derecognition entry.
+//   - GL responsibility sits with PR-FX-003 (`FxSettlementConfirmed`),
+//     which fires once on the aggregate. PR-FX-PRIN must therefore not
+//     also emit cash legs — doing so would double-count the cash movement.
+//   - Choosing the other direction (PR-FX-PRIN owns GL, PR-FX-003 becomes
+//     no-op) was considered and rejected: the per-leg events lack the
+//     realised-P&L delta and the nostro-account IDs in their payload
+//     schema (markets/cdm/fx.ts:464–501 carries only legKind, currency,
+//     netCash, settlementDate, correspondent). Reconstructing the
+//     aggregate from two separate events would require cross-event state
+//     in the posting-rule engine, which violates the pure-function
+//     contract for posting rules.
+//   - Auditability is preserved: each `PrincipalPayment` event is still
+//     persisted, citation-bearing, and queryable for settlement-progress
+//     reconstruction. It is a lifecycle marker (memorandum) without GL
+//     consequence.
+//
+// Authority:
+//   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//   - D-FX-CLS-MEMBERSHIP — correspondent-routed settlement
+//   - IFRS 9 §3.2.3 (derecognition — owned by PR-FX-003)
+//   - IAS 21 §28 (settlement-date P&L — owned by PR-FX-003)
+// ---------------------------------------------------------------------------
+
+export function fxPrincipalPaymentJournals(_event: PrincipalPaymentPayload): SubLedgerLeg[] {
+  // Intentional no-GL-impact: PR-FX-003 owns the aggregate derecognition.
+  // PrincipalPayment is the upstream per-leg lifecycle marker. See
+  // header docblock for full reasoning.
+  return [];
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-LIFECYCLE-CLOSE: CDM settlement-confirmed lifecycle-close journals
+//
+// On `SettlementConfirmed` (the CDM final-state event — schema at
+// markets/cdm/fx.ts:544 — emitted once both `PrincipalPayment` events
+// are in):
+//
+//   No GL entries are emitted by this rule.
+//
+//   Returns: [].
+//
+// Relationship to PR-FX-003 (intentional no-GL-impact, NOT a substrate gap):
+//   - Two settlement-completion event types co-exist and are not duplicates:
+//       (a) CDM `SettlementConfirmed` (markets/cdm/fx.ts:544) — lifecycle
+//           marker. Payload: tradeId, currencyPair, settledDate,
+//           realisedPnlDelta, settlementRef, finsurvReportingRef. No
+//           per-currency settled amounts; no nostro IDs.
+//       (b) Accounting `FxSettlementConfirmed`
+//           (event-store/event-types/fx-accounting.ts:112) — the
+//           GL-significant event. Payload carries `settledBaseCurrencyMinor`,
+//           `settledQuoteCurrencyMinor`, `realisedPnlZarMinor`,
+//           `nostroAccountBase`, `nostroAccountQuote`. PR-FX-003 owns
+//           derecognition + realised-P&L recognition against this.
+//   - The accounting `FxSettlementConfirmed` is projected from the CDM
+//     `SettlementConfirmed` by Bea's settlement-projection handler (see
+//     design note `archive/owner-inbox/2026-05-20_bea_fx-lifecycle-
+//     posting-rules-design-note.md`). The projection enriches the CDM
+//     event with nostro-account IDs and per-currency settled amounts.
+//   - Emitting GL legs on both events would double-count derecognition.
+//     PR-FX-003 is the single source of truth for FVTPL derecognition +
+//     realised-P&L recognition. PR-FX-LIFECYCLE-CLOSE records the
+//     lifecycle close as memorandum only.
+//
+// Authority:
+//   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//   - D-FX-CLS-MEMBERSHIP — correspondent-routed settlement
+//   - IFRS 9 §3.2.3 (derecognition — owned by PR-FX-003)
+//   - IAS 21 §28 (settlement-date P&L — owned by PR-FX-003)
+// ---------------------------------------------------------------------------
+
+export function fxLifecycleCloseJournals(_event: SettlementConfirmedPayload): SubLedgerLeg[] {
+  // Intentional no-GL-impact: CDM SettlementConfirmed is the lifecycle
+  // marker; PR-FX-003 (on the accounting FxSettlementConfirmed projection)
+  // owns the derecognition entry. See header docblock for the
+  // CDM-vs-accounting event-type taxonomy.
+  return [];
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-REGREPORT: Trade-report-submitted journals
+//
+// On TradeReportSubmitted (SARB FinSurv or DTCC-SAFE dispatch — schema at
+// event-store/event-types/regulatory-reporting.ts:36):
+//
+//   No GL entries are emitted by this rule.
+//
+//   Returns: [].
+//
+// Rationale (intentional no-GL-impact, NOT a substrate gap):
+//   - `TradeReportSubmitted` records a regulatory dispatch (or its
+//     acknowledgement) to SARB FinSurv (per EXCON-SARB-CIRC-3-2020) or to
+//     a derivatives trade repository (DTCC-SAFE). It is a reporting-system
+//     event: it neither creates nor extinguishes a contractual right or
+//     obligation under IFRS 9.
+//   - IAS 1 / IAS 8 do not recognise regulatory-dispatch events as
+//     accounting transactions. The cost of the regulatory-reporting
+//     function is captured as operating expense via the reporting-system
+//     run cost; it is not booked per-report.
+//   - A `status = "rejected"` outcome may trigger remediation work
+//     (re-submission, manual fix-up). That remediation is operationally
+//     load-bearing but still does not produce a per-event GL movement;
+//     any cost or fine arising is booked via the appropriate operating
+//     expense / penalty event-type when it crystallises.
+//
+// Authority:
+//   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//   - D-FX-AD-STATUS — Authorised-Dealer status (Mira)
+//   - EXCON-SARB-CIRC-3-2020 — FinSurv reporting obligations
+//   - IAS 1 §27 (going-concern recognition basis — reporting dispatch is
+//     not a transaction)
+// ---------------------------------------------------------------------------
+
+export function fxTradeReportSubmittedJournals(
+  _event: TradeReportSubmittedPayload,
+): SubLedgerLeg[] {
+  // Intentional no-GL-impact: regulator-side dispatch only; no asset,
+  // liability, income, or expense recognition is triggered. See header
+  // docblock for reasoning.
+  return [];
 }
