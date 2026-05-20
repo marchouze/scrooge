@@ -135,6 +135,17 @@ const legalEntityAttrsSchema = z.object({
   regimeAnchor: z
     .array(z.string().min(1))
     .min(1, { message: "legal-entity must declare at least one regime anchor" }),
+  // ISO 17442 LEI — 20-char uppercase alphanumeric. Optional until the
+  // bank holds its own LEI and operates with EU-counterparty OTC derivatives
+  // (matches the field in `LegalEntityAttrs` in `./types.ts`). First load-
+  // bearing emission is the 2026-05-20 institutional-counterparty backfill
+  // for the FX-spot controlled-launch (Standard Bank + Investec) — Helena
+  // (Chief Risk Officer, governance) PR #634 + Imani (Chief Legal Counsel,
+  // governance) PR #637.
+  lei: z
+    .string()
+    .regex(/^[A-Z0-9]{20}$/, "lei must be a 20-char uppercase alphanumeric ISO 17442 identifier")
+    .optional(),
 });
 
 const agentAttrsSchema = z.object({
