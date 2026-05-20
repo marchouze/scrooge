@@ -293,6 +293,19 @@ export function runEodFxForwardRevaluation(
       }
     }
   }
+  // CDM `SettlementConfirmed` (2026-05-20 GL-significant under
+  // PR-FX-LIFECYCLE-CLOSE). It does not carry `legKind` — it is emitted once
+  // both legs settle, so we treat its presence as "full trade settled" for
+  // non-FX-swap products. For FX-swap, the per-leg accounting events above
+  // remain authoritative.
+  for (const e of store.replay({ type: "SettlementConfirmed" })) {
+    const p = e.payload as { tradeId?: unknown };
+    if (typeof p.tradeId !== "string") continue;
+    const trade = trades.get(p.tradeId);
+    if (trade && trade.productTaxonomy !== "FX-swap") {
+      settledTrades.add(p.tradeId);
+    }
+  }
 
   // -------------------------------------------------------------------------
   // Step 3: Find positions already revalued today (idempotency gate).

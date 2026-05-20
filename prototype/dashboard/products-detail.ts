@@ -265,7 +265,7 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
   FxSettlementConfirmed: {
     ruleId: "PR-FX-003",
     module: "platform/accounting/posting-rules/fx-spot.ts",
-    legs: "Dr Nostro (bought ccy) · Cr FX Settlement Suspense · Dr FX Settlement Suspense · Cr Nostro (sold ccy).",
+    legs: "DEPRECATED 2026-05-20 — production lifecycle never emitted this event. Superseded by PR-FX-PRIN (per-leg cash) + PR-FX-LIFECYCLE-CLOSE (realised P&L). Kept for back-compat with legacy test fixtures.",
   },
   FxSettlementInstructed: {
     ruleId: "PR-FX-INSTRUCT",
@@ -275,12 +275,12 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
   PrincipalPayment: {
     ruleId: "PR-FX-PRIN",
     module: "platform/accounting/posting-rules/fx-spot.ts",
-    legs: "Memorandum — per-leg correspondent confirmation; aggregate GL impact posted on FxSettlementConfirmed (PR-FX-003).",
+    legs: "Dr Nostro / Cr FX Receivable (receive leg); Dr FX Payable / Cr Nostro (deliver leg). Per-leg cash at correspondent confirmation.",
   },
   SettlementConfirmed: {
     ruleId: "PR-FX-LIFECYCLE-CLOSE",
     module: "platform/accounting/posting-rules/fx-spot.ts",
-    legs: "Memorandum — CDM lifecycle marker (both legs settled); derecognition owned by PR-FX-003 on the FxSettlementConfirmed projection.",
+    legs: "Realised FX P&L residual: Dr Nostro ZAR / Cr Realised FX P&L (gain); Dr Realised FX P&L / Cr Nostro ZAR (loss). Closes the trade.",
   },
   TradeReportSubmitted: {
     ruleId: "PR-FX-REGREPORT",
@@ -327,8 +327,11 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
   // Lifecycle / lifecycle-shared events with no Bea posting rule today.
   // Returned as "missing" by the lookup below.
   // The four FX lifecycle gaps surfaced by Marc on 2026-05-20 (PR #608, Bea):
-  // FxSettlementInstructed, PrincipalPayment, SettlementConfirmed, TradeReportSubmitted
-  // are now registered above as memorandum rules — present but with no GL impact.
+  //   - PrincipalPayment            → PR-FX-PRIN          (GL-significant)
+  //   - SettlementConfirmed (CDM)   → PR-FX-LIFECYCLE-CLOSE (GL-significant)
+  //   - FxSettlementInstructed      → PR-FX-INSTRUCT      (memorandum)
+  //   - TradeReportSubmitted        → PR-FX-REGREPORT     (memorandum)
+  // are all registered above. PR-FX-003 is retained but deprecated.
 };
 
 // ---------------------------------------------------------------------------

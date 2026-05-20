@@ -178,11 +178,18 @@ export function runEodFxRevaluation(
     trades.set(p.tradeId.value, p);
   }
 
-  // Step 2: Remove settled positions.
+  // Step 2: Remove settled positions. Fold both the CDM lifecycle-close
+  // event (`SettlementConfirmed`, 2026-05-20 GL-significant under
+  // PR-FX-LIFECYCLE-CLOSE) and the deprecated accounting event
+  // (`FxSettlementConfirmed`, retained for back-compat with legacy tests).
   const settled = new Set<string>();
   for (const e of store.replay({ type: "FxSettlementConfirmed" })) {
     const p = e.payload as unknown as FxSettlementConfirmedPayload;
     settled.add(p.tradeId);
+  }
+  for (const e of store.replay({ type: "SettlementConfirmed" })) {
+    const p = e.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") settled.add(p.tradeId);
   }
 
   // Step 3: Find positions already revalued today (idempotency).

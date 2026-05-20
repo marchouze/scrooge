@@ -150,8 +150,32 @@ export function generateBa350MarketRiskFromEvents(
     tradeEventIds.push(ev.event_id);
   }
 
-  // ---- Step 2: replay FxSettlementConfirmed to find settled trades. --------
+  // ---- Step 2: identify settled trades. ------------------------------------
+  //
+  // Settled-trade detection folds three event types:
+  //
+  //   - CDM `SettlementConfirmed` (lifecycle close — 2026-05-20 GL-significant
+  //     under PR-FX-LIFECYCLE-CLOSE). Primary canonical signal that both legs
+  //     have settled.
+  //   - Accounting `FxSettlementConfirmed` (DEPRECATED 2026-05-20 — kept for
+  //     back-compat with legacy test fixtures and any historical events still
+  //     in the store).
+  //   - PrincipalPayment (per-leg confirmation). Used as a fallback signal —
+  //     a tradeId with at least one PrincipalPayment indicates the lifecycle
+  //     has progressed past the instruction phase. For BA-350 we treat any
+  //     tradeId that has reached the CDM SettlementConfirmed or accounting
+  //     FxSettlementConfirmed as fully settled; PrincipalPayment alone is
+  //     not enough (only one leg has confirmed).
   const settledTradeIds = new Set<string>();
+  for (const ev of eventStore.replay({
+    entity: input.entity,
+    type: "SettlementConfirmed",
+    asOf: input.periodEnd,
+  })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") settledTradeIds.add(p.tradeId);
+  }
   for (const ev of eventStore.replay({
     entity: input.entity,
     type: "FxSettlementConfirmed",

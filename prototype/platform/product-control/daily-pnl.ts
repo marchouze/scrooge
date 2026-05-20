@@ -113,6 +113,12 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
 
   // -------------------------------------------------------------------------
   // 3. Collect settled trade IDs and realised P&L.
+  //
+  // Settled-trade detection folds two event types:
+  //   - Accounting `FxSettlementConfirmed` (DEPRECATED 2026-05-20; kept for
+  //     back-compat with legacy tests). Carries `realisedPnlZarMinor`.
+  //   - CDM `SettlementConfirmed` (2026-05-20 GL-significant under
+  //     PR-FX-LIFECYCLE-CLOSE). Carries `realisedPnlDelta` (ZAR minor).
   // -------------------------------------------------------------------------
   const settledIds = new Set<string>();
   const realisedByTrade = new Map<string, number>(); // tradeId → ZAR minor
@@ -122,6 +128,15 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
     // Accumulate — a trade may have multiple legs settled.
     const existing = realisedByTrade.get(p.tradeId) ?? 0;
     realisedByTrade.set(p.tradeId, existing + p.realisedPnlZarMinor);
+  }
+  for (const e of store.replay({ type: "SettlementConfirmed" })) {
+    const p = e.payload as { tradeId?: unknown; realisedPnlDelta?: unknown };
+    if (typeof p.tradeId !== "string") continue;
+    settledIds.add(p.tradeId);
+    if (typeof p.realisedPnlDelta === "number") {
+      const existing = realisedByTrade.get(p.tradeId) ?? 0;
+      realisedByTrade.set(p.tradeId, existing + p.realisedPnlDelta);
+    }
   }
 
   // -------------------------------------------------------------------------

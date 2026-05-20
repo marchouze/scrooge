@@ -203,6 +203,27 @@ function buildFxTradeDescription(
     return `FX Settlement ${pair}${tradeId ? ` (${tradeId})` : ""}`;
   }
 
+  // PR-FX-PRIN: per-leg correspondent confirmation posting (2026-05-20).
+  // PrincipalPayment payload carries `legKind`, `currency`, `netCash`.
+  if (postingType === "fx-principal-payment") {
+    const legKind = typeof sourcePayload.legKind === "string" ? sourcePayload.legKind : "";
+    const ccy = typeof sourcePayload.currency === "string" ? sourcePayload.currency : "";
+    const netCash = typeof sourcePayload.netCash === "number" ? sourcePayload.netCash : 0;
+    const pairStr =
+      typeof sourcePayload.currencyPair === "string" ? sourcePayload.currencyPair : pair;
+    const legLabel = legKind ? `${legKind.charAt(0).toUpperCase()}${legKind.slice(1)} ` : "";
+    return `FX ${legLabel}leg ${pairStr} — ${formatMinorAmount(Math.abs(netCash), ccy)}${tradeId ? ` (${tradeId})` : ""}`;
+  }
+
+  // PR-FX-LIFECYCLE-CLOSE: realised-P&L residual on CDM SettlementConfirmed.
+  if (postingType === "fx-lifecycle-close") {
+    const pairStr =
+      typeof sourcePayload.currencyPair === "string" ? sourcePayload.currencyPair : pair;
+    const pnl =
+      typeof sourcePayload.realisedPnlDelta === "number" ? sourcePayload.realisedPnlDelta : 0;
+    return `FX Lifecycle Close ${pairStr} — Realised P&L ${formatMinorAmount(pnl, "ZAR")}${tradeId ? ` (${tradeId})` : ""}`;
+  }
+
   return `FX ${postingType} ${pair}${tradeId ? ` (${tradeId})` : ""}`;
 }
 
@@ -216,13 +237,18 @@ export function buildGlView(
   // Build rate map once if reporting currency requested
   const rateMap = reportingCurrency ? buildRateMap(events) : null;
 
-  // Build lookup map for source events referenced by SubLedgerPostingEmitted
+  // Build lookup map for source events referenced by SubLedgerPostingEmitted.
+  // Includes the new CDM lifecycle event types that PR-FX-PRIN and
+  // PR-FX-LIFECYCLE-CLOSE post against (2026-05-20 circularity fix —
+  // FxSettlementConfirmed retained for back-compat with legacy tests).
   const sourceEventMap = new Map<string, Record<string, unknown>>();
   for (const e of events) {
     if (
       e.type === "FxTradeExecuted" ||
       e.type === "FxPositionRevalued" ||
-      e.type === "FxSettlementConfirmed"
+      e.type === "FxSettlementConfirmed" ||
+      e.type === "PrincipalPayment" ||
+      e.type === "SettlementConfirmed"
     ) {
       sourceEventMap.set(e.event_id, e.payload as Record<string, unknown>);
     }

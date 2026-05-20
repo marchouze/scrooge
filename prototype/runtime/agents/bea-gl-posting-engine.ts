@@ -81,6 +81,8 @@ import {
 import {
   fxAmendmentJournals,
   fxCancellationJournals,
+  fxLifecycleCloseJournals,
+  fxPrincipalPaymentJournals,
   fxRevaluationJournals,
   fxSettlementJournals,
   fxSettlementReversalJournals,
@@ -135,7 +137,11 @@ import type {
   EquityPositionRevaluedPayload,
   EquityTradeExecutedPayload,
 } from "../../platform/markets/cdm/equity";
-import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
+import type {
+  FxTradeExecutedPayload,
+  PrincipalPaymentPayload,
+  SettlementConfirmedPayload,
+} from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -156,6 +162,11 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
   "FxSettlementConfirmed",
+  // FX lifecycle (CDM) — GL-significant since 2026-05-20 (D-MARKETS-SCHEMA-FOUNDATION).
+  // PR-FX-PRIN posts per-leg cash at correspondent confirmation; PR-FX-LIFECYCLE-CLOSE
+  // posts the realised-P&L residual at trade close.
+  "PrincipalPayment",
+  "SettlementConfirmed",
   "ConfirmationMatched",
   "ConfirmationMismatch",
   "SettlementFailed",
@@ -221,6 +232,9 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "FxTradeExecuted" }),
     ...eventStore.replay({ type: "FxPositionRevalued" }),
     ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+    // FX CDM lifecycle (PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE, since 2026-05-20).
+    ...eventStore.replay({ type: "PrincipalPayment" }),
+    ...eventStore.replay({ type: "SettlementConfirmed" }),
     ...eventStore.replay({ type: "ConfirmationMatched" }),
     ...eventStore.replay({ type: "ConfirmationMismatch" }),
     ...eventStore.replay({ type: "SettlementFailed" }),
@@ -362,7 +376,9 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         const payload = e.payload as FxPositionRevaluedPayload;
         legs = fxRevaluationJournals(payload);
       } else if (e.type === "FxSettlementConfirmed") {
-        // PR-FX-003: Derecognition — IFRS 9 §3.2.3
+        // PR-FX-003 (DEPRECATED 2026-05-20): Derecognition — IFRS 9 §3.2.3.
+        // Retained for back-compat with legacy test-only emitters. Production
+        // lifecycle now routes through PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE.
         postingType = "settlement";
         const key: IdempotencyKey = `${e.event_id}:${postingType}`;
         if (postedKeys.has(key)) {
@@ -371,6 +387,28 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as FxSettlementConfirmedPayload;
         legs = fxSettlementJournals(payload);
+      } else if (e.type === "PrincipalPayment") {
+        // PR-FX-PRIN (GL-significant since 2026-05-20): per-leg cash at
+        // correspondent confirmation. IFRS 9 §3.2.3 (derecognition); IAS 21 §28.
+        postingType = "fx-principal-payment";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as PrincipalPaymentPayload;
+        legs = fxPrincipalPaymentJournals(payload);
+      } else if (e.type === "SettlementConfirmed") {
+        // PR-FX-LIFECYCLE-CLOSE (GL-significant since 2026-05-20): realised-P&L
+        // residual on the CDM lifecycle-close event. IAS 21 §28.
+        postingType = "fx-lifecycle-close";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as SettlementConfirmedPayload;
+        legs = fxLifecycleCloseJournals(payload);
       } else if (e.type === "SettlementReversed") {
         postingType = "settlement-reversal";
         const key: IdempotencyKey = `${e.event_id}:${postingType}`;
@@ -658,7 +696,9 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
               | "ird-swap-trade-booking"
               | "ird-swap-revaluation"
               | "ird-swap-coupon-settlement"
-              | "ird-swap-termination",
+              | "ird-swap-termination"
+              | "fx-principal-payment"
+              | "fx-lifecycle-close",
             legs,
             postedAt: ctx.asOf,
           },

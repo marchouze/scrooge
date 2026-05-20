@@ -133,3 +133,71 @@ The register at Marc's worked-journal-entries page should now show:
 - **IAS 21 §21** — initial recognition of foreign-currency transactions.
 - **IAS 21 §28** — settlement-date P&L recognition.
 - **EXCON-SARB-CIRC-3-2020** — FinSurv reporting obligations (PR-FX-REGREPORT context).
+
+---
+
+## §5 — Erratum (2026-05-20): circularity in §3 and the Option 1 fix
+
+**Status:** ERRATUM applied 2026-05-20 by Bea (Accounting & financial reporting engineer, engineering) following CEO review.
+
+### What Marc found on PR #608
+
+The PR #608 design (above) declared that:
+- **PR-FX-PRIN** (on `PrincipalPayment`) returns `[]` — defers to PR-FX-003 on the aggregate `FxSettlementConfirmed`.
+- **PR-FX-LIFECYCLE-CLOSE** (on CDM `SettlementConfirmed`) returns `[]` — defers to PR-FX-003 on the accounting `FxSettlementConfirmed` projection.
+- **PR-FX-003** (on accounting `FxSettlementConfirmed`) carries the full GL impact.
+
+The circularity Marc spotted: `makeFxSettlementConfirmed(...)` is called **only from test code** (`platform/markets/eod/fx-revaluation.test.ts`, `platform/markets/eod/fx-forward-revaluation.test.ts`, `tests/ba-325-lcr.test.ts`). It is **never emitted** from `platform/simulation/post-trade-lifecycle.ts`, scenarios `06-fx-spot-trade.ts` / `07-fx-forward-trade.ts`, or any production code path. There is no projection handler that listens to CDM `SettlementConfirmed` and emits the accounting `FxSettlementConfirmed` projection — the design note assumed a handler that does not exist.
+
+**Net effect under §3:** an FX trade booked → instructed → 2× `PrincipalPayment` → CDM `SettlementConfirmed` produced **only PR-FX-001** (the booking) on the GL. The FX Trading Receivable and Payable were never derecognised; the nostro was never debited/credited; realised P&L was never recognised. The books were wrong for every settled trade.
+
+### The CEO decision (2026-05-20, in-session)
+
+**Option 1 — PR-FX-PRIN becomes the GL-significant rule** (per-leg cash at correspondent confirmation). PR-FX-LIFECYCLE-CLOSE owns the realised-P&L residual. PR-FX-003 + the accounting `FxSettlementConfirmed` event-type are deprecated.
+
+Rationale:
+- **Events match reality.** Cash moves at the correspondent → book the cash leg then. The CDM `PrincipalPayment` event is the canonical signal of that movement, and it IS emitted by production lifecycle code.
+- **No Principle 1 smell.** Option 1 does not derive a synthetic event from another event; the GL fold consumes the primary CDM events directly.
+- **No missing handler to write.** The settlement-projection handler the §3 design assumed does not exist. Option 1 removes the need for it.
+- **Realised-P&L residual.** The CDM `SettlementConfirmed` event carries `realisedPnlDelta` in ZAR minor units — exactly the residual to recognise once both legs have confirmed.
+
+### Why Option 1 over Option 2 (build the projection handler)
+
+Option 2 was to write a projection handler that listens to CDM `SettlementConfirmed` (+ the prior two `PrincipalPayment` events) and emits the accounting `FxSettlementConfirmed` event. PR-FX-003 would then post against the projection. Rejected because:
+- It requires a load-bearing cross-event projection (events deriving from events) — a Principle 1 anti-pattern flagged by Marc.
+- It adds a second derecognition timestamp (CDM lifecycle close vs accounting projection), with no underlying economic substance.
+- It is more code than Option 1 for an identical end-state GL footprint.
+
+### Implementation summary (this PR)
+
+- **PR-FX-PRIN rewrite** (`fxPrincipalPaymentJournals`):
+    - `legKind = "receive"` → `Dr Nostro [ccy] / Cr FX Trading Receivable [ccy]`, amount `|netCash|`.
+    - `legKind = "deliver"` → `Dr FX Trading Payable [ccy] / Cr Nostro [ccy]`, amount `|netCash|`.
+- **PR-FX-LIFECYCLE-CLOSE rewrite** (`fxLifecycleCloseJournals`):
+    - `realisedPnlDelta > 0` → `Dr Nostro ZAR / Cr Realised FX P&L`, amount `realisedPnlDelta`.
+    - `realisedPnlDelta < 0` → `Dr Realised FX P&L / Cr Nostro ZAR`, amount `|realisedPnlDelta|`.
+    - `realisedPnlDelta === 0` → `[]`.
+- **PR-FX-001 (`fxTradeBookingJournals`) convention fix.** A pre-existing pay-leg booking inversion (`Dr Payable / Cr Receivable`) was flipped to the natural side (`Dr Receivable / Cr Payable`) so that PR-FX-PRIN's deliver leg can retire the Payable cleanly. Documented in the function docblock.
+- **PR-FX-003 deprecation.** Annotated `@deprecated`; function and underlying accounting `FxSettlementConfirmed` event-type are retained for back-compat with legacy test fixtures and any historical events still in the store. No new production code path emits the event.
+
+### Consumer migration (this PR)
+
+The following downstream consumers folded the accounting `FxSettlementConfirmed` event and have been extended to also fold the CDM `SettlementConfirmed` (and, where useful, `PrincipalPayment`):
+
+- `platform/accounting/gl-projection.ts` — source-event lookup map + posting-type description handlers for `fx-principal-payment` and `fx-lifecycle-close`.
+- `platform/reporting/ba-350-events-adapter.ts` — settled-trade detection now folds both the CDM lifecycle-close event and the deprecated accounting event.
+- `platform/markets/eod/fx-revaluation.ts` / `fx-forward-revaluation.ts` — settled-trade exclusion folds CDM `SettlementConfirmed` in addition to `FxSettlementConfirmed`. For FX-swap (which needs per-leg granularity), the accounting event remains the authoritative source.
+- `platform/product-control/daily-pnl.ts` — settled-trade detection + realised-P&L accumulation folds both event types; CDM `SettlementConfirmed` contributes `realisedPnlDelta`.
+- `prototype/runtime/agents/bea-gl-posting-engine.ts` — subscribes to `PrincipalPayment` and `SettlementConfirmed`; routes each to its posting rule.
+
+`platform/event-store/event-types/fx-accounting.ts::subLedgerPostingEmittedPayloadSchema` adds two new `postingType` enum values: `"fx-principal-payment"` and `"fx-lifecycle-close"`.
+
+### Authority
+
+- **D-MARKETS-SCHEMA-FOUNDATION** (CEO-approved) — CDM event-family authority.
+- **D-FX-CLS-MEMBERSHIP** (CEO-approved) — correspondent-routed settlement.
+- **IFRS 9 §3.2.3** — derecognition on transfer of contractual cash flows (PR-FX-PRIN anchor).
+- **IAS 21 §28** — settlement-date FX gain/loss (PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE anchor).
+- **urn:principle:1** — events are reality, not derived from other events.
+- **Brief**: `brief:bea:fix-fx-posting-rule-circularity-pr-fx-prin-becom:2026-05-20`.
+- **CEO decision (in-session)**: 2026-05-20 (Marc, marc@tgv.co.za).
