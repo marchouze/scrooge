@@ -46,6 +46,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
+import type { ProvenanceTag } from "../provenance";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -219,6 +220,25 @@ export function makeOfficialMarkAdopted(args: {
   citations: string[];
   payload: OfficialMarkAdoptedPayload;
   eventId?: string;
+  /**
+   * Optional explicit provenance tag. When supplied, it is carried on the
+   * event envelope (the store's `append()` re-validates it against
+   * `provenanceTagSchema`). When omitted, the store applies the default
+   * resolution rules per `D-DATA-PROVENANCE-SUBSTRATE` (carve-outs first;
+   * else build-phase backfill tag if the substrate-active flag is false,
+   * else hard-reject).
+   *
+   * Ingesters in the build phase (e.g. the SARB-fixing fixture ingester
+   * — Atlas (Core banking platform architect, engineering) co-authored
+   * with Saskia (Chief Markets Officer, governance), 2026-05-20) supply
+   * an explicit `kind: "simulated"` tag with `sourceLineage: "sarb-fixing-fixture"`
+   * to label the source distinctly. Production-feed ingesters (post-licence)
+   * will supply `kind: "production"` with a feed-specific lineage. The
+   * `recon:market-data-provenance-gate` continues to govern the read
+   * side (every `.query(` / `.getLatest(` callsite must carry a `provenance`
+   * filter); this argument governs the write side.
+   */
+  provenance?: ProvenanceTag;
 }): Event {
   if (!args.citations || args.citations.length === 0) {
     throw new Error(
@@ -248,6 +268,7 @@ export function makeOfficialMarkAdopted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: parsed,
+    ...(args.provenance !== undefined ? { provenance: args.provenance } : {}),
   });
 }
 
