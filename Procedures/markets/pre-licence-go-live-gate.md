@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-PLG-01
 title: Pre-licence go-live readiness gate
-author: Saskia (Chief Markets Officer, governance) · Rashida (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
+author: Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Rashida (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
+owner: Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -18,7 +18,7 @@ citations:
 # Procedure — Pre-licence go-live readiness gate
 
 **Procedure ID:** PROC-MK-PLG-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Rashida (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
+**Owner:** Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
 **Approval:** CEO (D-MARKETS-SCHEMA-FOUNDATION); SARB determines final licence grant
 **Cadence:** Milestone-driven (single instance per product go-live, preceded by an iterative readiness-build phase)
 **Version:** v0.1 — 2026-05-16
@@ -55,34 +55,34 @@ Regulation (Banks Act 94 s.11 — licence required before banking business)
 
 1. Provide a structured, multi-condition readiness gate that the bank must pass before applying for a SARB banking licence and before commencing any regulated trading activity.
 2. Ensure that all 5 NPA product-readiness conditions, 6 operational-readiness conditions, and required regulatory approvals are formally satisfied and evidenced by terminal events before the gate is declared open.
-3. Require explicit sign-off from the co-chairs (Devon and Rashida) and the CEO before `GoLiveReadinessConfirmed` is emitted.
+3. Require explicit sign-off from the co-chairs (Devon and Zara) and the CEO before `GoLiveReadinessConfirmed` is emitted.
 4. Provide an audit-quality record of how each readiness condition was met, linked to the underlying evidence events.
 
 ## 4. Trigger
 
 - **Gate activation:** `GoLiveGateActivated { gateId, products: ['FxSpot', 'OtcIRS', 'JseBonds'], activatedBy: Devon, activatedAt }` — emitted when the bank formally enters the licence-application preparation phase.
 - **Condition update:** `GoLiveConditionUpdated { gateId, conditionId, status: 'Open' | 'InProgress' | 'Satisfied', evidence, updatedAt }` — emitted as each condition is worked through.
-- **Final gate call:** `GoLiveReadinessAssessed { gateId, allConditionsSatisfied: boolean, assessedBy: [Devon, Rashida], assessedAt }`.
+- **Final gate call:** `GoLiveReadinessAssessed { gateId, allConditionsSatisfied: boolean, assessedBy: [Devon, Zara], assessedAt }`.
 - **Gate cleared:** `GoLiveReadinessConfirmed { gateId, confirmedBy: CEO, confirmedAt }`.
 
 ## 5. Steps
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | Devon (COO) activates the go-live gate by emitting `GoLiveGateActivated`; the gate dashboard surfaces all conditions in `Open` status; Devon and Rashida are assigned as co-chairs | `human` (Devon — Chief Operating Officer, governance) | `@platform/governance/go-live-gate` (PLANNED) | Gate activation is a CEO-approved milestone; it marks the formal start of the licence-application preparation phase. |
-| 2 | **NPA product-readiness conditions (5 gates):** For each product (FX Spot, OTC Vanilla IRS, JSE Government Bonds, JSE Corporate Bonds, Structured Notes): (a) product schema defined and approved; (b) pricing model validated; (c) risk limits set; (d) conduct obligations mapped; (e) front-to-back system capability confirmed. Each sub-condition satisfied emits `GoLiveConditionUpdated { conditionId: 'NPA-{product}-{subCondition}', status: 'Satisfied', evidence }` | `agent` + `human` (Saskia co-signs each NPA gate) | `@platform/governance/go-live-gate` (PLANNED) | NPA conditions are product-specific. Each product requires Saskia (markets), Helena (risk), and Rashida (compliance) sign-off before the NPA condition for that product is marked Satisfied. |
+| 1 | Devon (COO) activates the go-live gate by emitting `GoLiveGateActivated`; the gate dashboard surfaces all conditions in `Open` status; Devon and Zara are assigned as co-chairs | `human` (Devon — Chief Operating Officer, governance) | `@platform/governance/go-live-gate` (PLANNED) | Gate activation is a CEO-approved milestone; it marks the formal start of the licence-application preparation phase. |
+| 2 | **NPA product-readiness conditions (5 gates):** For each product (FX Spot, OTC Vanilla IRS, JSE Government Bonds, JSE Corporate Bonds, Structured Notes): (a) product schema defined and approved; (b) pricing model validated; (c) risk limits set; (d) conduct obligations mapped; (e) front-to-back system capability confirmed. Each sub-condition satisfied emits `GoLiveConditionUpdated { conditionId: 'NPA-{product}-{subCondition}', status: 'Satisfied', evidence }` | `agent` + `human` (Saskia co-signs each NPA gate) | `@platform/governance/go-live-gate` (PLANNED) | NPA conditions are product-specific. Each product requires Saskia (markets), Helena (risk), and Zara (compliance) sign-off before the NPA condition for that product is marked Satisfied. |
 | 3 | **Operational-readiness conditions (6 conditions):** (a) Trading system operational and tested; (b) Settlement connectivity with correspondent bank confirmed; (c) Regulatory reporting pipelines live and tested (FinSurv, SARB returns); (d) Mandate and counterparty registries populated and validated; (e) Conduct gate (PROC-MK-PCG-01) tested end-to-end; (f) BCP and settlement-failure procedure (PROC-OPS-SFBCP-01) tested. Each condition satisfied emits `GoLiveConditionUpdated { conditionId: 'OPS-{condition}', status: 'Satisfied', evidence }` | `agent` + `human` (Devon co-signs each OPS condition) | `@platform/governance/go-live-gate` (PLANNED) | Operational conditions require Devon (COO) sign-off. System conditions require the relevant engineer to emit a test-completion event as evidence. |
-| 4 | **Regulatory approvals:** (a) SARB banking licence application submitted and approval received; (b) FSCA FSP licence in place; (c) POPIA Information Officer registered; (d) Key individuals (GC, MLRO) appointed and FSCA-approved; (e) Auditor appointed and engagement letter signed. Each approval received emits `RegulatoryApprovalReceived { approvalId, authority, approvalType, receivedAt, evidence }` | `human` (Devon + Rashida + Owen co-track) | `@platform/governance/go-live-gate` (PLANNED) | Regulatory approvals are external; they cannot be self-certified. Devon tracks outstanding approvals against the SARB licence timeline. |
-| 5 | **Readiness assessment:** Devon and Rashida jointly review the gate dashboard; confirm all conditions are in `Satisfied` status; all `RegulatoryApprovalReceived` events are present; emit `GoLiveReadinessAssessed { gateId, allConditionsSatisfied: true, assessedBy: [Devon, Rashida], assessedAt }` | `human` (Devon + Rashida) | `@platform/governance/go-live-gate` (PLANNED) | Assessment requires both Devon and Rashida to emit their sign-off events. Quorum is 2/2. A single co-chair cannot unilaterally confirm readiness. |
+| 4 | **Regulatory approvals:** (a) SARB banking licence application submitted and approval received; (b) FSCA FSP licence in place; (c) POPIA Information Officer registered; (d) Key individuals (GC, MLRO) appointed and FSCA-approved; (e) Auditor appointed and engagement letter signed. Each approval received emits `RegulatoryApprovalReceived { approvalId, authority, approvalType, receivedAt, evidence }` | `human` (Devon + Zara + Owen co-track) | `@platform/governance/go-live-gate` (PLANNED) | Regulatory approvals are external; they cannot be self-certified. Devon tracks outstanding approvals against the SARB licence timeline. |
+| 5 | **Readiness assessment:** Devon and Zara jointly review the gate dashboard; confirm all conditions are in `Satisfied` status; all `RegulatoryApprovalReceived` events are present; emit `GoLiveReadinessAssessed { gateId, allConditionsSatisfied: true, assessedBy: [Devon, Zara], assessedAt }` | `human` (Devon + Zara) | `@platform/governance/go-live-gate` (PLANNED) | Assessment requires both Devon and Zara to emit their sign-off events. Quorum is 2/2. A single co-chair cannot unilaterally confirm readiness. |
 | 6 | **CEO confirmation:** Marc (CEO) reviews the `GoLiveReadinessAssessed` event and the underlying condition evidence; if satisfied: emits `GoLiveReadinessConfirmed { gateId, confirmedBy: CEO, confirmedAt }` via `recordDecision`; this is the terminal event that authorises commencement of trading | `human` (Marc — CEO) | `@platform/decisions` | `GoLiveReadinessConfirmed` is a D-class decision event recorded via `recordDecision`. It is the single point of CEO authorisation for commencement of trading. |
-| 7 | **Post-gate activation:** On `GoLiveReadinessConfirmed`: Rashida initiates the commencement-of-trading regulatory notifications (SARB, FSCA); Devon activates production trading infrastructure; Saskia opens the trading desk to live counterparties; Niko commences live client onboarding | `human` (Rashida, Devon, Saskia, Niko) | Various | The gate event is immutable; any subsequent suspension of trading requires a separate `TradingSuspended` event with CEO sign-off. |
+| 7 | **Post-gate activation:** On `GoLiveReadinessConfirmed`: Zara initiates the commencement-of-trading regulatory notifications (SARB, FSCA); Devon activates production trading infrastructure; Saskia opens the trading desk to live counterparties; Niko commences live client onboarding | `human` (Zara, Devon, Saskia, Niko) | Various | The gate event is immutable; any subsequent suspension of trading requires a separate `TradingSuspended` event with CEO sign-off. |
 
 ## 6. Roles & responsibilities
 
 | Role | Responsibility |
 |---|---|
 | Devon (Chief Operating Officer, governance) | Gate co-chair; operational-readiness conditions sign-off; gate activation and activation |
-| Rashida (Chief Compliance Officer, governance) | Gate co-chair; NPA compliance sign-off; regulatory approvals tracking |
+| Zara (Chief Compliance Officer, governance) | Gate co-chair; NPA compliance sign-off; regulatory approvals tracking |
 | Saskia (Chief Markets Officer, governance) | NPA product-readiness conditions sign-off; desk activation on confirmation |
 | Helena (Chief Risk Officer, governance) | NPA risk-limit conditions sign-off |
 | Owen (Company Secretary, governance) | Regulatory approval documentation; SARB/FSCA correspondence |
@@ -96,7 +96,7 @@ Regulation (Banks Act 94 s.11 — licence required before banking business)
 | NPA condition blocked (system capability not ready) | Devon + relevant engineer + CEO for scope decision | Per blocker timeline |
 | Regulatory approval delayed | Owen + Devon + Marc strategic decision on timeline | Per SARB/FSCA timeline |
 | One co-chair cannot agree on readiness | Marc (CEO) adjudicates | Immediate |
-| Condition evidence disputed by Vera | Devon + Rashida review; condition remains Open until dispute resolved | Before assessment |
+| Condition evidence disputed by Vera | Devon + Zara review; condition remains Open until dispute resolved | Before assessment |
 
 ## 8. System capabilities
 
@@ -127,3 +127,4 @@ Regulation (Banks Act 94 s.11 — licence required before banking business)
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-16 | Devon (Chief Operating Officer, governance) | Initial POPULATED — gate activation, 5 NPA product conditions, 6 OPS conditions, regulatory approvals, Devon/Rashida co-chair assessment, CEO GoLiveReadinessConfirmed event; Banks Act 94 s.11 compliance; terminal build-phase gate. |
+| v0.2 | 2026-05-20 | Owen (Company Secretary, governance) | CCO seat reconciliation — Rashida (Chief Compliance Officer) → Zara (Chief Compliance Officer) per `Team/_team-roster.json` canonical roster. Rashida holds the CISO seat; CCO authority for the NPA / commencement-of-trading regulatory-notification pathway is Zara. No substantive procedure change. |

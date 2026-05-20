@@ -5,8 +5,8 @@ author: Mira (Compliance / RegTech Engineer) · Saskia (Chief Markets Officer, g
 date: 2026-05-16
 owner: Mira (Compliance / RegTech Engineer) · Saskia (Chief Markets Officer, governance)
 status: POPULATED
-version: "0.1"
-last-updated: "2026-05-16"
+version: "0.2"
+last-updated: "2026-05-20"
 policy-cited: Regulatory Reporting Policy (planned)
 system-capability: "@regulatory/sarb-finsurv (PLANNED)"
 citations:
@@ -19,14 +19,14 @@ citations:
 
 **Procedure ID:** PROC-FIN-FXFS-01
 **Owner:** Mira (Compliance / RegTech Engineer) · Saskia (Chief Markets Officer, governance)
-**Approval:** CCO (Rashida) — Regulatory Reporting Policy (planned); SARB FinSurv mandated
+**Approval:** CCO (Zara) — Regulatory Reporting Policy (planned); SARB FinSurv mandated
 **Cadence:** T+0 same-day for FX spot trades per FinSurv circular; automated at commencement of trading
 **Version:** v0.1 — 2026-05-16
 **Status:** POPULATED
 
 ## 1. Source policy
 
-- Regulatory Reporting Policy (planned; Mira co-author; CCO/Rashida approval required at commencement).
+- Regulatory Reporting Policy (planned; Mira co-author; CCO/Zara approval required at commencement).
 - Currency and Exchange Manual (SARB) — framework for FX transaction reporting obligations.
 - SARB FinSurv reporting circulars — prescribe the specific format and timing of FX trade reports.
 - Decision record: `D-FX-AD-STATUS` — confirms the bank's authorised dealer (AD) status pathway; FinSurv reporting obligations are an AD condition.
@@ -84,9 +84,9 @@ Regulation (Currency and Exchanges Act; SARB FinSurv circulars — FX trade repo
 | 4 | **FinSurv submission:** Submit the validated FinSurv file to SARB via the FinSurv submission channel (secure HTTPS API or SFTP per current SARB FinSurv technical specification); receive submission confirmation reference | `agent` (Mira — automated) | `@regulatory/sarb-finsurv` (PLANNED) | Submission channel: SARB FinSurv API (if available) or secure SFTP. Confirmation reference is stored as evidence. |
 | 5 | **TradeReportSubmitted event:** On successful submission: emit `TradeReportSubmitted { submissionId, tradeIds: [tradeId], submissionDate, finsurvRef, submittedBy: Mira, submittedAt }` | `agent` | `@platform/event-store` | This event is the canonical submission record. `finsurvRef` is the SARB-issued submission reference. |
 | 6 | **Confirmation stored:** The FinSurv submission confirmation is stored in the regulatory correspondence store (BLAKE3-addressed); `TradeReportSubmitted.confirmationHash` references the stored document | `agent` | `@platform/doc-store` | SARB FinSurv confirmation documents are retained for 7 years per Currency and Exchanges Act records obligations. |
-| 7 | **Submission failure handling:** If submission is rejected by FinSurv: emit `TradeReportSubmissionFailed { submissionId, reason, failedAt }`; Mira investigates the rejection reason; corrects the file; resubmits before 17:00 SAST; if resubmission is not possible before 17:00, Mira notifies Rashida (CCO) immediately | `human` (Mira) | `@regulatory/sarb-finsurv` (PLANNED) | Submission failures after 17:00 SAST are late submissions; Rashida assesses whether a FinSurv breach notification to SARB is required. Saskia is also informed. |
-| 8 | **Daily submission reconciliation:** At 17:30 SAST, Mira reconciles submitted trades against the day's `FxTradeExecuted` events; any trade without a `TradeReportSubmitted` event is a submission gap; Mira initiates a late submission with Rashida's approval | `human` (Mira) | `@platform/compliance/finsurv-validator` (PLANNED) | Submission gaps are `FinsurvSubmissionGap { tradeId, gapDetectedAt }` events; Rashida is notified of any gap. |
-| 9 | **Daily FinSurv submission report:** Mira emits `DailyFinsurvSubmissionReport { date, tradesSubmitted, submissionFailures, gapsDetected, gapsResolved, completedAt }` at EOD; this is an input to the regulatory reporting dashboard | `agent` (Mira — automated) | `@platform/event-store` | Daily report surfaces on the regulatory dashboard. Rashida reviews weekly. |
+| 7 | **Submission failure handling:** If submission is rejected by FinSurv: emit `TradeReportSubmissionFailed { submissionId, reason, failedAt }`; Mira investigates the rejection reason; corrects the file; resubmits before 17:00 SAST; if resubmission is not possible before 17:00, Mira notifies Zara (CCO) immediately | `human` (Mira) | `@regulatory/sarb-finsurv` (PLANNED) | Submission failures after 17:00 SAST are late submissions; Zara assesses whether a FinSurv breach notification to SARB is required. Saskia is also informed. |
+| 8 | **Daily submission reconciliation:** At 17:30 SAST, Mira reconciles submitted trades against the day's `FxTradeExecuted` events; any trade without a `TradeReportSubmitted` event is a submission gap; Mira initiates a late submission with Zara's approval | `human` (Mira) | `@platform/compliance/finsurv-validator` (PLANNED) | Submission gaps are `FinsurvSubmissionGap { tradeId, gapDetectedAt }` events; Zara is notified of any gap. |
+| 9 | **Daily FinSurv submission report:** Mira emits `DailyFinsurvSubmissionReport { date, tradesSubmitted, submissionFailures, gapsDetected, gapsResolved, completedAt }` at EOD; this is an input to the regulatory reporting dashboard | `agent` (Mira — automated) | `@platform/event-store` | Daily report surfaces on the regulatory dashboard. Zara reviews weekly. |
 
 ## 6. Roles & responsibilities
 
@@ -94,7 +94,7 @@ Regulation (Currency and Exchanges Act; SARB FinSurv circulars — FX trade repo
 |---|---|
 | Mira (Compliance / RegTech Engineer) | FinSurv pipeline ownership; finsurvCategory validation; submission; failure handling; daily reconciliation |
 | Saskia (Chief Markets Officer, governance) | Ensures finsurvCategory is set correctly on all FX trades at execution time |
-| Rashida (Chief Compliance Officer, governance) | CCO oversight; late-submission breach notification assessment; weekly report review |
+| Zara (Chief Compliance Officer, governance) | CCO oversight; late-submission breach notification assessment; weekly report review |
 | Vera (internal audit engineer, governance) | Quarterly assertion that every `FxTradeExecuted` has a downstream `TradeReportSubmitted`; no submission gaps |
 
 ## 7. Escalation
@@ -102,10 +102,10 @@ Regulation (Currency and Exchanges Act; SARB FinSurv circulars — FX trade repo
 | Trigger | Escalation path | Timing |
 |---|---|---|
 | finsurvCategory missing at trade execution | Mira → Saskia to correct at source; trade held from submission | Before 17:00 SAST |
-| Submission rejected by FinSurv | Mira investigates and resubmits; Rashida informed if before 17:00 | Immediate |
-| Submission not completed by 17:00 SAST | Mira → Rashida; late-submission process | 17:00 SAST |
-| Submission gap detected at 17:30 reconciliation | Rashida notified; late submission initiated | 17:30 SAST |
-| SARB FinSurv API unavailable | Mira → Devon (COO); SFTP fallback; Rashida notified | Immediate |
+| Submission rejected by FinSurv | Mira investigates and resubmits; Zara informed if before 17:00 | Immediate |
+| Submission not completed by 17:00 SAST | Mira → Zara; late-submission process | 17:00 SAST |
+| Submission gap detected at 17:30 reconciliation | Zara notified; late submission initiated | 17:30 SAST |
+| SARB FinSurv API unavailable | Mira → Devon (COO); SFTP fallback; Zara notified | Immediate |
 
 ## 8. System capabilities
 
@@ -138,3 +138,4 @@ Regulation (Currency and Exchanges Act; SARB FinSurv circulars — FX trade repo
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-16 | Devon (Chief Operating Officer, governance) | Initial POPULATED — finsurvCategory check, manual export path (build phase), automated pipeline (commencement), submission, TradeReportSubmitted event, failure handling, daily reconciliation, T+0 17:00 SAST deadline; Currency and Exchange Manual + FinSurv circular sourcing; D-FX-AD-STATUS citation. |
+| v0.2 | 2026-05-20 | Owen (Company Secretary, governance) | **CCO seat reconciliation.** Per `Team/_team-roster.json` canonical roster, the CCO seat is held by **Zara**, not Rashida (who holds the CISO seat). Replaced "Rashida" with "Zara" in: front-matter Approval line, §1 Source policy, steps 7/8/9, §6 Roles, and §7 Escalation. The substantive Mira-led submission flow is unchanged. |
