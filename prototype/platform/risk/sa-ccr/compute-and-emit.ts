@@ -47,8 +47,8 @@
 // engineer, engineering) — see `IrsPositionRevalued` / `FxPositionRevalued`
 // schemas.
 
-import { eventStore } from "../../composition";
 import { getCollateralInventory } from "../../collateral/inventory";
+import { eventStore } from "../../composition";
 import { type Money, minor } from "../../core/money";
 import { type Actor, BANK_ZA_001, newEventId } from "../../core/types";
 import {
@@ -106,9 +106,7 @@ export function resolveMtm(inputs: NettingSetMtmInputs): Money {
     };
     if (payload.counterparty?.partyId !== counterpartyId) continue;
     const tid =
-      typeof payload.tradeId === "string"
-        ? payload.tradeId
-        : (payload.tradeId?.value ?? undefined);
+      typeof payload.tradeId === "string" ? payload.tradeId : (payload.tradeId?.value ?? undefined);
     if (tid) tradeIds.add(tid);
   }
   for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
@@ -118,9 +116,7 @@ export function resolveMtm(inputs: NettingSetMtmInputs): Money {
     };
     if (payload.counterparty?.partyId !== counterpartyId) continue;
     const tid =
-      typeof payload.tradeId === "string"
-        ? payload.tradeId
-        : (payload.tradeId?.value ?? undefined);
+      typeof payload.tradeId === "string" ? payload.tradeId : (payload.tradeId?.value ?? undefined);
     if (tid) tradeIds.add(tid);
   }
 
@@ -137,9 +133,7 @@ export function resolveMtm(inputs: NettingSetMtmInputs): Money {
       markToMarket?: { currency?: string; amountMinor?: number };
     };
     const tid =
-      typeof payload.tradeId === "string"
-        ? payload.tradeId
-        : (payload.tradeId?.value ?? undefined);
+      typeof payload.tradeId === "string" ? payload.tradeId : (payload.tradeId?.value ?? undefined);
     if (!tid || !tradeIds.has(tid)) continue;
     const mtm = payload.markToMarket;
     if (!mtm || typeof mtm.amountMinor !== "number") continue;

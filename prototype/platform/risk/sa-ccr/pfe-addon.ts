@@ -161,9 +161,7 @@ export function pfeMultiplier(
 export const MPOR_BUSINESS_DAYS = 10 as const;
 const BUSINESS_DAYS_PER_YEAR = 250;
 /** Margined maturity factor: √(MPOR / 1y) — constant at v1 (MPOR = 10 bd). */
-export const MARGINED_MATURITY_FACTOR = Math.sqrt(
-  MPOR_BUSINESS_DAYS / BUSINESS_DAYS_PER_YEAR,
-);
+export const MARGINED_MATURITY_FACTOR = Math.sqrt(MPOR_BUSINESS_DAYS / BUSINESS_DAYS_PER_YEAR);
 
 export function maturityFactor(opts: {
   margined: boolean;
