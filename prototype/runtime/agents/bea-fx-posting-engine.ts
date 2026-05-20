@@ -32,6 +32,8 @@ import { makeSubLedgerPostingEmitted } from "../../platform/event-store/event-ty
 import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
+  FxTradeCancelledPayload,
+  SubLedgerLeg,
 } from "../../platform/event-store/event-types/fx-accounting";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -54,6 +56,7 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
   "FxSettlementConfirmed",
+  "FxTradeCancelled",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -88,6 +91,7 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           ...eventStore.replay({ type: "FxTradeExecuted" }),
           ...eventStore.replay({ type: "FxPositionRevalued" }),
           ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+          ...eventStore.replay({ type: "FxTradeCancelled" }),
         ];
 
   if (relevant.length === 0) {
@@ -228,6 +232,83 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           );
           postedKeys.add(`${e.event_id}:settlement`);
           eventsEmitted += 1;
+        }
+      } else if (e.type === "FxTradeCancelled") {
+        // PR-FX-004: cancellation reversal — for each prior revaluation posting
+        // on this trade, emit a reversing SubLedgerPostingEmitted that flips
+        // every debit→credit and credit→debit. This nulls out the phantom MTM
+        // movements in the GL for voided trades (IFRS 9: derecognition).
+        //
+        // Idempotency key: `<cancel_event_id>:revaluation-reversal:<source_event_id>`
+        // so each source revaluation is reversed at most once per cancellation.
+
+        const payload = e.payload as FxTradeCancelledPayload;
+        const { tradeId } = payload;
+
+        // Collect all FxPositionRevalued event IDs for this trade.
+        const revalEventIds = new Set<string>();
+        for (const re of eventStore.replay({ type: "FxPositionRevalued" })) {
+          const rp = re.payload as FxPositionRevaluedPayload;
+          if (rp.tradeId === tradeId) revalEventIds.add(re.event_id);
+        }
+
+        if (revalEventIds.size === 0) {
+          // No revaluation postings to reverse — trade cancelled before any MTM.
+          skipped += 1;
+          continue;
+        }
+
+        // For each revaluation posting that was emitted for these events, emit
+        // a reversing entry if not already done.
+        for (const re of eventStore.replay({ type: "SubLedgerPostingEmitted" })) {
+          const rp = re.payload as {
+            sourceEventId?: string;
+            postingType?: string;
+            legs?: SubLedgerLeg[];
+            postedAt?: string;
+          };
+          if (
+            rp.postingType !== "revaluation" ||
+            !rp.sourceEventId ||
+            !revalEventIds.has(rp.sourceEventId)
+          )
+            continue;
+
+          const reversalKey = `${e.event_id}:revaluation-reversal:${rp.sourceEventId}`;
+          if (postedKeys.has(reversalKey)) {
+            skipped += 1;
+            continue;
+          }
+
+          const reversedLegs: SubLedgerLeg[] = (rp.legs ?? []).map((leg) => ({
+            ...leg,
+            debitCredit: leg.debitCredit === "debit" ? "credit" : "debit",
+          }));
+
+          if (reversedLegs.length === 0) {
+            skipped += 1;
+            continue;
+          }
+
+          if (!ctx.dryRun) {
+            eventStore.append(
+              makeSubLedgerPostingEmitted({
+                asOf: ctx.asOf,
+                entity: e.entity ?? "LE-ZA-HOZ-BANK",
+                actor: HANDLER_ACTOR,
+                citations: [...FX_POSTING_CITATIONS],
+                payload: {
+                  sourceEventId: e.event_id,
+                  postingType: "reversal",
+                  legs: reversedLegs,
+                  postedAt: ctx.asOf,
+                },
+                eventId: newEventId(),
+              }),
+            );
+            postedKeys.add(reversalKey);
+            eventsEmitted += 1;
+          }
         }
       }
     } catch (err) {
