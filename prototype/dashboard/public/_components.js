@@ -220,6 +220,175 @@
     </div>`;
   }
 
+  // ── renderMarkdown ─────────────────────────────────────────────
+  // Minimal markdown → HTML renderer covering: H1-H3, paragraphs,
+  // unordered + ordered lists, fenced code blocks, blockquotes, GFM
+  // tables, bold/italic/inline-code/links. Strips a leading YAML
+  // frontmatter block. Same shape as the legacy renderMarkdownLite
+  // in policies.js / procedures.js; centralised here so any page can
+  // open a full markdown document. No external lib.
+  function renderMarkdown(md) {
+    const src = String(md ?? "");
+    let body = src;
+    if (body.startsWith("---")) {
+      const end = body.indexOf("\n---", 3);
+      if (end !== -1) body = body.slice(end + 4);
+    }
+    const lines = body.split(/\r?\n/);
+    const out = [];
+    let inCode = false;
+    let codeBuf = [];
+    let inList = false;
+    let listType = null;
+    let inTable = false;
+    let tableRows = [];
+    const closeList = () => {
+      if (inList) {
+        out.push(listType === "ol" ? "</ol>" : "</ul>");
+        inList = false;
+        listType = null;
+      }
+    };
+    const isTableSep = (r) => /^\|[\s\-:| ]+\|$/.test(r);
+    const parseTableCells = (r) =>
+      r
+        .split("|")
+        .slice(1, -1)
+        .map((c) => c.trim());
+    const closeTable = () => {
+      if (!inTable || tableRows.length === 0) {
+        inTable = false;
+        tableRows = [];
+        return;
+      }
+      const sepIdx = tableRows.findIndex((r) => isTableSep(r));
+      const headRows = sepIdx === -1 ? [] : tableRows.slice(0, sepIdx);
+      const bodyRows = sepIdx === -1 ? tableRows : tableRows.slice(sepIdx + 1);
+      let html = '<div class="md-table-wrap"><table>';
+      if (headRows.length > 0) {
+        html += "<thead>";
+        for (const r of headRows)
+          html += `<tr>${parseTableCells(r)
+            .map((c) => `<th>${inlineFormat(c)}</th>`)
+            .join("")}</tr>`;
+        html += "</thead>";
+      }
+      if (bodyRows.length > 0) {
+        html += "<tbody>";
+        for (const r of bodyRows)
+          html += `<tr>${parseTableCells(r)
+            .map((c) => `<td>${inlineFormat(c)}</td>`)
+            .join("")}</tr>`;
+        html += "</tbody>";
+      }
+      html += "</table></div>";
+      out.push(html);
+      inTable = false;
+      tableRows = [];
+    };
+    const inlineFormat = (line) => {
+      let s = esc(line);
+      s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
+      s = s.replace(/\*\*([^*]+)\*\*/g, (_, t) => `<strong>${t}</strong>`);
+      s = s.replace(/(^|\W)\*([^*]+)\*(\W|$)/g, (_m, a, t, b) => `${a}<em>${t}</em>${b}`);
+      s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, href) => {
+        const safe = /^(https?:|\/|\.\.?\/)/i.test(href) ? href : "#";
+        return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+      });
+      return s;
+    };
+    for (const raw of lines) {
+      const line = raw.replace(/\s+$/, "");
+      if (line.startsWith("```")) {
+        if (inCode) {
+          out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+          codeBuf = [];
+          inCode = false;
+        } else {
+          closeList();
+          closeTable();
+          inCode = true;
+        }
+        continue;
+      }
+      if (inCode) {
+        codeBuf.push(line);
+        continue;
+      }
+      if (!line.trim()) {
+        closeList();
+        closeTable();
+        continue;
+      }
+      const h1 = line.match(/^# (.+)$/);
+      if (h1) {
+        closeList();
+        closeTable();
+        out.push(`<h2>${inlineFormat(h1[1])}</h2>`);
+        continue;
+      }
+      const h2 = line.match(/^## (.+)$/);
+      if (h2) {
+        closeList();
+        closeTable();
+        out.push(`<h3>${inlineFormat(h2[1])}</h3>`);
+        continue;
+      }
+      const h3 = line.match(/^### (.+)$/);
+      if (h3) {
+        closeList();
+        closeTable();
+        out.push(`<h4>${inlineFormat(h3[1])}</h4>`);
+        continue;
+      }
+      const ul = line.match(/^[-*]\s+(.+)$/);
+      if (ul) {
+        if (!inList || listType !== "ul") {
+          closeList();
+          closeTable();
+          out.push("<ul>");
+          inList = true;
+          listType = "ul";
+        }
+        out.push(`<li>${inlineFormat(ul[1])}</li>`);
+        continue;
+      }
+      const ol = line.match(/^\d+\.\s+(.+)$/);
+      if (ol) {
+        if (!inList || listType !== "ol") {
+          closeList();
+          closeTable();
+          out.push("<ol>");
+          inList = true;
+          listType = "ol";
+        }
+        out.push(`<li>${inlineFormat(ol[1])}</li>`);
+        continue;
+      }
+      if (line.startsWith("> ")) {
+        closeList();
+        closeTable();
+        out.push(`<blockquote>${inlineFormat(line.slice(2))}</blockquote>`);
+        continue;
+      }
+      if (line.startsWith("|")) {
+        closeList();
+        inTable = true;
+        tableRows.push(line);
+        continue;
+      }
+      closeList();
+      closeTable();
+      out.push(`<p>${inlineFormat(line)}</p>`);
+    }
+    if (inCode) {
+      out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+    }
+    closeList();
+    closeTable();
+    return out.join("\n");
+  }
+
   // ── Export as window.SC ────────────────────────────────────────
   window.SC = {
     renderBadge,
@@ -230,6 +399,7 @@
     renderTable,
     renderSkeleton,
     renderSectionHeader,
+    renderMarkdown,
     esc,
     fmt,
   };

@@ -7,16 +7,42 @@
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .breadcrumbs { font: var(--text-caption); color: var(--color-text-secondary); margin-bottom: var(--space-2); }
+    .breadcrumbs a { color: var(--color-text-secondary); text-decoration: underline; cursor: pointer; }
+    .breadcrumbs a:hover { color: var(--color-text); }
+    .breadcrumbs .sep { margin: 0 0.5em; opacity: 0.6; }
+    .doc-meta { font: var(--text-caption); color: var(--color-text-secondary); margin-bottom: var(--space-3); display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .doc-meta span { white-space: nowrap; }
+    .doc-body { max-width: 78ch; font: var(--text-body); }
+    .doc-body h2 { font: var(--text-h2); margin-top: var(--space-4); }
+    .doc-body h3 { font: var(--text-h3); margin-top: var(--space-3); }
+    .doc-body h4 { font: var(--text-h4); margin-top: var(--space-3); }
+    .doc-body pre { background: var(--color-surface-alt, #f7f7f5); padding: var(--space-2); border-radius: 6px; overflow-x: auto; }
+    .doc-body code { background: var(--color-surface-alt, #f7f7f5); padding: 0 0.3em; border-radius: 3px; }
+    .doc-body pre code { background: transparent; padding: 0; }
+    .doc-body blockquote { border-left: 3px solid var(--color-border, #e0e0e0); padding-left: var(--space-2); color: var(--color-text-secondary); margin: var(--space-2) 0; }
+    .doc-body .md-table-wrap { overflow-x: auto; margin: var(--space-2) 0; }
+    .doc-body table { border-collapse: collapse; }
+    .doc-body th, .doc-body td { padding: 6px 12px; border-bottom: 1px solid var(--color-border, #e0e0e0); text-align: left; vertical-align: top; }
+    .doc-body th { font-weight: 600; background: var(--color-surface-alt, #f7f7f5); }
+    .doc-body ul, .doc-body ol { padding-left: 1.5em; }
+    .doc-empty { color: var(--color-text-secondary); font-style: italic; }
+    .table-row-click { cursor: pointer; }
+    .table-row-click:hover { background: var(--color-surface-alt, #f7f7f5); }
+  </style>
 </head>
 <body>
   <div id="shell"></div>
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
-    <div class="page-header"><h1 class="page-title">RMS Registers</h1></div>
+    <nav id="rms-breadcrumbs" class="breadcrumbs" aria-label="Breadcrumb"></nav>
+    <div class="page-header"><h1 id="rms-title" class="page-title">RMS Registers</h1></div>
     <div class="page-body">
       <p id="rms-blurb" class="page-subtitle"></p>
       <div id="rms-tabs" class="tab-bar"></div>
       <div id="rms-table"></div>
+      <div id="rms-document"></div>
     </div>
   </main>
   <script src="/_shell.js"></script>
@@ -24,11 +50,19 @@
   <script src="/_components.js"></script>
   <script>
     initShell({ title: "RMS Registers" });
-    (async () => {
+    (() => {
       async function sf(u) {
         try {
           const r = await fetch(u, { headers: { Accept: "application/json" } });
           return r.ok ? r.json() : null;
+        } catch {
+          return null;
+        }
+      }
+      async function fetchText(u) {
+        try {
+          const r = await fetch(u);
+          return r.ok ? r.text() : null;
         } catch {
           return null;
         }
@@ -49,33 +83,61 @@
         "procedures": ["title", "owner", "status", "policyCited", "systemCapability", "path"],
       };
 
+      // Pick an identifier for a row that's stable and human-recognisable —
+      // used as URL `id` param and as the breadcrumb leaf.
+      function rowId(register, row) {
+        if (register === "policies") return row.filename || "";
+        if (register === "procedures") return row.filename || "";
+        if (register === "document") return row.documentHash || "";
+        return (
+          row.decisionId || row.runId || row.briefId || row.recordId ||
+          row.feedbackId || row.workstreamId || row.documentHash ||
+          row.eventId || ""
+        );
+      }
+      function rowLabel(register, row) {
+        return row.title || rowId(register, row) || "(untitled)";
+      }
+
+      // For a given row, derive a content URL (markdown / text) and the
+      // doc title to render in the document view. Returns null when no
+      // backing document is available (in which case the document view
+      // falls back to the structured key-value listing).
+      function resolveContent(register, row) {
+        if (register === "policies" && row.filename) {
+          return { kind: "markdown", url: `/api/policy/${encodeURIComponent(row.filename)}`, source: row.path };
+        }
+        if (register === "procedures" && row.filename) {
+          return { kind: "markdown", url: `/api/procedure/${encodeURIComponent(row.filename)}`, source: row.path };
+        }
+        const hash = row.documentHash
+          || (Array.isArray(row.sourceDocumentHashes) ? row.sourceDocumentHashes[0] : null)
+          || (Array.isArray(row.deliverableDocumentHashes) ? row.deliverableDocumentHashes[0] : null);
+        if (hash) {
+          return { kind: "markdown", url: `/api/rms/document-content?hash=${encodeURIComponent(hash)}`, source: hash };
+        }
+        return null;
+      }
+
       const tableEl = document.getElementById("rms-table");
+      const docEl = document.getElementById("rms-document");
       const tabsEl = document.getElementById("rms-tabs");
       const blurbEl = document.getElementById("rms-blurb");
+      const titleEl = document.getElementById("rms-title");
+      const crumbsEl = document.getElementById("rms-breadcrumbs");
 
       tableEl.innerHTML = SC.renderSkeleton(6);
 
-      const catalogue = await sf("/api/rms");
-      if (!catalogue || !Array.isArray(catalogue.catalogue)) {
-        tableEl.innerHTML = `<p>RMS catalogue unavailable.</p>`;
-        return;
-      }
+      let catalogue = null;
+      let REGISTERS = [];
+      let activeKey = null;
+      let activeRowId = null;
+      const rowCache = new Map();
 
-      // Counts in /api/rms are keyed by a camelCased form (briefsDispatches,
-      // agentRuns); look both forms up so the badge is right for either.
       function lookupCount(key) {
         const camel = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-        return catalogue.counts?.[camel] ?? catalogue.counts?.[key] ?? null;
+        return catalogue?.counts?.[camel] ?? catalogue?.counts?.[key] ?? null;
       }
-      const REGISTERS = catalogue.catalogue.map((c) => ({
-        key: c.key,
-        title: c.title,
-        blurb: c.blurb || "",
-        count: lookupCount(c.key),
-      }));
-
-      let activeKey = REGISTERS[0]?.key;
-      const cache = new Map();
 
       function fmtCell(value) {
         if (value === null || value === undefined) return "—";
@@ -90,7 +152,6 @@
         }
         return String(value);
       }
-
       function flatten(row, key) {
         if (key === "owner" && row.owner) return fmtCell(row.owner);
         if (key === "agentName" && row.agent?.name) return row.agent.name;
@@ -106,29 +167,47 @@
         }).join("");
       }
 
+      function renderBreadcrumbs(reg, doc) {
+        const parts = [`<a data-nav="root">RMS Registers</a>`];
+        if (reg) {
+          if (doc) parts.push(`<a data-nav="register" data-k="${reg.key}">${SC.esc(reg.title)}</a>`);
+          else parts.push(`<span>${SC.esc(reg.title)}</span>`);
+        }
+        if (doc) parts.push(`<span>${SC.esc(doc)}</span>`);
+        crumbsEl.innerHTML = parts.join('<span class="sep">›</span>');
+      }
+
       async function getRows(key) {
-        if (cache.has(key)) return cache.get(key);
+        if (rowCache.has(key)) return rowCache.get(key);
         const res = await sf(`/api/rms/${encodeURIComponent(key)}`);
         const rows = Array.isArray(res?.rows) ? res.rows : [];
-        cache.set(key, rows);
+        rowCache.set(key, rows);
         return rows;
       }
 
-      async function render() {
-        const reg = REGISTERS.find((r) => r.key === activeKey);
+      async function renderListView(key) {
+        const reg = REGISTERS.find((r) => r.key === key);
+        activeKey = key;
+        activeRowId = null;
+        docEl.innerHTML = "";
+        tabsEl.style.display = "";
+        tableEl.style.display = "";
+        titleEl.textContent = "RMS Registers";
         blurbEl.textContent = reg?.blurb || "";
+        renderTabs();
+        renderBreadcrumbs(reg, null);
         tableEl.innerHTML = SC.renderSkeleton(6);
-        const rows = await getRows(activeKey);
+        const rows = await getRows(key);
         if (rows.length === 0) {
           SC.renderTable({
             container: tableEl,
             headers: ["—"],
             rows: [],
-            emptyMessage: `No ${reg?.title || activeKey} records yet.`,
+            emptyMessage: `No ${reg?.title || key} records yet.`,
           });
           return;
         }
-        const cols = REGISTER_COLUMNS[activeKey] || Object.keys(rows[0] || {}).slice(0, 6);
+        const cols = REGISTER_COLUMNS[key] || Object.keys(rows[0] || {}).slice(0, 6);
         SC.renderTable({
           container: tableEl,
           headers: cols,
@@ -136,24 +215,123 @@
             cells: cols.map((c) => SC.esc(flatten(r, c))),
             data: r,
           })),
-          onRowClick: (r) =>
-            SC.openModal({
-              title: r.title || r.decisionId || r.runId || r.briefId || r.recordId || reg?.title,
-              body: SC.renderDefList(r),
-            }),
-          emptyMessage: `No ${reg?.title || activeKey} records yet.`,
+          onRowClick: (r) => navigateTo(key, rowId(key, r), true),
+          emptyMessage: `No ${reg?.title || key} records yet.`,
         });
       }
 
-      renderTabs();
-      tabsEl.addEventListener("click", async (e) => {
+      async function renderDocumentView(key, id) {
+        const reg = REGISTERS.find((r) => r.key === key);
+        activeKey = key;
+        activeRowId = id;
+        tabsEl.style.display = "none";
+        tableEl.style.display = "none";
+        docEl.innerHTML = SC.renderSkeleton(8);
+        const rows = await getRows(key);
+        const row = rows.find((r) => rowId(key, r) === id);
+        if (!row) {
+          docEl.innerHTML = `<p class="doc-empty">Record not found: <code>${SC.esc(id)}</code></p>`;
+          titleEl.textContent = "Not found";
+          renderBreadcrumbs(reg, id);
+          return;
+        }
+        const label = rowLabel(key, row);
+        titleEl.textContent = label;
+        renderBreadcrumbs(reg, label);
+
+        const content = resolveContent(key, row);
+        // Build the meta strip — owner + status + identifiers.
+        const metaParts = [];
+        if (row.owner) metaParts.push(`Owner: <strong>${SC.esc(fmtCell(row.owner))}</strong>`);
+        if (row.status) metaParts.push(`Status: <strong>${SC.esc(row.status)}</strong>`);
+        if (row.forActor) metaParts.push(`For: <strong>${SC.esc(row.forActor)}</strong>`);
+        if (row.priority) metaParts.push(`Priority: <strong>${SC.esc(row.priority)}</strong>`);
+        if (row.classification) metaParts.push(`Classification: <strong>${SC.esc(row.classification)}</strong>`);
+        if (row.path) metaParts.push(`<code>${SC.esc(row.path)}</code>`);
+        if (content?.source && !row.path) metaParts.push(`<code>${SC.esc(content.source)}</code>`);
+        const metaHtml = metaParts.length ? `<div class="doc-meta">${metaParts.join("<span>·</span>")}</div>` : "";
+
+        if (!content) {
+          // No backing document — render the structured row as fallback.
+          docEl.innerHTML = `
+            ${metaHtml}
+            <p class="doc-empty">No standalone document is attached to this record. Showing the structured row instead.</p>
+            ${SC.renderDefList(row)}
+          `;
+          return;
+        }
+        const md = await fetchText(content.url);
+        if (md === null) {
+          docEl.innerHTML = `
+            ${metaHtml}
+            <p class="doc-empty">Document content not available from <code>${SC.esc(content.url)}</code> — likely a hash referenced by events but not present in the local content store. Showing the structured row instead.</p>
+            ${SC.renderDefList(row)}
+          `;
+          return;
+        }
+        docEl.innerHTML = `${metaHtml}<article class="doc-body">${SC.renderMarkdown(md)}</article>`;
+      }
+
+      // URL state — bare /rms.html → list view of first register;
+      // ?register=KEY → list view; ?register=KEY&id=ID → document view.
+      function readUrl() {
+        const u = new URL(window.location.href);
+        return { key: u.searchParams.get("register"), id: u.searchParams.get("id") };
+      }
+      function writeUrl(key, id, push) {
+        const u = new URL(window.location.href);
+        if (key) u.searchParams.set("register", key); else u.searchParams.delete("register");
+        if (id) u.searchParams.set("id", id); else u.searchParams.delete("id");
+        const url = u.pathname + (u.search || "") + (u.hash || "");
+        if (push) window.history.pushState({ key, id }, "", url);
+        else window.history.replaceState({ key, id }, "", url);
+      }
+      async function applyUrl() {
+        const { key, id } = readUrl();
+        const target = key && REGISTERS.some((r) => r.key === key) ? key : REGISTERS[0]?.key;
+        if (!target) return;
+        if (id) await renderDocumentView(target, id);
+        else await renderListView(target);
+      }
+      function navigateTo(key, id, push) {
+        writeUrl(key, id, push);
+        applyUrl();
+      }
+
+      window.addEventListener("popstate", () => applyUrl());
+
+      tabsEl.addEventListener("click", (e) => {
         const btn = e.target.closest(".tab-btn");
         if (!btn) return;
-        activeKey = btn.dataset.k;
-        renderTabs();
-        await render();
+        navigateTo(btn.dataset.k, null, true);
       });
-      await render();
+      crumbsEl.addEventListener("click", (e) => {
+        const a = e.target.closest("a[data-nav]");
+        if (!a) return;
+        e.preventDefault();
+        if (a.dataset.nav === "root") navigateTo(REGISTERS[0]?.key, null, true);
+        else if (a.dataset.nav === "register") navigateTo(a.dataset.k, null, true);
+      });
+
+      (async () => {
+        catalogue = await sf("/api/rms");
+        if (!catalogue || !Array.isArray(catalogue.catalogue)) {
+          tableEl.innerHTML = `<p>RMS catalogue unavailable.</p>`;
+          return;
+        }
+        REGISTERS = catalogue.catalogue.map((c) => ({
+          key: c.key,
+          title: c.title,
+          blurb: c.blurb || "",
+          count: lookupCount(c.key),
+        }));
+        // If the URL didn't specify, default to the first register without
+        // pushing a history entry (so back-button on first nav lands on the
+        // referrer page rather than an empty state).
+        const u = readUrl();
+        if (!u.key) writeUrl(REGISTERS[0]?.key, null, false);
+        applyUrl();
+      })();
     })();
   </script>
 </body>
