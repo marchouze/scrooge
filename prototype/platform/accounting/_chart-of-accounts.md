@@ -389,6 +389,157 @@ citations:
 
 ---
 
+## FX Settlement-Failed sub-ledger accounts — added 2026-05-20
+
+**Authority:** D-MARKETS-SCHEMA-FOUNDATION + IFRS 9 §5.5 (Impairment) · PR-FX-005 (`fxSettlementFailedJournals`)
+**Approved by:** Bea (Accounting & financial reporting engineer, engineering)
+**Spec:** PR-FX-005 docblock in `prototype/platform/accounting/posting-rules/fx-spot.ts`; brief `brief:bea:fxsettlementfailed-ifrs-9-default-recognition-me:2026-05-20`
+
+These accounts host the IFRS-9 default-recognition treatment of a failed FX settlement. The receivable on a Herstatt-active failure is reclassified out of the FVTPL trading book (`ACC-2100-001/002`) into a held-to-collect defaulted-receivable sub-ledger (amortised cost; in-scope for ECL per IFRS 9 §5.5).
+
+### ACC-2300-001 — Settlement-Failed Receivable — ZAR
+
+```yaml
+id: ACC-2300-001
+name: "Settlement-Failed Receivable — ZAR (amortised cost, credit-impaired)"
+category: asset-receivable
+side: debit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other assets / impaired receivables (Item 5 or similar)"
+    side: positive
+    note: "ZAR Herstatt-event receivable. Credit-impaired; reclassified from FVTPL FX Trading Receivable on settlement failure."
+  - form: "BA 200"
+    line: "Credit-impaired exposure (Stage 3)"
+    side: positive
+    note: "Memo for capital-adequacy roll-up; gross carrying amount before ECL allowance."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.4.1 — reclassification when business model changes"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.5.1 — default trigger; credit-loss event"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.5.13 — measurement of credit-impaired financial asset"
+  - type: ifrs
+    ifrsRef: "IAS 1 §54 — separate balance-sheet line for impaired receivables"
+  - type: regulation
+    regulationId: D-MARKETS-SCHEMA-FOUNDATION
+  - type: policy
+    policyRef: "Policies/ifrs9-ecl-provisioning-policy-v1.md"
+    section: "§5 Staging framework"
+  - type: policy
+    policyRef: "Policies/credit-risk-policy-v1.md"
+    section: "§5.5 Settlement risk (PA GN-5/2013)"
+  - type: procedure
+    procedureRef: "Procedures/operations/settlement-failure-bcp.md"
+    section: "PROC-OPS-SFBCP-01 v0.2 step 14 — recovery path"
+```
+
+### ACC-2300-002 — Settlement-Failed Receivable — USD
+
+```yaml
+id: ACC-2300-002
+name: "Settlement-Failed Receivable — USD (amortised cost, credit-impaired)"
+category: asset-receivable
+side: debit
+ifrsClassification: amortised-cost
+currencies: [USD]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Other assets / impaired receivables"
+    side: positive
+    note: "USD Herstatt-event receivable. IAS 21 §28 retranslation at closing rate."
+  - form: "BA 200"
+    line: "Credit-impaired exposure (Stage 3)"
+    side: positive
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §4.4.1 — reclassification on default"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.5.13 — credit-impaired measurement"
+  - type: ifrs
+    ifrsRef: "IAS 21 §28 — retranslate monetary item at closing rate"
+  - type: regulation
+    regulationId: D-MARKETS-SCHEMA-FOUNDATION
+  - type: policy
+    policyRef: "Policies/ifrs9-ecl-provisioning-policy-v1.md"
+    section: "§5 Staging framework"
+```
+
+### ACC-2300-003 — ECL Allowance — Settlement-Failed Receivables (contra-asset, ZAR)
+
+```yaml
+id: ACC-2300-003
+name: "ECL Allowance — Settlement-Failed Receivables"
+category: contra-asset-allowance
+side: credit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 300"
+    line: "Impairment allowance (contra to Item 5)"
+    side: negative
+    note: "Lifetime ECL allowance on Settlement-Failed Receivable sub-ledger. Functional-currency basis (IAS 21 §23)."
+  - form: "BA 200"
+    line: "Specific provisions (Stage 3) — CET1 deduction per PA D3/2023"
+    side: positive
+    note: "Stage 3 specific provisions are a CET1 deduction per PA D3/2023; computed by Bea's quarterly ECL refresh and the capital adequacy engine."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.5.3 — lifetime ECL for credit-impaired financial assets"
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.5.8 — recognition through profit or loss"
+  - type: ifrs
+    ifrsRef: "IAS 21 §23 — functional-currency translation basis"
+  - type: regulation
+    regulationId: D-MARKETS-SCHEMA-FOUNDATION
+  - type: policy
+    policyRef: "Policies/ifrs9-ecl-provisioning-policy-v1.md"
+    section: "§5 Staging framework"
+```
+
+### ACC-2300-004 — Credit Loss Expense — FX Settlement Failures (P&L, ZAR)
+
+```yaml
+id: ACC-2300-004
+name: "Credit Loss Expense — FX Settlement Failures"
+category: expense-impairment
+side: debit
+ifrsClassification: amortised-cost
+currencies: [ZAR]
+entityScope: [LE-ZA-HOZ-BANK]
+baReturnLines:
+  - form: "BA 120"
+    line: "Impairment losses on financial assets (Item separated from net trading income)"
+    side: positive
+    note: "IFRS 9 impairment loss; presented separately from FVTPL trading P&L per IAS 1 §82(ba)."
+version: v1.0
+status: draft
+citations:
+  - type: ifrs
+    ifrsRef: "IFRS 9 §5.5.8 — impairment loss recognised in profit or loss"
+  - type: ifrs
+    ifrsRef: "IAS 1 §82(ba) — separate impairment-loss presentation line"
+  - type: regulation
+    regulationId: D-MARKETS-SCHEMA-FOUNDATION
+  - type: policy
+    policyRef: "Policies/accounting-policies-ifrs-v1.md"
+    section: "§Impairment presentation"
+```
+
+---
+
 ## Payment processing accounts — added 2026-05-18
 
 **Authority:** PROC-PAY-RBH-01 (three-way reconciliation procedure); D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)

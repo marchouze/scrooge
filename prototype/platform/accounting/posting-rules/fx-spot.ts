@@ -26,6 +26,15 @@
 //   PR-FX-AMD: fxAmendmentJournals        — TradeAmended (delta for rate/notional)
 //   PR-FX-INSTRUCT: fxSettlementInstructedJournals — FxSettlementInstructed (memo; no GL)
 //   PR-FX-REGREPORT: fxTradeReportSubmittedJournals — TradeReportSubmitted (memo)
+//   PR-FX-005: fxSettlementFailedJournals — FxSettlementFailed
+//                                            (IFRS-9 default-recognition; reclassifies
+//                                             defaulted receivable from FVTPL trading
+//                                             to amortised-cost settlement-failed
+//                                             receivable + 100% Stage-3 ECL on the
+//                                             one-leg-delivered Herstatt branch;
+//                                             neither-delivered + operational-delay
+//                                             produce no GL legs — see header
+//                                             docblock for the IFRS scoping reasoning)
 //
 // All functions return SubLedgerLeg[] that balance per currency.
 // Balance invariant: sum(debit.amountMinor) == sum(credit.amountMinor)
@@ -44,6 +53,10 @@
 //   ACC-1100-003  Nostro EUR (correspondent)
 //   ACC-1100-004  FX Settlement Suspense — ZAR
 //   ACC-1100-005  FX Settlement Suspense — USD
+//   ACC-2300-001  Settlement-Failed Receivable — ZAR (amortised cost, credit-impaired)
+//   ACC-2300-002  Settlement-Failed Receivable — USD (amortised cost, credit-impaired)
+//   ACC-2300-003  ECL Allowance — Settlement-Failed Receivables (contra-asset, ZAR)
+//   ACC-2300-004  Credit Loss Expense — FX Settlement Failures (P&L, ZAR)
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
@@ -57,6 +70,7 @@
 import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
+  FxSettlementFailedPayload,
 } from "../../event-store/event-types/fx-accounting";
 import type { TradeReportSubmittedPayload } from "../../event-store/event-types/regulatory-reporting";
 import type {
@@ -96,6 +110,44 @@ export interface FxCancellationInput {
   bookingLegs: SubLedgerLeg[];
 }
 
+/**
+ * Input for `fxSettlementFailedJournals` (PR-FX-005).
+ *
+ * The `FxSettlementFailed` payload itself carries refs + classification but
+ * NOT the currency / amount of the failed receive-leg — the same shape
+ * issue that `FxCancellationInput` solves for cancellations. The booking
+ * context (the receive-leg amount that the bank was due to collect) is
+ * supplied by the engine which has access to the originating
+ * `FxTradeExecuted` event.
+ *
+ * Used only by the `one-leg-delivered` branch. For `neither-delivered`
+ * and `operational-delay`, the rule returns `[]` and the booking-context
+ * fields are ignored.
+ */
+export interface FxSettlementFailedInput {
+  /** The full FxSettlementFailed payload (carries `failureKind`, refs, legStatus). */
+  event: FxSettlementFailedPayload;
+  /**
+   * Booking context for the failed receive-leg (the leg the bank was due to
+   * collect, that the counterparty failed to deliver). Required when
+   * `event.failureKind === "one-leg-delivered"`; ignored otherwise.
+   *
+   * The engine resolves this from the originating `FxTradeExecuted` (PR-FX-001)
+   * payload using `event.tradeRef`.
+   */
+  failedReceiveLeg?: {
+    /** ISO-4217 code of the currency the bank was due to receive. */
+    currency: string;
+    /** Receive-leg notional in minor units of `currency`. */
+    amountMinor: number;
+    /**
+     * Receive-leg notional translated to ZAR minor units at the failure date
+     * spot rate (functional-currency ECL allowance basis per IAS 21 §28).
+     */
+    zarEquivalentMinor: number;
+  };
+}
+
 export interface FxAmendmentInput {
   /** The tradeId being amended. */
   tradeId: string;
@@ -125,6 +177,24 @@ export const FX_ACCOUNTS = {
   NOSTRO_EUR: "ACC-1100-003",
   SUSPENSE_ZAR: "ACC-1100-004",
   SUSPENSE_USD: "ACC-1100-005",
+  // Settlement-failed receivable sub-ledger (PR-FX-005; added 2026-05-20).
+  // Amortised-cost classification: once a settlement has failed and the
+  // counterparty has defaulted on delivery, the receivable is no longer
+  // "held for trading" (FVTPL §4.1.5) — it is a defaulted claim held to
+  // collect. Reclassification per IFRS 9 §4.4.1 (change in business model
+  // for a single instrument because of an objective default event) into
+  // amortised cost brings the receivable in-scope for ECL §5.5.
+  SETTLEMENT_FAILED_RECEIVABLE_ZAR: "ACC-2300-001",
+  SETTLEMENT_FAILED_RECEIVABLE_USD: "ACC-2300-002",
+  /** Contra-asset; lifetime ECL allowance on the settlement-failed receivable
+   *  sub-ledger (IFRS 9 §5.5.3 — Stage 3 lifetime ECL). Carried in ZAR
+   *  (functional currency) per IAS 21 §23 — the allowance is the bank's
+   *  exposure measured in its functional currency. */
+  ECL_ALLOWANCE_SETTLEMENT_FAILED: "ACC-2300-003",
+  /** P&L line — credit-loss expense (IFRS 9 §5.5.8). Distinct from FX P&L
+   *  (ACC-2100-005/006) because impairment loss is presented separately
+   *  from trading-book FVTPL income per IAS 1 §82(ba). */
+  CREDIT_LOSS_EXPENSE_FX: "ACC-2300-004",
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -154,6 +224,25 @@ function payableAccountFor(currency: string): string {
       return FX_ACCOUNTS.PAYABLE_USD;
     default:
       return FX_ACCOUNTS.PAYABLE_USD;
+  }
+}
+
+/**
+ * Map a currency code to the Settlement-Failed Receivable account ID
+ * (PR-FX-005). Used when a defaulted receive-leg is reclassified from the
+ * FVTPL trading receivable to the amortised-cost defaulted-claim sub-ledger.
+ */
+function settlementFailedReceivableAccountFor(currency: string): string {
+  switch (currency) {
+    case "ZAR":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_ZAR;
+    case "USD":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD;
+    default:
+      // Currencies without a dedicated account fall back to USD slot.
+      // Production: add dedicated account per Principle 5 as currencies
+      // are onboarded.
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD;
   }
 }
 
@@ -788,4 +877,217 @@ export function fxTradeReportSubmittedJournals(
   // liability, income, or expense recognition is triggered. See header
   // docblock for reasoning.
   return [];
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-005: FxSettlementFailed → IFRS-9 default-recognition memo journals
+//
+// Posts the IFRS-9 §5.5 (Impairment) treatment when a previously instructed
+// FX settlement has been reported failed by the correspondent. The
+// `FxSettlementFailed` event (event-store/event-types/fx-accounting.ts:454,
+// added in PR #638 by Atlas, Markets-substrate engineer) carries a
+// three-class `failureKind` taxonomy that maps cleanly onto IFRS-9 ECL
+// staging:
+//
+//   - "one-leg-delivered"  → Herstatt-active. Bank's pay-leg cash has
+//     already left the nostro (PR-FX-PRIN deliver leg fired); the
+//     counterparty's pay leg (= bank's receive leg) never arrived. The
+//     bank is left holding an unrecovered claim against the counterparty
+//     equal to the gross receive-leg notional. This is a credit-loss
+//     event under IFRS 9 §5.5.1 (default on contractual payment) →
+//     Stage 3, lifetime ECL.
+//
+//   - "neither-delivered"  → mutual fail. Both legs still on the books at
+//     PR-FX-001 booking (FVTPL receivable + payable in each currency);
+//     no cash has moved. Per IFRS 9 §5.5.1 and the Bank's IFRS 9 ECL
+//     Provisioning Policy v1 (see Policies/ifrs9-ecl-provisioning-policy-v1.md
+//     §51 — "Out-of-scope instruments: Financial assets measured at FVTPL —
+//     ECL is not applied; fair value changes absorb credit risk"), live
+//     FVTPL trading instruments do not take an ECL allowance. The Stage-2
+//     SICR signal is captured by the upstream `SicrTriggered` event flow
+//     (credit-risk-policy-v1 §165), not as a GL movement. PR-FX-005
+//     therefore returns `[]` for this branch — the GL is silent and the
+//     SICR memo lives in the event log.
+//
+//   - "operational-delay"  → settlement late but not failed in substance.
+//     No default event has occurred; the counterparty's credit profile is
+//     unchanged. Stage 1; no GL movement. Returns `[]`.
+//
+// IFRS-9 reasoning — `one-leg-delivered` branch (Herstatt):
+//   Two effects must be booked:
+//
+//   (a) Reclassify the receive-leg's FX Trading Receivable [receive-ccy]
+//       (FVTPL, currently sitting on ACC-2100-001 / -002 from the PR-FX-001
+//       booking; not derecognised because PR-FX-PRIN on the receive leg
+//       never fired) into the Settlement-Failed Receivable sub-ledger
+//       (amortised cost; ACC-2300-001 / -002). The instrument is no
+//       longer "held for trading" — the counterparty's failure to deliver
+//       is an objective default event; the bank's claim is now a
+//       held-to-collect defaulted receivable. Per IFRS 9 §4.4.1, a change
+//       in business model warrants reclassification; per IFRS 9 §B4.4.3,
+//       a non-recurring event affecting a single instrument can warrant
+//       a unit-of-account reclassification in substance. The new
+//       sub-ledger brings the instrument in-scope for §5.5 impairment.
+//
+//       Posting (per receive-leg currency, in the instrument's own
+//       currency):
+//         Dr  Settlement-Failed Receivable [recv-ccy]   amountMinor
+//         Cr  FX Trading Receivable [recv-ccy]           amountMinor
+//
+//   (b) Recognise Stage-3 lifetime ECL = 100% of the receivable's ZAR-
+//       equivalent value (the conservative position: the bank treats a
+//       Herstatt-event counterparty as default-certain pending recovery
+//       through ISDA §6 close-out or the BCP recovery path — see
+//       Procedures/operations/settlement-failure-bcp.md PROC-OPS-SFBCP-01
+//       v0.2 step 14). The 100% ECL position is consistent with IFRS 9
+//       §5.5.13 (credit-impaired financial asset measured at the present
+//       value of expected cash flows; where expected recovery is zero
+//       pre-investigation, ECL = gross carrying amount). If recovery is
+//       subsequently achieved (counterparty delivers late; ISDA close-out
+//       net settlement; cancel-and-rebook with replacement counterparty
+//       per step 12), the ECL is reversed via a separate journal — out of
+//       scope for this rule.
+//
+//       Posting (in ZAR functional currency per IAS 21 §23 / IFRS 9 §5.5.17):
+//         Dr  Credit Loss Expense — FX Settlement (ACC-2300-004)   zarEqMinor
+//         Cr  ECL Allowance — Settlement-Failed (ACC-2300-003)     zarEqMinor
+//
+//   The pay-leg side requires NO journal under this rule. The pay-leg's
+//   PR-FX-PRIN journal already fired at correspondent confirmation:
+//     Dr FX Trading Payable [pay-ccy] / Cr Nostro [pay-ccy]
+//   That entry is correct and remains correct under a failure scenario:
+//   the bank's nostro is empty (cash left); the FX Trading Payable
+//   [pay-ccy] is zero (the bank's obligation was discharged by paying).
+//   There is no "pay-leg debit" to reclassify out of nostro — that view
+//   in the dispatch sketch reflected a pre-PR-#608 mental model where
+//   the cash was thought to still be in nostro. Marc (CEO) caught this
+//   class of circularity in PR-FX-003 earlier today; the same hygiene
+//   applies here. The economic exposure is fully captured by step (a)
+//   above: the bank's claim on the counterparty equals the receive-leg
+//   it failed to receive.
+//
+// Idempotency:
+//   The function is pure — same input always produces same output. A
+//   replay of the `FxSettlementFailed` event will produce the same legs
+//   each time; the event store's append-only model + the upstream
+//   `bea-gl-posting-engine`'s per-event idempotency guard (keyed on
+//   eventId) ensures the legs land in the GL exactly once. The tests
+//   below assert pure-function idempotency.
+//
+// Authority and citations:
+//   - IFRS 9 §5.5 (Impairment) — Stage 3 lifetime ECL on credit-impaired
+//     assets; §5.5.1 (default trigger); §5.5.13 (measurement of credit-
+//     impaired assets); §5.5.17 (forward-looking, probability-weighted).
+//   - IFRS 9 §4.1.5 (FVTPL classification of FX trading instruments);
+//     §4.4.1 (reclassification on change in business model);
+//     §B4.4.3 (unit-of-account reclassification for default events).
+//   - IAS 1 §82(ba) (impairment loss presented separately from FVTPL P&L);
+//     §54 (separate balance-sheet line for trading vs defaulted receivables).
+//   - IAS 21 §23, §28 (functional-currency translation of monetary items
+//     and ECL allowance basis).
+//   - Bea's existing FX-spot 4-rule pack (PRs #608+#609+#616) — happy-path
+//     posting rules this default-flow rule complements:
+//       PR-FX-001 (booking), PR-FX-002 (revaluation), PR-FX-PRIN
+//       (per-leg cash), PR-FX-LIFECYCLE-CLOSE (realised P&L).
+//   - Devon's PROC-OPS-SFBCP-01 v0.2 (PR #636) — settlement-failure BCP
+//     procedure that classifies the failure and dispatches the
+//     Herstatt-active / mutual-fail / operational-delay branches.
+//   - Atlas's FxSettlementFailed event-type pack (PR #638) — the typed
+//     event this rule consumes.
+//   - Helena (Chief Risk Officer, governance) FX-spot-only market risk
+//     scope review (2026-05-20) — confirmed Herstatt failures are
+//     market-risk-adjacent but the default-recognition treatment is the
+//     IFRS-9 / credit-impairment lane that lands in this rule.
+//   - Bank's IFRS 9 ECL Provisioning Policy v1 (Policies/
+//     ifrs9-ecl-provisioning-policy-v1.md) §51 (FVTPL out of scope) and
+//     the Credit Risk Policy v1 (Policies/credit-risk-policy-v1.md) §166
+//     (Stage 3 trigger on default events).
+//   - urn:principle:1 — the typed event is reality; this rule is a pure
+//     function of the event payload + booking context; balances are queries.
+//
+// Author: Bea (Accounting & financial reporting engineer, engineering).
+// ---------------------------------------------------------------------------
+
+export function fxSettlementFailedJournals(input: FxSettlementFailedInput): SubLedgerLeg[] {
+  const { event, failedReceiveLeg } = input;
+
+  // Branches with no GL impact: see IFRS reasoning in header docblock.
+  if (event.failureKind === "neither-delivered") return [];
+  if (event.failureKind === "operational-delay") return [];
+
+  // Herstatt-active branch (`one-leg-delivered`).
+  if (event.failureKind !== "one-leg-delivered") {
+    // Exhaustiveness guard. The `failureKind` enum is checked at the schema
+    // boundary; any unknown literal reaching here indicates a schema drift
+    // that we should fail loudly on rather than silently no-op.
+    throw new Error(
+      `fxSettlementFailedJournals: unknown failureKind '${(event as { failureKind: string }).failureKind}'`,
+    );
+  }
+
+  // Sanity-check the leg-status field: `one-leg-delivered` per the
+  // PROC-OPS-SFBCP-01 §2 taxonomy means the bank's pay leg has delivered
+  // and the receive leg has not. The schema does not enforce this
+  // correlation, so we assert it here — a payload claiming
+  // "one-leg-delivered" with both legs delivered (or neither) is a
+  // classification bug upstream that we refuse to post against.
+  if (!event.legStatus.payLegDelivered || event.legStatus.receiveLegDelivered) {
+    throw new Error(
+      `fxSettlementFailedJournals: 'one-leg-delivered' requires legStatus.payLegDelivered === true && legStatus.receiveLegDelivered === false; got payLegDelivered=${event.legStatus.payLegDelivered}, receiveLegDelivered=${event.legStatus.receiveLegDelivered}`,
+    );
+  }
+
+  // The Herstatt-active branch requires booking context — the receive-leg
+  // currency / amount / ZAR-equivalent — sourced from the originating
+  // FxTradeExecuted (PR-FX-001) by the engine. Without it we cannot post.
+  if (!failedReceiveLeg) {
+    throw new Error(
+      "fxSettlementFailedJournals: 'one-leg-delivered' requires " +
+        "input.failedReceiveLeg (currency, amountMinor, zarEquivalentMinor) " +
+        "to be supplied by the engine from the originating FxTradeExecuted payload.",
+    );
+  }
+
+  const { currency, amountMinor, zarEquivalentMinor } = failedReceiveLeg;
+  const absAmount = Math.abs(amountMinor);
+  const absZar = Math.abs(zarEquivalentMinor);
+
+  const legs: SubLedgerLeg[] = [];
+
+  // (a) Reclassify FVTPL receive-leg receivable → amortised-cost
+  //     Settlement-Failed Receivable sub-ledger. Same currency; balanced
+  //     within currency.
+  if (absAmount > 0) {
+    legs.push({
+      accountId: settlementFailedReceivableAccountFor(currency),
+      debitCredit: "debit",
+      amountMinor: absAmount,
+      currency,
+    });
+    legs.push({
+      accountId: receivableAccountFor(currency),
+      debitCredit: "credit",
+      amountMinor: absAmount,
+      currency,
+    });
+  }
+
+  // (b) Recognise Stage-3 lifetime ECL = 100% of receivable's ZAR equivalent.
+  //     ZAR functional-currency basis per IAS 21 §23. Balanced within ZAR.
+  if (absZar > 0) {
+    legs.push({
+      accountId: FX_ACCOUNTS.CREDIT_LOSS_EXPENSE_FX,
+      debitCredit: "debit",
+      amountMinor: absZar,
+      currency: "ZAR",
+    });
+    legs.push({
+      accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED,
+      debitCredit: "credit",
+      amountMinor: absZar,
+      currency: "ZAR",
+    });
+  }
+
+  return legs;
 }
