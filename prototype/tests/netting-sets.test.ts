@@ -193,7 +193,7 @@ describe("netting-sets/projection", () => {
     expect(active[0]?.lastValidatedAt).toBe(t2);
   });
 
-  it("csaPresent derives from isdaStatus", () => {
+  it("csaPresent is false when isdaStatus is in-negotiation", () => {
     const cp = uniqueCp("CP-NS-F");
     const asOf = ts(2026, 5, 20);
     appendAssessment({
@@ -204,6 +204,43 @@ describe("netting-sets/projection", () => {
 
     const ns = resolveNettingSet(cp, "ZAR");
     expect(ns?.csaPresent).toBe(false);
+  });
+
+  it("csaPresent is false when ISDA executed but no CSA (threshold=0, mta=0) — Imani G-9 FX-spot controlled-launch posture", () => {
+    const cp = uniqueCp("CP-NS-G");
+    const asOf = ts(2026, 5, 20);
+    appendAssessment({
+      counterpartyId: cp,
+      asOf,
+      isdaStatus: "executed",
+      csaThreshold: 0,
+      mta: 0,
+      currency: "USD",
+      nettingEnforceable: true,
+      jurisdictionOpinionRef: "DOC-OP-ZA-ISDA-2024-04-15",
+    });
+
+    const ns = resolveNettingSet(cp, "USD");
+    expect(ns).not.toBeNull();
+    expect(ns?.csaPresent).toBe(false);
+    expect(ns?.nettingEnforceable).toBe(true);
+    expect(ns?.threshold.amount).toBe(0n);
+    expect(ns?.mta.amount).toBe(0n);
+  });
+
+  it("csaPresent is true when ISDA executed with non-zero threshold or MTA", () => {
+    const cp = uniqueCp("CP-NS-H");
+    const asOf = ts(2026, 5, 20);
+    appendAssessment({
+      counterpartyId: cp,
+      asOf,
+      isdaStatus: "executed",
+      csaThreshold: 1_000_000_00,
+      mta: 100_000_00,
+    });
+
+    const ns = resolveNettingSet(cp, "ZAR");
+    expect(ns?.csaPresent).toBe(true);
   });
 });
 

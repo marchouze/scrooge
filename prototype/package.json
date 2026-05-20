@@ -197,6 +197,7 @@
     "recon:credit-limit-breach-unescalated": "bun run platform/recon/credit-limit-breach-unescalated.ts",
     "recon:position-revalued-cites-mark": "bun run platform/recon/position-revalued-cites-mark.ts",
     "ras:seed-limits": "bun run scripts/seed-ras-limits.ts",
+    "fx-spot:seed-controlled-launch": "bun run scripts/seed-fx-spot-controlled-launch-limits.ts",
     "perf:raise-finding": "bun run scripts/raise-finding.ts",
     "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts",
     "recon:circular-deps": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
