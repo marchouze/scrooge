@@ -20,4 +20,5 @@ export type {
 export { computeReplacementCost } from "./replacement-cost";
 export { ALPHA_SA_CCR, computeAddOn, supervisoryFactor } from "./pfe-addon";
 export { computeEad } from "./ead";
-export { computeAndEmit } from "./compute-and-emit";
+export { computeAndEmit, computeAndEmitFor } from "./compute-and-emit";
+export type { ComputeAndEmitForInput } from "./compute-and-emit";

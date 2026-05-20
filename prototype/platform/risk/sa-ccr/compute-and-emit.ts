@@ -5,20 +5,18 @@
 // computations; this module composes them, resolves the inputs, and
 // emits the `CcrReplacementCostComputed` event registered in PR #612.
 //
-// Inputs are threaded by the caller in this v0 because there is no
-// canonical netting-set register yet — that gap is documented below.
-// Once a register lands, `computeAndEmit` should accept `(nettingSetId,
-// asOf)` and pull config + trades from the register, MTM from
-// market-data, collateral from `@platform/collateral`.
+// Inputs are threaded by the caller as the engine's primary interface;
+// this keeps the engine usable as a pure function in tests and lets
+// callers thread per-call MTM + collateral values.
+//
+// A `(counterpartyId, currency)` convenience entry — `computeAndEmitFor`
+// — looks up the netting set from the Phase-5 netting-set register
+// (`@platform/markets/netting-sets`) and forwards to `computeAndEmit`.
+// That closes the original substrate gap (canonical netting-set state
+// on the platform); MTM + collateral sources remain queued below.
 //
 // Substrate gap (queued, follow-on slice under D-CREDIT-LIMIT-ENGINE-
-// BUILD Phase 4):
-//   - Canonical netting-set register. v0 takes the `NettingSet` config
-//     directly on the call to keep this engine usable today; the future
-//     register will be a projection over `ISDACSAAssessmentCompleted` +
-//     `NettingAgreementValidated` events (per Credit Risk Policy §3
-//     line 136). Once the register lands, this module's signature
-//     simplifies to (nettingSetId, asOf).
+// BUILD):
 //   - MTM source. v0 takes `vMtm` directly; future iteration pulls from
 //     Bea's MTM engine / forward-obligations projection.
 //   - Collateral source. v0 takes `collateralHeld` directly; future
@@ -42,6 +40,7 @@ import {
   makeCcrReplacementCostComputed,
 } from "../../event-store/event-types/counterparty-credit-risk";
 import type { Event } from "../../event-store/types";
+import { resolveNettingSet as resolveNsFromRegister } from "../../markets/netting-sets";
 import { utcNow } from "../../types/time";
 import { computeEad } from "./ead";
 import { computeAddOn } from "./pfe-addon";
@@ -179,4 +178,44 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
   eventStore.append(eadEvent);
 
   return { rc, ead, event };
+}
+
+// ---------------------------------------------------------------------------
+// computeAndEmitFor — register-resolved entry. Looks up the active
+// netting set for `(counterpartyId, currency)` from the Phase-5
+// netting-set register (`@platform/markets/netting-sets`) and forwards
+// to `computeAndEmit`. Returns `null` when the register holds no active
+// assessment for the pair — callers decide whether to fall back to a
+// trade-by-trade computation or to refuse the trade pending ISDA / CSA
+// onboarding.
+//
+// Citations:
+//   Policies/credit-risk-policy-v1.md §3 line 136 (netting-enforceability
+//     prerequisite);
+//   D-CREDIT-LIMIT-ENGINE-BUILD Phase 5.
+// ---------------------------------------------------------------------------
+
+export interface ComputeAndEmitForInput {
+  counterpartyId: string;
+  currency: string;
+  vMtm: Money;
+  collateralHeld: Money;
+  trades: TradeSummary[];
+  asOf?: string;
+  actor?: Actor;
+  citations?: string[];
+}
+
+export function computeAndEmitFor(input: ComputeAndEmitForInput): ComputeAndEmitResult | null {
+  const ns = resolveNsFromRegister(input.counterpartyId, input.currency, input.asOf);
+  if (!ns) return null;
+  return computeAndEmit({
+    nettingSet: ns,
+    vMtm: input.vMtm,
+    collateralHeld: input.collateralHeld,
+    trades: input.trades,
+    ...(input.asOf !== undefined ? { asOf: input.asOf } : {}),
+    ...(input.actor !== undefined ? { actor: input.actor } : {}),
+    ...(input.citations !== undefined ? { citations: input.citations } : {}),
+  });
 }
