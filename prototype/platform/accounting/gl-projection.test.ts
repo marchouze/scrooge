@@ -117,10 +117,10 @@ describe("buildGlView — SubLedgerPostingEmitted", () => {
     const drRow = tbEntries.find((r) => r.accountId === ACCOUNT_DR);
     const crRow = tbEntries.find((r) => r.accountId === ACCOUNT_CR);
 
-    expect(drRow?.totalDebitsMinor).toBe(50000);
-    expect(drRow?.totalCreditsMinor).toBe(0);
-    expect(crRow?.totalCreditsMinor).toBe(50000);
-    expect(crRow?.totalDebitsMinor).toBe(0);
+    expect(drRow?.debitMinor).toBe(50000);
+    expect(drRow?.creditMinor).toBe(0);
+    expect(crRow?.creditMinor).toBe(50000);
+    expect(crRow?.debitMinor).toBe(0);
   });
 });
 

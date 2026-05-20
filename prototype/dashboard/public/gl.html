@@ -611,10 +611,10 @@
       } else {
         tbody.innerHTML = entries.map(row => {
           const rptDrCell = rptCcy
-            ? `<td style="text-align:right" class="mono">${row.reportingDebitsMinor != null ? fmt(row.reportingDebitsMinor) : '—'}</td>`
+            ? `<td style="text-align:right" class="mono">${row.reportingDebitMinor ? fmt(row.reportingDebitMinor) : ''}</td>`
             : '';
           const rptCrCell = rptCcy
-            ? `<td style="text-align:right" class="mono">${row.reportingCreditsMinor != null ? fmt(row.reportingCreditsMinor) : '—'}</td>`
+            ? `<td style="text-align:right" class="mono">${row.reportingCreditMinor ? fmt(row.reportingCreditMinor) : ''}</td>`
             : '';
           return `
           <tr>
@@ -622,8 +622,8 @@
             <td>${esc(row.accountName)}</td>
             <td>${esc(row.accountCategory)}</td>
             <td>${esc(row.currency)}</td>
-            <td style="text-align:right" class="mono ${row.totalDebitsMinor > 0 ? 'dr' : ''}">${fmt(row.totalDebitsMinor)}</td>
-            <td style="text-align:right" class="mono ${row.totalCreditsMinor > 0 ? 'cr' : ''}">${fmt(row.totalCreditsMinor)}</td>
+            <td style="text-align:right" class="mono ${row.debitMinor > 0 ? 'dr' : ''}">${row.debitMinor ? fmt(row.debitMinor) : ''}</td>
+            <td style="text-align:right" class="mono ${row.creditMinor > 0 ? 'cr' : ''}">${row.creditMinor ? fmt(row.creditMinor) : ''}</td>
             ${rptDrCell}${rptCrCell}
           </tr>`;
         }).join("");
@@ -636,8 +636,8 @@
       if (rptCcy) {
         let totalRptDr = 0, totalRptCr = 0;
         for (const row of entries) {
-          totalRptDr += row.reportingDebitsMinor ?? 0;
-          totalRptCr += row.reportingCreditsMinor ?? 0;
+          totalRptDr += row.reportingDebitMinor ?? 0;
+          totalRptCr += row.reportingCreditMinor ?? 0;
         }
         document.getElementById("tbTotalRptDebits").textContent = fmt(totalRptDr);
         document.getElementById("tbTotalRptCredits").textContent = fmt(totalRptCr);

@@ -116,12 +116,14 @@ export interface GlTrialBalanceRow {
   accountName: string;
   accountCategory: string;
   currency: string;
-  totalDebitsMinor: number;
-  totalCreditsMinor: number;
-  /** Sum of debit amounts converted to reporting currency (entries with no rate contribute 0) */
-  reportingDebitsMinor?: number;
-  /** Sum of credit amounts converted to reporting currency (entries with no rate contribute 0) */
-  reportingCreditsMinor?: number;
+  /** Net debit balance in minor units. Populated when the account netted on the debit side; 0 otherwise. */
+  debitMinor: number;
+  /** Net credit balance in minor units. Populated when the account netted on the credit side; 0 otherwise. */
+  creditMinor: number;
+  /** Net debit balance converted to reporting currency. Populated only when the row's natural-currency net is debit and a rate was available. */
+  reportingDebitMinor?: number;
+  /** Net credit balance converted to reporting currency. Populated only when the row's natural-currency net is credit and a rate was available. */
+  reportingCreditMinor?: number;
   /** ISO 4217 reporting currency */
   reportingCurrency?: string;
 }
@@ -382,48 +384,77 @@ export function buildGlView(
     }
   }
 
-  // Build trial balance rows — group by (accountId, currency)
-  const tbMap = new Map<string, GlTrialBalanceRow>();
+  // Build trial balance rows — group by (accountId, currency), then net.
+  // A proper TB shows one number per (account, currency) on whichever side
+  // the account netted to (Dr or Cr). Zero-net rows are dropped (closed/
+  // round-tripped accounts add noise without information). This mirrors
+  // the canonical `computeTrialBalance` in @platform/accounting/period-close.
+  type TbAccum = {
+    accountId: string;
+    accountName: string;
+    accountCategory: string;
+    currency: string;
+    grossDebitsMinor: number;
+    grossCreditsMinor: number;
+    grossReportingDebitsMinor: number;
+    grossReportingCreditsMinor: number;
+  };
+  const tbMap = new Map<string, TbAccum>();
   for (const entry of ledgerEntries) {
     const key = `${entry.accountId}|${entry.currency}`;
-    if (!tbMap.has(key)) {
-      const row: GlTrialBalanceRow = {
+    let acc = tbMap.get(key);
+    if (!acc) {
+      acc = {
         accountId: entry.accountId,
         accountName: entry.accountName,
         accountCategory: entry.accountCategory,
         currency: entry.currency,
-        totalDebitsMinor: 0,
-        totalCreditsMinor: 0,
+        grossDebitsMinor: 0,
+        grossCreditsMinor: 0,
+        grossReportingDebitsMinor: 0,
+        grossReportingCreditsMinor: 0,
       };
-      if (reportingCurrency) {
-        row.reportingCurrency = reportingCurrency;
-        row.reportingDebitsMinor = 0;
-        row.reportingCreditsMinor = 0;
-      }
-      tbMap.set(key, row);
+      tbMap.set(key, acc);
     }
-    const row = tbMap.get(key);
-    if (!row) continue;
     if (entry.debitCredit === "debit") {
-      row.totalDebitsMinor += entry.amountMinor;
-      if (reportingCurrency && row.reportingDebitsMinor !== undefined) {
-        row.reportingDebitsMinor += entry.reportingAmountMinor ?? 0;
-      }
+      acc.grossDebitsMinor += entry.amountMinor;
+      if (reportingCurrency) acc.grossReportingDebitsMinor += entry.reportingAmountMinor ?? 0;
     } else {
-      row.totalCreditsMinor += entry.amountMinor;
-      if (reportingCurrency && row.reportingCreditsMinor !== undefined) {
-        row.reportingCreditsMinor += entry.reportingAmountMinor ?? 0;
-      }
+      acc.grossCreditsMinor += entry.amountMinor;
+      if (reportingCurrency) acc.grossReportingCreditsMinor += entry.reportingAmountMinor ?? 0;
     }
   }
 
-  const tbEntries = [...tbMap.values()].sort((a, b) => a.accountId.localeCompare(b.accountId));
+  const tbEntries: GlTrialBalanceRow[] = [];
+  for (const acc of tbMap.values()) {
+    const net = acc.grossDebitsMinor - acc.grossCreditsMinor;
+    if (net === 0) continue; // drop zero-net rows
+    const row: GlTrialBalanceRow = {
+      accountId: acc.accountId,
+      accountName: acc.accountName,
+      accountCategory: acc.accountCategory,
+      currency: acc.currency,
+      debitMinor: net > 0 ? net : 0,
+      creditMinor: net < 0 ? -net : 0,
+    };
+    if (reportingCurrency) {
+      const repNet = acc.grossReportingDebitsMinor - acc.grossReportingCreditsMinor;
+      row.reportingCurrency = reportingCurrency;
+      row.reportingDebitMinor = repNet > 0 ? repNet : 0;
+      row.reportingCreditMinor = repNet < 0 ? -repNet : 0;
+    }
+    tbEntries.push(row);
+  }
+  tbEntries.sort((a, b) => {
+    if (a.accountId !== b.accountId) return a.accountId.localeCompare(b.accountId);
+    return a.currency.localeCompare(b.currency);
+  });
 
   let totalDebits = 0;
   let totalCredits = 0;
   for (const row of tbEntries) {
-    totalDebits += row.totalDebitsMinor;
-    totalCredits += row.totalCreditsMinor;
+    totalDebits += row.debitMinor;
+    totalCredits += row.creditMinor;
   }
 
   return {
