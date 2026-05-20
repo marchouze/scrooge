@@ -24,6 +24,7 @@
   let sectionsEl;
   let searchEl;
   let searchCountEl;
+  let showOblEl;
 
   // ── Utils ────────────────────────────────────────────────────────
 
@@ -208,13 +209,22 @@
                 : "";
 
             const obligationsHtml = renderObligations(section.obligations);
+            const oblCount = section.obligations?.length || 0;
+            const toggleHtml =
+              oblCount > 0
+                ? `<button type="button" class="rr-obl-toggle" data-rr-obl-toggle aria-expanded="false" aria-label="Toggle ${oblCount} obligation${oblCount !== 1 ? "s" : ""}">
+    <span class="rr-obl-toggle-icon" aria-hidden="true">▶</span>
+    <span>${oblCount} obligation${oblCount !== 1 ? "s" : ""}</span>
+  </button>`
+                : "";
 
             const sNum = section.sectionNumber || section.number || section.id;
             const sHead = section.title || section.heading || "";
-            return `<div class="rr-section" id="${esc(section.id)}" data-section-id="${esc(section.id)}">
+            return `<div class="rr-section" id="${esc(section.id)}" data-section-id="${esc(section.id)}" data-obl-count="${oblCount}">
   <div class="rr-section-header">
     <span class="rr-section-number">${esc(sNum)}</span>
     <span class="rr-section-heading">${esc(sHead)}</span>
+    ${toggleHtml}
   </div>
   ${bodyHtml}
   ${subsectionsHtml}
@@ -231,6 +241,37 @@
 </div>`;
       })
       .join("");
+  }
+
+  // ── Obligation expand/collapse ──────────────────────────────────
+
+  function setSectionExpanded(sectionEl, expanded) {
+    sectionEl.classList.toggle("rr-expanded", expanded);
+    const btn = sectionEl.querySelector("[data-rr-obl-toggle]");
+    if (btn) btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+  }
+
+  function bindObligationToggles() {
+    if (!sectionsEl) return;
+    for (const btn of sectionsEl.querySelectorAll("[data-rr-obl-toggle]")) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const section = btn.closest(".rr-section");
+        if (!section) return;
+        const next = !section.classList.contains("rr-expanded");
+        setSectionExpanded(section, next);
+        // If the global checkbox is on but the user collapses one, leave
+        // the global state as-is; treat it as "this section overrides".
+      });
+    }
+  }
+
+  function applyGlobalObligationToggle(show) {
+    if (!sectionsEl) return;
+    for (const section of sectionsEl.querySelectorAll(".rr-section[data-obl-count]")) {
+      const has = (Number(section.dataset.oblCount) || 0) > 0;
+      setSectionExpanded(section, show && has);
+    }
   }
 
   // ── Search ───────────────────────────────────────────────────────
@@ -293,6 +334,11 @@
     renderHeader(data);
     const wideHtml = renderInstrumentWideObligations(data.instrumentWideObligations);
     sectionsEl.innerHTML = wideHtml + renderSections(data.chapters);
+    bindObligationToggles();
+    // Honour the current global toggle state on freshly-rendered sections.
+    if (showOblEl?.checked) {
+      applyGlobalObligationToggle(true);
+    }
 
     // Reset search
     if (searchEl) {
@@ -359,10 +405,18 @@
     sectionsEl = document.getElementById("rr-sections");
     searchEl = document.getElementById("rr-search");
     searchCountEl = document.getElementById("rr-search-count");
+    showOblEl = document.getElementById("rr-show-obl");
 
     // Search handler
     if (searchEl) {
       searchEl.addEventListener("input", (e) => applySearch(e.target.value));
+    }
+
+    // Global obligation toggle
+    if (showOblEl) {
+      showOblEl.addEventListener("change", (e) => {
+        applyGlobalObligationToggle(e.target.checked);
+      });
     }
 
     // Hash routing
