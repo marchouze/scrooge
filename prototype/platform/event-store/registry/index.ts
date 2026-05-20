@@ -72,6 +72,12 @@ export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 export { CONDUCT_EVENT_TYPES } from "./conduct";
 // M3 Slice 10 — counterparty-exposure events (large-exposure framework).
 export { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
+// WS-CREDIT-LIMIT-ENGINE — credit-limit lifecycle events.
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD (CEO-approved 2026-05-20).
+export { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
+// WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs.
+// Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279; BCBS 283; RRB Reg 23.
+export { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
 export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
@@ -107,7 +113,9 @@ import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
+import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
+import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import {
   ANALYTICS_EVENT_TYPES,
@@ -187,6 +195,13 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // M3 Slice 10 — counterparty-exposure events. Placed after MISSING_EVENT_TYPES
   // so that typed schema rows override any placeholder rows.
   ...COUNTERPARTY_EXPOSURE_EVENT_TYPES,
+  // WS-CREDIT-LIMIT-ENGINE — credit-limit lifecycle events. Placed after
+  // MISSING_EVENT_TYPES so typed schema rows override any placeholder rows.
+  // Authority: D-CREDIT-LIMIT-ENGINE-BUILD (CEO-approved 2026-05-20).
+  ...CREDIT_LIMIT_EVENT_TYPES_REGISTRY,
+  // WS-CREDIT-LIMIT-ENGINE — SA-CCR / LEX computation outputs.
+  // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS 279; BCBS 283; RRB Reg 23.
+  ...COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY,
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events. Placed last so
   // typed schema rows override any placeholder rows from missing-types.ts.
   ...KYC_EVENT_TYPES_REGISTRY,
