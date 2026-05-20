@@ -8,14 +8,28 @@
 //   - ORG-PR-01 (ICAAP — Internal Capital Adequacy Assessment Process)
 //   - Banks Act 94/1990 Reg 38 (BA 325 capital adequacy — Pillar 1 RWA calculation)
 //   - BCBS 238 (LCR — Liquidity Coverage Ratio minimum 100%)
+//   - D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 — credit-limit-engine wiring into
+//     PROC-MK-PCG-01 Check 1(c). Replaces the prior credit-limit-stub.json
+//     baseline with the live engine's `checkHeadroom`.
 //   - D-S7-TARGETED-3-5-OPEN-QUESTIONS (gateway envelope v0 slice 7)
 //   - Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3
 //
 // What this handler does:
 //   On GatewayCheckRequested[credit-limit]:
-//     1. Compute current counterparty exposure from booked trades.
-//     2. Check proposed notional + current exposure vs credit-limit stub.
-//     3. Emit GatewayCheckCompleted[credit-limit] approve or reject.
+//     1. Resolve the OrderProposed to recover counterparty + proposed notional.
+//     2. Convert proposed notional into a credit-equivalent exposure (Money):
+//          - SA-CCR-tracked products (OTC IRD, FX forwards/swaps): notional ×
+//            supervisory factor. Build-phase substrate-gap fallback — replaced
+//            by Rohan's @platform/risk/sa-ccr marginal RC + add-on once that
+//            lands (also under D-CREDIT-LIMIT-ENGINE-BUILD Phase 4). TODO
+//            tracked in pre-deal-check.ts substrate-gap block.
+//          - Cash equity / cash bond / FX spot: notional treated as direct
+//            credit equivalent (collateral pledging is a future slice).
+//     3. Call `checkHeadroom(counterpartyId, proposedExposure)` from
+//        @platform/risk/credit-limit-engine.
+//     4. Emit GatewayCheckCompleted[credit-limit] approve, or reject with
+//        the canonical typed `blockReason` (CounterpartyNotApproved,
+//        CreditLimitExhausted, LimitExpired, AnnualReviewStale).
 //
 //   On GatewayCheckRequested[capital-impact]:
 //     1. Compute proposed RWA = notional × RWA weight for instrument class.
@@ -28,19 +42,19 @@
 //     3. Emit GatewayCheckCompleted[funding] approve or reject.
 //
 // Build-phase limitations:
-//   - Credit limits are read from credit-limit-stub.json. Production: derive
-//     from a live credit-assessment register event (CreditLimitSchedulePublished).
 //   - Capital RWA weights and LCR parameters are read from capital-funding-stub.json.
 //     Production: derive from live BA 325 projection (Anya) and Eitan's LCR
 //     projection (LCR ratio event, not yet built).
-//   - Counterparty exposure is approximated by replaying EquityTradeBooked and
-//     FxTradeExecuted notional per counterparty.
+//   - SA-CCR add-on / RC fallback uses supervisory factors only; pivot to
+//     Rohan's @platform/risk/sa-ccr once merged.
 //
 // Non-bypassability: only kai:pre-trade-gateway-aggregator emits
 // OrderApprovedAtGateway / OrderRejectedAtGateway. This handler emits only
 // GatewayCheckCompleted.
 //
-// Author: Kai (Markets platform engineer, engineering)
+// Authors: Kai (Markets platform engineer, engineering) — original handler
+//          Saskia (Derivatives trading desk, engineering) — credit-limit-engine wiring
+//            under D-CREDIT-LIMIT-ENGINE-BUILD Phase 4
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -50,7 +64,14 @@ import {
   type GatewayCheckCompletedPayload,
   makeGatewayCheckCompleted,
 } from "../../platform/event-store/event-types";
+import type { GatewayCreditBlockReason } from "../../platform/event-store/event-types/trading";
 import type { Event } from "../../platform/event-store/types";
+import { minor } from "../../platform/core/money";
+import type { Currency } from "../../platform/core/types";
+import {
+  checkHeadroom,
+  type HeadroomCheckResult,
+} from "../../platform/risk/credit-limit-engine";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const HANDLER_ACTOR = {
@@ -63,14 +84,27 @@ const CAPITAL_CITATIONS: readonly string[] = ["ORG-PR-01", "RAS-B1"];
 const FUNDING_CITATIONS: readonly string[] = ["ORG-PR-01"];
 
 // ---------------------------------------------------------------------------
-// Stub types
+// SA-CCR supervisory factors — build-phase fallback used when
+// @platform/risk/sa-ccr is not yet emitting CcrReplacementCostComputed for
+// the counterparty. Once the SA-CCR engine lands its full PFE pipeline, the
+// pre-deal-check helper in credit-limit-engine consumes RC events directly
+// and these factors become inert.
+//
+// Factor table per BCBS 279 Table 2 (SA-CCR supervisory factors), expressed
+// as fractions of notional. We use the table's most conservative tier per
+// asset class so the build-phase add-on never under-states exposure.
 // ---------------------------------------------------------------------------
 
-interface CreditLimitStub {
-  defaultCreditLimitZAR: number;
-  perCounterpartyLimits: Record<string, number>;
-  blockedCounterparties: string[];
-}
+const SA_CCR_SUPERVISORY_FACTOR: Record<string, number> = {
+  "OTC-IRD": 0.005, // Interest rate, single-currency
+  "FX-fwd": 0.04, // FX forwards / swaps
+  "FX-swap": 0.04,
+};
+
+// ---------------------------------------------------------------------------
+// Stub types — credit-limit branch now consumes the engine; this stub is
+// retained only for the capital + funding branches (still pre-Anya / pre-Eitan).
+// ---------------------------------------------------------------------------
 
 interface CapitalFundingStub {
   rwa: {
@@ -83,18 +117,6 @@ interface CapitalFundingStub {
     currentLcrPct: number;
     outflowPerMillionNotionalZAR: number;
   };
-}
-
-function loadCreditLimitStub(repoRoot: string): CreditLimitStub {
-  const stubPath = join(
-    repoRoot,
-    "prototype",
-    "platform",
-    "markets",
-    "regulatory",
-    "credit-limit-stub.json",
-  );
-  return JSON.parse(readFileSync(stubPath, "utf-8")) as CreditLimitStub;
 }
 
 function loadCapitalFundingStub(repoRoot: string): CapitalFundingStub {
@@ -110,61 +132,34 @@ function loadCapitalFundingStub(repoRoot: string): CapitalFundingStub {
 }
 
 // ---------------------------------------------------------------------------
-// Exposure helpers
+// Pre-deal exposure helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Compute current counterparty notional exposure (in ZAR) by replaying
- * EquityTradeBooked and FxTradeExecuted events.
- * Returns a map of counterpartyId → net notional ZAR.
+ * Compute the credit-equivalent exposure of a proposed order in the order's
+ * priced currency. Returns Money minor units.
+ *
+ * Build-phase rule (per D-CREDIT-LIMIT-ENGINE-BUILD Phase 4):
+ *   - SA-CCR-tracked products (OTC-IRD, FX forwards/swaps): notional ×
+ *     supervisory factor (BCBS 279 Table 2). TODO: pivot to Rohan's
+ *     @platform/risk/sa-ccr marginal RC + add-on once that engine emits
+ *     CcrReplacementCostComputed for the netting set.
+ *   - Cash equity / cash bond / FX spot: notional treated as credit
+ *     equivalent (collateral pledging is a future slice).
  */
-function computeCounterpartyExposure(): Map<string, number> {
-  const exposure = new Map<string, number>();
-
-  for (const e of eventStore.replay({ type: "EquityTradeBooked" })) {
-    const p = e.payload as {
-      counterpartyId?: string;
-      counterpartyLei?: string;
-      side?: string;
-      consideration?: { amountMinor?: number };
-      price?: { amount?: number };
-      quantity?: { amount?: number };
-    };
-    const cpId = p.counterpartyId ?? p.counterpartyLei;
-    if (!cpId) continue;
-
-    let notionalZAR = 0;
-    if (p.consideration?.amountMinor !== undefined && p.consideration.amountMinor > 0) {
-      notionalZAR = p.consideration.amountMinor / 100;
-    } else if (p.price?.amount !== undefined && p.quantity?.amount !== undefined) {
-      notionalZAR = p.price.amount * p.quantity.amount;
-    } else {
-      continue;
-    }
-
-    const side = p.side ?? "buy";
-    // Credit exposure accumulates on buys (we owe them securities / they owe us cash).
-    // Sells reduce exposure. Use absolute notional for credit (gross, not net).
-    const delta = side === "sell" ? -notionalZAR : notionalZAR;
-    exposure.set(cpId, (exposure.get(cpId) ?? 0) + delta);
-  }
-
-  for (const e of eventStore.replay({ type: "FxTradeExecuted" })) {
-    const p = e.payload as {
-      counterparty?: { partyId?: string };
-      legs?: Array<{ notional?: { amountMinor?: number }; legKind?: string }>;
-    };
-    const cpId = p.counterparty?.partyId;
-    if (!cpId) continue;
-
-    const nearLeg = Array.isArray(p.legs) ? p.legs.find((l) => l.legKind === "near") : undefined;
-    const notionalZAR = nearLeg?.notional?.amountMinor ? nearLeg.notional.amountMinor / 100 : 0;
-    if (notionalZAR > 0) {
-      exposure.set(cpId, (exposure.get(cpId) ?? 0) + notionalZAR);
-    }
-  }
-
-  return exposure;
+function proposedCreditExposureMinor(
+  instrument: string,
+  quantity: number,
+  price: number,
+): bigint {
+  const notional = quantity * price;
+  const cls = instrumentClass(instrument);
+  const supervisoryFactor = SA_CCR_SUPERVISORY_FACTOR[cls];
+  const exposure = supervisoryFactor !== undefined ? notional * supervisoryFactor : notional;
+  // Money stores minor units (cents). Round half-up to avoid silent under-
+  // statement when notional × factor produces a fractional minor unit.
+  const minorUnits = Math.round(exposure * 100);
+  return BigInt(Math.max(0, minorUnits));
 }
 
 /**
@@ -220,11 +215,20 @@ interface OrderDetails {
   side: string | null;
   quantity: number | null;
   price: number | null;
+  priceCurrency: string | null;
 }
 
 function resolveOrder(sourceOrderEventId: string | null): OrderDetails {
+  const empty: OrderDetails = {
+    counterpartyLei: null,
+    instrument: null,
+    side: null,
+    quantity: null,
+    price: null,
+    priceCurrency: null,
+  };
   if (!sourceOrderEventId) {
-    return { counterpartyLei: null, instrument: null, side: null, quantity: null, price: null };
+    return empty;
   }
   for (const orderEvent of eventStore.replay({ type: "OrderProposed" })) {
     if (orderEvent.event_id === sourceOrderEventId) {
@@ -234,6 +238,7 @@ function resolveOrder(sourceOrderEventId: string | null): OrderDetails {
         side?: unknown;
         quantity?: unknown;
         price?: unknown;
+        priceCurrency?: unknown;
       };
       return {
         counterpartyLei: typeof op.counterpartyLei === "string" ? op.counterpartyLei : null,
@@ -241,10 +246,11 @@ function resolveOrder(sourceOrderEventId: string | null): OrderDetails {
         side: typeof op.side === "string" ? op.side : null,
         quantity: typeof op.quantity === "number" ? op.quantity : null,
         price: typeof op.price === "number" ? op.price : null,
+        priceCurrency: typeof op.priceCurrency === "string" ? op.priceCurrency : null,
       };
     }
   }
-  return { counterpartyLei: null, instrument: null, side: null, quantity: null, price: null };
+  return empty;
 }
 
 // ---------------------------------------------------------------------------
@@ -282,7 +288,6 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   // Load stubs once.
-  const creditLimitStub = loadCreditLimitStub(ctx.repoRoot);
   const capitalFundingStub = loadCapitalFundingStub(ctx.repoRoot);
 
   let eventsEmitted = 0;
@@ -291,10 +296,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let totalSkipped = 0;
 
   // ---------------------------------------------------------------------------
-  // Credit-limit checks
+  // Credit-limit checks — wired into @platform/risk/credit-limit-engine per
+  // D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 and PROC-MK-PCG-01 Check 1(c).
   // ---------------------------------------------------------------------------
-
-  const cpExposure = computeCounterpartyExposure();
 
   for (const e of creditRequests) {
     const p = e.payload as {
@@ -334,37 +338,74 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     let outcome: GatewayCheckCompletedPayload["outcome"] = "approve";
     let rejectionReason: string | undefined;
     let citationToRule: string | undefined;
+    let blockReason: GatewayCreditBlockReason | undefined;
 
-    if (!order.counterpartyLei || order.quantity === null || order.price === null) {
+    if (
+      !order.counterpartyLei ||
+      !order.instrument ||
+      order.quantity === null ||
+      order.price === null
+    ) {
       outcome = "reject";
       rejectionReason =
-        "Could not resolve counterpartyLei/quantity/price from OrderProposed; credit-limit check cannot proceed";
+        "Could not resolve counterpartyLei/instrument/quantity/price from OrderProposed; credit-limit check cannot proceed";
       citationToRule = "RAS-B3";
-    } else if (creditLimitStub.blockedCounterparties.includes(order.counterpartyLei)) {
-      outcome = "reject";
-      rejectionReason = `Counterparty '${order.counterpartyLei}' is on the credit blocked list (zero credit limit).`;
-      citationToRule = "RAS-B3";
-    } else if (order.side !== "sell") {
-      const proposedNotionalZAR = order.price * order.quantity;
-      const currentExposureZAR = cpExposure.get(order.counterpartyLei) ?? 0;
-      const proFormaExposureZAR = currentExposureZAR + proposedNotionalZAR;
+    } else if (order.side === "sell") {
+      // Sell orders reduce exposure — engine call is unnecessary; admit.
+    } else {
+      // Build credit-equivalent exposure in the order's priced currency.
+      const priceCurrency = (order.priceCurrency ?? "ZAR") as Currency;
+      const proposedMinor = proposedCreditExposureMinor(
+        order.instrument,
+        order.quantity,
+        order.price,
+      );
+      const proposedExposure = minor(proposedMinor, priceCurrency);
 
-      const creditLimitZAR =
-        creditLimitStub.perCounterpartyLimits[order.counterpartyLei] ??
-        creditLimitStub.defaultCreditLimitZAR;
+      const headroom: HeadroomCheckResult = checkHeadroom(
+        order.counterpartyLei,
+        proposedExposure,
+        ctx.asOf,
+      );
 
-      if (proFormaExposureZAR > creditLimitZAR) {
+      if (!headroom.ok) {
         outcome = "reject";
-        rejectionReason =
-          `Credit limit breached for counterparty '${order.counterpartyLei}': ` +
-          `pro-forma exposure ZAR ${proFormaExposureZAR.toFixed(0)} ` +
-          `exceeds limit ZAR ${creditLimitZAR.toFixed(0)} ` +
-          `(current exposure ZAR ${currentExposureZAR.toFixed(0)}, ` +
-          `proposed notional ZAR ${proposedNotionalZAR.toFixed(0)}).`;
-        citationToRule = "RAS-B3";
+        const limitMinor = headroom.limit.amount;
+        const currExpMinor = headroom.currentExposure.amount;
+        blockReason = headroom.blockReason;
+        switch (headroom.blockReason) {
+          case "CounterpartyNotApproved":
+            rejectionReason =
+              `Counterparty '${order.counterpartyLei}' has no loaded credit limit ` +
+              `(credit-limit-engine status: not approved or not yet loaded).`;
+            citationToRule = "RAS-B3";
+            break;
+          case "LimitExpired":
+            rejectionReason =
+              `Credit limit for counterparty '${order.counterpartyLei}' has expired ` +
+              `(engine returned status=expired).`;
+            citationToRule = "RAS-B3";
+            break;
+          case "AnnualReviewStale":
+            rejectionReason =
+              `Counterparty '${order.counterpartyLei}' annual review is stale ` +
+              `(> 13 months; Credit Risk Policy §1.3, Banks Act Reg 23).`;
+            citationToRule = "RAS-B3";
+            break;
+          case "CreditLimitExhausted":
+          default:
+            rejectionReason =
+              `Credit limit exhausted for counterparty '${order.counterpartyLei}': ` +
+              `proposed credit-equivalent exposure ${priceCurrency} ` +
+              `${(Number(proposedMinor) / 100).toFixed(2)} would breach ` +
+              `limit ${priceCurrency} ${(Number(limitMinor) / 100).toFixed(2)} ` +
+              `(current exposure ${priceCurrency} ${(Number(currExpMinor) / 100).toFixed(2)}, ` +
+              `utilisation ${headroom.utilisationPct.toFixed(1)}%, traffic ${headroom.traffic}).`;
+            citationToRule = "RAS-B3";
+            break;
+        }
       }
     }
-    // Sell orders: reduces exposure, always pass credit check.
 
     const completedPayload: GatewayCheckCompletedPayload = {
       orderId,
@@ -374,6 +415,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       completedAt: ctx.asOf,
       durationMs,
       ...(rejectionReason && citationToRule ? { rejectionReason, citationToRule } : {}),
+      ...(blockReason ? { blockReason } : {}),
     };
 
     if (ctx.dryRun) {

@@ -111,6 +111,26 @@ export function makeGatewayCheckRequested(args: {
 
 export const gatewayCheckOutcomeSchema = z.enum(["approve", "reject", "timeout"]);
 
+/**
+ * Typed credit-limit block reasons, mirroring `HeadroomBlockReason` from
+ * `@platform/risk/credit-limit-engine`. Surfaced as an optional structured
+ * field on `GatewayCheckCompleted` so downstream consumers (recon, Vera
+ * findings, operator UI) can branch on the reason without parsing prose.
+ *
+ * The set is intentionally narrow today — extend as new typed reasons are
+ * added to the engine. Wired in by:
+ *   D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 — credit-limit-engine integration
+ *   into PROC-MK-PCG-01 Check 1(c).
+ */
+export const gatewayCreditBlockReasonSchema = z.enum([
+  "CounterpartyNotApproved",
+  "CreditLimitExhausted",
+  "LimitExpired",
+  "AnnualReviewStale",
+]);
+
+export type GatewayCreditBlockReason = z.infer<typeof gatewayCreditBlockReasonSchema>;
+
 export const gatewayCheckCompletedPayloadSchema = z.object({
   orderId: z.string().min(1),
   checkKind: gatewayCheckKindSchema,
@@ -120,6 +140,12 @@ export const gatewayCheckCompletedPayloadSchema = z.object({
   durationMs: z.number().nonnegative(),
   rejectionReason: z.string().optional(),
   citationToRule: z.string().optional(),
+  /**
+   * Typed block reason — populated when `outcome === 'reject'` for a typed
+   * block (today: credit-limit checks). Lets consumers branch on the canonical
+   * engine reason without parsing the prose `rejectionReason`.
+   */
+  blockReason: gatewayCreditBlockReasonSchema.optional(),
 });
 
 export type GatewayCheckCompletedPayload = z.infer<typeof gatewayCheckCompletedPayloadSchema>;
