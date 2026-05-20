@@ -169,7 +169,20 @@ export type AccountingClassification = z.infer<typeof accountingClassificationSc
 // ---------------------------------------------------------------------------
 
 export const legalDocumentationSchema = z.object({
-  masterAgreement: z.enum(["isda-2002", "isda-2025", "gmra-2011", "gmsla-2018", "none-listed"]),
+  // `"fx-bilateral"` added per Imani G-9 (PR #637, 2026-05-20) — required
+  // for schema completeness even though it is not on the controlled-launch
+  // counterparty whitelist. Kept in sync with
+  // `legalDocumentationAgreementTypeSchema` in
+  // `platform/event-store/event-types/legal-documentation.ts` (the
+  // LegalDocumentationSigned instance-side enum).
+  masterAgreement: z.enum([
+    "isda-2002",
+    "isda-2025",
+    "gmra-2011",
+    "gmsla-2018",
+    "fx-bilateral",
+    "none-listed",
+  ]),
   ectaExecutionPath: z.enum(["electronic-default", "wet-signature-required", "hybrid"]),
   /** ISO-3166-1 alpha-2 codes. */
   jurisdictionMatrix: z.array(

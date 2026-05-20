@@ -431,6 +431,222 @@ export function makeFxTradeCancelled(args: {
 }
 
 // ---------------------------------------------------------------------------
+// FxSettlementFailed
+//
+// Emitted when the correspondent reports settlement failure on a previously
+// instructed FX trade leg. Distinct from `SettlementFailed` (above): this
+// event carries the richer failure-kind taxonomy that Devon (Chief Operating
+// Officer, governance) uses to classify the failure under PROC-OPS-SFBCP-01
+// §2 (failure detection + initial triage). `SettlementFailed` is the older
+// generic accounting-side event covering simple counterparty-default /
+// nostro-insufficient-funds shapes; `FxSettlementFailed` is the
+// settlement-monitor's structured output that feeds the BCP procedure.
+//
+// Authority:
+//   - Devon's procedure: Procedures/operations/settlement-failure-bcp.md
+//     (PROC-OPS-SFBCP-01 v0.2, PR #636) §2 — failure classification.
+//   - Banks Act 94 of 1990 Reg 39 — documented BCP procedures for
+//     settlement failures; Herstatt risk supervisory concern.
+//   - BCBS d226 — Supervisory guidance for managing settlement risk in
+//     foreign-exchange transactions.
+// ---------------------------------------------------------------------------
+
+export const fxSettlementFailedPayloadSchema = z.object({
+  /** Internal trade identifier — links back to the originating FxTradeExecuted. */
+  tradeRef: z.string().min(1),
+  /** Link to the FxSettlementInstructed event whose instruction failed. */
+  settlementInstructionRef: z.string().min(1),
+  /** ISO 8601 timestamp when the correspondent reported the failure. */
+  failedAt: z.string().min(1),
+  /**
+   * Failure-kind taxonomy. Matches Devon's PROC-OPS-SFBCP-01 §2:
+   *   - "one-leg-delivered"  — Herstatt-active scenario (bank delivered
+   *     one currency but the counterparty has not delivered the other).
+   *   - "neither-delivered"  — mutual fail; neither leg has settled.
+   *   - "operational-delay"  — settlement has not failed in substance but
+   *     is delayed beyond the cut-off (typically resolves intra-day).
+   */
+  failureKind: z.enum(["one-leg-delivered", "neither-delivered", "operational-delay"]),
+  /** Free-form explanation from the correspondent (SWIFT MT199 body, email text). */
+  failureReason: z.string().min(1),
+  /** Per-leg delivery status as reported by the correspondent. */
+  legStatus: z.object({
+    payLegDelivered: z.boolean(),
+    receiveLegDelivered: z.boolean(),
+  }),
+});
+
+export type FxSettlementFailedPayload = z.infer<typeof fxSettlementFailedPayloadSchema>;
+
+export function makeFxSettlementFailed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxSettlementFailedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "FxSettlementFailed requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxSettlementFailed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: fxSettlementFailedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// MissedExpectedReceipt
+//
+// Emitted when the bank's pay-leg is confirmed delivered (cash has left the
+// nostro) but the receive-leg has not landed by `cutoff + tolerance`. This
+// is the structured trigger for Tomas (Operations & Payments Engineer)'s
+// 15-minute confirmation window in PROC-OPS-SFBCP-01 step 1: the
+// settlement-monitor emits this event the moment the bank's exposure
+// crosses from "pre-Herstatt" (neither leg delivered) into "Herstatt-active"
+// (bank's leg out, counterparty's leg unreceived).
+//
+// Authority:
+//   - Devon's procedure: Procedures/operations/settlement-failure-bcp.md
+//     (PROC-OPS-SFBCP-01 v0.2, PR #636) step 1 — failure detection.
+//   - BCBS d226 §3 — settlement-risk exposure window definition.
+// ---------------------------------------------------------------------------
+
+export const missedExpectedReceiptPayloadSchema = z.object({
+  /** Internal trade identifier — links back to the originating FxTradeExecuted. */
+  tradeRef: z.string().min(1),
+  /** Link to the FxSettlementInstructed event whose receive-leg has not landed. */
+  settlementInstructionRef: z.string().min(1),
+  /** ISO 4217 currency code of the expected (missing) receipt. */
+  expectedCurrency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /**
+   * Expected receipt amount in minor units (cents). Stored as a string to
+   * support amounts beyond JavaScript's safe-integer range (BCBS d226 does
+   * not cap notional; FX receive legs in deep EM currencies can exceed
+   * 2^53 in minor units).
+   */
+  expectedAmountMinor: z.string().regex(/^-?[0-9]+$/),
+  /** ISO 8601 timestamp of the settlement cutoff (correspondent's value-date cutoff). */
+  cutoffAt: z.string().min(1),
+  /** Tolerance window in minutes beyond `cutoffAt` before the receipt is declared missed. */
+  toleranceMinutes: z.number().int().nonnegative(),
+  /** ISO 8601 timestamp when the missed-receipt was detected by the monitor. */
+  detectedAt: z.string().min(1),
+});
+
+export type MissedExpectedReceiptPayload = z.infer<typeof missedExpectedReceiptPayloadSchema>;
+
+export function makeMissedExpectedReceipt(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: MissedExpectedReceiptPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "MissedExpectedReceipt requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "MissedExpectedReceipt",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: missedExpectedReceiptPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SettlementFailureClassified
+//
+// Emitted when Devon (Chief Operating Officer, governance) — or the agent
+// acting on his behalf — signs off the classification of a settlement
+// failure per PROC-OPS-SFBCP-01 §2. The classification drives the
+// downstream response path: "herstatt-active" forces the immediate
+// position-freeze + nostro-funding-hold sequence; "mutual-fail" routes to
+// the close-out-netting path under ISDA 2002 §6; "operational-delay" routes
+// to intra-day reconciliation only with no BCP escalation.
+//
+// Authority:
+//   - Devon's procedure: Procedures/operations/settlement-failure-bcp.md
+//     (PROC-OPS-SFBCP-01 v0.2, PR #636) §2 — classification & sign-off.
+//   - ISDA 2002 Master Agreement §6 — Events of Default and Termination
+//     Events; close-out-netting path for mutual-fail.
+// ---------------------------------------------------------------------------
+
+export const settlementFailureClassifiedPayloadSchema = z.object({
+  /** Link to the FxSettlementInstructed event whose failure is being classified. */
+  settlementInstructionRef: z.string().min(1),
+  /**
+   * Classification taxonomy. Matches Devon's PROC-OPS-SFBCP-01 §2:
+   *   - "herstatt-active"     — bank's leg delivered; counterparty's leg
+   *     unreceived; full notional exposure. BCP position-freeze sequence
+   *     fires immediately.
+   *   - "mutual-fail"         — neither leg delivered; close-out-netting
+   *     path under ISDA 2002 §6.
+   *   - "operational-delay"   — delayed settlement only, no exposure
+   *     escalation (typically resolves intra-day).
+   */
+  classification: z.enum(["herstatt-active", "mutual-fail", "operational-delay"]),
+  /** ISO 8601 timestamp of classification sign-off. */
+  classifiedAt: z.string().min(1),
+  /**
+   * Agent URN or human party reference of the classifier (Devon's
+   * standing authority under PROC-OPS-SFBCP-01; agents may classify on
+   * his behalf under the same authority).
+   */
+  classifiedBy: z.string().min(1),
+  /**
+   * Evidence references — links into the doc-store or event-store
+   * (correspondent SWIFT responses, counterparty calls, internal triage
+   * notes) that support the classification.
+   */
+  evidence: z.array(z.string().min(1)),
+});
+
+export type SettlementFailureClassifiedPayload = z.infer<
+  typeof settlementFailureClassifiedPayloadSchema
+>;
+
+export function makeSettlementFailureClassified(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SettlementFailureClassifiedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "SettlementFailureClassified requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SettlementFailureClassified",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: settlementFailureClassifiedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -441,6 +657,12 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   "SettlementFailed",
   "SettlementReversed",
   "FxTradeCancelled",
+  // PROC-OPS-SFBCP-01 settlement-failure BCP event types
+  // (Devon — Chief Operating Officer, governance; PR #636).
+  // Authority: Banks Act 94 Reg 39, BCBS d226.
+  "FxSettlementFailed",
+  "MissedExpectedReceipt",
+  "SettlementFailureClassified",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];

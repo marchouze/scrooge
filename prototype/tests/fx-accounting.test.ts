@@ -26,7 +26,13 @@ import {
   FX_ACCOUNTING_EVENT_TYPES,
   fxPositionRevaluedPayloadSchema,
   fxSettlementConfirmedPayloadSchema,
+  fxSettlementFailedPayloadSchema,
   makeFxPositionRevalued,
+  makeFxSettlementFailed,
+  makeMissedExpectedReceipt,
+  makeSettlementFailureClassified,
+  missedExpectedReceiptPayloadSchema,
+  settlementFailureClassifiedPayloadSchema,
   subLedgerPostingEmittedPayloadSchema,
 } from "../platform/event-store/event-types/fx-accounting";
 
@@ -99,10 +105,18 @@ const BASE_TRADE_PAYLOAD = {
 // ---------------------------------------------------------------------------
 
 describe("FX accounting event types", () => {
-  it("FX_ACCOUNTING_EVENT_TYPES lists three event types", () => {
+  it("FX_ACCOUNTING_EVENT_TYPES lists the core event types", () => {
     expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxPositionRevalued");
     expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxSettlementConfirmed");
     expect(FX_ACCOUNTING_EVENT_TYPES).toContain("SubLedgerPostingEmitted");
+  });
+
+  it("FX_ACCOUNTING_EVENT_TYPES includes PROC-OPS-SFBCP-01 settlement-failure events", () => {
+    // Authority: Devon (Chief Operating Officer, governance) procedure
+    // PROC-OPS-SFBCP-01 v0.2 (PR #636).
+    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxSettlementFailed");
+    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("MissedExpectedReceipt");
+    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("SettlementFailureClassified");
   });
 
   it("FxPositionRevalued payload validates correctly", () => {
@@ -178,6 +192,129 @@ describe("FX accounting event types", () => {
       postedAt: "2026-05-12T08:00:00.000Z",
     };
     expect(() => subLedgerPostingEmittedPayloadSchema.parse(balanced)).not.toThrow();
+  });
+
+  // ---------------------------------------------------------------------
+  // PROC-OPS-SFBCP-01 settlement-failure event types (PR #636)
+  // ---------------------------------------------------------------------
+
+  it("FxSettlementFailed — happy-path payload validates", () => {
+    const payload = {
+      tradeRef: "FX-TEST-001",
+      settlementInstructionRef: "SETT-001",
+      failedAt: "2026-05-14T11:30:00.000Z",
+      failureKind: "one-leg-delivered" as const,
+      failureReason: "Counterparty USD leg not received by cutoff + 15m",
+      legStatus: { payLegDelivered: true, receiveLegDelivered: false },
+    };
+    expect(() => fxSettlementFailedPayloadSchema.parse(payload)).not.toThrow();
+    const evt = makeFxSettlementFailed({
+      asOf: payload.failedAt,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload,
+    });
+    expect(evt.type).toBe("FxSettlementFailed");
+  });
+
+  it("FxSettlementFailed — rejects unknown failureKind", () => {
+    expect(() =>
+      fxSettlementFailedPayloadSchema.parse({
+        tradeRef: "FX-TEST-001",
+        settlementInstructionRef: "SETT-001",
+        failedAt: "2026-05-14T11:30:00.000Z",
+        failureKind: "not-a-real-kind",
+        failureReason: "nope",
+        legStatus: { payLegDelivered: false, receiveLegDelivered: false },
+      }),
+    ).toThrow();
+  });
+
+  it("FxSettlementFailed — make* requires citations", () => {
+    expect(() =>
+      makeFxSettlementFailed({
+        asOf: "2026-05-14T11:30:00.000Z",
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: [],
+        payload: {
+          tradeRef: "FX-TEST-001",
+          settlementInstructionRef: "SETT-001",
+          failedAt: "2026-05-14T11:30:00.000Z",
+          failureKind: "neither-delivered",
+          failureReason: "Mutual fail",
+          legStatus: { payLegDelivered: false, receiveLegDelivered: false },
+        },
+      }),
+    ).toThrow(/citation/i);
+  });
+
+  it("MissedExpectedReceipt — happy-path payload validates", () => {
+    const payload = {
+      tradeRef: "FX-TEST-001",
+      settlementInstructionRef: "SETT-001",
+      expectedCurrency: "USD",
+      // String-typed minor units (supports notionals beyond JS safe-int).
+      expectedAmountMinor: "100000000",
+      cutoffAt: "2026-05-14T10:00:00.000Z",
+      toleranceMinutes: 15,
+      detectedAt: "2026-05-14T10:16:00.000Z",
+    };
+    expect(() => missedExpectedReceiptPayloadSchema.parse(payload)).not.toThrow();
+    const evt = makeMissedExpectedReceipt({
+      asOf: payload.detectedAt,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload,
+    });
+    expect(evt.type).toBe("MissedExpectedReceipt");
+  });
+
+  it("MissedExpectedReceipt — rejects non-numeric amount string", () => {
+    expect(() =>
+      missedExpectedReceiptPayloadSchema.parse({
+        tradeRef: "FX-TEST-001",
+        settlementInstructionRef: "SETT-001",
+        expectedCurrency: "USD",
+        expectedAmountMinor: "abc",
+        cutoffAt: "2026-05-14T10:00:00.000Z",
+        toleranceMinutes: 15,
+        detectedAt: "2026-05-14T10:16:00.000Z",
+      }),
+    ).toThrow();
+  });
+
+  it("SettlementFailureClassified — happy-path payload validates", () => {
+    const payload = {
+      settlementInstructionRef: "SETT-001",
+      classification: "herstatt-active" as const,
+      classifiedAt: "2026-05-14T11:45:00.000Z",
+      classifiedBy: "agent:devon",
+      evidence: ["event:fx-settlement-failed-evt-001", "doc:swift-mt199-correspondent-response"],
+    };
+    expect(() => settlementFailureClassifiedPayloadSchema.parse(payload)).not.toThrow();
+    const evt = makeSettlementFailureClassified({
+      asOf: payload.classifiedAt,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload,
+    });
+    expect(evt.type).toBe("SettlementFailureClassified");
+  });
+
+  it("SettlementFailureClassified — rejects unknown classification", () => {
+    expect(() =>
+      settlementFailureClassifiedPayloadSchema.parse({
+        settlementInstructionRef: "SETT-001",
+        classification: "not-a-real-class",
+        classifiedAt: "2026-05-14T11:45:00.000Z",
+        classifiedBy: "agent:devon",
+        evidence: [],
+      }),
+    ).toThrow();
   });
 
   it("makeFxPositionRevalued requires citations", () => {
