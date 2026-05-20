@@ -22,6 +22,7 @@ import {
   detectInstrumentSlug,
   extractInstrumentSectionPairs,
   extractSectionRefs,
+  normaliseSectionRef,
 } from "./generate-section-obligation-index";
 
 describe("extractInstrumentSectionPairs", () => {
@@ -111,5 +112,32 @@ describe("extractSectionRefs", () => {
     expect(extractSectionRefs("s.21A(1)(b)").sort()).toEqual(["s21a"]);
     expect(extractSectionRefs("Schedule 1").sort()).toEqual(["s1"]);
     expect(extractSectionRefs("Standard 9").sort()).toEqual(["s9"]);
+  });
+});
+
+describe("normaliseSectionRef", () => {
+  // TC-9: shared normalisation helper used by both index generator and view.
+  it("TC-9: lowercases and strips dots", () => {
+    expect(normaliseSectionRef("21A")).toBe("21a");
+    expect(normaliseSectionRef("3.1")).toBe("31");
+    expect(normaliseSectionRef("60")).toBe("60");
+    expect(normaliseSectionRef("68A")).toBe("68a");
+  });
+});
+
+describe("Excon citation patterns", () => {
+  // TC-10: Currency and Exchanges Manual + Exchange Control + Excon all
+  // resolve to the `excon` slug.
+  it("TC-10: detects Currency and Exchanges Manual as excon", () => {
+    expect(detectInstrumentSlug("Currency and Exchanges Manual (Excon)")).toBe("excon");
+    expect(detectInstrumentSlug("Exchange Control Regulations 1961")).toBe("excon");
+    expect(detectInstrumentSlug("Currency and Exchanges Act 9 of 1933")).toBe("excon");
+  });
+
+  it("TC-11: Excon citation with a Reg X anchor routes to excon/sN", () => {
+    const pairs = extractInstrumentSectionPairs(
+      "Exchange Control Regulations 1961 Reg. 3 (export of currency)",
+    );
+    expect(pairs).toEqual([{ instrument: "excon", sections: ["s3"] }]);
   });
 });
