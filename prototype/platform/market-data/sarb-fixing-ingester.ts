@@ -96,7 +96,7 @@ import { makeOfficialMarkAdopted } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import type { Event, ProvenanceTag } from "../event-store/types";
 import { resolveActivePolicyVersionRef } from "../valuation/mark-adoption-engine";
-import { MarketDataStore } from "./store";
+import type { MarketDataStore } from "./store";
 
 // ---------------------------------------------------------------------------
 // Build-phase posture marker
