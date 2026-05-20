@@ -62,22 +62,28 @@ Examples:
 - `urn:party:agent:scrooge`
 - `urn:party:natural-person:np-<8-hex>` (deterministic-hash slug for PII discipline)
 
-## Active Parties (as-of 2026-05-11)
+## Active Parties (as-of 2026-05-20)
 
 ### By kind — totals
 
 | Kind | Count |
 |---|---:|
-| Legal entity | 3 |
+| Legal entity | 5 |
 | Agent | 27 |
 | Natural person | 1 |
-| **Total** | **31** |
+| **Total** | **33** |
 
 `"counterparty"` is not a kind — it is a relationship (D-PARTY-REGISTER correction,
 CEO-approved 2026-05-12). Institutional clients register as `legal-entity` with a
-`counterparty-of` relationship edge. The legal-entity count of 3 covers the bank's
-own entities (Hoz Group, Hoz Bank, Hoz Securities); institutional clients at v0 are
-zero (build-phase, no real customers yet per CLAUDE.md "Build phase vs licence-day").
+`counterparty-of` relationship edge. The legal-entity count of 5 covers the bank's
+own three entities (Hoz Group, Hoz Bank, Hoz Securities) plus the first two
+institutional counterparties added 2026-05-20 for the FX-spot controlled-launch —
+**Standard Bank Corporate Treasury** (`urn:party:legal-entity:standard-bank-za`) and
+**Investec Bank Treasury** (`urn:party:legal-entity:investec-bank-za`) — registered
+as `legal-entity` per D-PARTY-REGISTER correction (kind is intrinsic; counterparty
+is a relationship). Authority for the additions: Helena (Chief Risk Officer,
+governance) controlled-launch MR-1-FX limit proposal (PR #634) + Imani (Chief
+Legal Counsel, governance) G-9 close on ISDA vs bilateral FX Master (PR #637).
 The natural-person count is **1** as of PR 3 of D-PARTY-REGISTER (Marc as
 the founding CEO seat); subsequent natural persons land at licence-day
 when the statutory human roster (directors, MLRO, CISO, CAE, auditor)
@@ -90,11 +96,13 @@ URNs project from `LegalEntityRegistered` events; Party URN slug is the
 entity-slug component of the source URN
 (`urn:legal-entity:hoz:hoz-bank:v1` → `urn:party:legal-entity:hoz-bank`).
 
-| Party URN | Display name | Form | Jurisdictions | Primary regulator |
-|---|---|---|---|---|
-| `urn:party:legal-entity:hoz-group` | Hoz Group Limited | Ltd | ZA | none-companies-act-only |
-| `urn:party:legal-entity:hoz-bank` | Hoz Bank Limited | Ltd | ZA | PA |
-| `urn:party:legal-entity:hoz-securities` | Hoz Securities Limited | Ltd | ZA | JSE |
+| Party URN | Display name | Form | Jurisdictions | Primary regulator | LEI | Notes |
+|---|---|---|---|---|---|---|
+| `urn:party:legal-entity:hoz-group` | Hoz Group Limited | Ltd | ZA | none-companies-act-only | — | Bank's controlling company |
+| `urn:party:legal-entity:hoz-bank` | Hoz Bank Limited | Ltd | ZA | PA | — | Bank's banking entity |
+| `urn:party:legal-entity:hoz-securities` | Hoz Securities Limited | Ltd | ZA | JSE | — | Bank's JSE-member entity |
+| `urn:party:legal-entity:investec-bank-za` | Investec Bank Treasury | Ltd | ZA | PA | `549300RH5FFHO48FXT69` | Institutional counterparty — legal name "Investec Bank Limited"; CIPC 1969/004763/06; FX-spot controlled-launch whitelist (PR #634, PR #637); SARB Banks Act bank-licence number TBC |
+| `urn:party:legal-entity:standard-bank-za` | Standard Bank Corporate Treasury | Ltd | ZA | PA | `QFC8ZCW3Q5PRXU1XTM60` | Institutional counterparty — legal name "The Standard Bank of South Africa Limited"; CIPC 1962/000738/06; FSP 11287; FX-spot controlled-launch whitelist (PR #634, PR #637); SARB Banks Act bank-licence number TBC |
 
 The `parent-of` edges between these Parties are in the relationships
 register; see
@@ -121,16 +129,39 @@ personas resolve via in-fleet edges to a top-of-house persona.
 
 ### Institutional counterparty Parties (registered as `legal-entity`)
 
-Empty at v0 — institutional client lifecycle activates at licence-day per Niko
-(Customer onboarding engineer)'s `buildPhaseStatus`. When institutional clients
-are onboarded they register as `PartyRegistered{kind: "legal-entity"}` with a
-`counterparty-of` `PartyRelationshipAsserted` edge to Hoz Bank. The legacy
-backfill path (`CounterpartySoundingOpened` / `CounterpartyProspectRegistered` /
-`CounterpartyActivated` / `CounterpartyOffboarded`) folds into
-`PartyRegistered{kind: "legal-entity"}` + `PartyClassified` for the current
-lifecycle status. When the first institutional client lands, the row appears
-in the legal-entity table with a `counterparty-of` edge in the relationships
-register.
+Two institutional counterparties registered 2026-05-20 for the FX-spot
+controlled-launch (per CLAUDE.md "Build phase vs licence-day" — these two
+counterparties sit in the legal-entity table above; the wider institutional
+client lifecycle still activates at licence-day per Niko (Customer onboarding
+engineer)'s `buildPhaseStatus`):
+
+| Party URN | Legal name | LEI | CIPC reg # | Role |
+|---|---|---|---|---|
+| `urn:party:legal-entity:standard-bank-za` | The Standard Bank of South Africa Limited | `QFC8ZCW3Q5PRXU1XTM60` | 1962/000738/06 | FX-spot controlled-launch whitelist counterparty |
+| `urn:party:legal-entity:investec-bank-za` | Investec Bank Limited | `549300RH5FFHO48FXT69` | 1969/004763/06 | FX-spot controlled-launch whitelist counterparty |
+
+Authority chain:
+
+- `D-PARTY-REGISTER` (CEO-approved 2026-05-11) — Party register as unified
+  identity axis; counterparties register as `legal-entity` with a
+  `counterparty-of` relationship edge (per the 2026-05-12 correction).
+- Helena (Chief Risk Officer, governance) — controlled-launch MR-1-FX limit
+  proposal (PR #634) names the two-counterparty whitelist, USD/ZAR only,
+  per-counterparty notional cap USD 500k/day.
+- Imani (Chief Legal Counsel, governance) — G-9 close (PR #637) decides
+  ISDA 2002 + South African Schedule for both counterparties, no CSA at
+  controlled-launch, anchored on the Bowmans 2024-04-15 SA netting opinion.
+
+The `counterparty-of` `PartyRelationshipAsserted` edges from each counterparty
+to Hoz Bank, the operational FX-spot scope classification, and the netting-set
+register rows (`NS-standard-bank-za-USD`, `NS-investec-bank-za-USD`) land in
+follow-on PRs from Imani + Helena (out of scope here per the brief — this PR
+is the Party register row only).
+
+Legacy backfill path: `CounterpartySoundingOpened` /
+`CounterpartyProspectRegistered` / `CounterpartyActivated` /
+`CounterpartyOffboarded` folds into `PartyRegistered{kind: "legal-entity"}` +
+`PartyClassified` for the current lifecycle status.
 
 ### Natural-person Parties
 
@@ -188,8 +219,13 @@ Institutional counterparty lifecycle status (`Sounding`, `Prospect`, `KycPassed`
 the business relationship; the `PartyClassified` events track the onboarding
 lifecycle stage.
 
-At v0 there are no active classifications because no counterparties
-exist yet.
+At v0 there are no active classifications projected from `PartyClassified`
+events yet. The `fx-spot-controlled-launch-whitelist` classification for
+`urn:party:legal-entity:standard-bank-za` and `urn:party:legal-entity:investec-bank-za`
+lands in the follow-on PR from Imani (Chief Legal Counsel, governance) that
+emits the `PartyClassified` + `PartyRelationshipAsserted{kind:
+"counterparty-of"}` events; the registration rows above are the prerequisite
+seed for that work.
 
 ## Substrate gaps surfaced
 
@@ -205,6 +241,8 @@ Per Principle 6 (substrate-gap inventory transparency).
 | 6 | Deprecated event types (`LegalEntityRegistered` / `agentRegistered` / `CounterpartySoundingOpened` / `…ProspectRegistered` / `AuthorisedSignatoryAdded` / `…Removed` / `CounterpartyActivated` / `CounterpartyOffboarded`) need `status: "deprecated"` in the registry so Vera catches new emissions | Atlas | PR 4 of D-PARTY-REGISTER |
 | 7 | Marc's PII bundle (DOB, ID number, residential address, source-of-funds documentation) registers via the BLAKE3 document store with `piiDocumentRef` + `dobHashRef` populated | Imani + Iris (Information Officer, governance) | Licence-day |
 | 8 | `purposeRoles` enum should grow a dedicated `ceo-seat` value distinct from licence-day `ceo` to surface the build-phase founding seat in audit views (currently both collapse to `ceo`) | Atlas + Imani | Wave-5 / PR 4+ |
+| 9 | SARB Banks Act bank-licence number for `urn:party:legal-entity:standard-bank-za` and `urn:party:legal-entity:investec-bank-za` is currently `TBC` in the `regimeAnchor` text — sourced manually from the SARB BA110 register. The `LegalEntityAttrs` schema in `prototype/domains/party/types.ts` has no dedicated field for it; either the schema grows a `bankLicenceNumber?: string` field (preferred) or the value lives inside `regimeAnchor`. Resolve before first trade in the controlled-launch run. | Imani + Atlas | Pre-first-trade |
+| 10 | `counterparty-of` `PartyRelationshipAsserted` edges from `urn:party:legal-entity:standard-bank-za` and `urn:party:legal-entity:investec-bank-za` to `urn:party:legal-entity:hoz-bank`; `fx-spot-controlled-launch-whitelist` `PartyClassified` events for both — emitted as a follow-on PR from Imani so the netting-set register and counterparty-onboarding procedure can fire. The `counterparty-of` kind is not currently in `RELATIONSHIP_KINDS` in `prototype/domains/party/types.ts` (v0 enum); it must be added under a follow-on `D-PARTY-RELATIONSHIP-KINDS-V0` extension (or mapped onto an existing kind) before the relationship can be asserted. | Imani + Atlas | Pre-first-trade |
 
 ## Citation chain
 
