@@ -55,6 +55,7 @@ import {
   counterpartyEligibilityScreenedPayloadSchema,
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
+  orderAcceptedPayloadSchema,
   orderApprovedAtGatewayPayloadSchema,
   orderProposedPayloadSchema,
   orderRejectedAtGatewayPayloadSchema,
@@ -187,6 +188,27 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5", "FIC-ACT-38-2001"],
     retention: RETENTION_JSE_TRADE_7Y,
     source: "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3, §5.1",
+  },
+  {
+    // OrderAccepted — counterparty-facing acceptance event emitted after
+    // gateway clearance. Risk-attracting from the counterparty perspective;
+    // Vera's `recon:credit-limit-no-trade-without-loaded` asserts a
+    // CreditLimitLoaded exists for the counterparty prior to OrderAccepted.
+    // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; Credit Risk Policy §7 line 255.
+    type: "OrderAccepted",
+    class: "markets",
+    payloadSchema: orderAcceptedPayloadSchema,
+    issuer: "Kai",
+    subscribers: ["Saskia", "Helena", "Rohan", "Bea", "Vera", "dashboard"],
+    replay: "pair-coupled",
+    citationsHint: [
+      "JSE-RULES-EQUITIES",
+      "FMA-S5",
+      "BANKS-ACT-94-1990-S73",
+      "POLICY:credit-risk-policy-v1-S7",
+    ],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source: "platform/event-store/event-types/trading.ts",
   },
   {
     type: "PreTradeLimitChanged",

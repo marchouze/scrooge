@@ -19,18 +19,22 @@
 //
 // `LexUtilisationComputed.payload.eligibleCapital` is the bank's
 // eligible-capital denominator at the time of measurement, already snapshot-
-// resolved by Rohan's CCR / SA-CCR engine. The recon therefore does NOT
-// re-source eligible capital from any other register — the snapshot is
-// canonical for the audit assertion.
+// resolved by Rohan's CCR / SA-CCR engine. The snapshot remains canonical
+// for the per-event audit assertion (audit-trail integrity per Principle 1).
 //
-// Substrate gap noted in code:
-//   - When `LexUtilisationComputed` events are absent for a counterparty that
-//     has trades (per `recon:credit-limit-no-trade-without-loaded`), the LEX
-//     utilisation cannot be derived here. That gap is owned by the LEX
-//     measurement engine, not by this recon. Eligible-capital source: TBC —
-//     in the future this recon could cross-check against a standalone
-//     capital register (`@platform/finance/capital-adequacy` is the planned
-//     home per the substrate roadmap).
+// The canonical source for eligible-capital outside any specific snapshot
+// is `getEligibleCapital` in `@platform/projections/capital-metrics`
+// (D-CREDIT-LIMIT-ENGINE-BUILD Phase 4; reads from the same CapitalEvent
+// fold as `computeCapitalMetrics`, falling back to the ICAAP v1 build-phase
+// envelope per D-MARKETS-CAPITAL-TIME-SHAPE). Connected-group resolution
+// reads from `@platform/identity/party-projection` via
+// `getConnectedGroupFromStore` (LEX D3/2022 walk over the live `parent-of` /
+// `ubo-of` relationship graph).
+//
+// When `LexUtilisationComputed` events are absent for a counterparty that
+// has trades (per `recon:credit-limit-no-trade-without-loaded`), the LEX
+// utilisation cannot be derived here. That gap is owned by the LEX
+// measurement engine emission cadence, not by this recon.
 //
 // Empty-state correctness: no `LexUtilisationComputed` events → pass.
 //
@@ -50,6 +54,8 @@
 // Author: Vera (Internal audit engineer).
 
 import { eventStore } from "../composition";
+import { getConnectedGroupFromStore } from "../identity/party-projection";
+import { getEligibleCapital } from "../projections/capital-metrics";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "lex-cap-utilisation";
@@ -108,18 +114,49 @@ interface UtilSnapshot {
 
 function pickLatest(events: MinimalLexEvent[]): Map<string, UtilSnapshot> {
   const out = new Map<string, UtilSnapshot>();
+  // Fallback eligible-capital denominator (canonical source per
+  // D-CREDIT-LIMIT-ENGINE-BUILD Phase 4) — read once per recon run.
+  let fallbackEligibleCapital: number | null = null;
   for (const e of events) {
     const cpid = e.payload.counterpartyId;
     if (typeof cpid !== "string" || cpid.length === 0) continue;
-    const groupId =
+    // Connected-group attribution. The snapshot's connectedGroupId remains
+    // canonical when present (it's the value the measurement engine
+    // attributed to at compute time). When absent, walk the party register
+    // via getConnectedGroupFromStore to identify groups of size > 1.
+    let groupId =
       typeof e.payload.connectedGroupId === "string" && e.payload.connectedGroupId.length > 0
         ? e.payload.connectedGroupId
         : null;
+    if (groupId === null) {
+      try {
+        const grp = getConnectedGroupFromStore(eventStore, cpid);
+        if (grp && grp.members.length > 1) {
+          groupId = grp.groupId;
+        }
+      } catch {
+        // Party register not available — proceed with per-counterparty only.
+      }
+    }
     const utilisationPct =
       typeof e.payload.utilisationPct === "number" ? e.payload.utilisationPct : Number.NaN;
     const totalExposure = typeof e.payload.totalExposure === "number" ? e.payload.totalExposure : 0;
-    const eligibleCapital =
+    // Eligible-capital — prefer the snapshot value (canonical for the audit
+    // trail per Principle 1); when missing (0 or absent), substitute the
+    // canonical denominator from getEligibleCapital.
+    let eligibleCapital =
       typeof e.payload.eligibleCapital === "number" ? e.payload.eligibleCapital : 0;
+    if (eligibleCapital === 0) {
+      if (fallbackEligibleCapital === null) {
+        try {
+          const cap = getEligibleCapital(eventStore, e.as_of);
+          fallbackEligibleCapital = Number(cap.amount);
+        } catch {
+          fallbackEligibleCapital = 0;
+        }
+      }
+      eligibleCapital = fallbackEligibleCapital;
+    }
     const currency = typeof e.payload.currency === "string" ? e.payload.currency : "ZAR";
     const computedAt = typeof e.payload.computedAt === "string" ? e.payload.computedAt : e.as_of;
     if (Number.isNaN(utilisationPct)) continue;

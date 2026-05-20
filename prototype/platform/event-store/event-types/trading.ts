@@ -639,12 +639,68 @@ export function makeSwitchTestReport(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// OrderAccepted — counterparty-facing order acceptance.
+//
+// Emitted by the pre-trade gateway after `OrderApprovedAtGateway` confirms
+// gateway clearance and the bank commits to the counterparty that the
+// order will be worked. This is the canonical "trade-attracting" event for
+// counterparty-credit-risk reconciliations (Vera's
+// `recon:credit-limit-no-trade-without-loaded` surfaces here) — the bank
+// must have a `CreditLimitLoaded` for the counterparty before any
+// `OrderAccepted` is emitted (Credit Risk Policy §7 line 255).
+//
+// Distinct from `OrderApprovedAtGateway` (the platform-internal gate-pass
+// signal) and from `OrderSubmitted` / `OrderFilled` (venue lifecycle in
+// markets-trading-extended).
+// ---------------------------------------------------------------------------
+
+export const orderAcceptedPayloadSchema = z.object({
+  orderId: z.string().min(1),
+  counterpartyId: z.string().min(1),
+  instrumentId: z.string().min(1),
+  side: orderSideSchema,
+  /** Notional in minor units (cents) of `currency`. Non-negative integer. */
+  notional: z.number().int().nonnegative(),
+  /** ISO 4217 currency code of the notional. */
+  currency: z
+    .string()
+    .min(3)
+    .regex(/^[A-Z]{3}$/, { message: "currency must be ISO 4217 (3-char uppercase)" }),
+  /** ISO 8601 timestamp at which acceptance was committed to the counterparty. */
+  acceptedAt: z.string().min(1),
+  /** Party register ID / seat of the agent that accepted the order. */
+  acceptedBy: z.string().min(1),
+});
+
+export type OrderAcceptedPayload = z.infer<typeof orderAcceptedPayloadSchema>;
+
+export function makeOrderAccepted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OrderAcceptedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OrderAccepted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: orderAcceptedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const TRADING_TYPED_EVENT_TYPES = [
   "OrderProposed",
   "GatewayCheckRequested",
   "GatewayCheckCompleted",
   "OrderApprovedAtGateway",
   "OrderRejectedAtGateway",
+  "OrderAccepted",
   "PreTradeLimitChanged",
   "CounterpartyEligibilityScreened",
   "CounterpartyEligibilityRevalidated",

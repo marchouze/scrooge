@@ -12,9 +12,8 @@
 //                                             at execution before settlement)
 //   - `FxTradeBooked`                        (FX accounting)
 //   - `OrderFilled`                          (markets-trading-extended)
-//
-// `OrderAccepted` is named in the brief but does not exist in the current
-// event-type registry — substrate gap noted in the brief; not enforced here.
+//   - `OrderAccepted`                        (trading; risk-attracting at
+//                                             counterparty-facing acceptance)
 //
 // Rule: for each counterparty referenced on any of the above events with
 // `as_of = T`, there must be a `CreditLimitLoaded` event for the same
@@ -63,6 +62,7 @@ export const TRADE_EVENT_TYPES = [
   "FxTradeExecuted",
   "FxTradeBooked",
   "OrderFilled",
+  "OrderAccepted",
 ] as const;
 
 export type TradeEventType = (typeof TRADE_EVENT_TYPES)[number];

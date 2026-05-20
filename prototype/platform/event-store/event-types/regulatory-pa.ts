@@ -111,9 +111,7 @@ export const paNotificationSubmittedPayloadSchema = z.object({
   submittedAt: z.string().min(1),
 });
 
-export type PaNotificationSubmittedPayload = z.infer<
-  typeof paNotificationSubmittedPayloadSchema
->;
+export type PaNotificationSubmittedPayload = z.infer<typeof paNotificationSubmittedPayloadSchema>;
 
 export function makePaNotificationSubmitted(args: {
   asOf: string;
@@ -144,8 +142,6 @@ export function makePaNotificationSubmitted(args: {
 //   (4) add a spread in event-types/index.ts.
 // ---------------------------------------------------------------------------
 
-export const REGULATORY_PA_TYPED_EVENT_TYPES = [
-  "PaNotificationSubmitted",
-] as const;
+export const REGULATORY_PA_TYPED_EVENT_TYPES = ["PaNotificationSubmitted"] as const;
 
 export type RegulatoryPaEventType = (typeof REGULATORY_PA_TYPED_EVENT_TYPES)[number];

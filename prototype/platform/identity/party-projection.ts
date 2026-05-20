@@ -418,6 +418,124 @@ export function buildPartyTileSummary(projection: PartyProjection): PartyTileSum
   };
 }
 
+// ---------------------------------------------------------------------------
+// ConnectedCounterpartyGroup — LEX D3/2022 connected-group helper.
+//
+// Per Procedures/by-policy/credit-risk-limit-management.md §5.3 (PROC-RISK-
+// CLM-01), a counterparty's connected group is identified by applying two
+// regulatory tests:
+//
+//   (a) Control test          — one party directly or indirectly controls
+//                               the other per IFRS 10 control definition.
+//   (b) Interdependence test  — financial difficulties of one would cause
+//                               financial difficulties in the other; LEI
+//                               hierarchy + economic dependence + control
+//                               rights.
+//
+// v0 implementation (this slice): walk the live `parent-of` and `ubo-of`
+// relationship graph rooted at the counterparty Party to build a transitive
+// group set. This covers the LEI-hierarchy slice of the control test.
+//
+// TODO (Mira / Imani follow-on under PROC-RISK-CLM-01 §5.3 + Owen-flagged
+// citation gap): operationalise the economic-dependence sub-test and the
+// control-rights sub-test (IFRS 10 paragraph cite + D3/2022 interdependence
+// notification deadline). These slices land via dedicated party-register
+// relationship kinds + a `ConnectedCounterpartyGroupResolved` event
+// (procedure §5.3 line 137 onward).
+// ---------------------------------------------------------------------------
+
+export interface ConnectedGroup {
+  /** Stable group identifier — derived from the root Party URN. */
+  readonly groupId: string;
+  /** Party URNs in the group, deterministic order (sorted). Includes the seed. */
+  readonly members: readonly string[];
+}
+
+/**
+ * Convenience helper — builds the Party projection from the supplied
+ * event store and returns the connected group for `partyId`. Equivalent to
+ * `getConnectedGroup(buildPartyProjection(store), partyId)` but offered as
+ * a single call so callers (Vera recon pipelines, the credit-limit engine)
+ * don't need to thread the projection through their own dependency graph.
+ *
+ * Returns `null` if the seed Party is not registered in the store.
+ */
+export function getConnectedGroupFromStore(
+  eventStore: EventStore,
+  partyId: string,
+  asOf?: string,
+): ConnectedGroup | null {
+  const projection = buildPartyProjection(eventStore, asOf);
+  return getConnectedGroup(projection, partyId);
+}
+
+/**
+ * Resolve a counterparty's connected-counterparty group (LEX D3/2022).
+ *
+ * Returns `null` if the seed Party is not registered. Returns a group of
+ * size 1 (the seed alone) when the Party is registered but has no
+ * connected-group relationships.
+ *
+ * The walk follows live (non-revoked) edges only, in BOTH directions on
+ * `parent-of` and `ubo-of`:
+ *   - parent-of    — direct corporate control hierarchy (legal-entity tree).
+ *   - ubo-of       — beneficial-owner pierce; natural-person UBOs may
+ *                    connect multiple legal entities under shared control.
+ *
+ * Cycle-safe: visited-set bounds the walk; relationship graph is typically
+ * small (~few dozen edges per Party).
+ *
+ * Pure projection — reads only the supplied `PartyProjection`, never the
+ * event store directly.
+ *
+ * Authority: Procedures/by-policy/credit-risk-limit-management.md §5.3;
+ *   Policies/credit-risk-policy-v1.md §2; LEX Directive D3/2022;
+ *   BCBS 283 §11–14 (connected counterparty framework).
+ */
+export function getConnectedGroup(
+  projection: PartyProjection,
+  partyId: string,
+): ConnectedGroup | null {
+  if (!partyId.startsWith("urn:party:")) {
+    return null;
+  }
+  const seed = partyId as PartyId;
+  if (!projection.parties.has(seed)) {
+    return null;
+  }
+
+  const groupKinds: readonly RelationshipKind[] = ["parent-of", "ubo-of"];
+  const visited = new Set<string>([seed]);
+  const queue: PartyId[] = [seed];
+  // Cycle bound — generous (typical control / UBO graphs are < 50 nodes).
+  let hops = 0;
+  const MAX_HOPS = 200;
+
+  while (queue.length > 0 && hops < MAX_HOPS) {
+    hops += 1;
+    const cursor = queue.shift() as PartyId;
+    for (const kind of groupKinds) {
+      // Outbound — cursor is `parent-of` / `ubo-of` someone else.
+      for (const edge of projection.relationships.live) {
+        if (edge.kind !== kind) continue;
+        if (edge.fromPartyId === cursor && !visited.has(edge.toPartyId)) {
+          visited.add(edge.toPartyId);
+          queue.push(edge.toPartyId);
+        }
+        // Inbound — someone is `parent-of` / `ubo-of` cursor.
+        if (edge.toPartyId === cursor && !visited.has(edge.fromPartyId)) {
+          visited.add(edge.fromPartyId);
+          queue.push(edge.fromPartyId);
+        }
+      }
+    }
+  }
+
+  const members = [...visited].sort();
+  const groupId = `group:${seed}`;
+  return { groupId, members };
+}
+
 /**
  * Walk the `acts-on-behalf-of` / `reports-to` chain from a starting Party
  * up through the graph until no further edge applies (or a cycle would
