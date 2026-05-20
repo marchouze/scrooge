@@ -10,10 +10,22 @@
 //   - Each new `ISDACSAAssessmentCompleted` for the same counterparty
 //     supersedes the prior row (status: `superseded`), and the new row
 //     is registered as `active`.
-//   - `csaPresent` is derived from `isdaStatus`: `executed` → true,
-//     anything else → false. Threshold + MTA are recorded in either
-//     case (the event payload carries them), but the SA-CCR engine
-//     only consults them when `csaPresent = true`.
+//   - `csaPresent` is derived from the assessment payload as follows:
+//       `isdaStatus = "executed"` AND (`csaThreshold > 0` OR `mta > 0`)
+//         → `csaPresent = true` (margined RC branch in SA-CCR);
+//       `isdaStatus = "executed"` AND `csaThreshold = 0` AND `mta = 0`
+//         → `csaPresent = false` (ISDA Master executed, no CSA in place;
+//         unmargined RC branch). This is the FX-spot-only controlled-
+//         launch posture per Imani (Chief Legal Counsel, governance)'s
+//         G-9 decision (record `record:documents:imani:g9-isda-vs-
+//         bilateral-fx-master-for-spot:2026-05-20`) — ISDA 2002 in force,
+//         no CSA at controlled-launch because FX-spot T+2 does not
+//         generate continuing MTM exposure;
+//       `isdaStatus ∈ {"in-negotiation", "absent"}` → `csaPresent = false`
+//         regardless of threshold / MTA.
+//     Threshold + MTA are recorded in every case (the event payload
+//     carries them), but the SA-CCR engine only consults them when
+//     `csaPresent = true` (margined branch).
 //
 // Substrate gap (queued under D-CREDIT-LIMIT-ENGINE-BUILD):
 //   - `NettingAgreementValidated` / `NettingAgreementLapsed` events do
@@ -70,7 +82,11 @@ function entryFromAssessment(event: Event): NettingSetRegistryEntry {
   const currency = p.currency;
   const threshold: Money = minor(BigInt(p.csaThreshold), currency as Currency);
   const mta: Money = minor(BigInt(p.mta), currency as Currency);
-  const csaPresent = p.isdaStatus === "executed";
+  // CSA present iff ISDA executed AND a non-zero threshold or MTA is on file.
+  // Zero-threshold AND zero-MTA under an executed ISDA encodes the
+  // "ISDA in force, no CSA at this stage" posture per Imani G-9 (FX-spot
+  // controlled-launch). See module header for the full fold rule.
+  const csaPresent = p.isdaStatus === "executed" && (p.csaThreshold > 0 || p.mta > 0);
 
   const out: NettingSetRegistryEntry = {
     nettingSetId: nettingSetIdFor(p.counterpartyId, currency),
