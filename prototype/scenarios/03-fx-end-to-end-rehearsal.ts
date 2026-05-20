@@ -494,6 +494,8 @@ export function buildPhaseAEvents(): PhaseAEvents {
       bookType: "trading",
       settlementForm: "physical",
       settlementPath: "correspondent",
+      // No-prop attribution (G-3) — client-flow rehearsal.
+      clientFlowRef: "client-trade:scenario-03-dryrun-001",
     },
   });
   // Stamp the canonical CDM event with scenario provenance — the factory

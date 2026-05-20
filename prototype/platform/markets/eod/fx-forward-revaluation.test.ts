@@ -90,6 +90,7 @@ function appendForwardTrade(
         bookId: "BOOK-FX-FWD",
         settlementForm: "physical",
         settlementPath: "correspondent",
+        clientFlowRef: "client-trade:test-fwd-reval",
       },
     }),
   );
@@ -143,6 +144,7 @@ function appendSwapTrade(
         bookId: "BOOK-FX-SWP",
         settlementForm: "physical",
         settlementPath: "correspondent",
+        clientFlowRef: "client-trade:test-swap-reval",
       },
     }),
   );
@@ -187,6 +189,7 @@ function appendNdfTrade(
         settlementPath: "correspondent",
         ndfFixingSource: "SARB-ZAR-Fixing-1600-SAST",
         ndfSettlementCurrency: "USD",
+        clientFlowRef: "client-trade:test-ndf-reval",
       },
     }),
   );

@@ -228,6 +228,13 @@ export async function handleTradeBook(req: Request, _store: EventStore): Promise
         name: counterpartyName,
         role: "counterparty",
       },
+      // No-prop attribution (G-3). Manual trade-book entry defaults to a
+      // client-flow ref derived from the trade id. The /trade-book.html
+      // form does not yet surface a clientFlowRef / hedgeProgrammeRef
+      // selector — adding the field is out of scope for G-3.
+      // TODO(G-3 follow-on): add an explicit attribution selector to the
+      // manual booking form so operators can mark hedge-programme trades.
+      clientFlowRef: `client-trade:manual-${tradeId}`,
     },
   });
 

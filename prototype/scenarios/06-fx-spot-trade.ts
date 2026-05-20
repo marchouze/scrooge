@@ -138,6 +138,8 @@ function buildFxTradeExecuted(asOf: string): Event {
       settlementPath: "correspondent",
       // FinSurv category per ORG-EXCON-ODP-001 — non-resident counterparty OTC
       finsurvCategory: "ODP-001-cross-border-institutional",
+      // No-prop attribution (G-3) — this scenario books a client-driven flow.
+      clientFlowRef: "client-trade:scenario-06-fx-spot-001",
     },
   });
   return { ...base, provenance: SCENARIO_PROVENANCE };

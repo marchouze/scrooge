@@ -167,6 +167,8 @@ function buildFxForwardTradeExecuted(asOf: string): Event {
       settlementForm: "physical",
       settlementPath: "correspondent",
       finsurvCategory: "ODP-001-cross-border-institutional-forward",
+      // No-prop attribution (G-3) — client-flow forward.
+      clientFlowRef: "client-trade:scenario-07-fx-forward-001",
     },
   });
   return { ...base, provenance: SCENARIO_PROVENANCE };
@@ -349,6 +351,8 @@ function buildNdfTradeExecuted(asOf: string): Event {
       ndfFixingSource: "SARB-ZAR-Fixing-1600-SAST",
       ndfSettlementCurrency: "USD",
       finsurvCategory: "ODP-001-cross-border-institutional-ndf",
+      // No-prop attribution (G-3) — client-flow NDF.
+      clientFlowRef: "client-trade:scenario-07-fx-ndf-001",
     },
   });
   return { ...base, provenance: NDF_SCENARIO_PROVENANCE };

@@ -115,6 +115,8 @@ function appendFxTrade(store: EventStore, counterpartyId: string): void {
         bookType: "trading",
         settlementForm: "physical",
         settlementPath: "correspondent",
+        // No-prop attribution (G-3) — client-flow fixture.
+        clientFlowRef: "client-trade:markets-fx-summary-test",
       },
     }),
   );
