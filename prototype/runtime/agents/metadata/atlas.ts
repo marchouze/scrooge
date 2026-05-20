@@ -54,4 +54,14 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24 * 30, // monthly
     cronExpression: "0 7 1 * *",
   }),
+  // atlas:product-narrative-fulfilment — event-driven narrative authoring
+  // for the /products NPA & review console. Fires when a request for an
+  // agent's per-dimension narrative lands; authors a deterministic
+  // narrative drawn from the Product record + dimension policy metadata
+  // and emits ProductDimensionNarrativeRecorded on behalf of the
+  // requested agent.
+  // Authority: D-NEW-PRODUCT-APPROVAL-POLICY §5; D-PRODUCT-CONSTRUCTION-SUBSTRATE.
+  entry("Atlas", "product-narrative-fulfilment", "event-driven", {
+    subscribesTo: ["ProductDimensionNarrativeRequested"],
+  }),
 ];

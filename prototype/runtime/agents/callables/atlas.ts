@@ -9,6 +9,7 @@ import atlasEventTriage from "../atlas-event-triage";
 import atlasGoalLoop from "../atlas-goal-loop";
 import atlasIlaapRun from "../atlas-ilaap-run";
 import atlasPermissionPolicyRefresh from "../atlas-permission-policy-refresh";
+import atlasProductNarrativeFulfilment from "../atlas-product-narrative-fulfilment";
 import atlasSubstrateState from "../atlas-substrate-state";
 
 export const ATLAS_CALLABLES: Record<string, AgentRunHandler> = {
@@ -19,4 +20,5 @@ export const ATLAS_CALLABLES: Record<string, AgentRunHandler> = {
   "atlas:collateral-snapshot": atlasCollateralSnapshot,
   "atlas:ilaap-run": atlasIlaapRun,
   "atlas:alco-pack": atlasAlcoPack,
+  "atlas:product-narrative-fulfilment": atlasProductNarrativeFulfilment,
 };
