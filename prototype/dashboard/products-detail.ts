@@ -267,6 +267,26 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
     module: "platform/accounting/posting-rules/fx-spot.ts",
     legs: "Dr Nostro (bought ccy) · Cr FX Settlement Suspense · Dr FX Settlement Suspense · Cr Nostro (sold ccy).",
   },
+  FxSettlementInstructed: {
+    ruleId: "PR-FX-INSTRUCT",
+    module: "platform/accounting/posting-rules/fx-spot.ts",
+    legs: "Memorandum — instruction issued (MT202 / pacs.009); no cash moved, no GL impact.",
+  },
+  PrincipalPayment: {
+    ruleId: "PR-FX-PRIN",
+    module: "platform/accounting/posting-rules/fx-spot.ts",
+    legs: "Memorandum — per-leg correspondent confirmation; aggregate GL impact posted on FxSettlementConfirmed (PR-FX-003).",
+  },
+  SettlementConfirmed: {
+    ruleId: "PR-FX-LIFECYCLE-CLOSE",
+    module: "platform/accounting/posting-rules/fx-spot.ts",
+    legs: "Memorandum — CDM lifecycle marker (both legs settled); derecognition owned by PR-FX-003 on the FxSettlementConfirmed projection.",
+  },
+  TradeReportSubmitted: {
+    ruleId: "PR-FX-REGREPORT",
+    module: "platform/accounting/posting-rules/fx-spot.ts",
+    legs: "Memorandum — regulatory dispatch (SARB FinSurv / DTCC); no GL impact.",
+  },
   // Equities
   EquityTradeBooked: {
     ruleId: "PR-EQ-001",
@@ -306,6 +326,9 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
   },
   // Lifecycle / lifecycle-shared events with no Bea posting rule today.
   // Returned as "missing" by the lookup below.
+  // The four FX lifecycle gaps surfaced by Marc on 2026-05-20 (PR #608, Bea):
+  // FxSettlementInstructed, PrincipalPayment, SettlementConfirmed, TradeReportSubmitted
+  // are now registered above as memorandum rules — present but with no GL impact.
 };
 
 // ---------------------------------------------------------------------------
