@@ -6,13 +6,25 @@
 // Posting rules implemented (per FX Spec §C):
 //   PR-FX-001: fxTradeBookingJournals     — FxTradeExecuted (spot booking)
 //   PR-FX-002: fxRevaluationJournals      — FxPositionRevalued (daily FVTPL)
-//   PR-FX-003: fxSettlementJournals       — FxSettlementConfirmed (T+2 cash)
+//   PR-FX-PRIN: fxPrincipalPaymentJournals — PrincipalPayment
+//                                            (per-leg cash at correspondent
+//                                             confirmation; GL-significant since
+//                                             2026-05-20)
+//   PR-FX-LIFECYCLE-CLOSE: fxLifecycleCloseJournals — SettlementConfirmed (CDM)
+//                                            (realised-P&L residual; closes the
+//                                             trade; GL-significant since
+//                                             2026-05-20)
+//   PR-FX-003: fxSettlementJournals       — FxSettlementConfirmed (DEPRECATED
+//                                            2026-05-20 — superseded by
+//                                            PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE;
+//                                            kept for back-compat with legacy
+//                                            test-only emitters of the
+//                                            accounting `FxSettlementConfirmed`
+//                                            event-type)
 //   PR-FX-REV: fxSettlementReversalJournals — SettlementReversed (mirrors PR-FX-003)
 //   PR-FX-CANCEL: fxCancellationJournals  — TradeCancelled (net-zero reversal)
 //   PR-FX-AMD: fxAmendmentJournals        — TradeAmended (delta for rate/notional)
 //   PR-FX-INSTRUCT: fxSettlementInstructedJournals — FxSettlementInstructed (memo; no GL)
-//   PR-FX-PRIN: fxPrincipalPaymentJournals — PrincipalPayment (memo; PR-FX-003 owns GL)
-//   PR-FX-LIFECYCLE-CLOSE: fxLifecycleCloseJournals — SettlementConfirmed (CDM; memo)
 //   PR-FX-REGREPORT: fxTradeReportSubmittedJournals — TradeReportSubmitted (memo)
 //
 // All functions return SubLedgerLeg[] that balance per currency.
@@ -212,22 +224,33 @@ export function fxTradeBookingJournals(
 
     // Pay leg: bank delivers payCurrency → Cr FX Payable [payCcy], Dr FX Receivable [payCcy] as offset
     // Receive leg: bank receives receiveCcy → Dr FX Receivable [receiveCcy], Cr FX Payable [receiveCcy] as offset
+    //
+    // Convention fix (2026-05-20, brief
+    // `brief:bea:fix-fx-posting-rule-circularity-pr-fx-prin-becom:2026-05-20`):
+    // both currency sub-entries post `Dr Receivable [ccy] / Cr Payable [ccy]`
+    // — the natural-side convention (Receivable is a debit-natural asset;
+    // Payable is a credit-natural liability). Previously the pay-leg
+    // sub-entry inverted this (`Dr Payable / Cr Receivable`), which left
+    // unretirable balances when PR-FX-PRIN (Dr Payable / Cr Nostro on the
+    // deliver leg) tried to derecognise the liability. The natural-side
+    // convention lets PR-FX-PRIN close the active side of each currency:
+    // receive-leg Cr's the Receivable; deliver-leg Dr's the Payable.
 
-    // ZAR sub-entry (or payCcy sub-entry)
+    // payCcy sub-entry: Dr Receivable [payCcy] / Cr Payable [payCcy]
     legs.push({
-      accountId: payableAccountFor(payCcy),
+      accountId: receivableAccountFor(payCcy),
       debitCredit: "debit",
       amountMinor: payAmount,
       currency: payCcy,
     });
     legs.push({
-      accountId: receivableAccountFor(payCcy),
+      accountId: payableAccountFor(payCcy),
       debitCredit: "credit",
       amountMinor: payAmount,
       currency: payCcy,
     });
 
-    // receiveCcy sub-entry
+    // receiveCcy sub-entry: Dr Receivable [receiveCcy] / Cr Payable [receiveCcy]
     legs.push({
       accountId: receivableAccountFor(receiveCcy),
       debitCredit: "debit",
@@ -291,29 +314,43 @@ export function fxRevaluationJournals(event: FxPositionRevaluedPayload): SubLedg
 }
 
 // ---------------------------------------------------------------------------
-// PR-FX-003: Settlement journals
+// PR-FX-003: Settlement journals — DEPRECATED 2026-05-20
 //
-// On FxSettlementConfirmed (T+2 cash exchange):
+// @deprecated Use PR-FX-PRIN (`fxPrincipalPaymentJournals`) for per-leg cash
+//   movements + PR-FX-LIFECYCLE-CLOSE (`fxLifecycleCloseJournals`) for the
+//   realised-P&L residual. The accounting `FxSettlementConfirmed` event-type
+//   is also deprecated: production paths never emitted it (only test code
+//   constructed it), so PR-FX-003 was an unreachable code path. The CEO
+//   decision of 2026-05-20 split its responsibilities across the two CDM
+//   lifecycle events that ARE emitted by `post-trade-lifecycle.ts` and
+//   scenarios 06/07.
+//
+// This function is kept (a) for backwards compatibility with the rare
+// callers that still construct `FxSettlementConfirmed` payloads in tests
+// for purposes other than FX accounting (e.g. `ba-325-lcr.test.ts` settled-
+// trade detection); and (b) so the `bea-fx-posting-engine` / `bea-gl-
+// posting-engine` handlers can continue to route a stray
+// `FxSettlementConfirmed` if anything emits one during the deprecation
+// window. New authoring must NOT add new emitters of `FxSettlementConfirmed`.
+//
+// Original posting behaviour (unchanged for back-compat):
 //
 //   (i) Receive base currency into nostro:
-//     Dr  Nostro [base ccy]          [settledBaseCurrencyMinor]
-//     Cr  FX Trading Receivable [base ccy]  [settledBaseCurrencyMinor]
+//     Dr  Nostro [base ccy]                            settledBaseCurrencyMinor
+//     Cr  FX Trading Receivable [base ccy]             settledBaseCurrencyMinor
 //
 //   (ii) Deliver quote currency from nostro:
-//     Dr  FX Trading Payable [quote ccy]  [|settledQuoteCurrencyMinor|]
-//     Cr  Nostro [quote ccy]               [|settledQuoteCurrencyMinor|]
+//     Dr  FX Trading Payable [quote ccy]               |settledQuoteCurrencyMinor|
+//     Cr  Nostro [quote ccy]                           |settledQuoteCurrencyMinor|
 //
-//   (iii) Realised P&L (if any residual):
-//     If realisedPnlZarMinor > 0 (gain):
-//       Dr  ACC-1100-001  Nostro ZAR  [realisedPnlZarMinor]
-//       Cr  ACC-2100-006  Realised FX P&L  [realisedPnlZarMinor]
-//     If realisedPnlZarMinor < 0 (loss):
-//       Dr  ACC-2100-006  Realised FX P&L  [|realisedPnlZarMinor|]
-//       Cr  ACC-1100-001  Nostro ZAR        [|realisedPnlZarMinor|]
+//   (iii) Realised P&L residual:
+//     If realisedPnlZarMinor > 0: Dr Nostro ZAR / Cr ACC-2100-006
+//     If realisedPnlZarMinor < 0: Dr ACC-2100-006 / Cr Nostro ZAR
 //
 //   Each sub-entry balances in its own currency.
 // ---------------------------------------------------------------------------
 
+/** @deprecated 2026-05-20 — use `fxPrincipalPaymentJournals` + `fxLifecycleCloseJournals`. */
 export function fxSettlementJournals(event: FxSettlementConfirmedPayload): SubLedgerLeg[] {
   const legs: SubLedgerLeg[] = [];
 
@@ -552,99 +589,162 @@ export function fxSettlementInstructedJournals(
 }
 
 // ---------------------------------------------------------------------------
-// PR-FX-PRIN: Principal-payment journals
+// PR-FX-PRIN: Principal-payment journals — GL-significant per-leg cash
 //
 // On PrincipalPayment (per-leg correspondent confirmation — see CDM schema
 // at markets/cdm/fx.ts:464):
 //
-//   No GL entries are emitted by this rule.
+//   For `legKind === "receive"` (bank receives currency at correspondent):
+//     Dr  Nostro [currency]                  |netCash|
+//     Cr  FX Trading Receivable [currency]   |netCash|
 //
-//   Returns: [].
+//   For `legKind === "deliver"` (bank pays currency from correspondent):
+//     Dr  FX Trading Payable [currency]      |netCash|
+//     Cr  Nostro [currency]                  |netCash|
 //
-// Rationale (intentional no-GL-impact, NOT a substrate gap):
-//   - `PrincipalPayment` is the CDM-level per-leg correspondent notification.
-//     For a Spot trade there are two `PrincipalPayment` events (one per
-//     currency leg). Both are upstream of the accounting-flavoured
-//     `FxSettlementConfirmed` event, which carries the aggregate
-//     `settledBaseCurrencyMinor`, `settledQuoteCurrencyMinor`,
-//     `realisedPnlZarMinor`, and nostro-account IDs needed to construct
-//     a balanced derecognition entry.
-//   - GL responsibility sits with PR-FX-003 (`FxSettlementConfirmed`),
-//     which fires once on the aggregate. PR-FX-PRIN must therefore not
-//     also emit cash legs — doing so would double-count the cash movement.
-//   - Choosing the other direction (PR-FX-PRIN owns GL, PR-FX-003 becomes
-//     no-op) was considered and rejected: the per-leg events lack the
-//     realised-P&L delta and the nostro-account IDs in their payload
-//     schema (markets/cdm/fx.ts:464–501 carries only legKind, currency,
-//     netCash, settlementDate, correspondent). Reconstructing the
-//     aggregate from two separate events would require cross-event state
-//     in the posting-rule engine, which violates the pure-function
-//     contract for posting rules.
-//   - Auditability is preserved: each `PrincipalPayment` event is still
-//     persisted, citation-bearing, and queryable for settlement-progress
-//     reconstruction. It is a lifecycle marker (memorandum) without GL
-//     consequence.
+//   Each call returns a balanced 2-leg entry in a single currency. Two
+//   PrincipalPayment events per Spot trade (one receive, one deliver)
+//   therefore post in two different currencies, jointly derecognising
+//   the receivable and payable booked at PR-FX-001.
+//
+// Why this owns the cash GL (not PR-FX-003):
+//   - Marc's review of PR #608 surfaced a circularity: PR-FX-003 fires on
+//     the accounting `FxSettlementConfirmed` event, but
+//     `makeFxSettlementConfirmed(...)` is only called from test code —
+//     never from `platform/simulation/post-trade-lifecycle.ts`, scenarios
+//     06/07, or any production code path. There is no projection handler
+//     that derives the accounting event from the CDM lifecycle. As a
+//     result, FX trades were never derecognising their receivable/payable.
+//   - CEO decision (2026-05-20, in-session): PR-FX-PRIN becomes the
+//     GL-significant rule. Events match reality — cash moved at the
+//     correspondent → book the cash leg then. No Principle 1 smell of
+//     deriving an event from another event; no missing projection handler.
+//   - The accounting `FxSettlementConfirmed` event-type and PR-FX-003
+//     are deprecated by this change. See PR-FX-003 docblock for the
+//     migration plan and the `@deprecated` tag.
+//
+// Realised-P&L residual is recognised by PR-FX-LIFECYCLE-CLOSE on the
+// CDM `SettlementConfirmed` event, which carries the `realisedPnlDelta`
+// in ZAR minor units once both legs have been confirmed.
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - D-FX-CLS-MEMBERSHIP — correspondent-routed settlement
-//   - IFRS 9 §3.2.3 (derecognition — owned by PR-FX-003)
-//   - IAS 21 §28 (settlement-date P&L — owned by PR-FX-003)
+//   - IFRS 9 §3.2.3 (derecognition on transfer of contractual cash flows)
+//   - IAS 21 §28 (settlement-date FX gain/loss recognition)
+//   - urn:principle:1 — events are reality, not derived from other events
 // ---------------------------------------------------------------------------
 
-export function fxPrincipalPaymentJournals(_event: PrincipalPaymentPayload): SubLedgerLeg[] {
-  // Intentional no-GL-impact: PR-FX-003 owns the aggregate derecognition.
-  // PrincipalPayment is the upstream per-leg lifecycle marker. See
-  // header docblock for full reasoning.
-  return [];
+export function fxPrincipalPaymentJournals(event: PrincipalPaymentPayload): SubLedgerLeg[] {
+  const amount = Math.abs(event.netCash);
+  if (amount === 0) return [];
+
+  const ccy = event.currency;
+  const nostro = nostroAccountFor(ccy);
+
+  if (event.legKind === "receive") {
+    // Bank receives currency into nostro; derecognise the FX Trading Receivable.
+    return [
+      {
+        accountId: nostro,
+        debitCredit: "debit",
+        amountMinor: amount,
+        currency: ccy,
+      },
+      {
+        accountId: receivableAccountFor(ccy),
+        debitCredit: "credit",
+        amountMinor: amount,
+        currency: ccy,
+      },
+    ];
+  }
+
+  // legKind === "deliver": bank pays currency from nostro; derecognise the
+  // FX Trading Payable.
+  return [
+    {
+      accountId: payableAccountFor(ccy),
+      debitCredit: "debit",
+      amountMinor: amount,
+      currency: ccy,
+    },
+    {
+      accountId: nostro,
+      debitCredit: "credit",
+      amountMinor: amount,
+      currency: ccy,
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
-// PR-FX-LIFECYCLE-CLOSE: CDM settlement-confirmed lifecycle-close journals
+// PR-FX-LIFECYCLE-CLOSE: CDM settlement-confirmed lifecycle-close journals —
+//                        GL-significant realised-P&L residual
 //
 // On `SettlementConfirmed` (the CDM final-state event — schema at
 // markets/cdm/fx.ts:544 — emitted once both `PrincipalPayment` events
-// are in):
+// have been recorded):
 //
-//   No GL entries are emitted by this rule.
+//   If `realisedPnlDelta > 0` (gain — settlement rate above book rate):
+//     Dr  Nostro ZAR            realisedPnlDelta
+//     Cr  Realised FX P&L       realisedPnlDelta            (ACC-2100-006)
 //
-//   Returns: [].
+//   If `realisedPnlDelta < 0` (loss — settlement rate below book rate):
+//     Dr  Realised FX P&L       |realisedPnlDelta|
+//     Cr  Nostro ZAR            |realisedPnlDelta|
 //
-// Relationship to PR-FX-003 (intentional no-GL-impact, NOT a substrate gap):
-//   - Two settlement-completion event types co-exist and are not duplicates:
-//       (a) CDM `SettlementConfirmed` (markets/cdm/fx.ts:544) — lifecycle
-//           marker. Payload: tradeId, currencyPair, settledDate,
-//           realisedPnlDelta, settlementRef, finsurvReportingRef. No
-//           per-currency settled amounts; no nostro IDs.
-//       (b) Accounting `FxSettlementConfirmed`
-//           (event-store/event-types/fx-accounting.ts:112) — the
-//           GL-significant event. Payload carries `settledBaseCurrencyMinor`,
-//           `settledQuoteCurrencyMinor`, `realisedPnlZarMinor`,
-//           `nostroAccountBase`, `nostroAccountQuote`. PR-FX-003 owns
-//           derecognition + realised-P&L recognition against this.
-//   - The accounting `FxSettlementConfirmed` is projected from the CDM
-//     `SettlementConfirmed` by Bea's settlement-projection handler (see
-//     design note `archive/owner-inbox/2026-05-20_bea_fx-lifecycle-
-//     posting-rules-design-note.md`). The projection enriches the CDM
-//     event with nostro-account IDs and per-currency settled amounts.
-//   - Emitting GL legs on both events would double-count derecognition.
-//     PR-FX-003 is the single source of truth for FVTPL derecognition +
-//     realised-P&L recognition. PR-FX-LIFECYCLE-CLOSE records the
-//     lifecycle close as memorandum only.
+//   If `realisedPnlDelta === 0`: returns `[]` (no posting required).
+//
+//   The principal cash movements have already been derecognised by the two
+//   PR-FX-PRIN postings on the per-leg `PrincipalPayment` events. This rule
+//   records the realised-P&L residual — the difference between the
+//   carrying amount at the last revaluation and the actual settled cash
+//   value — and closes the trade.
+//
+// Why this owns the realised-P&L residual:
+//   - The CDM `SettlementConfirmed` event is the canonical lifecycle-close
+//     event emitted by `platform/simulation/post-trade-lifecycle.ts` (and
+//     in production by the FX trade lifecycle once both legs confirm).
+//     Its payload includes `realisedPnlDelta` (ZAR minor units), which is
+//     exactly the residual to be recognised.
+//   - PR-FX-PRIN (on PrincipalPayment) cannot recognise the realised P&L
+//     because each per-leg event sees only its own currency leg — there
+//     is no cross-leg residual computable from a single PrincipalPayment.
+//   - The CEO decision of 2026-05-20 retired PR-FX-003 (on accounting
+//     `FxSettlementConfirmed`) in favour of this two-tier split: PR-FX-PRIN
+//     owns the per-leg cash; PR-FX-LIFECYCLE-CLOSE owns the realised-P&L
+//     residual. See PR-FX-PRIN and PR-FX-003 docblocks for rationale.
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - D-FX-CLS-MEMBERSHIP — correspondent-routed settlement
-//   - IFRS 9 §3.2.3 (derecognition — owned by PR-FX-003)
-//   - IAS 21 §28 (settlement-date P&L — owned by PR-FX-003)
+//   - IFRS 9 §3.2.3 (derecognition on transfer of contractual cash flows)
+//   - IAS 21 §28 (settlement-date P&L recognition)
+//   - urn:principle:1 — events are reality, not derived from other events
 // ---------------------------------------------------------------------------
 
-export function fxLifecycleCloseJournals(_event: SettlementConfirmedPayload): SubLedgerLeg[] {
-  // Intentional no-GL-impact: CDM SettlementConfirmed is the lifecycle
-  // marker; PR-FX-003 (on the accounting FxSettlementConfirmed projection)
-  // owns the derecognition entry. See header docblock for the
-  // CDM-vs-accounting event-type taxonomy.
-  return [];
+export function fxLifecycleCloseJournals(event: SettlementConfirmedPayload): SubLedgerLeg[] {
+  const pnl = event.realisedPnlDelta;
+  if (pnl === 0) return [];
+
+  const amount = Math.abs(pnl);
+  const isGain = pnl > 0;
+
+  return [
+    {
+      accountId: isGain ? FX_ACCOUNTS.NOSTRO_ZAR : FX_ACCOUNTS.REALISED_PNL,
+      debitCredit: "debit",
+      amountMinor: amount,
+      currency: "ZAR",
+    },
+    {
+      accountId: isGain ? FX_ACCOUNTS.REALISED_PNL : FX_ACCOUNTS.NOSTRO_ZAR,
+      debitCredit: "credit",
+      amountMinor: amount,
+      currency: "ZAR",
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------

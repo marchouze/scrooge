@@ -117,10 +117,14 @@ describe("PR-FX-INSTRUCT: fxSettlementInstructedJournals", () => {
 });
 
 // ---------------------------------------------------------------------------
-// PR-FX-PRIN: PrincipalPayment → []
+// PR-FX-PRIN: PrincipalPayment → GL-significant per-leg cash
+//
+// Since 2026-05-20 (CEO decision resolving the PR #608 circularity):
+//   receive leg → Dr Nostro [ccy] / Cr FX Trading Receivable [ccy]
+//   deliver leg → Dr FX Trading Payable [ccy] / Cr Nostro [ccy]
 // ---------------------------------------------------------------------------
 
-describe("PR-FX-PRIN: fxPrincipalPaymentJournals", () => {
+describe("PR-FX-PRIN: fxPrincipalPaymentJournals (GL-significant)", () => {
   const receiveLeg: PrincipalPaymentPayload = {
     tradeId: "T-FX-PRIN-001",
     legKind: "receive",
@@ -153,51 +157,96 @@ describe("PR-FX-PRIN: fxPrincipalPaymentJournals", () => {
     citations: ["urn:decision:D-FX-CLS-MEMBERSHIP"],
   };
 
-  it("returns [] for the receive leg (PR-FX-003 owns aggregate derecognition)", () => {
+  it("receive leg: Dr Nostro [ccy] / Cr FX Trading Receivable [ccy], balanced", () => {
     const legs = fxPrincipalPaymentJournals(receiveLeg);
-    expect(legs).toEqual([]);
+    expect(legs).toHaveLength(2);
+    expect(legs[0]).toEqual({
+      accountId: FX_ACCOUNTS.NOSTRO_USD,
+      debitCredit: "debit",
+      amountMinor: 1_000_000,
+      currency: "USD",
+    });
+    expect(legs[1]).toEqual({
+      accountId: FX_ACCOUNTS.RECEIVABLE_USD,
+      debitCredit: "credit",
+      amountMinor: 1_000_000,
+      currency: "USD",
+    });
+    assertBalanced(legs);
   });
 
-  it("returns [] for the deliver leg (PR-FX-003 owns aggregate derecognition)", () => {
+  it("deliver leg: Dr FX Trading Payable [ccy] / Cr Nostro [ccy], balanced", () => {
     const legs = fxPrincipalPaymentJournals(deliverLeg);
+    expect(legs).toHaveLength(2);
+    expect(legs[0]).toEqual({
+      accountId: FX_ACCOUNTS.PAYABLE_ZAR,
+      debitCredit: "debit",
+      amountMinor: 18_000_000,
+      currency: "ZAR",
+    });
+    expect(legs[1]).toEqual({
+      accountId: FX_ACCOUNTS.NOSTRO_ZAR,
+      debitCredit: "credit",
+      amountMinor: 18_000_000,
+      currency: "ZAR",
+    });
+    assertBalanced(legs);
+  });
+
+  it("zero netCash returns [] (no posting required for a no-op confirmation)", () => {
+    const legs = fxPrincipalPaymentJournals({ ...receiveLeg, netCash: 0 });
     expect(legs).toEqual([]);
   });
 
-  it("round-trip: two PrincipalPayment events + one FxSettlementConfirmed → only PR-FX-003 emits GL", () => {
-    // Per-leg events: zero contribution.
+  it("uses Math.abs(netCash): deliver leg with positive netCash still produces |amount| legs", () => {
+    // Defensive: even if the upstream emitter is sloppy with sign conventions
+    // for legKind, we book the absolute amount in the correct direction.
+    const legs = fxPrincipalPaymentJournals({ ...deliverLeg, netCash: 18_000_000 });
+    expect(legs).toHaveLength(2);
+    expect(legs[0]?.debitCredit).toBe("debit");
+    expect(legs[0]?.accountId).toBe(FX_ACCOUNTS.PAYABLE_ZAR);
+    expect(legs[0]?.amountMinor).toBe(18_000_000);
+    assertBalanced(legs);
+  });
+
+  it("round-trip: receive + deliver PR-FX-PRIN zero out the receivable/payable in each currency", () => {
+    // PR-FX-001 booking: Dr USD Receivable / Cr USD Payable; Dr ZAR Payable / Cr ZAR Receivable.
+    // After settlement (PR-FX-PRIN on each leg), the USD Receivable and ZAR
+    // Payable must net to zero in their respective currencies.
     const receiveLegs = fxPrincipalPaymentJournals(receiveLeg);
     const deliverLegs = fxPrincipalPaymentJournals(deliverLeg);
-    expect(receiveLegs).toEqual([]);
-    expect(deliverLegs).toEqual([]);
 
-    // Aggregate event (PR-FX-003): emits balanced legs in each currency.
-    const aggregate: FxSettlementConfirmedPayload = {
-      tradeId: "T-FX-PRIN-001",
-      currencyPair: "ZAR/USD",
-      legKind: "near",
-      settledBaseCurrencyMinor: -18_000_000, // ZAR outflow
-      settledQuoteCurrencyMinor: 1_000_000, // USD inflow
-      settledAt: "2026-05-22T10:00:00Z",
-      nostroAccountBase: FX_ACCOUNTS.NOSTRO_ZAR,
-      nostroAccountQuote: FX_ACCOUNTS.NOSTRO_USD,
-      realisedPnlZarMinor: 0,
-      correspondentRef: "MT300-AGG-001",
-    };
-    const aggLegs = fxSettlementJournals(aggregate);
+    // Aggregate by (account, currency, side).
+    const totals = new Map<string, number>();
+    for (const leg of [...receiveLegs, ...deliverLegs]) {
+      const key = `${leg.accountId}|${leg.currency}`;
+      const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      totals.set(key, (totals.get(key) ?? 0) + signed);
+    }
 
-    // Combined GL impact = aggregate only (per-leg events are memorandum).
-    const combined = [...receiveLegs, ...deliverLegs, ...aggLegs];
-    expect(combined).toEqual(aggLegs);
-    assertBalanced(combined);
-    expect(combined.length).toBeGreaterThan(0);
+    // USD Receivable: PR-FX-PRIN credits 1m (offsets the PR-FX-001 debit).
+    expect(totals.get(`${FX_ACCOUNTS.RECEIVABLE_USD}|USD`)).toBe(-1_000_000);
+    // ZAR Payable: PR-FX-PRIN debits 18m (offsets the PR-FX-001 credit).
+    expect(totals.get(`${FX_ACCOUNTS.PAYABLE_ZAR}|ZAR`)).toBe(18_000_000);
+    // Nostro USD/ZAR move as expected.
+    expect(totals.get(`${FX_ACCOUNTS.NOSTRO_USD}|USD`)).toBe(1_000_000);
+    expect(totals.get(`${FX_ACCOUNTS.NOSTRO_ZAR}|ZAR`)).toBe(-18_000_000);
+
+    // Per-currency balance check (debits = credits in each currency).
+    assertBalanced([...receiveLegs, ...deliverLegs]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// PR-FX-LIFECYCLE-CLOSE: CDM SettlementConfirmed → []
+// PR-FX-LIFECYCLE-CLOSE: CDM SettlementConfirmed → realised-P&L residual
+//
+// Since 2026-05-20 (CEO decision resolving the PR #608 circularity):
+//   realisedPnlDelta > 0 → Dr Nostro ZAR / Cr Realised FX P&L
+//   realisedPnlDelta < 0 → Dr Realised FX P&L / Cr Nostro ZAR
+//   realisedPnlDelta === 0 → []
 // ---------------------------------------------------------------------------
 
-describe("PR-FX-LIFECYCLE-CLOSE: fxLifecycleCloseJournals", () => {
+describe("PR-FX-LIFECYCLE-CLOSE: fxLifecycleCloseJournals (GL-significant)", () => {
   const baseClose: SettlementConfirmedPayload = {
     tradeId: "T-FX-CLOSE-001",
     currencyPair: "ZAR/USD",
@@ -208,33 +257,217 @@ describe("PR-FX-LIFECYCLE-CLOSE: fxLifecycleCloseJournals", () => {
     citations: ["urn:decision:D-MARKETS-SCHEMA-FOUNDATION"],
   };
 
-  it("returns [] (intentional no-GL-impact: PR-FX-003 owns derecognition)", () => {
+  it("realisedPnlDelta === 0 returns [] (no posting required)", () => {
     const legs = fxLifecycleCloseJournals(baseClose);
     expect(legs).toEqual([]);
   });
 
-  it("returns [] regardless of realisedPnlDelta sign (gain)", () => {
-    const legs = fxLifecycleCloseJournals({
-      ...baseClose,
-      realisedPnlDelta: 50_000,
+  it("gain: Dr Nostro ZAR / Cr Realised FX P&L, balanced in ZAR", () => {
+    const legs = fxLifecycleCloseJournals({ ...baseClose, realisedPnlDelta: 50_000 });
+    expect(legs).toHaveLength(2);
+    expect(legs[0]).toEqual({
+      accountId: FX_ACCOUNTS.NOSTRO_ZAR,
+      debitCredit: "debit",
+      amountMinor: 50_000,
+      currency: "ZAR",
     });
-    expect(legs).toEqual([]);
+    expect(legs[1]).toEqual({
+      accountId: FX_ACCOUNTS.REALISED_PNL,
+      debitCredit: "credit",
+      amountMinor: 50_000,
+      currency: "ZAR",
+    });
+    assertBalanced(legs);
   });
 
-  it("returns [] regardless of realisedPnlDelta sign (loss)", () => {
-    const legs = fxLifecycleCloseJournals({
-      ...baseClose,
-      realisedPnlDelta: -25_000,
+  it("loss: Dr Realised FX P&L / Cr Nostro ZAR, balanced in ZAR", () => {
+    const legs = fxLifecycleCloseJournals({ ...baseClose, realisedPnlDelta: -25_000 });
+    expect(legs).toHaveLength(2);
+    expect(legs[0]).toEqual({
+      accountId: FX_ACCOUNTS.REALISED_PNL,
+      debitCredit: "debit",
+      amountMinor: 25_000,
+      currency: "ZAR",
     });
-    expect(legs).toEqual([]);
+    expect(legs[1]).toEqual({
+      accountId: FX_ACCOUNTS.NOSTRO_ZAR,
+      debitCredit: "credit",
+      amountMinor: 25_000,
+      currency: "ZAR",
+    });
+    assertBalanced(legs);
   });
 
-  it("returns [] when FinSurv reference is absent (build-phase pre-Mira)", () => {
+  it("returns posting when FinSurv reference is absent (FinSurv ref is metadata only)", () => {
     const legs = fxLifecycleCloseJournals({
       ...baseClose,
+      realisedPnlDelta: 100_000,
       finsurvReportingRef: undefined,
     });
-    expect(legs).toEqual([]);
+    expect(legs).toHaveLength(2);
+    assertBalanced(legs);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// End-to-end FX Spot lifecycle: PR-FX-001 + 2× PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE
+// produces a trial balance that zeros out FX Trading Receivable + Payable in
+// every currency, and lands the realised P&L on its dedicated account.
+// ---------------------------------------------------------------------------
+
+describe("FX Spot end-to-end lifecycle (PR-FX-001 + PR-FX-PRIN x2 + PR-FX-LIFECYCLE-CLOSE)", () => {
+  it("derecognises FX Trading Receivable + Payable per currency at trade close", () => {
+    // Step 1: Book a USD/ZAR spot — bank buys USD, pays ZAR.
+    // PR-FX-001 emits per-currency sub-entries on the natural side:
+    //   Dr Receivable [ccy] / Cr Payable [ccy] for both currencies.
+    // (Per fxTradeBookingJournals, 2026-05-20 convention fix.)
+    const tradeBookingLegs = [
+      // payCcy = ZAR sub-entry
+      {
+        accountId: FX_ACCOUNTS.RECEIVABLE_ZAR,
+        debitCredit: "debit" as const,
+        amountMinor: 18_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: FX_ACCOUNTS.PAYABLE_ZAR,
+        debitCredit: "credit" as const,
+        amountMinor: 18_000_000,
+        currency: "ZAR",
+      },
+      // receiveCcy = USD sub-entry
+      {
+        accountId: FX_ACCOUNTS.RECEIVABLE_USD,
+        debitCredit: "debit" as const,
+        amountMinor: 1_000_000,
+        currency: "USD",
+      },
+      {
+        accountId: FX_ACCOUNTS.PAYABLE_USD,
+        debitCredit: "credit" as const,
+        amountMinor: 1_000_000,
+        currency: "USD",
+      },
+    ];
+
+    // Step 2: PR-FX-PRIN on receive leg (USD inflow).
+    const receiveLegs = fxPrincipalPaymentJournals({
+      tradeId: "T-FX-E2E-001",
+      legKind: "receive",
+      currencyPair: "ZAR/USD",
+      currency: "USD",
+      netCash: 1_000_000,
+      settlementDate: "2026-05-22",
+      settlementPath: "correspondent",
+      correspondent: { name: "JP Morgan", bic: "CHASUS33XXX" },
+      citations: ["urn:decision:D-FX-CLS-MEMBERSHIP"],
+    });
+
+    // Step 3: PR-FX-PRIN on deliver leg (ZAR outflow).
+    const deliverLegs = fxPrincipalPaymentJournals({
+      tradeId: "T-FX-E2E-001",
+      legKind: "deliver",
+      currencyPair: "ZAR/USD",
+      currency: "ZAR",
+      netCash: -18_000_000,
+      settlementDate: "2026-05-22",
+      settlementPath: "correspondent",
+      correspondent: { name: "SARB", bic: "SARBZAJJXXX" },
+      citations: ["urn:decision:D-FX-CLS-MEMBERSHIP"],
+    });
+
+    // Step 4: PR-FX-LIFECYCLE-CLOSE — assume realised P&L is exactly zero
+    // (settlement rate == book rate, e.g. no intraday rate movement).
+    const closeLegs = fxLifecycleCloseJournals({
+      tradeId: "T-FX-E2E-001",
+      currencyPair: "ZAR/USD",
+      settledDate: "2026-05-22",
+      realisedPnlDelta: 0,
+      settlementRef: "MT300-E2E-001",
+      citations: ["urn:decision:D-MARKETS-SCHEMA-FOUNDATION"],
+    });
+
+    const allLegs = [...tradeBookingLegs, ...receiveLegs, ...deliverLegs, ...closeLegs];
+    assertBalanced(allLegs);
+
+    // Trial-balance fold by (account, currency).
+    const totals = new Map<string, number>();
+    for (const leg of allLegs) {
+      const key = `${leg.accountId}|${leg.currency}`;
+      const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      totals.set(key, (totals.get(key) ?? 0) + signed);
+    }
+
+    // PR-FX-001 (2026-05-20 convention) posts `Dr Receivable / Cr Payable`
+    // per currency sub-entry. PR-FX-PRIN on the receive leg credits
+    // Receivable; PR-FX-PRIN on the deliver leg debits Payable. Each side
+    // of the active currency closes:
+    //   Receivable [receive ccy] = 0
+    //   Payable    [pay ccy]     = 0
+    // The "non-active" side per currency (Payable[receive ccy] /
+    // Receivable[pay ccy]) carries the residual that mirrors the cash
+    // exchange and is reported under the FX Trading sub-ledger until
+    // netted at period close.
+    expect(totals.get(`${FX_ACCOUNTS.RECEIVABLE_USD}|USD`)).toBe(0); // closed
+    expect(totals.get(`${FX_ACCOUNTS.PAYABLE_ZAR}|ZAR`)).toBe(0); // closed
+
+    // Non-active side residuals (offset of the cash exchange):
+    expect(totals.get(`${FX_ACCOUNTS.PAYABLE_USD}|USD`)).toBe(-1_000_000);
+    expect(totals.get(`${FX_ACCOUNTS.RECEIVABLE_ZAR}|ZAR`)).toBe(18_000_000);
+
+    // Nostro positions reflect actual cash held.
+    expect(totals.get(`${FX_ACCOUNTS.NOSTRO_USD}|USD`)).toBe(1_000_000);
+    expect(totals.get(`${FX_ACCOUNTS.NOSTRO_ZAR}|ZAR`)).toBe(-18_000_000);
+  });
+
+  it("realised gain lands on the Realised FX P&L account", () => {
+    const closeLegs = fxLifecycleCloseJournals({
+      tradeId: "T-FX-PNL-001",
+      currencyPair: "ZAR/USD",
+      settledDate: "2026-05-22",
+      realisedPnlDelta: 75_000,
+      settlementRef: "MT300-PNL-001",
+      citations: ["urn:decision:D-MARKETS-SCHEMA-FOUNDATION"],
+    });
+    const totals = new Map<string, number>();
+    for (const leg of closeLegs) {
+      const key = `${leg.accountId}|${leg.currency}`;
+      const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      totals.set(key, (totals.get(key) ?? 0) + signed);
+    }
+    expect(totals.get(`${FX_ACCOUNTS.NOSTRO_ZAR}|ZAR`)).toBe(75_000);
+    expect(totals.get(`${FX_ACCOUNTS.REALISED_PNL}|ZAR`)).toBe(-75_000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PR-FX-003 (DEPRECATED 2026-05-20) — back-compat path
+//
+// `fxSettlementJournals(...)` still produces the legacy aggregate posting
+// when called with an `FxSettlementConfirmed` payload. The accounting
+// `FxSettlementConfirmed` event-type is no longer emitted by production
+// code paths; PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE replace it. This block
+// pins the legacy shape so that any remaining test-only emitters (the
+// rev-engine tests, ba-325 LCR test) keep producing the same legs they
+// did before.
+// ---------------------------------------------------------------------------
+
+describe("PR-FX-003 (DEPRECATED): fxSettlementJournals — legacy back-compat", () => {
+  it("still emits the aggregate posting when called directly (for legacy tests)", () => {
+    const legs = fxSettlementJournals({
+      tradeId: "T-FX-LEGACY-001",
+      currencyPair: "ZAR/USD",
+      legKind: "near",
+      settledBaseCurrencyMinor: -18_000_000,
+      settledQuoteCurrencyMinor: 1_000_000,
+      settledAt: "2026-05-22T10:00:00Z",
+      nostroAccountBase: FX_ACCOUNTS.NOSTRO_ZAR,
+      nostroAccountQuote: FX_ACCOUNTS.NOSTRO_USD,
+      realisedPnlZarMinor: 0,
+      correspondentRef: "MT300-LEGACY-001",
+    });
+    expect(legs.length).toBeGreaterThan(0);
+    assertBalanced(legs);
   });
 });
 
