@@ -654,9 +654,9 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
     });
 
     it("throws if booking context (failedReceiveLeg) is missing for Herstatt-active", () => {
-      expect(() =>
-        fxSettlementFailedJournals({ event: baseFailedPayload }),
-      ).toThrow(/failedReceiveLeg/);
+      expect(() => fxSettlementFailedJournals({ event: baseFailedPayload })).toThrow(
+        /failedReceiveLeg/,
+      );
     });
 
     it("throws if legStatus is internally inconsistent with failureKind", () => {
@@ -834,9 +834,7 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
       // Nostro ZAR: PR-FX-PRIN -18m ZAR (cash left).
       expect(totals.get(`${FX_ACCOUNTS.NOSTRO_ZAR}|ZAR`)).toBe(-18_000_000_00);
       // ECL Allowance (contra-asset; credit balance): -18m ZAR.
-      expect(totals.get(`${FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED}|ZAR`)).toBe(
-        -18_000_000_00,
-      );
+      expect(totals.get(`${FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED}|ZAR`)).toBe(-18_000_000_00);
       // Credit Loss Expense (debit): +18m ZAR.
       expect(totals.get(`${FX_ACCOUNTS.CREDIT_LOSS_EXPENSE_FX}|ZAR`)).toBe(18_000_000_00);
 
