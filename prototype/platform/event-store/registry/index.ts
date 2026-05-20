@@ -108,6 +108,9 @@ export { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — policy-version-in-force registry row.
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 export { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
+// D-EVENT-VIEW-BOUNDARY-WIRE Slice B — OfficialMarkAdopted registry row.
+// Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+export { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -163,6 +166,7 @@ import {
   RUNTIME_EVENT_TYPES,
 } from "./runtime";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
+import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
@@ -253,6 +257,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // PolicyVersionActivated (generic umbrella covering valuation / accounting-
   // IFRS / fx-translation). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
   ...POLICY_ACTIVATION_EVENT_TYPES_REGISTRY,
+  // D-EVENT-VIEW-BOUNDARY-WIRE Slice B — OfficialMarkAdopted registry row.
+  // The valuation engine's elected mark per (instrumentKey, markAsOf,
+  // policyVersionRef). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
+  ...VALUATION_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

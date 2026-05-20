@@ -191,6 +191,15 @@ export * from "./mtm";
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 // Author: Atlas (Core banking platform architect, engineering).
 export * from "./policy-activation";
+// D-EVENT-VIEW-BOUNDARY-WIRE Slice B — OfficialMarkAdopted.
+// The valuation engine's elected mark for an instrument at a timestamp,
+// under a named valuation policy version. Distinct from raw market-data
+// ticks (which live in MarketDataStore as reference data per
+// D-MARKETS-SCHEMA-FOUNDATION). Four mark types: price, fx-rate,
+// curve-point, vol-point.
+// Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+// Author: Atlas (Core banking platform architect, engineering).
+export * from "./valuation";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -311,6 +320,7 @@ import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extend
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES } from "./security-devops-extended";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
+import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
 
 export const TYPED_EVENT_TYPES = [
   ...AGENT_TYPED_EVENT_TYPES,
@@ -404,6 +414,11 @@ export const TYPED_EVENT_TYPES = [
   // Generic umbrella for policy-in-force events (valuation, accounting-IFRS,
   // fx-translation today). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
   ...POLICY_ACTIVATION_TYPED_EVENT_TYPES,
+  // D-EVENT-VIEW-BOUNDARY-WIRE Slice B — OfficialMarkAdopted.
+  // The valuation engine's elected mark per (instrumentKey, markAsOf,
+  // policyVersionRef). Four mark types: price, fx-rate, curve-point,
+  // vol-point. Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
+  ...VALUATION_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
