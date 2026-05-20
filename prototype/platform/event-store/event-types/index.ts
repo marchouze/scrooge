@@ -200,6 +200,13 @@ export * from "./policy-activation";
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 // Author: Atlas (Core banking platform architect, engineering).
 export * from "./valuation";
+// D-EVENT-VIEW-BOUNDARY-WIRE Slice C — PeriodClosed.
+// CFO attestation closing a financial period; pins policyVersionRefs,
+// codeSha, and derivedStatementHashes for replay-determinism verification.
+// Supersedes/extends AccountingPeriodClosed for the attestation role.
+// Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
+// Authors: Bea (Accounting engineer) + Atlas (Core banking architect).
+export * from "./close-management";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -282,6 +289,7 @@ import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
+import { CLOSE_MANAGEMENT_TYPED_EVENT_TYPES } from "./close-management";
 import { COLLATERAL_TYPED_EVENT_TYPES } from "./collateral";
 import { CONDUCT_TYPED_EVENT_TYPES } from "./conduct";
 import { COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES } from "./counterparty-credit-risk";
@@ -419,6 +427,11 @@ export const TYPED_EVENT_TYPES = [
   // policyVersionRef). Four mark types: price, fx-rate, curve-point,
   // vol-point. Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
   ...VALUATION_TYPED_EVENT_TYPES,
+  // D-EVENT-VIEW-BOUNDARY-WIRE Slice C — PeriodClosed.
+  // CFO attestation closing a financial period; pins policyVersionRefs,
+  // codeSha, and derivedStatementHashes for replay-determinism.
+  // Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
+  ...CLOSE_MANAGEMENT_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

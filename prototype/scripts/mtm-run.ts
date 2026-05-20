@@ -55,6 +55,10 @@ import type {
   SettlementConfirmedPayload,
 } from "../platform/markets/cdm/fx";
 import { checkIpvTolerance } from "../platform/markets/ipv-tolerance";
+import {
+  adoptFxMark,
+  resolveActivePolicyVersionRef,
+} from "../platform/valuation/mark-adoption-engine";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -179,6 +183,15 @@ async function main(): Promise<void> {
   // FX MTM loop
   // -------------------------------------------------------------------------
 
+  // Resolve the active valuation policy version once per run (Slice B.1).
+  const policyVersionRef = resolveActivePolicyVersionRef(store);
+  if (!policyVersionRef) {
+    console.warn(
+      "[mtm-run] WARN: no active PolicyVersionActivated for domain=valuation in event store. " +
+        "OfficialMarkAdopted events will be skipped. Run `bun run backfill:policy-activations` to fix.",
+    );
+  }
+
   let positionsValued = 0;
   let positionsSkipped = 0;
   const skippedReasons: string[] = [];
@@ -255,6 +268,16 @@ async function main(): Promise<void> {
 
     // Compute P&L delta.
     const unrealisedPnlZarMinor = Math.round(notionalBaseMinor * (primaryRate - bookRate));
+
+    // Emit OfficialMarkAdopted (Slice B.1) — pin the elected rate to the
+    // active valuation policy before emitting the position revaluation.
+    adoptFxMark({
+      store,
+      asOf,
+      tick,
+      markDecimal: primaryRate.toFixed(6),
+      policyVersionRef,
+    });
 
     // Emit FxPositionRevalued.
     const revalPayload: FxPositionRevaluedPayload = {
