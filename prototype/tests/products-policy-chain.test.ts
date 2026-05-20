@@ -83,3 +83,28 @@ describe("resolveDimensionChain — empty hints yields empty chain", () => {
     expect(chain.functions).toEqual([]);
   });
 });
+
+describe("listPolicies / listProcedures — register-shaped views", () => {
+  it("listPolicies returns rows with status + owner + path", async () => {
+    const { listPolicies } = await import("../dashboard/products-policy-chain");
+    resetPolicyChainCacheForTests();
+    const rows = listPolicies(REPO_ROOT);
+    expect(rows.length).toBeGreaterThan(10);
+    const creditRisk = rows.find((r) => r.filename === "credit-risk-policy-v1.md");
+    expect(creditRisk).toBeDefined();
+    expect(creditRisk?.status).toBe("in-force");
+    expect(creditRisk?.owner.toLowerCase()).toContain("helena");
+    expect(creditRisk?.path).toBe("Policies/credit-risk-policy-v1.md");
+  });
+
+  it("listProcedures returns rows with policy-cited + system-capability", async () => {
+    const { listProcedures } = await import("../dashboard/products-policy-chain");
+    resetPolicyChainCacheForTests();
+    const rows = listProcedures(REPO_ROOT);
+    expect(rows.length).toBeGreaterThan(5);
+    const kyc = rows.find((r) => r.filename === "kyc-continuous.md");
+    expect(kyc).toBeDefined();
+    expect(kyc?.policyCited).toBe("AML-CFT-POLICY-V1");
+    expect(kyc?.systemCapability).toContain("@platform/screening");
+  });
+});

@@ -235,6 +235,70 @@ export function resetPolicyChainCacheForTests(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Register-shaped listings — used by /api/rms to surface Policies + Procedures
+// alongside the seven event-derived RMS registers. Same shape as the existing
+// register rows (id + title + owner + status + path).
+// ---------------------------------------------------------------------------
+
+export interface PolicyRegisterRow {
+  policyId: string;
+  filename: string;
+  title: string;
+  owner: string;
+  status: ChainItemStatus;
+  path: string;
+}
+
+export interface ProcedureRegisterRow {
+  procedureId: string;
+  filename: string;
+  title: string;
+  owner: string;
+  status: ChainItemStatus;
+  policyCited: string;
+  systemCapability: string;
+  path: string;
+}
+
+export function listPolicies(repoRoot: string): PolicyRegisterRow[] {
+  _indexedRepoRoot = repoRoot;
+  const idx = indexPolicies(repoRoot);
+  const out: PolicyRegisterRow[] = [];
+  for (const p of idx.values()) {
+    out.push({
+      policyId: p.policyId ?? "",
+      filename: p.filename,
+      title: p.title,
+      owner: p.owner,
+      status: p.status,
+      path: `Policies/${p.filename}`,
+    });
+  }
+  out.sort((a, b) => a.title.localeCompare(b.title));
+  return out;
+}
+
+export function listProcedures(repoRoot: string): ProcedureRegisterRow[] {
+  _indexedRepoRoot = repoRoot;
+  const idx = indexProcedures(repoRoot);
+  const out: ProcedureRegisterRow[] = [];
+  for (const p of idx) {
+    out.push({
+      procedureId: "",
+      filename: p.filename,
+      title: p.title,
+      owner: p.owner,
+      status: p.status,
+      policyCited: p.policyCitedRaw,
+      systemCapability: p.systemCapabilityRaw,
+      path: p.path,
+    });
+  }
+  out.sort((a, b) => a.title.localeCompare(b.title));
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Matching helpers.
 // ---------------------------------------------------------------------------
 

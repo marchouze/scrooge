@@ -139,6 +139,7 @@ import {
 import { buildPerformanceView, getAgentPerformanceState } from "./performance-view";
 import { getProceduresIndex } from "./procedures-index";
 import { buildProductDetailView } from "./products-detail";
+import { listPolicies, listProcedures } from "./products-policy-chain";
 import { buildProductListView } from "./products-view";
 import { saveState } from "./registry";
 import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
@@ -1426,8 +1427,40 @@ function handleRmsCatalogue(): Response {
   // pageProvenance: event-derived — RMS registers fold typed events
   // from the event store (Phase 1 dual-render). Build phase →
   // simulated-only.
+  //
+  // Filesystem-derived registers (policies, procedures) are appended to
+  // the catalogue here, not stored as projections — they live in
+  // /Policies/*.md and /Procedures/**/*.md, not in the event log. They
+  // share the register UI but carry a separate provenance tag.
+  const eventFold = summariseFold(getRmsFold());
+  const policies = listPolicies(REPO_ROOT);
+  const procedures = listProcedures(REPO_ROOT);
   return jsonResponse({
-    ...summariseFold(getRmsFold()),
+    asOf: eventFold.asOf,
+    counts: {
+      ...eventFold.counts,
+      policies: policies.length,
+      procedures: procedures.length,
+    },
+    catalogue: [
+      ...eventFold.catalogue,
+      {
+        key: "policies",
+        title: "Policies",
+        blurb:
+          "Bank policy library under /Policies. Status, owner, and citation chain come from each policy's frontmatter.",
+        folds: ["filesystem: /Policies/*.md (frontmatter)"],
+        statusTaxonomy: ["in-force", "draft", "planned"],
+      },
+      {
+        key: "procedures",
+        title: "Procedures",
+        blurb:
+          "Bank procedure library under /Procedures. Each row carries its anchor policy (policy-cited) and implementing system-capability.",
+        folds: ["filesystem: /Procedures/**/*.md (frontmatter)"],
+        statusTaxonomy: ["populated", "planned", "stub"],
+      },
+    ],
     pageProvenance: eventDerivedPageProvenance(),
   });
 }
@@ -1583,11 +1616,29 @@ function handleRmsDocumentContent(searchParams: URLSearchParams): Response {
 }
 
 function handleRmsRegister(register: string): Response {
+  // Filesystem-derived registers — same shape, distinct provenance, read
+  // directly from /Policies and /Procedures.
+  if (register === "policies") {
+    return jsonResponse({
+      asOf: nowUtc(),
+      register,
+      rows: listPolicies(REPO_ROOT),
+      pageProvenance: eventDerivedPageProvenance(),
+    });
+  }
+  if (register === "procedures") {
+    return jsonResponse({
+      asOf: nowUtc(),
+      register,
+      rows: listProcedures(REPO_ROOT),
+      pageProvenance: eventDerivedPageProvenance(),
+    });
+  }
   if (!isRmsRegisterKey(register)) {
     return jsonResponse(
       {
         error: `unknown register: ${register}`,
-        validKeys: RMS_REGISTER_KEYS,
+        validKeys: [...RMS_REGISTER_KEYS, "policies", "procedures"],
       },
       404,
     );
