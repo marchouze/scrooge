@@ -48,8 +48,7 @@ const result = recordFiled(
     },
     entity: "BANK-ZA-001",
     metadata: {
-      title:
-        "FinSurv ExCon Assessment for FX-Spot Internal Pre-Licence Test",
+      title: "FinSurv ExCon Assessment for FX-Spot Internal Pre-Licence Test",
       path: "2026-05-20_rashida_finsurv-excon-assessment-for-fx-spot-internal-pre-licence-test.md",
       category: "chief-compliance-officer-assessment",
       author:
