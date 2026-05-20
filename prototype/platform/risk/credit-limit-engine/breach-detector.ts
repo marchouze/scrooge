@@ -28,6 +28,7 @@ import type {
   LexUtilisationComputedPayload,
 } from "../../event-store/event-types/counterparty-credit-risk";
 import type { CreditLimitBreachedPayload } from "../../event-store/event-types/credit-limit";
+import { utcNow } from "../../types/time";
 import { getCurrentExposure } from "./pre-deal-check";
 import { listActiveLimits } from "./projection";
 
@@ -38,7 +39,11 @@ import { listActiveLimits } from "./projection";
 
 function lexCapBreached(counterpartyId: string, asOf?: string): boolean {
   let latest: LexUtilisationComputedPayload | undefined;
-  for (const event of eventStore.replay({ type: "LexUtilisationComputed", asOf })) {
+  const replayOpts =
+    asOf !== undefined
+      ? ({ type: "LexUtilisationComputed", asOf } as const)
+      : ({ type: "LexUtilisationComputed" } as const);
+  for (const event of eventStore.replay(replayOpts)) {
     const p = event.payload as LexUtilisationComputedPayload;
     if (p.counterpartyId !== counterpartyId) continue;
     if (!latest || latest.computedAt <= p.computedAt) latest = p;
@@ -65,7 +70,7 @@ export interface BreachDetectionResult {
 }
 
 export function detectBreaches(asOf?: string): BreachDetectionResult {
-  const nowIso = asOf ?? new Date().toISOString();
+  const nowIso = asOf ?? utcNow();
   const detectedAt = nowIso;
   const limits = listActiveLimits(nowIso);
   const breaches: CreditLimitBreachedPayload[] = [];

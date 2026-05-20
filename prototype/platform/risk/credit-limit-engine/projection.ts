@@ -32,19 +32,20 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { eventStore } from "../../composition";
 import { type Money, minor } from "../../core/money";
 import type { Currency } from "../../core/types";
-import { eventStore } from "../../composition";
 import type {
   CreditApprovalAuthority,
+  CreditLimitAnnualReviewCompletedPayload,
+  CreditLimitApplicationSubmittedPayload,
   CreditLimitApprovedPayload,
   CreditLimitBreachDisposedPayload,
   CreditLimitBreachedPayload,
-  CreditLimitAnnualReviewCompletedPayload,
-  CreditLimitApplicationSubmittedPayload,
   CreditLimitLoadedPayload,
 } from "../../event-store/event-types/credit-limit";
 import type { Event } from "../../event-store/types";
+import { utcNow } from "../../types/time";
 import type { CreditLimit, CreditLimitStatus } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -86,7 +87,7 @@ interface FoldAcc {
   approvalAuthority: CreditApprovalAuthority;
   /** The latest CreditLimitBreached severity — needed to decide whether a
    * CreditLimitBreachDisposed should drop the row back to `loaded`. */
-  lastBreachSeverity?: "amber" | "red" | "critical";
+  lastBreachSeverity: "amber" | "red" | "critical" | null;
 }
 
 function emptyAcc(counterpartyId: string): FoldAcc {
@@ -98,6 +99,7 @@ function emptyAcc(counterpartyId: string): FoldAcc {
     tenor: "",
     conditions: [],
     approvalAuthority: "CRO",
+    lastBreachSeverity: null,
   };
 }
 
@@ -181,12 +183,11 @@ function applyEvent(acc: FoldAcc, event: Event): FoldAcc {
       // Revert to "loaded" — unless the latest breach was critical AND the
       // disposition is "accepted" (a CRC-approved standing exception that
       // explicitly tolerates ongoing breach).
-      const sticky =
-        acc.lastBreachSeverity === "critical" && p.dispositionType === "accepted";
+      const sticky = acc.lastBreachSeverity === "critical" && p.dispositionType === "accepted";
       if (!sticky) {
         acc.status = "loaded";
       }
-      acc.lastBreachSeverity = undefined;
+      acc.lastBreachSeverity = null;
       return acc;
     }
     default:
@@ -204,7 +205,7 @@ function applyEvent(acc: FoldAcc, event: Event): FoldAcc {
 function foldAll(asOf?: string): Map<string, FoldAcc> {
   const byCounterparty = new Map<string, FoldAcc>();
   for (const type of CREDIT_LIMIT_LIFECYCLE_TYPES) {
-    for (const event of eventStore.replay({ type, asOf })) {
+    for (const event of eventStore.replay(asOf !== undefined ? { type, asOf } : { type })) {
       const p = event.payload as { counterpartyId?: string };
       const cpId = p.counterpartyId;
       if (!cpId) continue;
@@ -227,10 +228,7 @@ function foldAll(asOf?: string): Map<string, FoldAcc> {
  * controls both the event-store cut-off and the expiry comparison (defaults
  * to current wall time).
  */
-export function getCreditLimit(
-  counterpartyId: string,
-  asOf?: string,
-): CreditLimit | null {
+export function getCreditLimit(counterpartyId: string, asOf?: string): CreditLimit | null {
   const all = foldAll(asOf);
   const acc = all.get(counterpartyId);
   if (!acc) return null;
@@ -258,13 +256,10 @@ export function listActiveLimits(asOf?: string): CreditLimit[] {
  * store sequence order, filtered to the credit-limit lifecycle types. Used
  * by audit / breach-investigation views.
  */
-export function getLimitHistory(
-  counterpartyId: string,
-  asOf?: string,
-): readonly Event[] {
+export function getLimitHistory(counterpartyId: string, asOf?: string): readonly Event[] {
   const out: Event[] = [];
   for (const type of CREDIT_LIMIT_LIFECYCLE_TYPES) {
-    for (const event of eventStore.replay({ type, asOf })) {
+    for (const event of eventStore.replay(asOf !== undefined ? { type, asOf } : { type })) {
       const p = event.payload as { counterpartyId?: string };
       if (p.counterpartyId === counterpartyId) out.push(event);
     }
@@ -281,7 +276,7 @@ export function getLimitHistory(
 
 function decorateExpiry(limit: CreditLimit, asOf?: string): CreditLimit {
   if (!limit.expiryDate) return limit;
-  const now = (asOf ?? new Date().toISOString()).slice(0, 10);
+  const now = (asOf ?? utcNow()).slice(0, 10);
   if (limit.expiryDate < now && limit.status !== "withdrawn") {
     return { ...limit, status: "expired" };
   }

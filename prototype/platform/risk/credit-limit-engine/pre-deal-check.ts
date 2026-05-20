@@ -24,10 +24,11 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { eventStore } from "../../composition";
 import { type Money, add, minor, sub } from "../../core/money";
 import type { Currency } from "../../core/types";
-import { eventStore } from "../../composition";
 import type { CcrReplacementCostComputedPayload } from "../../event-store/event-types/counterparty-credit-risk";
+import { utcNow } from "../../types/time";
 import { getCreditLimit } from "./projection";
 import type { CreditLimit, CreditLimitHeadroom } from "./types";
 
@@ -67,16 +68,13 @@ export type HeadroomCheckResult = CreditLimitHeadroom & {
 // Tracked under D-CREDIT-LIMIT-ENGINE-BUILD Phase 4.
 // ---------------------------------------------------------------------------
 
-export function getCurrentExposure(
-  counterpartyId: string,
-  currency: string,
-  asOf?: string,
-): Money {
+export function getCurrentExposure(counterpartyId: string, currency: string, asOf?: string): Money {
   const latestPerNettingSet = new Map<string, CcrReplacementCostComputedPayload>();
-  for (const event of eventStore.replay({
-    type: "CcrReplacementCostComputed",
-    asOf,
-  })) {
+  const replayOpts =
+    asOf !== undefined
+      ? ({ type: "CcrReplacementCostComputed", asOf } as const)
+      : ({ type: "CcrReplacementCostComputed" } as const);
+  for (const event of eventStore.replay(replayOpts)) {
     const p = event.payload as CcrReplacementCostComputedPayload;
     if (p.counterpartyId !== counterpartyId) continue;
     const prev = latestPerNettingSet.get(p.nettingSetId);
@@ -140,7 +138,7 @@ export function checkHeadroom(
   proposedExposure: Money,
   asOf?: string,
 ): HeadroomCheckResult {
-  const nowIso = asOf ?? new Date().toISOString();
+  const nowIso = asOf ?? utcNow();
   const limit = getCreditLimit(counterpartyId, nowIso);
 
   if (!limit) {

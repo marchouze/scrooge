@@ -25,9 +25,9 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { eventStore } from "../../composition";
 import { type Money, minor } from "../../core/money";
 import type { Currency } from "../../core/types";
-import { eventStore } from "../../composition";
 import { getCurrentExposure } from "./pre-deal-check";
 import { listActiveLimits } from "./projection";
 import type { LargeExposureCheck } from "./types";
@@ -69,16 +69,20 @@ function utilisationPercent(exposureMinor: bigint, capitalMinor: bigint): number
 interface PartyRelationshipAssertedPayload {
   fromPartyId?: string;
   toPartyId?: string;
+  /** Canonical schema field name (party-register schema). */
+  kind?: string;
+  /** Legacy synonym accepted for forward-compat with older tests / emitters. */
   relationshipKind?: string;
 }
 
 const GROUP_KINDS = new Set([
+  // Canonical PartyRelationshipKind values per `domains/party/types.ts` —
+  // the kinds that imply economic interdependence (BCBS 283 §15).
   "parent-of",
-  "subsidiary-of",
-  "affiliate-of",
-  "ultimate-parent-of",
-  "controls",
-  "controlled-by",
+  "intra-group-counterparty-of",
+  // Forward-compat: when the registry adds subsidiary-of / controls /
+  // affiliate-of (queued under D-PARTY-RELATIONSHIP-KINDS-V0 follow-on),
+  // they slot in here.
 ]);
 
 function resolveConnectedGroup(counterpartyId: string, asOf?: string): Set<string> {
@@ -86,13 +90,15 @@ function resolveConnectedGroup(counterpartyId: string, asOf?: string): Set<strin
   try {
     // Build an adjacency list from group-kind relationships.
     const adj = new Map<string, Set<string>>();
-    for (const event of eventStore.replay({
-      type: "PartyRelationshipAsserted",
-      asOf,
-    })) {
+    const replayOpts =
+      asOf !== undefined
+        ? ({ type: "PartyRelationshipAsserted", asOf } as const)
+        : ({ type: "PartyRelationshipAsserted" } as const);
+    for (const event of eventStore.replay(replayOpts)) {
       const p = event.payload as PartyRelationshipAssertedPayload;
-      if (!p.fromPartyId || !p.toPartyId || !p.relationshipKind) continue;
-      if (!GROUP_KINDS.has(p.relationshipKind)) continue;
+      if (!p.fromPartyId || !p.toPartyId) continue;
+      const kind = p.kind ?? p.relationshipKind;
+      if (!kind || !GROUP_KINDS.has(kind)) continue;
       addEdge(adj, p.fromPartyId, p.toPartyId);
       addEdge(adj, p.toPartyId, p.fromPartyId);
     }

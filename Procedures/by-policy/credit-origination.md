@@ -6,7 +6,7 @@ date: 2026-05-16
 owner: Helena (Chief Risk Officer, governance)
 status: POPULATED
 policy-cited: Credit Risk Policy (planned)
-system-capability: "@platform/risk/credit-limit-engine (PLANNED)"
+system-capability: "@platform/risk/credit-limit-engine"
 ---
 
 # Procedure — Credit origination — counterparty credit limit approval
