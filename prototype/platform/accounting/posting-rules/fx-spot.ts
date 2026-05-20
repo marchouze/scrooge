@@ -681,7 +681,9 @@ export function fxLifecycleCloseJournals(_event: SettlementConfirmedPayload): Su
 //     not a transaction)
 // ---------------------------------------------------------------------------
 
-export function fxTradeReportSubmittedJournals(_event: TradeReportSubmittedPayload): SubLedgerLeg[] {
+export function fxTradeReportSubmittedJournals(
+  _event: TradeReportSubmittedPayload,
+): SubLedgerLeg[] {
   // Intentional no-GL-impact: regulator-side dispatch only; no asset,
   // liability, income, or expense recognition is triggered. See header
   // docblock for reasoning.
