@@ -60,18 +60,15 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
+import { minor } from "../../platform/core/money";
+import type { Currency } from "../../platform/core/types";
 import {
   type GatewayCheckCompletedPayload,
   makeGatewayCheckCompleted,
 } from "../../platform/event-store/event-types";
 import type { GatewayCreditBlockReason } from "../../platform/event-store/event-types/trading";
 import type { Event } from "../../platform/event-store/types";
-import { minor } from "../../platform/core/money";
-import type { Currency } from "../../platform/core/types";
-import {
-  checkHeadroom,
-  type HeadroomCheckResult,
-} from "../../platform/risk/credit-limit-engine";
+import { type HeadroomCheckResult, checkHeadroom } from "../../platform/risk/credit-limit-engine";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const HANDLER_ACTOR = {
@@ -147,11 +144,7 @@ function loadCapitalFundingStub(repoRoot: string): CapitalFundingStub {
  *   - Cash equity / cash bond / FX spot: notional treated as credit
  *     equivalent (collateral pledging is a future slice).
  */
-function proposedCreditExposureMinor(
-  instrument: string,
-  quantity: number,
-  price: number,
-): bigint {
+function proposedCreditExposureMinor(instrument: string, quantity: number, price: number): bigint {
   const notional = quantity * price;
   const cls = instrumentClass(instrument);
   const supervisoryFactor = SA_CCR_SUPERVISORY_FACTOR[cls];
@@ -375,32 +368,19 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         blockReason = headroom.blockReason;
         switch (headroom.blockReason) {
           case "CounterpartyNotApproved":
-            rejectionReason =
-              `Counterparty '${order.counterpartyLei}' has no loaded credit limit ` +
-              `(credit-limit-engine status: not approved or not yet loaded).`;
+            rejectionReason = `Counterparty '${order.counterpartyLei}' has no loaded credit limit (credit-limit-engine status: not approved or not yet loaded).`;
             citationToRule = "RAS-B3";
             break;
           case "LimitExpired":
-            rejectionReason =
-              `Credit limit for counterparty '${order.counterpartyLei}' has expired ` +
-              `(engine returned status=expired).`;
+            rejectionReason = `Credit limit for counterparty '${order.counterpartyLei}' has expired (engine returned status=expired).`;
             citationToRule = "RAS-B3";
             break;
           case "AnnualReviewStale":
-            rejectionReason =
-              `Counterparty '${order.counterpartyLei}' annual review is stale ` +
-              `(> 13 months; Credit Risk Policy §1.3, Banks Act Reg 23).`;
+            rejectionReason = `Counterparty '${order.counterpartyLei}' annual review is stale (> 13 months; Credit Risk Policy §1.3, Banks Act Reg 23).`;
             citationToRule = "RAS-B3";
             break;
-          case "CreditLimitExhausted":
           default:
-            rejectionReason =
-              `Credit limit exhausted for counterparty '${order.counterpartyLei}': ` +
-              `proposed credit-equivalent exposure ${priceCurrency} ` +
-              `${(Number(proposedMinor) / 100).toFixed(2)} would breach ` +
-              `limit ${priceCurrency} ${(Number(limitMinor) / 100).toFixed(2)} ` +
-              `(current exposure ${priceCurrency} ${(Number(currExpMinor) / 100).toFixed(2)}, ` +
-              `utilisation ${headroom.utilisationPct.toFixed(1)}%, traffic ${headroom.traffic}).`;
+            rejectionReason = `Credit limit exhausted for counterparty '${order.counterpartyLei}': proposed credit-equivalent exposure ${priceCurrency} ${(Number(proposedMinor) / 100).toFixed(2)} would breach limit ${priceCurrency} ${(Number(limitMinor) / 100).toFixed(2)} (current exposure ${priceCurrency} ${(Number(currExpMinor) / 100).toFixed(2)}, utilisation ${headroom.utilisationPct.toFixed(1)}%, traffic ${headroom.traffic}).`;
             citationToRule = "RAS-B3";
             break;
         }
