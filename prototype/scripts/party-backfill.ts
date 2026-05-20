@@ -1001,12 +1001,125 @@ function backfillCeoSeat(
 }
 
 // ---------------------------------------------------------------------------
+// 6 — Institutional-counterparty backfill (FX-spot controlled-launch onwards)
+// ---------------------------------------------------------------------------
+//
+// Reads `seeds/party-register.json` and emits `PartyRegistered{kind:
+// "legal-entity"}` for any legal-entity Party whose URN does NOT correspond
+// to one of the bank's own group entities (`urn:party:legal-entity:hoz-*`).
+// These are the institutional counterparties added directly to the canonical
+// register markdown (per `feedback_canonical_source_registry.md` — the
+// register markdown is the canonical authoring location and `party-register.
+// json` is the typed mirror).
+//
+// First two rows (2026-05-20) — `urn:party:legal-entity:standard-bank-za`
+// and `urn:party:legal-entity:investec-bank-za` for the FX-spot
+// controlled-launch whitelist named in Helena (Chief Risk Officer,
+// governance)'s controlled-launch MR-1-FX limit proposal (PR #634) and
+// Imani (Chief Legal Counsel, governance)'s G-9 close (PR #637).
+//
+// Idempotency — keyed by Party URN. Re-running on a second boot produces
+// zero new events because each row's source-event id is the Party URN
+// itself (`party-register-seed:<partyId>`).
+
+interface PartyRegisterLegalEntitySeed {
+  readonly partyId: PartyId;
+  readonly displayName: string;
+  readonly legalName?: string;
+  readonly jurisdictions: readonly string[];
+  readonly kindAttributes: {
+    readonly kind: "legal-entity";
+    readonly entityForm: "Ltd" | "RF" | "Pty";
+    readonly parentPartyId: PartyId | null;
+    readonly primaryRegulator: "PA" | "JSE" | "FSCA" | "none-companies-act-only" | "other";
+    readonly regimeAnchor: readonly string[];
+    readonly lei?: string;
+  };
+}
+
+interface PartyRegisterSeedFile {
+  readonly partiesByKind?: {
+    readonly "legal-entity"?: readonly PartyRegisterLegalEntitySeed[];
+  };
+}
+
+/**
+ * Hoz group slugs — these are sourced from `seeds/legal-entity-tree.json`
+ * via step 1; we skip them here so step 6 stays scoped to institutional
+ * counterparties only.
+ */
+const HOZ_GROUP_SLUGS = new Set(["hoz-group", "hoz-bank", "hoz-securities"]);
+
+const INSTITUTIONAL_COUNTERPARTY_CITATIONS = [
+  "D-PARTY-REGISTER",
+  "D-PARTY-REGISTER-CORRECTION",
+  "BANKS-ACT-94-1990",
+  "FIC-ACT-38-2001",
+];
+
+function backfillInstitutionalCounterparties(
+  eventStore: EventStore,
+  index: BackfilledIndex,
+  result: { counterpartyPartiesEmitted: number; skipped: number },
+  asOf: string,
+  seeds: readonly PartyRegisterLegalEntitySeed[],
+): void {
+  for (const seed of seeds) {
+    // Slug = last colon-segment of the URN.
+    const slug = seed.partyId.split(":").pop() ?? "";
+    if (HOZ_GROUP_SLUGS.has(slug)) continue;
+    if (index.partyIds.has(seed.partyId)) {
+      result.skipped += 1;
+      continue;
+    }
+    const sourceId = `party-register-seed:${seed.partyId}`;
+    if (index.sourceEventIds.has(sourceId)) {
+      result.skipped += 1;
+      continue;
+    }
+    const event = makePartyRegistered({
+      asOf,
+      entity: ENTITY,
+      actor: IMANI_ACTOR,
+      citations: [...INSTITUTIONAL_COUNTERPARTY_CITATIONS],
+      payload: {
+        partyId: seed.partyId,
+        kind: "legal-entity",
+        displayName: seed.displayName,
+        ...(seed.legalName ? { legalName: seed.legalName } : {}),
+        jurisdictions: seed.jurisdictions,
+        kindAttributes: {
+          kind: "legal-entity",
+          entityForm: seed.kindAttributes.entityForm,
+          parentPartyId: seed.kindAttributes.parentPartyId,
+          primaryRegulator: seed.kindAttributes.primaryRegulator,
+          regimeAnchor: seed.kindAttributes.regimeAnchor,
+          ...(seed.kindAttributes.lei ? { lei: seed.kindAttributes.lei } : {}),
+        },
+        citations: [
+          "[citation: D-PARTY-REGISTER]",
+          "[citation: D-PARTY-REGISTER-CORRECTION — counterparty is a relationship, not a kind]",
+          "[citation: Banks Act 94 of 1990 — SARB-registered counterparty bank]",
+          "[citation: FIC Act 38 of 2001 s.21 — institutional-counterparty CDD]",
+        ],
+      },
+    });
+    appendWithBackfillTag(eventStore, event, sourceId, "party-register-seed");
+    index.partyIds.add(seed.partyId);
+    index.sourceEventIds.add(sourceId);
+    result.counterpartyPartiesEmitted += 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Public entry point
 // ---------------------------------------------------------------------------
 
 export interface PartyBackfillOptions {
   /** Override path to the canonical legal-entity-tree seed (test isolation). */
   readonly legalEntityTreeSeedPath?: string;
+  /** Override path to the canonical party-register seed (test isolation). */
+  readonly partyRegisterSeedPath?: string;
   /** Override path to the canonical Team/_team-roster.json (test isolation). */
   readonly teamRosterPath?: string;
   /** Override the "now" timestamp the backfill stamps on derived events. */
@@ -1014,6 +1127,7 @@ export interface PartyBackfillOptions {
 }
 
 const DEFAULT_LEGAL_ENTITY_SEED = resolve(import.meta.dir, "..", "seeds", "legal-entity-tree.json");
+const DEFAULT_PARTY_REGISTER_SEED = resolve(import.meta.dir, "..", "seeds", "party-register.json");
 const DEFAULT_TEAM_ROSTER = resolve(import.meta.dir, "..", "..", "Team", "_team-roster.json");
 
 export function runPartyBackfill(
@@ -1071,6 +1185,21 @@ export function runPartyBackfill(
 
   // 5 — Signatories (from existing AuthorisedSignatoryAdded stream).
   backfillSignatories(eventStore, index, result, asOf);
+
+  // 6 — Institutional counterparties (read from seeds/party-register.json;
+  // legal-entity rows whose slug is not one of the Hoz group entities are
+  // emitted as PartyRegistered events). First batch (2026-05-20) — Standard
+  // Bank + Investec for the FX-spot controlled-launch (PR #634, PR #637).
+  const partyRegisterSeedPath = opts.partyRegisterSeedPath ?? DEFAULT_PARTY_REGISTER_SEED;
+  let counterpartySeeds: readonly PartyRegisterLegalEntitySeed[] = [];
+  try {
+    const raw = JSON.parse(readFileSync(partyRegisterSeedPath, "utf8")) as PartyRegisterSeedFile;
+    counterpartySeeds = raw.partiesByKind?.["legal-entity"] ?? [];
+  } catch {
+    // Missing seed — degrade gracefully.
+    counterpartySeeds = [];
+  }
+  backfillInstitutionalCounterparties(eventStore, index, result, asOf, counterpartySeeds);
 
   return result;
 }
