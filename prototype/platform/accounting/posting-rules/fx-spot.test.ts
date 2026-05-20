@@ -32,7 +32,6 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { FxSettlementConfirmedPayload } from "../../event-store/event-types/fx-accounting";
 import type { TradeReportSubmittedPayload } from "../../event-store/event-types/regulatory-reporting";
 import type {
   FxSettlementInstructedPayload,

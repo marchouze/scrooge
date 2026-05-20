@@ -223,6 +223,11 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "settlement-reversal",
       "cancellation",
       "amendment",
+      // FX lifecycle posting types (D-MARKETS-SCHEMA-FOUNDATION, 2026-05-20
+      // circularity fix — PR-FX-PRIN and PR-FX-LIFECYCLE-CLOSE became
+      // GL-significant; PR-FX-003 deprecated).
+      "fx-principal-payment",
+      "fx-lifecycle-close",
       // Bond lifecycle posting types (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A)
       "bond-trade-booking",
       "bond-interest-accrual",
