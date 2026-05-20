@@ -246,9 +246,7 @@ export const creditAnalysisCompletedPayloadSchema = z.object({
   completedAt: z.string().min(1),
 });
 
-export type CreditAnalysisCompletedPayload = z.infer<
-  typeof creditAnalysisCompletedPayloadSchema
->;
+export type CreditAnalysisCompletedPayload = z.infer<typeof creditAnalysisCompletedPayloadSchema>;
 
 export function makeCreditAnalysisCompleted(args: {
   asOf: string;

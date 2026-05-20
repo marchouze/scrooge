@@ -152,9 +152,7 @@ export const lexUtilisationComputedPayloadSchema = z.object({
   computedAt: z.string().min(1),
 });
 
-export type LexUtilisationComputedPayload = z.infer<
-  typeof lexUtilisationComputedPayloadSchema
->;
+export type LexUtilisationComputedPayload = z.infer<typeof lexUtilisationComputedPayloadSchema>;
 
 export function makeLexUtilisationComputed(args: {
   asOf: string;

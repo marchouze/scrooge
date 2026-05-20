@@ -57,10 +57,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     retention: RETENTION_BANKING_5Y,
     payloadSchema: ccrReplacementCostComputedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
-    citationsHint: [
-      "BCBS-279",
-      "POLICY:credit-risk-policy-v1-S3",
-    ],
+    citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
   },
   {
     type: "LexUtilisationComputed",
@@ -87,9 +84,6 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: lexExceptionApprovedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
-    citationsHint: [
-      "RRB-REG-23",
-      "POLICY:credit-risk-policy-v1-S2",
-    ],
+    citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1-S2"],
   },
 ];

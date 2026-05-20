@@ -109,11 +109,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: creditAnalysisCompletedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
-    citationsHint: [
-      "BCBS-283",
-      "POLICY:credit-risk-policy-v1",
-      "PROC-RISK-CO-01",
-    ],
+    citationsHint: ["BCBS-283", "POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
   },
   {
     type: "ISDACSAAssessmentCompleted",
@@ -143,11 +139,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: creditLimitProposedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
-    citationsHint: [
-      "RRB-REG-23",
-      "POLICY:credit-risk-policy-v1",
-      "PROC-RISK-CO-01",
-    ],
+    citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
   },
   {
     type: "CreditLimitApproved",
@@ -202,11 +194,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: creditLimitBreachedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
-    citationsHint: [
-      "RRB-REG-23",
-      "POLICY:credit-risk-policy-v1-S1.4",
-      "PROC-RISK-CO-01",
-    ],
+    citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1-S1.4", "PROC-RISK-CO-01"],
   },
   {
     type: "CreditLimitBreachDisposed",
