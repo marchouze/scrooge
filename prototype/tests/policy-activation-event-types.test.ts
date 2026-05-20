@@ -207,9 +207,7 @@ describe("PolicyVersionActivated supersession chain", () => {
       citations: CITATIONS,
       payload: validPayload(),
     });
-    expect(
-      (founding.payload as { supersedes: string | null }).supersedes,
-    ).toBeNull();
+    expect((founding.payload as { supersedes: string | null }).supersedes).toBeNull();
   });
 
   it("successor activation carries supersedes=<prior event_id>", () => {
@@ -233,9 +231,7 @@ describe("PolicyVersionActivated supersession chain", () => {
         supersedes: founding.event_id,
       },
     });
-    expect(
-      (successor.payload as { supersedes: string | null }).supersedes,
-    ).toBe(founding.event_id);
+    expect((successor.payload as { supersedes: string | null }).supersedes).toBe(founding.event_id);
   });
 });
 
