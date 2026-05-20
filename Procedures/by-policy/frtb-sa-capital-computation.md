@@ -8,10 +8,11 @@ status: POPULATED
 policy-cited: market-risk-policy-v1
 parent-policy: Policies/market-risk-policy-v1.md
 citationOwner: Mira (Regulatory intelligence engineer, compliance)
-version: v1 — 2026-05-20
+version: v1.1 — 2026-05-20
 last-updated: 2026-05-20
 system-capability: "@platform/risk-engine/frtb-sa (PLANNED)"
 change-log:
+  - v1.1 — 2026-05-20 — Rohan + Helena — v1.1 amendment per Bea (Independent Validation engineer, engineering) review on PR #610 ([comment 4497901020](https://github.com/marchouze/scrooge/pull/610#issuecomment-4497901020)); authoring brief `brief:rohan:amend-frtb-sa-mrl-procedures-per-bea-v1-0-review:2026-05-20`. Three gaps closed (i) SBM three-correlation-scenarios pass (×1.25 / ×1.0 / ×0.75; max-across; per-risk-class) added as Step 7a, with Step 9 SBM-total redefined as the max-of-scenarios aggregate; without this, SA SBM systematically under-states. (ii) DRC net-JTD-per-obligor + hedge-benefit-ratio (HBR) made explicit in Step 11 (gross JTD → net JTD = max(gross long − gross short, 0) → HBR = sum(net long) / [sum(net long) + sum(net short)] → HBR-scaled bucket capital). (iii) Step 13 CVA-SA expanded to surface SA-CVA's internal SBM-like structure: per-counterparty CVA delta + vega sensitivities to each CVA risk class (IR / FX / counterparty credit spread / reference credit spread / equity / commodity); bucket-level aggregation; cross-bucket aggregation; CVA RW table reference. Step 15 day-on-day attribution expanded to add an FX-revaluation-of-foreign-currency-limit-deltas category per Bea's minor observation. All numerical parameters retain `[citation: TBC]` markers per Principle 2 (BCBS d457 paragraph indices, BCBS d507 CVA RW table, PA D/2025 SA-fallback floor).
   - v1 — 2026-05-20 — Rohan + Helena — Initial POPULATED procedure per `brief:rohan:draft-four-market-risk-procedures-policy-v1-8-2:2026-05-20` (Market Risk Policy v1 §8.2; CEO authorisation 2026-05-20).
 ---
 
@@ -21,7 +22,7 @@ change-log:
 **Owner:** Helena (Chief Risk Officer, governance) — methodology · Rohan (Market risk quantitative engineer, engineering) — computation
 **Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) approves the SA capital methodology elections (which products feed which risk classes; the choice of CVA-SA vs CVA-BA per netting set); PA approval is required only for IMA desk elections (see PROC-RISK-PLA-01 / PROC-RISK-BACKTEST-01), not for SA computation itself.
 **Cadence:** Daily (every business day end-of-day) — produces the canonical FRTB SA capital figure that Camille (Chief Financial Officer, governance) integrates into BA-325. Monthly aggregation for the BA-return cycle.
-**Version:** v1 — 2026-05-20
+**Version:** v1.1 — 2026-05-20
 **Status:** POPULATED
 
 ---
