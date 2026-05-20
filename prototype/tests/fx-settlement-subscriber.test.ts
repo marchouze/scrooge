@@ -16,14 +16,14 @@
 
 import { describe, expect, it } from "bun:test";
 
+import type { Actor } from "../platform/event-store/types";
 import {
-  FX_SETTLEMENT_SUBSCRIBER_VARIANT,
   type CorrespondentMessage,
+  FX_SETTLEMENT_SUBSCRIBER_VARIANT,
   idempotencyKey,
   makeStaticCorrespondentFeed,
   runFxSettlementSubscriber,
 } from "../platform/markets/settlement/fx-settlement-subscriber";
-import type { Actor } from "../platform/event-store/types";
 import {
   HAPPY_PATH_INVESTEC_ZA,
   HAPPY_PATH_STANDARD_BANK_ZA,
@@ -95,11 +95,10 @@ describe("FxSettlementSubscriber — both-delivered path", () => {
       { kind: "confirmed", tradeRef: HAPPY_PATH_STANDARD_BANK_ZA.tradeRef },
     ]);
     expect(result.events).toHaveLength(1);
-    const ev = result.events[0]!;
+    const ev = result.events[0];
+    if (!ev) throw new Error("event 0 missing");
     expect(ev.type).toBe("FxSettlementConfirmed");
-    expect((ev.payload as { tradeId: string }).tradeId).toBe(
-      HAPPY_PATH_STANDARD_BANK_ZA.tradeRef,
-    );
+    expect((ev.payload as { tradeId: string }).tradeId).toBe(HAPPY_PATH_STANDARD_BANK_ZA.tradeRef);
     expect((ev.payload as { currencyPair: string }).currencyPair).toBe("USD/ZAR");
     expect((ev.payload as { correspondentRef?: string }).correspondentRef).toBe(
       "SBZ-MT300-CONF-20260522-00001",
@@ -129,20 +128,23 @@ describe("FxSettlementSubscriber — one-leg-delivered path (Herstatt-active)", 
       "SettlementFailureClassified",
     ]);
 
-    const missed = result.events[0]!;
+    const missed = result.events[0];
+    if (!missed) throw new Error("event 0 missing");
     expect((missed.payload as { tradeRef: string }).tradeRef).toBe(
       HERSTATT_ACTIVE_FAILURE.tradeRef,
     );
     expect((missed.payload as { expectedCurrency: string }).expectedCurrency).toBe("ZAR");
 
-    const failed = result.events[1]!;
+    const failed = result.events[1];
+    if (!failed) throw new Error("event 1 missing");
     expect((failed.payload as { failureKind: string }).failureKind).toBe("one-leg-delivered");
     expect(
       (failed.payload as { legStatus: { payLegDelivered: boolean; receiveLegDelivered: boolean } })
         .legStatus,
     ).toEqual({ payLegDelivered: true, receiveLegDelivered: false });
 
-    const classified = result.events[2]!;
+    const classified = result.events[2];
+    if (!classified) throw new Error("event 2 missing");
     expect((classified.payload as { classification: string }).classification).toBe(
       "herstatt-active",
     );
@@ -237,10 +239,10 @@ describe("FxSettlementSubscriber — full internal pre-licence test batch", () =
 describe("FxSettlementSubscriber — citation discipline (Principle 2)", () => {
   it("throws when no citations are configured", () => {
     expect(() =>
-      runFxSettlementSubscriber(
-        makeStaticCorrespondentFeed([HAPPY_PATH_STANDARD_BANK_ZA]),
-        { ...makeDeterministicConfig(), citations: [] },
-      ),
+      runFxSettlementSubscriber(makeStaticCorrespondentFeed([HAPPY_PATH_STANDARD_BANK_ZA]), {
+        ...makeDeterministicConfig(),
+        citations: [],
+      }),
     ).toThrow(/Principle 2/);
   });
 
@@ -264,21 +266,20 @@ describe("FxSettlementSubscriber — empty + error paths", () => {
   });
 
   it("throws when one-leg-delivered message is missing expected-receive fields", () => {
-    const bad: CorrespondentMessage = {
-      ...HERSTATT_ACTIVE_FAILURE,
-      expectedReceiveCurrency: undefined,
-      expectedReceiveAmountMinor: undefined,
-    };
+    const {
+      expectedReceiveCurrency: _omitA,
+      expectedReceiveAmountMinor: _omitB,
+      ...rest
+    } = HERSTATT_ACTIVE_FAILURE;
+    const bad: CorrespondentMessage = rest;
     expect(() =>
       runFxSettlementSubscriber(makeStaticCorrespondentFeed([bad]), makeDeterministicConfig()),
     ).toThrow(/expectedReceiveCurrency/);
   });
 
   it("throws when both-delivered message is missing settled amounts / nostros", () => {
-    const bad: CorrespondentMessage = {
-      ...HAPPY_PATH_STANDARD_BANK_ZA,
-      nostroAccountBase: undefined,
-    };
+    const { nostroAccountBase: _omit, ...rest } = HAPPY_PATH_STANDARD_BANK_ZA;
+    const bad: CorrespondentMessage = rest;
     expect(() =>
       runFxSettlementSubscriber(makeStaticCorrespondentFeed([bad]), makeDeterministicConfig()),
     ).toThrow(/nostro/);

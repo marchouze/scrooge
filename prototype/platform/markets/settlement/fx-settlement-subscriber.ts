@@ -221,10 +221,7 @@ export interface FxSettlementSubscriberConfig {
 // To support that pattern we expose a stable key derivation:
 // ---------------------------------------------------------------------------
 
-export function idempotencyKey(
-  m: CorrespondentMessage,
-  kind: MessageOutcome["kind"],
-): string {
+export function idempotencyKey(m: CorrespondentMessage, kind: MessageOutcome["kind"]): string {
   return `${m.settlementInstructionRef}:${kind}`;
 }
 
@@ -255,9 +252,7 @@ export function runFxSettlementSubscriber(
   config: FxSettlementSubscriberConfig,
 ): FxSettlementSubscriberResult {
   if (!config.citations || config.citations.length === 0) {
-    throw new Error(
-      "runFxSettlementSubscriber requires at least one citation (Principle 2).",
-    );
+    throw new Error("runFxSettlementSubscriber requires at least one citation (Principle 2).");
   }
   const newId = config.newId ?? newEventId;
   const events: Event[] = [];
@@ -326,9 +321,7 @@ function emitConfirmed(
     !m.nostroAccountQuote
   ) {
     throw new Error(
-      `CorrespondentMessage for trade ${m.tradeRef} reports both legs delivered ` +
-        "but is missing settled-amount or nostro-account fields required for " +
-        "FxSettlementConfirmed (subscriber contract).",
+      `CorrespondentMessage for trade ${m.tradeRef} reports both legs delivered but is missing settled-amount or nostro-account fields required for FxSettlementConfirmed (subscriber contract).`,
     );
   }
   return makeFxSettlementConfirmed({
@@ -362,9 +355,7 @@ function emitMissedExpectedReceipt(
 ): Event {
   if (!m.expectedReceiveCurrency || !m.expectedReceiveAmountMinor) {
     throw new Error(
-      `CorrespondentMessage for trade ${m.tradeRef} reports our leg delivered ` +
-        "but is missing expectedReceiveCurrency/expectedReceiveAmountMinor — " +
-        "required for MissedExpectedReceipt (PROC-OPS-SFBCP-01 step 1).",
+      `CorrespondentMessage for trade ${m.tradeRef} reports our leg delivered but is missing expectedReceiveCurrency/expectedReceiveAmountMinor — required for MissedExpectedReceipt (PROC-OPS-SFBCP-01 step 1).`,
     );
   }
   return makeMissedExpectedReceipt({
