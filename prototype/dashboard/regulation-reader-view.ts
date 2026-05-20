@@ -132,6 +132,12 @@ export interface InstrumentDetailView {
   priority: number;
   citationPatterns: string[];
   totalObligations: number;
+  /**
+   * Obligations whose citation anchors to this instrument as a whole, with
+   * no section reference. Rendered in a panel above the chapter list so they
+   * are not fanned across every section (Bug 1 fix).
+   */
+  instrumentWideObligations: ObligationOnSection[];
   chapters: ChapterDetail[];
 }
 
@@ -248,7 +254,7 @@ function loadPolicies(repoRoot: string): Map<string, ResolvedPolicy> {
       const content = readFileSync(path, "utf-8");
       // Extract first H1 as title
       const h1Match = content.match(/^#\s+(.+)$/m);
-      const title = h1Match ? h1Match[1].trim() : basename(filename, ".md");
+      const title = h1Match?.[1] ? h1Match[1].trim() : basename(filename, ".md");
       _policyCache.set(filename, {
         urn: "",
         title,
@@ -334,15 +340,37 @@ function getObligationsForSection(
   obligationsMap: Record<string, ObligationRow>,
   repoRoot: string,
 ): ObligationOnSection[] {
+  // Bug 1 fix: do NOT fan instrument-root obligations into per-section
+  // payloads. They are surfaced in a dedicated `instrumentWideObligations`
+  // field on the InstrumentDetailView; the section payload carries only
+  // citations that anchor to *this* section.
   const key = `${slug}/${sectionId}`;
   const ids = sectionIndex.index[key] ?? [];
 
-  // Also check the instrument root (obligations without specific section)
-  const rootIds = sectionIndex.index[slug] ?? [];
-  const allIds = [...new Set([...ids, ...rootIds])];
-
   const result: ObligationOnSection[] = [];
-  for (const id of allIds) {
+  for (const id of ids) {
+    const obl = obligationsMap[id];
+    if (!obl) continue;
+    const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
+    result.push({
+      id: obl.id,
+      requirement: obl.requirement.slice(0, 400),
+      status: obl.status,
+      policy,
+    });
+  }
+  return result;
+}
+
+function getInstrumentWideObligations(
+  slug: string,
+  sectionIndex: SectionObligationIndex,
+  obligationsMap: Record<string, ObligationRow>,
+  repoRoot: string,
+): ObligationOnSection[] {
+  const ids = sectionIndex.index[slug] ?? [];
+  const result: ObligationOnSection[] = [];
+  for (const id of ids) {
     const obl = obligationsMap[id];
     if (!obl) continue;
     const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
@@ -434,7 +462,14 @@ export function buildInstrumentDetailView(
     }),
   }));
 
-  // Count total unique obligations across all sections
+  const instrumentWideObligations = getInstrumentWideObligations(
+    slug,
+    sectionIndex,
+    obligationsMap,
+    repoRoot,
+  );
+
+  // Count total unique obligations: section-anchored + instrument-wide
   const allOblIds = new Set<string>();
   for (const ch of chapters) {
     for (const sec of ch.sections) {
@@ -442,6 +477,9 @@ export function buildInstrumentDetailView(
         allOblIds.add(obl.id);
       }
     }
+  }
+  for (const obl of instrumentWideObligations) {
+    allOblIds.add(obl.id);
   }
 
   return {
@@ -453,6 +491,7 @@ export function buildInstrumentDetailView(
     priority: doc.priority,
     citationPatterns: doc.citationPatterns,
     totalObligations: allOblIds.size,
+    instrumentWideObligations,
     chapters,
   };
 }

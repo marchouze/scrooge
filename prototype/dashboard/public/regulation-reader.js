@@ -149,6 +149,36 @@
 </div>`;
   }
 
+  function renderInstrumentWideObligations(obligations) {
+    if (!obligations || obligations.length === 0) return "";
+
+    const cards = obligations
+      .map((obl) => {
+        const policyHtml = obl.policy
+          ? `<a class="rr-obl-policy" href="/policies.html" title="${esc(obl.policy.urn || obl.policy.filename)}">→ ${esc(obl.policy.title)}</a>`
+          : "";
+        const req = obl.requirement
+          ? obl.requirement.slice(0, 200) + (obl.requirement.length > 200 ? "…" : "")
+          : "";
+
+        return `<div class="rr-obl-card">
+  <div class="rr-obl-header">
+    <span class="rr-obl-id">${esc(obl.id)}</span>
+    <span class="rr-obl-status ${statusClass(obl.status)}">${esc(obl.status || "")}</span>
+  </div>
+  ${req ? `<div class="rr-obl-req">${esc(req)}</div>` : ""}
+  ${policyHtml}
+</div>`;
+      })
+      .join("");
+
+    return `<div class="rr-instrument-wide">
+  <div class="rr-instrument-wide-label">Instrument-wide obligations</div>
+  <div class="rr-instrument-wide-note">Obligations whose citation anchors to this instrument as a whole (no specific section reference).</div>
+  <div class="rr-instrument-wide-cards">${cards}</div>
+</div>`;
+  }
+
   function renderSections(chapters) {
     return chapters
       .map((chapter) => {
@@ -261,7 +291,8 @@
     currentDetail = data;
 
     renderHeader(data);
-    sectionsEl.innerHTML = renderSections(data.chapters);
+    const wideHtml = renderInstrumentWideObligations(data.instrumentWideObligations);
+    sectionsEl.innerHTML = wideHtml + renderSections(data.chapters);
 
     // Reset search
     if (searchEl) {

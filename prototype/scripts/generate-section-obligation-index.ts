@@ -21,26 +21,40 @@ const OUTPUT_PATH = resolve(REPO_ROOT, "Regulations", "_section-obligation-index
 
 // ---------------------------------------------------------------------------
 // Instrument slug detection
+//
+// Order matters: the most specific patterns must come first so that, when a
+// clause mentions both "FAIS Act" and "GCC", the GCC clause is detected as
+// `fais-gcc` not `fais-act`. Each clause is matched in isolation (see
+// extractInstrumentSectionPairs) — the per-clause pattern resolution picks
+// the *first* matching slug.
 // ---------------------------------------------------------------------------
 
 const INSTRUMENT_PATTERNS: Array<{ pattern: RegExp; slug: string }> = [
+  // GCC patterns MUST come before FAIS Act — a clause "FAIS GCC s.3(2)"
+  // mentions both literals but is GCC-anchored.
+  {
+    pattern:
+      /General Code of Conduct|FAIS General Code|\bGCC\b|BN 80|Board Notice 80|Board Notice 43\/2008/i,
+    slug: "fais-gcc",
+  },
   { pattern: /Banks Act/i, slug: "banks-act" },
+  {
+    pattern: /Regulations Relating to Banks|\bRRB\b/i,
+    slug: "rrb",
+  },
   { pattern: /FIC Act/i, slug: "fic-act" },
   { pattern: /Financial Intelligence Centre Act/i, slug: "fic-act" },
   { pattern: /\bPOPIA\b/i, slug: "popia" },
   { pattern: /Protection of Personal Information/i, slug: "popia" },
+  { pattern: /Exchange Control|\bExcon\b/i, slug: "excon" },
+  {
+    pattern: /Joint Standard 2 of 2024|JS 2\/2024|JS 2 of 2024|Joint Standard 2|\bJS2\b/i,
+    slug: "js2",
+  },
   { pattern: /FAIS Act/i, slug: "fais-act" },
   {
     pattern: /Financial Advisory and Intermediary Services Act/i,
     slug: "fais-act",
-  },
-  {
-    pattern: /Joint Standard 2 of 2024|JS 2\/2024|JS 2 of 2024|Joint Standard 2/i,
-    slug: "js2",
-  },
-  {
-    pattern: /General Code of Conduct|FAIS General Code|GCC|BN 80|Board Notice 80/i,
-    slug: "fais-gcc",
   },
 ];
 
@@ -48,9 +62,9 @@ const INSTRUMENT_PATTERNS: Array<{ pattern: RegExp; slug: string }> = [
 // Section reference extraction patterns
 // ---------------------------------------------------------------------------
 
-// Matches: s.21, s21, §21, ss.21, s.21A, §21A, s.21(1), §21(1), Schedule 1
+// Matches: s.21, s21, §21, ss.21, s.21A, §21A, s.21(1), Schedule 1
 // Reg. XX, Reg XX, Standard X, Std X
-const SECTION_PATTERNS = [
+const SECTION_PATTERNS: RegExp[] = [
   /s{1,2}\.(\d+[A-Z]?)(?:\(\d+[a-z]?\))?/g, // s.21, ss.21, s.21A, s.21(1)
   /§\s*(\d+[A-Z]?)(?:\(\d+[a-z]?\))?/g, // §21, §21A, §21(1)
   /Schedule\s+(\d+)/gi, // Schedule 1
@@ -59,14 +73,14 @@ const SECTION_PATTERNS = [
   /Std\s+(\d+)/gi, // Std 9 (for JS2)
 ];
 
-function detectInstrumentSlug(citation: string): string | null {
+export function detectInstrumentSlug(citation: string): string | null {
   for (const { pattern, slug } of INSTRUMENT_PATTERNS) {
     if (pattern.test(citation)) return slug;
   }
   return null;
 }
 
-function extractSectionRefs(citation: string): string[] {
+export function extractSectionRefs(citation: string): string[] {
   const refs = new Set<string>();
 
   for (const pattern of SECTION_PATTERNS) {
@@ -80,6 +94,93 @@ function extractSectionRefs(citation: string): string[] {
   }
 
   return Array.from(refs);
+}
+
+// ---------------------------------------------------------------------------
+// Citation clause parser (Bug 2 fix)
+//
+// Citations frequently straddle multiple instruments, e.g.:
+//
+//   "FAIS Act 37 of 2002 § 8 (record-keeping standard)
+//    + GCC (BN 80/2003) s.3(2) — five-year retention …
+//    + GCC s.7(1)(a)–(c) — full and frank disclosure …
+//    + GCC s.9(1)(a)–(d) — record of advice …"
+//
+// The old extractor pulled `[s3, s7, s8, s9]` and then attached *all* of
+// them to whichever instrument was detected first across the whole citation
+// (always `fais-act` because "FAIS Act" appears earliest). The correct
+// behaviour is to split on clause delimiters (`+`, `;`, newline), detect
+// the instrument per clause, and only attach section refs found *within
+// that clause*.
+//
+// A single obligation can legitimately produce multiple (instrument, section)
+// pairs when its citation chain spans instruments.
+// ---------------------------------------------------------------------------
+
+export interface InstrumentSectionPair {
+  instrument: string;
+  sections: string[];
+}
+
+const CLAUSE_SPLIT_PATTERN = /\s*\+\s*|\s*;\s*|\n/;
+
+export function extractInstrumentSectionPairs(citation: string): InstrumentSectionPair[] {
+  // First, attempt the rich clause split. If no delimiter is present this
+  // produces a single clause covering the whole citation, which is the
+  // correct degenerate case.
+  const rawClauses = citation.split(CLAUSE_SPLIT_PATTERN);
+
+  // Track instrument → ordered set of section refs (preserves discovery order)
+  const byInstrument = new Map<string, Set<string>>();
+  // Track which instruments appeared with no section anchor (instrument-wide).
+  // We collapse to a single empty-sections entry per instrument in that case.
+  const instrumentWide = new Set<string>();
+  // Carry-forward: if a clause has section refs but no instrument literal
+  // (e.g. "+ GCC s.3(2) …; s.16(2) — receive complaints"), attach to the
+  // last-seen instrument in clause order. This is a safety net — most
+  // citations in the register restate the instrument in each clause.
+  let lastInstrument: string | null = null;
+
+  for (const rawClause of rawClauses) {
+    const clause = rawClause.trim();
+    if (!clause) continue;
+
+    const clauseInstrument = detectInstrumentSlug(clause);
+    const instrument = clauseInstrument ?? lastInstrument;
+    if (!instrument) continue;
+    if (clauseInstrument) lastInstrument = clauseInstrument;
+
+    const sections = extractSectionRefs(clause);
+
+    if (sections.length === 0) {
+      // Clause names an instrument but no section — record only if no
+      // section-anchored entry exists yet for that instrument. We'll
+      // emit it as instrument-wide at the end if it remains section-less.
+      if (!byInstrument.has(instrument)) {
+        instrumentWide.add(instrument);
+      }
+      continue;
+    }
+
+    // Real section anchors found — promote to a section-anchored entry.
+    instrumentWide.delete(instrument);
+    let set = byInstrument.get(instrument);
+    if (!set) {
+      set = new Set<string>();
+      byInstrument.set(instrument, set);
+    }
+    for (const s of sections) set.add(s);
+  }
+
+  const pairs: InstrumentSectionPair[] = [];
+  for (const [instrument, sections] of byInstrument) {
+    pairs.push({ instrument, sections: Array.from(sections) });
+  }
+  for (const instrument of instrumentWide) {
+    pairs.push({ instrument, sections: [] });
+  }
+
+  return pairs;
 }
 
 // ---------------------------------------------------------------------------
@@ -148,22 +249,23 @@ export function buildIndex(repoRoot: string): SectionObligationIndex {
   const index: Record<string, string[]> = {};
 
   for (const row of rows) {
-    const slug = detectInstrumentSlug(row.citation);
-    if (!slug) continue;
+    const pairs = extractInstrumentSectionPairs(row.citation);
+    if (pairs.length === 0) continue;
 
-    const sections = extractSectionRefs(row.citation);
-    if (sections.length === 0) {
-      // No specific sections — index under the instrument root
-      const key = slug;
-      if (!index[key]) index[key] = [];
-      if (!index[key].includes(row.id)) index[key].push(row.id);
-      continue;
-    }
+    for (const { instrument, sections } of pairs) {
+      if (sections.length === 0) {
+        // Instrument-wide: index under the instrument root.
+        const key = instrument;
+        if (!index[key]) index[key] = [];
+        if (!index[key].includes(row.id)) index[key].push(row.id);
+        continue;
+      }
 
-    for (const section of sections) {
-      const key = `${slug}/${section}`;
-      if (!index[key]) index[key] = [];
-      if (!index[key].includes(row.id)) index[key].push(row.id);
+      for (const section of sections) {
+        const key = `${instrument}/${section}`;
+        if (!index[key]) index[key] = [];
+        if (!index[key].includes(row.id)) index[key].push(row.id);
+      }
     }
   }
 

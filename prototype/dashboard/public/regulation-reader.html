@@ -288,6 +288,34 @@
       text-decoration: underline;
     }
 
+    /* Instrument-wide obligations panel (above the chapter scroll) */
+    .rr-instrument-wide {
+      margin-bottom: var(--space-5);
+      padding: var(--space-3);
+      border: 1px solid var(--color-accent);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+    }
+    .rr-instrument-wide-label {
+      font: var(--text-label);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-accent);
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+    }
+    .rr-instrument-wide-note {
+      font: var(--text-small);
+      color: var(--color-text-muted);
+      font-style: italic;
+      margin-bottom: var(--space-3);
+    }
+    .rr-instrument-wide-cards {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
     /* Hidden sections (search filter) */
     .rr-section.hidden { display: none; }
 
