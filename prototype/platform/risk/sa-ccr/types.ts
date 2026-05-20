@@ -130,10 +130,24 @@ export interface EadComputation {
   nettingSetId: string;
   counterpartyId: string;
   rc: Money;
+  /** PFE = multiplier × aggregatedAddOn (BCBS d317 §149 / CRE52 §52.5). */
   pfe: Money;
   /** BCBS d317 §10 regulatory multiplier α. Constant 1.4 — carried in the
    * result for caller audit. */
   alpha: 1.4;
+  /**
+   * BCBS d317 §149 / CRE52 §52.5 PFE multiplier — in [0.05, 1.0]. Equal
+   * to 1.0 when the netting set is at-the-money or in-the-money; shrinks
+   * towards 0.05 (5% floor) as V − C goes deeply negative (over-
+   * collateralised). Carried on the result for caller audit + Vera recon.
+   */
+  multiplier: number;
+  /**
+   * Σ(asset-class add-on) — the unscaled aggregated add-on, before the
+   * PFE multiplier is applied. Carried on the result for caller audit
+   * (BCBS d317 §149 inputs).
+   */
+  aggregatedAddOn: Money;
   ead: Money;
   asOf: string;
 }
@@ -143,6 +157,18 @@ export interface EadComputation {
 // internal shape; consumers populate this from upstream sources (forward
 // obligations / market-data / trade-booking). Kept structural so the
 // engine doesn't bind to a single upstream trade representation.
+//
+// v1 (PR-SA-CCR-V1, D-CREDIT-LIMIT-ENGINE-BUILD Phase 5) adds:
+//   - `direction` — drives the BCBS d317 §15 supervisory delta (linear
+//     products: δ = +1 long / −1 short).
+//   - `remainingYears` — drives the BCBS d317 §164 maturity factor
+//     (unmargined: √(min(M, 1y)/1y)) and the IR hedging-set bucket.
+//   - `currency` — IR hedging-set keys are `<currency>:<bucket>`; defaults
+//     to `notional.currency` if omitted.
+//   - `hedgingSetTag` — FX currency pair / commodity type for hedging-set
+//     keying.
+//   - `optionType` — option discriminator (currently unused; supervisory
+//     delta for options is a follow-on slice).
 // ---------------------------------------------------------------------------
 
 export interface TradeSummary {
@@ -155,7 +181,39 @@ export interface TradeSummary {
   /** SA-CCR asset class — drives supervisory-factor selection. */
   assetClass: SaCcrAssetClass;
   /** Notional in the trade's currency. Always positive — direction is
-   * encoded by side / pay-receive, not by sign. v0 add-on aggregates by
-   * notional magnitude per asset class. */
+   * encoded by `direction`, not by sign. */
   notional: Money;
+  /**
+   * Trade direction from the bank's perspective. Drives the BCBS d317
+   * supervisory delta (linear: δ = +1 long / −1 short — CRE52 §52.46).
+   * Defaults to "long" if omitted (preserves v0 behaviour where notionals
+   * were summed without offsetting).
+   */
+  direction?: "long" | "short";
+  /**
+   * Remaining tenor to maturity in years (≥ 0). Drives both the BCBS
+   * d317 §164 maturity factor (unmargined: √(min(M, 1y)/1y), capped 1.0)
+   * and the IR hedging-set bucket (lt-1y / 1y-5y / gt-5y per §158).
+   * When omitted, treated as 1.0y (yields MF = 1.0 — matches v0).
+   */
+  remainingYears?: number;
+  /**
+   * Currency tag for hedging-set keying — for IR trades this is the
+   * leg currency. Defaults to `String(notional.currency)`.
+   */
+  currency?: string;
+  /**
+   * Hedging-set tag for asset classes whose key is a string label rather
+   * than a derived bucket:
+   *   - FX trades: canonical currency-pair (e.g. "EUR/USD" — alphabetical).
+   *   - Commodity trades: commodity type (e.g. "wti-crude", "electricity").
+   *   - Credit / Equity: ignored at v1 (single bucket per netting set).
+   */
+  hedgingSetTag?: string;
+  /**
+   * Option discriminator. When set, indicates the trade is an option —
+   * the BCBS d317 supervisory delta for options is a follow-on slice (v1
+   * conservatively treats options as linear; see `tradeDelta`).
+   */
+  optionType?: "call" | "put";
 }
