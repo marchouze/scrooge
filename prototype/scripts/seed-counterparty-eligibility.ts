@@ -13,9 +13,9 @@
 // Authority: CEO session delegation (Marc, 2026-05-20) — build-phase seed
 // to populate the unified counterparty register for FX desk + trade-book.
 
-import { EventStore } from "../platform/event-store/store";
-import { makeCounterpartyEligibilityScreened } from "../platform/event-store/event-types/trading";
 import { buildCounterpartiesView } from "../dashboard/markets-fx-counterparties";
+import { makeCounterpartyEligibilityScreened } from "../platform/event-store/event-types/trading";
+import { EventStore } from "../platform/event-store/store";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 
 const dbPath = process.env.BANK_EVENT_DB_PATH ?? ".local/event.db";

@@ -37,6 +37,11 @@ function catBadge(cat) {
   return `<span class="badge ${map[cat] ?? "badge-grey"}">${esc(cat ?? "—")}</span>`;
 }
 
+function simBadge(simulated) {
+  if (!simulated) return "";
+  return `<span class="badge badge-sim" title="Simulated counterparty — build-phase FX-sim bank">sim</span>`;
+}
+
 // ---------------------------------------------------------------------------
 // Fetch
 
@@ -101,7 +106,7 @@ function renderTable(clients) {
       const truncId = c.clientId.length > 16 ? `${c.clientId.slice(0, 16)}…` : c.clientId;
       return `<tr onclick="window.location.href='/kyc-clients/${encodeURIComponent(c.clientId)}'" title="${esc(c.clientId)}">
       <td><code>${esc(truncId)}</code></td>
-      <td>${esc(c.entityName ?? "—")}</td>
+      <td>${esc(c.entityName ?? "—")} ${simBadge(c.simulated)}</td>
       <td>${esc(c.entityType ?? "—")}</td>
       <td>${esc(c.jurisdiction ?? "—")}</td>
       <td>${riskBadge(c.riskBand)}</td>

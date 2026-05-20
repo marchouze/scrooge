@@ -58,6 +58,12 @@ export interface ClientState {
   readonly onboardedAt: string;
   /** ISO 8601 — most recent update event as_of. */
   readonly lastUpdatedAt: string;
+  /**
+   * True when this client was onboarded as a simulated counterparty (build-phase
+   * FX-sim banks). Simulated clients go through the full KYC event chain but are
+   * marked so the UI can show a "sim" badge distinguishing them from real clients.
+   */
+  readonly simulated: boolean;
 }
 
 /** Full projection state — Map keyed by clientId. */
@@ -147,6 +153,7 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
       : "medium";
 
   const category: ClientCategory = p.category === "EC" || p.category === "PC" ? p.category : "PC";
+  const simulated = p.simulated === true;
 
   // INVARIANT: insertClient is the ONLY function that may create a row.
   return insertClient(state, clientId, {
@@ -159,6 +166,7 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
     nextRefreshDue: null, // set by KYCRefreshCompleted
     onboardedAt: acceptedAt,
     lastUpdatedAt: e.as_of,
+    simulated,
   });
 }
 
