@@ -1,6 +1,6 @@
 ---
 procedureId: PROC-RISK-MRL-01
-title: Market risk limit monitoring — MR-1 to MR-5 daily limit register, breach escalation, and no-prop attribution
+title: Market risk limit monitoring — MR-1 to MR-6 daily limit register, breach escalation, and no-prop attribution
 author: Rohan (Market risk quantitative engineer, engineering)
 date: 2026-05-20
 owner: Helena (Chief Risk Officer, governance) · Rohan (Market risk quantitative engineer, engineering)
@@ -8,10 +8,11 @@ status: POPULATED
 policy-cited: market-risk-policy-v1
 parent-policy: Policies/market-risk-policy-v1.md
 citationOwner: Mira (Regulatory intelligence engineer, compliance)
-version: v1 — 2026-05-20
+version: v1.1 — 2026-05-20
 last-updated: 2026-05-20
 system-capability: "@platform/risk-engine/limit-comparator (PLANNED)"
 change-log:
+  - v1.1 — 2026-05-20 — Rohan + Helena — v1.1 amendment per Bea (Independent Validation engineer, engineering) review on PR #610 ([comment 4497901020](https://github.com/marchouze/scrooge/pull/610#issuecomment-4497901020)); authoring brief `brief:rohan:amend-frtb-sa-mrl-procedures-per-bea-v1-0-review:2026-05-20`. **Path A chosen** for the MR-5 / MR-5-NPA naming reconciliation against Market Risk Policy v1 §3. **Rationale:** policy §3 names MR-5 as "No-prop rule enforcement" (singular qualitative line). v1.0 of this procedure forked from that by splitting MR-5 into MR-5 (stress scenario loss; quantitative) + MR-5-NPA (no-prop attribution; qualitative), which is a policy-level reinterpretation rather than a procedure-internal choice. Path A restructures the procedure to **MR-5 = no-prop attribution** (matches policy §3 verbatim) and **MR-6 = stress scenario loss** (the bank-wide stress-loss ceiling line, retained because the stress ceiling is operationally load-bearing even though policy §3 does not name it). Path B (propose Market Risk Policy v1.2 to rename §3 MR-5 to "no-prop attribution + stress-loss ceiling") was rejected because (i) it triggers a policy amendment for what is essentially a procedure-side naming discipline; (ii) the stress-loss ceiling is also reachable as a quantitative limit *below* the §3 register without re-opening §3; (iii) the policy already references PROC-RISK-ST-01 (stress test cycle), so the stress ceiling can be sourced there rather than under §3 MR-5. **Substrate gap surfaced:** `Policies/market-risk-policy-v1.md` line 266 (v1 change-log + §8.2 procedures-planned summary) still refers to "MR-5 (stress) + MR-5-NPA"; that line is a render of the procedure structure and is now stale. Helena to update in the next policy-housekeeping pass (no Decision required — single-line render correction). Cross-cutting changes: (1) §1.1 + Step 1 register restructured (MR-5 = no-prop attribution; MR-6 = stress; MR-5-NPA naming retired). (2) Step 8 retitled "MR-5 daily attribution". (3) Outputs / Controls / Escalation tables re-keyed. (4) `NoPropAttributionFlagged.missingAttribution` extended to include `stale_reference` (programme expired) as a third state per Bea's hedge-programme-expiry observation. (5) Desk-level aggregation diversification factor source named (Helena's recalibration brief; cross-reference added in Step 1 final paragraph). (6) `MarketRiskHardBreachExemptionGranted` schema constraint clarified: `expiryDate` ≤ 5bd from emission is a schema-level invariant (PLANNED in `@platform/events/market-risk-limit`), not procedure prose. Citations unchanged.
   - v1 — 2026-05-20 — Rohan + Helena — Initial POPULATED procedure per `brief:rohan:draft-four-market-risk-procedures-policy-v1-8-2:2026-05-20` (Market Risk Policy v1 §8.2; CEO authorisation 2026-05-20).
 ---
 
@@ -19,9 +20,9 @@ change-log:
 
 **Procedure ID:** PROC-RISK-MRL-01
 **Owner:** Helena (Chief Risk Officer, governance) — governance · Rohan (Market risk quantitative engineer, engineering) — daily monitoring
-**Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) approves every RAS market risk line (MR-1 through MR-5) at calibration and on every recalibration; Helena recommends; CEO authorises. The Market Risk Committee (MRC — Helena chair) governs day-to-day breach management within the approved limits.
+**Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) approves every RAS market risk line (MR-1 through MR-6) at calibration and on every recalibration; Helena recommends; CEO authorises. The Market Risk Committee (MRC — Helena chair) governs day-to-day breach management within the approved limits.
 **Cadence:** Continuous intraday monitoring on every `TradeBooked` / `PositionUpdated`; full daily limit-utilisation snapshot at end-of-day; weekly Helena review; monthly MRC reporting; quarterly BRC trend reporting; annual recalibration cycle.
-**Version:** v1 — 2026-05-20
+**Version:** v1.1 — 2026-05-20
 **Status:** POPULATED
 
 ---
@@ -41,7 +42,7 @@ Regulation (Banks Act 94/1990 + Reg 32; BCBS FRTB; ORG-PR-19, ORG-PR-20)
       → @platform/events/market-risk-limit-breached (PLANNED)
 ```
 
-The procedure operationalises Market Risk Policy v1 §3 — the five RAS market risk lines (MR-1 1-day 99% VaR, MR-2 10-day 97.5% Expected Shortfall, MR-3 sensitivity per risk class, MR-4 CVA sensitivity, MR-5 no-prop attribution) plus the CVA hedge limit referenced in §5. It defines the daily run discipline, the warning / amber / hard-breach thresholds (50% / 80% / 100%), the desk-level → bank-wide aggregation, and the escalation chain on breach (1bd MRC convene; 5bd remediation plan; PA notification per Imani's ratification).
+The procedure operationalises Market Risk Policy v1 §3 — the five RAS market risk lines (MR-1 1-day 99% VaR, MR-2 10-day 97.5% Expected Shortfall, MR-3 sensitivity per risk class, MR-4 CVA sensitivity, **MR-5 no-prop rule enforcement** — per policy §3 verbatim) plus the CVA hedge limit referenced in §5 and a procedure-side stress-loss ceiling line (**MR-6 stress scenario loss**). v1.1 retired the prior MR-5 / MR-5-NPA naming split: policy §3 names MR-5 as a single qualitative no-prop line; this procedure now realises that one-to-one (MR-5 = no-prop attribution) and adds a separate MR-6 stress ceiling sourced from PROC-RISK-ST-01 rather than under §3 (see change-log v1.1 for Path A rationale). It defines the daily run discipline, the warning / amber / hard-breach thresholds (50% / 80% / 100%), the desk-level → bank-wide aggregation, and the escalation chain on breach (1bd MRC convene; 5bd remediation plan; PA notification per Imani's ratification).
 
 **No numerical calibration values are invented in this procedure.** Every limit numeric is marked `[calibration: pending RAS-calibration by Rohan under Helena's direction]`. The procedure defines *how* the limits operate; the *values* enter via Helena's calibration cycle and a separate Decision event under CEO authority.
 
@@ -101,18 +102,18 @@ The Bank maintains a limit register keyed by `(limitId, scope, riskClass?, deskI
 | MR-3-COM | Sensitivity (delta) — Commodity risk class (lower bound — non-primary franchise scope per Market Risk Policy v1 §3) | Bank-wide | Commodity | `[calibration: pending — set to a low bound consistent with non-primary-franchise scope]` ZAR per 1% | `[calibration: pending — low bound]` ZAR per 1% | `[calibration: pending — low bound]` ZAR per 1% |
 | MR-4 | CVA sensitivity to counterparty credit spread | Bank-wide | CVA | `[calibration: pending]` ZAR per bp | `[calibration: pending]` ZAR per bp | `[calibration: pending]` ZAR per bp |
 | MR-4-HEDGE | CVA hedge programme limit — notional outstanding eligible CVA hedges (per Market Risk Policy v1 §5) | Bank-wide | CVA hedge | `[calibration: pending]` ZAR notional | `[calibration: pending]` ZAR notional | `[calibration: pending]` ZAR notional |
-| MR-5 | Stress: scenario loss under the bank-wide adverse stress scenario (per PROC-RISK-ST-01) | Bank-wide | All | `[calibration: pending]` ZAR loss | `[calibration: pending]` ZAR loss | `[calibration: pending]` ZAR loss |
-| MR-5-NPA | No-prop attribution: fraction of trading-book positions with a valid client-flow OR named-hedge attribution | Bank-wide | All | 100% (informational only; any deviation is a Hard Breach) | n/a | < 100% |
+| MR-5 | No-prop attribution: fraction of trading-book positions with a valid client-flow OR named-hedge attribution (per Market Risk Policy v1 §3 MR-5 "No-prop rule enforcement"; `ORG-PR-20`) | Bank-wide | All | 100% (informational only; any deviation is a Hard Breach) | n/a | < 100% |
+| MR-6 | Stress: scenario loss under the bank-wide adverse stress scenario (per PROC-RISK-ST-01) | Bank-wide | All | `[calibration: pending]` ZAR loss | `[calibration: pending]` ZAR loss | `[calibration: pending]` ZAR loss |
 
-**Important:** The brief specifies five RAS lines MR-1 through MR-5 — VaR, ES, sensitivity, stress, no-prop attribution. The table above realises MR-5 as **two complementary limits**: MR-5 (stress scenario loss; a quantitative bank-wide stress limit) **and** MR-5-NPA (no-prop attribution; the qualitative no-prop control). Both attach to the §3 MR-5 no-prop principle: the qualitative requirement that every position attributes to a client flow OR a named hedge programme is realised as MR-5-NPA; the quantitative bank-wide stress-loss ceiling is realised as MR-5 (because the stress-loss is the most stringent operational ceiling on the no-prop position posture). The MR-4 CVA hedge limit referenced in Market Risk Policy v1 §5 is realised as MR-4-HEDGE alongside the MR-4 sensitivity line.
+**Important — naming reconciliation (Path A applied at v1.1):** Market Risk Policy v1 §3 names MR-5 as **"No-prop rule enforcement"** (a single qualitative line). v1.0 of this procedure forked from that by splitting MR-5 into MR-5 (stress; quantitative) + MR-5-NPA (no-prop; qualitative), creating a policy-procedure naming mismatch. v1.1 restructures to **MR-5 = no-prop attribution** (matches policy verbatim) and **MR-6 = stress scenario loss** (a new procedure-side line sourced from PROC-RISK-ST-01 rather than under §3, because stress-loss is operationally load-bearing but is not the §3 no-prop line). The Path A choice avoids a Market Risk Policy v1.2 amendment (Path B was rejected — see change-log v1.1 rationale). The MR-4 CVA hedge limit referenced in §5 is realised as MR-4-HEDGE alongside the MR-4 sensitivity line.
 
-Desk-level sub-limits (MR-1-GIRR, MR-1-EQ, MR-1-FX) aggregate to MR-1 per Market Risk Policy v1 §3 "Principles — Desk-level limits aggregate to the bank-wide limit". Helena ensures the sum of desk limits does not exceed the bank-wide limit accounting for realistic correlation; if the sum exceeds the bank-wide limit at the calibration-effective date, the bank-wide limit is the binding constraint, and the desk-level limits are management ceilings within the bank-wide budget.
+Desk-level sub-limits (MR-1-GIRR, MR-1-EQ, MR-1-FX) aggregate to MR-1 per Market Risk Policy v1 §3 "Principles — Desk-level limits aggregate to the bank-wide limit". Helena ensures the sum of desk limits does not exceed the bank-wide limit accounting for realistic correlation. The diversification factor is calibrated at each recalibration cycle and documented in **Helena's calibration brief** (the artefact filed under the annual recalibration cadence per §7 controls — not duplicated in this procedure per single-graph discipline). Formally: `Σ_desks desk_limit_i ≤ bank_wide_limit × diversification_factor`, where `diversification_factor ≤ 1` reflects correlation-adjusted aggregation; if the calibration-effective sum exceeds the bank-wide limit, the bank-wide limit is the binding constraint and the desk-level limits are management ceilings within the bank-wide budget.
 
 ### 5.2 Daily limit-utilisation snapshot (Steps 2–4)
 
 **Step 2 — Risk-measure retrieval.**
 
-The engine retrieves the day's EOD risk measures: VaR (from `MarketRiskMeasureComputed` per PROC-RISK-MRM-01); ES (same); sensitivities per risk class (from PROC-RISK-FRTB-SA-01 Step 4); CVA sensitivity (from `@platform/risk-engine/cva-sensitivities`); stress scenario loss (from PROC-RISK-ST-01 daily sensitivity-update output, where computed); no-prop attribution per position (from `@platform/risk-engine/trade-origin-check`).
+The engine retrieves the day's EOD risk measures: VaR (from `MarketRiskMeasureComputed` per PROC-RISK-MRM-01); ES (same); sensitivities per risk class (from PROC-RISK-FRTB-SA-01 Step 4); CVA sensitivity (from `@platform/risk-engine/cva-sensitivities`); stress scenario loss for MR-6 (from PROC-RISK-ST-01 daily sensitivity-update output, where computed); no-prop attribution per position for MR-5 (from `@platform/risk-engine/trade-origin-check`).
 
 **Step 3 — Limit comparison.**
 
@@ -159,20 +160,23 @@ On a Critical event per Market Risk Policy v1 §1.4 (back-testing Red zone — s
 2. The Critical event is recorded as `MarketRiskCriticalEventRecorded { eventType, date, scope, narrative, citations[] }` — a distinct event from `MarketRiskLimitBreached`, so the audit chain distinguishes severity.
 3. Crisis management protocol (per PROC-OR-CMA-01) may activate if the Critical event has institutional materiality.
 
-### 5.4 No-prop attribution (Step 8)
+### 5.4 No-prop attribution — MR-5 (Step 8)
 
-**Step 8 — MR-5-NPA daily attribution.**
+**Step 8 — MR-5 daily no-prop attribution sweep.**
 
-Per Market Risk Policy v1 §3 MR-5 and `ORG-PR-20`:
+Per Market Risk Policy v1 §3 MR-5 ("No-prop rule enforcement") and `ORG-PR-20`:
 
 1. The engine runs the no-prop attribution sweep: for every trading-book position at EOD, verify that it carries a valid attribution to a client-flow OR a named-franchise-hedge-programme. Attribution metadata is captured at trade booking (per PROC-MK-MA-01 — Trading Mandate Attestation Step 1) and persisted on the position record.
 2. **Valid client-flow attribution:** the position arose from a client-facilitation trade (institutional client; market-making; execution; hedging of client flow). The attribution carries the originating client trade-ID.
-3. **Valid named-hedge attribution:** the position is part of a named warehoused franchise hedge programme (e.g. "ZAR-IRD warehouse hedge programme #001"). Named programmes are pre-approved by Helena and recorded in the hedge-programme register (`@platform/markets/hedge-programme-register`, PLANNED).
-4. **Invalid / missing attribution:** any position without a valid attribution is flagged as a potential no-prop violation. The engine emits `NoPropAttributionFlagged { date, positionId, deskId, missingAttribution: true | invalid_reference, currentExposure, citations[] }`.
+3. **Valid named-hedge attribution:** the position is part of a named warehoused franchise hedge programme (e.g. "ZAR-IRD warehouse hedge programme #001"). Named programmes are pre-approved by Helena and recorded in the hedge-programme register (`@platform/markets/hedge-programme-register`, PLANNED). Programmes carry an `expiryDate` so that expired programmes do not silently continue to absorb attribution.
+4. **Invalid / missing attribution:** any position without a valid attribution is flagged as a potential no-prop violation. The engine emits `NoPropAttributionFlagged { date, positionId, deskId, attributionState, currentExposure, citations[] }` where `attributionState` is one of:
+    - `missing` — no attribution metadata exists on the position record (data gap).
+    - `invalid_reference` — the attribution references a client trade-ID or hedge programme that does not exist in the upstream register (referential-integrity failure).
+    - `stale_reference` — the attribution references a hedge programme whose `expiryDate` has passed (programme expired but position remains attributed to it). Added at v1.1 per Bea's review; relevant once warehoused hedge programmes have expiry dates.
 5. Helena reviews flagged positions within 1 business day per Market Risk Policy v1 §3 MR-5. If a position is confirmed as proprietary risk-taking, the Market Risk Committee convenes within 24 hours (per §3); the position is reduced or hedged to zero within the timeframe set in the remediation plan (typically same day or next business day). The confirmation is recorded as `NoPropViolationConfirmed { flagEventId, decisionRationale, remediationTargetDate, citations[] }`.
-6. If a position is confirmed as a misclassified-attribution case (e.g. the attribution metadata was missing at booking but the position is genuinely client-flow), the attribution is corrected via `NoPropAttributionCorrected { flagEventId, correctedAttribution, rationale, citations[] }` and the flag is closed.
+6. If a position is confirmed as a misclassified-attribution case (e.g. the attribution metadata was missing at booking but the position is genuinely client-flow; or the position should be re-attached to a successor hedge programme replacing the expired one), the attribution is corrected via `NoPropAttributionCorrected { flagEventId, correctedAttribution, rationale, citations[] }` and the flag is closed.
 
-The MR-5-NPA "limit" is binary: 100% of trading-book positions must have valid attribution. Any non-100% is a Hard Breach (Step 6 above) — the no-prop principle is absolute and non-negotiable per Market Risk Policy v1 §1 Principles.
+The MR-5 attribution "limit" is binary: 100% of trading-book positions must have valid attribution. Any non-100% is a Hard Breach (Step 6 above) — the no-prop principle is absolute and non-negotiable per Market Risk Policy v1 §1 Principles.
 
 ---
 
@@ -183,11 +187,11 @@ The MR-5-NPA "limit" is binary: 100% of trading-book positions must have valid a
 - `MarketRiskMeasureComputed { date, limitId, scope, riskClass?, currentMeasure, hardBreachThreshold, utilisation, state, citations[] }` — daily, per limit-row.
 - `MarketRiskLimitAmberAlert { date, limitId, scope, riskClass?, currentMeasure, hardBreachThreshold, utilisation, citations[] }` — on Amber-state deterioration.
 - `MarketRiskLimitBreached { date, limitId, scope, riskClass?, currentMeasure, hardBreachThreshold, utilisation, citations[] }` — on Hard Breach.
-- `MarketRiskHardBreachExemptionGranted { breachEventId, scope, expiryDate, rationale, citations[] }` — Helena-signed exemption (≤ 5bd).
+- `MarketRiskHardBreachExemptionGranted { breachEventId, scope, expiryDate, rationale, citations[] }` — Helena-signed exemption. **Schema invariant** (enforced in `@platform/events/market-risk-limit` PLANNED, not procedure prose): `expiryDate ≤ emission_date + 5 business days`. The 5bd cap is a schema-level constraint per Market Risk Policy v1 §3 ("there are no standing limit exceptions"); rejected at event-validation if violated.
 - `MarketRiskBreachRemediationPlanFiled { breachEventId, planSummary, targetResolutionDate, citations[] }` — 5bd filing per Market Risk Policy v1 §1.4 + brief.
 - `MarketRiskBreachRemediated { breachEventId, planEventId, resolutionDate, citations[] }` — on resolution.
 - `MarketRiskCriticalEventRecorded { eventType, date, scope, narrative, citations[] }` — Critical event (back-testing Red, capital-headroom exhaustion, unvaluable position).
-- `NoPropAttributionFlagged { date, positionId, deskId, missingAttribution, currentExposure, citations[] }` — per flagged position.
+- `NoPropAttributionFlagged { date, positionId, deskId, attributionState: 'missing' | 'invalid_reference' | 'stale_reference', currentExposure, citations[] }` — per flagged position. `attributionState` is the v1.1 enum replacing the v1.0 `missingAttribution: true | invalid_reference` field; the new `stale_reference` value covers expired hedge programmes.
 - `NoPropViolationConfirmed { flagEventId, decisionRationale, remediationTargetDate, citations[] }` — Helena's confirmation.
 - `NoPropAttributionCorrected { flagEventId, correctedAttribution, rationale, citations[] }` — misclassification resolution.
 - `MarketRiskLimitCalibrated { limitId, scope, riskClass?, oldThreshold, newThreshold, effectiveFrom, ceoApprovalRef, citations[] }` — limit-register update on recalibration cycle.
@@ -198,8 +202,8 @@ The MR-5-NPA "limit" is binary: 100% of trading-book positions must have valid a
 - `FrtbSaCapitalComputed` (per PROC-RISK-FRTB-SA-01) — capital headroom dimension of MR-1 / MR-2.
 - Sensitivity events (per PROC-RISK-FRTB-SA-01 Step 4) — MR-3 inputs.
 - CVA sensitivity events — MR-4 input.
-- `StressScenarioRun { ... }` (per PROC-RISK-ST-01) — MR-5 input (sensitivity-update cadence; full cycle quarterly).
-- Position-attribution metadata at trade booking (per PROC-MK-MA-01) — MR-5-NPA input.
+- `StressScenarioRun { ... }` (per PROC-RISK-ST-01) — MR-6 input (sensitivity-update cadence; full cycle quarterly).
+- Position-attribution metadata at trade booking (per PROC-MK-MA-01) — MR-5 input.
 - `BacktestingZoneEntered { toZone: red }` (per PROC-RISK-BACKTEST-01) — Critical event trigger.
 
 ---
@@ -233,7 +237,7 @@ The MR-5-NPA "limit" is binary: 100% of trading-book positions must have valid a
 | **Amber Alert (80% ≤ utilisation < 100%)** | Helena + desk head notified; management action plan within 2 business days; MRC at next meeting if Amber persists for 2 consecutive business days | 2bd plan |
 | **Hard Breach (utilisation ≥ 100%)** | Helena + Camille + CEO notified within 15 min (intraday) or 09:00 next bd (EOD); position freeze (per PROC-MK-MA-01); MRC convene within 1 business day; remediation plan within 5 business days; PA notification for material breach per Imani's ratification (within `[calibration: pending — typically 5bd]`) | 15 min notification; 1bd MRC; 5bd plan |
 | **Standing limit exception** | Prohibited per Market Risk Policy v1 §3 — every Hard Breach must be resolved (position reduction or limit recalibration); short-term exemptions ≤ 5bd require MRC approval and signed exemption event | n/a |
-| **MR-5-NPA flagged position (missing or invalid attribution)** | Helena reviews within 1 business day; confirm-prop → MRC convene within 24h + position reduction within remediation-plan timeframe (typically same/next bd); misclassification → attribution correction event | 1bd review; 24h MRC on confirmed-prop |
+| **MR-5 flagged position (missing, invalid, or stale attribution)** | Helena reviews within 1 business day; confirm-prop → MRC convene within 24h + position reduction within remediation-plan timeframe (typically same/next bd); misclassification or stale-reference re-attachment → attribution correction event | 1bd review; 24h MRC on confirmed-prop |
 | **Critical event** (back-testing Red entry on IMA-approved desk per PROC-RISK-BACKTEST-01; capital-headroom exhaustion under SA; unvaluable position) | CEO + BRC notified within 24h; PA notification per Imani's ratification; crisis-management protocol activates if institutionally material | 24h notification |
 | **CVA hedge limit (MR-4-HEDGE) Hard Breach** | Same as MR-1 to MR-5 Hard Breach; additionally Helena reviews counterparty exposure concentration and may instruct CVA-hedge unwind or counterparty-limit reduction | 1bd MRC; 5bd plan |
 | **Calibration drift: sum of desk limits > bank-wide ceiling at recalibration** | Helena reconciles before CEO approval; the bank-wide ceiling is the binding constraint; desk limits are management ceilings within the bank-wide budget | Per recalibration cycle |
@@ -251,9 +255,9 @@ The MR-5-NPA "limit" is binary: 100% of trading-book positions must have valid a
 | `@platform/risk-engine/sensitivities` | PLANNED | MR-3 inputs (per risk class) |
 | `@platform/risk-engine/cva-sensitivities` | PLANNED | MR-4 input |
 | `@platform/risk-engine/cva-hedge-register` | PLANNED | MR-4-HEDGE input (notional outstanding eligible CVA hedges) |
-| `@platform/stress-test/sensitivity-update` | PLANNED | MR-5 input (stress sensitivity-update output; full stress cycle per PROC-RISK-ST-01) |
-| `@platform/risk-engine/trade-origin-check` | PLANNED | MR-5-NPA input (no-prop attribution sweep per position) |
-| `@platform/markets/hedge-programme-register` | PLANNED | Named franchise hedge programmes; pre-approved by Helena; valid attribution targets for MR-5-NPA |
+| `@platform/stress-test/sensitivity-update` | PLANNED | MR-6 input (stress sensitivity-update output; full stress cycle per PROC-RISK-ST-01) |
+| `@platform/risk-engine/trade-origin-check` | PLANNED | MR-5 input (no-prop attribution sweep per position) |
+| `@platform/markets/hedge-programme-register` | PLANNED | Named franchise hedge programmes; pre-approved by Helena; valid attribution targets for MR-5; carries `expiryDate` to enable `stale_reference` detection |
 | `@platform/risk-engine/position-freeze` | PLANNED | Hard-breach order-management block (per PROC-MK-MA-01) |
 | `@platform/events/market-risk-limit` | PLANNED | Typed event schema: `MarketRiskMeasureComputed`, `MarketRiskLimitAmberAlert`, `MarketRiskLimitBreached`, `MarketRiskHardBreachExemptionGranted`, `MarketRiskBreachRemediationPlanFiled`, `MarketRiskBreachRemediated`, `MarketRiskCriticalEventRecorded`, `NoPropAttributionFlagged`, `NoPropViolationConfirmed`, `NoPropAttributionCorrected`, `MarketRiskLimitCalibrated` |
 | `@platform/recon/market-risk-limit-daily-completeness` | PLANNED | Daily completeness recon; desk → bank-wide aggregation correctness check |
@@ -267,7 +271,7 @@ The MR-5-NPA "limit" is binary: 100% of trading-book positions must have valid a
 - **Policy:** `Policies/market-risk-policy-v1.md` §3 (Market Risk Appetite — MR-1 through MR-5), §1.4 (Breach taxonomy — Alert / Hard Breach / Critical), §5 (CVA Capital — CVA hedge limit), §6.1 (Market Risk Committee), §6.2 (Reporting), §8.1 (Substrate dependencies — ES, sensitivities), §8.2 (Procedures planned — this procedure).
 - **Business policy:** `Policies/trading-mandate-v1.md` — franchise scope and no-prop principle.
 - **Regulation:** `ORG-PR-19`, `ORG-PR-20`, `ORG-PR-33`; BCBS *Minimum capital requirements for market risk* (January 2019) — ES + sensitivity-based measures `[citation: TBC]`; Regulations Relating to Banks 2012 Reg 32 `[citation: TBC]`; PA D/2025 `[citation: TBC]`.
-- **Related procedures:** `PROC-RISK-FRTB-SA-01` (`frtb-sa-capital-computation.md`) — SA capital feeds capital-headroom dimension of MR-1 / MR-2 + sensitivity inputs to MR-3; `PROC-RISK-MRM-01` (`market-risk-monitoring.md`) — daily VaR / ES inputs; `PROC-RISK-BACKTEST-01` (`backtesting-governance.md`) — Red-zone entry on IMA-approved desk = Critical event; `PROC-RISK-PLA-01` (`pla-test-governance.md`) — PLA Fail reverts (desk, risk class) to SA, affecting MR-1 / MR-2 / MR-3 budget; `PROC-RISK-ST-01` (`stress-test-cycle.md`) — MR-5 stress input (sensitivity-update daily / full cycle annual + quarterly); `PROC-MK-MA-01` (`mandate-attestation.md`) — order-management position-freeze on Hard Breach; trading mandate attestation upstream; `PROC-RSK-MV-01` (`model-validation.md`) — Nadia's limit-engine validation; `PROC-OR-CMA-01` (`crisis-management-activation.md`) — Critical-event crisis-management protocol; `PROC-FIN-BA-01` (`ba-return-generation.md`) — capital-headroom integration.
+- **Related procedures:** `PROC-RISK-FRTB-SA-01` (`frtb-sa-capital-computation.md`) — SA capital feeds capital-headroom dimension of MR-1 / MR-2 + sensitivity inputs to MR-3; `PROC-RISK-MRM-01` (`market-risk-monitoring.md`) — daily VaR / ES inputs; `PROC-RISK-BACKTEST-01` (`backtesting-governance.md`) — Red-zone entry on IMA-approved desk = Critical event; `PROC-RISK-PLA-01` (`pla-test-governance.md`) — PLA Fail reverts (desk, risk class) to SA, affecting MR-1 / MR-2 / MR-3 budget; `PROC-RISK-ST-01` (`stress-test-cycle.md`) — MR-6 stress input (sensitivity-update daily / full cycle annual + quarterly); `PROC-MK-MA-01` (`mandate-attestation.md`) — order-management position-freeze on Hard Breach; trading mandate attestation upstream; `PROC-RSK-MV-01` (`model-validation.md`) — Nadia's limit-engine validation; `PROC-OR-CMA-01` (`crisis-management-activation.md`) — Critical-event crisis-management protocol; `PROC-FIN-BA-01` (`ba-return-generation.md`) — capital-headroom integration.
 
 ---
 
