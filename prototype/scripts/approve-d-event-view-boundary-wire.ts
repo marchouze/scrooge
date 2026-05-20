@@ -7,8 +7,7 @@ recordDecision(
     phase: "approved",
     authority: "CEO",
     authorityRef: "marc@tgv.co.za",
-    title:
-      "Wire OfficialMarkAdopted + PeriodClosed into MTM engine and close-management substrate",
+    title: "Wire OfficialMarkAdopted + PeriodClosed into MTM engine and close-management substrate",
     category: "engineering",
     recommendation:
       "Approve a 4-slice programme to land the Atlas event-vs-view contract (PR #595) in code: " +
