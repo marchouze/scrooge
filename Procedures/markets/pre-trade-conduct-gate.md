@@ -5,14 +5,15 @@ author: Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech
 date: 2026-05-16
 owner: Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
 status: POPULATED
-version: "0.1"
-last-updated: "2026-05-16"
-policy-cited: Best Execution Policy (planned) · Conduct Policy (planned)
-system-capability: "@platform/markets/conduct-gate (PLANNED)"
+version: "0.2"
+last-updated: "2026-05-20"
+policy-cited: Best Execution Policy (planned) · Conduct Policy (planned) · Credit Risk Policy v1
+system-capability: "@platform/markets/conduct-gate (PLANNED) · @platform/risk/credit-limit-engine"
 citations:
   - FAIS Act GCC s4
   - D-FSP-LICENCE-NECESSITY
   - D-MARKETS-SCHEMA-FOUNDATION
+  - D-CREDIT-LIMIT-ENGINE-BUILD
 ---
 
 # Procedure — Pre-trade conduct and suitability gate for FX spot trades
@@ -21,7 +22,7 @@ citations:
 **Owner:** Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
 **Approval:** BRC (Conduct Policy — planned; FSP-licence-conditional)
 **Cadence:** Per-trade (blocking gate before every FX spot trade execution)
-**Version:** v0.1 — 2026-05-16
+**Version:** v0.2 — 2026-05-20
 **Status:** POPULATED
 
 ## 1. Source policy
@@ -68,7 +69,7 @@ Regulation (FAIS Act s.16 + GCC §4 — conduct and suitability; FMCA conduct ob
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | **Check 1 — Counterparty mandate:** Query the approved-counterparty registry (built by PROC-MK-CIL-01) to confirm: (a) counterparty is on the approved list; (b) counterparty is approved for FX spot; (c) credit-limit-exhausted check now calls `checkHeadroom` from `@platform/risk/credit-limit-engine`, which returns `ok: false` with `blockReason ∈ { 'CounterpartyNotApproved', 'CreditLimitExhausted', 'LimitExpired', 'AnnualReviewStale' }`; (d) ISDA Master Agreement is in place and current | `agent` | `@platform/markets/counterparty-registry` (PLANNED) · `@platform/risk/credit-limit-engine` | If any sub-check fails: emit `ConductGateBlocked { intentId, reason: 'CounterpartyNotApproved' | 'CreditLimitExhausted' | 'LimitExpired' | 'AnnualReviewStale' | 'IsdaNotInPlace', blockedAt }`. Stop. |
+| 1 | **Check 1 — Counterparty mandate:** Query the approved-counterparty registry (built by PROC-MK-CIL-01) to confirm: (a) counterparty is on the approved list; (b) counterparty is approved for FX spot; (c) credit-limit-exhausted check calls `checkHeadroom(counterpartyId, proposedExposure)` from `@platform/risk/credit-limit-engine` (live; D-CREDIT-LIMIT-ENGINE-BUILD Phase 4), which returns `ok: false` with `blockReason ∈ { 'CounterpartyNotApproved', 'CreditLimitExhausted', 'LimitExpired', 'AnnualReviewStale' }`; (d) ISDA Master Agreement is in place and current | `agent` | `@platform/markets/counterparty-registry` (PLANNED) · `@platform/risk/credit-limit-engine` (live) | If any sub-check fails: emit `GatewayCheckCompleted { orderId, checkKind: 'credit-limit', outcome: 'reject', blockReason: 'CounterpartyNotApproved' | 'CreditLimitExhausted' | 'LimitExpired' | 'AnnualReviewStale', rejectionReason, citationToRule: 'RAS-B3' }` (canonical, today). The legacy procedure naming `ConductGateBlocked { intentId, reason, blockedAt }` reflects the planned conduct-gate envelope; the runtime emits the canonical `GatewayCheckCompleted` events ahead of that envelope, with the typed `blockReason` enum carrying the engine's outcome. Stop. |
 | 2 | **Check 2 — Dealer mandate:** Query the dealer mandate registry (built by PROC-MK-MDI-01) to confirm: (a) dealer has an active acknowledged mandate; (b) FX spot is within the dealer's product scope; (c) proposed notional is within the dealer's single-trade and portfolio notional limits; (d) settlement date is within the dealer's tenor mandate | `agent` | `@platform/markets/mandate-registry` (PLANNED) | If any sub-check fails: emit `ConductGateBlocked { intentId, reason: 'DealerMandateInsufficient' | 'NotionalLimitBreached' | 'TenorLimitBreached', blockedAt }`. Stop. |
 | 3 | **Check 3 — Real-time sanctions screening:** Run the counterparty's LEI and beneficial owner names through the real-time sanctions screening engine (OFAC, UN, SA PFA lists); confirm no current sanctions hit | `agent` (Zara — MLRO, governance, system-assisted) | `@platform/compliance/sanctions-screen` (PLANNED) | Sanctions screening must use a fresh pull (not a cached result older than 24 hours). A sanctions hit is a hard block; Zara is notified immediately; Mira assesses regulatory notification obligations. If screening engine unavailable: trade is blocked until screening is restored. |
 | 4 | **Check 4 — Counterparty capacity confirmation:** Confirm the counterparty has acknowledged FX spot as an approved product in their mandate with the bank; no capacity disputes on record; no pending exclusion requests | `agent` | `@platform/markets/counterparty-registry` (PLANNED) | Capacity disputes in the dispute registry block new trades with the affected counterparty. |
@@ -102,11 +103,12 @@ Regulation (FAIS Act s.16 + GCC §4 — conduct and suitability; FMCA conduct ob
 | Capability | Status | Notes |
 |---|---|---|
 | `@platform/markets/conduct-gate` | PLANNED | Blocking gate orchestration; all five checks |
-| `@platform/markets/counterparty-registry` | PLANNED | Approved-counterparty query |
+| `@platform/markets/counterparty-registry` | PLANNED | Approved-counterparty query (approval list, FX-spot eligibility, ISDA in place) |
+| `@platform/risk/credit-limit-engine` | LIVE | `checkHeadroom` — credit-limit-exhausted check (Check 1(c)); D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 |
 | `@platform/markets/mandate-registry` | PLANNED | Dealer mandate query |
 | `@platform/compliance/sanctions-screen` | PLANNED | Real-time sanctions screening |
 | `@platform/markets/best-execution` | PLANNED | Best-execution assessment check |
-| `@platform/event-store` | Live | `ConductGatePassed` / `ConductGateBlocked` events |
+| `@platform/event-store` | Live | `GatewayCheckCompleted` (live, with typed `blockReason`); `ConductGatePassed` / `ConductGateBlocked` (planned envelope) |
 
 ## 9. Quality controls
 
@@ -130,3 +132,4 @@ Regulation (FAIS Act s.16 + GCC §4 — conduct and suitability; FMCA conduct ob
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-16 | Devon (Chief Operating Officer, governance) | Initial POPULATED — 5-check blocking gate (counterparty mandate, dealer mandate, sanctions, capacity, best-execution record); ConductGatePassed/Blocked events; blocked-trade review; FAIS GCC §4 + FMCA + FICA sourcing; institutional-only posture. |
+| v0.2 | 2026-05-20 | Saskia (Derivatives trading desk, engineering) | Check 1(c) wired into the live `@platform/risk/credit-limit-engine` (`checkHeadroom`) per D-CREDIT-LIMIT-ENGINE-BUILD Phase 4. Typed `blockReason` enum on `GatewayCheckCompleted` carries one of `CounterpartyNotApproved`, `CreditLimitExhausted`, `LimitExpired`, `AnnualReviewStale`. Stale-review check enforces Credit Risk Policy §1.3 + Banks Act Reg 23 annual-review obligation. Procedure system-capability column flipped from PLANNED to LIVE for the engine. |

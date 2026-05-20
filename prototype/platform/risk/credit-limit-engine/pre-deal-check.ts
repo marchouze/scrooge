@@ -10,21 +10,31 @@
 // Computation:
 //   1. Resolve current limit via the projection (must be in `loaded` status).
 //   2. Resolve current exposure by summing the latest CcrReplacementCostComputed
-//      event per netting set for the counterparty (BCBS 279 RC floor).
-//   3. Fallback (substrate gap): if no RC events exist for the counterparty,
-//      we sum notional from CreditLimit-derived applications. This is a
-//      stand-in until @platform/risk/sa-ccr lands its full PFE + RC pipeline;
-//      see comment block below.
+//      event per netting set for the counterparty (BCBS d317 RC floor).
+//      This is the canonical primary path now that @platform/risk/sa-ccr
+//      (D-CREDIT-LIMIT-ENGINE-BUILD Phase 4) is live and emits RC events.
+//   3. Degraded-mode fallback: if no RC events exist for the counterparty,
+//      we return zero exposure AND log a warning. The fallback is
+//      explicit, observable, and intended as a build-phase scaffold —
+//      Vera's lex-cap-utilisation recon asserts that any loaded limit
+//      with traded notional and zero RC events is a finding. Notional
+//      summation as a stand-in was considered and rejected: it produces
+//      a number that looks like an exposure but is methodologically
+//      wrong, and the explicit-zero + warning + recon assertion combo
+//      is the cleaner path.
 //   4. Apply traffic-light per Credit Risk Policy §1.4.
 //   5. Block when status != loaded, when headroom <= 0, when limit expired,
 //      or when annual review > 13 months stale (Policy §1.3, Banks Act Reg
 //      23 annual review obligation).
 //
-// Pure function: no event emission, no side effects.
+// Pure function up to the degraded-mode `logger.warn` call: no event
+// emission, no projection writes.
 //
-// Author: Atlas (Core banking platform architect, engineering).
+// Authors: Atlas (Core banking platform architect, engineering) — initial
+//   implementation; Rohan (Market risk quantitative engineer, engineering)
+//   — SA-CCR pivot under D-CREDIT-LIMIT-ENGINE-BUILD Phase 4.
 
-import { eventStore } from "../../composition";
+import { eventStore, logger } from "../../composition";
 import { type Money, add, minor, sub } from "../../core/money";
 import type { Currency } from "../../core/types";
 import type { CcrReplacementCostComputedPayload } from "../../event-store/event-types/counterparty-credit-risk";
@@ -59,13 +69,19 @@ export type HeadroomCheckResult = CreditLimitHeadroom & {
 // Current-exposure helper.
 //
 // Sums the latest CcrReplacementCostComputed event per nettingSetId for the
-// counterparty. If no RC events exist yet (build phase / pre-SA-CCR), we
-// return Money(0) as a substrate-gap fallback.
+// counterparty (BCBS d317 RC floor). When the SA-CCR engine has produced
+// at least one RC event for this counterparty, the sum is the canonical
+// current exposure.
 //
-// Substrate gap (queued, follow-on slice): the full SA-CCR engine at
-// `@platform/risk/sa-ccr` will land RC + PFE + add-on; once it does, this
-// helper should pivot to that engine and remove the build-phase fallback.
-// Tracked under D-CREDIT-LIMIT-ENGINE-BUILD Phase 4.
+// Degraded-mode fallback: when no RC events exist for the counterparty in
+// the configured currency, the helper returns zero AND logs a
+// `degraded:no-rc-events` warning. Callers must treat zero as "no SA-CCR
+// run has been observed yet", not "no exposure". Vera's
+// lex-cap-utilisation recon asserts that any loaded limit with traded
+// notional and zero RC events is a finding (closes the loop).
+//
+// SA-CCR engine: `@platform/risk/sa-ccr.computeAndEmit` — landed under
+// D-CREDIT-LIMIT-ENGINE-BUILD Phase 4.
 // ---------------------------------------------------------------------------
 
 export function getCurrentExposure(counterpartyId: string, currency: string, asOf?: string): Money {
@@ -83,9 +99,23 @@ export function getCurrentExposure(counterpartyId: string, currency: string, asO
     }
   }
   let total: Money = minor(0n, currency as Currency);
+  let observedInCurrency = 0;
   for (const p of latestPerNettingSet.values()) {
     if (p.currency !== currency) continue; // skip cross-currency RC sets
     total = add(total, minor(BigInt(p.rc), currency as Currency));
+    observedInCurrency += 1;
+  }
+  if (observedInCurrency === 0) {
+    logger.warn(
+      {
+        component: "credit-limit-engine.pre-deal-check",
+        counterpartyId,
+        currency,
+        asOf: asOf ?? null,
+        mode: "degraded:no-rc-events",
+      },
+      "SA-CCR getCurrentExposure: no CcrReplacementCostComputed events observed for counterparty; returning zero exposure. Vera lex-cap-utilisation recon will flag traded notional without RC coverage.",
+    );
   }
   return total;
 }
