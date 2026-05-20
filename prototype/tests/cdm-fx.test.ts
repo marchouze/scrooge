@@ -279,10 +279,11 @@ describe("FxTradeExecuted — no-prop attribution (G-3)", () => {
   });
 
   it("rejects a trade with neither clientFlowRef nor hedgeProgrammeRef", () => {
-    const { clientFlowRef, hedgeProgrammeRef, ...trade } = baseSpotPayload as typeof baseSpotPayload & {
-      clientFlowRef?: string;
-      hedgeProgrammeRef?: string;
-    };
+    const { clientFlowRef, hedgeProgrammeRef, ...trade } =
+      baseSpotPayload as typeof baseSpotPayload & {
+        clientFlowRef?: string;
+        hedgeProgrammeRef?: string;
+      };
     void clientFlowRef;
     void hedgeProgrammeRef;
     const result = fxTradeExecutedPayloadSchema.safeParse(trade);
