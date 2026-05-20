@@ -99,6 +99,7 @@ import {
   buildKycClientsView,
 } from "./kyc-clients-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
+import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { type GatewayOrderResult, routeOrderToGateway } from "./markets-fx-gateway";
 import { buildHeadroomView } from "./markets-fx-headroom";
 import { buildNpaView } from "./markets-fx-npa";
@@ -1703,13 +1704,31 @@ const server = Bun.serve({
     // ---------- end Slice 5 ----------
     if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
       // FX desk Slice 1 picker source. Folds the counterparty
-      // institutional-eligibility events (Niko, PR #77) and returns the
-      // pass-and-not-breached set. Read-only; no caching (event volume
-      // is small in build phase).
+      // institutional-eligibility events and returns the pass-and-not-breached
+      // set, enriched with display names from KYC clients and fx-sim register.
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
-      // pageProvenance: event-derived → simulated-only in build phase.
+      const view = buildCounterpartiesView(eventStore);
+
+      // Build name lookup: counterpartyId → display name
+      const nameMap = new Map<string, string>();
+      // (a) KYC clients
+      const kycView = buildKycClientsView(eventStore);
+      for (const c of kycView.clients) {
+        nameMap.set(c.clientId, c.entityName);
+      }
+      // (b) fx-sim counterparties
+      for (const c of SIM_COUNTERPARTIES) {
+        nameMap.set(c.partyId, c.name);
+      }
+
+      const enriched = view.counterparties.map((c) => ({
+        ...c,
+        name: nameMap.get(c.counterpartyId) ?? c.counterpartyId,
+      }));
+
       return jsonResponse({
-        ...buildCounterpartiesView(eventStore),
+        ...view,
+        counterparties: enriched,
         pageProvenance: eventDerivedPageProvenance(),
       });
     }

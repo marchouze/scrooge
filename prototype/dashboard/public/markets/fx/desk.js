@@ -106,10 +106,11 @@
           .slice(0, 3)
           .map((e) => `<li>${escapeHtml(e)}</li>`)
           .join("");
+        const displayName = c.name || c.counterpartyId;
         return [
           "<tr>",
-          `<td><strong>${escapeHtml(c.counterpartyId)}</strong>`,
-          `<span class="fx-cp-id">${escapeHtml(c.screeningId || "")}</span></td>`,
+          `<td><strong>${escapeHtml(displayName)}</strong>`,
+          `<span class="fx-cp-id">${escapeHtml(c.counterpartyId.slice(0, 16))}</span></td>`,
           `<td>${escapeHtml(c.screeningId || "—")}</td>`,
           `<td><span class="fx-cp-outcome-pass">${escapeHtml(c.outcome || "—")}</span></td>`,
           `<td>${escapeHtml(fmtAsOf(c.asOf))}</td>`,
@@ -156,13 +157,16 @@
   function populateCounterpartySelect(payload) {
     const sel = $("[data-fx-rfq-counterparty]");
     if (!sel) return;
-    const list = (payload?.counterparties ?? []).map((c) => c.counterpartyId);
+    const list = payload?.counterparties ?? [];
     const previous = sel.value;
     const opts = list
-      .map((id) => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`)
+      .map((c) => {
+        const label = c.name || c.counterpartyId;
+        return `<option value="${escapeHtml(c.counterpartyId)}">${escapeHtml(label)}</option>`;
+      })
       .join("");
     sel.innerHTML = `<option value="">— select an eligible counterparty —</option>${opts}`;
-    if (previous && list.includes(previous)) {
+    if (previous && list.some((c) => c.counterpartyId === previous)) {
       sel.value = previous;
     }
     // Refresh derived UI state on every reload (e.g. submit-button

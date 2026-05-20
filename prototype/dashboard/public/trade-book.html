@@ -284,31 +284,26 @@
 
   (async () => {
     try {
-      const res = await fetch('/api/kyc/clients');
+      const res = await fetch('/api/markets/fx/counterparties');
       if (!res.ok) throw new Error(res.status);
       const data = await res.json();
-      const clients = data.clients || data;
+      const counterparties = data.counterparties || [];
 
       cptySelect.innerHTML = '';
       // Blank prompt
       const blank = document.createElement('option');
       blank.value = '';
-      blank.textContent = '— select client —';
+      blank.textContent = '— select counterparty —';
       blank.disabled = true;
       blank.selected = true;
       cptySelect.appendChild(blank);
 
-      // One option per unique client name
-      const seen = new Set();
-      clients.forEach((c) => {
-        const name = c.entityName || c.legalName || c.name || '';
-        if (!name || seen.has(name)) return;
-        seen.add(name);
+      counterparties.forEach((c) => {
+        const label = c.name || c.counterpartyId;
         const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        // Store lei as data attr for auto-fill
-        if (c.lei) opt.dataset.lei = c.lei;
+        opt.value = label;
+        opt.textContent = label;
+        opt.dataset.counterpartyId = c.counterpartyId;
         cptySelect.appendChild(opt);
       });
 
