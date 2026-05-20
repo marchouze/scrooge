@@ -6,7 +6,7 @@
 // approval → load → annual review → breach lifecycle for counterparty
 // credit limits under the SA LEX regime + Banks Act §73.
 //
-// Event family (10 events):
+// Event family (11 events):
 //   CreditLimitApplicationSubmitted (PROC-RISK-CO-01 Step 1)
 //   CreditLimitExtensionRequested
 //   CreditAnalysisCompleted          (PROC-RISK-CO-01 Step 2)
@@ -17,6 +17,7 @@
 //   CreditLimitAnnualReviewCompleted (PROC-RISK-CO-01 Step 7)
 //   CreditLimitBreached              (PROC-RISK-CO-01 Step 8; policy §1.4)
 //   CreditLimitBreachDisposed
+//   CreditLimitWithdrawn             (policy §7 — explicit decommissioning)
 //
 // Standing authority: D-CREDIT-LIMIT-ENGINE-BUILD (CEO-approved 2026-05-20).
 //
@@ -635,6 +636,57 @@ export function makeSubInvestmentGradeCounterpartyApproved(args: {
 }
 
 // ---------------------------------------------------------------------------
+// CreditLimitWithdrawn — explicit decommissioning of a loaded / approved
+// limit. Credit Risk Policy §7 line 232 + PROC-RISK-CO-01 §5.
+//
+// Reasons:
+//   expired                 — ISDA expiry / tenor lapsed without renewal
+//   rating-downgrade        — rating-trigger withdrawal per §5.1 matrix
+//   counterparty-defaulted  — counterparty in default; limit pulled
+//   cro-decision            — CRO discretionary withdrawal
+//   sub-ig-revoked          — sub-IG standing approval revoked by BRC / CEO
+// ---------------------------------------------------------------------------
+
+export const creditLimitWithdrawnReasonSchema = z.enum([
+  "expired",
+  "rating-downgrade",
+  "counterparty-defaulted",
+  "cro-decision",
+  "sub-ig-revoked",
+]);
+
+export type CreditLimitWithdrawnReason = z.infer<typeof creditLimitWithdrawnReasonSchema>;
+
+export const creditLimitWithdrawnPayloadSchema = z.object({
+  counterpartyId: z.string().min(1),
+  withdrawnReason: creditLimitWithdrawnReasonSchema,
+  withdrawnAt: z.string().min(1),
+  /** Party register ID / seat of the actor that effected the withdrawal. */
+  withdrawnBy: z.string().min(1),
+});
+
+export type CreditLimitWithdrawnPayload = z.infer<typeof creditLimitWithdrawnPayloadSchema>;
+
+export function makeCreditLimitWithdrawn(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CreditLimitWithdrawnPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CreditLimitWithdrawn",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: creditLimitWithdrawnPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // CREDIT_LIMIT_TYPED_EVENT_TYPES — registry of event types in this module.
 //
 // To add a new credit-limit event type:
@@ -657,6 +709,7 @@ export const CREDIT_LIMIT_TYPED_EVENT_TYPES = [
   "CreditLimitBreachDisposed",
   "CrcLimitExceptionApproved",
   "SubInvestmentGradeCounterpartyApproved",
+  "CreditLimitWithdrawn",
 ] as const;
 
 export type CreditLimitEventType = (typeof CREDIT_LIMIT_TYPED_EVENT_TYPES)[number];

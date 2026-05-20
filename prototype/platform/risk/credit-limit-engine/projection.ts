@@ -23,9 +23,12 @@
 //   CreditLimitBreachDisposed        → revert to "loaded" unless severity
 //                                       was critical AND disposition was
 //                                       "accepted" (then stay "breached").
+//   CreditLimitWithdrawn             → status = "withdrawn" (terminal).
+//                                      `listActiveLimits` excludes withdrawn
+//                                      rows; `getCreditLimit` still returns
+//                                      the materialised row so callers see
+//                                      the lifecycle outcome.
 //   CreditLimitExtensionRequested    → (no status change; tracked only)
-//
-// `withdrawn` is reserved — no current event flips a row to it.
 //
 // `expired` is computed on-demand from `expiryDate` when callers query
 // `getCreditLimit` — keeps projection pure (no clock state baked in).
@@ -43,6 +46,7 @@ import type {
   CreditLimitBreachDisposedPayload,
   CreditLimitBreachedPayload,
   CreditLimitLoadedPayload,
+  CreditLimitWithdrawnPayload,
 } from "../../event-store/event-types/credit-limit";
 import type { Event } from "../../event-store/types";
 import { utcNow } from "../../types/time";
@@ -65,6 +69,7 @@ export const CREDIT_LIMIT_LIFECYCLE_TYPES = [
   "CreditLimitAnnualReviewCompleted",
   "CreditLimitBreached",
   "CreditLimitBreachDisposed",
+  "CreditLimitWithdrawn",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -190,6 +195,16 @@ function applyEvent(acc: FoldAcc, event: Event): FoldAcc {
       acc.lastBreachSeverity = null;
       return acc;
     }
+    case "CreditLimitWithdrawn": {
+      // Withdrawal is terminal — limit no longer available for trading.
+      // Payload reason is recorded on the event itself; the projection
+      // tracks only the status transition (additional reason / actor
+      // metadata is queryable via `getLimitHistory`).
+      const _p = event.payload as CreditLimitWithdrawnPayload; // schema-validate via type import
+      void _p;
+      acc.status = "withdrawn";
+      return acc;
+    }
     default:
       // Lifecycle events not modelled (analysis, ISDA, proposed, extension)
       // are observed but don't change the fold state.
@@ -240,11 +255,17 @@ export function getCreditLimit(counterpartyId: string, asOf?: string): CreditLim
  * Returns all counterparties with non-`pending` lifecycle progress. Used by
  * `breach-detector.ts` and downstream views. Sorted by counterpartyId for
  * stable rendering.
+ *
+ * Withdrawn counterparties are excluded — `CreditLimitWithdrawn` is a
+ * terminal transition (policy §7); the limit is no longer "active" for
+ * pre-deal headroom or for inclusion in periodic limit reviews. The full
+ * lifecycle history remains queryable via `getLimitHistory`.
  */
 export function listActiveLimits(asOf?: string): CreditLimit[] {
   const all = foldAll(asOf);
   const out: CreditLimit[] = [];
   for (const acc of all.values()) {
+    if (acc.status === "withdrawn") continue;
     out.push(decorateExpiry(materialise(acc), asOf));
   }
   out.sort((a, b) => (a.counterpartyId < b.counterpartyId ? -1 : 1));

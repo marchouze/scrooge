@@ -36,9 +36,12 @@ import type { CreditApprovalAuthority } from "../../event-store/event-types/cred
 //                Credit Risk Policy §1.4; trading blocked at red+critical.
 //   expired    — limit's expiryDate has passed without annual review; not
 //                tradeable.
-//   withdrawn  — explicitly withdrawn / decommissioned; not tradeable. The
-//                event-store family does not yet emit a `Withdrawn` event;
-//                reserved for a future slice and currently unreachable.
+//   withdrawn  — explicitly withdrawn / decommissioned; not tradeable.
+//                Emitted via `CreditLimitWithdrawn { counterpartyId,
+//                withdrawnReason, withdrawnAt, withdrawnBy }` per policy §7;
+//                withdrawn counterparties are excluded from
+//                `listActiveLimits` but remain queryable via
+//                `getCreditLimit` / `getLimitHistory`.
 // ---------------------------------------------------------------------------
 
 export type CreditLimitStatus =
