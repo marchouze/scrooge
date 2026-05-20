@@ -16,6 +16,23 @@
     failed: { label: "failed", cls: "danger" },
   };
 
+  // Chain-item statuses (policy / procedure / function) — share the
+  // dimension status palette but with their own labels.
+  const CHAIN_PILL = {
+    "in-force": { label: "IN FORCE", cls: "ok" },
+    active: { label: "ACTIVE", cls: "ok" },
+    populated: { label: "POPULATED", cls: "ok" },
+    planned: { label: "PLANNED", cls: "warn" },
+    stub: { label: "STUB", cls: "warn" },
+    draft: { label: "DRAFT", cls: "warn" },
+    unknown: { label: "—", cls: "" },
+  };
+
+  function chainPill(status) {
+    const m = CHAIN_PILL[status] || CHAIN_PILL.unknown;
+    return `<span class="pp-pill ${m.cls}">${esc(m.label)}</span>`;
+  }
+
   function esc(s) {
     return String(s ?? "").replace(
       /[&<>"']/g,
@@ -185,6 +202,7 @@
 
     const narrativeBlock = renderNarrativeBlock(dim);
     const programmaticBlock = renderProgrammaticBlock(product, dim);
+    const chainBlock = renderChainBlock(dim);
 
     section.innerHTML = `
       <div class="pp-section-head" data-toggle="1">
@@ -200,6 +218,7 @@
           <dt>Fail rule</dt><dd>${esc(dim.failRule)}</dd>
           <dt>Citation chain</dt><dd>${chips(dim.citationChain)}</dd>
         </dl>
+        ${chainBlock}
         ${onboardingBlock}
         ${narrativeBlock}
         ${programmaticBlock}
@@ -225,6 +244,72 @@
     actions.appendChild(makeRequestNarrativeButton(product, dim));
 
     return section;
+  }
+
+  function renderChainBlock(dim) {
+    const chain = dim.chain;
+    if (
+      !chain ||
+      (!chain.policies?.length && !chain.procedures?.length && !chain.functions?.length)
+    ) {
+      return `
+        <div class="pp-chain" style="margin-top:var(--space-2);padding:var(--space-2);background:var(--color-surface-alt, #f7f7f5);border-radius:6px">
+          <div class="pp-policy-cite"><strong>Policy → Procedure → Function chain</strong></div>
+          <p class="pp-policy-cite" style="margin-top:var(--space-1)"><em>No governance-anchored chain for this dimension. Substrate-only readiness is covered by the worked-journal-entry section above.</em></p>
+        </div>`;
+    }
+    const policiesHtml = (chain.policies || [])
+      .map(
+        (p) => `
+        <li>
+          <div><strong>${esc(p.title)}</strong> ${chainPill(p.status)}${p.source === "hint" ? "" : ' <span class="pp-policy-cite">(graph)</span>'}</div>
+          <div class="pp-policy-cite">Owner: ${esc(p.owner || "—")} · <code>Policies/${esc(p.filename)}</code></div>
+        </li>`,
+      )
+      .join("");
+    const proceduresHtml =
+      (chain.procedures || []).length === 0
+        ? `<li><span class="pp-policy-cite"><em>No procedure links the anchor policies to executable steps yet.</em></span></li>`
+        : chain.procedures
+            .map(
+              (p) => `
+        <li>
+          <div><strong>${esc(p.title)}</strong> ${chainPill(p.status)}</div>
+          <div class="pp-policy-cite">Owner: ${esc(p.owner || "—")} · <code>${esc(p.path)}</code></div>
+          ${p.policiesCited?.length ? `<div class="pp-policy-cite">Cites: ${p.policiesCited.map((c) => `<code>${esc(c)}</code>`).join(" · ")}</div>` : ""}
+        </li>`,
+            )
+            .join("");
+    const functionsHtml =
+      (chain.functions || []).length === 0
+        ? `<li><span class="pp-policy-cite"><em>No system-capability declared on the matched procedures.</em></span></li>`
+        : chain.functions
+            .map(
+              (f) => `
+        <li>
+          <div><code>${esc(f.name)}</code> ${chainPill(f.status)}</div>
+          <div class="pp-policy-cite">from <code>${esc(f.fromProcedure)}</code></div>
+        </li>`,
+            )
+            .join("");
+    return `
+      <div class="pp-chain" style="margin-top:var(--space-2);padding:var(--space-2);background:var(--color-surface-alt, #f7f7f5);border-radius:6px">
+        <div class="pp-policy-cite" style="margin-bottom:var(--space-1)"><strong>Policy → Procedure → Function chain</strong> <span style="opacity:.7">(resolved from frontmatter; statuses live)</span></div>
+        <div class="pp-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)">
+          <div>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Policy</div>
+            <ul style="margin:0;padding-left:1em;list-style:none">${policiesHtml}</ul>
+          </div>
+          <div>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Procedure</div>
+            <ul style="margin:0;padding-left:1em;list-style:none">${proceduresHtml}</ul>
+          </div>
+          <div>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Function</div>
+            <ul style="margin:0;padding-left:1em;list-style:none">${functionsHtml}</ul>
+          </div>
+        </div>
+      </div>`;
   }
 
   function renderNarrativeBlock(dim) {

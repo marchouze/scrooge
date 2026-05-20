@@ -14,9 +14,12 @@
 //
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
+import { resolve as resolvePath } from "node:path";
+
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 
+import { type DimensionPolicyChain, resolveDimensionChain } from "./products-policy-chain";
 import { NPA_DIMENSIONS, type NpaDimension, resolveProduct } from "./products-view";
 
 // ---------------------------------------------------------------------------
@@ -35,6 +38,14 @@ export interface DimensionMetadata {
   citationChain: readonly string[];
   /** Helps the page render onboarding implications next to conduct / AML / legal. */
   surfacesClientOnboarding: boolean;
+  /**
+   * Anchor policies for this dimension — file basenames under
+   * `/Policies/`. The policy-chain resolver expands these into the full
+   * Policy → Procedure → Function chain at request time. Empty array =
+   * no policy chain rendered (used for the engineering-only
+   * `operational-readiness` substrate dimension).
+   */
+  policyHints: readonly string[];
 }
 
 export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
@@ -48,6 +59,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Pricing model not validated at appropriate Tier; OR sensitivity profile exceeds RAS § B-market envelope at expected book size; OR the product introduces a non-modellable risk factor (FRTB NMRF) without an interim treatment.",
     citationChain: ["BCBS-d352", "BCBS-d457", "RAS § B-market", "ORG-PR-19"],
     surfacesClientOnboarding: false,
+    policyHints: ["market-risk-policy-v1.md"],
   },
   {
     dimension: "credit-risk",
@@ -59,6 +71,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Pre-deal credit engine returns withhold at expected book size; OR breach of pre-deal envelope; OR counterparty class lacks rating coverage and no interim treatment.",
     citationChain: ["BCBS-Large-Exposures", "Banks-Act-94-1990", "ORG-PR-09", "ORG-PR-16"],
     surfacesClientOnboarding: false,
+    policyHints: ["credit-risk-policy-v1.md", "counterparty-onboarding-policy-v1.md"],
   },
   {
     dimension: "liquidity-funding",
@@ -70,6 +83,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Net LCR or NSFR effect breaches RAS § B-liquidity envelope at expected book size; OR FTP contribution unattributable under the FTP methodology; OR HQLA classification ambiguous.",
     citationChain: ["BCBS-d295", "BCBS-d335", "ORG-PR-06", "ORG-PR-07", "ORG-PR-08"],
     surfacesClientOnboarding: false,
+    policyHints: ["liquidity-risk-management-policy-v1.md", "irrbb-policy-v1.md"],
   },
   {
     dimension: "operational-risk",
@@ -81,6 +95,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Critical operational dependency without backup or rehearsed recovery; OR resilience gap unmitigated at launch; OR process-readiness checklist incomplete.",
     citationChain: ["BCBS-OpRisk-2021", "BCBS-OpResilience-2021", "ORG-PR-17", "ORG-PR-18"],
     surfacesClientOnboarding: false,
+    policyHints: ["operational-risk-policy-v1.md", "operational-resilience-policy-v1.md"],
   },
   {
     dimension: "operational-readiness",
@@ -92,6 +107,11 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Any required substrate component is not yet built; OR reconciliation harness does not cover the product's lifecycle events; OR settlement path absent and no simulator coverage.",
     citationChain: ["CLAUDE.md-P1", "CLAUDE.md-P3", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
     surfacesClientOnboarding: false,
+    // Engineering substrate dimension — no governance policy anchors;
+    // chain rendering is skipped (the Operational Readiness story is
+    // covered by Tomas's procedures + the lifecycle-event journal block
+    // already on the page).
+    policyHints: [],
   },
   {
     dimension: "accounting",
@@ -103,6 +123,11 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Classification ambiguous between IFRS 9 categories; OR fair-value level cannot be determined from the pricing model; OR sub-ledger postings undefined for any lifecycle event.",
     citationChain: ["IFRS-9", "IFRS-13", "IAS-21", "ORG-AC-15"],
     surfacesClientOnboarding: false,
+    policyHints: [
+      "accounting-policies-ifrs-v1.md",
+      "hedge-accounting-policy-v1.md",
+      "ifrs9-ecl-provisioning-policy-v1.md",
+    ],
   },
   {
     dimension: "capital",
@@ -114,6 +139,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Estimated capital headroom breach at expected book size; OR RWA model uncalibrated for the product class; OR Pillar 2A add-on indicated and not provisioned.",
     citationChain: ["Banks-Act-Reg-39", "Basel-III-IV", "ORG-PR-02", "ORG-PR-03", "ORG-PR-05"],
     surfacesClientOnboarding: false,
+    policyHints: ["capital-management-policy-v1.md"],
   },
   {
     dimension: "conduct-suitability",
@@ -132,6 +158,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "ORG-CS3-001",
     ],
     surfacesClientOnboarding: true,
+    policyHints: ["conduct-of-business-tcf-policy-v1.md", "fais-compliance-policy-v1.md"],
   },
   {
     dimension: "aml-sanctions-pep",
@@ -143,6 +170,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "CDD pathway absent for any in-scope counterparty class; OR sanctions service does not extend to the new product's counterparty universe; OR transaction-monitoring rule set has no coverage for the new product's transaction shape.",
     citationChain: ["FIC-Act-38-2001", "UN-OFAC-EU-UK-HMT", "ORG-AML", "ORG-SAN"],
     surfacesClientOnboarding: true,
+    policyHints: ["aml-cft-policy-v1.md"],
   },
   {
     dimension: "model-risk",
@@ -154,6 +182,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Model not validated at appropriate Tier (Tier-1 fully validated; Tier-2 limited; Tier-3 challenger / shadow); OR Tier-classification disagreement between first line and Nadia unresolved.",
     citationChain: ["SR-11-7", "SS-1-23", "BCBS-CG-Principles", "RAS § B7"],
     surfacesClientOnboarding: false,
+    policyHints: ["model-risk-policy-v1.md"],
   },
   {
     dimension: "legal-documentation",
@@ -165,6 +194,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Master agreement absent for any in-scope counterparty class; OR ECTA execution path unverified; OR dispute-resolution procedure not in place pre-trade per Conduct Standard 3/2018 §6.",
     citationChain: ["ECTA-25-2002", "ISDA-Master", "GMRA", "GMSLA", "ORG-MK-06", "ORG-CS3-001"],
     surfacesClientOnboarding: true,
+    policyHints: ["document-execution-policy-v1.md"],
   },
   {
     dimension: "information-security",
@@ -176,6 +206,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Threat-model gate not closed; OR new external integration introduced without zero-trust pattern; OR HSM key custody not specified for any product-signing path.",
     citationChain: ["Joint-Standard-1-2024", "POPIA-s19-22", "CLAUDE.md-P4", "ORG-CY"],
     surfacesClientOnboarding: false,
+    policyHints: ["information-security-it-governance-policy-v1.md"],
   },
   {
     dimension: "privacy",
@@ -187,6 +218,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "POPIA classification missing for any personal-data field; OR cross-border transfer pathway not assessed against POPIA s.72.",
     citationChain: ["POPIA-4-2013", "SARB-Directive-3-2018", "ORG-PR-PRIV"],
     surfacesClientOnboarding: false,
+    policyHints: ["popia-privacy-policy-v1.md"],
   },
   {
     dimension: "tax",
@@ -198,6 +230,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "Tax classification ambiguous for any cashflow type; OR FATCA/CRS classification not determinable for any counterparty class targeted; OR transfer-pricing methodology absent for inter-entity flows.",
     citationChain: ["Income-Tax-Act", "VAT-Act", "STT-Act", "FATCA-IGA", "CRS"],
     surfacesClientOnboarding: false,
+    policyHints: ["tax-policy-v1.md"],
   },
 ];
 
@@ -304,6 +337,14 @@ export interface DimensionCard {
   } | null;
   /** Whether a narrative has been requested but not yet recorded. */
   narrativeRequested: boolean;
+  /**
+   * Policy → Procedure → Function chain applicable to this dimension,
+   * resolved at request time from `/Policies/*.md` + `/Procedures/**\/*.md`
+   * frontmatter. The dimension's `policyHints` anchor the chain; the
+   * resolver expands. Empty `policies` array = no governance-anchored
+   * chain for this dimension (e.g. operational-readiness substrate).
+   */
+  chain: DimensionPolicyChain;
 }
 
 export interface LifecycleEventJournalRow {
@@ -397,10 +438,12 @@ export function buildProductDetailView(
     }
   }
 
+  const repoRoot = resolvePath(import.meta.dir, "..", "..");
   const dimensions: DimensionCard[] = DIMENSION_METADATA.map((meta) => {
     const att = attestationFold.get(meta.dimension);
     const nar = narrativeFold.get(meta.dimension);
     const req = narrativeRequestFold.get(meta.dimension);
+    const chain = resolveDimensionChain({ repoRoot, policyHints: meta.policyHints });
     // If the latest recorded narrative is more recent than the latest request,
     // the "pending request" state is cleared.
     const narrativeRequested = req !== undefined && (!nar || nar.asOf < req.asOf);
@@ -430,6 +473,7 @@ export function buildProductDetailView(
           }
         : null,
       narrativeRequested,
+      chain,
     };
   });
 
