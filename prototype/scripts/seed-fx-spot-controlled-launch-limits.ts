@@ -193,10 +193,7 @@ function creditLimitLoadedAlreadyExists(args: {
 }): boolean {
   for (const e of eventStore.replay({ type: "CreditLimitLoaded" })) {
     const p = e.payload as Partial<CreditLimitLoadedPayload>;
-    if (
-      p.counterpartyId === args.counterpartyId &&
-      p.effectiveFrom === args.effectiveFrom
-    ) {
+    if (p.counterpartyId === args.counterpartyId && p.effectiveFrom === args.effectiveFrom) {
       return true;
     }
   }
