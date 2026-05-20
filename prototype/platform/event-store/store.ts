@@ -407,6 +407,21 @@ export class EventStore {
     return r.n;
   }
 
+  /**
+   * Highest assigned sequence in the store, or 0 when empty. Distinct from
+   * `count()`: gaps from rolled-back appends or replaced events mean
+   * `count() <= highWatermark()`. Bus-tick cursors and any "what's the
+   * sequence of the event I just appended" caller must use this — using
+   * `count()` undercounts whenever a gap exists and causes the post-append
+   * cursor to walk over stale events instead of the new one.
+   */
+  highWatermark(): number {
+    const r = this.db.prepare("SELECT MAX(sequence) AS m FROM events").get() as {
+      m: number | null;
+    };
+    return r.m ?? 0;
+  }
+
   // --------------------------------------------------------------------
   // D-EVENT-STORE-SCALING Slice 2 — snapshot substrate.
   //

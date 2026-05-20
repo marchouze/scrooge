@@ -15,6 +15,11 @@
 //
 // Author: Atlas (A2.2)
 
+import { Database } from "bun:sqlite";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "bun:test";
 
 import { BANK_ZA_001 } from "../platform/core/types";
@@ -236,6 +241,65 @@ describe("LocalEventTriggerBus — tick dispatches once per (event, handler) pai
     const second = await bus.tick(first.nextCursor, new Date("2026-05-08T00:02:00Z"));
     expect(second.dispatches.length).toBe(0);
     expect(invocations).toBe(1);
+    store.close();
+  });
+
+  it("dispatches the just-appended event even when the store has sequence gaps (regression)", async () => {
+    // Regression: SQLite leaves sequence gaps from rolled-back appends
+    // and DELETE-after-INSERT, so `count() < max(sequence)`. The bus
+    // tick used to compute its walk-budget from `count()`, which
+    // truncated the walk before reaching the just-appended event —
+    // silently dropping the dispatch. Fix: bus.tick + post-append
+    // callers must use `highWatermark()` (max sequence), not `count()`.
+    const dir = mkdtempSync(join(tmpdir(), "bus-gap-"));
+    const dbPath = join(dir, "events.db");
+    const store = new EventStore(dbPath);
+
+    const calls: string[] = [];
+    const runner: BusRunner = async ({ agent, trigger }) => {
+      calls.push(`${agent}:${trigger}`);
+      return { ok: true };
+    };
+    const source = inMemoryBusSource({
+      handlers: [
+        {
+          agent: "Anya",
+          trigger: "projection-refresh",
+          subscribesTo: ["WorkstreamRegistered"],
+        },
+      ],
+    });
+    const bus = new LocalEventTriggerBus({ eventStore: store, runner, source });
+
+    // Seed with several events, then carve a gap by deleting the middle
+    // rows via a side-band connection. The deletes do not reset
+    // sqlite_sequence (AUTOINCREMENT is monotonic), so subsequent
+    // appends keep advancing — final layout: count() < highWatermark().
+    for (let i = 1; i <= 6; i++) {
+      appendWorkstream(store, {
+        workstreamId: `ws:gap-seed-${i}`,
+        asOf: `2026-05-08T00:00:0${i}Z`,
+      });
+    }
+    const sideband = new Database(dbPath);
+    sideband.exec("DELETE FROM events WHERE sequence IN (3, 4)");
+    sideband.close();
+
+    expect(store.count()).toBe(4);
+    expect(store.highWatermark()).toBe(6);
+
+    // Prod call pattern: capture cursor before append, then tick from
+    // cursor + 1 after appending.
+    const seqBefore = store.highWatermark();
+    appendWorkstream(store, {
+      workstreamId: "ws:gap-trigger",
+      asOf: "2026-05-08T00:00:99Z",
+    });
+
+    const result = await bus.tick(seqBefore + 1, new Date("2026-05-08T00:01:00Z"));
+    expect(result.dispatches.length).toBe(1);
+    expect(result.dispatches[0]?.handlerKey).toBe("anya:projection-refresh");
+    expect(calls).toEqual(["Anya:projection-refresh"]);
     store.close();
   });
 });
