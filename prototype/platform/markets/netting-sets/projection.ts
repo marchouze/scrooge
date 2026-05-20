@@ -171,10 +171,7 @@ export function getNettingSet(nettingSetId: string, asOf?: string): NettingSet |
  * currency, currency collapsed to assessment-event ccy); the array
  * shape preserves headroom for the cross-currency follow-on slice.
  */
-export function getNettingSetsByCounterparty(
-  counterpartyId: string,
-  asOf?: string,
-): NettingSet[] {
+export function getNettingSetsByCounterparty(counterpartyId: string, asOf?: string): NettingSet[] {
   const rows = foldAll(asOf);
   const out: NettingSet[] = [];
   for (const row of rows) {
