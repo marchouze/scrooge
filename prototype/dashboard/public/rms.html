@@ -14,6 +14,7 @@
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
     <div class="page-header"><h1 class="page-title">RMS Registers</h1></div>
     <div class="page-body">
+      <p id="rms-blurb" class="page-subtitle"></p>
       <div id="rms-tabs" class="tab-bar"></div>
       <div id="rms-table"></div>
     </div>
@@ -24,40 +25,133 @@
   <script>
     initShell({ title: "RMS Registers" });
     (async () => {
-      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
-      document.getElementById("rms-table").innerHTML = SC.renderSkeleton(6);
-      const data = await sf("/api/rms");
-      const REGISTERS = ["Decisions","Correspondence","Records","Documents","Feedback","Briefs","Workstreams"];
-      let activeReg = REGISTERS[0];
-      const tabsEl = document.getElementById("rms-tabs");
-      function getRows(reg) {
-        if (!data) return [];
-        const key = reg.toLowerCase();
-        return Array.isArray(data[key]) ? data[key] :
-               Array.isArray(data[reg]) ? data[reg] :
-               Array.isArray(data) ? data.filter(r=>(r.register||r.type||"").toLowerCase()===key) : [];
+      async function sf(u) {
+        try {
+          const r = await fetch(u, { headers: { Accept: "application/json" } });
+          return r.ok ? r.json() : null;
+        } catch {
+          return null;
+        }
       }
-      function render() {
-        const rows = getRows(activeReg);
+
+      // Per-register column choice. Each register's row shape is different;
+      // hand-picking columns keeps the table scannable instead of dumping
+      // every key. Missing keys gracefully render as "—".
+      const REGISTER_COLUMNS = {
+        "decisions": ["decisionId", "title", "forActor", "status", "requestedAt", "resolvedAt"],
+        "correspondence": ["recordId", "title", "registerKey", "status", "filedAt"],
+        "agent-runs": ["runId", "agentName", "agentPosition", "status", "startedAt", "completedAt"],
+        "document": ["documentHash", "title", "classification", "registeredAt"],
+        "feedback": ["feedbackId", "title", "subjectAgent", "filedAt"],
+        "briefs-dispatches": ["briefId", "title", "toAgentName", "priority", "status", "issuedAt"],
+        "workstreams": ["workstreamId", "title", "owner", "status", "registeredAt"],
+      };
+
+      const tableEl = document.getElementById("rms-table");
+      const tabsEl = document.getElementById("rms-tabs");
+      const blurbEl = document.getElementById("rms-blurb");
+
+      tableEl.innerHTML = SC.renderSkeleton(6);
+
+      const catalogue = await sf("/api/rms");
+      if (!catalogue || !Array.isArray(catalogue.catalogue)) {
+        tableEl.innerHTML = `<p>RMS catalogue unavailable.</p>`;
+        return;
+      }
+
+      // Counts in /api/rms are keyed by a camelCased form (briefsDispatches,
+      // agentRuns); look both forms up so the badge is right for either.
+      function lookupCount(key) {
+        const camel = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        return catalogue.counts?.[camel] ?? catalogue.counts?.[key] ?? null;
+      }
+      const REGISTERS = catalogue.catalogue.map((c) => ({
+        key: c.key,
+        title: c.title,
+        blurb: c.blurb || "",
+        count: lookupCount(c.key),
+      }));
+
+      let activeKey = REGISTERS[0]?.key;
+      const cache = new Map();
+
+      function fmtCell(value) {
+        if (value === null || value === undefined) return "—";
+        if (typeof value === "string") {
+          if (/^\d{4}-\d{2}-\d{2}T/.test(value)) return value.slice(0, 19).replace("T", " ") + "Z";
+          if (/^blake3:/.test(value)) return value.slice(0, 19) + "…";
+          return value;
+        }
+        if (typeof value === "object") {
+          if ("name" in value && "position" in value) return `${value.name} (${value.position})`;
+          return JSON.stringify(value);
+        }
+        return String(value);
+      }
+
+      function flatten(row, key) {
+        if (key === "owner" && row.owner) return fmtCell(row.owner);
+        if (key === "agentName" && row.agent?.name) return row.agent.name;
+        if (key === "agentPosition" && row.agent?.position) return row.agent.position;
+        if (key === "filedAt" && row.recordedAt) return fmtCell(row.recordedAt);
+        return fmtCell(row[key]);
+      }
+
+      function renderTabs() {
+        tabsEl.innerHTML = REGISTERS.map((r) => {
+          const badge = r.count !== null ? ` <span class="tab-count">(${r.count})</span>` : "";
+          return `<button class="tab-btn${r.key === activeKey ? " active" : ""}" data-k="${r.key}">${SC.esc(r.title)}${badge}</button>`;
+        }).join("");
+      }
+
+      async function getRows(key) {
+        if (cache.has(key)) return cache.get(key);
+        const res = await sf(`/api/rms/${encodeURIComponent(key)}`);
+        const rows = Array.isArray(res?.rows) ? res.rows : [];
+        cache.set(key, rows);
+        return rows;
+      }
+
+      async function render() {
+        const reg = REGISTERS.find((r) => r.key === activeKey);
+        blurbEl.textContent = reg?.blurb || "";
+        tableEl.innerHTML = SC.renderSkeleton(6);
+        const rows = await getRows(activeKey);
         if (rows.length === 0) {
-          SC.renderTable({ container: document.getElementById("rms-table"), headers:["—"], rows:[], emptyMessage:`No ${activeReg} records` });
+          SC.renderTable({
+            container: tableEl,
+            headers: ["—"],
+            rows: [],
+            emptyMessage: `No ${reg?.title || activeKey} records yet.`,
+          });
           return;
         }
-        const keys = [...new Set(rows.flatMap(r => Object.keys(r)))].slice(0,5);
+        const cols = REGISTER_COLUMNS[activeKey] || Object.keys(rows[0] || {}).slice(0, 6);
         SC.renderTable({
-          container: document.getElementById("rms-table"),
-          headers: keys,
-          rows: rows.map(r => ({
-            cells: keys.map(k => SC.esc(SC.fmt(r[k]))),
+          container: tableEl,
+          headers: cols,
+          rows: rows.map((r) => ({
+            cells: cols.map((c) => SC.esc(flatten(r, c))),
             data: r,
           })),
-          onRowClick: r => SC.openModal({ title: r.title||r.id||activeReg, body: SC.renderDefList(r) }),
-          emptyMessage: `No ${activeReg} records`,
+          onRowClick: (r) =>
+            SC.openModal({
+              title: r.title || r.decisionId || r.runId || r.briefId || r.recordId || reg?.title,
+              body: SC.renderDefList(r),
+            }),
+          emptyMessage: `No ${reg?.title || activeKey} records yet.`,
         });
       }
-      tabsEl.innerHTML = REGISTERS.map(r => `<button class="tab-btn${r===activeReg?" active":""}" data-r="${r}">${r}</button>`).join("");
-      tabsEl.addEventListener("click", e => { const b=e.target.closest(".tab-btn"); if(!b) return; activeReg=b.dataset.r; tabsEl.querySelectorAll(".tab-btn").forEach(x=>x.classList.toggle("active",x.dataset.r===activeReg)); render(); });
-      render();
+
+      renderTabs();
+      tabsEl.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".tab-btn");
+        if (!btn) return;
+        activeKey = btn.dataset.k;
+        renderTabs();
+        await render();
+      });
+      await render();
     })();
   </script>
 </body>
