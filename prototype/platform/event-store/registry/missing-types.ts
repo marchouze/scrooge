@@ -77,8 +77,11 @@ import {
 import {
   fxPositionRevaluedPayloadSchema,
   fxSettlementConfirmedPayloadSchema,
+  fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
+  missedExpectedReceiptPayloadSchema,
   settlementFailedPayloadSchema,
+  settlementFailureClassifiedPayloadSchema,
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
 import {
@@ -136,6 +139,10 @@ import {
   signatureRequestedPayloadSchema,
   taxClassificationPublishedPayloadSchema,
 } from "../event-types/ifrs-accounting-extended";
+import {
+  jurisdictionalOpinionRefreshedPayloadSchema,
+  legalDocumentationSignedPayloadSchema,
+} from "../event-types/legal-documentation";
 import {
   collateralUpdatedPayloadSchema,
   confirmationMatchedPayloadSchema,
@@ -618,6 +625,87 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "platform/event-store/event-types/fx-accounting.ts; CEO instruction 2026-05-19",
+  },
+  {
+    // PROC-OPS-SFBCP-01 (Devon — Chief Operating Officer, governance; PR
+    // #636) §2 — failure-classification event emitted by the
+    // settlement-monitor when the correspondent reports settlement
+    // failure on a previously instructed FX trade leg. The failureKind
+    // taxonomy ("one-leg-delivered" | "neither-delivered" |
+    // "operational-delay") drives downstream classification + response.
+    // Authority: Banks Act 94 Reg 39 (BCP procedures), BCBS d226
+    // (FX settlement risk supervisory guidance).
+    type: "FxSettlementFailed",
+    class: "markets",
+    payloadSchema: fxSettlementFailedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Devon", "Helena", "Imani", "Bea", "Mira", "Owen", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; Procedures/operations/settlement-failure-bcp.md (PR #636); Banks Act 94 Reg 39; BCBS d226",
+  },
+  {
+    // PROC-OPS-SFBCP-01 (Devon, PR #636) step 1 — emitted when the bank's
+    // pay-leg is confirmed delivered but the receive-leg has not landed
+    // by `cutoff + tolerance`. Structured trigger for Tomas's 15-minute
+    // failure-confirmation window: the moment exposure crosses from
+    // "pre-Herstatt" into "Herstatt-active" / one-leg-delivered.
+    type: "MissedExpectedReceipt",
+    class: "markets",
+    payloadSchema: missedExpectedReceiptPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Devon", "Helena", "Bea", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; Procedures/operations/settlement-failure-bcp.md (PR #636) step 1; BCBS d226 §3",
+  },
+  {
+    // PROC-OPS-SFBCP-01 (Devon, PR #636) §2 — emitted when Devon (or the
+    // agent on his behalf) signs off the classification of a settlement
+    // failure. classification taxonomy ("herstatt-active" | "mutual-fail"
+    // | "operational-delay") routes the downstream BCP response.
+    type: "SettlementFailureClassified",
+    class: "markets",
+    payloadSchema: settlementFailureClassifiedPayloadSchema,
+    issuer: "Devon",
+    subscribers: ["Tomas", "Helena", "Imani", "Bea", "Mira", "Owen", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; Procedures/operations/settlement-failure-bcp.md (PR #636) §2; ISDA 2002 Master Agreement §6",
+  },
+  {
+    // Emitted when a counterparty signs a master agreement (ISDA, GMRA,
+    // GMSLA, or fx-bilateral form). Authority: Imani G-9 decision (PR
+    // #637, 2026-05-20). The agreementType enum is the instance-side
+    // companion to `legalDocumentationSchema.masterAgreement` (the
+    // product-class-side enum in markets/products/types.ts).
+    type: "LegalDocumentationSigned",
+    class: "governance",
+    payloadSchema: legalDocumentationSignedPayloadSchema,
+    issuer: "Imani",
+    subscribers: ["Niko", "Owen", "Helena", "Saskia", "Rohan", "Vera"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/legal-documentation.ts; 2026-05-20_imani_g9-isda-vs-bilateral-fx-master-for-spot.md (PR #637)",
+  },
+  {
+    // Emitted when an annual jurisdictional netting opinion is refreshed
+    // (e.g. ISDA's South Africa opinion — Bowmans 2024-04-15 per Imani
+    // G-9). Consumed by the annual-refresh recon pipeline (Vera Wave-4
+    // backlog) to assert no enforceable-netting flag is stale > 12 months.
+    type: "JurisdictionalOpinionRefreshed",
+    class: "governance",
+    payloadSchema: jurisdictionalOpinionRefreshedPayloadSchema,
+    issuer: "Imani",
+    subscribers: ["Helena", "Owen", "Mira", "Vera"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/legal-documentation.ts; 2026-05-20_imani_g9-isda-vs-bilateral-fx-master-for-spot.md (PR #637) §5",
   },
   {
     // Emitted when a trade is cancelled post-booking. Triggers PR-FX-CANCEL:

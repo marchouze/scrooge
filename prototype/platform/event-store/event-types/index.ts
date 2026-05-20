@@ -309,6 +309,7 @@ import { ILAAP_TYPED_EVENT_TYPES } from "./ilaap";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES } from "./ird-accounting";
 import { KYC_TYPED_EVENT_TYPES } from "./kyc";
+import { LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES } from "./legal-documentation";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
 import { LIQUIDITY_TYPED_EVENT_TYPES } from "./liquidity";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
@@ -337,6 +338,7 @@ export const TYPED_EVENT_TYPES = [
   ...MODEL_RISK_TYPED_EVENT_TYPES,
   ...TRADING_TYPED_EVENT_TYPES,
   ...LEGAL_ENTITY_TYPED_EVENT_TYPES,
+  ...LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES,
   ...PRODUCT_TYPED_EVENT_TYPES,
   ...RMS_TYPED_EVENT_TYPES,
   ...ACCOUNTING_TYPED_EVENT_TYPES,
