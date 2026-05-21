@@ -15,12 +15,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import {
-  extractMidRate,
-  invertPair,
-  lookupQuoteWithInverse,
-  MarketDataStore,
-} from "./store";
+import { MarketDataStore, extractMidRate, invertPair, lookupQuoteWithInverse } from "./store";
 
 function freshStore(): MarketDataStore {
   return new MarketDataStore(":memory:");
@@ -199,11 +194,13 @@ describe("lookupQuoteWithInverse", () => {
     expect(primary?.rate).toBeCloseTo(1 / 20.5);
 
     // IPV secondary: exclude primary's source, still resolves via inverse.
+    if (primary === null) throw new Error("primary lookup must succeed for integration test");
+    const primarySource = primary.tick.source;
     const secondary = lookupQuoteWithInverse(store, "ZAR/EUR", {
-      excludeSource: primary?.tick.source,
+      excludeSource: primarySource,
     });
     expect(secondary?.sourceDirection).toBe("inverse");
-    expect(secondary?.tick.source).not.toBe(primary?.tick.source);
+    expect(secondary?.tick.source).not.toBe(primarySource);
     expect(secondary?.rate).toBeCloseTo(1 / 20.4);
     store.close();
   });

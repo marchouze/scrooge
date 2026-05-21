@@ -50,7 +50,7 @@ import {
   makeMtmRunCompleted,
 } from "../platform/event-store/event-types/mtm";
 import { EventStore } from "../platform/event-store/store";
-import { lookupQuoteWithInverse, MarketDataStore } from "../platform/market-data/store";
+import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
