@@ -31,7 +31,8 @@
         try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
       }
       const [state, glData] = await Promise.all([sf("/api/state"), sf("/api/gl/accounts")]);
-      const fin = state?.finance ?? state?.capitalMetrics ?? state ?? {};
+      const cap  = state?.capitalPositions ?? {};
+      const liq  = state?.liquidityMetrics ?? {};
 
       function pctStatus(val, threshold) {
         if (val == null || val === "—") return null;
@@ -42,9 +43,9 @@
         return "danger";
       }
 
-      const tier1 = fin.tier1CapitalRatio ?? fin.cet1Ratio ?? fin.tier1 ?? null;
-      const lcr   = fin.lcr ?? fin.lcrRatio ?? null;
-      const nsfr  = fin.nsfr ?? fin.nsfrRatio ?? null;
+      const tier1 = cap.cet1Ratio != null ? parseFloat((cap.cet1Ratio * 100).toFixed(2)) : null;
+      const lcr   = liq.lcr ?? null;
+      const nsfr  = liq.nsfr ?? null;
 
       const tiles = document.getElementById("fin-tiles");
       const mkTile = (label, val, threshold, href) => {

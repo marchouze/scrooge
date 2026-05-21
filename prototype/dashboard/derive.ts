@@ -32,6 +32,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
+import type { CapitalMetrics } from "../platform/projections/capital-metrics";
 import {
   type DecisionsRegister,
   buildDecisionsRegister,
@@ -180,6 +181,21 @@ export interface DeriveOpts {
    * omitted the dashboard state carries null (graceful build-phase default).
    */
   readonly ftp?: FtpDashboardSummary | null;
+  /**
+   * Capital position — pre-built from computeCapitalMetrics() against the
+   * event store. Optional: if omitted the dashboard state carries null.
+   */
+  readonly capitalPositions?: CapitalMetrics | null;
+  /**
+   * Liquidity metrics — LCR / NSFR ratios from ALM position snapshot.
+   * Optional: if omitted the dashboard state carries null.
+   */
+  readonly liquidityMetrics?: {
+    lcr: number | null;
+    nsfr: number | null;
+    lcrStatus: string;
+    nsfrStatus: string;
+  } | null;
 }
 
 export function defaultSourcePaths(repoRoot: string): SourcePaths {
@@ -1383,6 +1399,8 @@ export function deriveState(opts: DeriveOpts): DashboardState {
       lastUpdated: "2026-05-15T00:00:00.000Z",
     },
     ftp: opts.ftp ?? null,
+    capitalPositions: opts.capitalPositions ?? null,
+    liquidityMetrics: opts.liquidityMetrics ?? null,
   };
 }
 
