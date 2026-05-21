@@ -318,6 +318,189 @@ export function makeLexExceptionApproved(args: {
 }
 
 // ---------------------------------------------------------------------------
+// SicrTriggered — IFRS 9 §5.5.3 Significant-Increase-in-Credit-Risk memo
+//
+// Records the Stage-1 → Stage-2 transition for a counterparty under the
+// IFRS 9 ECL framework. The transition is *memorial* — Stage-2 widens the
+// ECL horizon from 12-month to lifetime for in-scope (amortised-cost /
+// FVOCI) instruments, but for FVTPL instruments (the bank's FX-spot book
+// per IFRS 9 §5.5.1 and the IFRS 9 ECL Provisioning Policy v1 §51) no GL
+// allowance is taken — fair value changes absorb credit risk. The event
+// therefore does not produce journal entries; it carries the supervisory
+// signal that a counterparty has crossed the SICR threshold and the
+// watchlist / monitoring uplift is required.
+//
+// Sources of trigger (per credit-risk-policy-v1 §165):
+//   - settlement-failure-neither-delivered — mutual fail on an FX-spot
+//     trade. Both legs still on the books; no cash has moved; no default
+//     event in the §5.5.1 sense, but the counterparty's operational /
+//     credit deterioration is now observable. Captured here as a SICR
+//     signal, not a GL movement.
+//   - settlement-failure-repeated — repeated operational delay or near-
+//     fail pattern over a configurable horizon (CRC review required).
+//   - external-rating-downgrade — ≥ 2-notch external-rating downgrade
+//     since initial recognition.
+//   - watchlist-placement — qualitative CRC placement on the credit
+//     watchlist independent of a quantitative trigger.
+//   - lex-utilisation-threshold — counterparty EAD ≥ 80% of LEX sub-limit.
+//   - manual — qualitative CRC override.
+//
+// Triggering pattern:
+//   Posting rules in `platform/accounting/posting-rules/` stay pure (they
+//   produce `SubLedgerLeg[]` for GL events only). The `SicrTriggered`
+//   event is emitted by a separate subscriber at
+//   `platform/credit-risk/sicr-subscriber.ts` that watches for the
+//   trigger event types above and appends a `SicrTriggered` event to the
+//   store. Idempotency is enforced via deterministic `event_id` derived
+//   from `(triggerEventId, partyId)`.
+//
+// Recovery condition:
+//   IFRS 9 §B5.5.7 contemplates reversal of a SICR classification once
+//   credit risk no longer reflects a significant increase. The Bank's
+//   credit-risk-policy-v1 §168 specifies the watchlist exit conditions;
+//   the `recoveryCondition` field carries the prose description of what
+//   needs to happen to revert to Stage-1. The reversal itself is a
+//   separate event (SicrCleared — future slice; out of scope here).
+//
+// Citations:
+//   IFRS 9 §5.5.1 (FVTPL out of ECL scope);
+//   IFRS 9 §5.5.3 (SICR Stage 1 → Stage 2 transition);
+//   IFRS 9 §5.5.13 (credit-impaired financial asset, Stage-3 measurement);
+//   IFRS 9 §B5.5.7 (reversal of SICR classification);
+//   Policies/credit-risk-policy-v1.md §165 (SICR triggers) + §166
+//     (Stage 3 default triggers);
+//   Policies/ifrs9-ecl-provisioning-policy-v1.md §51 (FVTPL out of scope);
+//   PRs #608/#609/#616/#641 (FX-spot posting-rule pack);
+//   Kai PR #645 (end-to-end FX-spot scenario that surfaced this gap);
+//   Helena (Chief Risk Officer, governance) FX-spot-only market risk
+//     scope review (2026-05-20);
+//   Principles/1-events-are-truth.md;
+//   Principles/2-single-graph-discipline.md.
+//
+// Author: Bea (Accounting & financial reporting engineer, engineering).
+// ---------------------------------------------------------------------------
+
+export const ifrs9StageSchema = z.enum(["stage-1", "stage-2", "stage-3"]);
+export type Ifrs9Stage = z.infer<typeof ifrs9StageSchema>;
+
+export const sicrTriggerKindSchema = z.enum([
+  "settlement-failure-neither-delivered",
+  "settlement-failure-repeated",
+  "external-rating-downgrade",
+  "watchlist-placement",
+  "lex-utilisation-threshold",
+  "manual",
+]);
+export type SicrTriggerKind = z.infer<typeof sicrTriggerKindSchema>;
+
+export const sicrTriggeredPayloadSchema = z
+  .object({
+    /** Party register ID of the counterparty entering SICR. */
+    partyId: z.string().min(1),
+
+    /** The kind of trigger that fired the SICR transition. */
+    triggerKind: sicrTriggerKindSchema,
+
+    /**
+     * `event_id` of the source event that triggered this SICR (e.g.
+     * the `FxSettlementFailed{neither-delivered}` event), or `null` when
+     * the trigger is qualitative (manual CRC override / watchlist
+     * placement with no single source event).
+     */
+    triggerEventId: z.string().min(1).nullable(),
+
+    /** ISO 8601 timestamp when the SICR transition was recognised. */
+    triggerDate: z.string().min(1),
+
+    /** Prior IFRS-9 stage. Typical: "stage-1". */
+    previousStage: ifrs9StageSchema,
+
+    /** New IFRS-9 stage. Must differ from previousStage. */
+    newStage: ifrs9StageSchema,
+
+    /**
+     * One or more citations / `event_id`s supporting the SICR trigger
+     * (e.g. the chain of settlement-failures or rating-downgrade events
+     * the CRC weighed). Minimum 1 to enforce auditability.
+     */
+    evidence: z.array(z.string().min(1)).min(1),
+
+    /**
+     * Prose description of the conditions required to revert to Stage-1
+     * (IFRS 9 §B5.5.7; credit-risk-policy-v1 §168). Example:
+     * "20 consecutive successful settlements without operational fail,
+     * combined with no external rating downgrade for 6 months."
+     */
+    recoveryCondition: z.string().min(1),
+
+    /**
+     * Optional credit-impaired flag (IFRS 9 §5.5.13). When `true`, the
+     * counterparty has also crossed the §5.5.13 default threshold and is
+     * a Stage-3 candidate. When `triggerKind` is `manual` the CRC may
+     * use this flag to short-circuit the staging staircase.
+     */
+    creditImpaired: z.boolean().optional(),
+
+    /**
+     * Optional watchlist assignment marker — the credit-watchlist tier
+     * the counterparty is placed onto (e.g. "watch-tier-1"). Absent
+     * when the SICR signal does not yet warrant watchlist enrolment.
+     */
+    watchlistTier: z.string().min(1).optional(),
+  })
+  .superRefine((p, ctx) => {
+    if (p.previousStage === p.newStage) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `SicrTriggered requires previousStage (${p.previousStage}) !== newStage (${p.newStage}). A no-op staging transition is not a SICR event.`,
+        path: ["newStage"],
+      });
+    }
+    // Forward-direction only — Stage downgrade reversals (Stage-2 → Stage-1)
+    // are handled by a separate `SicrCleared` event (future slice). This
+    // refine guards against accidentally back-dating a reversal through
+    // SicrTriggered.
+    const order: Record<Ifrs9Stage, number> = {
+      "stage-1": 1,
+      "stage-2": 2,
+      "stage-3": 3,
+    };
+    if (order[p.newStage] <= order[p.previousStage]) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `SicrTriggered must move stages forward (e.g. stage-1 → stage-2). Reversals use SicrCleared. Got ${p.previousStage} → ${p.newStage}.`,
+        path: ["newStage"],
+      });
+    }
+  });
+
+export type SicrTriggeredPayload = z.infer<typeof sicrTriggeredPayloadSchema>;
+
+export function makeSicrTriggered(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SicrTriggeredPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "SicrTriggered requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SicrTriggered",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: sicrTriggeredPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES — registry of event types
 // in this module.
 //
@@ -333,6 +516,7 @@ export const COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES = [
   "CcrEadComputed",
   "LexUtilisationComputed",
   "LexExceptionApproved",
+  "SicrTriggered",
 ] as const;
 
 export type CounterpartyCreditRiskEventType =
