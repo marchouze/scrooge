@@ -136,7 +136,7 @@
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-controlled-launch.md`](by-policy/product-controlled-launch.md) (PROC-MK-NPA-CL-01 — stage 5 limit administration + daily monitoring) | Saskia | **POPULATED** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-post-implementation-review.md`](by-policy/product-post-implementation-review.md) (PROC-MK-NPA-PIR-01 — stage 6 PIR convening) | Saskia + Devon | **POPULATED** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-retirement-migration.md`](by-policy/product-retirement-migration.md) (PROC-MK-NPA-RET-01 — stage 8 open-position migration) | Saskia + Imani + Tomas | **POPULATED** |
-| New Product Approval | [`npa-gate.md`](by-policy/npa-gate.md) (PROC-NPA-GATE-01 — stage-4 gate; four-party opinion cycle; `NewProductApproved` gate event; controlled-launch configuration; handoff to stage 5) | Saskia · Helena · Camille · Zara | **POPULATED** |
+| New Product Approval | [`npa-gate.md`](by-policy/npa-gate.md) (PROC-NPA-GATE-01 — stage-4 gate; four-party attestation cycle; `ProductApproved` gate event; controlled-launch configuration; handoff to stage 5 via `ProductLaunched`) | Saskia · Helena · Camille · Zara | **POPULATED** |
 
 ## Markets — OTC Derivative Provider (FMA / FSCA)
 

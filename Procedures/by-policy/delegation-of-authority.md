@@ -70,7 +70,7 @@ This procedure is triggered in four circumstances:
   - `EscalationRequired { decision_type, current_actor, current_level, required_level, value, blocking_event_id }` — authority-limit breach trigger.
   - `EscalationResolved { escalation_event_id, decision, actor, level, timestamp }` — resolution of an escalation.
 - **Reconciliation invariants:**
-  - All `CeoDecision`, `PolicyApproved`, `LargeContractExecuted`, and `NewProductApproved` events must carry an `authority_level` field matching the DOA matrix in force at the time of the event. Vera runs this check quarterly; any event missing the field or carrying a mis-matched level is a finding.
+  - All `Decision`, `PolicyApproved`, `LargeContractExecuted`, and `ProductApproved` events must carry the authority-level signal (`authority_level` field for `Decision` / `PolicyApproved` / `LargeContractExecuted`; the `approvedBy` tag for `ProductApproved` per `prototype/platform/event-store/event-types/product.ts`) matching the DOA matrix in force at the time of the event. Vera runs this check quarterly; any event missing the field or carrying a mis-matched level is a finding.
   - Every `EscalationRequired` event must have a downstream `EscalationResolved` event within the applicable SLA. Open escalations older than 5 business days are reported to the Board.
   - The `DelegationOfAuthorityApproved` event must exist before any Level 1–4 authority exercise is recognised as valid. The first event is the inaugural Board approval at licence-day.
   - Agent-runtime Level 4 decisions must not exceed the financial threshold in the DOA configuration. The authority-validation layer enforces this synchronously; any bypass is a critical finding.

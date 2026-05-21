@@ -88,7 +88,7 @@ The procedure is the HOW for policy §5; it does not author dimensional substanc
 ## 8. Manual steps
 
 - Each dimension's substantive analysis is performed by the dimension owner under their own sub-policy. Where the sub-policy's analysis is human-led (e.g. Senna's threat-model gate, Imani's master-agreement review), the human-led step is captured per Principle 2 with citation to the sub-policy.
-- Saskia's decision to redesign-and-re-enter or abandon on a `withheld` dimension is human discretion captured as `ProductProposalWithdrawn` or a stage-2 re-entry event.
+- Saskia's decision to redesign-and-re-enter or abandon on a `withheld` dimension is human discretion captured as `ProductWithheld { reason: "proposal-withdrawn:<rationale>" }` (canonical typed family per D-PRODUCT-CONSTRUCTION-SUBSTRATE) or a stage-2 re-entry handled by re-firing `PROC-MK-NPA-DD-01`.
 - Build-phase: dimensional substrates marked PLANNED in §5 are not yet built; attestations are produced from spec and recorded by Scrooge-coordinated runs until the substrate lands. This is the substrate gap tracked as a roadmap item.
 
 ## 9. Failure modes and escalation
