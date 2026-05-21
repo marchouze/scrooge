@@ -53,4 +53,5 @@ export const MarketDataSources = {
   JSE_SENS: "jse-sens",
   NEWS: "news",
   OPEN_ER_API: "open-er-api",
+  TWELVE_DATA: "twelve-data",
 } as const;
