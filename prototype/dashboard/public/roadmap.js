@@ -88,12 +88,40 @@
           text: "RMS Phase 3 — RecordFiled wiring + /documents route + projection-parity recon (deliverables events-first)",
           ref: "PR #466",
         },
+        {
+          text: "RMS Phase 4 complete — archive move done; Owner Inbox / Team Inbox retired; parseOwnerInbox removed; registers sole canonical",
+          ref: "D-RMS-PHASE-4 PR #523",
+        },
+        {
+          text: "KYC onboarding build sprint — event handlers, screening flows, onboarding lifecycle (D-KYC-ONBOARDING-BUILD)",
+          ref: "PRs #532–#536",
+        },
+        {
+          text: "Valuation + MTM substrate — EnvSim, MarketDataStore, SENS ingest, Valuation Policy, MTM engine, IPV tolerance, provenance recon",
+          ref: "PRs #576–#582",
+        },
+        {
+          text: "Regulation reader sprint — all 8 regulation JSON files rebuilt with verbatim text (Banks Act, FAIS, FIC, POPIA, JS2, RRB, Excon)",
+          ref: "PRs #586–#593",
+        },
+        {
+          text: "Market data page + Twelve Data live hourly feed — MarketDataStore browser UI + /time_series ingest",
+          ref: "PRs #686 #688",
+        },
+        {
+          text: "Cross-worktree shared event-DB sync — single canonical SQLite store; dispatch CLIs unified",
+          ref: "PR #704 D-CROSS-WORKTREE-EVENT-STORE-SYNC",
+        },
+        {
+          text: "Event-store append-only typed gate — SQL-DELETE prevention; Vera finding resolved",
+          ref: "PR #697",
+        },
+        {
+          text: "GL COA fix — duplicate ACC-3100-001/002 resolved; posting imbalance and blank account names fixed",
+          ref: "PR #707",
+        },
       ],
       inflight: [
-        {
-          text: "RMS Phase 4 cutover — pending one-agent-week soak, then archive Owner Inbox / Team Inbox + delete parseOwnerInbox",
-          ref: "D-RMS-PHASE-1, D-RMS-PHASE-4-ARCHIVE-SCOPE",
-        },
         {
           text: "Product-construction substrate gap closure — six items (pricing-model registration, RWA-delta engine, trade-confirmation generators)",
           ref: "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
@@ -164,6 +192,22 @@
         {
           text: "All 16 STUB procedures → POPULATED; 35 further procedures drafted across Batches G–K",
           ref: "PRs #407–#426",
+        },
+        {
+          text: "Market risk procedures — PROC-NPA-GATE-01 reconciled with Product* event family; PROC-MK-PLG-01 rehearsal READY-FOR-INTERNAL-TEST",
+          ref: "PRs #681 #683",
+        },
+        {
+          text: "D-OPRISK-ENGINEER-ROLE approved — Option B (subsume into existing roster); licence-day successor card filed",
+          ref: "PR #671 #672",
+        },
+        {
+          text: "Entity-identity unification — single canonical identifier for the bank entity; BANK-ZA-001 literal audit + remediation",
+          ref: "PRs #669 #679",
+        },
+        {
+          text: "Dispatch sync primitive — reviewer→decider gate; recon:dispatch-sync-integrity pipeline; D-DISPATCH-SYNC-PRIMITIVE approved",
+          ref: "D-DISPATCH-SYNC-PRIMITIVE",
         },
       ],
       inflight: [
@@ -236,6 +280,14 @@
         {
           text: "DCAM taxonomy complete — EDM Council three-layer architecture, 7 new product codes, party LEI field",
           ref: "PR #432",
+        },
+        {
+          text: "FX Spot product Policy → Procedure → Function chain — per-dimension attestations, Triggered-by/Emits, accounting card",
+          ref: "PR #684",
+        },
+        {
+          text: "3 Decision(requested) obligations surfaced as CEO decision cards — queued for approval",
+          ref: "PR #670",
         },
       ],
       inflight: [
@@ -312,13 +364,58 @@
           text: "First SARB return (BA-700 capital) — dry-run scenarios A + B + D",
           ref: "S8 Tier 1",
         },
+        {
+          text: "Trade booking UI + FX trade lifecycle — /trade-book.html manual booking; post-trade chain, T+2 settlement, cancellation filter",
+          ref: "PRs #549–#556 #570 #574 #575",
+        },
+        {
+          text: "FX posting rules + Bea autonomous GL subscriber — 4 memo rules; PR-FX-PRIN GL-significant; bea-gl-posting-engine live",
+          ref: "PRs #608 #609 #616 #668",
+        },
+        {
+          text: "Credit limit engine — full Reg 29 / LEX / BCBS SA-CCR chain; 17 events; SA-CCR v1; netting-set register; PROC-RISK-CLM-01",
+          ref: "PRs #611–#614 #617–#619 #622–#624",
+        },
+        {
+          text: "FX quoting convention (D-FX-QUOTING-CONVENTION) — schema + Zod refinement + rate inversion + MT300 field 36 + unrealised-P&L repair",
+          ref: "PRs #664 #675 #676 #677",
+        },
+        {
+          text: "D-BRC-INTERIM-MR-1-FX approved — CEO interim approval of Helena's MR-1-FX market risk limits",
+          ref: "PR #680",
+        },
+        {
+          text: "D-NPA-FX-SPOT-INTERNAL-TEST approved — FX Spot walked through PROC-NPA-GATE-01 for internal pre-licence test scope",
+          ref: "PRs #673 #674",
+        },
+        {
+          text: "MTM daily cadence — rohan:daily-mtm scheduled handler; stale-mark carry-forward; inverse-pair lookup fix",
+          ref: "PRs #685 #687 #691",
+        },
+        {
+          text: "Product Control P&L + FX-risk fix — MR-1-FX RAS schedule; realised-P&L on FxSettlementConfirmed; inverse-pair direction sanity-check",
+          ref: "PRs #692 #693 #694",
+        },
+        {
+          text: "Leverage ratio + liquidity-limit engine + ALM positions — LR-1 appetite line; LCR/NSFR breach detector; ALM-positions projection wired",
+          ref: "PRs #699 #700 #701",
+        },
+        {
+          text: "Finance page capital/liquidity projections — CET1 ~407%, LCR/NSFR, leverage tiles live on dashboard",
+          ref: "PR #709",
+        },
       ],
       inflight: [
         { text: "Markets franchise design proposal (Saskia)", ref: "WS-MARKETS-FRANCHISE" },
-        { text: "D-MARKETS-SCHEMA-FOUNDATION ongoing build — handler-callables sync" },
         { text: "Product-construction substrate slices 4+ (Atlas + Kai + Saskia)" },
-        { text: "ALM readiness (Ravi, autonomous run)", ref: "2026-05-09" },
-        { text: "Daily accounting readiness (Bea) + Liquidity snapshot (Eitan)" },
+        {
+          text: "Market risk procedures (WS-MARKET-RISK-PROCEDURES) — scenario Wave-2 build; BA-325 return; daily P&L + GL projection",
+          ref: "WS-MARKET-RISK-PROCEDURES",
+        },
+        {
+          text: "IPV breach recalibration — 4/6 pairs in breach post inverse-pair fix; Helena tolerance brief candidate",
+          ref: "PR #695",
+        },
       ],
       todo: [
         {
