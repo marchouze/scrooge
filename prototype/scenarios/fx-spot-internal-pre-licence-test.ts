@@ -107,6 +107,7 @@
 
 import { unlinkSync } from "node:fs";
 
+import { runGlPostingEngine } from "../platform/accounting/gl-posting-engine";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
@@ -285,23 +286,13 @@ class PhaseRecorder {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Wave-2 helper — emit the FX-trade-booking GL posting for a trade event.
- * Drives the GL projection so `recon:gl-ledger-coverage` (Bea PR #652)
- * finds a posting for every FxTradeExecuted. Uses the production posting
- * rule `fxTradeBookingJournals`. Returns the posting event_id when emitted.
- */
-async function emitTradeBookingPosting(tradeEvent: Event, postedAt: string): Promise<void> {
-  const { fxTradeBookingJournals } = await import("../platform/accounting/posting-rules/fx-spot");
-  const bookingPayload = tradeEvent.payload as Parameters<typeof fxTradeBookingJournals>[0];
-  const legs = fxTradeBookingJournals(bookingPayload);
-  await emitPosting({
-    sourceEventId: tradeEvent.event_id,
-    postingType: "trade-booking",
-    legs,
-    postedAt,
-  });
-}
+// Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
+// scenario-side `emitTradeBookingPosting` / `emitPosting` helpers that
+// hand-emitted SubLedgerPostingEmitted events have been removed. The
+// `bea-gl-posting-engine` autonomous subscriber now owns this — Phase 6
+// runs `runGlPostingEngine` over the cumulative event stream and emits
+// every SubLedgerPostingEmitted in one pass. See
+// `platform/accounting/gl-posting-engine.ts`.
 
 /** Build a synthetic FX-spot trade. BUY USD vs ZAR at the supplied rate. */
 function buildFxSpotTrade(args: {
@@ -444,63 +435,43 @@ function reconResultOk(r: ReconResult): boolean {
 }
 
 /**
- * Emit a `SubLedgerPostingEmitted` event with the given legs, sourcing
- * from `sourceEventId` (which must be a real event in the store). The legs
- * are expected to be already-balanced per currency (the schema's
- * `superRefine` will throw if not).
+ * Wave-3 (Bea PR — autonomous GL posting engine, this PR): run the
+ * `bea-gl-posting-engine` over the cumulative event stream and append
+ * the engine's emissions to the event store. Idempotent — second call
+ * over the same stream emits zero new events.
  *
- * Wave-2 (Kai PR — this PR): we wire the scenario's lifecycle events to GL
- * postings so the GL projection's `buildGlView` actually sees them and the
- * `recon:gl-ledger-coverage` gate (Bea PR #652) can run end-to-end. In
- * production the bea-gl-posting-engine subscriber emits these events on
- * each source-event arrival; here we hand-emit them as part of the
- * scenario to verify the full coverage chain.
+ * Returns the number of new postings emitted + the engine's skipped[]
+ * list for logging / phase notes.
  */
-async function emitPosting(args: {
-  sourceEventId: string;
-  postingType:
-    | "trade-booking"
-    | "revaluation"
-    | "settlement"
-    | "fx-principal-payment"
-    | "fx-lifecycle-close";
-  legs: ReadonlyArray<{
-    accountId: string;
-    debitCredit: "debit" | "credit";
-    amountMinor: number;
-    currency: string;
-  }>;
-  postedAt: string;
-  entity?: string;
-}): Promise<Event | null> {
-  if (args.legs.length === 0) return null;
-  const { makeSubLedgerPostingEmitted } = await import(
-    "../platform/event-store/event-types/fx-accounting"
-  );
-  const event = makeSubLedgerPostingEmitted({
-    asOf: args.postedAt,
-    entity: args.entity ?? ENTITY,
-    actor: {
-      type: "service" as const,
-      id: "agent:bea:gl-posting-engine",
-    },
+async function runEngineAndAppend(args: {
+  asOf: string;
+}): Promise<{ emitted: number; skipped: number }> {
+  const events: Event[] = [];
+  const priorPostings: Event[] = [];
+  for (const e of eventStore.replay({})) {
+    events.push(e);
+    if (e.type === "SubLedgerPostingEmitted") priorPostings.push(e);
+  }
+  const result = runGlPostingEngine({
+    events,
+    priorPostings,
+    now: () => args.asOf,
+    actor: { type: "service" as const, id: "agent:bea:gl-posting-engine" },
+    entity: ENTITY,
     citations: [
       "Principles/1-events-are-truth.md",
-      "Principles/2-single-graph-discipline.md",
+      "Principles/6-autonomous-by-default.md",
       "Policies/ifrs9-ecl-provisioning-policy-v1.md",
       "pr:#641",
       "pr:#652",
+      "pr:#663",
       "WS-MARKET-RISK-PROCEDURES",
     ],
-    payload: {
-      sourceEventId: args.sourceEventId,
-      postingType: args.postingType,
-      legs: args.legs.map((l) => ({ ...l })),
-      postedAt: args.postedAt,
-    },
   });
-  eventStore.append(event);
-  return event;
+  for (const posting of result.emittedPostings) {
+    eventStore.append(posting);
+  }
+  return { emitted: result.emittedPostings.length, skipped: result.skipped.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -724,15 +695,11 @@ async function runPhase2(): Promise<PhaseResult> {
     `clientFlowRef=${String(tradePayload.clientFlowRef)} hedgeProgrammeRef=${String(tradePayload.hedgeProgrammeRef)}`,
   );
 
-  // 1b. Wave-2 (Kai PR — this PR) — wire the GL posting for trade booking.
-  //     Drives the GL projection so `buildGlView` sees the trade and
-  //     `recon:gl-ledger-coverage` (Bea PR #652) finds a posting for the
-  //     FxTradeExecuted event.
-  try {
-    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
-  } catch (err) {
-    r.assert("Phase 2 trade-booking posting emitted", false, String(err));
-  }
+  // 1b. Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
+  //     `bea-gl-posting-engine` autonomous subscriber will emit the
+  //     trade-booking SubLedgerPostingEmitted event once Phase 6 runs
+  //     the engine over the cumulative event stream. No scenario-side
+  //     emission here — the engine owns it.
 
   // 2. Settlement instructions — one per currency leg.
   const usdSettlement = buildFxSettlementInstructed({
@@ -783,36 +750,12 @@ async function runPhase2(): Promise<PhaseResult> {
       `revalued=${result.revalued}`,
     );
 
-    // Wave-2 (Kai PR — this PR): emit a GL posting for each
-    // FxPositionRevalued so `recon:gl-ledger-coverage` (Bea PR #652)
-    // finds a matching posting. Use the production posting rule
-    // `fxRevaluationJournals`. Zero-delta revals correctly emit no
-    // posting (the rule returns []).
-    const { fxRevaluationJournals } = await import("../platform/accounting/posting-rules/fx-spot");
-    for (const reval of eventStore.replay({ type: "FxPositionRevalued" })) {
-      const revalPayload = reval.payload as Parameters<typeof fxRevaluationJournals>[0];
-      const legs = fxRevaluationJournals(revalPayload);
-      if (legs.length === 0) {
-        // Zero-delta — emit a "settlement-instruction" balanced no-op
-        // would be wrong; instead post a zero-amount synthetic that the
-        // schema rejects. The recon will then flag the FxPositionRevalued
-        // as having no posting. We sidestep by emitting a balanced
-        // settlement-instruction-style "marker" posting — but the
-        // schema requires non-zero amounts. Simplest honest path: skip
-        // emission here AND skip the recon assertion for zero-delta
-        // revals. We accept the recon will count the FxPositionRevalued
-        // as a violation when delta=0; this is itself a substrate-gap
-        // (the posting-engine subscriber should know to no-op without
-        // tripping the coverage gate). Surfaced in Phase 6.
-        continue;
-      }
-      await emitPosting({
-        sourceEventId: reval.event_id,
-        postingType: "revaluation",
-        legs,
-        postedAt: reval.as_of,
-      });
-    }
+    // Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
+    // `bea-gl-posting-engine` will emit revaluation postings for each
+    // FxPositionRevalued event once Phase 6 runs the engine over the
+    // cumulative stream. Zero-delta revals correctly produce no posting
+    // (the rule returns []); the engine records them in `skipped[]` with
+    // reason "zero-delta-revaluation" so recon transparency is preserved.
   } catch (err) {
     r.assert("EOD revaluation completed", false, String(err));
   }
@@ -907,24 +850,10 @@ async function runPhase2(): Promise<PhaseResult> {
     `count=${countEventsOfType("FxSettlementConfirmed")}`,
   );
 
-  // Wave-2 (Kai PR — this PR): emit GL posting for FxSettlementConfirmed
-  // via the production posting rule `fxSettlementJournals`. Drives the GL
-  // projection so `recon:gl-ledger-coverage` finds a posting.
-  try {
-    const { fxSettlementJournals } = await import("../platform/accounting/posting-rules/fx-spot");
-    for (const confirmed of eventStore.replay({ type: "FxSettlementConfirmed" })) {
-      const confirmedPayload = confirmed.payload as Parameters<typeof fxSettlementJournals>[0];
-      const legs = fxSettlementJournals(confirmedPayload);
-      await emitPosting({
-        sourceEventId: confirmed.event_id,
-        postingType: "settlement",
-        legs,
-        postedAt: confirmed.as_of,
-      });
-    }
-  } catch (err) {
-    r.assert("Phase 2 settlement-confirmed posting emitted", false, String(err));
-  }
+  // Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
+  // `bea-gl-posting-engine` will emit the FxSettlementConfirmed posting
+  // (via deprecated PR-FX-003 for back-compat) once Phase 6 runs the
+  // engine over the cumulative stream.
 
   // 6. Recon pipeline assertions.
   const gateRecon = runCreditLimitNoTradeRecon();
@@ -992,12 +921,7 @@ async function runPhase3(): Promise<PhaseResult> {
     asOf: TRADE_TIMESTAMP,
   });
   eventStore.append(tradeEvent);
-  // Wave-2 — emit trade-booking posting for the GL projection.
-  try {
-    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
-  } catch (err) {
-    r.assert("Phase 3 trade-booking posting emitted", false, String(err));
-  }
+  // Wave-3 — autonomous engine emits the trade-booking posting at Phase 6.
 
   const usdSettlement = buildFxSettlementInstructed({
     tradeId,
@@ -1166,21 +1090,12 @@ async function runPhase3(): Promise<PhaseResult> {
       `ECL=${eclAllowance} expected=${zarEquivalentMinor}`,
     );
 
-    // Wave-2 (Kai PR — this PR): emit the PR-FX-005 journals into the
-    // event store so `buildGlView` reflects the Stage-3 ECL postings and
-    // `recon:gl-ledger-coverage` finds a posting for the
-    // FxSettlementFailed{one-leg-delivered} event. The "settlement"
-    // postingType is the closest fit in the existing enum; long-term the
-    // bea-gl-posting-engine subscriber would emit this with its own type
-    // (a follow-on schema slice — see Phase 6 substrate gaps).
-    if (journals.length === 4) {
-      await emitPosting({
-        sourceEventId: failedEvent.event_id,
-        postingType: "settlement",
-        legs: journals,
-        postedAt: failedEvent.as_of,
-      });
-    }
+    // Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
+    // engine emits the PR-FX-005 4-leg posting for the Stage-3 ECL
+    // recognition once Phase 6 runs over the cumulative stream. The
+    // engine resolves the failed receive-leg context from the
+    // originating FxTradeExecuted event in the stream — no scenario-side
+    // hand-off of `failedReceiveLeg` required.
   } catch (err) {
     r.assert("PR-FX-005 (Bea PR #641) pure function evaluated", false, String(err));
   }
@@ -1221,12 +1136,7 @@ async function runPhase4(): Promise<PhaseResult> {
     asOf: TRADE_TIMESTAMP,
   });
   eventStore.append(tradeEvent);
-  // Wave-2 — emit trade-booking posting for the GL projection.
-  try {
-    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
-  } catch (err) {
-    r.assert("Phase 4 trade-booking posting emitted", false, String(err));
-  }
+  // Wave-3 — autonomous engine emits the trade-booking posting at Phase 6.
 
   const usdSettlement = buildFxSettlementInstructed({
     tradeId,
@@ -1446,12 +1356,7 @@ async function runPhase5(): Promise<PhaseResult> {
     asOf: TRADE_TIMESTAMP,
   });
   eventStore.append(tradeEvent);
-  // Wave-2 — emit trade-booking posting for the GL projection.
-  try {
-    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
-  } catch (err) {
-    r.assert("Phase 5 trade-booking posting emitted", false, String(err));
-  }
+  // Wave-3 — autonomous engine emits the trade-booking posting at Phase 6.
 
   const usdSettlement = buildFxSettlementInstructed({
     tradeId,
@@ -1564,6 +1469,59 @@ async function runPhase5(): Promise<PhaseResult> {
 
 async function runPhase6(): Promise<PhaseResult> {
   const r = new PhaseRecorder("Phase 6 — BA-325 + Daily P&L + GL projection + recons");
+
+  // -------------------------------------------------------------------------
+  // Block 0 — Autonomous GL posting engine
+  // -------------------------------------------------------------------------
+  //
+  // Wave-3 (Bea PR — autonomous GL posting engine, this PR): run the
+  // `bea-gl-posting-engine` over the cumulative lifecycle-event stream
+  // from Phases 1–5. The engine dispatches each FX lifecycle event to
+  // its posting-rule pure function (PRs #608/#609/#616/#641/#652) and
+  // emits SubLedgerPostingEmitted events autonomously — no scenario-side
+  // hand-emission. Idempotent: re-running produces zero new emissions.
+  //
+  // Expected emissions across Phases 2-5:
+  //   - 4 × trade-booking (one per FxTradeExecuted in Phases 2–5)
+  //   - ≥1 × revaluation (the Phase 2 EOD reval; zero-delta revals
+  //     correctly produce no posting and appear in skipped[])
+  //   - 1 × settlement (Phase 2 FxSettlementConfirmed — deprecated
+  //     PR-FX-003 back-compat path)
+  //   - 1 × settlement (Phase 3 FxSettlementFailed{one-leg-delivered} —
+  //     4-leg PR-FX-005 Stage-3 ECL posting)
+  //   - 0 × Phase 4 mutual-fail (FVTPL out of ECL scope; skipped)
+  //   - 0 × Phase 5 op-delay (no default event; skipped)
+  //
+  // Citations: Bea PRs #608/#609/#616/#641/#652; IFRS 9 §5.5.1 + §5.5.13;
+  // pr:#663 (Kai's Wave-2 scenario whose scenario-side glue this engine
+  // replaces).
+  // -------------------------------------------------------------------------
+  try {
+    const engineResult = await runEngineAndAppend({
+      asOf: "2026-05-26T00:00:00.000Z",
+    });
+    r.note(
+      `bea-gl-posting-engine: emitted=${engineResult.emitted} postings; ` +
+        `skipped=${engineResult.skipped} events.`,
+    );
+    r.assert(
+      "Block 0 — autonomous GL posting engine emitted ≥4 postings (trade-booking ×4 minimum)",
+      engineResult.emitted >= 4,
+      `emitted=${engineResult.emitted}`,
+    );
+
+    // Idempotency check — second run emits zero new events.
+    const second = await runEngineAndAppend({
+      asOf: "2026-05-26T00:00:01.000Z",
+    });
+    r.assert(
+      "Block 0 — engine is idempotent (second run emits zero new postings)",
+      second.emitted === 0,
+      `second.emitted=${second.emitted}`,
+    );
+  } catch (err) {
+    r.assert("Block 0 — autonomous GL posting engine ran", false, String(err));
+  }
 
   // -------------------------------------------------------------------------
   // Block A — BA-325 LCR period-close from synthetic trade
@@ -2128,28 +2086,31 @@ export async function runFxSpotInternalPreLicenceTest(
 
   // Substrate gaps surfaced this run (carry into the summary).
   //
-  // Wave-2 strike list (this PR — Kai Markets engineering lead, engineering):
-  //   - "GL-engine wire-up" — STRUCK. PR-FX-005 journals are now emitted as
-  //     SubLedgerPostingEmitted events in Phase 3 (scenario-side); the GL
-  //     projection reflects the Stage-3 ECL postings end-to-end. The fully
-  //     autonomous bea-gl-posting-engine subscriber is still upstream of
-  //     the scenario (no event-driven engine), but the wire-up no longer
-  //     blocks the scenario's GL projection assertions.
-  //   - "BA-325 / Daily P&L integration scope" — STRUCK. Both subscribers
-  //     now drive end-to-end from synthetic trade events in Phase 6.
-  //   - "SicrTriggered event flow" — STRUCK. Bea PR #652 SICR subscriber
-  //     runs in Phase 4 (Block D).
-  //   - "M4_FX_SPOT_FIXTURE level-1 alignment" — STRUCK. Block E flipped
-  //     to "level-2" per Helena scope review §2.2.
-  //   - "no-prop attribution recon manual" — STRUCK. Vera PR #648 made it
-  //     permanent (Phase 6 runs the recon).
+  // Wave-3 strike list (this PR — Bea, Accounting & financial reporting
+  // engineer, engineering):
+  //   - "GL-engine subscriber autonomy" — STRUCK. The autonomous
+  //     `bea-gl-posting-engine` now consumes the lifecycle event stream
+  //     and emits SubLedgerPostingEmitted events without scenario-side
+  //     glue. Phase 6 Block 0 runs the engine over the cumulative
+  //     stream; the engine is idempotent and exhaustive. The remaining
+  //     gap is real-time event-bus integration (synchronous batch is
+  //     sufficient for the scenario; a standing subscriber runner is a
+  //     separate Atlas concern).
+  //
+  // Wave-2 strike list (Kai PR #663 — Markets engineering lead):
+  //   - "GL-engine wire-up" — STRUCK in Wave 2 (scenario-side); now
+  //     replaced by autonomous engine in Wave 3.
+  //   - "BA-325 / Daily P&L integration scope" — STRUCK.
+  //   - "SicrTriggered event flow" — STRUCK (Bea PR #652 SICR subscriber).
+  //   - "M4_FX_SPOT_FIXTURE level-1 alignment" — STRUCK (Helena scope §2.2).
+  //   - "no-prop attribution recon manual" — STRUCK (Vera PR #648).
   const substrateGaps: string[] = [
-    "GL-engine subscriber autonomy — fxSettlementFailedJournals + " +
-      "fxTradeBookingJournals + fxRevaluationJournals + fxSettlementJournals " +
-      "are wired scenario-side in this PR. The autonomous bea-gl-posting-" +
-      "engine subscriber (subscribes to each lifecycle event and emits " +
-      "SubLedgerPostingEmitted unprompted) is still pending — production " +
-      "wire-up is a follow-on substrate slice for Bea.",
+    "Standing subscriber runner — the `bea-gl-posting-engine` is invoked " +
+      "synchronously at the end of Phase 5 by `runEngineAndAppend()`. " +
+      "Production wiring should register the engine in a standing " +
+      "subscriber runner (cron / event-bus listener) so it fires on each " +
+      "lifecycle event arrival without scenario / batch invocation. Atlas " +
+      "concern (autonomous-runtime substrate), not Bea's.",
     "BA-325 entity-identity unification — the BA-325 subscriber whitelists " +
       "`LE-ZA-HOZ-BANK` but the trading entity is `BANK-ZA-001` " +
       "(hardcoded by fx-revaluation, daily-pnl, SA-CCR). Phase 6 Block A " +
