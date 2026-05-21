@@ -172,6 +172,21 @@ export {
   type RenderBa700Options,
 } from "./ba-700-render";
 
+// Basel III leverage ratio (BCBS §147–§165) — separate primitive composed
+// into BA 700 when the caller supplies an exposure-measure decomposition.
+export {
+  BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
+  BUILD_PHASE_LEVERAGE_BASELINE_EXPOSURE_MINOR,
+  BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
+  LEVERAGE_RATIO_BANK_ENTITIES,
+  type LeverageExposureDecomposition,
+  type LeverageExposureSection,
+  type LeverageRatioGeneratorInput,
+  LeverageRatioGeneratorError,
+  type LeverageRatioOutput,
+  generateLeverageRatio,
+} from "./ba-700-leverage-ratio";
+
 // ---------------------------------------------------------------------------
 // Slice 5 — BA 350 (market risk), BA 600 (operational risk), XML render
 // layer.

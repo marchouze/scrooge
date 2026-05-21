@@ -43,6 +43,7 @@ import type {
 } from "./ba-700-capital";
 import { BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS, generateBa700Capital } from "./ba-700-capital";
 import type { Ba700Output, BufferRequirements } from "./ba-700-capital";
+import type { LeverageExposureDecomposition } from "./ba-700-leverage-ratio";
 
 // ---------------------------------------------------------------------------
 // Input contract for the events-first entry point.
@@ -97,6 +98,11 @@ export interface Ba700FromEventsInput {
   readonly rwa: RwaDecomposition;
   /** Buffer requirements; defaults to `BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS`. */
   readonly bufferRequirements?: BufferRequirements;
+  /**
+   * Optional Basel III leverage-ratio exposure-measure decomposition
+   * (per BCBS §147–§165). Forwarded to the pure generator unchanged.
+   */
+  readonly leverageExposureMeasure?: LeverageExposureDecomposition;
 }
 
 // ---------------------------------------------------------------------------
@@ -251,6 +257,9 @@ export function generateBa700CapitalFromEvents(
     deductions: input.deductions,
     rwa: input.rwa,
     bufferRequirements: input.bufferRequirements ?? BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
+    ...(input.leverageExposureMeasure
+      ? { leverageExposureMeasure: input.leverageExposureMeasure }
+      : {}),
     // No trialBalanceSnapshotEventId — capital stock came from primary events.
     // Provenance chain: SubLedgerPostingEmitted / CapitalContributionRecorded
     //   → foldCapitalAccountBalances → generateBa700Capital.

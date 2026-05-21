@@ -42,6 +42,7 @@ import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
 import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
 import { getClimateRiskMetric } from "../../platform/projections/climate-risk-projection";
+import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -133,6 +134,16 @@ const APPETITE_LINES: readonly AppetiteLine[] = [
     tier: "tier-1",
     summary:
       "Operate above PA min + Pillar 2A + CCB + 1.5pp; trigger at PA min + 0.75pp; escalate at PA min + 0.25pp.",
+    measurementOwner: "Bea (eng) → Camille (CFO) joint with Helena (CRO)",
+  },
+  {
+    id: "appetite:capital:leverage-ratio",
+    label: "Basel III leverage ratio (Tier-1 / total exposure)",
+    rasSection: "RAS §B3",
+    category: "capital",
+    tier: "tier-1",
+    summary:
+      "Non-risk-weighted Tier-1 / total exposure measure per BCBS §147–§165 + RRTB Reg 38. Regulatory minimum 3%; proposed appetite thresholds green ≥4.5% / amber 4.0-4.5% / red 3.5-4.0% / critical <3.5% (Marc pending — Decision(requested) D-RAS-LEVERAGE-RATIO-THRESHOLDS).",
     measurementOwner: "Bea (eng) → Camille (CFO) joint with Helena (CRO)",
   },
   {
@@ -256,6 +267,7 @@ function statusForLine(
   line: AppetiteLine,
   capitalMetrics?: ReturnType<typeof computeCapitalMetrics>,
   climateMetric?: ReturnType<typeof getClimateRiskMetric>,
+  leverageMetrics?: ReturnType<typeof computeLeverageRatioMetrics>,
 ): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
@@ -281,6 +293,22 @@ function statusForLine(
       line,
       status: capitalMetrics.status,
       note: capitalMetrics.note,
+    };
+  }
+
+  // appetite:capital:leverage-ratio — measured by the Basel III leverage-
+  // ratio projection. Build-phase posture (CLAUDE.md): no live positions ⇒
+  // exposure = 0 ⇒ ratio = Infinity ⇒ green (compliant by convention; the
+  // regulator-floor compliance flag also reports `true`). Lights up
+  // amber/red when the periodic SA-CCR + commitment projections start
+  // dropping live exposure values into the store.
+  // Authority: D-RAS (2026-05-06), D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12),
+  //   Banks Act §70, RRTB Reg 38, BCBS Basel III §147–§165.
+  if (line.id === "appetite:capital:leverage-ratio" && leverageMetrics !== undefined) {
+    return {
+      line,
+      status: leverageMetrics.status,
+      note: leverageMetrics.note,
     };
   }
 
@@ -387,8 +415,15 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK; PA GN 1/2024; PROC-RISK-CR-01.
   const climateMetric = getClimateRiskMetric(eventStore);
 
+  // Compute Basel III leverage-ratio metric (Helena + Rohan projection — closes
+  // the appetite:capital:leverage-ratio unmeasured gap). Build-phase posture:
+  // exposure = 0 against Tier-1 R300m envelope ⇒ ratio = Infinity ⇒ green.
+  // Authority: D-RAS, D-MARKETS-CAPITAL-TIME-SHAPE, Banks Act §70,
+  //   RRTB Reg 38, BCBS Basel III §147–§165.
+  const leverageMetrics = computeLeverageRatioMetrics(eventStore, asOfIso);
+
   const lineStates = APPETITE_LINES.map((line) =>
-    statusForLine(line, capitalMetrics, climateMetric),
+    statusForLine(line, capitalMetrics, climateMetric, leverageMetrics),
   );
   const measuredCount = lineStates.filter(
     (s) => s.status === "green" || s.status === "amber" || s.status === "red",
