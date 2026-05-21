@@ -15,9 +15,8 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { newEventId } from "../../core/types";
-import { makeFxTradeExecuted } from "../../markets/cdm/fx";
 import type { Event } from "../../event-store/types";
+import { makeFxTradeExecuted } from "../../markets/cdm/fx";
 import { getLimitUtilisations, rebuildLimitUtilisation } from "./limit-utilisation";
 
 // ---------------------------------------------------------------------------
@@ -95,12 +94,12 @@ describe("LimitUtilisationProjection — placeholder-zero bug fix", () => {
     const b3 = rows.find((r) => r.cluster === "B3");
     expect(b3).toBeDefined();
     // legs[0].notional.amountMinor = 1_000_000_00 ÷ 100 = 1_000_000
-    expect(b3!.currentExposure).toBe(1_000_000);
+    expect(b3?.currentExposure).toBe(1_000_000);
     // No schedule → utilisationPct=0, limitValue=0, ragStatus=green
-    expect(b3!.utilisationPct).toBe(0);
-    expect(b3!.limitValue).toBe(0);
-    expect(b3!.ragStatus).toBe("green");
-    expect(b3!.limitName).toContain("no schedule published");
+    expect(b3?.utilisationPct).toBe(0);
+    expect(b3?.limitValue).toBe(0);
+    expect(b3?.ragStatus).toBe("green");
+    expect(b3?.limitName).toContain("no schedule published");
   });
 
   it("B1.currentExposure = 100_000 (10% of notional) after 1 FxTradeExecuted with ZAR 1m notional, even when no schedule is published", () => {
@@ -113,10 +112,10 @@ describe("LimitUtilisationProjection — placeholder-zero bug fix", () => {
     const b1 = rows.find((r) => r.cluster === "B1");
     expect(b1).toBeDefined();
     // 10% of 1_000_000 = 100_000
-    expect(b1!.currentExposure).toBe(100_000);
-    expect(b1!.utilisationPct).toBe(0);
-    expect(b1!.limitValue).toBe(0);
-    expect(b1!.ragStatus).toBe("green");
+    expect(b1?.currentExposure).toBe(100_000);
+    expect(b1?.utilisationPct).toBe(0);
+    expect(b1?.limitValue).toBe(0);
+    expect(b1?.ragStatus).toBe("green");
   });
 
   it("clusters with no trade events report currentExposure=0 when no schedule is published", () => {
@@ -129,7 +128,7 @@ describe("LimitUtilisationProjection — placeholder-zero bug fix", () => {
     for (const cluster of ["B2", "B4", "B5"] as const) {
       const row = rows.find((r) => r.cluster === cluster);
       expect(row).toBeDefined();
-      expect(row!.currentExposure).toBe(0);
+      expect(row?.currentExposure).toBe(0);
     }
   });
 
