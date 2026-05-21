@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Senna (CISO, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Joint Standard 2/2024: §6 (cyber incident response)"
   - "POPIA Act 4 of 2013: s22 (security compromise notification)"

@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "FAIS Act 37/2002: General Code of Conduct r.3A (conflict of interest management)"
   - "FSR Act 9/2017: s57 (conduct standards)"

@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Iris (Information Officer, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - POPIA 4 of 2013
   - Joint Standard 2 of 2024 (PA/FSCA)

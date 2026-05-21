@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Owen (Company Secretary, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - King IV Principle 14
   - Banks Act 94 of 1990

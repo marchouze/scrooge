@@ -31,14 +31,27 @@ Every `Policies/*.md` document must carry the following YAML frontmatter fields:
 policy-id: <kebab-case-policy-id>           # e.g. liquidity-risk-management-policy
 title: <Human-readable title>                # e.g. Liquidity Risk Management Policy v1
 version: "<n>"                               # e.g. "1"
-status: IN FORCE | DRAFT | SUPERSEDED       # lifecycle status
+status: IN FORCE | DRAFT | ACTIVE | SUPERSEDED  # lifecycle status
 owner: <Name (Role, seat)>                   # e.g. Helena (Chief Risk Officer, governance)
-effective-from: "YYYY-MM-DD"                 # ISO date
+effective-from: "YYYY-MM-DD"                 # ISO date the policy takes effect
+next-review: "YYYY-MM-DD"                    # ISO date the next scheduled review is due
 citations:                                   # one or more regulatory or decision citations
   - <citation 1>
   - D-POLICY-DOCUMENT-HOME                  # always include the authorising decision
 ---
 ```
+
+### `next-review` — mandatory review-cadence field
+
+Every policy carries an explicit `next-review` date so review cadence is a typed property of the policy itself, not a sidecar tracker. Authority: `D-POLICY-NEXT-REVIEW-CONVENTION` (CoSec — Owen — 2026-05-21; recorded via CEO session-delegation).
+
+Default cadences (override only with documented rationale in the body):
+
+- **`status: IN FORCE`** — `next-review = effective-from + 12 months`.
+- **`status: DRAFT`** or **`status: ACTIVE`** (pre-IN FORCE working state) — `next-review = date + 6 months` (tighter cadence while the policy beds in).
+- **`status: SUPERSEDED`** — `next-review` is retained as the historical scheduled date; superseded policies are exempt from past-due enforcement.
+
+Recon enforcement: `recon:policy-next-review` (CI gate) asserts (a) every `Policies/*.md` has a `next-review` field, (b) the value parses as ISO date, and (c) raises a Vera finding when an IN FORCE policy's `next-review` is in the past relative to `clock.now()`. Past-due IN FORCE policies are `fail`-severity; past-due DRAFT / ACTIVE policies are `warn`-severity.
 
 ## Event binding
 

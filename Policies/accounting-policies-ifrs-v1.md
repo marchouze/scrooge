@@ -5,6 +5,7 @@ version: "1.1"
 status: DRAFT
 owner: Camille (CFO, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Banks Act 94/1990: s90 (accounting records)"
   - "IAS 1: Presentation of Financial Statements"

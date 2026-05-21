@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Thandiwe (Chief Audit Executive, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - IIA IPPF Standards (2024)
   - BCBS 223 (Internal Audit of Banks)

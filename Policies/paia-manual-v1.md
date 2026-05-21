@@ -4,6 +4,7 @@ title: Promotion of Access to Information Act Manual
 version: 1
 author: Iris (Information Officer, governance)
 date: 2026-05-14
+next-review: "2026-11-14"
 status: draft
 citations:
   - PAIA-2-2000-S51

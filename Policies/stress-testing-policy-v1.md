@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Helena (Chief Risk Officer, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Banks Act 94 of 1990: s73 (risk management)"
   - "Regulations Relating to Banks 2012: reg.39(4) (ICAAP)"

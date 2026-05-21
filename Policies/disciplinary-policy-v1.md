@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Sade (AgentOps, governance)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - Labour Relations Act 66 of 1995 Schedule 8 Code of Good Practice — Dismissal
   - Labour Relations Act 66 of 1995 ss.185-197

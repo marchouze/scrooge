@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Rashida (CISO, governance)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - ORG-CY-12
   - ORG-CY-13

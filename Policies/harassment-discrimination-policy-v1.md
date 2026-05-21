@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Sade (AgentOps, governance)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - Employment Equity Act 55 of 1998
   - Code of Good Practice on Prevention and Elimination of Harassment GN R.206 of 2022

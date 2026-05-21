@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: "2026-05-13"
+next-review: "2027-05-13"
 citations:
   - Currency and Exchanges Act 9 of 1933
   - Exchange Control Regulations 1961 (as amended)

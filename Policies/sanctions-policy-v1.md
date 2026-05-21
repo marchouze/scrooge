@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Zara (Chief Compliance Officer, governance — acting MLRO + FIC Compliance Officer interim)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - FIC Act 38 of 2001 ss.26B, 28A
   - POCDATARA 33 of 2004

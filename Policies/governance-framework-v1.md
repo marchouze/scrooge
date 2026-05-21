@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Owen (Company Secretary, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Companies Act 71/2008: s66-76 (board duties)"
   - "Banks Act 94/1990: s60-69 (management and control)"

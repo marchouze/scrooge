@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - Protected Disclosures Act 26 of 2000
   - Prevention and Combating of Corrupt Activities Act 12 of 2004 s.34

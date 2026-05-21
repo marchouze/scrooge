@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Helena (Chief Risk Officer, governance) + Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - BCBS D368 (April 2016, updated 2022) — Standards for Interest Rate Risk in the Banking Book
   - Basel III capital framework — Pillar 2 ICAAP capital add-on for IRRBB

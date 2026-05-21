@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Owen (Company Secretary, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - PA D7/2022 (Fit and Proper Requirements)
   - Banks Act 94 of 1990

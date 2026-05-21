@@ -5,6 +5,7 @@ version: 1.0.0
 status: ACTIVE
 owner: Owen Atlas (Company Secretary) + Helena (Chief Risk Officer) + Vera (Internal Audit Engineer)
 effective-from: 2026-05-17
+next-review: "2026-11-17"
 citations:
   - "BCBS Corporate Governance Principles for Banks (2015) — Principles 6–8"
   - "Banks Act 94 of 1990 s.60 (risk management)"
