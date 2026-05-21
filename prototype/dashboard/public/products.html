@@ -55,7 +55,14 @@
     <div class="page-body">
       <div class="pp-product-picker" id="pp-picker"></div>
       <div id="pp-header" class="pp-product-header"></div>
-      <div id="pp-journal" style="margin-bottom:var(--space-6)"></div>
+      <div id="pp-product-chain" style="margin-bottom:var(--space-6)"></div>
+      <!--
+        #pp-journal is retained for back-compat with older products.js
+        scripts that may still reference it; the live renderer now embeds
+        the worked-journal-entries table inside the accounting dimension
+        card and leaves this slot empty.
+      -->
+      <div id="pp-journal"></div>
       <div id="pp-sections"></div>
     </div>
   </main>

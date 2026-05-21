@@ -454,3 +454,157 @@ export function resolveDimensionChain(args: {
 
   return { policies, procedures, functions };
 }
+
+// ---------------------------------------------------------------------------
+// Product-level resolver — same chain shape, scoped to one product.
+// Inputs:
+//   - `policyHints`: union of policyHints across the 14 NPA dimensions (every
+//     dimension's anchor policy is "relevant" by virtue of the product touching
+//     that dimension).
+//   - `productTokens`: lower-case tokens that identify the product in
+//     procedure filenames / system-capability strings (e.g. ["fx", "fx-spot"]).
+//   - `productLifecycleEvents`: lifecycle event names emitted by the product
+//     (used to widen the procedure match: a procedure referencing the event
+//     by name in its system-capability or title is product-relevant).
+//   - `declaredFunctions`: functions named directly on the product (CDM
+//     primitive + extension modules, and posting-rule modules for the
+//     lifecycle event family). These are added to the function list with
+//     a synthetic `fromProcedure` of "product:declared".
+// ---------------------------------------------------------------------------
+
+export interface ProductDeclaredFunction {
+  name: string;
+  status: ChainItemStatus;
+  source: string;
+}
+
+export function resolveProductChain(args: {
+  repoRoot: string;
+  policyHints: readonly string[];
+  productTokens: readonly string[];
+  productLifecycleEvents: readonly string[];
+  declaredFunctions: readonly ProductDeclaredFunction[];
+}): DimensionPolicyChain {
+  const { repoRoot, policyHints, productTokens, productLifecycleEvents, declaredFunctions } = args;
+  _indexedRepoRoot = repoRoot;
+  const policyIdx = indexPolicies(repoRoot);
+  const procedureIdx = indexProcedures(repoRoot);
+
+  // 1. Anchor policies: union of hints across dimensions, dedup'd.
+  const policies: PolicyRef[] = [];
+  const seen = new Set<string>();
+  for (const hint of policyHints) {
+    const p = policyIdx.get(hint);
+    if (!p || seen.has(p.filename)) continue;
+    seen.add(p.filename);
+    policies.push({
+      filename: p.filename,
+      title: p.title,
+      owner: p.owner,
+      status: p.status,
+      source: "hint",
+    });
+  }
+  const anchorEntries = policies
+    .map((p) => policyIdx.get(p.filename))
+    .filter((p): p is PolicyEntry => p !== undefined);
+
+  // 2. Procedures — must cite an anchor policy AND be product-relevant.
+  // Product-relevance = filename/path/system-capability/title contains any
+  // productToken OR system-capability/title references any lifecycle event
+  // from the product's family OR system-capability mentions a declared
+  // function module.
+  const declaredFnNames = new Set(declaredFunctions.map((f) => f.name.toLowerCase()));
+  const productTokensLower = productTokens.map((t) => t.toLowerCase()).filter((t) => t.length > 0);
+  const lifecycleEventsLower = productLifecycleEvents.map((e) => e.toLowerCase());
+
+  function isProductRelevant(proc: ProcedureEntry): boolean {
+    const haystack =
+      `${proc.filename} ${proc.path} ${proc.title} ${proc.systemCapabilityRaw}`.toLowerCase();
+    for (const t of productTokensLower) {
+      if (t.length >= 2 && haystack.includes(t)) return true;
+    }
+    for (const e of lifecycleEventsLower) {
+      if (haystack.includes(e)) return true;
+    }
+    for (const fn of declaredFnNames) {
+      if (haystack.includes(fn)) return true;
+    }
+    return false;
+  }
+
+  // Fragment-level match — split the procedure's policy-cited raw on the
+  // multi-policy separators commonly used in frontmatter ("·", ",", ";")
+  // and require the policy to match at least one fragment. Stricter than
+  // the dimension-level whole-string fuzzy match, which can collide on
+  // weak token overlaps (e.g. "rate" + "risk") across unrelated policies.
+  const fragmentMatchesPolicy = (citedRaw: string, p: PolicyEntry): boolean => {
+    const fragments = citedRaw
+      .split(/[·,;]\s*/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    if (fragments.length === 0) return false;
+    for (const frag of fragments) {
+      if (citedMatchesPolicy(frag, p)) return true;
+    }
+    return false;
+  };
+
+  const procedures: ProcedureRef[] = [];
+  const seenProc = new Set<string>();
+  for (const proc of procedureIdx) {
+    if (seenProc.has(proc.path)) continue;
+    if (!isProductRelevant(proc)) continue;
+    const matched = anchorEntries
+      .filter((p) => fragmentMatchesPolicy(proc.policyCitedRaw, p))
+      .map((p) => p.filename);
+    if (matched.length === 0) continue;
+    seenProc.add(proc.path);
+    procedures.push({
+      filename: proc.filename,
+      path: proc.path,
+      title: proc.title,
+      owner: proc.owner,
+      status: proc.status,
+      policiesCited: matched,
+      systemCapabilityRaw: proc.systemCapabilityRaw,
+    });
+  }
+
+  // 3. Functions: declared on the product first (CDM modules + posting
+  // rules), then functions parsed from system-capability of matched
+  // procedures. Dedup by name.
+  const functions: FunctionRef[] = [];
+  const seenFn = new Set<string>();
+  for (const df of declaredFunctions) {
+    const key = df.name.toLowerCase();
+    if (seenFn.has(key)) continue;
+    seenFn.add(key);
+    functions.push({ name: df.name, status: df.status, fromProcedure: df.source });
+  }
+  for (const proc of procedures) {
+    for (const parsed of parseSystemCapability(proc.systemCapabilityRaw)) {
+      const key = parsed.name.toLowerCase();
+      if (seenFn.has(key)) continue;
+      seenFn.add(key);
+      functions.push({
+        name: parsed.name,
+        status: parsed.status,
+        fromProcedure: proc.filename,
+      });
+    }
+  }
+
+  // Drop policies that have no procedures citing them AND aren't reachable
+  // through the product — keeps the section honest about what's actually in
+  // play for this product, not the universe of dimension hints.
+  const citedPolicyFilenames = new Set<string>();
+  for (const proc of procedures) for (const c of proc.policiesCited) citedPolicyFilenames.add(c);
+  const filteredPolicies = policies.filter((p) => citedPolicyFilenames.has(p.filename));
+  // If filtering would empty the policy column entirely (no matching
+  // procedures yet), keep the full hint set so the user can see the
+  // governance frame even when no executable procedure exists.
+  const finalPolicies = filteredPolicies.length > 0 ? filteredPolicies : policies;
+
+  return { policies: finalPolicies, procedures, functions };
+}

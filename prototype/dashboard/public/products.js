@@ -94,6 +94,8 @@
 
   function clearDetail() {
     document.getElementById("pp-header").innerHTML = "";
+    const pc = document.getElementById("pp-product-chain");
+    if (pc) pc.innerHTML = "";
     document.getElementById("pp-journal").innerHTML = "";
     document.getElementById("pp-sections").innerHTML = "";
     CURRENT_PRODUCT_ID = null;
@@ -113,7 +115,11 @@
       return;
     }
     renderHeader(data);
-    renderJournalEntries(data);
+    renderProductChain(data);
+    // Worked-journal-entry table is now embedded inside the accounting
+    // dimension card (see renderJournalTableInline). The top-level
+    // #pp-journal slot stays empty.
+    clearJournalSlot();
     renderDimensions(data);
   }
 
@@ -138,15 +144,19 @@
     `;
   }
 
-  function renderJournalEntries(data) {
+  function clearJournalSlot() {
     const el = document.getElementById("pp-journal");
-    if (!data.journalEntries || data.journalEntries.length === 0) {
-      el.innerHTML = `
-        <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Worked journal entries</h3>
-        <p class="pp-policy-cite">No lifecycle events declared on this product yet.</p>`;
-      return;
+    if (el) el.innerHTML = "";
+  }
+
+  // Renders the worked-journal-entries table as an HTML fragment for
+  // inline inclusion within the accounting dimension card. Returns "" if
+  // there is no lifecycle event family to report on.
+  function renderJournalTableInline(journalEntries) {
+    if (!journalEntries || journalEntries.length === 0) {
+      return `<p class="pp-policy-cite"><em>No lifecycle events declared on this product yet.</em></p>`;
     }
-    const rows = data.journalEntries
+    const rows = journalEntries
       .map((row) => {
         if (row.status === "present" && row.rule) {
           return `<tr>
@@ -164,27 +174,51 @@
           </tr>`;
       })
       .join("");
-    el.innerHTML = `
-      <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Worked journal entries per lifecycle event</h3>
-      <p class="pp-policy-cite">Bea (Accounting & financial reporting engineer) posting-rule registry. Missing rows are substrate gaps.</p>
-      <table class="pp-table">
-        <thead>
-          <tr><th>Lifecycle event</th><th>Posting rule</th><th>Dr / Cr legs</th><th>Module</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `;
+    return `
+      <div style="margin-top:var(--space-3)">
+        <div class="pp-policy-cite" style="margin-bottom:var(--space-1)"><strong>Worked journal entries per lifecycle event</strong></div>
+        <p class="pp-policy-cite" style="margin:0 0 var(--space-1)">Posting-rule registry — missing rows are substrate gaps.</p>
+        <table class="pp-table">
+          <thead>
+            <tr><th>Lifecycle event</th><th>Posting rule</th><th>Dr / Cr legs</th><th>Module</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }
 
   function renderDimensions(data) {
     const container = document.getElementById("pp-sections");
     container.innerHTML = "";
     data.dimensions.forEach((dim, idx) => {
-      container.appendChild(renderDimensionSection(data.product, dim, idx + 1));
+      container.appendChild(
+        renderDimensionSection(data.product, dim, idx + 1, data.journalEntries),
+      );
     });
   }
 
-  function renderDimensionSection(product, dim, ordinal) {
+  // Render the per-section "Events" block: events that trigger action
+  // and events the dimension emits. Both lists are rendered as code chips.
+  function renderEventsBlock(dim) {
+    const triggeredHtml = (dim.triggeredBy || []).length
+      ? dim.triggeredBy.map((e) => `<code class="pp-chip">${esc(e)}</code>`).join(" ")
+      : '<span class="pp-policy-cite"><em>none</em></span>';
+    const emitsHtml = (dim.emits || []).length
+      ? dim.emits.map((e) => `<code class="pp-chip">${esc(e)}</code>`).join(" ")
+      : '<span class="pp-policy-cite"><em>none</em></span>';
+    return `
+      <div style="margin-top:var(--space-2);padding:var(--space-2);background:var(--color-surface-alt, #f7f7f5);border-radius:6px">
+        <div class="pp-policy-cite" style="margin-bottom:var(--space-1)"><strong>Events</strong> <span style="opacity:.7">(triggers and emissions for this dimension)</span></div>
+        <div class="pp-grid" style="display:grid;grid-template-columns:max-content 1fr;gap:var(--space-1) var(--space-2)">
+          <dt style="font:var(--text-caption);color:var(--color-text-secondary)">Triggered by</dt>
+          <dd style="margin:0">${triggeredHtml}</dd>
+          <dt style="font:var(--text-caption);color:var(--color-text-secondary)">Emits</dt>
+          <dd style="margin:0">${emitsHtml}</dd>
+        </div>
+      </div>`;
+  }
+
+  function renderDimensionSection(product, dim, ordinal, journalEntries) {
     const section = document.createElement("div");
     section.className = "pp-section";
     section.dataset.dimension = dim.dimension;
@@ -202,7 +236,12 @@
 
     const narrativeBlock = renderNarrativeBlock(dim);
     const programmaticBlock = renderProgrammaticBlock(product, dim);
-    const chainBlock = renderChainBlock(dim);
+    const eventsBlock = renderEventsBlock(dim);
+    // The accounting dimension owns the worked-journal-entries table —
+    // moved here from the top-level page so the journal sits next to its
+    // accountable owner (Bea) and IFRS classification fields.
+    const journalBlock =
+      dim.dimension === "accounting" ? renderJournalTableInline(journalEntries) : "";
 
     section.innerHTML = `
       <div class="pp-section-head" data-toggle="1">
@@ -218,7 +257,8 @@
           <dt>Fail rule</dt><dd>${esc(dim.failRule)}</dd>
           <dt>Citation chain</dt><dd>${chips(dim.citationChain)}</dd>
         </dl>
-        ${chainBlock}
+        ${eventsBlock}
+        ${journalBlock}
         ${onboardingBlock}
         ${narrativeBlock}
         ${programmaticBlock}
@@ -246,22 +286,34 @@
     return section;
   }
 
-  function renderChainBlock(dim) {
-    const chain = dim.chain;
+  // Product-level Policy → Procedure → Function section. Renders the
+  // chain scoped to this product only (replaces the previous per-dimension
+  // chain blocks).
+  function renderProductChain(data) {
+    const el = document.getElementById("pp-product-chain");
+    if (!el) return;
+    const chain = data.productChain;
     if (
       !chain ||
       (!chain.policies?.length && !chain.procedures?.length && !chain.functions?.length)
     ) {
-      return `
-        <div class="pp-chain" style="margin-top:var(--space-2);padding:var(--space-2);background:var(--color-surface-alt, #f7f7f5);border-radius:6px">
-          <div class="pp-policy-cite"><strong>Policy → Procedure → Function chain</strong></div>
-          <p class="pp-policy-cite" style="margin-top:var(--space-1)"><em>No governance-anchored chain for this dimension. Substrate-only readiness is covered by the worked-journal-entry section above.</em></p>
-        </div>`;
+      el.innerHTML = `
+        <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Policy → Procedure → Function</h3>
+        <p class="pp-policy-cite"><em>No governance-anchored chain has been resolved for this product yet.</em></p>`;
+      return;
     }
+    el.innerHTML = `
+      <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Policy → Procedure → Function</h3>
+      <p class="pp-policy-cite" style="margin:0 0 var(--space-2)">Scoped to <strong>${esc(data.product.name)}</strong>: policies relevant to this product, procedures that use it, and functions it actually invokes. Resolved from frontmatter; statuses live.</p>
+      ${chainGridHtml(chain)}
+    `;
+  }
+
+  function chainGridHtml(chain) {
     const policiesHtml = (chain.policies || [])
       .map(
         (p) => `
-        <li>
+        <li style="margin-bottom:var(--space-2)">
           <div><strong>${esc(p.title)}</strong> ${chainPill(p.status)}${p.source === "hint" ? "" : ' <span class="pp-policy-cite">(graph)</span>'}</div>
           <div class="pp-policy-cite">Owner: ${esc(p.owner || "—")} · <code>Policies/${esc(p.filename)}</code></div>
         </li>`,
@@ -269,11 +321,11 @@
       .join("");
     const proceduresHtml =
       (chain.procedures || []).length === 0
-        ? `<li><span class="pp-policy-cite"><em>No procedure links the anchor policies to executable steps yet.</em></span></li>`
+        ? `<li><span class="pp-policy-cite"><em>No procedure currently links the relevant policies to executable steps for this product.</em></span></li>`
         : chain.procedures
             .map(
               (p) => `
-        <li>
+        <li style="margin-bottom:var(--space-2)">
           <div><strong>${esc(p.title)}</strong> ${chainPill(p.status)}</div>
           <div class="pp-policy-cite">Owner: ${esc(p.owner || "—")} · <code>${esc(p.path)}</code></div>
           ${p.policiesCited?.length ? `<div class="pp-policy-cite">Cites: ${p.policiesCited.map((c) => `<code>${esc(c)}</code>`).join(" · ")}</div>` : ""}
@@ -282,30 +334,29 @@
             .join("");
     const functionsHtml =
       (chain.functions || []).length === 0
-        ? `<li><span class="pp-policy-cite"><em>No system-capability declared on the matched procedures.</em></span></li>`
+        ? `<li><span class="pp-policy-cite"><em>No functions declared or matched for this product.</em></span></li>`
         : chain.functions
             .map(
               (f) => `
-        <li>
+        <li style="margin-bottom:var(--space-2)">
           <div><code>${esc(f.name)}</code> ${chainPill(f.status)}</div>
           <div class="pp-policy-cite">from <code>${esc(f.fromProcedure)}</code></div>
         </li>`,
             )
             .join("");
     return `
-      <div class="pp-chain" style="margin-top:var(--space-2);padding:var(--space-2);background:var(--color-surface-alt, #f7f7f5);border-radius:6px">
-        <div class="pp-policy-cite" style="margin-bottom:var(--space-1)"><strong>Policy → Procedure → Function chain</strong> <span style="opacity:.7">(resolved from frontmatter; statuses live)</span></div>
-        <div class="pp-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)">
+      <div class="pp-chain" style="padding:var(--space-3);background:var(--color-surface-alt, #f7f7f5);border-radius:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-3)">
           <div>
-            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Policy</div>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)">Policy</div>
             <ul style="margin:0;padding-left:1em;list-style:none">${policiesHtml}</ul>
           </div>
           <div>
-            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Procedure</div>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)">Procedure</div>
             <ul style="margin:0;padding-left:1em;list-style:none">${proceduresHtml}</ul>
           </div>
           <div>
-            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Function</div>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)">Function</div>
             <ul style="margin:0;padding-left:1em;list-style:none">${functionsHtml}</ul>
           </div>
         </div>
