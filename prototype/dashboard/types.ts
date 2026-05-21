@@ -356,6 +356,12 @@ export interface DecisionDrillDown {
   popiaS71: boolean;
   /** Citations attached to the originating escalation envelope. */
   citations: readonly string[];
+  /**
+   * Rich row from the RMS decisions register (title, category, recommendation,
+   * source-document hashes, citations, options, deadline, requestedAt,
+   * resolution). Present whenever the decisionId appears in the register fold.
+   */
+  registerRow?: unknown;
 }
 
 /**

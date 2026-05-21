@@ -38,6 +38,54 @@ function fmtDate(iso) {
 }
 
 // ---------------------------------------------------------------------------
+// View state persistence — so a click into a decision detail + browser-back
+// restores the same filters / scroll position the user left from.
+
+const VIEW_STATE_KEY = "decisions-register-view-state";
+
+function saveViewState() {
+  try {
+    const state = {
+      status: getStatusFilter(),
+      query: getSearchText(),
+      authAll: $("authAll")?.checked ?? true,
+      selectedAuthorities: [...selectedAuthorities],
+      scrollY: window.scrollY,
+    };
+    sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify(state));
+  } catch {
+    // sessionStorage unavailable — non-fatal.
+  }
+}
+
+function loadViewState() {
+  try {
+    const raw = sessionStorage.getItem(VIEW_STATE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function applyViewState(state) {
+  if (!state) return;
+  const radio = document.querySelector(`input[name="statusFilter"][value="${state.status}"]`);
+  if (radio) radio.checked = true;
+  const search = $("searchInput");
+  if (search && typeof state.query === "string") search.value = state.query;
+  const authAll = $("authAll");
+  if (authAll && typeof state.authAll === "boolean") authAll.checked = state.authAll;
+  if (Array.isArray(state.selectedAuthorities)) {
+    const want = new Set(state.selectedAuthorities);
+    for (const cb of document.querySelectorAll("[data-auth]")) {
+      cb.checked = want.has(cb.dataset.auth);
+    }
+    selectedAuthorities = want;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Data model
 
 /** @type {{ open: any[], resolved: any[], asOf: string } | null} */
@@ -259,7 +307,16 @@ async function load() {
   try {
     registerData = await fetchRegister();
     buildAuthorityFilter(registerData.open, registerData.resolved);
+    // Restore filters from sessionStorage if the user is returning from a
+    // detail drill-down. Must run after buildAuthorityFilter created the
+    // authority checkboxes; scroll restoration runs after the table renders.
+    const saved = loadViewState();
+    applyViewState(saved);
     applyFilters();
+    if (saved && typeof saved.scrollY === "number") {
+      // Let the table layout settle before restoring scroll.
+      requestAnimationFrame(() => window.scrollTo(0, saved.scrollY));
+    }
   } catch (err) {
     const content = $("decisionsContent");
     if (content) {
@@ -277,6 +334,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   $("searchInput")?.addEventListener("input", applyFilters);
+
+  // Persist view state any time the user clicks into a decision detail,
+  // so the back-navigation can restore the same filters + scroll position.
+  $("decisionsContent")?.addEventListener("click", (e) => {
+    const a = e.target.closest("a.decision-link");
+    if (a) saveViewState();
+  });
 
   $("authAll")?.addEventListener("change", (e) => {
     const checkboxes = document.querySelectorAll("[data-auth]");
