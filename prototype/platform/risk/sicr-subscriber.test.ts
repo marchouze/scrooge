@@ -161,9 +161,7 @@ describe("deriveSicrTriggered — neither-delivered (canonical SICR path)", () =
     });
     const evt = result.event as Event;
     const p = evt.payload as Record<string, unknown>;
-    expect(p.recoveryCondition).toBe(
-      "Counterparty-specific override approved by CRC 2026-05-21.",
-    );
+    expect(p.recoveryCondition).toBe("Counterparty-specific override approved by CRC 2026-05-21.");
   });
 });
 

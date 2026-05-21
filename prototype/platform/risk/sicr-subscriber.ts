@@ -70,12 +70,12 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
-import type { FxSettlementFailedPayload } from "../event-store/event-types/fx-accounting";
-import type { Actor, Event } from "../event-store/types";
 import {
   type SicrTriggeredPayload,
   makeSicrTriggered,
 } from "../event-store/event-types/counterparty-credit-risk";
+import type { FxSettlementFailedPayload } from "../event-store/event-types/fx-accounting";
+import type { Actor, Event } from "../event-store/types";
 
 // ---------------------------------------------------------------------------
 // Deterministic event-id helpers
