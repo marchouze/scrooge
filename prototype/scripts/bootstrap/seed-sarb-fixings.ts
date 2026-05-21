@@ -58,13 +58,14 @@ import {
   makeFixtureSarbFixingSource,
   runSarbFixingIngestAll,
 } from "../../platform/market-data/sarb-fixing-ingester";
+import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 
 const FIXTURE_PATH = resolve(import.meta.dir, "../../seeds/sarb-fixing-rates.json");
 
 function main(): number {
   const eventDbPath = process.env.BANK_EVENT_DB ?? ".local/event.db";
-  const marketDbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+  const marketDbPath = resolveMarketDataDbPath().path;
 
   // ---- Load fixture --------------------------------------------------------
   let fixture: SarbFixingFixtureShape;

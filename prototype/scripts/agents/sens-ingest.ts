@@ -10,6 +10,7 @@
 //   bun run scripts/agents/sens-ingest.ts
 //   bun run sens:ingest
 
+import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import type { SensAnnouncementPayload } from "../../platform/market-data/types";
 import { parseAnnouncementsFromHtml } from "./sens-parse";
@@ -23,7 +24,7 @@ const SENS_URL = "https://www.sharenet.co.za/v3/sens.php";
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-const DB_PATH = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+const DB_PATH = resolveMarketDataDbPath().path;
 
 // ---------------------------------------------------------------------------
 // Main

@@ -26,6 +26,7 @@
 //   BANK_TWELVEDATA_API_KEY=<key> bun run scripts/agents/fx-twelvedata-ingest.ts
 //   BANK_TWELVEDATA_API_KEY=<key> bun run twelve-data:ingest
 
+import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import type { FxQuotePayload } from "../../platform/market-data/types";
 import { TWELVE_DATA_TARGET_PAIRS, parseTwelveDataQuoteResponse } from "./fx-twelvedata-parse";
@@ -140,7 +141,7 @@ export async function runTwelveDataIngest(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const dbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+  const dbPath = resolveMarketDataDbPath().path;
   const apiKey = process.env.BANK_TWELVEDATA_API_KEY;
 
   if (!apiKey) {

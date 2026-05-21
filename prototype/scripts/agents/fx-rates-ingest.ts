@@ -18,6 +18,7 @@
 //   bun run scripts/agents/fx-rates-ingest.ts
 //   bun run fx-rates:ingest
 
+import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import type { FxQuotePayload } from "../../platform/market-data/types";
 import { parseFxRatesFromApiResponse } from "./fx-rates-parse";
@@ -120,7 +121,7 @@ export async function runFxRatesIngest(opts: FxRatesIngestOptions): Promise<FxRa
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const dbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+  const dbPath = resolveMarketDataDbPath().path;
   const result = await runFxRatesIngest({ dbPath });
   if (!result.ok) process.exit(1);
 }

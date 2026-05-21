@@ -50,6 +50,7 @@ import {
   makeMtmRunCompleted,
 } from "../platform/event-store/event-types/mtm";
 import { EventStore } from "../platform/event-store/store";
+import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type {
   FxTradeExecutedPayload,
@@ -129,14 +130,10 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
 
   const eventDbPath = process.env.BANK_EVENT_DB;
-  const marketDbPath = process.env.BANK_MARKET_DATA_DB;
+  const marketDbPath = resolveMarketDataDbPath().path;
 
   if (!eventDbPath) {
     console.error("[mtm-run] ERROR: BANK_EVENT_DB environment variable not set.");
-    process.exit(1);
-  }
-  if (!marketDbPath) {
-    console.error("[mtm-run] ERROR: BANK_MARKET_DATA_DB environment variable not set.");
     process.exit(1);
   }
 

@@ -77,6 +77,7 @@ import { buildPartyProjection, buildPartyTileSummary } from "../platform/identit
 import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { MarketDataStore } from "../platform/market-data/store";
+import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import {
@@ -204,7 +205,7 @@ const fxSimEngine = new FxSimEngine(eventStore);
 // sens-announcement / news ticks. Read-only here (writes come from the
 // ingester scripts and EnvSim). Path mirrors the agent ingest scripts.
 // Authority: D-MARKETS-SCHEMA-FOUNDATION.
-const marketDataDbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+const marketDataDbPath = resolveMarketDataDbPath().path;
 const marketDataStore = new MarketDataStore(marketDataDbPath);
 
 function buildSlice5Projections(): void {
