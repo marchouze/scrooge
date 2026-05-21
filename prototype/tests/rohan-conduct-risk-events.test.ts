@@ -85,7 +85,9 @@ function makeTestFxSpotTrade(opts: {
       tradeId: { scheme: "internal", value: opts.tradeId },
       productTaxonomy: "FX-spot",
       currencyPair: { base: "USD", quote: "ZAR" },
-      side: "buy",
+      // Canonical Option A (D-FX-QUOTING-CONVENTION): pay USD (base),
+      // receive ZAR (quote) → side "sell" on the canonical pair.
+      side: "sell",
       legs: [
         {
           legKind: "near",

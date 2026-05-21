@@ -399,10 +399,25 @@ export const fxTradeExecutedPayloadSchema = z
           message: `rate.currency '${leg.rate.currency}' must equal currencyPair.quote '${quote}' (rate is quote-per-base; D-FX-QUOTING-CONVENTION)`,
         });
       }
-      // (v) Side coherence: BUY → pay quote, receive base;
-      //                     SELL → pay base, receive quote.
-      const expectedPay = data.side === "buy" ? quote : base;
-      const expectedReceive = data.side === "buy" ? base : quote;
+      // (v) Side coherence:
+      //
+      //   For Spot/Forward/NDF (single near leg): the near leg's
+      //   direction matches the trade-level side —
+      //     BUY  → pay quote, receive base
+      //     SELL → pay base, receive quote.
+      //
+      //   For Swap (one near + one far leg): the near leg matches the
+      //   trade-level side; the far leg is, by definition, in the
+      //   opposite direction. Clause (v) therefore inverts expectations
+      //   on the far leg of a swap.
+      const isFarSwapLeg = data.productTaxonomy === "FX-swap" && leg.legKind === "far";
+      const effectiveSide: "buy" | "sell" = isFarSwapLeg
+        ? data.side === "buy"
+          ? "sell"
+          : "buy"
+        : data.side;
+      const expectedPay = effectiveSide === "buy" ? quote : base;
+      const expectedReceive = effectiveSide === "buy" ? base : quote;
       if (leg.payCurrency !== expectedPay) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

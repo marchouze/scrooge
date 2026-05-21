@@ -103,11 +103,24 @@ describe("fxTradeExecutedPayloadSchema — D-FX-QUOTING-CONVENTION happy paths",
 // Rejection paths — five-clause invariant.
 // ---------------------------------------------------------------------------
 
+type FxLegFixture = FxTradeExecutedPayload["legs"][number];
+
+function withMutatedLeg(
+  base: FxTradeExecutedPayload,
+  mutate: (leg: FxLegFixture) => FxLegFixture,
+): FxTradeExecutedPayload {
+  const firstLeg = base.legs[0];
+  if (!firstLeg) throw new Error("fixture must have at least one leg");
+  return { ...base, legs: [mutate(firstLeg), ...base.legs.slice(1)] };
+}
+
 describe("fxTradeExecutedPayloadSchema — D-FX-QUOTING-CONVENTION rejections", () => {
   it("rejects pay-currency outside the pair", () => {
-    const bad = baseBuyUsdZar();
-    bad.legs[0]!.payCurrency = "GBP"; // GBP not in {USD, ZAR}
-    bad.legs[0]!.notional = { currency: "GBP", amountMinor: 100 };
+    const bad = withMutatedLeg(baseBuyUsdZar(), (leg) => ({
+      ...leg,
+      payCurrency: "GBP", // GBP not in {USD, ZAR}
+      notional: { currency: "GBP", amountMinor: 100 },
+    }));
     const parsed = fxTradeExecutedPayloadSchema.safeParse(bad);
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
@@ -117,9 +130,11 @@ describe("fxTradeExecutedPayloadSchema — D-FX-QUOTING-CONVENTION rejections", 
   });
 
   it("rejects notional in the wrong currency (not pay)", () => {
-    const bad = baseBuyUsdZar();
-    // Pay = ZAR, but notional says USD.
-    bad.legs[0]!.notional = { currency: "USD", amountMinor: 10_000_00 };
+    const bad = withMutatedLeg(baseBuyUsdZar(), (leg) => ({
+      ...leg,
+      // Pay = ZAR, but notional says USD.
+      notional: { currency: "USD", amountMinor: 10_000_00 },
+    }));
     const parsed = fxTradeExecutedPayloadSchema.safeParse(bad);
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
@@ -129,40 +144,42 @@ describe("fxTradeExecutedPayloadSchema — D-FX-QUOTING-CONVENTION rejections", 
   });
 
   it("rejects counter-notional in the wrong currency (not receive)", () => {
-    const bad = baseBuyUsdZar();
-    // Receive = USD, but counter-notional says ZAR.
-    bad.legs[0]!.counterNotional = { currency: "ZAR", amountMinor: 185_000_00 };
+    const bad = withMutatedLeg(baseBuyUsdZar(), (leg) => ({
+      ...leg,
+      // Receive = USD, but counter-notional says ZAR.
+      counterNotional: { currency: "ZAR", amountMinor: 185_000_00 },
+    }));
     const parsed = fxTradeExecutedPayloadSchema.safeParse(bad);
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
       const messages = parsed.error.issues.map((i) => i.message).join(" | ");
-      expect(messages).toContain(
-        "counterNotional.currency 'ZAR' must equal receiveCurrency 'USD'",
-      );
+      expect(messages).toContain("counterNotional.currency 'ZAR' must equal receiveCurrency 'USD'");
     }
   });
 
   it("rejects rate.currency that is not the pair quote (inverted rate)", () => {
-    const bad = baseBuyUsdZar();
-    // Pair quote = ZAR, but rate is in USD (inverted, the sim-generator bug).
-    bad.legs[0]!.rate = { currency: "USD", amount: 1 / 18.5 };
+    const bad = withMutatedLeg(baseBuyUsdZar(), (leg) => ({
+      ...leg,
+      // Pair quote = ZAR, but rate is in USD (inverted, the sim-generator bug).
+      rate: { currency: "USD", amount: 1 / 18.5 },
+    }));
     const parsed = fxTradeExecutedPayloadSchema.safeParse(bad);
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
       const messages = parsed.error.issues.map((i) => i.message).join(" | ");
-      expect(messages).toContain(
-        "rate.currency 'USD' must equal currencyPair.quote 'ZAR'",
-      );
+      expect(messages).toContain("rate.currency 'USD' must equal currencyPair.quote 'ZAR'");
     }
   });
 
   it("rejects side='buy' with pay/receive swapped (side coherence fail)", () => {
-    const bad = baseBuyUsdZar();
-    // BUY USD/ZAR must pay ZAR + receive USD; here pay USD + receive ZAR.
-    bad.legs[0]!.payCurrency = "USD";
-    bad.legs[0]!.receiveCurrency = "ZAR";
-    bad.legs[0]!.notional = { currency: "USD", amountMinor: 10_000_00 };
-    bad.legs[0]!.counterNotional = { currency: "ZAR", amountMinor: 185_000_00 };
+    const bad = withMutatedLeg(baseBuyUsdZar(), (leg) => ({
+      ...leg,
+      // BUY USD/ZAR must pay ZAR + receive USD; here pay USD + receive ZAR.
+      payCurrency: "USD",
+      receiveCurrency: "ZAR",
+      notional: { currency: "USD", amountMinor: 10_000_00 },
+      counterNotional: { currency: "ZAR", amountMinor: 185_000_00 },
+    }));
     const parsed = fxTradeExecutedPayloadSchema.safeParse(bad);
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
