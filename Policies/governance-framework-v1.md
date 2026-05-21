@@ -146,7 +146,7 @@ The Board operates the following committee structure at licence-day:
 | Board Remuneration Committee (RemCo) | King IV Principle 14 | Independent NED | Remuneration policy; senior executive pay; alignment with risk appetite |
 | Board Social and Ethics Committee (SEC) | Companies Act s.72(4) | NED | Ethics; sustainability; stakeholder inclusivity; King IV Principle 3 |
 
-**Interim build-phase structure.** Until licence-day, committee functions are performed by Marc (CEO) as interim sole decision-maker, supported by the agent workforce. The **Interim Audit Forum** (chaired by Owen, Company Secretary, governance) performs the audit-oversight function until the BAC is constituted; Thandiwe (Chief Audit Executive, governance) has functional independence from management per Principle 6 and reports functionally to the Interim Audit Forum.
+**Interim build-phase structure.** Until licence-day, committee functions are performed by Marc (CEO) as interim sole decision-maker, supported by the agent workforce. The **Interim Audit Forum** (chaired by Owen, Company Secretary, governance) performs the audit-oversight function until the BAC is constituted; Thandiwe (Chief Audit Executive, governance) has functional independence from management per Principle 6 and reports functionally to the Interim Audit Forum and administratively through the CEO. At licence-day, the Interim Audit Forum dissolves and its mandate transfers to the BAC; the transfer is recorded as a `Decision(approved)` event with category `committee-establishment` and a paired `Decision(superseded)` retiring the Interim Audit Forum's standing.
 
 ### 3.2 Audit Committee (BAC)
 
@@ -192,7 +192,7 @@ The Bank adopts the **three-lines model** as the primary framework for distribut
 | **Second line — Oversight** | CRO (Helena, Chief Risk Officer, governance); CCO (Zara, Chief Compliance Officer, governance); CFO (Camille, CFO, governance); CISO (Ravi, CISO, governance) | Set frameworks, policies, and limits; monitor first-line risk-taking; provide independent challenge; escalate breaches |
 | **Third line — Independent assurance** | CAE (Thandiwe, Chief Audit Executive, governance); Vera (Internal audit / continuous-assurance engineer, engineering) | Risk-based audit plan; independent assurance over first- and second-line effectiveness; reports functionally to the BAC |
 
-**Principle 6 — autonomous by default.** All three lines operate with agent actors as the default. The engineering layer (Atlas, Devon, Ravi-eng, Camille-eng, Mira, Vera, Bea, and others per `Team/_team-roster.json`) builds and operates the substrate; governance seats (Helena, Zara, Camille-governance, Thandiwe, Owen, Iris, Ravi-governance) hold named regulatory accountability and oversee engineering outputs.
+**Principle 6 — autonomous by default.** All three lines operate with agent actors as the default. The engineering layer (Atlas, Devon, Mira, Bea, Vera, and others per `Team/_team-roster.json`) builds and operates the substrate; governance seats (Helena CRO; Zara CCO; Camille CFO; Thandiwe CAE; Owen CoSec; Iris IO; Ravi CISO) hold named regulatory accountability and oversee engineering outputs. The roster JSON `reportsTo` field is the canonical encoding of engineering-to-governance reporting lines; this Framework's prose references the JSON and does not duplicate it (Principle 2 — single-graph discipline).
 
 ### 4.2 CRO independence
 
@@ -437,11 +437,43 @@ Owen (Company Secretary, governance) maintains the governance exception register
 
 ---
 
-## 11. Change log
+## 11. Path-to-IN-FORCE — promotion gate
+
+This Framework is **LICENCE-BIND**. Promotion from `DRAFT` to `IN FORCE` is gated by **licence-day** — the Bank cannot have a Board-approved Governance Framework before it has a Board. The Framework is authored now so that the structure, committee mandates, three-lines model, and delegation hierarchy are production-grade *the day the Board is constituted*; the substrate runs in rehearsal mode under Marc (CEO) as interim sole decision-maker, supported by the agent workforce, until then.
+
+Promotion gate conditions (evaluated by Owen as CoSec and ratified by the CEO and the newly-constituted Board):
+
+| # | Condition | Owner | Closure signal |
+|---|---|---|---|
+| 1 | The Bank is granted a section-17 banking licence by the SARB Prudential Authority | Marc (CEO); Owen | Licence-grant correspondence filed in Correspondence register; `Decision(approved)` event recording the grant |
+| 2 | The Board is constituted with the composition set out in §2.2 (Independent NED Chair; NED majority; CEO as sole Executive Director; Audit Committee Chair) | Owen | First `BoardMeetingConvened` event with quorum confirmed |
+| 3 | All four committees (BAC, BRC, RemCo, SEC) have approved terms of reference and inaugural members | Owen | Per-committee `Decision(approved)` event with category `committee-establishment` |
+| 4 | The Delegation of Authority matrix at `Governance/_delegation-of-authority-matrix.md` is authored, Board-approved, and operative | Owen | DoA file exists on `main`; `Decision(approved)` event recording Board approval |
+| 5 | CRO and CFO independence is verifiable — remuneration arrangements carry no P&L-linked component for the CRO; the CFO holds no trading-desk responsibility | Vera | `recon:cro-independence` and `recon:cfo-independence` green |
+| 6 | All governance recon harnesses listed in §8.2 are green or have documented advisory-only deferrals | Vera | Vera quarterly recon report shows no P1 governance findings |
+| 7 | The Interim Audit Forum's mandate has transferred to the BAC | Owen | `Decision(superseded)` retiring the Interim Audit Forum + `Decision(approved)` establishing BAC mandate |
+
+When all seven conditions are met, Owen recommends promotion and the Board approves via a `Decision(approved)` event with category `governance-framework-promotion`. The promotion event triggers a status change from `DRAFT` to `IN FORCE` in this policy's frontmatter and a `RecordFiled` event registering the IF version.
+
+**Build-phase operative carve-outs.** Notwithstanding the Framework's `DRAFT` status, the following build-phase elements are **operative now** (not waiting for licence-day) because they describe the Bank's *current* governance state, not a future one:
+
+- Marc (CEO) as interim sole decision-maker (§2.2, §3.1).
+- The Interim Audit Forum chaired by Owen (CoSec) (§3.1).
+- Thandiwe's CAE functional independence from management (§4.1, §4.2 cross-ref).
+- The three-lines model as applied to engineering-vs-governance roles (§4.1).
+- Regulatory engagement protocol where the Bank already engages regulators (e.g. pre-application correspondence with the SARB Prudential Authority) (§6).
+- The annual governance review cycle as applied to the build-phase substrate (§7).
+
+These carve-outs are operative under the Bank's "Operating model — what is real, deferred, paused" rule (CLAUDE.md). They do not require Board approval to bind because they describe interim arrangements that the Bank is *currently running*, not licence-day arrangements that need a Board to authorise.
+
+---
+
+## 12. Change log
 
 | Version | Date | Author | Note |
 |---|---|---|---|
 | v1.0 | 2026-05-13 | Owen (Company Secretary, governance) | Initial Governance Framework. Establishes board structure, three-lines model, CRO/CFO independence, delegation of authority, regulatory engagement protocol, regulatory change management, and annual review cycle. Closes obligations ORG-GV-15, ORG-GV-16, ORG-GV-19, ORG-GV-CFO-INDEPENDENCE, ORG-GV-CRO-INDEPENDENCE, ORG-FC-11, ORG-CY-02, ORG-TX-08, ORG-CD-08, ORG-CD-09. LICENCE-BIND. DRAFT pending licence-day Board constitution. |
+| v1.1 | 2026-05-21 | Owen (Company Secretary, governance) | Edge-case cleanup + finalisation under the 2026-05-21 top-5 policy-gap audit (brief: `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`). Changes: (1) §4.1 — replaced loose engineering-vs-governance prose ("Ravi-eng, Camille-eng" etc.) with explicit governance-seat list and pointer to `Team/_team-roster.json` as canonical encoding (Principle 2 — single-graph discipline). (2) §3.1 — added explicit transfer language for when the Interim Audit Forum's mandate transfers to the BAC at licence-day (paired `Decision(superseded)` + `Decision(approved)` events). (3) New §11 — explicit seven-condition path-to-IN-FORCE promotion gate with closure signals per condition; documents build-phase operative carve-outs (Marc as interim CEO; Interim Audit Forum; three-lines model on engineering vs governance) under the "Operating model — what is real, deferred, paused" rule. (4) Renumbered legacy §11 (change log) to §12. No substantive content change to committee mandates, delegation hierarchy, or independence requirements. |
 
 ---
 

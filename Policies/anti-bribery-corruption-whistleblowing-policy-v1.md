@@ -258,3 +258,55 @@ The following trigger board notification (via Owen):
 This policy is given effect in the Bank's Code of Conduct, which every agent and human principal is bound by at onboarding and annually. The Code of Conduct is the day-to-day expression of the principles in this policy; this policy is the governing instrument. In case of conflict, this policy prevails.
 
 Where a conduct breach under this policy constitutes a criminal offence under PRECCA or any other statute, criminal referral to law enforcement is not precluded by any internal disciplinary process. Internal discipline and criminal referral may proceed in parallel.
+
+---
+
+## 7. Obligations closed by this policy
+
+| Obligation | Description | Status | Closed by section |
+|---|---|---|---|
+| `ORG-FC-20` | Anti-bribery and corruption framework — zero-tolerance policy, governance, prohibitions | **DRAFT** (CORPORATE-BIND) — closed | §3.1 (zero-tolerance prohibition); §3.2 (gifts and hospitality — public-official rule); §3.5 (political contributions) |
+| `ORG-FC-22` | PRECCA s34 mandatory-reporting procedure — process for reporting corruption offences to SAPS / Hawks | **DRAFT** (CORPORATE-BIND) — closed | §3.3 (PRECCA s34 mandatory reporting); §4.3 (investigation process) |
+| `ORG-WB-01` | Whistleblowing channel establishment — anonymous, custodian-routed, 24/7 reporting mechanism | **DRAFT** (CORPORATE-BIND) — closed | §4.1 (whistleblowing channel); §4.3 (investigation process) |
+| `ORG-WB-02` | Protected-disclosure protections for reporters — PDA and Companies Act s159 safe-harbour application | **DRAFT** (CORPORATE-BIND) — closed | §4.2 (protected disclosures and non-retaliation) |
+| `ORG-WB-03` | Non-retaliation policy — bar on adverse action against good-faith reporters | **DRAFT** (CORPORATE-BIND) — closed | §4.2 (protected disclosures and non-retaliation); §6.2 (escalation — retaliation as escalation trigger) |
+| `ORG-WB-04` | COI-linked whistleblowing channel — cross-reference with COI-POL-01 | **DRAFT** (CORPORATE-BIND) — closed | §4.1 (channel custodian + Owen / Helena alternate routing where Zara implicated); cross-ref `Policies/conflicts-of-interest-policy-v1.md` §6.4 |
+
+All six obligations are CORPORATE-BIND and operative from the date of the Bank's incorporation. PRECCA imposes criminal liability on the Bank and its officers from the moment the corporate entity exists; the whistleblowing channel and protected-disclosure framework do not require SARB licence-day to attach.
+
+---
+
+## 8. Citations
+
+**Statutory instruments:**
+
+- **Prevention and Combating of Corrupt Activities Act 12 of 2004 (PRECCA)** — s.1 (definitions of "corrupt activities"); ss.3–17 (specific corruption offences); s.34 (mandatory reporting obligation); s.36 (extra-territorial jurisdiction). Operative from corporate-existence; binds the Bank and every person acting for or on its behalf.
+- **Protected Disclosures Act 26 of 2000 (PDA)** (as amended by the Protected Disclosures Amendment Act 5 of 2017) — ss.3–4 (protection of employees and persons in service relationships from occupational detriment for protected disclosures); s.6 (general protected disclosure); s.9 (disclosure to legal advisor).
+- **Companies Act 71 of 2008** — s.159 (statutory safe harbour for protected disclosures made in good faith to appropriate persons or bodies); s.75 (director disclosure of personal financial interest — cross-reference with COI-POL-01 §3.7).
+- **Public Finance Management Act 1 of 1999 (PFMA)** — completeness reference; applies to public-sector counterparties where the Bank deals with state-owned entities at licence-day.
+- **US Foreign Corrupt Practices Act (FCPA) 1977** (15 U.S.C. §§78dd-1 et seq.) — applies where the Bank's activities have US nexus (US-listed counterparties; payments through US financial infrastructure; US-domiciled correspondents). The Bank adopts FCPA-equivalent controls globally rather than apply a lower standard to non-US activity.
+
+**Internal canonical sources:**
+
+- [`Regulations/_obligations-register.md`](../Regulations/_obligations-register.md) — ORG-FC-20, ORG-FC-22, ORG-WB-01 through ORG-WB-04 cited inline.
+- [`Team/_team-roster.json`](../Team/_team-roster.json) — canonical source for agent names, positions, and reporting lines.
+- [`Policies/conflicts-of-interest-policy-v1.md`](conflicts-of-interest-policy-v1.md) — COI register; gifts and hospitality framework (§3.5); whistleblowing channel cross-reference (§6.4).
+- [`Policies/aml-cft-policy-v1.md`](aml-cft-policy-v1.md) — financial-crime parallel; STR pathway where corruption proceeds intersect with AML/CFT.
+- [`Policies/risk-management-and-compliance-policy-v1.md`](risk-management-and-compliance-policy-v1.md) — three-lines model; CCO mandate.
+- [`Policies/governance-framework-v1.md`](governance-framework-v1.md) — board notification pathway; CoSec corporate-governance interface.
+- **CLAUDE.md** — "Operating procedures" (events-first authoring; dispatch discipline); "Decision authority routing" (CCO authority for RMCP, STR/CTR/TPR, EDD sign-off — extends to ABC framework); "Architectural principles" 1, 2, 6.
+- `project_ai_driven_bank.md` (memory) — build-phase posture; CORPORATE-BIND vs LICENCE-BIND status taxonomy.
+- `feedback_agent_name_with_position.md` (memory) — name + position on first mention.
+
+---
+
+## 9. Change log
+
+| Version | Date | Author | Note |
+|---|---|---|---|
+| v1.0 | 2026-05-13 | Zara (Chief Compliance Officer, governance) | Initial Anti-Bribery, Corruption, and Whistleblowing Policy. Six sections of substantive content: Purpose; Principles (six, including zero tolerance, PRECCA mandatory reporting, protected disclosures, proportionate response, third-party integrity, political neutrality); (1) Scope — CORPORATE-BIND; (2) Governance — Zara as policy owner, CEO PRECCA s34 co-signatory, Owen board-notification interface, Helena risk-taxonomy linkage, Vera annual audit; (3) Standards — zero-tolerance prohibition with no de minimis threshold; gifts/hospitality with public-official prohibition; PRECCA s34 mandatory reporting process; third-party due diligence by risk tier; political contributions framework; (4) Controls — whistleblowing channel (24/7, anonymous, Zara custodian + Owen / Helena alternate where Zara implicated); protected disclosures and non-retaliation (PDA + Companies Act s.159); investigation process (5-step); training and awareness; monitoring and surveillance; (5) Reporting — six report types; (6) Exceptions and escalation — no exceptions to core prohibitions; Code of Conduct cross-reference. Closes obligations ORG-FC-20, ORG-FC-22, ORG-WB-01, ORG-WB-02, ORG-WB-03, ORG-WB-04. CORPORATE-BIND. |
+| v1.1 | 2026-05-21 | Owen (Company Secretary, governance) on behalf of Zara (Chief Compliance Officer, governance) | Added §7 (Obligations closed — formal table with section-level closure mapping for all six CORPORATE-BIND obligations); §8 (Citations — statutory instruments PRECCA / PDA / Companies Act s.159 / PFMA / FCPA + internal canonical sources); §9 (Change log). Edits authored under Owen's CoSec authority during the 2026-05-21 top-5 policy-gap completion sweep (brief: `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`); substantive content unchanged — only structural completion to match the IN-FORCE policy template (e.g. `aml-cft-policy-v1.md` §§10–12). No status change. |
+
+---
+
+*Zara (Chief Compliance Officer, governance) — policy owner; structural completion authored by Owen (Company Secretary, governance) on 2026-05-21.*
