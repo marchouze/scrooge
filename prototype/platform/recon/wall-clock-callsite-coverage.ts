@@ -87,7 +87,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // Author: Bea (Accounting & financial reporting engineer, engineering),
 //   2026-05-21.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 56;
+const KNOWN_VIOLATIONS_SNAPSHOT = 57;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
