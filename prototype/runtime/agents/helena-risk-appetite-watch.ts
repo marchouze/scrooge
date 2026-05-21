@@ -40,6 +40,9 @@ import { resolve } from "node:path";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
+import { computeLCR } from "../../platform/liquidity/lcr";
+import { computeNSFR } from "../../platform/liquidity/nsfr";
+import { getALMPositionSnapshot } from "../../platform/projections/alm-positions";
 import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
 import { getClimateRiskMetric } from "../../platform/projections/climate-risk-projection";
 import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
@@ -263,11 +266,91 @@ interface AppetiteSnapshot {
   readonly daysSinceRasReview: number;
 }
 
+// ---------------------------------------------------------------------------
+// Liquidity metric (RAS §B3 thresholds)
+// ---------------------------------------------------------------------------
+// Builds the LCR + NSFR measurement for the appetite:liquidity:lcr and
+// appetite:liquidity:nsfr lines via Ravi (Treasury and ALM engineer)'s
+// ALM-positions projection. Build-phase posture: when no positions are fed
+// (empty inputs → `status: no-positions` from `computeLCR`/`computeNSFR`),
+// the appetite line resolves to a measured green-with-substrate-gap rather
+// than `unmeasured` — the framework knows the answer is "above-minimum" by
+// construction (no outflows → no shortfall) while explicitly carrying the
+// gap inventory for the BRC pack.
+//
+// RAS §B3 thresholds (D-RAS, 2026-05-06):
+//   LCR:  green ≥120% / amber 110-120% / red <110% / critical <105%
+//   NSFR: green ≥115% / amber 108-115% / red <108% / critical <103%
+
+interface LiquidityMetricForLine {
+  /** Computed status under RAS §B3 — never `unmeasured`. */
+  readonly status: MetricStatus;
+  /** Human-readable note for the line. */
+  readonly note: string;
+}
+
+function statusForLcrRatio(ratioPct: number | null): MetricStatus {
+  if (ratioPct === null) {
+    // Null + above-minimum status is the "effectively infinite" case
+    // (HQLA present, zero net outflows). Treat as green.
+    return "green";
+  }
+  if (ratioPct < 105) return "red"; // critical band
+  if (ratioPct < 110) return "red";
+  if (ratioPct < 120) return "amber";
+  return "green";
+}
+
+function statusForNsfrRatio(ratioPct: number | null): MetricStatus {
+  if (ratioPct === null) return "green";
+  if (ratioPct < 103) return "red"; // critical band
+  if (ratioPct < 108) return "red";
+  if (ratioPct < 115) return "amber";
+  return "green";
+}
+
+function buildLiquidityMetric(asOf: string): {
+  lcr: LiquidityMetricForLine;
+  nsfr: LiquidityMetricForLine;
+} {
+  // T+30 snapshot is the canonical horizon for the RAS §B3 buffer line
+  // (30-day stress per BA 325). Anya's daily handler computes both T+0 and
+  // T+30; the appetite line uses T+30 for forward-looking buffer adequacy.
+  const alm = getALMPositionSnapshot(eventStore, asOf, 30);
+  const lcr = computeLCR([...alm.hqlaPositions], [...alm.fundingPositions]);
+  const nsfr = computeNSFR([...alm.asfItems], [...alm.rsfItems]);
+
+  // Build-phase: no positions → `no-positions` status. By construction the
+  // bank holds zero outflows and zero RSF, so the ratio is structurally
+  // above the regulatory minimum. Report green-with-substrate-gap.
+  const gapSummary = alm.gaps.length > 0 ? ` Substrate gaps: ${alm.gaps.length} class(es).` : "";
+
+  const lcrStatus: MetricStatus =
+    lcr.status === "no-positions" ? "green" : statusForLcrRatio(lcr.lcrRatioPct);
+  const lcrNote =
+    lcr.status === "no-positions"
+      ? `Build-phase: no positions in store → no-outflow construction; RAS §B3 LCR appetite line resolves to green-with-substrate-gap.${gapSummary} Source: Ravi (Treasury and ALM engineer, engineering) ALM-positions projection T+30.`
+      : `LCR T+30 = ${lcr.lcrRatioPct === null ? "∞" : `${lcr.lcrRatioPct.toFixed(1)}%`} (HQLA R${lcr.hqlaZar.toLocaleString()}, net outflows R${lcr.netCashOutflowsZar.toLocaleString()}). RAS §B3 thresholds: green ≥120% / amber 110-120% / red <110% / critical <105%.${gapSummary}`;
+
+  const nsfrStatus: MetricStatus =
+    nsfr.status === "no-positions" ? "green" : statusForNsfrRatio(nsfr.nsfrRatioPct);
+  const nsfrNote =
+    nsfr.status === "no-positions"
+      ? `Build-phase: no positions in store → no-RSF construction; RAS §B3 NSFR appetite line resolves to green-with-substrate-gap.${gapSummary} Source: Ravi (Treasury and ALM engineer, engineering) ALM-positions projection T+30.`
+      : `NSFR T+30 = ${nsfr.nsfrRatioPct === null ? "∞" : `${nsfr.nsfrRatioPct.toFixed(1)}%`} (ASF R${nsfr.asfZar.toLocaleString()}, RSF R${nsfr.rsfZar.toLocaleString()}). RAS §B3 thresholds: green ≥115% / amber 108-115% / red <108% / critical <103%.${gapSummary}`;
+
+  return {
+    lcr: { status: lcrStatus, note: lcrNote },
+    nsfr: { status: nsfrStatus, note: nsfrNote },
+  };
+}
+
 function statusForLine(
   line: AppetiteLine,
   capitalMetrics?: ReturnType<typeof computeCapitalMetrics>,
   climateMetric?: ReturnType<typeof getClimateRiskMetric>,
   leverageMetrics?: ReturnType<typeof computeLeverageRatioMetrics>,
+  liquidityMetric?: ReturnType<typeof buildLiquidityMetric>,
 ): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
@@ -309,6 +392,28 @@ function statusForLine(
       line,
       status: leverageMetrics.status,
       note: leverageMetrics.note,
+    };
+  }
+
+  // appetite:liquidity:lcr / appetite:liquidity:nsfr — measured by Ravi's
+  // ALM-positions projection + Anya's LCR/NSFR engines. Build-phase posture:
+  // empty positions → green-with-substrate-gap (no outflows by construction).
+  // Once positions flow, status maps under RAS §B3 thresholds.
+  // Authority: D-RAS (2026-05-06); RAS §B3; RRTB Reg 26 (LCR); RRTB Reg 26A
+  // (NSFR); brief:ravi:alm-position-substrate-and-helena-liquidity-line:
+  // 2026-05-21.
+  if (line.id === "appetite:liquidity:lcr" && liquidityMetric !== undefined) {
+    return {
+      line,
+      status: liquidityMetric.lcr.status,
+      note: liquidityMetric.lcr.note,
+    };
+  }
+  if (line.id === "appetite:liquidity:nsfr" && liquidityMetric !== undefined) {
+    return {
+      line,
+      status: liquidityMetric.nsfr.status,
+      note: liquidityMetric.nsfr.note,
     };
   }
 
@@ -422,8 +527,16 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   //   RRTB Reg 38, BCBS Basel III §147–§165.
   const leverageMetrics = computeLeverageRatioMetrics(eventStore, asOfIso);
 
+  // Compute liquidity metrics (Ravi's ALM-positions projection + Anya's
+  // LCR/NSFR engines — closes the appetite:liquidity:lcr and
+  // appetite:liquidity:nsfr unmeasured gaps).
+  // Build-phase posture: empty positions → green-with-substrate-gap;
+  // RAS §B3 thresholds applied when positions flow.
+  // Authority: D-RAS (2026-05-06); RAS §B3; RRTB Reg 26 (LCR); RRTB Reg 26A (NSFR).
+  const liquidityMetric = buildLiquidityMetric(asOfIso);
+
   const lineStates = APPETITE_LINES.map((line) =>
-    statusForLine(line, capitalMetrics, climateMetric, leverageMetrics),
+    statusForLine(line, capitalMetrics, climateMetric, leverageMetrics, liquidityMetric),
   );
   const measuredCount = lineStates.filter(
     (s) => s.status === "green" || s.status === "amber" || s.status === "red",
@@ -527,7 +640,7 @@ function buildReportMarkdown(
   lines.push("## Substrate gaps surfaced this run");
   lines.push("");
   lines.push(
-    `- **Measurement substrate** — ${snap.unmeasuredCount} of ${APPETITE_LINES.length} lines are unmeasured pending Rohan / Bea / Ravi engineering (next handler #5 in the fleet-rollout plan). Note: \`appetite:capital:cet1-buffer\` is now measured (Bea's capital-metrics module, D-MARKETS-CAPITAL-TIME-SHAPE).`,
+    `- **Measurement substrate** — ${snap.unmeasuredCount} of ${APPETITE_LINES.length} lines are unmeasured pending Rohan engineering (next handler #5 in the fleet-rollout plan). Closed: \`appetite:capital:cet1-buffer\` (Bea's capital-metrics module, D-MARKETS-CAPITAL-TIME-SHAPE); \`appetite:liquidity:lcr\` and \`appetite:liquidity:nsfr\` (Ravi's ALM-positions projection wired to RAS §B3 thresholds, build-phase green-with-substrate-gap per brief \`brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21\`).`,
   );
   lines.push(
     "- **Live capital events** — CET1 metrics currently use ICAAP v1 build-phase baseline (D-MARKETS-CAPITAL-TIME-SHAPE). Substrate gap: no live CapitalEvent events (CapitalContributionRecorded / equity-issuance) in the store. When real capital is raised at licence-day, the module auto-switches to live-event mode.",
@@ -572,6 +685,14 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
+    // Per-line status map — every appetite line's status keyed by id. Lets
+    // the `recon:liquidity-appetite-snapshot-coverage` gate assert that
+    // LCR/NSFR lines are not 'unmeasured' without re-running the handler.
+    const lineStatuses: Record<string, MetricStatus> = {};
+    for (const s of snap.lineStates) {
+      lineStatuses[s.line.id] = s.status;
+    }
+
     eventStore.append({
       event_id: newEventId(),
       type: "RiskAppetiteSnapshot",
@@ -590,6 +711,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         disposedBreaches: snap.breachCounts.disposedBreaches,
         daysSinceRasReview: snap.daysSinceRasReview,
         runTrigger: ctx.trigger.id,
+        // Per-line status map — keyed by appetite-line id. Recon
+        // pipelines walk this to assert specific lines (e.g. LCR/NSFR)
+        // are measured. See `recon:liquidity-appetite-snapshot-coverage`.
+        lineStatuses,
       },
     });
     eventsEmitted = 1;
