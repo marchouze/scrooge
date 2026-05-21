@@ -207,6 +207,12 @@ export * from "./valuation";
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 // Authors: Bea (Accounting engineer) + Atlas (Core banking architect).
 export * from "./close-management";
+// WS-IFRS-POLICY-VALIDATION — IFRS quantitative-threshold approval events.
+// SicrThresholdApproved (§3.2.2) + MaterialityBenchmarkApproved (§3.5.2) per
+// FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
+// materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
+// Author: Bea (Accounting & financial reporting engineer, engineering).
+export * from "./ifrs-policy-thresholds";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -305,6 +311,7 @@ import { GOVERNANCE_TYPED_EVENT_TYPES } from "./governance";
 import { GOVERNANCE_EXTENDED_TYPED_EVENT_TYPES } from "./governance-extended";
 import { GOVERNANCE_SNAPSHOTS_TYPED_EVENT_TYPES } from "./governance-snapshots";
 import { IFRS_ACCOUNTING_EXTENDED_TYPED_EVENT_TYPES } from "./ifrs-accounting-extended";
+import { IFRS_POLICY_THRESHOLDS_TYPED_EVENT_TYPES } from "./ifrs-policy-thresholds";
 import { ILAAP_TYPED_EVENT_TYPES } from "./ilaap";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES } from "./ird-accounting";
@@ -434,6 +441,11 @@ export const TYPED_EVENT_TYPES = [
   // codeSha, and derivedStatementHashes for replay-determinism.
   // Authority: D-EVENT-VIEW-BOUNDARY-WIRE.
   ...CLOSE_MANAGEMENT_TYPED_EVENT_TYPES,
+  // WS-IFRS-POLICY-VALIDATION — IFRS quantitative-threshold approval events.
+  // SicrThresholdApproved (§3.2.2) + MaterialityBenchmarkApproved (§3.5.2)
+  // per FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
+  // materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
+  ...IFRS_POLICY_THRESHOLDS_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

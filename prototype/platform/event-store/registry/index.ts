@@ -114,6 +114,11 @@ export { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 // D-EVENT-VIEW-BOUNDARY-WIRE Slice C — PeriodClosed registry row.
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 export { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
+// WS-IFRS-POLICY-VALIDATION — IFRS quantitative-threshold approval events.
+// SicrThresholdApproved (§3.2.2) + MaterialityBenchmarkApproved (§3.5.2)
+// per FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
+// materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
+export { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -142,6 +147,7 @@ import {
   READINESS_SNAPSHOT_EVENT_TYPES,
   RMS_EVENT_TYPES,
 } from "./governance";
+import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
@@ -269,6 +275,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // CFO attestation pinning policyVersionRefs + codeSha + statement hashes.
   // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
   ...CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY,
+  // WS-IFRS-POLICY-VALIDATION — IFRS quantitative-threshold approval events.
+  // SicrThresholdApproved (§3.2.2) + MaterialityBenchmarkApproved (§3.5.2)
+  // per FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
+  // materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
+  ...IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
