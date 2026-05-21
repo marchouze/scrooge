@@ -86,7 +86,7 @@ Trading-book positions are excluded from IRRBB scope; they are subject to the Ma
 | Policy owner / ALCO chair | Helena (Chief Risk Officer, governance) | Pillar 2 IRRBB oversight; ALCO chairperson; ICAAP sign-off |
 | Engineering owner / measurement | Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena) | EVE/NII calculation engine; shock-scenario pipeline; BA 330 population |
 | Board oversight | BRC (Board Risk Committee) | Approves risk appetite; receives quarterly ALCO IRRBB report; approves ICAAP IRRBB section |
-| ALCO membership | Helena (chair), Eitan, Saskia (Head of Global Markets, governance), Devon (CFO, governance), Rashida (COO, governance) | Monthly IRRBB review; limit calibration |
+| ALCO membership | Helena (chair), Eitan, Saskia (Head of Global Markets, governance), Camille (Chief Financial Officer, governance), Devon (Chief Operating Officer, governance) | Monthly IRRBB review; limit calibration |
 | Independent assurance | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, CAE, governance) | Annual IRRBB methodology review; measurement-accuracy recon |
 
 ### 1.5 Policy hierarchy

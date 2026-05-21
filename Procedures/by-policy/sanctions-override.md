@@ -115,7 +115,7 @@ All manual steps produce typed events with the actor's agent identity under Prin
 | Override-authority service unavailable | Health-check alert | Mira immediately; break-glass procedure invoked (see `incident-response.md`); block remains in force until service restored or break-glass event recorded |
 | False-positive override for same subject > 1 in 12 months | Vera quarterly audit query | Vera finding → screening quality review (Helena model-risk); BRC report |
 | Strong match incorrectly overridden on re-screen by Vera | Vera periodic re-screen | Vera finding → MLRO → BRC; FIC engagement if needed; potential regulatory notification |
-| Tipping-off breach (case details disclosed to subject) | Information-barrier audit log | MLRO + Senna (CISO) immediately; FSCA/PA notification if required; FIC informed |
+| Tipping-off breach (case details disclosed to subject) | Information-barrier audit log | MLRO + Rashida (Chief Information Security Officer, governance) immediately; FSCA/PA notification if required; FIC informed |
 
 ## 10. Related procedures
 
