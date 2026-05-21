@@ -84,13 +84,13 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
-import type { Event } from "../event-store/types";
 import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
   FxSettlementFailedPayload,
 } from "../event-store/event-types/fx-accounting";
 import { makeSubLedgerPostingEmitted } from "../event-store/event-types/fx-accounting";
+import type { Event } from "../event-store/types";
 import type {
   FxTradeExecutedPayload,
   PrincipalPaymentPayload,
@@ -209,10 +209,7 @@ const DEFAULT_ENGINE_CITATIONS: ReadonlyArray<string> = [
 // receive-leg lookup.
 // ---------------------------------------------------------------------------
 
-function findFxTradeExecuted(
-  events: ReadonlyArray<Event>,
-  tradeRef: string,
-): Event | undefined {
+function findFxTradeExecuted(events: ReadonlyArray<Event>, tradeRef: string): Event | undefined {
   for (const e of events) {
     if (e.type !== "FxTradeExecuted") continue;
     const p = e.payload as Partial<FxTradeExecutedPayload>;
@@ -301,10 +298,7 @@ type DispatchResult =
     }
   | { kind: "skip"; reason: SkipReason; detail?: string };
 
-function dispatchEvent(
-  event: Event,
-  allEvents: ReadonlyArray<Event>,
-): DispatchResult {
+function dispatchEvent(event: Event, allEvents: ReadonlyArray<Event>): DispatchResult {
   switch (event.type) {
     case "FxTradeExecuted": {
       const payload = event.payload as FxTradeExecutedPayload;
@@ -493,12 +487,20 @@ export function runGlPostingEngine(input: GlPostingEngineInput): GlPostingEngine
     const dispatched = dispatchEvent(event, events);
 
     if (dispatched.kind === "skip") {
-      skipped.push({
-        eventId: event.event_id,
-        eventType: event.type,
-        reason: dispatched.reason,
-        detail: dispatched.detail,
-      });
+      const skipEntry: EngineSkipped =
+        dispatched.detail !== undefined
+          ? {
+              eventId: event.event_id,
+              eventType: event.type,
+              reason: dispatched.reason,
+              detail: dispatched.detail,
+            }
+          : {
+              eventId: event.event_id,
+              eventType: event.type,
+              reason: dispatched.reason,
+            };
+      skipped.push(skipEntry);
       continue;
     }
 

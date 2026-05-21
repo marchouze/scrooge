@@ -27,9 +27,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { makeFxPositionRevalued } from "../event-store/event-types/fx-accounting";
-import {
-  makeFxSettlementFailed,
-} from "../event-store/event-types/fx-accounting";
+import { makeFxSettlementFailed } from "../event-store/event-types/fx-accounting";
 import type { Event } from "../event-store/types";
 import {
   makeFxSettlementInstructed,
@@ -37,11 +35,7 @@ import {
   makePrincipalPayment,
   makeSettlementConfirmed,
 } from "../markets/cdm/fx";
-import {
-  POSTING_RULE_IDS,
-  deriveGlPostingEventId,
-  runGlPostingEngine,
-} from "./gl-posting-engine";
+import { POSTING_RULE_IDS, deriveGlPostingEventId, runGlPostingEngine } from "./gl-posting-engine";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -260,12 +254,12 @@ describe("runGlPostingEngine — happy path", () => {
     ]);
 
     // Each posting cites its source event.
-    expect(
-      (result.emittedPostings[0]?.payload as { sourceEventId: string }).sourceEventId,
-    ).toBe(trade.event_id);
-    expect(
-      (result.emittedPostings[1]?.payload as { sourceEventId: string }).sourceEventId,
-    ).toBe(reval.event_id);
+    expect((result.emittedPostings[0]?.payload as { sourceEventId: string }).sourceEventId).toBe(
+      trade.event_id,
+    );
+    expect((result.emittedPostings[1]?.payload as { sourceEventId: string }).sourceEventId).toBe(
+      reval.event_id,
+    );
 
     // Deterministic event_ids.
     expect(result.emittedPostings[0]?.event_id).toBe(
