@@ -20,8 +20,7 @@ recordDecision(
     phase: "approved",
     authority: "CRO",
     authorityRef: "helena@bank.internal",
-    title:
-      "MR-1-FX IPV tolerance recalibration v2 — post D-FX-QUOTING-CONVENTION calculator fix",
+    title: "MR-1-FX IPV tolerance recalibration v2 — post D-FX-QUOTING-CONVENTION calculator fix",
     category: "risk",
     recommendation:
       "Recalibrate build-phase IPV tolerances: relative threshold 0.25% → 0.75%; " +
