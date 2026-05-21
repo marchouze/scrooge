@@ -76,8 +76,8 @@ import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
-import { MarketDataStore } from "../platform/market-data/store";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
+import { MarketDataStore } from "../platform/market-data/store";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import {

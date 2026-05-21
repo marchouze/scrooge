@@ -53,12 +53,12 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { EventStore } from "../../platform/event-store/store";
+import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import {
   type SarbFixingFixtureShape,
   makeFixtureSarbFixingSource,
   runSarbFixingIngestAll,
 } from "../../platform/market-data/sarb-fixing-ingester";
-import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 
 const FIXTURE_PATH = resolve(import.meta.dir, "../../seeds/sarb-fixing-rates.json");
