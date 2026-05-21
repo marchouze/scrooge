@@ -225,7 +225,8 @@
     "perf:raise-finding": "bun run scripts/raise-finding.ts",
     "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts",
     "recon:circular-deps": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
-    "sarb:pdf-extract": "bun run platform/tools/sarb-pdf-extract.ts"
+    "sarb:pdf-extract": "bun run platform/tools/sarb-pdf-extract.ts",
+    "recon:liquidity-appetite-snapshot-coverage": "bun run platform/recon/liquidity-appetite-snapshot-coverage.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
