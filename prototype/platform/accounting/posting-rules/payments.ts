@@ -18,8 +18,8 @@
 //   ACC-1200-003  Nostro — EUR correspondent
 //   ACC-2200-001  Customer Payables — ZAR
 //   ACC-2200-002  Customer Payables — USD
-//   ACC-3100-001  Payment Suspense — ZAR
-//   ACC-3100-002  Payment Suspense — USD
+//   ACC-2400-001  Payment Suspense — ZAR
+//   ACC-2400-002  Payment Suspense — USD
 //   ACC-4100-001  Settlement Receivable — ZAR
 //   ACC-4100-002  Settlement Receivable — USD
 //
@@ -49,8 +49,8 @@ export const PAYMENT_ACCOUNTS = {
   NOSTRO_EUR: "ACC-1200-003",
   CUSTOMER_PAYABLE_ZAR: "ACC-2200-001",
   CUSTOMER_PAYABLE_USD: "ACC-2200-002",
-  SUSPENSE_ZAR: "ACC-3100-001",
-  SUSPENSE_USD: "ACC-3100-002",
+  SUSPENSE_ZAR: "ACC-2400-001",
+  SUSPENSE_USD: "ACC-2400-002",
   SETTLEMENT_RECEIVABLE_ZAR: "ACC-4100-001",
   SETTLEMENT_RECEIVABLE_USD: "ACC-4100-002",
 } as const;
