@@ -23,14 +23,13 @@ export const DEVON_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "AuditFinding",
     ],
   }),
-  // FX market-data ingest — daily (open-er-api updates ~00:00 UTC; fire at 02:00 UTC).
-  entry("Devon", "fx-rates-ingest", "scheduled", {
-    cadenceHours: 24,
-    cronExpression: "0 2 * * *",
-  }),
-  // FX market-data ingest — hourly (Twelve Data free tier; offset minute 5).
-  entry("Devon", "fx-twelvedata-ingest", "scheduled", {
-    cadenceHours: 1,
-    cronExpression: "5 * * * *",
-  }),
+  // FX market-data ingest handlers — kept as on-request callables so
+  // `bun run agent:devon-fx-rates-ingest` etc. still work for ad-hoc
+  // invocation and testing. Scheduled cadence is owned by the
+  // **standalone launchd plists** (com.scrooge.fx-rates-ingest,
+  // com.scrooge.fx-twelvedata-ingest) which were already the local
+  // convention before this handler was added — making these `scheduled`
+  // in the scheduler-tick cron map would double-fire.
+  entry("Devon", "fx-rates-ingest", "on-request"),
+  entry("Devon", "fx-twelvedata-ingest", "on-request"),
 ];
