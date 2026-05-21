@@ -1,14 +1,18 @@
 // platform/recon/fx-rate-magnitude.ts
 //
 // Vera advisory recon: cross-checks the magnitude relation on every
-// `FxTradeExecuted` event leg —
+// `FxTradeExecuted` event leg, given the D-FX-QUOTING-CONVENTION Option A
+// convention (rate.amount = quote-per-base; rate.currency = currencyPair.quote):
 //
-//   notional.amountMinor × rate.amount  ≈  counterNotional.amountMinor
+//   side=buy  → counterNotional ≈ notional / rate.amount  (pay quote, receive base)
+//   side=sell → counterNotional ≈ notional × rate.amount  (pay base,  receive quote)
 //
-// within a 0.1% tolerance. A drift bigger than that indicates the rate
-// value is inverted (a 1/mid where it should be mid, or vice versa) —
-// the canonical "off-by-rate" signature of the pre-Slice-3b sim
-// generator.
+// within a 0.1% tolerance. A drift bigger than that indicates the rate is
+// inverted (the canonical "off-by-rate" signature of the pre-Slice-3b sim
+// generator).
+//
+// For FX-swap far legs the direction inverts (per refinement clause (v));
+// the side-aware branch handles this.
 //
 // Severity: P2 (advisory) — matches `fx-quoting-convention`. Vera will
 // upgrade advisory → strict once Slice 3b (Devon — sim generator
@@ -63,36 +67,66 @@ function loadFxTradeEvents(opts: RunOpts): MinimalFxEvent[] {
 // ---------------------------------------------------------------------------
 
 interface LegLike {
+  legKind?: unknown;
   notional?: { amountMinor?: unknown };
   counterNotional?: { amountMinor?: unknown };
   rate?: { amount?: unknown };
 }
 
 /**
+ * Effective side for a leg — the trade-level side for spot/forward/NDF and
+ * the swap near leg; inverted for the swap far leg (per refinement (v)).
+ */
+function effectiveSide(
+  side: "buy" | "sell",
+  productTaxonomy: string,
+  legKind: unknown,
+): "buy" | "sell" {
+  if (productTaxonomy === "FX-swap" && legKind === "far") {
+    return side === "buy" ? "sell" : "buy";
+  }
+  return side;
+}
+
+/**
  * Returns the relative drift |implied − recorded| / |recorded| between
  * the rate-implied counter-notional and the recorded counter-notional,
  * or `null` if the leg is shape-malformed (which other recons handle).
+ *
+ * `implied` is derived per side under the D-FX-QUOTING-CONVENTION
+ * Option A convention (rate is quote-per-base):
+ *   buy  → implied = notional / rate
+ *   sell → implied = notional × rate
  */
-export function legDrift(leg: LegLike): number | null {
+export function legDrift(leg: LegLike, side: "buy" | "sell"): number | null {
   const notional = leg.notional?.amountMinor;
   const counter = leg.counterNotional?.amountMinor;
   const rate = leg.rate?.amount;
   if (typeof notional !== "number" || typeof counter !== "number" || typeof rate !== "number") {
     return null;
   }
-  if (counter === 0) return null; // avoid divide-by-zero; degenerate but not our concern
-  const implied = notional * rate;
+  if (counter === 0 || rate === 0) return null; // degenerate; not our concern
+  const implied = side === "buy" ? notional / rate : notional * rate;
   return Math.abs(implied - counter) / Math.abs(counter);
 }
 
 function assertEvent(ev: MinimalFxEvent, violations: ReconViolation[]): void {
-  const payload = ev.payload as { legs?: LegLike[] } | undefined;
+  const payload = ev.payload as
+    | { legs?: LegLike[]; side?: unknown; productTaxonomy?: unknown }
+    | undefined;
   if (!payload || !Array.isArray(payload.legs)) {
     // Shape problems are surfaced by fx-quoting-convention; skip silently.
     return;
   }
+  const tradeSide = payload.side === "buy" || payload.side === "sell" ? payload.side : null;
+  if (tradeSide === null) {
+    // Missing/invalid side — fx-quoting-convention surfaces this.
+    return;
+  }
+  const taxonomy = typeof payload.productTaxonomy === "string" ? payload.productTaxonomy : "";
   for (const [i, leg] of payload.legs.entries()) {
-    const drift = legDrift(leg);
+    const sideForLeg = effectiveSide(tradeSide, taxonomy, leg.legKind);
+    const drift = legDrift(leg, sideForLeg);
     if (drift === null) continue;
     if (drift > TOLERANCE) {
       const pct = (drift * 100).toFixed(3);
@@ -146,7 +180,7 @@ if (import.meta.main) {
       msg: r.ok
         ? warnCount > 0
           ? `fx-rate-magnitude passed with ${warnCount} advisory warning(s) — legacy events show off-by-rate drift (expected pending Slice 3b).`
-          : "fx-rate-magnitude passed — every FxTradeExecuted leg satisfies notional × rate ≈ counter-notional."
+          : "fx-rate-magnitude passed — every FxTradeExecuted leg's counter-notional is consistent with rate.amount under D-FX-QUOTING-CONVENTION (BUY: counter ≈ notional / rate; SELL: counter ≈ notional × rate)."
         : "fx-rate-magnitude FAILED — see violations.",
       detail: r.violations,
     }),

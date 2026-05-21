@@ -28,11 +28,11 @@ function makeInMemoryStore(): EventStore {
 // Test 1: Deterministic mode — same seed produces same event sequence
 // ---------------------------------------------------------------------------
 
-// Pending Slice 3b (Devon — sim generator simplification) — the
-// fx-sim-generator emits FxTradeExecuted events whose rate.currency is
-// the pair base (not the canonical quote), which now fails the
-// D-FX-QUOTING-CONVENTION refinement. Re-enable once Slice 3b lands.
-describe.skip("EnvSimEngine — deterministic mode", () => {
+// Re-enabled in Slice 3b (Devon — sim generator simplification, PR #665).
+// The fx-sim-generator now emits FxTradeExecuted events whose rate.currency
+// equals currencyPair.quote and whose rate.amount is quote-per-base, in
+// line with the D-FX-QUOTING-CONVENTION refinement.
+describe("EnvSimEngine — deterministic mode", () => {
   it("two engines with same seed produce same event count and types", () => {
     const store1 = makeInMemoryStore();
     const store2 = makeInMemoryStore();
@@ -66,8 +66,8 @@ describe.skip("EnvSimEngine — deterministic mode", () => {
 // Test 2: Stochastic failure — always-fail profile produces settlement failures
 // ---------------------------------------------------------------------------
 
-// Pending Slice 3b (Devon — sim generator simplification) — see note above.
-describe.skip("EnvSimEngine — stochastic failure", () => {
+// Re-enabled in Slice 3b (Devon — sim generator simplification, PR #665).
+describe("EnvSimEngine — stochastic failure", () => {
   it("counterparty with settlementFailureProbability:1 always produces settlement-failed event", () => {
     const store = makeInMemoryStore();
 

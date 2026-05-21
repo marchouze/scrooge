@@ -73,53 +73,61 @@ export function generateSimTrade(
   const rate = rateEngine.tick(pair);
   const { base: baseCcy, quote: quoteCcy } = parsePair(pair);
 
-  // 6. Derive leg currencies.
+  // 6. Derive leg currencies and rate.
   //    Pairs are always major-first (e.g. `USD/ZAR`, `EUR/USD`) per ACI
   //    Model Code §2 — base is the ACI-higher currency. The rate-engine mid
   //    is quote-per-base (e.g. USD/ZAR mid 18.5 = 18.5 ZAR per 1 USD).
   //
-  //    If side=buy: bank buys base (receives base), pays quote.
-  //      payCurrency = quote, receiveCurrency = base
-  //    If side=sell: bank sells base (pays base), receives quote.
-  //      payCurrency = base, receiveCurrency = quote
+  //    Per D-FX-QUOTING-CONVENTION (CEO-approved 2026-05-21) Option A, the
+  //    CDM `rate.amount` is ALWAYS quote-per-base regardless of side, and
+  //    `rate.currency` equals `currencyPair.quote`. Slice 1 (PR #664)
+  //    restated the schema docstring + Zod refinement; this slice (3b)
+  //    aligns the sim generator with that convention.
   //
-  //    The CDM `rate.amount` is receive-per-pay (the schema docstring at
-  //    `platform/markets/cdm/fx.ts` defines this), so:
-  //      buy  → rate = base / quote = 1 / mid
-  //      sell → rate = quote / base = mid
+  //    Side dictates pay / receive direction (per clause (v) of the
+  //    refinement):
+  //      side=buy : bank buys base (receives base), pays quote.
+  //        payCurrency = quote, receiveCurrency = base.
+  //      side=sell: bank sells base (pays base), receives quote.
+  //        payCurrency = base, receiveCurrency = quote.
   //
-  //    The broader question of whether `rate = receive/pay` is the right
-  //    convention to encode (vs. straight quote-per-base) is open ground
-  //    and tracked under a separate decision card; this function follows
-  //    the schema as written.
+  //    `legRate = rate.mid` in BOTH branches — there is no invert.
   let payCurrency: string;
   let receiveCurrency: string;
-  let legRate: number;
 
   if (side === "buy") {
     // Bank buys base (receives base), pays quote.
     payCurrency = quoteCcy;
     receiveCurrency = baseCcy;
-    // rate in CDM = receiveCurrency per pay-unit = base per quote = 1 / mid
-    legRate = 1 / rate.mid;
   } else {
     // Bank sells base (pays base), receives quote.
     payCurrency = baseCcy;
     receiveCurrency = quoteCcy;
-    // rate in CDM = receiveCurrency per pay-unit = quote per base = mid
-    legRate = rate.mid;
   }
 
+  // Rate is quote-per-base regardless of side (D-FX-QUOTING-CONVENTION).
+  const legRate = rate.mid;
+
   // 7. Compute counter-notional.
-  //    notional is in pay-currency minor units.
-  //    counterNotional (minor) = round(notional × legRate).
-  //    legRate maps pay→receive (units: receive-per-pay), so
-  //    receive_minor = pay_minor × legRate when minor-unit scale matches.
-  //    For USD/ZAR side=buy: payCurrency=ZAR, receiveCurrency=USD,
-  //    legRate ≈ 1/18.5 ≈ 0.054 USD per ZAR → counterNotional in USD cents.
-  //    We accept the approximation that minor unit scale is the same for
-  //    all currencies (cents / smallest unit), correct for ZAR, USD, EUR, GBP.
-  const counterNotionalMinor = Math.round(notionalMinor * legRate);
+  //    `notionalMinor` is in pay-currency minor units (the random draw on
+  //    line 70 is interpreted as units of `payCurrency`). With `legRate =
+  //    quote per base`, the counter-notional in receive-currency units is
+  //    derived by direction:
+  //
+  //      side=buy  : pay=quote, receive=base.
+  //        notional (quote-minor) / legRate = counter (base-minor).
+  //        e.g. USD/ZAR mid 18.5, notional 18,500,000 ZAR cents
+  //          → counter = 18,500,000 / 18.5 = 1,000,000 USD cents.
+  //      side=sell : pay=base, receive=quote.
+  //        notional (base-minor) × legRate = counter (quote-minor).
+  //        e.g. USD/ZAR mid 18.5, notional 1,000,000 USD cents
+  //          → counter = 1,000,000 × 18.5 = 18,500,000 ZAR cents.
+  //
+  //    Minor-unit scaling: all simulated currencies (ZAR, USD, EUR, GBP)
+  //    use 2-decimal minor units (cents), so the minor-unit conversion
+  //    factor cancels. JPY (0 decimals) is not in the sim pair set.
+  const counterNotionalMinor =
+    side === "buy" ? Math.round(notionalMinor / legRate) : Math.round(notionalMinor * legRate);
 
   // 8. Trade ID.
   const tradeId = `SIM-${Date.now()}-${randomUUID().slice(0, 8).toUpperCase()}`;
@@ -139,7 +147,7 @@ export function generateSimTrade(
         receiveCurrency,
         notional: { currency: payCurrency, amountMinor: notionalMinor },
         counterNotional: { currency: receiveCurrency, amountMinor: counterNotionalMinor },
-        rate: { currency: receiveCurrency, amount: legRate },
+        rate: { currency: quoteCcy, amount: legRate },
         settlementDate: { iso: settlement, calendar: "JIHCAL" },
       },
     ],
