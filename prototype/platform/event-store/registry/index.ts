@@ -260,7 +260,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Market-data domain control-plane events (stale-data alerts, model validation).
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §5.
   ...MARKET_DATA_EVENT_TYPES_REGISTRY,
-  // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
+  // MTM engine events — MtmRunCompleted, IpvExceptionRaised, IpvBreachShadow.
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
   ...MTM_EVENT_TYPES_REGISTRY,
   // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — policy-version-in-force registry row.

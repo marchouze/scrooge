@@ -180,7 +180,7 @@ export * from "./alco";
 // DailyPnLReportGenerated — aggregated unrealised + realised P&L by pair/counterparty/book.
 // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1; D-MARKETS-SCHEMA-FOUNDATION.
 export * from "./product-control";
-// MTM engine events — MtmRunCompleted, IpvExceptionRaised.
+// MTM engine events — MtmRunCompleted, IpvExceptionRaised, IpvBreachShadow.
 // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
 // Author: Rohan (Market risk engineer, engineering)
 export * from "./mtm";
@@ -424,7 +424,7 @@ export const TYPED_EVENT_TYPES = [
   // DailyPnLReportGenerated — aggregated unrealised + realised P&L.
   // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
   ...PRODUCT_CONTROL_EVENT_TYPES,
-  // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
+  // MTM engine events — MtmRunCompleted, IpvExceptionRaised, IpvBreachShadow.
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
   ...MTM_TYPED_EVENT_TYPES,
   // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — PolicyVersionActivated.

@@ -10,8 +10,12 @@
 //      MarketDataStore (provenance: "production") and:
 //      a. Emits FxPositionRevalued (using the existing FX revaluation maker).
 //      b. Runs IPV check: compares to the most-recent tick from a different
-//         source in MarketDataStore (cross-source variance); emits
-//         IpvExceptionRaised on breach.
+//         source in MarketDataStore (cross-source variance). Tolerance
+//         lookup is per-pair via canonical-pair resolution (per
+//         D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21). On breach:
+//         - SHADOW mode → emits IpvBreachShadow (separate channel; does NOT
+//           lift into the live appetite-watch surface).
+//         - LIVE mode → emits IpvExceptionRaised (lifts into appetite-watch).
 //   4. Logs "bond MTM: no JSE price feed connected — skipped".
 //   5. Logs "IRD MTM: no curve ingest connected — skipped".
 //   6. Emits MtmRunCompleted.
@@ -21,6 +25,8 @@
 // CLI args:
 //   --type  eod|intraday   (default: eod)
 //   --as-of YYYY-MM-DD     (default: today)
+//   --mode  live|shadow    (default: DEFAULT_IPV_TOLERANCE_CONFIG.mode —
+//                           currently "shadow" during the cutover window)
 //
 // Environment:
 //   BANK_EVENT_DB         path to SQLite event store
@@ -29,6 +35,7 @@
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
+//   - D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21 (CEO-approved 2026-05-21)
 //   - IFRS-9-§5.7.1 (FVTPL: changes in fair value through P&L)
 //   - IAS-21-§28 (monetary items retranslated at closing rate)
 //   - ORG-MK-08 (Currency and Exchanges Manual — Authorised Dealer rules)
@@ -46,6 +53,7 @@ import {
 } from "../platform/event-store/event-types/fx-accounting";
 import type { FxTradeCancelledPayload } from "../platform/event-store/event-types/fx-accounting";
 import {
+  makeIpvBreachShadow,
   makeIpvExceptionRaised,
   makeMtmRunCompleted,
 } from "../platform/event-store/event-types/mtm";
@@ -55,7 +63,11 @@ import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
 } from "../platform/markets/cdm/fx";
-import { checkIpvTolerance } from "../platform/markets/ipv-tolerance";
+import {
+  DEFAULT_IPV_TOLERANCE_CONFIG,
+  type IpvMode,
+  checkIpvTolerance,
+} from "../platform/markets/ipv-tolerance";
 import {
   adoptFxMark,
   resolveActivePolicyVersionRef,
@@ -79,14 +91,23 @@ const CITATIONS = [
   "EXCON-SARB-CIRC-3-2020",
 ];
 
+/**
+ * Extra citations for IPV events — adds the recalibration-decision authority
+ * for the per-pair tolerance surface and shadow-mode flag.
+ */
+const IPV_CITATIONS = [...CITATIONS, "D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21"];
+
 // ---------------------------------------------------------------------------
 // CLI argument parsing
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { runType: "eod" | "intraday"; asOf: string } {
+function parseArgs(): { runType: "eod" | "intraday"; asOf: string; mode: IpvMode } {
   const args = process.argv.slice(2);
   let runType: "eod" | "intraday" = "eod";
   let asOf = new Date().toISOString().slice(0, 10); // today YYYY-MM-DD
+  // Default mode follows DEFAULT_IPV_TOLERANCE_CONFIG.mode — currently "shadow"
+  // for the 10-trading-day cutover window (D-MR-1-FX-IPV-TOLERANCE-RECAL).
+  let mode: IpvMode = DEFAULT_IPV_TOLERANCE_CONFIG.mode;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--type" && args[i + 1]) {
@@ -100,10 +121,18 @@ function parseArgs(): { runType: "eod" | "intraday"; asOf: string } {
     } else if (args[i] === "--as-of" && args[i + 1]) {
       asOf = args[i + 1];
       i++;
+    } else if (args[i] === "--mode" && args[i + 1]) {
+      const m = args[i + 1];
+      if (m !== "live" && m !== "shadow") {
+        console.error(`[mtm-run] ERROR: --mode must be "live" or "shadow", got "${m}"`);
+        process.exit(1);
+      }
+      mode = m;
+      i++;
     }
   }
 
-  return { runType, asOf };
+  return { runType, asOf, mode };
 }
 
 // ---------------------------------------------------------------------------
@@ -119,10 +148,17 @@ function pairToString(pair: { base: string; quote: string }): string {
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const { runType, asOf } = parseArgs();
+  const { runType, asOf, mode } = parseArgs();
   const runId = randomUUID();
 
-  console.log(`[mtm-run] Starting ${runType.toUpperCase()} MTM run for ${asOf} (runId: ${runId})`);
+  console.log(
+    `[mtm-run] Starting ${runType.toUpperCase()} MTM run for ${asOf} (runId: ${runId}, IPV mode: ${mode.toUpperCase()})`,
+  );
+  if (mode === "shadow") {
+    console.log(
+      `[mtm-run] IPV shadow mode: breaches emit as IpvBreachShadow and do NOT lift into the live appetite-watch surface. Cutover scheduled for ${DEFAULT_IPV_TOLERANCE_CONFIG.cutoverDate} (D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21).`,
+    );
+  }
 
   // -------------------------------------------------------------------------
   // Open stores
@@ -306,30 +342,70 @@ async function main(): Promise<void> {
       const secondaryRate = secondaryQuote.rate;
 
       if (secondaryRate !== undefined && secondaryRate > 0) {
-        const ipvResult = checkIpvTolerance(primaryRate, secondaryRate, notionalBaseMinor);
+        // Per-pair tolerance lookup via canonical pair — USD/ZAR and ZAR/USD
+        // resolve to the same row (D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21).
+        const ipvResult = checkIpvTolerance(
+          primaryRate,
+          secondaryRate,
+          notionalBaseMinor,
+          trade.currencyPair.base,
+          trade.currencyPair.quote,
+        );
         if (!ipvResult.pass) {
-          // Emit IpvExceptionRaised.
-          store.append(
-            makeIpvExceptionRaised({
-              asOf,
-              entity: BANK_ENTITY,
-              actor: ENGINE_ACTOR,
-              citations: CITATIONS,
-              payload: {
-                positionId: tradeId,
-                instrument: currencyPairStr,
-                primaryRate,
-                secondaryRateSource: secTick.source,
-                secondaryRate,
-                divergencePct: ipvResult.divergencePct * 100, // convert to %
-                divergenceZar: ipvResult.divergenceZar,
-                notional: notionalBaseMinor,
-                currency: nearLeg.notional.currency,
-              },
-              eventId: newEventId(),
-            }),
-          );
-          ipvStatus = `BREACH(${ipvResult.breachThreshold}: ${(ipvResult.divergencePct * 100).toFixed(4)}%)`;
+          // Branch: shadow mode → IpvBreachShadow (separate channel, no lift);
+          // live mode → IpvExceptionRaised (lifts into appetite-watch).
+          if (mode === "shadow") {
+            store.append(
+              makeIpvBreachShadow({
+                asOf,
+                entity: BANK_ENTITY,
+                actor: ENGINE_ACTOR,
+                citations: IPV_CITATIONS,
+                payload: {
+                  positionId: tradeId,
+                  instrument: currencyPairStr,
+                  canonicalPair: ipvResult.canonicalPair,
+                  primaryRate,
+                  secondaryRateSource: secTick.source,
+                  secondaryRate,
+                  divergencePct: ipvResult.divergencePct * 100, // convert to %
+                  divergenceZar: ipvResult.divergenceZar,
+                  notional: notionalBaseMinor,
+                  currency: nearLeg.notional.currency,
+                  bpsThresholdApplied: ipvResult.bpsThresholdApplied,
+                  absoluteZarMinorApplied: ipvResult.absoluteZarMinorApplied,
+                  toleranceSource: ipvResult.source,
+                  // Safe non-null assertion: ipvResult.pass === false guarantees
+                  // breachThreshold is "pct" | "zar" (never null).
+                  breachThreshold: ipvResult.breachThreshold as "pct" | "zar",
+                },
+                eventId: newEventId(),
+              }),
+            );
+            ipvStatus = `SHADOW(${ipvResult.breachThreshold}: ${(ipvResult.divergencePct * 100).toFixed(4)}%)`;
+          } else {
+            store.append(
+              makeIpvExceptionRaised({
+                asOf,
+                entity: BANK_ENTITY,
+                actor: ENGINE_ACTOR,
+                citations: IPV_CITATIONS,
+                payload: {
+                  positionId: tradeId,
+                  instrument: currencyPairStr,
+                  primaryRate,
+                  secondaryRateSource: secTick.source,
+                  secondaryRate,
+                  divergencePct: ipvResult.divergencePct * 100, // convert to %
+                  divergenceZar: ipvResult.divergenceZar,
+                  notional: notionalBaseMinor,
+                  currency: nearLeg.notional.currency,
+                },
+                eventId: newEventId(),
+              }),
+            );
+            ipvStatus = `BREACH(${ipvResult.breachThreshold}: ${(ipvResult.divergencePct * 100).toFixed(4)}%)`;
+          }
         } else {
           ipvStatus = `OK(${(ipvResult.divergencePct * 100).toFixed(4)}%)`;
         }

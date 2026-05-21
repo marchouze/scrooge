@@ -6,13 +6,22 @@
 //                         (EOD or intraday). Carries position counts, skip
 //                         reasons, and total P&L delta for reconciliation.
 //   - IpvExceptionRaised — emitted when the IPV (Independent Price Verification)
-//                          tolerance check fails for a position: primary rate
-//                          diverges from the secondary rate source beyond the
-//                          configured threshold (0.25% or ZAR 50k).
+//                          tolerance check fails for a position in LIVE mode:
+//                          primary rate diverges from the secondary rate
+//                          source beyond the per-pair (or default) thresholds.
+//                          Lifts into the live appetite-watch surface.
+//   - IpvBreachShadow   — emitted on IPV breach in SHADOW mode (during the
+//                          10-trading-day cutover window per
+//                          D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21). Recorded
+//                          on a separate channel so the new thresholds can be
+//                          observed without lifting into live appetite-watch.
+//                          Helena (Chief Risk Officer, governance)'s daily run
+//                          ignores shadow events for the duration of the window.
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
+//   - D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21 (CEO-approved 2026-05-21)
 //   - IFRS-9-§5.7.1 (FVTPL: changes in fair value through P&L)
 //   - ORG-MK-08 (Currency and Exchanges Manual — Authorised Dealer rules)
 //
@@ -153,9 +162,102 @@ export function makeIpvExceptionRaised(args: {
 }
 
 // ---------------------------------------------------------------------------
+// IpvBreachShadow
+//
+// Emitted during the SHADOW-mode cutover window (10 trading days from
+// 2026-05-21 per D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21). The IPV engine
+// computes breaches against the new per-pair thresholds; in shadow mode it
+// records them on this channel instead of raising `IpvExceptionRaised`.
+// Downstream consumers of the live appetite-watch surface (Helena's daily
+// run) filter out shadow events; the recon pipeline observes both channels.
+//
+// Same payload shape as IpvExceptionRaised plus:
+//   - bpsThresholdApplied: the per-pair (or default) bps threshold applied
+//   - absoluteZarMinorApplied: the per-pair (or default) ZAR threshold (minor)
+//   - canonicalPair: canonical pair key used for the lookup
+//   - toleranceSource: "per-pair" | "default"
+// ---------------------------------------------------------------------------
+
+export const ipvBreachShadowPayloadSchema = z.object({
+  /** Internal trade / position ID. */
+  positionId: z.string(),
+  /** Instrument identifier (e.g. "USD/ZAR", "R2030"). */
+  instrument: z.string(),
+  /** Canonical pair key (e.g. "USD/ZAR" — applies to both USD/ZAR and ZAR/USD inputs). */
+  canonicalPair: z.string(),
+  /**
+   * Primary rate used for mark-to-market (decimal, e.g. 18.5 for USD/ZAR).
+   * This is the production rate from the bank's primary feed.
+   */
+  primaryRate: z.number(),
+  /** Name/identifier of the secondary price source used for IPV. */
+  secondaryRateSource: z.string(),
+  /** Secondary rate from the independent source (decimal). */
+  secondaryRate: z.number(),
+  /**
+   * Percentage divergence: |primary - secondary| / primary × 100.
+   * E.g. 0.27 = 0.27%.
+   */
+  divergencePct: z.number(),
+  /**
+   * Absolute ZAR equivalent of the divergence on the notional.
+   * = |primary - secondary| × (notionalMinor / 100). Major units.
+   */
+  divergenceZar: z.number(),
+  /** Notional of the position in minor currency units (cents). */
+  notional: z.number(),
+  /** ISO 4217 currency of the notional (e.g. "ZAR"). */
+  currency: z.string(),
+  /**
+   * The bps threshold actually applied to this check (fraction). Reflects
+   * the per-pair lookup result. E.g. 0.0055 = 0.55% (USD/ZAR canonical).
+   */
+  bpsThresholdApplied: z.number(),
+  /**
+   * The absolute ZAR threshold actually applied (minor units, cents).
+   * E.g. 5_000_000 = ZAR 50,000.
+   */
+  absoluteZarMinorApplied: z.number(),
+  /** Did the lookup hit a per-pair row or fall through to default? */
+  toleranceSource: z.enum(["per-pair", "default"]),
+  /** Which threshold breached: "pct" | "zar". */
+  breachThreshold: z.enum(["pct", "zar"]),
+});
+
+export type IpvBreachShadowPayload = z.infer<typeof ipvBreachShadowPayloadSchema>;
+
+export function makeIpvBreachShadow(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: IpvBreachShadowPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "IpvBreachShadow requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "IpvBreachShadow",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: ipvBreachShadowPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // MTM event-type array (for registry)
 // ---------------------------------------------------------------------------
 
-export const MTM_TYPED_EVENT_TYPES = ["MtmRunCompleted", "IpvExceptionRaised"] as const;
+export const MTM_TYPED_EVENT_TYPES = [
+  "MtmRunCompleted",
+  "IpvExceptionRaised",
+  "IpvBreachShadow",
+] as const;
 
 export type MtmEventType = (typeof MTM_TYPED_EVENT_TYPES)[number];
