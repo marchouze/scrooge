@@ -27,7 +27,7 @@ import type { FxRateEngine } from "../fx-sim-rates";
  * (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
  * Asserted by `recon:fx-pair-direction`.
  */
-const STANDARD_PAIRS = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"] as const;
+export const STANDARD_PAIRS = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"] as const;
 
 // ---------------------------------------------------------------------------
 // MarketDataSimulator

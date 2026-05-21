@@ -34,6 +34,9 @@ const SEED_MID_RATES: Record<string, number> = {
   "GBP/USD": 1.265,
 };
 
+/** Read-only view of the seed mid-rate pair keys (consumed by recon:fx-pair-direction). */
+export const SEED_MID_RATES_KEYS: readonly string[] = Object.freeze(Object.keys(SEED_MID_RATES));
+
 // ---------------------------------------------------------------------------
 // Half-spread lookup (basis points)
 // ---------------------------------------------------------------------------
