@@ -74,8 +74,7 @@ import { logger } from "../platform/observability/logger";
 // Rehearsal v2 constants — DISTINCT from v1
 // ─────────────────────────────────────────────────────────────────────────────
 
-const REHEARSAL_GATE_ID =
-  "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test-v2";
+const REHEARSAL_GATE_ID = "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test-v2";
 const PRODUCT_SCOPE: readonly string[] = ["fx-spot"];
 const ENTITY = "BANK-ZA-001";
 const AS_OF = "2026-05-21T10:30:00.000Z";
@@ -547,8 +546,7 @@ function main(): number {
         "fx-spot internal pre-licence test — re-rehearsal (v2) confirming v1 Open conditions cleared",
       coChairs: ["agent:devon:coo", "agent:zara:cco"],
       proceduresRef: "PROC-MK-PLG-01",
-      priorRehearsalGateId:
-        "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test",
+      priorRehearsalGateId: "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test",
       note:
         "REHEARSAL v2 — re-rehearsal under brief " +
         "`brief:devon:re-run-proc-mk-plg-01-rehearsal-confirm-both-ope:2026-05-21` " +

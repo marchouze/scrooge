@@ -26,8 +26,7 @@ const body = readFileSync(DOC_PATH, "utf8");
 
 const result = recordFiled(
   {
-    recordId:
-      "record:documents:devon-zara:proc-mk-plg-01-rerehearsal-fx-spot-internal:2026-05-21",
+    recordId: "record:documents:devon-zara:proc-mk-plg-01-rerehearsal-fx-spot-internal:2026-05-21",
     registerKey: "documents",
     body,
     classification: "ceo-only",
@@ -57,10 +56,8 @@ const result = recordFiled(
       author:
         "Devon (Chief Operating Officer, governance) · co-author Zara (Chief Compliance Officer, governance)",
       date: "2026-05-21",
-      gateId:
-        "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test-v2",
-      priorGateId:
-        "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test",
+      gateId: "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test-v2",
+      priorGateId: "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test",
       assessment: "READY-FOR-INTERNAL-TEST",
     },
   },
