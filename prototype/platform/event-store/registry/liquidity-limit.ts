@@ -88,9 +88,6 @@ export const LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     retention: RETENTION_BANKING_5Y,
     payloadSchema: liquidityLimitBreachDisposedPayloadSchema,
     source: "platform/event-store/event-types/liquidity-limit.ts",
-    citationsHint: [
-      "POLICY:liquidity-risk-management-policy-v1-S9.3",
-      "PROC-RISK-LLM-01",
-    ],
+    citationsHint: ["POLICY:liquidity-risk-management-policy-v1-S9.3", "PROC-RISK-LLM-01"],
   },
 ];

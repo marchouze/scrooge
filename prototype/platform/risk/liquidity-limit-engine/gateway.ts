@@ -49,7 +49,9 @@ export function checkLiquidityGate(opts: DetectBreachesOpts = {}): LiquidityGate
     (l) => l.line === "lcr-ratio" || l.line === "nsfr-ratio",
   );
   const intradayRed = status.tier1RedLines.find((l) => l.line === "intraday-liquidity-buffer");
-  const concentrationRed = status.tier1RedLines.find((l) => l.line.startsWith("funding-concentration") || l.line === "hqla-concentration");
+  const concentrationRed = status.tier1RedLines.find(
+    (l) => l.line.startsWith("funding-concentration") || l.line === "hqla-concentration",
+  );
 
   let blockReason: LiquidityGateBlockReason;
   let detail: string;

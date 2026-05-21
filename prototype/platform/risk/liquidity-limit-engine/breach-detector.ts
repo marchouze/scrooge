@@ -105,7 +105,10 @@ export function detectBreaches(opts: DetectBreachesOpts = {}): BreachDetectionRe
 
   const observations: LiquidityLimitObservation[] = opts.observations
     ? [...opts.observations]
-    : [...getPortfolioObservations(asOf), ...getConcentrationObservations(asOf, opts.concentrationFeed)];
+    : [
+        ...getPortfolioObservations(asOf),
+        ...getConcentrationObservations(asOf, opts.concentrationFeed),
+      ];
 
   const breaches: LiquidityLimitBreachedPayload[] = [];
 
@@ -150,7 +153,12 @@ export function detectBreaches(opts: DetectBreachesOpts = {}): BreachDetectionRe
 
 export interface TierStatusSummary {
   tier1Red: boolean;
-  tier1RedLines: { line: string; current: number; threshold: number; severity: LiquidityBreachSeverity }[];
+  tier1RedLines: {
+    line: string;
+    current: number;
+    threshold: number;
+    severity: LiquidityBreachSeverity;
+  }[];
   observationsCount: number;
 }
 
@@ -159,7 +167,10 @@ export function tierStatus(opts: DetectBreachesOpts = {}): TierStatusSummary {
   const asOf = opts.asOf ?? utcNow();
   const observations: LiquidityLimitObservation[] = opts.observations
     ? [...opts.observations]
-    : [...getPortfolioObservations(asOf), ...getConcentrationObservations(asOf, opts.concentrationFeed)];
+    : [
+        ...getPortfolioObservations(asOf),
+        ...getConcentrationObservations(asOf, opts.concentrationFeed),
+      ];
 
   const redLines: TierStatusSummary["tier1RedLines"] = [];
   for (const observation of observations) {

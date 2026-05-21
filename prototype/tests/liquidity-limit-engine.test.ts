@@ -199,11 +199,11 @@ describe("detectBreaches", () => {
       asOf: ts(2026, 5, 21),
     });
     expect(result.newBreaches.length).toBe(1);
-    const b = result.newBreaches[0]!;
-    expect(b.tier).toBe("tier-1");
-    expect(b.severity).toBe("critical");
-    expect(b.current).toBe(95);
-    expect(b.threshold).toBe(100);
+    const b = result.newBreaches[0];
+    expect(b?.tier).toBe("tier-1");
+    expect(b?.severity).toBe("critical");
+    expect(b?.current).toBe(95);
+    expect(b?.threshold).toBe(100);
   });
 
   it("returns tier-2 severity when only tier-2 + tier-3 cross (above PA minimum)", () => {
@@ -214,10 +214,10 @@ describe("detectBreaches", () => {
       asOf: ts(2026, 5, 21),
     });
     expect(result.newBreaches.length).toBe(1);
-    const b = result.newBreaches[0]!;
-    expect(b.tier).toBe("tier-2");
-    expect(b.severity).toBe("high");
-    expect(b.threshold).toBe(120);
+    const b = result.newBreaches[0];
+    expect(b?.tier).toBe("tier-2");
+    expect(b?.severity).toBe("high");
+    expect(b?.threshold).toBe(120);
   });
 
   it("returns tier-3 severity when only tier-3 crosses", () => {
@@ -227,9 +227,9 @@ describe("detectBreaches", () => {
       asOf: ts(2026, 5, 21),
     });
     expect(result.newBreaches.length).toBe(1);
-    const b = result.newBreaches[0]!;
-    expect(b.tier).toBe("tier-3");
-    expect(b.severity).toBe("medium");
+    const b = result.newBreaches[0];
+    expect(b?.tier).toBe("tier-3");
+    expect(b?.severity).toBe("medium");
   });
 
   it("emits one breach per line when multiple lines breach", () => {
@@ -264,10 +264,10 @@ describe("detectBreaches", () => {
       asOf: ts(2026, 5, 21),
     });
     expect(result.newBreaches.length).toBe(1);
-    const b = result.newBreaches[0]!;
-    expect(b.subjectRef).toBe("PARTY-LEI-EXAMPLE-CP");
-    expect(b.sourceEventId).toBe("src-event-id-123");
-    expect(b.tier).toBe("tier-2");
+    const b = result.newBreaches[0];
+    expect(b?.subjectRef).toBe("PARTY-LEI-EXAMPLE-CP");
+    expect(b?.sourceEventId).toBe("src-event-id-123");
+    expect(b?.tier).toBe("tier-2");
   });
 
   it("returns empty breaches on empty observation list (no-positions reality)", () => {
@@ -314,7 +314,7 @@ describe("tierStatus + checkLiquidityGate", () => {
     expect(gate.ok).toBe(false);
     expect(gate.blockReason).toBe("Tier1LiquidityRed");
     expect(gate.redLines.length).toBe(1);
-    expect(gate.redLines[0]!.line).toBe("lcr-ratio");
+    expect(gate.redLines[0]?.line).toBe("lcr-ratio");
     expect(gate.message).toContain("D-RAS");
     expect(gate.message).toContain("LRM Policy");
   });
@@ -330,9 +330,7 @@ describe("tierStatus + checkLiquidityGate", () => {
 
   it("blocks on counterparty concentration tier-1 red", () => {
     const gate = checkLiquidityGate({
-      observations: [
-        { line: "funding-concentration-counterparty", current: 30 },
-      ],
+      observations: [{ line: "funding-concentration-counterparty", current: 30 }],
       asOf: ts(2026, 5, 21),
     });
     expect(gate.ok).toBe(false);
@@ -397,9 +395,17 @@ describe("DEFAULT_LIMIT_CONFIGS coverage", () => {
     // LCR: 100 (tier-1) < 120 (tier-2) < 130 (tier-3).
     const lcrTiers = DEFAULT_LIMIT_CONFIGS.filter((c) => c.line === "lcr-ratio");
     expect(lcrTiers.length).toBe(3);
-    const byTier = Object.fromEntries(lcrTiers.map((c) => [c.tier, c.threshold]));
-    expect(byTier["tier-1"]).toBeLessThan(byTier["tier-2"]!);
-    expect(byTier["tier-2"]).toBeLessThan(byTier["tier-3"]!);
+    const byTier = new Map<string, number>(lcrTiers.map((c) => [c.tier, c.threshold]));
+    const t1 = byTier.get("tier-1");
+    const t2 = byTier.get("tier-2");
+    const t3 = byTier.get("tier-3");
+    expect(typeof t1).toBe("number");
+    expect(typeof t2).toBe("number");
+    expect(typeof t3).toBe("number");
+    if (typeof t1 === "number" && typeof t2 === "number" && typeof t3 === "number") {
+      expect(t1).toBeLessThan(t2);
+      expect(t2).toBeLessThan(t3);
+    }
   });
 });
 
@@ -502,7 +508,7 @@ describe("liquidity-limit projection round-trip via event store", () => {
 
     const history = getBreachHistory(breachId);
     expect(history.length).toBe(2);
-    expect(history[0]!.type).toBe("LiquidityLimitBreached");
-    expect(history[1]!.type).toBe("LiquidityLimitBreachDisposed");
+    expect(history[0]?.type).toBe("LiquidityLimitBreached");
+    expect(history[1]?.type).toBe("LiquidityLimitBreachDisposed");
   });
 });

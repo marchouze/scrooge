@@ -30,8 +30,17 @@ export {
   listOpenBreaches,
 } from "./projection";
 
-export type { BreachDetectionResult, DetectBreachesOpts, TierStatusSummary } from "./breach-detector";
-export { detectBreaches, observationBreachesConfig, resetBreachIdCounter, tierStatus } from "./breach-detector";
+export type {
+  BreachDetectionResult,
+  DetectBreachesOpts,
+  TierStatusSummary,
+} from "./breach-detector";
+export {
+  detectBreaches,
+  observationBreachesConfig,
+  resetBreachIdCounter,
+  tierStatus,
+} from "./breach-detector";
 
 export type { LiquidityGateBlockReason, LiquidityGateResult } from "./gateway";
 export { checkLiquidityGate } from "./gateway";
