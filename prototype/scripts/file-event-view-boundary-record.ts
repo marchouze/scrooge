@@ -13,6 +13,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
+applySharedEventDbResolution();
+
 import { clock, eventStore } from "../platform/composition";
 import { makeWorkstreamRegistered } from "../platform/event-store/event-types/platform";
 import { recordFiled } from "../platform/records";

@@ -14,6 +14,9 @@
 //          · Owen (Company Secretary, governance — records-lifecycle
 //          semantics consult)
 
+import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
+applySharedEventDbResolution();
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

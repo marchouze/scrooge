@@ -1,3 +1,6 @@
+import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
+applySharedEventDbResolution();
+
 import { clock } from "../platform/composition";
 import { recordDecision } from "../runtime/decisions/record";
 

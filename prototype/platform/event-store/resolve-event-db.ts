@@ -3,34 +3,37 @@
 // Shared event-DB resolution helper used by every surface that needs to
 // decide which SQLite file to talk to:
 //
-//   - `platform/composition.ts` (the canonical composition root — anyone
-//     who imports `eventStore` / `clock` automatically targets the
-//     resolved store)
 //   - The dispatch CLIs (`open-brief`, `start-run`, `close-run`) call
 //     `applyDispatchEventDbResolution` (the wrapper at
 //     `scripts/dispatch/resolve-event-db.ts`) at the top of each script,
-//     before importing `platform/composition`
-//   - The `approve-d-*.ts` / `record-d-*.ts` / `file-*.ts` emission
-//     scripts (indirectly — they import from composition)
+//     BEFORE importing `platform/composition.ts`. The wrapper resolves
+//     to the home-default shared store and mutates `BANK_EVENT_DB` so
+//     composition picks it up.
 //
-// Why this lives at `platform/event-store/` rather than `scripts/dispatch/`.
-// Before this slice, the only callsite was the dispatch CLIs, so the
-// resolver sat under `scripts/dispatch/`. PR #695 (Helena's MR-1-FX IPV
-// recalibration) surfaced the cost: persona emission scripts that import
-// from `platform/composition.ts` used a *different* (looser) precedence
-// chain. Helena's events landed in the per-worktree fallback while
-// dispatch CLI events landed in the home-default store — silent
-// mis-targeting. The fix is to make the same resolver authoritative for
-// every consumer; lifting it into `platform/event-store/` reflects that.
+//   - The `approve-d-*.ts` / `record-d-*.ts` / `file-*.ts` emission
+//     scripts call the same `applyDispatchEventDbResolution` at the top.
+//     This is the fix for PR #695 (Helena (Chief Risk Officer,
+//     governance)'s MR-1-FX IPV recalibration emission landed in the
+//     per-worktree fallback because the script imported composition
+//     directly without first resolving to the shared store).
+//
+//   - `platform/composition.ts` calls `resolveEventDbPath` directly with
+//     `excludeHomeDefault: true`. The composition root must NOT silently
+//     adopt the home-default store on its own — that would pollute the
+//     CI fallback (`.local/event.db`) with events from other surfaces
+//     and break recon pipelines (Atlas verified this empirically in the
+//     2026-05-21 build of this slice). Callers that want the shared
+//     store (dispatch CLIs, emission scripts) opt in by setting
+//     `BANK_EVENT_DB` via the apply wrapper.
 //
 // Resolution precedence (high → low):
 //   1. `opts.explicit` (e.g. `--event-db` CLI flag; caller override)
-//   2. `BANK_EVENT_DB` env var (already-set ambient — tests, scenarios)
+//   2. `BANK_EVENT_DB` env var (already-set ambient — tests, scenarios,
+//      dispatch boot)
 //   3. `BANK_HOME_EVENT_DB` env var (custom home location)
-//   4. `$HOME/.local/share/bank/event.db` (default shared store)
-//   5. fallback to `.local/event.db` (per-worktree; CI, fresh-clone, error
-//      recovery) — only when `$HOME` is unresolvable. The caller is
-//      expected to log a warning when this fires.
+//   4. `$HOME/.local/share/bank/event.db` (home-default shared store;
+//      SKIPPED when `excludeHomeDefault: true`)
+//   5. fallback to `.local/event.db` (per-worktree; CI, fresh-clone)
 //
 // The helper is pure: it does NOT mutate `process.env`, does NOT print to
 // stderr, does NOT touch the filesystem. Side-effects belong to the
@@ -50,12 +53,7 @@ export interface ResolvedEventDb {
   /** Absolute path the caller should open. */
   path: string;
   /** Which resolution rule fired. */
-  source:
-    | "explicit"
-    | "env-bank-event-db"
-    | "env-bank-home-event-db"
-    | "home-default"
-    | "fallback";
+  source: "explicit" | "env-bank-event-db" | "env-bank-home-event-db" | "home-default" | "fallback";
   /**
    * `true` when this is a shared store (home-default or BANK_HOME_EVENT_DB);
    * `false` for explicit / BANK_EVENT_DB / fallback — those may or may not
@@ -79,6 +77,14 @@ export interface ResolveEventDbInputs {
   envBankHomeEventDb?: string | undefined;
   /** Read from `os.homedir()` by default. */
   home?: string | undefined;
+  /**
+   * When `true`, the home-default tier is skipped — resolution jumps from
+   * `BANK_HOME_EVENT_DB` straight to the per-worktree fallback. Used by
+   * `platform/composition.ts` so the composition root does not silently
+   * adopt the home store: dispatch CLIs + emission scripts opt in
+   * explicitly via the apply wrapper.
+   */
+  excludeHomeDefault?: boolean;
 }
 
 const HOME_DEFAULT_SUBPATH = ".local/share/bank/event.db";
@@ -123,10 +129,37 @@ export function resolveEventDbPath(opts: ResolveEventDbInputs = {}): ResolvedEve
     };
   }
 
-  const home = opts.home === undefined ? nonEmpty(homedir()) : nonEmpty(opts.home);
-  if (home !== undefined) {
-    return { path: resolve(home, HOME_DEFAULT_SUBPATH), source: "home-default", shared: true };
+  if (!opts.excludeHomeDefault) {
+    const home = opts.home === undefined ? nonEmpty(homedir()) : nonEmpty(opts.home);
+    if (home !== undefined) {
+      return { path: resolve(home, HOME_DEFAULT_SUBPATH), source: "home-default", shared: true };
+    }
   }
 
   return { path: resolve(".local/event.db"), source: "fallback", shared: false };
+}
+
+/**
+ * Apply the home-default-enabled resolution + mutate `process.env.BANK_EVENT_DB`
+ * so a downstream import of `platform/composition.ts` picks up the resolved
+ * path. Intended for callers that want the shared HOME store: dispatch CLIs
+ * and persona emission scripts (`approve-d-*.ts`, `record-d-*.ts`,
+ * `file-*.ts`).
+ *
+ * MUST be called BEFORE the first import of `platform/composition.ts` —
+ * composition reads `BANK_EVENT_DB` at module-load time.
+ *
+ * Returns the resolved descriptor. Idempotent: calling twice with the same
+ * inputs yields the same result and leaves `process.env.BANK_EVENT_DB` set
+ * to that path.
+ *
+ * Side-effect: mutates `process.env.BANK_EVENT_DB`. Does NOT print to
+ * stderr; the dispatch-CLI variant
+ * (`applyDispatchEventDbResolution` in `scripts/dispatch/resolve-event-db.ts`)
+ * adds the audit log.
+ */
+export function applySharedEventDbResolution(opts?: { explicit?: string }): ResolvedEventDb {
+  const result = resolveEventDbPath({ explicit: opts?.explicit });
+  process.env.BANK_EVENT_DB = result.path;
+  return result;
 }

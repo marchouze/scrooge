@@ -19,6 +19,9 @@
 //   engineering) — Owner Inbox/2026-05-10_senna-rashida_agent-runtime-
 //   substrate-threat-model.md T-01.
 
+import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
+applySharedEventDbResolution();
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

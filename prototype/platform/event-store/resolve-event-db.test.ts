@@ -141,48 +141,55 @@ describe("resolveEventDbPath — precedence chain", () => {
 });
 
 describe("resolveEventDbPath — env-default reads (no injected inputs)", () => {
-  // These tests must NOT leak state across the suite. We snapshot + restore.
+  // These tests must NOT leak state across the suite. We snapshot the
+  // ambient env vars and restore them at the end of each test. Empty
+  // string is treated as "not set" by the helper (see `nonEmpty`), so we
+  // overwrite with `""` rather than `delete process.env.X` (which Biome
+  // flags as `lint/performance/noDelete`).
+
+  function snapshotEnv(): { prevEvent: string | undefined; prevHome: string | undefined } {
+    return {
+      prevEvent: process.env.BANK_EVENT_DB,
+      prevHome: process.env.BANK_HOME_EVENT_DB,
+    };
+  }
+
+  function restoreEnv(snap: { prevEvent: string | undefined; prevHome: string | undefined }): void {
+    process.env.BANK_EVENT_DB = snap.prevEvent ?? "";
+    process.env.BANK_HOME_EVENT_DB = snap.prevHome ?? "";
+  }
 
   test("reads BANK_EVENT_DB from process.env when not injected", () => {
-    const prevEvent = process.env.BANK_EVENT_DB;
-    const prevHome = process.env.BANK_HOME_EVENT_DB;
+    const snap = snapshotEnv();
     try {
       process.env.BANK_EVENT_DB = "/tmp/from-process-env.db";
-      delete process.env.BANK_HOME_EVENT_DB;
+      process.env.BANK_HOME_EVENT_DB = "";
       const r = resolveEventDbPath();
       expect(r.source).toBe("env-bank-event-db");
       expect(r.path).toBe(resolve("/tmp/from-process-env.db"));
     } finally {
-      if (prevEvent === undefined) delete process.env.BANK_EVENT_DB;
-      else process.env.BANK_EVENT_DB = prevEvent;
-      if (prevHome === undefined) delete process.env.BANK_HOME_EVENT_DB;
-      else process.env.BANK_HOME_EVENT_DB = prevHome;
+      restoreEnv(snap);
     }
   });
 
   test("reads BANK_HOME_EVENT_DB from process.env when not injected", () => {
-    const prevEvent = process.env.BANK_EVENT_DB;
-    const prevHome = process.env.BANK_HOME_EVENT_DB;
+    const snap = snapshotEnv();
     try {
-      delete process.env.BANK_EVENT_DB;
+      process.env.BANK_EVENT_DB = "";
       process.env.BANK_HOME_EVENT_DB = "/tmp/from-home-env.db";
       const r = resolveEventDbPath();
       expect(r.source).toBe("env-bank-home-event-db");
       expect(r.path).toBe(resolve("/tmp/from-home-env.db"));
     } finally {
-      if (prevEvent === undefined) delete process.env.BANK_EVENT_DB;
-      else process.env.BANK_EVENT_DB = prevEvent;
-      if (prevHome === undefined) delete process.env.BANK_HOME_EVENT_DB;
-      else process.env.BANK_HOME_EVENT_DB = prevHome;
+      restoreEnv(snap);
     }
   });
 
   test("falls back to os.homedir() when no env vars set", () => {
-    const prevEvent = process.env.BANK_EVENT_DB;
-    const prevHome = process.env.BANK_HOME_EVENT_DB;
+    const snap = snapshotEnv();
     try {
-      delete process.env.BANK_EVENT_DB;
-      delete process.env.BANK_HOME_EVENT_DB;
+      process.env.BANK_EVENT_DB = "";
+      process.env.BANK_HOME_EVENT_DB = "";
       const r = resolveEventDbPath();
       // On any normal dev / CI runner, homedir() resolves; "fallback" should
       // only fire in unusual containers. Assert on either of the two valid
@@ -196,10 +203,7 @@ describe("resolveEventDbPath — env-default reads (no injected inputs)", () => 
         expect(r.shared).toBe(false);
       }
     } finally {
-      if (prevEvent === undefined) delete process.env.BANK_EVENT_DB;
-      else process.env.BANK_EVENT_DB = prevEvent;
-      if (prevHome === undefined) delete process.env.BANK_HOME_EVENT_DB;
-      else process.env.BANK_HOME_EVENT_DB = prevHome;
+      restoreEnv(snap);
     }
   });
 });

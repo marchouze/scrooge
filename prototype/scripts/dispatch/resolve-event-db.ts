@@ -36,12 +36,7 @@ import {
  */
 export interface ResolvedEventDb {
   path: string;
-  source:
-    | "cli-flag"
-    | "env-bank-event-db"
-    | "env-bank-home-event-db"
-    | "home-default"
-    | "fallback";
+  source: "cli-flag" | "env-bank-event-db" | "env-bank-home-event-db" | "home-default" | "fallback";
   shared: boolean;
 }
 
