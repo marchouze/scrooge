@@ -43,8 +43,8 @@ const ENTITY = "BANK-ZA-001";
 const ACTOR = { type: "service" as const, id: "test:fx-forward-reval" };
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION", "IAS-21-§28"];
 
-// Stub rate source: 90d forward for ZAR/USD at 19_000_000 minor units (19.0)
-function makeSimpleStub(pair = "ZAR/USD", tenorDays = 90, rate = 19_000_000n): ForwardRateSource {
+// Stub rate source: 90d forward for USD/ZAR at 19_000_000 minor units (19.0)
+function makeSimpleStub(pair = "USD/ZAR", tenorDays = 90, rate = 19_000_000n): ForwardRateSource {
   return makeStubForwardRateSource({ [pair]: { [tenorDays]: rate } });
 }
 
@@ -58,7 +58,7 @@ function appendForwardTrade(
   tradeId: string,
   bookRate = 18.7,
   settlementDate = "2026-08-15", // ~90 calendar days from AS_OF
-  currencyPair = { base: "ZAR", quote: "USD" },
+  currencyPair = { base: "USD", quote: "ZAR" },
 ): void {
   store.append(
     makeFxTradeExecuted({
@@ -70,14 +70,19 @@ function appendForwardTrade(
         tradeId: { scheme: "internal", value: tradeId },
         productTaxonomy: "FX-forward",
         currencyPair,
-        side: "buy",
+        // Canonical Option A (D-FX-QUOTING-CONVENTION): a SELL on the
+        // canonical USD/ZAR pair pays USD (base) and receives ZAR (quote).
+        side: "sell",
         legs: [
           {
             legKind: "near",
             payCurrency: currencyPair.base,
             receiveCurrency: currencyPair.quote,
-            notional: { currency: currencyPair.base, amountMinor: 100_000_000 }, // 1M ZAR
-            counterNotional: { currency: currencyPair.quote, amountMinor: 53_476 },
+            notional: { currency: currencyPair.base, amountMinor: 100_000_000 }, // USD 1m
+            counterNotional: {
+              currency: currencyPair.quote,
+              amountMinor: Math.round(100_000_000 * bookRate),
+            },
             rate: { currency: currencyPair.quote, amount: bookRate },
             settlementDate: { iso: settlementDate, calendar: "JIHCAL" },
           },
@@ -114,24 +119,34 @@ function appendSwapTrade(
       payload: {
         tradeId: { scheme: "internal", value: tradeId },
         productTaxonomy: "FX-swap",
-        currencyPair: { base: "ZAR", quote: "USD" },
-        side: "buy",
+        currencyPair: { base: "USD", quote: "ZAR" },
+        // Canonical Option A: SELL USD/ZAR near; the far leg of a swap is
+        // by definition the opposite direction (i.e. BUY USD/ZAR).
+        side: "sell",
         legs: [
           {
             legKind: "near",
-            payCurrency: "ZAR",
-            receiveCurrency: "USD",
-            notional: { currency: "ZAR", amountMinor: 100_000_000 },
-            counterNotional: { currency: "USD", amountMinor: 53_763 },
-            rate: { currency: "USD", amount: bookRateNear },
+            // SELL near: pay USD (base), receive ZAR (quote).
+            payCurrency: "USD",
+            receiveCurrency: "ZAR",
+            notional: { currency: "USD", amountMinor: 100_000_000 },
+            counterNotional: {
+              currency: "ZAR",
+              amountMinor: Math.round(100_000_000 * bookRateNear),
+            },
+            rate: { currency: "ZAR", amount: bookRateNear },
             settlementDate: { iso: nearSettleDate, calendar: "JIHCAL" },
           },
           {
             legKind: "far",
-            payCurrency: "USD",
-            receiveCurrency: "ZAR",
-            notional: { currency: "USD", amountMinor: 53_763 },
-            counterNotional: { currency: "ZAR", amountMinor: 100_000_000 },
+            // BUY far (opposite to near): pay ZAR (quote), receive USD (base).
+            payCurrency: "ZAR",
+            receiveCurrency: "USD",
+            notional: {
+              currency: "ZAR",
+              amountMinor: Math.round(100_000_000 * bookRateFar),
+            },
+            counterNotional: { currency: "USD", amountMinor: 100_000_000 },
             rate: { currency: "ZAR", amount: bookRateFar },
             settlementDate: { iso: farSettleDate, calendar: "JIHCAL" },
           },
@@ -166,16 +181,19 @@ function appendNdfTrade(
       payload: {
         tradeId: { scheme: "internal", value: tradeId },
         productTaxonomy: "NDF",
-        currencyPair: { base: "ZAR", quote: "USD" },
-        side: "buy",
+        currencyPair: { base: "USD", quote: "ZAR" },
+        side: "sell",
         legs: [
           {
             legKind: "near",
-            payCurrency: "ZAR",
-            receiveCurrency: "USD",
-            notional: { currency: "ZAR", amountMinor: 100_000_000 },
-            counterNotional: { currency: "USD", amountMinor: 53_191 },
-            rate: { currency: "USD", amount: bookRate },
+            payCurrency: "USD",
+            receiveCurrency: "ZAR",
+            notional: { currency: "USD", amountMinor: 100_000_000 },
+            counterNotional: {
+              currency: "ZAR",
+              amountMinor: Math.round(100_000_000 * bookRate),
+            },
+            rate: { currency: "ZAR", amount: bookRate },
             settlementDate: { iso: settlementDate, calendar: "JIHCAL" },
           },
         ],
@@ -209,7 +227,7 @@ function appendSettlementConfirmed(
       citations: CITATIONS,
       payload: {
         tradeId,
-        currencyPair: "ZAR/USD",
+        currencyPair: "USD/ZAR",
         legKind,
         settledBaseCurrencyMinor: 100_000_000,
         settledQuoteCurrencyMinor: 53_476,
@@ -232,7 +250,7 @@ describe("TC-FWD-1: FX-forward sunny-day", () => {
     appendForwardTrade(store, "FWD-001", 18.7, "2026-08-15");
 
     // 2026-08-15 is 90 days from 2026-05-17
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 90: 19_000_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 90: 19_000_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(1);
@@ -253,7 +271,7 @@ describe("TC-FWD-1: FX-forward sunny-day", () => {
     // Book at 18.7; forward rate moves to 19.0 → gain for buyer.
     appendForwardTrade(store, "FWD-PNL", 18.7, "2026-08-15");
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 90: 19_000_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 90: 19_000_000n } });
     runEodFxForwardRevaluation(store, AS_OF, stub);
 
     let payload: { unrealisedPnlZarMinor: number; bookRate: number; revalRate: number } | undefined;
@@ -274,7 +292,7 @@ describe("TC-FWD-1: FX-forward sunny-day", () => {
     appendForwardTrade(store, "FWD-LOSS", 18.7, "2026-08-15");
 
     // Rate falls to 18.0
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 90: 18_000_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 90: 18_000_000n } });
     runEodFxForwardRevaluation(store, AS_OF, stub);
 
     let payload: { unrealisedPnlZarMinor: number } | undefined;
@@ -293,7 +311,7 @@ describe("TC-FWD-2: FX-forward idempotency", () => {
   it("second run on same date skips the already-revalued position", () => {
     const store = makeStore();
     appendForwardTrade(store, "FWD-IDEM", 18.7, "2026-08-15");
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 90: 19_000_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 90: 19_000_000n } });
 
     const r1 = runEodFxForwardRevaluation(store, AS_OF, stub);
     const r2 = runEodFxForwardRevaluation(store, AS_OF, stub);
@@ -354,7 +372,7 @@ describe("TC-FWD-5: settled forward excluded", () => {
     appendForwardTrade(store, "FWD-SETTLED", 18.7, "2026-08-15");
     appendSettlementConfirmed(store, "FWD-SETTLED", "near");
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 90: 19_000_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 90: 19_000_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(0);
@@ -379,7 +397,7 @@ describe("TC-FWD-6: multiple forward positions", () => {
     appendForwardTrade(store, "FWD-C", 18.9, "2026-08-15");
     appendSettlementConfirmed(store, "FWD-C", "near"); // settle FWD-C
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 90: 19_000_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 90: 19_000_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(2); // FWD-A, FWD-B
@@ -431,7 +449,7 @@ describe("TC-SWP-1: FX-swap near leg settled — far leg valued", () => {
     // Near leg confirmed.
     appendSettlementConfirmed(store, "SWP-001", "near");
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 94: 19_100_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 94: 19_100_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(1);
@@ -448,7 +466,7 @@ describe("TC-SWP-2: FX-swap — both legs open, far leg valued", () => {
     const store = makeStore();
     appendSwapTrade(store, "SWP-OPEN", "2026-05-19", "2026-08-19");
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 94: 19_100_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 94: 19_100_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(1);
@@ -465,7 +483,7 @@ describe("TC-SWP-3: FX-swap fully settled — excluded", () => {
     appendSwapTrade(store, "SWP-FULL-SETTLED");
     appendSettlementConfirmed(store, "SWP-FULL-SETTLED", "far");
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 94: 19_100_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 94: 19_100_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(0);
@@ -483,7 +501,7 @@ describe("TC-NDF-1: NDF sunny-day", () => {
     appendNdfTrade(store, "NDF-001", 18.8, "2026-08-19");
 
     // 2026-08-19 − 2026-05-17 = 94 days
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 94: 19_200_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 94: 19_200_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(1);
@@ -509,7 +527,7 @@ describe("TC-NDF-2: NDF idempotency", () => {
   it("second run skips the already-revalued NDF", () => {
     const store = makeStore();
     appendNdfTrade(store, "NDF-IDEM");
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 94: 19_200_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 94: 19_200_000n } });
 
     const r1 = runEodFxForwardRevaluation(store, AS_OF, stub);
     const r2 = runEodFxForwardRevaluation(store, AS_OF, stub);
@@ -530,7 +548,7 @@ describe("TC-NDF-3: NDF settled — excluded", () => {
     appendNdfTrade(store, "NDF-SETTLED");
     appendSettlementConfirmed(store, "NDF-SETTLED", "near");
 
-    const stub = makeStubForwardRateSource({ "ZAR/USD": { 94: 19_200_000n } });
+    const stub = makeStubForwardRateSource({ "USD/ZAR": { 94: 19_200_000n } });
     const result = runEodFxForwardRevaluation(store, AS_OF, stub);
 
     expect(result.revalued).toBe(0);
@@ -549,7 +567,7 @@ describe("TC-MIX-1: mixed portfolio — forward + swap + NDF", () => {
     appendNdfTrade(store, "MIX-NDF", 18.8, "2026-08-19");
 
     const stub = makeStubForwardRateSource({
-      "ZAR/USD": {
+      "USD/ZAR": {
         90: 19_000_000n, // FWD-MIX: 2026-08-15 = 90d from 2026-05-17
         94: 19_100_000n, // SWP far + NDF: 2026-08-19 = 94d
       },

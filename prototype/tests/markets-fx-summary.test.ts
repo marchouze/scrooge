@@ -91,7 +91,9 @@ function appendFxTrade(store: EventStore, counterpartyId: string): void {
         tradeId: { scheme: "internal", value: `trade:${Math.random().toString(36).slice(2)}` },
         productTaxonomy: "FX-spot",
         currencyPair: { base: "USD", quote: "ZAR" },
-        side: "buy",
+        // Canonical Option A (D-FX-QUOTING-CONVENTION): pay USD (base),
+        // receive ZAR (quote) → side "sell" on the canonical pair.
+        side: "sell",
         legs: [
           {
             legKind: "near",

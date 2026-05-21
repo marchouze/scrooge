@@ -125,11 +125,24 @@ export const fxLegSchema = z.object({
     .string()
     .length(3)
     .regex(/^[A-Z]{3}$/),
-  /** Notional traded in the pay currency. */
+  /**
+   * Notional traded in the pay currency. notional.currency MUST equal
+   * payCurrency. For a BUY trade on a major-first pair, this is the
+   * quote-currency amount; for a SELL trade, the base-currency amount.
+   */
   notional: moneySchema,
-  /** Counter-notional received in the receive currency. */
+  /**
+   * Counter-notional received in the receive currency.
+   * counterNotional.currency MUST equal receiveCurrency. Always equal in
+   * magnitude to notional × rate (within rounding to minor units).
+   */
   counterNotional: moneySchema,
-  /** Agreed rate for this leg (price expressed as receiveCurrency per pay-unit). */
+  /**
+   * Agreed rate for this leg, expressed as quote-per-base — i.e. units of
+   * currencyPair.quote per one unit of currencyPair.base. rate.currency
+   * MUST equal currencyPair.quote. ACI Model Code §2;
+   * D-FX-QUOTING-CONVENTION.
+   */
   rate: priceSchema,
   /** Settlement date for this leg. */
   settlementDate: cdmDateSchema,
@@ -312,21 +325,111 @@ export const fxTradeExecutedPayloadSchema = z
       });
     }
 
-    // Every leg's pay/receive currencies must be drawn from the trade pair.
+    // -----------------------------------------------------------------
+    // Quoting-convention invariants (D-FX-QUOTING-CONVENTION, Option A).
+    //
+    // The five-clause invariant that pins how price / notional /
+    // counter-notional relate on every leg:
+    //   (i)   payCurrency, receiveCurrency ∈ {currencyPair.base, currencyPair.quote}
+    //         (with payCurrency ≠ receiveCurrency).
+    //   (ii)  notional.currency = payCurrency.
+    //   (iii) counterNotional.currency = receiveCurrency.
+    //   (iv)  rate.currency = currencyPair.quote (rate is quote-per-base).
+    //   (v)   Side coherence: side="buy" → payCurrency = quote,
+    //         receiveCurrency = base; side="sell" → payCurrency = base,
+    //         receiveCurrency = quote.
+    //
+    // Authority:
+    //   - D-FX-QUOTING-CONVENTION (CEO-approved 2026-05-21)
+    //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
+    //   - PR #654 (pair-direction precedent — ACI Model Code §2)
+    //
+    // Forward-only schema change. Pre-existing FxTradeExecuted events
+    // that pre-date this refinement may fail re-parse; the
+    // recon:fx-quoting-convention advisory pipeline surfaces them so
+    // Slice 3b (Devon — sim generator simplification) can repair the
+    // sim substrate without blocking CI on legacy events.
+    // -----------------------------------------------------------------
     for (const [i, leg] of data.legs.entries()) {
-      const pair = new Set([data.currencyPair.base, data.currencyPair.quote]);
-      if (!pair.has(leg.payCurrency) || !pair.has(leg.receiveCurrency)) {
+      const { base, quote } = data.currencyPair;
+      // (i) Pay/receive currencies must be the pair's two currencies.
+      const pairCurrencies = new Set([base, quote]);
+      if (!pairCurrencies.has(leg.payCurrency)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "leg currencies must come from the trade currencyPair",
-          path: ["legs", i],
+          path: ["legs", i, "payCurrency"],
+          message: `payCurrency '${leg.payCurrency}' must be one of currencyPair {${base}, ${quote}}`,
+        });
+      }
+      if (!pairCurrencies.has(leg.receiveCurrency)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["legs", i, "receiveCurrency"],
+          message: `receiveCurrency '${leg.receiveCurrency}' must be one of currencyPair {${base}, ${quote}}`,
         });
       }
       if (leg.payCurrency === leg.receiveCurrency) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "leg payCurrency and receiveCurrency must differ",
-          path: ["legs", i],
+          path: ["legs", i, "payCurrency"],
+          message: "payCurrency and receiveCurrency must differ",
+        });
+      }
+      // (ii) Notional must be in pay currency.
+      if (leg.notional.currency !== leg.payCurrency) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["legs", i, "notional", "currency"],
+          message: `notional.currency '${leg.notional.currency}' must equal payCurrency '${leg.payCurrency}'`,
+        });
+      }
+      // (iii) Counter-notional must be in receive currency.
+      if (leg.counterNotional.currency !== leg.receiveCurrency) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["legs", i, "counterNotional", "currency"],
+          message: `counterNotional.currency '${leg.counterNotional.currency}' must equal receiveCurrency '${leg.receiveCurrency}'`,
+        });
+      }
+      // (iv) Rate is quote-per-base; rate.currency must equal pair quote.
+      if (leg.rate.currency !== quote) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["legs", i, "rate", "currency"],
+          message: `rate.currency '${leg.rate.currency}' must equal currencyPair.quote '${quote}' (rate is quote-per-base; D-FX-QUOTING-CONVENTION)`,
+        });
+      }
+      // (v) Side coherence:
+      //
+      //   For Spot/Forward/NDF (single near leg): the near leg's
+      //   direction matches the trade-level side —
+      //     BUY  → pay quote, receive base
+      //     SELL → pay base, receive quote.
+      //
+      //   For Swap (one near + one far leg): the near leg matches the
+      //   trade-level side; the far leg is, by definition, in the
+      //   opposite direction. Clause (v) therefore inverts expectations
+      //   on the far leg of a swap.
+      const isFarSwapLeg = data.productTaxonomy === "FX-swap" && leg.legKind === "far";
+      const effectiveSide: "buy" | "sell" = isFarSwapLeg
+        ? data.side === "buy"
+          ? "sell"
+          : "buy"
+        : data.side;
+      const expectedPay = effectiveSide === "buy" ? quote : base;
+      const expectedReceive = effectiveSide === "buy" ? base : quote;
+      if (leg.payCurrency !== expectedPay) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["legs", i, "payCurrency"],
+          message: `side '${data.side}' requires payCurrency '${expectedPay}', got '${leg.payCurrency}'`,
+        });
+      }
+      if (leg.receiveCurrency !== expectedReceive) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["legs", i, "receiveCurrency"],
+          message: `side '${data.side}' requires receiveCurrency '${expectedReceive}', got '${leg.receiveCurrency}'`,
         });
       }
     }

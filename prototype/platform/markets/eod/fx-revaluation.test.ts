@@ -41,7 +41,17 @@ function makeTestRateSource(rates: Record<string, Record<string, number>>): FxRa
   };
 }
 
-/** Append one FxTradeExecuted (ZAR/USD spot, near leg, notional 1M ZAR). */
+/**
+ * Append one FxTradeExecuted in canonical Option A form
+ * (D-FX-QUOTING-CONVENTION):
+ *   - pair USD/ZAR (canonical major-first per ACI Model Code §2)
+ *   - side="sell" → bank pays USD (base), receives ZAR (quote)
+ *   - rate.currency = ZAR (quote) and rate.amount is quote-per-base
+ *   - notional in pay currency (USD)
+ * The economic intent (bank holds a long-USD/short-ZAR position on the
+ * back of receiving ZAR) is preserved; only the canonical-direction
+ * framing changes.
+ */
 function appendFxTrade(store: EventStore, tradeId: string, bookRateAmount = 18.5): void {
   store.append(
     makeFxTradeExecuted({
@@ -52,16 +62,20 @@ function appendFxTrade(store: EventStore, tradeId: string, bookRateAmount = 18.5
       payload: {
         tradeId: { scheme: "internal", value: tradeId },
         productTaxonomy: "FX-spot",
-        currencyPair: { base: "ZAR", quote: "USD" },
-        side: "buy",
+        currencyPair: { base: "USD", quote: "ZAR" },
+        side: "sell",
         legs: [
           {
             legKind: "near",
-            payCurrency: "ZAR",
-            receiveCurrency: "USD",
-            notional: { currency: "ZAR", amountMinor: 1_000_000_00 }, // 1M ZAR in cents
-            counterNotional: { currency: "USD", amountMinor: 54054 }, // ~54k USD cents
-            rate: { currency: "USD", amount: bookRateAmount },
+            payCurrency: "USD",
+            receiveCurrency: "ZAR",
+            // notional in pay currency (USD); 100_000_000 USD cents = USD 1m.
+            notional: { currency: "USD", amountMinor: 100_000_000 },
+            counterNotional: {
+              currency: "ZAR",
+              amountMinor: Math.round(100_000_000 * bookRateAmount),
+            },
+            rate: { currency: "ZAR", amount: bookRateAmount },
             settlementDate: { iso: AS_OF, calendar: "JIHCAL" },
           },
         ],
@@ -89,7 +103,7 @@ function appendSettlementConfirmed(store: EventStore, tradeId: string): void {
       citations: CITATIONS,
       payload: {
         tradeId,
-        currencyPair: "ZAR/USD",
+        currencyPair: "USD/ZAR",
         legKind: "near",
         settledBaseCurrencyMinor: 1_000_000_00,
         settledQuoteCurrencyMinor: 54054,
@@ -116,7 +130,7 @@ describe("TC-1: sunny-day — one open position, rate available", () => {
     appendFxTrade(store, "TRD-001", 18.5);
 
     // Rate is 18.6 on the valuation date.
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_600_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_600_000 } });
 
     const result = runEodFxRevaluation(store, AS_OF, rateSource);
 
@@ -138,7 +152,7 @@ describe("TC-1: sunny-day — one open position, rate available", () => {
     appendFxTrade(store, "TRD-002", 18.5);
 
     // Rate moved up → positive P&L (gain) if notional × (newRate - bookRate) > 0.
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_600_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_600_000 } });
 
     runEodFxRevaluation(store, AS_OF, rateSource);
 
@@ -161,7 +175,7 @@ describe("TC-2: idempotency — position already revalued today", () => {
     const store = makeStore();
     appendFxTrade(store, "TRD-IDEM", 18.5);
 
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_600_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_600_000 } });
 
     // First run — should revalue.
     const result1 = runEodFxRevaluation(store, AS_OF, rateSource);
@@ -189,7 +203,7 @@ describe("TC-2: idempotency — position already revalued today", () => {
 describe("TC-3: no open positions", () => {
   it("returns revalued=0, skipped=0 when no FxTradeExecuted events", () => {
     const store = makeStore();
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_600_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_600_000 } });
 
     const result = runEodFxRevaluation(store, AS_OF, rateSource);
 
@@ -208,7 +222,7 @@ describe("TC-4: missing rate — throws", () => {
     appendFxTrade(store, "TRD-NORATE", 18.5);
 
     // Rate source has no data for the valuation date.
-    const rateSource = makeTestRateSource({ "ZAR/USD": {} });
+    const rateSource = makeTestRateSource({ "USD/ZAR": {} });
 
     expect(() => runEodFxRevaluation(store, AS_OF, rateSource)).toThrow();
   });
@@ -224,7 +238,7 @@ describe("TC-5: settled position excluded from revaluation", () => {
     appendFxTrade(store, "TRD-SETTLED", 18.5);
     appendSettlementConfirmed(store, "TRD-SETTLED");
 
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_600_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_600_000 } });
 
     const result = runEodFxRevaluation(store, AS_OF, rateSource);
 
@@ -266,16 +280,19 @@ function appendFxForwardTrade(
       payload: {
         tradeId: { scheme: "internal", value: tradeId },
         productTaxonomy: "FX-forward",
-        currencyPair: { base: "ZAR", quote: "USD" },
-        side: "buy",
+        currencyPair: { base: "USD", quote: "ZAR" },
+        side: "sell",
         legs: [
           {
             legKind: "near",
-            payCurrency: "ZAR",
-            receiveCurrency: "USD",
-            notional: { currency: "ZAR", amountMinor: 1_000_000_00 },
-            counterNotional: { currency: "USD", amountMinor: 53_476 },
-            rate: { currency: "USD", amount: bookRateAmount },
+            payCurrency: "USD",
+            receiveCurrency: "ZAR",
+            notional: { currency: "USD", amountMinor: 100_000_000 },
+            counterNotional: {
+              currency: "ZAR",
+              amountMinor: Math.round(100_000_000 * bookRateAmount),
+            },
+            rate: { currency: "ZAR", amount: bookRateAmount },
             settlementDate: { iso: forwardSettleDate, calendar: "JIHCAL" },
           },
         ],
@@ -299,7 +316,7 @@ describe("TC-7: FX Forward positions enter the EOD revaluation cycle", () => {
     // Book a 3-month forward at 18.7; mid-life rate moves to 18.85.
     appendFxForwardTrade(store, "TRD-FWD-MID", 18.7);
 
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_850_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_850_000 } });
     const result = runEodFxRevaluation(store, AS_OF, rateSource);
 
     expect(result.revalued).toBe(1);
@@ -319,7 +336,7 @@ describe("TC-7: FX Forward positions enter the EOD revaluation cycle", () => {
     appendFxForwardTrade(store, "TRD-FWD-SETTLED", 18.7);
     appendSettlementConfirmed(store, "TRD-FWD-SETTLED");
 
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_850_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_850_000 } });
     const result = runEodFxRevaluation(store, AS_OF, rateSource);
     expect(result.revalued).toBe(0);
   });
@@ -328,7 +345,7 @@ describe("TC-7: FX Forward positions enter the EOD revaluation cycle", () => {
     const store = makeStore();
     appendFxForwardTrade(store, "TRD-FWD-IDEM", 18.7);
 
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_850_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_850_000 } });
     const first = runEodFxRevaluation(store, AS_OF, rateSource);
     const second = runEodFxRevaluation(store, AS_OF, rateSource);
     expect(first.revalued).toBe(1);
@@ -346,7 +363,7 @@ describe("TC-6: multiple open positions — all revalued", () => {
     // Settle TRD-M3.
     appendSettlementConfirmed(store, "TRD-M3");
 
-    const rateSource = makeTestRateSource({ "ZAR/USD": { [AS_OF]: 18_600_000 } });
+    const rateSource = makeTestRateSource({ "USD/ZAR": { [AS_OF]: 18_600_000 } });
 
     const result = runEodFxRevaluation(store, AS_OF, rateSource);
 
