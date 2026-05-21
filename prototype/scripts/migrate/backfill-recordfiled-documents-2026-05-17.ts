@@ -120,7 +120,7 @@ const ENTRIES: readonly BackfillEntry[] = [
     recordId: "record:documents:mira:obligations-register-v1-30-activity-scope-review:2026-05-17",
     asOf: "2026-05-17T12:00:00.000Z",
     actor: { type: "service", id: "agent:mira:engineering" },
-    classification: "internal",
+    classification: "engineering-seat",
     retentionKind: "agent-engineer",
     metadata: {
       title: "Obligations register v1.30 — Activity scope column corrections",
@@ -202,8 +202,7 @@ const ENTRIES: readonly BackfillEntry[] = [
     classification: "governance-seat",
     retentionKind: "governance",
     metadata: {
-      title:
-        "Authority gap brief — CFO / COO / CISO / CAE / CCO decision authority scoping",
+      title: "Authority gap brief — CFO / COO / CISO / CAE / CCO decision authority scoping",
       category: "governance-seat-scoping",
       author: "Owen (Company Secretary, governance)",
       date: "2026-05-17",
@@ -215,11 +214,10 @@ const ENTRIES: readonly BackfillEntry[] = [
   },
   {
     filename: "2026-05-17_sade_agent-performance-evaluation-2026-05-16-17.md",
-    recordId:
-      "record:documents:sade:agent-performance-evaluation-2026-05-16-17:2026-05-17",
+    recordId: "record:documents:sade:agent-performance-evaluation-2026-05-16-17:2026-05-17",
     asOf: "2026-05-17T12:00:00.000Z",
     actor: { type: "service", id: "agent:sade:engineering" },
-    classification: "internal",
+    classification: "engineering-seat",
     retentionKind: "agent-engineer",
     metadata: {
       title: "Agent Performance Evaluation — 2026-05-16/17 period",
@@ -257,7 +255,7 @@ const ENTRIES: readonly BackfillEntry[] = [
     recordId: "record:documents:bea:fx-lifecycle-posting-rules-design-note:2026-05-20",
     asOf: "2026-05-20T12:00:00.000Z",
     actor: { type: "service", id: "agent:bea:engineering" },
-    classification: "internal",
+    classification: "engineering-seat",
     retentionKind: "agent-engineer",
     metadata: {
       title: "FX lifecycle posting rules — design note",

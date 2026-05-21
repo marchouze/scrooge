@@ -29,8 +29,7 @@ import { recordDecision, requestDecision } from "../runtime/decisions/record";
 
 const DECISION_ID = "D-RMS-DOCUMENTS-FRESH-RUNNER-DOWNGRADE-RETIRE";
 
-const TITLE =
-  "Retire `recon:rms-documents-parity` fresh-runner empty-store downgrade carve-out";
+const TITLE = "Retire `recon:rms-documents-parity` fresh-runner empty-store downgrade carve-out";
 const CATEGORY = "governance" as const;
 const RECOMMENDATION =
   "Remove the `if (totalRecordFiledDocumentsEvents === 0) → downgrade all violations to warn` branch in `prototype/platform/recon/rms-documents-parity.ts`. With the 8 historical post-Phase-3 RecordFiled(documents) events backfilled via `scripts/migrate/backfill-recordfiled-documents-2026-05-17.ts` (wired into `migrate:decisions-backfill`), every fresh runner now hydrates a non-empty Documents register before recon runs. Post-Phase-3 files without a matching RecordFiled event remain `fail`; pre-Phase-3 files remain `warn` (historical gap expected). Empty-store posture no longer needs special handling.";
