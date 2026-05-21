@@ -50,8 +50,8 @@ Env does not own real market data connectivity (no live feed subscription), real
 | `EnvSimEngine.start()` called | API route or test harness | Immediate — timers armed on call |
 | Interval tick — market data | Internal timer | Within `marketDataIntervalMs` of last tick |
 | Interval tick — nostro statement | Internal timer | Within `nostroStatementIntervalMs` of last tick |
-| `PrincipalPayment` event with `legKind:"receive"` | `@platform/event-store` | Within 500 ms of event append |
-| `OutboundMessageDispatched` event with regulatory message type | `@platform/event-store` | Within 1 s poll cycle + 2 s ack delay |
+| `PrincipalPayment` event with `legKind:"receive"` [deferred — handler not yet built] | `@platform/event-store` | Within 500 ms of event append |
+| `OutboundMessageDispatched` event with regulatory message type [deferred — handler not yet built] | `@platform/event-store` | Within 1 s poll cycle + 2 s ack delay |
 
 ## 8. Inputs
 

@@ -140,6 +140,7 @@ This agent's mandate **is** the substrate. The relevant gaps are the things Atla
 - **F-030 (Vera P2)** — 90 ad-hoc `process.env` reads across `prototype/` with no central schema. Centralise in a `platform/env.ts` Zod-parsed config singleton; fail at boot on misconfig. Owner: Atlas.
 - **F-034 (Vera P2)** — `recon:circular-deps` script added to `package.json` but not wired into `ci` chain — 5 circular deps currently present (taxonomies barrel cycle + dcam/index cycle). Resolve cycles then add `bun run recon:circular-deps` to the `ci` script. Owner: Atlas.
 - **F-016 (Vera P2, partial)** — CEO-decision-record parse failures currently surface as `SubstrateAgentRunFailed`; should emit `AgentEscalation` for integrity events. Blocked on escalation channel wiring (above gap). Owner: Atlas (channel) + Scrooge (handler update).
+- **Goal-deriver defer rate 100%** (2026-05-21): `recon:goal-loop-capability` warns at ≥95% defer rate; Atlas currently defers 204/205 iterations. §6 goal-deriver logic needs a concrete implementation — inspect open briefs, recon findings, and decision queue to produce `AgentGoalEvaluated{outcome:"act"}` events rather than always deferring.
 
 ## 17. Change log
 
