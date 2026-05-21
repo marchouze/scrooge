@@ -170,10 +170,17 @@ def ingest_procedure(path: Path) -> IngestResult:
                 result.edges.append(DeterministicEdge(pol_urn, urn, "GOVERNS", src))
 
     if sys_cap and isinstance(sys_cap, str):
-        for cap in sys_cap.split("·"):
-            cap = cap.strip()
-            if cap:
-                cap_urn = f"capability:{cap}"
+        # The corpus uses three separators interchangeably: " · ", " + ", and ",".
+        # Split on all of them and keep paths that start with '@'.
+        import re as _re
+
+        caps = [c.strip() for c in _re.split(r"\s*[·+,]\s*", sys_cap) if c.strip()]
+        for cap in caps:
+            # Drop trailing parenthesised qualifiers like " (PLANNED)" for matching;
+            # keep them on the attrs.path for traceability.
+            cap_clean = _re.sub(r"\s*\([^)]*\)\s*$", "", cap).strip()
+            if cap_clean:
+                cap_urn = f"capability:{cap_clean}"
                 result.nodes.append(
                     DeterministicNode(
                         entity_type="Capability",

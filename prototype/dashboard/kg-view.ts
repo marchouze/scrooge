@@ -11,13 +11,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const KG_STORE_ROOT = join(
-  __dirname,
-  "..",
-  "platform",
-  "knowledge-graph",
-  ".local",
-);
+const KG_STORE_ROOT = join(__dirname, "..", "platform", "knowledge-graph", ".local");
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -61,10 +55,7 @@ function handleKgRun(slice: string): Response {
     return jsonResponse({
       slice,
       seeded: false,
-      message:
-        "No ingest run found. Run `cd prototype/platform/knowledge-graph && uv run kg ingest --slice " +
-        slice +
-        "` to seed.",
+      message: `No ingest run found. Run \`cd prototype/platform/knowledge-graph && uv run kg ingest --slice ${slice}\` to seed.`,
     });
   }
   return jsonResponse({ slice, seeded: true, ...(meta as Record<string, unknown>) });

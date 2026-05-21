@@ -13,10 +13,20 @@ For the FX-Spot spike we persist:
 
 from __future__ import annotations
 
+import datetime as _dt
 import json
 from dataclasses import asdict
 from pathlib import Path
 from typing import Iterable
+
+
+def _json_default(o: object) -> object:
+    """JSON encoder for YAML-parsed types we encounter (dates, datetimes, sets)."""
+    if isinstance(o, (_dt.date, _dt.datetime)):
+        return o.isoformat()
+    if isinstance(o, set):
+        return list(o)
+    return str(o)
 
 from .ingest.markdown import DeterministicEdge, DeterministicNode, IngestResult
 
@@ -64,13 +74,13 @@ class JsonGraphStore:
 
         with self.nodes_path.open("w", encoding="utf-8") as f:
             for n in seen_nodes.values():
-                f.write(json.dumps(n) + "\n")
+                f.write(json.dumps(default=_json_default, obj=n) + "\n")
         with self.edges_path.open("w", encoding="utf-8") as f:
             for e in edges:
-                f.write(json.dumps(e) + "\n")
+                f.write(json.dumps(default=_json_default, obj=e) + "\n")
         with self.episodes_path.open("w", encoding="utf-8") as f:
             for ep in episodes:
-                f.write(json.dumps(ep) + "\n")
+                f.write(json.dumps(default=_json_default, obj=ep) + "\n")
         return len(seen_nodes), len(edges), len(episodes)
 
     def write_run_metadata(self, meta: dict) -> None:

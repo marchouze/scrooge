@@ -121,15 +121,19 @@ def decisions_affecting(store: JsonGraphStore, handler: str) -> list[dict]:
         for e in inb.get(m, []):
             if e["relation"] != "AFFECTS":
                 continue
-            d = nodes.get(e["src_urn"])
-            if d:
-                results.append(
-                    {
-                        "node": d,
-                        "citation_path": [e["src_urn"], m],
-                        "via": [e["source_file"]],
-                    }
-                )
+            d = nodes.get(e["src_urn"]) or {
+                "urn": e["src_urn"],
+                "entity_type": "Decision",
+                "attrs": {"decision_id": e["src_urn"], "title": "(not in slice)"},
+                "_unresolved": True,
+            }
+            results.append(
+                {
+                    "node": d,
+                    "citation_path": [e["src_urn"], m],
+                    "via": [e["source_file"]],
+                }
+            )
     return results
 
 

@@ -25,6 +25,8 @@ _EXPORT_PATTERNS = [
 ]
 
 _HANDLER_NAME_PATTERN = re.compile(r"\bhandlerName:\s*['\"]([\w-]+)['\"]")
+# Decision IDs cited in TS header comments (e.g. "Authority: D-FX-SALES-TRADING-FRONTEND").
+_DECISION_REF_PATTERN = re.compile(r"\b(D-[A-Z][A-Z0-9-]{2,})\b")
 
 
 def _extract_exports(text: str) -> list[str]:
@@ -91,5 +93,14 @@ def ingest_ts_module(path: Path, prototype_root: Path) -> tuple[IngestResult, Ts
     ]
     for cap in cap_aliases:
         result.edges.append(DeterministicEdge(cap, code_urn, "IMPLEMENTED_AT", str(path)))
+
+    # Look at file-header comments for decision-id citations — gives Q3 a
+    # deterministic signal without the LLM pass.
+    header = "\n".join(text.splitlines()[:40])
+    for m in _DECISION_REF_PATTERN.finditer(header):
+        decision_id = m.group(1)
+        result.edges.append(
+            DeterministicEdge(decision_id, code_urn, "AFFECTS", str(path))
+        )
 
     return result, stats

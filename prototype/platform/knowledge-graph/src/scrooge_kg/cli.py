@@ -71,7 +71,11 @@ def main(env_file: str | None) -> None:
     candidates.append(REPO_ROOT / ".env.local")
     for c in candidates:
         if c.exists():
-            load_dotenv(c)
+            # override=True: the shell may export an empty ANTHROPIC_API_KEY
+            # (we observed this in the dispatched worktree), in which case the
+            # default `load_dotenv` no-ops. Override is correct because the
+            # .env.local is the authoritative source for the sidecar.
+            load_dotenv(c, override=True)
             break
 
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
   "files": {
-    "ignore": [".local/**", "node_modules/**"]
+    "ignore": [".local/**", "node_modules/**", "platform/knowledge-graph/.venv/**"]
   },
   "organizeImports": { "enabled": true },
   "linter": {

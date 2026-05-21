@@ -43,12 +43,16 @@ procedures:
 
 decision_globs:
   # Owner Inbox decision-card markdown — we glob for FX-related cards.
+  # Post RMS Phase 4 the Owner Inbox is archived; both locations are searched.
   - "Owner Inbox/*fx*decision-card*.md"
   - "Owner Inbox/*mr-1-fx*.md"
   - "Owner Inbox/*fx-spot*.md"
   - "Owner Inbox/*fx-quoting*.md"
   - "Owner Inbox/*npa-fx-spot*.md"
   - "Owner Inbox/actioned/*fx*decision-card*.md"
+  - "archive/owner-inbox/*fx*.md"
+  - "archive/owner-inbox/*mr-1-fx*.md"
+  - "archive/owner-inbox/actioned/*fx*.md"
 
 code_globs:
   - "prototype/platform/markets/cdm/fx*.ts"
