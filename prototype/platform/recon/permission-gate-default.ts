@@ -193,6 +193,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // not a production access path. T-01 carve-out.
   // Citation: D-RAS-CLIMATE-SCENARIO-FRAMEWORK, P4-SECURITY-DESIGNED-IN.
   "platform/projections/climate-risk-projection.test.ts",
+  // ALM-positions projection unit tests — co-located per-module test
+  // convention. Same carve-out rationale as climate-risk-projection.test.ts:
+  // build-phase fixture store for scenario assertion, not a production
+  // access path. T-01 carve-out.
+  // Citation: D-RAS, brief:ravi:alm-position-substrate-and-helena-liquidity-line:
+  //   2026-05-21, P4-SECURITY-DESIGNED-IN.
+  "platform/projections/alm-positions.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

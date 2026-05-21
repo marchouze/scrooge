@@ -34,6 +34,7 @@ import {
 import { makeLCRRatioProjection } from "../../platform/event-store/event-types/risk-treasury-extended";
 import { computeLCR } from "../../platform/liquidity/lcr";
 import { computeNSFR } from "../../platform/liquidity/nsfr";
+import { getALMPositionSnapshot } from "../../platform/projections/alm-positions";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -47,21 +48,20 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let eventsEmitted = 0;
 
   // -------------------------------------------------------------------------
-  // Build-phase inputs: empty positions (no collateral inventory yet)
+  // ALM position snapshots — driven by Ravi's projection.
   // -------------------------------------------------------------------------
-  // Substrate gap: once Tomas's collateral inventory and Ravi's ALM substrate
-  // land, replace these empty arrays with event-store queries.
+  // The projection folds events into HQLA / funding / ASF / RSF input sets;
+  // in build phase most arrays are empty and `gaps[]` names each missing
+  // event class (see `platform/projections/alm-positions.ts`).
+  const almT0 = getALMPositionSnapshot(eventStore, ctx.asOf, 0);
+  const almT30 = getALMPositionSnapshot(eventStore, ctx.asOf, 30);
 
-  const hqlaPositions = [] as Parameters<typeof computeLCR>[0];
-  const fundingPositions = [] as Parameters<typeof computeLCR>[1];
-  const asfItems = [] as Parameters<typeof computeNSFR>[0];
-  const rsfItems = [] as Parameters<typeof computeNSFR>[1];
-
-  // Run LCR and NSFR for T+0 and T+30
-  const lcrT0 = computeLCR(hqlaPositions, fundingPositions);
-  const lcrT30 = computeLCR(hqlaPositions, fundingPositions);
-  const nsfrT0 = computeNSFR(asfItems, rsfItems);
-  const nsfrT30 = computeNSFR(asfItems, rsfItems);
+  // `computeLCR` and `computeNSFR` accept mutable arrays for back-compat;
+  // copy the read-only projection arrays into mutable shape.
+  const lcrT0 = computeLCR([...almT0.hqlaPositions], [...almT0.fundingPositions]);
+  const lcrT30 = computeLCR([...almT30.hqlaPositions], [...almT30.fundingPositions]);
+  const nsfrT0 = computeNSFR([...almT0.asfItems], [...almT0.rsfItems]);
+  const nsfrT30 = computeNSFR([...almT30.asfItems], [...almT30.rsfItems]);
 
   if (!ctx.dryRun) {
     // -----------------------------------------------------------------------
@@ -221,24 +221,29 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       );
     }
     lines.push("");
-    lines.push("## Build-phase posture");
+    lines.push("## ALM position substrate");
     lines.push("");
     lines.push(
-      "All positions are empty — no collateral inventory or ALM position substrate exists yet.",
+      `Inputs sourced via Ravi (Treasury and ALM engineer, engineering)'s ALM-positions projection (\`platform/projections/alm-positions.ts\`). Build-phase posture:`,
     );
-    lines.push("Results reflect the baseline: `status: no-positions`.");
-    lines.push("");
-    lines.push("## Substrate gaps");
     lines.push("");
     lines.push(
-      "- **Collateral inventory** (Tomas + Atlas): HQLA positions not yet queryable from event store. Once live, this handler will populate L1/L2a/L2b positions from `CollateralInventorySnapshotted` events.",
+      `- **T+0:** ${almT0.hqlaPositions.length} HQLA, ${almT0.fundingPositions.length} funding, ${almT0.asfItems.length} ASF, ${almT0.rsfItems.length} RSF; ${almT0.gaps.length} substrate gap(s).`,
     );
     lines.push(
-      "- **ALM position substrate** (Ravi + Atlas): Funding positions and ASF/RSF items not yet queryable. Once live, this handler will populate from `ALMPositionSnapshotted` events.",
+      `- **T+30:** ${almT30.hqlaPositions.length} HQLA, ${almT30.fundingPositions.length} funding, ${almT30.asfItems.length} ASF, ${almT30.rsfItems.length} RSF; ${almT30.gaps.length} substrate gap(s).`,
     );
     lines.push("");
+    if (almT0.gaps.length > 0) {
+      lines.push("**Substrate gaps named by the projection:**");
+      lines.push("");
+      for (const gap of almT0.gaps) {
+        lines.push(`- ${gap}`);
+      }
+      lines.push("");
+    }
     lines.push(`**Events emitted:** ${eventsEmitted}`);
-    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1; BA 325; BA 326");
+    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1; D-RAS; BA 325; BA 326");
     lines.push("");
     writeFileSync(resolve(ctx.ownerInboxDir, filename), lines.join("\n"), "utf8");
   }

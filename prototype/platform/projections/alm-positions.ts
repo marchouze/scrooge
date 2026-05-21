@@ -24,12 +24,12 @@
 //
 // Build-phase posture (CLAUDE.md "build phase vs licence-day"):
 //   None of the funding/ASF/RSF events exist in the store yet (no customers,
-//   no deposits, no loans, no derivatives). HQLA is partially queryable via
-//   the existing `getCollateralInventory()` projection. This module returns
-//   empty arrays with an explicit `gaps: string[]` field naming each missing
-//   event class — the gaps are the substrate roadmap; explicit is the
-//   requirement (brief: `brief:ravi:alm-position-substrate-and-helena-
-//   liquidity-line:2026-05-21`).
+//   no deposits, no loans, no derivatives). HQLA is partially queryable by
+//   folding `TradeBooked` / `TradeSettled` events through the HQLA classifier
+//   (`classifyHQLA`). This module returns empty arrays with an explicit
+//   `gaps: string[]` field naming each missing event class — the gaps are
+//   the substrate roadmap; explicit is the requirement (brief:
+//   `brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21`).
 //
 // Once those event classes land (Ravi + Atlas + Tomas), the projection
 // switches to live-event mode without changing its signature. Anya's
@@ -41,8 +41,8 @@
 //
 // Author: Ravi (Treasury and ALM engineer, engineering)
 
+import { type SecurityDescriptor, classifyHQLA } from "../collateral/hqla-classifier";
 import type { EventStore } from "../event-store/store";
-import { getCollateralInventory } from "../collateral/inventory";
 import type { FundingPosition, HQLAPosition } from "../liquidity/lcr";
 import type { ASFItem, RSFItem } from "../liquidity/nsfr";
 
@@ -112,36 +112,109 @@ export const ALM_POSITION_SOURCE_EVENTS = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// HQLA projection — partial wiring through the collateral inventory module
+// HQLA projection — fold TradeBooked / TradeSettled through HQLA classifier
 // ---------------------------------------------------------------------------
 
-/**
- * Read HQLA positions from the existing collateral inventory projection.
- *
- * Returns the per-tier post-haircut positions as `HQLAPosition[]` (pre-cap;
- * `computeLCR` applies the L2 and L2b caps downstream). Returns an empty
- * array when no collateral positions exist (build-phase default).
- *
- * Note: `getCollateralInventory()` reads `TradeBooked` and `TradeSettled`
- * events. In build phase no such events exist, so this returns empty.
- * Once `CollateralInventorySnapshotted` events flow (Tomas + Atlas), this
- * helper swaps to consuming those events directly.
- */
-function readHQLAFromCollateralInventory(asOf: string): HQLAPosition[] {
-  const inventory = getCollateralInventory(asOf);
-  const out: HQLAPosition[] = [];
+interface RawPosition {
+  isin: string;
+  marketValueZar: number;
+  currency: string;
+  descriptor: SecurityDescriptor;
+}
 
-  // Group by tier: `computeLCR` expects pre-haircut amounts (it applies
-  // haircuts itself), so we pass `marketValueZar` rather than the
-  // already-haircut `haircutAdjustedValueZar` from the inventory module.
-  for (const pos of inventory.positions) {
-    if (pos.hqlaLevel === "non-HQLA") continue;
-    out.push({
-      amountZar: pos.marketValueZar,
-      tier: pos.hqlaLevel,
-    });
+function extractDescriptor(payload: Record<string, unknown>, isin: string): SecurityDescriptor {
+  const assetClass = ((): SecurityDescriptor["assetClass"] => {
+    const ac = typeof payload.assetClass === "string" ? payload.assetClass : "";
+    if (ac === "sovereign-bond") return "sovereign-bond";
+    if (ac === "corporate-bond") return "corporate-bond";
+    if (ac === "equity") return "equity";
+    if (ac === "covered-bond") return "covered-bond";
+    if (ac === "cash") return "cash";
+    // Heuristic from ISIN prefix: ZAG = SA government bond, ZAE = JSE equity
+    if (isin.startsWith("ZAG")) return "sovereign-bond";
+    if (isin.startsWith("ZAE")) return "equity";
+    return "other";
+  })();
+
+  return {
+    isin,
+    issuer: typeof payload.issuer === "string" ? payload.issuer : "unknown",
+    assetClass,
+    creditRating: typeof payload.creditRating === "string" ? payload.creditRating : undefined,
+    riskWeight: typeof payload.riskWeight === "number" ? payload.riskWeight : undefined,
+    currency: typeof payload.currency === "string" ? payload.currency : "ZAR",
+    residualMaturityDays:
+      typeof payload.residualMaturityDays === "number" ? payload.residualMaturityDays : undefined,
+  };
+}
+
+function extractRawPosition(type: string, payload: Record<string, unknown>): RawPosition | null {
+  if (type !== "TradeBooked" && type !== "TradeSettled") return null;
+  const isin = typeof payload.isin === "string" ? payload.isin : null;
+  if (!isin) return null;
+
+  const faceValue =
+    typeof payload.faceValue === "number"
+      ? payload.faceValue
+      : typeof payload.notional === "number"
+        ? payload.notional
+        : 0;
+  const marketValueZar =
+    typeof payload.marketValueZar === "number"
+      ? payload.marketValueZar
+      : typeof payload.marketValue === "number"
+        ? payload.marketValue
+        : faceValue;
+  const currency = typeof payload.currency === "string" ? payload.currency : "ZAR";
+
+  return {
+    isin,
+    marketValueZar,
+    currency,
+    descriptor: extractDescriptor(payload, isin),
+  };
+}
+
+/**
+ * Read HQLA positions by folding `TradeBooked` and `TradeSettled` events
+ * through the HQLA classifier (`classifyHQLA`).
+ *
+ * Returns the per-tier pre-haircut positions as `HQLAPosition[]` (pre-cap;
+ * `computeLCR` applies the L2 / L2b caps + haircuts downstream). Returns
+ * an empty array when no trades exist (build-phase default).
+ *
+ * This is a self-contained fold against the passed `EventStore`. It does
+ * not call `getCollateralInventory()` because that function reaches for
+ * the composition singleton, which breaks isolated-store testing.
+ * Once `CollateralInventorySnapshotted` events flow (Tomas + Atlas
+ * substrate), this helper swaps to consuming those events directly.
+ */
+function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosition[] {
+  // Aggregate positions by ISIN — latest trade event wins.
+  const positionMap = new Map<string, RawPosition>();
+
+  for (const event of eventStore.replay({ type: "TradeBooked" })) {
+    if (event.as_of > asOf) continue;
+    const raw = extractRawPosition(event.type, event.payload as Record<string, unknown>);
+    if (!raw) continue;
+    positionMap.set(raw.isin, raw);
+  }
+  for (const event of eventStore.replay({ type: "TradeSettled" })) {
+    if (event.as_of > asOf) continue;
+    const raw = extractRawPosition(event.type, event.payload as Record<string, unknown>);
+    if (!raw) continue;
+    positionMap.set(raw.isin, raw);
   }
 
+  const out: HQLAPosition[] = [];
+  for (const raw of positionMap.values()) {
+    const classification = classifyHQLA(raw.descriptor);
+    if (classification.level === "non-HQLA") continue;
+    out.push({
+      amountZar: raw.marketValueZar,
+      tier: classification.level,
+    });
+  }
   return out;
 }
 
@@ -159,14 +232,14 @@ function readHQLAFromCollateralInventory(asOf: string): HQLAPosition[] {
  * than synthesising input arrays in-handler.
  *
  * Build-phase posture:
- *   - HQLA: partially wired via `getCollateralInventory()` (returns empty
- *     when no `TradeBooked` events exist).
+ *   - HQLA: folded from `TradeBooked` / `TradeSettled` events through
+ *     `classifyHQLA` (empty when no trades exist).
  *   - Funding / ASF / RSF: not yet wired (no source event classes exist).
  *     The `gaps` array names each missing class.
  *
- * @param eventStore  - the singleton event store (used for gap detection;
- *                      `getCollateralInventory()` uses the composition
- *                      singleton directly today).
+ * @param eventStore  - the event store to fold against (caller passes the
+ *                      composition singleton in production; tests pass an
+ *                      isolated in-memory store).
  * @param asOf        - ISO 8601 run timestamp.
  * @param horizonDays - projection horizon (0 = T+0, 30 = T+30, etc.).
  */
@@ -178,9 +251,12 @@ export function getALMPositionSnapshot(
   const gaps: string[] = [];
 
   // -------------------------------------------------------------------------
-  // HQLA — read via collateral inventory (partial wiring; build-phase empty)
+  // HQLA — fold TradeBooked / TradeSettled events through HQLA classifier.
+  // Partial wiring: full HQLA substrate (CollateralInventorySnapshotted) lands
+  // with Tomas + Atlas; until then, security positions from the trade stream
+  // are the only source. Build-phase empty by construction.
   // -------------------------------------------------------------------------
-  const hqlaPositions = readHQLAFromCollateralInventory(asOf);
+  const hqlaPositions = readHQLAFromEventStore(eventStore, asOf);
 
   // Detect whether any of the canonical HQLA-source events exist; if not,
   // record the gap. (`getCollateralInventory()` reads TradeBooked /
