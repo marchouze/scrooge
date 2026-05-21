@@ -166,6 +166,13 @@ export * from "./collateral";
 // NSFRComputed — result of a single NSFR computation (BA 326 / Basel III).
 // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
 export * from "./liquidity";
+// WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
+// LiquidityLimitBreached + LiquidityLimitBreachDisposed; tiered breaches
+// against the RAS B3-family liquidity-appetite lines.
+// Authority: D-RAS; LRM Policy v1; Procedures/by-policy/liquidity-limit-
+// management.md (PROC-RISK-LLM-01); brief:ravi:liquidity-limit-engine-
+// mirroring-credit-limit-en:2026-05-21.
+export * from "./liquidity-limit";
 // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
 // ILAAPScenarioRun — per-scenario liquidity stress result (4 scenarios).
 // ILAAPSummaryCompleted — aggregated worst-case ILAAP assessment.
@@ -319,6 +326,7 @@ import { KYC_TYPED_EVENT_TYPES } from "./kyc";
 import { LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES } from "./legal-documentation";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
 import { LIQUIDITY_TYPED_EVENT_TYPES } from "./liquidity";
+import { LIQUIDITY_LIMIT_TYPED_EVENT_TYPES } from "./liquidity-limit";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
@@ -413,6 +421,10 @@ export const TYPED_EVENT_TYPES = [
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine event types (LCR/NSFR).
   // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
   ...LIQUIDITY_TYPED_EVENT_TYPES,
+  // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
+  // LiquidityLimitBreached + LiquidityLimitBreachDisposed.
+  // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
+  ...LIQUIDITY_LIMIT_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine event types (stress scenarios + survival horizon).
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
   ...ILAAP_TYPED_EVENT_TYPES,
