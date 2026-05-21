@@ -44,6 +44,7 @@ import {
 } from "../../event-store/event-types/fx-accounting";
 import type { EventStore } from "../../event-store/store";
 import type { FxTradeExecutedPayload } from "../cdm/fx";
+import { baseAmountMinor } from "../cdm/fx-helpers";
 
 // ---------------------------------------------------------------------------
 // Rate source abstraction — injectable for tests
@@ -226,16 +227,21 @@ export function runEodFxRevaluation(
     const revalRate = rateSource.getRate(currencyPairStr, valuationDate);
 
     // Step 4b: Compute the unrealised P&L delta.
-    // The CDM leg rate is expressed as "receiveCurrency per pay-unit", which is
-    // side-dependent: sell → quote/base (standard direction); buy → base/quote (inverted).
-    // Normalise to standard direction (quote per base) so it is comparable to the
-    // seed reval rate, which is always expressed as quote per base × 10^6.
-    const legRate = nearLeg.rate.amount;
-    const bookRate =
-      nearLeg.rate.currency === trade.currencyPair.quote
-        ? legRate // already quote-per-base (sell side)
-        : 1 / legRate; // base-per-quote → invert to quote-per-base (buy side)
-    const notionalBaseMinor = nearLeg.notional.amountMinor;
+    //
+    // Post-Slice-1 (D-FX-QUOTING-CONVENTION; PR #664), the CDM leg rate is
+    // always quote-per-base (clause (iv) of the Zod refinement —
+    // `rate.currency === currencyPair.quote`). The pre-Slice-1 side-dependent
+    // invert (`1 / legRate` for the buy branch) is no longer needed and would
+    // now be unreachable code; we read `nearLeg.rate.amount` directly as the
+    // quote-per-base book rate. The seed reval rate is also quote-per-base
+    // × 10^6, so the comparison is dimensionally aligned.
+    const bookRate = nearLeg.rate.amount;
+    // Resolve base-currency notional via the Slice-2 helper. The legacy line
+    // (`nearLeg.notional.amountMinor`) was incorrect for BUY trades on a
+    // major-first pair — notional sat on the quote side, so the dimensional
+    // product `notional × rateDelta` was ~rate× too large. The helper picks
+    // the base-side amount whether it lives on notional or counterNotional.
+    const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
 
     // P&L = notional_base × (revalRate − bookRate), both in quote-per-base decimal.
     // Build-phase simplification: result is in quote-currency minor units, reported as

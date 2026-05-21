@@ -584,6 +584,174 @@ describe("unrealisedPnlCalculator", () => {
     expect(result).toHaveLength(1);
     expect(result[0]?.unrealisedPnlZarMinor).toBeGreaterThan(0); // gain
   });
+
+  // -------------------------------------------------------------------------
+  // Slice-2 regression — D-FX-QUOTING-CONVENTION (Bea, 2026-05-21).
+  //
+  // Pre-Slice-2 the calculator read `nearLeg.notional.amountMinor` as if it
+  // were always the base-currency amount. For a BUY trade on a major-first
+  // pair the notional sits on the quote side, so the legacy reading was the
+  // quote-currency cents, not base — and multiplying by ΔRate (units
+  // ZAR/USD) produced a number ~rate× too large.
+  //
+  // The fixtures below pin both sides of the bug:
+  //
+  //   (a) BUY USD/ZAR — notional ZAR 92.5m (quote), counterNotional USD 5m
+  //       (base). Book rate 18.5 ZAR/USD; current rate 19.0. Correct
+  //       unrealised P&L = ΔRate × USD-notional = 0.5 × 500_000_000 cents =
+  //       +ZAR 250_000_000 minor units (ZAR 2.5m).
+  //       Pre-Slice-2 bogus = 0.5 × 9_250_000_000 cents = +ZAR 4_625_000_000
+  //       minor units (ZAR 46.25m) — ~rate× too large.
+  //
+  //   (b) SELL USD/ZAR — notional USD 5m (base), counterNotional ZAR 92.5m
+  //       (quote). Book rate 18.5; current rate 19.0. Bank is short USD, so
+  //       USD appreciating is a loss. Correct unrealised P&L = -ZAR 250_000_000
+  //       minor units. Pre-Slice-2 the SELL side accidentally read the base
+  //       amount correctly (because pay=base on a SELL major-first leg) — so
+  //       this fixture proves the migration didn't regress the previously-
+  //       correct branch.
+  // -------------------------------------------------------------------------
+  describe("Slice-2 regression: baseAmountMinor side-correct resolution", () => {
+    const SLICE2_COMMON = {
+      productTaxonomy: "FX-spot" as const,
+      currencyPair: { base: "USD", quote: "ZAR" },
+      legs: [], // overridden per-test
+      tradeDate: { iso: "2026-05-20", calendar: "JIHCAL" as const },
+      counterparty: {
+        partyId: "LEI-CTPY-001",
+        name: "Test Counterparty",
+        role: "counterparty" as const,
+        jurisdiction: "ZA",
+      },
+      venue: "OTC",
+      trader: "TRADER-01",
+      bookId: "FX-TRADING-BOOK",
+      bookType: "trading" as const,
+      settlementForm: "physical" as const,
+      settlementPath: "correspondent" as const,
+      clientFlowRef: "client-trade:slice-2-regression",
+    };
+
+    it("BUY USD/ZAR — base-amount lives on counterNotional; uses USD notional × ΔRate", () => {
+      const trade = {
+        ...SLICE2_COMMON,
+        tradeId: { scheme: "INTERNAL", value: "FX-BUY-SLICE2" },
+        side: "buy" as const,
+        legs: [
+          {
+            legKind: "near" as const,
+            // BUY on major-first pair (USD/ZAR): pay quote (ZAR), receive base (USD).
+            payCurrency: "ZAR",
+            receiveCurrency: "USD",
+            // notional in pay currency (ZAR 92.5m → 9_250_000_000 ZAR-cents)
+            notional: { currency: "ZAR", amountMinor: 9_250_000_000 },
+            // counterNotional in receive currency (USD 5m → 500_000_000 USD-cents)
+            counterNotional: { currency: "USD", amountMinor: 500_000_000 },
+            // Slice-1 invariant clause (iv): rate.currency = pair.quote
+            rate: { currency: "ZAR", amount: 18.5 },
+            settlementDate: { iso: "2026-05-22", calendar: "JIHCAL" as const },
+          },
+        ],
+      };
+
+      const result = unrealisedPnlCalculator({
+        trades: [trade],
+        settledTradeIds: new Set(),
+        latestRevaluations: new Map(),
+        currentRates: new Map([["USD", 19.0]]),
+      });
+
+      expect(result).toHaveLength(1);
+      // Correct: ΔRate × USD-notional = 0.5 × 500_000_000 = +250_000_000 ZAR-minor
+      // Bogus (pre-Slice-2): 0.5 × 9_250_000_000 = +4_625_000_000 ZAR-minor (~rate× too large)
+      expect(result[0]?.unrealisedPnlZarMinor).toBe(250_000_000);
+      expect(result[0]?.notionalBaseMinor).toBe(500_000_000);
+    });
+
+    it("SELL USD/ZAR — base-amount lives on notional; previously-correct branch preserved", () => {
+      const trade = {
+        ...SLICE2_COMMON,
+        tradeId: { scheme: "INTERNAL", value: "FX-SELL-SLICE2" },
+        side: "sell" as const,
+        legs: [
+          {
+            legKind: "near" as const,
+            // SELL on major-first pair (USD/ZAR): pay base (USD), receive quote (ZAR).
+            payCurrency: "USD",
+            receiveCurrency: "ZAR",
+            // notional in pay currency (USD 5m → 500_000_000 USD-cents)
+            notional: { currency: "USD", amountMinor: 500_000_000 },
+            // counterNotional in receive currency (ZAR 92.5m → 9_250_000_000 ZAR-cents)
+            counterNotional: { currency: "ZAR", amountMinor: 9_250_000_000 },
+            rate: { currency: "ZAR", amount: 18.5 },
+            settlementDate: { iso: "2026-05-22", calendar: "JIHCAL" as const },
+          },
+        ],
+      };
+
+      const result = unrealisedPnlCalculator({
+        trades: [trade],
+        settledTradeIds: new Set(),
+        latestRevaluations: new Map(),
+        currentRates: new Map([["USD", 19.0]]),
+      });
+
+      expect(result).toHaveLength(1);
+      // SELL: bank is short USD → USD appreciation is a loss.
+      // P&L = -ΔRate × USD-notional = -(0.5 × 500_000_000) = -250_000_000
+      expect(result[0]?.unrealisedPnlZarMinor).toBe(-250_000_000);
+      expect(result[0]?.notionalBaseMinor).toBe(500_000_000);
+    });
+
+    it("BUY and SELL produce symmetric P&L (sign-flipped, equal magnitude)", () => {
+      // Same trade economics on each side — magnitudes equal, signs flipped.
+      const buyTrade = {
+        ...SLICE2_COMMON,
+        tradeId: { scheme: "INTERNAL", value: "FX-BUY-SYM" },
+        side: "buy" as const,
+        legs: [
+          {
+            legKind: "near" as const,
+            payCurrency: "ZAR",
+            receiveCurrency: "USD",
+            notional: { currency: "ZAR", amountMinor: 9_250_000_000 },
+            counterNotional: { currency: "USD", amountMinor: 500_000_000 },
+            rate: { currency: "ZAR", amount: 18.5 },
+            settlementDate: { iso: "2026-05-22", calendar: "JIHCAL" as const },
+          },
+        ],
+      };
+      const sellTrade = {
+        ...SLICE2_COMMON,
+        tradeId: { scheme: "INTERNAL", value: "FX-SELL-SYM" },
+        side: "sell" as const,
+        legs: [
+          {
+            legKind: "near" as const,
+            payCurrency: "USD",
+            receiveCurrency: "ZAR",
+            notional: { currency: "USD", amountMinor: 500_000_000 },
+            counterNotional: { currency: "ZAR", amountMinor: 9_250_000_000 },
+            rate: { currency: "ZAR", amount: 18.5 },
+            settlementDate: { iso: "2026-05-22", calendar: "JIHCAL" as const },
+          },
+        ],
+      };
+
+      const out = unrealisedPnlCalculator({
+        trades: [buyTrade, sellTrade],
+        settledTradeIds: new Set(),
+        latestRevaluations: new Map(),
+        currentRates: new Map([["USD", 19.0]]),
+      });
+
+      expect(out).toHaveLength(2);
+      const buyPnl = out.find((r) => r.tradeId === "FX-BUY-SYM")?.unrealisedPnlZarMinor;
+      const sellPnl = out.find((r) => r.tradeId === "FX-SELL-SYM")?.unrealisedPnlZarMinor;
+      expect(buyPnl).toBe(-(sellPnl ?? 0));
+      expect(Math.abs(buyPnl ?? 0)).toBe(250_000_000);
+    });
+  });
 });
 
 describe("realisedPnlCalculator", () => {
