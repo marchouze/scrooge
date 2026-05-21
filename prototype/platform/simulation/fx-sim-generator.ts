@@ -127,9 +127,7 @@ export function generateSimTrade(
   //    use 2-decimal minor units (cents), so the minor-unit conversion
   //    factor cancels. JPY (0 decimals) is not in the sim pair set.
   const counterNotionalMinor =
-    side === "buy"
-      ? Math.round(notionalMinor / legRate)
-      : Math.round(notionalMinor * legRate);
+    side === "buy" ? Math.round(notionalMinor / legRate) : Math.round(notionalMinor * legRate);
 
   // 8. Trade ID.
   const tradeId = `SIM-${Date.now()}-${randomUUID().slice(0, 8).toUpperCase()}`;

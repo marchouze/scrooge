@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:te
 const vi = { fn: mock, spyOn, useFakeTimers: () => {}, useRealTimers: () => {} };
 
 import type { EventStore } from "../event-store/store";
+import { fxTradeExecutedPayloadSchema } from "../markets/cdm/fx";
 import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
 import { FxSimEngine } from "./fx-sim-engine";
 import { generateSimTrade } from "./fx-sim-generator";
@@ -57,17 +58,19 @@ describe("generateSimTrade", () => {
     }
   });
 
-  it("counterNotional ≈ notional × rate within 1%", () => {
+  it("counterNotional is consistent with rate (quote-per-base) by side within 1%", () => {
     const engine = new FxRateEngine();
     const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
     const leg = payload.legs[0];
     expect(leg).toBeDefined();
     if (!leg) return;
 
+    // Per D-FX-QUOTING-CONVENTION:
+    //   rate.amount = quote-per-base.
+    //   BUY  → pay=quote, receive=base → counter (base) = notional (quote) / rate.
+    //   SELL → pay=base, receive=quote → counter (quote) = notional (base) × rate.
+    const expectedRatio = payload.side === "buy" ? 1 / leg.rate.amount : leg.rate.amount;
     const actualRatio = leg.counterNotional.amountMinor / leg.notional.amountMinor;
-    const expectedRatio = leg.rate.amount;
-
-    // Within 1% tolerance (rounding in minor units)
     const relErr = Math.abs(actualRatio - expectedRatio) / expectedRatio;
     expect(relErr).toBeLessThanOrEqual(0.01);
   });
@@ -77,6 +80,76 @@ describe("generateSimTrade", () => {
     const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
     expect(payload.productTaxonomy).toBe("FX-spot");
     expect(payload.settlementForm).toBe("physical");
+  });
+
+  // D-FX-QUOTING-CONVENTION Slice 3b regression — generated payloads must
+  // parse cleanly under the Slice-1 Zod refinement (rate is quote-per-base;
+  // rate.currency = currencyPair.quote; pay/receive coherent with side).
+  it("generated payload satisfies the D-FX-QUOTING-CONVENTION Zod refinement (50 samples)", () => {
+    const engine = new FxRateEngine();
+    for (let i = 0; i < 50; i++) {
+      const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+      const parsed = fxTradeExecutedPayloadSchema.safeParse(payload);
+      if (!parsed.success) {
+        // Surface the first failure with full detail for debugging.
+        throw new Error(
+          `Sample ${i} failed refinement: ${JSON.stringify(parsed.error.format(), null, 2)} for payload: ${JSON.stringify(payload, null, 2)}`,
+        );
+      }
+      expect(parsed.success).toBe(true);
+    }
+  });
+
+  // Synthesised BUY against a USD/ZAR-only counterparty — explicit assertion
+  // of the rate.currency = quote / counter-derivation contract.
+  it("BUY trade on USD/ZAR: rate.currency = ZAR, rate.amount ≈ mid, counter ≈ notional / mid", () => {
+    const engine = new FxRateEngine();
+    const usdZarOnly = SIM_COUNTERPARTIES.filter((cp) =>
+      cp.eligiblePairs.every((p) => p === "USD/ZAR"),
+    );
+    // If no USD/ZAR-only counterparty, fall back to one whose first pair is USD/ZAR.
+    const cps =
+      usdZarOnly.length > 0
+        ? usdZarOnly
+        : SIM_COUNTERPARTIES.filter((cp) => cp.eligiblePairs.includes("USD/ZAR"));
+    expect(cps.length).toBeGreaterThan(0);
+
+    // Force BUY by retrying generation until we get one (Math.random sampled).
+    let payload = generateSimTrade(engine, cps, "BK-TEST");
+    let attempts = 0;
+    while (
+      (payload.side !== "buy" ||
+        `${payload.currencyPair.base}/${payload.currencyPair.quote}` !== "USD/ZAR") &&
+      attempts < 200
+    ) {
+      payload = generateSimTrade(engine, cps, "BK-TEST");
+      attempts++;
+    }
+    expect(payload.side).toBe("buy");
+    expect(payload.currencyPair.base).toBe("USD");
+    expect(payload.currencyPair.quote).toBe("ZAR");
+
+    const leg = payload.legs[0];
+    expect(leg).toBeDefined();
+    if (!leg) return;
+
+    // Per Slice 3b: rate.currency = quote = ZAR; rate.amount = quote-per-base = mid.
+    expect(leg.rate.currency).toBe("ZAR");
+    // For BUY: payCurrency = quote = ZAR; receiveCurrency = base = USD.
+    expect(leg.payCurrency).toBe("ZAR");
+    expect(leg.receiveCurrency).toBe("USD");
+    expect(leg.notional.currency).toBe("ZAR");
+    expect(leg.counterNotional.currency).toBe("USD");
+
+    // counter (USD-minor) = notional (ZAR-minor) / mid.
+    const ratio = leg.notional.amountMinor / leg.counterNotional.amountMinor;
+    const expected = leg.rate.amount;
+    const relErr = Math.abs(ratio - expected) / expected;
+    expect(relErr).toBeLessThanOrEqual(0.01);
+
+    // And the payload re-parses cleanly under the refinement.
+    const parsed = fxTradeExecutedPayloadSchema.safeParse(payload);
+    expect(parsed.success).toBe(true);
   });
 });
 
