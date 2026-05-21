@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-IS-CIC-01
 title: Cyber Incident Severity Classification
-author: Senna (CISO, governance)
+author: Rashida (Chief Information Security Officer, governance)
 date: 2026-05-15
-owner: Senna (CISO, governance) · Iris (IO, governance)
+owner: Rashida (Chief Information Security Officer, governance) · Iris (IO, governance)
 status: POPULATED
 policy-cited: Cyber Resilience Policy (in-force)
 system-capability: "@platform/security/incident-classification (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/security/incident-classification (PLANNED)"
 # Procedure — Cyber Incident Severity Classification
 
 **Procedure ID:** PROC-IS-CIC-01
-**Owner:** Senna (CISO, governance) — substantive owner · Iris (IO, governance) — privacy-impact dimension
+**Owner:** Rashida (Chief Information Security Officer, governance) — substantive owner · Iris (IO, governance) — privacy-impact dimension
 **Approval:** Board Risk Committee (or Interim Audit Forum during build phase)
 **Cadence:** On-trigger (every detected cyber event that enters the IR pipeline); annual review of tier thresholds
 **Version:** v1.0 — 2026-05-15

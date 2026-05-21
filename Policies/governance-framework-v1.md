@@ -189,10 +189,10 @@ The Bank adopts the **three-lines model** as the primary framework for distribut
 | Line | Who | What |
 |---|---|---|
 | **First line — Management** | CEO (Marc, interim); ExCo; business / trading functions | Own and manage risk; execute within approved limits and policies; report on risk indicators |
-| **Second line — Oversight** | CRO (Helena, Chief Risk Officer, governance); CCO (Zara, Chief Compliance Officer, governance); CFO (Camille, CFO, governance); CISO (Ravi, CISO, governance) | Set frameworks, policies, and limits; monitor first-line risk-taking; provide independent challenge; escalate breaches |
+| **Second line — Oversight** | CRO (Helena, Chief Risk Officer, governance); CCO (Zara, Chief Compliance Officer, governance); CFO (Camille, Chief Financial Officer, governance); CISO (Rashida, Chief Information Security Officer, governance) | Set frameworks, policies, and limits; monitor first-line risk-taking; provide independent challenge; escalate breaches |
 | **Third line — Independent assurance** | CAE (Thandiwe, Chief Audit Executive, governance); Vera (Internal audit / continuous-assurance engineer, engineering) | Risk-based audit plan; independent assurance over first- and second-line effectiveness; reports functionally to the BAC |
 
-**Principle 6 — autonomous by default.** All three lines operate with agent actors as the default. The engineering layer (Atlas, Devon, Mira, Bea, Vera, and others per `Team/_team-roster.json`) builds and operates the substrate; governance seats (Helena CRO; Zara CCO; Camille CFO; Thandiwe CAE; Owen CoSec; Iris IO; Ravi CISO) hold named regulatory accountability and oversee engineering outputs. The roster JSON `reportsTo` field is the canonical encoding of engineering-to-governance reporting lines; this Framework's prose references the JSON and does not duplicate it (Principle 2 — single-graph discipline).
+**Principle 6 — autonomous by default.** All three lines operate with agent actors as the default. The engineering layer (Atlas, Anya, Mira, Vera, Bea, Senna, Ravi, and others per `Team/_team-roster.json`) builds and operates the substrate; governance seats (Helena CRO; Zara CCO; Camille CFO; Devon COO; Rashida CISO; Thandiwe CAE; Owen CoSec; Iris IO) hold named regulatory accountability and oversee engineering outputs. The roster JSON `reportsTo` field is the canonical encoding of engineering-to-governance reporting lines; this Framework's prose references the JSON and does not duplicate it (Principle 2 — single-graph discipline).
 
 ### 4.2 CRO independence
 
@@ -228,7 +228,7 @@ The following senior management positions carry named regulatory accountability 
 | CRO | Helena (Chief Risk Officer, governance) | Risk framework; RAS; ICAAP / ILAAP; limit structure |
 | CCO / MLRO | Zara (Chief Compliance Officer, governance) | AML/CFT/CPF RMCP; FIC s.42A senior person; regulatory compliance programme |
 | Information Officer | Iris (Information Officer, governance) | POPIA s.55 Information Officer; data protection |
-| CISO | Ravi (CISO, governance) | Joint Standard 2/2024 cybersecurity programme; PA/FSCA IT governance |
+| CISO | Rashida (Chief Information Security Officer, governance) | Joint Standard 2/2024 cybersecurity programme; PA/FSCA IT governance |
 | Company Secretary | Owen (Company Secretary, governance) | Board secretariat; statutory filings; governance register; governance framework ownership |
 | CAE | Thandiwe (Chief Audit Executive, governance) | Internal audit independence; audit plan; BAC functional reports |
 

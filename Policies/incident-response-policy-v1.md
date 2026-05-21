@@ -3,7 +3,7 @@ policy-id: CY-IRP-01
 title: Cyber and Operational Incident Response Policy v1
 version: "1.0"
 status: DRAFT
-owner: Senna (CISO, governance)
+owner: Rashida (Chief Information Security Officer, governance)
 effective-from: 2026-05-13
 next-review: "2026-11-13"
 citations:
@@ -12,7 +12,7 @@ citations:
   - "Banks Act 94 of 1990: s78 (operational risk)"
   - "FSR Act 9 of 2017: s57 (reportable irregularities)"
   - "PA Guidance Note 3/2022: operational risk events — reporting thresholds and timelines"
-author: Senna (CISO, governance)
+author: Rashida (Chief Information Security Officer, governance)
 date: 2026-05-13
 summary: "Establishes the bank's cyber and operational incident response framework — detection, classification, containment, eradication, recovery, and regulatory notification — aligned to Joint Standard 2/2024 and POPIA s22."
 decision-required: false
@@ -30,7 +30,7 @@ riskTaxonomy:
 
 # Cyber and Operational Incident Response Policy v1
 
-> **Policy** | CY-IRP-01 v1.0 | Owner: Senna (CISO, governance) | Status: DRAFT | Effective: 2026-05-13
+> **Policy** | CY-IRP-01 v1.0 | Owner: Rashida (Chief Information Security Officer, governance) | Status: DRAFT | Effective: 2026-05-13
 
 > **Standing authority.** CEO-approved regulatory readiness programme (`D-REGULATORY-READINESS-GATE-PLAN`). Implements Joint Standard 2/2024 §6 (cyber incident response), POPIA s22 (security compromise notification), Banks Act s78 (operational risk), FSR Act s57 (reportable irregularities), and PA Guidance Note 3/2022 (operational risk event reporting).
 > **Obligations closed.** `ORG-CY-04` (cyber incident detection and response framework), `ORG-CY-05` (regulatory notification of cyber incidents), `ORG-CY-11` (annual cyber resilience testing), `ORG-PR(IV)-07` (POPIA breach notification to Information Regulator and data subjects).
@@ -54,7 +54,7 @@ Hoz Bank operates an AI-agent labour force (Principle 6). Incident response in a
 - **Detect early, contain fast.** The cost of containment rises exponentially with dwell time. SIEM and agent-runtime anomaly detection are the primary detection instruments; human-in-the-loop escalation is reserved for classification and response decisions above the agent's decision boundary.
 - **Classification before containment.** No containment action is taken without a classification decision (P1–P4, see §2). Misclassification at triage costs more than a brief delay to get classification right.
 - **Evidence before eradication.** Forensic evidence is preserved before any eradication or remediation action. An incident that destroys its own evidence is a compounded harm.
-- **Regulatory notification is non-negotiable.** PA, POPIA Information Regulator, and FIC notifications are mandatory at specified thresholds; they are never discretionary. Senna (CISO, governance) is the notification authority; no team member may delay or suppress a notification.
+- **Regulatory notification is non-negotiable.** PA, POPIA Information Regulator, and FIC notifications are mandatory at specified thresholds; they are never discretionary. Rashida (Chief Information Security Officer, governance) is the notification authority; no team member may delay or suppress a notification.
 - **Events are the record of truth.** Every incident event — detection, classification, containment actions, regulatory notifications, and post-incident review findings — is a typed event in the event log (Principle 1). An incident that exists only in a shared document and not in the event log is a Vera (internal audit engineer) finding.
 - **AI-agent incidents are first class.** Agent infrastructure failures, model-output anomalies, credential compromise, and prompt-injection events are incident types under this policy, subject to the same detection-to-PIR lifecycle as any other incident.
 
@@ -89,7 +89,7 @@ All incidents are classified on detection into one of four severity tiers. Class
 
 ### 2.2 Classification Criteria
 
-Classification is performed by Senna (CISO, governance) or a delegated Tier-1 responder, based on the following criteria:
+Classification is performed by Rashida (Chief Information Security Officer, governance) or a delegated Tier-1 responder, based on the following criteria:
 
 - **Data exposure:** Has confidential data, PII, or regulated information been accessed, exfiltrated, or exposed without authorisation?
 - **System availability:** Has a critical banking system been rendered unavailable or materially impaired?
@@ -111,7 +111,7 @@ IncidentReclassified { incidentId, reclassifiedAt, reclassifiedBy, previousSever
 
 ### 3.1 Roles and Responsibilities
 
-**Senna (CISO, governance)** — Policy owner; incident commander for P1 and P2 incidents; PA notification authority; POPIA breach notification authority; chairs the post-incident review for P1/P2; reports to CEO on P1 incidents within 2 hours of classification.
+**Rashida (Chief Information Security Officer, governance)** — Policy owner; incident commander for P1 and P2 incidents; PA notification authority; POPIA breach notification authority; chairs the post-incident review for P1/P2; reports to CEO on P1 incidents within 2 hours of classification.
 
 **Helena (Chief Risk Officer, governance)** — Operational risk classification of incidents as loss events per the Operational Risk Policy; ensures P1/P2 incidents are captured in the loss event database; co-signs the post-incident review for P1/P2 incidents where control gaps are identified.
 
@@ -214,7 +214,7 @@ PIR findings feed directly into: the RCSA (control gap findings); the loss event
 
 ### 4.7 Cyber War-Gaming and Tabletop Exercises
 
-**Minimum frequency: annually.** Senna (CISO, governance) runs at minimum one tabletop exercise per calendar year covering at least one P1-scenario (e.g., ransomware, data exfiltration, AI-agent credential compromise). Additional exercises are triggered by: major infrastructure changes; significant PIR findings; PA or FSCA thematic review on cyber resilience; material new threat intelligence.
+**Minimum frequency: annually.** Rashida (Chief Information Security Officer, governance) runs at minimum one tabletop exercise per calendar year covering at least one P1-scenario (e.g., ransomware, data exfiltration, AI-agent credential compromise). Additional exercises are triggered by: major infrastructure changes; significant PIR findings; PA or FSCA thematic review on cyber resilience; material new threat intelligence.
 
 Exercise outcomes are filed as `CyberResilienceExerciseCompleted { exerciseId, date, scenario, participants[], gaps[], actionItems[] }` events. Gaps identified in exercises are treated as RCSA findings and subject to the same remediation governance.
 
@@ -342,7 +342,7 @@ Regulatory notifications per §5 are filed as `RegulatoryNotificationMade` event
 ### 9.1 Exception Process
 
 Any deviation from this policy (e.g., deferring a regulatory notification beyond the prescribed timeline) requires:
-1. Written justification from Senna (CISO, governance).
+1. Written justification from Rashida (Chief Information Security Officer, governance).
 2. Marc (CEO) written approval.
 3. Filing as a typed `PolicyException { policyId: "CY-IRP-01", exceptionId, justification, approvedBy, approvedAt, reviewDate }` event.
 4. Legal review by Imani (Legal-as-code engineer, engineering) where the exception involves a regulatory notification timeline.
@@ -404,4 +404,4 @@ Per Principle 2, no sub-clause indices are invented. The following are `[citatio
 
 | Version | Date | Author | Change |
 |---|---|---|---|
-| v1.0 | 2026-05-13 | Senna (CISO, governance) | Initial policy authored. Eleven sections: (1) Scope — all systems, data, AI-agent processes, third-party providers; (2) Incident Classification — P1/P2/P3/P4 tiers with RTO by tier and classification event schema; (3) Governance — roles (Senna, Helena, Devon, Zara, Imani, Owen, Marc), IRT constitution, typed governance events; (4) Response Lifecycle — Detect (SIEM, agent-runtime, external, PA/FSCA, internal) → Triage → Contain → Eradicate → Recover → PIR (mandatory 14-day timeline for P1/P2), annual tabletop exercise requirement; (5) Regulatory Notification — PA 24h/72h/30-day cadence (Joint Standard 2/2024 §6), POPIA s22 72h Information Regulator + data-subject notification with serious-harm assessment factors, FSR Act s57 reportable irregularities, PA Guidance Note 3/2022 operational risk events; (6) Evidence Preservation — forensic chain of custody, log retention during incident (7 years), legal privilege considerations; (7) Controls and Monitoring — SIEM, agent-runtime anomaly detection, vulnerability management, access review, threat intelligence; KRI table (MTTD, MTTC, notification compliance, PIR completion, open actions, tabletop frequency); (8) Reporting — real-time to CEO (P1: 2h, P2: 24h), monthly ORC, quarterly BRC, annual cyber resilience report; (9) Exceptions and Escalation — exception process (CEO approval + typed event), no exception for mandatory notifications, escalation matrix; Obligations closure table: ORG-CY-04/05/11, ORG-PR(IV)-07. Substrate and citation gaps per Principle 2. Identity discipline per CLAUDE.md. |
+| v1.0 | 2026-05-13 | Rashida (Chief Information Security Officer, governance) | Initial policy authored. Eleven sections: (1) Scope — all systems, data, AI-agent processes, third-party providers; (2) Incident Classification — P1/P2/P3/P4 tiers with RTO by tier and classification event schema; (3) Governance — roles (Senna, Helena, Devon, Zara, Imani, Owen, Marc), IRT constitution, typed governance events; (4) Response Lifecycle — Detect (SIEM, agent-runtime, external, PA/FSCA, internal) → Triage → Contain → Eradicate → Recover → PIR (mandatory 14-day timeline for P1/P2), annual tabletop exercise requirement; (5) Regulatory Notification — PA 24h/72h/30-day cadence (Joint Standard 2/2024 §6), POPIA s22 72h Information Regulator + data-subject notification with serious-harm assessment factors, FSR Act s57 reportable irregularities, PA Guidance Note 3/2022 operational risk events; (6) Evidence Preservation — forensic chain of custody, log retention during incident (7 years), legal privilege considerations; (7) Controls and Monitoring — SIEM, agent-runtime anomaly detection, vulnerability management, access review, threat intelligence; KRI table (MTTD, MTTC, notification compliance, PIR completion, open actions, tabletop frequency); (8) Reporting — real-time to CEO (P1: 2h, P2: 24h), monthly ORC, quarterly BRC, annual cyber resilience report; (9) Exceptions and Escalation — exception process (CEO approval + typed event), no exception for mandatory notifications, escalation matrix; Obligations closure table: ORG-CY-04/05/11, ORG-PR(IV)-07. Substrate and citation gaps per Principle 2. Identity discipline per CLAUDE.md. |

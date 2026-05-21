@@ -3,7 +3,7 @@ procedureId: PROC-OPS-OUTS-01
 title: Outsourcing Due Diligence (Pre-Engagement)
 author: Devon (COO, governance)
 date: 2026-05-15
-owner: Devon (COO, governance) · Senna (CISO, governance) · Iris (IO, governance) · Imani (Legal-as-code engineer) · Mira (Regulatory intelligence engineer)
+owner: Devon (COO, governance) · Rashida (Chief Information Security Officer, governance) · Iris (IO, governance) · Imani (Legal-as-code engineer) · Mira (Regulatory intelligence engineer)
 status: POPULATED
 policy-cited: Outsourcing & Third-Party Risk Policy (planned — Devon)
 system-capability: "@platform/third-party-risk/intake (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/third-party-risk/intake (PLANNED)"
 # Procedure — Outsourcing Due Diligence (Pre-Engagement)
 
 **Procedure ID:** PROC-OPS-OUTS-01
-**Owner:** Devon (COO, governance) — substantive owner · Senna (CISO, governance) · Iris (IO, governance) · Imani (Legal-as-code engineer) · Mira (Regulatory intelligence engineer — FIC / sanctions exposure on the third party)
+**Owner:** Devon (COO, governance) — substantive owner · Rashida (Chief Information Security Officer, governance) · Iris (IO, governance) · Imani (Legal-as-code engineer) · Mira (Regulatory intelligence engineer — FIC / sanctions exposure on the third party)
 **Approval:** BRC (Board Risk Committee) at v1; Interim Audit Forum during build phase
 **Cadence:** On-trigger (pre-engagement of every material third party); annual review of every active engagement
 **Version:** v1.0 — 2026-05-15

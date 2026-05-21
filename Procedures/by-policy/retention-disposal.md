@@ -93,7 +93,7 @@ Maintain a canonical retention schedule for all categories of personal informati
 | Retention-expiry timer fires but scan produces zero candidates (misconfiguration) | Vera recon | Atlas + Anya; retention-register diagnostic |
 | Disposal executed on data subject to active LegalHold | Recon: `PersonalInformationDeleted` vs `LegalHoldAsserted` | Iris + Imani + CEO; potential POPIA violation; emergency de-escalation |
 | Mandatory-minimum floor missed (disposal too early) | Vera audit | Iris + Owen + Imani; if FIC records, potential FIC non-compliance; notify FIC if necessary |
-| Cryptographic erasure fails (key deletion error) | HSM error event | Senna (CISO) + Devon; fallback to secure overwrite; incident log opened |
+| Cryptographic erasure fails (key deletion error) | HSM error event | Rashida (Chief Information Security Officer, governance) + Devon; fallback to secure overwrite; incident log opened |
 | Annual schedule not reviewed by 31 March | Calendar trigger | Iris + Owen; immediate review; Vera finding |
 
 ## 10. Related procedures

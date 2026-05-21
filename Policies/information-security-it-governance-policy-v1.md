@@ -3,7 +3,7 @@ policy-id: information-security-it-governance-policy
 title: Information Security and IT Governance Policy v1
 version: "1"
 status: IN FORCE
-owner: Senna (Chief Information Security Officer, engineering)
+owner: Senna (Security engineer, engineering)
 effective-from: "2026-05-13"
 next-review: "2027-05-13"
 citations:
@@ -12,7 +12,7 @@ citations:
   - Banks Act 94 of 1990
   - PA/FSCA Joint Standard 2 of 2024
   - D-POLICY-DOCUMENT-HOME
-author: Senna (Chief Information Security Officer, engineering) + Devon (Chief Operating Officer, governance)
+author: Senna (Security engineer, engineering) + Devon (Chief Operating Officer, governance)
 date: 2026-05-13
 summary: Standalone Information Security and IT Governance Policy covering IT governance (board-approved IT strategy, IT performance, third-party IT risk) and IT risk management (IT risk appetite, identification/assessment, access controls, change management, asset management, cryptographic controls, monitoring, vulnerability management) per PA/FSCA Joint Standard 1 of 2023. Closes obligations ORG-CY-15 and ORG-CY-16. IN FORCE.
 decision-required: false
@@ -24,7 +24,7 @@ riskTaxonomy:
 
 # Information Security and IT Governance Policy v1
 
-> **Authors.** Senna (Chief Information Security Officer, engineering) — lead; Devon (Chief Operating Officer, governance) — co-author.
+> **Authors.** Senna (Security engineer, engineering) — lead; Devon (Chief Operating Officer, governance) — co-author.
 > **Standing authority.** `D-REGULATORY-READINESS-GATE-PLAN` (CEO-approved 2026-05-10); `D-POLICY-DOCUMENT-HOME` (CEO-approved 2026-05-12). Implements the IT governance and IT risk management policy layer of the bank's information-security programme per PA/FSCA Joint Standard 1 of 2023 under the no-pause rule — CLAUDE.md "Operating procedures".
 > **Obligations closed.** `ORG-CY-15` (IT governance framework per JS 1/2023: board-approved IT strategy, IT risk management integrated into enterprise risk, IT performance monitoring, third-party IT risk); `ORG-CY-16` (IT risk management per JS 1/2023: risk identification and assessment, IT risk appetite, risk treatment, monitoring and reporting).
 > **Status.** IN FORCE. PA/FSCA Joint Standard 1 of 2023 is in force; the Bank's AI-native platform is a regulated IT system from the date of first productive use. The IT governance framework obligations bind from the point at which the bank operates regulated IT systems — which is now, in the build phase. Banking-specific capital and liquidity obligations bind at commencement of trading; IT governance obligations bind when the systems are active.
@@ -34,7 +34,7 @@ riskTaxonomy:
 
 ## 1. Information Security and IT Governance Policy — Overarching
 
-**Owner:** Senna (Chief Information Security Officer, engineering) · **Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) · **Cadence:** Annual; triggered on material change to IT architecture, threat landscape, or regulatory update · **Citation:** PA/FSCA Joint Standard 1 of 2023 (`JS 1/2023`) — IT Governance and IT Risk Management for Financial Institutions (Parts A and B); Protection of Personal Information Act 4 of 2013 (`POPIA`) — s.19 (security safeguards), s.20 (integrity and confidentiality of personal information), s.21 (third-party processing), s.22 (notification of information security compromise); PA/FSCA Joint Standard 2 of 2024 (`JS 2/2024`) — Cybersecurity Framework for Financial Institutions; Banks Act 94 of 1990 — Reg 39 (operational risk and IT systems) `[citation: TBC — precise Reg 39 sub-clause indices; Imani (Legal-as-code engineer, engineering) + external counsel to ratify at the licence-application gate]`; `D-POLICY-DOCUMENT-HOME` (policy-document-home decision, CEO-approved 2026-05-12)
+**Owner:** Senna (Security engineer, engineering) · **Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) · **Cadence:** Annual; triggered on material change to IT architecture, threat landscape, or regulatory update · **Citation:** PA/FSCA Joint Standard 1 of 2023 (`JS 1/2023`) — IT Governance and IT Risk Management for Financial Institutions (Parts A and B); Protection of Personal Information Act 4 of 2013 (`POPIA`) — s.19 (security safeguards), s.20 (integrity and confidentiality of personal information), s.21 (third-party processing), s.22 (notification of information security compromise); PA/FSCA Joint Standard 2 of 2024 (`JS 2/2024`) — Cybersecurity Framework for Financial Institutions; Banks Act 94 of 1990 — Reg 39 (operational risk and IT systems) `[citation: TBC — precise Reg 39 sub-clause indices; Imani (Legal-as-code engineer, engineering) + external counsel to ratify at the licence-application gate]`; `D-POLICY-DOCUMENT-HOME` (policy-document-home decision, CEO-approved 2026-05-12)
 
 ### Purpose
 
@@ -61,7 +61,7 @@ The policy covers the full scope of information security: physical and logical a
 
 ### Roles
 
-Senna (Chief Information Security Officer, engineering) owns the Information Security and IT Governance Policy, the IT risk register, and the IT risk management programme. Senna chairs the Bank's information-security governance process; produces the quarterly IT performance and risk report for the Board (CEO interim); and owns the security-by-design requirement for every platform component. Senna reports to the Board (CEO interim) on IT risk and security posture.
+Senna (Security engineer, engineering) owns the Information Security and IT Governance Policy, the IT risk register, and the IT risk management programme. Senna chairs the Bank's information-security governance process; produces the quarterly IT performance and risk report for the Board (CEO interim); and owns the security-by-design requirement for every platform component. Senna reports to the Board (CEO interim) on IT risk and security posture.
 
 Devon (Chief Operating Officer, governance) co-authors the policy and owns the operational IT systems: the cloud infrastructure (Azure), the event store, the content-addressed document store, the agent runtime platform, and the third-party vendor service relationships. Devon is responsible for ensuring the IT systems meet the availability, integrity, and confidentiality requirements of this policy; for operating the change-management process; and for coordinating with Senna on the security posture of the operational systems.
 
@@ -89,7 +89,7 @@ Breach taxonomy under this policy is three-severity:
 
 ## 2. IT Governance Framework (JS 1/2023 Part A)
 
-**Owner:** Senna (Chief Information Security Officer, engineering) — framework; Devon (Chief Operating Officer, governance) — operational systems · **Approval:** Board (CEO interim) — IT strategy and IT governance framework annually; IT performance report quarterly · **Cadence:** IT strategy reviewed annually; IT performance reported quarterly; third-party IT risk assessed at vendor onboarding and annually · **Citation:** JS 1/2023 Part A — IT Governance; Banks Act 94 of 1990 — Reg 39 `[citation: TBC]`; `D-THIN-HUMAN-LAYER-MINIMUM` (governance structure interim)
+**Owner:** Senna (Security engineer, engineering) — framework; Devon (Chief Operating Officer, governance) — operational systems · **Approval:** Board (CEO interim) — IT strategy and IT governance framework annually; IT performance report quarterly · **Cadence:** IT strategy reviewed annually; IT performance reported quarterly; third-party IT risk assessed at vendor onboarding and annually · **Citation:** JS 1/2023 Part A — IT Governance; Banks Act 94 of 1990 — Reg 39 `[citation: TBC]`; `D-THIN-HUMAN-LAYER-MINIMUM` (governance structure interim)
 
 ### Purpose
 
@@ -123,7 +123,7 @@ Failure to produce the quarterly IT governance report within 15 days of quarter-
 
 ## 3. IT Risk Management Framework (JS 1/2023 Part B)
 
-**Owner:** Senna (Chief Information Security Officer, engineering) — IT risk register and programme; Helena (Chief Risk Officer, governance) — enterprise-risk integration · **Approval:** Board (CEO interim) — IT risk appetite; Helena — IT risk register additions and closures within appetite · **Cadence:** IT risk register updated continuously (typed events); formal quarterly review; RCSA annual; IT risk appetite reviewed annually · **Citation:** JS 1/2023 Part B — IT Risk Management; Banks Act 94 of 1990 — Reg 39 `[citation: TBC]`; BCBS operational risk principles `[citation: TBC — precise BCBS document reference; Imani to confirm]`; `ORG-CY-15` and `ORG-CY-16`
+**Owner:** Senna (Security engineer, engineering) — IT risk register and programme; Helena (Chief Risk Officer, governance) — enterprise-risk integration · **Approval:** Board (CEO interim) — IT risk appetite; Helena — IT risk register additions and closures within appetite · **Cadence:** IT risk register updated continuously (typed events); formal quarterly review; RCSA annual; IT risk appetite reviewed annually · **Citation:** JS 1/2023 Part B — IT Risk Management; Banks Act 94 of 1990 — Reg 39 `[citation: TBC]`; BCBS operational risk principles `[citation: TBC — precise BCBS document reference; Imani to confirm]`; `ORG-CY-15` and `ORG-CY-16`
 
 ### Purpose
 
@@ -157,7 +157,7 @@ An IT risk treatment plan with no progress event in 90 days is an Alert. A resid
 
 ## 4. Access Controls and Identity Management
 
-**Owner:** Senna (Chief Information Security Officer, engineering) · **Approval:** Devon (Chief Operating Officer, governance) for new privileged-access roles; Senna for access-right reviews · **Cadence:** Access rights reviewed quarterly; privileged access reviewed monthly; joiner/mover/leaver controls on event-trigger · **Citation:** JS 1/2023 Part B — IT Risk Management (access controls); JS 2/2024 — Cybersecurity Framework; POPIA — s.19 (security safeguards); Principle 4 (`Principles/4-security-designed-in.md`); Principle 6 (`Principles/6-autonomous-by-default.md`) — agent identity
+**Owner:** Senna (Security engineer, engineering) · **Approval:** Devon (Chief Operating Officer, governance) for new privileged-access roles; Senna for access-right reviews · **Cadence:** Access rights reviewed quarterly; privileged access reviewed monthly; joiner/mover/leaver controls on event-trigger · **Citation:** JS 1/2023 Part B — IT Risk Management (access controls); JS 2/2024 — Cybersecurity Framework; POPIA — s.19 (security safeguards); Principle 4 (`Principles/4-security-designed-in.md`); Principle 6 (`Principles/6-autonomous-by-default.md`) — agent identity
 
 ### Purpose
 
@@ -193,7 +193,7 @@ MFA not enforced for a human user account accessing a Bank system is a Hard Brea
 
 ## 5. Change Management
 
-**Owner:** Devon (Chief Operating Officer, governance) — process; Senna (Chief Information Security Officer, engineering) — security gate · **Approval:** Devon for standard changes; Senna for changes to security-critical systems; Board (CEO interim) for architecture-level changes · **Cadence:** Change management is continuous (event-triggered); change review cadence matches the Bank's release cycle · **Citation:** JS 1/2023 Part B — IT Risk Management; Principle 4 (`Principles/4-security-designed-in.md`); `Procedures/by-policy/change-management.md` (procedure)
+**Owner:** Devon (Chief Operating Officer, governance) — process; Senna (Security engineer, engineering) — security gate · **Approval:** Devon for standard changes; Senna for changes to security-critical systems; Board (CEO interim) for architecture-level changes · **Cadence:** Change management is continuous (event-triggered); change review cadence matches the Bank's release cycle · **Citation:** JS 1/2023 Part B — IT Risk Management; Principle 4 (`Principles/4-security-designed-in.md`); `Procedures/by-policy/change-management.md` (procedure)
 
 ### Purpose
 
@@ -225,7 +225,7 @@ An unplanned production change (outside the change-management process) is a Hard
 
 ## 6. Asset Management and Cryptographic Controls
 
-**Owner:** Senna (Chief Information Security Officer, engineering) · **Approval:** Devon for new asset-class additions; Senna for classification-level changes · **Cadence:** Asset inventory updated continuously (provisioning events); asset classification review annually; key rotation per schedule · **Citation:** JS 1/2023 Part B — IT Risk Management; JS 2/2024 — Cybersecurity Framework; Principle 4 (`Principles/4-security-designed-in.md`) — FIPS 140-2 Level 3 HSM; POPIA — s.19 (security safeguards)
+**Owner:** Senna (Security engineer, engineering) · **Approval:** Devon for new asset-class additions; Senna for classification-level changes · **Cadence:** Asset inventory updated continuously (provisioning events); asset classification review annually; key rotation per schedule · **Citation:** JS 1/2023 Part B — IT Risk Management; JS 2/2024 — Cybersecurity Framework; Principle 4 (`Principles/4-security-designed-in.md`) — FIPS 140-2 Level 3 HSM; POPIA — s.19 (security safeguards)
 
 ### Purpose
 
@@ -257,7 +257,7 @@ Plaintext key material outside the HSM boundary is a Critical breach: immediate 
 
 ## 7. Security Monitoring, Vulnerability Management, and Incident Response
 
-**Owner:** Senna (Chief Information Security Officer, engineering) · **Approval:** Devon (Chief Operating Officer, governance) for monitoring infrastructure changes; CEO (interim) for PA notification decisions · **Cadence:** Monitoring is continuous; vulnerability scans quarterly; penetration test annually; incident response on event-trigger · **Citation:** JS 1/2023 Part B — IT Risk Management; JS 2/2024 — Cybersecurity Framework; POPIA — s.22 (notification of information security compromise); Banks Act 94 of 1990 `[citation: TBC — security incident reporting obligation]`; `Procedures/by-policy/incident-response.md` (procedure)
+**Owner:** Senna (Security engineer, engineering) · **Approval:** Devon (Chief Operating Officer, governance) for monitoring infrastructure changes; CEO (interim) for PA notification decisions · **Cadence:** Monitoring is continuous; vulnerability scans quarterly; penetration test annually; incident response on event-trigger · **Citation:** JS 1/2023 Part B — IT Risk Management; JS 2/2024 — Cybersecurity Framework; POPIA — s.22 (notification of information security compromise); Banks Act 94 of 1990 `[citation: TBC — security incident reporting obligation]`; `Procedures/by-policy/incident-response.md` (procedure)
 
 ### Purpose
 
@@ -338,4 +338,4 @@ Per Principle 2, no sub-clause indices are invented. The following are `[citatio
 
 | Version | Date | Author | Change |
 |---|---|---|---|
-| v1 | 2026-05-13 | Senna (Chief Information Security Officer, engineering) + Devon (Chief Operating Officer, governance) | Initial policy authored. Nine sections: (1) Overarching Policy — Board approval, JS 1/2023 + JS 2/2024 + POPIA + Banks Act citations, ten principles (board accountability, security designed in, zero-trust, least-privilege, events-first security logging, IT risk as enterprise dimension, AI-platform risk explicitly scoped, third-party IT risk ownership, continuous monitoring, resilience as design), full roles including Senna/Devon/Atlas/Helena/Vera/Nadia/Imani/Zara, three-severity breach taxonomy; (2) IT Governance Framework (JS 1/2023 Part A) — board-approved IT strategy, alignment to business strategy, IT performance KPIs (availability/incidents/change-success/vulnerability/security), quarterly IT governance report, third-party IT risk assessment, governance non-delegation principle, AI governance as IT governance sub-domain; (3) IT Risk Management Framework (JS 1/2023 Part B) — board-approved IT risk appetite (availability RTO/RPO, data integrity, confidentiality, cyber tolerance), IT risk identification (seven named scenarios including AI-specific: model manipulation, prompt injection, agent spoofing), qualitative-quantitative hybrid assessment, four treatment options (mitigate/accept/transfer/avoid), IT risk register, RCSA integration, continuous monitoring and reporting; (4) Access Controls and Identity Management — zero-trust verify-every-request, least-privilege RBAC, agent identity as first-class security requirement, PAM with hardware MFA, joiner/mover/leaver controls, MFA mandatory for all human access, network micro-segmentation, session management; (5) Change Management — all production changes governed, standard/significant/emergency change types, security gate for security-critical systems, rollback capability mandatory, change-success-rate KPI, architecture-level Board approval; (6) Asset Management and Cryptographic Controls — full IT asset inventory, four-level classification (Public/Internal/Confidential/Restricted), FIPS 140-2 Level 3 HSM for all key material, key management framework (generation/distribution/rotation/revocation/archival/destruction), no plaintext credentials, encryption requirements by classification; (7) Security Monitoring, Vulnerability Management, Incident Response — all production events logged, SIEM integration, log retention per Records Management Policy, quarterly vulnerability scans, annual penetration test, AI-platform specific monitoring (agent behaviour anomaly / prompt injection / model output), typed SecurityIncident events, POPIA s.22 notification, PA notification; (8) Obligations Closure Table — ORG-CY-15 and ORG-CY-16 closed; (9) Substrate Dependencies and Gaps — agent-identity framework, SIEM integration, secrets management, IT risk register substrate (gaps named per Principle 2); citation gaps named. Identity discipline per CLAUDE.md observed throughout. |
+| v1 | 2026-05-13 | Senna (Security engineer, engineering) + Devon (Chief Operating Officer, governance) | Initial policy authored. Nine sections: (1) Overarching Policy — Board approval, JS 1/2023 + JS 2/2024 + POPIA + Banks Act citations, ten principles (board accountability, security designed in, zero-trust, least-privilege, events-first security logging, IT risk as enterprise dimension, AI-platform risk explicitly scoped, third-party IT risk ownership, continuous monitoring, resilience as design), full roles including Senna/Devon/Atlas/Helena/Vera/Nadia/Imani/Zara, three-severity breach taxonomy; (2) IT Governance Framework (JS 1/2023 Part A) — board-approved IT strategy, alignment to business strategy, IT performance KPIs (availability/incidents/change-success/vulnerability/security), quarterly IT governance report, third-party IT risk assessment, governance non-delegation principle, AI governance as IT governance sub-domain; (3) IT Risk Management Framework (JS 1/2023 Part B) — board-approved IT risk appetite (availability RTO/RPO, data integrity, confidentiality, cyber tolerance), IT risk identification (seven named scenarios including AI-specific: model manipulation, prompt injection, agent spoofing), qualitative-quantitative hybrid assessment, four treatment options (mitigate/accept/transfer/avoid), IT risk register, RCSA integration, continuous monitoring and reporting; (4) Access Controls and Identity Management — zero-trust verify-every-request, least-privilege RBAC, agent identity as first-class security requirement, PAM with hardware MFA, joiner/mover/leaver controls, MFA mandatory for all human access, network micro-segmentation, session management; (5) Change Management — all production changes governed, standard/significant/emergency change types, security gate for security-critical systems, rollback capability mandatory, change-success-rate KPI, architecture-level Board approval; (6) Asset Management and Cryptographic Controls — full IT asset inventory, four-level classification (Public/Internal/Confidential/Restricted), FIPS 140-2 Level 3 HSM for all key material, key management framework (generation/distribution/rotation/revocation/archival/destruction), no plaintext credentials, encryption requirements by classification; (7) Security Monitoring, Vulnerability Management, Incident Response — all production events logged, SIEM integration, log retention per Records Management Policy, quarterly vulnerability scans, annual penetration test, AI-platform specific monitoring (agent behaviour anomaly / prompt injection / model output), typed SecurityIncident events, POPIA s.22 notification, PA notification; (8) Obligations Closure Table — ORG-CY-15 and ORG-CY-16 closed; (9) Substrate Dependencies and Gaps — agent-identity framework, SIEM integration, secrets management, IT risk register substrate (gaps named per Principle 2); citation gaps named. Identity discipline per CLAUDE.md observed throughout. |

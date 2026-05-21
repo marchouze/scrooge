@@ -4,7 +4,7 @@ status: POPULATED
 # Procedure — DR Test Execution
 
 **Procedure ID:** PROC-OR-DR-01
-**Owner:** Devon (Chief Operating Officer, governance) · Senna (Chief Information Security Officer, engineering)
+**Owner:** Devon (Chief Operating Officer, governance) · Senna (Security engineer, engineering)
 **Approval:** EXCO
 **Cadence:** Annual (full DR test); semi-annual (component tests)
 **Version:** v0.1 — 2026-05-13
@@ -96,7 +96,7 @@ Both tests are required. DR test results feed the SBP scenario assessments: if a
 ## 8. Manual steps
 
 - **Step 2** — Pre-test readiness check: Senna must physically confirm HSM DR key shard access and DR-site infrastructure readiness. Platform tooling records the check outcome; it cannot substitute for Senna's physical/cryptographic verification of the HSM.
-- **Step 3** — Failover initiation: the controlled failover is initiated by Senna and Atlas. While the sequence is scripted, the decision to proceed (given the readiness check, business calendar, and risk appetite) is a human call by Devon (COO) and Senna (CISO).
+- **Step 3** — Failover initiation: the controlled failover is initiated by Senna and Atlas. While the sequence is scripted, the decision to proceed (given the readiness check, business calendar, and risk appetite) is a human call by Devon (COO) and Rashida (Chief Information Security Officer, governance).
 - **Step 6** — IBS functional confirmation: IBS owners must confirm that their service is functioning correctly on the DR site. The smoke-test suite provides automated checks; IBS owners add the expert-judgement layer (e.g. market-data quality, trade-capture accuracy).
 - **Step 10** — Failback: the decision to proceed with failback (after confirming DR site results are captured and all measurements recorded) is a human call by Devon and Senna. Premature failback could invalidate test results.
 - **Step 11** — Remediation action creation: Devon and the relevant IBS owner must agree the remediation approach and feasibility before the action is committed. The platform records the action; the remediation content requires professional judgement.
@@ -130,7 +130,7 @@ Both tests are required. DR test results feed the SBP scenario assessments: if a
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Devon + Senna (via Scrooge dispatch) | Initial populated stub. Full DR test + semi-annual component tests; 13-step cycle; five IBS with explicit RTO/RPO targets; failover → IBS verification → failback → post-test report path. Covers ORG-PR-18 + ORG-PR-45 + ORG-CY-16. |
-| v0.2 | 2026-05-15 | Devon (Chief Operating Officer, governance) + Senna (Chief Information Security Officer, engineering) | Promoted to POPULATED — all 12 sections verified complete. |
+| v0.2 | 2026-05-15 | Devon (Chief Operating Officer, governance) + Senna (Security engineer, engineering) | Promoted to POPULATED — all 12 sections verified complete. |
 
 ## 12. Audit / assurance
 

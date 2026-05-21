@@ -4,7 +4,7 @@ status: POPULATED
 # Procedure — Access provisioning (joiner / mover / leaver)
 
 **Procedure ID:** PROC-IS-AP-01
-**Owner:** Senna (Chief Information Security Officer, engineering) · Devon (Chief Operating Officer, governance)
+**Owner:** Senna (Security engineer, engineering) · Devon (Chief Operating Officer, governance)
 **Approval:** EXCO
 **Cadence:** Event-triggered (per personnel/agent change); quarterly access review
 **Version:** v0.2 — 2026-05-15
@@ -192,7 +192,7 @@ The orphaned-account detection recon (`@platform/recon/iam-orphan-detection`) ru
 3. `∀ privileged_grant : privileged_grant.dual_approved_by.length == 2 AND privileged_grant.dual_approved_by[0] ≠ privileged_grant.dual_approved_by[1]` — no self-approved privileged grant.
 4. `∀ hsm_custodian_grant : hsm_custodian_grant.dual_approved_by.includes('senna') OR hsm_custodian_grant.dual_approved_by.includes('devon')` — HSM custodian grants must involve CISO or COO as one of the dual approvers.
 
-**Failure action:** Any assertion violation emits a `ReconFinding { recon_id: 'iam-orphan-detection', assertion_id, subject_id, grant_id, found_at, severity: 'critical' }` event, which surfaces immediately on the security dashboard and is escalated to Senna (Chief Information Security Officer, governance) and Devon (Chief Operating Officer, governance). Vera (internal audit engineer) is notified within the same tick for independence.
+**Failure action:** Any assertion violation emits a `ReconFinding { recon_id: 'iam-orphan-detection', assertion_id, subject_id, grant_id, found_at, severity: 'critical' }` event, which surfaces immediately on the security dashboard and is escalated to Rashida (Chief Information Security Officer, governance) and Devon (Chief Operating Officer, governance). Vera (internal audit engineer) is notified within the same tick for independence.
 
 **System capability:** `@platform/recon/iam-orphan-detection` (`PLANNED`) — implemented as a TypeScript recon function in `prototype/platform/recon/iam-orphan-detection.ts`, scheduled via the agent scheduler harness.
 
@@ -200,5 +200,5 @@ The orphaned-account detection recon (`@platform/recon/iam-orphan-detection`) ru
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v0.1 | 2026-05-13 | Senna (Chief Information Security Officer, governance) + Devon (Chief Operating Officer, governance) | Initial stub; 9 sections across 5 sub-flows (Joiner, Mover, Leaver, PAM, Quarterly review); system capabilities `PLANNED`. |
-| v0.2 | 2026-05-15 | Senna (Chief Information Security Officer, governance) + Devon (Chief Operating Officer, governance) | STUB → POPULATED. Added Sub-flow H (HSM key custodian access), Sub-flow A2 (annual standard-access review). Canonical event names updated to `AccessGranted` / `AccessRevoked` / `AccessReviewCompleted`. Added Section 12 (recon harness — orphaned-account detection). Annual review cadence formalised. All 12 sections complete. |
+| v0.1 | 2026-05-13 | Rashida (Chief Information Security Officer, governance) + Devon (Chief Operating Officer, governance) | Initial stub; 9 sections across 5 sub-flows (Joiner, Mover, Leaver, PAM, Quarterly review); system capabilities `PLANNED`. |
+| v0.2 | 2026-05-15 | Rashida (Chief Information Security Officer, governance) + Devon (Chief Operating Officer, governance) | STUB → POPULATED. Added Sub-flow H (HSM key custodian access), Sub-flow A2 (annual standard-access review). Canonical event names updated to `AccessGranted` / `AccessRevoked` / `AccessReviewCompleted`. Added Section 12 (recon harness — orphaned-account detection). Annual review cadence formalised. All 12 sections complete. |

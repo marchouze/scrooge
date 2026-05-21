@@ -118,7 +118,7 @@ The escalation channel is a typed event (Wave-4 #14). Side-channel escalations (
 
 ## 13. Procedures owned
 
-- `Procedures/by-policy/popia-breach-notification.md` — **owner; co-owned with Rashida (CISO seat) and Senna (engineer)** (populated).
+- `Procedures/by-policy/popia-breach-notification.md` — **owner; co-owned with Rashida (Chief Information Security Officer, governance) and Senna (Security engineer, engineering)** (populated).
 - `Procedures/by-policy/popia-dsar.md` — **owner** (populated).
 - `Procedures/by-policy/popia-io-designation.md` — **owner; per-entity POPIA s.55–56 Information-Officer designation procedure (PROC-PRIV-IO-DSG-01)**. Landed via PR #91 (`Owner Inbox/2026-05-09_iris_per-entity-popia-io-designation-scoping.md`); reconciles to D-LEGAL-ENTITY-TREE-V0.
 - `Procedures/by-policy/processing-purpose-registration.md` — **owner** (planned).

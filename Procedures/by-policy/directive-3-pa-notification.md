@@ -3,7 +3,7 @@ procedureId: PROC-OPS-D3-01
 title: Directive 3 of 2018 (Cloud Computing & Offshoring of Data) PA Notification
 author: Devon (COO, governance)
 date: 2026-05-15
-owner: Devon (COO, governance) · Owen (CoSec, governance) · Imani (Legal-as-code engineer) · Senna (CISO, governance) · Rashida (Cyber resilience engineer) · Iris (IO, governance)
+owner: Devon (COO, governance) · Owen (CoSec, governance) · Imani (Legal-as-code engineer) · Rashida (Chief Information Security Officer, governance) · Senna (Security engineer, engineering) · Iris (IO, governance)
 status: POPULATED
 policy-cited: Outsourcing & Third-Party Risk Policy (planned — Devon)
 system-capability: "@platform/governance/d3-notification-packet (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/governance/d3-notification-packet (PLANNED)"
 # Procedure — Directive 3 of 2018 (Cloud Computing & Offshoring of Data) PA Notification
 
 **Procedure ID:** PROC-OPS-D3-01
-**Owner:** Devon (COO, governance) — substantive owner · Owen (CoSec, governance) — governance-calendar sequencing · Imani (Legal-as-code engineer) — legal review · Senna (CISO, governance) + Rashida (Cyber resilience engineer) — cyber attestations · Iris (IO, governance) — POPIA s.72 transfer assessment
+**Owner:** Devon (COO, governance) — substantive owner · Owen (CoSec, governance) — governance-calendar sequencing · Imani (Legal-as-code engineer) — legal review · Rashida (Chief Information Security Officer, governance) + Senna (Security engineer, engineering) — cyber attestations · Iris (IO, governance) — POPIA s.72 transfer assessment
 **Approval:** Board (or Interim Audit Forum during build phase) — Directive 3 notifications are governance-level filings to the Prudential Authority
 **Cadence:** On-trigger (pre-engagement of every notifiable arrangement); update notification on material change to an existing arrangement
 **Version:** v1.0 — 2026-05-15

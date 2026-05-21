@@ -3,7 +3,7 @@ policy-id: OPS-OUTSRC-01
 title: Outsourcing and Third-Party Risk Policy v1
 version: "1.0"
 status: DRAFT
-owner: Senna (CISO, governance) with Devon (IT ops engineer)
+owner: Rashida (Chief Information Security Officer, governance) with Devon (Chief Operating Officer, governance)
 effective-from: 2026-05-13
 next-review: "2026-11-13"
 citations:
@@ -13,7 +13,7 @@ citations:
   - "Joint Standard 2/2024: §8 (third-party risk management)"
   - "POPIA 4/2013: s19 (security measures), s20 (operator agreements), s21 (operator processing conditions)"
   - "POPIA 4/2013: s57 (information officer designation)"
-author: Senna (CISO, governance) with Devon (IT ops engineer)
+author: Rashida (Chief Information Security Officer, governance) with Devon (Chief Operating Officer, governance)
 date: 2026-05-13
 summary: "Governs the bank's use of third-party service providers and cloud platforms, from due diligence and contract standards through ongoing monitoring and exit planning, ensuring PA outsourcing notification and POPIA operator obligations are met."
 decision-required: false
@@ -29,9 +29,9 @@ applies-at: LICENCE-BIND
 
 # Outsourcing and Third-Party Risk Policy v1
 
-> **Policy** | OPS-OUTSRC-01 v1.0 | Owner: Senna (CISO, governance) with Devon (IT ops engineer) | Status: DRAFT | Effective: 2026-05-13
+> **Policy** | OPS-OUTSRC-01 v1.0 | Owner: Rashida (Chief Information Security Officer, governance) with Devon (Chief Operating Officer, governance) | Status: DRAFT | Effective: 2026-05-13
 
-> **Authors:** Senna (CISO, governance) as primary author and approving authority for vendor risk assessments; Devon (IT ops engineer, engineering — reports to Senna, CISO, governance) as technical due diligence lead; Camille (CFO, governance) approves material contracts.
+> **Authors:** Rashida (Chief Information Security Officer, governance) as primary author and approving authority for vendor risk assessments; Devon (Chief Operating Officer, governance) as technical due diligence lead; Camille (CFO, governance) approves material contracts.
 >
 > **Obligations closed:** ORG-CY-06 (third-party and outsourcing risk management framework); ORG-CY-07 (POPIA operator agreement requirements).
 >
@@ -52,7 +52,7 @@ This policy governs the bank's use of external third parties — including cloud
 3. **Arm's-length governance.** Third-party relationships are governed by written agreements containing minimum standards per §3.4, regardless of whether the provider is a related entity.
 4. **Concentration risk awareness.** Dependence on a single provider for critical functions is actively managed; fallback plans are maintained and tested.
 5. **POPIA data protection.** Where a third party processes personal information on behalf of the bank, a POPIA-compliant operator agreement is in place before any personal information is transferred.
-6. **Autonomous monitoring.** Devon (IT ops engineer, engineering) runs continuous security-posture monitoring routines against the Critical Service Provider register. Senna (CISO, governance) reviews findings and escalates to Camille (CFO, governance) on material changes.
+6. **Autonomous monitoring.** Devon (Chief Operating Officer, governance) runs continuous security-posture monitoring routines against the Critical Service Provider register. Rashida (Chief Information Security Officer, governance) reviews findings and escalates to Camille (CFO, governance) on material changes.
 
 ---
 
@@ -97,10 +97,10 @@ The policy covers outsourced functions regardless of whether the provider is:
 
 | Role | Holder | Authority |
 |---|---|---|
-| Policy owner | Senna (CISO, governance) | Approves vendor risk assessments; owns the Critical Service Provider register; approves exceptions |
-| Technical due diligence lead | Devon (IT ops engineer, engineering — reports to Senna, CISO, governance) | Security posture assessments; architecture reviews; ongoing monitoring |
+| Policy owner | Rashida (Chief Information Security Officer, governance) | Approves vendor risk assessments; owns the Critical Service Provider register; approves exceptions |
+| Technical due diligence lead | Devon (Chief Operating Officer, governance) | Security posture assessments; architecture reviews; ongoing monitoring |
 | Contract approval — material | Camille (CFO, governance) | Approves material outsourcing contracts >R1m annual value |
-| Contract approval — non-material | Senna (CISO, governance) | Approves non-material contracts ≤R1m annual value |
+| Contract approval — non-material | Rashida (Chief Information Security Officer, governance) | Approves non-material contracts ≤R1m annual value |
 | POPIA operator agreements | Iris (Information Officer, governance) | Co-signs POPIA operator agreements; maintains the operator register |
 | PA outsourcing notification | Owen (Company Secretary, governance) | Files material-outsourcing notifications with the PA; maintains notification log |
 | Internal audit | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, CAE, governance) | Annual outsourcing controls recon; spot-checks vendor risk assessments |
@@ -109,7 +109,7 @@ The policy covers outsourced functions regardless of whether the provider is:
 
 The Outsourcing and Vendor Risk Committee (OVRC) is a management-level forum:
 
-- **Members:** Senna (chair), Devon, Camille, Iris, Owen.
+- **Members:** Rashida (chair), Devon, Camille, Iris, Owen.
 - **Cadence:** Quarterly in steady state; convened ad hoc for material new outsourcing decisions.
 - **Mandate:** Approve material outsourcing arrangements; review Critical Service Provider register; assess concentration risk; approve exit-plan testing results.
 
@@ -132,7 +132,7 @@ An outsourcing arrangement is **material** (reg.39(17); PA D3/2016) if it involv
 - Would have a material impact on the bank's customers, operations, or reputation;
 - Would require notification to the PA under reg.39(17)(b).
 
-The classification is made by Senna (CISO) at onboarding and reviewed annually.
+The classification is made by Rashida (Chief Information Security Officer, governance) at onboarding and reviewed annually.
 
 **3.1.2 Non-material outsourcing**
 
@@ -162,7 +162,7 @@ Before entering into a material outsourcing arrangement, the bank conducts full 
 | Concentration risk | Market share; customer concentration; single-points-of-failure |
 | Exit capability | Data portability; transition assistance provisions; contractual exit obligations |
 
-Devon (IT ops engineer) leads the technical dimensions; Senna (CISO) leads the overall assessment and signs off.
+Devon (Chief Operating Officer, governance) leads the technical dimensions; Rashida (Chief Information Security Officer, governance) leads the overall assessment and signs off.
 
 **3.2.2 Non-material outsourcing — light due diligence**
 
@@ -186,7 +186,7 @@ The bank must notify the PA of any material outsourcing arrangement **at least 9
 
 **3.3.2 Cloud notification — D3/2016**
 
-The PA Directive D3/2016 requires notification of any cloud-computing arrangement used for banking operations. Devon (IT ops engineer) maintains the cloud-services inventory; Owen files D3/2016 notifications for each new cloud service before the service goes live.
+The PA Directive D3/2016 requires notification of any cloud-computing arrangement used for banking operations. Devon (Chief Operating Officer, governance) maintains the cloud-services inventory; Owen files D3/2016 notifications for each new cloud service before the service goes live.
 
 **3.3.3 Changes to material outsourcing**
 
@@ -210,7 +210,7 @@ Every outsourcing agreement must include the following minimum provisions:
 | Jurisdiction | SA law governs; SA courts have jurisdiction (or arbitration clause with SA seat) |
 | Step-in rights | The bank can step in to perform the outsourced function directly in an emergency |
 
-Contracts that do not meet these minimum standards are not executed. Exceptions require Senna (CISO) approval with risk-acceptance documentation.
+Contracts that do not meet these minimum standards are not executed. Exceptions require Rashida (Chief Information Security Officer, governance) approval with risk-acceptance documentation.
 
 ### 3.5 Azure as primary cloud provider
 
@@ -224,7 +224,7 @@ The shared-responsibility model applies per the Microsoft Azure Customer Agreeme
 - Microsoft is responsible for: physical security; hypervisor security; network controls; underlying platform availability.
 - The bank is responsible for: data classification and encryption; identity and access management; application-layer security; compliance configuration.
 
-Devon (IT ops engineer) maintains the shared-responsibility matrix and ensures bank-side controls are implemented and tested.
+Devon (Chief Operating Officer, governance) maintains the shared-responsibility matrix and ensures bank-side controls are implemented and tested.
 
 **3.5.3 Data residency — South Africa North**
 
@@ -254,7 +254,7 @@ The bank's primary dependence on Azure is a concentration risk. Mitigation measu
 
 **3.6.2 Critical Service Provider register**
 
-Devon (IT ops engineer) maintains the Critical Service Provider register covering:
+Devon (Chief Operating Officer, governance) maintains the Critical Service Provider register covering:
 - Provider name and service description;
 - Materiality classification and CSP designation;
 - PA notification date and reference;
@@ -296,11 +296,11 @@ Providers must notify the bank within 24 hours of any security incident (as defi
 
 ### 4.1 Critical Service Provider register
 
-Devon (IT ops engineer) maintains the register as the canonical inventory of all material and critical outsourcing arrangements. The register is the source of truth for PA notifications, OVRC reviews, and Vera's audit recon.
+Devon (Chief Operating Officer, governance) maintains the register as the canonical inventory of all material and critical outsourcing arrangements. The register is the source of truth for PA notifications, OVRC reviews, and Vera's audit recon.
 
 ### 4.2 Contract compliance monitoring
 
-Senna (CISO) maintains a contract-compliance checklist for each material provider, confirming that:
+Rashida (Chief Information Security Officer, governance) maintains a contract-compliance checklist for each material provider, confirming that:
 - Minimum contract standards (§3.4) are present in the signed agreement;
 - Audit rights have been exercised (or waived with risk-acceptance) in the past 24 months;
 - SLA performance reports are received and reviewed quarterly.
@@ -337,7 +337,7 @@ Vera (Internal audit / continuous-assurance engineer, engineering) performs:
 - Spot-checks of vendor risk assessments (sample: 20% of material providers assessed in prior 12 months);
 - PA notification log completeness check.
 
-Findings are reported to Thandiwe (CAE, governance) and escalated to Senna (CISO) and Camille (CFO) where material.
+Findings are reported to Thandiwe (CAE, governance) and escalated to Rashida (Chief Information Security Officer, governance) and Camille (CFO) where material.
 
 ---
 
@@ -380,7 +380,7 @@ Where a security incident at a provider results in a personal-information breach
 
 Exceptions to minimum contract standards (§3.4), due-diligence requirements (§3.2), or data-localisation requirements (§3.5.3) must be:
 - Documented in a risk-acceptance record;
-- Approved by Senna (CISO) for non-material arrangements;
+- Approved by Rashida (Chief Information Security Officer, governance) for non-material arrangements;
 - Approved by Senna and Camille (CFO) for material arrangements;
 - Escalated to the CEO for Critical Service Provider exceptions.
 
@@ -408,4 +408,4 @@ Where a Critical Service Provider fails or terminates service unexpectedly:
 
 ---
 
-*Policy OPS-OUTSRC-01 v1.0 — Authored by Senna (CISO, governance) with Devon (IT ops engineer) | Effective 2026-05-13*
+*Policy OPS-OUTSRC-01 v1.0 — Authored by Rashida (Chief Information Security Officer, governance) with Devon (Chief Operating Officer, governance) | Effective 2026-05-13*

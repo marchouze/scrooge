@@ -4,7 +4,7 @@ status: POPULATED
 # Procedure — Key Rotation
 
 **Procedure ID:** PROC-IS-KR-01
-**Owner:** Senna (Chief Information Security Officer, governance) · Devon (IT operations engineer, engineering)
+**Owner:** Rashida (Chief Information Security Officer, governance) · Devon (IT operations engineer, engineering)
 **Approval:** BRC
 **Cadence:** Scheduled (HSM root CA = annual; signing/API keys = 90 days; encryption keys = 180 days) + on-trigger (compromise, departing principal, or audit finding)
 **Version:** v0.2 — 2026-05-15
@@ -28,7 +28,7 @@ Cryptographic key lifecycle (generate → activate → rotate → retire → des
 
 ## 3. Purpose
 
-Ensure that every cryptographic key in use at the bank is rotated on schedule or on demand, that no key overstays its maximum validity period, that all key-material generation and retirement occurs within the HSM and is fully audit-trailed, and that dependent services are updated and verified before any key is retired. This procedure operationalises the cryptographic key lifecycle and feeds the key-rotation register maintained by Senna (Chief Information Security Officer, governance). The procedure also defines the emergency rotation path for suspected key compromise, which must resolve to a confirmed `KeyRotated` event within four hours of the compromise signal.
+Ensure that every cryptographic key in use at the bank is rotated on schedule or on demand, that no key overstays its maximum validity period, that all key-material generation and retirement occurs within the HSM and is fully audit-trailed, and that dependent services are updated and verified before any key is retired. This procedure operationalises the cryptographic key lifecycle and feeds the key-rotation register maintained by Rashida (Chief Information Security Officer, governance). The procedure also defines the emergency rotation path for suspected key compromise, which must resolve to a confirmed `KeyRotated` event within four hours of the compromise signal.
 
 ## 4. Trigger
 
@@ -121,7 +121,7 @@ Ensure that every cryptographic key in use at the bank is rotated on schedule or
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Atlas (Core banking platform architect, engineering) | Initial stub; all 9 sections populated; system capabilities `PLANNED`; dual-control ceremony and 4 key types specified. |
-| v0.2 | 2026-05-15 | Senna (Chief Information Security Officer, governance) + Devon (IT operations engineer, engineering) | Promoted to POPULATED — reformatted to 12-section canonical template; §6 invariants expanded; §7–§12 fully authored; `KeyCompromiseSuspected` event and 4-hour SLA added; `KeyRotationScheduled` and `KeyRotationCeremonyCompleted` events added. |
+| v0.2 | 2026-05-15 | Rashida (Chief Information Security Officer, governance) + Devon (IT operations engineer, engineering) | Promoted to POPULATED — reformatted to 12-section canonical template; §6 invariants expanded; §7–§12 fully authored; `KeyCompromiseSuspected` event and 4-hour SLA added; `KeyRotationScheduled` and `KeyRotationCeremonyCompleted` events added. |
 
 ## 12. Audit / assurance
 
