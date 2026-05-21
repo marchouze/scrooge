@@ -30,6 +30,7 @@ import type {
   FxSettlementConfirmedPayload,
 } from "../event-store/event-types/fx-accounting";
 import { makeDailyPnLReportGenerated } from "../event-store/event-types/product-control";
+import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type {
   DailyPnLReportGeneratedPayload,
   PnLByBook,
@@ -137,6 +138,26 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
       const existing = realisedByTrade.get(p.tradeId) ?? 0;
       realisedByTrade.set(p.tradeId, existing + p.realisedPnlDelta);
     }
+  }
+  // Fold SettlementRealisedPnlCorrected — supersedes any zero/incorrect
+  // realisedPnlDelta on the original SettlementConfirmed for the same trade.
+  // The correction replaces (not adds to) the P&L already accumulated from
+  // the original event: correction.realisedPnlZarMinor is the full correct
+  // value, not an incremental delta.
+  //
+  // Authority: IAS 21 §28; PR-FX-LIFECYCLE-CLOSE; Principle 1 (events immutable,
+  //   corrections via new event type).
+  const correctedTradeIds = new Set<string>();
+  try {
+    for (const e of store.replay({ type: "SettlementRealisedPnlCorrected" })) {
+      const p = e.payload as unknown as SettlementRealisedPnlCorrectedPayload;
+      if (!p.tradeId) continue;
+      // Apply only the latest correction per trade (last-write-wins in replay order).
+      realisedByTrade.set(p.tradeId, p.realisedPnlZarMinor);
+      correctedTradeIds.add(p.tradeId);
+    }
+  } catch {
+    // SettlementRealisedPnlCorrected not yet registered — silently continue.
   }
 
   // -------------------------------------------------------------------------

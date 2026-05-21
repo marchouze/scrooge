@@ -36,6 +36,7 @@ import {
   ndfFixingObservedPayloadSchema,
   principalPaymentPayloadSchema,
   settlementConfirmedPayloadSchema,
+  settlementRealisedPnlCorrectedPayloadSchema,
 } from "../../markets/cdm/fx";
 import {
   irsCouponPaymentInstructedPayloadSchema,
@@ -536,6 +537,31 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M4 FX settlement lifecycle); scenarios/06-fx-spot-trade.ts; D-FX-CLS-MEMBERSHIP; D-MARKETS-SCHEMA-FOUNDATION",
+  },
+  // SettlementRealisedPnlCorrected — corrective event for SettlementConfirmed
+  // events that were historically emitted with realisedPnlDelta: 0 (substrate
+  // gap: the post-trade lifecycle emitter did not compute realised P&L at
+  // emission time). Option A per the brief: new event type, not in-place
+  // mutation (Principle 1 — events immutable). Folded by the daily-pnl
+  // projection to supersede the zero.
+  //
+  // Authority: IAS 21 §28; PR-FX-LIFECYCLE-CLOSE; D-FX-QUOTING-CONVENTION.
+  // Author: Bea (Accounting & financial reporting engineer, engineering).
+  {
+    type: "SettlementRealisedPnlCorrected",
+    class: "markets",
+    payloadSchema: settlementRealisedPnlCorrectedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Anya", "Rohan", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "IAS-21-§28",
+      "PR-FX-LIFECYCLE-CLOSE",
+      "D-FX-QUOTING-CONVENTION",
+    ],
+    retention: RETENTION_JSE_TRADE_7Y,
+    source:
+      "scripts/backfill-fx-settlement-realised-pnl.ts; platform/product-control/daily-pnl.ts; IAS 21 §28",
   },
   // NdfFixingObserved — FX-Forward NDF variant only. Records the observed
   // fixing rate and the resulting net cash settlement amount on the fixing
