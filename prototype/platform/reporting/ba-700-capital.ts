@@ -80,6 +80,12 @@
 //   semantic-layer integration).
 
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
+import {
+  BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
+  type LeverageExposureDecomposition,
+  type LeverageRatioOutput,
+  generateLeverageRatio,
+} from "./ba-700-leverage-ratio";
 
 // P1 fix note (C-3): the events-first entry point for BA 700 lives at
 // `ba-700-events-adapter.ts` → `generateBa700CapitalFromEvents()`. Callers
@@ -251,6 +257,20 @@ export interface Ba700GeneratorInput {
   /** Buffer requirements; defaults to `BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS`. */
   readonly bufferRequirements?: BufferRequirements;
   /**
+   * Optional Basel III leverage-ratio exposure-measure decomposition
+   * (per BCBS §147–§165). When supplied, the BA 700 output ships a
+   * `leverageRatio` section alongside the CET1/T1/Total ratios. When
+   * omitted, the `leverageRatio` field is absent — backwards-compatible
+   * for callers that have not yet wired exposure-measure inputs.
+   *
+   * v0 contract: caller-supplied. Mirrors the `rwa` field's posture —
+   * the periodic SA-CCR + commitment-snapshot projection waves will
+   * feed this once they land. Coordinate with the credit-limit-engine
+   * SA-CCR v1 (D-CREDIT-LIMIT-ENGINE-BUILD Phase 5) for derivative-
+   * exposure composition.
+   */
+  readonly leverageExposureMeasure?: LeverageExposureDecomposition;
+  /**
    * Optional: cite the source `TrialBalanceSnapshotted.event_id` so the
    * downstream `ReportGenerated` event can chain back to the trial-balance
    * snapshot under Principle 1.
@@ -366,6 +386,18 @@ export interface Ba700Output {
   readonly rwa: Ba700RwaSection;
   readonly bufferRequirements: BufferRequirements;
   readonly ratios: Ba700RatiosSection;
+  /**
+   * Basel III leverage-ratio section (BCBS §147–§165). Present when
+   * the caller supplies `leverageExposureMeasure` in the input;
+   * absent otherwise.
+   *
+   * The leverage ratio is computed via the standalone
+   * `generateLeverageRatio` generator with Tier-1 capital equal to
+   * the net Tier-1 stock here. Composing through a single typed
+   * primitive guarantees the BA 700 leverage view and a stand-alone
+   * leverage report match byte-for-byte.
+   */
+  readonly leverageRatio?: LeverageRatioOutput;
   /**
    * Citations the generator carries forward into the `ReportGenerated`
    * event (Slice 5). Includes the standing authority + the regulatory
@@ -650,6 +682,27 @@ export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
   const deductionsFingerprint = fingerprintDeductions(input.deductions);
   const rwaFingerprint = fingerprintRwa(input.rwa);
 
+  // Optional Basel III leverage ratio — produced when the caller supplied
+  // an exposure-measure decomposition. Uses the net Tier-1 stock so the
+  // numerator matches the BA 700 Tier-1 view exactly.
+  let leverageRatio: LeverageRatioOutput | undefined;
+  if (input.leverageExposureMeasure !== undefined) {
+    leverageRatio = generateLeverageRatio({
+      entity: input.entity,
+      asOf: input.asOf,
+      periodId: input.periodId,
+      functionalCurrency: ccy,
+      tier1CapitalMinor: tier1Net,
+      exposureMeasure: input.leverageExposureMeasure,
+      regulatoryMinimumRatio: BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
+    });
+    // Propagate leverage-ratio placeholders into the BA 700 placeholder
+    // density so the recon pipeline tracks them uniformly.
+    for (const p of leverageRatio.placeholders) {
+      placeholders.push(p);
+    }
+  }
+
   return {
     meta: {
       form: "BA 700",
@@ -706,6 +759,7 @@ export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
     },
     bufferRequirements: buffers,
     ratios,
+    ...(leverageRatio !== undefined ? { leverageRatio } : {}),
     citations: [
       "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
       "D-REPORTING-CAPABILITY-SLICE-4",
@@ -713,6 +767,7 @@ export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
       "Regulations Relating to Banks Reg 38",
       "BCBS Basel III §50–§90",
       "BCBS Basel III §122–§148",
+      ...(leverageRatio !== undefined ? ["BCBS Basel III §147–§165"] : []),
     ],
     placeholders,
   };

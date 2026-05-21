@@ -111,6 +111,43 @@ export const Ba700RenderSchema = z.object({
   }),
   bufferRequirements: ba700BufferRequirementsSchema,
   /**
+   * Basel III leverage-ratio section (BCBS §147–§165). Present when
+   * the generator was supplied an exposure-measure decomposition.
+   * Ratio encoded as a string (mirrors RWA-ratio encoding for
+   * Infinity safety).
+   */
+  leverageRatio: z
+    .object({
+      meta: z.object({
+        form: z.literal("Leverage Ratio"),
+        formVersion: z.literal("v0.1-rehearsal"),
+        entity: z.string().min(1),
+        asOf: z.string().min(1),
+        periodId: z.string().min(1),
+        functionalCurrency: z.string().length(3),
+        generatorVersion: z.literal("v0.1"),
+        exposureFingerprint: z.string().min(1),
+      }),
+      tier1CapitalMinor: z.number().int().nonnegative(),
+      exposureMeasure: z.object({
+        onBalanceSheetExposureMinor: z.number().int().nonnegative(),
+        derivativeExposureMinor: z.number().int().nonnegative(),
+        sftExposureMinor: z.number().int().nonnegative(),
+        offBalanceSheetExposurePostCcfMinor: z.number().int().nonnegative(),
+        totalExposureMeasureMinor: z.number().int().nonnegative(),
+        source: z.string().min(1),
+        saccrEventId: z.string().min(1).optional(),
+      }),
+      leverageRatio: z.string().min(1),
+      leveragePercent: z.string().min(1),
+      regulatoryMinimumRatio: z.string().min(1),
+      regulatoryMinimumPercent: z.string().min(1),
+      compliant: z.boolean(),
+      citations: z.array(z.string().min(1)),
+      placeholders: z.array(z.string().min(1)),
+    })
+    .optional(),
+  /**
    * Ratios are encoded as strings to preserve `Infinity` (which is not
    * valid JSON) for the divide-by-zero edge case (no RWA). Finite ratios
    * render as `"0.1234"` (4 decimals); the divide-by-zero case as
@@ -187,12 +224,28 @@ export function renderBa700ToJson(output: Ba700Output, opts: RenderBa700Options)
     renderedAt: opts.renderedAt,
   };
 
+  const leverageRatioRender = output.leverageRatio
+    ? {
+        meta: output.leverageRatio.meta,
+        tier1CapitalMinor: output.leverageRatio.tier1CapitalMinor,
+        exposureMeasure: output.leverageRatio.exposureMeasure,
+        leverageRatio: ratioToString(output.leverageRatio.leverageRatio),
+        leveragePercent: ratioToPercent(output.leverageRatio.leverageRatio),
+        regulatoryMinimumRatio: ratioToString(output.leverageRatio.regulatoryMinimumRatio),
+        regulatoryMinimumPercent: ratioToPercent(output.leverageRatio.regulatoryMinimumRatio),
+        compliant: output.leverageRatio.compliant,
+        citations: [...output.leverageRatio.citations],
+        placeholders: [...output.leverageRatio.placeholders],
+      }
+    : undefined;
+
   const candidate = {
     $schema: BA_700_SCHEMA_URL,
     meta,
     capitalStack: output.capitalStack,
     rwa: output.rwa,
     bufferRequirements: output.bufferRequirements,
+    ...(leverageRatioRender ? { leverageRatio: leverageRatioRender } : {}),
     ratios: {
       cet1Ratio: ratioToString(output.ratios.cet1Ratio),
       cet1Percent: ratioToPercent(output.ratios.cet1Ratio),
