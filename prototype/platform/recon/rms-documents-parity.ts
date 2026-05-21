@@ -176,6 +176,7 @@ export function run(): ReconResult {
   try {
     mdFiles = readdirSync(ownerInboxDir)
       .filter((f) => f.endsWith(".md"))
+      .filter((f) => !f.startsWith("_")) // skip meta/template files (e.g. _frontmatter-convention.md)
       .filter((f) => {
         try {
           return statSync(resolve(ownerInboxDir, f)).isFile();
