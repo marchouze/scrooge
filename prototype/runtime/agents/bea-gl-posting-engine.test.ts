@@ -104,7 +104,7 @@ describe("GL posting engine — posting rule integration", () => {
       .reduce((s, l) => s + l.amountMinor, 0);
     expect(debit).toBe(credit);
     // Debit suspense, credit nostro
-    expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-3100-001");
+    expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-2400-001");
     expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-1200-001");
   });
 
@@ -129,7 +129,7 @@ describe("GL posting engine — posting rule integration", () => {
     expect(debit).toBe(credit);
     // Debit customer payable, credit suspense
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-2200-002");
-    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-3100-002");
+    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-2400-002");
   });
 
   it("SettlementInstructionReceived → correct posting legs", () => {
@@ -153,7 +153,7 @@ describe("GL posting engine — posting rule integration", () => {
     expect(debit).toBe(credit);
     // Debit settlement receivable, credit suspense
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-4100-001");
-    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-3100-001");
+    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-2400-001");
   });
 });
 
@@ -299,7 +299,7 @@ describe("GL posting engine — idempotency logic", () => {
     );
     expect(legs).toHaveLength(2);
     expect(legs.find((l) => l.debitCredit === "debit")?.accountId).toBe("ACC-4100-002");
-    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-3100-002");
+    expect(legs.find((l) => l.debitCredit === "credit")?.accountId).toBe("ACC-2400-002");
   });
 });
 

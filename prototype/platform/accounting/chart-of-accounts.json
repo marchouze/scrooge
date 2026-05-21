@@ -126,13 +126,13 @@
     },
 
     {
-      "id": "ACC-3100-001",
+      "id": "ACC-2400-001",
       "name": "Payment Suspense — ZAR",
       "category": "asset",
       "side": "debit"
     },
     {
-      "id": "ACC-3100-002",
+      "id": "ACC-2400-002",
       "name": "Payment Suspense — USD",
       "category": "asset",
       "side": "debit"

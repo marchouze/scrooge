@@ -689,10 +689,10 @@ citations:
     section: "§4 — customer payable recognition"
 ```
 
-### ACC-3100-001 — Payment Suspense — ZAR
+### ACC-2400-001 — Payment Suspense — ZAR
 
 ```yaml
-id: ACC-3100-001
+id: ACC-2400-001
 name: "Payment Suspense — ZAR"
 category: liability-suspense
 side: credit
@@ -716,10 +716,10 @@ citations:
     section: "§5 — suspense account mechanics"
 ```
 
-### ACC-3100-002 — Payment Suspense — USD
+### ACC-2400-002 — Payment Suspense — USD
 
 ```yaml
-id: ACC-3100-002
+id: ACC-2400-002
 name: "Payment Suspense — USD"
 category: liability-suspense
 side: credit

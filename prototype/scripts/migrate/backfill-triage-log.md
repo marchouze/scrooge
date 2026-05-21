@@ -1,6 +1,6 @@
 # Backfill triage log — D-DECISIONS-FRAMEWORK-REDESIGN Slice C
 
-Generated: 2026-05-21T17:40:09.518Z
+Generated: 2026-05-21T17:28:54.624Z
 
 ---
 
@@ -83,4 +83,4 @@ _None identified by the migration script. Review manually if recon gates still f
 
 - Triage IDs (a): 0
 - Reference-only IDs (b): 62
-- Emitted backfill events: 0
+- Emitted backfill events: 122
