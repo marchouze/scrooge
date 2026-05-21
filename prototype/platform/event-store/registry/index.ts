@@ -95,6 +95,9 @@ export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
 export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
+// WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit lifecycle events.
+// Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
+export { LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY } from "./liquidity-limit";
 // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
 export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
@@ -153,6 +156,7 @@ import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
+import { LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY } from "./liquidity-limit";
 import { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 import {
   BANK_ACCOUNT_EVENT_TYPES,
@@ -248,6 +252,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
   // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
   ...LIQUIDITY_EVENT_TYPES_REGISTRY,
+  // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
+  // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
+  ...LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
   ...ILAAP_EVENT_TYPES_REGISTRY,
