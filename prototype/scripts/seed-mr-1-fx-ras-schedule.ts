@@ -165,8 +165,7 @@ const event = makeRasLimitSchedulePublished({
         // B4 — Market risk — IR notional (not in MR-1-FX scope).
         // Retained from placeholder; awaits full MR schedule.
         cluster: "B4",
-        limitName:
-          "Market risk — IR notional (placeholder — MR-1-FX scope covers B1+B3 only)",
+        limitName: "Market risk — IR notional (placeholder — MR-1-FX scope covers B1+B3 only)",
         limitValue: 150_000_000,
         currency: "ZAR",
         breachThresholdAmber: 0.7,
@@ -188,9 +187,7 @@ const event = makeRasLimitSchedulePublished({
 });
 
 eventStore.append(event);
-console.log(
-  `[seed-mr-1-fx] Emitted RasLimitSchedulePublished event_id=${event.event_id}`,
-);
+console.log(`[seed-mr-1-fx] Emitted RasLimitSchedulePublished event_id=${event.event_id}`);
 console.log(
   `[seed-mr-1-fx] Schedule: ${SCHEDULE_ID} effective from 2026-05-21 (B1+B3 MR-1-FX aligned; B2/B4/B5 placeholder)`,
 );
@@ -252,6 +249,6 @@ if (!veraFindingAlreadyFiled) {
   );
 } else {
   console.log(
-    `[seed-mr-1-fx] Vera finding vera:mr-1-fx-var-projection-gap already filed — skipping.`,
+    "[seed-mr-1-fx] Vera finding vera:mr-1-fx-var-projection-gap already filed — skipping.",
   );
 }
