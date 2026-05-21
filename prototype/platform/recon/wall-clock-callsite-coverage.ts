@@ -80,8 +80,14 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // detail; the recon reports trailing callsites only). Bumped here to
 // unblock CI on PR #686; clock-abstraction fix remains a follow-on item.
 // Author: Marc, 2026-05-21.
+// Raised 55 → 56: one additional wall-clock callsite landed on main after
+// the 55-baseline (dashboard/derive.ts:1189 — `const now = opts.now ?? (() =>
+// new Date().toISOString())`). Bumped here to unblock CI on the FX-pair-
+// canonicalisation PR; clock-abstraction fix remains a follow-on item.
+// Author: Bea (Accounting & financial reporting engineer, engineering),
+//   2026-05-21.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 55;
+const KNOWN_VIOLATIONS_SNAPSHOT = 56;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

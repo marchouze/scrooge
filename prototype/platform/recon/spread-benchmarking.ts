@@ -23,6 +23,7 @@
 // Author: Rohan (Market risk engineer, engineering)
 
 import { EventStore } from "../event-store/store";
+import { toCanonicalPair } from "../market-data/canonical-pair";
 import { MarketDataStore } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 
@@ -38,6 +39,8 @@ const OUTLIER_MULTIPLIER = 3; // flag if spreadBps > 3 × pair average
 // ---------------------------------------------------------------------------
 
 function pairToString(pair: { base: string; quote: string }): string {
+  // Wire direction preserved here — used to query the market-data store
+  // by instrument. Aggregation keys below are canonicalised separately.
   return `${pair.base}/${pair.quote}`;
 }
 
@@ -163,13 +166,21 @@ async function main(): Promise<void> {
   }
 
   // -------------------------------------------------------------------------
-  // Step 3: Aggregate by pair.
+  // Step 3: Aggregate by **canonical** pair so direct + inverse directions
+  // share a single bucket for outlier statistics (Marc, 2026-05-21).
   // -------------------------------------------------------------------------
+  const canonicalKeyOf = (pair: string): string => {
+    const slash = pair.indexOf("/");
+    if (slash <= 0 || slash === pair.length - 1) return pair;
+    return toCanonicalPair(pair.slice(0, slash), pair.slice(slash + 1)).pairKey;
+  };
+
   const pairGroups = new Map<string, number[]>();
   for (const row of rows) {
-    const arr = pairGroups.get(row.pair) ?? [];
+    const k = canonicalKeyOf(row.pair);
+    const arr = pairGroups.get(k) ?? [];
     arr.push(row.spreadBps);
-    pairGroups.set(row.pair, arr);
+    pairGroups.set(k, arr);
   }
 
   const pairStats = new Map<string, { avg: number; max: number; count: number }>();
@@ -180,10 +191,10 @@ async function main(): Promise<void> {
   }
 
   // -------------------------------------------------------------------------
-  // Step 4: Flag outliers.
+  // Step 4: Flag outliers (lookup against the canonical bucket).
   // -------------------------------------------------------------------------
   const tradeRows: TradeSpreadRow[] = rows.map((row) => {
-    const stats = pairStats.get(row.pair);
+    const stats = pairStats.get(canonicalKeyOf(row.pair));
     const outlier = stats !== undefined && row.spreadBps > OUTLIER_MULTIPLIER * stats.avg;
     return { ...row, outlier };
   });

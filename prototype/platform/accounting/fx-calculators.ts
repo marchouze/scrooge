@@ -26,6 +26,7 @@ import type {
   FxPositionRevaluedPayload,
   FxSettlementConfirmedPayload,
 } from "../event-store/event-types/fx-accounting";
+import { canonicalSide, toCanonicalPair } from "../market-data/canonical-pair";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { baseAmountMinor } from "../markets/cdm/fx-helpers";
 
@@ -85,7 +86,14 @@ export function fxPositionCalculator(args: {
     const tradeIdStr = trade.tradeId.value;
     if (args.settledTradeIds.has(tradeIdStr)) continue; // settled — not open
 
-    const pairKey = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
+    // Canonicalise the bucket key so direct + inverse pair directions
+    // aggregate together (Marc, 2026-05-21). When the trade's booked
+    // direction is the inverse of canonical, both the notional resolution
+    // (canonical-base currency, not trade-base) and the side semantics
+    // (buy ↔ sell) flip — see canonicalSide() docstring.
+    const canonical = toCanonicalPair(trade.currencyPair.base, trade.currencyPair.quote);
+    const pairKey = canonical.pairKey;
+    const canonicalPair = { base: canonical.base, quote: canonical.quote };
     const existing = byPair.get(pairKey) ?? {
       netBaseMinor: 0,
       grossLongBaseMinor: 0,
@@ -95,15 +103,14 @@ export function fxPositionCalculator(args: {
 
     for (const leg of trade.legs) {
       if (leg.legKind !== "near") continue;
-      // Resolve base-currency notional via the Slice-2 helper —
-      // (D-FX-QUOTING-CONVENTION). Previously read `leg.notional.amountMinor`
-      // directly, which only equals the base amount when the leg's
-      // payCurrency is the pair base (SELL on a major-first pair). For BUY
-      // trades on a major-first pair, notional is in the quote currency and
-      // the base amount lives on counterNotional. The helper picks the right
-      // field side-correctly.
-      const notional = baseAmountMinor(leg, trade.currencyPair);
-      const isBuy = trade.side === "buy";
+      // Resolve notional in **canonical**-base currency. The helper picks
+      // the leg field whose currency equals the canonical base — for an
+      // inverted trade that is the leg's counterNotional, not its notional.
+      // (D-FX-QUOTING-CONVENTION; brief:bea:fx-pair-canonicalisation-in-
+      // product-control-aggr:2026-05-21.)
+      const notional = baseAmountMinor(leg, canonicalPair);
+      const effectiveSide = canonicalSide(trade.side, canonical);
+      const isBuy = effectiveSide === "buy";
       if (isBuy) {
         existing.netBaseMinor += notional;
         existing.grossLongBaseMinor += notional;
@@ -196,7 +203,12 @@ export function unrealisedPnlCalculator(args: {
     // coherent (units = base × quote/base = quote-cents, which is the
     // ZAR-functional unit for the BA-350 ZAR-presented P&L).
     const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
-    const pairKey = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
+    // `currencyPair` on the result is canonicalised so downstream consumers
+    // bucket direct + inverse trades into the same key (Marc, 2026-05-21).
+    // The P&L sign is computed against the trade's booked side and rate
+    // direction — independent of canonicalisation, so no flip is needed
+    // for the ZAR-functional P&L number itself; only the label is rewritten.
+    const pairKey = toCanonicalPair(trade.currencyPair.base, trade.currencyPair.quote).pairKey;
 
     // Use latest revaluation rate if available, else fall back to current rate map
     const revaluation = args.latestRevaluations.get(tradeIdStr);

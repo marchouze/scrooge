@@ -37,6 +37,7 @@ import type {
   PnLByPair,
 } from "../event-store/event-types/product-control";
 import type { EventStore } from "../event-store/store";
+import { toCanonicalPair } from "../market-data/canonical-pair";
 import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 
@@ -195,7 +196,20 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   let cancelledPositions = 0;
 
   for (const [tradeId, trade] of tradeMap) {
+    // Per-trade `pair` retains the booked direction (for trader-audit
+    // visibility in the trades grid). The aggregation key below uses the
+    // **canonical** form so that "buy USD/ZAR" and "sell ZAR/USD" land in
+    // the same bucket (Marc, 2026-05-21 — brief:bea:fx-pair-canonicalisation-
+    // in-product-control-aggr:2026-05-21). P&L sums are in ZAR minor
+    // (functional currency) and are sign-stable across pair-direction flips
+    // because the per-trade P&L was already computed with the right sign
+    // for the trade's booked side downstream — only the bucket *key* needs
+    // canonicalisation; the numbers don't.
     const pair = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
+    const canonicalPairKey = toCanonicalPair(
+      trade.currencyPair.base,
+      trade.currencyPair.quote,
+    ).pairKey;
     const cid = trade.counterparty.partyId;
     const cname = trade.counterparty.name ?? cid;
     const bookId = trade.bookId;
@@ -236,12 +250,17 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
     });
 
     if (status !== "cancelled") {
-      // Aggregate by pair.
-      const pairRow = byPairMap.get(pair) ?? { trades: 0, unrealised: 0, realised: 0 };
+      // Aggregate by **canonical** pair so direct and inverse directions
+      // share a single bucket. P&L is ZAR-functional and direction-stable.
+      const pairRow = byPairMap.get(canonicalPairKey) ?? {
+        trades: 0,
+        unrealised: 0,
+        realised: 0,
+      };
       pairRow.trades++;
       pairRow.unrealised += unrealised;
       pairRow.realised += realised;
-      byPairMap.set(pair, pairRow);
+      byPairMap.set(canonicalPairKey, pairRow);
 
       // Aggregate by counterparty.
       const cpRow = byCounterpartyMap.get(cid) ?? {
