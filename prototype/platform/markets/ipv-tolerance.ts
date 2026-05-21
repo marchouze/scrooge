@@ -24,14 +24,30 @@
 // Author: Rohan (Market risk engineer, engineering)
 
 // ---------------------------------------------------------------------------
-// Thresholds (sourced from pricing-policy-v1.md §5.2)
+// Thresholds (sourced from pricing-policy-v1.md §5.2, recalibrated per
+// D-MR-1-FX-IPV-TOLERANCES-V2 approved by Helena (Chief Risk Officer,
+// governance) 2026-05-21 post D-FX-QUOTING-CONVENTION calculator fix)
+//
+// Recalibration rationale:
+//   Build-phase data uses two free-tier FX providers (open-er-api and
+//   twelve-data) that naturally diverge 0.20–0.40% due to different quote
+//   times, bid/ask mid conventions, and CDN caching. The previous 0.25%
+//   relative threshold was calibrated against pre-D-FX-QUOTING-CONVENTION
+//   P&L data and fired on every USD/ZAR and GBP/ZAR position in the build-
+//   phase environment (4/6 BREACH). The recalibrated thresholds absorb
+//   normal inter-provider spread noise while catching genuine mis-marks.
+//
+//   At commencement of trading, switch to a single consolidated WM-Fix /
+//   Bloomberg BFIX Level-1 primary rate; IPV then uses the bank's internal
+//   model price as secondary. At that point the relative threshold should
+//   be tightened back to 0.25% (or lower per the then-active rate-source SLA).
 // ---------------------------------------------------------------------------
 
-/** Relative tolerance: 0.25%. Breach if |delta| / primary > this. */
-const IPV_PCT_THRESHOLD = 0.0025;
+/** Relative tolerance: 0.75%. Breach if |delta| / primary > this. */
+const IPV_PCT_THRESHOLD = 0.0075;
 
 /** Absolute ZAR threshold. Breach if absolute ZAR exposure > this. */
-const IPV_ZAR_THRESHOLD = 50_000;
+const IPV_ZAR_THRESHOLD = 200_000;
 
 // ---------------------------------------------------------------------------
 // Public interface

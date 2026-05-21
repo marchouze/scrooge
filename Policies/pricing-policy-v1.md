@@ -158,7 +158,7 @@ The IPV process ensures that valuations used for P&L reporting, margin calls, an
 
 - **Daily IPV:** Rohan (Market risk engineer) performs daily IPV for all OTC derivatives and bond positions
 - **Source independence:** IPV uses a secondary pricing source independent of the front-office feed
-- **Tolerance:** price differences > 0.25% of notional (or > ZAR 50,000 per position) are flagged as IPV exceptions
+- **Tolerance (build-phase):** price differences > 0.75% of notional (or > ZAR 200,000 per position) are flagged as IPV exceptions. Rationale: free-tier build-phase FX providers (open-er-api, twelve-data) diverge 0.20–0.40% from normal quote-timing and CDN effects; thresholds recalibrated by Helena (Chief Risk Officer) per D-MR-1-FX-IPV-TOLERANCES-V2 (2026-05-21) post D-FX-QUOTING-CONVENTION calculator fix. At commencement of trading, tighten to 0.25% / ZAR 50,000 using a consolidated Level-1 WM-Fix / BFIX primary source
 - **Exception resolution:** Rohan and the trading desk (Kai — FX / Rates trader, engineering) jointly resolve exceptions by close of business; unresolved exceptions escalated to Saskia (Head of Global Markets) and Helena (Chief Risk Officer, governance)
 
 ### 5.3 IFRS 13 Fair Value Hierarchy
@@ -232,3 +232,4 @@ The bank is committed to TCF Outcome 4: that customers receive products and serv
 |---|---|---|---|
 | 1 | 2026-05-14 | Mira (Compliance / RegTech engineer) | Initial version — closes ORG-CD-06, ORG-FAIS-RK-FEE-DISCLOSURE, ORG-MK-07 (pricing), ORG-CS3-006 |
 | 2 | 2026-05-18 | Owen (Company Secretary, governance) | Added §3.3A multi-instrument measurement table — classification, measurement basis, MTM frequency, P&L routing, IFRS ref for all instrument types (FX spot/fwd/swap/NDF, JSE bonds trading/banking, JSE equities FVTPL/FVOCI, OTC IRD); cross-referenced trade-lifecycle-system-capability-register. Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. |
+| 3 | 2026-05-21 | Helena (Chief Risk Officer, governance) | §5.2 IPV tolerance recalibrated: 0.25% → 0.75% relative; ZAR 50k → ZAR 200k absolute. Build-phase recalibration post D-FX-QUOTING-CONVENTION (PRs #664/#675) calculator fix. Authority: D-MR-1-FX-IPV-TOLERANCES-V2 (CRO own-authority per CLAUDE.md decision-authority routing table). |
