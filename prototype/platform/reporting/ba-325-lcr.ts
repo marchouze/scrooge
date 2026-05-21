@@ -479,10 +479,7 @@ export function applyHqlaCaps(args: {
  */
 interface SettlementCashFlow {
   readonly eventId: string;
-  readonly eventType:
-    | "FxSettlementInstructed"
-    | "TradeMatured"
-    | "EquitySettlementInstructed";
+  readonly eventType: "FxSettlementInstructed" | "TradeMatured" | "EquitySettlementInstructed";
   readonly tradeId: string;
   /** Amount in the settlement currency (minor units). Positive = inflow; negative = outflow. */
   readonly amountMinor: number;

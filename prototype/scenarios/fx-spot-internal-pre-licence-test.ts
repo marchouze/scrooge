@@ -913,9 +913,7 @@ async function runPhase2(): Promise<PhaseResult> {
   // projection so `recon:gl-ledger-coverage` finds a posting.
   try {
     const { fxSettlementJournals } = await import("../platform/accounting/posting-rules/fx-spot");
-    const { isFxSpotMaturity } = await import(
-      "../platform/event-store/event-types/trade-matured"
-    );
+    const { isFxSpotMaturity } = await import("../platform/event-store/event-types/trade-matured");
     for (const confirmed of eventStore.replay({ type: "TradeMatured" })) {
       const confirmedPayload = confirmed.payload as {
         product: Parameters<typeof fxSettlementJournals>[0] & { productKind: string };

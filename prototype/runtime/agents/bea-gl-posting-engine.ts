@@ -122,8 +122,6 @@ import {
   type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
-import type { TradeMaturedPayload } from "../../platform/event-store/event-types/trade-matured";
-import { isFxSpotMaturity } from "../../platform/event-store/event-types/trade-matured";
 import type {
   IrdSwapCouponSettledPayload,
   IrdSwapPositionRevaluedPayload,
@@ -139,6 +137,8 @@ import type {
   PaymentSettledPayload,
   SettlementInstructionReceivedPayload,
 } from "../../platform/event-store/event-types/payments";
+import type { TradeMaturedPayload } from "../../platform/event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../../platform/event-store/event-types/trade-matured";
 import type {
   EquityPositionRevaluedPayload,
   EquityTradeExecutedPayload,

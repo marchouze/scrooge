@@ -442,18 +442,19 @@ describe("FX Spot end-to-end lifecycle (PR-FX-001 + PR-FX-PRIN x2 + PR-FX-LIFECY
 });
 
 // ---------------------------------------------------------------------------
-// PR-FX-003 (DEPRECATED 2026-05-20) — back-compat path
+// PR-FX-003 — legacy aggregate path over TradeMatured (FX-spot variant)
 //
-// `fxSettlementJournals(...)` still produces the legacy aggregate posting
-// when called with an `TradeMatured (FX-spot)` payload. The accounting
-// `TradeMatured (FX-spot)` event-type is no longer emitted by production
-// code paths; PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE replace it. This block
-// pins the legacy shape so that any remaining test-only emitters (the
-// rev-engine tests, ba-325 LCR test) keep producing the same legs they
-// did before.
+// `fxSettlementJournals(...)` consumes the FX-spot variant of the generic
+// `TradeMatured` event (which replaced the retired FX-specific
+// settlement-confirmed event on 2026-05-21). Production paths use
+// PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE; this rule is retained for the
+// SettlementReversed mirror and rare test-only emitters. The tests below
+// pin (a) the legacy posting shape, and (b) the realised-P&L behaviour
+// originally wired by PR #693 — gain & loss residuals must land on
+// ACC-2100-006 (Realised FX P&L) per IAS 21 §28.
 // ---------------------------------------------------------------------------
 
-describe("PR-FX-003 (legacy): fxSettlementJournals — TradeMatured FX-spot variant back-compat", () => {
+describe("PR-FX-003 (legacy): fxSettlementJournals — TradeMatured FX-spot variant", () => {
   it("still emits the aggregate posting when called directly (for legacy tests)", () => {
     const legs = fxSettlementJournals({
       productKind: "FX-spot",
@@ -468,6 +469,73 @@ describe("PR-FX-003 (legacy): fxSettlementJournals — TradeMatured FX-spot vari
     });
     expect(legs.length).toBeGreaterThan(0);
     assertBalanced(legs);
+  });
+
+  it("realised-P&L gain residual debits Nostro ZAR and credits Realised FX P&L (mirrors PR #693)", () => {
+    // Bank sold USD 1m at 18.50 (received ZAR 18.5m); settles at 18.60 →
+    // bank's USD-sold position appreciated against ZAR; ZAR receivable
+    // value at the new fixing is higher than carrying amount. Realised P&L
+    // residual = +ZAR 100,000 = 10,000,000 cents (the canonical PR #693 case).
+    const legs = fxSettlementJournals({
+      productKind: "FX-spot",
+      currencyPair: "USD/ZAR",
+      legKind: "near",
+      settledBaseCurrencyMinor: -100_000_00, // bank paid USD 100k (delivered)
+      settledQuoteCurrencyMinor: 1_860_000_00, // bank received ZAR 1.86m
+      nostroAccountBase: FX_ACCOUNTS.NOSTRO_USD,
+      nostroAccountQuote: FX_ACCOUNTS.NOSTRO_ZAR,
+      realisedPnlZarMinor: 10_000_000, // +ZAR 100k gain
+    });
+
+    assertBalanced(legs);
+    // Realised P&L gain legs in ZAR: Dr Nostro ZAR / Cr ACC-2100-006.
+    const realisedLegs = legs.filter(
+      (l) => l.currency === "ZAR" && l.accountId === FX_ACCOUNTS.REALISED_PNL,
+    );
+    expect(realisedLegs).toHaveLength(1);
+    expect(realisedLegs[0]?.debitCredit).toBe("credit");
+    expect(realisedLegs[0]?.amountMinor).toBe(10_000_000);
+  });
+
+  it("realised-P&L loss residual debits Realised FX P&L and credits Nostro ZAR", () => {
+    // Bank bought USD 1m at 18.60; settles at 18.50 → ZAR cost rose less than
+    // expected, realising a -ZAR 100,000 loss. Realised-P&L residual must
+    // land on the same account but with opposite direction.
+    const legs = fxSettlementJournals({
+      productKind: "FX-spot",
+      currencyPair: "USD/ZAR",
+      legKind: "near",
+      settledBaseCurrencyMinor: 100_000_00, // bank received USD 100k
+      settledQuoteCurrencyMinor: -1_850_000_00, // bank paid ZAR 1.85m
+      nostroAccountBase: FX_ACCOUNTS.NOSTRO_USD,
+      nostroAccountQuote: FX_ACCOUNTS.NOSTRO_ZAR,
+      realisedPnlZarMinor: -10_000_000, // -ZAR 100k loss
+    });
+
+    assertBalanced(legs);
+    const realisedLegs = legs.filter(
+      (l) => l.currency === "ZAR" && l.accountId === FX_ACCOUNTS.REALISED_PNL,
+    );
+    expect(realisedLegs).toHaveLength(1);
+    expect(realisedLegs[0]?.debitCredit).toBe("debit");
+    expect(realisedLegs[0]?.amountMinor).toBe(10_000_000);
+  });
+
+  it("zero realised-P&L emits no Realised-FX-P&L leg", () => {
+    const legs = fxSettlementJournals({
+      productKind: "FX-spot",
+      currencyPair: "USD/ZAR",
+      legKind: "near",
+      settledBaseCurrencyMinor: -100_000_00,
+      settledQuoteCurrencyMinor: 1_850_000_00,
+      nostroAccountBase: FX_ACCOUNTS.NOSTRO_USD,
+      nostroAccountQuote: FX_ACCOUNTS.NOSTRO_ZAR,
+      realisedPnlZarMinor: 0,
+    });
+
+    assertBalanced(legs);
+    const realisedLegs = legs.filter((l) => l.accountId === FX_ACCOUNTS.REALISED_PNL);
+    expect(realisedLegs).toHaveLength(0);
   });
 });
 

@@ -34,9 +34,7 @@ import {
   settlementFailureClassifiedPayloadSchema,
   subLedgerPostingEmittedPayloadSchema,
 } from "../platform/event-store/event-types/fx-accounting";
-import {
-  tradeMaturedPayloadSchema,
-} from "../platform/event-store/event-types/trade-matured";
+import { tradeMaturedPayloadSchema } from "../platform/event-store/event-types/trade-matured";
 
 import {
   FX_ACCOUNTS,
@@ -113,9 +111,7 @@ describe("FX accounting event types", () => {
     // The legacy FX-specific settlement-confirmed event was retired
     // 2026-05-21 in favour of the generic TradeMatured (FX-spot variant);
     // the legacy type name no longer appears in FX_ACCOUNTING_EVENT_TYPES.
-    expect(FX_ACCOUNTING_EVENT_TYPES).not.toContain(
-      "FxSettlement" + "Confirmed" as never,
-    );
+    expect(FX_ACCOUNTING_EVENT_TYPES).not.toContain(("FxSettlement" + "Confirmed") as never);
   });
 
   it("FX_ACCOUNTING_EVENT_TYPES includes PROC-OPS-SFBCP-01 settlement-failure events", () => {

@@ -83,7 +83,6 @@ import {
   settlementFailureClassifiedPayloadSchema,
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
-import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
 import {
   alertOpenedPayloadSchema,
   auditCommitteePackPreppedPayloadSchema,
@@ -209,6 +208,7 @@ import {
   threatModelGateDecisionPayloadSchema,
   vendorSecurityReviewPayloadSchema,
 } from "../event-types/security-devops-extended";
+import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
 import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
 
 // ---------------------------------------------------------------------------
