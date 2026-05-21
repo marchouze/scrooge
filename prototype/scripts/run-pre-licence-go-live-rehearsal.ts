@@ -67,8 +67,7 @@ import { logger } from "../platform/observability/logger";
 // Rehearsal constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const REHEARSAL_GATE_ID =
-  "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test";
+const REHEARSAL_GATE_ID = "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test";
 const PRODUCT_SCOPE: readonly string[] = ["fx-spot"];
 const ENTITY = "BANK-ZA-001";
 const AS_OF = "2026-05-21T08:30:00.000Z";
@@ -556,7 +555,9 @@ function printReport(): void {
     lines.push(`  - ${c.conditionId}: ${c.status}  (${shortNote(c)})`);
   }
   lines.push("");
-  lines.push(`Regulatory approvals required (${REGULATORY_APPROVALS.length} items — NOT in 11 conditions):`);
+  lines.push(
+    `Regulatory approvals required (${REGULATORY_APPROVALS.length} items — NOT in 11 conditions):`,
+  );
   for (const r of REGULATORY_APPROVALS) {
     lines.push(`  - ${r.approvalId}: ${r.status}  (wall-clock — ${r.authority})`);
   }
@@ -585,8 +586,12 @@ function printReport(): void {
     lines.push(`INTERNAL-TEST FIRE-READINESS: BLOCKED-BY-${openIds}`);
   }
   lines.push("");
-  lines.push("Note: this rehearsal does NOT emit GoLiveReadinessAssessed or GoLiveReadinessConfirmed.");
-  lines.push("Those events require both co-chair quorum sign-offs AND CEO authority AND a real SARB");
+  lines.push(
+    "Note: this rehearsal does NOT emit GoLiveReadinessAssessed or GoLiveReadinessConfirmed.",
+  );
+  lines.push(
+    "Those events require both co-chair quorum sign-offs AND CEO authority AND a real SARB",
+  );
   lines.push("banking licence. None of those pre-conditions hold today.");
   lines.push("══════════════════════════════════════════════════════════════════════");
   lines.push("");

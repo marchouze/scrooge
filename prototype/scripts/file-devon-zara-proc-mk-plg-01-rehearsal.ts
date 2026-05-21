@@ -24,8 +24,7 @@ const body = readFileSync(DOC_PATH, "utf8");
 
 const result = recordFiled(
   {
-    recordId:
-      "record:documents:devon-zara:proc-mk-plg-01-rehearsal-fx-spot-internal:2026-05-21",
+    recordId: "record:documents:devon-zara:proc-mk-plg-01-rehearsal-fx-spot-internal:2026-05-21",
     registerKey: "documents",
     body,
     classification: "ceo-only",
