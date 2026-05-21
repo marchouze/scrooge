@@ -297,6 +297,17 @@ export function runPostTradeLifecycle(
       console.warn(
         `[post-trade-lifecycle] No OfficialMarkAdopted found for ${currencyPairStr} on/before ${settlementDateIso}; realisedPnlDelta=0 (book-rate fallback, IAS 21 §28).`,
       );
+    } else if (settlementRate > 0 && bookRate > 0) {
+      // OfficialMarkAdopted carries marks for the same instrumentKey in BOTH
+      // pair directions in some seed data (e.g. GBP/ZAR: 22.148 AND 0.04515 —
+      // reciprocals at identical markAsOf). A non-deterministic match against
+      // the reciprocal-direction mark produces ZAR ±100m+ spurious realised
+      // P&L. FX spot never moves by >5x in a single settlement window, so a
+      // ratio outside [0.2, 5.0] is a direction error — invert to align.
+      const ratio = settlementRate / bookRate;
+      if (ratio > 5 || ratio < 0.2) {
+        settlementRate = 1 / settlementRate;
+      }
     }
 
     // IAS 21 §28: bank long base (buy) gains when settlement rate > book rate.
