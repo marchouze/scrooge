@@ -158,10 +158,16 @@ describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE M4 — FX Spot product type", () => {
     expect(rp.modelRiskTier).toBe("tier-1");
   });
 
-  it("M4 accountingClassification: FVTPL + level-1 + monetary IAS 21", () => {
+  it("M4 accountingClassification: FVTPL + level-2 + monetary IAS 21", () => {
+    // Updated 2026-05-21 per Helena (Chief Risk Officer, governance) FX-spot
+    // scope review §2.2 / §7 IPV — FX spot is a Level 2 instrument
+    // (observable market data, not Level 1 exchange quote). Atlas's PR #643
+    // close-out flagged the prior "level-1" fixture value as inconsistent
+    // with the policy ruling. Kai (Markets engineering lead, engineering)
+    // Wave-2 PR — fx-spot-internal-pre-licence-test scenario extension.
     const ac = M4_FX_SPOT_FIXTURE.accountingClassification;
     expect(ac.ifrs9Family).toBe("fvtpl");
-    expect(ac.ifrs13FairValueHierarchy).toBe("level-1");
+    expect(ac.ifrs13FairValueHierarchy).toBe("level-2");
     expect(ac.ias21FxTreatment).toBe("monetary");
   });
 
