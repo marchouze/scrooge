@@ -127,7 +127,7 @@ sed \
   -e "s|__LOG_DIR__|${LOG_DIR}|g" \
   "${TEMPLATE_PLIST}" \
 | awk -v block_file="${ENV_BLOCK_TMP}" '
-    /^__ENVIRONMENT_VARIABLES__$/ {
+    /^[[:space:]]*__ENVIRONMENT_VARIABLES__[[:space:]]*$/ {
       while ((getline line < block_file) > 0) print line
       close(block_file)
       next
@@ -136,8 +136,9 @@ sed \
   ' \
 > "${TMP_PLIST}"
 
-# Sanity-check: verify no tokens remain.
-if grep -q "__BUN_PATH__\|__WORKING_DIRECTORY__\|__LOG_DIR__\|__ENVIRONMENT_VARIABLES__" "${TMP_PLIST}"; then
+# Sanity-check: verify no tokens remain (skip XML comment lines which may
+# mention token names as documentation prose).
+if grep -v "^\s*<!--\|^\s*-\s\|^\s*\*" "${TMP_PLIST}" | grep -q "__BUN_PATH__\|__WORKING_DIRECTORY__\|__LOG_DIR__\|__ENVIRONMENT_VARIABLES__"; then
   echo "install.sh: token substitution failed; rendered plist still" >&2
   echo "contains placeholders. Refusing to install." >&2
   exit 1
