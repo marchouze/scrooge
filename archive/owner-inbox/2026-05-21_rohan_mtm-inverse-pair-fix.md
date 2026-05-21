@@ -4,6 +4,7 @@ author: "Rohan (Market risk engineer, engineering)"
 date: 2026-05-21
 workstream: WS-MTM-DAILY-CADENCE
 brief: brief:rohan:fix-mtm-pair-direction-lookup-activate-valuation:2026-05-21
+riskTaxonomy: [RT-MK.FX]
 citations:
   - D-MARKETS-SCHEMA-FOUNDATION
   - D-FX-SALES-TRADING-FRONTEND
