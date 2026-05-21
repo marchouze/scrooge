@@ -39,6 +39,19 @@ export interface LegalEntityShortIdEntry {
   readonly legalName: string;
   /** Lifecycle status — short-ids removed from rotation are marked `retired`. */
   readonly status: "active" | "retired";
+  /**
+   * ISO-8601 UTC timestamp at which the short-id was retired. Present
+   * only on `status: "retired"` rows. Used by
+   * `recon:entity-identity-coherence` together with the migration
+   * boundary timestamp to classify retired-row events as
+   * `warn` (pre-boundary, defensible historical) vs `fail`
+   * (post-boundary, live drift).
+   */
+  readonly retiredAt?: string;
+  /** Human-readable explanation of the retirement (PR ref + rationale). */
+  readonly retiredBy?: string;
+  /** Successor short-id that supersedes this retired one. */
+  readonly successor?: LegalEntity;
 }
 
 /**
@@ -58,6 +71,25 @@ export const LEGAL_ENTITY_SHORT_ID_REGISTRY: readonly LegalEntityShortIdEntry[] 
     partyUrn: "urn:party:legal-entity:hoz-bank",
     legalName: "Hoz Bank Limited",
     status: "active",
+  },
+  {
+    // Legacy short-id retired by the entity-identity unification
+    // (Atlas + Imani PR #669, merged 2026-05-21T08:57:13Z UTC). Pre-
+    // unification the substrate carried this form in parallel with
+    // `LE-ZA-HOZ-BANK`; both denoted the same legal entity. Vera's
+    // PR #679 audit recommended a `status:"retired"` row so that
+    // `recon:entity-identity-coherence` can distinguish "known-but-
+    // retired" (defensible historical, pre-boundary `warn`) from
+    // "unknown-rogue" (`fail` at any time). Authority:
+    // D-PARTY-REGISTER + Principle 1.
+    shortId: "BANK-ZA-001" as LegalEntity,
+    partyUrn: "urn:party:legal-entity:hoz-bank",
+    legalName: "Hoz Bank Limited",
+    status: "retired",
+    retiredAt: "2026-05-21T08:57:13Z",
+    retiredBy:
+      "Atlas (Core banking platform architect, engineering) + Imani (Chief Legal Counsel, governance) — entity-identity unification PR #669",
+    successor: HOZ_BANK_ENTITY,
   },
 ] as const;
 

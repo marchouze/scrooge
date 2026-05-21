@@ -22,6 +22,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { clock, eventStore } from "../platform/composition";
+import { HOZ_BANK_ENTITY } from "../platform/core/types";
 import { recordFiled } from "../platform/records";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
@@ -114,7 +115,7 @@ const fileResult = recordFiled(
       type: "service",
       id: "agent:owen:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: HOZ_BANK_ENTITY,
     metadata: {
       title:
         "D-OPRISK-ENGINEER-ROLE — Operational-risk engineering: dedicated seat, subsume, or defer?",

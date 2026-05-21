@@ -12,6 +12,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { clock } from "../platform/composition";
+import { HOZ_BANK_ENTITY } from "../platform/core/types";
 import { recordFiled } from "../platform/records";
 
 const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
@@ -43,7 +44,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:devon:coo",
     },
-    entity: "BANK-ZA-001",
+    entity: HOZ_BANK_ENTITY,
     metadata: {
       title:
         "PROC-MK-PLG-01 Pre-licence go-live readiness gate — META-REHEARSAL for FX-spot internal test scope",

@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { clock, eventStore } from "../platform/composition";
+import { HOZ_BANK_ENTITY } from "../platform/core/types";
 import { recordFiled } from "../platform/records";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
@@ -129,7 +130,7 @@ const walkResult = recordFiled(
       type: "service",
       id: "agent:saskia:cmo",
     },
-    entity: "BANK-ZA-001",
+    entity: HOZ_BANK_ENTITY,
     metadata: {
       title:
         "PROC-NPA-GATE-01 first activation — FX-spot internal pre-licence test (14-dimension walk)",
@@ -169,7 +170,7 @@ const cardResult = recordFiled(
       type: "service",
       id: "agent:saskia:cmo",
     },
-    entity: "BANK-ZA-001",
+    entity: HOZ_BANK_ENTITY,
     metadata: {
       title: "D-NPA-FX-SPOT-INTERNAL-TEST — Approve FX-spot for internal pre-licence test scope?",
       path: "2026-05-21_saskia-owen_d-npa-fx-spot-internal-test_decision-card.md",
