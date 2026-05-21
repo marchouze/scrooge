@@ -44,6 +44,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { clock, eventStore } from "../../platform/composition";
 import { type LocalFsDocumentStore, defaultDocumentStore } from "../../platform/document-store";
 import type { AgentBriefIssuedPayload, RmsAgentRef } from "../../platform/event-store/event-types";
+import { mirrorEventToPostgres } from "../../platform/event-store/postgres-mirror";
 import { recordBriefIssued } from "../../platform/records";
 import {
   die,
@@ -227,6 +228,10 @@ function main(): void {
     },
     asOf,
   );
+
+  // D-DISPATCH-MULTI-HOST-POSTGRES-MIRROR-AUTO-INVOKE — best-effort mirror.
+  // Fire-and-forget; never blocks CLI exit or fails CI when mirror is absent.
+  mirrorEventToPostgres(result.event).catch(() => {});
 
   emitOk({
     duplicate: false,

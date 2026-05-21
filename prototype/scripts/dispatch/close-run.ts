@@ -57,6 +57,7 @@ import { basename } from "node:path";
 import { clock, eventStore } from "../../platform/composition";
 import { HOZ_BANK_ENTITY } from "../../platform/core/types";
 import { checkDeciderMayClose } from "../../platform/dispatch";
+import { mirrorEventToPostgres } from "../../platform/event-store/postgres-mirror";
 import type {
   AgentRunCompletedFollowOnRoute,
   AgentRunCompletedPayload,
@@ -324,6 +325,9 @@ function main(): void {
     asOf,
   );
 
+  // D-DISPATCH-MULTI-HOST-POSTGRES-MIRROR-AUTO-INVOKE — mirror run-completed event.
+  mirrorEventToPostgres(result.event).catch(() => {});
+
   const payload: AgentRunCompletedPayload = result.event.payload as AgentRunCompletedPayload;
   const deliverableHashes = [...payload.deliverableDocumentHashes];
 
@@ -374,6 +378,9 @@ function main(): void {
       },
       asOf,
     );
+
+    // D-DISPATCH-MULTI-HOST-POSTGRES-MIRROR-AUTO-INVOKE — mirror each RecordFiled event.
+    mirrorEventToPostgres(filed.event).catch(() => {});
 
     recordEvents.push({
       recordId,
