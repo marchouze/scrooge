@@ -20,7 +20,9 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be first import.
+// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be the first
+// import so the shared resolver mutates `BANK_EVENT_DB` BEFORE
+// `platform/composition` resolves its dbPath at module-load time.
 import "./resolve-event-db-boot";
 
 import { clock } from "../../platform/composition";

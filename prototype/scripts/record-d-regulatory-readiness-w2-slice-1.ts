@@ -17,6 +17,8 @@
 // Author: Helena (Chief Risk Officer, governance) +
 //         Camille (Chief Financial Officer, governance)
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

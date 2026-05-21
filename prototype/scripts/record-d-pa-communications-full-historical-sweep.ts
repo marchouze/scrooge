@@ -27,6 +27,8 @@
 //   engineer, engineering — reports to Devon COO interim; legal sourcing
 //   co-author).
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

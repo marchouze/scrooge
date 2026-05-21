@@ -12,6 +12,8 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import "../platform/event-store/resolve-event-db-boot";
+
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
 

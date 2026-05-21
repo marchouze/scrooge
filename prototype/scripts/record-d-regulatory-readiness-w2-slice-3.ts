@@ -19,6 +19,8 @@
 //   Atlas (Core banking platform architect, engineering — substrate consult
 //   on projection contract + as-of replay).
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

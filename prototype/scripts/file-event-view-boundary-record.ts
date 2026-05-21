@@ -13,6 +13,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { clock, eventStore } from "../platform/composition";
 import { makeWorkstreamRegistered } from "../platform/event-store/event-types/platform";
 import { recordFiled } from "../platform/records";

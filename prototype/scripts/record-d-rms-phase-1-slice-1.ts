@@ -16,6 +16,8 @@
 // Author: Atlas (Core banking platform architect, engineering)
 //         + Owen (Company Secretary, governance)
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

@@ -19,6 +19,8 @@
 // Run once; idempotent — checks whether a terminal Decision event for
 // this ID already exists before appending.
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";

@@ -44,7 +44,12 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be first import.
+// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be the first
+// import so the shared resolver mutates `BANK_EVENT_DB` BEFORE
+// `platform/composition` resolves its dbPath at module-load time. A
+// plain `applyDispatchEventDbResolution()` call between later imports
+// runs *after* them (TS hoists import statements), so the side-effect-
+// only shim is the canonical idiom for "boot env before imports".
 import "./resolve-event-db-boot";
 
 import { existsSync, readFileSync } from "node:fs";

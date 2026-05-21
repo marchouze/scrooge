@@ -15,6 +15,8 @@
 // Authors: Rohan (Risk engineer, engineering — reports to Helena CRO)
 //   · Anya (Data / analytics engineer, engineering — reports to Devon COO)
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

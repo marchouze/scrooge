@@ -30,6 +30,8 @@
 // Author: Mira (Compliance / RegTech engineer, engineering — reports to
 //   Zara CCO; obligations-register curator).
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

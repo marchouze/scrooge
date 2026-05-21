@@ -15,32 +15,51 @@ import { dirname } from "node:path";
 
 import { LocalPermissionPolicyPublisher } from "./agent-identity/permission-policy";
 import { gateEventStore, isGateEnabled } from "./event-store/permission-gate";
+import { resolveEventDbPath } from "./event-store/resolve-event-db";
 import { EventStore } from "./event-store/store";
 import { LocalAuthenticator } from "./identity";
 import { logger } from "./observability/logger";
 import { LocalProjector } from "./projections";
 import { resolveCompositionClock } from "./scenario-clock";
 
-// Local event-store path. Default `prototype/.local/event.db` is per-worktree
-// (each `.claude/worktrees/...` spawn starts with an empty store), which means
-// CeoDecision events recorded in one worktree are invisible in another and
-// every fresh worktree shows already-actioned decisions as "open" until back-
-// filled.
+// Local event-store path. Routed through the shared resolver in
+// `event-store/resolve-event-db.ts`. The composition root deliberately
+// passes `excludeHomeDefault: true`, which means it never auto-adopts
+// the home-default shared store — that's a CI/test isolation guard, not
+// a Principle 1 statement. Callers that DO want the shared home store
+// (dispatch CLIs, emission scripts) call
+// `applyDispatchEventDbResolution()` at the top of the script BEFORE
+// importing composition; the wrapper mutates `process.env.BANK_EVENT_DB`
+// so composition picks it up via tier #1 below.
 //
-// To share a single event store across all worktrees on this machine, set:
+// Resolution precedence (high → low) seen by composition:
 //
-//   export BANK_EVENT_DB="$HOME/.local/share/bank/event.db"
+//   1. `BANK_EVENT_DB` env var (already-set ambient — tests, scenarios,
+//      dispatch boot, emission boot)
+//   2. `BANK_HOME_EVENT_DB` env var (custom home location)
+//   3. `.local/event.db` (per-worktree fallback)
 //
-// (or any absolute path under your home directory). The next process to boot
-// will create the file on first append; subsequent worktrees will see the
-// same events and the dashboard will reflect a consistent decision posture.
+// Why composition does NOT auto-adopt the home store. PR #695 (Helena
+// (Chief Risk Officer, governance)'s MR-1-FX IPV recalibration) prompted
+// this refactor — Helena's emission script wrote to the per-worktree
+// fallback while Scrooge's dispatch CLI wrote to the home store. The fix
+// is to make emission scripts opt into the home store via the same
+// wrapper the dispatch CLIs use, NOT to silently re-route every consumer
+// of composition. CI tests preload `tests/_setup.ts` which sets
+// `BANK_EVENT_DB` to a temp dir; CI backfill + recon use the
+// `.local/event.db` fallback. Both stay correct under this scheme.
 //
 // Multi-host or cloud sharing is handled by the Postgres mirror via
 // `BANK_EVENT_DB_URL` (see `scripts/event-store-sync.ts`); the local sqlite
 // remains canonical-shape and is bidirectionally synced before/after each
 // agent workflow. The full Azure-target store lands in later
-// D-EVENT-STORE-SCALING slices (Event Hubs + Cosmos).
-const dbPath = process.env.BANK_EVENT_DB ?? ".local/event.db";
+// D-EVENT-STORE-SCALING slices (Event Hubs + Cosmos). The cloud lift swaps
+// the resolved path for a Cosmos/Postgres URL without touching capability
+// code.
+//
+// Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21).
+const resolvedEventDb = resolveEventDbPath({ excludeHomeDefault: true });
+const dbPath = resolvedEventDb.path;
 const idpKeyPath = process.env.BANK_IDP_KEY ?? ".local/keys/idp.key";
 mkdirSync(dirname(dbPath), { recursive: true });
 
@@ -100,6 +119,8 @@ export { logger, permissionPolicy };
 logger.debug(
   {
     dbPath,
+    dbPathSource: resolvedEventDb.source,
+    dbPathShared: resolvedEventDb.shared,
     idpKeyPath,
     permissionGateEnabled: isGateEnabled(),
     clockMode: clock.mode,

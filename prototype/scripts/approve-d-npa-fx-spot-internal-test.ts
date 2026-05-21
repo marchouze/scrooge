@@ -22,6 +22,8 @@
 //
 // Author: Scrooge (Chief of Staff, orchestrator) — recording instrument for the CEO.
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { clock, eventStore } from "../platform/composition";
 import { makeProductApproved } from "../platform/event-store/event-types/product";
 import { recordDecision } from "../runtime/decisions/record";

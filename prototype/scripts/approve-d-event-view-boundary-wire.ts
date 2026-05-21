@@ -1,3 +1,5 @@
+import "../platform/event-store/resolve-event-db-boot";
+
 import { clock } from "../platform/composition";
 import { recordDecision } from "../runtime/decisions/record";
 

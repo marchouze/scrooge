@@ -14,6 +14,8 @@
 // Authors: Anya (Data / analytics engineer, engineering — reports to Devon
 //   COO; semantic-layer + projection-runtime curator)
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

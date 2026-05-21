@@ -16,6 +16,8 @@
 //   — substrate consult) · Bea (Accounting & financial reporting engineer,
 //   engineering — reports to Camille CFO).
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

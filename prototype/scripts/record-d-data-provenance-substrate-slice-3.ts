@@ -13,6 +13,8 @@
 // Author: Anya (Data / analytics engineer, engineering — projection runtime
 //   + watermark layer)
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

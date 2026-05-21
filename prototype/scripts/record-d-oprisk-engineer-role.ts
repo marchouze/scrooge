@@ -21,6 +21,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { clock, eventStore } from "../platform/composition";
 import { HOZ_BANK_ENTITY } from "../platform/core/types";
 import { recordFiled } from "../platform/records";

@@ -23,6 +23,8 @@
 //
 // Author: Scrooge (Chief of Staff / Orchestrator)
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";

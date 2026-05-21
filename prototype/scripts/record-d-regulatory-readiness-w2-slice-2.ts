@@ -24,6 +24,8 @@
 //         Bea (Accounting & financial reporting engineer, engineering
 //              — under Camille (CFO, governance))
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { makeRasLineCalibrated } from "../platform/event-store/event-types";
 import { logger } from "../platform/observability/logger";

@@ -16,6 +16,8 @@
 //   reports to Camille CFO; close orchestration owner) · Atlas (Core
 //   banking platform architect, engineering — substrate consult).
 
+import "../platform/event-store/resolve-event-db-boot";
+
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";
