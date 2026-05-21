@@ -107,7 +107,8 @@ function loadFactoryTypeNames(): Set<string> {
     let m: RegExpExecArray | null;
     // biome-ignore lint/suspicious/noAssignInExpressions: idiomatic regex walk
     while ((m = re.exec(body)) !== null) {
-      out.add(m[1]);
+      const captured = m[1];
+      if (captured !== undefined) out.add(captured);
     }
   }
   return out;
@@ -261,7 +262,14 @@ const STRICT_SCOPE_PROCEDURE_PATHS: ReadonlySet<string> = new Set<string>([
 ]);
 
 function severityForFile(relPath: string): "fail" | "warn" {
-  return STRICT_SCOPE_PROCEDURE_PATHS.has(relPath) ? "fail" : "warn";
+  // Exact match against the repo-relative path (production callsite), OR
+  // suffix match (test fixtures that use tmpdir paths but share the
+  // trailing `Procedures/by-policy/<file>.md` suffix). Suffix match is
+  // safe because the strict-scope paths are unambiguous filenames.
+  for (const p of STRICT_SCOPE_PROCEDURE_PATHS) {
+    if (relPath === p || relPath.endsWith(`/${p}`)) return "fail";
+  }
+  return "warn";
 }
 
 // ---------------------------------------------------------------------------
@@ -331,15 +339,15 @@ const EMIT_VERB_REGEX = /\b(emit|emits|emitted|emitting)\b/i;
 
 function isEventContextRef(
   lineText: string,
-  matchStart: number,
+  _matchStart: number,
   matchEnd: number,
   hasPayload: boolean,
 ): boolean {
   if (hasPayload) return true;
 
-  // (b) emit-verb precedes on same line (any position before matchStart).
-  const before = lineText.slice(0, matchStart);
-  if (EMIT_VERB_REGEX.test(before)) return true;
+  // (b) emit-verb appears on the same line either before or after the
+  // token (e.g. "emit `Foo`" or "`Foo` is emitted").
+  if (EMIT_VERB_REGEX.test(lineText)) return true;
 
   // (c) "event"/"events" follows within ~25 chars after the closing backtick.
   const afterWindow = lineText.slice(matchEnd, matchEnd + 25);
@@ -361,11 +369,12 @@ function extractEventNameReferences(filePath: string, relPath: string): EventNam
 
   for (let i = 0; i < lines.length; i++) {
     const lineText = lines[i];
+    if (lineText === undefined) continue;
     let m: RegExpExecArray | null;
     // biome-ignore lint/suspicious/noAssignInExpressions: idiomatic regex walk
     while ((m = re.exec(lineText)) !== null) {
       const token = m[1];
-      if (token.length < 6) continue;
+      if (token === undefined || token.length < 6) continue;
       const hasPayload = Boolean(m[2]);
       const matchStart = m.index;
       const matchEnd = m.index + m[0].length;
@@ -434,16 +443,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `${ref.relPath}:${ref.line}`,
         severity: severityForFile(ref.relPath),
-        message:
-          `Procedure prose references \`${ref.token}\` but no canonical ` +
-          "`make<Type>` factory exists in `prototype/platform/event-store/event-types/` " +
-          "and no `EVENT_TYPE_REGISTRY` row carries that type. This is procedure-prose " +
-          "drift from the typed substrate (Principle 2). Either rewrite the prose to " +
-          "reference the canonical event name, or — if the reference describes a " +
-          "deliberately retired vocabulary — annotate the line with one of the " +
-          'recognised retirement-context markers (e.g. "retired", "drift", ' +
-          '"Event-name vocabulary"). Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE; ' +
-          "Principle 2; PR #673.",
+        message: `Procedure prose references \`${ref.token}\` but no canonical \`make<Type>\` factory exists in \`prototype/platform/event-store/event-types/\` and no \`EVENT_TYPE_REGISTRY\` row carries that type. This is procedure-prose drift from the typed substrate (Principle 2). Either rewrite the prose to reference the canonical event name, or — if the reference describes a deliberately retired vocabulary — annotate the line with one of the recognised retirement-context markers (e.g. "retired", "drift", "Event-name vocabulary"). Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE; Principle 2; PR #673.`,
       });
     }
   }
