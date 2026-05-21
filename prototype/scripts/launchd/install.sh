@@ -7,7 +7,10 @@
 # substituted, writes it to ~/Library/LaunchAgents/, and bootstraps
 # it via launchctl. Idempotent.
 #
-# Author: Atlas (Core banking platform architect; substrate)
+# Author: Atlas (Core banking platform architect; substrate).
+# Co-author: Devon (Chief Operating Officer, governance) — .env.local
+# propagation (2026-05-21 brief: `brief:devon:twelve-data-ingest-
+# propagate-bank-twelvedata-api:2026-05-21`).
 #
 # Usage:
 #   bash prototype/scripts/launchd/install.sh
@@ -15,6 +18,12 @@
 # Environment overrides:
 #   BUN          path to bun binary           (default: which bun)
 #   LOG_DIR      directory for stdout/stderr  (default: ~/Library/Logs/scrooge)
+#
+# .env.local propagation:
+#   If `prototype/.env.local` exists, this script extracts whitelisted
+#   `BANK_*` keys and injects them into the plist <EnvironmentVariables>
+#   dict via the `render-env-block.ts` helper. If absent or empty, the
+#   plist installs with PATH only (current behaviour preserved).
 #
 set -euo pipefail
 
@@ -62,28 +71,73 @@ TARGET_PLIST="${LAUNCH_AGENTS_DIR}/${LABEL}.plist"
 DOMAIN_TARGET="gui/$(id -u)/${LABEL}"
 
 # --------------------------------------------------------------------
-# Render the plist with absolute paths substituted.
+# Resolve .env.local and render the <EnvironmentVariables> dict body.
+# --------------------------------------------------------------------
+ENV_LOCAL="${PROTOTYPE_DIR}/.env.local"
+ENV_BLOCK_RENDERER="${SCRIPT_DIR}/render-env-block.ts"
+
+if [[ ! -f "${ENV_BLOCK_RENDERER}" ]]; then
+  echo "install.sh: missing env-block renderer at ${ENV_BLOCK_RENDERER}" >&2
+  exit 1
+fi
+
+ENV_BLOCK_TMP="$(mktemp -t scheduler-tick-env-block.XXXXXX)"
+# shellcheck disable=SC2064
+trap "rm -f '${ENV_BLOCK_TMP}'" EXIT
+
+if [[ -f "${ENV_LOCAL}" ]]; then
+  echo "install.sh: reading .env.local at ${ENV_LOCAL}"
+else
+  echo "install.sh: WARNING — ${ENV_LOCAL} does not exist." >&2
+  echo "             Plist will install with PATH-only env. Any handler" >&2
+  echo "             that needs a BANK_* env var (e.g. devon:fx-twelvedata-" >&2
+  echo "             ingest reading BANK_TWELVEDATA_API_KEY) will be a" >&2
+  echo "             SubstrateAlert candidate at next fire." >&2
+fi
+
+# Run the TS renderer. It always writes a complete env-block (PATH plus
+# any BANK_* keys) to stdout and prints diagnostics — counts + key NAMES
+# only, never values — to stderr.
+if ! "${BUN_PATH}" run "${ENV_BLOCK_RENDERER}" "${ENV_LOCAL}" > "${ENV_BLOCK_TMP}"; then
+  echo "install.sh: env-block renderer failed; refusing to install." >&2
+  exit 1
+fi
+
+# --------------------------------------------------------------------
+# Render the plist with absolute paths + env block substituted.
 # --------------------------------------------------------------------
 echo "install.sh: rendering plist with"
 echo "  BUN_PATH         = ${BUN_PATH}"
 echo "  WorkingDirectory = ${PROTOTYPE_DIR}"
 echo "  LOG_DIR          = ${LOG_DIR}"
+echo "  ENV_LOCAL        = ${ENV_LOCAL}"
 
 # Use a temp file so a half-written render never overwrites the live
 # target. We rely on `mv` being atomic on the same filesystem.
 TMP_PLIST="$(mktemp -t com.scrooge.scheduler-tick.plist.XXXXXX)"
-trap 'rm -f "${TMP_PLIST}"' EXIT
+# shellcheck disable=SC2064
+trap "rm -f '${TMP_PLIST}' '${ENV_BLOCK_TMP}'" EXIT
 
-# Pipe through three sed expressions. Token format chosen to be
-# distinct from anything that would appear in real content.
+# Render the plist. Path tokens go through sed; the env block goes
+# through awk so its contents (which may include `&`, `|`, `<`, `>`)
+# are not re-interpreted as sed replacement metacharacters.
 sed \
   -e "s|__BUN_PATH__|${BUN_PATH}|g" \
   -e "s|__WORKING_DIRECTORY__|${PROTOTYPE_DIR}|g" \
   -e "s|__LOG_DIR__|${LOG_DIR}|g" \
-  "${TEMPLATE_PLIST}" > "${TMP_PLIST}"
+  "${TEMPLATE_PLIST}" \
+| awk -v block_file="${ENV_BLOCK_TMP}" '
+    /^__ENVIRONMENT_VARIABLES__$/ {
+      while ((getline line < block_file) > 0) print line
+      close(block_file)
+      next
+    }
+    { print }
+  ' \
+> "${TMP_PLIST}"
 
 # Sanity-check: verify no tokens remain.
-if grep -q "__BUN_PATH__\|__WORKING_DIRECTORY__\|__LOG_DIR__" "${TMP_PLIST}"; then
+if grep -q "__BUN_PATH__\|__WORKING_DIRECTORY__\|__LOG_DIR__\|__ENVIRONMENT_VARIABLES__" "${TMP_PLIST}"; then
   echo "install.sh: token substitution failed; rendered plist still" >&2
   echo "contains placeholders. Refusing to install." >&2
   exit 1
@@ -120,9 +174,11 @@ if [[ "${already_loaded}" -eq 1 ]]; then
   launchctl bootout "${DOMAIN_TARGET}" || true
 fi
 
-# Move the rendered plist into place.
+# Move the rendered plist into place. ENV_BLOCK_TMP is still owned by
+# the trap and will be cleaned at exit.
 mv "${TMP_PLIST}" "${TARGET_PLIST}"
-trap - EXIT
+# shellcheck disable=SC2064
+trap "rm -f '${ENV_BLOCK_TMP}'" EXIT
 chmod 0644 "${TARGET_PLIST}"
 
 # Bootstrap.
