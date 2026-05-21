@@ -15,15 +15,24 @@
 // **Matching:** a `RecordFiled` event matches an Owner Inbox file when its
 // `metadata.path` (repo-relative) equals `"Owner Inbox/<filename>"`. If no
 // `metadata.path` is set, matching falls back to matching by the date prefix
-// in the filename against the event's `as_of` date. On a fresh runner (empty
-// store), all violations are downgraded to `warn` (empty-store posture).
+// in the filename against the event's `as_of` date.
 //
 // **Purpose:** enforces the events-first authoring rule (CLAUDE.md §"Events-first
 // authoring"): Owner Inbox markdown without a backing `RecordFiled` event is a
 // Principle 1 violation from Phase 3 onward.
 //
+// **Empty-store posture (retired 2026-05-21).** A prior version of this recon
+// downgraded all violations to `warn` when the event store contained zero
+// `RecordFiled(documents)` events ("fresh-runner detected"). That carve-out
+// was retired by `D-RMS-DOCUMENTS-FRESH-RUNNER-DOWNGRADE-RETIRE` once the
+// 8 historical post-Phase-3 deliverables were backfilled via
+// `scripts/migrate/backfill-recordfiled-documents-2026-05-17.ts` (wired
+// into `migrate:decisions-backfill`). On fresh runners the backfill now
+// hydrates a non-empty Documents register before this recon runs.
+//
 // Authority: D-RMS-PHASE-3 (CEO-approved 2026-05-17);
-//            D-RMS-PHASE-2-3-ACCELERATE (soak waived 2026-05-17).
+//            D-RMS-PHASE-2-3-ACCELERATE (soak waived 2026-05-17);
+//            D-RMS-DOCUMENTS-FRESH-RUNNER-DOWNGRADE-RETIRE (2026-05-21).
 // Authors: Owen (Company Secretary, governance) +
 //          Atlas (Core banking platform architect, engineering)
 
@@ -85,21 +94,17 @@ interface DocumentEventIndex {
   readonly byPath: ReadonlySet<string>;
   /** Map from YYYY-MM-DD → set of lowercase path fragments for fallback matching */
   readonly byDate: ReadonlyMap<string, Set<string>>;
-  readonly totalEvents: number;
 }
 
 function buildDocumentEventIndex(): DocumentEventIndex {
   const byPath = new Set<string>();
   const byDate = new Map<string, Set<string>>();
-  let totalEvents = 0;
 
   for (const e of eventStore.replay({ type: "RecordFiled" })) {
     const payload = e.payload as Record<string, unknown>;
 
     // Only index events for the "documents" register.
     if (payload.registerKey !== "documents") continue;
-
-    totalEvents++;
 
     const metadata = payload.metadata as Record<string, unknown> | undefined;
     const metaPath = typeof metadata?.path === "string" ? metadata.path : null;
@@ -118,7 +123,7 @@ function buildDocumentEventIndex(): DocumentEventIndex {
     }
   }
 
-  return { byPath, byDate, totalEvents };
+  return { byPath, byDate };
 }
 
 // ---------------------------------------------------------------------------
@@ -147,15 +152,6 @@ function hasMatchingRecordEvent(filename: string, index: DocumentEventIndex): bo
       return true;
   }
   return false;
-}
-
-// ---------------------------------------------------------------------------
-// Fresh-runner detection: if the event store has no RecordFiled events for
-// the documents register, downgrade all violations to `warn`.
-// ---------------------------------------------------------------------------
-
-function storeHasDocumentEvents(index: DocumentEventIndex): boolean {
-  return index.totalEvents > 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -197,8 +193,11 @@ export function run(): ReconResult {
   }
 
   // 3. Build the document event index from the live event store.
+  //    (Fresh-runner empty-store downgrade retired 2026-05-21 per
+  //    D-RMS-DOCUMENTS-FRESH-RUNNER-DOWNGRADE-RETIRE; the backfill in
+  //    `scripts/migrate/backfill-recordfiled-documents-2026-05-17.ts`
+  //    now hydrates the Documents register on every runner.)
   const index = buildDocumentEventIndex();
-  const emptyStore = !storeHasDocumentEvents(index);
 
   // 4. Assert each file.
   for (const filename of mdFiles) {
@@ -212,18 +211,11 @@ export function run(): ReconResult {
 
     const postPhase3 = isPostPhase3(filename);
 
-    if (emptyStore) {
-      // Empty store: downgrade all to warn (fresh runner / first boot).
-      violations.push({
-        subject: filePath,
-        message: `No RecordFiled event found for Owner Inbox file \`${filename}\`. Event store has no RecordFiled(documents) events — fresh runner detected. Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
-        severity: "warn",
-      });
-    } else if (postPhase3) {
+    if (postPhase3) {
       // Post-Phase-3: hard fail — Principle 1 violation.
       violations.push({
         subject: filePath,
-        message: `No RecordFiled event found for Owner Inbox file \`${filename}\` (created on or after Phase 3 activation 2026-05-17). Every deliverable from Phase 3 onward requires a backing RecordFiled event. Run \`bun run dispatch:close-run --deliverable <path>\` or backfill the event. Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE.`,
+        message: `No RecordFiled event found for Owner Inbox file \`${filename}\` (created on or after Phase 3 activation 2026-05-17). Every deliverable from Phase 3 onward requires a backing RecordFiled event. Run \`bun run dispatch:close-run --deliverable <path>\` or backfill the event. Citations: D-RMS-PHASE-3, D-RMS-PHASE-2-3-ACCELERATE, D-RMS-DOCUMENTS-FRESH-RUNNER-DOWNGRADE-RETIRE.`,
         severity: "fail",
       });
     } else {
