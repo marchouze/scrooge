@@ -421,7 +421,12 @@ export function run(opts: RunOpts = {}): ReconResult {
 
 if (import.meta.main) {
   const r = run();
-  const strict = process.env.BANK_PERSONA_ATTRIBUTION_STRICT === "1";
+  // Strict mode is the default as of Owen's non-CISO drift sweep
+  // (2026-05-21, PR following Senna PR #651). Explicit opt-out via
+  // `BANK_PERSONA_ATTRIBUTION_STRICT=0` is retained for the rare case
+  // a follow-up sweep needs to surface findings without blocking CI.
+  const strictEnv = process.env.BANK_PERSONA_ATTRIBUTION_STRICT;
+  const strict = strictEnv === undefined ? true : strictEnv !== "0";
   const failCount = r.violations.filter((v) => v.severity === "fail").length;
   const warnCount = r.violations.filter((v) => v.severity === "warn").length;
   console.log(
@@ -443,9 +448,9 @@ if (import.meta.main) {
       detail: r.violations,
     }),
   );
-  // Advisory mode (default) emits findings but always exits 0 — the
-  // Senna/CISO drift is a known finding pending Senna-led sweep. Flip to
-  // strict via BANK_PERSONA_ATTRIBUTION_STRICT=1 once that sweep lands.
+  // Strict-by-default: any fail-severity finding exits non-zero so CI
+  // blocks the regression. Set `BANK_PERSONA_ATTRIBUTION_STRICT=0` only
+  // when a deliberate sweep is in flight.
   if (strict && failCount > 0) {
     process.exit(1);
   }
