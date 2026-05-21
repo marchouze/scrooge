@@ -123,6 +123,12 @@ function findSettlementRate(
 // ---------------------------------------------------------------------------
 
 function main(): number {
+  // CLI flag: --force re-emits corrections for trades that already have a
+  // SettlementRealisedPnlCorrected event. Used to supersede prior corrections
+  // when the rate-resolution logic improves (e.g. direction sanity-check fix).
+  // The projection at platform/product-control/daily-pnl.ts folds corrections
+  // last-write-wins per tradeId, so re-emission deterministically supersedes.
+  const force = process.argv.includes("--force");
   // 1. Collect all FxTradeExecuted payloads keyed by tradeId.
   const tradeMap = new Map<string, FxTradeExecutedPayload>();
   for (const e of eventStore.replay({ type: "FxTradeExecuted" })) {
@@ -180,7 +186,7 @@ function main(): number {
   let fallbacks = 0;
 
   for (const sc of zeroSettlements) {
-    if (alreadyCorrected.has(sc.tradeId)) {
+    if (alreadyCorrected.has(sc.tradeId) && !force) {
       skipped++;
       continue;
     }
@@ -217,6 +223,19 @@ function main(): number {
     if (rateResult) {
       settlementRate = rateResult.rate;
       rateSource = rateResult.rateSource;
+      // Direction sanity-check. OfficialMarkAdopted carries marks for the
+      // same instrumentKey in BOTH pair directions in some seed data
+      // (e.g. GBP/ZAR: 22.148 AND 0.04515 — reciprocals at identical
+      // markAsOf). A non-deterministic match against the reciprocal-
+      // direction mark produces ZAR ±100m+ spurious realised P&L. FX spot
+      // never moves by >5x in a single settlement window, so a ratio
+      // outside [0.2, 5.0] is a direction error — invert to align.
+      if (settlementRate > 0 && bookRate > 0) {
+        const ratio = settlementRate / bookRate;
+        if (ratio > 5 || ratio < 0.2) {
+          settlementRate = 1 / settlementRate;
+        }
+      }
     } else {
       // Fallback: use book rate → zero P&L (substrate gap).
       settlementRate = bookRate;
