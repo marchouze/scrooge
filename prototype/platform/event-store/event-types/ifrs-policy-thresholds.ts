@@ -201,11 +201,7 @@ export function makeSicrThresholdApproved(args: {
  * additions to this enum (substrate change — every addition is a
  * deliberate policy amendment).
  */
-export const MATERIALITY_DENOMINATORS = [
-  "total-assets",
-  "normalised-pbt",
-  "cet1-capital",
-] as const;
+export const MATERIALITY_DENOMINATORS = ["total-assets", "normalised-pbt", "cet1-capital"] as const;
 
 export type MaterialityDenominator = (typeof MATERIALITY_DENOMINATORS)[number];
 
