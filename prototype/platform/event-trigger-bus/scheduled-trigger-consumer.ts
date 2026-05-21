@@ -55,7 +55,7 @@ import { logger } from "../observability/logger";
 
 import type { BusRunner, BusRunnerResult } from "./bus";
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 const DEFAULT_ACTOR: Actor = {
   type: "service",
   id: "agent:atlas:scheduled-trigger-consumer",

@@ -241,7 +241,7 @@ const runHandler = async (
         eventStore.append(
           makeAgentEscalation({
             asOf: ctx.asOf,
-            entity: "BANK-ZA-001",
+            entity: "LE-ZA-HOZ-BANK",
             actor: { type: "service", id: "agent:scrooge:follow-on-router" },
             citations: EVENT_CITATIONS,
             payload: {

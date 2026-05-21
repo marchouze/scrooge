@@ -69,7 +69,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // -----------------------------------------------------------------------
     const lcrT0Event = makeLCRComputed({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:anya:liquidity-projection" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -90,7 +90,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
     const lcrT30Event = makeLCRComputed({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:anya:liquidity-projection" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -114,7 +114,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // -----------------------------------------------------------------------
     const nsfrT0Event = makeNSFRComputed({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:anya:liquidity-projection" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -135,7 +135,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
     const nsfrT30Event = makeNSFRComputed({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:anya:liquidity-projection" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -160,7 +160,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     if (lcrT30.lcrRatioPct !== null && lcrT30.lcrRatioPct < LCR_NEAR_MINIMUM_THRESHOLD_PCT) {
       const lcrProjectionEvent = makeLCRRatioProjection({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:anya:liquidity-projection" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),

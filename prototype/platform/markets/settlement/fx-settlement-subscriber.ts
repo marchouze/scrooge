@@ -190,7 +190,7 @@ export interface FxSettlementSubscriberConfig {
   readonly now: () => string;
   /** Actor recorded on every emitted event. */
   readonly actor: Actor;
-  /** Legal-entity identifier (e.g. "BANK-ZA-001"). */
+  /** Legal-entity identifier (e.g. "LE-ZA-HOZ-BANK"). */
   readonly entity: string;
   /**
    * Citations carried on every emitted event (Principle 2). At minimum:

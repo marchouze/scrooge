@@ -57,7 +57,7 @@ import type { Actor } from "../platform/event-store/types";
 // Test fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const NIKO_ACTOR: Actor = { type: "service", id: "agent:niko:eligibility-screening" };
 const ELIGIBILITY_CITATIONS = [
   "FAIS-ACT-37-2002",
@@ -193,7 +193,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     expect(typeof p.price).toBe("number");
     expect((p.price as number) > 0).toBe(true);
     expect(typeof p.priceCurrency).toBe("string");
-    expect(p.bookingEntity).toBe("BANK-ZA-001");
+    expect(p.bookingEntity).toBe("LE-ZA-HOZ-BANK");
     // orderId in result matches proposed event
     expect(p.orderId).toBe(result.orderId);
   });

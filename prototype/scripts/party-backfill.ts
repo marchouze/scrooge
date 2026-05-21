@@ -99,7 +99,7 @@ export interface CeoSeatBackfillResult {
 // agent reports-to graph from the canonical roster).
 const IMANI_ACTOR: Actor = { type: "system", id: "system:party-backfill:imani" };
 const ATLAS_ACTOR: Actor = { type: "system", id: "system:party-backfill:atlas" };
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
 // Envelope citation set per event family (P2). Per-payload citations
 // further narrow the regulatory anchor for the specific Party kind.

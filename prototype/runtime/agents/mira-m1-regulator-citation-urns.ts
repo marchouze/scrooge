@@ -605,7 +605,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         event_id: newEventId(),
         type: "ObligationRegistered",
         as_of: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:mira:m1-regulator-citation-urns" },
         // The URN itself is in the citations array — every
         // ObligationRegistered is self-citing in addition to carrying
@@ -642,7 +642,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "M1CitationTrancheRegistered",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:mira:m1-regulator-citation-urns" },
       citations: [...BASE_CITATIONS],
       payload: {

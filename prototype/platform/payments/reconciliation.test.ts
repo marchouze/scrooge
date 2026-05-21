@@ -30,7 +30,7 @@ import { runThreeWayReconciliation } from "./reconciliation";
 // ---------------------------------------------------------------------------
 
 const AS_OF = "2026-05-16";
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:tomas:test" };
 const CITATIONS = ["PROC-PAY-RBH-01", "NPS-ACT-78-1998"];
 

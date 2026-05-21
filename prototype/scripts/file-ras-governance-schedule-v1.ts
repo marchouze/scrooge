@@ -33,7 +33,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:helena:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title: "RAS governance schedule v1",
       path: "2026-05-18_helena_ras-governance-schedule-v1.md",

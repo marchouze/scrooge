@@ -30,7 +30,7 @@ const asOf = clock.now();
 // 1. Register the workstream (citable handle for follow-on slices).
 const workstreamEvent = makeWorkstreamRegistered({
   asOf,
-  entity: "BANK-ZA-001",
+  entity: "LE-ZA-HOZ-BANK",
   actor: { type: "service", id: "agent:atlas:engineering" },
   citations: ["D-MARKETS-SCHEMA-FOUNDATION", "Principles/1-events-are-truth.md"],
   payload: {
@@ -61,7 +61,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:atlas:engineering",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title: "Event-vs-view boundary + OfficialMarkAdopted / PeriodClosed schemas",
       path: "2026-05-20_atlas_event-view-boundary-and-mark-period-events.md",

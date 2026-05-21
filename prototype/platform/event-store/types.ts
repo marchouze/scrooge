@@ -31,7 +31,7 @@ export const eventSchema = z.object({
   // ISO 8601 UTC. The event's effective business time. Processing time
   // (recorded_at) is set by the store and is separate.
   as_of: z.string().min(1),
-  entity: z.string().min(1), // legal-entity identifier (e.g. BANK-ZA-001)
+  entity: z.string().min(1), // legal-entity identifier (e.g. LE-ZA-HOZ-BANK)
   actor: actorSchema,
   // P2: at least one citation required at append time.
   citations: z.array(z.string().min(1)).min(1, {

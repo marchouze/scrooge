@@ -30,7 +30,7 @@ function makeEvent(type: string, payload: Record<string, unknown>): Event {
     event_id: `evt-test-${++seq}`,
     type,
     as_of: new Date(1_700_000_000_000 + seq * 1_000).toISOString(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "anya:test" },
     citations: ["AML-CFT-POLICY-V1"],
     payload,

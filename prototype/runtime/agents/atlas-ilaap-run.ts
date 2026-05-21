@@ -99,7 +99,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const runId = `${runPrefix}-${result.scenario.toUpperCase()}`;
       const scenarioEvent = makeILAAPScenarioRun({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:ilaap-run" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),
@@ -123,7 +123,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // -----------------------------------------------------------------------
     const summaryEvent = makeILAAPSummaryCompleted({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:atlas:ilaap-run" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -146,7 +146,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     if (summary.overallStatus === "inadequate") {
       const escalationEvent = makeAgentEscalation({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:ilaap-run" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),
@@ -173,7 +173,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // -----------------------------------------------------------------------
     const inputReadyEvent = makeIcaapIlaapInputReady({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:atlas:ilaap-run" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -261,7 +261,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // Emit RecordFiled
     const recordFiledEvent = makeRecordFiled({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:atlas:ilaap-run" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),

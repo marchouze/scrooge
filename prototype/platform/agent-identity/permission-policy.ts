@@ -157,7 +157,7 @@ export interface PermissionPolicyPublisherConfig {
   readonly now?: () => string;
 }
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 const DEFAULT_ACTOR: Actor = { type: "service", id: "agent:atlas:permission-policy" };
 const DEFAULT_CITATIONS: readonly string[] = [
   "GOV-FRAMEWORK-CEO-RESERVED",

@@ -232,7 +232,7 @@ describe("semantic-layer quantity registry", () => {
     it("produces a valid event for a known quantity", () => {
       const event = makeSemanticLayerQuantityRegistered({
         asOf: "2026-05-15T00:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:anya" },
         citations: ["D-SEMANTIC-LAYER-QUANTITIES-V1"],
         payload: {
@@ -244,7 +244,7 @@ describe("semantic-layer quantity registry", () => {
       });
 
       expect(event.type).toBe("SemanticLayerQuantityRegistered");
-      expect(event.entity).toBe("BANK-ZA-001");
+      expect(event.entity).toBe("LE-ZA-HOZ-BANK");
       expect((event.payload as { code: string }).code).toBe("CET1_RATIO");
     });
 
@@ -252,7 +252,7 @@ describe("semantic-layer quantity registry", () => {
       expect(() =>
         makeSemanticLayerQuantityRegistered({
           asOf: "2026-05-15T00:00:00.000Z",
-          entity: "BANK-ZA-001",
+          entity: "LE-ZA-HOZ-BANK",
           actor: { type: "service", id: "agent:anya" },
           citations: ["D-SEMANTIC-LAYER-QUANTITIES-V1"],
           payload: {

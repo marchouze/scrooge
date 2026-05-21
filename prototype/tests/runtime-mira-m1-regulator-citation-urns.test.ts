@@ -59,7 +59,7 @@ function appendCeoDecision(decisionId: string, phase: DecisionPhase): { event_id
   eventStore.append(
     makeDecision({
       asOf: "2026-05-07T10:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: SCHEDULER_ACTOR,
       citations: DECISION_CITATIONS,
       eventId: event_id,
@@ -129,7 +129,7 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     eventStore.append(
       makeDecision({
         asOf: "2026-05-07T10:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: SCHEDULER_ACTOR,
         citations: DECISION_CITATIONS,
         eventId: decision_event_id,
@@ -184,7 +184,7 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     eventStore.append(
       makeDecision({
         asOf: "2026-05-07T10:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: SCHEDULER_ACTOR,
         citations: DECISION_CITATIONS,
         eventId: decision_event_id_1,
@@ -222,7 +222,7 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     eventStore.append(
       makeDecision({
         asOf: "2026-05-07T11:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: SCHEDULER_ACTOR,
         citations: DECISION_CITATIONS,
         eventId: decision_event_id_2,
@@ -274,7 +274,7 @@ describe("runtime — Mira m1-regulator-citation-urns handler", () => {
     eventStore.append(
       makeDecision({
         asOf: "2026-05-07T10:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: SCHEDULER_ACTOR,
         citations: DECISION_CITATIONS,
         eventId: decision_event_id,

@@ -46,7 +46,7 @@ const ATLAS_REF = {
 const OWEN_REF = { name: "Owen", position: "Company Secretary, governance" };
 
 const ACTOR = { type: "service" as const, id: "agent:atlas" };
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"] as const;
 const AS_OF = "2026-05-10T12:00:00Z";
 

@@ -169,7 +169,7 @@ const RECON_ACTOR = {
   id: "bea:eod-fx-forward-revaluation",
 };
 
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 /**
  * Compute calendar days between two ISO 8601 dates (YYYY-MM-DD).

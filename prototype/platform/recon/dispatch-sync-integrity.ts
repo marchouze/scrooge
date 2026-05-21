@@ -86,7 +86,7 @@ function checkForwardMode(
     event_id: "synthetic",
     type: "AgentRunCompleted",
     as_of: c.asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "recon" },
     citations: ["D-DISPATCH-SYNC-PRIMITIVE"],
     payload: c.payload as unknown as Record<string, unknown>,

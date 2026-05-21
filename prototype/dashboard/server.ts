@@ -548,7 +548,7 @@ async function handleDecide(req: Request): Promise<Response> {
     try {
       const escalationEvent = makeAgentEscalationDecided({
         asOf: nowUtc(),
-        entity: matchingEscalation.entity ?? "BANK-ZA-001",
+        entity: matchingEscalation.entity ?? "LE-ZA-HOZ-BANK",
         actor: { type: "human", id: actor },
         citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
         eventId: `evt-escalation-decided-${newEventId()}`,
@@ -735,7 +735,7 @@ function handleKycClientRefresh(clientId: string): Response {
     event_id: newEventId(),
     type: "KYCRefreshScheduled",
     as_of: asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human" as const, id: "marc@tgv.co.za" },
     citations: ["D-KYC-ONBOARDING-BUILD", "AML-CFT-POLICY-V1", "FIC-ACT-38-2001"],
     payload: {
@@ -935,7 +935,7 @@ async function handleProductPropose(req: Request): Promise<Response> {
   try {
     const evt = makeProductProposalRegistered({
       asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: proposedBy },
       citations: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
       payload: {
@@ -1006,7 +1006,7 @@ async function handleProductAttest(req: Request): Promise<Response> {
   try {
     const evt = makeProductDimensionAttested({
       asOf: nowUtc(),
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: attestedBy },
       citations: citationChain,
       payload: {
@@ -1051,7 +1051,7 @@ async function handleProductApprove(req: Request): Promise<Response> {
   try {
     const evt = makeProductApproved({
       asOf: nowUtc(),
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: approvedBy },
       citations: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
       payload: { productId, version, conditions, approvedBy },
@@ -1103,7 +1103,7 @@ async function handleProductNarrative(req: Request): Promise<Response> {
   try {
     const evt = makeProductDimensionNarrativeRecorded({
       asOf: nowUtc(),
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: citationChain,
       payload: {
@@ -1163,7 +1163,7 @@ async function handleProductNarrativeRequest(req: Request): Promise<Response> {
     const seqBefore = eventStore.highWatermark();
     const evt = makeProductDimensionNarrativeRequested({
       asOf: nowUtc(),
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
       payload: {
@@ -1320,7 +1320,7 @@ async function handleStartWorkstream(req: Request): Promise<Response> {
     event_id: newEventId(),
     type: "WorkstreamStarted",
     as_of: nowUtc(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human", id: actor },
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
     payload: {
@@ -1367,7 +1367,7 @@ async function handleCompleteWorkstream(req: Request): Promise<Response> {
     event_id: newEventId(),
     type: "WorkstreamCompleted",
     as_of: nowUtc(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human", id: actor },
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
     payload: {

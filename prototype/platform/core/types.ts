@@ -50,11 +50,12 @@ export type LegalEntity = Brand<string, "LegalEntity">;
  *
  * Pre-unification the substrate carried two short-id forms in parallel:
  * `LE-ZA-HOZ-BANK` (BA-return whitelists, accounting period close) and
- * `BANK-ZA-001` (FX revaluation, daily P&L, SA-CCR, agent runtime
- * defaults). Both denoted the same legal entity; the divergence forced
- * a "mirror-block" workaround in the FX-spot scenario for BA-325. The
- * `BANK_ZA_001` symbol below is retained as a deprecated alias so
- * existing imports continue to compile; new code uses `HOZ_BANK_ENTITY`.
+ * the legacy `BANK-ZA-001` form (FX revaluation, daily P&L, SA-CCR,
+ * agent runtime defaults). Both denoted the same legal entity; the
+ * divergence forced a "mirror-block" workaround in the FX-spot
+ * scenario for BA-325. The `BANK_ZA_001` symbol below is retained as
+ * a deprecated alias so existing imports continue to compile; new
+ * code uses `HOZ_BANK_ENTITY`.
  *
  * @see Regulations/_party-register.md
  * @see https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/LegalPerson (FIBO BE)
@@ -64,7 +65,7 @@ export const HOZ_BANK_ENTITY = "LE-ZA-HOZ-BANK" as LegalEntity;
 /**
  * @deprecated Use {@link HOZ_BANK_ENTITY}. Retained for backward
  * compatibility during the entity-identity unification rollout; the
- * value is identical to `HOZ_BANK_ENTITY`. The `BANK-ZA-001`
+ * value is identical to `HOZ_BANK_ENTITY`. The legacy `BANK-ZA-001`
  * non-canonical short-id has been retired — this alias now points at
  * the canonical `LE-ZA-HOZ-BANK`.
  */

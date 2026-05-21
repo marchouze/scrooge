@@ -74,7 +74,7 @@ function freshStores(): { eventStore: EventStore; marketDataStore: MarketDataSto
 function seedValuationPolicy(eventStore: EventStore): void {
   const activation = makePolicyVersionActivated({
     asOf: "2026-05-19T08:00:00.000Z",
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { id: "agent:helena:cro", type: "service" },
     citations: ["Policies/valuation-policy-v1.md", "D-EVENT-VIEW-BOUNDARY-WIRE"],
     payload: {

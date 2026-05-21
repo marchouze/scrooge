@@ -17,7 +17,7 @@ import type { Event } from "../../event-store/types";
 // ---------------------------------------------------------------------------
 
 const ACTOR = { type: "service" as const, id: "agent:env:regulatory-ack-sim" };
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION"];
 const SARB_BIC = "SARB0000XXX";
 const POLL_INTERVAL_MS = 1_000;

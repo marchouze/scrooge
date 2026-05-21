@@ -232,7 +232,7 @@ describe("RasLineCalibrated event — maker", () => {
   it("constructs a valid Event envelope", () => {
     const e = makeRasLineCalibrated({
       asOf: "2026-05-10T13:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: [...RAS_B2_CITATION_LIST],
       payload: {
@@ -248,7 +248,7 @@ describe("RasLineCalibrated event — maker", () => {
       },
     });
     expect(e.type).toBe("RasLineCalibrated");
-    expect(e.entity).toBe("BANK-ZA-001");
+    expect(e.entity).toBe("LE-ZA-HOZ-BANK");
     expect(e.citations.length).toBeGreaterThan(0);
     expect((e.payload as Record<string, unknown>).lineId).toBe("B2");
   });

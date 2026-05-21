@@ -38,7 +38,7 @@ import type { Event } from "../platform/event-store/types";
 import scroogeOwnerInboxArchiver from "../runtime/agents/scrooge-owner-inbox-archiver";
 import type { AgentRunContext } from "../runtime/types";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
 let repoRoot: string;
 let ownerInboxDir: string;

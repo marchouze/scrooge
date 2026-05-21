@@ -117,7 +117,7 @@ const PHASE_1_CITATIONS: readonly string[] = [
   "ORG-CY-01",
 ];
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
 // Substrate-runner lifecycle (S8 / D-AGENT-RUNTIME-AUTHORIZE; spec §3.4)

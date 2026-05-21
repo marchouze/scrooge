@@ -146,7 +146,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeAgentRetired({
         asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: {
           type: "service",
           id: "agent:sade:agent-retirement",

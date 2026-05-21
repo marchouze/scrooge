@@ -42,7 +42,7 @@ const TEST_ACTOR: Actor = {
   id: "agent:tomas:fx-settlement-subscriber",
 };
 
-const TEST_ENTITY = "BANK-ZA-001";
+const TEST_ENTITY = "LE-ZA-HOZ-BANK";
 
 const TEST_CITATIONS = [
   "pr:#636",

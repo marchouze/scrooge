@@ -23,7 +23,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const AS_OF = "2026-05-17";
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "test:equity-revaluation" };
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION"];
 const NPN_ISIN = "ZAE000015889";

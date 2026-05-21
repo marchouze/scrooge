@@ -584,7 +584,7 @@ function buildDecisionEvent(src: SourceDecision): Event {
     event_id: newEventId(),
     type: "Decision",
     as_of: src.asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: {
       type: src.authority === "CEO" ? "human" : "service",
       id: src.authorityRef,

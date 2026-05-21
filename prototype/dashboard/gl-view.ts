@@ -199,7 +199,7 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
 
   const event = makeManualJournalEntry({
     asOf: postedAt,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human" as const, id: body.postedBy as string },
     citations,
     payload: {

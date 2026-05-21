@@ -34,7 +34,7 @@ import { EVENT_TYPE_REGISTRY, lookupEventType } from "../platform/event-store/re
 // Test fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-EVENT-VIEW-BOUNDARY-WIRE", "P1-EVENTS-AS-TRUTH"];
 const ACTOR = { id: "agent:rohan:valuation-engine", type: "service" as const };
 const AS_OF = "2026-05-20T17:05:00.000Z";

@@ -156,7 +156,7 @@ function main(): void {
         retention: entry.retention,
         citations: [...entry.citations],
         actor: entry.actor,
-        entity: entry.entity ?? "BANK-ZA-001",
+        entity: entry.entity ?? "LE-ZA-HOZ-BANK",
         ...(entry.metadata ? { metadata: entry.metadata } : {}),
         ...(entry.supersedes ? { supersedes: entry.supersedes } : {}),
       },

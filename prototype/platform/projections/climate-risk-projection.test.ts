@@ -45,7 +45,7 @@ function appendScenarioRun(
     event_id: newEventId(),
     type: "ClimateScenarioRun",
     as_of: overrides.asOf ?? overrides.runDate,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "agent:helena:climate-risk-measurement" },
     citations: ["D-RAS-CLIMATE-SCENARIO-FRAMEWORK", "PA-GN1-2024"],
     payload: {
@@ -83,7 +83,7 @@ describe("getClimateRiskMetric — no-data state", () => {
       event_id: newEventId(),
       type: "RiskRaised",
       as_of: "2026-07-01",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:helena" },
       citations: ["RAS-FRAMEWORK-2026-05-06"],
       payload: {

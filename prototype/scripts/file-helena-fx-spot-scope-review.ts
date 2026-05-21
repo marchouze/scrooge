@@ -40,7 +40,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:helena:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title: "FX-Spot-only Market Risk Scope Review",
       path: "2026-05-20_helena_fx-spot-only-market-risk-scope-review.md",

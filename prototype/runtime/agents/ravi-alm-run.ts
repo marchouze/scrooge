@@ -76,7 +76,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // ALMRunCompleted — one per run
     const runEvent = makeALMRunCompleted({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:ravi:alm-run" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -99,7 +99,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const checkId = `IRRBB-EVE-${label}-${date}`;
       const checkEvent = makeIRRBBChecked({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:ravi:alm-run" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),
@@ -124,7 +124,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const checkId = `IRRBB-NII-${label}-${date}`;
       const checkEvent = makeIRRBBChecked({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:ravi:alm-run" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),

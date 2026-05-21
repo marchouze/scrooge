@@ -39,7 +39,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const AS_OF = "2026-05-17";
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "test:fx-forward-reval" };
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION", "IAS-21-§28"];
 

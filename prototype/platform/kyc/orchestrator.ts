@@ -115,7 +115,7 @@ const KYC_CITATIONS = [
   "POPIA-S11",
 ];
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
 // In-memory candidate registry (maps candidateId → input data).
 // This is a process-level cache only; the canonical state is in the event store.

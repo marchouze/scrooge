@@ -83,7 +83,7 @@ const EVENT_CITATIONS: readonly string[] = [
   "D-AGENT-RUNTIME-AUTHORIZE",
 ];
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
 function fmtDateUTC(iso: string): string {
   return iso.slice(0, 10);

@@ -1328,9 +1328,9 @@ export function runPhaseAandBandD(opts: {
 
   // Phase-D BA generators (BA 325 / 350 / 600 / 700) bank-licence-gate on
   // the canonical SARB legal-entity short-id `LE-ZA-HOZ-BANK`. The event
-  // store uses the brand-typed alias `BANK-ZA-001` (per `BANK_ZA_001` in
+  // store uses the brand-typed alias `LE-ZA-HOZ-BANK` (per `BANK_ZA_001` in
   // `@platform/core/types`). Phase D emits its `RecordFiled` events under
-  // the event-store entity (BANK-ZA-001) and feeds the canonical entity
+  // the event-store entity (LE-ZA-HOZ-BANK) and feeds the canonical entity
   // short-id to the BA generators. The two are the same legal entity per
   // `Regulations/_legal-entity-tree.md`; alignment lands when the legal-
   // entity-tree register publishes the canonical short-id (substrate gap).

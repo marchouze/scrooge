@@ -383,7 +383,7 @@ describe("LocalScheduler — inactivityCheck (lifecycle-pair fold)", () => {
     store.append(
       makeSubstrateAgentRunStarted({
         asOf: args.startedAt,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:substrate-runner" },
         citations: ["D-AGENT-RUNTIME-AUTHORIZE", "GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
         payload: {
@@ -411,7 +411,7 @@ describe("LocalScheduler — inactivityCheck (lifecycle-pair fold)", () => {
     store.append(
       makeSubstrateAgentRunCompleted({
         asOf: args.completedAt,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:substrate-runner" },
         citations: ["D-AGENT-RUNTIME-AUTHORIZE", "GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
         payload: {
@@ -441,7 +441,7 @@ describe("LocalScheduler — inactivityCheck (lifecycle-pair fold)", () => {
     store.append(
       makeSubstrateAgentRunFailed({
         asOf: args.failedAt,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:substrate-runner" },
         citations: ["D-AGENT-RUNTIME-AUTHORIZE", "GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-09"],
         payload: {
@@ -637,7 +637,7 @@ describe("LocalScheduler — inactivityCheck (lifecycle-pair fold)", () => {
     store.append(
       makeSubstrateAlert({
         asOf: "2026-05-08T01:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:scheduler" },
         citations: ["GOV-FRAMEWORK-CEO-RESERVED", "JOINT-STANDARD-2-2024", "ORG-CY-01"],
         payload: {

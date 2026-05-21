@@ -41,7 +41,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:helena:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title: "Controlled-Launch MR-1-FX Limit Proposal + Compensating-Control Attestation Block",
       path: "2026-05-20_helena_controlled-launch-mr1-fx-limit-proposal.md",

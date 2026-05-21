@@ -30,7 +30,7 @@ function makeEvent(type: string, payload: Record<string, unknown>): Event {
     event_id: `evt-kyc-test-${++seq}`,
     type,
     as_of: new Date(1_748_000_000_000 + seq * 1000).toISOString(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service" as const, id: "kyc-gateway:test" },
     citations: ["D-KYC-ONBOARDING-BUILD", "AML-CFT-POLICY-V1"],
     payload,

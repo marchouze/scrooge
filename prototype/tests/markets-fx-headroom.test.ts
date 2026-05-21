@@ -41,7 +41,7 @@ import type { Actor } from "../platform/event-store/types";
 // Test fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const KAI_ACTOR: Actor = { type: "service", id: "agent:kai:fx-rfq" };
 const NIKO_ACTOR: Actor = { type: "service", id: "agent:niko:eligibility-screening" };
 const CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"];

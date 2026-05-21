@@ -59,7 +59,7 @@ function makeContext(args: {
 function syntheticCeoDecision(args: { decisionId: string; asOf: string }): Event {
   return makeDecision({
     asOf: args.asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: TEST_ACTOR,
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
     eventId: newEventId(),

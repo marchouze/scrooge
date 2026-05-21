@@ -143,7 +143,7 @@ const GOAL_LOOP_ACTOR: Actor = {
   id: "agent:atlas:goal-loop-runner",
 };
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
 // LocalAgentGoalLoopRunner — concrete implementation

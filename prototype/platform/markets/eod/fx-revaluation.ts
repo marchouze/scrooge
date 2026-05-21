@@ -138,7 +138,7 @@ const RECON_ACTOR = {
   id: "anya:eod-fx-revaluation",
 };
 
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 /** Serialize a CurrencyPair object to canonical "BASE/QUOTE" string. */
 function pairToString(pair: { base: string; quote: string }): string {

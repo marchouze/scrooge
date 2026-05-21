@@ -117,7 +117,7 @@ function main(): void {
 
     const cancelEvent = makeFxTradeCancelled({
       asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:devon:cancel-bad-fx-trades" },
       citations: [...CANCELLATION_CITATIONS],
       payload: {

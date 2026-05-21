@@ -54,7 +54,7 @@ export interface GatewayOrderResult {
 // Internal constants
 // ---------------------------------------------------------------------------
 
-const GATEWAY_ENTITY = "BANK-ZA-001";
+const GATEWAY_ENTITY = "LE-ZA-HOZ-BANK";
 const GATEWAY_ACTOR = { type: "service" as const, id: "agent:kai:fx-gateway" };
 const GATEWAY_CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"] as const;
 

@@ -117,7 +117,7 @@ export const BUILD_PHASE_VARIANT_MARKER = "build-phase-fixture" as const;
 // Constants
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
 const INGESTER_ACTOR = {
   id: "atlas:sarb-fixing-ingester",

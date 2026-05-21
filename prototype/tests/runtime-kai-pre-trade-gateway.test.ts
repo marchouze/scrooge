@@ -57,7 +57,7 @@ function makeContext(args: {
 function syntheticOrderProposed(args: { orderId: string; asOf: string }): Event {
   return makeOrderProposed({
     asOf: args.asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: TEST_ACTOR,
     citations: [...ORDER_PROPOSED_CITATIONS],
     payload: {

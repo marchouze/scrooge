@@ -95,7 +95,7 @@ beforeAll(async () => {
     store.append(
       makeDecision({
         asOf: "2026-05-10T00:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "human", id: "marc@tgv.co.za" },
         citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
         payload: {

@@ -43,7 +43,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:imani:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title:
         "G-9 Close — ISDA vs Bilateral FX Master Agreement for FX-Spot-Only Counterparties (Controlled-Launch)",

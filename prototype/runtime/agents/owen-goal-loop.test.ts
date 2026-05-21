@@ -59,7 +59,7 @@ function hoursAgoIso(h: number): string {
 
 const BASE_ACTOR = { type: "service" as const, id: "test:owen-goal-loop-test" };
 const BASE_CITATIONS = ["test-citation"];
-const BASE_ENTITY = "BANK-ZA-001";
+const BASE_ENTITY = "LE-ZA-HOZ-BANK";
 
 const BRIEF_DOC_HASH = "blake3:0000000000000000000000000000000000000000000000000000000000000001";
 

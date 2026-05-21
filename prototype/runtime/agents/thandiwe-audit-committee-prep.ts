@@ -284,7 +284,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "AuditCommitteePackPrepped",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:thandiwe:audit-committee-prep" },
       citations: EVENT_CITATIONS,
       payload: {

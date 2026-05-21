@@ -37,7 +37,7 @@ import type { MarketDataTick } from "../market-data/store";
 // Constants
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ENGINE_ACTOR = { id: "rohan:mark-adoption-engine", type: "service" as const };
 const CITATIONS = [
   "D-EVENT-VIEW-BOUNDARY-WIRE",

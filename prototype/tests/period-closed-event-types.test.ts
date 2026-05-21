@@ -28,7 +28,7 @@ import { EVENT_TYPE_REGISTRY, lookupEventType } from "../platform/event-store/re
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-EVENT-VIEW-BOUNDARY-WIRE", "IFRS-IAS-1-§29", "Companies-Act-71-2008-§29"];
 const ACTOR = { id: "agent:camille:cfo", type: "service" as const };
 const AS_OF = "2026-06-05T16:42:00.000Z";

@@ -297,7 +297,7 @@ const acmePartyId: PartyId = partyId("legal-entity", "acme-am");
 eventStore.append(
   makePartyRegistered({
     asOf: new Date().toISOString(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "agent:imani" },
     citations: ["D-PARTY-REGISTER", "FIC-ACT-38-2001"],
     payload: {
@@ -327,7 +327,7 @@ const janePartyId: PartyId = partyId("natural-person", "jane-doe-scenario-05");
 eventStore.append(
   makePartyRegistered({
     asOf: new Date().toISOString(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "agent:imani" },
     citations: ["D-PARTY-REGISTER", "POPIA-ACT-4-2013"],
     payload: {
@@ -353,7 +353,7 @@ const signatoryRelationshipId = `relationship:signatory-of:${janePartyId}->${acm
 eventStore.append(
   makePartyRelationshipAsserted({
     asOf: new Date().toISOString(),
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "agent:imani" },
     citations: ["D-PARTY-RELATIONSHIP-KINDS-V0", "D-PARTY-REGISTER"],
     payload: {

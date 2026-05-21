@@ -66,7 +66,7 @@ function appendCapitalEvent(
     event_id: newEventId(),
     type: "CapitalEvent",
     as_of: AS_OF,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: ACTOR,
     citations: CITATIONS,
     payload: {

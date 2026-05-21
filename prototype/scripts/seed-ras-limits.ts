@@ -18,7 +18,7 @@ import { newEventId, nowUtc } from "../platform/core/types";
 import { makeRasLimitSchedulePublished } from "../platform/event-store/event-types/trading";
 
 const SCHEDULE_ID = "RAS-LIMIT-SCHEDULE-SEED-2026-05-14";
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-14T00:00:00.000Z";
 
 // Check idempotency: has this schedule already been published?

@@ -81,7 +81,7 @@ import type {
 import type { Event } from "../../platform/event-store/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 const AGGREGATOR_ACTOR = {
   type: "service" as const,

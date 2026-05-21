@@ -74,7 +74,7 @@ function emitRasB2Calibration(): void {
   const calibration = calibrateRasB2(RAS_B2_FIXTURE_PILLAR1);
   const event = makeRasLineCalibrated({
     asOf: AS_OF,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human", id: "marc@tgv.co.za" },
     citations: RAS_B2_CITATION_LIST,
     payload: {

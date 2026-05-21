@@ -97,7 +97,7 @@ function emitReconResultEvent(ctx: AgentRunContext, result: ReconResult): void {
     event_id: newEventId(),
     type: "ReconResult",
     as_of: ctx.asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "agent:vera:overnight-recon" },
     citations: EVENT_CITATIONS,
     payload: {
@@ -127,7 +127,7 @@ function emitAuditFindingEvents(ctx: AgentRunContext, result: ReconResult): numb
     const findingId = `F-VERA-${dateSlug}-${randSuffix}`;
     const event = makeAuditFinding({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:vera:overnight-recon" },
       citations: EVENT_CITATIONS,
       payload: {

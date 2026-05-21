@@ -87,7 +87,7 @@ export interface AgentRegistryConfig {
    */
   readonly eventStore: EventStore;
   /**
-   * Legal entity to stamp on emitted events. Defaults to `BANK-ZA-001`
+   * Legal entity to stamp on emitted events. Defaults to `LE-ZA-HOZ-BANK`
    * (the bank's single SA entity today; P5 multi-entity from day one).
    */
   readonly entity?: string;
@@ -122,7 +122,7 @@ const DEFAULT_CITATIONS: readonly string[] = [
   "JOINT-STANDARD-2-2024",
 ];
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 /**
  * Decode the `AgentRegistered` payload back into an `AgentSpec`. The
