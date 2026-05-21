@@ -4,7 +4,7 @@ status: Approved
 # Procedure — Party registration (unified identity axis across all four actor kinds)
 
 **Procedure ID:** PROC-ID-01
-**Owner:** Owen (Company Secretary, governance; reports to CEO) · Imani (Legal-as-code engineer; reports to Devon, Chief Operating Officer, governance)
+**Owner:** Owen (Company Secretary) · Imani (Legal-as-code engineer; reports to Devon, Chief Operating Officer, governance)
 **Compliance reviewer:** Mira (Compliance / RegTech engineer; reports to Zara, Chief Compliance Officer, governance)
 **Runtime actor (steady-state):** PartyIntake (future agent persona — see substrate gaps)
 **Approval:** CEO (per `D-PARTY-REGISTER` 2026-05-11)

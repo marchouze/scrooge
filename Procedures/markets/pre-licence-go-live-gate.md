@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-PLG-01
 title: Pre-licence go-live readiness gate
-author: Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
+author: Saskia (Head of Global Markets) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
+owner: Saskia (Head of Global Markets) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -18,7 +18,7 @@ citations:
 # Procedure — Pre-licence go-live readiness gate
 
 **Procedure ID:** PROC-MK-PLG-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
+**Owner:** Saskia (Head of Global Markets) · Zara (Chief Compliance Officer, governance) · Devon (Chief Operating Officer, governance)
 **Approval:** CEO (D-MARKETS-SCHEMA-FOUNDATION); SARB determines final licence grant
 **Cadence:** Milestone-driven (single instance per product go-live, preceded by an iterative readiness-build phase)
 **Version:** v0.1 — 2026-05-16
@@ -83,7 +83,7 @@ Regulation (Banks Act 94 s.11 — licence required before banking business)
 |---|---|
 | Devon (Chief Operating Officer, governance) | Gate co-chair; operational-readiness conditions sign-off; gate activation and activation |
 | Zara (Chief Compliance Officer, governance) | Gate co-chair; NPA compliance sign-off; regulatory approvals tracking |
-| Saskia (Chief Markets Officer, governance) | NPA product-readiness conditions sign-off; desk activation on confirmation |
+| Saskia (Head of Global Markets) | NPA product-readiness conditions sign-off; desk activation on confirmation |
 | Helena (Chief Risk Officer, governance) | NPA risk-limit conditions sign-off |
 | Owen (Company Secretary, governance) | Regulatory approval documentation; SARB/FSCA correspondence |
 | Marc (CEO) | Final `GoLiveReadinessConfirmed` sign-off |

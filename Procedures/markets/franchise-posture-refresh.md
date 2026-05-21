@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-FPR-01
 title: Quarterly markets franchise posture refresh
-author: Saskia (Chief Markets Officer, governance)
+author: Saskia (Head of Global Markets)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance)
+owner: Saskia (Head of Global Markets)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -17,7 +17,7 @@ citations:
 # Procedure — Quarterly markets franchise posture refresh
 
 **Procedure ID:** PROC-MK-FPR-01
-**Owner:** Saskia (Chief Markets Officer, governance)
+**Owner:** Saskia (Head of Global Markets)
 **Approval:** CEO (D-MARKETS-SCHEMA-FOUNDATION) for scope changes; Saskia for quarterly operational refresh
 **Cadence:** Quarterly at agent's scheduled governance-cycle run
 **Version:** v0.1 — 2026-05-16
@@ -62,7 +62,7 @@ Decision (D-MARKETS-SCHEMA-FOUNDATION — markets franchise scope)
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | **Saskia drafts posture update:** Saskia (Chief Markets Officer, governance) reviews the current franchise against: (a) active products — operational status vs. planned; (b) pipeline health — number of institutions by stage (PROC-MK-SFP-01 quarterly output); (c) capital allocation — current RWA consumption vs. approved envelope; (d) market conditions — spread environment, liquidity conditions, competitive landscape; (e) substrate completeness — which system capabilities are PLANNED vs. LIVE | `human` (Saskia — Chief Markets Officer, governance) | `@platform/markets/franchise-posture` (PLANNED) | Posture draft is structured as a markdown document with five sections (one per review dimension). At commencement of trading, trading P&L and volume metrics replace substrate readiness metrics. |
+| 1 | **Saskia drafts posture update:** Saskia (Head of Global Markets) reviews the current franchise against: (a) active products — operational status vs. planned; (b) pipeline health — number of institutions by stage (PROC-MK-SFP-01 quarterly output); (c) capital allocation — current RWA consumption vs. approved envelope; (d) market conditions — spread environment, liquidity conditions, competitive landscape; (e) substrate completeness — which system capabilities are PLANNED vs. LIVE | `human` (Saskia — Chief Markets Officer, governance) | `@platform/markets/franchise-posture` (PLANNED) | Posture draft is structured as a markdown document with five sections (one per review dimension). At commencement of trading, trading P&L and volume metrics replace substrate readiness metrics. |
 | 2 | **Helena risk overlay:** Helena (Chief Risk Officer, governance) reviews the posture draft from a risk perspective: RAS alignment, current portfolio risk vs. capital, emerging market risks that should constrain franchise scope, and any concentration concerns; Helena adds a risk overlay section to the posture document | `human` (Helena — Chief Risk Officer, governance) | None — risk judgment | Helena's risk overlay is required before the posture document is finalised. If Helena identifies RAS-level concerns, the posture review triggers an immediate RAS review (PROC-RISK-RAS-01). |
 | 3 | **Atlas substrate gap delta:** Atlas (Platform Engineer) provides a substrate gap delta: which capabilities moved from PLANNED to LIVE this quarter; which remain PLANNED; revised estimate for capability completion; blockers; Atlas emits `SubstrateGapDeltaProvided { quarter, year, capsCompleted, capsRemaining, blockers, providedAt }` | `agent` (Atlas — Platform Engineer) | `@platform/recon/substrate-gap` (PLANNED) | Substrate gap delta is a build-phase-specific input; it transitions to a technology-investment review at commencement of trading. |
 | 4 | **Franchise posture document finalised:** Saskia incorporates Helena's risk overlay and Atlas's substrate gap delta; finalises the posture document; stores it in the doc store (BLAKE3-addressed) | `human` (Saskia) | `@platform/doc-store` | Finalisation event: `FranchisePostureDocumentFinalised { quarter, year, documentHash, finalisedAt }`. |
@@ -74,7 +74,7 @@ Decision (D-MARKETS-SCHEMA-FOUNDATION — markets franchise scope)
 
 | Role | Responsibility |
 |---|---|
-| Saskia (Chief Markets Officer, governance) | Posture draft; document finalisation; CEO briefing; scope-change recommendations |
+| Saskia (Head of Global Markets) | Posture draft; document finalisation; CEO briefing; scope-change recommendations |
 | Helena (Chief Risk Officer, governance) | Risk overlay; RAS alignment check |
 | Atlas (Platform Engineer) | Substrate gap delta provision |
 | Marc (CEO) | Quarterly acknowledgement; scope-change Decision approval |

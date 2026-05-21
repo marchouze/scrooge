@@ -99,7 +99,7 @@ This policy applies to:
 |---|---|---|
 | Policy owner / Execution Register owner | Imani (Legal-as-code engineer, engineering — reports to Devon COO interim) | ECTA compliance; clause library; execution register; AES provider pre-approval |
 | Authorised signatories | CEO (Marc) + any person authorised under the bank's delegation-of-authority framework | Binding the bank contractually |
-| Counterparty-risk review | Devon (COO interim) or delegated authority | Counterparty and contract terms review for material agreements |
+| Counterparty-risk review | Devon (Chief Operating Officer) or delegated authority | Counterparty and contract terms review for material agreements |
 | Regulatory submission execution | Owen (Company Secretary, governance) + Imani | Regulator-specific formalities |
 | Independent assurance | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, Chief Audit Executive, governance) | Annual review of execution register completeness; formality-compliance spot-check |
 | Board oversight | Board (from licence-day) | Approves delegation-of-authority framework; ratifies this policy |
@@ -312,7 +312,7 @@ Imani commissions an annual review of a sample (minimum 10%) of the execution re
 - AES certificate quality (valid, not revoked, appropriate assurance level)
 - Schedule 1 compliance (no Schedule 1 agreements executed electronically)
 
-The annual review findings are reported to Devon (COO interim) and to Vera.
+The annual review findings are reported to Devon (Chief Operating Officer) and to Vera.
 
 ---
 

@@ -93,9 +93,9 @@ This policy applies to:
 
 | Role | Holder | Authority |
 |---|---|---|
-| Policy owner | Sade (AgentOps, governance) | Owns disciplinary policy; monitors open cases; reports to Devon (COO interim) |
+| Policy owner | Sade (AgentOps, governance) | Owns disciplinary policy; monitors open cases; reports to Devon (Chief Operating Officer) |
 | Legal-as-code owner | Imani (Legal-as-code engineer, engineering — reports to Devon COO interim) | ISDA/GMRA clause library; employment-contracts clause library; LRA compliance hooks |
-| Hearing chairperson | Appointed by Devon (COO interim) or delegated manager; must be independent of the accused employee's direct management chain | LRA Schedule 8 §4 |
+| Hearing chairperson | Appointed by Devon (Chief Operating Officer) or delegated manager; must be independent of the accused employee's direct management chain | LRA Schedule 8 §4 |
 | Appeals authority | Next governance level above the hearing chairperson; Board AC at senior-management level | LRA Schedule 8 §8 |
 | CCMA representation | Imani or external counsel at licence-day | LRA s.191 |
 | Independent assurance | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, Chief Audit Executive, governance) | Third-line; annual review of disciplinary outcomes register |
@@ -194,7 +194,7 @@ Failure of procedure does not automatically make a dismissal substantively unfai
 
 **Trigger:** any allegation of misconduct, or Sade's detection of an anomalous conduct event (e.g. an audit trail flag, a Vera recon finding, a colleague complaint), opens an investigation.
 
-**Investigation officer:** Devon (COO interim) appoints an investigation officer who is:
+**Investigation officer:** Devon (Chief Operating Officer) appoints an investigation officer who is:
 - Senior to the accused employee
 - Independent of the accused's direct line management
 - Free of a material conflict of interest in the matter
@@ -205,7 +205,7 @@ Failure of procedure does not automatically make a dismissal substantively unfai
 2. **Interview witnesses.** The investigation officer interviews relevant witnesses. Witness statements are recorded in writing; witnesses sign their statements.
 3. **Interview the accused employee.** The accused is given an opportunity to respond to the preliminary findings before the investigation is concluded. This is not the formal hearing — it is a fact-gathering step. The accused may be accompanied by a support person.
 4. **Investigation report.** The investigation officer prepares a written report: findings of fact; recommendation on whether to proceed to a disciplinary hearing. The report is stored in the document substrate.
-5. **Decision to charge.** Devon (COO interim) or the designated authority reviews the investigation report and decides whether to proceed to a formal disciplinary hearing. If no further action is warranted, Sade emits `DisciplinaryInvestigationClosed` with disposition "no charge".
+5. **Decision to charge.** Devon (Chief Operating Officer) or the designated authority reviews the investigation report and decides whether to proceed to a formal disciplinary hearing. If no further action is warranted, Sade emits `DisciplinaryInvestigationClosed` with disposition "no charge".
 
 **Precautionary suspension:** Where the nature of the alleged misconduct is such that the employee's presence in the workplace during investigation would be prejudicial to the investigation or create an unacceptable risk, the employee may be placed on precautionary suspension with full pay. Suspension is not disciplinary action and must not be communicated as such.
 
@@ -223,7 +223,7 @@ Sade emits a `DisciplinaryNoticeIssued` event on dispatch of the notice. The not
 
 ### 3.3 Disciplinary hearing
 
-**Chairperson:** the hearing is chaired by an independent chairperson appointed by Devon (COO interim). The chairperson must not be subordinate to the accused employee and must not have a conflict of interest in the matter.
+**Chairperson:** the hearing is chaired by an independent chairperson appointed by Devon (Chief Operating Officer). The chairperson must not be subordinate to the accused employee and must not have a conflict of interest in the matter.
 
 **Hearing steps:**
 
@@ -301,7 +301,7 @@ Any employee who has a grievance (a complaint about treatment, working condition
 **Grievance steps:**
 
 1. **Informal resolution.** The employee first attempts to resolve the grievance informally with the relevant manager. Sade may facilitate.
-2. **Formal grievance.** If informal resolution fails, the employee submits a written grievance to Devon (COO interim) or directly to Sade where the grievance concerns Devon.
+2. **Formal grievance.** If informal resolution fails, the employee submits a written grievance to Devon (Chief Operating Officer) or directly to Sade where the grievance concerns Devon.
 3. **Investigation and response.** The grievance is investigated and a written response provided within 10 business days.
 4. **Escalation.** If unresolved, the grievance escalates to the Board or a designated Board committee.
 5. **CCMA.** If the bank fails to resolve the grievance, the employee may refer an unfair labour practice dispute to the CCMA.
@@ -338,7 +338,7 @@ Sade runs the `recon:disciplinary-sla-compliance` harness at every agent-cadence
 - Every `DisciplinaryHearingConducted` has a written outcome stored in the document substrate within 2 business days
 - Every `DisciplinaryAppealLodged` has a `DisciplinaryAppealDecided` event within 15 business days
 
-Breaches alert to Sade and are reported to Devon (COO interim).
+Breaches alert to Sade and are reported to Devon (Chief Operating Officer).
 
 ### 5.3 Outcomes register
 
@@ -351,7 +351,7 @@ Sade maintains an **outcomes register** covering:
 - CCMA referrals and outcomes
 - Average time-to-conclusion by stage
 
-The outcomes register is reported to Devon (COO interim) quarterly and to Vera (Internal audit / continuous-assurance engineer) annually for the third-line review.
+The outcomes register is reported to Devon (Chief Operating Officer) quarterly and to Vera (Internal audit / continuous-assurance engineer) annually for the third-line review.
 
 ### 5.4 Consistency check
 
@@ -363,7 +363,7 @@ Before each sanction determination, Sade runs a `recon:disciplinary-consistency-
 
 | Event | Escalation path | Timeline |
 |---|---|---|
-| Allegation of gross misconduct | Devon (COO interim) notified immediately; Sade opens investigation | Same day |
+| Allegation of gross misconduct | Devon (Chief Operating Officer) notified immediately; Sade opens investigation | Same day |
 | Allegation of automatically unfair dismissal basis | Imani (Legal-as-code engineer) + Devon + Board notified | Same day |
 | CCMA referral received | Imani notified; `CcmaReferralReceived` event emitted; Sade tracks | Within 2 business days |
 | Systemic disciplinary pattern (e.g. three or more cases in a quarter) | Devon report; Vera advisory engagement | At quarterly reporting cycle |

@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-COND-PAD-01
 title: Personal account dealing pre-clearance — insider trading controls
-author: Owen (Company Secretary, governance) · Zara (compliance engineer)
+author: Owen (Company Secretary, governance) · Zara (Chief Compliance Officer)
 date: 2026-05-16
-owner: Owen (Company Secretary, governance) · Zara (compliance engineer)
+owner: Owen (Company Secretary, governance) · Zara (Chief Compliance Officer)
 status: POPULATED
 policy-cited: Insider Trading / PA Dealing Policy (planned) · Owner Inbox/2026-05-06_core-policies-compliance-conduct.md
 system-capability: "@platform/conduct/pa-dealing-engine (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/conduct/pa-dealing-engine (PLANNED)"
 # Procedure — Personal account dealing pre-clearance — insider trading controls
 
 **Procedure ID:** PROC-COND-PAD-01
-**Owner:** Owen (Company Secretary, governance) · Zara (compliance engineer)
+**Owner:** Owen (Company Secretary, governance) · Zara (Chief Compliance Officer)
 **Approval:** Zara (pre-clearance within 24h) · Owen (complex cases) · Helena (CRO, governance — breach escalation)
 **Cadence:** On-trigger (per personal account dealing request); annual (designated-person register review; certification)
 **Version:** v0.1 — 2026-05-16
@@ -73,7 +73,7 @@ Prevent insider trading and manage conflicts of interest arising from personal a
 | Role | Responsibility |
 |---|---|
 | Owen (Company Secretary, governance) | Designated-person register; complex case referrals; annual certification oversight |
-| Zara (compliance engineer) | Pre-clearance review and decision (within 24h); MNPI check; breach escalation |
+| Zara (Chief Compliance Officer) | Pre-clearance review and decision (within 24h); MNPI check; breach escalation |
 | Helena (Chief Risk Officer, governance) | Breach escalation receipt; BRC notification; FSCA reporting decision |
 | Each designated person | Application before trading; post-trade reporting; annual certification |
 

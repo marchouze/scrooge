@@ -3,7 +3,7 @@ policy-id: trading-mandate
 title: Trading Mandate v1
 version: "1"
 status: IN FORCE
-owner: Saskia (Head of Markets, governance)
+owner: Saskia (Head of Global Markets)
 effective-from: "2026-05-11"
 next-review: "2027-05-11"
 citations:
@@ -438,7 +438,7 @@ The following gaps are surfaced for the roadmap — they do not prevent this man
 |---|---|
 | **Initial approval** | Board (interim: CEO Marc on behalf of CEO + interim NEDs) |
 | **Ongoing review cadence** | Annual; or on addition of new desk / product class; or on material change to the bank's franchise or capital structure |
-| **Parties to any amendment** | Kai (lead author); Helena (CRO, co-author); Devon (COO, co-author); Saskia (Head of Global Markets, governance approver); Board / CEO ratification |
+| **Parties to any amendment** | Kai (lead author); Helena (Chief Risk Officer); Devon (Chief Operating Officer); Saskia (Head of Global Markets); Board / CEO ratification |
 | **Register** | This mandate is a policy-layer document. Amendments are typed `PolicyAmendment` events per Principle 1 (Events are the only source of truth) |
 | **Obligation register update** | On approval, Mira (Compliance / RegTech engineer) updates `ORG-PR-20` and `ORG-MK-04` status from `PARTIAL` to `IN FORCE` in `Regulations/_obligations-register.md`; updates `ORG-PR-19`, `ORG-MK-01`, `ORG-PR-48`, `ORG-MK-09` closure notes |
 | **BRC standing item** | This mandate is a standing BRC agenda item for compliance monitoring; position-limit utilisation is reported monthly |

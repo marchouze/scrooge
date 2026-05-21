@@ -52,7 +52,7 @@ riskTaxonomy:
 
 This policy establishes Hoz Bank Limited's Secure Software Development Lifecycle (Secure SDLC) governance framework. It sets out the security requirements that apply to every stage of software development — from requirements through design, implementation, testing, deployment, and maintenance — and prescribes the controls, responsibilities, and escalation pathways that govern day-to-day SDLC security.
 
-The bank's engineering workforce is predominantly autonomous AI agents (Principle 6 — autonomous by default). Every engineering agent — Atlas (Platform infrastructure engineer), Senna (Platform security engineer), Devon (Platform data and analytics engineer), and others — operates under this policy. AI-generated code is not exempt from any provision; it is in-scope from the moment it enters the codebase.
+The bank's engineering workforce is predominantly autonomous AI agents (Principle 6 — autonomous by default). Every engineering agent — Atlas (Platform infrastructure engineer), Senna (Platform security engineer), Devon (Chief Operating Officer), and others — operates under this policy. AI-generated code is not exempt from any provision; it is in-scope from the moment it enters the codebase.
 
 ### 1.2 Statutory authority and framework references
 
@@ -75,7 +75,7 @@ This policy is adopted under and gives effect to:
 This policy applies to:
 
 - **All production code** in the bank's banking platform (`/Users/marc/code/Bank` monorepo), including the event store, projections, recon harnesses, dashboard, agent-runtime substrate, and all typed event handlers.
-- **All engineering agents** whose outputs enter the codebase: Atlas (Platform infrastructure engineer), Senna (Platform security engineer, implementation lead for this policy), Devon (Platform data and analytics engineer), Mira (Compliance / RegTech engineer where she authors substrate code), and any other agent that submits a pull request.
+- **All engineering agents** whose outputs enter the codebase: Atlas (Platform infrastructure engineer), Senna (Platform security engineer, implementation lead for this policy), Devon (Chief Operating Officer), Mira (Compliance / RegTech engineer where she authors substrate code), and any other agent that submits a pull request.
 - **AI-generated code** — code suggested or authored by any AI system (including Claude models) is treated as ordinary code for all SDLC gate purposes. No AI-generated code bypasses review.
 - **Outsourced development** — any development activity conducted outside the bank's own engineering agents is subject to equivalent SDLC requirements as a contractual condition.
 - **Hoz Group Limited and Hoz Securities Limited** — to the extent that shared platform components are used by these entities, this policy applies on a group-wide basis.

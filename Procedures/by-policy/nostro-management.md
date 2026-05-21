@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-PAY-NM-01
 title: Nostro account management — correspondent balance and settlement feed
-author: Tomas (payments engineer) · Eitan (treasury & ALM engineer)
+author: Tomas (payments engineer) · Eitan (Treasurer)
 date: 2026-05-16
-owner: Tomas (payments engineer) · Eitan (treasury & ALM engineer)
+owner: Tomas (payments engineer) · Eitan (Treasurer)
 status: POPULATED
 policy-cited: Sponsor-Bank Operating Policy v0.1 (STUB) · Payments Policy v0.1 (STUB) · Funding Strategy (planned)
 system-capability: "@platform/payments/nostro (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/payments/nostro (PLANNED)"
 # Procedure — Nostro account management — correspondent balance and settlement feed
 
 **Procedure ID:** PROC-PAY-NM-01
-**Owner:** Tomas (payments engineer) · Eitan (treasury & ALM engineer)
+**Owner:** Tomas (payments engineer) · Eitan (Treasurer)
 **Approval:** ALCO (nostro limits and intraday liquidity integration); BRC (under Sponsor-Bank Operating Policy v0.1 — STUB)
 **Cadence:** Daily opening balance feed; continuous intraday monitoring; end-of-day reconciliation against correspondent bank statement; periodic nostro account maintenance
 **Version:** v0.1 — 2026-05-16
@@ -74,7 +74,7 @@ This procedure has four sub-functions:
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
 | A1 | **Retrieve opening balance.** At system start, query the correspondent's balance API (or parse the MT940 / camt.052 statement received from the correspondent). Parse: `openingBalance`, `currency`, `valueDate`, `accountRef`. | system | `@platform/payments/nostro` (PLANNED — build-phase: synthetic balance from `_sponsor-bank-operating-model.md`) | If the feed is unavailable at system start, Tomas (payments engineer) is alerted immediately; PROC-RISK-ILF-01 Step 1 is blocked until the feed arrives. |
-| A2 | **Validate opening balance.** Assert: `currency == ZAR` (or designated nostro currency); `valueDate == today`; balance is ≥ 0; balance is within the ALCO-approved nostro operating range (lower: intraday minimum; upper: excess-balance ceiling per Funding Strategy). | system | `@platform/payments/nostro` | Out-of-range balance alerts Eitan (treasury & ALM engineer) and Tomas (payments engineer). |
+| A2 | **Validate opening balance.** Assert: `currency == ZAR` (or designated nostro currency); `valueDate == today`; balance is ≥ 0; balance is within the ALCO-approved nostro operating range (lower: intraday minimum; upper: excess-balance ceiling per Funding Strategy). | system | `@platform/payments/nostro` | Out-of-range balance alerts Eitan (Treasurer) and Tomas (payments engineer). |
 | A3 | **Emit `NostroOpeningBalance` event.** Record: `{ accountRef, openingBalance, currency, valueDate, sourceStatement }`. This event is the named input for PROC-RISK-ILF-01 Step 1. | system | `@platform/payments/nostro`; `@platform/event-store` | PROC-RISK-ILF-01 consumes this event as its Step 1 trigger. Emit before 07:00 SAST target. |
 
 ### Sub-function B — Intraday balance monitoring
@@ -83,7 +83,7 @@ This procedure has four sub-functions:
 |---|---|---|---|---|
 | B1 | **Update projected balance on `PaymentInitiated`.** On each `PaymentInitiated` event, subtract the payment amount from the running projected nostro balance. Emit `NostroProjectedUpdate { paymentId, projectedBalance, direction: "debit" }`. | system | `@platform/payments/nostro` | Projected balance may differ from confirmed balance (payments initiated but not yet settled). |
 | B2 | **Confirm balance on `PaymentSettled`.** On `PaymentSettled`, record the confirmed outflow. Reconcile projected vs confirmed balance. If they diverge by more than the tolerance (default: ZAR 1 000), emit `NostroProjectionVariance`. | system | `@platform/payments/nostro` | Projection variance > ZAR 50 000 is alerted to Tomas. Persistent variance is a PROC-PAY-RBH-01 finding. |
-| B3 | **Monitor intraday threshold.** Continuously compare the confirmed nostro balance (opening balance minus confirmed outflows plus confirmed inflows, per inbound credit entries from the correspondent) against the ALCO-approved intraday minimum threshold. If balance falls below threshold, emit `NostroAlertThresholdBreached { balance, threshold, margin }` and alert Eitan (treasury & ALM engineer). | system | `@platform/payments/nostro`; `@platform/events/alert-dispatcher` (PLANNED) | Eitan assesses funding options: correspondent intraday credit facility, repo, or treasury flow adjustment. Escalation per PROC-RISK-ILF-01 if liquidity position is stressed. |
+| B3 | **Monitor intraday threshold.** Continuously compare the confirmed nostro balance (opening balance minus confirmed outflows plus confirmed inflows, per inbound credit entries from the correspondent) against the ALCO-approved intraday minimum threshold. If balance falls below threshold, emit `NostroAlertThresholdBreached { balance, threshold, margin }` and alert Eitan (Treasurer). | system | `@platform/payments/nostro`; `@platform/events/alert-dispatcher` (PLANNED) | Eitan assesses funding options: correspondent intraday credit facility, repo, or treasury flow adjustment. Escalation per PROC-RISK-ILF-01 if liquidity position is stressed. |
 | B4 | **Intraday position report.** Every 30 minutes, emit `NostroIntradaySnapshot { time, openingBalance, confirmedOutflows, projectedOutflows, inflows, confirmedBalance, projectedBalance }`. Consumed by Eitan's ALCO reporting and PROC-RISK-ILF-01's BCBS monitoring metrics. | system | `@platform/payments/nostro` | Automated snapshot; no manual step. |
 
 ### Sub-function C — End-of-day reconciliation
@@ -99,9 +99,9 @@ This procedure has four sub-functions:
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| D1 | **Trigger:** operational need — limit amendment, signatory change, account-structure update. | Tomas (payments engineer) + Eitan (treasury & ALM engineer) | n/a | Changes require ALCO pre-approval (limit changes) or BRC approval (structural changes). |
+| D1 | **Trigger:** operational need — limit amendment, signatory change, account-structure update. | Tomas (payments engineer) + Eitan (Treasurer) | n/a | Changes require ALCO pre-approval (limit changes) or BRC approval (structural changes). |
 | D2 | **Draft change instruction.** Tomas documents the required change; Imani (legal & contracts engineer) confirms the change is within the scope of the correspondent operating contract or raises a contract amendment. | Tomas (payments engineer) + Imani (legal & contracts engineer) | `@platform/legal/clause-library` (Imani's substrate — PLANNED) | If contract amendment is required, it flows through Imani's contracting process. |
-| D3 | **ALCO or BRC approval.** Obtain the required governance approval. Record the approval as a `CeoDecision` or ALCO-minute artefact. | Eitan (treasury & ALM engineer) [ALCO], Devon (COO, governance) [BRC] | `@platform/decisions/record` | Limit changes: ALCO. Structural or contractual changes: BRC. |
+| D3 | **ALCO or BRC approval.** Obtain the required governance approval. Record the approval as a `CeoDecision` or ALCO-minute artefact. | Eitan (Treasurer) [ALCO], Devon (COO, governance) [BRC] | `@platform/decisions/record` | Limit changes: ALCO. Structural or contractual changes: BRC. |
 | D4 | **Submit change to correspondent.** Tomas submits the approved change instruction to the correspondent. Record `NostroAccountMaintenanceSubmitted { changeType, correspondentRef, approvedBy }`. | Tomas (payments engineer) | n/a — external correspondent channel | |
 | D5 | **Confirm and update internal records.** On correspondent confirmation, update the nostro account profile in `_sponsor-bank-operating-model.md` and emit `NostroAccountMaintenanceConfirmed`. | Tomas (payments engineer) | `@platform/payments/nostro` | Imani updates the clause-library record if the contract was amended. |
 
@@ -110,7 +110,7 @@ This procedure has four sub-functions:
 | Role | Responsibility |
 |---|---|
 | Tomas (payments engineer) | Primary owner of the nostro balance feed, intraday monitoring engine, and EoD reconciliation; manages correspondent channel for account maintenance; escalates threshold breaches and reconciliation breaks. |
-| Eitan (treasury & ALM engineer) | Co-owner; consumes opening balance and intraday snapshots for PROC-RISK-ILF-01 and ALCO reporting; assesses funding responses to threshold breaches; approves limit changes at ALCO. |
+| Eitan (Treasurer) | Co-owner; consumes opening balance and intraday snapshots for PROC-RISK-ILF-01 and ALCO reporting; assesses funding responses to threshold breaches; approves limit changes at ALCO. |
 | Bea (financial-reporting engineer) | Receives unmatched credit entries from C2 for accounting posting; co-owner of PROC-PAY-RBH-01 for nostro-leg breaks. |
 | Imani (legal & contracts engineer) | Custodian of the correspondent operating contract; reviews and co-ordinates nostro account maintenance change requests. |
 | Devon (COO, governance) | Receives escalation for nostro reconciliation breaks and structural account changes; BRC approver for structural changes. |

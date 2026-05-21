@@ -3,7 +3,7 @@ procedureId: PROC-MK-ODP-04
 title: Initial Margin — SIMM-aligned calculation, exchange, and segregation (phased)
 author: Kai (Trading systems engineer, engineering) · Tomas (Operations engineer, engineering)
 date: 2026-05-16
-owner: Ravi (ALM quant engineer, engineering) · Rohan (Market risk quant engineer, engineering) · Eitan (Treasury and ALM engineer, governance) · Imani (Legal-as-code engineer, engineering)
+owner: Ravi (ALM quant engineer, engineering) · Rohan (Market risk quant engineer, engineering) · Eitan (Treasurer) · Imani (Legal-as-code engineer, engineering)
 status: POPULATED
 policy-cited: Policies/margin-policy-v1.md · Policies/im-methodology-policy-v1.md
 system-capability: prototype/platform/risk/im-simm (PLANNED)
@@ -12,7 +12,7 @@ system-capability: prototype/platform/risk/im-simm (PLANNED)
 # Procedure — Initial Margin (SIMM-Aligned, Phased, Per-Counterparty)
 
 **Procedure ID:** PROC-MK-ODP-04
-**Owner:** Ravi (ALM quant engineer, engineering) · Rohan (Market risk quant engineer, engineering) · Eitan (Treasury and ALM engineer, governance) · Imani (Legal-as-code engineer, engineering)
+**Owner:** Ravi (ALM quant engineer, engineering) · Rohan (Market risk quant engineer, engineering) · Eitan (Treasurer) · Imani (Legal-as-code engineer, engineering)
 **Approval:** ALCO + BRC (Margin Policy + IM Methodology Policy)
 **Cadence:** Per-trade IM at execution; daily IM recompute on MTM change; quarterly group-notional reassessment
 **Version:** v0.2 — 2026-05-16
@@ -81,7 +81,7 @@ The purpose of this procedure is to:
 | 3 | For each in-scope counterparty and each new trade (`OtcTradeExecuted`): compute SIMM IM using risk sensitivities sourced from Rohan's risk engine (delta, vega, curvature by risk class: IR, FX, EQ, CRQ, CRNQ, CM) | `agent` (Rohan) | `@risk/im-simm` (PLANNED) | SIMM methodology per ISDA SIMM v2.7 (or current published version). Where SIMM is not mutually agreed with the counterparty, use the schedule-based fallback per JS 2/2020 Annex B. |
 | 4 | Emit `InitialMarginCalculated { nettingSetId, counterpartyLei, im, methodology: SIMM\|schedule, sensitivities: [...], csa, asOf }` | `system` | `@platform/event-store` | Canonical IM calculation record. `sensitivities` is the BLAKE3-addressed sensitivity file used as input to SIMM. |
 | 5 | Reconcile IM with counterparty: share SIMM sensitivities via ISDA Margin Arbitration or AcadiaSoft; compare counterparty's IM; if difference > 10% or > ZAR 5m, raise dispute | `agent` (Ravi) | `@settlement/im-comms` (PLANNED) | Reconciliation is bilateral and may take 1–5 BDs. Dispute window: 5 BDs per JS 2/2020 §5(2). |
-| 6 | If IM dispute not resolved in 5 BDs: emit `IMDisputeEscalated { nettingSetId, counterpartyLei, bankIM, counterpartyIM, age }` and route to `otc-dispute-resolution.md` | `system` + `agent` (Imani) | `@platform/escalation` (PLANNED) | In the interim, the higher of the two IM amounts is posted pending resolution. Eitan (Treasury and ALM engineer, governance) approves the interim posting. |
+| 6 | If IM dispute not resolved in 5 BDs: emit `IMDisputeEscalated { nettingSetId, counterpartyLei, bankIM, counterpartyIM, age }` and route to `otc-dispute-resolution.md` | `system` + `agent` (Imani) | `@platform/escalation` (PLANNED) | In the interim, the higher of the two IM amounts is posted pending resolution. Eitan (Treasurer) approves the interim posting. |
 | 7 | Instruct third-party custodian to segregate posted IM in the agreed SCSA segregation account; receive custodian confirmation | `agent` (Ravi) | `@treasury/collateral-segregation` (PLANNED) | Segregation arrangements must be established at counterparty onboarding under PROC-MK-COBP-01. Tri-party custody: Clearstream, Euroclear, or local custodian as agreed. IM is not rehypothecatable. |
 | 8 | Emit `InitialMarginPosted { nettingSetId, counterpartyLei, amount, currency, collateralType, custodian, segregationAccount, postedAt }` | `system` | `@platform/event-store` | For IM received from the counterparty: emit `InitialMarginReceived { ... }`. |
 | 9 | Daily IM recompute (Step 3 repeated at `MarketClose`): calculate new SIMM IM; compute IM delta = new IM − last exchanged IM; if \|delta\| exceeds MTA (aggregate with VM), call or return the delta | `agent` (Rohan) + `system` | `@risk/im-simm` (PLANNED) + `@treasury/margin-engine` (DRAFTING) | Only the delta is exchanged daily, not the full IM. Full IM is reposted on trade execution or significant portfolio change. |
@@ -112,7 +112,7 @@ The purpose of this procedure is to:
 
 ### Failure mode
 
-If the SIMM calculation engine fails to produce a daily recompute, Rohan (Market risk quant engineer, engineering) uses the prior-day IM as a placeholder; no delta call is issued on that day. A `SIMMCalculationFailed { nettingSetId, date, reason }` event is emitted and Eitan (Treasury and ALM engineer, governance) is notified. If the failure persists for 2 consecutive days, Helena (Chief Risk Officer, governance) escalates to the BRC and the schedule-based fallback is activated.
+If the SIMM calculation engine fails to produce a daily recompute, Rohan (Market risk quant engineer, engineering) uses the prior-day IM as a placeholder; no delta call is issued on that day. A `SIMMCalculationFailed { nettingSetId, date, reason }` event is emitted and Eitan (Treasurer) is notified. If the failure persists for 2 consecutive days, Helena (Chief Risk Officer, governance) escalates to the BRC and the schedule-based fallback is activated.
 
 ---
 

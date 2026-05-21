@@ -59,7 +59,7 @@ Owen does **not** draft contracts (Imani), measure risk (Rohan), oversee complia
 | `PAIARequest` event | External requester via PAIA channel (with Iris) | Per Companies Act / PAIA deadlines |
 | `MOIChangeProposed` event | Imani / CEO | Pre-CIPC filing |
 | `SupervisoryLetterReceived` event | Regulator-correspondence intake | Triage within 24h; route within 24h |
-| `AgentEscalation` from Helena (BRC pathway), Camille (AC pathway), Thandiwe (CAE / IAF pathway) | Governance peers | Per escalator-stated deadline |
+| `AgentEscalation` from Helena (BRC pathway), Camille (AC pathway), Thandiwe (Chief Audit Executive) | Governance peers | Per escalator-stated deadline |
 | Scheduled wake-up — weekly forum prep | Runtime scheduler | 1 business day |
 | Scheduled wake-up — quarterly framework refresh | Runtime scheduler | Per cycle |
 | Scheduled wake-up — annual director-induction cycle | Runtime scheduler | Per induction cycle |

@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-ALM-FTP-01
 title: Funds transfer pricing rate attachment on product lifecycle events
-author: Eitan (treasury & ALM engineer) · Anya (platform & data engineer)
+author: Eitan (Treasurer) · Anya (platform & data engineer)
 date: 2026-05-16
-owner: Eitan (treasury & ALM engineer) · Anya (platform & data engineer)
+owner: Eitan (Treasurer) · Anya (platform & data engineer)
 status: POPULATED
 policy-cited: FTP Methodology (planned)
 system-capability: "@platform/alm/ftp-engine (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/alm/ftp-engine (PLANNED)"
 # Procedure — Funds transfer pricing rate attachment on product lifecycle events
 
 **Procedure ID:** PROC-ALM-FTP-01
-**Owner:** Eitan (treasury & ALM engineer) · Anya (platform & data engineer)
+**Owner:** Eitan (Treasurer) · Anya (platform & data engineer)
 **Approval:** ALCO (FTP curve parameters and methodology); CFO (policy approval)
 **Cadence:** Event-driven (fires on every qualifying product lifecycle event); monthly ALCO review of FTP curve calibration; annual methodology review
 **Version:** v0.1 — 2026-05-16
@@ -101,11 +101,11 @@ The agent maps the product to an FTP curve segment using the following classific
 | FRA | Short-end ZARONIA curve | FRA settlement date |
 | OTC cap/floor | ZARONIA vol-adjusted curve | Cap/floor expiry |
 
-If the product type is not in the classification tree, the agent raises a `FTPClassificationGap` event and escalates to Eitan (treasury & ALM engineer) within 30 minutes (§7).
+If the product type is not in the classification tree, the agent raises a `FTPClassificationGap` event and escalates to Eitan (Treasurer) within 30 minutes (§7).
 
 **Step 3 — FTP rate retrieval (agent)**
 
-The agent retrieves the current FTP curve snapshot from `@platform/alm/ftp-curve-store`. The curve snapshot is published each business day at 07:30 SAST by the FTP curve calibration sub-process (owned by Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer)). The agent interpolates to the product's exact tenor using log-linear interpolation on zero rates.
+The agent retrieves the current FTP curve snapshot from `@platform/alm/ftp-curve-store`. The curve snapshot is published each business day at 07:30 SAST by the FTP curve calibration sub-process (owned by Eitan (Treasurer) · Ravi (ALM quant engineer)). The agent interpolates to the product's exact tenor using log-linear interpolation on zero rates.
 
 **Step 4 — Three-component rate assembly (agent)**
 
@@ -149,7 +149,7 @@ The `tradeId` cross-references the originating `TradeExecuted` or `ProductAmende
 
 **Step 6 — Amendment handling (agent)**
 
-On receipt of a `ProductAmended` event, the agent calculates a revised FTP rate using the curve snapshot on the amendment date. It emits a `FTPRateAmended` event with the original rate, the new rate, the delta, and the amendment reason. The amended rate applies from the amendment date; historical periods retain the original FTP rate for P&L attribution purposes. Backdating beyond the amendment date requires Eitan (treasury & ALM engineer) approval (§7 escalation path B).
+On receipt of a `ProductAmended` event, the agent calculates a revised FTP rate using the curve snapshot on the amendment date. It emits a `FTPRateAmended` event with the original rate, the new rate, the delta, and the amendment reason. The amended rate applies from the amendment date; historical periods retain the original FTP rate for P&L attribution purposes. Backdating beyond the amendment date requires Eitan (Treasurer) approval (§7 escalation path B).
 
 **Step 7 — Internal P&L allocation update (agent)**
 
@@ -157,7 +157,7 @@ After FTP attachment, the agent triggers the internal P&L allocation engine to u
 
 **Step 8 — Reconciliation check (agent)**
 
-At 17:00 SAST each business day, the FTP engine runs an end-of-day reconciliation: every trade in the position register must have exactly one active `FTPRateAttached` event. Trades missing an FTP rate generate a `FTPAttachmentGap` exception. The exception list is included in the daily ALCO operations report and escalated to Eitan (treasury & ALM engineer) if not resolved within 2 hours of detection.
+At 17:00 SAST each business day, the FTP engine runs an end-of-day reconciliation: every trade in the position register must have exactly one active `FTPRateAttached` event. Trades missing an FTP rate generate a `FTPAttachmentGap` exception. The exception list is included in the daily ALCO operations report and escalated to Eitan (Treasurer) if not resolved within 2 hours of detection.
 
 ---
 
@@ -165,7 +165,7 @@ At 17:00 SAST each business day, the FTP engine runs an end-of-day reconciliatio
 
 | Role | Responsibility |
 |---|---|
-| Eitan (treasury & ALM engineer) | Procedure owner; FTP curve calibration; exception escalation resolution; amendment approval |
+| Eitan (Treasurer) | Procedure owner; FTP curve calibration; exception escalation resolution; amendment approval |
 | Anya (platform & data engineer) | FTP engine substrate build and maintenance; curve data pipeline; event schema ownership |
 | Ravi (ALM quant engineer) | FTP curve model validation; liquidity-premium calibration model; ALCO reporting support |
 | Camille (CFO, governance) | FTP Methodology Policy approval; business-line P&L attribution governance |
@@ -178,10 +178,10 @@ At 17:00 SAST each business day, the FTP engine runs an end-of-day reconciliatio
 
 | Condition | Action | Timeframe |
 |---|---|---|
-| **Path A — FTPClassificationGap:** product type not in classification tree | Agent raises exception; Eitan (treasury & ALM engineer) manually classifies and configures curve mapping; Atlas (platform engineer, engineering) updates classification tree in next sprint | Within 30 minutes of event receipt; trade held in a suspense bucket until resolved |
-| **Path B — Backdating request:** FTP amendment requested for a date before the amendment date | Eitan (treasury & ALM engineer) approves; Camille (CFO, governance) notified if the delta exceeds ZAR 100,000 in P&L attribution impact | Approval within 1 business day; CFO notification same day |
-| **Path C — FTPAttachmentGap not resolved by 19:00 SAST** | Eitan (treasury & ALM engineer) escalates to Camille (CFO, governance); gap included in monthly ALCO pack | Next business day ALCO report |
-| **Path D — Curve snapshot unavailable** | Agent uses prior-day curve with a 5 bp loading; Eitan (treasury & ALM engineer) notified immediately; curve refresh attempted within 1 hour | Immediate notification; resolution before 09:00 SAST |
+| **Path A — FTPClassificationGap:** product type not in classification tree | Agent raises exception; Eitan (Treasurer) manually classifies and configures curve mapping; Atlas (platform engineer, engineering) updates classification tree in next sprint | Within 30 minutes of event receipt; trade held in a suspense bucket until resolved |
+| **Path B — Backdating request:** FTP amendment requested for a date before the amendment date | Eitan (Treasurer) approves; Camille (CFO, governance) notified if the delta exceeds ZAR 100,000 in P&L attribution impact | Approval within 1 business day; CFO notification same day |
+| **Path C — FTPAttachmentGap not resolved by 19:00 SAST** | Eitan (Treasurer) escalates to Camille (CFO, governance); gap included in monthly ALCO pack | Next business day ALCO report |
+| **Path D — Curve snapshot unavailable** | Agent uses prior-day curve with a 5 bp loading; Eitan (Treasurer) notified immediately; curve refresh attempted within 1 hour | Immediate notification; resolution before 09:00 SAST |
 
 ---
 
@@ -203,9 +203,9 @@ At 17:00 SAST each business day, the FTP engine runs an end-of-day reconciliatio
 |---|---|---|
 | FTP curve snapshot completeness — all tenor buckets populated | Daily at 07:30 SAST | Anya (platform & data engineer) |
 | FTP coverage reconciliation — every trade has exactly one active FTP rate | Daily at 17:00 SAST | FTP engine agent |
-| ALCO curve calibration review — liquidity premium and term premium | Monthly | Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer) |
+| ALCO curve calibration review — liquidity premium and term premium | Monthly | Eitan (Treasurer) · Ravi (ALM quant engineer) |
 | Independent model validation of FTP curve methodology | Annual | Rohan (market risk quant engineer) (independent of Ravi) |
-| FTP methodology policy review | Annual | Camille (CFO, governance) · Eitan (treasury & ALM engineer) |
+| FTP methodology policy review | Annual | Camille (CFO, governance) · Eitan (Treasurer) |
 | Business-line P&L attribution reconciliation to FTP register | Monthly (at period-close, per PROC-FIN-MC-01) | Bea (financial-reporting engineer) |
 
 ---

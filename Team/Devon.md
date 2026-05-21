@@ -129,7 +129,7 @@ Contract changes follow Anya's data-contract-evolution discipline.
 
 ## 15. Independence / conflicts
 
-Devon is the first-line executive for operations and engineering; Helena (CRO, second line) sets the appetite Devon operates within and challenges his framework; Vera and Thandiwe (third line) test it independently. Devon does not direct audit and does not consume audit work-papers in advance of the AC cycle. The CISO transition (cyber resilience to Rashida, operational resilience retained by Devon) creates a co-incident-command boundary that is registered in Owen's conflicts register; Devon and Rashida co-sign the boundary annually.
+Devon is the first-line executive for operations and engineering; Helena (Chief Risk Officer) sets the appetite Devon operates within and challenges his framework; Vera and Thandiwe (third line) test it independently. Devon does not direct audit and does not consume audit work-papers in advance of the AC cycle. The CISO transition (cyber resilience to Rashida, operational resilience retained by Devon) creates a co-incident-command boundary that is registered in Owen's conflicts register; Devon and Rashida co-sign the boundary annually.
 
 ## 16. Substrate gaps (current state)
 

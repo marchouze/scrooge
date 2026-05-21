@@ -3,7 +3,7 @@ policy-id: insider-trading-pa-dealing-policy
 title: Insider Trading and Personal Account Dealing Policy v1
 version: "1"
 status: IN FORCE
-owner: Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Markets readiness and regulatory engineer, engineering)
+owner: Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Head of Global Markets)
 effective-from: "2026-05-17"
 next-review: "2027-05-17"
 citations:
@@ -23,7 +23,7 @@ riskTaxonomy:
 
 > **Status:** IN FORCE (policy layer). **LICENCE-BIND** — the FMA Ch. X market-abuse prohibitions activate on commencement of trading. However, the policy is adopted now and the controls substrate is built now, so that the bank is compliant from the first day of trading.
 >
-> **Authors:** Owen (Company Secretary, governance) leads as policy custodian and PA-dealing register keeper; Zara (Chief Compliance Officer, governance) co-authors the compliance-oversight and monitoring framework; Saskia (Markets readiness and regulatory engineer, engineering) co-authors the trading-book surveillance and FMA technical implementation.
+> **Authors:** Owen (Company Secretary, governance) leads as policy custodian and PA-dealing register keeper; Zara (Chief Compliance Officer, governance) co-authors the compliance-oversight and monitoring framework; Saskia (Head of Global Markets) co-authors the trading-book surveillance and FMA technical implementation.
 >
 > **Scope note:** Every autonomous agent and human officer with access to material non-public information (MNPI) — including but not limited to the deal room, the research pipeline, the SARB regulatory engagement channel, or the bank's own proprietary trading positions — is bound by this policy.
 
@@ -37,8 +37,8 @@ riskTaxonomy:
 | Version | v1 |
 | Effective date | 2026-05-17 |
 | Approval authority | Board (via Owen as IAF Chair interim) |
-| Policy owner | Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Markets readiness and regulatory engineer, engineering) |
-| Engineering owner | Saskia (Markets readiness and regulatory engineer, engineering) |
+| Policy owner | Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Head of Global Markets) |
+| Engineering owner | Saskia (Head of Global Markets) |
 | Review cadence | Annual; triggered by FMA amendment, JSE listing requirements change, FSCA market-conduct communication, or material market-abuse event |
 | Risk appetite anchor | RAS B1 — zero appetite for market abuse in any form; RAS B5 — zero tolerance for conduct that breaches securities law |
 | LICENCE-BIND | Yes — FMA 19/2012 Ch. X market-abuse prohibitions activate on commencement of trading; criminal penalties apply from that point |
@@ -96,7 +96,7 @@ This policy applies to:
 
 - **Hoz Bank Limited** — primary scope; the bank as a licensed dealing entity.
 - **Hoz Securities Limited** — on and from FAIS-FSP authorisation; Hoz Securities' dealing activity is subject to the same policy from that date.
-- **All autonomous agents** with access to MNPI or involved in securities dealing — in particular: Saskia (Markets readiness and regulatory engineer), Atlas (Platform and tooling engineer), Mira (Compliance / RegTech engineer), Camille (Financial controller), and any agent whose functions bring them into contact with deal-room or research-pipeline information.
+- **All autonomous agents** with access to MNPI or involved in securities dealing — in particular: Saskia (Head of Global Markets), Atlas (Platform and tooling engineer), Mira (Compliance / RegTech engineer), Camille (Financial controller), and any agent whose functions bring them into contact with deal-room or research-pipeline information.
 - **All human officers** at licence-day and thereafter, including the CEO, Company Secretary, CCO, CRO, CFO, and any NED who has access to MNPI.
 
 **Coverage at go-live.** The bank's initial business is institutional bonds, equities, OTC IRD, and FX. Personal account dealing in any of these instruments by a covered person is subject to this policy.
@@ -107,7 +107,7 @@ This policy applies to:
 |---|---|---|
 | Policy custodian / PA register keeper | Owen (Company Secretary, governance) | Maintains the PA dealing register; processes pre-clearance requests; quarterly attestation; reports to IAF / Board AC |
 | Compliance oversight | Zara (Chief Compliance Officer, governance) | Oversees the policy and monitoring framework; receives FSCA communications; escalates to MLRO if insider trading suspected |
-| Market surveillance / FMA technical | Saskia (Markets readiness and regulatory engineer, engineering) | Operates and tunes the trading-book surveillance system; emits `MarketAbuseSurveillanceHit` events; implements FMA-aligned monitoring |
+| Market surveillance / FMA technical | Saskia (Head of Global Markets) | Operates and tunes the trading-book surveillance system; emits `MarketAbuseSurveillanceHit` events; implements FMA-aligned monitoring |
 | Independent assurance | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, Chief Audit Executive, governance) | Annual effectiveness review; testing of pre-clearance controls, blackout-period enforcement, and PA dealing register completeness |
 | Engineering support | Atlas (Platform and tooling engineer, engineering) + Mira (Compliance / RegTech engineer, engineering) | Substrate tooling for pre-clearance workflow, PA register, and blackout-period enforcement |
 
@@ -201,9 +201,9 @@ The personal account (PA) dealing controls apply to all **covered persons**: eve
 
 - Owen (Company Secretary, governance)
 - Zara (Chief Compliance Officer, governance)
-- Saskia (Markets readiness and regulatory engineer, engineering)
+- Saskia (Head of Global Markets)
 - Marc (CEO) — as the CEO of a dealing institution; Marc's personal dealings are subject to the same pre-clearance regime
-- Camille (Financial controller, engineering) — access to material financial information
+- Camille (Chief Financial Officer) — access to material financial information
 - Any autonomous agent with read access to deal-room event streams
 
 **Exclusions (limited):**
@@ -262,7 +262,7 @@ For **listed issuers** — where the bank or a covered person makes a dealing in
 
 ### 4.1 Ongoing trading-book surveillance
 
-Saskia (Markets readiness and regulatory engineer, engineering) operates and tunes the **market abuse surveillance system** across the bank's trading book and client-order flow:
+Saskia (Head of Global Markets) operates and tunes the **market abuse surveillance system** across the bank's trading book and client-order flow:
 
 **Surveillance scenarios (in force at go-live):**
 
@@ -348,7 +348,7 @@ Covered person → Owen (CoSec) or Zara (CCO)
 
 ### 6.3 Emergency escalation
 
-Where a surveillance hit indicates an imminent or ongoing market-abuse event (e.g. a suspected in-progress insider trade), Saskia (Markets readiness and regulatory engineer) may immediately:
+Where a surveillance hit indicates an imminent or ongoing market-abuse event (e.g. a suspected in-progress insider trade), Saskia (Head of Global Markets) may immediately:
 - Suspend the relevant agent identity's market access (via the permission-policy substrate)
 - Notify Zara (CCO) and Owen (Company Secretary) in the same event
 - Emit an `EmergencyMarketAccessSuspended` event
@@ -383,4 +383,4 @@ Emergency suspension does not require prior investigation. It is a protective me
 
 ---
 
-*Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Markets readiness and regulatory engineer, engineering)*
+*Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Head of Global Markets)*

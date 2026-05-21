@@ -355,7 +355,7 @@ The procedure emits and consumes the following typed events.
 |---|---|---|
 | Daily completeness check: `FrtbSaCapitalComputed { purpose: regulatory }` event present for every business day | Daily | Rohan (Market risk quantitative engineer, engineering) — first line; Vera (internal audit engineer) — third line via `recon:frtb-sa-daily-completeness` (PLANNED) |
 | Day-on-day delta attribution review | Daily | Rohan |
-| RRAO scope register completeness (every new product template assessed before first trade) | Per new product (NPA gate) | Rohan + Saskia (Markets engineer) at NPA gate |
+| RRAO scope register completeness (every new product template assessed before first trade) | Per new product (NPA gate) | Rohan + Saskia (Head of Global Markets) at NPA gate |
 | CVA approach assignment register (every netting set has an assignment) | On counterparty enable + quarterly | Helena |
 | Independent validation of SA engine | Monthly + ad-hoc on material methodology change | Nadia (Independent-validation engineer, engineering) |
 | Methodology change approval | Per change | Helena (CRO) approves methodology elections; Board (CEO interim) approves material elections per Market Risk Policy v1 §4 |

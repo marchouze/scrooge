@@ -11,7 +11,7 @@ reconciliation-cadence: per-counterparty (onboarding close); annual re-attestati
 # Procedure — Counterparty Onboarding (Markets)
 
 **Procedure ID:** PROC-MK-CO-01
-**Owner:** Saskia (Chief Investment Officer — markets, governance) · Imani (Legal-as-code engineer, legal) · Zara (Chief Compliance Officer, governance) · Eitan (Treasury/ALM engineer, engineering)
+**Owner:** Saskia (Head of Global Markets) · Imani (Legal-as-code engineer, legal) · Zara (Chief Compliance Officer, governance) · Eitan (Treasurer)
 **Co-actors:** Helena (CRO, governance — credit-limit approval) · Ravi (market risk quant, engineering — exposure calculation) · Mira (compliance engineer, engineering — KYC/sanctions/CDD) · Tomas (payments and settlement engineer, engineering — settlement instructions) · Anya (data platform engineer, engineering — counterparty data) · Rohan (market risk quant, engineering — LEX headroom)
 **Approval:** EXCO (standard counterparties); CRO + CCO jointly (enhanced-risk counterparties — PEP-linked, high-risk jurisdiction, or above exposure threshold)
 **Cadence:** Event-triggered (per new counterparty proposal); annual re-attestation run on every `CounterpartyEnabled` entity
@@ -174,7 +174,7 @@ No trade may be executed with a counterparty before `CounterpartyEnabled` exists
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Saskia · Imani · Zara · Eitan (via Scrooge) | Initial STUB. Covers seven-gate onboarding sequence for institutional OTC / repo / secondary-market counterparties. |
-| v0.2 | 2026-05-15 | Saskia (Chief Investment Officer — markets, governance) · Imani (Legal-as-code engineer, legal) · Zara (Chief Compliance Officer, governance) · Eitan (Treasury/ALM engineer, engineering) | Promoted to POPULATED; owner titles updated; version bumped. |
+| v0.2 | 2026-05-15 | Saskia (Head of Global Markets) · Imani (Legal-as-code engineer, legal) · Zara (Chief Compliance Officer, governance) · Eitan (Treasurer) | Promoted to POPULATED; owner titles updated; version bumped. |
 
 ## 14. Audit / assurance
 

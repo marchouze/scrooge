@@ -197,7 +197,7 @@ The following training is mandatory:
 | Market abuse awareness | Annual | Trading desk heads, relationship management | Same record type |
 | New product conduct training | Before first trade in new product | Relevant desk heads | `ConductNpaTrainingCompleted { productType, date }` |
 
-Sade (AgentOps, engineering) administers training records and produces completion MI for Zara's quarterly ExCo report. Incomplete training within 30 days of the due date is a conduct finding; Zara escalates to the relevant desk head and to Helena (as CRO, governance) for risk-consequence assessment.
+Sade (AgentOps, engineering) administers training records and produces completion MI for Zara's quarterly ExCo report. Incomplete training within 30 days of the due date is a conduct finding; Zara escalates to the relevant desk head and to Helena (Chief Risk Officer) for risk-consequence assessment.
 
 ---
 

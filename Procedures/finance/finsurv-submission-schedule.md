@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-FIN-FXFS-01
 title: SARB FinSurv FX trade reporting — submission schedule and procedure
-author: Mira (Compliance / RegTech Engineer) · Saskia (Chief Markets Officer, governance)
+author: Mira (Compliance / RegTech Engineer) · Saskia (Head of Global Markets)
 date: 2026-05-16
-owner: Mira (Compliance / RegTech Engineer) · Saskia (Chief Markets Officer, governance)
+owner: Mira (Compliance / RegTech Engineer) · Saskia (Head of Global Markets)
 status: POPULATED
 version: "0.2"
 last-updated: "2026-05-20"
@@ -18,7 +18,7 @@ citations:
 # Procedure — SARB FinSurv FX trade reporting — submission schedule and procedure
 
 **Procedure ID:** PROC-FIN-FXFS-01
-**Owner:** Mira (Compliance / RegTech Engineer) · Saskia (Chief Markets Officer, governance)
+**Owner:** Mira (Compliance / RegTech Engineer) · Saskia (Head of Global Markets)
 **Approval:** CCO (Zara) — Regulatory Reporting Policy (planned); SARB FinSurv mandated
 **Cadence:** T+0 same-day for FX spot trades per FinSurv circular; automated at commencement of trading
 **Version:** v0.1 — 2026-05-16
@@ -93,7 +93,7 @@ Regulation (Currency and Exchanges Act; SARB FinSurv circulars — FX trade repo
 | Role | Responsibility |
 |---|---|
 | Mira (Compliance / RegTech Engineer) | FinSurv pipeline ownership; finsurvCategory validation; submission; failure handling; daily reconciliation |
-| Saskia (Chief Markets Officer, governance) | Ensures finsurvCategory is set correctly on all FX trades at execution time |
+| Saskia (Head of Global Markets) | Ensures finsurvCategory is set correctly on all FX trades at execution time |
 | Zara (Chief Compliance Officer, governance) | CCO oversight; late-submission breach notification assessment; weekly report review |
 | Vera (internal audit engineer, governance) | Quarterly assertion that every `FxTradeExecuted` has a downstream `TradeReportSubmitted`; no submission gaps |
 

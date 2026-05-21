@@ -3,14 +3,14 @@ policy-id: three-lines-of-defence-policy
 title: Three Lines of Defence Policy
 version: 1.0.0
 status: ACTIVE
-owner: Owen Atlas (Company Secretary) + Helena (Chief Risk Officer) + Vera (Internal Audit Engineer)
+owner: Owen (Company Secretary) + Helena (Chief Risk Officer) + Vera (Internal Audit Engineer)
 effective-from: 2026-05-17
 next-review: "2026-11-17"
 citations:
   - "BCBS Corporate Governance Principles for Banks (2015) — Principles 6–8"
   - "Banks Act 94 of 1990 s.60 (risk management)"
   - "PA Guidance Note 2/2021 — Internal controls"
-author: Owen Atlas (Company Secretary, governance)
+author: Owen (Company Secretary, governance)
 date: 2026-05-17
 summary: >
   Defines the bank's Three Lines of Defence model, establishing first-line business
@@ -24,7 +24,7 @@ riskTaxonomy: RT-ST.GV
 
 > **Standing authority:** `D-REGULATORY-READINESS-GATE-PLAN` (CEO-approved 2026-05-10). This policy closes obligation [`ORG-GV-18`](../Regulations/_obligations-register.md) — establishment of a documented three-lines-of-defence governance model — as required by **BCBS Corporate Governance Principles for Banks (2015) Principles 6–8** and **Banks Act 94 of 1990 s.60** and **PA Guidance Note 2/2021**.
 >
-> **Author:** Owen Atlas (Company Secretary, governance). Co-owners: Helena (Chief Risk Officer, governance); Vera (Internal Audit Engineer, engineering — reports functionally to Thandiwe, Chief Audit Executive, governance).
+> **Author:** Owen (Company Secretary, governance). Co-owners: Helena (Chief Risk Officer, governance); Vera (Internal Audit Engineer, engineering — reports functionally to Thandiwe, Chief Audit Executive, governance).
 >
 > **Obligation closed:** [`ORG-GV-18`](../Regulations/_obligations-register.md) — Three Lines of Defence model documentation.
 >
@@ -100,9 +100,9 @@ The default actor in every first-line procedure step is an **agent operating wit
 | Tomas (Payments / settlement engineer) | Engineering | Settlement risk, payment-execution risk, correspondent-bank counterparty risk |
 | Mira (Compliance / RegTech engineer) | Engineering | Regulatory-change risk (first-line input); CDD execution risk |
 | Niko (Client lifecycle agent) | Engineering (activates at licence-day) | Onboarding risk, KYC/CDD execution, client-data integrity risk |
-| Devon (Core banking engineer) | Engineering | Ledger integrity risk, posting correctness, GL reconciliation |
+| Devon (Chief Operating Officer) | Engineering | Ledger integrity risk, posting correctness, GL reconciliation |
 | Atlas (Platform / infra engineer) | Engineering | Infrastructure risk, event-store integrity, availability risk |
-| Camille (Capital / treasury engineer) | Engineering | Funding risk, collateral optimisation risk, treasury-execution risk |
+| Camille (Chief Financial Officer) | Engineering | Funding risk, collateral optimisation risk, treasury-execution risk |
 | Quinn (Quant / risk engine engineer) | Engineering | Model implementation risk, quantitative risk measure correctness |
 | Imani (Legal-as-code engineer) | Engineering | Legal documentation risk, contract-execution risk |
 
@@ -289,7 +289,7 @@ The following escalation boundaries require human-in-the-loop confirmation:
 | Boundary | Event | Human principal required |
 |---|---|---|
 | Limit breach above threshold tier 2 | `RiskLimitBreachFinding` (severity: HIGH) | CEO (build phase); Board Risk Committee (licence-day) |
-| STR/SAR filing | `SARReviewRequired` | MLRO / Zara (Compliance Officer) |
+| STR/SAR filing | `SARReviewRequired` | MLRO / Zara (Chief Compliance Officer) |
 | Material audit finding (RED) | `ThirdLineFindingEmitted` (severity: RED) | CEO + Interim Audit Forum chair |
 | New product approval | `NPAGateRequired` | CEO (build phase pre-go-live; NPA gate under Devon) |
 | Policy waiver | `PolicyWaiverRequested` | CEO |
@@ -483,6 +483,6 @@ Where a situation arises that is not covered by this policy and cannot wait for 
 
 ---
 
-*Authored by Owen Atlas (Company Secretary, governance). Effective: 2026-05-17. Version 1.0.0.*
+*Authored by Owen (Company Secretary, governance). Effective: 2026-05-17. Version 1.0.0.*
 *Next scheduled review: at Owen's next quarterly agent-cadence run.*
 *Obligation closed: [`ORG-GV-18`](../Regulations/_obligations-register.md).*

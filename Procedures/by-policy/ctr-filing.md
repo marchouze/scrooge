@@ -39,7 +39,7 @@ Any of the following initiates the CTR filing procedure:
 - `TransactionInitiated` event where the transaction involves cash (currency code `CASH`) in a single amount ≥ R49,999.
 - `TransactionInitiated` event representing an electronic fund transfer meeting the FIC s.28B criteria in a single amount ≥ R24,999.
 - `StructuringCheckCompleted { outcome: threshold_crossed }` — emitted by the 24-hour aggregation engine when multiple sub-threshold transactions by the same `party_id` collectively breach the R49,999 cash threshold within a rolling 24-hour window.
-- Manual referral from Tomas (Head of Payments) or Saskia (Chief Markets Officer) where a business-unit team member identifies a potential qualifying transaction outside the automated pipeline; the referral is recorded as a `ComplianceReferralReceived` event before this procedure begins.
+- Manual referral from Tomas (Head of Payments) or Saskia (Head of Global Markets) where a business-unit team member identifies a potential qualifying transaction outside the automated pipeline; the referral is recorded as a `ComplianceReferralReceived` event before this procedure begins.
 
 ## 5. Steps
 

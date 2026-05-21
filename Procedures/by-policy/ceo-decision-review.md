@@ -3,7 +3,7 @@ status: POPULATED
 ---
 # Procedure — CEO decision review
 
-**Owner:** Owen (CoSec, procedural-discipline custodian) · Scrooge (Chief of Staff, orchestration)
+**Owner:** Owen (Company Secretary) · Scrooge (Chief of Staff, orchestration)
 **Source policy:** Governance Framework (`Owner Inbox/2026-05-06_governance-framework.md`) — CEO reserved-matter authority and the two-track approval convention (CEO / Board).
 **Source regulation(s):** Companies Act 71 of 2008 (sections on directors' authority and the executive-board interface); BCBS Corporate Governance Principles for Banks; King IV.
 **System capability:** `@platform/dashboard` (`prototype/dashboard/`) — the live bank operations dashboard.

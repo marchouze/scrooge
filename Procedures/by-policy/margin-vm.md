@@ -3,7 +3,7 @@ procedureId: PROC-MK-ODP-03
 title: Variation Margin — daily calculation and exchange (per-counterparty)
 author: Kai (Trading systems engineer, engineering) · Tomas (Operations engineer, engineering)
 date: 2026-05-16
-owner: Ravi (ALM quant engineer, engineering) · Eitan (Treasury and ALM engineer, governance) · Imani (Legal-as-code engineer, engineering) · Bea (Accounting and financial reporting engineer, engineering)
+owner: Ravi (ALM quant engineer, engineering) · Eitan (Treasurer) · Imani (Legal-as-code engineer, engineering) · Bea (Accounting and financial reporting engineer, engineering)
 status: POPULATED
 policy-cited: Policies/margin-policy-v1.md · Policies/collateral-management-policy-v1.md
 system-capability: prototype/platform/treasury/margin-engine (DRAFTING)
@@ -12,7 +12,7 @@ system-capability: prototype/platform/treasury/margin-engine (DRAFTING)
 # Procedure — Variation Margin (Daily, Per-Counterparty)
 
 **Procedure ID:** PROC-MK-ODP-03
-**Owner:** Ravi (ALM quant engineer, engineering) · Eitan (Treasury and ALM engineer, governance) · Imani (Legal-as-code engineer, engineering) · Bea (Accounting and financial reporting engineer, engineering)
+**Owner:** Ravi (ALM quant engineer, engineering) · Eitan (Treasurer) · Imani (Legal-as-code engineer, engineering) · Bea (Accounting and financial reporting engineer, engineering)
 **Approval:** ALCO (Margin Policy is ALCO-approved under the Risk Management Framework)
 **Cadence:** Daily (per-counterparty, ZAR market calendar)
 **Version:** v0.2 — 2026-05-16
@@ -35,7 +35,7 @@ Regulation (Joint Standard JS 2/2020 §4 + JN 2/2024)
       → @treasury/collateral-inventory (PLANNED)
 ```
 
-The Margin Policy mandates daily VM calculation and exchange for every non-centrally cleared OTC derivative counterparty. Zero threshold (MTA of ZAR 0) applies for bank-to-bank counterparties, consistent with ISDA standard CSA terms. Eligible collateral is defined in the Collateral Management Policy per JS 2/2020 §6: ZAR cash, gold, and South African Government Bonds (SAGBs). Eitan (Treasury and ALM engineer, governance) holds ALCO accountability for margin governance.
+The Margin Policy mandates daily VM calculation and exchange for every non-centrally cleared OTC derivative counterparty. Zero threshold (MTA of ZAR 0) applies for bank-to-bank counterparties, consistent with ISDA standard CSA terms. Eligible collateral is defined in the Collateral Management Policy per JS 2/2020 §6: ZAR cash, gold, and South African Government Bonds (SAGBs). Eitan (Treasurer) holds ALCO accountability for margin governance.
 
 ---
 
@@ -81,7 +81,7 @@ The purpose of this procedure is to:
 | 3 | Emit `VariationMarginCalculated { nettingSetId, counterpartyLei, vm, direction: call\|return, mtmCurrent, mtmPrior, csa, asOf }` | `system` | `@platform/event-store` | Canonical calculation record. Retained for Vera reconciliation and PA Umoja reporting. |
 | 4 | Issue VM call or return notice to counterparty via ISDA-aligned margin call communication (Swift MT 527 or equivalent agreed format) | `agent` (Tomas) | `@settlement/margin-comms` (PLANNED) | Deadline: by 10:00 SAST on the next business day (T+1), per standard ISDA CSA settlement cycle. Counterparty has until 17:00 T+1 to respond and settle. |
 | 5 | Emit `VariationMarginCallSent { nettingSetId, counterpartyLei, amount, currency, deadline }` | `system` | `@platform/event-store` | Audit trail of call issuance. |
-| 6 | Receive counterparty confirmation or dispute; if dispute, emit `VariationMarginDisputeRaised { nettingSetId, counterpartyLei, bankMTM, counterpartyMTM, differenceAbs }` and route to `otc-dispute-resolution.md` | `agent` (Tomas) | `@settlement/margin-comms` (PLANNED) | Dispute window: 1 business day. If not resolved within 1 BD, escalate to Eitan (Treasury and ALM engineer, governance) + Rohan (Market risk quant engineer, engineering). |
+| 6 | Receive counterparty confirmation or dispute; if dispute, emit `VariationMarginDisputeRaised { nettingSetId, counterpartyLei, bankMTM, counterpartyMTM, differenceAbs }` and route to `otc-dispute-resolution.md` | `agent` (Tomas) | `@settlement/margin-comms` (PLANNED) | Dispute window: 1 business day. If not resolved within 1 BD, escalate to Eitan (Treasurer) + Rohan (Market risk quant engineer, engineering). |
 | 7 | Instruct correspondent bank to effect collateral movement (ZAR cash transfer or SAGB delivery vs. payment) | `agent` (Tomas) | `@settlement/correspondent-bank-channel` (PLANNED) | Collateral movement is settled via correspondent bank; Tomas triggers SWIFT MT 202 or equivalent. Settlement confirmation received same day (T+1). |
 | 8 | Receive settlement confirmation from correspondent bank; emit `VariationMarginSettled { nettingSetId, counterpartyLei, amount, currency, collateralType, settledAt }` | `system` | `@platform/event-store` | Canonical settlement proof. Triggers Bea's sub-ledger posting. |
 | 9 | Bea posts VM movement to the collateral sub-ledger as a collateral deposit (if posting) or collateral return (if receiving); post reversing entry when collateral is returned on trade termination | `agent` (Bea) | `@accounting/sub-ledger` | VM posted collateral is not P&L; classified as "collateral posted" or "collateral received" on the balance sheet. Hedge-accounting boundary: VM cash does not qualify as hedge effectiveness evidence. |
@@ -110,7 +110,7 @@ The purpose of this procedure is to:
 
 ### Failure mode
 
-If the margin engine fails to complete the VM calculation by 08:00 on T+1, Ravi (ALM quant engineer, engineering) is alerted and runs the calculation manually using the previous day's MTM positions as a fallback. The fallback is recorded via a `VariationMarginCalculatedManual { nettingSetId, fallbackBasis }` event. Eitan (Treasury and ALM engineer, governance) approves the fallback calculation before any call is issued.
+If the margin engine fails to complete the VM calculation by 08:00 on T+1, Ravi (ALM quant engineer, engineering) is alerted and runs the calculation manually using the previous day's MTM positions as a fallback. The fallback is recorded via a `VariationMarginCalculatedManual { nettingSetId, fallbackBasis }` event. Eitan (Treasurer) approves the fallback calculation before any call is issued.
 
 ---
 
@@ -133,7 +133,7 @@ If the margin engine fails to complete the VM calculation by 08:00 on T+1, Ravi 
 The following steps require human action or professional judgement in the current substrate:
 
 1. **Counterparty communication for disputes (Step 6):** When a counterparty disputes the VM call, Tomas (Operations engineer, engineering) must communicate directly with the counterparty's operations team. Automated dispute-resolution messaging is a PLANNED substrate gap; current implementation routes through Tomas.
-2. **Fallback calculation approval (failure mode):** If the margin engine fails, Eitan (Treasury and ALM engineer, governance) must manually review and approve the fallback VM calculation before any call is issued. This is a governance control step that cannot be automated.
+2. **Fallback calculation approval (failure mode):** If the margin engine fails, Eitan (Treasurer) must manually review and approve the fallback VM calculation before any call is issued. This is a governance control step that cannot be automated.
 3. **Correspondent bank instruction for non-standard collateral (Step 7):** SAGB delivery-vs.-payment and gold movements require Tomas to co-ordinate with the correspondent bank's collateral-services desk. Automated SAGB-DvP instruction is a PLANNED substrate gap.
 4. **PA Umoja portal submission (Step 11):** Until the `@regulatory/umoja-client` is live, Tomas and Anya prepare the Umoja report manually from the `VariationMarginCalculated` event log and upload via the PA portal web interface.
 

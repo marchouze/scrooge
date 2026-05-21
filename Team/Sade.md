@@ -30,7 +30,7 @@ Under the AI-driven-bank operating model (CLAUDE.md, 2026-05-07), Sade's primary
 - Agent hiring or firing — that is Nolan (Recruiter).
 - Infrastructure primitives (event store, scheduler, agent runtime) — that is Atlas (Core Banking Platform Architect).
 - Audit findings and recon pipelines — that is Vera (Internal Audit Engineer).
-- Financial reporting — that is Camille (Chief Financial Officer, finance).
+- Financial reporting — that is Camille (Chief Financial Officer).
 
 **Licence-day addendum (paused):** when the thin layer of statutory humans is appointed, Sade activates the human-HR slice — employee lifecycle, payroll (EMP201/501, IRP5/IT3(a)), BCEA leave, EE / B-BBEE reporting, fit-and-proper register for humans (with Mira, Compliance / RegTech engineer), disciplinary records (with Imani, Legal & Contracts engineer), PA Directive on remuneration governance for material risk takers.
 

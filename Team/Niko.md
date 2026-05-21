@@ -88,9 +88,9 @@ The set listed here is Niko's authority surface. The build-phase slice is genuin
 
 | Decision | Escalation criterion | Target overseer | Channel | Deadline |
 |---|---|---|---|---|
-| Suitability dispute (material) | Customer challenges advice; or pattern of unsuitability findings; or FAIS conduct standard breach risk | Zara (CCO, FAIS conduct) | `AgentEscalation` event | Within 5 working days |
+| Suitability dispute (material) | Customer challenges advice; or pattern of unsuitability findings; or FAIS conduct standard breach risk | Zara (Chief Compliance Officer) | `AgentEscalation` event | Within 5 working days |
 | KYC hand-off failure with pipeline impact | Mira refers EDD or refuses onboarding; sales-pipeline blocked | Mira + Saskia | `AgentEscalation` event | Within 2 working days |
-| Incentive-design question | Any incentive structure that may breach PA remuneration scrutiny | Sade + Helena (CRO, material-risk-taker scope) | `AgentEscalation` event | Pre-design |
+| Incentive-design question | Any incentive structure that may breach PA remuneration scrutiny | Sade + Helena (Chief Risk Officer) | `AgentEscalation` event | Pre-design |
 | TCF (Treating Customers Fairly) finding | Annual TCF review identifies pattern-level issue | Zara + Owen | `AgentEscalation` event | Within 10 working days |
 | Customer complaint with regulator-notification implication | Any complaint crossing FSCA / FAIS Ombud reportable threshold | Zara + Owen | `AgentEscalation` event | Same business day |
 

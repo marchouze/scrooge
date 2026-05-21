@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-SFP-01
 title: Soft franchise pipeline management — institutional relationship onboarding stage
-author: Saskia (Chief Markets Officer, governance) · Niko (Client Lifecycle Manager) · Imani (Legal / Contracts Engineer)
+author: Saskia (Head of Global Markets) · Niko (Client Lifecycle Manager) · Imani (Legal / Contracts Engineer)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Niko (Client Lifecycle Manager) · Imani (Legal / Contracts Engineer)
+owner: Saskia (Head of Global Markets) · Niko (Client Lifecycle Manager) · Imani (Legal / Contracts Engineer)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -18,7 +18,7 @@ citations:
 # Procedure — Soft franchise pipeline management — institutional relationship onboarding stage
 
 **Procedure ID:** PROC-MK-SFP-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Niko (Client Lifecycle Manager) · Imani (Legal / Contracts Engineer)
+**Owner:** Saskia (Head of Global Markets) · Niko (Client Lifecycle Manager) · Imani (Legal / Contracts Engineer)
 **Approval:** CEO (D-MARKETS-SCHEMA-FOUNDATION); BRC for policy formalisation at commencement of trading
 **Cadence:** Continuous (pipeline entries per engagement); quarterly pipeline review by Saskia
 **Version:** v0.1 — 2026-05-16
@@ -70,7 +70,7 @@ Regulation (FAIS GCC §4 — counterparty conduct; FICA s.21 — business-relati
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | **Pipeline entry:** Saskia (Chief Markets Officer, governance) identifies a target institutional client; creates a pipeline entry via `FranchisePipelineEntryCreated`; assigns proposed product scope and initial engagement owner | `human` (Saskia — Chief Markets Officer, governance) | `@platform/crm/pipeline-tracker` (PLANNED) | Entry fields: institution name, LEI (if known), proposed products (FX spot, OTC IRS, JSE bonds), strategic rationale, estimated annual volume. |
+| 1 | **Pipeline entry:** Saskia (Head of Global Markets) identifies a target institutional client; creates a pipeline entry via `FranchisePipelineEntryCreated`; assigns proposed product scope and initial engagement owner | `human` (Saskia — Chief Markets Officer, governance) | `@platform/crm/pipeline-tracker` (PLANNED) | Entry fields: institution name, LEI (if known), proposed products (FX spot, OTC IRS, JSE bonds), strategic rationale, estimated annual volume. |
 | 2 | **Initial NDA/NIP execution:** Saskia or Niko sends a Non-Disclosure Agreement (NDA) or Non-Indication Protocol (NIP) to the institution; Imani reviews the NDA template for legal adequacy; NDA execution triggers FICA business-relationship KYC | `human` (Saskia / Niko) + `agent` (Imani — Legal / Contracts Engineer) | `@platform/legal/isda-registry` (PLANNED) | NDA template is maintained by Imani. Any institution-specific changes require Imani's approval. NDA execution event: `NdaExecuted { entryId, institutionName, ndaRef, executedAt }`. |
 | 3 | **FICA KYC trigger notification:** On `NdaExecuted`, Zara (MLRO, governance) is notified that a new business relationship is being established; Zara initiates KYC pre-screening (simplified at this stage, full KYC at PROC-MK-CIL-01 step 2) | `agent` (Zara — MLRO, governance, system-assisted) | `@platform/compliance/kyc-engine` (PLANNED) | Pre-screening at this stage: basic identity verification + top-level sanctions check. Full EDD deferred to formal inclusion. |
 | 4 | **Counterparty pre-qualification (Imani):** Imani assesses: (a) legal capacity to enter FX spot transactions (entity type, constitutional documents); (b) jurisdiction of incorporation and netting enforceability; (c) any known legal disputes or regulatory orders that would preclude a trading relationship | `agent` (Imani — Legal / Contracts Engineer) | `@platform/legal/isda-registry` (PLANNED) | Pre-qualification note stored in doc store. Pre-qualification event: `CounterpartyPreQualified { entryId, legalCapacityAssessed: true, nettingEnforceability, isdaFeasibility, completedAt }`. Blockers flagged here save significant relationship investment. |
@@ -83,7 +83,7 @@ Regulation (FAIS GCC §4 — counterparty conduct; FICA s.21 — business-relati
 
 | Role | Responsibility |
 |---|---|
-| Saskia (Chief Markets Officer, governance) | Pipeline entry creation; graduation decision; exit decision; quarterly review |
+| Saskia (Head of Global Markets) | Pipeline entry creation; graduation decision; exit decision; quarterly review |
 | Niko (Client Lifecycle Manager) | Stage tracking; NDA/NIP dispatch; stale-entry escalation to Saskia |
 | Imani (Legal / Contracts Engineer) | NDA template maintenance; counterparty pre-qualification (legal capacity, netting enforceability) |
 | Zara (MLRO, governance) | FICA KYC trigger management; pre-screening at NDA stage |

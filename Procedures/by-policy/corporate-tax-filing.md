@@ -148,7 +148,7 @@ In the build phase, the procedure is rehearsed against synthetic financial data.
 | Failure mode | Detection | Escalation |
 |---|---|---|
 | CIT engine fails to produce draft | `CITDraftFailed` event; Yael notified | Yael → Camille; SARS deadline extension if needed |
-| Provisional tax under-estimated (> 20% shortfall) | Engine safe-harbour warning; post-assessment SARS interest notice | Yael + Camille; cash-flow impact flagged to Eitan (Treasury & ALM engineer) |
+| Provisional tax under-estimated (> 20% shortfall) | Engine safe-harbour warning; post-assessment SARS interest notice | Yael + Camille; cash-flow impact flagged to Eitan (Treasurer) |
 | ITR14 not filed by deadline | `CITReturnFiled` not emitted by due date | Vera finding → Yael + Camille + Thandiwe; SARS penalty exposure |
 | SARS e-Filing portal unavailable on deadline | `CITFilingFailed` event; 3-retry limit | Yael manual upload via SARS branch / telephonic backup; SARS deadline relief engaged |
 | Material tax error discovered post-filing | Yael review or SARS query | `CITVoluntaryDisclosureTriggered`; Camille + Thandiwe notified; VDP engaged within 21 days |

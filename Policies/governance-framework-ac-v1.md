@@ -99,7 +99,7 @@ This framework applies to:
 | **Board Risk Committee (BRC)** | Joint oversight of risk in relation to financial reporting and internal controls. The BRC owns the broader risk appetite framework; the AC is the primary body for financial-reporting-related risks. |
 | **External Auditor** | The AC nominates, recommends fees, and monitors independence of the external auditor. The external auditor reports to the AC on matters of accounting, internal control, and audit scope. |
 | **Thandiwe (CAE, governance)** | Thandiwe has a **functional reporting line to the AC** and an administrative line through the CEO. This is a non-negotiable structural independence requirement (Principle 6 — autonomous by default; third-line independence). |
-| **Camille (Financial controller, engineering)** and **Bea (Regulatory finance and SARB returns engineer, engineering)** | Financial reporting outputs from Camille and Bea are subject to AC oversight. Camille and Bea attend AC meetings by invitation to present financial reporting outputs. |
+| **Camille (Chief Financial Officer)** and **Bea (Regulatory finance and SARB returns engineer, engineering)** | Financial reporting outputs from Camille and Bea are subject to AC oversight. Camille and Bea attend AC meetings by invitation to present financial reporting outputs. |
 | **Vera (Internal audit / continuous-assurance engineer)** | Vera is the autonomous-agent implementation of the internal audit function; functionally reports to Thandiwe (CAE) and through Thandiwe to the AC. Vera's recon findings and effectiveness reviews are presented to the AC via Thandiwe. |
 | **Owen (Company Secretary, governance)** | Owen acts as Secretary to the AC; maintains AC minutes and the disclosure register; is not an AC member in the post-NED constitution (Owen's membership is an interim-phase construct). |
 
@@ -240,7 +240,7 @@ The AC maintains a **combined assurance framework** that co-ordinates three line
 
 | Line | Holder | Assurance function |
 |---|---|---|
-| First line | Camille (Financial controller, engineering) + Bea (Regulatory finance engineer, engineering) | Financial-reporting controls; GL accuracy; SARB return accuracy |
+| First line | Camille (Chief Financial Officer) + Bea (Regulatory finance engineer, engineering) | Financial-reporting controls; GL accuracy; SARB return accuracy |
 | Second line | Zara (CCO, governance) + Helena (CRO, governance) | Compliance oversight; risk framework |
 | Third line | Vera (Internal audit / continuous-assurance engineer, engineering) + Thandiwe (CAE, governance) | Independent assurance to the AC |
 
@@ -293,7 +293,7 @@ Owen (Company Secretary) co-ordinates with Zara (CCO) on any regulatory-reportin
 | Material internal control weakness | Board Chair; Helena (CRO) |
 | CAE independence threat | Board Chair; Marc (CEO) |
 | External auditor independence threat | Board Chair; IRBA (if warranted) |
-| Financial crime via AC papers | Owen → Zara (CCO / MLRO pathway per AML/CFT Policy) |
+| Financial crime via AC papers | Owen → Zara (Chief Compliance Officer) |
 
 ---
 

@@ -115,7 +115,7 @@ Camille does **not** measure risk (Helena), build the platform (Devon's domain v
 
 ## 13. Procedures owned
 
-- `Procedures/by-policy/capital-ratio-monitoring.md` — **co-owner with Eitan + Helena** (live; CFO sign-off).
+- `Procedures/by-policy/capital-ratio-monitoring.md` — **co-owner with Eitan + Helena**; status live; CFO sign-off.
 - `Procedures/by-policy/monthly-close-sign-off.md` — **owner** (planned).
 - `Procedures/by-policy/ba-return-sign-off.md` — **owner** (planned).
 - `Procedures/by-policy/afs-sign-off.md` — **owner** (planned).
@@ -133,7 +133,7 @@ Contract changes follow Anya's data-contract-evolution discipline.
 
 ## 15. Independence / conflicts
 
-Camille is the first-line executive for finance; Helena (CRO, second line) challenges the framework around capital and ECL; Vera + Thandiwe (third line) test it independently. The external auditor relationship runs through Camille operationally and through Owen / the AC chair governance-wise — Camille does not unilaterally accept or contest auditor positions; the AC channel is preserved. ALCO co-chair with Eitan creates a defined boundary: Camille governs capital and accounting outcomes; Eitan governs funding and liquidity execution; conflicts within ALCO are surfaced to Helena.
+Camille is the first-line executive for finance; Helena (Chief Risk Officer) challenges the framework around capital and ECL; Vera + Thandiwe (third line) test it independently. The external auditor relationship runs through Camille operationally and through Owen / the AC chair governance-wise — Camille does not unilaterally accept or contest auditor positions; the AC channel is preserved. ALCO co-chair with Eitan creates a defined boundary: Camille governs capital and accounting outcomes; Eitan governs funding and liquidity execution; conflicts within ALCO are surfaced to Helena.
 
 ## 16. Substrate gaps (current state)
 

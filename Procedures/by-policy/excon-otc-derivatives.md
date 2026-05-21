@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-ODP-09
 title: Exchange Control (Excon) compliance for OTC derivatives
-author: Mira (regulatory intelligence engineer) · Eitan (treasury & ALM engineer) · Tomas (operations engineer)
+author: Mira (regulatory intelligence engineer) · Eitan (Treasurer) · Tomas (operations engineer)
 date: 2026-05-16
-owner: Eitan (treasury & ALM engineer) · Mira (regulatory intelligence engineer) · Ravi (market risk quant engineer)
+owner: Eitan (Treasurer) · Mira (regulatory intelligence engineer) · Ravi (market risk quant engineer)
 status: POPULATED
 policy-cited: Excon Compliance Policy (planned, markets bundle) · Funding Strategy Policy
 system-capability: "@compliance/excon-screening · @regulatory/finsurv-client (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@compliance/excon-screening · @regulatory/finsurv-client (P
 # Procedure — Exchange Control (Excon) compliance for OTC derivatives
 
 **Procedure ID:** PROC-MK-ODP-09
-**Owner:** Eitan (treasury & ALM engineer) · Mira (regulatory intelligence engineer) · Ravi (market risk quant engineer)
+**Owner:** Eitan (Treasurer) · Mira (regulatory intelligence engineer) · Ravi (market risk quant engineer)
 **Approval:** ALCO + BRC
 **Cadence:** Per-trade (scope assessment); periodic aggregate reporting per SARB FinSurv cadence; annual Excon framework review
 **Version:** v0.2 — 2026-05-16
@@ -68,7 +68,7 @@ Regulation (Currency & Exchanges Act 9 of 1933 + Exchange Control Regulations + 
 | 1 | On `OtcTradeProposed` or `CounterpartyOnboardingInitiated`: run Excon scope screen — is the counterparty a non-resident (SARB Excon definition)? Does any leg of the trade involve a cross-border capital flow? Is the underlying asset or currency pair within the Excon Manual Chapter F.4 scope? | `agent` (Mira) | `@compliance/excon-screening` (PLANNED) | The scope screen uses the Excon scope-determination ruleset ratified by external Excon counsel (manual step §8 step 1). Non-resident counterparty + OTC IRD = prima facie in scope; resident-only trades are out of scope. |
 | 2 | Emit `ExconScopeAssessed { tradeId / counterpartyId, inScope, scopeBasis, residencyStatus, capitalFlowType, assessedBy, assessedAt }` — `inScope: true` or `false` with documented basis | `system` | `@platform/event-store` | `scopeBasis` references the specific Excon Manual chapter or counsel opinion that supports the assessment. This event is the authoritative record for the Excon scope determination. |
 | 3 | **If `inScope: false`:** no further Excon action required; emit `ExconScopeCleared { tradeId / counterpartyId, assessedAt }`; pre-trade gateway proceeds with the trade; Excon assessment is complete | `system` | `@platform/event-store` | Out-of-scope assessment must still be documented (step 2); the absence of a scope event is itself a finding. |
-| 4 | **If `inScope: true` — pre-approval check.** Eitan (treasury & ALM engineer) + Mira assess whether FinSurv pre-approval is required for the specific transaction type; consult the Excon Manual Chapter F.4 approval-requirement matrix and the external counsel opinion | `agent` (Eitan + Mira) | (manual assessment referencing the approved ruleset) | Pre-approval requirements vary by transaction type, notional size, tenor, and counterparty jurisdiction. For OTC IRD between SA bank and non-resident financial institution: Mira's working assumption (pending counsel confirmation) is that pre-approval is not required for vanilla IRS / OIS within standard market practice parameters; exotic / cross-currency structures may require pre-approval. |
+| 4 | **If `inScope: true` — pre-approval check.** Eitan (Treasurer) + Mira assess whether FinSurv pre-approval is required for the specific transaction type; consult the Excon Manual Chapter F.4 approval-requirement matrix and the external counsel opinion | `agent` (Eitan + Mira) | (manual assessment referencing the approved ruleset) | Pre-approval requirements vary by transaction type, notional size, tenor, and counterparty jurisdiction. For OTC IRD between SA bank and non-resident financial institution: Mira's working assumption (pending counsel confirmation) is that pre-approval is not required for vanilla IRS / OIS within standard market practice parameters; exotic / cross-currency structures may require pre-approval. |
 | 5 | **If pre-approval required:** Eitan submits the FinSurv pre-approval application via the SARB FinSurv online portal (or manual form); tracks the application; trade execution is blocked until approval is received | `agent` (Eitan) | `@regulatory/finsurv-client` (PLANNED) | Manual submission until `@regulatory/finsurv-client` is built. Application includes: trade economics summary, counterparty details (LEI, residency status, jurisdiction), purpose of the derivative, expected cash flows. |
 | 6 | On receipt of FinSurv pre-approval (or determination that pre-approval is not required): emit `ExconApprovalObtained { tradeId, finSurvRef, approvalType, approvedAt }` (or `ExconPreApprovalNotRequired { tradeId, basis, assessedAt }`); release the pre-trade gate | `system` | `@platform/event-store` + `@trading/pre-trade-gate` (PLANNED) | The pre-trade gate is held in `blocked_excon` state until one of these two events is in committed state. |
 | 7 | **Post-trade FinSurv report.** After `OtcTradeExecuted` for an in-scope trade: Tomas (operations engineer) compiles the FinSurv post-trade report in the required format (per SARB FinSurv Circular AD GNRO or equivalent); submit via the FinSurv reporting system within the required window | `agent` (Tomas + Mira) | `@regulatory/finsurv-client` (PLANNED) | Tomas handles operational submission; Mira reviews for regulatory accuracy. The report includes: trade economics, counterparty LEI, currency flows, settlement dates. |
@@ -138,8 +138,8 @@ Regulation (Currency & Exchanges Act 9 of 1933 + Exchange Control Regulations + 
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v0.1 | 2026-05-07 | Eitan (treasury & ALM engineer) · Mira (regulatory intelligence engineer) · Ravi (market risk quant engineer) | Initial STUB |
-| v0.2 | 2026-05-16 | Mira (regulatory intelligence engineer) · Eitan (treasury & ALM engineer) · Tomas (operations engineer) | STUB → POPULATED: full 12-section procedure; pre-trade Excon scope screen; pre-approval pathway; post-trade and aggregate FinSurv reporting; external counsel engagement as named manual step; annual framework review; full event schema. |
+| v0.1 | 2026-05-07 | Eitan (Treasurer) · Mira (regulatory intelligence engineer) · Ravi (market risk quant engineer) | Initial STUB |
+| v0.2 | 2026-05-16 | Mira (regulatory intelligence engineer) · Eitan (Treasurer) · Tomas (operations engineer) | STUB → POPULATED: full 12-section procedure; pre-trade Excon scope screen; pre-approval pathway; post-trade and aggregate FinSurv reporting; external counsel engagement as named manual step; annual framework review; full event schema. |
 
 ## 12. Audit / assurance
 

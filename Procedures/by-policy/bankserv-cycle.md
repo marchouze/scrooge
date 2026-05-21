@@ -84,7 +84,7 @@ Cut-off times and cycle windows are scheme-specific and subject to PASA rule ame
 |---|---|
 | Tomas (payments engineer) | Owns calendar engine scheme configuration; validates PASA scheme-rule updates; decides fast-track or deferral; manages scheme-unavailability fallback decisions; escalates cycle misses. |
 | Devon (COO, governance) | Receives escalation for material cycle misses or scheme outages affecting Important Business Services; approves communications to counterparties. |
-| Eitan (treasury & ALM engineer) | Notified of deferred treasury-originated flows; updates intraday liquidity position (PROC-RISK-ILF-01). |
+| Eitan (Treasurer) | Notified of deferred treasury-originated flows; updates intraday liquidity position (PROC-RISK-ILF-01). |
 | Kai (markets systems engineer) | Notified of deferred or failed trade-settlement-linked instructions; manages counterparty value-date co-ordination. |
 | Imani (legal & contracts engineer) | Custodian of the correspondent operating contract; source of scheme-processing buffer SLA values. |
 | Helena (Chief Risk Officer, governance) | Receives cycle-miss operational-risk findings; approves material RCSA updates. |

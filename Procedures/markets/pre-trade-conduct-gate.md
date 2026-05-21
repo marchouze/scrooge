@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-PCG-01
 title: Pre-trade conduct and suitability gate for FX spot trades
-author: Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
+author: Saskia (Head of Global Markets) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
+owner: Saskia (Head of Global Markets) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
 status: POPULATED
 version: "0.2"
 last-updated: "2026-05-20"
@@ -19,7 +19,7 @@ citations:
 # Procedure — Pre-trade conduct and suitability gate for FX spot trades
 
 **Procedure ID:** PROC-MK-PCG-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
+**Owner:** Saskia (Head of Global Markets) · Mira (Compliance / RegTech Engineer) · Zara (MLRO, governance)
 **Approval:** BRC (Conduct Policy — planned; FSP-licence-conditional)
 **Cadence:** Per-trade (blocking gate before every FX spot trade execution)
 **Version:** v0.2 — 2026-05-20
@@ -84,7 +84,7 @@ Regulation (FAIS Act s.16 + GCC §4 — conduct and suitability; FMCA conduct ob
 | Ravi / Kai (trading system engineer) | Trade intent submission; execution only after `ConductGatePassed` |
 | Mira (Compliance / RegTech Engineer) | Conduct gate system ownership; blocked-trade review; regulatory escalation |
 | Zara (MLRO, governance) | Sanctions screening oversight; sanctions-hit triage |
-| Saskia (Chief Markets Officer, governance) | Mandate-related block resolution |
+| Saskia (Head of Global Markets) | Mandate-related block resolution |
 | Imani (Legal / Contracts Engineer) | ISDA-related block resolution |
 | Vera (internal audit engineer, governance) | Daily assertion that every `TradeIntentReceived` has a downstream `ConductGatePassed` or `ConductGateBlocked` |
 
@@ -132,4 +132,4 @@ Regulation (FAIS Act s.16 + GCC §4 — conduct and suitability; FMCA conduct ob
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-16 | Devon (Chief Operating Officer, governance) | Initial POPULATED — 5-check blocking gate (counterparty mandate, dealer mandate, sanctions, capacity, best-execution record); ConductGatePassed/Blocked events; blocked-trade review; FAIS GCC §4 + FMCA + FICA sourcing; institutional-only posture. |
-| v0.2 | 2026-05-20 | Saskia (Derivatives trading desk, engineering) | Check 1(c) wired into the live `@platform/risk/credit-limit-engine` (`checkHeadroom`) per D-CREDIT-LIMIT-ENGINE-BUILD Phase 4. Typed `blockReason` enum on `GatewayCheckCompleted` carries one of `CounterpartyNotApproved`, `CreditLimitExhausted`, `LimitExpired`, `AnnualReviewStale`. Stale-review check enforces Credit Risk Policy §1.3 + Banks Act Reg 23 annual-review obligation. Procedure system-capability column flipped from PLANNED to LIVE for the engine. |
+| v0.2 | 2026-05-20 | Saskia (Head of Global Markets) | Check 1(c) wired into the live `@platform/risk/credit-limit-engine` (`checkHeadroom`) per D-CREDIT-LIMIT-ENGINE-BUILD Phase 4. Typed `blockReason` enum on `GatewayCheckCompleted` carries one of `CounterpartyNotApproved`, `CreditLimitExhausted`, `LimitExpired`, `AnnualReviewStale`. Stale-review check enforces Credit Risk Policy §1.3 + Banks Act Reg 23 annual-review obligation. Procedure system-capability column flipped from PLANNED to LIVE for the engine. |

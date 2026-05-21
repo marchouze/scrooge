@@ -4,7 +4,7 @@ status: POPULATED
 # Procedure — Capital and liquidity ratio monitoring (daily)
 
 **Procedure ID:** PROC-PR-01
-**Owner:** Camille (CFO) · Helena (CRO oversight) · Eitan (Treasurer for liquidity) · Bea (engineering)
+**Owner:** Camille (CFO) · Helena (Chief Risk Officer) · Eitan (Treasurer) · Bea (engineering)
 **Approval:** Board (via BRC)
 **Cadence:** Daily 06:00 UTC; intraday on-trigger
 **Version:** v1.0 — 2026-05-06

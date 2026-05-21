@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-MBH-01
 title: Dealer mandate limit breach detection, triage, and resolution
-author: Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+author: Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+owner: Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -18,7 +18,7 @@ citations:
 # Procedure — Dealer mandate limit breach detection, triage, and resolution
 
 **Procedure ID:** PROC-MK-MBH-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance) · Rohan (Market Risk Quant Engineer)
+**Owner:** Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance) · Rohan (Market Risk Quant Engineer)
 **Approval:** BRC (TRADING-MANDATE-V1)
 **Cadence:** Continuous intraday monitoring; breach response per-event; structural review per breach-pattern
 **Version:** v0.1 — 2026-05-16
@@ -80,7 +80,7 @@ Regulation (Banks Act Reg 39 — trading authority discipline)
 | Role | Responsibility |
 |---|---|
 | Anya (Data Engineer) | Intraday breach monitoring; breach alert emission; root-cause analysis for operational breaches |
-| Saskia (Chief Markets Officer, governance) | Level-1 triage; trade suspension decisions for non-material breaches; resolution event emission |
+| Saskia (Head of Global Markets) | Level-1 triage; trade suspension decisions for non-material breaches; resolution event emission |
 | Helena (Chief Risk Officer, governance) | Level-2 review for material breaches; RAS implications; trade suspension authorisation |
 | Rohan (Market Risk Quant Engineer) | Structural-breach limit recalibration |
 | Mira (Compliance / RegTech Engineer) | Regulatory notification assessment and filing |

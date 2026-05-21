@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-FC-PEP-01
 title: PEP handling — enhanced due diligence for politically exposed persons
-author: Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer, MLRO, governance)
+author: Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer)
 date: 2026-05-18
-owner: Zara (Chief Compliance Officer, MLRO, governance) · Mira (Regulatory intelligence engineer, compliance)
+owner: Zara (Chief Compliance Officer) · Mira (Regulatory intelligence engineer, compliance)
 status: POPULATED
 version: "1.0"
 last-updated: "2026-05-18"
@@ -22,7 +22,7 @@ citations:
 # Procedure — PEP Handling (Enhanced Due Diligence for Politically Exposed Persons)
 
 **Procedure ID:** PROC-FC-PEP-01
-**Owner:** Zara (Chief Compliance Officer, MLRO, governance) · Mira (Regulatory intelligence engineer, compliance)
+**Owner:** Zara (Chief Compliance Officer) · Mira (Regulatory intelligence engineer, compliance)
 **Approval:** BRC
 **Cadence:** Per-event — fires on any `KYCSanctionsPEPScreened` result with `pep_flag: true` or `pep_linked: true`
 **Version:** v1.0 — 2026-05-18
@@ -156,7 +156,7 @@ All manual steps are tracked exceptions under Principle 6; each produces a typed
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v1.0 | 2026-05-18 | Mira (Regulatory intelligence engineer, compliance) + Zara (Chief Compliance Officer, MLRO, governance) | Initial POPULATED version — all 12 sections; authority D-KYC-ONBOARDING-BUILD. |
+| v1.0 | 2026-05-18 | Mira (Regulatory intelligence engineer, compliance) + Zara (Chief Compliance Officer) | Initial POPULATED version — all 12 sections; authority D-KYC-ONBOARDING-BUILD. |
 
 ## 12. Audit / assurance
 

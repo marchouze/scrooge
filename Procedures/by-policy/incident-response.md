@@ -112,7 +112,7 @@ Each manual step is a tracked exception under P2, justified by the operational n
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v1.0 | 2026-05-06 | Senna + Devon (interim CISO function) + Iris + Zara | Initial draft, pre-board reviewed under IR Policy and Cyber Resilience Policy. |
+| v1.0 | 2026-05-06 | Senna + Devon (Chief Operating Officer) + Iris + Zara | Initial draft, pre-board reviewed under IR Policy and Cyber Resilience Policy. |
 | v1.1 | 2026-05-07 | Scrooge (custodial edit) | Owner field updated to reflect Rashida's CISO hire (2026-05-06). The interim "CISO function: Devon" reference replaced with Rashida (Chief Information Security Officer, governance); Senna remains the engineering owner. No substantive changes to procedure steps, reconciliation, or escalation. |
 
 ## 12. Audit / assurance

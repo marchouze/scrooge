@@ -491,7 +491,7 @@ Bea prepares the IFRS 7 quantitative disclosure schedules from the ECL computati
 
 ### 9.3 ICAAP Integration
 
-The IFRS 9 ECL allowance feeds into the Bank's Internal Capital Adequacy Assessment Process (ICAAP) as a key input to credit risk stress testing. The downside ECL scenario (§5.2) provides the stressed ECL estimate that Helena uses in the ICAAP credit risk stress scenario. Devon (Capital adequacy and stress testing engineer, engineering) consumes the ECL model output in the ICAAP module.
+The IFRS 9 ECL allowance feeds into the Bank's Internal Capital Adequacy Assessment Process (ICAAP) as a key input to credit risk stress testing. The downside ECL scenario (§5.2) provides the stressed ECL estimate that Helena uses in the ICAAP credit risk stress scenario. Devon (Chief Operating Officer) consumes the ECL model output in the ICAAP module.
 
 ---
 
