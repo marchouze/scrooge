@@ -27,10 +27,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  type IpvToleranceConfig,
-  checkIpvTolerance,
-} from "../platform/markets/ipv-tolerance";
+import { type IpvToleranceConfig, checkIpvTolerance } from "../platform/markets/ipv-tolerance";
 
 // Legacy 0.25% / ZAR 50k config — keeps the original boundary-arithmetic
 // stable for the existing tests below.
@@ -109,8 +106,8 @@ describe("checkIpvTolerance (legacy 0.25% / ZAR 50k explicit config)", () => {
 
   // TC-6: Zero primary rate — should throw
   it("TC-6: throws on zero primary rate", () => {
-    expect(() =>
-      checkIpvTolerance(0, 18.5, 100_000_00, "USD", "ZAR", LEGACY_CONFIG),
-    ).toThrow("primaryRate must not be zero");
+    expect(() => checkIpvTolerance(0, 18.5, 100_000_00, "USD", "ZAR", LEGACY_CONFIG)).toThrow(
+      "primaryRate must not be zero",
+    );
   });
 });
