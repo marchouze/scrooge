@@ -64,10 +64,7 @@ const ALLOWLIST_RELATIVE_PATHS: ReadonlySet<string> = new Set([
 ]);
 
 // Directories to skip entirely when walking prototype/.
-const EXCLUDE_DIRS: ReadonlySet<string> = new Set([
-  "node_modules",
-  ".local",
-]);
+const EXCLUDE_DIRS: ReadonlySet<string> = new Set(["node_modules", ".local"]);
 
 // Patterns that indicate a DELETE against the events table.
 // Checked case-insensitively. Comment lines are pre-filtered before matching.
