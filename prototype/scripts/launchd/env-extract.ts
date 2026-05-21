@@ -95,9 +95,7 @@ export function parseDotEnv(body: string): Record<string, string> {
  * at least one further identifier character. Vacuous keys like `BANK_`
  * are dropped.
  */
-export function whitelistBankKeys(
-  parsed: Record<string, string>,
-): Record<string, string> {
+export function whitelistBankKeys(parsed: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(parsed)) {
     if (!/^BANK_[A-Z0-9_]+$/.test(k)) continue;
@@ -153,8 +151,7 @@ export function escapeXml(s: string): string {
  * Output uses LF line endings; the template file uses LF (Unix), and
  * `plutil` accepts LF.
  */
-export const DEFAULT_PATH_VALUE =
-  "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+export const DEFAULT_PATH_VALUE = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
 export function renderEnvironmentDictBody(args: {
   bankKeys: Record<string, string>;

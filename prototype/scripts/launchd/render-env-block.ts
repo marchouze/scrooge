@@ -19,7 +19,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { renderFromDotEnv } from "./env-extract";
 
 function usage(): never {
-  // biome-ignore lint/suspicious/noConsole: CLI usage
   console.error(
     "usage: bun run scripts/launchd/render-env-block.ts <path-to-.env.local>\n" +
       "       (writes rendered <EnvironmentVariables> dict body to stdout)\n",
@@ -36,10 +35,7 @@ function main(): void {
   if (existsSync(envPath)) {
     envLocalText = readFileSync(envPath, "utf8");
   } else {
-    // biome-ignore lint/suspicious/noConsole: CLI warning
-    console.error(
-      `render-env-block: ${envPath} not found — rendering with PATH only.`,
-    );
+    console.error(`render-env-block: ${envPath} not found — rendering with PATH only.`);
     envLocalText = undefined;
   }
 
@@ -50,12 +46,10 @@ function main(): void {
   // Surface counts + key NAMES only (never values) so install.sh can
   // print a useful diagnostic without leaking secrets.
   if (bankKeyCount === 0) {
-    // biome-ignore lint/suspicious/noConsole: CLI warning
     console.error(
       "render-env-block: no BANK_* keys found in .env.local — plist will install with PATH only.",
     );
   } else {
-    // biome-ignore lint/suspicious/noConsole: CLI diagnostic (names only, no values)
     console.error(
       `render-env-block: ${bankKeyCount} BANK_* key(s) extracted: ${bankKeyNames.join(", ")}`,
     );
