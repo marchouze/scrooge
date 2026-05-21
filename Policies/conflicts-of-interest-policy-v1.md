@@ -236,3 +236,68 @@ Exceptions to the gifts threshold (e.g. a corporate event above the annual aggre
 ### 6.4 Interaction with the Whistleblowing Channel
 
 Conflicts of interest that a reporter believes have been suppressed, mismanaged, or concealed may be reported through the Bank's anonymous whistleblowing channel established under the Anti-Bribery, Corruption, and Whistleblowing Policy (ABC-WB-01). Protected Disclosures Act 26/2000 protections apply. Zara is custodian of the whistleblowing channel; where a COI report implicates Zara directly, the report is routed to Owen (Company Secretary, governance) or Helena (Chief Risk Officer, governance) as the independent escalation point.
+
+---
+
+## 7. Owner attribution — verification
+
+This policy has dual authority anchors, both verified against the CLAUDE.md "Decision authority routing" table (operationalised 2026-05-18 per brief `brief:owen:operationalise-decision-authority-routing-5-gove:2026-05-18`):
+
+| Layer | Authority | Rationale | CLAUDE.md routing row |
+|---|---|---|---|
+| Policy owner (substantive — conduct, FAIS GCC r.3A, FSR Act s.57, gifts register, PA dealing, information barriers) | Zara (Chief Compliance Officer, governance) | FAIS General Code r.3A imposes the COI policy obligation on the financial-services-provider compliance function; FSR Act s.57 routes conduct standards via the CCO; CLAUDE.md row "RMCP attestation, STR/CTR/TPR filing, obligation interpretation, EDD sign-off | CCO" extends to COI as an obligation-interpretation matter | CCO row |
+| Board-level COI handling (§3.7 — Companies Act s.75 director disclosure; conflict register at board level) | Owen (Company Secretary, governance) | Companies Act 71/2008 s.75 puts the corporate-secretarial function at the centre of director-conflict disclosure; CLAUDE.md row "Governance / procedure register | CoSec" extends to board-level conflict register custody | CoSec row |
+
+The two layers are complementary, not in tension. Zara owns the policy and its operationalisation across the workforce (agents + human principals); Owen owns the board-layer carve-out at §3.7 and the conflict register *that the Board itself reviews*. Either role can be the policy approver where the matter falls clearly within their authority; cross-layer matters route through both. CEO escalation triggers (per CLAUDE.md routing) apply: sanctions true-positive / material exposure / PA-FIC notification escalate to CEO via Zara; board-quorum or director-recusal integrity matters escalate to CEO via Owen.
+
+**No reattribution required.** The current owner (Zara, CCO) is correct for the substantive policy; Owen's §3.7 / §6.2 / §6.4 carve-outs adequately express the CoSec interface. The 2026-05-21 audit verified this attribution against the CLAUDE.md routing table; no change to frontmatter `owner` field.
+
+---
+
+## 8. Obligations closed by this policy
+
+| Obligation | Description | Status | Closed by section |
+|---|---|---|---|
+| `ORG-CD-05` | Conflict of interest management framework — FAIS GCC r.3A | **DRAFT** (LICENCE-BIND) — closed | §3 (Standards and Limits — definitions, register, declarations, barriers, gifts, PA dealing); §4.1 (FAIS disclosure to clients) |
+| `ORG-CS3-007` | FAIS General Code r.3A — COI policy and register; conflict-management plan | **DRAFT** (LICENCE-BIND) — closed | §3.2 (standing COI register categories); §4.1 (disclosure); §4.2 (quarterly review) |
+| `ORG-WB-04` | COI disclosure channel for protected reporters — link to whistleblowing channel | **DRAFT** (CORPORATE-BIND) — closed | §6.4 (interaction with whistleblowing channel); cross-ref `Policies/anti-bribery-corruption-whistleblowing-policy-v1.md` §4.1 |
+
+LICENCE-BIND obligations activate at FSCA FSP authorisation; CORPORATE-BIND obligations activate at incorporation. Build-phase work on substrate (COI register, PA-dealing pre-clearance workflow, gifts register, disclosure templates) is preparation for compliance, not compliance itself.
+
+---
+
+## 9. Citations
+
+**Statutory instruments:**
+
+- **Financial Advisory and Intermediary Services Act 37 of 2002 (FAIS)** — General Code of Conduct (Board Notice 80 of 2003 as amended) r.3A (conflict-of-interest management policy obligation; conflict identification, disclosure, management plan; gifts and immaterial financial-interest thresholds).
+- **Financial Sector Regulation Act 9 of 2017 (FSR Act)** — s.57 (conduct standards for financial institutions; FSCA conduct-supervision mandate); s.106 (information-sharing for conduct enforcement).
+- **Companies Act 71 of 2008** — s.75 (director duty to disclose personal financial interest; recusal; resolution by disinterested directors); s.75(4)–(7) (procedure for disclosure; effect of non-compliance).
+- **EMIR (Regulation (EU) No 648/2012)** and **MiFID II (Directive 2014/65/EU)** Article 23 — equivalence reference for OTC-derivatives COI standards used by the Bank's institutional counterparties; the Bank adopts MiFID II-equivalent conflict-management as a market-practice baseline notwithstanding the absence of direct EU jurisdiction.
+- **King IV Report on Corporate Governance for South Africa** (Institute of Directors SA, 2016) — Principle 8 (ethical culture); Principle 2 (effective leadership grounded in ethics).
+- **Banks Act 94 of 1990** — s.60 (fit-and-proper standards; conflict-management as a senior-management responsibility); Regulations Relating to Banks reg.39 (governance).
+
+**Internal canonical sources:**
+
+- [`Regulations/_obligations-register.md`](../Regulations/_obligations-register.md) — ORG-CD-05, ORG-CS3-007, ORG-WB-04 cited inline.
+- [`Team/_team-roster.json`](../Team/_team-roster.json) — canonical source for agent names, positions, and reporting lines.
+- [`Policies/anti-bribery-corruption-whistleblowing-policy-v1.md`](anti-bribery-corruption-whistleblowing-policy-v1.md) — whistleblowing channel; gifts to public officials (stricter standard); PRECCA cross-reference.
+- [`Policies/conduct-of-business-tcf-policy-v1.md`](conduct-of-business-tcf-policy-v1.md) — fair-dealing standards; §3.7 conflicts cross-reference (the "COI-POL-01 placeholder" referenced there is this policy).
+- [`Policies/insider-trading-pa-dealing-policy-v1.md`](insider-trading-pa-dealing-policy-v1.md) — personal account dealing detail; restricted-securities list custody.
+- [`Policies/governance-framework-v1.md`](governance-framework-v1.md) — board reserved matters; §2.3 director duties; §4 three-lines model.
+- [`Policies/fit-and-proper-policy-v1.md`](fit-and-proper-policy-v1.md) — fit-and-proper currency for directors and key individuals.
+- **CLAUDE.md** — "Operating procedures" (events-first authoring; dispatch discipline); "Decision authority routing" (CCO authority over RMCP / obligation interpretation; CoSec authority over governance / procedure register); "Architectural principles" 1, 2, 6.
+- `feedback_agent_name_with_position.md` (memory) — name + position on first mention.
+
+---
+
+## 10. Change log
+
+| Version | Date | Author | Note |
+|---|---|---|---|
+| v1.0 | 2026-05-13 | Zara (Chief Compliance Officer, governance) | Initial Conflicts of Interest Policy. Six sections of substantive content: Purpose; Principles (five, including conflicts are managed not suppressed; disclosure is mandatory; independence of compliance and control functions; zero tolerance for undisclosed conflicts in advice; governance integrity); (1) Scope — LICENCE-BIND; (2) Governance — Zara as policy owner, Owen as board-level interface, Helena risk-taxonomy linkage; (3) Standards — definitions (actual / potential / perceived); standing COI register categories (six standing entries); annual declaration cadence; information barriers / Chinese walls; gifts and hospitality (R500 individual / R2,000 aggregate; nil to public officials); personal account dealing (restricted list, pre-clearance, blackout); board-level conflicts under Companies Act s.75; (4) Controls — FAIS disclosure to clients; quarterly register review; trade surveillance; annual independent audit; (5) Reporting; (6) Exceptions and escalation — board-level escalation; whistleblowing channel cross-reference. Closes obligations ORG-CD-05, ORG-CS3-007, ORG-WB-04. LICENCE-BIND for FAIS layer; CORPORATE-BIND for §3.7 board layer. |
+| v1.1 | 2026-05-21 | Owen (Company Secretary, governance) on behalf of Zara (Chief Compliance Officer, governance) | Added §7 (Owner attribution verification — confirms Zara/CCO ownership against CLAUDE.md decision-authority routing table; Owen's §3.7 / §6.2 / §6.4 CoSec carve-outs documented as the board-layer interface; no reattribution required); §8 (Obligations closed — formal table); §9 (Citations — statutory instruments + internal canonical sources); §10 (Change log). Authored under Owen's CoSec authority during the 2026-05-21 top-5 policy-gap completion sweep (brief: `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`); substantive content unchanged. No status change. |
+
+---
+
+*Zara (Chief Compliance Officer, governance) — policy owner; structural completion and owner-attribution verification authored by Owen (Company Secretary, governance) on 2026-05-21.*

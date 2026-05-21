@@ -299,7 +299,27 @@ Per the events-first authoring rule (Principle 1), gaps are named explicitly —
 - `Policies/trading-mandate-v1.md` — no-prop rule (MR-5) provides the structural conduct control referenced in §3.5.
 - `RISK-MRP-01` (Model Risk Policy) — valuation model integrity underpins pricing transparency (§3.4).
 
-### 8.4 Citation gaps (TBC)
+### 8.4 Path-to-IN-FORCE — promotion gate
+
+This policy is **COMMENCEMENT-BIND**. It cannot be promoted from `DRAFT` to `IN FORCE` until the Bank actually begins client-facing dealing — there are no clients in the build phase, and so the substantive obligations of the FSCA TCF framework, FAIS GCC r.3A, FSR Act s.57, and Conduct Standard for Banks CS1/2020 have no live referent to attach to. Authoring this policy *now* is a prerequisite for licence-day; promotion to IF is gated by the *commencement of trading*, not by drafting completeness.
+
+The promotion gate consists of the following conditions, evaluated together by Zara (Chief Compliance Officer, governance) and ratified by the CEO (or Board at licence-day):
+
+| # | Condition | Owner | Closure signal |
+|---|---|---|---|
+| 1 | The Bank is SARB-licensed under Banks Act 94/1990 and (where the trading-book strategy requires it) FSCA-authorised under FAIS 37/2002 | Zara; Marc | Licence-grant correspondence filed in Correspondence register |
+| 2 | The first client onboarding has completed — at least one institutional client has a current `ClientClassificationConfirmed` event in the Party register | Zara; Niko (Client lifecycle, paused — activates at licence-day) | `ClientClassificationConfirmed` event in event log |
+| 3 | Trade surveillance system is operating against a live alert queue (not synthetic fixture) — at least one real alert has been generated and dispositioned per §4.1 | Zara; Atlas (Market risk engineer, trading) | First non-fixture `SurveillanceAlertDispositioned` event |
+| 4 | All four planned procedures (§8.2) are POPULATED and merged on `main` | Zara | Procedure register marks each as POPULATED |
+| 5 | COI-POL-01 is IN FORCE — the §3.7 placeholder is replaced by a live cross-reference | Zara | COI-POL-01 status field reads `IN FORCE` |
+| 6 | Citation gaps in §8.4 are closed — Imani (Legal-as-code engineer, engineering) has ratified all six items below with external counsel sign-off | Imani; Zara | `CitationRatified` event per item; or single `LegalReviewCompleted` covering all six |
+| 7 | Annual TCF self-assessment substrate is operational — the projection from the event log renders the six TCF outcomes without manual spreadsheet | Zara; Mira (Compliance / RegTech engineer, engineering) | First `TcfSelfAssessmentCompleted` event from substrate (not Owner Inbox markdown) |
+
+When all seven conditions are met, Zara recommends promotion and the CEO (or Board at licence-day) approves via a `Decision(approved)` event with category `conduct-of-business-policy-promotion`. The promotion event triggers a status change from `DRAFT` to `IN FORCE` in this policy's frontmatter and a `RecordFiled` event registering the IF version.
+
+**No interim promotion.** Promotion *before* condition (2) is satisfied (i.e. before any client exists) is incoherent — a "fair-treatment of customers" policy cannot be IN FORCE without customers. The Bank does not back-date promotions; the status field truthfully reflects whether the operative referent exists.
+
+### 8.5 Citation gaps (TBC)
 
 Per Principle 2, no sub-clause indices are invented. The following are `[citation: TBC]` until Imani (Legal-as-code engineer, engineering) + external counsel ratify at the licence-application gate:
 
@@ -317,3 +337,4 @@ Per Principle 2, no sub-clause indices are invented. The following are `[citatio
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v1.0 | 2026-05-13 | Zara (Chief Compliance Officer, governance) | Initial policy. Nine sections: Purpose; Principles (six, including no front-running, no misrepresentation, best execution, events-first); (1) Scope — institutional clients only, OTC + JSE; (2) Governance — Conduct Oversight Forum, FSCA liaison, Zara as owner, Sade training records; (3) Standards — client categorisation (professional only), TCF six outcomes mapped to institutional context, suitability/appropriateness (complex OTC appropriateness assessment + FAIS s16 KYC), pricing transparency (pre-trade disclosure, bid-offer spreads, no hidden fees, MtM transparency), fair dealing (no front-running, no misrepresentation, best execution, market abuse), product governance (NPA gate conduct sign-off), conflicts of interest link (COI-POL-01 placeholder), training table; (4) Controls — trade surveillance (weekly review, alert disposition), complaint handling, annual TCF self-assessment, regulatory monitoring; (5) Reporting — six report types with canonical events; (6) Exceptions and escalation; (7) Obligations closure: ORG-CD-01/04/06/08; (8) Substrate and citation gaps. COMMENCEMENT-BIND. |
+| v1.1 | 2026-05-21 | Owen (Company Secretary, governance) | Added §8.4 — explicit seven-condition path-to-IN-FORCE promotion gate, with closure signals per condition. Resolved the DRAFT→IN-FORCE decision raised in the 2026-05-21 top-5 policy-gap audit: this policy remains `DRAFT` because it is **COMMENCEMENT-BIND** and the operative referent (clients) does not yet exist; promotion is gated by the commencement of trading, not by drafting completeness. No interim promotion. Renumbered legacy §8.4 (citation gaps) to §8.5. Authority: brief `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`; CoSec authority per CLAUDE.md decision-authority routing (governance / procedure register). |
