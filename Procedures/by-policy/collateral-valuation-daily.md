@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-ALM-CVD-01
 title: Daily collateral valuation and margin call management
-author: Eitan (treasury & ALM engineer) · Saskia (markets risk engineer)
+author: Eitan (Treasurer) · Saskia (Head of Global Markets)
 date: 2026-05-16
-owner: Eitan (treasury & ALM engineer) · Saskia (markets risk engineer)
+owner: Eitan (Treasurer) · Saskia (Head of Global Markets)
 status: POPULATED
 policy-cited: Collateral Management Policy (planned)
 system-capability: "@platform/alm/collateral-engine (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/alm/collateral-engine (PLANNED)"
 # Procedure — Daily collateral valuation and margin call management
 
 **Procedure ID:** PROC-ALM-CVD-01
-**Owner:** Eitan (treasury & ALM engineer) · Saskia (markets risk engineer)
+**Owner:** Eitan (Treasurer) · Saskia (Head of Global Markets)
 **Approval:** ALCO (Collateral Management Policy; eligible-collateral schedule; haircut grid); ALCO + BRC (margin policy — shared with PROC-MK-ODP-03 and PROC-MK-ODP-04)
 **Cadence:** Daily (end-of-day valuation cycle, 17:00 SAST cutoff; margin calls issued by 18:00 SAST); intraday (on material MTM move > threshold); monthly ALCO collateral report
 **Version:** v0.1 — 2026-05-16
@@ -22,7 +22,7 @@ system-capability: "@platform/alm/collateral-engine (PLANNED)"
 
 ## 1. Source policy
 
-- Collateral Management Policy (planned; to be authored by Eitan (treasury & ALM engineer) with Saskia (markets risk engineer); Helena (Chief Risk Officer, governance) approval; required before first OTC derivative trade).
+- Collateral Management Policy (planned; to be authored by Eitan (Treasurer) with Saskia (Head of Global Markets); Helena (Chief Risk Officer, governance) approval; required before first OTC derivative trade).
 - `Policies/margin-policy-v1.md` — Margin Policy (PLANNED; shared with PROC-MK-ODP-03 and PROC-MK-ODP-04).
 - `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` §B4 — counterparty credit risk appetite; collateral is the primary first-loss mitigation.
 
@@ -88,7 +88,7 @@ Default actor is the collateral engine agent (`@platform/alm/collateral-engine`)
 
 **Step 1 — OTC position MTM refresh (agent)**
 
-At 17:00 SAST, the collateral engine retrieves end-of-day mark-to-market values for all open OTC derivative positions from `@risk/otc-mtm`. The MTM values are as of the 17:00 SAST JSDA/BASA fixing. Positions without an end-of-day MTM value by 17:15 SAST trigger a `MTMStalenessAlert` — Saskia (markets risk engineer) is notified immediately and a prior-day MTM with a conservative loading is used as a fallback pending resolution.
+At 17:00 SAST, the collateral engine retrieves end-of-day mark-to-market values for all open OTC derivative positions from `@risk/otc-mtm`. The MTM values are as of the 17:00 SAST JSDA/BASA fixing. Positions without an end-of-day MTM value by 17:15 SAST trigger a `MTMStalenessAlert` — Saskia (Head of Global Markets) is notified immediately and a prior-day MTM with a conservative loading is used as a fallback pending resolution.
 
 **Step 2 — ISDA/CSA netting calculation (agent)**
 
@@ -143,7 +143,7 @@ For collateral held from counterparties and for collateral the bank is consideri
 | Foreign currency cash (USD/EUR/GBP) | Yes | Yes (custodian holds) | FX haircut per JS 2/2020 |
 
 2. For IM, the agent confirms that the collateral is held in a bankruptcy-remote segregated account at the custodian and is not rehypothecated.
-3. If a collateral asset held from a counterparty is no longer eligible (e.g. bond rating downgrade, maturity crossed a tenor bucket), the agent flags a `CollateralEligibilityBreach` event and Eitan (treasury & ALM engineer) is notified within 30 minutes to demand a collateral substitution.
+3. If a collateral asset held from a counterparty is no longer eligible (e.g. bond rating downgrade, maturity crossed a tenor bucket), the agent flags a `CollateralEligibilityBreach` event and Eitan (Treasurer) is notified within 30 minutes to demand a collateral substitution.
 
 **Step 6 — Haircut application and adjusted collateral value (agent)**
 
@@ -164,7 +164,7 @@ By 18:00 SAST:
 1. For each counterparty with a net VM margin call or VM shortfall, the collateral engine:
    - Drafts a margin call notice in the ISDA standard format.
    - For calls ≤ ZAR 50,000,000: the agent issues the call automatically via the correspondent bank SWIFT MT messaging channel (or email per the CSA agreed method).
-   - For calls > ZAR 50,000,000: Eitan (treasury & ALM engineer) reviews and approves the call before issuance (approval within 30 minutes of draft being ready).
+   - For calls > ZAR 50,000,000: Eitan (Treasurer) reviews and approves the call before issuance (approval within 30 minutes of draft being ready).
 
 2. The margin call is issued as a `MarginCallIssued` event in the event store, with payload:
    - Counterparty ID; netting set ID; call direction (bank-to-counterparty or counterparty-to-bank); call amount; call currency; value date (next business day); collateral type demanded.
@@ -178,7 +178,7 @@ By 18:00 SAST:
 On the value date (next business day after the call date):
 
 1. For VM collateral being delivered to a counterparty: the collateral engine instructs the correspondent bank (via PROC-MK-ODP-03 outbound payment channel) to transfer the collateral asset. For cash VM: SWIFT MT202 via correspondent. For bond VM: STRATE DvP instruction via the JSE settlement channel.
-2. For VM collateral being received from a counterparty: the agent monitors the collateral ledger for the inbound credit. If not received by 12:00 SAST on the value date, a `MarginCallSettlementFail` event is raised and Eitan (treasury & ALM engineer) is notified (§7 Path C).
+2. For VM collateral being received from a counterparty: the agent monitors the collateral ledger for the inbound credit. If not received by 12:00 SAST on the value date, a `MarginCallSettlementFail` event is raised and Eitan (Treasurer) is notified (§7 Path C).
 3. For IM: settlement is directly between the counterparty and the custodian; the bank confirms custodian receipt via the custodian data feed.
 
 **Step 9 — Post-settlement reconciliation (agent)**
@@ -207,8 +207,8 @@ The report is formatted per PA Umoja specifications and submitted via the PA rep
 
 | Role | Responsibility |
 |---|---|
-| Eitan (treasury & ALM engineer) | Procedure owner; large-call approval (> ZAR 50m); collateral eligibility exception resolution; settlement fail escalation |
-| Saskia (markets risk engineer) | MTM staleness alert resolution; intraday trigger monitoring; Collateral Management Policy co-author |
+| Eitan (Treasurer) | Procedure owner; large-call approval (> ZAR 50m); collateral eligibility exception resolution; settlement fail escalation |
+| Saskia (Head of Global Markets) | MTM staleness alert resolution; intraday trigger monitoring; Collateral Management Policy co-author |
 | Ravi (ALM quant engineer) | SIMM IM computation (cross-referenced from PROC-MK-ODP-04); collateral VaR for ALCO reporting |
 | Tomas (operations engineer) | Settlement instruction execution (correspondent bank; STRATE); reconciliation breaks |
 | Imani (legal-as-code engineer) | Netting legal opinion register; CSA terms validation; collateral substitution notices |
@@ -222,11 +222,11 @@ The report is formatted per PA Umoja specifications and submitted via the PA rep
 
 | Condition | Action | Timeframe |
 |---|---|---|
-| **Path A — MTMStalenessAlert:** MTM not available by 17:15 SAST | Saskia (markets risk engineer) notified immediately; prior-day MTM + conservative loading applied; root-cause resolution | Immediate notification; resolution before next day's cycle |
-| **Path B — Counterparty disputes margin call** | Eitan (treasury & ALM engineer) and Imani (legal-as-code engineer) assess; PROC-MK-ODP-07 (OTC dispute resolution) invoked; interim collateral held; Helena (Chief Risk Officer, governance) notified if dispute exceeds ZAR 10m | Acknowledged within 1 business day; PROC-MK-ODP-07 governs resolution timeline |
-| **Path C — MarginCallSettlementFail:** inbound collateral not received by 12:00 SAST value date | Eitan (treasury & ALM engineer) notified immediately; counterparty contacted; if not settled by 15:00 SAST, Imani (legal-as-code engineer) issues ISDA notice of failure; Helena (Chief Risk Officer, governance) notified | Immediate notification; ISDA notice within 3 hours of failure |
-| **Path D — CollateralEligibilityBreach:** held collateral becomes ineligible | Eitan (treasury & ALM engineer) demands substitution within 2 business days; if no substitution, calls additional cash collateral; Helena (Chief Risk Officer, governance) notified | 2 business days for substitution; notification immediate |
-| **Path E — Intraday trigger (> ZAR 5m MTM move)** | Collateral engine computes intraday call; Eitan (treasury & ALM engineer) approves if > ZAR 50m; issued immediately | Intraday; call issued within 1 hour of trigger |
+| **Path A — MTMStalenessAlert:** MTM not available by 17:15 SAST | Saskia (Head of Global Markets) notified immediately; prior-day MTM + conservative loading applied; root-cause resolution | Immediate notification; resolution before next day's cycle |
+| **Path B — Counterparty disputes margin call** | Eitan (Treasurer) and Imani (legal-as-code engineer) assess; PROC-MK-ODP-07 (OTC dispute resolution) invoked; interim collateral held; Helena (Chief Risk Officer, governance) notified if dispute exceeds ZAR 10m | Acknowledged within 1 business day; PROC-MK-ODP-07 governs resolution timeline |
+| **Path C — MarginCallSettlementFail:** inbound collateral not received by 12:00 SAST value date | Eitan (Treasurer) notified immediately; counterparty contacted; if not settled by 15:00 SAST, Imani (legal-as-code engineer) issues ISDA notice of failure; Helena (Chief Risk Officer, governance) notified | Immediate notification; ISDA notice within 3 hours of failure |
+| **Path D — CollateralEligibilityBreach:** held collateral becomes ineligible | Eitan (Treasurer) demands substitution within 2 business days; if no substitution, calls additional cash collateral; Helena (Chief Risk Officer, governance) notified | 2 business days for substitution; notification immediate |
+| **Path E — Intraday trigger (> ZAR 5m MTM move)** | Collateral engine computes intraday call; Eitan (Treasurer) approves if > ZAR 50m; issued immediately | Intraday; call issued within 1 hour of trigger |
 
 ---
 
@@ -249,13 +249,13 @@ The report is formatted per PA Umoja specifications and submitted via the PA rep
 
 | Control | Frequency | Owner |
 |---|---|---|
-| MTM completeness — all positions have EOD MTM by 17:15 SAST | Daily | Saskia (markets risk engineer) |
+| MTM completeness — all positions have EOD MTM by 17:15 SAST | Daily | Saskia (Head of Global Markets) |
 | Netting legal opinion validity — all counterparties flagged | Monthly | Imani (legal-as-code engineer) |
-| Collateral eligibility schedule review — haircut grid and eligible assets | Quarterly (ALCO) | Eitan (treasury & ALM engineer) |
+| Collateral eligibility schedule review — haircut grid and eligible assets | Quarterly (ALCO) | Eitan (Treasurer) |
 | Margin call issuance completeness — every netting set above MTA has a call or posting | Daily at 18:00 SAST | Collateral engine agent |
 | Post-settlement reconciliation — collateral ledger vs. correspondent bank + STRATE | Daily at 16:00 SAST value date | Tomas (operations engineer) |
 | PA Umoja submission timeliness | Daily by 09:00 SAST | Collateral engine agent |
-| ALCO monthly collateral report — aggregate exposures, call efficiency, eligibility breaches | Monthly | Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer) |
+| ALCO monthly collateral report — aggregate exposures, call efficiency, eligibility breaches | Monthly | Eitan (Treasurer) · Ravi (ALM quant engineer) |
 | Haircut model validation | Annual | Rohan (market risk quant engineer) (independent of Ravi) |
 
 ---

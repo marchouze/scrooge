@@ -11,7 +11,7 @@ reconciliation-cadence: per-product (stage-4 gate); re-checked at any controlled
 # Procedure — New Product Approval Gate
 
 **Procedure ID:** PROC-NPA-GATE-01
-**Owner:** Saskia (Chief Investment Officer — markets, governance) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance)
+**Owner:** Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance)
 **Approval:** EXCO (products within existing RAS); Board (products requiring RAS amendment or new regulatory authorisation)
 **Cadence:** Event-triggered — fires on `ProductDueDiligenceCompleted`; one run per product per approval cycle
 **Version:** v0.2 — 2026-05-15
@@ -145,7 +145,7 @@ No trade may be executed in any product before `NewProductApproved` exists in th
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-13 | Saskia · Helena · Camille · Zara (via Scrooge) | Initial STUB. Authored to complement `new-product-due-diligence.md`; covers stage-4 gate and handoff to stage 5. |
-| v0.2 | 2026-05-15 | Saskia (Chief Investment Officer — markets, governance) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance) | Promoted to POPULATED; owner title updated to CIO; version bumped. |
+| v0.2 | 2026-05-15 | Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance) · Camille (Chief Financial Officer, governance) · Zara (Chief Compliance Officer, governance) | Promoted to POPULATED; owner title updated to CIO; version bumped. |
 
 ## 14. Audit / assurance
 

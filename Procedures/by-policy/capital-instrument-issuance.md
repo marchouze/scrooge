@@ -3,7 +3,7 @@ procedureId: PROC-CAP-CII-01
 title: Capital instrument issuance
 author: Atlas (Core banking platform architect, engineering)
 date: 2026-05-15
-owner: Camille (Chief Financial Officer, governance) · Eitan (Treasury engineer, engineering)
+owner: Camille (Chief Financial Officer, governance) · Eitan (Treasurer)
 status: POPULATED
 policy-cited: Capital Management Policy (planned — Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md)
 system-capability: prototype/platform/capital/instrument-issuance-engine (PLANNED)
@@ -12,7 +12,7 @@ system-capability: prototype/platform/capital/instrument-issuance-engine (PLANNE
 # Procedure — Capital instrument issuance
 
 **Procedure ID:** PROC-CAP-CII-01
-**Owner:** Camille (Chief Financial Officer, governance) · Eitan (Treasury engineer, engineering)
+**Owner:** Camille (Chief Financial Officer, governance) · Eitan (Treasurer)
 **Approval:** Board (with SARB no-objection for AT1 / Tier 2)
 **Cadence:** On demand (triggered by capital plan or regulatory trigger); build-phase dormant
 **Version:** v0.1 — 2026-05-15

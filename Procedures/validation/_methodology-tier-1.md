@@ -139,9 +139,9 @@ Escalation triggers (per `Team/Nadia.md` §10):
 
 - **Methodology disagreement with Rohan** that cannot be resolved by evidence → `AgentEscalation` to Helena → CEO; deadline 5 working days.
 - **Model owner contests `restrict-to-validated-envelope`** → `AgentEscalation` to Helena (and Thandiwe if independence-affecting); 5 working days.
-- **Novel model class outside RAS § B7 tier definitions** → `AgentEscalation` to Helena (BRC route; CEO interim) pre-classification.
+- **Novel model class outside RAS § B7 tier definitions** → `AgentEscalation` to Helena (Chief Risk Officer) pre-classification.
 - **Material model-risk failure in production** (post-approval withdrawal of sign-off; the bind activates at first real-position consumption per sub-decision A.2) → sealed `AgentEscalation` to Helena + Camille + Thandiwe → CEO, with PA notification path lit if regulatory submission affected; 24 hours.
-- **Methodology-version change that materially shifts validation rigour** → `AgentEscalation` to Helena (BRC route; CEO interim) pre-publication. This methodology v0.1 itself is not such a change (initial publication); future v0.2 → v0.3 transitions are.
+- **Methodology-version change that materially shifts validation rigour** → `AgentEscalation` to Helena (Chief Risk Officer) pre-publication. This methodology v0.1 itself is not such a change (initial publication); future v0.2 → v0.3 transitions are.
 - **Independence-affecting event** (Helena or Rohan attempts to gate Nadia's access to data, code, or registers) → sealed `AgentEscalation` to Thandiwe (CAE) pre-decision.
 - **BCBS 239 conformance failure** (data-quality preconditions not met) → `AgentEscalation` to Helena + Anya within 2 working days.
 

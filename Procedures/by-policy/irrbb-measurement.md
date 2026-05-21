@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-RISK-IRRBB-01
 title: IRRBB measurement cycle
-author: Helena (Chief Risk Officer, governance) · Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer)
+author: Helena (Chief Risk Officer, governance) · Eitan (Treasurer) · Ravi (ALM quant engineer)
 date: 2026-05-15
-owner: Helena (Chief Risk Officer, governance) · Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer)
+owner: Helena (Chief Risk Officer, governance) · Eitan (Treasurer) · Ravi (ALM quant engineer)
 status: POPULATED
 policy-cited: IRRBB Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B6
 system-capability: "@platform/alm/irrbb-engine (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/alm/irrbb-engine (PLANNED)"
 # Procedure — IRRBB measurement cycle
 
 **Procedure ID:** PROC-RISK-IRRBB-01
-**Owner:** Helena (Chief Risk Officer, governance) · Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer)
+**Owner:** Helena (Chief Risk Officer, governance) · Eitan (Treasurer) · Ravi (ALM quant engineer)
 **Approval:** BRC (limits + appetite); ALCO (monthly review)
 **Cadence:** Monthly (full NII/EVE calculation + ALCO); daily (limit monitoring); annual (ILAAP chapter)
 **Version:** v0.1 — 2026-05-15

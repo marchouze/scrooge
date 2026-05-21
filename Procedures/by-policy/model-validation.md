@@ -12,7 +12,7 @@ system-capability: "@platform/risk/validation-runner (PLANNED) · @platform/risk
 # Procedure — Model validation cycle
 
 **Procedure ID:** PROC-RSK-MV-01
-**Owner:** Helena (CRO governance — owns the cycle's outcome) · Nadia (independent-validation engineer — methodology authority) · Rohan (model owner / first-line for in-scope models, escalation target only)
+**Owner:** Helena (Chief Risk Officer) · Nadia (independent-validation engineer — methodology authority) · Rohan (model owner / first-line for in-scope models, escalation target only)
 **Approval:** BRC (interim: Interim Risk Forum + CEO concurrence per `ORG-GV-17`)
 **Cadence:** Continuous on `ModelVersionPublished` and `ModelMaterialChange` events; scheduled cycle per tier (Tier 1 annual, Tier 2 biennial, Tier 3 hygiene-only) — tiers and cadences canonical per Nadia's methodology page (see §3 / §5)
 **Version:** v0.2 — 2026-05-15
@@ -99,7 +99,7 @@ The cycle and the methodology are a procedure-pair: the cycle cites the methodol
 | Failure mode | Detection | Escalation |
 |---|---|---|
 | Methodology page stale vs model in scope | Vera Wave-4 #11 recon; Nadia's substrate-state run | Nadia + Helena; methodology page updated before cycle proceeds |
-| Validator-builder separation breach (Rohan validates own model) | Vera continuous-controls pipeline (mandate-ownership check) | Helena (governance) + Thandiwe (CAE for third-line independence finding) |
+| Validator-builder separation breach (Rohan validates own model) | Vera continuous-controls pipeline (mandate-ownership check) | Helena (governance) + Thandiwe (Chief Audit Executive) |
 | Red finding without Helena disposition past SLA | `ValidationCycleStalled` event | Vera finding; Owen secretariat surfaces to BRC / Interim Risk Forum |
 | Production model without `ValidationCycleSigned` | Vera Wave-4 #11 recon | Critical — Helena + Vera + Thandiwe; production-eligibility flipped to `not-eligible` immediately |
 | Auto-suspend triggered on red without Helena disposition | Cycle-handler audit | Senna + Helena — protocol breach (sub-decision B.3 forbids auto-suspend) |

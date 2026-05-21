@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-CIL-01
 title: Corporate issuer inclusion/exclusion from approved-counterparty list
-author: Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+author: Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+owner: Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -18,7 +18,7 @@ citations:
 # Procedure — Corporate issuer inclusion/exclusion from approved-counterparty list
 
 **Procedure ID:** PROC-MK-CIL-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+**Owner:** Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 **Approval:** BRC (Counterparty Credit Policy — planned)
 **Cadence:** Per-request (inclusion / exclusion); annual refresh of full approved list
 **Version:** v0.1 — 2026-05-16
@@ -66,7 +66,7 @@ Regulation (Banks Act — counterparty risk management; FAIS GCC §4 — conduct
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | Saskia (Chief Markets Officer, governance) identifies a corporate issuer for potential inclusion; confirms business rationale (proposed products, estimated volume, strategic relationship); submits `CounterpartyInclusionRequested` with supporting documentation | `human` (Saskia — Chief Markets Officer, governance) | `@platform/markets/counterparty-registry` (PLANNED) | Required documentation: company registration, LEI, audited financials (latest 2 years), credit rating (if available), product scope proposed. |
+| 1 | Saskia (Head of Global Markets) identifies a corporate issuer for potential inclusion; confirms business rationale (proposed products, estimated volume, strategic relationship); submits `CounterpartyInclusionRequested` with supporting documentation | `human` (Saskia — Chief Markets Officer, governance) | `@platform/markets/counterparty-registry` (PLANNED) | Required documentation: company registration, LEI, audited financials (latest 2 years), credit rating (if available), product scope proposed. |
 | 2 | **KYC/conduct due diligence (Zara):** Zara (MLRO, governance) conducts customer due diligence per FICA s.21: identity verification, UBO mapping, sanctions screening (OFAC, UN, SA PFA lists), PEP screening, adverse media check; classifies counterparty risk tier (Low / Medium / High) | `human` (Zara — MLRO, governance) | `@platform/compliance/kyc-engine` (PLANNED) | Zara must complete KYC within 5 business days. High-risk counterparties require enhanced due diligence (EDD) and Helena's explicit sign-off before proceeding. Zara emits `KycCddCompleted { counterpartyId, riskTier, eddRequired, completedAt }`. |
 | 3 | **Credit review (Helena):** Helena (Chief Risk Officer, governance) assesses counterparty credit quality: internal credit scoring, external rating if available, financial ratio analysis, sector concentration check against the bank's credit risk appetite; recommends credit limit for the approved-counterparty record | `human` (Helena — Chief Risk Officer, governance) | `@platform/risk/credit-limit-engine` | Helena must complete credit review within 5 business days of Zara's KYC completion. Helena emits `CounterpartyCreditReviewCompleted { counterpartyId, internalCreditScore, proposedCreditLimit, rationale, completedAt }`. |
 | 4 | **Legal capacity review (Imani):** Imani (Legal / Contracts Engineer) confirms: (a) counterparty has legal capacity to enter FX spot and bond transactions; (b) ISDA Master Agreement or equivalent is in place or being executed; (c) netting enforceability confirmed for the counterparty's jurisdiction | `agent` (Imani — Legal / Contracts Engineer) | `@platform/legal/isda-registry` (PLANNED) | ISDA check: if ISDA is not yet in place, Imani flags this and inclusion is conditional on ISDA execution. Imani emits `LegalCapacityConfirmed { counterpartyId, isdaStatus, nettingEnforceability, completedAt }`. |
@@ -79,7 +79,7 @@ Regulation (Banks Act — counterparty risk management; FAIS GCC §4 — conduct
 
 | Role | Responsibility |
 |---|---|
-| Saskia (Chief Markets Officer, governance) | Inclusion/exclusion requests; final approval event emission; annual refresh coordination |
+| Saskia (Head of Global Markets) | Inclusion/exclusion requests; final approval event emission; annual refresh coordination |
 | Zara (MLRO, governance) | KYC/CDD/EDD; sanctions and PEP screening; risk-tier classification |
 | Helena (Chief Risk Officer, governance) | Credit review; credit-limit recommendation; exclusion approval |
 | Imani (Legal / Contracts Engineer) | Legal capacity confirmation; ISDA status; netting enforceability |

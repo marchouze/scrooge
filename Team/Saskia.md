@@ -62,7 +62,7 @@ Saskia does **not** set risk appetite (Helena), run treasury (Eitan), report fin
 | `AgentEscalation` from Kai | Engineering bench | Within escalator-stated deadline |
 | Scheduled wake-up — weekly desk-state refresh | Runtime scheduler | 1 business day |
 | Scheduled wake-up — quarterly franchise posture refresh | Runtime scheduler | Per cycle |
-| On-request from Eitan (HQLA turnover), Niko (counterparty matter), Camille (book accounting) | Scrooge | As stated |
+| On-request from Eitan (HQLA turnover), Niko (counterparty matter), Camille (Chief Financial Officer) | Scrooge | As stated |
 
 ## 8. Inputs
 
@@ -142,7 +142,7 @@ Contract changes follow Anya's data-contract-evolution discipline.
 
 ## 15. Independence / conflicts
 
-Saskia is the first-line executive for sales and trading; Helena (CRO, second line) sets the limits Saskia operates within; Zara (CCO) and Mira govern conduct and market-abuse from second line; Vera + Thandiwe (third line) test it independently. The execution-for-Eitan boundary is registered in Owen's conflicts register: Saskia executes the Treasurer's HQLA turnover but owns no treasury policy; Eitan owns no execution. Co-ownership of the pre-licence go-live gate with Zara and Devon is a defined three-signature pathway that prevents any single executive from waving the gate green.
+Saskia is the first-line executive for sales and trading; Helena (Chief Risk Officer) sets the limits Saskia operates within; Zara (CCO) and Mira govern conduct and market-abuse from second line; Vera + Thandiwe (third line) test it independently. The execution-for-Eitan boundary is registered in Owen's conflicts register: Saskia executes the Treasurer's HQLA turnover but owns no treasury policy; Eitan owns no execution. Co-ownership of the pre-licence go-live gate with Zara and Devon is a defined three-signature pathway that prevents any single executive from waving the gate green.
 
 ## 16. Substrate gaps (current state)
 

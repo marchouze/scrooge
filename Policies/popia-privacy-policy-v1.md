@@ -11,7 +11,7 @@ citations:
   - Joint Standard 2 of 2024 (PA/FSCA)
   - PAIA Act 2 of 2000
   - D-POLICY-DOCUMENT-HOME
-author: Iris (Information Officer, governance) + Zara (Compliance / legal-as-code engineer)
+author: Iris (Information Officer, governance) + Zara (Chief Compliance Officer)
 date: 2026-05-11
 summary: Standalone Privacy Policy implementing POPIA 4/2013 and Joint Standard 2 of 2024 for Hoz Bank. Covers lawful basis for processing, data subject rights, Information Officer designation, data breach notification, retention schedules, and cross-border transfer controls. Closes 17 ORG-PR(IV)-series obligations. CORPORATE-BIND (binds now).
 decision-required: false
@@ -20,7 +20,7 @@ riskTaxonomy: RT-LR.DP
 
 # POPIA Privacy Policy v1
 
-**Authors:** Iris (Information Officer, governance) — lead; Zara (Compliance / legal-as-code engineer) — co-author
+**Authors:** Iris (Information Officer, governance) — lead; Zara (Chief Compliance Officer) — co-author
 **Date:** 2026-05-11
 **Version:** 1.0
 **Status:** IN FORCE (CORPORATE-BIND — binds from today; POPIA applies at corporate formation, not at licence-day)
@@ -648,7 +648,7 @@ Where a processor causes a POPIA breach (access, loss, destruction, or unauthori
 
 ### 10.1 Policy governance
 
-This Policy is owned by Iris (Information Officer, governance), co-authored by Zara (Compliance / legal-as-code engineer), and approved by the BRC and S&E Committee (interim CEO approval pending BRC constitution at licence-day). It is reviewed annually and on any material change in POPIA, related regulations, or the Bank's processing activities.
+This Policy is owned by Iris (Information Officer, governance), co-authored by Zara (Chief Compliance Officer), and approved by the BRC and S&E Committee (interim CEO approval pending BRC constitution at licence-day). It is reviewed annually and on any material change in POPIA, related regulations, or the Bank's processing activities.
 
 Material changes requiring an out-of-cycle review include:
 - Commencement of a new material processing purpose
@@ -734,4 +734,4 @@ The following substrate gaps are tracked against this Policy. Each gap is a `PLA
 
 ---
 
-*Policy authored: 2026-05-11. Authors: Iris (Information Officer, governance) + Zara (Compliance / legal-as-code engineer). Review authority: BRC + S&E Committee (interim CEO approval). Next review: 2027-05-11 or on material trigger.*
+*Policy authored: 2026-05-11. Authors: Iris (Information Officer, governance) + Zara (Chief Compliance Officer). Review authority: BRC + S&E Committee (interim CEO approval). Next review: 2027-05-11 or on material trigger.*

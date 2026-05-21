@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-IS-CRA-01
 title: Cloud data residency attestation — POPIA and PA requirements
-author: Devon (DevOps & platform engineer) · Senna (information security & cloud engineer)
+author: Devon (Chief Operating Officer) · Senna (information security & cloud engineer)
 date: 2026-05-16
-owner: Devon (DevOps & platform engineer) · Senna (information security & cloud engineer)
+owner: Devon (Chief Operating Officer) · Senna (information security & cloud engineer)
 status: POPULATED
 policy-cited: Cloud Computing Policy (planned) · Owner Inbox/2026-05-06_core-policies-infosec-cloud.md
 system-capability: "@platform/infosec/cloud-residency-inventory (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/infosec/cloud-residency-inventory (PLANNED)"
 # Procedure — Cloud data residency attestation — POPIA and PA requirements
 
 **Procedure ID:** PROC-IS-CRA-01
-**Owner:** Devon (DevOps & platform engineer) · Senna (information security & cloud engineer)
+**Owner:** Devon (Chief Operating Officer) · Senna (information security & cloud engineer)
 **Approval:** CEO (annual attestation sign-off) · Owen (Company Secretary, governance — POPIA s.72 transfer authorisations)
 **Cadence:** Annual (Q3 — attestation cycle); triggered on any new cloud service adoption
 **Version:** v0.1 — 2026-05-16
@@ -72,7 +72,7 @@ Ensure that all cloud services used by the bank are inventoried, their data clas
 
 | Role | Responsibility |
 |---|---|
-| Devon (DevOps & platform engineer) | Azure residency controls; IaC enforcement; attestation package co-author; PA submission |
+| Devon (Chief Operating Officer) | Azure residency controls; IaC enforcement; attestation package co-author; PA submission |
 | Senna (information security & cloud engineer) | Cloud service inventory; data classification mapping; attestation package compiler |
 | Owen (Company Secretary, governance — Information Officer) | POPIA s.72 IO authorisation for cross-border transfers; archives attestation package |
 | CEO | Final attestation sign-off |

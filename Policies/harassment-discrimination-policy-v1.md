@@ -103,7 +103,7 @@ This policy applies to:
 
 | Role | Holder | Authority |
 |---|---|---|
-| Policy owner / primary reporting channel | Sade (AgentOps, governance) | Owns this policy; receives complaints; monitors compliance; reports to Devon (COO interim) |
+| Policy owner / primary reporting channel | Sade (AgentOps, governance) | Owns this policy; receives complaints; monitors compliance; reports to Devon (Chief Operating Officer) |
 | Legal oversight | Imani (Legal-as-code engineer, engineering — reports to Devon COO interim) | EEA-compliance clause library; employment contracts; legal advice on complex cases |
 | Whistleblowing channel (cross-management complaints) | Owen (Company Secretary, governance) + Zara (Chief Compliance Officer, governance) | Where the complaint involves a member of senior management or Devon |
 | Independent assurance | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, Chief Audit Executive, governance) | Third-line; annual review of complaints-handling effectiveness |
@@ -285,7 +285,7 @@ Both parties receive written reasons for the outcome. Sade emits a `HarassmentCo
 
 **Step 5 — Appeal**
 
-Either party may appeal the outcome to Devon (COO interim), following the grievance-appeal procedure in `Policies/disciplinary-policy-v1.md` §4. Devon's decision is final internally; the complainant retains the right to refer to the CCMA or EE Commission.
+Either party may appeal the outcome to Devon (Chief Operating Officer), following the grievance-appeal procedure in `Policies/disciplinary-policy-v1.md` §4. Devon's decision is final internally; the complainant retains the right to refer to the CCMA or EE Commission.
 
 ### 3.5 Remedial measures
 

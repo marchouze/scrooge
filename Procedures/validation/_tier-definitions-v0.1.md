@@ -168,7 +168,7 @@ Per sub-decision A.2 of `D-S7-TARGETED-3-5-OPEN-QUESTIONS`: in the build phase (
 If a candidate model does not fit any of the worked examples in §3.1 / §3.2 and the application of the §2 criteria is genuinely ambiguous, Nadia escalates to Helena per `Team/Nadia.md` §10 ("Novel model class outside existing tier definitions") **before** issuing a `ModelTierClassified` event. The escalation:
 
 - Carries the candidate, the §2 criteria evaluation, and Nadia's recommended tier.
-- Routes to Helena (BRC route once BRC stands up; CEO interim per `Team/Nadia.md` §10).
+- Routes to Helena (Chief Risk Officer).
 - Is sealed if the candidate is itself sensitive (e.g. an AML-typology-detection model whose existence the bank does not advertise).
 - Resolution lands as a binding precedent — added to the worked-example tables in §3.1 / §3.2 in a future v0.N revision of this file.
 

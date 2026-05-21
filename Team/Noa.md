@@ -75,7 +75,7 @@ Role brief archived at `Team Inbox/actioned/2026-05-12_pax_role-brief_noa-intran
 | Decision | Escalation criterion | Target overseer | Channel | Deadline |
 |---|---|---|---|---|
 | Major intranet redesign affecting all governance agents | Scope exceeds one sprint; cross-agent UX impact | CEO (Marc) | `AgentEscalation` event | 2 agent ticks |
-| API contract breaking change with no acceptable workaround | Atlas and Noa cannot resolve shape disagreement | Devon (COO, platform governance) | `AgentEscalation` event | 1 agent tick |
+| API contract breaking change with no acceptable workaround | Atlas and Noa cannot resolve shape disagreement | Devon (Chief Operating Officer) | `AgentEscalation` event | 1 agent tick |
 | Accessibility non-compliance in production-bound component | WCAG 2.1 AA failure with no remediation path in sprint | CEO | `AgentEscalation` event | 1 agent tick |
 
 ## 11. Outputs

@@ -3,7 +3,7 @@ policy-id: irrbb-policy
 title: Interest Rate Risk in the Banking Book (IRRBB) Policy v1
 version: "1"
 status: IN FORCE
-owner: Helena (Chief Risk Officer, governance) + Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena)
+owner: Helena (Chief Risk Officer, governance) + Eitan (Treasurer)
 effective-from: "2026-05-17"
 next-review: "2027-05-17"
 citations:
@@ -12,7 +12,7 @@ citations:
   - SARB BA 330 — IRRBB disclosure return
   - SARB BA 700 — ICAAP capital adequacy return (Pillar 2 add-on)
   - D-POLICY-DOCUMENT-HOME
-author: Helena (Chief Risk Officer, governance) + Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena)
+author: Helena (Chief Risk Officer, governance) + Eitan (Treasurer)
 date: 2026-05-17
 summary: >
   Establishes Hoz Bank Limited's governance framework for identifying, measuring, monitoring, and managing interest rate
@@ -27,7 +27,7 @@ riskTaxonomy:
 
 > **Status:** IN FORCE (policy layer). ALM engine substrate (EVE/NII calculation, shock scenarios, ALCO reporting) tracked under Eitan's workstream; ICAAP capital add-on disclosure tracked under Helena's ICAAP programme.
 >
-> **Authors:** Helena (Chief Risk Officer, governance) leads policy governance; Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena) leads substrate engineering and measurement methodology.
+> **Authors:** Helena (Chief Risk Officer, governance) leads policy governance; Eitan (Treasurer) leads substrate engineering and measurement methodology.
 >
 > **LICENCE-BIND:** IRRBB measurement and management obligations are Pillar 2 supervisory expectations that bind from commencement of banking operations. The substrate is built and calibrated during the build phase; disclosures (BA 330) and the ICAAP capital add-on (BA 700) activate at licence-day.
 
@@ -42,7 +42,7 @@ riskTaxonomy:
 | Effective date | 2026-05-17 |
 | Approval authority | Board Risk Committee (BRC) |
 | Policy owner | Helena (Chief Risk Officer, governance) |
-| Engineering owner | Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena) |
+| Engineering owner | Eitan (Treasurer) |
 | Review cadence | Annual; triggered by material change in balance sheet composition, interest rate regime, or SARB supervisory guidance |
 | Risk appetite anchor | EVE impact ≤ 15% of Tier 1 capital (BCBS outlier threshold); internal ALCO limit TBD at first ALCO calibration run |
 | LICENCE-BIND | Yes — IRRBB measurement activates at commencement of banking operations; substrate built and tested in build phase |
@@ -84,7 +84,7 @@ Trading-book positions are excluded from IRRBB scope; they are subject to the Ma
 | Role | Holder | Authority |
 |---|---|---|
 | Policy owner / ALCO chair | Helena (Chief Risk Officer, governance) | Pillar 2 IRRBB oversight; ALCO chairperson; ICAAP sign-off |
-| Engineering owner / measurement | Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena) | EVE/NII calculation engine; shock-scenario pipeline; BA 330 population |
+| Engineering owner / measurement | Eitan (Treasurer) | EVE/NII calculation engine; shock-scenario pipeline; BA 330 population |
 | Board oversight | BRC (Board Risk Committee) | Approves risk appetite; receives quarterly ALCO IRRBB report; approves ICAAP IRRBB section |
 | ALCO membership | Helena (chair), Eitan, Saskia (Head of Global Markets, governance), Camille (Chief Financial Officer, governance), Devon (Chief Operating Officer, governance) | Monthly IRRBB review; limit calibration |
 | Independent assurance | Vera (Internal audit / continuous-assurance engineer, engineering — reports functionally to Thandiwe, CAE, governance) | Annual IRRBB methodology review; measurement-accuracy recon |
@@ -232,7 +232,7 @@ All hedging transactions are approved by Helena (CRO) and executed by Saskia (He
 | Outlier-criterion check | Automated flag if EVE > 15% Tier 1 | Eitan (automated) + Helena (review) | Daily |
 | Behavioural-assumption review | ALCO review of non-maturity and optionality assumptions | Helena (chair) + Eitan | Annual; triggered on material balance sheet change |
 | BA 330 submission | SARB supervisory return on IRRBB | Anya (data reporting engineer) + Eitan (data) + Helena (sign-off) | Quarterly |
-| ICAAP IRRBB section | Pillar 2 capital add-on documentation | Helena + Devon (CFO, governance) + Eitan | Annual ICAAP cycle |
+| ICAAP IRRBB section | Pillar 2 capital add-on documentation | Helena + Devon (Chief Operating Officer) + Eitan | Annual ICAAP cycle |
 | Vera effectiveness review | Independent review of EVE/NII methodology and limit-breach protocol | Vera (Internal audit / continuous-assurance engineer) | Annual |
 | Stress testing | Sensitivity of EVE/NII to behavioural assumptions; additional ad hoc stress scenarios | Eitan + Helena | Annual; ad hoc on ALCO request |
 
@@ -267,7 +267,7 @@ The BRC receives:
 | Return | Content | Frequency | Preparer | Approver |
 |---|---|---|---|---|
 | BA 330 | Banking-book IRRBB disclosure; EVE under 6 shocks by currency | Quarterly | Anya (data reporting engineer) + Eitan (calculations) | Helena (CRO) |
-| BA 700 (ICAAP) | Pillar 2 IRRBB capital add-on | Annual | Devon (CFO, governance) + Helena + Eitan | Helena + Devon |
+| BA 700 (ICAAP) | Pillar 2 IRRBB capital add-on | Annual | Devon (Chief Operating Officer) + Helena + Eitan | Helena + Devon |
 | Ad hoc supervisory data requests | SARB PA IRRBB data requests | On request | Anya + Eitan | Helena |
 
 All submitted data is traceable to `IrrbbEveCalculated` and `IrrbbNiiCalculated` events in the event store per Principle 1.
@@ -288,14 +288,14 @@ All submitted data is traceable to `IrrbbEveCalculated` and `IrrbbNiiCalculated`
 
 ### 5.1 Pillar 2 IRRBB capital add-on
 
-IRRBB is a Pillar 2 risk type. The bank's annual ICAAP (co-owned by Helena (CRO) and Devon (CFO, governance)) must:
+IRRBB is a Pillar 2 risk type. The bank's annual ICAAP (co-owned by Helena (CRO) and Devon (Chief Operating Officer)) must:
 
 1. Document the bank's IRRBB exposure (maximum EVE impact across the 6 BCBS shocks).
 2. Assess whether the EVE impact is adequately covered by existing Pillar 1 capital or requires a Pillar 2 add-on.
 3. Document the methodology for calculating the add-on (or the rationale for no add-on where EVE is below the outlier threshold with material headroom).
 4. Disclose the IRRBB capital add-on in the BA 700 submission.
 
-**BCBS outlier-criterion interaction:** where the bank breaches the 15% outlier threshold, the SARB PA may mandate a capital add-on independent of the bank's own ICAAP assessment. Helena and Devon (CFO) calibrate the internal ICAAP capital add-on to be defensible before any PA challenge.
+**BCBS outlier-criterion interaction:** where the bank breaches the 15% outlier threshold, the SARB PA may mandate a capital add-on independent of the bank's own ICAAP assessment. Helena and Devon (Chief Operating Officer) calibrate the internal ICAAP capital add-on to be defensible before any PA challenge.
 
 ### 5.2 Capital add-on methodology
 
@@ -335,8 +335,8 @@ All methodology decisions are `AlcoResolutionRecord` events or ICAAP document ar
 
 | Version | Date | Author | Note |
 |---|---|---|---|
-| v1 | 2026-05-17 | Helena (Chief Risk Officer, governance) + Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena) | Initial version. Establishes IRRBB governance framework, EVE/NII measurement under 6 BCBS D368 shocks, risk appetite (15% Tier 1 outlier threshold), ALCO governance, BA 330 disclosure, and ICAAP Pillar 2 capital add-on. Closes ORG-PR-11. LICENCE-BIND. |
+| v1 | 2026-05-17 | Helena (Chief Risk Officer, governance) + Eitan (Treasurer) | Initial version. Establishes IRRBB governance framework, EVE/NII measurement under 6 BCBS D368 shocks, risk appetite (15% Tier 1 outlier threshold), ALCO governance, BA 330 disclosure, and ICAAP Pillar 2 capital add-on. Closes ORG-PR-11. LICENCE-BIND. |
 
 ---
 
-*Helena (Chief Risk Officer, governance) + Eitan (ALM / interest-rate-risk engineer, engineering — reports to Helena)*
+*Helena (Chief Risk Officer, governance) + Eitan (Treasurer)*

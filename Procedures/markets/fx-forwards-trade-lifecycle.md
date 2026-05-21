@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-FXFL-01
 title: FX forwards — trade lifecycle (booking, MtM revaluation, fixing, settlement)
-author: Saskia (Markets franchise lead, engineering) · Rohan (Market risk quant, engineering) · Bea (Finance engineer, accounting)
+author: Saskia (Head of Global Markets) · Rohan (Market risk quant, engineering) · Bea (Finance engineer, accounting)
 date: 2026-05-17
-owner: Saskia (Markets franchise lead, engineering)
+owner: Saskia (Head of Global Markets)
 status: POPULATED
 version: "0.2"
 last-updated: "2026-05-18"
@@ -25,7 +25,7 @@ citations:
 # Procedure — FX forwards trade lifecycle
 
 **Procedure ID:** PROC-MK-FXFL-01
-**Owner:** Saskia (Markets franchise lead, engineering)
+**Owner:** Saskia (Head of Global Markets)
 **Approval:** BRC (TRADING-MANDATE-V1)
 **Cadence:** Per-trade lifecycle (booking → daily MtM revaluation over life → settlement at maturity)
 **Version:** v0.1 — 2026-05-17
@@ -237,5 +237,5 @@ All forwards in this PR are FVTPL (trading book). FVOCI / hedge-accounting desig
 
 ## 9. Change log
 
-- 2026-05-17 — v0.1 POPULATED. Initial draft mirroring the FX spot lifecycle procedure with forward-specific extensions (MtM cycle + NDF fixing path). Author: Saskia (Markets franchise lead, engineering).
+- 2026-05-17 — v0.1 POPULATED. Initial draft mirroring the FX spot lifecycle procedure with forward-specific extensions (MtM cycle + NDF fixing path). Author: Saskia (Head of Global Markets).
 - 2026-05-18 — v0.2 ANNOTATED. Added §4A (step-level event / posting-rule / IFRS annotations for all 9 steps: pre-trade mandate check, trade execution, confirmation matching, daily MTM, settlement instruction, settlement confirmation/derecognition, settlement failure/reversal, cancellation, amendment). Cross-referenced trade-lifecycle-system-capability-register. Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. Author: Owen (Company Secretary, governance).

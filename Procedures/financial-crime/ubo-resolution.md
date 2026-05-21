@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-FC-UBO-01
 title: UBO resolution — recursive beneficial ownership identification per FIC Act s.21(1)(b)
-author: Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer, MLRO, governance)
+author: Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer)
 date: 2026-05-18
-owner: Zara (Chief Compliance Officer, MLRO, governance) · Mira (Regulatory intelligence engineer, compliance)
+owner: Zara (Chief Compliance Officer) · Mira (Regulatory intelligence engineer, compliance)
 status: POPULATED
 version: "1.0"
 last-updated: "2026-05-18"
@@ -21,7 +21,7 @@ citations:
 # Procedure — UBO Resolution (Recursive Beneficial Ownership Identification)
 
 **Procedure ID:** PROC-FC-UBO-01
-**Owner:** Zara (Chief Compliance Officer, MLRO, governance) · Mira (Regulatory intelligence engineer, compliance)
+**Owner:** Zara (Chief Compliance Officer) · Mira (Regulatory intelligence engineer, compliance)
 **Approval:** BRC
 **Cadence:** Per-event — called from PROC-FC-01 Step 4 on every legal-entity onboarding candidate; re-invoked by `kyc-continuous.md` on ownership-change signals
 **Version:** v1.0 — 2026-05-18
@@ -170,7 +170,7 @@ POPIA s.14 note: UBO personal information (ID numbers, nationality, country of r
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v1.0 | 2026-05-18 | Mira (Regulatory intelligence engineer, compliance) + Zara (Chief Compliance Officer, MLRO, governance) | Initial POPULATED version — all 12 sections; authority D-KYC-ONBOARDING-BUILD. |
+| v1.0 | 2026-05-18 | Mira (Regulatory intelligence engineer, compliance) + Zara (Chief Compliance Officer) | Initial POPULATED version — all 12 sections; authority D-KYC-ONBOARDING-BUILD. |
 
 ## 12. Audit / assurance
 

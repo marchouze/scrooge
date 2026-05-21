@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-RISK-ILF-01
 title: Intraday liquidity and funding monitoring
-author: Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer)
+author: Eitan (Treasurer) · Ravi (ALM quant engineer)
 date: 2026-05-15
-owner: Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer) · Helena (Chief Risk Officer, governance — RAS approval)
+owner: Eitan (Treasurer) · Ravi (ALM quant engineer) · Helena (Chief Risk Officer, governance — RAS approval)
 status: POPULATED
 policy-cited: Liquidity Risk Management Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B5
 system-capability: "@platform/alm/intraday-liquidity-engine (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/alm/intraday-liquidity-engine (PLANNED)"
 # Procedure — Intraday liquidity and funding monitoring
 
 **Procedure ID:** PROC-RISK-ILF-01
-**Owner:** Eitan (treasury & ALM engineer) · Ravi (ALM quant engineer) · Helena (Chief Risk Officer, governance — RAS approval)
+**Owner:** Eitan (Treasurer) · Ravi (ALM quant engineer) · Helena (Chief Risk Officer, governance — RAS approval)
 **Approval:** ALCO (limits); BRC (appetite); PA (ILAAP chapter)
 **Cadence:** Continuous (intraday real-time monitoring); daily close (settlement reconciliation); monthly (ALCO report); annual (ILAAP liquidity chapter)
 **Version:** v0.1 — 2026-05-15

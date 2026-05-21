@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-ALM-HDT-01
 title: IFRS 9 hedge designation and effectiveness test
-author: Eitan (treasury & ALM engineer) · Bea (financial-reporting engineer)
+author: Eitan (Treasurer) · Bea (financial-reporting engineer)
 date: 2026-05-16
-owner: Eitan (treasury & ALM engineer) · Bea (financial-reporting engineer)
+owner: Eitan (Treasurer) · Bea (financial-reporting engineer)
 status: POPULATED
 policy-cited: Hedge Accounting Policy (planned)
 system-capability: "@platform/alm/hedge-accounting-engine (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/alm/hedge-accounting-engine (PLANNED)"
 # Procedure — IFRS 9 hedge designation and effectiveness test
 
 **Procedure ID:** PROC-ALM-HDT-01
-**Owner:** Eitan (treasury & ALM engineer) · Bea (financial-reporting engineer)
+**Owner:** Eitan (Treasurer) · Bea (financial-reporting engineer)
 **Approval:** ALCO (hedge strategy); CFO (Hedge Accounting Policy); external auditor (hedge documentation review at period-end)
 **Cadence:** Per-designation (prospective test at inception); daily (ongoing effectiveness monitoring); period-end (retrospective effectiveness assessment and de-designation review); annual (methodology review)
 **Version:** v0.1 — 2026-05-16
@@ -22,7 +22,7 @@ system-capability: "@platform/alm/hedge-accounting-engine (PLANNED)"
 
 ## 1. Source policy
 
-- Hedge Accounting Policy (planned; to be authored by Eitan (treasury & ALM engineer) with Bea (financial-reporting engineer) and Camille (CFO, governance) approval; required before first hedge relationship is designated).
+- Hedge Accounting Policy (planned; to be authored by Eitan (Treasurer) with Bea (financial-reporting engineer) and Camille (CFO, governance) approval; required before first hedge relationship is designated).
 - IFRS 9 Financial Instruments (as adopted in South Africa via IFRS for South Africa, effective 1 January 2018) — Chapter 6 (Hedge Accounting).
 - `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` §B3 — interest-rate risk appetite; the RAS frames the hedge programme as the primary control for IRRBB within appetite.
 
@@ -94,7 +94,7 @@ Default actor is the hedge accounting engine agent (`@platform/alm/hedge-account
 
 **Step 1 — Hedge relationship specification (Eitan, human)**
 
-Eitan (treasury & ALM engineer) defines the hedge relationship in writing before or at the date of designation:
+Eitan (Treasurer) defines the hedge relationship in writing before or at the date of designation:
 
 - **Hedge type:** fair value hedge or cash-flow hedge.
 - **Hedged item:** the specific bond ISIN(s) or a proportion of the bond portfolio; or the specific OTC IRD position; or a forecast transaction (cash-flow hedge only).
@@ -114,7 +114,7 @@ The hedge accounting engine verifies:
 3. The designated portion is clearly identifiable and measurable.
 4. The hedging instrument is not a written option designated as hedging instrument for a net position (prohibited).
 
-If any check fails, the engine raises a `HedgeEligibilityFailed` event and escalates to Eitan (treasury & ALM engineer) and Bea (financial-reporting engineer) for resolution.
+If any check fails, the engine raises a `HedgeEligibilityFailed` event and escalates to Eitan (Treasurer) and Bea (financial-reporting engineer) for resolution.
 
 **Step 3 — Prospective effectiveness test (agent)**
 
@@ -163,11 +163,11 @@ Each business day at 17:30 SAST, the hedge accounting engine:
 2. Retrieves the fair-value change of the hedged item for the designated risk component (from the bond pricing feed; isolating the benchmark rate component via duration × rate-change attribution).
 3. Computes the dollar-offset ratio: Δ(hedging instrument) / Δ(hedged item).
 4. If the ratio is within the 80–125% corridor, no action required.
-5. If the ratio breaches the corridor, a `HedgeEffectivenessBreached` event is emitted and Eitan (treasury & ALM engineer) is notified within 30 minutes (§7).
+5. If the ratio breaches the corridor, a `HedgeEffectivenessBreached` event is emitted and Eitan (Treasurer) is notified within 30 minutes (§7).
 
 **Step 8 — Rebalancing assessment (Eitan, human — if Step 7 triggers)**
 
-On receipt of a `HedgeEffectivenessBreached` event, Eitan (treasury & ALM engineer):
+On receipt of a `HedgeEffectivenessBreached` event, Eitan (Treasurer):
 
 1. Determines whether the breach is due to a systematic drift in the hedge ratio (requiring rebalancing) or a temporary basis movement (which may resolve without action).
 2. If rebalancing is required: adjusts the notional of the hedging instrument designated in the relationship (partial termination or additional designation) to restore the hedge ratio. The hedge relationship is not de-designated — IFRS 9 permits rebalancing without de-designation.
@@ -197,7 +197,7 @@ De-designation is mandatory when:
 - The hedge no longer meets the qualifying criteria (economic relationship failed per Step 9; or credit risk has become dominant).
 - ALCO instructs voluntary de-designation (documented in ALCO minutes).
 
-Eitan (treasury & ALM engineer) and Bea (financial-reporting engineer) complete a de-designation form specifying the de-designation date and reason. A `HedgeDessignated` (de-designated) event is emitted.
+Eitan (Treasurer) and Bea (financial-reporting engineer) complete a de-designation form specifying the de-designation date and reason. A `HedgeDessignated` (de-designated) event is emitted.
 
 **Step 11 — Accounting treatment on de-designation (Bea, human)**
 
@@ -215,7 +215,7 @@ Bea (financial-reporting engineer) posts the required journal entries and update
 
 | Role | Responsibility |
 |---|---|
-| Eitan (treasury & ALM engineer) | Hedge relationship design; hedge ratio determination; rebalancing decisions; de-designation sign-off |
+| Eitan (Treasurer) | Hedge relationship design; hedge ratio determination; rebalancing decisions; de-designation sign-off |
 | Bea (financial-reporting engineer) | IFRS 9 documentation sign-off; period-end effectiveness assessment review; accounting treatment on de-designation; auditor liaison |
 | Ravi (ALM quant engineer) | Regression model for effectiveness testing; fair-value attribution of the benchmark rate component |
 | Camille (CFO, governance) | Hedge Accounting Policy approval; auditor liaison at year-end |
@@ -229,8 +229,8 @@ Bea (financial-reporting engineer) posts the required journal entries and update
 
 | Condition | Action | Timeframe |
 |---|---|---|
-| **HedgeEligibilityFailed:** designated relationship does not meet IFRS 9 criteria | Eitan (treasury & ALM engineer) and Bea (financial-reporting engineer) assess; ALCO informed; hedge is not designated until criteria are met | Resolution within 2 business days; ALCO at next scheduled meeting |
-| **HedgeEffectivenessBreached (daily monitoring)** | Eitan (treasury & ALM engineer) notified within 30 minutes; rebalancing decision within 1 business day; if rebalancing not feasible, mandatory de-designation | 1 business day for rebalancing decision |
+| **HedgeEligibilityFailed:** designated relationship does not meet IFRS 9 criteria | Eitan (Treasurer) and Bea (financial-reporting engineer) assess; ALCO informed; hedge is not designated until criteria are met | Resolution within 2 business days; ALCO at next scheduled meeting |
+| **HedgeEffectivenessBreached (daily monitoring)** | Eitan (Treasurer) notified within 30 minutes; rebalancing decision within 1 business day; if rebalancing not feasible, mandatory de-designation | 1 business day for rebalancing decision |
 | **Retrospective test failure at period-end** | Mandatory de-designation; Camille (CFO, governance) notified; disclosure implications assessed by Bea (financial-reporting engineer); Helena (Chief Risk Officer, governance) notified for RAS reporting | De-designation effective as of period-end date; disclosure prepared within 5 business days |
 | **Documentation not complete before hedge start date attempted** | Agent blocks hedge accounting flag on the position; Bea (financial-reporting engineer) escalates to Camille (CFO, governance) | No backdating permitted; hedge accounting only from documentation-complete date |
 
@@ -258,7 +258,7 @@ Bea (financial-reporting engineer) posts the required journal entries and update
 | Daily dollar-offset ratio within 80–125% corridor | Daily | Hedge accounting engine agent |
 | Period-end retrospective effectiveness test completed and signed off | Monthly / quarterly / annually | Bea (financial-reporting engineer) |
 | Hedge register completeness — every designated relationship has current documentation | Monthly | Bea (financial-reporting engineer) |
-| ALCO review of hedge effectiveness summary | Monthly | Eitan (treasury & ALM engineer) |
+| ALCO review of hedge effectiveness summary | Monthly | Eitan (Treasurer) |
 | IFRS 7 disclosure adequacy review | Quarterly (for quarterly reporting) / annually (for annual financial statements) | Camille (CFO, governance) · Bea (financial-reporting engineer) |
 | Independent model validation of regression effectiveness test | Annual | Rohan (market risk quant engineer) |
 

@@ -13,7 +13,7 @@ system-capability: "@platform/markets/product-register (PLANNED)"
 
 **Procedure ID:** PROC-MK-NPA-RET-01
 **Owner:** Saskia (Head of Global Markets, governance — franchise authority) · Imani (Legal-as-code engineer — counterparty consent flows) · Tomas (Operations & payments engineer — settlement / cutover execution)
-**Co-actors:** Bea + Camille (accounting / capital flush) · Eitan + Ravi (FTP / liquidity flush) · Helena (CRO, governance — risk-envelope close-out) · Mira (Regulatory intelligence engineer — regulatory record retention) · Devon (COO, governance — operational cutover) · BRC (vote / ratification)
+**Co-actors:** Bea + Camille (Chief Financial Officer) · Eitan + Ravi (FTP / liquidity flush) · Helena (CRO, governance — risk-envelope close-out) · Mira (Regulatory intelligence engineer — regulatory record retention) · Devon (COO, governance — operational cutover) · BRC (vote / ratification)
 **Approval:** BRC primary (vote); CEO ratification (interim, until BRC constituted); CEO direct authority for emergency retirement per parent policy §9
 **Cadence:** Per-retirement — single cycle from `ProductRetirementProposed` to `ProductRetired`
 **Version:** v1.0 — 2026-05-15

@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-MK-MDI-01
 title: Dealer mandate issuance, review, and revocation
-author: Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+author: Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 date: 2026-05-16
-owner: Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+owner: Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 status: POPULATED
 version: "0.1"
 last-updated: "2026-05-16"
@@ -18,7 +18,7 @@ citations:
 # Procedure — Dealer mandate issuance, review, and revocation
 
 **Procedure ID:** PROC-MK-MDI-01
-**Owner:** Saskia (Chief Markets Officer, governance) · Helena (Chief Risk Officer, governance)
+**Owner:** Saskia (Head of Global Markets) · Helena (Chief Risk Officer, governance)
 **Approval:** BRC (TRADING-MANDATE-V1)
 **Cadence:** Per-request (issuance / amendment / revocation); annual blanket review of all active mandates
 **Version:** v0.1 — 2026-05-16
@@ -67,7 +67,7 @@ Regulation (Banks Act Reg 39 — written trading authority delegation)
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | Saskia (Chief Markets Officer, governance) identifies the need for a new or amended dealer mandate; reviews the proposed product scope and limits against TRADING-MANDATE-V1 category limits; submits `DealerMandateRequested` | `human` (Saskia — Chief Markets Officer, governance) | `@platform/markets/mandate-registry` (PLANNED) | Proposal must specify: dealer category (Junior / Senior / Principal), product scope (e.g. FX spot, OTC IRS), single-trade notional limit, portfolio notional limit, max tenor. |
+| 1 | Saskia (Head of Global Markets) identifies the need for a new or amended dealer mandate; reviews the proposed product scope and limits against TRADING-MANDATE-V1 category limits; submits `DealerMandateRequested` | `human` (Saskia — Chief Markets Officer, governance) | `@platform/markets/mandate-registry` (PLANNED) | Proposal must specify: dealer category (Junior / Senior / Principal), product scope (e.g. FX spot, OTC IRS), single-trade notional limit, portfolio notional limit, max tenor. |
 | 2 | Helena (Chief Risk Officer, governance) reviews the credit and counterparty risk implications of the proposed mandate; assesses whether the proposed limits are consistent with the bank's current risk appetite statement (RAS) and capital allocation; approves or returns for revision | `human` (Helena — Chief Risk Officer, governance) | None — risk judgment | Helena's review must be completed within 2 business days of mandate request. Return-for-revision requires Helena to document the gap in writing (chat or event body). |
 | 3 | Rohan (Market Risk Quant Engineer) calibrates the quantitative limits: VaR contribution, DV01 per tenor bucket (IRS/FX), and maximum single-trade notional consistent with the bank's intraday liquidity buffer; produces a limit-calibration note | `agent` (Rohan — Market Risk Quant Engineer) | `@platform/risk/var-engine` (PLANNED) | Limit-calibration note is an input artefact, not a separate event; it is referenced by hash in the `DealerMandateIssued` event body. |
 | 4 | If Helena approves and Rohan's calibration is consistent with the proposal: Saskia emits `DealerMandateIssued { dealerId, mandateId, category, productScope, notionalLimits, tenorLimits, effectiveFrom, limitCalibrationHash, approvedBy: Helena, issuedBy: Saskia, issuedAt }` | `agent` | `@platform/event-store` | This event is the canonical mandate record per Principle 1. `mandateId` follows the pattern `MDT-{dealerInitials}-{YYYYMMDD}`. |
@@ -82,7 +82,7 @@ Regulation (Banks Act Reg 39 — written trading authority delegation)
 
 | Role | Responsibility |
 |---|---|
-| Saskia (Chief Markets Officer, governance) | Mandate request initiation; issuance event emission; annual review coordination; revocation initiation |
+| Saskia (Head of Global Markets) | Mandate request initiation; issuance event emission; annual review coordination; revocation initiation |
 | Helena (Chief Risk Officer, governance) | Credit/risk review (step 2); RAS alignment check; revocation approval |
 | Rohan (Market Risk Quant Engineer) | Quantitative limit calibration (step 3); annual re-calibration (step 10) |
 | Vera (internal audit engineer, governance) | Asserts every active dealer has a current acknowledged mandate; flags overdue annual reviews |

@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-FC-CKKYC-01
 title: Continuous KYC re-evaluation — signal-triggered between formal refresh cycles
-author: Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer, MLRO, governance)
+author: Mira (Regulatory intelligence engineer, compliance) · Zara (Chief Compliance Officer)
 date: 2026-05-18
-owner: Zara (Chief Compliance Officer, MLRO, governance) · Mira (Regulatory intelligence engineer, compliance)
+owner: Zara (Chief Compliance Officer) · Mira (Regulatory intelligence engineer, compliance)
 status: POPULATED
 version: "1.0"
 last-updated: "2026-05-18"
@@ -20,7 +20,7 @@ citations:
 # Procedure — Continuous KYC Re-evaluation (Signal-triggered)
 
 **Procedure ID:** PROC-FC-CKKYC-01
-**Owner:** Zara (Chief Compliance Officer, MLRO, governance) · Mira (Regulatory intelligence engineer, compliance)
+**Owner:** Zara (Chief Compliance Officer) · Mira (Regulatory intelligence engineer, compliance)
 **Approval:** BRC
 **Cadence:** Per-signal — fires whenever a qualifying signal event arrives for an active client; not calendar-driven
 **Version:** v1.0 — 2026-05-18
@@ -133,7 +133,7 @@ Any of the following signal events arriving for an active client in the KYC regi
 | Band-upgrade without `KYCRefreshScheduled` | Projection invariant on `KYCRiskRated` emit | Mira immediately; Zara notified; trade restriction automatically applied |
 | Screening service unavailable during re-screen | Health-check on `@platform/screening` | Mira immediately; re-screen pending; trading restriction applied until resolved |
 | `ClientExitTriggered` not followed by EXCO decision event within 5 business days | Case-management escalation timer | Zara → EXCO chair; relationship restricted pending EXCO |
-| Exit trigger during active open trades | `ClientExitTriggered` + open trade projection check | Mira + Saskia (Markets franchise lead, engineering) immediately; unwind plan required |
+| Exit trigger during active open trades | `ClientExitTriggered` + open trade projection check | Mira + Saskia (Head of Global Markets) immediately; unwind plan required |
 
 ## 10. Related procedures
 
@@ -148,7 +148,7 @@ Any of the following signal events arriving for an active client in the KYC regi
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v1.0 | 2026-05-18 | Mira (Regulatory intelligence engineer, compliance) + Zara (Chief Compliance Officer, MLRO, governance) | Initial POPULATED version — all 12 sections; authority D-KYC-ONBOARDING-BUILD. |
+| v1.0 | 2026-05-18 | Mira (Regulatory intelligence engineer, compliance) + Zara (Chief Compliance Officer) | Initial POPULATED version — all 12 sections; authority D-KYC-ONBOARDING-BUILD. |
 
 ## 12. Audit / assurance
 

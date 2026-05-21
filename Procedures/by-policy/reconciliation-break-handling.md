@@ -92,7 +92,7 @@ A reconciliation break exists when the three legs do not agree on amount, curren
 | Timing break — auto-corrects | ≤ 4 hours (self-correcting window) | Alert Tomas; monitor; escalate if not resolved within 4 hours |
 | Timing break — not resolved within 4 hours | Escalate within 30 minutes of window expiry | Tomas → Devon (COO) + Bea |
 | Amount break (any value) | Escalate within 30 minutes of detection | Tomas + Bea → Devon (COO) + Camille (CFO) + Helena (CRO) |
-| Nostro break — unresolved within 1 hour | Escalate at 1 hour | Tomas → Devon (COO) + Eitan (treasury & ALM engineer) |
+| Nostro break — unresolved within 1 hour | Escalate at 1 hour | Tomas → Devon (COO) + Eitan (Treasurer) |
 | End-of-day outstanding break | Report at EoD; escalate if unresolved by 09:00 next day | Tomas + Bea → Devon (COO) + Helena (CRO) |
 | Systemic pattern (3+ breaks in one day, same leg) | Same-day | Tomas + Bea → Devon (COO) + Helena (CRO) + Camille (CFO) |
 | Correcting journal entry required (material) | Pre-posting approval | Bea → Camille (CFO) sign-off before posting |

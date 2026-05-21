@@ -77,8 +77,8 @@ This Policy applies to every person who holds, is proposed for, or is acting in 
 | Seat | Incumbent at licence-day | PA approval required |
 |---|---|---|
 | Chief Executive Officer (CEO) | Marc (CEO — see note) | Yes |
-| Chief Financial Officer (CFO) | Camille (CFO candidate) | Yes |
-| Chief Risk Officer (CRO) | Helena (CRO candidate) | Yes |
+| Chief Financial Officer (CFO) | Camille (Chief Financial Officer) | Yes |
+| Chief Risk Officer (CRO) | Helena (Chief Risk Officer) | Yes |
 | Company Secretary (CoSec) | Owen (Company Secretary, governance) [agent, build-phase; human at licence-day] | Yes |
 | Board directors (minimum per Banks Act) | To be nominated before licence application | Yes |
 

@@ -27,7 +27,7 @@ system-capability: prototype/platform/accounting/consolidation.ts (planned)
 
 | Citation | Requirement | Resolves via |
 |---|---|---|
-| Companies Act 71 of 2008 § 28 + § 29 + Regulation 27 + 28 [citation: TBC — exact section anchors to be ratified by Imani (Legal-as-code engineer) + external counsel at licence-application gate] | Holding company of a group prepares consolidated annual financial statements in accordance with IFRS endorsed by FRSC. | This procedure produces the consolidated financial statements; Step 8 is Camille (CFO governance) sign-off and Step 9 is filing. |
+| Companies Act 71 of 2008 § 28 + § 29 + Regulation 27 + 28 [citation: TBC — exact section anchors to be ratified by Imani (Legal-as-code engineer) + external counsel at licence-application gate] | Holding company of a group prepares consolidated annual financial statements in accordance with IFRS endorsed by FRSC. | This procedure produces the consolidated financial statements; Step 8 is Camille (Chief Financial Officer) sign-off and Step 9 is filing. |
 | Banks Act 94 of 1990 § 60 + Regulations Relating to Banks § 36 + § 38 [citation: TBC] | SARB Prudential Authority assesses the bank on a group / consolidated basis; consolidated capital, liquidity, large-exposures reported via BA returns at consolidated level. | Step 9 (regulatory-submission generation) consumes this procedure's consolidated outputs and feeds them into Bea's `ba-return-generation.md` (PLANNED). |
 | IFRS 10 *Consolidated Financial Statements* §6, §7, §B86, §19, §22 [citation: TBC] | Three-element control test; uniform accounting policies across the group; line-by-line consolidation with intra-group elimination. | §2 of the spec partner documents the three-element test; Steps 3 + 4 implement line-by-line consolidation with elimination. |
 | IFRS 12 *Disclosure of Interests in Other Entities* [citation: TBC] | Disclose composition of group, control assessment summary, restrictions on access to group assets, risks. | Step 6 generates IFRS 12 disclosure block. |
@@ -37,7 +37,7 @@ system-capability: prototype/platform/accounting/consolidation.ts (planned)
 
 ## 3. Purpose
 
-Produce, on demand and at any "as-of" point, a reproducible set of consolidated balance-sheet, income-statement, equity-movement, and cash-flow statements for the Hoz Group Limited group (Hoz Group Limited parent + Hoz Bank Limited 100%-owned + Hoz Securities Limited 100%-owned), plus the IFRS 12 (group composition + control assessment + restrictions + risks) and IAS 24 (related-party transactions and balances) disclosure blocks. Per Principle 1, the consolidated financial statements are **queries over the event log**, not stored documents. The procedure is the operational discipline binding Camille (CFO governance) sign-off to the substrate output.
+Produce, on demand and at any "as-of" point, a reproducible set of consolidated balance-sheet, income-statement, equity-movement, and cash-flow statements for the Hoz Group Limited group (Hoz Group Limited parent + Hoz Bank Limited 100%-owned + Hoz Securities Limited 100%-owned), plus the IFRS 12 (group composition + control assessment + restrictions + risks) and IAS 24 (related-party transactions and balances) disclosure blocks. Per Principle 1, the consolidated financial statements are **queries over the event log**, not stored documents. The procedure is the operational discipline binding Camille (Chief Financial Officer) sign-off to the substrate output.
 
 ## 4. Trigger
 
@@ -89,7 +89,7 @@ Per the spec partner § 4 — the new Vera (Internal-audit / continuous-assuranc
 
 ## 8. Manual steps
 
-- **Camille (CFO governance) sign-off (Step 8)** is a human-judgment step captured as a typed event. Per Principle 6, the human-actor exception is registered: CFO sign-off of financial statements is a regulatory expectation that cannot be agent-default within the foreseeable build-phase horizon.
+- **Camille (Chief Financial Officer) sign-off (Step 8)** is a human-judgment step captured as a typed event. Per Principle 6, the human-actor exception is registered: CFO sign-off of financial statements is a regulatory expectation that cannot be agent-default within the foreseeable build-phase horizon.
 - **External-counsel ratification of `[citation: TBC]` section refs** (Companies Act, Banks Act, IFRS / IAS sub-paragraphs) is a manual step routed to Imani (Legal-as-code engineer) at licence-application gate — Principle 2 citation discipline.
 - **External auditor walkthrough** of the annual consolidation cycle is a future cadence step at audit-engagement (post-CAE substrate; auditor is appointed at licence-application moment per CLAUDE.md operating model).
 
@@ -127,7 +127,7 @@ Per Principle 6 substrate-gap-naming discipline. v0 substrate scaffolds without 
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v0.1 | 2026-05-09 | Bea (Accounting & financial reporting engineer) | Initial scaffold — STUB. Procedure created under D-LEGAL-ENTITY-TREE-V0 (PR #82) + D-REGULATORY-PERIMETER (PR #85) to make IFRS 10 consolidation operationally executable for the Hoz Group / Hoz Bank / Hoz Securities three-entity structure. Cadence: monthly + quarterly + annual. Steps 1–9 named; six substrate gaps named for v1; Camille (CFO governance) signs at Step 8. Spec partner at `Owner Inbox/2026-05-09_bea_ifrs10-consolidation-substrate-v0.md`. |
+| v0.1 | 2026-05-09 | Bea (Accounting & financial reporting engineer) | Initial scaffold — STUB. Procedure created under D-LEGAL-ENTITY-TREE-V0 (PR #82) + D-REGULATORY-PERIMETER (PR #85) to make IFRS 10 consolidation operationally executable for the Hoz Group / Hoz Bank / Hoz Securities three-entity structure. Cadence: monthly + quarterly + annual. Steps 1–9 named; six substrate gaps named for v1; Camille (Chief Financial Officer) signs at Step 8. Spec partner at `Owner Inbox/2026-05-09_bea_ifrs10-consolidation-substrate-v0.md`. |
 | v0.2 | 2026-05-15 | Atlas (Core banking platform architect, engineering) | Promoted to POPULATED — status updated; all 13 sections verified complete. |
 
 ## 13. Audit / assurance

@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-OPS-SARB-FIX-IPV-01
 title: SARB ZAR Fixing as authorised FX-spot IPV source (controlled-launch)
-author: Saskia (Chief Markets Officer, governance) · Atlas (Core banking platform architect, engineering)
+author: Saskia (Head of Global Markets) · Atlas (Core banking platform architect, engineering)
 date: 2026-05-20
-owner: Saskia (Chief Markets Officer, governance)
+owner: Saskia (Head of Global Markets)
 co-signs: Helena (Chief Risk Officer, governance) · Devon (Chief Operating Officer, governance)
 status: POPULATED
 version: "1.0"
@@ -24,7 +24,7 @@ citations:
 # Procedure — SARB ZAR Fixing as authorised FX-spot IPV source (controlled-launch)
 
 **Procedure ID:** PROC-OPS-SARB-FIX-IPV-01
-**Owner:** Saskia (Chief Markets Officer, governance) — source authority
+**Owner:** Saskia (Head of Global Markets) — source authority
 **Co-author:** Atlas (Core banking platform architect, engineering) — system implementation
 **Co-signs:** Helena (Chief Risk Officer, governance) — daily IPV sign-off; Devon (Chief Operating Officer, governance) — operational continuity
 **Approval:** CMO (Saskia) for source-of-authority; CRO (Helena) for IPV sign-off; CEO (Marc) per the controlled-launch envelope decision
@@ -123,7 +123,7 @@ Manual step (§5 step 6 sub-action): Helena's daily IPV sign-off carries discret
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| v1.0 | 2026-05-20 | Saskia (Chief Markets Officer, governance) · Atlas (Core banking platform architect, engineering) | Initial procedure — POPULATED. SARB fixing established as the authorised FX-spot IPV source for the controlled-launch window. Build-phase fixture variant; live SARB feed post-licence. |
+| v1.0 | 2026-05-20 | Saskia (Head of Global Markets) · Atlas (Core banking platform architect, engineering) | Initial procedure — POPULATED. SARB fixing established as the authorised FX-spot IPV source for the controlled-launch window. Build-phase fixture variant; live SARB feed post-licence. |
 
 ## 12. Audit / assurance
 

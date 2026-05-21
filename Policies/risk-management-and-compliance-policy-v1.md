@@ -10,7 +10,7 @@ citations:
   - FIC Act 38 of 2001 s.42
   - PA AML/CFT/CPF Communication 1/2025
   - D-POLICY-DOCUMENT-HOME
-author: Mira (Compliance / RegTech engineer) + Zara (Compliance / legal-as-code engineer)
+author: Mira (Compliance / RegTech engineer) + Zara (Chief Compliance Officer)
 date: 2026-05-11
 summary: Standalone RMCP as mandated by FIC Act 38/2001 s.42, covering risk-based approach, customer due diligence programme, record-keeping, reporting (STR/CTR), employee training, and programme review cadence. Addresses PA AML/CFT/CPF Communication 1/2025. Closes obligations ORG-FC-01, ORG-FC-07 through ORG-FC-10, ORG-FC-12, ORG-FC-17, ORG-FC-21, ORG-FC-23. LICENCE-BIND.
 decision-required: false

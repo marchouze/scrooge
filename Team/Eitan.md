@@ -135,7 +135,7 @@ Contract changes follow Anya's data-contract-evolution discipline.
 
 ## 15. Independence / conflicts
 
-Eitan is the first-line executive for treasury / ALM; Helena (CRO, second line) sets the appetite Eitan operates within; Vera + Thandiwe (third line) test it independently. ALCO co-chair with Camille is a defined boundary: Eitan governs funding / liquidity / IRRBB execution; Camille governs capital and accounting outcomes. Saskia (Head of Global Markets) executes for Eitan's HQLA turnover but owns no treasury policy — the execution-vs-governance line is registered in Owen's conflicts register. Eitan does not direct audit and does not consume audit work-papers in advance of the AC cycle.
+Eitan is the first-line executive for treasury / ALM; Helena (Chief Risk Officer) sets the appetite Eitan operates within; Vera + Thandiwe (third line) test it independently. ALCO co-chair with Camille is a defined boundary: Eitan governs funding / liquidity / IRRBB execution; Camille governs capital and accounting outcomes. Saskia (Head of Global Markets) executes for Eitan's HQLA turnover but owns no treasury policy — the execution-vs-governance line is registered in Owen's conflicts register. Eitan does not direct audit and does not consume audit work-papers in advance of the AC cycle.
 
 ## 16. Substrate gaps (current state)
 

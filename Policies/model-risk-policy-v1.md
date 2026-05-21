@@ -278,7 +278,7 @@ Changes to the scenario set or probability weights between quarterly runs (e.g.,
 
 ### 5.6 IFRS 9 ECL Governance Committee
 
-Helena chairs the IFRS 9 ECL Governance Committee (a sub-forum of the Credit Risk Committee or, pending its constitution, of the Board Risk Committee). The committee meets quarterly before each ECL run and includes: Helena (chair), Rohan (model owner), Nadia (validator), Camille (CFO, financial statement sign-off), and Eitan (Treasurer, governance — portfolio composition input). The committee reviews: backtesting results; parameter changes since last run; macroeconomic overlay proposals; staging model performance; any open validation findings.
+Helena chairs the IFRS 9 ECL Governance Committee (a sub-forum of the Credit Risk Committee or, pending its constitution, of the Board Risk Committee). The committee meets quarterly before each ECL run and includes: Helena (chair), Rohan (model owner), Nadia (validator), Camille (Chief Financial Officer), and Eitan (Treasurer, governance — portfolio composition input). The committee reviews: backtesting results; parameter changes since last run; macroeconomic overlay proposals; staging model performance; any open validation findings.
 
 `IfrsNineEclGovernanceCommitteeMeeting { meetingDate, attendees[], decisionsSummary[], overlayApproved, openFindings[] }` is the typed committee record.
 
