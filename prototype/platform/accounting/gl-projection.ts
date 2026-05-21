@@ -272,14 +272,33 @@ export function buildGlView(
     if (event.type === "SubLedgerPostingEmitted") {
       const postedAt = typeof p.postedAt === "string" ? p.postedAt : event.as_of;
       if (postedAt > asOf) continue;
-      const legs = Array.isArray(p.legs) ? p.legs : [];
-      for (const leg of legs) {
-        const l = leg as {
-          accountId: string;
-          debitCredit: "debit" | "credit";
-          amountMinor: number;
-          currency: string;
-        };
+      const rawLegs = Array.isArray(p.legs) ? p.legs : [];
+      // Normalise: old events used {debit, credit, amountMinor, currency} per leg
+      // (one object = one journal entry). Expand those into two canonical legs each.
+      type NormLeg = {
+        accountId: string;
+        debitCredit: "debit" | "credit";
+        amountMinor: number;
+        currency: string;
+      };
+      const legs: NormLeg[] = [];
+      for (const raw of rawLegs) {
+        const r = raw as Record<string, unknown>;
+        if (typeof r.accountId === "string") {
+          legs.push(r as unknown as NormLeg);
+        } else if (typeof r.debit === "string" && typeof r.credit === "string") {
+          const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+          const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
+          legs.push({ accountId: r.debit, debitCredit: "debit", amountMinor: amt, currency: ccy });
+          legs.push({
+            accountId: r.credit,
+            debitCredit: "credit",
+            amountMinor: amt,
+            currency: ccy,
+          });
+        }
+      }
+      for (const l of legs) {
         const coa = getCoaEntry(l.accountId);
         const postingType = String(p.postingType ?? "unknown");
         const sourceEventId = typeof p.sourceEventId === "string" ? p.sourceEventId : undefined;
