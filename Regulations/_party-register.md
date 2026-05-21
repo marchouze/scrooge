@@ -99,7 +99,7 @@ entity-slug component of the source URN
 | Party URN | Display name | Form | Jurisdictions | Primary regulator | LEI | Notes |
 |---|---|---|---|---|---|---|
 | `urn:party:legal-entity:hoz-group` | Hoz Group Limited | Ltd | ZA | none-companies-act-only | — | Bank's controlling company |
-| `urn:party:legal-entity:hoz-bank` | Hoz Bank Limited | Ltd | ZA | PA | — | Bank's banking entity |
+| `urn:party:legal-entity:hoz-bank` | Hoz Bank Limited | Ltd | ZA | PA | — | Bank's banking entity. Event-store short-id: `LE-ZA-HOZ-BANK` (registered in `prototype/platform/identity/entity-short-ids.ts` per the entity-identity unification, Atlas + Imani 2026-05-21; supersedes the legacy `BANK-ZA-001` placeholder) |
 | `urn:party:legal-entity:hoz-securities` | Hoz Securities Limited | Ltd | ZA | JSE | — | Bank's JSE-member entity |
 | `urn:party:legal-entity:investec-bank-za` | Investec Bank Treasury | Ltd | ZA | PA | `549300RH5FFHO48FXT69` | Institutional counterparty — legal name "Investec Bank Limited"; CIPC 1969/004763/06; FX-spot controlled-launch whitelist (PR #634, PR #637); SARB Banks Act bank-licence number TBC |
 | `urn:party:legal-entity:standard-bank-za` | Standard Bank Corporate Treasury | Ltd | ZA | PA | `QFC8ZCW3Q5PRXU1XTM60` | Institutional counterparty — legal name "The Standard Bank of South Africa Limited"; CIPC 1962/000738/06; FSP 11287; FX-spot controlled-launch whitelist (PR #634, PR #637); SARB Banks Act bank-licence number TBC |

@@ -1733,10 +1733,19 @@ async function runPhase6(): Promise<PhaseResult> {
       ba325Result.skipped === false,
       `skipped=${ba325Result.skipped}; reason=${ba325Result.skipReason ?? "n/a"}`,
     );
+    // HQLA Level-1 stock = initial SARB-cash capital (ZAR 100m) net of
+    // the trade-settlement ZAR outflow (~ZAR 9.262m, USD_500K_MINOR ×
+    // SPOT_RATE_USD_ZAR). Post-unification the trading entity IS the
+    // bank-licence entity, so the GL projection sees both postings as
+    // belonging to the same trial balance. Pre-unification the trade
+    // was on a separate (BANK-ZA-001) entity and was invisible to the
+    // BA-325 subscriber.
+    const expectedLevel1StockMinor =
+      100_000_000_00 - Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR);
     r.assert(
-      "Block A — BA-325 HQLA Level-1 stock = ZAR 100m (initial SARB-cash capital)",
-      ba325Result.ba325Output.hqla.level1.stockMinor === 100_000_000_00,
-      `level1.stockMinor=${ba325Result.ba325Output.hqla.level1.stockMinor}`,
+      `Block A — BA-325 HQLA Level-1 stock = ZAR ${(expectedLevel1StockMinor / 100).toLocaleString("en-ZA")} (initial SARB-cash capital net of trade-settlement outflow)`,
+      ba325Result.ba325Output.hqla.level1.stockMinor === expectedLevel1StockMinor,
+      `level1.stockMinor=${ba325Result.ba325Output.hqla.level1.stockMinor}; expected=${expectedLevel1StockMinor}`,
     );
     r.assert(
       "Block A — BA-325 total HQLA stock > 0",
