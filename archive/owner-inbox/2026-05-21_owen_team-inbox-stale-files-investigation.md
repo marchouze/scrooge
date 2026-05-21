@@ -32,7 +32,9 @@ PR #649's CI note flagged 5 files reported by `recon:rms-briefs-parity` under th
 
 Per RMS Phase 4 (D-RMS-PHASE-4, 2026-05-18) the live `Team Inbox/` directory was retired and all files moved to `archive/team-inbox/`. Any "Team Inbox" file post-Phase-4 should therefore be anomalous.
 
-**Finding: the files are NOT stale and require NO file-system remediation.** They are correctly archived; the recon-reported `Team Inbox/...` path prefix is a misleading label produced by the recon code itself, not a real on-disk location.
+**Finding: the files are NOT stale on disk.** They are correctly archived; the recon-reported `Team Inbox/...` path prefix is a misleading label produced by the recon code itself, not a real on-disk location.
+
+**Event-level remediation IS required, however.** The 5 backing `AgentBriefIssued` events were originally emitted only into the production daemon's event-store (commit `a71c066e`, 2026-05-18) and were never written into a deterministic CI/worktree backfill script. Each fresh checkout (CI container or new agent worktree) therefore re-derives the empty-store recon posture: 5 `warn`-level violations downgraded by the empty-store auto-rule. As soon as any agent emits even one `AgentBriefIssued` event in the worktree, the empty-store rule no longer applies and the 5 historical files become `fail`-level violations. This investigation re-encountered exactly that failure mode while emitting the brief lifecycle events for this run, so the fix is now committed: a re-runnable `backfill:authority-briefs-2026-05-18` script wired into `bun run ci`.
 
 ---
 
@@ -86,18 +88,23 @@ Confirmed by running the recon in this worktree (also empty event-store, same fr
 
 ## Classification (per brief taxonomy A/B/C/D)
 
-All 5 files are **Class A — DELIVERED-ARCHIVED**:
+All 5 files are a **hybrid A + C**:
 
-1. Live record under correct RMS-Phase-4 location (`archive/team-inbox/`).
-2. Backing `AgentBriefIssued` events were emitted by the 2026-05-18 backfill (commit `a71c066e`) and exist in the canonical event store on `origin/main` / the daemon-served event.db.
-3. No `Team Inbox/` directory pollution — the legacy path string in the recon report is cosmetic.
-4. Substrate-only artefact (fresh-worktree empty event-store) caused them to surface as `warn` in PR #649.
+- **Class A on disk (DELIVERED-ARCHIVED):** Live record at the correct RMS-Phase-4 location (`archive/team-inbox/`). No `Team Inbox/` directory pollution — the legacy path string in the recon report is cosmetic only.
+- **Class C on events (DRAFTED-NEVER-EVENTED in a fresh store):** No deterministic backfill exists for the 5 `AgentBriefIssued` events. The daemon's event-store carries them (emitted by commit `a71c066e` on 2026-05-18), but every fresh worktree / CI container starts empty and cannot re-derive them.
+
+The hybrid status is the substrate-level lesson: an event-only emit is only durable if it is *also* committed as a re-runnable backfill script (matching the pattern used by `backfill:decisions`, `backfill:policy-activations`, `backfill:policy-documents`).
 
 ---
 
 ## Remediation
 
 **File-system action: NONE.** The 5 files are at the correct location. No janitorial PR moving or deleting files is required.
+
+**Event-store remediation: SHIPPED in this PR.**
+
+- `prototype/scripts/backfill-authority-briefs-2026-05-18.ts` — idempotent backfill emitting 5 `AgentBriefIssued` events (one per archived authority brief), keyed by `briefId`, body sourced from the on-disk markdown so the BLAKE3 hash matches the canonical document store entry.
+- `prototype/package.json` — script alias `backfill:authority-briefs-2026-05-18` + addition to the `ci` chain immediately after `backfill:policy-activations` and before `recon`. CI now re-derives the 5 events on every fresh checkout; `recon:rms-briefs-parity` matches them deterministically (5 asserted / 0 violations).
 
 **Recon cosmetic clarification:** the path-label inconsistency in `rms-briefs-parity.ts` is logged below as a substrate gap. It is not in this brief's remit to fix; flagging only.
 
@@ -111,9 +118,13 @@ All 5 files are **Class A — DELIVERED-ARCHIVED**:
 
 `prototype/platform/recon/rms-briefs-parity.ts` scans `archive/team-inbox/` (line 166) but reports violations under the legacy `Team Inbox/${filename}` prefix (line 201). Identical pattern likely in sibling reconciliations that pre-date D-RMS-PHASE-4 (e.g. `dashboard-derivation-recon.ts` and `decision-event-recon.ts` still carry the `Team Inbox/actioned/*` prose-comment reference). The label should match the actual scanned path so investigators do not chase a phantom directory.
 
-### Gap 2 — Fresh-worktree empty event-store produces misleading "warn" surfaces
+### Gap 2 — Fresh-worktree empty event-store produces unstable recon outcomes
 
-Agent worktrees boot with empty `prototype/.local/event.db`. Recon pipelines that match markdown files to historical events (here: `rms-briefs-parity`; likely sister: `rms-documents-parity`) cannot find the events because they live on the production daemon's event-store, not the worktree's. The fresh-runner empty-store posture (auto-downgrade to `warn`) is the right safety net, but the surface still looks like a real finding to humans / Scrooge skimming PR CI output. Consider one of: (a) recon outputs that explicitly tag the "empty store, warn-only" posture in the human-readable `msg`, (b) a boot-time replay-from-main into the local event.db, or (c) running these specific recons only on the daemon and skipping them in worktrees.
+Agent worktrees boot with empty `prototype/.local/event.db`. Recon pipelines that match markdown files to historical events (here: `rms-briefs-parity`; likely sister: `rms-documents-parity`) cannot find the events because they live on the production daemon's event-store, not the worktree's. The fresh-runner empty-store auto-downgrade (all violations → `warn`, `ok: true`) is the right safety net for *truly* empty stores, but it produces an unstable signal: as soon as a worktree emits any single event of the same kind, the empty-store rule disengages and all historically un-evented files become `fail`-level violations.
+
+This investigation hit that exact instability — emitting just the `AgentBriefIssued` event for this brief flipped the 5 historical files from `warn` to `fail`. The proper fix (and the one this PR ships for the 5 authority briefs) is **always pair an event-only emit with a re-runnable backfill script wired into CI**; the empty-store auto-downgrade should be a tripwire, not load-bearing semantics. Sister recon pipelines should be audited for the same pattern (`rms-documents-parity` first; any other recon that pattern-matches event-store contents against on-disk markdown second).
+
+Atlas (Core banking platform architect, engineering) is running in parallel under `brief:atlas:backfill-8-missing-recordfiled-documents-events-:2026-05-21` and is shipping the equivalent pattern for `RecordFiled(documents)`. The two backfill scripts share the same structural lesson.
 
 ### Gap 3 — Agent worktrees inherit branch artefacts that look like authoring drift
 
