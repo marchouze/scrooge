@@ -31,6 +31,7 @@ import {
   ccrReplacementCostComputedPayloadSchema,
   lexExceptionApprovedPayloadSchema,
   lexUtilisationComputedPayloadSchema,
+  sicrTriggeredPayloadSchema,
 } from "../event-types/counterparty-credit-risk";
 import { RETENTION_BANKING_5Y, RETENTION_GOVERNANCE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
@@ -99,5 +100,29 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: lexExceptionApprovedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1-S2"],
+  },
+  {
+    // IFRS 9 §5.5.3 Significant-Increase-in-Credit-Risk (SICR) memo.
+    // Emitted by `platform/credit-risk/sicr-subscriber.ts` on settlement-
+    // failure / rating-downgrade / watchlist triggers. FVTPL instruments
+    // take no ECL allowance (§5.5.1 + IFRS 9 ECL Provisioning Policy §51)
+    // — this event is the supervisory signal, not a GL movement.
+    // Authority: PRs #608/#609/#616/#641; Kai PR #645; Helena 2026-05-20
+    //   FX-spot-only market risk scope review.
+    type: "SicrTriggered",
+    class: "audit",
+    issuer: "Bea",
+    subscribers: ["Helena", "Bea", "Mira", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: sicrTriggeredPayloadSchema,
+    source: "platform/event-store/event-types/counterparty-credit-risk.ts",
+    citationsHint: [
+      "IFRS-9-S5.5.1",
+      "IFRS-9-S5.5.3",
+      "IFRS-9-S5.5.13",
+      "POLICY:credit-risk-policy-v1-S4",
+      "POLICY:ifrs9-ecl-provisioning-policy-v1-S51",
+    ],
   },
 ];
