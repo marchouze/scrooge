@@ -23,4 +23,14 @@ export const DEVON_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "AuditFinding",
     ],
   }),
+  // FX market-data ingest — daily (open-er-api updates ~00:00 UTC; fire at 02:00 UTC).
+  entry("Devon", "fx-rates-ingest", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 2 * * *",
+  }),
+  // FX market-data ingest — hourly (Twelve Data free tier; offset minute 5).
+  entry("Devon", "fx-twelvedata-ingest", "scheduled", {
+    cadenceHours: 1,
+    cronExpression: "5 * * * *",
+  }),
 ];

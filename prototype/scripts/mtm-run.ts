@@ -9,8 +9,9 @@
 //   3. For each open position, looks up the current mid rate from
 //      MarketDataStore (provenance: "production") and:
 //      a. Emits FxPositionRevalued (using the existing FX revaluation maker).
-//      b. Runs IPV check: compares to secondary source ("open-er-api") from
-//         MarketDataStore; emits IpvExceptionRaised on breach.
+//      b. Runs IPV check: compares to the most-recent tick from a different
+//         source in MarketDataStore (cross-source variance); emits
+//         IpvExceptionRaised on breach.
 //   4. Logs "bond MTM: no JSE price feed connected — skipped".
 //   5. Logs "IRD MTM: no curve ingest connected — skipped".
 //   6. Emits MtmRunCompleted.
@@ -306,16 +307,20 @@ async function main(): Promise<void> {
     positionsValued++;
 
     // -----------------------------------------------------------------------
-    // IPV check: look for secondary rate source in MarketDataStore.
+    // IPV check: look up the most-recent tick from a different source than
+    // the primary's, so the variance check is genuinely cross-provider
+    // (e.g. open-er-api vs twelve-data). Falls through to "no-secondary-source"
+    // when only one source has data for this instrument.
     // -----------------------------------------------------------------------
     let ipvStatus = "no-secondary-source";
 
-    const secondaryTicks = mdStore.query({
+    const candidates = mdStore.query({
+      provenance: "production",
       instrument: currencyPairStr,
       dataType: "fx-quote",
-      source: "open-er-api",
-      limit: 1,
+      limit: 10,
     });
+    const secondaryTicks = candidates.filter((t) => t.source !== tick.source).slice(0, 1);
 
     if (secondaryTicks.length > 0) {
       const secTick = secondaryTicks[0];
