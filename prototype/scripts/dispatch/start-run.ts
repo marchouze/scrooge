@@ -27,6 +27,7 @@ import "./resolve-event-db-boot";
 
 import { clock } from "../../platform/composition";
 import type { RmsAgentRef } from "../../platform/event-store/event-types";
+import { mirrorEventToPostgres } from "../../platform/event-store/postgres-mirror";
 import { recordAgentRunStarted } from "../../platform/records";
 import { die, emitOk, optionalRepeatable, optionalString, parseArgs, requireString } from "./args";
 
@@ -82,6 +83,9 @@ function main(): void {
     },
     asOf,
   );
+
+  // D-DISPATCH-MULTI-HOST-POSTGRES-MIRROR-AUTO-INVOKE — best-effort mirror.
+  mirrorEventToPostgres(result.event).catch(() => {});
 
   emitOk({
     runId,
