@@ -4,25 +4,34 @@
 // Seeds approximate 2026 mid-market rates and applies a bounded random walk
 // on each tick. Half-spreads are pair-dependent.
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
+// Pair representation: all pairs are stored in **major-first** form per the
+// ACI Model Code currency hierarchy:
+//
+//   EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > everything else
+//
+// So `USD/ZAR` (not `ZAR/USD`), `EUR/USD` (not `USD/EUR`), etc. The mid is
+// quote-per-base — i.e. `USD/ZAR: 18.5` means 18.5 ZAR per 1 USD. Callers
+// requesting an inverse pair go through `inferMid`, which derives the
+// reciprocal on demand.
+//
+// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION;
+//   ACI Model Code §2 (currency-pair quotation convention).
 // Author: Devon (Chief Operating Officer, engineering)
 
 // ---------------------------------------------------------------------------
-// Seed mid-rates (approx 2026 values)
+// Seed mid-rates (approx 2026 values, major-first per ACI hierarchy)
 // ---------------------------------------------------------------------------
 
 const SEED_MID_RATES: Record<string, number> = {
-  "ZAR/USD": 0.0541,
-  "ZAR/EUR": 0.05,
-  "ZAR/GBP": 0.0435,
-  "EUR/USD": 1.08,
-  "EUR/ZAR": 20.0,
-  "GBP/ZAR": 23.0,
-  "USD/EUR": 0.9259,
+  // USD/* — USD is base only against currencies below it (ZAR and others).
   "USD/ZAR": 18.5,
+  // EUR/* — EUR is highest in the hierarchy, so always base.
+  "EUR/ZAR": 20.0,
+  "EUR/USD": 1.08,
+  "EUR/GBP": 1.15,
+  // GBP/* — GBP is base against everything except EUR.
+  "GBP/ZAR": 23.0,
   "GBP/USD": 1.265,
-  // Derived convenience pairs
-  "GBP/EUR": 1.15,
 };
 
 // ---------------------------------------------------------------------------

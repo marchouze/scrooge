@@ -1,20 +1,7 @@
 {
-  "_comment": "Build-phase static FX rate seed — rates as decimal × 1,000,000 (6dp precision), always expressed as quote-per-base (standard Forex convention). E.g. ZAR/USD = how many USD per 1 ZAR. Used by staticRateSource in platform/markets/eod/fx-revaluation.ts.",
-  "_authority": "D-MARKETS-SCHEMA-FOUNDATION; D-MARKETS-CAPITAL-TIME-SHAPE",
+  "_comment": "Build-phase static FX rate seed — rates expressed as quote-per-base (ACI convention), pairs always major-first per ACI hierarchy EUR>GBP>AUD>NZD>USD>CAD>CHF>JPY>others. Values stored as decimal × 1,000,000 (6dp precision).",
+  "_authority": "D-MARKETS-SCHEMA-FOUNDATION; D-MARKETS-CAPITAL-TIME-SHAPE; ACI Model Code §2",
   "_note": "Production: replaced by reuters-wm-fix or bloomberg-bfix live feed per Bea spec §7.",
-  "ZAR/USD": {
-    "2026-05-12": 54054,
-    "2026-05-13": 54000,
-    "2026-05-14": 54100,
-    "2026-05-15": 54050,
-    "2026-05-16": 54054,
-    "2026-05-19": 53880,
-    "2026-05-26": 53620,
-    "2026-06-09": 53191,
-    "2026-07-09": 52910,
-    "2026-08-10": 52770,
-    "2026-08-12": 52700
-  },
   "USD/ZAR": {
     "2026-05-12": 18500000,
     "2026-05-13": 18519000,
@@ -31,22 +18,6 @@
     "2026-05-16": 1083500,
     "2026-05-19": 1085000
   },
-  "USD/EUR": {
-    "2026-05-12": 925926,
-    "2026-05-13": 924876,
-    "2026-05-14": 923622,
-    "2026-05-15": 922323,
-    "2026-05-16": 922966,
-    "2026-05-19": 921659
-  },
-  "ZAR/EUR": {
-    "2026-05-12": 50000,
-    "2026-05-13": 49900,
-    "2026-05-14": 49850,
-    "2026-05-15": 49800,
-    "2026-05-16": 49750,
-    "2026-05-19": 49700
-  },
   "EUR/ZAR": {
     "2026-05-12": 20000000,
     "2026-05-13": 20040000,
@@ -54,14 +25,6 @@
     "2026-05-15": 20080000,
     "2026-05-16": 20100000,
     "2026-05-19": 20121000
-  },
-  "ZAR/GBP": {
-    "2026-05-12": 43478,
-    "2026-05-13": 43420,
-    "2026-05-14": 43380,
-    "2026-05-15": 43340,
-    "2026-05-16": 43290,
-    "2026-05-19": 43250
   },
   "GBP/ZAR": {
     "2026-05-12": 23000000,

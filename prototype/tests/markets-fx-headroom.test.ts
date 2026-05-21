@@ -4,8 +4,8 @@
 // and the headroom panel view builder.
 //
 // Scope:
-//   - loadSeedRate: resolves ZAR/USD from seeds/fx-rates.json; falls back
-//     to SYNTHETIC_USDZAR_MID for unknown pairs.
+//   - loadSeedRate: resolves USD/ZAR from seeds/fx-rates.json (major-first
+//     per ACI hierarchy); falls back to SYNTHETIC_USDZAR_MID for unknown pairs.
 //   - quoteRfq: bid < mid < offer for seed-data pricer; source label updated.
 //   - emitTrade: RfqRequested emitted before FxTradeExecuted; QuoteResponded
 //     emitted before FxTradeExecuted; payload field correctness.
@@ -144,26 +144,27 @@ function seedRasSchedule(store: EventStore): void {
 }
 
 // ---------------------------------------------------------------------------
-// 1. loadSeedRate — ZAR/USD from seeds/fx-rates.json
+// 1. loadSeedRate — USD/ZAR from seeds/fx-rates.json
+//    Pairs are major-first per ACI hierarchy
+//    (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
 // ---------------------------------------------------------------------------
 
 describe("loadSeedRate", () => {
-  it("resolves ZAR/USD as USD-per-ZAR (standard Forex convention, ~0.054)", () => {
-    const rate = loadSeedRate("ZAR/USD");
-    // Standard: ZAR/USD = how many USD buys 1 ZAR ≈ 0.054 (1/18.5).
-    expect(rate).toBeGreaterThan(0.04);
-    expect(rate).toBeLessThan(0.1);
-  });
-
-  it("resolves USD/ZAR as ZAR-per-USD (~18.5)", () => {
+  it("resolves USD/ZAR as ZAR-per-USD (ACI convention, ~18.5)", () => {
     const rate = loadSeedRate("USD/ZAR");
-    // Standard: USD/ZAR = how many ZAR buys 1 USD ≈ 18.5.
+    // ACI: USD/ZAR = how many ZAR buys 1 USD ≈ 18.5.
     expect(rate).toBeGreaterThan(17.5);
     expect(rate).toBeLessThan(22.0);
   });
 
   it("falls back to SYNTHETIC_USDZAR_MID for unknown pair", () => {
     const rate = loadSeedRate("UNKNOWN/PAIR");
+    expect(rate).toBe(SYNTHETIC_USDZAR_MID);
+  });
+
+  it("falls back to SYNTHETIC_USDZAR_MID for ZAR/USD (no longer canonical)", () => {
+    // Inverse pair removed from seed file under recon:fx-pair-direction.
+    const rate = loadSeedRate("ZAR/USD");
     expect(rate).toBe(SYNTHETIC_USDZAR_MID);
   });
 });
@@ -173,27 +174,27 @@ describe("loadSeedRate", () => {
 // ---------------------------------------------------------------------------
 
 describe("quoteRfq (Slice 3 seed-data pricer)", () => {
-  it("bid < mid < offer for buy side (ZAR/USD)", () => {
-    const quote = quoteRfq({ side: "buy" }, "ZAR/USD");
+  it("bid < mid < offer for buy side (USD/ZAR)", () => {
+    const quote = quoteRfq({ side: "buy" }, "USD/ZAR");
     expect(quote.bidRate).toBeLessThan(quote.midRate);
     expect(quote.midRate).toBeLessThan(quote.offerRate);
   });
 
-  it("bid < mid < offer for sell side (ZAR/USD)", () => {
-    const quote = quoteRfq({ side: "sell" }, "ZAR/USD");
+  it("bid < mid < offer for sell side (USD/ZAR)", () => {
+    const quote = quoteRfq({ side: "sell" }, "USD/ZAR");
     expect(quote.bidRate).toBeLessThan(quote.midRate);
     expect(quote.midRate).toBeLessThan(quote.offerRate);
   });
 
   it("half-spread matches SYNTHETIC_HALF_SPREAD", () => {
-    const quote = quoteRfq({ side: "buy" }, "ZAR/USD");
+    const quote = quoteRfq({ side: "buy" }, "USD/ZAR");
     expect(quote.halfSpread).toBeCloseTo(SYNTHETIC_HALF_SPREAD, 8);
     expect(quote.offerRate - quote.midRate).toBeCloseTo(SYNTHETIC_HALF_SPREAD, 8);
     expect(quote.midRate - quote.bidRate).toBeCloseTo(SYNTHETIC_HALF_SPREAD, 8);
   });
 
   it("source is seed-data-pricer-v1", () => {
-    const quote = quoteRfq({ side: "buy" }, "ZAR/USD");
+    const quote = quoteRfq({ side: "buy" }, "USD/ZAR");
     expect(quote.source).toBe("seed-data-pricer-v1");
   });
 });
