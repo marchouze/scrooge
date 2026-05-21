@@ -131,6 +131,7 @@ Active conflicts register entries (as of 2026-05-07):
 - **Agent-runtime substrate** — scheduler is live; Wave-4 pipelines #14, #15 are gated on `AgentEscalation` and `AgentDecision` event types, which are now defined. Full pipeline wiring awaits event-trigger bus. Owner: Atlas.
 - **Conflict-of-interest auto-detection** — conflicts register is curated, not generated. Defer until the conflict surface is large enough to merit pipeline support.
 - **F-034 (Vera P2)** — `recon:circular-deps` script added to `package.json` but not yet in the `ci` chain (5 existing cycles block it). Once Atlas resolves the taxonomy barrel cycles, Vera wires the gate into CI. Owner: Vera (CI gate) + Atlas (cycle resolution).
+- **F-035 (Vera P2) — closed-via-gate 2026-05-21.** During the 2026-05-21 MTM bug-fix arc a direct SQL `DELETE` against the live event store was observed in-session and queued as a memo finding (memory `project_continuation_2026_05_21_mtm_gl_bugfix`). The append-only contract of Principle 1 was enforced only by convention. **Closure:** typed recon pipeline `recon:event-store-append-only` (this PR) — three-signal triangulation (row-count regression, max-sequence regression, interior-gap regression at flat row count) against a persisted baseline at `.local/recon/event-store-append-only.json`. Wired into the `ci` chain so any future DELETE on `events` fails CI with the precise delta. Owner: Vera. Status: closed-via-gate.
 
 ## 17. Change log
 
@@ -140,3 +141,4 @@ Active conflicts register entries (as of 2026-05-07):
 | v1.0 | 2026-05-07 | Vera (via Scrooge) | Upgraded to agent operating spec under Principle 6. Sections 1–5 retained from v0.1; Sections 6–17 added. |
 | v1.1 | 2026-05-14 | Vera (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note; stale "Step 2 of Principle-7 rollout" language replaced with current agent-runtime status. |
 | v1.2 | 2026-05-14 | Vera (via Scrooge) | P2/P3 triage — substrate gap F-034 (circular-deps CI gate) recorded. |
+| v1.3 | 2026-05-21 | Vera (via Scrooge) | Substrate gap F-035 (SQL-DELETE on event store) recorded and closed-via-gate via the `recon:event-store-append-only` pipeline (this PR). |
