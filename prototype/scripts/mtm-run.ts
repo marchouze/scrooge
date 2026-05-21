@@ -50,7 +50,7 @@ import {
   makeMtmRunCompleted,
 } from "../platform/event-store/event-types/mtm";
 import { EventStore } from "../platform/event-store/store";
-import { MarketDataStore } from "../platform/market-data/store";
+import { lookupQuoteWithInverse, MarketDataStore } from "../platform/market-data/store";
 import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
@@ -221,18 +221,17 @@ async function main(): Promise<void> {
       continue;
     }
 
-    // Look up production mid rate from MarketDataStore.
-    const productionTicks = mdStore.query({
+    // Look up production mid rate from MarketDataStore — direction-aware
+    // (handles trades booked in the opposite direction to the upstream feed
+    // convention, e.g. trade pair "ZAR/EUR" against stored "EUR/ZAR" tick).
+    const directedQuote = lookupQuoteWithInverse(mdStore, currencyPairStr, {
       provenance: "production",
-      instrument: currencyPairStr,
-      dataType: "fx-quote",
-      limit: 1,
     });
 
-    if (productionTicks.length === 0) {
+    if (directedQuote === null) {
       // No production rate yet — build phase, skip gracefully.
       positionsSkipped++;
-      const reason = `${tradeId} (${currencyPairStr}): no production rate in MarketDataStore`;
+      const reason = `${tradeId} (${currencyPairStr}): no production rate in MarketDataStore (direct or inverse)`;
       console.warn(`[mtm-run] WARN: ${reason}`);
       if (!skippedReasons.includes(`no production rate for ${currencyPairStr}`)) {
         skippedReasons.push(`no production rate for ${currencyPairStr}`);
@@ -240,27 +239,8 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const tick = productionTicks[0];
-    const payload = tick.payload as Record<string, unknown>;
-    // Extract mid rate from tick payload — support "mid", "midRate", or average of "bid"+"ask".
-    let primaryRate: number | undefined;
-    if (typeof payload.mid === "number") {
-      primaryRate = payload.mid;
-    } else if (typeof payload.midRate === "number") {
-      primaryRate = payload.midRate;
-    } else if (typeof payload.bid === "number" && typeof payload.ask === "number") {
-      primaryRate = ((payload.bid as number) + (payload.ask as number)) / 2;
-    }
-
-    if (primaryRate === undefined || primaryRate <= 0) {
-      positionsSkipped++;
-      const reason = `${tradeId} (${currencyPairStr}): production tick has no usable mid rate`;
-      console.warn(`[mtm-run] WARN: ${reason}`);
-      if (!skippedReasons.includes(`no mid rate in production tick for ${currencyPairStr}`)) {
-        skippedReasons.push(`no mid rate in production tick for ${currencyPairStr}`);
-      }
-      continue;
-    }
+    const tick = directedQuote.tick;
+    const primaryRate = directedQuote.rate;
 
     // Book rate normalisation (same logic as fx-revaluation.ts).
     const legRate = nearLeg.rate.amount;
@@ -309,30 +289,21 @@ async function main(): Promise<void> {
     // -----------------------------------------------------------------------
     // IPV check: look up the most-recent tick from a different source than
     // the primary's, so the variance check is genuinely cross-provider
-    // (e.g. open-er-api vs twelve-data). Falls through to "no-secondary-source"
-    // when only one source has data for this instrument.
+    // (e.g. open-er-api vs twelve-data). Direction-aware in the same way as
+    // the primary lookup — if the secondary feed only stores the inverse
+    // direction, the helper inverts the rate before comparison. Falls through
+    // to "no-secondary-source" when only one source has data for this pair.
     // -----------------------------------------------------------------------
     let ipvStatus = "no-secondary-source";
 
-    const candidates = mdStore.query({
+    const secondaryQuote = lookupQuoteWithInverse(mdStore, currencyPairStr, {
       provenance: "production",
-      instrument: currencyPairStr,
-      dataType: "fx-quote",
-      limit: 10,
+      excludeSource: tick.source,
     });
-    const secondaryTicks = candidates.filter((t) => t.source !== tick.source).slice(0, 1);
 
-    if (secondaryTicks.length > 0) {
-      const secTick = secondaryTicks[0];
-      const secPayload = secTick.payload as Record<string, unknown>;
-      let secondaryRate: number | undefined;
-      if (typeof secPayload.mid === "number") {
-        secondaryRate = secPayload.mid;
-      } else if (typeof secPayload.midRate === "number") {
-        secondaryRate = secPayload.midRate;
-      } else if (typeof secPayload.bid === "number" && typeof secPayload.ask === "number") {
-        secondaryRate = ((secPayload.bid as number) + (secPayload.ask as number)) / 2;
-      }
+    if (secondaryQuote !== null) {
+      const secTick = secondaryQuote.tick;
+      const secondaryRate = secondaryQuote.rate;
 
       if (secondaryRate !== undefined && secondaryRate > 0) {
         const ipvResult = checkIpvTolerance(primaryRate, secondaryRate, notionalBaseMinor);
