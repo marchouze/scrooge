@@ -26,9 +26,8 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { basename, join, relative } from "node:path";
+import { basename, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
 
 import { eventStore } from "../../platform/composition";
 import { BANK_ZA_001 } from "../../platform/core/types";
@@ -85,9 +84,9 @@ function parseFrontmatter(content: string): Frontmatter {
     if (key && value) result[key] = value;
   }
   return {
-    title: result["title"],
-    author: result["author"] ?? result["agent"],
-    date: result["date"],
+    title: result.title,
+    author: result.author ?? result.agent,
+    date: result.date,
   };
 }
 
@@ -113,9 +112,7 @@ function deriveTitle(filename: string): string {
 function makeRecordId(relPath: string): string {
   // Strip leading archive/owner-inbox/ and normalise to a slug.
   // e.g. "archive/owner-inbox/2026-05-17_owen_rms.md" → "record:owner-inbox:2026-05-17_owen_rms"
-  const slug = relPath
-    .replace(/^archive\/owner-inbox\/(?:actioned\/)?/, "")
-    .replace(/\.md$/i, "");
+  const slug = relPath.replace(/^archive\/owner-inbox\/(?:actioned\/)?/, "").replace(/\.md$/i, "");
   return `record:owner-inbox:${slug}`;
 }
 
@@ -180,8 +177,12 @@ function main(): void {
   const archiveDir = join(REPO_ROOT, "archive", "owner-inbox");
   const archiveActionedDir = join(archiveDir, "actioned");
 
-  const dirFiles: Array<{ filename: string; absPath: string; relPath: string; inActioned: boolean }> =
-    [];
+  const dirFiles: Array<{
+    filename: string;
+    absPath: string;
+    relPath: string;
+    inActioned: boolean;
+  }> = [];
 
   for (const filename of scanDir(archiveDir)) {
     dirFiles.push({
@@ -284,16 +285,14 @@ function main(): void {
     }
   }
 
-  console.log(`\nrms-recordfiled-manifest backfill — complete`);
+  console.log("\nrms-recordfiled-manifest backfill — complete");
   console.log(`  Emitted: ${emitted}`);
   console.log(`  Skipped: ${skipped} (already filed)`);
   console.log(`  Errors:  ${errors}`);
   console.log(`  Total:   ${dirFiles.length} files scanned`);
 
   if (errors > 0) {
-    console.error(
-      "\nBackfill completed with errors — some RecordFiled events were not emitted.",
-    );
+    console.error("\nBackfill completed with errors — some RecordFiled events were not emitted.");
     process.exit(1);
   }
 }
