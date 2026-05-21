@@ -142,9 +142,9 @@ const TRADE_EMIT_CITATIONS = [
 // Seed-data pricer — Slice 3 (replaces fixed-spread stub).
 //
 // Reads fx-rates.json relative to this file's location at runtime.
-// Seed rates are standard Forex convention × 10^6:
-//   ZAR/USD = USD per ZAR (e.g. 54054 → 0.054054 USD per 1 ZAR)
+// Seed rates are ACI convention × 10^6 (quote-per-base, major-first):
 //   USD/ZAR = ZAR per USD (e.g. 18500000 → 18.5 ZAR per 1 USD)
+//   EUR/USD = USD per EUR (e.g. 1080000 → 1.08 USD per 1 EUR)
 // The RFQ pricer uses USD/ZAR to quote how many ZAR the bank pays per USD.
 // ---------------------------------------------------------------------------
 
@@ -185,20 +185,18 @@ export function loadSeedRate(currencyPair: string): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Return a seed-data-driven ZAR/USD quote (Slice 3).
+ * Return a seed-data-driven USD/ZAR quote (Slice 3).
  *
  * Reads the mid-rate from seeds/fx-rates.json using the most-recent
- * date entry for the given `currencyPair`. The RFQ form always quotes
- * "USD/ZAR" to the user, but the seed stores the ZAR-per-USD rate
- * under "ZAR/USD" (the canonical pair with ZAR as base). The caller
- * passes the seed-lookup pair (default "ZAR/USD").
+ * date entry for the given `currencyPair`. The seed stores rates in
+ * major-first ACI convention; `USD/ZAR` is ZAR-per-USD (≈ 18.5).
  *
  * The spread is symmetric at SYNTHETIC_HALF_SPREAD (25 pips).
  * The bank-internal rate (rateUsed) is side-appropriate: bank buys USD
  * at offer, sells USD at bid.
  *
  * @param input       RFQ side (buy = bank buys USD; sell = bank sells USD).
- * @param currencyPair Seed-file lookup key (default "ZAR/USD").
+ * @param currencyPair Seed-file lookup key (default "USD/ZAR").
  */
 export function quoteRfq(input: Pick<RfqInput, "side">, currencyPair = "USD/ZAR"): SyntheticQuote {
   const midRate = loadSeedRate(currencyPair);

@@ -5,7 +5,12 @@
 // simulation runs. No real LEIs, no real counterparties.
 //
 // Authority: D-FX-SALES-TRADING-FRONTEND (D-FX-BOOK-BOUNDARY — bookType
-//   required on every FX TradeExecuted); D-MARKETS-SCHEMA-FOUNDATION.
+//   required on every FX TradeExecuted); D-MARKETS-SCHEMA-FOUNDATION;
+//   ACI Model Code §2 (currency-pair quotation convention).
+//
+// Pair representation: all `eligiblePairs` entries are major-first per the
+// ACI hierarchy (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
+// e.g. `USD/ZAR`, not `ZAR/USD`. Asserted by `recon:fx-pair-direction`.
 //
 // Author: Devon (Chief Operating Officer, engineering)
 
@@ -39,7 +44,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "ZA",
     bic: "SBZAZAJJXXX",
-    eligiblePairs: ["ZAR/USD", "ZAR/EUR", "ZAR/GBP"],
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
     minNotionalMinor: 100_000_00, // 1M ZAR in cents
     maxNotionalMinor: 5_000_000_00, // 50M ZAR in cents
   },
@@ -49,7 +54,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "ZA",
     bic: "ABSAZAJJXXX",
-    eligiblePairs: ["ZAR/USD", "ZAR/EUR"],
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR"],
     minNotionalMinor: 50_000_00, // 500K ZAR in cents
     maxNotionalMinor: 2_000_000_00, // 20M ZAR in cents
   },
@@ -59,7 +64,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "GB",
     bic: "BARCGB22XXX",
-    eligiblePairs: ["ZAR/USD", "GBP/ZAR", "EUR/USD"],
+    eligiblePairs: ["USD/ZAR", "GBP/ZAR", "EUR/USD"],
     minNotionalMinor: 200_000_00, // 2M GBP/ZAR minor (using cents as representative)
     maxNotionalMinor: 10_000_000_00, // 100M
   },
@@ -69,7 +74,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "DE",
     bic: "DEUTDEDBXXX",
-    eligiblePairs: ["EUR/ZAR", "EUR/USD", "ZAR/EUR"],
+    eligiblePairs: ["EUR/ZAR", "EUR/USD"],
     minNotionalMinor: 100_000_00, // 1M EUR/ZAR minor
     maxNotionalMinor: 8_000_000_00, // 80M
   },
@@ -79,7 +84,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "US",
     bic: "CHASUS33XXX",
-    eligiblePairs: ["ZAR/USD", "USD/EUR", "ZAR/EUR"],
+    eligiblePairs: ["USD/ZAR", "EUR/USD", "EUR/ZAR"],
     minNotionalMinor: 500_000_00, // 5M ZAR minor
     maxNotionalMinor: 20_000_000_00, // 200M
   },
@@ -89,7 +94,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "ZA",
     bic: "NEDSZAJJXXX",
-    eligiblePairs: ["ZAR/USD", "ZAR/GBP"],
+    eligiblePairs: ["USD/ZAR", "GBP/ZAR"],
     minNotionalMinor: 50_000_00, // 500K ZAR minor
     maxNotionalMinor: 3_000_000_00, // 30M ZAR
   },

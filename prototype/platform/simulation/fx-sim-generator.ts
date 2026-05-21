@@ -32,7 +32,9 @@ function todayIso(fromMs: number): string {
 
 /**
  * Split "BASE/QUOTE" pair string into { base, quote }.
- * e.g. "ZAR/USD" → { base: "ZAR", quote: "USD" }
+ * Pairs are always major-first per ACI hierarchy
+ * (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
+ * e.g. "USD/ZAR" → { base: "USD", quote: "ZAR" }.
  */
 function parsePair(pair: string): { base: string; quote: string } {
   const slash = pair.indexOf("/");
@@ -72,12 +74,24 @@ export function generateSimTrade(
   const { base: baseCcy, quote: quoteCcy } = parsePair(pair);
 
   // 6. Derive leg currencies.
-  //    Convention: notional is in base currency (e.g. ZAR for ZAR/USD).
-  //    If side=buy: bank receives base, pays quote.
+  //    Pairs are always major-first (e.g. `USD/ZAR`, `EUR/USD`) per ACI
+  //    Model Code §2 — base is the ACI-higher currency. The rate-engine mid
+  //    is quote-per-base (e.g. USD/ZAR mid 18.5 = 18.5 ZAR per 1 USD).
+  //
+  //    If side=buy: bank buys base (receives base), pays quote.
   //      payCurrency = quote, receiveCurrency = base
-  //    If side=sell: bank pays base, receives quote.
+  //    If side=sell: bank sells base (pays base), receives quote.
   //      payCurrency = base, receiveCurrency = quote
-  //    The "rate" in the CDM sense is receiveCurrency per pay-unit.
+  //
+  //    The CDM `rate.amount` is receive-per-pay (the schema docstring at
+  //    `platform/markets/cdm/fx.ts` defines this), so:
+  //      buy  → rate = base / quote = 1 / mid
+  //      sell → rate = quote / base = mid
+  //
+  //    The broader question of whether `rate = receive/pay` is the right
+  //    convention to encode (vs. straight quote-per-base) is open ground
+  //    and tracked under a separate decision card; this function follows
+  //    the schema as written.
   let payCurrency: string;
   let receiveCurrency: string;
   let legRate: number;
@@ -98,11 +112,13 @@ export function generateSimTrade(
 
   // 7. Compute counter-notional.
   //    notional is in pay-currency minor units.
-  //    counterNotional (minor) = round(notional × legRate × 100) / 100
-  //    We keep minor units as integers; legRate maps pay→receive.
-  //    For ZAR/USD side=buy: notionalMinor is in quote (USD cents), counterNotional in ZAR cents.
-  //    We accept the approximation that minor unit scale is the same for all currencies
-  //    (both in "cents" / smallest unit) which is correct for ZAR, USD, EUR, GBP.
+  //    counterNotional (minor) = round(notional × legRate).
+  //    legRate maps pay→receive (units: receive-per-pay), so
+  //    receive_minor = pay_minor × legRate when minor-unit scale matches.
+  //    For USD/ZAR side=buy: payCurrency=ZAR, receiveCurrency=USD,
+  //    legRate ≈ 1/18.5 ≈ 0.054 USD per ZAR → counterNotional in USD cents.
+  //    We accept the approximation that minor unit scale is the same for
+  //    all currencies (cents / smallest unit), correct for ZAR, USD, EUR, GBP.
   const counterNotionalMinor = Math.round(notionalMinor * legRate);
 
   // 8. Trade ID.

@@ -21,8 +21,13 @@ import type { FxRateEngine } from "../fx-sim-rates";
 // Constants
 // ---------------------------------------------------------------------------
 
-/** The 5 standard pairs tracked by the MarketDataSimulator. */
-const STANDARD_PAIRS = ["ZAR/USD", "ZAR/EUR", "ZAR/GBP", "EUR/USD", "GBP/ZAR"] as const;
+/**
+ * The 5 standard pairs tracked by the MarketDataSimulator, in major-first
+ * form per the ACI Model Code currency hierarchy
+ * (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
+ * Asserted by `recon:fx-pair-direction`.
+ */
+export const STANDARD_PAIRS = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"] as const;
 
 // ---------------------------------------------------------------------------
 // MarketDataSimulator
