@@ -135,8 +135,11 @@ export type SubLedgerLeg = z.infer<typeof subLedgerLegSchema>;
 
 export const subLedgerPostingEmittedPayloadSchema = z
   .object({
-    /** Event ID of the source business event that triggered this posting. */
-    sourceEventId: z.string().min(1),
+    /**
+     * Event ID of the source business event that triggered this posting.
+     * Optional for correction entries that use `correctsEventId` instead.
+     */
+    sourceEventId: z.string().min(1).optional(),
     postingType: z.enum([
       "trade-booking",
       "revaluation",
@@ -169,11 +172,22 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "ird-swap-revaluation",
       "ird-swap-coupon-settlement",
       "ird-swap-termination",
+      // Correction posting types — append-only correcting entries per Principle 1.
+      // D-CORRECT-DUPLICATE-MTM-REVERSALS (2026-05-21): reverses duplicate MTM
+      // reversal / stale revaluation entries without deleting events.
+      "duplicate-reversal-correction",
+      "stale-revaluation-correction",
+      // Observed in production DB but missing from schema (pre-existing postings
+      // that landed before this enum was formalised).
+      "cancellation-reversal",
+      "settlement-confirmation",
+      "trade-date-booking",
     ]),
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */
     postedAt: z.string().min(1),
   })
+  .passthrough()
   .superRefine((p, ctx) => {
     // Validate: debits = credits per currency.
     const totals = new Map<string, { debit: number; credit: number }>();

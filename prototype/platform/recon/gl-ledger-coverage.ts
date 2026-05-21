@@ -174,7 +174,10 @@ function postingSourceRef(posting: MinimalEvent): string | undefined {
   return (
     safeString(posting.payload.sourceEventId) ??
     safeString(posting.payload.tradeId) ??
-    safeString(posting.payload.sourceEventRef)
+    safeString(posting.payload.sourceEventRef) ??
+    // Correction entries reference the posting they correct (not a business event).
+    // Accepted as a valid source reference so the orphan-check produces no violation.
+    safeString(posting.payload.correctsEventId)
   );
 }
 
@@ -291,7 +294,11 @@ export function run(opts: RunOpts = {}): ReconResult {
     // Only enforce strict resolution for sourceEventId (event_id) refs.
     // JournalEntryPosted's tradeId is a stream key, not an event_id, so
     // skip the resolution check when the ref is a tradeId.
-    const isEventIdRef = typeof p.payload.sourceEventId === "string";
+    // Correction entries reference a SubLedgerPostingEmitted event (correctsEventId),
+    // not a business event, so skip the resolution check for them too.
+    const isEventIdRef =
+      typeof p.payload.sourceEventId === "string" &&
+      typeof p.payload.correctsEventId !== "string";
     if (isEventIdRef && !eventById.has(ref)) {
       violations.push({
         subject: `posting:${p.event_id}`,
