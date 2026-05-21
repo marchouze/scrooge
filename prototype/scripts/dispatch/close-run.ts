@@ -50,6 +50,7 @@ import "./resolve-event-db-boot";
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { clock, eventStore } from "../../platform/composition";
+import { HOZ_BANK_ENTITY } from "../../platform/core/types";
 import { checkDeciderMayClose } from "../../platform/dispatch";
 import type {
   AgentRunCompletedFollowOnRoute,
@@ -239,7 +240,7 @@ function main(): void {
           .replace(/^-+|-+$/g, "");
         const alert = makeSubstrateAlert({
           asOf: preCloseAsOf,
-          entity: "BANK-ZA-001",
+          entity: HOZ_BANK_ENTITY,
           actor: { type: "service", id: "agent:dispatch-close-run" },
           citations: ["D-DISPATCH-SYNC-PRIMITIVE", "D-CROSS-WORKTREE-EVENT-STORE-SYNC"],
           payload: {
