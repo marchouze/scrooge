@@ -76,6 +76,7 @@ import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
+import { MarketDataStore } from "../platform/market-data/store";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import {
@@ -108,6 +109,7 @@ import {
   buildKycClientDetailView,
   buildKycClientsView,
 } from "./kyc-clients-view";
+import { registerMarketDataRoutes } from "./market-data-view";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type GatewayOrderResult, routeOrderToGateway } from "./markets-fx-gateway";
 import { buildHeadroomView } from "./markets-fx-headroom";
@@ -197,6 +199,13 @@ let cachedState: DashboardState = bootDerive();
 // FX market-making simulation engine — module-level singleton.
 // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
 const fxSimEngine = new FxSimEngine(eventStore);
+
+// MarketDataStore — SQLite-backed time-series of fx-quote / equity-quote /
+// sens-announcement / news ticks. Read-only here (writes come from the
+// ingester scripts and EnvSim). Path mirrors the agent ingest scripts.
+// Authority: D-MARKETS-SCHEMA-FOUNDATION.
+const marketDataDbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+const marketDataStore = new MarketDataStore(marketDataDbPath);
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
@@ -2677,6 +2686,20 @@ const server = Bun.serve({
     // FX simulator control panel page.
     if (req.method === "GET" && url.pathname === "/fx-sim") {
       return serveStatic("/fx-sim.html");
+    }
+    // Market data — reference/time-series ticks (MarketDataStore).
+    // Authority: D-MARKETS-SCHEMA-FOUNDATION.
+    {
+      const mdResponse = registerMarketDataRoutes(
+        url.pathname,
+        req.method,
+        url.searchParams,
+        marketDataStore,
+      );
+      if (mdResponse) return mdResponse;
+    }
+    if (req.method === "GET" && url.pathname === "/market-data") {
+      return serveStatic("/market-data.html");
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname);

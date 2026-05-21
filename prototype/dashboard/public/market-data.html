@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Data — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .md-toolbar { display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center; margin-bottom:var(--space-4); }
+    .md-toolbar input, .md-toolbar select {
+      font:var(--text-body); padding:var(--space-2) var(--space-3);
+      border:1px solid var(--color-border); border-radius:var(--radius-md);
+      background:var(--color-bg); color:var(--color-text-primary); min-width:0;
+    }
+    .md-toolbar input[type="search"] { flex:1 1 200px; }
+    .md-toolbar .md-count { margin-left:auto; font:var(--text-caption); color:var(--color-text-secondary); white-space:nowrap; }
+    .md-source, .md-type { font-family:var(--font-mono); font-size:12px; color:var(--color-accent); }
+    .md-instr { font-family:var(--font-mono); font-size:12px; font-weight:600; }
+    .md-id { font-family:var(--font-mono); font-size:11px; color:var(--color-text-secondary); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .md-payload { font-family:var(--font-mono); font-size:11px; color:var(--color-text-secondary); max-width:380px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .md-prov { display:inline-block; font-size:11px; padding:1px 6px; border-radius:var(--radius-sm); background:var(--color-info-bg); color:var(--color-info); white-space:nowrap; }
+    .md-prov.prod { background:var(--color-success-bg); color:var(--color-success); }
+    .md-prov.sim { background:var(--color-warning-bg); color:var(--color-warning); }
+    .md-row { cursor:pointer; }
+    .md-row:hover { background:var(--color-bg-hover, rgba(0,0,0,0.03)); }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">Market Data <span id="md-store-badge" style="font:var(--text-caption);color:var(--color-text-secondary)"></span></h1>
+    </div>
+    <div class="page-body">
+      <p style="color:var(--color-text-secondary);font:var(--text-caption);margin-top:0;margin-bottom:var(--space-3)">
+        Reference / time-series ticks from <code>MarketDataStore</code> (FX quotes, equity quotes,
+        SENS announcements, news). Most recent first. Authority: <strong>D-MARKETS-SCHEMA-FOUNDATION</strong>.
+      </p>
+      <div class="md-toolbar">
+        <input type="search" id="md-search" placeholder="Search instrument or payload…" autocomplete="off">
+        <select id="md-source"><option value="">All sources</option></select>
+        <select id="md-instrument"><option value="">All instruments</option></select>
+        <select id="md-type"><option value="">All data types</option></select>
+        <select id="md-provenance">
+          <option value="">All provenance</option>
+          <option value="production">Production only</option>
+          <option value="simulated">Simulated only</option>
+        </select>
+        <select id="md-limit">
+          <option value="100">100 rows</option>
+          <option value="200" selected>200 rows</option>
+          <option value="500">500 rows</option>
+          <option value="1000">1000 rows</option>
+        </select>
+        <button id="md-refresh" class="btn btn-primary">Refresh</button>
+        <button id="md-clear" class="btn btn-secondary">Clear filters</button>
+        <span class="md-count" id="md-result-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table aria-label="Market data ticks">
+          <thead>
+            <tr>
+              <th>as_of</th>
+              <th>Source</th>
+              <th>Instrument</th>
+              <th>Data type</th>
+              <th>Prov</th>
+              <th>Payload</th>
+              <th>ingested_at</th>
+            </tr>
+          </thead>
+          <tbody id="md-tbody"><tr><td colspan="7" class="table-empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <p id="md-hint" style="color:var(--color-text-secondary);font:var(--text-caption);margin-top:var(--space-3)">Click any row to see the full tick JSON.</p>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Market Data" });</script>
+  <script src="/market-data.js"></script>
+</body>
+</html>
