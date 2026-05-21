@@ -1,0 +1,37 @@
+[project]
+name = "scrooge-knowledge-graph"
+version = "0.1.0"
+description = "Graphiti-backed knowledge-graph sidecar for Scrooge Bank — FX-Spot spike."
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+authors = [{ name = "Atlas (Core banking platform architect, engineering)" }]
+dependencies = [
+  "anthropic>=0.30.0",
+  "python-dotenv>=1.0.0",
+  "pyyaml>=6.0",
+  "pydantic>=2.6",
+  "click>=8.1",
+]
+
+# Optional extras — turn on full Graphiti / Kuzu stack when the host can build them.
+# The spike's deterministic tier runs without these; the LLM narrative pass uses
+# `anthropic` directly. See README §"Why the optional extras?".
+[project.optional-dependencies]
+graphiti = [
+  "graphiti-core[anthropic]>=0.3.0",
+  "kuzu>=0.4.0",
+]
+tree-sitter = [
+  "tree-sitter>=0.21",
+  "tree-sitter-typescript>=0.21",
+]
+
+[project.scripts]
+kg = "scrooge_kg.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scrooge_kg"]

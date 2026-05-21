@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knowledge-graph spike (FX-Spot) — Scrooge Bank</title>
+  <meta name="description" content="Graphiti-style unified knowledge graph spike — FX-Spot product slice. Side-by-side comparison with the existing /graph view.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    :root {
+      --surface-base:   #ffffff;
+      --surface-raised: #f5f3ee;
+      --neutral-rule:   var(--neutral-mist, #ddd);
+      --text-primary:   var(--brand-primary, #111);
+      --text-secondary: var(--neutral-graphite, #555);
+    }
+    .kg-shell { padding: 16px 24px 48px; max-width: 1280px; margin: 0 auto; }
+    .kg-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--neutral-rule);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .kg-header h1 { margin: 0; font-size: 18px; }
+    .kg-header .sub { color: var(--text-secondary); font-size: 12px; }
+    .kg-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .kg-panel {
+      border: 1px solid var(--neutral-rule);
+      border-radius: 6px;
+      background: var(--surface-base);
+      overflow: hidden;
+    }
+    .kg-panel-head {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--neutral-rule);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .kg-panel-body { padding: 12px 14px; font-size: 12.5px; max-height: 70vh; overflow: auto; }
+    .kg-meta {
+      grid-column: 1 / -1;
+      border: 1px solid var(--neutral-rule);
+      border-radius: 6px;
+      background: var(--surface-raised);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--neutral-rule); }
+    th { font-weight: 600; color: var(--text-secondary); }
+    .empty-state { color: var(--text-secondary); font-style: italic; padding: 12px 0; }
+    pre {
+      background: var(--surface-raised);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div data-shell-mount></div>
+  <main class="kg-shell">
+    <div class="kg-header">
+      <div>
+        <h1>Knowledge-graph spike (FX-Spot)</h1>
+        <div class="sub">
+          Authority: D-KG-GRAPHITI-SPIKE-FX-SPOT · Author: Atlas (Core banking platform architect, engineering)
+        </div>
+      </div>
+      <div class="sub" id="kg-run-summary">loading…</div>
+    </div>
+
+    <div class="kg-panels">
+      <div class="kg-meta" id="kg-meta">Loading ingest run metadata…</div>
+
+      <div class="kg-panel">
+        <div class="kg-panel-head">Spike subgraph (Graphiti-style) — /api/kg/graph</div>
+        <div class="kg-panel-body" id="kg-pane">Loading…</div>
+      </div>
+
+      <div class="kg-panel">
+        <div class="kg-panel-head">Existing regulatory graph — /api/graph/stats</div>
+        <div class="kg-panel-body" id="graph-pane">Loading…</div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/_shell.js" defer></script>
+  <script>
+    async function safeJson(url) {
+      try {
+        const r = await fetch(url);
+        return await r.json();
+      } catch (e) {
+        return { error: String(e) };
+      }
+    }
+
+    function renderTable(rows, columns) {
+      if (!rows || rows.length === 0) {
+        return '<div class="empty-state">No rows — run <code>uv run kg ingest --slice fx-spot</code> from <code>prototype/platform/knowledge-graph/</code>.</div>';
+      }
+      let html = '<table><thead><tr>';
+      for (const c of columns) html += '<th>' + c.label + '</th>';
+      html += '</tr></thead><tbody>';
+      for (const row of rows) {
+        html += '<tr>';
+        for (const c of columns) {
+          const v = c.get(row);
+          html += '<td>' + (v ?? '') + '</td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function escapeHtml(s) {
+      if (s == null) return '';
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    (async () => {
+      // KG pane (spike)
+      const kg = await safeJson('/api/kg/stats?slice=fx-spot');
+      const kgRun = await safeJson('/api/kg/run?slice=fx-spot');
+      const kgPane = document.getElementById('kg-pane');
+      const kgMeta = document.getElementById('kg-meta');
+      const kgRunSummary = document.getElementById('kg-run-summary');
+
+      if (!kgRun || kgRun.error || kgRun.seeded === false) {
+        kgPane.innerHTML = '<div class="empty-state">' + escapeHtml(kgRun?.message || 'No ingest run found yet.') + '</div>';
+        kgMeta.innerHTML = 'Knowledge-graph store not yet seeded for slice <code>fx-spot</code>.';
+        kgRunSummary.textContent = 'not seeded';
+      } else {
+        const llm = kgRun.llm || {};
+        kgRunSummary.innerHTML =
+          'nodes: <b>' + (kg.totals?.nodes ?? '?') + '</b> · edges: <b>' + (kg.totals?.edges ?? '?') + '</b> · ' +
+          (llm.skipped ? '(LLM skipped)' : ('LLM $' + (llm.estimated_cost_usd ?? 0) + ' / ' + (llm.calls ?? 0) + ' calls'));
+        kgMeta.innerHTML =
+          '<b>Ingest run</b> · slice <code>' + escapeHtml(kgRun.slice) + '</code> · ' +
+          'wall-clock <b>' + (kgRun.wall_clock_s ?? '?') + 's</b> · ' +
+          'nodes <b>' + (kgRun.nodes ?? '?') + '</b> · ' +
+          'deterministic edges <b>' + (kgRun.deterministic_edges ?? '?') + '</b> · ' +
+          'LLM edges <b>' + (llm.extracted_edges ?? 0) + '</b> · ' +
+          'tokens in/out <b>' + (llm.input_tokens ?? 0) + '/' + (llm.output_tokens ?? 0) + '</b> · ' +
+          'est. cost <b>$' + (llm.estimated_cost_usd ?? 0) + '</b>';
+
+        const nodesByType = Object.entries(kg.nodesByType || {}).map(([k, v]) => ({ type: k, count: v }));
+        const edgesByRel = Object.entries(kg.edgesByRelation || {}).map(([k, v]) => ({ relation: k, count: v }));
+        kgPane.innerHTML =
+          '<div><b>Nodes by type</b></div>' +
+          renderTable(nodesByType, [
+            { label: 'Entity type', get: r => escapeHtml(r.type) },
+            { label: 'Count', get: r => r.count },
+          ]) +
+          '<div style="margin-top:16px;"><b>Edges by relation</b></div>' +
+          renderTable(edgesByRel, [
+            { label: 'Relation', get: r => escapeHtml(r.relation) },
+            { label: 'Count', get: r => r.count },
+          ]);
+      }
+
+      // /graph pane (existing substrate, scoped to FX-related obligations)
+      const graphStats = await safeJson('/api/graph/stats');
+      const graphPane = document.getElementById('graph-pane');
+      if (graphStats?.error) {
+        graphPane.innerHTML = '<div class="empty-state">/graph error: ' + escapeHtml(graphStats.error) + '</div>';
+      } else {
+        const totals =
+          'totalNodes: <b>' + (graphStats?.totalNodes ?? graphStats?.nodes ?? '?') + '</b><br>' +
+          'totalEdges: <b>' + (graphStats?.totalEdges ?? graphStats?.edges ?? '?') + '</b><br>' +
+          'unimplementedCount: <b>' + (graphStats?.unimplementedCount ?? '?') + '</b><br>' +
+          'orphanProcedureCount: <b>' + (graphStats?.orphanProcedureCount ?? '?') + '</b>';
+        graphPane.innerHTML =
+          '<div style="margin-bottom:12px;">' + totals + '</div>' +
+          '<pre>' + escapeHtml(JSON.stringify(graphStats, null, 2)) + '</pre>';
+      }
+    })();
+  </script>
+</body>
+</html>

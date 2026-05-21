@@ -1,0 +1,78 @@
+# FX-Spot slice manifest — single declarative source for the spike ingest.
+#
+# Paths are repo-relative (the repo root resolves to two parents up from
+# `prototype/platform/knowledge-graph/`).
+#
+# Adding to this list is the *only* way to extend the FX-Spot slice — every
+# other code path uses this manifest.
+
+slice: fx-spot
+description: |
+  Every artefact touching the FX-Spot product. Per the approved spike plan
+  (.claude/plans/i-m-not-happy-with-idempotent-tide.md), in-scope items are:
+  Banks Act §78/§79; FIC Act ss.28-29; FAIS Act + GCC; JS-2; Excon Manual;
+  market-risk + AML/CFT policies; PROC-OPS-SARB-FIX-IPV-01 + related FX
+  procedures; recent FX-related decisions; FX code in prototype/platform.
+
+regulations:
+  # These files live under Regulations/ — for the spike we pick MD files only
+  # where they exist; JSON regulation files are out of scope for the LLM pass.
+  - Regulations/SARB-PA/_index.md
+  - Regulations/FIC/_index.md
+  - Regulations/FSCA/_index.md
+  - Regulations/SARB-FinSurv/_index.md
+  - Regulations/Joint-Standards/_index.md
+
+policies:
+  - Policies/market-risk-policy-v1.md
+  - Policies/aml-cft-policy-v1.md
+  - Policies/conduct-of-business-tcf-policy-v1.md
+  - Policies/credit-risk-policy-v1.md
+  - Policies/excon-compliance-policy-v1.md
+  - Policies/operational-risk-policy-v1.md
+
+procedures:
+  - Procedures/operations/sarb-fixing-as-fx-spot-ipv-source.md
+  - Procedures/operations/settlement-failure-bcp.md
+  - Procedures/markets/fx-forwards-trade-lifecycle.md
+  - Procedures/finance/fx-settlement-reconciliation.md
+  - Procedures/finance/fx-period-close-runbook.md
+  - Procedures/by-policy/market-risk-limit-monitoring.md
+  - Procedures/by-policy/market-risk-monitoring.md
+  - Procedures/by-policy/credit-risk-limit-management.md
+
+decision_globs:
+  # Owner Inbox decision-card markdown — we glob for FX-related cards.
+  - "Owner Inbox/*fx*decision-card*.md"
+  - "Owner Inbox/*mr-1-fx*.md"
+  - "Owner Inbox/*fx-spot*.md"
+  - "Owner Inbox/*fx-quoting*.md"
+  - "Owner Inbox/*npa-fx-spot*.md"
+  - "Owner Inbox/actioned/*fx*decision-card*.md"
+
+code_globs:
+  - "prototype/platform/markets/cdm/fx*.ts"
+  - "prototype/platform/markets/cdm/fx-helpers.ts"
+  - "prototype/platform/markets/settlement/fx-settlement-subscriber.ts"
+  - "prototype/platform/markets/eod/fx-revaluation.ts"
+  - "prototype/platform/markets/eod/fx-forward-revaluation.ts"
+  - "prototype/platform/accounting/posting-rules/fx-spot.ts"
+  - "prototype/platform/accounting/fx-calculators.ts"
+  - "prototype/platform/accounting/fx-rate-projection.ts"
+  - "prototype/platform/accounting/fx-accounting-types.ts"
+  - "prototype/runtime/agents/rohan-daily-mtm.ts"
+  - "prototype/platform/markets/ipv-tolerance.ts"
+
+registers:
+  obligations: "Regulations/_obligations-register.md"
+  risk_taxonomy: "Regulations/_risk-taxonomy.md"
+  party_register: "Regulations/_party-register.md"
+
+fx_keywords:
+  - " fx"
+  - "fx "
+  - "fx-spot"
+  - "foreign exchange"
+  - "mk-fx"
+  - "mk fx"
+  - "rt-mk.fx"

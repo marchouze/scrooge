@@ -1,0 +1,14 @@
+# uv venv + lock
+.venv/
+uv.lock
+
+# Per-slice JSONL store
+.local/
+
+# Python build artefacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/

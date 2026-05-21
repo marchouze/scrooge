@@ -103,6 +103,7 @@ import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } f
 import { registerFxSimRoutes } from "./fx-sim-view";
 import { registerGlRoutes } from "./gl-view";
 import { registerGraphRoutes } from "./graph-view";
+import { registerKgRoutes } from "./kg-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
 import {
   buildKycCandidateDetailView,
@@ -2656,6 +2657,17 @@ const server = Bun.serve({
     {
       const graphResponse = registerGraphRoutes(url.pathname, req.method, url.searchParams);
       if (graphResponse) return graphResponse;
+    }
+    // ── Knowledge-graph spike (FX-Spot slice) endpoints ────────────────────
+    // Authority: D-KG-GRAPHITI-SPIKE-FX-SPOT (CEO-approved 2026-05-21).
+    // Reads JSONL store written by the Python sidecar at
+    // `prototype/platform/knowledge-graph/.local/<slice>/`. Empty-state OK.
+    {
+      const kgResponse = registerKgRoutes(url.pathname, req.method, url.searchParams);
+      if (kgResponse) return kgResponse;
+    }
+    if (req.method === "GET" && url.pathname === "/kg") {
+      return serveStatic("/kg.html");
     }
     if (req.method === "GET" && url.pathname === "/gl") {
       return serveStatic("/gl.html");
