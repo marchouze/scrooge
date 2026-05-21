@@ -128,9 +128,7 @@ describe("recon:no-prop-attribution", () => {
 
   it("flags an empty-string attribution distinctly", () => {
     const r = run({
-      fxTradeEvents: [
-        fxTrade({ id: "tempty", tradeRef: "E-1", hedgeProgrammeRef: "" }),
-      ],
+      fxTradeEvents: [fxTrade({ id: "tempty", tradeRef: "E-1", hedgeProgrammeRef: "" })],
     });
     expect(r.ok).toBe(false);
     expect(r.violations[0]?.message).toContain("EMPTY hedgeProgrammeRef");
