@@ -14,12 +14,12 @@
 //                                            (realised-P&L residual; closes the
 //                                             trade; GL-significant since
 //                                             2026-05-20)
-//   PR-FX-003: fxSettlementJournals       — FxSettlementConfirmed (DEPRECATED
+//   PR-FX-003: fxSettlementJournals       — TradeMatured (DEPRECATED
 //                                            2026-05-20 — superseded by
 //                                            PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE;
 //                                            kept for back-compat with legacy
 //                                            test-only emitters of the
-//                                            accounting `FxSettlementConfirmed`
+//                                            accounting `TradeMatured`
 //                                            event-type)
 //   PR-FX-REV: fxSettlementReversalJournals — SettlementReversed (mirrors PR-FX-003)
 //   PR-FX-CANCEL: fxCancellationJournals  — TradeCancelled (net-zero reversal)
@@ -69,10 +69,10 @@
 
 import type {
   FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
   FxSettlementFailedPayload,
 } from "../../event-store/event-types/fx-accounting";
 import type { TradeReportSubmittedPayload } from "../../event-store/event-types/regulatory-reporting";
+import type { TradeMaturedFxSpotPayload } from "../../event-store/event-types/trade-matured";
 import type {
   FxLeg,
   FxSettlementInstructedPayload,
@@ -89,8 +89,8 @@ import type { SubLedgerLeg } from "../fx-accounting-types";
 export interface FxSettlementReversalInput {
   /** The tradeId of the reversed trade. */
   tradeId: string;
-  /** Full payload of the original FxSettlementConfirmed event. */
-  originalSettlement: FxSettlementConfirmedPayload;
+  /** Full payload of the original TradeMatured event. */
+  originalSettlement: TradeMaturedFxSpotPayload;
 }
 
 export interface FxCancellationInput {
@@ -407,7 +407,7 @@ export function fxRevaluationJournals(event: FxPositionRevaluedPayload): SubLedg
 //
 // @deprecated Use PR-FX-PRIN (`fxPrincipalPaymentJournals`) for per-leg cash
 //   movements + PR-FX-LIFECYCLE-CLOSE (`fxLifecycleCloseJournals`) for the
-//   realised-P&L residual. The accounting `FxSettlementConfirmed` event-type
+//   realised-P&L residual. The accounting `TradeMatured` event-type
 //   is also deprecated: production paths never emitted it (only test code
 //   constructed it), so PR-FX-003 was an unreachable code path. The CEO
 //   decision of 2026-05-20 split its responsibilities across the two CDM
@@ -415,12 +415,12 @@ export function fxRevaluationJournals(event: FxPositionRevaluedPayload): SubLedg
 //   scenarios 06/07.
 //
 // This function is kept (a) for backwards compatibility with the rare
-// callers that still construct `FxSettlementConfirmed` payloads in tests
+// callers that still construct `TradeMatured` payloads in tests
 // for purposes other than FX accounting (e.g. `ba-325-lcr.test.ts` settled-
 // trade detection); and (b) so the `bea-fx-posting-engine` / `bea-gl-
 // posting-engine` handlers can continue to route a stray
-// `FxSettlementConfirmed` if anything emits one during the deprecation
-// window. New authoring must NOT add new emitters of `FxSettlementConfirmed`.
+// `TradeMatured` if anything emits one during the deprecation
+// window. New authoring must NOT add new emitters of `TradeMatured`.
 //
 // Original posting behaviour (unchanged for back-compat):
 //
@@ -440,7 +440,7 @@ export function fxRevaluationJournals(event: FxPositionRevaluedPayload): SubLedg
 // ---------------------------------------------------------------------------
 
 /** @deprecated 2026-05-20 — use `fxPrincipalPaymentJournals` + `fxLifecycleCloseJournals`. */
-export function fxSettlementJournals(event: FxSettlementConfirmedPayload): SubLedgerLeg[] {
+export function fxSettlementJournals(event: TradeMaturedFxSpotPayload): SubLedgerLeg[] {
   const legs: SubLedgerLeg[] = [];
 
   // Determine currencies from the currencyPair field (e.g. "ZAR/USD")
@@ -644,7 +644,7 @@ export function fxAmendmentJournals(input: FxAmendmentInput): SubLedgerLeg[] {
 //     and no contractual right or obligation has changed. The receivable
 //     and payable booked at PR-FX-001 remain in place; settlement-date
 //     derecognition occurs only when the correspondent confirms cash
-//     movement (PR-FX-003 on FxSettlementConfirmed).
+//     movement (PR-FX-003 on TradeMatured).
 //   - IFRS 9 §3.2.3 derecognition requires that the contractual rights to
 //     cash flows have either expired or been transferred such that
 //     substantially all risks and rewards have passed. Instructing the
@@ -698,8 +698,8 @@ export function fxSettlementInstructedJournals(
 //
 // Why this owns the cash GL (not PR-FX-003):
 //   - Marc's review of PR #608 surfaced a circularity: PR-FX-003 fires on
-//     the accounting `FxSettlementConfirmed` event, but
-//     `makeFxSettlementConfirmed(...)` is only called from test code —
+//     the accounting `TradeMatured` event, but
+//     `makeTradeMatured(...)` is only called from test code —
 //     never from `platform/simulation/post-trade-lifecycle.ts`, scenarios
 //     06/07, or any production code path. There is no projection handler
 //     that derives the accounting event from the CDM lifecycle. As a
@@ -708,7 +708,7 @@ export function fxSettlementInstructedJournals(
 //     GL-significant rule. Events match reality — cash moved at the
 //     correspondent → book the cash leg then. No Principle 1 smell of
 //     deriving an event from another event; no missing projection handler.
-//   - The accounting `FxSettlementConfirmed` event-type and PR-FX-003
+//   - The accounting `TradeMatured` event-type and PR-FX-003
 //     are deprecated by this change. See PR-FX-003 docblock for the
 //     migration plan and the `@deprecated` tag.
 //
@@ -801,7 +801,7 @@ export function fxPrincipalPaymentJournals(event: PrincipalPaymentPayload): SubL
 //     because each per-leg event sees only its own currency leg — there
 //     is no cross-leg residual computable from a single PrincipalPayment.
 //   - The CEO decision of 2026-05-20 retired PR-FX-003 (on accounting
-//     `FxSettlementConfirmed`) in favour of this two-tier split: PR-FX-PRIN
+//     `TradeMatured`) in favour of this two-tier split: PR-FX-PRIN
 //     owns the per-leg cash; PR-FX-LIFECYCLE-CLOSE owns the realised-P&L
 //     residual. See PR-FX-PRIN and PR-FX-003 docblocks for rationale.
 //

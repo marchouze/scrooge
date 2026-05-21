@@ -449,7 +449,7 @@ const CATEGORY_E: AgentSpec[] = [
 
   // Bea — FX posting engine sub-agent
   // Emits: SubLedgerPostingEmitted (for FxTradeExecuted, FxPositionRevalued,
-  //   FxSettlementConfirmed trade events)
+  //   TradeMatured trade events)
   // Parent: Bea (Finance Engineer, engineering)
   // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
   makeSubAgentSpec("agent:bea:fx-posting-engine", ["SubLedgerPostingEmitted", "AgentEscalation"]),

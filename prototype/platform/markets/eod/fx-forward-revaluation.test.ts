@@ -24,7 +24,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { makeFxSettlementConfirmed } from "../../event-store/event-types/fx-accounting";
+import { makeTradeMatured } from "../../event-store/event-types/trade-matured";
 import { EventStore } from "../../event-store/store";
 import { makeFxTradeExecuted } from "../cdm/fx";
 import { interpolateForwardRate, seedForwardRate } from "./forward-rate-seed";
@@ -213,19 +213,20 @@ function appendNdfTrade(
   );
 }
 
-/** Append FxSettlementConfirmed for a given tradeId and legKind. */
+/** Append TradeMatured for a given tradeId and legKind. */
 function appendSettlementConfirmed(
   store: EventStore,
   tradeId: string,
   legKind: "near" | "far" = "near",
 ): void {
   store.append(
-    makeFxSettlementConfirmed({
+    makeTradeMatured({
       asOf: AS_OF,
       entity: ENTITY,
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
+        productKind: "fx-spot",
         tradeId,
         currencyPair: "USD/ZAR",
         legKind,
@@ -367,7 +368,7 @@ describe("TC-FWD-4: missing rate — error captured per trade", () => {
 // ---------------------------------------------------------------------------
 
 describe("TC-FWD-5: settled forward excluded", () => {
-  it("skips a forward with FxSettlementConfirmed (near leg)", () => {
+  it("skips a forward with TradeMatured (near leg)", () => {
     const store = makeStore();
     appendForwardTrade(store, "FWD-SETTLED", 18.7, "2026-08-15");
     appendSettlementConfirmed(store, "FWD-SETTLED", "near");
@@ -478,7 +479,7 @@ describe("TC-SWP-2: FX-swap — both legs open, far leg valued", () => {
 // ---------------------------------------------------------------------------
 
 describe("TC-SWP-3: FX-swap fully settled — excluded", () => {
-  it("skips trade when far leg FxSettlementConfirmed exists", () => {
+  it("skips trade when far leg TradeMatured exists", () => {
     const store = makeStore();
     appendSwapTrade(store, "SWP-FULL-SETTLED");
     appendSettlementConfirmed(store, "SWP-FULL-SETTLED", "far");
@@ -543,7 +544,7 @@ describe("TC-NDF-2: NDF idempotency", () => {
 // ---------------------------------------------------------------------------
 
 describe("TC-NDF-3: NDF settled — excluded", () => {
-  it("skips NDF with FxSettlementConfirmed", () => {
+  it("skips NDF with TradeMatured", () => {
     const store = makeStore();
     appendNdfTrade(store, "NDF-SETTLED");
     appendSettlementConfirmed(store, "NDF-SETTLED", "near");

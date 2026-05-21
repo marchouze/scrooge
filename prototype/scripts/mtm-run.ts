@@ -174,8 +174,8 @@ async function main(): Promise<void> {
     const p = e.payload as unknown as SettlementConfirmedPayload;
     settledIds.add(p.tradeId);
   }
-  // Also handle FxSettlementConfirmed from the IFRS accounting domain.
-  for (const e of store.replay({ type: "FxSettlementConfirmed" })) {
+  // Also handle TradeMatured from the IFRS accounting domain.
+  for (const e of store.replay({ type: "TradeMatured" })) {
     const p = e.payload as unknown as { tradeId: string };
     if (p.tradeId) settledIds.add(p.tradeId);
   }

@@ -18,12 +18,7 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   }),
   // B-1 — Bea FX posting engine. Authority: D-MARKETS-CAPITAL-TIME-SHAPE.
   entry("Bea", "fx-posting-engine", "event-driven", {
-    subscribesTo: [
-      "FxTradeExecuted",
-      "FxPositionRevalued",
-      "FxSettlementConfirmed",
-      "FxTradeCancelled",
-    ],
+    subscribesTo: ["FxTradeExecuted", "FxPositionRevalued", "TradeMatured", "FxTradeCancelled"],
   }),
   // B-2 — Bea universal GL posting engine. Authority: PROC-PAY-RBH-01.
   entry("Bea", "gl-posting-engine", "event-driven", {

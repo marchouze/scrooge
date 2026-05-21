@@ -18,7 +18,8 @@
 //   - Customer lifecycle / onboarding Slice 2: CounterpartyFaisClassified,
 //     BeneficialOwnerResolved, SanctionsClearancePassed, FatcaCrsClassified,
 //     PopiaConsentRecorded, CreditAssessmentCompleted, AccountsSetupCompleted
-//   - FX accounting: FxPositionRevalued, FxSettlementConfirmed
+//   - FX accounting: FxPositionRevalued
+//   - Generic lifecycle terminal: TradeMatured (retired TradeMatured 2026-05-21)
 
 import { z } from "zod";
 
