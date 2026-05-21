@@ -61,7 +61,7 @@ function hoursAgoIso(h: number): string {
 
 const BASE_ACTOR = { type: "service" as const, id: "test:vera-goal-loop-test" };
 const BASE_CITATIONS = ["test-citation"];
-const BASE_ENTITY = "BANK-ZA-001";
+const BASE_ENTITY = "LE-ZA-HOZ-BANK";
 
 /** Append a minimal AuditFindingDisposed (not in registry → passthrough). */
 function appendDisposed(store: EventStore, findingId: string): void {

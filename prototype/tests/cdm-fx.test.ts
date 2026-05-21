@@ -329,14 +329,14 @@ describe("makeFxTradeExecuted — envelope + citation enforcement", () => {
   it("envelopes a valid Spot trade and stamps event_id + type", () => {
     const e = makeFxTradeExecuted({
       asOf: "2026-05-09T10:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:fx-test" },
       citations: ["ORG-MK-08", "D-FX-BOOK-BOUNDARY", "[citation: TBC]"],
       payload: baseSpotPayload,
     });
     expect(e.type).toBe("FxTradeExecuted");
     expect(e.event_id).toBeDefined();
-    expect(e.entity).toBe("BANK-ZA-001");
+    expect(e.entity).toBe("LE-ZA-HOZ-BANK");
     expect(e.citations).toContain("ORG-MK-08");
   });
 
@@ -344,7 +344,7 @@ describe("makeFxTradeExecuted — envelope + citation enforcement", () => {
     expect(() =>
       makeFxTradeExecuted({
         asOf: "2026-05-09T10:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:kai:fx-test" },
         citations: [],
         payload: baseSpotPayload,
@@ -374,7 +374,7 @@ describe("FxSettlementInstructed — correspondent vs bilateral path", () => {
   it("envelopes correspondent-path settlement and stamps event_id + type", () => {
     const e = makeFxSettlementInstructed({
       asOf: "2026-05-09T10:01:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:fx-test" },
       citations: ["D-FX-CLS-MEMBERSHIP", "ORG-MK-08"],
       payload: baseSettle,
@@ -388,7 +388,7 @@ describe("FxSettlementInstructed — correspondent vs bilateral path", () => {
     expect(() =>
       makeFxSettlementInstructed({
         asOf: "2026-05-09T10:01:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:kai:fx-test" },
         citations: ["D-FX-CLS-MEMBERSHIP"],
         payload: without,
@@ -408,7 +408,7 @@ describe("FxSettlementInstructed — correspondent vs bilateral path", () => {
     expect(() =>
       makeFxSettlementInstructed({
         asOf: "2026-05-09T10:01:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:kai:fx-test" },
         citations: [],
         payload: baseSettle,
@@ -495,14 +495,14 @@ describe("makePrincipalPayment — envelope + citation enforcement", () => {
   it("envelopes a valid PrincipalPayment and stamps event_id + type", () => {
     const e = makePrincipalPayment({
       asOf: "2026-05-13T10:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:tomas:settlement" },
       citations: ["D-FX-CLS-MEMBERSHIP"],
       payload: basePrincipalPaymentPayload,
     });
     expect(e.type).toBe("PrincipalPayment");
     expect(e.event_id).toBeDefined();
-    expect(e.entity).toBe("BANK-ZA-001");
+    expect(e.entity).toBe("LE-ZA-HOZ-BANK");
     expect(e.citations).toContain("D-FX-CLS-MEMBERSHIP");
   });
 
@@ -510,7 +510,7 @@ describe("makePrincipalPayment — envelope + citation enforcement", () => {
     expect(() =>
       makePrincipalPayment({
         asOf: "2026-05-13T10:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:tomas:settlement" },
         citations: [],
         payload: basePrincipalPaymentPayload,
@@ -522,7 +522,7 @@ describe("makePrincipalPayment — envelope + citation enforcement", () => {
     expect(() =>
       makePrincipalPayment({
         asOf: "2026-05-13T10:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:tomas:settlement" },
         citations: ["D-FX-CLS-MEMBERSHIP"],
         payload: { ...basePrincipalPaymentPayload, citations: [] },
@@ -601,21 +601,21 @@ describe("makeSettlementConfirmed — envelope + citation enforcement", () => {
   it("envelopes a valid SettlementConfirmed and stamps event_id + type", () => {
     const e = makeSettlementConfirmed({
       asOf: "2026-05-13T10:05:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:tomas:settlement" },
       citations: ["D-FX-CLS-MEMBERSHIP"],
       payload: baseSettlementConfirmedPayload,
     });
     expect(e.type).toBe("SettlementConfirmed");
     expect(e.event_id).toBeDefined();
-    expect(e.entity).toBe("BANK-ZA-001");
+    expect(e.entity).toBe("LE-ZA-HOZ-BANK");
   });
 
   it("rejects empty envelope citations (Principle 2)", () => {
     expect(() =>
       makeSettlementConfirmed({
         asOf: "2026-05-13T10:05:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:tomas:settlement" },
         citations: [],
         payload: baseSettlementConfirmedPayload,
@@ -627,7 +627,7 @@ describe("makeSettlementConfirmed — envelope + citation enforcement", () => {
     expect(() =>
       makeSettlementConfirmed({
         asOf: "2026-05-13T10:05:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:tomas:settlement" },
         citations: ["D-FX-CLS-MEMBERSHIP"],
         payload: { ...baseSettlementConfirmedPayload, citations: [] },
@@ -714,7 +714,7 @@ describe("NdfFixingObserved — schema + envelope", () => {
   it("envelopes a valid fixing and stamps event_id + type", () => {
     const e = makeNdfFixingObserved({
       asOf: "2026-08-10T16:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:saskia:ndf-fixing" },
       citations: ["D-FX-AD-STATUS"],
       payload: baseNdfFixingPayload,
@@ -727,7 +727,7 @@ describe("NdfFixingObserved — schema + envelope", () => {
     expect(() =>
       makeNdfFixingObserved({
         asOf: "2026-08-10T16:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:saskia:ndf-fixing" },
         citations: [],
         payload: baseNdfFixingPayload,
@@ -739,7 +739,7 @@ describe("NdfFixingObserved — schema + envelope", () => {
     expect(() =>
       makeNdfFixingObserved({
         asOf: "2026-08-10T16:00:00.000Z",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:saskia:ndf-fixing" },
         citations: ["D-FX-AD-STATUS"],
         payload: { ...baseNdfFixingPayload, citations: [] },

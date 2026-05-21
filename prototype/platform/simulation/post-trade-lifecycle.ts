@@ -37,7 +37,7 @@ import type { CounterpartyBehaviorProfile } from "./env-sim/counterparty-profile
 
 const CITATIONS = ["D-FX-CLS-MEMBERSHIP", "D-MARKETS-SCHEMA-FOUNDATION", "D-FX-AD-STATUS"];
 const ACTOR = { type: "service" as const, id: "agent:devon:fx-sim-engine" };
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
 const SIM_CORRESPONDENT = {
   partyId: "CORRESPONDENT-BANK-001",

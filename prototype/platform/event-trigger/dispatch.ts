@@ -32,7 +32,7 @@ import type { Actor } from "../event-store/types";
 // Default infrastructure constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 const DEFAULT_ACTOR: Actor = {
   type: "service",
@@ -65,7 +65,7 @@ export interface DispatchEscalationParams {
   /** ISO 8601 business time for the event. */
   readonly asOf: string;
 
-  /** Legal-entity identifier (defaults to BANK-ZA-001). */
+  /** Legal-entity identifier (defaults to LE-ZA-HOZ-BANK). */
   readonly entity?: string;
 
   /** Actor emitting the escalation. */
@@ -133,7 +133,7 @@ export interface DispatchDecisionRequestParams {
   /** ISO 8601 business time for the event. */
   readonly asOf: string;
 
-  /** Legal-entity identifier (defaults to BANK-ZA-001). */
+  /** Legal-entity identifier (defaults to LE-ZA-HOZ-BANK). */
   readonly entity?: string;
 
   /** Actor emitting the request. */

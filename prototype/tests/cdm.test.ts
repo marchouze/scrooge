@@ -118,14 +118,14 @@ describe("CDM equity event types", () => {
   it("makeEquityTradeBooked envelopes a valid trade and stamps event_id + type", () => {
     const e = makeEquityTradeBooked({
       asOf: "2026-05-07T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:test" },
       citations: ["ISDA-CDM"],
       payload: baseTrade,
     });
     expect(e.type).toBe("EquityTradeBooked");
     expect(e.event_id).toBeDefined();
-    expect(e.entity).toBe("BANK-ZA-001");
+    expect(e.entity).toBe("LE-ZA-HOZ-BANK");
     expect(e.citations).toContain("ISDA-CDM");
   });
 
@@ -162,7 +162,7 @@ describe("CDM equity event types", () => {
   it("makeEquityCorporateActionApplied envelopes correctly", () => {
     const e = makeEquityCorporateActionApplied({
       asOf: "2026-06-15T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:test" },
       citations: ["ISDA-CDM"],
       payload: {
@@ -183,7 +183,7 @@ describe("CDM equity event types", () => {
   it("EquitySettlementInstructed validates and envelopes", () => {
     const e = makeEquitySettlementInstructed({
       asOf: "2026-05-09T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:test" },
       citations: ["ISDA-CDM"],
       payload: {

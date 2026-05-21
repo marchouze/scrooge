@@ -226,7 +226,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeGatewayCheckCompleted({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: HANDLER_ACTOR,
         citations: [...IDENTITY_CITATIONS],
         payload: completedPayload,

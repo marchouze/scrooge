@@ -338,7 +338,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     try {
       const narrativeEvent = makeProductDimensionNarrativeRecorded({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:product-narrative-fulfilment" },
         citations: citationChain,
         payload: {

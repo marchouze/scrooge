@@ -73,7 +73,7 @@ The HTTP surface (`/api/state`, `/api/decide`) and event-emit shape are stable a
 - **P2** — every `CeoDecision` event carries citations (`GOV-FRAMEWORK-CEO-RESERVED`, `COMPANIES-ACT-71-2008`).
 - **P3** — no manual decision-recording outside the system; the dashboard is the coded workflow.
 - **P4** — the local mock IdP is the seam for the M8 Entra ID + WebAuthn flow. Today the loopback is single-user `LOCAL_ONLY`.
-- **P5** — all state is per-entity (`BANK-ZA-001`); multi-entity expansion is a registry-shape change, not a code change.
+- **P5** — all state is per-entity (`LE-ZA-HOZ-BANK`); multi-entity expansion is a registry-shape change, not a code change.
 - **P6 (downward)** — the dashboard is generated from the registry; nothing is authored in the UI itself.
 - **P6 (upward)** — the dashboard module is a system capability supporting the **CEO Decision Review** procedure (`Procedures/by-policy/ceo-decision-review.md`). No orphan capability.
 

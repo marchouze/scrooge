@@ -76,7 +76,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeDashboardProjectionRefreshed({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:anya:projection-refresh" },
         citations: EVENT_CITATIONS,
         payload: {

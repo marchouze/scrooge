@@ -28,7 +28,7 @@ import {
 import { lookupEventType } from "../platform/event-store/registry";
 import type { Actor } from "../platform/event-store/types";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const T0 = "2026-05-09T08:00:00.000Z";
 const T1 = "2027-05-09T08:00:00.000Z";
 const T2 = "2027-08-15T10:30:00.000Z";

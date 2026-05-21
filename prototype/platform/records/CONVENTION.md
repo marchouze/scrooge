@@ -84,7 +84,7 @@ Add an entry when:
     "archivalTier":  "<hot | cool | cold>"
   },
   "actor":    { "type": "service", "id": "agent:<slug>:<seat-class>" },
-  "entity":   "BANK-ZA-001",  /* optional, defaults BANK-ZA-001 */
+  "entity":   "LE-ZA-HOZ-BANK",  /* optional, defaults LE-ZA-HOZ-BANK */
   "metadata": {
     "title":    "<human-readable title>",
     "path":     "<recon match key — usually Owner Inbox/<filename>>",

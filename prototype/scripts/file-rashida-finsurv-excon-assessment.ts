@@ -46,7 +46,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:rashida:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title: "FinSurv ExCon Assessment for FX-Spot Internal Pre-Licence Test",
       path: "2026-05-20_rashida_finsurv-excon-assessment-for-fx-spot-internal-pre-licence-test.md",

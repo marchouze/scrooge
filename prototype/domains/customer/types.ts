@@ -5,7 +5,7 @@
 // P1 — every state change is an event in the log.
 // P2 — every event carries citations (registry entries cited at emission).
 // P5 — multi-entity-ready: every counterparty is held under a typed legal
-//      entity ("BANK-ZA-001" today; the entity field is non-optional).
+//      entity ("LE-ZA-HOZ-BANK" today; the entity field is non-optional).
 // D-PARTY-REGISTER (CEO-approved 2026-05-11, PR 4): `personId` and
 //      `reviewerId` are tightened from plain `string` to `PartyId` so that
 //      all identity-axis foreign keys carry the Party URN discipline.

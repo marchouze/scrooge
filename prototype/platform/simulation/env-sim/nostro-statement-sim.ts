@@ -19,7 +19,7 @@ import { generateMt940 } from "../../payments/swift-mt/mt940";
 // ---------------------------------------------------------------------------
 
 const ACTOR = { type: "service" as const, id: "agent:env:nostro-statement-sim" };
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-MARKETS-SCHEMA-FOUNDATION", "D-FX-CLS-MEMBERSHIP"];
 const CORRESPONDENT_BIC = "SBZAZAJJXXX";
 const NOSTRO_IBAN = "ZA00BANK0000000000000";

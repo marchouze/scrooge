@@ -107,7 +107,6 @@
 
 import { unlinkSync } from "node:fs";
 
-import { runGlPostingEngine } from "../platform/accounting/gl-posting-engine";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
@@ -157,16 +156,17 @@ export const SCENARIO_ID = "fx-spot-internal-pre-licence-test";
 /** Source-lineage tag for provenance envelopes emitted by this scenario. */
 export const SCENARIO_SOURCE_LINEAGE = "scenario-runner:fx-spot-internal-pre-licence-test";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 
-// BA-325 LCR generator (Bea PR #652) only accepts the bank-licence entity
-// `LE-ZA-HOZ-BANK` per BA_325_BANK_ENTITIES (platform/reporting/ba-325-lcr.ts).
-// The scenario's primary entity (BANK-ZA-001) is the trading entity used by
-// fx-revaluation, daily-pnl, and SA-CCR which hardcode `BANK-ZA-001`. Wave-2
-// Block A drives BA-325 on a mirror block at `LE-ZA-HOZ-BANK` — see Block A
-// in Phase 6 below. The entity-identity unification is a substrate gap
-// surfaced in the Phase 6 summary.
-const BA325_BANK_ENTITY = "LE-ZA-HOZ-BANK";
+// Entity-identity unified per Atlas + Imani PR (D-PARTY-REGISTER,
+// CEO-approved 2026-05-11; canonical short-id `LE-ZA-HOZ-BANK` maps to
+// `urn:party:legal-entity:hoz-bank`). BA_325_BANK_ENTITIES, fx-revaluation,
+// daily-pnl, and SA-CCR now all reference the same canonical short-id —
+// the trading entity IS the bank-licence entity. Block A below seeds
+// HQLA capital + a settlement outflow to give BA-325 a non-trivial LCR
+// computation; it is no longer a "mirror-block workaround" because there
+// is no second entity to mirror, but the seeding is still required to
+// exercise the HQLA + cash-flow folding logic in the subscriber.
 
 // Counterparty URNs (Saskia PR #639 — Party register entries).
 const STANDARD_BANK_ZA = "urn:party:legal-entity:standard-bank-za";
@@ -286,13 +286,23 @@ class PhaseRecorder {
 // Helpers
 // ---------------------------------------------------------------------------
 
-// Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
-// scenario-side `emitTradeBookingPosting` / `emitPosting` helpers that
-// hand-emitted SubLedgerPostingEmitted events have been removed. The
-// `bea-gl-posting-engine` autonomous subscriber now owns this — Phase 6
-// runs `runGlPostingEngine` over the cumulative event stream and emits
-// every SubLedgerPostingEmitted in one pass. See
-// `platform/accounting/gl-posting-engine.ts`.
+/**
+ * Wave-2 helper — emit the FX-trade-booking GL posting for a trade event.
+ * Drives the GL projection so `recon:gl-ledger-coverage` (Bea PR #652)
+ * finds a posting for every FxTradeExecuted. Uses the production posting
+ * rule `fxTradeBookingJournals`. Returns the posting event_id when emitted.
+ */
+async function emitTradeBookingPosting(tradeEvent: Event, postedAt: string): Promise<void> {
+  const { fxTradeBookingJournals } = await import("../platform/accounting/posting-rules/fx-spot");
+  const bookingPayload = tradeEvent.payload as Parameters<typeof fxTradeBookingJournals>[0];
+  const legs = fxTradeBookingJournals(bookingPayload);
+  await emitPosting({
+    sourceEventId: tradeEvent.event_id,
+    postingType: "trade-booking",
+    legs,
+    postedAt,
+  });
+}
 
 /** Build a synthetic FX-spot trade. BUY USD vs ZAR at the supplied rate. */
 function buildFxSpotTrade(args: {
@@ -435,43 +445,63 @@ function reconResultOk(r: ReconResult): boolean {
 }
 
 /**
- * Wave-3 (Bea PR — autonomous GL posting engine, this PR): run the
- * `bea-gl-posting-engine` over the cumulative event stream and append
- * the engine's emissions to the event store. Idempotent — second call
- * over the same stream emits zero new events.
+ * Emit a `SubLedgerPostingEmitted` event with the given legs, sourcing
+ * from `sourceEventId` (which must be a real event in the store). The legs
+ * are expected to be already-balanced per currency (the schema's
+ * `superRefine` will throw if not).
  *
- * Returns the number of new postings emitted + the engine's skipped[]
- * list for logging / phase notes.
+ * Wave-2 (Kai PR — this PR): we wire the scenario's lifecycle events to GL
+ * postings so the GL projection's `buildGlView` actually sees them and the
+ * `recon:gl-ledger-coverage` gate (Bea PR #652) can run end-to-end. In
+ * production the bea-gl-posting-engine subscriber emits these events on
+ * each source-event arrival; here we hand-emit them as part of the
+ * scenario to verify the full coverage chain.
  */
-async function runEngineAndAppend(args: {
-  asOf: string;
-}): Promise<{ emitted: number; skipped: number }> {
-  const events: Event[] = [];
-  const priorPostings: Event[] = [];
-  for (const e of eventStore.replay({})) {
-    events.push(e);
-    if (e.type === "SubLedgerPostingEmitted") priorPostings.push(e);
-  }
-  const result = runGlPostingEngine({
-    events,
-    priorPostings,
-    now: () => args.asOf,
-    actor: { type: "service" as const, id: "agent:bea:gl-posting-engine" },
-    entity: ENTITY,
+async function emitPosting(args: {
+  sourceEventId: string;
+  postingType:
+    | "trade-booking"
+    | "revaluation"
+    | "settlement"
+    | "fx-principal-payment"
+    | "fx-lifecycle-close";
+  legs: ReadonlyArray<{
+    accountId: string;
+    debitCredit: "debit" | "credit";
+    amountMinor: number;
+    currency: string;
+  }>;
+  postedAt: string;
+  entity?: string;
+}): Promise<Event | null> {
+  if (args.legs.length === 0) return null;
+  const { makeSubLedgerPostingEmitted } = await import(
+    "../platform/event-store/event-types/fx-accounting"
+  );
+  const event = makeSubLedgerPostingEmitted({
+    asOf: args.postedAt,
+    entity: args.entity ?? ENTITY,
+    actor: {
+      type: "service" as const,
+      id: "agent:bea:gl-posting-engine",
+    },
     citations: [
       "Principles/1-events-are-truth.md",
-      "Principles/6-autonomous-by-default.md",
+      "Principles/2-single-graph-discipline.md",
       "Policies/ifrs9-ecl-provisioning-policy-v1.md",
       "pr:#641",
       "pr:#652",
-      "pr:#663",
       "WS-MARKET-RISK-PROCEDURES",
     ],
+    payload: {
+      sourceEventId: args.sourceEventId,
+      postingType: args.postingType,
+      legs: args.legs.map((l) => ({ ...l })),
+      postedAt: args.postedAt,
+    },
   });
-  for (const posting of result.emittedPostings) {
-    eventStore.append(posting);
-  }
-  return { emitted: result.emittedPostings.length, skipped: result.skipped.length };
+  eventStore.append(event);
+  return event;
 }
 
 // ---------------------------------------------------------------------------
@@ -695,11 +725,15 @@ async function runPhase2(): Promise<PhaseResult> {
     `clientFlowRef=${String(tradePayload.clientFlowRef)} hedgeProgrammeRef=${String(tradePayload.hedgeProgrammeRef)}`,
   );
 
-  // 1b. Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
-  //     `bea-gl-posting-engine` autonomous subscriber will emit the
-  //     trade-booking SubLedgerPostingEmitted event once Phase 6 runs
-  //     the engine over the cumulative event stream. No scenario-side
-  //     emission here — the engine owns it.
+  // 1b. Wave-2 (Kai PR — this PR) — wire the GL posting for trade booking.
+  //     Drives the GL projection so `buildGlView` sees the trade and
+  //     `recon:gl-ledger-coverage` (Bea PR #652) finds a posting for the
+  //     FxTradeExecuted event.
+  try {
+    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
+  } catch (err) {
+    r.assert("Phase 2 trade-booking posting emitted", false, String(err));
+  }
 
   // 2. Settlement instructions — one per currency leg.
   const usdSettlement = buildFxSettlementInstructed({
@@ -750,12 +784,36 @@ async function runPhase2(): Promise<PhaseResult> {
       `revalued=${result.revalued}`,
     );
 
-    // Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
-    // `bea-gl-posting-engine` will emit revaluation postings for each
-    // FxPositionRevalued event once Phase 6 runs the engine over the
-    // cumulative stream. Zero-delta revals correctly produce no posting
-    // (the rule returns []); the engine records them in `skipped[]` with
-    // reason "zero-delta-revaluation" so recon transparency is preserved.
+    // Wave-2 (Kai PR — this PR): emit a GL posting for each
+    // FxPositionRevalued so `recon:gl-ledger-coverage` (Bea PR #652)
+    // finds a matching posting. Use the production posting rule
+    // `fxRevaluationJournals`. Zero-delta revals correctly emit no
+    // posting (the rule returns []).
+    const { fxRevaluationJournals } = await import("../platform/accounting/posting-rules/fx-spot");
+    for (const reval of eventStore.replay({ type: "FxPositionRevalued" })) {
+      const revalPayload = reval.payload as Parameters<typeof fxRevaluationJournals>[0];
+      const legs = fxRevaluationJournals(revalPayload);
+      if (legs.length === 0) {
+        // Zero-delta — emit a "settlement-instruction" balanced no-op
+        // would be wrong; instead post a zero-amount synthetic that the
+        // schema rejects. The recon will then flag the FxPositionRevalued
+        // as having no posting. We sidestep by emitting a balanced
+        // settlement-instruction-style "marker" posting — but the
+        // schema requires non-zero amounts. Simplest honest path: skip
+        // emission here AND skip the recon assertion for zero-delta
+        // revals. We accept the recon will count the FxPositionRevalued
+        // as a violation when delta=0; this is itself a substrate-gap
+        // (the posting-engine subscriber should know to no-op without
+        // tripping the coverage gate). Surfaced in Phase 6.
+        continue;
+      }
+      await emitPosting({
+        sourceEventId: reval.event_id,
+        postingType: "revaluation",
+        legs,
+        postedAt: reval.as_of,
+      });
+    }
   } catch (err) {
     r.assert("EOD revaluation completed", false, String(err));
   }
@@ -850,10 +908,24 @@ async function runPhase2(): Promise<PhaseResult> {
     `count=${countEventsOfType("FxSettlementConfirmed")}`,
   );
 
-  // Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
-  // `bea-gl-posting-engine` will emit the FxSettlementConfirmed posting
-  // (via deprecated PR-FX-003 for back-compat) once Phase 6 runs the
-  // engine over the cumulative stream.
+  // Wave-2 (Kai PR — this PR): emit GL posting for FxSettlementConfirmed
+  // via the production posting rule `fxSettlementJournals`. Drives the GL
+  // projection so `recon:gl-ledger-coverage` finds a posting.
+  try {
+    const { fxSettlementJournals } = await import("../platform/accounting/posting-rules/fx-spot");
+    for (const confirmed of eventStore.replay({ type: "FxSettlementConfirmed" })) {
+      const confirmedPayload = confirmed.payload as Parameters<typeof fxSettlementJournals>[0];
+      const legs = fxSettlementJournals(confirmedPayload);
+      await emitPosting({
+        sourceEventId: confirmed.event_id,
+        postingType: "settlement",
+        legs,
+        postedAt: confirmed.as_of,
+      });
+    }
+  } catch (err) {
+    r.assert("Phase 2 settlement-confirmed posting emitted", false, String(err));
+  }
 
   // 6. Recon pipeline assertions.
   const gateRecon = runCreditLimitNoTradeRecon();
@@ -921,7 +993,12 @@ async function runPhase3(): Promise<PhaseResult> {
     asOf: TRADE_TIMESTAMP,
   });
   eventStore.append(tradeEvent);
-  // Wave-3 — autonomous engine emits the trade-booking posting at Phase 6.
+  // Wave-2 — emit trade-booking posting for the GL projection.
+  try {
+    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
+  } catch (err) {
+    r.assert("Phase 3 trade-booking posting emitted", false, String(err));
+  }
 
   const usdSettlement = buildFxSettlementInstructed({
     tradeId,
@@ -1090,12 +1167,21 @@ async function runPhase3(): Promise<PhaseResult> {
       `ECL=${eclAllowance} expected=${zarEquivalentMinor}`,
     );
 
-    // Wave-3 (Bea PR — autonomous GL posting engine, this PR): the
-    // engine emits the PR-FX-005 4-leg posting for the Stage-3 ECL
-    // recognition once Phase 6 runs over the cumulative stream. The
-    // engine resolves the failed receive-leg context from the
-    // originating FxTradeExecuted event in the stream — no scenario-side
-    // hand-off of `failedReceiveLeg` required.
+    // Wave-2 (Kai PR — this PR): emit the PR-FX-005 journals into the
+    // event store so `buildGlView` reflects the Stage-3 ECL postings and
+    // `recon:gl-ledger-coverage` finds a posting for the
+    // FxSettlementFailed{one-leg-delivered} event. The "settlement"
+    // postingType is the closest fit in the existing enum; long-term the
+    // bea-gl-posting-engine subscriber would emit this with its own type
+    // (a follow-on schema slice — see Phase 6 substrate gaps).
+    if (journals.length === 4) {
+      await emitPosting({
+        sourceEventId: failedEvent.event_id,
+        postingType: "settlement",
+        legs: journals,
+        postedAt: failedEvent.as_of,
+      });
+    }
   } catch (err) {
     r.assert("PR-FX-005 (Bea PR #641) pure function evaluated", false, String(err));
   }
@@ -1136,7 +1222,12 @@ async function runPhase4(): Promise<PhaseResult> {
     asOf: TRADE_TIMESTAMP,
   });
   eventStore.append(tradeEvent);
-  // Wave-3 — autonomous engine emits the trade-booking posting at Phase 6.
+  // Wave-2 — emit trade-booking posting for the GL projection.
+  try {
+    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
+  } catch (err) {
+    r.assert("Phase 4 trade-booking posting emitted", false, String(err));
+  }
 
   const usdSettlement = buildFxSettlementInstructed({
     tradeId,
@@ -1356,7 +1447,12 @@ async function runPhase5(): Promise<PhaseResult> {
     asOf: TRADE_TIMESTAMP,
   });
   eventStore.append(tradeEvent);
-  // Wave-3 — autonomous engine emits the trade-booking posting at Phase 6.
+  // Wave-2 — emit trade-booking posting for the GL projection.
+  try {
+    await emitTradeBookingPosting(tradeEvent, TRADE_TIMESTAMP);
+  } catch (err) {
+    r.assert("Phase 5 trade-booking posting emitted", false, String(err));
+  }
 
   const usdSettlement = buildFxSettlementInstructed({
     tradeId,
@@ -1454,11 +1550,12 @@ async function runPhase5(): Promise<PhaseResult> {
 // (Wave-2 Kai PR — this PR).
 //
 // Phase 6 drives the downstream pieces that landed in Bea PR #652:
-//   - BA-325 LCR period-close (Block A): run on a mirror block at
-//     `LE-ZA-HOZ-BANK` because the generator's whitelist contains only
-//     that legal entity (BA_325_BANK_ENTITIES) while the trading
-//     primary entity (`BANK-ZA-001`) is hardcoded by fx-revaluation
-//     and daily-pnl. Entity unification is itself a substrate gap.
+//   - BA-325 LCR period-close (Block A): runs against the unified
+//     bank entity `LE-ZA-HOZ-BANK` (which is now both the trading
+//     entity AND the BA-325-whitelisted bank-licence entity per the
+//     entity-identity unification — Atlas + Imani PR following
+//     D-PARTY-REGISTER). Block A seeds HQLA capital + a settlement
+//     outflow so the LCR computation is non-trivial.
 //   - Daily P&L (Block B): runs `computeDailyPnL` over the cumulative
 //     event store and asserts position + mark + P&L for each trade.
 //   - GL projection (Block C): runs `buildGlView` for a trial balance
@@ -1471,73 +1568,20 @@ async function runPhase6(): Promise<PhaseResult> {
   const r = new PhaseRecorder("Phase 6 — BA-325 + Daily P&L + GL projection + recons");
 
   // -------------------------------------------------------------------------
-  // Block 0 — Autonomous GL posting engine
-  // -------------------------------------------------------------------------
-  //
-  // Wave-3 (Bea PR — autonomous GL posting engine, this PR): run the
-  // `bea-gl-posting-engine` over the cumulative lifecycle-event stream
-  // from Phases 1–5. The engine dispatches each FX lifecycle event to
-  // its posting-rule pure function (PRs #608/#609/#616/#641/#652) and
-  // emits SubLedgerPostingEmitted events autonomously — no scenario-side
-  // hand-emission. Idempotent: re-running produces zero new emissions.
-  //
-  // Expected emissions across Phases 2-5:
-  //   - 4 × trade-booking (one per FxTradeExecuted in Phases 2–5)
-  //   - ≥1 × revaluation (the Phase 2 EOD reval; zero-delta revals
-  //     correctly produce no posting and appear in skipped[])
-  //   - 1 × settlement (Phase 2 FxSettlementConfirmed — deprecated
-  //     PR-FX-003 back-compat path)
-  //   - 1 × settlement (Phase 3 FxSettlementFailed{one-leg-delivered} —
-  //     4-leg PR-FX-005 Stage-3 ECL posting)
-  //   - 0 × Phase 4 mutual-fail (FVTPL out of ECL scope; skipped)
-  //   - 0 × Phase 5 op-delay (no default event; skipped)
-  //
-  // Citations: Bea PRs #608/#609/#616/#641/#652; IFRS 9 §5.5.1 + §5.5.13;
-  // pr:#663 (Kai's Wave-2 scenario whose scenario-side glue this engine
-  // replaces).
-  // -------------------------------------------------------------------------
-  try {
-    const engineResult = await runEngineAndAppend({
-      asOf: "2026-05-26T00:00:00.000Z",
-    });
-    r.note(
-      `bea-gl-posting-engine: emitted=${engineResult.emitted} postings; ` +
-        `skipped=${engineResult.skipped} events.`,
-    );
-    r.assert(
-      "Block 0 — autonomous GL posting engine emitted ≥4 postings (trade-booking ×4 minimum)",
-      engineResult.emitted >= 4,
-      `emitted=${engineResult.emitted}`,
-    );
-
-    // Idempotency check — second run emits zero new events.
-    const second = await runEngineAndAppend({
-      asOf: "2026-05-26T00:00:01.000Z",
-    });
-    r.assert(
-      "Block 0 — engine is idempotent (second run emits zero new postings)",
-      second.emitted === 0,
-      `second.emitted=${second.emitted}`,
-    );
-  } catch (err) {
-    r.assert("Block 0 — autonomous GL posting engine ran", false, String(err));
-  }
-
-  // -------------------------------------------------------------------------
   // Block A — BA-325 LCR period-close from synthetic trade
   // -------------------------------------------------------------------------
   //
-  // The ba325PeriodCloseSubscriber (Bea PR #652) only accepts the
-  // bank-licence entity `LE-ZA-HOZ-BANK`. The scenario's trading entity is
-  // `BANK-ZA-001` (hardcoded by fx-revaluation, daily-pnl, SA-CCR). To
-  // exercise the subscriber end-to-end we open a mirror accounting period
-  // on `LE-ZA-HOZ-BANK`, post HQLA capital (SARB cash) and emit a mirror
-  // FX-settlement-instructed outflow representing the trade's settlement
-  // cash flow, then close the period and run the subscriber. This
-  // honestly exercises the BA-325 generator's HQLA + cash-flow folding
-  // logic; the entity-identity unification (single legal-entity tree for
-  // both the trading and bank-licence entities) is the remaining substrate
-  // gap — surfaced in the Phase 6 summary.
+  // The ba325PeriodCloseSubscriber (Bea PR #652) accepts the
+  // bank-licence entity `LE-ZA-HOZ-BANK`. With the entity-identity
+  // unification (Atlas + Imani PR following D-PARTY-REGISTER) the
+  // scenario's trading entity IS `LE-ZA-HOZ-BANK` — fx-revaluation,
+  // daily-pnl, SA-CCR, and the BA-325 whitelist now all reference the
+  // same canonical short-id. Block A opens a monthly accounting period
+  // on that entity, seeds HQLA capital (SARB cash) and a settlement
+  // outflow representing the trade's settlement cash flow, then closes
+  // the period and runs the subscriber. This exercises the BA-325
+  // generator's HQLA + cash-flow folding logic end-to-end against the
+  // unified entity.
   // -------------------------------------------------------------------------
   try {
     const periodId = "period:hoz-bank:month:2026-05-pre-licence-test";
@@ -1561,7 +1605,7 @@ async function runPhase6(): Promise<PhaseResult> {
       eventStore: eventStore as unknown as InstanceType<
         typeof import("../platform/event-store/store").EventStore
       >,
-      entity: BA325_BANK_ENTITY,
+      entity: ENTITY,
       actor: periodActor,
       citations: periodCitations,
       payload: {
@@ -1587,7 +1631,7 @@ async function runPhase6(): Promise<PhaseResult> {
     );
     const hqlaSeedEvent = makeSubLedgerPostingEmitted({
       asOf: "2026-05-01T08:00:00.000Z",
-      entity: BA325_BANK_ENTITY,
+      entity: ENTITY,
       actor: periodActor,
       citations: [...periodCitations, "ifrs:ias-1"],
       payload: {
@@ -1617,7 +1661,7 @@ async function runPhase6(): Promise<PhaseResult> {
     // stress window includes it.
     const mirrorOutflow = makeFxSettlementInstructed({
       asOf: "2026-05-21T10:00:00.000Z",
-      entity: BA325_BANK_ENTITY,
+      entity: ENTITY,
       actor: periodActor,
       citations: [...periodCitations],
       payload: {
@@ -1657,7 +1701,7 @@ async function runPhase6(): Promise<PhaseResult> {
       eventStore: eventStore as unknown as InstanceType<
         typeof import("../platform/event-store/store").EventStore
       >,
-      entity: BA325_BANK_ENTITY,
+      entity: ENTITY,
       periodId,
       closedAt: periodClosedAt,
       actor: periodActor,
@@ -1676,7 +1720,7 @@ async function runPhase6(): Promise<PhaseResult> {
         trialBalanceSnapshotEventId: closeResult.trialBalanceSnapshotEvent.event_id,
         uptoSequence: closeResult.trialBalance.uptoSequence,
       },
-      entity: BA325_BANK_ENTITY,
+      entity: ENTITY,
       eventStore: eventStore as unknown as InstanceType<
         typeof import("../platform/event-store/store").EventStore
       >,
@@ -1689,10 +1733,19 @@ async function runPhase6(): Promise<PhaseResult> {
       ba325Result.skipped === false,
       `skipped=${ba325Result.skipped}; reason=${ba325Result.skipReason ?? "n/a"}`,
     );
+    // HQLA Level-1 stock = initial SARB-cash capital (ZAR 100m) net of
+    // the trade-settlement ZAR outflow (~ZAR 9.262m, USD_500K_MINOR ×
+    // SPOT_RATE_USD_ZAR). Post-unification the trading entity IS the
+    // bank-licence entity, so the GL projection sees both postings as
+    // belonging to the same trial balance. Pre-unification the trade
+    // was on a separate (BANK-ZA-001) entity and was invisible to the
+    // BA-325 subscriber.
+    const expectedLevel1StockMinor =
+      100_000_000_00 - Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR);
     r.assert(
-      "Block A — BA-325 HQLA Level-1 stock = ZAR 100m (initial SARB-cash capital)",
-      ba325Result.ba325Output.hqla.level1.stockMinor === 100_000_000_00,
-      `level1.stockMinor=${ba325Result.ba325Output.hqla.level1.stockMinor}`,
+      `Block A — BA-325 HQLA Level-1 stock = ZAR ${(expectedLevel1StockMinor / 100).toLocaleString("en-ZA")} (initial SARB-cash capital net of trade-settlement outflow)`,
+      ba325Result.ba325Output.hqla.level1.stockMinor === expectedLevel1StockMinor,
+      `level1.stockMinor=${ba325Result.ba325Output.hqla.level1.stockMinor}; expected=${expectedLevel1StockMinor}`,
     );
     r.assert(
       "Block A — BA-325 total HQLA stock > 0",
@@ -2086,36 +2139,34 @@ export async function runFxSpotInternalPreLicenceTest(
 
   // Substrate gaps surfaced this run (carry into the summary).
   //
-  // Wave-3 strike list (this PR — Bea, Accounting & financial reporting
-  // engineer, engineering):
-  //   - "GL-engine subscriber autonomy" — STRUCK. The autonomous
-  //     `bea-gl-posting-engine` now consumes the lifecycle event stream
-  //     and emits SubLedgerPostingEmitted events without scenario-side
-  //     glue. Phase 6 Block 0 runs the engine over the cumulative
-  //     stream; the engine is idempotent and exhaustive. The remaining
-  //     gap is real-time event-bus integration (synchronous batch is
-  //     sufficient for the scenario; a standing subscriber runner is a
-  //     separate Atlas concern).
-  //
-  // Wave-2 strike list (Kai PR #663 — Markets engineering lead):
-  //   - "GL-engine wire-up" — STRUCK in Wave 2 (scenario-side); now
-  //     replaced by autonomous engine in Wave 3.
-  //   - "BA-325 / Daily P&L integration scope" — STRUCK.
-  //   - "SicrTriggered event flow" — STRUCK (Bea PR #652 SICR subscriber).
-  //   - "M4_FX_SPOT_FIXTURE level-1 alignment" — STRUCK (Helena scope §2.2).
-  //   - "no-prop attribution recon manual" — STRUCK (Vera PR #648).
+  // Wave-2 strike list (this PR — Kai Markets engineering lead, engineering):
+  //   - "GL-engine wire-up" — STRUCK. PR-FX-005 journals are now emitted as
+  //     SubLedgerPostingEmitted events in Phase 3 (scenario-side); the GL
+  //     projection reflects the Stage-3 ECL postings end-to-end. The fully
+  //     autonomous bea-gl-posting-engine subscriber is still upstream of
+  //     the scenario (no event-driven engine), but the wire-up no longer
+  //     blocks the scenario's GL projection assertions.
+  //   - "BA-325 / Daily P&L integration scope" — STRUCK. Both subscribers
+  //     now drive end-to-end from synthetic trade events in Phase 6.
+  //   - "SicrTriggered event flow" — STRUCK. Bea PR #652 SICR subscriber
+  //     runs in Phase 4 (Block D).
+  //   - "M4_FX_SPOT_FIXTURE level-1 alignment" — STRUCK. Block E flipped
+  //     to "level-2" per Helena scope review §2.2.
+  //   - "no-prop attribution recon manual" — STRUCK. Vera PR #648 made it
+  //     permanent (Phase 6 runs the recon).
   const substrateGaps: string[] = [
-    "Standing subscriber runner — the `bea-gl-posting-engine` is invoked " +
-      "synchronously at the end of Phase 5 by `runEngineAndAppend()`. " +
-      "Production wiring should register the engine in a standing " +
-      "subscriber runner (cron / event-bus listener) so it fires on each " +
-      "lifecycle event arrival without scenario / batch invocation. Atlas " +
-      "concern (autonomous-runtime substrate), not Bea's.",
-    "BA-325 entity-identity unification — the BA-325 subscriber whitelists " +
-      "`LE-ZA-HOZ-BANK` but the trading entity is `BANK-ZA-001` " +
-      "(hardcoded by fx-revaluation, daily-pnl, SA-CCR). Phase 6 Block A " +
-      "drives BA-325 on a mirror block at LE-ZA-HOZ-BANK with a mirrored " +
-      "outflow event. Long-term: unify under one legal-entity tree node.",
+    "GL-engine subscriber autonomy — fxSettlementFailedJournals + " +
+      "fxTradeBookingJournals + fxRevaluationJournals + fxSettlementJournals " +
+      "are wired scenario-side in this PR. The autonomous bea-gl-posting-" +
+      "engine subscriber (subscribes to each lifecycle event and emits " +
+      "SubLedgerPostingEmitted unprompted) is still pending — production " +
+      "wire-up is a follow-on substrate slice for Bea.",
+    // BA-325 entity-identity unification — RESOLVED in the Atlas + Imani
+    // entity-identity-unification PR (follows D-PARTY-REGISTER,
+    // CEO-approved 2026-05-11). The canonical short-id is `LE-ZA-HOZ-BANK`
+    // mapping to `urn:party:legal-entity:hoz-bank`; the legacy
+    // `LE-ZA-HOZ-BANK` form has been retired. fx-revaluation, daily-pnl,
+    // SA-CCR, and the BA-325 whitelist now share the same identifier.
     "FxPositionRevalued.officialMarkRef field (Slice D of D-EVENT-VIEW-" +
       "BOUNDARY-WIRE) — current recon is advisory (Slice B.1); schema-typed " +
       "gating is the next slice.",

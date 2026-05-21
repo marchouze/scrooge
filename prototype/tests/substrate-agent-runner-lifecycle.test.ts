@@ -49,7 +49,7 @@ import type { Actor, Event } from "../platform/event-store/types";
 
 const ENVELOPE = {
   asOf: "2026-05-10T12:00:00.000Z",
-  entity: "BANK-ZA-001",
+  entity: "LE-ZA-HOZ-BANK",
   actor: { type: "service" as const, id: "agent:atlas:substrate-runner" } satisfies Actor,
   citations: ["GOV-FRAMEWORK-CEO-RESERVED", "D-AGENT-RUNTIME-AUTHORIZE"],
 };

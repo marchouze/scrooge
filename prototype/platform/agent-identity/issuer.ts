@@ -154,7 +154,7 @@ export interface AgentIdentityIssuerConfig {
 }
 
 const DEFAULT_KEY_DIR = ".local/keys";
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 const DEFAULT_ACTOR: Actor = { type: "service", id: "agent:atlas:identity-issuer" };
 const DEFAULT_CITATIONS: readonly string[] = [
   "GOV-FRAMEWORK-CEO-RESERVED",

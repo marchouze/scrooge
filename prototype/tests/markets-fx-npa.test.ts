@@ -37,7 +37,7 @@ import type { Actor } from "../platform/event-store/types";
 // Shared test scaffolding
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const NPA_ACTOR: Actor = { type: "service", id: "agent:helena:npa-committee" };
 const CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"];
 

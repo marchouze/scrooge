@@ -545,7 +545,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "ALMReadinessSnapshot",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:ravi:alm-readiness" },
       citations: EVENT_CITATIONS,
       payload: {

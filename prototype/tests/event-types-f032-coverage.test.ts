@@ -62,7 +62,7 @@ describe("F-032 closed types — schema round-trips", () => {
   const actor = { type: "service" as const, id: "agent:test:f032" };
   const baseEnvelope = {
     asOf: "2026-05-10T12:00:00.000Z",
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor,
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
   };

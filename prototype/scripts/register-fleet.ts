@@ -106,7 +106,7 @@ const FLEET_ROLLOUT_CITATIONS: readonly string[] = [
   "ORG-CY-09",
 ];
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 /** Inputs the driver needs from the composition root. */
 export interface FleetRegistrationConfig {

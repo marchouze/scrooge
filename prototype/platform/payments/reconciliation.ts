@@ -58,7 +58,7 @@ const RECON_CITATIONS = ["PROC-PAY-RBH-01", "NPS-ACT-78-1998", "BANKS-ACT-94-199
 const RECON_ACTOR = { type: "service" as const, id: "agent:tomas:daily-reconciliation" };
 
 /** Entity the bank operates under. */
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
 // Public result types

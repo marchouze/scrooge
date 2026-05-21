@@ -360,7 +360,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "SubstrateStateSnapshot",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:atlas:substrate-state" },
       citations: EVENT_CITATIONS,
       payload: {
@@ -394,7 +394,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeAgentEscalation({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: atlasEscActor,
         citations: EVENT_CITATIONS,
         payload: {
@@ -422,7 +422,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeAgentEscalation({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: atlasEscActor,
         citations: EVENT_CITATIONS,
         payload: {
@@ -460,7 +460,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeAgentDecision({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: atlasEscActor,
         citations: EVENT_CITATIONS,
         payload: {
@@ -496,7 +496,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeWorkstreamRegistered({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: atlasEscActor,
         citations: EVENT_CITATIONS,
         payload: {
@@ -534,7 +534,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventStore.append(
         makeRiskRaised({
           asOf: ctx.asOf,
-          entity: "BANK-ZA-001",
+          entity: "LE-ZA-HOZ-BANK",
           actor: atlasActor,
           citations: EVENT_CITATIONS,
           payload: {
@@ -557,7 +557,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventStore.append(
         makeWorkstreamRegistered({
           asOf: ctx.asOf,
-          entity: "BANK-ZA-001",
+          entity: "LE-ZA-HOZ-BANK",
           actor: atlasActor,
           citations: EVENT_CITATIONS,
           payload: {

@@ -317,7 +317,7 @@ export async function generateNsfrProjection(
 
   const event = makeNSFRRatioProjection({
     asOf: inputs.periodEnd,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "agent:ravi:nsfr-engine" },
     citations: [...citations],
     payload: {

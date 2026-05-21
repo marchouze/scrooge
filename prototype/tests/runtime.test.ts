@@ -70,7 +70,7 @@ describe("runtime — Vera overnight-recon handler", () => {
         eventStore.append(
           makeDecision({
             asOf: "2026-05-01T00:00:00.000Z",
-            entity: "BANK-ZA-001",
+            entity: "LE-ZA-HOZ-BANK",
             actor: { type: "human", id: "marc@tgv.co.za" },
             citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
             eventId: newEventId(),

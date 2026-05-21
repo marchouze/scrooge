@@ -287,7 +287,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "GovernanceCyclePrep",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:owen:governance-cycle-prep" },
       citations: EVENT_CITATIONS,
       payload: {

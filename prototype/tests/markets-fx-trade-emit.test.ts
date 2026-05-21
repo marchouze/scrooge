@@ -48,7 +48,7 @@ import { makeCounterpartyEligibilityScreened } from "../platform/event-store/eve
 import { EventStore } from "../platform/event-store/store";
 import type { Actor, Event } from "../platform/event-store/types";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const NIKO_ACTOR: Actor = { type: "service", id: "agent:niko:eligibility-screening" };
 const ELIGIBILITY_CITATIONS = [
   "FAIS-ACT-37-2002",

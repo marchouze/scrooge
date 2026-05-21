@@ -89,7 +89,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCIdentityCollected produces a valid event", () => {
     const event = makeKYCIdentityCollected({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -107,7 +107,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCIdentityVerified produces a valid event", () => {
     const event = makeKYCIdentityVerified({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: { candidateId: "cand-001", adapter: "dha", result: "matched", verifiedAt: NOW },
@@ -119,7 +119,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCIdentityVerificationFailed produces a valid event", () => {
     const event = makeKYCIdentityVerificationFailed({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -136,7 +136,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCSanctionsPEPScreened produces a valid event", () => {
     const event = makeKYCSanctionsPEPScreened({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -156,7 +156,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCUBOResolved produces a valid event", () => {
     const event = makeKYCUBOResolved({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -184,7 +184,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCRiskRated produces a valid event", () => {
     const event = makeKYCRiskRated({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -202,7 +202,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCEDDInitiated produces a valid event", () => {
     const event = makeKYCEDDInitiated({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -219,7 +219,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCEDDCompleted with mlro_sign_off_event_id produces a valid event", () => {
     const event = makeKYCEDDCompleted({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -236,7 +236,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCDecisionMade produces a valid event", () => {
     const event = makeKYCDecisionMade({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -254,7 +254,7 @@ describe("KYC event type factory functions", () => {
   it("makeClientAccepted produces a valid event with required fields", () => {
     const event = makeClientAccepted({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -275,7 +275,7 @@ describe("KYC event type factory functions", () => {
   it("makeClientRejected produces a valid event", () => {
     const event = makeClientRejected({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: { candidateId: "cand-bad", reason: "Sanctions hit confirmed", rejectedAt: NOW },
@@ -287,7 +287,7 @@ describe("KYC event type factory functions", () => {
   it("makeLawfulProcessingRegistered produces a valid event", () => {
     const event = makeLawfulProcessingRegistered({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -304,7 +304,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCRefreshScheduled produces a valid event", () => {
     const event = makeKYCRefreshScheduled({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -322,7 +322,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCRefreshCompleted produces a valid event", () => {
     const event = makeKYCRefreshCompleted({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -339,7 +339,7 @@ describe("KYC event type factory functions", () => {
   it("makeKYCRatingRevised downgrade (no mlro required) produces a valid event", () => {
     const event = makeKYCRatingRevised({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -357,7 +357,7 @@ describe("KYC event type factory functions", () => {
   it("makeCounterpartyCategorised produces a valid event", () => {
     const event = makeCounterpartyCategorised({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
@@ -376,7 +376,7 @@ describe("KYC event type factory functions", () => {
   it("makeCounterpartyDeclined produces a valid event", () => {
     const event = makeCounterpartyDeclined({
       asOf: NOW,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
       citations: CITATIONS,
       payload: { partyId: "cand-retail", reason: "retail-client-declined", declinedAt: NOW },

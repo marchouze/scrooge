@@ -64,7 +64,7 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 const ENGINE_ACTOR = {
   type: "service" as const,
   id: "rohan:mtm-run",

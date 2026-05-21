@@ -174,7 +174,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     if (!ctx.dryRun) {
       const event = makeFtpAttributionRecorded({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:ravi:ftp-attribution" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),

@@ -47,7 +47,7 @@ function main(): number {
 
   const event = makeAgentEscalationDecided({
     asOf: AS_OF,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human", id: "marc@tgv.co.za" },
     citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
     eventId: EVENT_ID,

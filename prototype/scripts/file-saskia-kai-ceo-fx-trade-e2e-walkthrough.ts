@@ -50,7 +50,7 @@ const result = recordFiled(
       type: "service",
       id: "agent:saskia:governance",
     },
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     metadata: {
       title:
         "CEO End-to-End FX-Trade Walkthrough — every function across the bank, every gate, every event",

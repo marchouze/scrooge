@@ -50,7 +50,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // 1. Emit CollateralInventorySnapshot
     const snapshotEvent = makeCollateralInventorySnapshot({
       asOf: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:atlas:collateral-snapshot" },
       citations: EVENT_CITATIONS,
       eventId: newEventId(),
@@ -82,7 +82,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
       const driftEvent = makeHQLACompositionDrift({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:atlas:collateral-snapshot" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),

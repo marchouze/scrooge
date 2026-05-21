@@ -22,7 +22,7 @@
 //      (Imani spec § 16).
 //   3. Reports legal-as-code substrate state: clause-library version
 //      and clause count (today: substrate gap, no version published);
-//      legal-entity tree count (today: 1 — `BANK-ZA-001` placeholder);
+//      legal-entity tree count (today: 1 — `LE-ZA-HOZ-BANK` placeholder);
 //      ECTA-execution path readiness (digital-signature, time-stamping,
 //      log — all design-only today).
 //   4. Reports counterparty-onboarding readiness (depends on Niko's
@@ -196,7 +196,7 @@ function readSubstrateState(): SubstrateState {
   }
 
   // Legal-entity tree count: distinct entity ids ever registered.
-  // No LegalEntityRegistered events today — the placeholder BANK-ZA-001
+  // No LegalEntityRegistered events today — the placeholder LE-ZA-HOZ-BANK
   // is the implicit single entity referenced across all event payloads,
   // but no formal registration event has been emitted.
   const distinctEntities = new Set<string>();
@@ -204,7 +204,7 @@ function readSubstrateState(): SubstrateState {
     const id = (e.payload as { entityId?: string })?.entityId;
     if (id) distinctEntities.add(id);
   }
-  // Floor at 1 — BANK-ZA-001 is the operating placeholder.
+  // Floor at 1 — LE-ZA-HOZ-BANK is the operating placeholder.
   const legalEntityTreeCount = Math.max(1, distinctEntities.size);
 
   // ECTA-execution path readiness — gated on cryptographic-signature
@@ -271,7 +271,7 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: ImaniSnapshot): string 
   );
   lines.push(`  Clause-library clause count: ${snap.substrate.clauseLibraryClauseCount}`);
   lines.push(
-    `  Legal-entity tree count (distinct registered + BANK-ZA-001 floor): ${snap.substrate.legalEntityTreeCount}`,
+    `  Legal-entity tree count (distinct registered + LE-ZA-HOZ-BANK floor): ${snap.substrate.legalEntityTreeCount}`,
   );
   lines.push(
     `  ECTA-execution path exercised (any ECTAExecutionRecorded): ${snap.substrate.ectaExecutionPathReady}`,
@@ -349,7 +349,7 @@ function buildReportMarkdown(
     `| Clause-library version published | ${snap.substrate.clauseLibraryVersionPublished ? `yes (${snap.substrate.clauseLibraryClauseCount} clauses)` : "**no — substrate gap (DSL design-only)**"} |`,
   );
   lines.push(
-    `| Legal-entity tree count | ${snap.substrate.legalEntityTreeCount} (\`BANK-ZA-001\` placeholder${snap.substrate.legalEntityTreeCount === 1 ? "; no `LegalEntityRegistered` events yet" : ""}) |`,
+    `| Legal-entity tree count | ${snap.substrate.legalEntityTreeCount} (\`LE-ZA-HOZ-BANK\` placeholder${snap.substrate.legalEntityTreeCount === 1 ? "; no `LegalEntityRegistered` events yet" : ""}) |`,
   );
   lines.push(
     `| ECTA-execution path exercised | ${snap.substrate.ectaExecutionPathReady ? "yes" : "**no — engine + HSM integration design-only (§ 16)**"} |`,
@@ -414,7 +414,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "LegalReadinessSnapshot",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:imani:legal-readiness" },
       citations: EVENT_CITATIONS,
       payload: {

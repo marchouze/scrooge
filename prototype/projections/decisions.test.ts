@@ -8,7 +8,7 @@ import { type DecisionPayload, makeDecision } from "../platform/event-store/even
 import type { Event } from "../platform/event-store/types";
 import { type DecisionsEventSource, buildDecisionsRegister } from "./decisions";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "human" as const, id: "marc@tgv.co.za" };
 const CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
 

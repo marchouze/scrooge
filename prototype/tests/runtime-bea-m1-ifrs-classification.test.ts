@@ -73,7 +73,7 @@ function syntheticTrade(args: {
 }): Event {
   return makeEquityTradeBooked({
     asOf: args.asOf ?? "2026-05-09T00:00:00.000Z",
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: SOURCE_ACTOR,
     citations: [...TRADE_CITATIONS],
     payload: {
@@ -333,7 +333,7 @@ describe("runtime — bea:m1-ifrs-classification-rules", () => {
     const tradeId = uniq("trd-settle");
     const settle = makeEquitySettlementInstructed({
       asOf: "2026-05-13T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: SOURCE_ACTOR,
       citations: ["ISDA-CDM"],
       payload: {
@@ -372,7 +372,7 @@ describe("runtime — bea:m1-ifrs-classification-rules", () => {
     // construction to makeDecision with the unified Decision payload.
     const ceoDecision: Event = makeDecision({
       asOf: "2026-05-07T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
       eventId: newEventId(),
@@ -392,7 +392,7 @@ describe("runtime — bea:m1-ifrs-classification-rules", () => {
     });
     const cdmRefresh: Event = makeCdmBindingsRegenerated({
       asOf: "2026-05-09T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings" },
       citations: ["ISDA-CDM"],
       payload: {

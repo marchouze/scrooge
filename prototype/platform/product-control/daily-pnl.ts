@@ -70,7 +70,7 @@ export interface DailyPnLResult {
 // ---------------------------------------------------------------------------
 
 const DESK_ID = "FX-SPOT";
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 const ENGINE_ACTOR = {
   type: "service" as const,
   id: "agent:product-control-engine",

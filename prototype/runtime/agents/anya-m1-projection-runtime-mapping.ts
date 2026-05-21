@@ -57,7 +57,7 @@ import {
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 const HANDLER_ACTOR = {
   type: "service" as const,

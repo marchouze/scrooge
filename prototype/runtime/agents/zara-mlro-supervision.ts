@@ -443,7 +443,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeMLROAttestation({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:zara:mlro-supervision" },
         citations: EVENT_CITATIONS,
         payload: {
@@ -470,7 +470,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventStore.append(
         makeAgentEscalation({
           asOf: ctx.asOf,
-          entity: "BANK-ZA-001",
+          entity: "LE-ZA-HOZ-BANK",
           actor: { type: "service", id: "agent:zara:mlro-supervision" },
           citations: EVENT_CITATIONS,
           payload: {

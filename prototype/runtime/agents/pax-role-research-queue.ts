@@ -544,7 +544,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: "RoleResearchQueueSnapshot",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:pax:role-research-queue" },
       citations: EVENT_CITATIONS,
       payload: {

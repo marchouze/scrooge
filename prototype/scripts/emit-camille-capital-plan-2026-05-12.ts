@@ -77,7 +77,7 @@ function main(): number {
       ],
       citations: [...CITATIONS],
       actor: CAMILLE_ACTOR,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
     },
     AS_OF,
   );

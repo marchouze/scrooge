@@ -80,7 +80,7 @@ const RECON_ACTOR = {
   id: "eitan:eod-irs-revaluation",
 };
 
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
 // Helper: calendar days between two ISO 8601 dates

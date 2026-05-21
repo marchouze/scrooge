@@ -202,7 +202,7 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
 
   constructor(opts: { eventStore: EventStore; entity?: string; clock?: ScenarioClock }) {
     this.eventStore = opts.eventStore;
-    this.entity = opts.entity ?? "BANK-ZA-001";
+    this.entity = opts.entity ?? "LE-ZA-HOZ-BANK";
     this.clock = opts.clock ?? new WallClock();
   }
 

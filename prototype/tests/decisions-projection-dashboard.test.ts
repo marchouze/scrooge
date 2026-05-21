@@ -15,7 +15,7 @@ import type { Event } from "../platform/event-store/types";
 import { type DecisionsEventSource, buildDecisionsRegister } from "../projections/decisions";
 
 const ACTOR = { type: "human" as const, id: "marc@tgv.co.za" };
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
 
 function minimalFixture(): { sources: SourcePaths; events: EventSource } {

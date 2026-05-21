@@ -391,7 +391,7 @@ export function emitTrade(args: {
 
   const commonArgs = {
     asOf: args.asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service" as const, id: "agent:kai:fx-rfq" },
     citations: [...TRADE_EMIT_CITATIONS],
   };

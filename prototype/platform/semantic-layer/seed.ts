@@ -24,7 +24,7 @@ import type { EventStore } from "../event-store/store";
 import { makeSemanticLayerQuantityRegistered } from "./event-type";
 import { QUANTITY_REGISTRY } from "./quantities";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const REGISTERED_AT = new Date().toISOString();
 
 /**

@@ -39,7 +39,7 @@ import {
 // Test fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "bea-sicr-subscriber" };
 const TRADE_REF = "FX-TRADE-2026-05-21-001";
 const PARTY_ID = "PARTY-CP-ACME-LTD";

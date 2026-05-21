@@ -58,7 +58,7 @@ function main(): number {
 
   const event = makePolicyVersionActivated({
     asOf: AS_OF,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { id: "agent:helena:cro", type: "service" },
     citations: [
       "D-EVENT-VIEW-BOUNDARY-WIRE",

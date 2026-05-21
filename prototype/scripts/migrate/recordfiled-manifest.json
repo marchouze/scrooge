@@ -20,7 +20,7 @@
     "  classification — RecordFiled classification.",
     "  retention      — retention envelope { citationRef, minimumYears, archivalTier }.",
     "  actor          — { type, id }.",
-    "  entity         — entity ID (defaults BANK-ZA-001 if omitted).",
+    "  entity         — entity ID (defaults LE-ZA-HOZ-BANK if omitted).",
     "  metadata       — { title, path, category, author, date }; `path` is the",
     "                   logical Owner Inbox path used by recon (NOT sourcePath).",
     "  citations      — non-empty list of upstream urns / decision IDs.",

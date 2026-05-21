@@ -278,7 +278,7 @@ export class EnvSimEngine {
       event_id: eventId,
       type: "FxTradeExecuted",
       as_of: asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:env:fx-sim-engine" },
       citations: ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"],
       payload: payload as unknown as Record<string, unknown>,

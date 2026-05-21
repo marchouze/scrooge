@@ -32,7 +32,7 @@ const FINSURV_ACTOR = {
   id: "mira:finsurv-stub",
 };
 
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 /**
  * Emit a pending TradeReportSubmitted event for the given tradeId.

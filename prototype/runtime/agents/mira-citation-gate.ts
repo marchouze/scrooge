@@ -101,7 +101,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       event_id: newEventId(),
       type: gate.violations.length === 0 ? "CitationGatePassed" : "CitationGateFailed",
       as_of: ctx.asOf,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:mira:citation-gate" },
       citations: EVENT_CITATIONS,
       payload: {
@@ -119,7 +119,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         event_id: newEventId(),
         type: "AuditFinding",
         as_of: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:mira:citation-gate" },
         citations: EVENT_CITATIONS,
         payload: {

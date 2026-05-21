@@ -26,7 +26,7 @@ function makeEvent(
     event_id: `evt-${Math.random().toString(36).slice(2)}`,
     type: overrides.type,
     as_of: overrides.as_of ?? "2026-05-18T10:00:00.000Z",
-    entity: overrides.entity ?? "BANK-ZA-001",
+    entity: overrides.entity ?? "LE-ZA-HOZ-BANK",
     actor: overrides.actor ?? { type: "agent" as const, id: "bea" },
     citations: overrides.citations ?? ["[citation: TBC]"],
     payload: overrides.payload,

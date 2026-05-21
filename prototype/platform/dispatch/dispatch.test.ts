@@ -38,7 +38,7 @@ function mkCompletion(args: {
     event_id: `e-${args.runId}`,
     type: "AgentRunCompleted",
     as_of: args.completedAt,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: "service", id: "test" },
     citations: ["D-DISPATCH-SYNC-PRIMITIVE"],
     payload: {

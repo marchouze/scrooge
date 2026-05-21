@@ -75,7 +75,7 @@ const ATLAS_REF = {
   position: "Core banking platform architect",
 };
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const SCROOGE_ACTOR = { type: "service" as const, id: "agent:scrooge" };
 const MIRA_ACTOR = { type: "service" as const, id: "agent:mira" };
 

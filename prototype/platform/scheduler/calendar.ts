@@ -4,7 +4,7 @@
 // (A2.1; Atlas runtime spec §3.2 — calendar awareness, P5 — multi-
 // jurisdiction from day one).
 //
-// Today the bank operates a single SA legal entity (BANK-ZA-001) and a
+// Today the bank operates a single SA legal entity (LE-ZA-HOZ-BANK) and a
 // single ZA jurisdictional context. Per P5 the substrate is built as if
 // jurisdictions were already plural — the public API is keyed on
 // jurisdiction code, and adding a second is a config change. The

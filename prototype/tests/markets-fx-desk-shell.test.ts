@@ -38,7 +38,7 @@ import type { Actor } from "../platform/event-store/types";
 const PROTOTYPE_ROOT = resolve(import.meta.dir, "..");
 const PUBLIC_DIR = resolve(PROTOTYPE_ROOT, "dashboard", "public");
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const NIKO_ACTOR: Actor = { type: "service", id: "agent:niko:eligibility-screening" };
 const CITATIONS = [
   "FAIS-ACT-37-2002",

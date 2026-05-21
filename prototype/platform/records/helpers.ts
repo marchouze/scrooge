@@ -65,7 +65,7 @@ import type { Actor, Event } from "../event-store/types";
 // ---------------------------------------------------------------------------
 
 /** Default legal entity for in-bank records. Mirrors `runtime/decisions/record.ts`. */
-const DEFAULT_ENTITY = "BANK-ZA-001";
+const DEFAULT_ENTITY = "LE-ZA-HOZ-BANK";
 
 /** Document store handle. Helpers default to the singleton; tests inject. */
 export interface RecordHelperDeps {

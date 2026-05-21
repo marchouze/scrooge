@@ -111,7 +111,7 @@ const MARKETS_CORRECTION_EVENT: Event = {
   event_id: MARKETS_CORRECTION_EVENT_ID,
   type: "CeoDecision",
   as_of: MARKETS_CORRECTION_AS_OF,
-  entity: "BANK-ZA-001",
+  entity: "LE-ZA-HOZ-BANK",
   // `service` actor — this is an agent-authored audit-trail correction,
   // not a CEO decision. The corrective semantics: the prior event was
   // mis-attributed to Marc; the underlying decision is genuinely open.

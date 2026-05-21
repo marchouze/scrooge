@@ -125,7 +125,7 @@ import {
   makeISDACSAAssessmentCompleted,
 } from "../platform/event-store/event-types/credit-limit";
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR_YAEL = {
   type: "service" as const,
   id: "agent:yael:treasurer-tax",

@@ -146,7 +146,7 @@ const RECON_ACTOR = {
   id: "kai:eod-equity-revaluation",
 };
 
-const BANK_ENTITY = "BANK-ZA-001";
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
 // Main revaluation runner

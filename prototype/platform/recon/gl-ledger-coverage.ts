@@ -319,7 +319,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         event_id: e.event_id,
         type: e.type,
         as_of: e.as_of,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "system" as const, id: "recon" },
         citations: ["urn:recon:gl-ledger-coverage"],
         payload: e.payload,

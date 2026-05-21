@@ -185,7 +185,7 @@ describe("IRS EOD revaluation — MTM and DV01", () => {
 
       const tradeEvent = makeIrsTradeBooked({
         asOf: "2026-05-17",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "human", id: "eitan@bank.local" },
         citations: ["D-MARKETS-SCHEMA-FOUNDATION"],
         payload: BASE_TRADE,
@@ -214,7 +214,7 @@ describe("IRS EOD revaluation — MTM and DV01", () => {
 
       const tradeEvent = makeIrsTradeBooked({
         asOf: "2026-05-17",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "human", id: "eitan@bank.local" },
         citations: ["D-MARKETS-SCHEMA-FOUNDATION"],
         payload: BASE_TRADE,
@@ -252,7 +252,7 @@ describe("IRS EOD revaluation — MTM and DV01", () => {
 
       const tradeEvent = makeIrsTradeBooked({
         asOf: "2026-05-17",
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "human", id: "eitan@bank.local" },
         citations: ["D-MARKETS-SCHEMA-FOUNDATION"],
         payload: maturedTrade,

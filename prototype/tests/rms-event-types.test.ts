@@ -65,7 +65,7 @@ const S8_RUNTIME_PRIMITIVES = [
 
 const ENVELOPE = {
   asOf: "2026-05-10T12:00:00Z",
-  entity: "BANK-ZA-001",
+  entity: "LE-ZA-HOZ-BANK",
   actor: { type: "service" as const, id: "agent:Atlas" },
   citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
 };

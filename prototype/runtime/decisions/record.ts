@@ -211,7 +211,7 @@ export function recordDecision(input: RecordDecisionInput, asOf?: string): Recor
   // Zod parse via `decisionPayloadSchema` runs inside `makeDecision`.
   const event = makeDecision({
     asOf: ts,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor,
     citations: EVENT_CITATIONS,
     payload: decisionPayloadSchema.parse({
@@ -355,7 +355,7 @@ export function recordDecisionComment(
 
   const event = makeDecisionComment({
     asOf,
-    entity: "BANK-ZA-001",
+    entity: "LE-ZA-HOZ-BANK",
     actor: { type: input.actorType, id: input.actorId },
     citations: EVENT_CITATIONS,
     payload: {

@@ -76,7 +76,7 @@ function runSelfTest(): { passed: boolean; note: string } {
     identifierSchema.parse({ scheme: "INTERNAL", value: "TRD-SELFTEST-001" });
     const event = makeEquityTradeBooked({
       asOf: "2026-05-07T00:00:00.000Z",
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings:self-test" },
       citations: ["ISDA-CDM"],
       payload: {
@@ -256,7 +256,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventStore.append(
       makeCdmBindingsRegenerated({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:kai:m1-cdm-typescript-bindings" },
         citations: EVENT_CITATIONS,
         payload: {

@@ -38,7 +38,7 @@ import type { Actor } from "../platform/event-store/types";
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = "LE-ZA-HOZ-BANK";
 const KAI_ACTOR: Actor = { type: "service", id: "agent:kai:fx-risk-test" };
 const CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"];
 

@@ -40,7 +40,7 @@ const ROWS: BackfillRow[] = [
       event_id: "evt-backfill-2026-05-07-ws-markets-franchise-completed",
       type: "WorkstreamCompleted",
       as_of: AS_OF,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
       payload: {
@@ -59,7 +59,7 @@ const ROWS: BackfillRow[] = [
       event_id: "evt-backfill-2026-05-07-ws-ciso-recruitment-completed",
       type: "WorkstreamCompleted",
       as_of: AS_OF,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
       payload: {
@@ -78,7 +78,7 @@ const ROWS: BackfillRow[] = [
       event_id: "evt-backfill-2026-05-07-ws-ia-charter-completed",
       type: "WorkstreamCompleted",
       as_of: AS_OF,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
       payload: {
@@ -97,7 +97,7 @@ const ROWS: BackfillRow[] = [
       event_id: "evt-backfill-2026-05-07-d10-autonomous-agents",
       type: "CeoDecision",
       as_of: AS_OF,
-      entity: "BANK-ZA-001",
+      entity: "LE-ZA-HOZ-BANK",
       actor: { type: "human", id: "marc@tgv.co.za" },
       citations: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
       payload: {

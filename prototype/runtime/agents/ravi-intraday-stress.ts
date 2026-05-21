@@ -146,7 +146,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         const projectionId = `INTRADAY-${w.scenario}-${w.windowLabel}-${date}`;
         const ev = makeIntradayHQLAStressProjection({
           asOf: ctx.asOf,
-          entity: "BANK-ZA-001",
+          entity: "LE-ZA-HOZ-BANK",
           actor: { type: "service", id: "agent:ravi:intraday-stress" },
           citations: EVENT_CITATIONS,
           eventId: newEventId(),
@@ -172,7 +172,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const alertId = `HQLA-INTRADAY-BREACH-${date}`;
       const driftEvent = makeHQLACompositionDrift({
         asOf: ctx.asOf,
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
         actor: { type: "service", id: "agent:ravi:intraday-stress" },
         citations: EVENT_CITATIONS,
         eventId: newEventId(),
@@ -210,7 +210,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         },
         citations: EVENT_CITATIONS,
         actor: { type: "service", id: "agent:ravi:intraday-stress" },
-        entity: "BANK-ZA-001",
+        entity: "LE-ZA-HOZ-BANK",
       },
       ctx.asOf,
     );
