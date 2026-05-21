@@ -582,6 +582,22 @@ export interface DashboardState {
    * buildFtpPortfolio(). Null when no FTP data has been emitted yet.
    */
   ftp?: FtpDashboardSummary | null;
+  /**
+   * Capital position tile — Helena (CRO) + Bea (Accounting engineer).
+   * Derived from computeCapitalMetrics() against the event store.
+   * Null when the projection is unavailable.
+   */
+  capitalPositions?: import("../platform/projections/capital-metrics").CapitalMetrics | null;
+  /**
+   * Liquidity metrics tile — LCR / NSFR ratios computed from ALM positions.
+   * Null when no ALM positions exist (build phase; no deposits / HQLA events).
+   */
+  liquidityMetrics?: {
+    lcr: number | null;
+    nsfr: number | null;
+    lcrStatus: string;
+    nsfrStatus: string;
+  } | null;
 }
 
 export interface DecisionRequestBody {

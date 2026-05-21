@@ -76,10 +76,17 @@ import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
+import { computeLCR } from "../platform/liquidity/lcr";
+import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
+import { getALMPositionSnapshot } from "../platform/projections/alm-positions";
+import {
+  type CapitalMetrics,
+  computeCapitalMetrics,
+} from "../platform/projections/capital-metrics";
 import {
   getCorrespondentRouting,
   getLimitUtilisations,
@@ -231,6 +238,33 @@ function buildFtpSummary(): import("./types").FtpDashboardSummary | null {
   };
 }
 
+function buildCapitalPositions(): CapitalMetrics | null {
+  return computeCapitalMetrics(eventStore, nowUtc());
+}
+
+function buildLiquidityMetrics(): {
+  lcr: number | null;
+  nsfr: number | null;
+  lcrStatus: string;
+  nsfrStatus: string;
+} {
+  const snap = getALMPositionSnapshot(eventStore, nowUtc(), 30);
+  const lcr = computeLCR(
+    snap.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
+    snap.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],
+  );
+  const nsfr = computeNSFR(
+    snap.asfItems as import("../platform/liquidity/nsfr").ASFItem[],
+    snap.rsfItems as import("../platform/liquidity/nsfr").RSFItem[],
+  );
+  return {
+    lcr: lcr.lcrRatioPct,
+    nsfr: nsfr.nsfrRatioPct,
+    lcrStatus: lcr.status,
+    nsfrStatus: nsfr.status,
+  };
+}
+
 function bootDerive(): DashboardState {
   try {
     // D-DECISIONS-FRAMEWORK-REDESIGN Slice D: backfillCeoDecisionsFromRecords
@@ -258,6 +292,8 @@ function bootDerive(): DashboardState {
       events: EVENTS,
       limitUtilisations: getLimitUtilisations(),
       ftp: buildFtpSummary(),
+      capitalPositions: buildCapitalPositions(),
+      liquidityMetrics: buildLiquidityMetrics(),
     });
     ensureRuntimeDir(RUNTIME_STATE_PATH);
     saveState(s, RUNTIME_STATE_PATH);
@@ -396,6 +432,8 @@ function refresh(reason: string): void {
       events: EVENTS,
       limitUtilisations: getLimitUtilisations(),
       ftp: buildFtpSummary(),
+      capitalPositions: buildCapitalPositions(),
+      liquidityMetrics: buildLiquidityMetrics(),
     });
     cachedState = next;
     // RMS Slice 4 — invalidate the register-fold cache because new
