@@ -263,9 +263,7 @@ function assertBankEntity(entity: string): void {
  * compliance flag treats infinity as compliant (no exposure to leverage).
  * Mirrors the `generateBa700Capital` divide-by-zero treatment.
  */
-export function generateLeverageRatio(
-  input: LeverageRatioGeneratorInput,
-): LeverageRatioOutput {
+export function generateLeverageRatio(input: LeverageRatioGeneratorInput): LeverageRatioOutput {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
     throw new LeverageRatioGeneratorError(
@@ -294,13 +292,8 @@ export function generateLeverageRatio(
     }
   }
 
-  const regulatoryMinimum =
-    input.regulatoryMinimumRatio ?? BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM;
-  if (
-    !Number.isFinite(regulatoryMinimum) ||
-    regulatoryMinimum < 0 ||
-    regulatoryMinimum > 1
-  ) {
+  const regulatoryMinimum = input.regulatoryMinimumRatio ?? BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM;
+  if (!Number.isFinite(regulatoryMinimum) || regulatoryMinimum < 0 || regulatoryMinimum > 1) {
     throw new LeverageRatioGeneratorError(
       `Leverage ratio generator: regulatoryMinimumRatio must be a finite ratio in [0,1], got ${regulatoryMinimum}`,
     );

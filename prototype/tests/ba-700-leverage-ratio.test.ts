@@ -35,19 +35,19 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
-  BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
-  BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
-  LEVERAGE_RATIO_BANK_ENTITIES,
-  LeverageRatioGeneratorError,
-  generateLeverageRatio,
-} from "../platform/reporting/ba-700-leverage-ratio";
-import {
   THRESHOLD_LEVERAGE_AMBER,
   THRESHOLD_LEVERAGE_GREEN,
   THRESHOLD_LEVERAGE_RED,
   computeLeverageRatioMetrics,
 } from "../platform/projections/leverage-ratio-metrics";
 import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
+import {
+  BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
+  BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
+  LEVERAGE_RATIO_BANK_ENTITIES,
+  LeverageRatioGeneratorError,
+  generateLeverageRatio,
+} from "../platform/reporting/ba-700-leverage-ratio";
 import { renderBa700ToJson } from "../platform/reporting/ba-700-render";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -303,9 +303,7 @@ describe("BA 700 leverage ratio composition", () => {
       },
     });
     expect(out.leverageRatio).toBeDefined();
-    expect(out.leverageRatio?.exposureMeasure.totalExposureMeasureMinor).toBe(
-      100_000_000_000,
-    );
+    expect(out.leverageRatio?.exposureMeasure.totalExposureMeasureMinor).toBe(100_000_000_000);
     // Tier-1 capital = 0 (empty trial balance) ⇒ ratio = 0/Exposure = 0
     expect(out.leverageRatio?.leverageRatio).toBe(0);
     expect(out.leverageRatio?.compliant).toBe(false);

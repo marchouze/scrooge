@@ -40,16 +40,13 @@
 // Authors: Helena (Chief Risk Officer, governance) · Rohan (Market risk
 //   quantitative engineer, engineering — measurement substrate)
 
+import type { EventStore } from "../event-store/store";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   type LeverageExposureDecomposition,
 } from "../reporting/ba-700-leverage-ratio";
 import { generateLeverageRatio } from "../reporting/ba-700-leverage-ratio";
-import type { EventStore } from "../event-store/store";
-import {
-  BUILD_PHASE_TOTAL_CAPITAL_MINOR,
-  computeCapitalMetrics,
-} from "./capital-metrics";
+import { BUILD_PHASE_TOTAL_CAPITAL_MINOR, computeCapitalMetrics } from "./capital-metrics";
 
 // ---------------------------------------------------------------------------
 // RAS §B3 appetite thresholds (proposed; Decision(requested) pending Marc
@@ -115,8 +112,7 @@ function computeStatus(leverageRatio: number): {
   belowRegulatoryFloor: boolean;
 } {
   const belowRegulatoryFloor =
-    Number.isFinite(leverageRatio) &&
-    leverageRatio < BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM;
+    Number.isFinite(leverageRatio) && leverageRatio < BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM;
 
   if (leverageRatio < THRESHOLD_LEVERAGE_RED) {
     // Below 3.5 % — management-action floor (sub-amber). `critical` set.
@@ -226,9 +222,7 @@ export function computeLeverageRatioMetrics(
     exposureMeasure: exposure,
   });
 
-  const { status, critical, belowRegulatoryFloor } = computeStatus(
-    output.leverageRatio,
-  );
+  const { status, critical, belowRegulatoryFloor } = computeStatus(output.leverageRatio);
   const leverageRatioPct = formatPct(output.leverageRatio);
 
   const capitalFmt = `R${(tier1CapitalMinor / 100).toLocaleString("en-ZA", {
@@ -257,8 +251,7 @@ export function computeLeverageRatioMetrics(
     onBalanceSheetExposureMinor: output.exposureMeasure.onBalanceSheetExposureMinor,
     derivativeExposureMinor: output.exposureMeasure.derivativeExposureMinor,
     sftExposureMinor: output.exposureMeasure.sftExposureMinor,
-    offBalanceSheetExposurePostCcfMinor:
-      output.exposureMeasure.offBalanceSheetExposurePostCcfMinor,
+    offBalanceSheetExposurePostCcfMinor: output.exposureMeasure.offBalanceSheetExposurePostCcfMinor,
     leverageRatio: output.leverageRatio,
     leverageRatioPct,
     status,
