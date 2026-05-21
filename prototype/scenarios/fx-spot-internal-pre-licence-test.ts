@@ -107,6 +107,8 @@
 
 import { unlinkSync } from "node:fs";
 
+import { buildGlView } from "../platform/accounting/gl-projection";
+import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import type {
@@ -122,8 +124,10 @@ import {
   makeStaticCorrespondentFeed,
   runFxSettlementSubscriber,
 } from "../platform/markets/settlement/fx-settlement-subscriber";
+import { computeDailyPnL } from "../platform/product-control/daily-pnl";
 import { setDefaultProvenanceModeOverride } from "../platform/projections";
 import { computeAndEmitFor } from "../platform/risk/sa-ccr";
+import { deriveSicrTriggered } from "../platform/risk/sicr-subscriber";
 
 import { run as runCounterpartyExposureRecon } from "../platform/recon/counterparty-exposure-coverage";
 // Recon pipelines — imported by named exports only. Some recon modules
@@ -133,10 +137,14 @@ import { run as runCounterpartyExposureRecon } from "../platform/recon/counterpa
 // advisory) but does emit console output. We accept the noise rather than
 // touch the recon files (out of scope for this brief).
 import { run as runCreditLimitNoTradeRecon } from "../platform/recon/credit-limit-no-trade-without-loaded";
+import { run as runGlLedgerCoverageRecon } from "../platform/recon/gl-ledger-coverage";
 import { run as runLexCapRecon } from "../platform/recon/lex-cap-utilisation";
 import { run as runMarketDataProvenanceRecon } from "../platform/recon/market-data-provenance-gate";
+import { run as runNoPropAttributionRecon } from "../platform/recon/no-prop-attribution";
+import { run as runPersonaAttributionCoherenceRecon } from "../platform/recon/persona-attribution-coherence";
 import { run as runPositionRevaluedRecon } from "../platform/recon/position-revalued-cites-mark";
 import type { ReconResult } from "../platform/recon/types";
+import { ba325PeriodCloseSubscriber } from "../platform/returns/ba325/period-close-subscriber";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -149,6 +157,15 @@ export const SCENARIO_ID = "fx-spot-internal-pre-licence-test";
 export const SCENARIO_SOURCE_LINEAGE = "scenario-runner:fx-spot-internal-pre-licence-test";
 
 const ENTITY = "BANK-ZA-001";
+
+// BA-325 LCR generator (Bea PR #652) only accepts the bank-licence entity
+// `LE-ZA-HOZ-BANK` per BA_325_BANK_ENTITIES (platform/reporting/ba-325-lcr.ts).
+// The scenario's primary entity (BANK-ZA-001) is the trading entity used by
+// fx-revaluation, daily-pnl, and SA-CCR which hardcode `BANK-ZA-001`. Wave-2
+// Block A drives BA-325 on a mirror block at `LE-ZA-HOZ-BANK` — see Block A
+// in Phase 6 below. The entity-identity unification is a substrate gap
+// surfaced in the Phase 6 summary.
+const BA325_BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 // Counterparty URNs (Saskia PR #639 — Party register entries).
 const STANDARD_BANK_ZA = "urn:party:legal-entity:standard-bank-za";
@@ -406,6 +423,66 @@ function findEventsByPredicate(
 
 function reconResultOk(r: ReconResult): boolean {
   return r.ok;
+}
+
+/**
+ * Emit a `SubLedgerPostingEmitted` event with the given legs, sourcing
+ * from `sourceEventId` (which must be a real event in the store). The legs
+ * are expected to be already-balanced per currency (the schema's
+ * `superRefine` will throw if not).
+ *
+ * Wave-2 (Kai PR — this PR): we wire the scenario's lifecycle events to GL
+ * postings so the GL projection's `buildGlView` actually sees them and the
+ * `recon:gl-ledger-coverage` gate (Bea PR #652) can run end-to-end. In
+ * production the bea-gl-posting-engine subscriber emits these events on
+ * each source-event arrival; here we hand-emit them as part of the
+ * scenario to verify the full coverage chain.
+ */
+async function emitPosting(args: {
+  sourceEventId: string;
+  postingType:
+    | "trade-booking"
+    | "revaluation"
+    | "settlement"
+    | "fx-principal-payment"
+    | "fx-lifecycle-close";
+  legs: ReadonlyArray<{
+    accountId: string;
+    debitCredit: "debit" | "credit";
+    amountMinor: number;
+    currency: string;
+  }>;
+  postedAt: string;
+  entity?: string;
+}): Promise<Event | null> {
+  if (args.legs.length === 0) return null;
+  const { makeSubLedgerPostingEmitted } = await import(
+    "../platform/event-store/event-types/fx-accounting"
+  );
+  const event = makeSubLedgerPostingEmitted({
+    asOf: args.postedAt,
+    entity: args.entity ?? ENTITY,
+    actor: {
+      type: "service" as const,
+      id: "agent:bea:gl-posting-engine",
+    },
+    citations: [
+      "Principles/1-events-are-truth.md",
+      "Principles/2-single-graph-discipline.md",
+      "Policies/ifrs9-ecl-provisioning-policy-v1.md",
+      "pr:#641",
+      "pr:#652",
+      "WS-MARKET-RISK-PROCEDURES",
+    ],
+    payload: {
+      sourceEventId: args.sourceEventId,
+      postingType: args.postingType,
+      legs: args.legs.map((l) => ({ ...l })),
+      postedAt: args.postedAt,
+    },
+  });
+  eventStore.append(event);
+  return event;
 }
 
 // ---------------------------------------------------------------------------
@@ -1133,6 +1210,116 @@ async function runPhase4(): Promise<PhaseResult> {
       (classifiedEvents[0].payload as Record<string, unknown>).classification === "mutual-fail",
     `classification=${String((classifiedEvents[0]?.payload as Record<string, unknown> | undefined)?.classification)}`,
   );
+
+  // -------------------------------------------------------------------------
+  // Block D (Wave-2) — Bea SicrTriggered emission (PR #652).
+  //
+  // The mutual-fail branch is the §5.5.3 SICR trigger Bea's PR #641
+  // IFRS-9 default-recognition rule flagged. `deriveSicrTriggered` is the
+  // pure subscriber function — pass the FxSettlementFailed event and a
+  // counterparty resolver, emit the resulting SicrTriggered event.
+  //
+  // Counterparty resolution: in production the resolver reads the trade-
+  // store projection; here we resolve directly from the FxTradeExecuted
+  // event we just emitted.
+  // -------------------------------------------------------------------------
+  try {
+    const failedEvent = findEventsByPredicate(
+      "FxSettlementFailed",
+      (p) => p.tradeRef === tradeId,
+    )[0];
+    if (!failedEvent) throw new Error("FxSettlementFailed for trade-003 not found");
+
+    const resolveCounterparty = (tradeRef: string): string | null => {
+      // Look up the FxTradeExecuted event for this tradeRef and return its
+      // counterparty.partyId.
+      for (const trade of findEventsByPredicate("FxTradeExecuted", (p) => {
+        const id = p.tradeId as { value?: string } | undefined;
+        return id?.value === tradeRef;
+      })) {
+        const cp = (trade.payload as Record<string, unknown>).counterparty as
+          | { partyId?: string }
+          | undefined;
+        if (cp?.partyId) return cp.partyId;
+      }
+      return null;
+    };
+
+    const sicrResult = deriveSicrTriggered({
+      event: {
+        event_id: failedEvent.event_id,
+        as_of: failedEvent.as_of,
+        payload: failedEvent.payload as Parameters<
+          typeof deriveSicrTriggered
+        >[0]["event"]["payload"],
+      },
+      resolveCounterparty,
+      entity: ENTITY,
+      actor: {
+        type: "service" as const,
+        id: "agent:bea:accounting-financial-reporting",
+      },
+    });
+
+    r.assert(
+      "Bea PR #652 deriveSicrTriggered emits SicrTriggered for neither-delivered (reason='emitted')",
+      sicrResult.reason === "emitted" && sicrResult.event !== null,
+      `reason=${sicrResult.reason}`,
+    );
+
+    if (sicrResult.event) {
+      // Append the event so downstream readers (recon, dashboards, audit
+      // chain) can see it.
+      eventStore.append(sicrResult.event);
+
+      r.assert(
+        "Exactly one SicrTriggered event in the store for this trade",
+        countEventsOfType("SicrTriggered") === 1,
+        `count=${countEventsOfType("SicrTriggered")}`,
+      );
+
+      const sicrPayload = sicrResult.event.payload as Record<string, unknown>;
+      r.assert(
+        "SicrTriggered.partyId = Standard Bank ZA (resolved from FxTradeExecuted)",
+        sicrPayload.partyId === STANDARD_BANK_ZA,
+        `partyId=${String(sicrPayload.partyId)}`,
+      );
+      r.assert(
+        "SicrTriggered.triggerKind = 'settlement-failure-neither-delivered'",
+        sicrPayload.triggerKind === "settlement-failure-neither-delivered",
+        `triggerKind=${String(sicrPayload.triggerKind)}`,
+      );
+      r.assert(
+        "SicrTriggered.previousStage = 'stage-1'",
+        sicrPayload.previousStage === "stage-1",
+        `previousStage=${String(sicrPayload.previousStage)}`,
+      );
+      r.assert(
+        "SicrTriggered.newStage = 'stage-2'",
+        sicrPayload.newStage === "stage-2",
+        `newStage=${String(sicrPayload.newStage)}`,
+      );
+      r.assert(
+        "SicrTriggered.triggerEventId = FxSettlementFailed.event_id",
+        sicrPayload.triggerEventId === failedEvent.event_id,
+        `triggerEventId=${String(sicrPayload.triggerEventId)} vs failedEvent=${failedEvent.event_id}`,
+      );
+      const evidence = Array.isArray(sicrPayload.evidence)
+        ? (sicrPayload.evidence as readonly unknown[])
+        : [];
+      r.assert(
+        "SicrTriggered.evidence contains the trigger event id + tradeRef + settlementInstructionRef",
+        evidence.includes(failedEvent.event_id) &&
+          evidence.some((e) => typeof e === "string" && e.startsWith("tradeRef:")) &&
+          evidence.some(
+            (e) => typeof e === "string" && e.startsWith("settlementInstructionRef:"),
+          ),
+        `evidence=${JSON.stringify(evidence)}`,
+      );
+    }
+  } catch (err) {
+    r.assert("Bea PR #652 SicrTriggered subscriber evaluated", false, String(err));
+  }
 
   return r.result();
 }

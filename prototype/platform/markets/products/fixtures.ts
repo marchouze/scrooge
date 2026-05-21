@@ -355,8 +355,15 @@ export const M4_FX_SPOT_FIXTURE: Product = {
   accountingClassification: {
     // FX spot in trading book: FVTPL (IFRS 9 §4.1.4 — held for trading).
     ifrs9Family: "fvtpl",
-    // Level-1: live quoted market rate (SARB fixing, Reuters spot).
-    ifrs13FairValueHierarchy: "level-1",
+    // Level-2: observable market data (SARB daily fixing, broker spot quotes),
+    // not a quoted exchange price for the identical asset. Per Helena
+    // (Chief Risk Officer, governance) 2026-05-20 FX-spot-only market-risk
+    // scope review §2.2 ("§7 IPV: FX spot is a Level 2 instrument —
+    // observable market data, not Level 1 exchange quote"). Atlas's PR #643
+    // close-out flagged the prior `"level-1"` value as an inconsistency
+    // with the policy ruling. Corrected here per Kai (Markets engineering
+    // lead, engineering) Wave-2 scenario extension.
+    ifrs13FairValueHierarchy: "level-2",
     // FX monetary item — IAS 21 §23: retranslate at closing rate each period.
     ias21FxTreatment: "monetary",
     // BA-return line mapping: BA350 (market risk) + BA700 (capital adequacy).

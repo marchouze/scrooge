@@ -88,6 +88,31 @@
     { "id": "ACC-2100-006", "name": "Realised FX P&L", "category": "income", "side": "credit" },
 
     {
+      "id": "ACC-2300-001",
+      "name": "Settlement-Failed Receivable — ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-002",
+      "name": "Settlement-Failed Receivable — USD",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-003",
+      "name": "ECL Allowance — Settlement-Failed",
+      "category": "asset",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2300-004",
+      "name": "Credit Loss Expense — FX Settlement",
+      "category": "expense",
+      "side": "debit"
+    },
+
+    {
       "id": "ACC-2200-001",
       "name": "Customer Payables — ZAR",
       "category": "liability",
