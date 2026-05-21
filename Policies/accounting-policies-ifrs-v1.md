@@ -1,7 +1,7 @@
 ---
 policy-id: FIN-ACCT-01
 title: Accounting Policies — IFRS v1
-version: "1.1"
+version: "1.3"
 status: DRAFT
 owner: Camille (CFO, governance)
 effective-from: 2026-05-13
@@ -29,7 +29,7 @@ riskTaxonomy:
 
 # Accounting Policies — IFRS v1
 
-> **Policy** | FIN-ACCT-01 v1.0 | Owner: Camille (CFO, governance) | Status: DRAFT | Effective: 2026-05-13
+> **Policy** | FIN-ACCT-01 v1.3 | Owner: Camille (CFO, governance) | Status: DRAFT | Effective: 2026-05-13
 
 > **Obligations closed:** [`ORG-AC-01`](../Regulations/_obligations-register.md) through [`ORG-AC-16`](../Regulations/_obligations-register.md) — all 16 IFRS accounting obligation rows.
 
@@ -175,7 +175,14 @@ The Bank applies the IFRS 9 **three-stage ECL impairment model** to financial as
 
 A financial instrument is classified as Stage 2 when there has been a **significant increase in credit risk** since initial recognition. The Bank uses the following SICR indicators:
 
-**Quantitative:** The lifetime probability of default (PD) at the reporting date is significantly higher than the PD at initial recognition. The threshold is a **relative 100% increase in the lifetime PD** **or** an **absolute increase of 50 basis points** (whichever is breached first), with the absolute test acting as a floor so that a doubling of a very small PD (e.g. 5bp → 10bp) does not over-state SICR flow. Both parameters are reviewed annually by Helena (CRO, governance) and Camille (CFO, governance) in the ICAAP and ratified by the BRC; any change is recorded as a `SicrThresholdApproved` event (planned) before becoming the active threshold. The build-phase initial calibration uses these defaults; live model calibration replaces them at commencement of trading.
+**Quantitative:** The lifetime probability of default (PD) at the reporting date is significantly higher than the PD at initial recognition. The Bank classifies an instrument as Stage 2 when **both**:
+
+- the relative change in lifetime PD is **≥ +100%** since initial recognition, **and**
+- the absolute change in lifetime PD is **≥ +50 basis points** since initial recognition.
+
+Either qualitative trigger (watchlist, adverse business / financial / economic condition change, covenant breach, forbearance) or the 30-days-past-due backstop independently triggers Stage 2 regardless of the PD test. The two-leg "both must trigger" rule resolves the ambiguity identified in Bea's v1.2 peer review (rule-vs-rationale contradiction): the absolute-bp leg acts as a de-minimis filter that prevents a doubling of a very small PD (e.g. 5 bp → 10 bp) from over-stating SICR flow, while the relative leg ensures that material proportional moves on larger PDs are caught.
+
+Both PD parameters are reviewed annually by Helena (CRO, governance) and Camille (CFO, governance) in the ICAAP and ratified by the BRC; any change is recorded as a `SicrThresholdApproved` event (planned) before becoming the active threshold. The build-phase initial calibration uses these defaults; live model calibration replaces them at commencement of trading.
 
 **Qualitative:** The instrument is classified as a watchlist item; there is an adverse change in the counterparty's business, financial, or economic conditions; the counterparty is in breach of financial covenants; the Bank has granted a forbearance measure.
 
@@ -382,7 +389,12 @@ The financial statements are prepared on the **going-concern basis** unless the 
 
 An item is **material** if omitting, misstating, or obscuring it could reasonably be expected to influence decisions made by primary users of the financial statements on the basis of those statements. Materiality is assessed by reference to both:
 
-- **Quantitative threshold:** items ≥ **5% of profit before tax** **or** ≥ **0.5% of total assets** (whichever is lower), consistent with the indicative IAS 1 materiality benchmarks applied by the South African banking sector. The benchmark is reviewed annually by Camille (CFO, governance) against the Bank's loss-absorbing capacity, risk appetite, and the prior year's external-audit overall materiality benchmark, and is documented in the close-cycle working papers. The external auditor sets its own audit materiality independently per ISA 320; this policy threshold governs preparation and disclosure, not audit scope.
+- **Quantitative threshold:** materiality is set as the **lowest of**:
+  - **0.5% of total assets** (primary benchmark; always defined); and
+  - **5% of normalised profit before tax** — where normalised PBT is the 3-year trailing average of PBT computed using only profit-making years (years with PBT ≤ 0 are excluded from the average). This leg is **inactive** during the build phase and for any period before three profit-making years exist in the trailing window; and
+  - **1% of CET1 capital** (floor; always defined).
+
+  The threshold is the lowest of the legs whose denominator is **defined and positive** in the reporting period. This three-leg construct (introduced in v1.3 on Bea's peer review of v1.2) replaces an earlier "5% PBT or 0.5% total assets, whichever lower" rule that collapsed to near-zero in the build phase and was mathematically undefined in loss-making years. The benchmark legs and weights are reviewed annually by Camille (CFO, governance) against the Bank's loss-absorbing capacity, risk appetite, and the prior year's external-audit overall materiality benchmark, and are documented in the close-cycle working papers. Any change is recorded as a `MaterialityBenchmarkApproved` event (planned) before becoming the active threshold. The external auditor sets its own audit materiality independently per ISA 320; this policy threshold governs preparation and disclosure, not audit scope.
 - **Qualitative factors:** nature of the item (e.g. fraud, regulatory breach, related-party transaction) may make an item material regardless of size.
 
 #### 3.5.3 Comparative periods
@@ -621,6 +633,7 @@ Any departure from these accounting policies (e.g. application of a different IF
 | v1.0 | 2026-05-13 | Owen (Company Secretary, governance) on behalf of Camille (CFO, governance) | Initial IFRS accounting policies. Sections: (3.1) IFRS 9 classification and measurement — business model test, amortised cost, FVOCI, FVTPL; (3.2) IFRS 9 ECL — three-stage model, SICR triggers, PD/LGD/EAD methodology, forward-looking adjustments; (3.3) IFRS 13 fair value — hierarchy Levels 1/2/3, valuation techniques, CVA/DVA/FVA, Day-1 P&L policy; (3.4) IFRS 9 hedge accounting — fair value hedges, cash flow hedges, documentation; (3.5) IAS 1 presentation — going concern, materiality, comparative periods; (3.6) IAS 12 income taxes — current and deferred tax, effective-rate reconciliation; (3.7) IAS 24 related-party disclosures — definitions, transactions, board approval thresholds; (5) External audit engagement — auditor requirements, ISA 700, independence, rotation. Closes obligations ORG-AC-01 through ORG-AC-16. LICENCE-BIND. DRAFT pending BAC constitution at licence-day. |
 | v1.1 | 2026-05-18 | Owen (Company Secretary, governance) | Added §3.1A (trade-date accounting election — IFRS 9 B3.1.3; recognition on trade date for FX/bonds/equities; PR-FX-001/PR-BOND-001/PR-EQ-001 mapping); §3.1B (derecognition — IFRS 9 §3.2; instrument-level derecognition triggers; settlement failure/reversal; FVOCI equity no-recycle rule); §3.1C (IFRS 13 §72 fair value measurement hierarchy — Level 1/2/3 for all instrument types; build-phase rate source; Level 3 governance). Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN. |
 | v1.2 | 2026-05-21 | Owen (Company Secretary, governance) on behalf of Camille (CFO, governance) | Resolved two `[X]/[Y]` placeholders that blocked DRAFT→IN-FORCE promotion: (a) §3.2.2 SICR quantitative threshold — set at relative 100% increase in lifetime PD **or** absolute 50 bp increase, whichever first; ICAAP reviewed annually; `SicrThresholdApproved` event planned. (b) §3.5.2 materiality quantitative threshold — set at 5% of profit before tax **or** 0.5% of total assets (whichever lower); annual review against external-audit materiality benchmark. No other substantive content change. Authority: brief `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`; CFO (Camille) ratification expected at next ICAAP review cycle. |
+| v1.3 | 2026-05-21 | Bea (Accounting & financial reporting engineer, engineering) on peer review of Owen (Company Secretary, governance) v1.2 | Peer-review amendment of two quantitative thresholds inserted in v1.2: (a) §3.2.2 SICR — replaced "whichever first" OR-rule with "both legs must trigger" AND-rule, resolving internal contradiction with the rationale paragraph (rule and worked-example disagreed for small-PD doublings) and aligning with the conservative end of SA Big-5 peer practice; qualitative and 30-DPD overrides preserved. (b) §3.5.2 materiality — replaced two-leg "whichever lower" with three-leg "lowest of defined positive denominators" (0.5% total assets / 5% normalised PBT / 1% CET1), removing the threshold-collapses-to-zero pathology in build-phase periods and the mathematically-undefined behaviour in loss-making years; introduced normalised-PBT definition (3-year trailing average of profit-making years only); introduced CET1 floor; added `MaterialityBenchmarkApproved` event ref. No other substantive content change; touched only §3.2.2, §3.5.2, change log, version bump (frontmatter + header). Authority: brief `brief:bea:peer-review-ifrs-quantitative-thresholds-drafted:2026-05-21`; full peer-review record at `2026-05-21_bea_ifrs-thresholds-peer-review.md`; CFO (Camille) ratification expected at next ICAAP review cycle. |
 
 ---
 
