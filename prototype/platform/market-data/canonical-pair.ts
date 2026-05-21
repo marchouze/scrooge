@@ -63,16 +63,7 @@
  * not in the table outranks ZAR by the trailing "everything else > ZAR"
  * rule encoded below.
  */
-const PRECEDENCE: readonly string[] = [
-  "EUR",
-  "GBP",
-  "AUD",
-  "NZD",
-  "USD",
-  "CHF",
-  "CAD",
-  "JPY",
-];
+const PRECEDENCE: readonly string[] = ["EUR", "GBP", "AUD", "NZD", "USD", "CHF", "CAD", "JPY"];
 
 /**
  * Returns the rank of a currency in the precedence table.
