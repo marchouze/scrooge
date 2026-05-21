@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Camille (CFO, governance)
 effective-from: "2026-05-14"
+next-review: "2027-05-14"
 citations:
   - "IFRS 9 Financial Instruments: Chapter 6 (hedge accounting — §§6.1–6.8)"
   - "IAS 39 Financial Instruments — Recognition and Measurement: §§71–102 (hedge accounting — legacy option until IFRS 9 full adoption)"

@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Helena (Chief Risk Officer, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - BCBS D295 (LCR)
   - BCBS D335 (NSFR)

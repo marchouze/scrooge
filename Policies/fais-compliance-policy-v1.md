@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: "2026-05-13"
+next-review: "2027-05-13"
 citations:
   - Financial Advisory and Intermediary Services Act 37 of 2002
   - FAIS General Code of Conduct for Authorised FSPs and Representatives (Board Notice 80 of 2003, as amended)

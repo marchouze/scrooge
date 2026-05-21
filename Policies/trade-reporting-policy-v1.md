@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Mira (Compliance / RegTech engineer, engineering — reports to Zara CCO) + Anya (data reporting / regulatory submissions engineer, engineering) + Tomas (payments and settlement engineer, engineering)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - Financial Markets Act 19 of 2012 ss.6, 59, 60
   - GN R.98/2018 — OTC Derivative Regulations (Reporting), reg 3 + Schedule

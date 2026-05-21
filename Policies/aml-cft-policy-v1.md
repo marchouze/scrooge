@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - FIC Act 38 of 2001 ss.28, 28A, 29, 42
   - FATF Recommendations (2012, updated 2024)

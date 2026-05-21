@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Owen (Company Secretary, governance)
 effective-from: "2026-05-13"
+next-review: "2027-05-13"
 citations:
   - Companies Act 71 of 2008
   - Protection of Personal Information Act 4 of 2013

@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - FIC Act 38 of 2001 s.42
   - PA AML/CFT/CPF Communication 1/2025

@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Camille (Chief Financial Officer, governance)
 effective-from: "2026-05-13"
+next-review: "2027-05-13"
 citations:
   - Banks Act 94 of 1990 s.72
   - Regulations Relating to Banks 2012 (as amended) Reg 46

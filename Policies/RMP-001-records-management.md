@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Owen (Company Secretary, governance)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - D-RMS-PHASE-1
   - D-RMS-PHASE-2

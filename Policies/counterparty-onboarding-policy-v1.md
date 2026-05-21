@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: "2026-05-14"
+next-review: "2027-05-14"
 citations:
   - "FSCA Conduct Standard 3 of 2018 §§3, 7: written trading-relationship agreement; client/counterparty categorisation and due diligence"
   - "Financial Intelligence Centre Act 38 of 2001: ss.21–22 (customer due diligence); s.29 (reporting suspicious transactions)"

@@ -5,6 +5,7 @@ version: 1.0.0
 status: ACTIVE
 owner: Helena (Chief Risk Officer) + Bea (Finance / accounting engineer)
 effective-from: 2026-05-17
+next-review: "2026-11-17"
 citations:
   - "IFRS 9 Financial Instruments (2014) — §5.5 Impairment"
   - "BCBS 239 — Principles for Effective Risk Data Aggregation and Risk Reporting (2013)"

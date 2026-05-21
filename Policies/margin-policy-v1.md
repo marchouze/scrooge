@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Eitan (Treasurer, governance)
 effective-from: "2026-05-14"
+next-review: "2027-05-14"
 citations:
   - "Joint Standard 2 of 2020 — Margin Requirements for Non-Centrally Cleared OTC Derivative Transactions (as amended 9 June 2023): §§3–7 (governance; VM; IM; eligible collateral; MTA)"
   - "FSCA Joint Notice 2 of 2024: margin information reporting to the PA from 1 April 2025"

@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "PRECCA: Prevention and Combating of Corrupt Activities Act 12/2004"
   - "Companies Act 71/2008: s159 (protected disclosures)"

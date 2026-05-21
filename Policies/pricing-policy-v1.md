@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Saskia (Head of Global Markets, governance)
 effective-from: "2026-05-14"
+next-review: "2027-05-14"
 citations:
   - "FSCA Conduct Standard 3 of 2018 §8: daily valuation methodology for OTC derivative transactions"
   - "FAIS Act 37 of 2002 + GCC (BN 80/2003) s.7(1)(c)(vi): fee and commission disclosure"

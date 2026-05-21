@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Imani (Legal-as-code engineer, engineering)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - Electronic Communications and Transactions Act 25 of 2002 ss.11-16 Schedule 1
   - Electronic Communications and Transactions Act 25 of 2002 s.13

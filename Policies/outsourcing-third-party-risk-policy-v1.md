@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Senna (CISO, governance) with Devon (IT ops engineer)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Banks Act 94/1990: s60 (management of a bank)"
   - "Regulations Relating to Banks: reg.39(17) (outsourcing requirements)"

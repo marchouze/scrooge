@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Yael (Tax & Regulatory Compliance engineer) under Camille (CFO, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Income Tax Act 58/1962: s1 (definitions), s9 (source of income), s24J (accrual — interest), s24I (forex gains/losses), s31 (transfer pricing)"
   - "Income Tax Act 58/1962: s8E (hybrid equity instruments), s8EA (third-party backed shares)"

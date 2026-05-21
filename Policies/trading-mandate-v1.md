@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Saskia (Head of Markets, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - Banks Act 94 of 1990
   - Financial Markets Act 19 of 2012

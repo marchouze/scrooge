@@ -5,6 +5,7 @@ version: "1.0"
 status: DRAFT
 owner: Zara (Chief Compliance Officer, governance)
 effective-from: 2026-05-13
+next-review: "2026-11-13"
 citations:
   - "Financial Advisory and Intermediary Services Act 37/2002: General Code r.3A (fair treatment)"
   - "Financial Sector Regulation Act 9/2017: s57 (conduct of financial institutions)"

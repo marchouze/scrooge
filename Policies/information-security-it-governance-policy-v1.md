@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Senna (Chief Information Security Officer, engineering)
 effective-from: "2026-05-13"
+next-review: "2027-05-13"
 citations:
   - PA/FSCA Joint Standard 1 of 2023
   - Protection of Personal Information Act 4 of 2013

@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Helena (Chief Risk Officer, governance)
 effective-from: "2026-05-11"
+next-review: "2027-05-11"
 citations:
   - PA D1/2015 (Recovery and Resolution Plans)
   - Banks Act 94 of 1990 ss.60-72

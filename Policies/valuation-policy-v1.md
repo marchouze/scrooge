@@ -5,6 +5,7 @@ version: "1.0"
 status: ACTIVE
 owner: Helena (Chief Risk Officer, governance)
 effective-from: "2026-05-19"
+next-review: "2026-11-19"
 citations:
   - "IFRS 13 Fair Value Measurement: §§9–31 (fair value hierarchy; observable vs unobservable inputs)"
   - "FSCA Conduct Standard 3 of 2018 §8: daily valuation methodology for OTC derivative transactions; consistent and documented"

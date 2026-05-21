@@ -5,6 +5,7 @@ version: "1"
 status: IN FORCE
 owner: Owen (Company Secretary, governance)
 effective-from: "2026-05-17"
+next-review: "2027-05-17"
 citations:
   - Companies Act 71 of 2008 ss.94-94A
   - King IV Report on Corporate Governance for South Africa 2016 Principle 8
