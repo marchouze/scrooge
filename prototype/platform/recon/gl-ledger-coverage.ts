@@ -297,8 +297,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     // Correction entries reference a SubLedgerPostingEmitted event (correctsEventId),
     // not a business event, so skip the resolution check for them too.
     const isEventIdRef =
-      typeof p.payload.sourceEventId === "string" &&
-      typeof p.payload.correctsEventId !== "string";
+      typeof p.payload.sourceEventId === "string" && typeof p.payload.correctsEventId !== "string";
     if (isEventIdRef && !eventById.has(ref)) {
       violations.push({
         subject: `posting:${p.event_id}`,
