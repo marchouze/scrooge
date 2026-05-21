@@ -159,15 +159,30 @@ production MT300 dispatch.
 
 ## Patch summary (this PR)
 
-1. `prototype/platform/payments/swift-mt/mt300.ts:99–140` — replace
+1. `prototype/platform/payments/swift-mt/mt300.ts` — replace
    `const rate = nearLeg.rate.amount.toFixed(5);` with a derivation
-   that computes *sold-per-bought* from the two leg amounts (handles
-   2dp-vs-0dp via the currency-decimals lookup).
-2. Update the misleading comment at the same line.
-3. `prototype/tests/payments/swift-mt.test.ts` — add a `side: "sell"`
-   MT300 case so the inverted-direction regression is asserted at
-   CI time.
-4. This verification note filed as `documents` register entry via
+   that computes *sold-per-bought* from the two leg amounts via a new
+   `formatMt300Rate()` helper. The helper normalises minor units to
+   decimal units using `decimalsFor()` from `@platform/core/money`
+   so it stays correct under 2dp-vs-0dp pairs (e.g. USD/JPY once JPY
+   is added to the currency table).
+2. `prototype/platform/core/money.ts` — export `decimalsFor` (was
+   file-private). Small surface-area expansion required by the new
+   helper; documented inline.
+3. **Decimal-separator alignment.** The prior emission used
+   `.toFixed(5)` → period as decimal separator (e.g. `18.50000`).
+   SWIFT MT amount/rate format mandates comma (per
+   `formatSwiftAmount` in `swift-mt/types.ts:14`). `formatMt300Rate`
+   emits comma (e.g. `18,50000`). This is one additional behaviour
+   change beyond the bare direction fix; it is in-scope because the
+   spec-correct emission must be both directionally and
+   format-correct (and the helper produces both simultaneously). The
+   existing field-36 unit test is updated to assert the spec format.
+4. `prototype/tests/payments/swift-mt.test.ts` — update the existing
+   `:36:` test to read the comma-decimal value, plus add a
+   `side: "sell"` MT300 case so the inverted-direction regression is
+   asserted at CI time.
+5. This verification note filed as `documents` register entry via
    `dispatch:close-run --register-key documents --classification
    engineering-seat`.
 
