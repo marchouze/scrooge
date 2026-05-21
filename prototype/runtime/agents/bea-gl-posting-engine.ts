@@ -14,6 +14,10 @@
 //   - SettlementFailed              → log only, no SubLedgerPostingEmitted
 //   - SettlementReversed            → PR-FX-REV: fxSettlementReversalJournals()
 //   - TradeCancelled                → PR-FX-CANCEL: fxCancellationJournals()
+//   - FxTradeCancelled              → PR-FX-CANCEL: fxCancellationJournals()
+//                                     (FX-specific cancellation kind — same posting rule,
+//                                      same `postingType: "cancellation"`; both shapes
+//                                      carry `tradeId: string` at the top of the payload.)
 //   - TradeAmended                  → PR-FX-AMD: fxAmendmentJournals()
 //
 //   FX trade lifecycle:
@@ -115,6 +119,7 @@ import type {
 import {
   type FxPositionRevaluedPayload,
   type FxSettlementConfirmedPayload,
+  type FxTradeCancelledPayload,
   type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
@@ -172,6 +177,10 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "SettlementFailed",
   "SettlementReversed",
   "TradeCancelled",
+  // FxTradeCancelled is the FX-specific cancellation kind. Same posting rule
+  // as TradeCancelled — both carry `tradeId: string` and re-use PR-FX-CANCEL.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; PR #616.
+  "FxTradeCancelled",
   "TradeAmended",
   // Bond lifecycle events (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A)
   "BondTradeExecuted",
@@ -240,6 +249,8 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "SettlementFailed" }),
     ...eventStore.replay({ type: "SettlementReversed" }),
     ...eventStore.replay({ type: "TradeCancelled" }),
+    // FxTradeCancelled is the FX-specific cancellation kind (PR #616).
+    ...eventStore.replay({ type: "FxTradeCancelled" }),
     ...eventStore.replay({ type: "TradeAmended" }),
     // Bond lifecycle events
     ...eventStore.replay({ type: "BondTradeExecuted" }),
@@ -431,14 +442,23 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           tradeId: payload.tradeId,
           originalSettlement: origPayload,
         });
-      } else if (e.type === "TradeCancelled") {
+      } else if (e.type === "TradeCancelled" || e.type === "FxTradeCancelled") {
+        // PR-FX-CANCEL handles both event kinds. TradeCancelled (markets-trading-extended)
+        // and FxTradeCancelled (fx-accounting) both expose `tradeId: string` at the
+        // payload root — the only field this handler actually reads. The IAS-21 §28 /
+        // IFRS-9 §3.2.3 derecognition logic is the same in both cases.
+        //
+        // Bug history: this arm originally listened on TradeCancelled only. The 15
+        // FX cancellations emitted on 2026-05-19 used FxTradeCancelled and were
+        // skipped, leaving 15 booking journals on the GL against trades that no
+        // longer exist. Fixed 2026-05-21.
         postingType = "cancellation";
         const key: IdempotencyKey = `${e.event_id}:${postingType}`;
         if (postedKeys.has(key)) {
           skipped += 1;
           continue;
         }
-        const payload = e.payload as TradeCancelledPayload;
+        const payload = e.payload as TradeCancelledPayload | FxTradeCancelledPayload;
         // Gather all prior SubLedgerPostingEmitted for this trade to reconstruct
         // booking legs and cumulative unrealised P&L.
         const allPostings = [...eventStore.replay({ type: "SubLedgerPostingEmitted" })];
@@ -470,11 +490,20 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
 
           if (pp.postingType === "trade-booking") {
             bookingLegs.push(...pp.legs);
-          } else if (pp.postingType === "revaluation") {
-            // Accumulate net unrealised P&L from ZAR legs
+          } else if (pp.postingType === "revaluation" || pp.postingType === "reversal") {
+            // Accumulate net unrealised P&L from ZAR legs.
+            //
+            // We include BOTH "revaluation" and "reversal" postings (the latter
+            // emitted by bea-fx-posting-engine on FxTradeCancelled — see
+            // runtime/agents/bea-fx-posting-engine.ts:302). Each "reversal" leg
+            // is the exact debit/credit inverse of a prior revaluation leg, so
+            // summing both nets to the current outstanding unrealised P&L
+            // (zero if fx-posting-engine already reversed all MTMs; the gross
+            // P&L if no reversals have happened — the TradeCancelled path).
+            //
+            // The UNREALISED_PNL account credit = gain, debit = loss.
             for (const leg of pp.legs) {
               if (leg.currency === "ZAR") {
-                // The UNREALISED_PNL account credit = gain, debit = loss
                 if (leg.accountId === "ACC-2100-005") {
                   cumulativeUnrealisedPnlZarMinor +=
                     leg.debitCredit === "credit" ? leg.amountMinor : -leg.amountMinor;
