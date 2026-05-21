@@ -51,13 +51,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { clock, eventStore } from "../../platform/composition";
 import { checkDeciderMayClose } from "../../platform/dispatch";
-import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import type {
   AgentRunCompletedFollowOnRoute,
   AgentRunCompletedPayload,
   RecordFiledPayload,
   RmsAgentRef,
 } from "../../platform/event-store/event-types";
+import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import {
   defaultRetentionForRegister,
   recordAgentRunCompleted,

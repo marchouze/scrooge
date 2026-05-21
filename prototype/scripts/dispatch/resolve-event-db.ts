@@ -88,7 +88,11 @@ export function resolveDispatchEventDb(opts: {
     // Caller (tests, scenarios) set this explicitly — honour it. We can't
     // know from the env-var alone whether it points at a shared store or a
     // per-test temp dir, so mark `shared: false` conservatively.
-    return { path: resolve(opts.envBankEventDb.trim()), source: "env-bank-event-db", shared: false };
+    return {
+      path: resolve(opts.envBankEventDb.trim()),
+      source: "env-bank-event-db",
+      shared: false,
+    };
   }
   if (opts.envBankHomeEventDb && opts.envBankHomeEventDb.trim() !== "") {
     return {
