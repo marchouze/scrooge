@@ -205,3 +205,113 @@ export class MarketDataStore {
     };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Pair-direction-aware FX quote lookup
+// ---------------------------------------------------------------------------
+
+/**
+ * Outcome of a direction-aware FX quote lookup. `rate` is always returned in
+ * the direction the caller asked for; `sourceDirection` records whether the
+ * stored tick was already in that direction ("direct") or required inversion
+ * ("inverse"). `tick` is the underlying market-data tick the rate was derived
+ * from — exposed so callers can attribute rate-source provenance and so the
+ * IPV path can compare cross-source candidates.
+ */
+export interface DirectedQuote {
+  rate: number;
+  sourceDirection: "direct" | "inverse";
+  tick: MarketDataTick;
+}
+
+/**
+ * Extract a usable mid rate from an FX-quote tick payload. Accepts payloads
+ * that expose `mid`, `midRate`, or `bid` + `ask` (average). Returns
+ * `undefined` if no usable rate can be derived.
+ *
+ * Exported so the inverse-lookup helper, the MTM runner, and tests can share
+ * one rate-derivation rule (Principle 2 — single derivation site).
+ */
+export function extractMidRate(payload: Record<string, unknown>): number | undefined {
+  if (typeof payload.mid === "number" && payload.mid > 0) return payload.mid;
+  if (typeof payload.midRate === "number" && payload.midRate > 0) return payload.midRate;
+  if (
+    typeof payload.bid === "number" &&
+    typeof payload.ask === "number" &&
+    payload.bid > 0 &&
+    payload.ask > 0
+  ) {
+    return ((payload.bid as number) + (payload.ask as number)) / 2;
+  }
+  return undefined;
+}
+
+/**
+ * Invert a canonical pair string. "EUR/ZAR" → "ZAR/EUR". Returns the original
+ * string if the input does not match the BASE/QUOTE shape.
+ */
+export function invertPair(pair: string): string {
+  const slash = pair.indexOf("/");
+  if (slash <= 0 || slash === pair.length - 1) return pair;
+  return `${pair.slice(slash + 1)}/${pair.slice(0, slash)}`;
+}
+
+/**
+ * Direction-aware FX quote lookup. Resolves the bug where trades booked in
+ * one direction (e.g. ZAR/EUR) silently skip MTM because the upstream feeds
+ * store the opposite direction (e.g. EUR/ZAR).
+ *
+ * Algorithm:
+ *   1. Query the store for the requested pair string. If a tick is found
+ *      with a usable mid rate, return it as `sourceDirection: "direct"`.
+ *   2. Otherwise, query the inverted pair (`QUOTE/BASE`). If a tick is found
+ *      with a usable mid rate `r`, return `{ rate: 1/r, sourceDirection: "inverse" }`.
+ *   3. If neither direction returns a usable tick, return `null`.
+ *
+ * The `excludeSource` option lets the IPV path request a tick that comes
+ * from a different source than the primary's, so the variance check is
+ * genuinely cross-provider (e.g. open-er-api vs twelve-data).
+ *
+ * Authority:
+ *   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+ *   - D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
+ *   - IAS-21-§28 (closing-rate translation — direction-neutral by construction)
+ */
+export function lookupQuoteWithInverse(
+  store: MarketDataStore,
+  pair: string,
+  opts: {
+    provenance?: "production" | "simulated";
+    excludeSource?: string;
+    limit?: number;
+  } = {},
+): DirectedQuote | null {
+  const provenance = opts.provenance ?? "production";
+  const limit = opts.limit ?? 10;
+
+  // Try the direct direction first.
+  const directCandidates = store
+    .query({ provenance, instrument: pair, dataType: "fx-quote", limit })
+    .filter((t) => (opts.excludeSource ? t.source !== opts.excludeSource : true));
+  for (const tick of directCandidates) {
+    const rate = extractMidRate(tick.payload);
+    if (rate !== undefined && rate > 0) {
+      return { rate, sourceDirection: "direct", tick };
+    }
+  }
+
+  // Fall back to the inverted direction.
+  const inverted = invertPair(pair);
+  if (inverted === pair) return null;
+  const inverseCandidates = store
+    .query({ provenance, instrument: inverted, dataType: "fx-quote", limit })
+    .filter((t) => (opts.excludeSource ? t.source !== opts.excludeSource : true));
+  for (const tick of inverseCandidates) {
+    const rate = extractMidRate(tick.payload);
+    if (rate !== undefined && rate > 0) {
+      return { rate: 1 / rate, sourceDirection: "inverse", tick };
+    }
+  }
+
+  return null;
+}
