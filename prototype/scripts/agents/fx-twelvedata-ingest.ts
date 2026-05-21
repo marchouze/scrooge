@@ -1,8 +1,14 @@
 // scripts/agents/fx-twelvedata-ingest.ts
 //
-// FX rates ingest agent (secondary source) — fetches live spot quotes from
-// Twelve Data (https://api.twelvedata.com) and stores new ticks in the
-// MarketDataStore (SQLite).
+// FX rates ingest agent (secondary source) — fetches intraday hourly bars
+// from Twelve Data (https://api.twelvedata.com/time_series) and stores new
+// ticks in the MarketDataStore (SQLite).
+//
+// Uses /time_series (interval=1h, outputsize=2) rather than /quote. The
+// /quote endpoint returns a single EOD-pinned snapshot whose timestamp
+// doesn't change within a trading day on the free tier, causing all
+// subsequent hourly polls to dedup to 0 new ticks. /time_series returns
+// distinct hourly bars, so each polling cycle stores a genuine new tick.
 //
 // This file exposes two entry points:
 //   - `runTwelveDataIngest()` — pure function (no process.exit); used by
@@ -10,15 +16,9 @@
 //   - `main()` (CLI shape, run when invoked directly via `bun run ...`) —
 //     unchanged operator-facing behaviour for manual / ad-hoc runs.
 //
-// This is the **second** free FX source, run alongside fx-rates-ingest
-// (open.er-api.com). Twelve Data updates intraday on the free tier (delayed
-// — typically EOD-ish but not daily-only), giving the tape actual motion
-// and enabling two-source IPV cross-checks in mtm-run.ts.
-//
-// Free-tier quotas: 800 req/day, 8 req/min. The batched 6-symbol /quote
-// counts as 6 credits (one per symbol), so the hourly cadence wired in
-// `devon:fx-twelvedata-ingest` costs ~144 req/day, well under the daily
-// cap.
+// Free-tier credit cost: 1 credit per data point returned per symbol.
+// outputsize=2 × 6 symbols = 12 credits/run; hourly cadence = 288/day —
+// well under the 800/day cap.
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION
 //
@@ -29,13 +29,18 @@
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import type { FxQuotePayload } from "../../platform/market-data/types";
-import { TWELVE_DATA_TARGET_PAIRS, parseTwelveDataQuoteResponse } from "./fx-twelvedata-parse";
+import { TWELVE_DATA_TARGET_PAIRS, parseTwelveDataTimeSeriesResponse } from "./fx-twelvedata-parse";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const TWELVE_DATA_BASE = "https://api.twelvedata.com/quote";
+const TWELVE_DATA_BASE = "https://api.twelvedata.com/time_series";
+// Fetch the 2 most-recent hourly bars per symbol. Each hourly poll adds the
+// newest bar while the previous bar acts as overlap for dedup correctness.
+// Credit cost: outputsize × symbols = 2 × 6 = 12 credits/run.
+const TWELVE_DATA_INTERVAL = "1h";
+const TWELVE_DATA_OUTPUTSIZE = 2;
 const SOURCE = "twelve-data";
 
 // ---------------------------------------------------------------------------
@@ -75,6 +80,9 @@ export async function runTwelveDataIngest(
 
   const url = new URL(TWELVE_DATA_BASE);
   url.searchParams.set("symbol", TWELVE_DATA_TARGET_PAIRS.join(","));
+  url.searchParams.set("interval", TWELVE_DATA_INTERVAL);
+  url.searchParams.set("outputsize", String(TWELVE_DATA_OUTPUTSIZE));
+  url.searchParams.set("timezone", "UTC");
   url.searchParams.set("apikey", opts.apiKey);
 
   let responseJson: unknown;
@@ -89,9 +97,9 @@ export async function runTwelveDataIngest(
     return { fetched: 0, newStored: 0, ok: false, error: msg };
   }
 
-  let quotes: ReturnType<typeof parseTwelveDataQuoteResponse>;
+  let quotes: ReturnType<typeof parseTwelveDataTimeSeriesResponse>;
   try {
-    quotes = parseTwelveDataQuoteResponse(responseJson);
+    quotes = parseTwelveDataTimeSeriesResponse(responseJson);
   } catch (err) {
     mdStore.close();
     const msg = `parse failed — ${String(err)}`;

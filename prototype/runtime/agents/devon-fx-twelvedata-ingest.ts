@@ -6,9 +6,9 @@
 // on cron.
 //
 // Cadence: hourly at minute 5 (offset from open-er-api's daily 02:00
-// UTC to avoid clashing). Twelve Data free tier permits 800 req/day
-// and 8 req/min; the batched 6-symbol /quote costs 6 credits, so 24
-// hourly fires/day = 144 credits/day — well under the daily cap.
+// UTC to avoid clashing). Twelve Data free tier permits 800 req/day and
+// 8 req/min; /time_series at outputsize=2 costs 12 credits/run (2 bars ×
+// 6 symbols), so 24 hourly fires/day = 288 credits/day — under the cap.
 //
 // Env var requirement:
 //   BANK_TWELVEDATA_API_KEY — required. The launchd plist installed at
