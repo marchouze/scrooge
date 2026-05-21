@@ -26,6 +26,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { HOZ_BANK_ENTITY } from "../core/types";
 import { makeFxPositionRevalued } from "../event-store/event-types/fx-accounting";
 import { makeFxSettlementFailed } from "../event-store/event-types/fx-accounting";
 import type { Event } from "../event-store/types";
@@ -41,7 +42,7 @@ import { POSTING_RULE_IDS, deriveGlPostingEventId, runGlPostingEngine } from "./
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const ENTITY = "BANK-ZA-001";
+const ENTITY = HOZ_BANK_ENTITY;
 const ENGINE_ACTOR = {
   type: "service" as const,
   id: "agent:bea:gl-posting-engine",

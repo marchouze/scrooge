@@ -58,7 +58,7 @@
 //         condition assessment.
 
 import { eventStore } from "../platform/composition";
-import { newEventId } from "../platform/core/types";
+import { HOZ_BANK_ENTITY, newEventId } from "../platform/core/types";
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
 import { logger } from "../platform/observability/logger";
@@ -69,7 +69,7 @@ import { logger } from "../platform/observability/logger";
 
 const REHEARSAL_GATE_ID = "pre-licence-go-live-rehearsal-2026-05-21-fx-spot-internal-test";
 const PRODUCT_SCOPE: readonly string[] = ["fx-spot"];
-const ENTITY = "BANK-ZA-001";
+const ENTITY = HOZ_BANK_ENTITY;
 const AS_OF = "2026-05-21T08:30:00.000Z";
 
 const ACTOR_DEVON = {

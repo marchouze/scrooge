@@ -27,9 +27,16 @@
 //
 // Empty-state correctness: zero events → asserted=0, ok=true.
 //
-// Severity. Fail-class (P1) — a divergent `entity` value is a
-// data-integrity issue, not a convention nit. The event store accepts
-// any string, so the gate must be at recon time.
+// Severity. Two-tier — see `MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK`
+// below.
+//   - Pre-boundary events with a `status:"retired"` short-id degrade
+//     to `warn` (defensible historical; Principle 1 prohibits rewriting
+//     immutable events).
+//   - Post-boundary events with a retired short-id are `fail` (live
+//     drift — source patches exist via PR #669).
+//   - Unregistered short-ids are `fail` at any timestamp (rogue value).
+// The event store accepts any string, so the gate must be at recon
+// time. Vera PR #679 surfaced the boundary recommendation.
 //
 // Author: Atlas (Core banking platform architect, engineering) ·
 // co-attributed Imani (Chief Legal Counsel, governance — legal-entity-
@@ -44,6 +51,36 @@ import {
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "entity-identity-coherence";
+
+/**
+ * Migration boundary: PR #669 (entity-identity unification) merged at
+ * `2026-05-21T08:57:13Z` UTC. Events emitted strictly before this
+ * timestamp may carry the now-retired `BANK-ZA-001` short-id; per
+ * Principle 1 (events as the single source of truth) the event log is
+ * immutable — historical events cannot be rewritten. The retired-row
+ * in `LEGAL_ENTITY_SHORT_ID_REGISTRY` (Vera PR #679 recommendation)
+ * lets this recon recognise such events as "known-but-retired"
+ * (defensible historical) rather than "unknown-rogue".
+ *
+ * Classification semantics applied per event:
+ *   - `as_of < MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK`:
+ *       - entity ∈ active row             → ok
+ *       - entity ∈ retired row             → `warn` (defensible historical)
+ *       - entity ∉ registry                → `fail` (rogue at any time)
+ *   - `as_of >= MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK`:
+ *       - entity ∈ active row             → ok
+ *       - entity ∈ retired row             → `fail` (live drift)
+ *       - entity ∉ registry                → `fail` (rogue at any time)
+ *
+ * Authority:
+ *   - D-PARTY-REGISTER (CEO-approved 2026-05-11)
+ *   - Principle 1 (events are the only source of truth) —
+ *     immutability of the historical log
+ *   - Atlas + Imani PR #669 (entity-identity unification, merged
+ *     2026-05-21T08:57:13Z UTC) — establishes the boundary
+ *   - Vera PR #679 — surfaced the recommendation
+ */
+export const MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK = "2026-05-21T08:57:13Z";
 
 /**
  * Minimal event shape — accepted from the live event store and from
@@ -99,6 +136,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     result.asserted++;
     const entry = lookupShortId(ev.entity);
     if (entry === null) {
+      // Unregistered short-id — `fail` at any timestamp (rogue value).
       violations.push({
         subject: `event:${ev.event_id}:${ev.type}`,
         severity: "fail",
@@ -106,11 +144,26 @@ export function run(opts: RunOpts = {}): ReconResult {
       });
       continue;
     }
-    if (entry.status !== "active") {
+    if (entry.status === "active") {
+      // Active row — always ok.
+      continue;
+    }
+    // Retired row. Classify by migration-boundary timestamp.
+    // Pre-boundary → `warn` (defensible historical, immutable per
+    // Principle 1). Post-boundary → `fail` (live drift; source patches
+    // exist via Atlas + Imani PR #669 + the literal-patch pack).
+    const isPreBoundary = ev.as_of < MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK;
+    if (isPreBoundary) {
+      violations.push({
+        subject: `event:${ev.event_id}:${ev.type}`,
+        severity: "warn",
+        message: `event.entity "${ev.entity}" resolves to a retired Party register row (${entry.partyUrn}, legalName="${entry.legalName}", retiredAt=${entry.retiredAt ?? "unknown"}). Event as_of=${ev.as_of} predates the migration boundary (${MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK}); defensible historical per Principle 1 (immutable event log). Successor: ${entry.successor ?? "(none recorded)"}. Authority: D-PARTY-REGISTER; Atlas + Imani PR #669.`,
+      });
+    } else {
       violations.push({
         subject: `event:${ev.event_id}:${ev.type}`,
         severity: "fail",
-        message: `event.entity "${ev.entity}" resolves to a retired Party register row (${entry.partyUrn}, legalName="${entry.legalName}"). Retired short-ids must not appear on new events. Authority: D-PARTY-REGISTER.`,
+        message: `event.entity "${ev.entity}" resolves to a retired Party register row (${entry.partyUrn}, legalName="${entry.legalName}", retiredAt=${entry.retiredAt ?? "unknown"}). Event as_of=${ev.as_of} is at-or-after the migration boundary (${MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK}) — live drift, must use successor "${entry.successor ?? "(none recorded)"}". Authority: D-PARTY-REGISTER; Atlas + Imani PR #669.`,
       });
     }
   }
@@ -126,18 +179,25 @@ export function run(opts: RunOpts = {}): ReconResult {
 
 if (import.meta.main) {
   const r = run();
+  const warnCount = r.violations.filter((v) => v.severity === "warn").length;
+  const failCount = r.violations.filter((v) => v.severity === "fail").length;
   console.log(
     JSON.stringify({
-      level: r.ok ? "info" : "error",
+      level: r.ok ? (warnCount > 0 ? "warn" : "info") : "error",
       time: r.asOf,
       service: "bank-prototype",
       pipeline: r.pipeline,
       asserted: r.asserted,
       violations: r.violations.length,
+      warnCount,
+      failCount,
       ok: r.ok,
+      migrationBoundary: MIGRATION_BOUNDARY_TIMESTAMP_FX_HOZ_BANK,
       msg: r.ok
-        ? `entity-identity-coherence passed — every event.entity (${r.asserted}) resolves to an active Party register short-id.`
-        : `entity-identity-coherence FAILED — ${r.violations.length} divergent event.entity value(s).`,
+        ? warnCount > 0
+          ? `entity-identity-coherence passed — ${r.asserted} event(s) asserted; 0 fail-class; ${warnCount} warn-class (pre-boundary retired-row events; defensible historical per Principle 1).`
+          : `entity-identity-coherence passed — every event.entity (${r.asserted}) resolves to an active Party register short-id.`
+        : `entity-identity-coherence FAILED — ${failCount} fail-class violation(s); ${warnCount} warn-class.`,
       detail: r.violations,
     }),
   );

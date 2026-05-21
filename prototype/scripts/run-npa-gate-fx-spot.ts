@@ -64,6 +64,7 @@
 //            authority.
 
 import { eventStore } from "../platform/composition";
+import { HOZ_BANK_ENTITY } from "../platform/core/types";
 import {
   makeProductDimensionAttested,
   makeProductDueDiligenceCompleted,
@@ -80,7 +81,7 @@ import { logger } from "../platform/observability/logger";
 
 const PRODUCT_ID = "prd:bank:fx:fx-spot-usdzar";
 const PRODUCT_FAMILY = "fx" as const;
-const ENTITY = "BANK-ZA-001";
+const ENTITY = HOZ_BANK_ENTITY;
 const AS_OF = "2026-05-21T09:30:00.000Z";
 
 const ACTOR_SASKIA = {
