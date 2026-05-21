@@ -34,7 +34,10 @@
 import { eventStore } from "../platform/composition";
 import type { OfficialMarkAdoptedPayload } from "../platform/event-store/event-types/valuation";
 import { makeSettlementRealisedPnlCorrected } from "../platform/markets/cdm/fx";
-import type { FxTradeExecutedPayload, SettlementConfirmedPayload } from "../platform/markets/cdm/fx";
+import type {
+  FxTradeExecutedPayload,
+  SettlementConfirmedPayload,
+} from "../platform/markets/cdm/fx";
 import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 import { logger } from "../platform/observability/logger";
 
@@ -75,7 +78,7 @@ function buildOfficialMarkIndex(): Map<
       const existing = byPairAndDate.get(key);
       if (!existing || m.markAsOf > existing.markAsOf) {
         byPairAndDate.set(key, {
-          rate: parseFloat(m.mark),
+          rate: Number.parseFloat(m.mark),
           markAsOf: m.markAsOf,
           instrumentKey: m.instrumentKey,
         });

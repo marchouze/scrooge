@@ -554,11 +554,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Bea",
     subscribers: ["Bea", "Anya", "Rohan", "Vera", "dashboard"],
     replay: "append-only-audit",
-    citationsHint: [
-      "IAS-21-§28",
-      "PR-FX-LIFECYCLE-CLOSE",
-      "D-FX-QUOTING-CONVENTION",
-    ],
+    citationsHint: ["IAS-21-§28", "PR-FX-LIFECYCLE-CLOSE", "D-FX-QUOTING-CONVENTION"],
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "scripts/backfill-fx-settlement-realised-pnl.ts; platform/product-control/daily-pnl.ts; IAS 21 §28",

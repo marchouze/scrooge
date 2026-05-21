@@ -19,8 +19,8 @@
 // Author: Devon (Chief Operating Officer, engineering)
 
 import { newEventId, nowUtc } from "../core/types";
-import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import { makeInboundMessageReceived } from "../event-store/event-types/payments";
+import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import {
   makeFxSettlementInstructed,
@@ -267,7 +267,9 @@ export function runPostTradeLifecycle(
     // -------------------------------------------------------------------------
     const nearLegForPnl = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
     const bookRate = nearLegForPnl?.rate.amount ?? 0;
-    const notionalBaseMinor = nearLegForPnl ? baseAmountMinor(nearLegForPnl, trade.currencyPair) : 0;
+    const notionalBaseMinor = nearLegForPnl
+      ? baseAmountMinor(nearLegForPnl, trade.currencyPair)
+      : 0;
 
     // Look up the latest OfficialMarkAdopted for this pair on/before the settlement date.
     let settlementRate = bookRate;
@@ -282,7 +284,7 @@ export function runPostTradeLifecycle(
         ) {
           if (m.markAsOf > latestMarkAsOf) {
             latestMarkAsOf = m.markAsOf;
-            settlementRate = parseFloat(m.mark);
+            settlementRate = Number.parseFloat(m.mark);
           }
         }
       }

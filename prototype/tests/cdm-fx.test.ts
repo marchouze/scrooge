@@ -424,7 +424,8 @@ describe("FX event-type registry", () => {
     expect(FX_EVENT_TYPES).toContain("PrincipalPayment");
     expect(FX_EVENT_TYPES).toContain("SettlementConfirmed");
     expect(FX_EVENT_TYPES).toContain("NdfFixingObserved");
-    expect(FX_EVENT_TYPES.length).toBe(5);
+    expect(FX_EVENT_TYPES).toContain("SettlementRealisedPnlCorrected");
+    expect(FX_EVENT_TYPES.length).toBe(6);
   });
 });
 
@@ -764,7 +765,9 @@ describe("NdfFixingObserved — schema + envelope", () => {
 
   it("registry exposes NdfFixingObserved in FX_EVENT_TYPES", () => {
     expect(FX_EVENT_TYPES).toContain("NdfFixingObserved");
-    expect(FX_EVENT_TYPES.length).toBe(5);
+    // Length now 6: FxTradeExecuted, FxSettlementInstructed, PrincipalPayment,
+    // SettlementConfirmed, NdfFixingObserved, SettlementRealisedPnlCorrected
+    expect(FX_EVENT_TYPES.length).toBe(6);
   });
 });
 

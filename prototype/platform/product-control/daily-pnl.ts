@@ -30,7 +30,6 @@ import type {
   FxSettlementConfirmedPayload,
 } from "../event-store/event-types/fx-accounting";
 import { makeDailyPnLReportGenerated } from "../event-store/event-types/product-control";
-import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type {
   DailyPnLReportGeneratedPayload,
   PnLByBook,
@@ -38,6 +37,7 @@ import type {
   PnLByPair,
 } from "../event-store/event-types/product-control";
 import type { EventStore } from "../event-store/store";
+import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 
 // ---------------------------------------------------------------------------

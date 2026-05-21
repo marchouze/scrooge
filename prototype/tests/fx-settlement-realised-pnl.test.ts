@@ -22,14 +22,14 @@
 
 import { beforeEach, describe, expect, it } from "bun:test";
 
-import { computeDailyPnL } from "../platform/product-control/daily-pnl";
+import { EventStore } from "../platform/event-store/store";
 import {
   makeFxTradeExecuted,
   makeSettlementConfirmed,
   makeSettlementRealisedPnlCorrected,
   settlementRealisedPnlCorrectedPayloadSchema,
 } from "../platform/markets/cdm/fx";
-import { EventStore } from "../platform/event-store/store";
+import { computeDailyPnL } from "../platform/product-control/daily-pnl";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -57,7 +57,9 @@ function computeRealisedPnl(opts: {
   notionalBaseMinor: number;
 }): number {
   const sign = opts.side === "buy" ? 1 : -1;
-  return Math.round(sign * (opts.settlementRate - opts.bookRate) * Math.abs(opts.notionalBaseMinor));
+  return Math.round(
+    sign * (opts.settlementRate - opts.bookRate) * Math.abs(opts.notionalBaseMinor),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -95,7 +97,7 @@ function makeBuyUsdTrade(tradeId: string) {
           // BUY USD: pay ZAR (notional in payCurrency = ZAR)
           notional: { currency: "ZAR", amountMinor: 1_850_000_000 }, // ZAR 18.5m
           counterNotional: { currency: "USD", amountMinor: USD_1M_MINOR }, // USD 1m
-          rate: { amount: 18.5, quoteCurrency: "ZAR" },
+          rate: { amount: 18.5, currency: "ZAR" },
           settlementDate: { iso: "2026-05-21", calendar: "JIHCAL" },
         },
       ],
