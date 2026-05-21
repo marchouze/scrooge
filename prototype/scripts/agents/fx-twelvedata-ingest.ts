@@ -4,20 +4,23 @@
 // Twelve Data (https://api.twelvedata.com) and stores new ticks in the
 // MarketDataStore (SQLite).
 //
+// This file exposes two entry points:
+//   - `runTwelveDataIngest()` — pure function (no process.exit); used by
+//     the Devon scheduled handler `devon:fx-twelvedata-ingest`.
+//   - `main()` (CLI shape, run when invoked directly via `bun run ...`) —
+//     unchanged operator-facing behaviour for manual / ad-hoc runs.
+//
 // This is the **second** free FX source, run alongside fx-rates-ingest
 // (open.er-api.com). Twelve Data updates intraday on the free tier (delayed
 // — typically EOD-ish but not daily-only), giving the tape actual motion
 // and enabling two-source IPV cross-checks in mtm-run.ts.
 //
-// Free-tier quotas: 800 req/day, 8 req/min. Batched 6-symbol /quote counts
-// as a single request, so the suggested hourly cadence costs ~24 req/day —
-// comfortably within budget.
+// Free-tier quotas: 800 req/day, 8 req/min. The batched 6-symbol /quote
+// counts as 6 credits (one per symbol), so the hourly cadence wired in
+// `devon:fx-twelvedata-ingest` costs ~144 req/day, well under the daily
+// cap.
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION
-//
-// Scheduler integration is a follow-on item — same posture as
-// fx-rates-ingest, which is also designed-for-cron but invoked manually
-// until the scheduling harness lands.
 //
 // Usage:
 //   BANK_TWELVEDATA_API_KEY=<key> bun run scripts/agents/fx-twelvedata-ingest.ts
@@ -34,61 +37,74 @@ import { TWELVE_DATA_TARGET_PAIRS, parseTwelveDataQuoteResponse } from "./fx-twe
 const TWELVE_DATA_BASE = "https://api.twelvedata.com/quote";
 const SOURCE = "twelve-data";
 
-const DB_PATH = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
-const API_KEY = process.env.BANK_TWELVEDATA_API_KEY;
-
 // ---------------------------------------------------------------------------
-// Main
+// Public function — usable from handlers + tests
 // ---------------------------------------------------------------------------
 
-async function main(): Promise<void> {
-  if (!API_KEY) {
-    console.error(
-      "[fx-twelvedata-ingest] ERROR: BANK_TWELVEDATA_API_KEY env var not set — skipping. Register a free key at https://twelvedata.com/register.",
-    );
-    process.exit(1);
-  }
+export interface TwelveDataIngestOptions {
+  /** Path to the MarketDataStore SQLite file. */
+  dbPath: string;
+  /** Twelve Data API key. */
+  apiKey: string;
+  /**
+   * Logging sink. Defaults to `console.log`/`console.error`. Pass a no-op
+   * to silence; handlers wire their structured logger here.
+   */
+  log?: (level: "info" | "error", message: string) => void;
+}
 
-  const mdStore = new MarketDataStore(DB_PATH);
+export interface TwelveDataIngestResult {
+  /** Number of quotes returned by the parser. */
+  readonly fetched: number;
+  /** Number of ticks newly written to the store. */
+  readonly newStored: number;
+  /** Whether the fetch + parse + store cycle completed without throwing. */
+  readonly ok: boolean;
+  /** Error message if `ok` is false. */
+  readonly error?: string;
+}
+
+export async function runTwelveDataIngest(
+  opts: TwelveDataIngestOptions,
+): Promise<TwelveDataIngestResult> {
+  const log =
+    opts.log ?? ((level, msg) => (level === "error" ? console.error(msg) : console.log(msg)));
+
+  const mdStore = new MarketDataStore(opts.dbPath);
 
   const url = new URL(TWELVE_DATA_BASE);
   url.searchParams.set("symbol", TWELVE_DATA_TARGET_PAIRS.join(","));
-  url.searchParams.set("apikey", API_KEY);
+  url.searchParams.set("apikey", opts.apiKey);
 
-  // ---- Fetch ---------------------------------------------------------------
   let responseJson: unknown;
   try {
-    const resp = await fetch(url.toString(), {
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
-    }
+    const resp = await fetch(url.toString(), { signal: AbortSignal.timeout(30_000) });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     responseJson = await resp.json();
   } catch (err) {
-    console.error(`[fx-twelvedata-ingest] ERROR: fetch failed — ${String(err)}`);
-    process.exit(1);
+    mdStore.close();
+    const msg = `fetch failed — ${String(err)}`;
+    log("error", `[fx-twelvedata-ingest] ERROR: ${msg}`);
+    return { fetched: 0, newStored: 0, ok: false, error: msg };
   }
 
-  // ---- Parse ---------------------------------------------------------------
   let quotes: ReturnType<typeof parseTwelveDataQuoteResponse>;
   try {
     quotes = parseTwelveDataQuoteResponse(responseJson);
   } catch (err) {
-    console.error(`[fx-twelvedata-ingest] ERROR: parse failed — ${String(err)}`);
-    process.exit(1);
+    mdStore.close();
+    const msg = `parse failed — ${String(err)}`;
+    log("error", `[fx-twelvedata-ingest] ERROR: ${msg}`);
+    return { fetched: 0, newStored: 0, ok: false, error: msg };
   }
 
-  // ---- Dedup ---------------------------------------------------------------
   const existing = mdStore.query({ source: SOURCE });
   const existingIds = new Set(existing.map((t) => t.id));
 
-  // ---- Store ---------------------------------------------------------------
   let newCount = 0;
   for (const quote of quotes) {
     const { pair, mid, bid, ask, timestamp, asOf } = quote;
     const id = `${SOURCE}:${pair}:${timestamp}`;
-
     if (existingIds.has(id)) continue;
 
     const payload: FxQuotePayload = {
@@ -109,16 +125,39 @@ async function main(): Promise<void> {
       payload: payload as unknown as Record<string, unknown>,
     });
 
-    console.log(`[fx-twelvedata-ingest] NEW: ${pair} mid=${mid.toFixed(4)} (${asOf})`);
+    log("info", `[fx-twelvedata-ingest] NEW: ${pair} mid=${mid.toFixed(4)} (${asOf})`);
     newCount++;
   }
 
-  console.log(`[fx-twelvedata-ingest] fetched ${quotes.length} quotes, ${newCount} new stored`);
-
+  log("info", `[fx-twelvedata-ingest] fetched ${quotes.length} quotes, ${newCount} new stored`);
   mdStore.close();
+
+  return { fetched: quotes.length, newStored: newCount, ok: true };
 }
 
-main().catch((err: unknown) => {
-  console.error(`[fx-twelvedata-ingest] FATAL: ${String(err)}`);
-  process.exit(1);
-});
+// ---------------------------------------------------------------------------
+// CLI entry point
+// ---------------------------------------------------------------------------
+
+async function main(): Promise<void> {
+  const dbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
+  const apiKey = process.env.BANK_TWELVEDATA_API_KEY;
+
+  if (!apiKey) {
+    console.error(
+      "[fx-twelvedata-ingest] ERROR: BANK_TWELVEDATA_API_KEY env var not set — skipping. Register a free key at https://twelvedata.com/register.",
+    );
+    process.exit(1);
+  }
+
+  const result = await runTwelveDataIngest({ dbPath, apiKey });
+  if (!result.ok) process.exit(1);
+}
+
+// Run as CLI only when invoked directly, not when imported by a handler.
+if (import.meta.main) {
+  main().catch((err: unknown) => {
+    console.error(`[fx-twelvedata-ingest] FATAL: ${String(err)}`);
+    process.exit(1);
+  });
+}
