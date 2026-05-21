@@ -1,15 +1,12 @@
 // platform/event-store/event-types/fx-accounting.ts
 //
-// FX accounting event-payload schemas — three typed events for the
-// complete FX Spot accounting lifecycle:
+// FX accounting event-payload schemas — typed events for the
+// FX Spot accounting lifecycle (terminal `TradeMatured` lives in
+// trade-matured.ts as a generic, asset-class-agnostic event):
 //
 //   - FxPositionRevalued      — daily revaluation of an open FX position
 //                               at closing mid-market rate (FVTPL through
 //                               P&L per IFRS 9 §5.7.1).
-//   - FxSettlementConfirmed   — T+2 cash exchange confirmed; derecognises
-//                               the FX trading receivable/payable and
-//                               recognises the nostro cash legs. Realised
-//                               P&L crystallised on this event.
 //   - SubLedgerPostingEmitted — generic double-entry posting emitted by
 //                               the posting-rule engine. Consumed by
 //                               computeTrialBalance in period-close.ts.
@@ -17,6 +14,9 @@
 //                               bank-account / period-close events; FX
 //                               posting events land here so the FX domain
 //                               is self-contained.)
+//
+// `FxSettlementConfirmed` was retired 2026-05-21 in favour of `TradeMatured`
+// (brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21).
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
@@ -94,82 +94,6 @@ export function makeFxPositionRevalued(args: {
 }
 
 // ---------------------------------------------------------------------------
-// FxSettlementConfirmed
-//
-// T+2 (or T+N for non-spot) cash exchange confirmed by the correspondent
-// bank. Derecognises the FX Trading Receivable/Payable (FVTPL) and
-// recognises the nostro cash legs (amortised cost).
-//
-// Realised P&L = settled cash (ZAR equivalent) - carrying amount of the
-// FVTPL asset. Any residual is credited/debited to ACC-2100-006 (Realised
-// FX P&L). If daily revaluations were current, the residual is typically
-// negligible (intraday rate movement only).
-//
-// Per IFRS 9 §3.2.3: derecognise a financial asset when the contractual
-// rights to the cash flows expire or are transferred.
-// ---------------------------------------------------------------------------
-
-export const fxSettlementConfirmedPayloadSchema = z.object({
-  /** The trade this settlement confirms. */
-  tradeId: z.string().min(1),
-  /** Currency pair. */
-  currencyPair: z.string().min(1),
-  /** Which leg of the trade (near / far for swaps; near for spot). */
-  legKind: z.enum(["near", "far"]),
-  /**
-   * Settled base-currency amount in minor units (positive = bank received,
-   * negative = bank paid).
-   */
-  settledBaseCurrencyMinor: z.number().int(),
-  /**
-   * Settled quote-currency amount in minor units (positive = bank received,
-   * negative = bank paid).
-   */
-  settledQuoteCurrencyMinor: z.number().int(),
-  /** ISO 8601 timestamp when settlement was confirmed by the correspondent. */
-  settledAt: z.string().min(1),
-  /** Chart-of-accounts ID for the nostro account receiving/paying base currency. */
-  nostroAccountBase: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/),
-  /** Chart-of-accounts ID for the nostro account receiving/paying quote currency. */
-  nostroAccountQuote: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/),
-  /**
-   * Realised P&L in ZAR minor units. Computed as:
-   *   (settledZarEquivalent) - (carryingAmountZar at last revaluation).
-   * Positive = gain; negative = loss. Zero if revaluations were current
-   * to the settlement rate.
-   */
-  realisedPnlZarMinor: z.number().int(),
-  /** Correspondent bank message reference (SWIFT MT300 / pacs.009 reference). */
-  correspondentRef: z.string().optional(),
-});
-
-export type FxSettlementConfirmedPayload = z.infer<typeof fxSettlementConfirmedPayloadSchema>;
-
-export function makeFxSettlementConfirmed(args: {
-  asOf: string;
-  entity: string;
-  actor: Actor;
-  citations: string[];
-  payload: FxSettlementConfirmedPayload;
-  eventId?: string;
-}): Event {
-  if (!args.citations || args.citations.length === 0) {
-    throw new Error(
-      "FxSettlementConfirmed requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
-    );
-  }
-  return eventSchema.parse({
-    event_id: args.eventId ?? newEventId(),
-    type: "FxSettlementConfirmed",
-    as_of: args.asOf,
-    entity: args.entity,
-    actor: args.actor,
-    citations: args.citations,
-    payload: fxSettlementConfirmedPayloadSchema.parse(args.payload),
-  });
-}
-
-// ---------------------------------------------------------------------------
 // SubLedgerPostingEmitted
 //
 // Generic double-entry posting event emitted by the posting-rule engine.
@@ -184,7 +108,7 @@ export function makeFxSettlementConfirmed(args: {
 // postingType discriminator:
 //   "trade-booking"         — FxTradeExecuted source; initial recognition
 //   "revaluation"           — FxPositionRevalued source; FVTPL P&L movement
-//   "settlement"            — FxSettlementConfirmed source; derecognition + nostro
+//   "settlement"            — TradeMatured (fx-spot) source; derecognition + nostro
 //   "reversal"              — period-open reversal of a prior accrual/revaluation
 //   "payment-initiation"    — PaymentInitiated source; suspense DR / nostro CR
 //   "payment-settlement"    — PaymentSettled source; payable DR / suspense CR
@@ -350,7 +274,7 @@ export function makeSettlementFailed(args: {
 
 export const settlementReversedPayloadSchema = z.object({
   tradeId: z.string().min(1),
-  /** Event ID of the original FxSettlementConfirmed event being reversed. */
+  /** Event ID of the original TradeMatured (fx-spot) event being reversed. */
   originalSettlementEventId: z.string().min(1),
   reversedAt: z.string().min(1),
   reason: z.string().min(1),
@@ -652,7 +576,6 @@ export function makeSettlementFailureClassified(args: {
 
 export const FX_ACCOUNTING_EVENT_TYPES = [
   "FxPositionRevalued",
-  "FxSettlementConfirmed",
   "SubLedgerPostingEmitted",
   "SettlementFailed",
   "SettlementReversed",

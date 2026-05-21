@@ -39,8 +39,12 @@
 //   - rms.ts            — DecisionRequested, Feedback, BriefSuperseded,
 //                         RecordFiled, CeoDecisionRmsExtended
 //   - accounting.ts     — BankAccount*, AccountingPeriod*, TrialBalanceSnapshotted
-//   - fx-accounting.ts  — FxPositionRevalued, FxSettlementConfirmed,
-//                         SubLedgerPostingEmitted (FX accounting lifecycle)
+//   - fx-accounting.ts  — FxPositionRevalued, SubLedgerPostingEmitted
+//                         (FX accounting lifecycle; terminal TradeMatured
+//                         lives in trade-matured.ts as a generic event)
+//   - trade-matured.ts  — TradeMatured (asset-class-agnostic terminal event;
+//                         discriminated union on productKind; fx-spot variant
+//                         retired the previous FxSettlementConfirmed)
 //
 // Party domain lives in prototype/domains/party/ (its own domain package);
 // re-exported directly here as before.
@@ -61,6 +65,11 @@ export * from "./accounting";
 // Slice 2 — institutional counterparty onboarding lifecycle (7 new phase events).
 export * from "./customer";
 export * from "./fx-accounting";
+// TradeMatured — generic lifecycle-terminal event (D-MARKETS-SCHEMA-FOUNDATION;
+// brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21).
+// Discriminated-union payload; fx-spot variant first; retires
+// FxSettlementConfirmed entirely (2026-05-21).
+export * from "./trade-matured";
 export * from "./regulatory";
 export * from "./performance";
 // Semantic-layer quantity registration — Anya (Data / analytics engineer).
@@ -335,6 +344,7 @@ import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES } from "./security-devops-extended";
+import { TRADE_MATURED_EVENT_TYPES } from "./trade-matured";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
 
@@ -351,6 +361,10 @@ export const TYPED_EVENT_TYPES = [
   ...ACCOUNTING_TYPED_EVENT_TYPES,
   ...CUSTOMER_TYPED_EVENT_TYPES,
   ...FX_ACCOUNTING_EVENT_TYPES,
+  // TradeMatured — generic lifecycle-terminal event.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION;
+  //   brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21.
+  ...TRADE_MATURED_EVENT_TYPES,
   ...REGULATORY_TYPED_EVENT_TYPES,
   ...PERFORMANCE_TYPED_EVENT_TYPES,
   ...AUDIT_TYPED_EVENT_TYPES,

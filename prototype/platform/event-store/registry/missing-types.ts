@@ -76,7 +76,6 @@ import {
 } from "../event-types/aml-popia-extended";
 import {
   fxPositionRevaluedPayloadSchema,
-  fxSettlementConfirmedPayloadSchema,
   fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
   missedExpectedReceiptPayloadSchema,
@@ -84,6 +83,7 @@ import {
   settlementFailureClassifiedPayloadSchema,
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
+import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
 import {
   alertOpenedPayloadSchema,
   auditCommitteePackPreppedPayloadSchema,
@@ -231,17 +231,20 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
   },
   {
-    // Emitted when FX settlement is confirmed by the counterparty / correspondent bank.
+    // Generic lifecycle-terminal event — confirms a trade has matured /
+    // settled. Discriminated-union payload (productKind: "fx-spot" today).
+    // Retires `FxSettlementConfirmed` (2026-05-21) per
+    // brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21.
     // Subscribes: Bea (fx-posting-engine).
-    type: "FxSettlementConfirmed",
+    type: "TradeMatured",
     class: "markets",
-    payloadSchema: fxSettlementConfirmedPayloadSchema,
+    payloadSchema: tradeMaturedPayloadSchema,
     issuer: "Kai",
     subscribers: ["Bea"],
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
-      "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
+      "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/trade-matured.ts",
   },
   {
     // Emitted by Ravi / Kai when a trade (bond, equity, IRS) is booked into the
