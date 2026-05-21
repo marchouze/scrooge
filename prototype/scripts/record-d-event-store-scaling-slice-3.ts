@@ -15,8 +15,7 @@
 // Authors: Rohan (Risk engineer, engineering — reports to Helena CRO)
 //   · Anya (Data / analytics engineer, engineering — reports to Devon COO)
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
+import "../platform/event-store/resolve-event-db-boot";
 
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";

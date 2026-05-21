@@ -23,9 +23,6 @@
 // Author: Atlas (Core banking platform architect, engineering)
 // Brief:  brief:atlas:backfill-8-missing-recordfiled-documents-events-:2026-05-21
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
-
 import { eventStore } from "../platform/composition";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision, requestDecision } from "../runtime/decisions/record";

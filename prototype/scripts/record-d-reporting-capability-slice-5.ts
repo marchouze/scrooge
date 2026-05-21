@@ -17,8 +17,7 @@
 //   render-layer infrastructure) · Anya (Data / analytics engineer,
 //   engineering — reports to Devon COO; semantic-layer integration).
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
+import "../platform/event-store/resolve-event-db-boot";
 
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";

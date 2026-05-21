@@ -27,9 +27,6 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
-
 import { eventStore } from "../platform/composition";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { requestDecision } from "../runtime/decisions/record";

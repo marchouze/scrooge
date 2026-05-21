@@ -10,12 +10,26 @@
 //     to the home-default shared store and mutates `BANK_EVENT_DB` so
 //     composition picks it up.
 //
-//   - The `approve-d-*.ts` / `record-d-*.ts` / `file-*.ts` emission
-//     scripts call the same `applyDispatchEventDbResolution` at the top.
+//   - The interactive persona emission scripts (`approve-d-*.ts`,
+//     `record-d-*.ts`, `file-*.ts`) opt into the shared HOME store by
+//     importing the boot shim FIRST:
+//
+//       import "../platform/event-store/resolve-event-db-boot";
+//
 //     This is the fix for PR #695 (Helena (Chief Risk Officer,
 //     governance)'s MR-1-FX IPV recalibration emission landed in the
 //     per-worktree fallback because the script imported composition
 //     directly without first resolving to the shared store).
+//
+//     EXCEPTION: the 8 `record-d-*` scripts referenced from
+//     `migrate:decisions-backfill` in `package.json` DELIBERATELY do
+//     NOT import the boot shim. They run as part of `bun run ci`, where
+//     the rest of the tooling (backfill writers + recon readers +
+//     citation gate) targets `prototype/.local/event.db`. Routing those
+//     CI-chained scripts to the HOME store would split-brain the CI
+//     event log. The interactive scripts (Helena's emission, Owen's
+//     filing, etc.) keep the boot shim so end-users get the shared
+//     store on their workstations.
 //
 //   - `platform/composition.ts` calls `resolveEventDbPath` directly with
 //     `excludeHomeDefault: true`. The composition root must NOT silently

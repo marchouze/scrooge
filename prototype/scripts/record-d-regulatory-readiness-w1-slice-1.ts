@@ -18,8 +18,7 @@
 // Author: Mira (Compliance / RegTech engineer, engineering)
 //         + Zara (Chief Compliance Officer, governance)
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
+import "../platform/event-store/resolve-event-db-boot";
 
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";

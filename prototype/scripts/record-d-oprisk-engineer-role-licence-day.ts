@@ -23,8 +23,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
+import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";

@@ -19,8 +19,7 @@
 // Run once; idempotent — checks whether a terminal Decision event for
 // this ID already exists before appending.
 
-import { applySharedEventDbResolution } from "../platform/event-store/resolve-event-db";
-applySharedEventDbResolution();
+import "../platform/event-store/resolve-event-db-boot";
 
 import { eventStore } from "../platform/composition";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
