@@ -5,7 +5,7 @@
 // Algorithm:
 //   1. Replay FxTradeExecuted from the event store to build the set of
 //      all FX positions.
-//   2. Replay FxSettlementConfirmed to remove settled positions.
+//   2. Replay TradeMatured (FX-spot variant) to remove settled positions.
 //   3. Replay FxPositionRevalued to skip positions already revalued today
 //      (idempotency gate — prevents duplicate daily emissions).
 //   4. For each open, un-revalued position:
@@ -16,7 +16,7 @@
 //   5. Return a summary (revalued, skipped, asOf).
 //
 // Open position definition:
-//   FxTradeExecuted that has no matching FxSettlementConfirmed for the
+//   FxTradeExecuted that has no matching TradeMatured (FX-spot) for the
 //   same tradeId (any legKind).
 //
 // Idempotency:
@@ -39,9 +39,10 @@ import { clock } from "../../composition";
 import { newEventId } from "../../core/types";
 import {
   type FxPositionRevaluedPayload,
-  type FxSettlementConfirmedPayload,
   makeFxPositionRevalued,
 } from "../../event-store/event-types/fx-accounting";
+import type { TradeMaturedPayload } from "../../event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../../event-store/event-types/trade-matured";
 import type { EventStore } from "../../event-store/store";
 import type { FxTradeExecutedPayload } from "../cdm/fx";
 import { baseAmountMinor } from "../cdm/fx-helpers";
@@ -154,7 +155,7 @@ function pairToString(pair: { base: string; quote: string }): string {
  * Run the EOD FX position revaluation for the given `valuationDate`.
  *
  * - Reads open FX positions from the event store (FxTradeExecuted minus
- *   FxSettlementConfirmed).
+ *   TradeMatured FX-spot variant).
  * - Skips positions already revalued today (idempotency).
  * - Looks up closing rates from `rateSource` (default: seeds/fx-rates.json).
  * - Emits `FxPositionRevalued` for each open, un-revalued position.
@@ -181,11 +182,13 @@ export function runEodFxRevaluation(
 
   // Step 2: Remove settled positions. Fold both the CDM lifecycle-close
   // event (`SettlementConfirmed`, 2026-05-20 GL-significant under
-  // PR-FX-LIFECYCLE-CLOSE) and the deprecated accounting event
-  // (`FxSettlementConfirmed`, retained for back-compat with legacy tests).
+  // PR-FX-LIFECYCLE-CLOSE) and the generic `TradeMatured` (FX-spot variant,
+  // which replaced the legacy FX-specific settlement-confirmed event on
+  // 2026-05-21).
   const settled = new Set<string>();
-  for (const e of store.replay({ type: "FxSettlementConfirmed" })) {
-    const p = e.payload as unknown as FxSettlementConfirmedPayload;
+  for (const e of store.replay({ type: "TradeMatured" })) {
+    const p = e.payload as unknown as TradeMaturedPayload;
+    if (!isFxSpotMaturity(p)) continue;
     settled.add(p.tradeId);
   }
   for (const e of store.replay({ type: "SettlementConfirmed" })) {

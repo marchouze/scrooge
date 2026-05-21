@@ -23,7 +23,7 @@
 // ## Principle 1 compliance
 //
 // Cash flows (LCR denominator) are folded directly from
-// `FxSettlementInstructed` and `FxSettlementConfirmed` events inside
+// `FxSettlementInstructed` and `TradeMatured (FX-spot)` events inside
 // `generateBa325Lcr` — not from GL account balances. HQLA stock (numerator)
 // uses the trial-balance rows from the period-close snapshot. This is the
 // Principle 1 compliant architecture per `Principles/1-events-are-truth.md`
@@ -115,7 +115,7 @@ export interface Ba325PeriodCloseSubscriberInput {
   /**
    * Event store — provides access to:
    *   (a) `TrialBalanceSnapshotted` event rows (HQLA stock);
-   *   (b) `FxSettlementInstructed` / `FxSettlementConfirmed` events (cash flows).
+   *   (b) `FxSettlementInstructed` / `TradeMatured (FX-spot)` events (cash flows).
    */
   readonly eventStore: EventStore;
   /** Actor running the subscriber (typically the Bea agent). */

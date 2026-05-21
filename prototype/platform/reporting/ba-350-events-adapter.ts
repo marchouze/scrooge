@@ -17,9 +17,9 @@
 //     → generateBa350MarketRisk (pure generator)
 //     → Ba350Output
 //
-// FxSettlementConfirmed events are folded to identify settled trades so they
-// are excluded from the open-position calculation (Reg 28(5) — only open /
-// unsettled positions enter the FX charge).
+// TradeMatured (FX-spot variant) events are folded to identify settled
+// trades so they are excluded from the open-position calculation
+// (Reg 28(5) — only open / unsettled positions enter the FX charge).
 //
 // ZAR rates must be supplied by the caller — the rate feed is a separate
 // substrate concern (Bea rate-feed integration spec §7; build-phase: caller
@@ -59,7 +59,7 @@ import type {
  * Input for `generateBa350MarketRiskFromEvents`.
  *
  * The FX-position sub-charge is derived by replaying `FxTradeExecuted` and
- * `FxSettlementConfirmed` events directly (P1-compliant). The remaining
+ * `TradeMatured` (FX-spot variant) events directly (P1-compliant). The remaining
  * sub-charges (IR general, IR specific, equity, commodity) are caller-supplied
  * at v0 — their event-fold paths land when the respective trading-book event
  * types (bond positions, equity positions) are implemented.
@@ -118,7 +118,7 @@ export interface Ba350FromEventsInput {
  * events directly from the event store.
  *
  * P1-compliant entry point (C-2 fix). FX positions are computed from
- * `FxTradeExecuted` events (minus `FxSettlementConfirmed` settled trades)
+ * `FxTradeExecuted` events (minus `TradeMatured` FX-spot settled trades)
  * rather than from the trial balance.
  *
  * Citations: Principles/1-events-are-truth.md, D-MARKETS-SCHEMA-FOUNDATION,
@@ -157,15 +157,16 @@ export function generateBa350MarketRiskFromEvents(
   //   - CDM `SettlementConfirmed` (lifecycle close — 2026-05-20 GL-significant
   //     under PR-FX-LIFECYCLE-CLOSE). Primary canonical signal that both legs
   //     have settled.
-  //   - Accounting `FxSettlementConfirmed` (DEPRECATED 2026-05-20 — kept for
-  //     back-compat with legacy test fixtures and any historical events still
-  //     in the store).
+  //   - Generic `TradeMatured` (FX-spot variant — replaces the retired
+  //     legacy accounting settlement-confirmed event since 2026-05-21).
+  //     Carries the same per-leg
+  //     cash facts in `payload.product`.
   //   - PrincipalPayment (per-leg confirmation). Used as a fallback signal —
   //     a tradeId with at least one PrincipalPayment indicates the lifecycle
   //     has progressed past the instruction phase. For BA-350 we treat any
-  //     tradeId that has reached the CDM SettlementConfirmed or accounting
-  //     FxSettlementConfirmed as fully settled; PrincipalPayment alone is
-  //     not enough (only one leg has confirmed).
+  //     tradeId that has reached the CDM SettlementConfirmed or TradeMatured
+  //     (FX-spot) as fully settled; PrincipalPayment alone is not enough
+  //     (only one leg has confirmed).
   const settledTradeIds = new Set<string>();
   for (const ev of eventStore.replay({
     entity: input.entity,
@@ -178,12 +179,14 @@ export function generateBa350MarketRiskFromEvents(
   }
   for (const ev of eventStore.replay({
     entity: input.entity,
-    type: "FxSettlementConfirmed",
+    type: "TradeMatured",
     asOf: input.periodEnd,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    const p = ev.payload as { tradeId: string };
-    if (p.tradeId) settledTradeIds.add(p.tradeId);
+    const p = ev.payload as { tradeId?: unknown; product?: { productKind?: unknown } };
+    if (typeof p.tradeId === "string" && p.product?.productKind === "FX-spot") {
+      settledTradeIds.add(p.tradeId);
+    }
   }
 
   // ---- Step 3: compute open FX positions using the calculator. -------------

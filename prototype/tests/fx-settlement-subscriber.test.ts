@@ -87,7 +87,7 @@ describe("FxSettlementSubscriber — variant marker", () => {
 });
 
 describe("FxSettlementSubscriber — both-delivered path", () => {
-  it("emits FxSettlementConfirmed when both legs delivered (Standard Bank ZA)", () => {
+  it("emits TradeMatured (FX-spot) when both legs delivered (Standard Bank ZA)", () => {
     const feed = makeStaticCorrespondentFeed([HAPPY_PATH_STANDARD_BANK_ZA]);
     const result = runFxSettlementSubscriber(feed, makeDeterministicConfig());
 
@@ -97,19 +97,19 @@ describe("FxSettlementSubscriber — both-delivered path", () => {
     expect(result.events).toHaveLength(1);
     const ev = result.events[0];
     if (!ev) throw new Error("event 0 missing");
-    expect(ev.type).toBe("FxSettlementConfirmed");
+    expect(ev.type).toBe("TradeMatured");
     expect((ev.payload as { tradeId: string }).tradeId).toBe(HAPPY_PATH_STANDARD_BANK_ZA.tradeRef);
-    expect((ev.payload as { currencyPair: string }).currencyPair).toBe("USD/ZAR");
-    expect((ev.payload as { correspondentRef?: string }).correspondentRef).toBe(
-      "SBZ-MT300-CONF-20260522-00001",
-    );
+    const product = (ev.payload as { product: { currencyPair: string; correspondentRef?: string } })
+      .product;
+    expect(product.currencyPair).toBe("USD/ZAR");
+    expect(product.correspondentRef).toBe("SBZ-MT300-CONF-20260522-00001");
   });
 
-  it("emits FxSettlementConfirmed for Investec ZA EUR/ZAR fixture", () => {
+  it("emits TradeMatured (FX-spot) for Investec ZA EUR/ZAR fixture", () => {
     const feed = makeStaticCorrespondentFeed([HAPPY_PATH_INVESTEC_ZA]);
     const result = runFxSettlementSubscriber(feed, makeDeterministicConfig());
     expect(result.events).toHaveLength(1);
-    expect(result.events[0]?.type).toBe("FxSettlementConfirmed");
+    expect(result.events[0]?.type).toBe("TradeMatured");
     expect(result.outcomes[0]?.kind).toBe("confirmed");
   });
 });

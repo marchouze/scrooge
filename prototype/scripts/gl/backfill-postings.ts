@@ -6,7 +6,7 @@
 //
 // Engines run:
 //   - beaGlPostingEngine  → PaymentInitiated / PaymentSettled / SettlementInstructionReceived
-//   - beaFxPostingEngine  → FxTradeExecuted / FxPositionRevalued / FxSettlementConfirmed
+//   - beaFxPostingEngine  → FxTradeExecuted / FxPositionRevalued / TradeMatured (FX-spot)
 //
 // Usage:
 //   bun run gl:backfill-postings

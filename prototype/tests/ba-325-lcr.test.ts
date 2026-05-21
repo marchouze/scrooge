@@ -5,7 +5,7 @@
 // classification map + per-entity isolation + cap arithmetic.
 //
 // P1-fix (2026-05-12): cash flows now folded from FxSettlementInstructed /
-// FxSettlementConfirmed events in the event store (Principle 1 compliant).
+// TradeMatured (FX-spot) events in the event store (Principle 1 compliant).
 // Tests updated to pass an event store + period window. Previously the tests
 // passed account-level outflow/inflow rows; those are now replaced by
 // settlement events.
@@ -38,7 +38,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
-import { makeFxSettlementConfirmed } from "../platform/event-store/event-types/fx-accounting";
+import { makeTradeMatured } from "../platform/event-store/event-types/trade-matured";
 import { EventStore } from "../platform/event-store/store";
 import { makeEquitySettlementInstructed } from "../platform/markets/cdm/equity";
 import { makeFxSettlementInstructed } from "../platform/markets/cdm/fx";
@@ -746,27 +746,30 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
     expect(r.lcrPercent).toBe("infinity");
   });
 
-  it("FxSettlementConfirmed events also contribute to cash flows", () => {
-    // Append a FxSettlementConfirmed with a ZAR inflow and a USD outflow.
+  it("TradeMatured (FX-spot) events also contribute to cash flows", () => {
+    // Append a TradeMatured (FX-spot variant) with a ZAR inflow and a USD outflow.
     // Only ZAR (functional ccy) leg should count; USD should be a placeholder.
     const store = makeStore();
     store.append(
-      makeFxSettlementConfirmed({
+      makeTradeMatured({
         asOf: "2026-05-10T12:00:00.000Z",
         entity: ENTITY_BANK,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
           tradeId: "TRADE-CONF-001",
-          currencyPair: "ZAR/USD",
-          legKind: "near",
-          // Bank receives ZAR 50,000 (+), pays USD 2,778 (−).
-          settledBaseCurrencyMinor: 50_000, // ZAR inflow
-          settledQuoteCurrencyMinor: -2_778, // USD outflow (non-functional)
-          settledAt: "2026-05-10T12:00:00.000Z",
-          nostroAccountBase: "ACC-1100-001",
-          nostroAccountQuote: "ACC-1200-001",
-          realisedPnlZarMinor: 0,
+          maturedAt: "2026-05-10T12:00:00.000Z",
+          product: {
+            productKind: "FX-spot",
+            currencyPair: "ZAR/USD",
+            legKind: "near",
+            // Bank receives ZAR 50,000 (+), pays USD 2,778 (−).
+            settledBaseCurrencyMinor: 50_000, // ZAR inflow
+            settledQuoteCurrencyMinor: -2_778, // USD outflow (non-functional)
+            nostroAccountBase: "ACC-1100-001",
+            nostroAccountQuote: "ACC-1200-001",
+            realisedPnlZarMinor: 0,
+          },
         },
       }),
     );

@@ -13,12 +13,12 @@
 //                               posting events land here so the FX domain
 //                               is self-contained.)
 //
-// `FxSettlementConfirmed` was the previous FX-specific terminal lifecycle
-// event for FX-spot trades. It was retired 2026-05-21 in favour of the
-// generic `TradeMatured` event (see event-types/trade-matured.ts). The
-// FX-spot variant of `TradeMatured` carries the same data shape; the
-// rename generalises the event so bond/IRD/equity terminal events can use
-// the same envelope as their lifecycles migrate.
+// The previous FX-specific terminal lifecycle event for FX-spot trades was
+// retired 2026-05-21 in favour of the generic `TradeMatured` event (see
+// event-types/trade-matured.ts). The FX-spot variant of `TradeMatured`
+// carries the same data shape; the rename generalises the event so
+// bond/IRD/equity terminal events can use the same envelope as their
+// lifecycles migrate.
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)

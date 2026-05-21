@@ -140,7 +140,7 @@ function buildCloseSet(): Map<string, string> {
       if (!prior || day < prior) closedOn.set(p.tradeId, day);
     }
   }
-  for (const e of eventStore.replay({ type: "FxSettlementConfirmed" })) {
+  for (const e of eventStore.replay({ type: "TradeMatured" })) {
     const p = e.payload as { tradeId?: string };
     if (p.tradeId) {
       const day = dayOf(e.as_of);

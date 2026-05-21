@@ -21,8 +21,10 @@
 //                            postingType "fx-lifecycle-close"
 //                            (zero realised P&L → no posting; surfaced as
 //                            skipped)
-//   FxSettlementConfirmed  → PR-FX-003 (fxSettlementJournals) → DEPRECATED;
-//                            kept for back-compat with legacy emitters →
+//   TradeMatured           → PR-FX-003 (fxSettlementJournals) → legacy
+//                            aggregate path consumed only for the FX-spot
+//                            variant; retained for the SettlementReversed
+//                            mirror and rare test-only emitters →
 //                            postingType "settlement"
 //   FxSettlementFailed     → PR-FX-005 (fxSettlementFailedJournals) →
 //                            postingType "settlement"
@@ -86,10 +88,11 @@
 
 import type {
   FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
   FxSettlementFailedPayload,
 } from "../event-store/event-types/fx-accounting";
 import { makeSubLedgerPostingEmitted } from "../event-store/event-types/fx-accounting";
+import type { TradeMaturedPayload } from "../event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../event-store/event-types/trade-matured";
 import type { Event } from "../event-store/types";
 import type {
   FxTradeExecutedPayload,
@@ -360,12 +363,18 @@ function dispatchEvent(event: Event, allEvents: ReadonlyArray<Event>): DispatchR
       };
     }
 
-    case "FxSettlementConfirmed": {
-      // Deprecated path — PR-FX-003. Kept for back-compat with rare
-      // legacy emitters (test-only). New authoring uses PR-FX-PRIN +
-      // PR-FX-LIFECYCLE-CLOSE.
-      const payload = event.payload as FxSettlementConfirmedPayload;
-      const legs = fxSettlementJournals(payload);
+    case "TradeMatured": {
+      // Legacy aggregate path — PR-FX-003. Routes only the FX-spot variant
+      // of `TradeMatured`; bond/IRD/equity variants do not consume this
+      // posting rule. Retained for the SettlementReversed mirror and rare
+      // test-only emitters. New production code uses PR-FX-PRIN +
+      // PR-FX-LIFECYCLE-CLOSE for FX-spot.
+      const payload = event.payload as TradeMaturedPayload;
+      if (!isFxSpotMaturity(payload)) {
+        // Non-FX variants of TradeMatured aren't handled by this engine yet.
+        return { kind: "skip", reason: "unhandled-event-type" };
+      }
+      const legs = fxSettlementJournals(payload.product);
       if (legs.length === 0) {
         return { kind: "skip", reason: "zero-realised-pnl" };
       }
@@ -449,7 +458,7 @@ const HANDLED_EVENT_TYPES: ReadonlySet<string> = new Set([
   "FxPositionRevalued",
   "PrincipalPayment",
   "SettlementConfirmed",
-  "FxSettlementConfirmed",
+  "TradeMatured",
   "FxSettlementFailed",
   "FxSettlementInstructed",
   "TradeReportSubmitted",

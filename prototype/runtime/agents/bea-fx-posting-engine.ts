@@ -7,7 +7,7 @@
 // Subscriptions:
 //   - FxTradeExecuted       → PR-FX-001: fxTradeBookingJournals()
 //   - FxPositionRevalued    → PR-FX-002: fxRevaluationJournals()
-//   - FxSettlementConfirmed → PR-FX-003: fxSettlementJournals()
+//   - TradeMatured (FX-spot variant) → PR-FX-003: fxSettlementJournals()
 //
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
@@ -31,10 +31,11 @@ import { newEventId } from "../../platform/core/types";
 import { makeSubLedgerPostingEmitted } from "../../platform/event-store/event-types/fx-accounting";
 import type {
   FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
   FxTradeCancelledPayload,
   SubLedgerLeg,
 } from "../../platform/event-store/event-types/fx-accounting";
+import type { TradeMaturedPayload } from "../../platform/event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../../platform/event-store/event-types/trade-matured";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -55,7 +56,7 @@ const FX_POSTING_CITATIONS: readonly string[] = [
 const SUBSCRIBED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
-  "FxSettlementConfirmed",
+  "TradeMatured",
   "FxTradeCancelled",
 ]);
 
@@ -90,7 +91,7 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
       : [
           ...eventStore.replay({ type: "FxTradeExecuted" }),
           ...eventStore.replay({ type: "FxPositionRevalued" }),
-          ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+          ...eventStore.replay({ type: "TradeMatured" }),
           ...eventStore.replay({ type: "FxTradeCancelled" }),
         ];
 
@@ -194,21 +195,28 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           postedKeys.add(`${e.event_id}:revaluation`);
           eventsEmitted += 1;
         }
-      } else if (e.type === "FxSettlementConfirmed") {
-        // PR-FX-003: T+2 settlement — derecognises receivable/payable,
-        // recognises nostro cash legs, crystallises realised P&L.
+      } else if (e.type === "TradeMatured") {
+        // PR-FX-003 (FX-spot variant only): T+2 settlement — derecognises
+        // receivable/payable, recognises nostro cash legs, crystallises
+        // realised P&L. Non-FX variants of TradeMatured are skipped (their
+        // posting rules will land in future slices).
         if (postedKeys.has(`${e.event_id}:settlement`)) {
           skipped += 1;
           continue;
         }
 
-        const payload = e.payload as FxSettlementConfirmedPayload;
-        const legs = fxSettlementJournals(payload);
+        const payload = e.payload as TradeMaturedPayload;
+        if (!isFxSpotMaturity(payload)) {
+          // Non-FX maturity variant — outside this engine's FX-spot scope.
+          skipped += 1;
+          continue;
+        }
+        const legs = fxSettlementJournals(payload.product);
 
         if (legs.length === 0) {
           logger.warn(
             { eventId: e.event_id, tradeId: payload.tradeId },
-            "bea:fx-posting-engine — FxSettlementConfirmed produced zero legs; skipping",
+            "bea:fx-posting-engine — TradeMatured produced zero legs; skipping",
           );
           skipped += 1;
           continue;

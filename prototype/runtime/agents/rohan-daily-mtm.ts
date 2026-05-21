@@ -16,7 +16,7 @@
 //      across worktrees via $HOME/.local/share/bank/event.db) and a
 //      MarketDataStore from `BANK_MARKET_DATA_DB`.
 //   2. Resolves open FX positions (FxTradeExecuted minus FxTradeCancelled
-//      minus SettlementConfirmed / FxSettlementConfirmed).
+//      minus SettlementConfirmed / TradeMatured (FX-spot)).
 //   3. For each open position:
 //      a. Queries MarketDataStore for the latest production `fx-quote`.
 //      b. If fresh tick (asOf within the current business day): emits
@@ -138,15 +138,15 @@ function collectOpenFxPositions(): OpenPositionsResult {
     // FxTradeCancelled not yet registered in some environments — continue.
   }
 
-  // Settled trade ids (CDM lifecycle-close + deprecated accounting event).
+  // Settled trade ids (CDM lifecycle-close + generic TradeMatured FX-spot).
   const settledIds = new Set<string>();
   for (const e of eventStore.replay({ type: "SettlementConfirmed" })) {
     const p = e.payload as unknown as SettlementConfirmedPayload;
     if (p.tradeId) settledIds.add(p.tradeId);
   }
-  for (const e of eventStore.replay({ type: "FxSettlementConfirmed" })) {
-    const p = e.payload as { tradeId?: string };
-    if (p.tradeId) settledIds.add(p.tradeId);
+  for (const e of eventStore.replay({ type: "TradeMatured" })) {
+    const p = e.payload as { tradeId?: string; product?: { productKind?: string } };
+    if (p.tradeId && p.product?.productKind === "FX-spot") settledIds.add(p.tradeId);
   }
 
   const trades = new Map<string, FxTradeExecutedPayload>();
@@ -646,7 +646,7 @@ function buildReportMarkdown(args: {
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    `Open FX positions resolved by replaying \`FxTradeExecuted\` minus \`FxTradeCancelled\` minus \`SettlementConfirmed\`/\`FxSettlementConfirmed\` from the composition-root event store. Marks elected via \`MarketDataStore.query({provenance:"production"})\` (latest tick per pair); stale-mark fallback reads the most-recent prior \`FxPositionRevalued\` for the position. \`OfficialMarkAdopted\` emitted via \`adoptFxMark\` per D-EVENT-VIEW-BOUNDARY-WIRE Slice B.1. Recon gate: \`recon:mtm-reversal-paired-with-reval\` asserts per-position-day reversal/revaluation pairing.`,
+    `Open FX positions resolved by replaying \`FxTradeExecuted\` minus \`FxTradeCancelled\` minus \`SettlementConfirmed\`/\`TradeMatured (FX-spot)\` from the composition-root event store. Marks elected via \`MarketDataStore.query({provenance:"production"})\` (latest tick per pair); stale-mark fallback reads the most-recent prior \`FxPositionRevalued\` for the position. \`OfficialMarkAdopted\` emitted via \`adoptFxMark\` per D-EVENT-VIEW-BOUNDARY-WIRE Slice B.1. Recon gate: \`recon:mtm-reversal-paired-with-reval\` asserts per-position-day reversal/revaluation pairing.`,
   );
   lines.push("");
   return lines.join("\n");

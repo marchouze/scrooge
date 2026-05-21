@@ -40,10 +40,12 @@
 //                         RecordFiled, CeoDecisionRmsExtended
 //   - accounting.ts     — BankAccount*, AccountingPeriod*, TrialBalanceSnapshotted
 //   - fx-accounting.ts  — FxPositionRevalued, SubLedgerPostingEmitted
-//                         (FX accounting lifecycle; FxSettlementConfirmed
-//                         retired 2026-05-21 in favour of TradeMatured)
+//                         (FX accounting lifecycle; the legacy FX-specific
+//                         settlement-confirmed event was retired 2026-05-21
+//                         in favour of the generic TradeMatured event)
 //   - trade-matured.ts  — TradeMatured (generic terminal lifecycle event;
-//                         FX-spot variant replaces FxSettlementConfirmed)
+//                         FX-spot variant is the first product to migrate
+//                         off its per-asset terminal event)
 //
 // Party domain lives in prototype/domains/party/ (its own domain package);
 // re-exported directly here as before.
@@ -64,7 +66,8 @@ export * from "./accounting";
 // Slice 2 — institutional counterparty onboarding lifecycle (7 new phase events).
 export * from "./customer";
 export * from "./fx-accounting";
-// Generic terminal lifecycle event — replaces FxSettlementConfirmed (2026-05-21).
+// Generic terminal lifecycle event — replaces the legacy FX-specific
+// settlement-confirmed event (2026-05-21).
 // FX-spot is the first product variant; bond/IRD/equity follow as their
 // lifecycles migrate. Authority: D-MARKETS-SCHEMA-FOUNDATION.
 export * from "./trade-matured";

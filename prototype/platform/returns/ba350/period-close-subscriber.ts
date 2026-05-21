@@ -11,7 +11,7 @@
 //
 // The subscriber wires the BA 350 generator to the period-close event stream.
 // When `AccountingPeriodClosed` fires for `LE-ZA-HOZ-BANK`, the subscriber:
-//   1. Folds `FxTradeExecuted` and `FxSettlementConfirmed` events from the
+//   1. Folds `FxTradeExecuted` and `TradeMatured (FX-spot)` events from the
 //      event store for the period window to compute open FX positions
 //      (P1-compliant path; see `ba-350-events-adapter.ts`).
 //   2. Uses caller-supplied IR general / IR specific / equity / commodity
@@ -23,7 +23,7 @@
 // ## Principle 1 compliance
 //
 // FX positions are folded directly from `FxTradeExecuted` events (minus
-// `FxSettlementConfirmed` settled trades) — not from the trial balance.
+// `TradeMatured (FX-spot)` settled trades) — not from the trial balance.
 // This is the Principle 1 compliant architecture per
 // `Principles/1-events-are-truth.md` and per the P1 fix (C-2) filed at
 // `reporting/ba-350-events-adapter.ts`.
@@ -76,7 +76,7 @@ export interface Ba350PeriodCloseSubscriberInput {
   readonly entity: string;
   /**
    * Event store — provides access to `FxTradeExecuted` and
-   * `FxSettlementConfirmed` events for the P1-compliant FX position fold.
+   * `TradeMatured (FX-spot)` events for the P1-compliant FX position fold.
    */
   readonly eventStore: EventStore;
   /** Actor running the subscriber (typically the Bea agent). */

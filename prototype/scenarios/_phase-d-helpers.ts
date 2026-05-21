@@ -125,7 +125,7 @@ export interface PhaseDInputs {
   readonly trialBalanceSnapshotEventId?: string;
   /**
    * Event store — required for all P1-compliant BA return paths (C-1/C-2/C-3):
-   * BA 325 folds FxSettlementInstructed/FxSettlementConfirmed; BA 700 folds
+   * BA 325 folds FxSettlementInstructed/TradeMatured (FX-spot); BA 700 folds
    * SubLedgerPostingEmitted + CapitalContributionRecorded; BA 350 folds
    * FxTradeExecuted. Authority: Principles/1-events-are-truth.md.
    */

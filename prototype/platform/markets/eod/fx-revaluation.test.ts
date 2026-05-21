@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { makeFxSettlementConfirmed } from "../../event-store/event-types/fx-accounting";
+import { makeTradeMatured } from "../../event-store/event-types/trade-matured";
 import { EventStore } from "../../event-store/store";
 import { makeFxTradeExecuted } from "../cdm/fx";
 import { type FxRateSource, runEodFxRevaluation } from "./fx-revaluation";
@@ -93,24 +93,27 @@ function appendFxTrade(store: EventStore, tradeId: string, bookRateAmount = 18.5
   );
 }
 
-/** Append one FxSettlementConfirmed for the given tradeId. */
+/** Append one TradeMatured (FX-spot variant) for the given tradeId. */
 function appendSettlementConfirmed(store: EventStore, tradeId: string): void {
   store.append(
-    makeFxSettlementConfirmed({
+    makeTradeMatured({
       asOf: AS_OF,
       entity: ENTITY,
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
         tradeId,
-        currencyPair: "USD/ZAR",
-        legKind: "near",
-        settledBaseCurrencyMinor: 1_000_000_00,
-        settledQuoteCurrencyMinor: 54054,
-        settledAt: new Date().toISOString(),
-        nostroAccountBase: "ACC-1001-001",
-        nostroAccountQuote: "ACC-1001-002",
-        realisedPnlZarMinor: 0,
+        maturedAt: new Date().toISOString(),
+        product: {
+          productKind: "FX-spot",
+          currencyPair: "USD/ZAR",
+          legKind: "near",
+          settledBaseCurrencyMinor: 1_000_000_00,
+          settledQuoteCurrencyMinor: 54054,
+          nostroAccountBase: "ACC-1001-001",
+          nostroAccountQuote: "ACC-1001-002",
+          realisedPnlZarMinor: 0,
+        },
       },
     }),
   );
@@ -233,7 +236,7 @@ describe("TC-4: missing rate — throws", () => {
 // ---------------------------------------------------------------------------
 
 describe("TC-5: settled position excluded from revaluation", () => {
-  it("skips positions with a matching FxSettlementConfirmed", () => {
+  it("skips positions with a matching TradeMatured (FX-spot)", () => {
     const store = makeStore();
     appendFxTrade(store, "TRD-SETTLED", 18.5);
     appendSettlementConfirmed(store, "TRD-SETTLED");

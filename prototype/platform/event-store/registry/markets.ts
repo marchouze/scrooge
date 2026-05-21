@@ -18,7 +18,8 @@
 //   - Customer lifecycle / onboarding Slice 2: CounterpartyFaisClassified,
 //     BeneficialOwnerResolved, SanctionsClearancePassed, FatcaCrsClassified,
 //     PopiaConsentRecorded, CreditAssessmentCompleted, AccountsSetupCompleted
-//   - FX accounting: FxPositionRevalued, FxSettlementConfirmed
+//   - FX accounting: FxPositionRevalued (FX-spot maturity now flows
+//     through the generic TradeMatured event)
 
 import { z } from "zod";
 

@@ -161,7 +161,7 @@ export function classifyFxSubLedger(rows: SubLedgerRow[]): IfrsJournalEntry[] {
       }
 
       // -------------------------------------------------------------------
-      // Settlement — FxSettlementConfirmed (derecognition)
+      // Settlement — TradeMatured (FX-spot variant) (derecognition)
       // IFRS 9 §3.2.3: derecognise when contractual rights to cash flows
       // expire or are transferred.
       //

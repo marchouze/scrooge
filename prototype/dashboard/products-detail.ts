@@ -118,7 +118,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["BCBS-d295", "BCBS-d335", "ORG-PR-06", "ORG-PR-07", "ORG-PR-08"],
     surfacesClientOnboarding: false,
     policyHints: ["liquidity-risk-management-policy-v1.md", "irrbb-policy-v1.md"],
-    triggeredBy: ["FxTradeExecuted", "FxSettlementConfirmed", "FundingDrawn"],
+    triggeredBy: ["FxTradeExecuted", "TradeMatured", "FundingDrawn"],
     emits: [
       "LCRComputed",
       "NSFRComputed",
@@ -164,7 +164,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     triggeredBy: [
       "FxTradeExecuted",
       "FxSettlementInstructed",
-      "FxSettlementConfirmed",
+      "TradeMatured",
       "FxSettlementFailed",
     ],
     emits: [
@@ -194,7 +194,6 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "FxTradeExecuted",
       "FxPositionRevalued",
       "PrincipalPayment",
-      "FxSettlementConfirmed",
       "TradeReportSubmitted",
       "TradeMatured",
     ],
@@ -423,10 +422,10 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
     module: "platform/accounting/posting-rules/fx-spot.ts",
     legs: "Dr/Cr Unrealised FX P&L (FVTPL) · Cr/Dr FX Trading Receivable revaluation. Daily mark.",
   },
-  FxSettlementConfirmed: {
+  TradeMatured: {
     ruleId: "PR-FX-003",
     module: "platform/accounting/posting-rules/fx-spot.ts",
-    legs: "DEPRECATED 2026-05-20 — production lifecycle never emitted this event. Superseded by PR-FX-PRIN (per-leg cash) + PR-FX-LIFECYCLE-CLOSE (realised P&L). Kept for back-compat with legacy test fixtures.",
+    legs: "Generic terminal lifecycle event (FX-spot variant; replaces the legacy FX-specific settlement-confirmed event retired 2026-05-21). Production lifecycle uses PR-FX-PRIN (per-leg cash) + PR-FX-LIFECYCLE-CLOSE (realised P&L); PR-FX-003 is the legacy aggregate path retained for the SettlementReversed mirror and rare test-only emitters.",
   },
   FxSettlementInstructed: {
     ruleId: "PR-FX-INSTRUCT",

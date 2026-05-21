@@ -11,7 +11,7 @@
 // Previously this module accepted a `TrialBalance` as the sole input and
 // derived both HQLA stock *and* cash flows from GL account balances. That
 // is a P1 violation: cash-flow metrics must be folded from the primary
-// settlement events (`FxSettlementInstructed`, `FxSettlementConfirmed`),
+// settlement events (`FxSettlementInstructed`, `TradeMatured (FX-spot)`),
 // not from the posting-engine's GL output. The GL trial balance is the
 // *right* source for HQLA stock (account balances are balance-sheet
 // positions); it is the *wrong* source for the LCR denominator because:
@@ -24,12 +24,12 @@
 // Fixed architecture (per `Principles/1-events-are-truth.md` table entry
 // updated 2026-05-12):
 //
-//   Cash-flow source  →  FxSettlementInstructed / FxSettlementConfirmed
+//   Cash-flow source  →  FxSettlementInstructed / TradeMatured (FX-spot)
 //   HQLA stock source →  TrialBalance (account balances; still correct —
 //                         balances ARE queries over events via period-close)
 //
 // The generator now requires:
-//   eventStore  — replayed for FxSettlementInstructed + FxSettlementConfirmed
+//   eventStore  — replayed for FxSettlementInstructed + TradeMatured (FX-spot)
 //   periodStart / periodEnd — event window (as_of bounds)
 //   trialBalance — kept for HQLA stock derivation (account balances)
 //   classifications — restricted to HQLA-only entries; outflow/inflow
@@ -43,7 +43,7 @@
 // ## Pipeline (per pack §3.1 — updated):
 //
 //   EVENT LOG          (Principle 1 — sole truth)
-//      → FxSettlementInstructed / FxSettlementConfirmed   ← cash-flow fold
+//      → FxSettlementInstructed / TradeMatured (FX-spot)   ← cash-flow fold
 //      → PROJECTION RUNTIME  — period-close → trial balance ← HQLA stock
 //      → BA 325 PROJECTION   — this module — pure function
 //      → RENDER + STORE      — `ba-325-render.ts` + RMS doc store
@@ -83,7 +83,7 @@
 //     currency netCash to the functional currency using the rate encoded
 //     in the settlement event's `netCash`. For FxSettlementInstructed
 //     the netCash is the settlement-currency amount (ZAR for ZAR/USD =
-//     already functional); for FxSettlementConfirmed the two legs are
+//     already functional); for TradeMatured (FX-spot) the two legs are
 //     reported in their respective currencies. Slice-6+ will add a
 //     FX-rate enrichment step; the build-phase generator uses the as-
 //     booked amounts and flags non-functional-currency amounts as
@@ -99,11 +99,12 @@
 
 import { newEventId } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
-import type { FxSettlementConfirmedPayload } from "../event-store/event-types/fx-accounting";
 import {
   makeHQLACompositionDrift,
   makeLCRRatioProjection,
 } from "../event-store/event-types/risk-treasury-extended";
+import type { TradeMaturedPayload } from "../event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../event-store/event-types/trade-matured";
 import type { EventStore } from "../event-store/store";
 import type { EquitySettlementInstructedPayload } from "../markets/cdm/equity";
 import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
@@ -132,7 +133,7 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
  *
  * Post P1-fix: `outflowRunOffRate` and `inflowRate` entries are
  * **deprecated** — cash flows now come from `FxSettlementInstructed` /
- * `FxSettlementConfirmed` events folded directly from the event store.
+ * `TradeMatured (FX-spot)` events folded directly from the event store.
  * Entries with only `outflowRunOffRate` or `inflowRate` set are silently
  * ignored by the generator (a deprecation warning is added to
  * `Ba325Output.placeholders`). Only `hqlaLevel` entries are processed.
@@ -163,7 +164,7 @@ export interface AccountLiquidityClassification {
 
 /**
  * The complete generator input. Cash flows are folded from the event store
- * directly (`FxSettlementInstructed` and `FxSettlementConfirmed` events
+ * directly (`FxSettlementInstructed` and `TradeMatured (FX-spot)` events
  * within the period window). The trial balance is used only for HQLA stock
  * classification (account balances are the correct source for stock metrics).
  *
@@ -184,7 +185,7 @@ export interface Ba325GeneratorInput {
   readonly functionalCurrency: string;
   /**
    * Event store — replayed to fold `FxSettlementInstructed` and
-   * `FxSettlementConfirmed` events for the cash-flow denominator section.
+   * `TradeMatured (FX-spot)` events for the cash-flow denominator section.
    * Required for P1-compliant operation.
    *
    * Citation: Principles/1-events-are-truth.md; D-MARKETS-SCHEMA-FOUNDATION.
@@ -270,7 +271,7 @@ export interface Ba325HqlaSection {
 
 /**
  * The cash-flow section. Outflows + inflows folded directly from
- * `FxSettlementInstructed` and `FxSettlementConfirmed` events within
+ * `FxSettlementInstructed` and `TradeMatured (FX-spot)` events within
  * the period window (Principle 1 compliant; not routed through GL).
  *
  * Citation: Principles/1-events-are-truth.md (updated 2026-05-12).
@@ -480,7 +481,7 @@ interface SettlementCashFlow {
   readonly eventId: string;
   readonly eventType:
     | "FxSettlementInstructed"
-    | "FxSettlementConfirmed"
+    | "TradeMatured"
     | "EquitySettlementInstructed";
   readonly tradeId: string;
   /** Amount in the settlement currency (minor units). Positive = inflow; negative = outflow. */
@@ -490,7 +491,7 @@ interface SettlementCashFlow {
 }
 
 /**
- * Fold `FxSettlementInstructed` and `FxSettlementConfirmed` events from the
+ * Fold `FxSettlementInstructed` and `TradeMatured (FX-spot)` events from the
  * event store for the given entity + period window.
  *
  * **Principle 1 citation**: cash-flow inputs for the LCR denominator are
@@ -499,7 +500,7 @@ interface SettlementCashFlow {
  *
  * Per `Principles/1-events-are-truth.md` (updated 2026-05-12):
  * > BA-325 LCR (liquidity coverage) | cash-flow events
- * > (`FxSettlementInstructed`, `FxSettlementConfirmed`) | trial balance
+ * > (`FxSettlementInstructed`, `TradeMatured (FX-spot)`) | trial balance
  *
  * Event-fold semantics:
  * - `FxSettlementInstructed.netCash` represents the expected cash leg of
@@ -507,7 +508,7 @@ interface SettlementCashFlow {
  *   30-day stress window are the primary contractual cash-flow input.
  *   `netCash.amountMinor > 0` → bank receives (inflow);
  *   `netCash.amountMinor < 0` → bank pays (outflow).
- * - `FxSettlementConfirmed` carries the settled base and quote legs.
+ * - `TradeMatured (FX-spot)` carries the settled base and quote legs.
  *   Each leg is reported in its own currency. Both legs are included;
  *   foreign-currency amounts are flagged as placeholders pending a
  *   rate-enrichment step (Slice-6+).
@@ -529,13 +530,14 @@ function foldSettlementCashFlows(args: {
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
   const provenanceFilter = defaultProvenanceFilter();
 
-  // Fold FxSettlementInstructed, FxSettlementConfirmed, and EquitySettlementInstructed events.
+  // Fold FxSettlementInstructed, TradeMatured (FX-spot variant), and
+  // EquitySettlementInstructed events.
   for (const event of eventStore.replay({ entity, asOf: periodEnd })) {
     if (!eventMatchesProvenanceFilter(event, provenanceFilter)) continue;
     if (event.as_of < periodStart) continue;
     if (
       event.type !== "FxSettlementInstructed" &&
-      event.type !== "FxSettlementConfirmed" &&
+      event.type !== "TradeMatured" &&
       event.type !== "EquitySettlementInstructed"
     )
       continue;
@@ -567,27 +569,29 @@ function foldSettlementCashFlows(args: {
         currency: payload.netCash.currency,
         asOf: event.as_of,
       });
-    } else if (event.type === "FxSettlementConfirmed") {
-      const payload = event.payload as FxSettlementConfirmedPayload;
+    } else if (event.type === "TradeMatured") {
+      const payload = event.payload as TradeMaturedPayload;
+      if (!isFxSpotMaturity(payload)) continue;
+      const product = payload.product;
       // Base leg.
-      if (payload.settledBaseCurrencyMinor !== 0) {
+      if (product.settledBaseCurrencyMinor !== 0) {
         flows.push({
           eventId: event.event_id,
-          eventType: "FxSettlementConfirmed",
-          tradeId: normaliseTradeId(payload.tradeId),
-          amountMinor: payload.settledBaseCurrencyMinor,
-          currency: payload.currencyPair.split("/")[0] ?? "ZZZ",
+          eventType: "TradeMatured",
+          tradeId: payload.tradeId,
+          amountMinor: product.settledBaseCurrencyMinor,
+          currency: product.currencyPair.split("/")[0] ?? "ZZZ",
           asOf: event.as_of,
         });
       }
       // Quote leg.
-      if (payload.settledQuoteCurrencyMinor !== 0) {
+      if (product.settledQuoteCurrencyMinor !== 0) {
         flows.push({
           eventId: event.event_id,
-          eventType: "FxSettlementConfirmed",
-          tradeId: normaliseTradeId(payload.tradeId),
-          amountMinor: payload.settledQuoteCurrencyMinor,
-          currency: payload.currencyPair.split("/")[1] ?? "ZZZ",
+          eventType: "TradeMatured",
+          tradeId: payload.tradeId,
+          amountMinor: product.settledQuoteCurrencyMinor,
+          currency: product.currencyPair.split("/")[1] ?? "ZZZ",
           asOf: event.as_of,
         });
       }
@@ -606,7 +610,7 @@ function foldSettlementCashFlows(args: {
  *
  * **Principle 1 compliant** (post P1-fix 2026-05-12):
  * - Cash flows (LCR denominator) are folded directly from
- *   `FxSettlementInstructed` and `FxSettlementConfirmed` events in the
+ *   `FxSettlementInstructed` and `TradeMatured (FX-spot)` events in the
  *   event store. This is the authoritative source per
  *   `Principles/1-events-are-truth.md`.
  * - HQLA stock (LCR numerator) is derived from the trial-balance rows,
@@ -656,7 +660,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   if (hasDeprecatedEntries) {
     placeholders.push(
       "[P1-fix deprecation: outflowRunOffRate / inflowRate entries in classifications are ignored; " +
-        "cash flows are now derived from FxSettlementInstructed / FxSettlementConfirmed events " +
+        "cash flows are now derived from FxSettlementInstructed / TradeMatured (FX-spot) events " +
         "per Principles/1-events-are-truth.md (updated 2026-05-12)]",
     );
   }

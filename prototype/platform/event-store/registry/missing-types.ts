@@ -231,8 +231,9 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
   },
   {
-    // Generic terminal lifecycle event — replaces the retired
-    // `FxSettlementConfirmed` (2026-05-21). FX-spot is the first product
+    // Generic terminal lifecycle event — replaces the retired legacy
+    // FX-specific settlement-confirmed event (2026-05-21). FX-spot is the
+    // first product
     // variant; bond/IRD/equity maturity variants land as their lifecycles
     // migrate. Payload uses a discriminated union on `product.productKind`.
     // Subscribes: Bea (gl-posting-engine, fx-posting-engine), Product Control
@@ -245,7 +246,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
-      "platform/event-store/event-types/trade-matured.ts; D-MARKETS-SCHEMA-FOUNDATION; retires FxSettlementConfirmed (2026-05-21)",
+      "platform/event-store/event-types/trade-matured.ts; D-MARKETS-SCHEMA-FOUNDATION; retires the legacy FX-specific settlement-confirmed event (2026-05-21)",
   },
   {
     // Emitted by Ravi / Kai when a trade (bond, equity, IRS) is booked into the

@@ -18,7 +18,7 @@
 //       matching `sourceEventId`. The "should produce a journal" set is:
 //         - FxTradeExecuted              (PR-FX-001 booking)
 //         - FxPositionRevalued           (PR-FX-002 daily FVTPL)
-//         - FxSettlementConfirmed        (PR-FX-003 derecognition — deprecated)
+//         - TradeMatured (FX-spot)       (PR-FX-003 derecognition — legacy)
 //         - SettlementConfirmed (CDM)    (PR-FX-LIFECYCLE-CLOSE realised P&L)
 //         - PrincipalPayment             (PR-FX-PRIN per-leg cash)
 //         - FxSettlementFailed{one-leg-delivered}
@@ -81,7 +81,7 @@ const PIPELINE = "recon:gl-ledger-coverage";
 const POSTING_REQUIRED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
-  "FxSettlementConfirmed",
+  "TradeMatured",
   "SettlementConfirmed", // CDM lifecycle close
   "PrincipalPayment",
 ]);

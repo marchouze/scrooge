@@ -23,7 +23,7 @@
 //   FX trade lifecycle:
 //   - FxTradeExecuted               → PR-FX-001: fxTradeBookingJournals()
 //   - FxPositionRevalued            → PR-FX-002: fxRevaluationJournals()
-//   - FxSettlementConfirmed         → PR-FX-003: fxSettlementJournals()
+//   - TradeMatured (FX-spot variant) → PR-FX-003: fxSettlementJournals()
 //
 //   Bond lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A):
 //   - BondTradeExecuted             → PR-BOND-001: bondBankingBookJournals() / bondTradingBookJournals()
@@ -118,11 +118,12 @@ import type {
 } from "../../platform/event-store/event-types/equity-accounting";
 import {
   type FxPositionRevaluedPayload,
-  type FxSettlementConfirmedPayload,
   type FxTradeCancelledPayload,
   type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
+import type { TradeMaturedPayload } from "../../platform/event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../../platform/event-store/event-types/trade-matured";
 import type {
   IrdSwapCouponSettledPayload,
   IrdSwapPositionRevaluedPayload,
@@ -166,7 +167,7 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "SettlementInstructionReceived",
   "FxTradeExecuted",
   "FxPositionRevalued",
-  "FxSettlementConfirmed",
+  "TradeMatured",
   // FX lifecycle (CDM) — GL-significant since 2026-05-20 (D-MARKETS-SCHEMA-FOUNDATION).
   // PR-FX-PRIN posts per-leg cash at correspondent confirmation; PR-FX-LIFECYCLE-CLOSE
   // posts the realised-P&L residual at trade close.
@@ -240,7 +241,7 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "SettlementInstructionReceived" }),
     ...eventStore.replay({ type: "FxTradeExecuted" }),
     ...eventStore.replay({ type: "FxPositionRevalued" }),
-    ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+    ...eventStore.replay({ type: "TradeMatured" }),
     // FX CDM lifecycle (PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE, since 2026-05-20).
     ...eventStore.replay({ type: "PrincipalPayment" }),
     ...eventStore.replay({ type: "SettlementConfirmed" }),
@@ -386,18 +387,26 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as FxPositionRevaluedPayload;
         legs = fxRevaluationJournals(payload);
-      } else if (e.type === "FxSettlementConfirmed") {
-        // PR-FX-003 (DEPRECATED 2026-05-20): Derecognition — IFRS 9 §3.2.3.
-        // Retained for back-compat with legacy test-only emitters. Production
-        // lifecycle now routes through PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE.
+      } else if (e.type === "TradeMatured") {
+        // PR-FX-003 (FX-spot variant only): Derecognition — IFRS 9 §3.2.3.
+        // Legacy aggregate path. Production FX-spot lifecycle now routes
+        // through PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE; this arm fires for the
+        // SettlementReversed mirror and rare test-only emitters that drive
+        // a TradeMatured directly. Non-FX variants are skipped until their
+        // posting rules land.
         postingType = "settlement";
         const key: IdempotencyKey = `${e.event_id}:${postingType}`;
         if (postedKeys.has(key)) {
           skipped += 1;
           continue;
         }
-        const payload = e.payload as FxSettlementConfirmedPayload;
-        legs = fxSettlementJournals(payload);
+        const payload = e.payload as TradeMaturedPayload;
+        if (!isFxSpotMaturity(payload)) {
+          // Non-FX maturity variant — outside this engine's FX-spot scope.
+          skipped += 1;
+          continue;
+        }
+        legs = fxSettlementJournals(payload.product);
       } else if (e.type === "PrincipalPayment") {
         // PR-FX-PRIN (GL-significant since 2026-05-20): per-leg cash at
         // correspondent confirmation. IFRS 9 §3.2.3 (derecognition); IAS 21 §28.
@@ -428,19 +437,24 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           continue;
         }
         const payload = e.payload as SettlementReversedPayload;
-        // Look up the original FxSettlementConfirmed event.
-        const origEvents = [...eventStore.replay({ type: "FxSettlementConfirmed" })].filter(
+        // Look up the original TradeMatured event (FX-spot variant).
+        const origEvents = [...eventStore.replay({ type: "TradeMatured" })].filter(
           (ev) => ev.event_id === payload.originalSettlementEventId,
         );
         if (origEvents.length === 0) {
           throw new Error(
-            `SettlementReversed: original FxSettlementConfirmed event '${payload.originalSettlementEventId}' not found in store`,
+            `SettlementReversed: original TradeMatured event '${payload.originalSettlementEventId}' not found in store`,
           );
         }
-        const origPayload = origEvents[0]?.payload as FxSettlementConfirmedPayload;
+        const origPayload = origEvents[0]?.payload as TradeMaturedPayload;
+        if (!isFxSpotMaturity(origPayload)) {
+          throw new Error(
+            `SettlementReversed: original TradeMatured event '${payload.originalSettlementEventId}' is not an FX-spot maturity`,
+          );
+        }
         legs = fxSettlementReversalJournals({
           tradeId: payload.tradeId,
-          originalSettlement: origPayload,
+          originalSettlement: origPayload.product,
         });
       } else if (e.type === "TradeCancelled" || e.type === "FxTradeCancelled") {
         // PR-FX-CANCEL handles both event kinds. TradeCancelled (markets-trading-extended)

@@ -10,9 +10,9 @@
 // engines come online.
 //
 // Why generic, not per-asset:
-//   - `FxSettlementConfirmed` (retired 2026-05-21) was the FX-specific
-//     terminal event. Bond maturity, IRD termination, and equity settlement
-//     have their own per-asset events today (BondMatured, IrdSwapTerminated,
+//   - The previous FX-specific terminal event was retired 2026-05-21.
+//     Bond maturity, IRD termination, and equity settlement have their own
+//     per-asset events today (BondMatured, IrdSwapTerminated,
 //     EquitySettlementConfirmed). The aim of `TradeMatured` is to unify the
 //     "trade lifecycle terminal" pattern under one event type so:
 //       (a) Product Control's realised-P&L derivation has one place to fold;
@@ -24,8 +24,9 @@
 //   Per-asset events remain valid where they carry asset-specific richer
 //   semantics (e.g. BondMatured carries coupon redemption details that have
 //   no analogue in FX). The migration plan unfolds product-by-product:
-//   FX spot is the first migration (retiring FxSettlementConfirmed);
-//   bond/IRD/equity remain on their per-asset events until a future slice.
+//   FX spot is the first migration (retiring the legacy FX-specific
+//   settlement-confirmed event); bond/IRD/equity remain on their per-asset
+//   events until a future slice.
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
@@ -43,7 +44,8 @@ import { type Actor, type Event, eventSchema } from "../types";
 // ---------------------------------------------------------------------------
 // FX-spot variant payload
 //
-// Mirrors the data the retired `FxSettlementConfirmedPayload` carried:
+// Mirrors the data the retired legacy FX-specific settlement-confirmed
+// payload carried:
 // settled cash legs in their respective currencies, nostro account IDs,
 // the realised-P&L residual in ZAR minor units, and the correspondent
 // reference. The FX-spot lifecycle close (PrincipalPayment for the per-leg

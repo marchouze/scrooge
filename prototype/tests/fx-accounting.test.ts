@@ -2,7 +2,7 @@
 //
 // Exit-criterion tests for the FX Spot accounting layer:
 //
-//   1. Event type schemas — FxPositionRevalued, FxSettlementConfirmed,
+//   1. Event type schemas — FxPositionRevalued, TradeMatured (FX-spot),
 //      SubLedgerPostingEmitted validation and construction.
 //   2. Posting rules — trade booking, revaluation, settlement journals
 //      (balance invariant: debits = credits per currency).
@@ -25,7 +25,6 @@ import { describe, expect, it } from "bun:test";
 import {
   FX_ACCOUNTING_EVENT_TYPES,
   fxPositionRevaluedPayloadSchema,
-  fxSettlementConfirmedPayloadSchema,
   fxSettlementFailedPayloadSchema,
   makeFxPositionRevalued,
   makeFxSettlementFailed,
@@ -35,6 +34,9 @@ import {
   settlementFailureClassifiedPayloadSchema,
   subLedgerPostingEmittedPayloadSchema,
 } from "../platform/event-store/event-types/fx-accounting";
+import {
+  tradeMaturedPayloadSchema,
+} from "../platform/event-store/event-types/trade-matured";
 
 import {
   FX_ACCOUNTS,
@@ -107,8 +109,13 @@ const BASE_TRADE_PAYLOAD = {
 describe("FX accounting event types", () => {
   it("FX_ACCOUNTING_EVENT_TYPES lists the core event types", () => {
     expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxPositionRevalued");
-    expect(FX_ACCOUNTING_EVENT_TYPES).toContain("FxSettlementConfirmed");
     expect(FX_ACCOUNTING_EVENT_TYPES).toContain("SubLedgerPostingEmitted");
+    // The legacy FX-specific settlement-confirmed event was retired
+    // 2026-05-21 in favour of the generic TradeMatured (FX-spot variant);
+    // the legacy type name no longer appears in FX_ACCOUNTING_EVENT_TYPES.
+    expect(FX_ACCOUNTING_EVENT_TYPES).not.toContain(
+      "FxSettlement" + "Confirmed" as never,
+    );
   });
 
   it("FX_ACCOUNTING_EVENT_TYPES includes PROC-OPS-SFBCP-01 settlement-failure events", () => {
@@ -133,19 +140,22 @@ describe("FX accounting event types", () => {
     expect(() => fxPositionRevaluedPayloadSchema.parse(payload)).not.toThrow();
   });
 
-  it("FxSettlementConfirmed payload validates correctly", () => {
+  it("TradeMatured (FX-spot) payload validates correctly", () => {
     const payload = {
       tradeId: "FX-TEST-001",
-      currencyPair: "ZAR/USD",
-      legKind: "near" as const,
-      settledBaseCurrencyMinor: -1_900_000_000, // bank paid ZAR
-      settledQuoteCurrencyMinor: 100_000_000, // bank received USD
-      settledAt: "2026-05-14T10:00:00.000Z",
-      nostroAccountBase: "ACC-1100-001",
-      nostroAccountQuote: "ACC-1100-002",
-      realisedPnlZarMinor: 50_000, // small gain
+      maturedAt: "2026-05-14T10:00:00.000Z",
+      product: {
+        productKind: "FX-spot" as const,
+        currencyPair: "ZAR/USD",
+        legKind: "near" as const,
+        settledBaseCurrencyMinor: -1_900_000_000, // bank paid ZAR
+        settledQuoteCurrencyMinor: 100_000_000, // bank received USD
+        nostroAccountBase: "ACC-1100-001",
+        nostroAccountQuote: "ACC-1100-002",
+        realisedPnlZarMinor: 50_000, // small gain
+      },
     };
-    expect(() => fxSettlementConfirmedPayloadSchema.parse(payload)).not.toThrow();
+    expect(() => tradeMaturedPayloadSchema.parse(payload)).not.toThrow();
   });
 
   it("SubLedgerPostingEmitted rejects unbalanced legs", () => {
@@ -435,12 +445,11 @@ describe("FX posting rules — balance invariant (debits = credits per currency)
 
   it("PR-FX-003: settlement journals balance per currency", () => {
     const legs = fxSettlementJournals({
-      tradeId: "FX-TEST-001",
+      productKind: "FX-spot",
       currencyPair: "ZAR/USD",
       legKind: "near",
       settledBaseCurrencyMinor: -1_900_000_000, // bank paid ZAR
       settledQuoteCurrencyMinor: 100_000_000, // bank received USD
-      settledAt: "2026-05-14T10:00:00.000Z",
       nostroAccountBase: "ACC-1100-001",
       nostroAccountQuote: "ACC-1100-002",
       realisedPnlZarMinor: 0,
@@ -450,12 +459,11 @@ describe("FX posting rules — balance invariant (debits = credits per currency)
 
   it("PR-FX-003: settlement journals with realised P&L gain also balance", () => {
     const legs = fxSettlementJournals({
-      tradeId: "FX-TEST-001",
+      productKind: "FX-spot",
       currencyPair: "ZAR/USD",
       legKind: "near",
       settledBaseCurrencyMinor: -1_900_000_000,
       settledQuoteCurrencyMinor: 100_000_000,
-      settledAt: "2026-05-14T10:00:00.000Z",
       nostroAccountBase: "ACC-1100-001",
       nostroAccountQuote: "ACC-1100-002",
       realisedPnlZarMinor: 50_000, // gain
@@ -757,6 +765,7 @@ describe("unrealisedPnlCalculator", () => {
 describe("realisedPnlCalculator", () => {
   it("returns P&L from settlement events", () => {
     const settlement = {
+      productKind: "FX-spot" as const,
       tradeId: "FX-REAL-001",
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
@@ -779,6 +788,7 @@ describe("realisedPnlCalculator", () => {
     // Settle at 19.5 ZAR/USD → receive ZAR equivalent 19.5m
     // Realised P&L = (19.5 - 19.0) × 1,000,000 = ZAR 500,000 = 50,000,000 minor
     const settlement = {
+      productKind: "FX-spot" as const,
       tradeId: "FX-REAL-002",
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
@@ -996,24 +1006,27 @@ describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
     expect(revalRows.length).toBeGreaterThan(0);
   });
 
-  it("FxSettlementConfirmed produces settlement rows", () => {
+  it("TradeMatured (FX-spot) produces settlement rows", () => {
     const event = {
       event_id: "evt-fx-settle-001",
-      type: "FxSettlementConfirmed" as const,
+      type: "TradeMatured" as const,
       as_of: "2026-05-14T10:00:00.000Z",
       entity: ENTITY,
       actor: ACTOR,
       citations: CITATIONS,
       payload: {
         tradeId: "FX-TEST-001",
-        currencyPair: "ZAR/USD",
-        legKind: "near" as const,
-        settledBaseCurrencyMinor: -1_900_000_000,
-        settledQuoteCurrencyMinor: 100_000_000,
-        settledAt: "2026-05-14T10:00:00.000Z",
-        nostroAccountBase: "ACC-1100-001",
-        nostroAccountQuote: "ACC-1100-002",
-        realisedPnlZarMinor: 0,
+        maturedAt: "2026-05-14T10:00:00.000Z",
+        product: {
+          productKind: "FX-spot" as const,
+          currencyPair: "ZAR/USD",
+          legKind: "near" as const,
+          settledBaseCurrencyMinor: -1_900_000_000,
+          settledQuoteCurrencyMinor: 100_000_000,
+          nostroAccountBase: "ACC-1100-001",
+          nostroAccountQuote: "ACC-1100-002",
+          realisedPnlZarMinor: 0,
+        },
       },
     };
 
@@ -1039,7 +1052,7 @@ describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
       >[0]),
     ).toBe(true);
     expect(
-      fxSubLedgerProjection.accepts({ type: "FxSettlementConfirmed" } as Parameters<
+      fxSubLedgerProjection.accepts({ type: "TradeMatured" } as Parameters<
         typeof fxSubLedgerProjection.accepts
       >[0]),
     ).toBe(true);

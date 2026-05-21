@@ -21,7 +21,7 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
     subscribesTo: [
       "FxTradeExecuted",
       "FxPositionRevalued",
-      "FxSettlementConfirmed",
+      "TradeMatured",
       "FxTradeCancelled",
     ],
   }),

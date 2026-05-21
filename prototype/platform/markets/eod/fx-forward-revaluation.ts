@@ -10,8 +10,8 @@
 // Algorithm (per brief WS-FINANCE-FX-REVAL):
 //   1. Replay FxTradeExecuted — collect positions with productTaxonomy ∈
 //      {"FX-forward", "FX-swap", "NDF"}.
-//   2. Replay FxSettlementConfirmed — build settled-trade set.
-//   3. FX-swap near-leg: if FxSettlementConfirmed for legKind="near" exists,
+//   2. Replay TradeMatured (FX-spot) — build settled-trade set.
+//   3. FX-swap near-leg: if TradeMatured (FX-spot) for legKind="near" exists,
 //      treat near leg as closed. Skip near-leg revaluation.
 //   4. Replay FxPositionRevalued for (tradeId, valuationDate) — idempotency.
 //   5. For each open, un-revalued position:
@@ -57,9 +57,10 @@ import { clock } from "../../composition";
 import { newEventId } from "../../core/types";
 import {
   type FxPositionRevaluedPayload,
-  type FxSettlementConfirmedPayload,
   makeFxPositionRevalued,
 } from "../../event-store/event-types/fx-accounting";
+import type { TradeMaturedPayload } from "../../event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../../event-store/event-types/trade-matured";
 import type { EventStore } from "../../event-store/store";
 import type { FxTradeExecutedPayload } from "../cdm/fx";
 import { baseAmountMinor } from "../cdm/fx-helpers";
@@ -236,7 +237,7 @@ function pairToString(pair: { base: string; quote: string }): string {
  * Scope:
  *   - FX-forward positions (single near leg, settlement on a future date).
  *   - FX-swap far leg (near leg treated as spot; skip if its legKind="near"
- *     FxSettlementConfirmed already exists).
+ *     TradeMatured (FX-spot) already exists).
  *   - NDF positions (cash-settlement only; pnlDelta denominated in
  *     ndfSettlementCurrency minor units).
  *
@@ -277,17 +278,19 @@ export function runEodFxForwardRevaluation(
   // -------------------------------------------------------------------------
   const settledTrades = new Set<string>(); // fully settled trades
   const settledNearLegs = new Set<string>(); // FX-swap near leg settled
-  for (const e of store.replay({ type: "FxSettlementConfirmed" })) {
-    const p = e.payload as unknown as FxSettlementConfirmedPayload;
-    if (p.legKind === "near") {
+  for (const e of store.replay({ type: "TradeMatured" })) {
+    const p = e.payload as unknown as TradeMaturedPayload;
+    if (!isFxSpotMaturity(p)) continue;
+    const product = p.product;
+    if (product.legKind === "near") {
       settledNearLegs.add(p.tradeId);
     }
     // A "far" leg settlement → full trade settled.
-    if (p.legKind === "far") {
+    if (product.legKind === "far") {
       settledTrades.add(p.tradeId);
     }
     // Non-swap (forward/NDF) has only a near leg; mark the whole trade.
-    if (p.legKind === "near") {
+    if (product.legKind === "near") {
       const trade = trades.get(p.tradeId);
       if (trade && trade.productTaxonomy !== "FX-swap") {
         settledTrades.add(p.tradeId);
@@ -352,7 +355,7 @@ export function runEodFxForwardRevaluation(
           continue;
         }
 
-        // Near leg: if FxSettlementConfirmed exists for legKind=near → settled.
+        // Near leg: if TradeMatured (FX-spot) exists for legKind=near → settled.
         // We value only the far (forward) leg.
         const nearLegSettled = settledNearLegs.has(tradeId);
         if (!nearLeg || nearLegSettled) {

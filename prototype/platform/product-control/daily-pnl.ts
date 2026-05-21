@@ -4,9 +4,9 @@
 //
 // Algorithm:
 //   1. Replay FxTradeExecuted — all trades ever booked.
-//   2. Replay FxSettlementConfirmed — settled (closed) trade IDs.
+//   2. Replay TradeMatured (FX-spot variant) — settled (closed) trade IDs.
 //   3. Replay FxPositionRevalued — latest unrealised P&L per trade.
-//   4. Replay FxSettlementConfirmed for realised P&L amounts.
+//   4. Replay TradeMatured (FX-spot variant) for realised P&L amounts.
 //   5. Aggregate by currency pair, counterparty, and book.
 //   6. Return a DailyPnLReportGeneratedPayload (caller appends the event).
 //
@@ -25,10 +25,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { newEventId, nowUtc } from "../core/types";
-import type {
-  FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
-} from "../event-store/event-types/fx-accounting";
+import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
 import { makeDailyPnLReportGenerated } from "../event-store/event-types/product-control";
 import type {
   DailyPnLReportGeneratedPayload,
@@ -36,6 +33,8 @@ import type {
   PnLByCounterparty,
   PnLByPair,
 } from "../event-store/event-types/product-control";
+import type { TradeMaturedPayload } from "../event-store/event-types/trade-matured";
+import { isFxSpotMaturity } from "../event-store/event-types/trade-matured";
 import type { EventStore } from "../event-store/store";
 import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
@@ -56,7 +55,7 @@ export interface TradeDetailRow {
   revalRate: number | null;
   /** Latest unrealised P&L delta in ZAR minor units (from FxPositionRevalued). */
   unrealisedPnlZarMinor: number;
-  /** Realised P&L in ZAR minor units (from FxSettlementConfirmed). 0 if open. */
+  /** Realised P&L in ZAR minor units (from TradeMatured FX-spot variant). 0 if open. */
   realisedPnlZarMinor: number;
   status: "live" | "settled" | "cancelled";
 }
@@ -116,19 +115,22 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   // 3. Collect settled trade IDs and realised P&L.
   //
   // Settled-trade detection folds two event types:
-  //   - Accounting `FxSettlementConfirmed` (DEPRECATED 2026-05-20; kept for
-  //     back-compat with legacy tests). Carries `realisedPnlZarMinor`.
+  //   - Generic `TradeMatured` (FX-spot variant; replaces the retired
+  //     legacy accounting settlement-confirmed event since 2026-05-21).
+  //     Carries the per-leg cash
+  //     legs + `realisedPnlZarMinor` under `payload.product`.
   //   - CDM `SettlementConfirmed` (2026-05-20 GL-significant under
   //     PR-FX-LIFECYCLE-CLOSE). Carries `realisedPnlDelta` (ZAR minor).
   // -------------------------------------------------------------------------
   const settledIds = new Set<string>();
   const realisedByTrade = new Map<string, number>(); // tradeId → ZAR minor
-  for (const e of store.replay({ type: "FxSettlementConfirmed" })) {
-    const p = e.payload as unknown as FxSettlementConfirmedPayload;
+  for (const e of store.replay({ type: "TradeMatured" })) {
+    const p = e.payload as unknown as TradeMaturedPayload;
+    if (!isFxSpotMaturity(p)) continue;
     settledIds.add(p.tradeId);
     // Accumulate — a trade may have multiple legs settled.
     const existing = realisedByTrade.get(p.tradeId) ?? 0;
-    realisedByTrade.set(p.tradeId, existing + p.realisedPnlZarMinor);
+    realisedByTrade.set(p.tradeId, existing + p.product.realisedPnlZarMinor);
   }
   for (const e of store.replay({ type: "SettlementConfirmed" })) {
     const p = e.payload as { tradeId?: unknown; realisedPnlDelta?: unknown };

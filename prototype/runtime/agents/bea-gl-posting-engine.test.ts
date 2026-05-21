@@ -18,7 +18,7 @@
 //   - FxTradeExecuted → trade-booking posting, balanced legs per currency
 //   - FxPositionRevalued (gain) → revaluation posting, Dr Receivable / Cr UnrealisedPnL
 //   - FxPositionRevalued (loss) → revaluation posting, Dr UnrealisedPnL / Cr Receivable
-//   - FxSettlementConfirmed with positive realised P&L → settlement posting, balanced
+//   - TradeMatured (FX-spot) with positive realised P&L → settlement posting, balanced
 //   - Idempotency: re-running over same FX events emits zero duplicates
 //
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
@@ -421,14 +421,13 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     expect(legs).toHaveLength(0);
   });
 
-  it("PR-FX-003: FxSettlementConfirmed with positive realised P&L → balanced legs per currency", () => {
+  it("PR-FX-003: TradeMatured (FX-spot) with positive realised P&L → balanced legs per currency", () => {
     const settlementPayload = {
-      tradeId: "FX-TRADE-001",
+      productKind: "FX-spot" as const,
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
       settledBaseCurrencyMinor: 1800000_00, // bank received ZAR 1,800,000
       settledQuoteCurrencyMinor: -100000_00, // bank paid USD 100,000
-      settledAt: "2026-05-20T10:00:00Z",
       nostroAccountBase: FX_ACCOUNTS.NOSTRO_ZAR,
       nostroAccountQuote: FX_ACCOUNTS.NOSTRO_USD,
       realisedPnlZarMinor: 5000_00, // ZAR 50 gain
@@ -517,15 +516,14 @@ describe("FX lifecycle — ConfirmationMatched: no GL entries", () => {
 // ---------------------------------------------------------------------------
 
 describe("FX lifecycle — SettlementReversed: mirrors PR-FX-003", () => {
-  it("SettlementReversed legs are exact debit/credit inverse of FxSettlementConfirmed legs", () => {
-    // Construct a minimal FxSettlementConfirmed payload.
+  it("SettlementReversed legs are exact debit/credit inverse of TradeMatured (FX-spot) legs", () => {
+    // Construct a minimal FX-spot variant TradeMatured payload.
     const settlementPayload = {
-      tradeId: "FX-REV-TEST-001",
+      productKind: "FX-spot" as const,
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
       settledBaseCurrencyMinor: 100000, // bank received 100k ZAR
       settledQuoteCurrencyMinor: -5000, // bank paid 5k USD
-      settledAt: "2026-05-20T12:00:00Z",
       nostroAccountBase: "ACC-1100-001",
       nostroAccountQuote: "ACC-1100-002",
       realisedPnlZarMinor: 500, // small residual gain
@@ -555,12 +553,11 @@ describe("FX lifecycle — SettlementReversed: mirrors PR-FX-003", () => {
 
   it("SettlementReversed: reversal legs are balanced per currency", () => {
     const settlementPayload = {
-      tradeId: "FX-REV-BALANCE-001",
+      productKind: "FX-spot" as const,
       currencyPair: "ZAR/USD",
       legKind: "near" as const,
       settledBaseCurrencyMinor: 200000,
       settledQuoteCurrencyMinor: -10000,
-      settledAt: "2026-05-20T14:00:00Z",
       nostroAccountBase: "ACC-1100-001",
       nostroAccountQuote: "ACC-1100-002",
       realisedPnlZarMinor: 0,

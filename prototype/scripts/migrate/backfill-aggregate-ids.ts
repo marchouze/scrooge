@@ -61,7 +61,7 @@ function matchRule(eventType: string): DomainRule | null {
     t === "TradeBooked" ||
     t === "TradePosted" ||
     t === "FxPositionRevalued" ||
-    t === "FxSettlementConfirmed" ||
+    t === "TradeMatured" ||
     t === "FxForwardBooked" ||
     t === "FxForwardSettled" ||
     t === "FxSwapBooked" ||

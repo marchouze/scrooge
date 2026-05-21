@@ -238,15 +238,16 @@ export function buildGlView(
   const rateMap = reportingCurrency ? buildRateMap(events) : null;
 
   // Build lookup map for source events referenced by SubLedgerPostingEmitted.
-  // Includes the new CDM lifecycle event types that PR-FX-PRIN and
-  // PR-FX-LIFECYCLE-CLOSE post against (2026-05-20 circularity fix —
-  // FxSettlementConfirmed retained for back-compat with legacy tests).
+  // Includes the CDM lifecycle event types that PR-FX-PRIN and
+  // PR-FX-LIFECYCLE-CLOSE post against (2026-05-20 circularity fix), plus
+  // the generic TradeMatured (FX-spot variant) that replaced
+  // the retired settlement-confirmed event on 2026-05-21.
   const sourceEventMap = new Map<string, Record<string, unknown>>();
   for (const e of events) {
     if (
       e.type === "FxTradeExecuted" ||
       e.type === "FxPositionRevalued" ||
-      e.type === "FxSettlementConfirmed" ||
+      e.type === "TradeMatured" ||
       e.type === "PrincipalPayment" ||
       e.type === "SettlementConfirmed"
     ) {

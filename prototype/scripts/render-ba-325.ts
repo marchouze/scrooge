@@ -25,14 +25,14 @@
 //      Defaults to a built-in build-phase fixture (see
 //      `BUILD_PHASE_DEFAULT_CLASSIFICATIONS` below).
 //   4. Generates the BA 325 projection — cash flows folded directly from
-//      FxSettlementInstructed / FxSettlementConfirmed events in the event
+//      FxSettlementInstructed / TradeMatured (FX-spot) events in the event
 //      store (Principle 1 compliant; not routed through GL).
 //   5. Renders to canonical JSON.
 //   6. Writes to stdout (default) or `--out`.
 //
 // P1 compliance note: --period-start and --period-end are required for the
 // event-fold window. The generator replays FxSettlementInstructed and
-// FxSettlementConfirmed events with as_of in [periodStart, periodEnd] to
+// TradeMatured (FX-spot) events with as_of in [periodStart, periodEnd] to
 // derive the LCR cash-flow denominator directly.
 //
 // This script is rehearsal-grade. The production form (Slice 5) emits a
@@ -175,7 +175,7 @@ function main(argv: readonly string[]): number {
     : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
   const tb = resolveTrialBalance(args);
   // P1-compliant: pass the event store + period window so cash flows are
-  // folded from FxSettlementInstructed / FxSettlementConfirmed events.
+  // folded from FxSettlementInstructed / TradeMatured (FX-spot) events.
   const output = generateBa325Lcr({
     entity: args.entity,
     asOf: args.asOf,

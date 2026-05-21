@@ -17,8 +17,8 @@
 // MT202 vs pacs.009 wire standards).
 //
 // A round-trip test asserts that two PrincipalPayment events (receive +
-// deliver) followed by one FxSettlementConfirmed produce GL legs only
-// from the FxSettlementConfirmed step — i.e. the per-leg events
+// deliver) followed by one TradeMatured (FX-spot) produce GL legs only
+// from the TradeMatured (FX-spot) step — i.e. the per-leg events
 // contribute zero, and PR-FX-003 owns the aggregate derecognition.
 //
 // Authority:
@@ -445,23 +445,22 @@ describe("FX Spot end-to-end lifecycle (PR-FX-001 + PR-FX-PRIN x2 + PR-FX-LIFECY
 // PR-FX-003 (DEPRECATED 2026-05-20) — back-compat path
 //
 // `fxSettlementJournals(...)` still produces the legacy aggregate posting
-// when called with an `FxSettlementConfirmed` payload. The accounting
-// `FxSettlementConfirmed` event-type is no longer emitted by production
+// when called with an `TradeMatured (FX-spot)` payload. The accounting
+// `TradeMatured (FX-spot)` event-type is no longer emitted by production
 // code paths; PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE replace it. This block
 // pins the legacy shape so that any remaining test-only emitters (the
 // rev-engine tests, ba-325 LCR test) keep producing the same legs they
 // did before.
 // ---------------------------------------------------------------------------
 
-describe("PR-FX-003 (DEPRECATED): fxSettlementJournals — legacy back-compat", () => {
+describe("PR-FX-003 (legacy): fxSettlementJournals — TradeMatured FX-spot variant back-compat", () => {
   it("still emits the aggregate posting when called directly (for legacy tests)", () => {
     const legs = fxSettlementJournals({
-      tradeId: "T-FX-LEGACY-001",
+      productKind: "FX-spot",
       currencyPair: "ZAR/USD",
       legKind: "near",
       settledBaseCurrencyMinor: -18_000_000,
       settledQuoteCurrencyMinor: 1_000_000,
-      settledAt: "2026-05-22T10:00:00Z",
       nostroAccountBase: FX_ACCOUNTS.NOSTRO_ZAR,
       nostroAccountQuote: FX_ACCOUNTS.NOSTRO_USD,
       realisedPnlZarMinor: 0,
