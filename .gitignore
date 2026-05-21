@@ -17,3 +17,6 @@ coverage/
 *.sqlite-journal
 *.db
 prototype/.data/
+
+# Build-phase local secrets — never commit
+.local/
