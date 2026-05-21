@@ -181,6 +181,7 @@
     "agent:owen-goal-loop": "bun run runtime/run.ts --agent Owen --trigger goal-loop",
     "agent:helena-goal-loop": "bun run runtime/run.ts --agent Helena --trigger goal-loop",
     "agent:rohan-goal-loop": "bun run runtime/run.ts --agent Rohan --trigger goal-loop",
+    "agent:rohan-daily-mtm": "bun run runtime/run.ts --agent Rohan --trigger daily-mtm",
     "agent:zara-goal-loop": "bun run runtime/run.ts --agent Zara --trigger goal-loop",
     "agent:eitan-goal-loop": "bun run runtime/run.ts --agent Eitan --trigger goal-loop",
     "agent:camille-goal-loop": "bun run runtime/run.ts --agent Camille --trigger goal-loop",
