@@ -129,8 +129,7 @@ function resolveEventDbPath(): string {
 }
 
 function resolveBaselinePath(): string {
-  const dir =
-    process.env.BANK_RECON_BASELINE_DIR ?? resolve(process.cwd(), ".local", "recon");
+  const dir = process.env.BANK_RECON_BASELINE_DIR ?? resolve(process.cwd(), ".local", "recon");
   return resolve(dir, `${PIPELINE}.json`);
 }
 
@@ -161,8 +160,7 @@ export function observeEventStore(dbPath: string): EventStoreObservation | null 
     const rowCount = Number(row.rowCount ?? 0);
     const minSequence = Number(row.minSeq ?? 0);
     const maxSequence = Number(row.maxSeq ?? 0);
-    const interiorGap =
-      rowCount === 0 ? 0 : Math.max(0, maxSequence - minSequence + 1 - rowCount);
+    const interiorGap = rowCount === 0 ? 0 : Math.max(0, maxSequence - minSequence + 1 - rowCount);
     return {
       rowCount,
       maxSequence,
@@ -245,10 +243,7 @@ export function compareToBaseline(
   // mutation. We allow growth (cloud-merge legitimately introduces
   // birth-store sequence holes) but flag shrinkage at constant or
   // shrinking rowCount.
-  if (
-    observation.interiorGap < baseline.interiorGap &&
-    observation.rowCount <= baseline.rowCount
-  ) {
+  if (observation.interiorGap < baseline.interiorGap && observation.rowCount <= baseline.rowCount) {
     v.push({
       subject: "events:interiorGap",
       message: `Interior sequence gap shrank from ${baseline.interiorGap} to ${observation.interiorGap} while row count did not grow (was ${baseline.rowCount}, now ${observation.rowCount}). Cloud-merge can only widen the gap; a narrowing gap at flat rowCount indicates physical row replacement or sequence rewrite — both forbidden. Baseline recorded ${baseline.updatedAt}; current observation ${observation.observedAt}.`,
