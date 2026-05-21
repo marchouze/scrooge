@@ -69,7 +69,7 @@ The Risk and Control Self-Assessment (RCSA) is the bank's primary bottom-up tool
 
 | Trigger event | Description |
 |---|---|
-| `NewProductApproved { product_id }` | RCSA addendum required for the new product's risk domain before launch. |
+| `ProductApproved { productId }` | RCSA addendum required for the new product's risk domain before launch. |
 | `MaterialSystemChangeDeployed { system_id, change_type }` | RCSA addendum for the system's operational risk profile. |
 | `OperationalLossEventRecorded { severity: High \| Critical }` | Unplanned RCSA review of the affected risk domain within 30 days. |
 | `AgentRuntimeAnomalyDetected { severity: Critical }` | Immediate RCSA review of the AI-agent risk category; Helena chairs within 5 business days. |
