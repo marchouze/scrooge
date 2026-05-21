@@ -35,10 +35,13 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be first import so
-// the side-effect (mutating `process.env.BANK_EVENT_DB`) runs before
-// `platform/composition` resolves its dbPath at module-load time.
-import "./resolve-event-db-boot";
+// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — call the shared resolver
+// BEFORE importing `platform/composition`, because composition reads
+// `BANK_EVENT_DB` at module-load time. Mutating the env up here keeps both
+// surfaces (dispatch CLIs + composition) pointed at the same store.
+import { applyDispatchEventDbResolution } from "./resolve-event-db";
+
+applyDispatchEventDbResolution();
 
 import { existsSync, readFileSync } from "node:fs";
 import { clock, eventStore } from "../../platform/composition";

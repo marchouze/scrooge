@@ -15,34 +15,57 @@ import { dirname } from "node:path";
 
 import { LocalPermissionPolicyPublisher } from "./agent-identity/permission-policy";
 import { gateEventStore, isGateEnabled } from "./event-store/permission-gate";
+import { resolveEventDbPath } from "./event-store/resolve-event-db";
 import { EventStore } from "./event-store/store";
 import { LocalAuthenticator } from "./identity";
 import { logger } from "./observability/logger";
 import { LocalProjector } from "./projections";
 import { resolveCompositionClock } from "./scenario-clock";
 
-// Local event-store path. Default `prototype/.local/event.db` is per-worktree
-// (each `.claude/worktrees/...` spawn starts with an empty store), which means
-// CeoDecision events recorded in one worktree are invisible in another and
-// every fresh worktree shows already-actioned decisions as "open" until back-
-// filled.
+// Local event-store path. Routed through the shared resolver in
+// `event-store/resolve-event-db.ts` so every consumer of this composition
+// root targets the same store as the dispatch CLIs (open-brief, start-run,
+// close-run) and the `approve-d-*` / `record-d-*` / `file-*` emission
+// scripts. Resolution precedence (high → low):
 //
-// To share a single event store across all worktrees on this machine, set:
+//   1. `BANK_EVENT_DB` env var (already-set ambient — tests, scenarios)
+//   2. `BANK_HOME_EVENT_DB` env var (custom home location)
+//   3. `$HOME/.local/share/bank/event.db` (default shared store)
+//   4. `.local/event.db` (per-worktree fallback when $HOME unresolvable)
 //
-//   export BANK_EVENT_DB="$HOME/.local/share/bank/event.db"
+// Default is now the shared home store, not the per-worktree fallback.
+// This eliminates the silent mis-targeting that surfaced in PR #695 (Helena
+// (Chief Risk Officer, governance)'s MR-1-FX IPV recalibration emission
+// landed in the wrong DB because the per-worktree fallback ran ahead of the
+// home-default).
 //
-// (or any absolute path under your home directory). The next process to boot
-// will create the file on first append; subsequent worktrees will see the
-// same events and the dashboard will reflect a consistent decision posture.
+// To force a per-worktree or temp store, set `BANK_EVENT_DB` explicitly
+// (tests + scenarios already do this via the test harness).
 //
 // Multi-host or cloud sharing is handled by the Postgres mirror via
 // `BANK_EVENT_DB_URL` (see `scripts/event-store-sync.ts`); the local sqlite
 // remains canonical-shape and is bidirectionally synced before/after each
 // agent workflow. The full Azure-target store lands in later
-// D-EVENT-STORE-SCALING slices (Event Hubs + Cosmos).
-const dbPath = process.env.BANK_EVENT_DB ?? ".local/event.db";
+// D-EVENT-STORE-SCALING slices (Event Hubs + Cosmos). The cloud lift swaps
+// the resolved path for a Cosmos/Postgres URL without touching capability
+// code.
+//
+// Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21).
+const resolvedEventDb = resolveEventDbPath();
+const dbPath = resolvedEventDb.path;
 const idpKeyPath = process.env.BANK_IDP_KEY ?? ".local/keys/idp.key";
 mkdirSync(dirname(dbPath), { recursive: true });
+
+if (resolvedEventDb.source === "fallback") {
+  // Per-worktree fallback fires only when `$HOME` is unresolvable (unusual
+  // containers, CI runners with no HOME). Log once via the structured
+  // logger so any process whose event-store happens to land in a per-
+  // worktree file has a single traceable record of why.
+  logger.warn(
+    { dbPath, source: resolvedEventDb.source },
+    "composition resolved to per-worktree event-store fallback — cross-worktree visibility will not work",
+  );
+}
 
 const rawEventStore = new EventStore(dbPath);
 
@@ -100,6 +123,8 @@ export { logger, permissionPolicy };
 logger.debug(
   {
     dbPath,
+    dbPathSource: resolvedEventDb.source,
+    dbPathShared: resolvedEventDb.shared,
     idpKeyPath,
     permissionGateEnabled: isGateEnabled(),
     clockMode: clock.mode,
