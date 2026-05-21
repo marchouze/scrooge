@@ -42,12 +42,42 @@
     .muted { color:var(--color-text-secondary); }
     .nav-back { display:inline-flex; align-items:center; gap:var(--space-2); font:var(--text-body); color:var(--color-accent); text-decoration:none; margin-bottom:var(--space-4); }
     .nav-back:hover { text-decoration:underline; }
+    /* Breadcrumb (matches /rms pattern). */
+    .breadcrumbs { font: var(--text-caption); color: var(--color-text-secondary); margin-bottom: var(--space-3); }
+    .breadcrumbs a { color: var(--color-text-secondary); text-decoration: underline; cursor: pointer; }
+    .breadcrumbs a:hover { color: var(--color-text-primary); }
+    .breadcrumbs .sep { margin: 0 0.5em; opacity: 0.6; }
+    .breadcrumbs .leaf { color: var(--color-text-primary); font-weight: 600; }
+    /* Decision title block. */
+    .decision-title { font: var(--text-h2); color: var(--color-text-primary); margin: 0 0 var(--space-2); }
+    .decision-meta-strip { display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center; font:var(--text-caption); color:var(--color-text-secondary); margin-bottom:var(--space-4); }
+    .decision-meta-strip .pill { margin-right:0; }
+    /* Citation + source-doc lists. */
+    .cite-chip { display:inline-block; padding:2px 8px; margin:2px 4px 2px 0; border:1px solid var(--color-border); border-radius:var(--radius-sm); font:var(--text-caption); background:var(--color-surface); color:var(--color-text-primary); text-decoration:none; }
+    .cite-chip:hover { background:var(--color-surface-raised); }
+    .cite-chip.is-decision { background:var(--color-info-bg); color:var(--color-info); border-color:var(--color-info); }
+    .src-doc { display:flex; gap:var(--space-2); align-items:baseline; padding:var(--space-2) 0; border-bottom:1px dashed var(--color-border); font:var(--text-body); }
+    .src-doc:last-child { border-bottom:none; }
+    .src-doc code { font-size:0.78rem; color:var(--color-text-secondary); }
+    .options-list { padding-left:1.5em; margin:0; }
+    .options-list li { padding: var(--space-1) 0; }
+    /* Recommendation panel. */
+    .reco-panel { background:var(--color-info-bg); border-left:3px solid var(--color-info); padding:var(--space-3) var(--space-4); border-radius:var(--radius-sm); margin-top:var(--space-2); }
+    .reco-label { font:var(--text-caption); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-info); margin-bottom:var(--space-1); }
+    .reco-body { font:var(--text-body); color:var(--color-text-primary); margin:0; }
+    .reco-body + .reco-label { margin-top:var(--space-3); }
+    /* Outcome panel. */
+    .outcome-panel { background:var(--color-success-bg); border-left:3px solid var(--color-success); padding:var(--space-3) var(--space-4); border-radius:var(--radius-sm); }
+    .outcome-action { display:inline-block; padding:2px 8px; background:var(--color-success); color:#fff; border-radius:var(--radius-sm); font:var(--text-caption); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-right:var(--space-2); }
+    /* Source-doc preview modal/panel. */
+    .src-doc-preview { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-3); margin-top:var(--space-2); font:var(--text-body); max-height:60vh; overflow-y:auto; white-space:pre-wrap; }
   </style>
 </head>
 <body>
   <div id="shell"></div>
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <nav id="decisionBreadcrumbs" class="breadcrumbs" aria-label="Breadcrumb"></nav>
     <div class="page-header"><h1 class="page-title">Decision</h1></div>
     <div class="page-body">
       <div id="strategyBanner" class="strategy-banner"></div>

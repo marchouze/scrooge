@@ -90,6 +90,226 @@ function decisionIdFromPath() {
   return decodeURIComponent(m[1]);
 }
 
+// ---------------------------------------------------------------------------
+// Breadcrumbs
+
+function renderBreadcrumbs(decisionId, title) {
+  const nav = $("decisionBreadcrumbs");
+  if (!nav) return;
+  nav.innerHTML = "";
+  const home = el("a", { href: "/" }, "Home");
+  const sep1 = el("span", { class: "sep" }, "›");
+  const register = el("a", { href: "/decisions" }, "Decisions");
+  const sep2 = el("span", { class: "sep" }, "›");
+  const leafText = title ? `${decisionId} — ${title}` : (decisionId ?? "(unknown)");
+  const leaf = el("span", { class: "leaf" }, leafText);
+  nav.appendChild(home);
+  nav.appendChild(sep1);
+  nav.appendChild(register);
+  nav.appendChild(sep2);
+  nav.appendChild(leaf);
+}
+
+// ---------------------------------------------------------------------------
+// Header band — title + authority + status badges, replacing the legacy
+// "Decision · <id>" header. Uses the rich registerRow when available.
+
+function renderHeaderBand(data) {
+  const reg = data.registerRow;
+  const title = reg?.title || data.open?.title || data.resolution?.title || data.decisionId;
+  const status = reg?.status || (data.resolution ? "resolved" : data.open ? "open" : "unknown");
+  const authority = reg?.forActor || data.open?.authority || "—";
+  const category = reg?.category || data.open?.category || "";
+  const requestedAt = reg?.requestedAt || data.open?.requestedAt;
+  const resolvedAt = reg?.resolvedAt;
+  const deadline = reg?.deadline || data.open?.deadline;
+  const owner = reg?.owner;
+
+  const strip = el("div", { class: "decision-meta-strip" });
+  strip.appendChild(el("span", { class: "status-badge", "data-status": status }, status));
+  strip.appendChild(el("span", { class: "pill" }, `Authority: ${authority}`));
+  if (category) strip.appendChild(el("span", { class: "pill" }, `Category: ${category}`));
+  if (owner?.name && owner.name !== "unknown") {
+    const ownerLabel = owner.position
+      ? `Owner: ${owner.name} (${owner.position})`
+      : `Owner: ${owner.name}`;
+    strip.appendChild(el("span", { class: "pill" }, ownerLabel));
+  }
+  if (requestedAt) strip.appendChild(el("span", {}, `Requested ${fmtDate(requestedAt)}`));
+  if (resolvedAt) strip.appendChild(el("span", {}, `Resolved ${fmtDate(resolvedAt)}`));
+  if (deadline) strip.appendChild(el("span", {}, `Deadline ${fmtDate(deadline)}`));
+
+  return el("section", { class: "band" }, [
+    el("h1", { class: "decision-title" }, title),
+    el(
+      "div",
+      { class: "muted small mono", style: "margin-bottom:var(--space-2)" },
+      data.decisionId,
+    ),
+    strip,
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Recommendation panel from the register row (open decisions and historical
+// decisions both carry a recommendation stance + reasoning).
+
+function renderRecommendationBand(reg) {
+  if (!reg) return null;
+  const stance = reg.recommendation?.stance;
+  const reasoning = reg.recommendation?.reasoning;
+  if (!stance && !reasoning) return null;
+  const children = [];
+  if (stance) {
+    children.push(el("div", { class: "reco-label" }, "Recommendation"));
+    children.push(renderStanceWithSliceList(stance));
+  }
+  if (reasoning) {
+    children.push(el("div", { class: "reco-label" }, "Reasoning"));
+    children.push(el("p", { class: "reco-body" }, reasoning));
+  }
+  if (reg.decisionForActor) {
+    children.push(el("div", { class: "reco-label" }, `Decision for ${reg.forActor ?? "actor"}`));
+    children.push(el("p", { class: "reco-body" }, reg.decisionForActor));
+  }
+  return el("section", { class: "band" }, [
+    el("div", { class: "band-head" }, [el("h2", {}, "Brief")]),
+    el("div", { class: "drill-card" }, [el("div", { class: "reco-panel" }, children)]),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Options the decider had to choose between.
+
+function renderOptionsBand(reg) {
+  if (!reg || !Array.isArray(reg.options) || reg.options.length === 0) return null;
+  const ol = el("ol", { class: "options-list" });
+  for (const o of reg.options) {
+    // Options may be strings or { label, description } objects.
+    if (typeof o === "string") {
+      ol.appendChild(el("li", {}, o));
+    } else if (o && typeof o === "object") {
+      const label = o.label ?? o.option ?? "";
+      const desc = o.description ?? o.reasoning ?? "";
+      ol.appendChild(
+        el(
+          "li",
+          {},
+          [el("strong", {}, label), desc ? el("span", {}, ` — ${desc}`) : null].filter(Boolean),
+        ),
+      );
+    }
+  }
+  return el("section", { class: "band" }, [
+    el("div", { class: "band-head" }, [el("h2", {}, "Options considered")]),
+    el("div", { class: "drill-card" }, [ol]),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Citations — merged from the escalation envelope (data.citations) AND the
+// register row (reg.decisionCitations). Each chip is clickable: if the
+// citation looks like a decision id (D-…), link to /decisions/<id>; if it
+// looks like a file path, link relatively; otherwise plain text.
+
+function citationChip(c) {
+  const isDecisionId = /^D-[A-Z0-9-]+$/.test(c);
+  const isPath = c.includes("/") || c.endsWith(".md");
+  if (isDecisionId) {
+    return el(
+      "a",
+      { class: "cite-chip is-decision", href: `/decisions/${encodeURIComponent(c)}` },
+      c,
+    );
+  }
+  if (isPath) {
+    return el("a", { class: "cite-chip", href: `/${c}`, target: "_blank" }, c);
+  }
+  return el("span", { class: "cite-chip" }, c);
+}
+
+function renderCitationsBand(data) {
+  const fromEnvelope = Array.isArray(data.citations) ? data.citations : [];
+  const fromRegister = Array.isArray(data.registerRow?.decisionCitations)
+    ? data.registerRow.decisionCitations
+    : [];
+  const all = [...new Set([...fromEnvelope, ...fromRegister])];
+  if (all.length === 0) return null;
+  return el("section", { class: "band" }, [
+    el("div", { class: "band-head" }, [el("h2", {}, "Citations")]),
+    el("div", { class: "drill-card" }, [
+      el(
+        "p",
+        { class: "muted small" },
+        "Principle 2 — citation chain anchoring this decision to policy / regulation / prior decisions.",
+      ),
+      el("div", {}, all.map(citationChip)),
+    ]),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Source documents — BLAKE3-addressed content from the document store.
+// Each entry exposes a "Preview" toggle that fetches the raw text from
+// /api/rms/document-content?hash=<blake3:...>.
+
+function sourceDocItem(hash) {
+  const previewBtn = el(
+    "a",
+    { href: "#", class: "cite-chip", "data-action": "preview" },
+    "Preview",
+  );
+  const downloadLink = el(
+    "a",
+    {
+      href: `/api/rms/document-content?hash=${encodeURIComponent(hash)}`,
+      target: "_blank",
+      class: "cite-chip",
+    },
+    "Open raw",
+  );
+  const previewPane = el("div", { class: "src-doc-preview", style: "display:none" });
+  previewBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (previewPane.style.display === "none") {
+      previewPane.textContent = "Loading…";
+      previewPane.style.display = "";
+      try {
+        const r = await fetch(`/api/rms/document-content?hash=${encodeURIComponent(hash)}`);
+        if (!r.ok) {
+          previewPane.textContent = `Document not found (HTTP ${r.status})`;
+          return;
+        }
+        previewPane.textContent = await r.text();
+      } catch (err) {
+        previewPane.textContent = `Error: ${err.message}`;
+      }
+    } else {
+      previewPane.style.display = "none";
+    }
+  });
+  return el("div", { class: "src-doc-wrap" }, [
+    el("div", { class: "src-doc" }, [
+      el("code", {}, hash),
+      el("span", { style: "margin-left:auto;display:flex;gap:var(--space-1);" }, [
+        previewBtn,
+        downloadLink,
+      ]),
+    ]),
+    previewPane,
+  ]);
+}
+
+function renderSourceDocsBand(reg) {
+  if (!reg || !Array.isArray(reg.sourceDocumentHashes) || reg.sourceDocumentHashes.length === 0) {
+    return null;
+  }
+  return el("section", { class: "band" }, [
+    el("div", { class: "band-head" }, [el("h2", {}, "Source documents")]),
+    el("div", { class: "drill-card" }, reg.sourceDocumentHashes.map(sourceDocItem)),
+  ]);
+}
+
 function renderEscalation(esc) {
   const sealedTag = esc.sealedReason
     ? el("span", { class: "pill esc-sealed" }, `sealed · ${esc.sealedReason}`)
@@ -145,20 +365,31 @@ function renderEscalation(esc) {
   return wrap;
 }
 
-function renderResolution(res) {
+function renderResolution(res, registerRow) {
+  // Prefer the RMS register's resolution (richer + canonical) when available;
+  // fall back to the legacy projection shape (res).
+  const reg = registerRow?.resolution;
+  const action = reg?.action ?? res.action ?? "—";
+  const outcome = reg?.outcome ?? res.outcome ?? "—";
+  const comment = reg?.comment ?? res.comment ?? "";
+  const actionedAt = reg?.resolvedAt ?? res.actionedAt;
+  const actionedBy = reg?.actorId ?? res.actionedBy ?? "—";
+  const recordedVia = reg?.recordedVia;
+
   return el("section", { class: "band" }, [
-    el("div", { class: "band-head" }, [el("h2", {}, "CEO decision")]),
-    el("div", { class: "drill-card resolved-card" }, [
-      el("dl", { class: "drill-dl" }, [
-        el("dt", {}, "Action"),
-        el("dd", {}, res.action ?? "—"),
-        el("dt", {}, "Outcome"),
-        el("dd", {}, res.outcome),
+    el("div", { class: "band-head" }, [el("h2", {}, "Resolution")]),
+    el("div", { class: "drill-card" }, [
+      el("div", { class: "outcome-panel" }, [
+        el("div", {}, [el("span", { class: "outcome-action" }, action)]),
+        el("p", { class: "reco-body", style: "margin-top:var(--space-2)" }, outcome),
+      ]),
+      el("dl", { class: "drill-dl", style: "margin-top:var(--space-3)" }, [
         el("dt", {}, "Actioned at"),
-        el("dd", {}, fmtTimestamp(res.actionedAt)),
+        el("dd", {}, fmtTimestamp(actionedAt)),
         el("dt", {}, "Actioned by"),
-        el("dd", {}, res.actionedBy ?? "—"),
-        ...(res.comment ? [el("dt", {}, "Comment"), el("dd", {}, res.comment)] : []),
+        el("dd", {}, actionedBy),
+        ...(recordedVia ? [el("dt", {}, "Recorded via"), el("dd", {}, recordedVia)] : []),
+        ...(comment && comment !== outcome ? [el("dt", {}, "Comment"), el("dd", {}, comment)] : []),
       ]),
     ]),
   ]);
@@ -222,23 +453,6 @@ function renderLifecycle(lifecycle) {
   return el("section", { class: "band" }, [
     el("div", { class: "band-head" }, [el("h2", {}, "Lifecycle timeline")]),
     ul,
-  ]);
-}
-
-function renderCitations(citations) {
-  if (!citations || citations.length === 0) return null;
-  return el("section", { class: "band" }, [
-    el("div", { class: "band-head" }, [el("h2", {}, "Citation chain")]),
-    el(
-      "p",
-      { class: "muted small" },
-      "Per Principle 2 — every escalation envelope carries the regulator / policy citations that justify the routing.",
-    ),
-    el(
-      "ul",
-      { class: "citation-list" },
-      citations.map((c) => el("li", { class: "citation-item" }, [el("code", {}, c)])),
-    ),
   ]);
 }
 
@@ -453,6 +667,7 @@ function renderActionPanel(open, decisionId) {
 }
 
 function renderNotFound(decisionId) {
+  renderBreadcrumbs(decisionId ?? "(unknown)", null);
   const wrap = $("decisionContent");
   wrap.innerHTML = "";
   wrap.appendChild(
@@ -461,10 +676,10 @@ function renderNotFound(decisionId) {
       el("p", {}, [
         "No matching record for ",
         el("code", {}, decisionId ?? "(no id)"),
-        ". Try the ",
+        ". This ID may be referenced as a citation but has not yet been recorded as a Decision event. Browse the ",
+        el("a", { href: "/decisions" }, "Decisions register"),
+        " or try the ",
         el("a", { href: "/escalations" }, "escalation inbox"),
-        " or ",
-        el("a", { href: "/" }, "main dashboard"),
         ".",
       ]),
     ]),
@@ -510,28 +725,39 @@ async function load() {
     const data = await drillR.json();
     const wrap = $("decisionContent");
     wrap.innerHTML = "";
-    // Header band.
-    wrap.appendChild(
-      el("section", { class: "band drill-header" }, [
-        el("div", { class: "band-head" }, [
-          el("h1", {}, [el("span", { class: "muted" }, "Decision · "), data.decisionId]),
-        ]),
-      ]),
-    );
+    // Breadcrumbs.
+    const titleForCrumb = data.registerRow?.title || data.open?.title || data.resolution?.title;
+    renderBreadcrumbs(data.decisionId, titleForCrumb);
+    // Header band (title, status, authority, dates).
+    wrap.appendChild(renderHeaderBand(data));
     if (data.popiaS71) {
       const notice = renderPopiaNotice(data.popiaNotice);
       if (notice) wrap.appendChild(notice);
     }
+    // Brief — recommendation + reasoning + decision-for-actor prompt.
+    const reco = renderRecommendationBand(data.registerRow);
+    if (reco) wrap.appendChild(reco);
+    // Options the decider had to choose between.
+    const opts = renderOptionsBand(data.registerRow);
+    if (opts) wrap.appendChild(opts);
+    // Originating escalation (when present).
     if (data.escalation) wrap.appendChild(renderEscalation(data.escalation));
-    if (data.resolution) wrap.appendChild(renderResolution(data.resolution));
+    // Resolution or open action panel.
+    if (data.resolution) wrap.appendChild(renderResolution(data.resolution, data.registerRow));
     else if (data.open) {
       wrap.appendChild(renderOpen(data.open));
       wrap.appendChild(renderActionPanel(data.open, data.decisionId));
     }
+    // Source documents (BLAKE3 hashes, with preview toggle).
+    const srcDocs = renderSourceDocsBand(data.registerRow);
+    if (srcDocs) wrap.appendChild(srcDocs);
+    // Citations (envelope + register, deduped, clickable).
+    const citations = renderCitationsBand(data);
+    if (citations) wrap.appendChild(citations);
+    // Lifecycle (escalation events).
     const lifecycle = renderLifecycle(data.lifecycle);
     if (lifecycle) wrap.appendChild(lifecycle);
-    const citations = renderCitations(data.citations);
-    if (citations) wrap.appendChild(citations);
+    // Comments.
     wrap.appendChild(renderComments(data.comments));
 
     live.classList.add("ok");

@@ -2522,6 +2522,15 @@ const server = Bun.serve({
             };
           }
         }
+        // Attach the rich RMS decisions-register row when present — gives
+        // the drill-down page the supporting context (citations, source
+        // documents, recommendation, options, deadline, requestedAt,
+        // resolution metadata) without a second round-trip.
+        const rmsFold = getRmsFold();
+        const rmsRow = rmsFold.decisions.find((r) => r.decisionId === decisionId);
+        if (rmsRow) {
+          enrichedView = { ...enrichedView, registerRow: rmsRow };
+        }
         return jsonResponse({
           asOf: cachedState.asOf,
           ...enrichedView,
