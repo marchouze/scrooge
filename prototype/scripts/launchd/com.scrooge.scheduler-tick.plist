@@ -100,16 +100,19 @@
       EnvironmentVariables.
         - PATH carries the standard bin dirs so `bun` resolves any
           subprocess tools (git, etc.) it needs.
-        - BANK_EVENT_DB and BANK_PERMISSION_GATE_ENABLED can be set
-          at install time by editing this file before bootstrap, OR
-          left blank to fall through to the runtime defaults. We do
-          NOT hardcode credentials here — anything secret belongs
-          in a .env.local sourced by bun via its own loader.
+        - install.sh substitutes `__ENVIRONMENT_VARIABLES__` below with
+          a rendered block that ALWAYS includes PATH and OPTIONALLY
+          includes whitelisted `BANK_*` keys parsed from
+          `prototype/.env.local`. See `render-env-block.ts` for the
+          parsing and XML-escaping rules.
+        - The plist file is mode 0644 on the local workstation; this
+          is the build-phase risk Marc accepts in the file header. The
+          production path holds secrets in Azure Key Vault per
+          Principle 3 (Cloud-native) and never serialises them to disk.
     -->
     <key>EnvironmentVariables</key>
     <dict>
-      <key>PATH</key>
-      <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+__ENVIRONMENT_VARIABLES__
     </dict>
 
     <!--
