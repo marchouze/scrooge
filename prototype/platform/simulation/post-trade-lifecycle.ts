@@ -20,6 +20,7 @@
 
 import { newEventId, nowUtc } from "../core/types";
 import { makeInboundMessageReceived } from "../event-store/event-types/payments";
+import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import {
   makeFxSettlementInstructed,
@@ -27,6 +28,7 @@ import {
   makeSettlementConfirmed,
 } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { baseAmountMinor } from "../markets/cdm/fx-helpers";
 import { simulateInboundMessages } from "../payments/inbound-simulator";
 import { generateAndEmitMt300 } from "../payments/swift-mt/mt300";
 import type { CounterpartyBehaviorProfile } from "./env-sim/counterparty-profiles";
@@ -255,6 +257,53 @@ export function runPostTradeLifecycle(
       }),
     );
   } else if (!isRejected) {
+    // -------------------------------------------------------------------------
+    // Compute realised P&L per IAS 21 §28: (r_settle − r_book) × N_base_minor.
+    // Settlement rate: look for the latest OfficialMarkAdopted for the pair on
+    // the settlement date; fall back to book rate (zero P&L) with a substrate
+    // warning if no mark is available.
+    //
+    // Authority: IAS 21 §28; PR-FX-LIFECYCLE-CLOSE; D-FX-QUOTING-CONVENTION.
+    // -------------------------------------------------------------------------
+    const nearLegForPnl = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
+    const bookRate = nearLegForPnl?.rate.amount ?? 0;
+    const notionalBaseMinor = nearLegForPnl
+      ? baseAmountMinor(nearLegForPnl, trade.currencyPair)
+      : 0;
+
+    // Look up the latest OfficialMarkAdopted for this pair on/before the settlement date.
+    let settlementRate = bookRate;
+    let latestMarkAsOf = "";
+    try {
+      for (const e of store.replay({ type: "OfficialMarkAdopted" })) {
+        const m = e.payload as unknown as OfficialMarkAdoptedPayload;
+        if (
+          m.markType === "fx-rate" &&
+          m.instrumentKey === currencyPairStr &&
+          m.markAsOf.slice(0, 10) <= settlementDateIso
+        ) {
+          if (m.markAsOf > latestMarkAsOf) {
+            latestMarkAsOf = m.markAsOf;
+            settlementRate = Number.parseFloat(m.mark);
+          }
+        }
+      }
+    } catch {
+      // OfficialMarkAdopted not yet in store — fall back to book rate.
+    }
+
+    if (!latestMarkAsOf) {
+      // No official mark found — substrate gap; log and use zero P&L.
+      console.warn(
+        `[post-trade-lifecycle] No OfficialMarkAdopted found for ${currencyPairStr} on/before ${settlementDateIso}; realisedPnlDelta=0 (book-rate fallback, IAS 21 §28).`,
+      );
+    }
+
+    // IAS 21 §28: bank long base (buy) gains when settlement rate > book rate.
+    const isBuy = trade.side === "buy";
+    const rateDelta = settlementRate - bookRate;
+    const realisedPnlDelta = Math.round((isBuy ? 1 : -1) * rateDelta * Math.abs(notionalBaseMinor));
+
     store.append(
       makeSettlementConfirmed({
         asOf: settlementDateIso,
@@ -265,7 +314,7 @@ export function runPostTradeLifecycle(
           tradeId: tradeIdValue,
           currencyPair: currencyPairStr,
           settledDate: settlementDateIso,
-          realisedPnlDelta: 0,
+          realisedPnlDelta,
           settlementRef: `SWIFT-CONF-SIM-${tradeIdValue.slice(-12)}`,
           citations: CITATIONS,
         },

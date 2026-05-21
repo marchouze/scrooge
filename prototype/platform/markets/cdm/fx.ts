@@ -847,6 +847,94 @@ export function makeNdfFixingObserved(args: {
 }
 
 // ---------------------------------------------------------------------------
+// SettlementRealisedPnlCorrected
+//
+// Corrective event emitted when a `SettlementConfirmed` was originally
+// published with `realisedPnlDelta: 0` (historical substrate gap: the
+// post-trade lifecycle emitter did not yet compute realised P&L at emission
+// time). Carries the recomputed delta for the backfill script and any future
+// forward-path corrections.
+//
+// Option A chosen over in-place mutation (Principle 1 — events are immutable).
+// The corrective event is folded by the daily-pnl projection to supersede the
+// original zero.
+//
+// Authority:
+//   IAS 21 §28 — exchange differences on settlement of monetary items
+//     recognised in profit or loss.
+//   PR-FX-LIFECYCLE-CLOSE — realised P&L crystallised on settlement.
+//   D-FX-QUOTING-CONVENTION — side-aware rate convention.
+//
+// Author: Bea (Accounting & financial reporting engineer, engineering)
+// ---------------------------------------------------------------------------
+
+export const settlementRealisedPnlCorrectedPayloadSchema = z.object({
+  /** The trade whose settlement P&L is being corrected. */
+  tradeId: z.string().min(1),
+  /** Event ID of the original SettlementConfirmed event being corrected. */
+  originalSettlementEventId: z.string().min(1),
+  /** Currency pair (canonical "BASE/QUOTE", e.g. "USD/ZAR"). */
+  currencyPair: z.string().min(1),
+  /**
+   * Corrected realised P&L in ZAR minor units. Positive = profit; negative = loss.
+   * Computed as: N_usd × (r_settle − r_book) for a buy-side trade (bank long base);
+   * sign-inverted for a sell-side trade (bank short base).
+   * Per IAS 21 §28.
+   */
+  realisedPnlZarMinor: z.number().int(),
+  /** Settlement rate used to compute the correction (decimal, e.g. 18.60). */
+  settlementRate: z.number().positive(),
+  /** Book rate from the original FxTradeExecuted (decimal, e.g. 18.50). */
+  bookRate: z.number().positive(),
+  /** Base-currency notional in minor units used for the calculation. */
+  notionalBaseMinor: z.number().int(),
+  /**
+   * Source of the settlement rate used.
+   * - "official-mark" — latest OfficialMarkAdopted for the pair on the settlement date.
+   * - "explicit"      — explicit settlement rate carried on the SettlementConfirmed event.
+   * - "book-rate-fallback" — no settlement rate available; fell back to book rate (zero P&L).
+   */
+  rateSource: z.enum(["official-mark", "explicit", "book-rate-fallback"]),
+  /** ISO 8601 date of settlement (value date). */
+  settledDate: z.string().min(1),
+  /** Citations — must not be empty (Principle 2). */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type SettlementRealisedPnlCorrectedPayload = z.infer<
+  typeof settlementRealisedPnlCorrectedPayloadSchema
+>;
+
+export function makeSettlementRealisedPnlCorrected(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SettlementRealisedPnlCorrectedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "SettlementRealisedPnlCorrected requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  if (!args.payload.citations || args.payload.citations.length === 0) {
+    throw new Error(
+      "SettlementRealisedPnlCorrected payload.citations must not be empty (Principle 2).",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SettlementRealisedPnlCorrected",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: settlementRealisedPnlCorrectedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX event-type registry — for runtime registration into the event store.
 // ---------------------------------------------------------------------------
 
@@ -856,6 +944,7 @@ export const FX_EVENT_TYPES = [
   "PrincipalPayment",
   "SettlementConfirmed",
   "NdfFixingObserved",
+  "SettlementRealisedPnlCorrected",
 ] as const;
 
 export type FxEventType = (typeof FX_EVENT_TYPES)[number];
