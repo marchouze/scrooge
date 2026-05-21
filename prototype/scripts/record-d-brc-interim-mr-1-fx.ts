@@ -33,10 +33,7 @@ import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections
 import { recordDecision } from "../runtime/decisions/record";
 
 const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-21_owen_d-brc-interim-mr-1-fx_decision-card.md",
-);
+const DOC_PATH = resolve(WORKTREE_ROOT, "2026-05-21_owen_d-brc-interim-mr-1-fx_decision-card.md");
 const DECISION_ID = "D-BRC-INTERIM-MR-1-FX";
 
 const body = readFileSync(DOC_PATH, "utf8");
