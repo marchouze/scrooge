@@ -35,6 +35,11 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be first import so
+// the side-effect (mutating `process.env.BANK_EVENT_DB`) runs before
+// `platform/composition` resolves its dbPath at module-load time.
+import "./resolve-event-db-boot";
+
 import { existsSync, readFileSync } from "node:fs";
 import { clock, eventStore } from "../../platform/composition";
 import { type LocalFsDocumentStore, defaultDocumentStore } from "../../platform/document-store";

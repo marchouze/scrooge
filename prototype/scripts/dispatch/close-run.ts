@@ -44,9 +44,12 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be first import.
+import "./resolve-event-db-boot";
+
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
-import { clock } from "../../platform/composition";
+import { clock, eventStore } from "../../platform/composition";
 import { checkDeciderMayClose } from "../../platform/dispatch";
 import type {
   AgentRunCompletedFollowOnRoute,
@@ -54,6 +57,7 @@ import type {
   RecordFiledPayload,
   RmsAgentRef,
 } from "../../platform/event-store/event-types";
+import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import {
   defaultRetentionForRegister,
   recordAgentRunCompleted,
@@ -198,11 +202,64 @@ function main(): void {
         );
         process.exit(1);
       }
-      // Caller forced the bypass — surface the gap on the resulting event.
+      // Caller forced the bypass — surface the gap on the resulting event
+      // AND emit a high-severity `SubstrateAlert{alertClass:"integrity"}`
+      // so Vera's recon can drive the count to zero. Loud-warn to stderr
+      // makes the bypass impossible to miss in agent logs.
+      // D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21): cross-worktree
+      // visibility now works via shared event store at $HOME/.local/share/
+      // bank/event.db; routine bypass should be zero. Each remaining bypass
+      // is a true emergency escape.
       const bypassGap =
         `dispatch-sync-bypass: closed delivered while ${syncCheck.blockedBy?.briefId ?? "blocking brief"} ` +
-        `was ${syncCheck.blockedBy?.reason ?? "unsatisfied"} (D-DISPATCH-SYNC-PRIMITIVE)`;
+        `was ${syncCheck.blockedBy?.reason ?? "unsatisfied"} (D-DISPATCH-SYNC-PRIMITIVE; D-CROSS-WORKTREE-EVENT-STORE-SYNC)`;
       gaps.push(bypassGap);
+
+      console.error(
+        JSON.stringify({
+          level: "warn",
+          component: "dispatch:close-run",
+          msg: "force-close-bypass-sync=true — emergency escape valve fired",
+          briefId,
+          blockedBy: syncCheck.blockedBy,
+          citations: ["D-DISPATCH-SYNC-PRIMITIVE", "D-CROSS-WORKTREE-EVENT-STORE-SYNC"],
+          hint: "Cross-worktree visibility is now substrate-supported; bypass should be exceptional, not routine.",
+        }),
+      );
+
+      // Emit a typed `SubstrateAlert{alertClass:"integrity"}` so Vera's
+      // recon can drive the count to zero. Best-effort: never block the
+      // close-run on alert-emit failure (the gap on AgentRunCompleted
+      // remains the canonical audit record).
+      try {
+        const alertSlug = briefId
+          .replace(/[^a-z0-9-]+/gi, "-")
+          .toLowerCase()
+          .slice(0, 40)
+          .replace(/^-+|-+$/g, "");
+        const alert = makeSubstrateAlert({
+          asOf: preCloseAsOf,
+          entity: "BANK-ZA-001",
+          actor: { type: "service", id: "agent:dispatch-close-run" },
+          citations: ["D-DISPATCH-SYNC-PRIMITIVE", "D-CROSS-WORKTREE-EVENT-STORE-SYNC"],
+          payload: {
+            alertId: `alert:integrity:dispatch-bypass-${alertSlug || "unknown"}`,
+            alertClass: "integrity",
+            severity: "high",
+            details: bypassGap,
+          },
+        });
+        eventStore.append(alert);
+      } catch (e) {
+        console.error(
+          JSON.stringify({
+            level: "warn",
+            component: "dispatch:close-run",
+            msg: "SubstrateAlert emit failed — gap remains on AgentRunCompleted",
+            err: (e as Error).message,
+          }),
+        );
+      }
     }
   }
 

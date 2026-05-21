@@ -20,6 +20,9 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+// D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21) — MUST be first import.
+import "./resolve-event-db-boot";
+
 import { clock } from "../../platform/composition";
 import type { RmsAgentRef } from "../../platform/event-store/event-types";
 import { recordAgentRunStarted } from "../../platform/records";
