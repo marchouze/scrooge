@@ -224,8 +224,7 @@ function revalueOnePosition(args: {
   }
 
   const legRate = nearLeg.rate.amount;
-  const bookRate =
-    nearLeg.rate.currency === trade.currencyPair.quote ? legRate : 1 / legRate;
+  const bookRate = nearLeg.rate.currency === trade.currencyPair.quote ? legRate : 1 / legRate;
   const notionalBaseMinor = nearLeg.notional.amountMinor;
 
   // ---- 1. Try fresh production tick ----------------------------------------
@@ -236,8 +235,8 @@ function revalueOnePosition(args: {
     limit: 1,
   });
 
-  if (productionTicks.length > 0) {
-    const tick = productionTicks[0];
+  const tick = productionTicks[0];
+  if (tick) {
     const tickPayload = tick.payload as Record<string, unknown>;
     const midRate = extractMidRate(tickPayload);
 
@@ -480,11 +479,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
             alertId: `alert:integrity:mtm-stale-mark-${dateStr}`,
             alertClass: "integrity",
             agentUrn: "urn:agent:rohan:daily-mtm",
-            details:
-              `Daily MTM ${dateStr}: ${positionsStaleMark} position(s) carried forward stale marks ` +
-              `(no fresh production tick). Pairs: ${distinctPairs.join(", ")}. ` +
-              `Substrate gap: no production FX feed (Reuters / Bloomberg / SARB intraday). ` +
-              `Each affected position-day has FxPositionRevalued emitted with rateSource="stale-mark:<original>" and unrealisedPnlZarMinor=0.`,
+            details: `Daily MTM ${dateStr}: ${positionsStaleMark} position(s) carried forward stale marks (no fresh production tick). Pairs: ${distinctPairs.join(", ")}. Substrate gap: no production FX feed (Reuters / Bloomberg / SARB intraday). Each affected position-day has FxPositionRevalued emitted with rateSource="stale-mark:<original>" and unrealisedPnlZarMinor=0.`,
             severity: "medium",
           },
           eventId: newEventId(),
