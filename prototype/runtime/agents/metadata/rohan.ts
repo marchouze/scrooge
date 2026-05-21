@@ -10,6 +10,17 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "43 3 * * *",
   }),
+  // Daily MTM (mark-to-market) — EOD revaluation of open FX positions.
+  // Cron: 18:00 UTC weekdays = ~20:00 SAST, after the JSE 17:00 SAST close.
+  // Skips Sat/Sun (no JSE close); operator-triggered runs available via the
+  // on-request path (`bun run agent:rohan-daily-mtm`).
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND;
+  //            D-EVENT-VIEW-BOUNDARY-WIRE Slice B.1.
+  // Brief: brief:rohan:wire-daily-mtm-cadence-fix-reversal-without-reva:2026-05-21.
+  entry("Rohan", "daily-mtm", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 18 * * 1-5",
+  }),
   // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
   entry("Rohan", "goal-loop", "on-request"),

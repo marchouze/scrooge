@@ -334,6 +334,34 @@
         "WS-RMS-DOCUMENTS-PARITY",
         "brief:atlas:auto-wire-one-shot-recordfiled-scripts-into-the-:2026-05-21"
       ]
+    },
+    {
+      "recordId": "record:documents:rohan:daily-mtm-cadence:2026-05-21",
+      "sourcePath": "archive/owner-inbox/2026-05-21_rohan_daily-mtm-cadence.md",
+      "asOf": "2026-05-21T08:00:00.000Z",
+      "registerKey": "documents",
+      "classification": "engineering-seat",
+      "retention": {
+        "citationRef": "urn:obligation:bank:org:gv:director-decision-retention:v1",
+        "minimumYears": 7,
+        "archivalTier": "hot"
+      },
+      "actor": { "type": "service", "id": "agent:rohan:engineering" },
+      "metadata": {
+        "title": "Daily MTM cadence — handler wired; substrate gap surfaced",
+        "path": "archive/owner-inbox/2026-05-21_rohan_daily-mtm-cadence.md",
+        "category": "engineering-substrate-readiness",
+        "author": "Rohan (Market risk engineer, engineering)",
+        "date": "2026-05-21"
+      },
+      "citations": [
+        "D-MARKETS-SCHEMA-FOUNDATION",
+        "D-FX-SALES-TRADING-FRONTEND",
+        "D-EVENT-VIEW-BOUNDARY-WIRE",
+        "IFRS-9-§5.7.1",
+        "IAS-21-§28",
+        "brief:rohan:wire-daily-mtm-cadence-fix-reversal-without-reva:2026-05-21"
+      ]
     }
   ]
 }
