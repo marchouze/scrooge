@@ -16,11 +16,7 @@ function mkPoliciesDir(): string {
   return mkdtempSync(resolve(tmpdir(), "policies-recon-"));
 }
 
-function writePolicy(
-  dir: string,
-  name: string,
-  frontmatter: Record<string, string | null>,
-): void {
+function writePolicy(dir: string, name: string, frontmatter: Record<string, string | null>): void {
   const lines = ["---"];
   for (const [k, v] of Object.entries(frontmatter)) {
     if (v === null) continue;
@@ -206,10 +202,7 @@ describe("policy-next-review recon", () => {
   it("flags a file with no frontmatter block", () => {
     const dir = mkPoliciesDir();
     try {
-      writeFileSync(
-        resolve(dir, "no-frontmatter-v1.md"),
-        "# Just a body, no frontmatter\n",
-      );
+      writeFileSync(resolve(dir, "no-frontmatter-v1.md"), "# Just a body, no frontmatter\n");
       const result = runPolicyNextReviewRecon("/unused", {
         nowIso: "2026-05-21T00:00:00Z",
         policiesDirOverride: dir,

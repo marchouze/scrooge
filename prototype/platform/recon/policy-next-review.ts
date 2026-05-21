@@ -180,11 +180,7 @@ function parseIsoDate(raw: string): ParsedDate {
   const month = Number(m[2]);
   const day = Number(m[3]);
   const d = new Date(Date.UTC(year, month - 1, day));
-  if (
-    d.getUTCFullYear() !== year ||
-    d.getUTCMonth() !== month - 1 ||
-    d.getUTCDate() !== day
-  ) {
+  if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) {
     return { ok: false, reason: `'${raw}' is not a valid calendar date` };
   }
   return { ok: true, date: d };

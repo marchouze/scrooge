@@ -40,10 +40,7 @@ const SKIP = new Set(["README.md"]);
 
 function stripQuotes(raw: string): string {
   const t = raw.trim();
-  if (
-    (t.startsWith('"') && t.endsWith('"')) ||
-    (t.startsWith("'") && t.endsWith("'"))
-  ) {
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
     return t.slice(1, -1);
   }
   return t;
@@ -86,9 +83,9 @@ function addMonths(iso: string, months: number): string {
   const month = Number(m[2]);
   const day = Number(m[3]);
   // Pure calendar arithmetic. If the target month has fewer days, clamp.
-  let newMonth0 = month - 1 + months;
-  let newYear = year + Math.floor(newMonth0 / 12);
-  newMonth0 = ((newMonth0 % 12) + 12) % 12;
+  const rawMonth = month - 1 + months;
+  const newYear = year + Math.floor(rawMonth / 12);
+  const newMonth0 = ((rawMonth % 12) + 12) % 12;
   const daysInTargetMonth = new Date(Date.UTC(newYear, newMonth0 + 1, 0)).getUTCDate();
   const newDay = Math.min(day, daysInTargetMonth);
   return `${newYear.toString().padStart(4, "0")}-${(newMonth0 + 1).toString().padStart(2, "0")}-${newDay.toString().padStart(2, "0")}`;
@@ -151,9 +148,7 @@ function backfillOne(basename: string): BackfillResult {
   // else after `date:`, else immediately after the opening `---`. This
   // keeps the field adjacent to its anchor for human readability.
   const insertAfter =
-    fm.fields.get("effective-from")?.line ??
-    fm.fields.get("date")?.line ??
-    fm.start;
+    fm.fields.get("effective-from")?.line ?? fm.fields.get("date")?.line ?? fm.start;
 
   const newLine = `next-review: "${nr.value}"`;
   const newLines = [...lines.slice(0, insertAfter + 1), newLine, ...lines.slice(insertAfter + 1)];
