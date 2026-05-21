@@ -17,7 +17,8 @@
 //
 // Authors: Devon (CTO, engineering) · Tomas (Operations & payments engineer)
 
-import { BANK_ZA_001 } from "@platform/core/types";
+import { decimalsFor } from "@platform/core/money";
+import { BANK_ZA_001, type Currency } from "@platform/core/types";
 import { makeOutboundMessageDispatched } from "@platform/event-store/event-types/payments";
 import type { EventStore } from "@platform/event-store/store";
 import type { FxTradeExecutedPayload } from "@platform/markets/cdm/fx";
@@ -40,6 +41,49 @@ export interface Mt300Block4 extends SwiftBlock4 {
 export type Mt300Message = SwiftMessage<Mt300Block4> & {
   readonly serialised: string;
 };
+
+// ---------------------------------------------------------------------------
+// Field 36 (Exchange Rate) — sold-per-bought helper
+//
+// SWIFT MT300 field 36 is, by market convention, amount(33B) / amount(32B)
+// = units of sold-currency per one unit of bought-currency. This is the
+// rate every public worked example (Eurex circular 032/21, ASX Austraclear,
+// SWIFT Accord defaults, GFMA GFXD recommendations) uses. The text spec
+// itself only mandates that field 36 be mathematically consistent with
+// 32B and 33B in *some* direction.
+//
+// The function normalises minor units to decimal units via each currency's
+// `decimalsFor()`, so 2dp-vs-2dp (USD/ZAR, EUR/USD) and 2dp-vs-0dp
+// (USD/JPY when JPY lands) both produce the right ratio.
+//
+// Output is a 12-character decimal string with comma decimal separator
+// (SWIFT amount/rate convention), max 5 decimal places. The SWIFT spec
+// for field 36 is 12d (12 digits inclusive of comma); we cap at 5 dp
+// which matches industry practice and the prior emitter.
+// ---------------------------------------------------------------------------
+
+const RATE_DP = 5;
+
+export function formatMt300Rate(
+  soldAmountMinor: bigint,
+  soldCurrency: Currency,
+  boughtAmountMinor: bigint,
+  boughtCurrency: Currency,
+): string {
+  if (boughtAmountMinor === 0n) {
+    throw new Error("MT300 field 36: bought amount is zero — cannot derive rate");
+  }
+  const soldDp = decimalsFor(soldCurrency);
+  const boughtDp = decimalsFor(boughtCurrency);
+  // Convert minor units to decimal units in `number` space. For the bank's
+  // current 2dp-only currency set this is exact for amounts up to ~2^53
+  // minor units (= ZAR 90 trillion); well above any plausible FX notional.
+  const soldDecimal = Number(soldAmountMinor) / 10 ** soldDp;
+  const boughtDecimal = Number(boughtAmountMinor) / 10 ** boughtDp;
+  const rate = soldDecimal / boughtDecimal;
+  // SWIFT amount/rate format uses comma as the decimal separator.
+  return rate.toFixed(RATE_DP).replace(".", ",");
+}
 
 // ---------------------------------------------------------------------------
 // Generator
@@ -102,8 +146,20 @@ export function generateMt300(
   const soldAmountMinor = BigInt(Math.abs(nearLeg.notional.amountMinor));
   const boughtAmountMinor = BigInt(Math.abs(nearLeg.counterNotional.amountMinor));
 
-  // Exchange rate: receiveCurrency per pay-unit (CDM convention)
-  const rate = nearLeg.rate.amount.toFixed(5);
+  // Field 36 (Exchange Rate): SWIFT MT300 market convention is units of
+  // *sold* currency per one unit of *bought* currency — equivalently,
+  // amount(33B) / amount(32B). This is *not* always the same as the
+  // canonical CDM rate (quote per base, D-FX-QUOTING-CONVENTION) — they
+  // agree only when the bank-bought currency happens to be the pair's
+  // base. To stay correct in both directions (side: "buy" and side:
+  // "sell"), field 36 is derived from the two leg amounts directly.
+  // See `mt300-field-36-verification.md` (D-FX-QUOTING-CONVENTION Slice 3a).
+  const rate = formatMt300Rate(
+    soldAmountMinor,
+    soldCurrency as Currency,
+    boughtAmountMinor,
+    boughtCurrency as Currency,
+  );
 
   const ref = commonRef ?? tradeIdValue.slice(0, 16);
   const seqRef = tradeIdValue.slice(-14);

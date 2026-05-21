@@ -24,7 +24,13 @@ const DECIMALS: Record<string, number> = {
   GBP: 2,
 };
 
-function decimalsFor(currency: Currency): number {
+/**
+ * Number of minor-unit decimal places for a currency (e.g. ZAR/USD/EUR/GBP
+ * = 2; JPY would be 0 once added). Exported so cross-currency consumers
+ * (MT300 field-36 rate derivation, payments serialisers) can normalise
+ * minor units to decimal-units without going via `format()`.
+ */
+export function decimalsFor(currency: Currency): number {
   const d = DECIMALS[currency];
   if (d === undefined) throw new Error(`Unsupported currency: ${currency}. Add to DECIMALS.`);
   return d;

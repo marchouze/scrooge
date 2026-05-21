@@ -37,7 +37,12 @@ const TRADE_FIXTURE: FxTradeExecutedPayload = {
       legKind: "near",
       payCurrency: "ZAR",
       receiveCurrency: "USD",
-      notional: { currency: "ZAR", amountMinor: 9_250_000_000_00 }, // ZAR 92,500,000
+      // ZAR 92,500,000 = 9,250,000,000 minor units (cents). The
+      // pre-existing literal `9_250_000_000_00` was off by 100× —
+      // it parsed as 925,000,000,000 minor (= ZAR 9.25 billion), which
+      // would also fail the FxLeg notional-≈-counterNotional×rate
+      // refinement added in Slice 1 (D-FX-QUOTING-CONVENTION).
+      notional: { currency: "ZAR", amountMinor: 9_250_000_000 }, // ZAR 92,500,000
       counterNotional: { currency: "USD", amountMinor: 5_000_000_00 }, // USD 5,000,000
       rate: { currency: "ZAR", amount: 18.5 },
       settlementDate: { iso: "2026-05-14", calendar: "JIHCAL" },
@@ -228,12 +233,54 @@ describe("MT300 generator", () => {
     expect(seq15D).toBeDefined();
   });
 
-  test(":36: rate field is present and numerically correct", () => {
+  test(":36: rate field is present and numerically correct (side=buy)", () => {
+    // TRADE_FIXTURE: bank buys USD against ZAR. Sold ZAR 92,500,000;
+    // bought USD 5,000,000; SWIFT field 36 = sold / bought = 18.5
+    // (ZAR per USD). Comma decimal separator per SWIFT amount format.
+    // D-FX-QUOTING-CONVENTION Slice 3a.
     const mt300 = generateMt300(TRADE_FIXTURE, SENDER_BIC, CORRESPONDENT_BIC);
     const field36 = mt300.block4.find((f) => f.tag === "36");
     expect(field36).toBeDefined();
-    const rate = Number.parseFloat(field36?.value ?? "0");
-    expect(rate).toBeCloseTo(18.5, 2);
+    expect(field36?.value).toBe("18,50000");
+    const rate = Number.parseFloat((field36?.value ?? "0").replace(",", "."));
+    expect(rate).toBeCloseTo(18.5, 5);
+  });
+
+  test(":36: rate is sold-per-bought when bank sells the base currency (side=sell)", () => {
+    // Regression: when the bank sells the base currency (here, sells
+    // USD against ZAR on pair USD/ZAR), the canonical CDM rate
+    // (quote-per-base = ZAR per USD = 18.5) does NOT equal SWIFT's
+    // sold-per-bought (= USD per ZAR = 1/18.5 ≈ 0.0541). MT300 must
+    // emit the latter. D-FX-QUOTING-CONVENTION Slice 3a.
+    const sellFixture: FxTradeExecutedPayload = {
+      ...TRADE_FIXTURE,
+      side: "sell",
+      legs: [
+        {
+          legKind: "near",
+          // Bank sells USD (pays USD), receives ZAR
+          payCurrency: "USD",
+          receiveCurrency: "ZAR",
+          notional: { currency: "USD", amountMinor: 5_000_000_00 },
+          counterNotional: { currency: "ZAR", amountMinor: 9_250_000_000 },
+          // Canonical rate is still quote-per-base = ZAR per USD = 18.5.
+          rate: { currency: "ZAR", amount: 18.5 },
+          settlementDate: { iso: "2026-05-14", calendar: "JIHCAL" },
+        },
+      ],
+    };
+    const mt300 = generateMt300(sellFixture, SENDER_BIC, CORRESPONDENT_BIC);
+    const field36 = mt300.block4.find((f) => f.tag === "36");
+    expect(field36).toBeDefined();
+    // sold = USD 5,000,000; bought = ZAR 92,500,000.
+    // sold-per-bought = 5,000,000 / 92,500,000 ≈ 0.05405
+    const rate = Number.parseFloat((field36?.value ?? "0").replace(",", "."));
+    expect(rate).toBeCloseTo(1 / 18.5, 5);
+    // And the canonical CDM rate.amount (18.5) is NOT what shows up
+    // on the wire — the previous emitter would have written "18.50000"
+    // here, which is the inverted value the SWIFT network rule would
+    // have detected as the wrong direction.
+    expect(field36?.value).not.toContain("18,5");
   });
 
   test(":22A: operation type is NEW", () => {
