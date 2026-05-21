@@ -13,8 +13,8 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
-import type { CurrencyPair } from "./primitives";
 import type { FxLeg } from "./fx";
+import type { CurrencyPair } from "./primitives";
 
 /**
  * Resolve the base-currency notional amount in minor units for an FxLeg,

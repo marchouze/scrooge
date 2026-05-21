@@ -62,6 +62,7 @@ import {
 } from "../../event-store/event-types/fx-accounting";
 import type { EventStore } from "../../event-store/store";
 import type { FxTradeExecutedPayload } from "../cdm/fx";
+import { baseAmountMinor } from "../cdm/fx-helpers";
 import { seedForwardRate } from "./forward-rate-seed";
 
 // ---------------------------------------------------------------------------
@@ -366,7 +367,15 @@ export function runEodFxForwardRevaluation(
           tenorDays,
         );
         const bookedRate = farLeg.rate.amount;
-        const notionalBaseMinor = farLeg.notional.amountMinor;
+        // Resolve base-currency notional via the Slice-2 helper
+        // (D-FX-QUOTING-CONVENTION). The legacy line was
+        //     const notionalBaseMinor = farLeg.notional.amountMinor;
+        // which only matches the base amount when the far leg's payCurrency
+        // is the pair base. For a typical swap whose near leg is SELL
+        // (pay=base/USD) and whose far leg is therefore BUY (pay=quote/ZAR),
+        // the far-leg notional is in the QUOTE currency and the base amount
+        // lives on counterNotional. The helper picks the right side.
+        const notionalBaseMinor = baseAmountMinor(farLeg, trade.currencyPair);
 
         const pnlDeltaMinor = computeMtmPnlMinor(forwardRateMinor, bookedRate, notionalBaseMinor);
 
@@ -413,7 +422,12 @@ export function runEodFxForwardRevaluation(
           tenorDays,
         );
         const bookedRate = nearLeg.rate.amount;
-        const notionalBaseMinor = nearLeg.notional.amountMinor;
+        // Resolve base-currency notional via the Slice-2 helper
+        // (D-FX-QUOTING-CONVENTION). Same fix as the FX-swap far-leg branch
+        // above: the legacy `nearLeg.notional.amountMinor` only works for
+        // SELL-side NDFs (pay=base); BUY-side NDFs had base sitting on
+        // counterNotional and produced ~rate× too-large MtM.
+        const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
 
         // NDF settlement amount in ndfSettlementCurrency minor units.
         // Formula: (currentForwardRate − bookedRate) × notional / currentForwardRate
@@ -459,7 +473,11 @@ export function runEodFxForwardRevaluation(
           tenorDays,
         );
         const bookedRate = nearLeg.rate.amount;
-        const notionalBaseMinor = nearLeg.notional.amountMinor;
+        // Resolve base-currency notional via the Slice-2 helper
+        // (D-FX-QUOTING-CONVENTION). Same fix as the FX-swap and NDF
+        // branches: side-correct base-amount selection so BUY-side
+        // forwards no longer produce ~rate× too-large MtM.
+        const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
 
         const pnlDeltaMinor = computeMtmPnlMinor(forwardRateMinor, bookedRate, notionalBaseMinor);
 

@@ -27,6 +27,7 @@ import type {
   FxSettlementConfirmedPayload,
 } from "../event-store/event-types/fx-accounting";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { baseAmountMinor } from "../markets/cdm/fx-helpers";
 
 // ---------------------------------------------------------------------------
 // Calculator 1 — FX Position Calculator
@@ -94,7 +95,14 @@ export function fxPositionCalculator(args: {
 
     for (const leg of trade.legs) {
       if (leg.legKind !== "near") continue;
-      const notional = leg.notional.amountMinor;
+      // Resolve base-currency notional via the Slice-2 helper —
+      // (D-FX-QUOTING-CONVENTION). Previously read `leg.notional.amountMinor`
+      // directly, which only equals the base amount when the leg's
+      // payCurrency is the pair base (SELL on a major-first pair). For BUY
+      // trades on a major-first pair, notional is in the quote currency and
+      // the base amount lives on counterNotional. The helper picks the right
+      // field side-correctly.
+      const notional = baseAmountMinor(leg, trade.currencyPair);
       const isBuy = trade.side === "buy";
       if (isBuy) {
         existing.netBaseMinor += notional;
@@ -176,7 +184,18 @@ export function unrealisedPnlCalculator(args: {
     if (!nearLeg) continue;
 
     const bookRate = nearLeg.rate.amount;
-    const notionalBaseMinor = nearLeg.notional.amountMinor;
+    // Resolve base-currency notional via the Slice-2 helper
+    // (D-FX-QUOTING-CONVENTION). The legacy line
+    //     const notionalBaseMinor = nearLeg.notional.amountMinor;
+    // was incorrect for BUY trades on a major-first pair: notional.currency
+    // = payCurrency = quote on a BUY, so `notional.amountMinor` was
+    // quote-currency cents, not base. Multiplying by `(currentRate - bookRate)`
+    // (which has units quote/base) then produced a number ~rate× too large.
+    // The helper resolves to the leg's counterNotional when the leg is on
+    // the quote side, keeping `notionalBaseMinor × rateDelta` dimensionally
+    // coherent (units = base × quote/base = quote-cents, which is the
+    // ZAR-functional unit for the BA-350 ZAR-presented P&L).
+    const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
     const pairKey = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
 
     // Use latest revaluation rate if available, else fall back to current rate map
