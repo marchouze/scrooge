@@ -15,8 +15,9 @@
 //                               posting events land here so the FX domain
 //                               is self-contained.)
 //
-// `FxSettlementConfirmed` was retired 2026-05-21 in favour of `TradeMatured`
-// (brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21).
+// The previous FX-specific lifecycle-terminal event was retired on
+// 2026-05-21 in favour of `TradeMatured` (see trade-matured.ts; authority:
+// brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21).
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)

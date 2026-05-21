@@ -18,7 +18,7 @@
 //   - FxTradeExecuted → trade-booking posting, balanced legs per currency
 //   - FxPositionRevalued (gain) → revaluation posting, Dr Receivable / Cr UnrealisedPnL
 //   - FxPositionRevalued (loss) → revaluation posting, Dr UnrealisedPnL / Cr Receivable
-//   - FxSettlementConfirmed with positive realised P&L → settlement posting, balanced
+//   - TradeMatured with positive realised P&L → settlement posting, balanced
 //   - Idempotency: re-running over same FX events emits zero duplicates
 //
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
@@ -421,7 +421,7 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     expect(legs).toHaveLength(0);
   });
 
-  it("PR-FX-003: FxSettlementConfirmed with positive realised P&L → balanced legs per currency", () => {
+  it("PR-FX-003: TradeMatured with positive realised P&L → balanced legs per currency", () => {
     const settlementPayload = {
       tradeId: "FX-TRADE-001",
       currencyPair: "ZAR/USD",
@@ -517,8 +517,8 @@ describe("FX lifecycle — ConfirmationMatched: no GL entries", () => {
 // ---------------------------------------------------------------------------
 
 describe("FX lifecycle — SettlementReversed: mirrors PR-FX-003", () => {
-  it("SettlementReversed legs are exact debit/credit inverse of FxSettlementConfirmed legs", () => {
-    // Construct a minimal FxSettlementConfirmed payload.
+  it("SettlementReversed legs are exact debit/credit inverse of TradeMatured legs", () => {
+    // Construct a minimal TradeMatured payload.
     const settlementPayload = {
       tradeId: "FX-REV-TEST-001",
       currencyPair: "ZAR/USD",

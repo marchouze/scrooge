@@ -22,10 +22,8 @@
 // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
 //   engineer, engineering)
 
-import type {
-  FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
-} from "../event-store/event-types/fx-accounting";
+import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
+import type { TradeMaturedFxSpotPayload } from "../event-store/event-types/trade-matured";
 import { canonicalSide, toCanonicalPair } from "../market-data/canonical-pair";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { baseAmountMinor } from "../markets/cdm/fx-helpers";
@@ -34,7 +32,7 @@ import { baseAmountMinor } from "../markets/cdm/fx-helpers";
 // Calculator 1 — FX Position Calculator
 //
 // Net long/short per currency pair from open (unsettled) FxTradeExecuted
-// events. A trade is "open" if there is no corresponding FxSettlementConfirmed
+// events. A trade is "open" if there is no corresponding TradeMatured
 // event for that tradeId.
 //
 // Output: per currency pair, net long (positive) and net short (negative)
@@ -60,7 +58,7 @@ export interface FxPositionResult {
  * Compute net open positions per currency pair.
  *
  * @param trades - Array of FxTradeExecuted payloads (tradeId may be string or Identifier)
- * @param settledTradeIds - Set of trade ID strings for which FxSettlementConfirmed has been received
+ * @param settledTradeIds - Set of trade ID strings for which TradeMatured has been received
  * @param zarRates - Map from currency code → ZAR rate (units of ZAR per 1 minor unit of currency)
  * @param asOf - ISO 8601 as-of timestamp for the snapshot
  */
@@ -238,7 +236,7 @@ export function unrealisedPnlCalculator(args: {
 // ---------------------------------------------------------------------------
 // Calculator 3 — Realised P&L Calculator
 //
-// Folds FxSettlementConfirmed events to compute realised P&L per trade.
+// Folds TradeMatured events to compute realised P&L per trade.
 // Realised P&L = settled cash (ZAR equivalent) - carrying amount at
 // last revaluation. In the model this is the realisedPnlZarMinor field
 // on the settlement event.
@@ -257,7 +255,7 @@ export interface RealisedPnlResult {
  * Compute realised P&L from settlement events.
  */
 export function realisedPnlCalculator(args: {
-  readonly settlements: ReadonlyArray<{ tradeId: string } & FxSettlementConfirmedPayload>;
+  readonly settlements: ReadonlyArray<{ tradeId: string } & TradeMaturedFxSpotPayload>;
 }): RealisedPnlResult[] {
   return args.settlements.map((s) => ({
     tradeId: s.tradeId,

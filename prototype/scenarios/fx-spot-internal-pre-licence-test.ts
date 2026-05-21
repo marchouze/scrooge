@@ -903,17 +903,17 @@ async function runPhase2(): Promise<PhaseResult> {
     `outcomes=${subResult.outcomes.map((o) => o.kind).join(",")}`,
   );
   r.assert(
-    "FxSettlementConfirmed emitted (lifecycle close)",
-    countEventsOfType("FxSettlementConfirmed") === 1,
-    `count=${countEventsOfType("FxSettlementConfirmed")}`,
+    "TradeMatured emitted (lifecycle close)",
+    countEventsOfType("TradeMatured") === 1,
+    `count=${countEventsOfType("TradeMatured")}`,
   );
 
-  // Wave-2 (Kai PR — this PR): emit GL posting for FxSettlementConfirmed
+  // Wave-2 (Kai PR — this PR): emit GL posting for TradeMatured
   // via the production posting rule `fxSettlementJournals`. Drives the GL
   // projection so `recon:gl-ledger-coverage` finds a posting.
   try {
     const { fxSettlementJournals } = await import("../platform/accounting/posting-rules/fx-spot");
-    for (const confirmed of eventStore.replay({ type: "FxSettlementConfirmed" })) {
+    for (const confirmed of eventStore.replay({ type: "TradeMatured" })) {
       const confirmedPayload = confirmed.payload as Parameters<typeof fxSettlementJournals>[0];
       const legs = fxSettlementJournals(confirmedPayload);
       await emitPosting({
@@ -1780,7 +1780,7 @@ async function runPhase6(): Promise<PhaseResult> {
   //
   // `computeDailyPnL` (Bea PR #652 / D-FX-SALES-TRADING-FRONTEND) replays
   // the event store and aggregates FxTradeExecuted + FxPositionRevalued +
-  // FxSettlementConfirmed by pair / counterparty / book. We assert the
+  // TradeMatured by pair / counterparty / book. We assert the
   // cumulative state reflects every trade we booked: 4 trades total —
   // trade-001 (Phase 2 happy-path, settled), trade-002 (Phase 3 Herstatt,
   // live), trade-003 (Phase 4 mutual-fail, live), trade-004 (Phase 5 op
@@ -1803,7 +1803,7 @@ async function runPhase6(): Promise<PhaseResult> {
 
     const happyPathTrade = pnl.trades.find((t) => t.tradeId === "TRD-FX-SPOT-INTERNAL-TEST-001");
     r.assert(
-      "Block B — Phase 2 happy-path trade is marked 'settled' (FxSettlementConfirmed seen)",
+      "Block B — Phase 2 happy-path trade is marked 'settled' (TradeMatured seen)",
       happyPathTrade?.status === "settled",
       `status=${happyPathTrade?.status}`,
     );
@@ -1820,7 +1820,7 @@ async function runPhase6(): Promise<PhaseResult> {
 
     const herstattTrade = pnl.trades.find((t) => t.tradeId === "TRD-FX-SPOT-INTERNAL-TEST-002");
     r.assert(
-      "Block B — Phase 3 Herstatt trade stays 'live' (no FxSettlementConfirmed)",
+      "Block B — Phase 3 Herstatt trade stays 'live' (no TradeMatured)",
       herstattTrade?.status === "live",
       `status=${herstattTrade?.status}`,
     );
@@ -1874,7 +1874,7 @@ async function runPhase6(): Promise<PhaseResult> {
   // `buildGlView` (Bea PR #652) replays SubLedgerPostingEmitted +
   // JournalEntryPosted + ManualJournalEntry and produces a trial balance.
   // The scenario emits postings for FxTradeExecuted (trade-booking),
-  // FxPositionRevalued (revaluation), FxSettlementConfirmed (settlement),
+  // FxPositionRevalued (revaluation), TradeMatured (settlement),
   // and FxSettlementFailed{one-leg-delivered} (PR-FX-005). Trial balance
   // closes at zero per currency by construction (each posting balances
   // per-currency at append-time, schema-enforced).

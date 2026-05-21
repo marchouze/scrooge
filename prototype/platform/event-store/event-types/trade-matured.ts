@@ -1,15 +1,15 @@
 // platform/event-store/event-types/trade-matured.ts
 //
 // TradeMatured — generic lifecycle-terminal event for a settled or matured
-// trade across asset classes. Replaces the FX-specific
-// `FxSettlementConfirmed` (retired 2026-05-21) as the canonical terminal
-// event for FX spot, and is intended to subsume future per-asset terminal
-// events (bond maturity, equity settlement, IRS termination) as those
-// lifecycles converge on this primitive.
+// trade across asset classes. Replaces the FX-specific lifecycle-terminal
+// event retired on 2026-05-21 as the canonical terminal event for FX spot,
+// and is intended to subsume future per-asset terminal events (bond
+// maturity, equity settlement, IRS termination) as those lifecycles
+// converge on this primitive.
 //
 // The payload is a discriminated union on `productKind`. The FX-spot variant
-// is structurally identical to the previous `FxSettlementConfirmed` payload
-// so the FX accounting lifecycle (derecognition + realised-P&L crystallisation
+// is structurally identical to the previous FX settlement payload so the FX
+// accounting lifecycle (derecognition + realised-P&L crystallisation
 // in product-control/daily-pnl.ts, PR-FX-PRIN / PR-FX-LIFECYCLE-CLOSE in
 // posting-rules/fx-spot.ts) preserves its existing semantics.
 //

@@ -240,13 +240,13 @@ export function buildGlView(
   // Build lookup map for source events referenced by SubLedgerPostingEmitted.
   // Includes the new CDM lifecycle event types that PR-FX-PRIN and
   // PR-FX-LIFECYCLE-CLOSE post against (2026-05-20 circularity fix —
-  // FxSettlementConfirmed retained for back-compat with legacy tests).
+  // TradeMatured retained for back-compat with legacy tests).
   const sourceEventMap = new Map<string, Record<string, unknown>>();
   for (const e of events) {
     if (
       e.type === "FxTradeExecuted" ||
       e.type === "FxPositionRevalued" ||
-      e.type === "FxSettlementConfirmed" ||
+      e.type === "TradeMatured" ||
       e.type === "PrincipalPayment" ||
       e.type === "SettlementConfirmed"
     ) {

@@ -83,7 +83,6 @@ import {
   settlementFailureClassifiedPayloadSchema,
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
-import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
 import {
   alertOpenedPayloadSchema,
   auditCommitteePackPreppedPayloadSchema,
@@ -209,6 +208,7 @@ import {
   threatModelGateDecisionPayloadSchema,
   vendorSecurityReviewPayloadSchema,
 } from "../event-types/security-devops-extended";
+import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
 import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -233,7 +233,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     // Generic lifecycle-terminal event — confirms a trade has matured /
     // settled. Discriminated-union payload (productKind: "fx-spot" today).
-    // Retires `FxSettlementConfirmed` (2026-05-21) per
+    // Retires `TradeMatured` (2026-05-21) per
     // brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21.
     // Subscribes: Bea (fx-posting-engine).
     type: "TradeMatured",

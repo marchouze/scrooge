@@ -10,7 +10,7 @@
 // FX extension added in this slice:
 //   - FxTradeExecuted  → "fx-receivable" + "fx-payable" legs
 //   - FxPositionRevalued → "fx-revaluation" leg
-//   - FxSettlementConfirmed → "fx-settlement-receive" + "fx-settlement-deliver" legs
+//   - TradeMatured → "fx-settlement-receive" + "fx-settlement-deliver" legs
 //
 // P1 — derived from the event log.
 // P2 — every row inherits the source event's citations.
@@ -27,10 +27,8 @@ import {
   fxSettlementJournals,
   fxTradeBookingJournals,
 } from "../../accounting/posting-rules/fx-spot";
-import type {
-  FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
-} from "../../event-store/event-types/fx-accounting";
+import type { FxPositionRevaluedPayload } from "../../event-store/event-types/fx-accounting";
+import type { TradeMaturedFxSpotPayload } from "../../event-store/event-types/trade-matured";
 import type { Event } from "../../event-store/types";
 import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
 import type { Projection } from "../types";
@@ -58,9 +56,9 @@ export type SubLedgerLegKind =
   | "fx-payable"
   /** Daily FVTPL revaluation leg — FxPositionRevalued. */
   | "fx-revaluation"
-  /** Settlement receive leg — cash arrives at nostro on FxSettlementConfirmed. */
+  /** Settlement receive leg — cash arrives at nostro on TradeMatured. */
   | "fx-settlement-receive"
-  /** Settlement deliver leg — cash leaves nostro on FxSettlementConfirmed. */
+  /** Settlement deliver leg — cash leaves nostro on TradeMatured. */
   | "fx-settlement-deliver";
 
 export interface SubLedgerRow {
@@ -225,14 +223,14 @@ export const subLedgerProjection: Projection<SubLedgerState, EquityLifecycleEven
 // ---------------------------------------------------------------------------
 
 export type FxSubLedgerEvent = Event & {
-  type: "FxTradeExecuted" | "FxPositionRevalued" | "FxSettlementConfirmed" | "FxTradeCancelled";
+  type: "FxTradeExecuted" | "FxPositionRevalued" | "TradeMatured" | "FxTradeCancelled";
 };
 
 function isFxSubLedgerEvent(event: { type: string }): event is FxSubLedgerEvent {
   return (
     event.type === "FxTradeExecuted" ||
     event.type === "FxPositionRevalued" ||
-    event.type === "FxSettlementConfirmed" ||
+    event.type === "TradeMatured" ||
     event.type === "FxTradeCancelled"
   );
 }
@@ -294,8 +292,8 @@ function applyFxPositionRevalued(state: SubLedgerState, e: Event): SubLedgerStat
   return next;
 }
 
-function applyFxSettlementConfirmed(state: SubLedgerState, e: Event): SubLedgerState {
-  const p = e.payload as unknown as FxSettlementConfirmedPayload;
+function applyTradeMatured(state: SubLedgerState, e: Event): SubLedgerState {
+  const p = e.payload as unknown as TradeMaturedFxSpotPayload;
   const journals = fxSettlementJournals(p);
 
   let next = state;
@@ -326,7 +324,7 @@ function applyFxSettlementConfirmed(state: SubLedgerState, e: Event): SubLedgerS
 //
 // Replays the full event list, first collecting cancelled trade IDs from
 // FxTradeCancelled events, then folding FxTradeExecuted / FxPositionRevalued
-// / FxSettlementConfirmed events while skipping any whose tradeId is in the
+// / TradeMatured events while skipping any whose tradeId is in the
 // cancelled set. Cancellations themselves produce no sub-ledger rows (the
 // original rows remain absent from the ledger, i.e. they are never added).
 //
@@ -375,10 +373,10 @@ export function buildFxSubLedger(events: readonly Event[]): SubLedgerState {
         state = applyFxPositionRevalued(state, e);
         break;
       }
-      case "FxSettlementConfirmed": {
+      case "TradeMatured": {
         const p = e.payload as Record<string, unknown>;
         if (typeof p.tradeId === "string" && cancelledTradeIds.has(p.tradeId)) break;
-        state = applyFxSettlementConfirmed(state, e);
+        state = applyTradeMatured(state, e);
         break;
       }
     }
@@ -402,8 +400,8 @@ export const fxSubLedgerProjection: Projection<SubLedgerState, FxSubLedgerEvent>
         return applyFxTradeExecuted(state, event);
       case "FxPositionRevalued":
         return applyFxPositionRevalued(state, event);
-      case "FxSettlementConfirmed":
-        return applyFxSettlementConfirmed(state, event);
+      case "TradeMatured":
+        return applyTradeMatured(state, event);
     }
   },
 };

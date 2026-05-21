@@ -165,12 +165,13 @@ approval:
   decisionRef: D-MARKETS-CAPITAL-TIME-SHAPE
 ```
 
-### PR-FX-003 — FX Settlement (FxSettlementConfirmed)
+### PR-FX-003 — FX Settlement (TradeMatured, productKind: fx-spot)
 
 ```yaml
 id: PR-FX-003
 name: "FX Spot settlement — derecognition and nostro recognition"
-eventType: "FxSettlementConfirmed"
+eventType: "TradeMatured"
+eventProductKind: "fx-spot"
 preconditions:
   - "event.payload.legKind == 'near'"
 postingLogic: "fxSettlementJournals(event.payload) — see fx-spot.ts"

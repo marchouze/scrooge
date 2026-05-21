@@ -41,7 +41,7 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     ifrsClassification: "amortised-cost",
     ifrsClassificationStatus: "in-force",
     shouldNetToZeroAtPeriodEnd: false,
-    sourceEventTypes: ["BankAccountOpened", "FxSettlementConfirmed"],
+    sourceEventTypes: ["BankAccountOpened", "TradeMatured"],
   },
   {
     accountId: "ACC-1100-002",
@@ -51,7 +51,7 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     ifrsClassificationStatus: "in-force",
     clearanceHorizonDays: 0,
     shouldNetToZeroAtPeriodEnd: false,
-    sourceEventTypes: ["FxSettlementConfirmed"],
+    sourceEventTypes: ["TradeMatured"],
   },
   {
     accountId: "ACC-1100-004",
@@ -61,7 +61,7 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     ifrsClassificationStatus: "in-force",
     clearanceHorizonDays: 2,
     shouldNetToZeroAtPeriodEnd: true,
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+    sourceEventTypes: ["FxTradeExecuted", "TradeMatured"],
   },
   {
     accountId: "ACC-1100-005",
@@ -71,7 +71,7 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     ifrsClassificationStatus: "in-force",
     clearanceHorizonDays: 2,
     shouldNetToZeroAtPeriodEnd: true,
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+    sourceEventTypes: ["FxTradeExecuted", "TradeMatured"],
   },
   {
     accountId: "ACC-2100-001",
@@ -90,7 +90,7 @@ const COA_FIXTURES: ChartOfAccountsEntry[] = [
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "superseded",
     shouldNetToZeroAtPeriodEnd: false,
-    sourceEventTypes: ["FxPositionRevalued", "FxSettlementConfirmed"],
+    sourceEventTypes: ["FxPositionRevalued", "TradeMatured"],
   },
 ];
 
@@ -195,7 +195,7 @@ describe("tracePostingToSourceEvent", () => {
       trialBalance: tb,
       postingEvents: [posting],
       primaryEvents,
-      accountSourceMap: new Map([["ACC-1100-001", ["BankAccountOpened", "FxSettlementConfirmed"]]]),
+      accountSourceMap: new Map([["ACC-1100-001", ["BankAccountOpened", "TradeMatured"]]]),
     });
 
     expect(result.ok).toBe(false);

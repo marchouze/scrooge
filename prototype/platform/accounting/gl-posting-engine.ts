@@ -21,7 +21,7 @@
 //                            postingType "fx-lifecycle-close"
 //                            (zero realised P&L → no posting; surfaced as
 //                            skipped)
-//   FxSettlementConfirmed  → PR-FX-003 (fxSettlementJournals) → DEPRECATED;
+//   TradeMatured  → PR-FX-003 (fxSettlementJournals) → DEPRECATED;
 //                            kept for back-compat with legacy emitters →
 //                            postingType "settlement"
 //   FxSettlementFailed     → PR-FX-005 (fxSettlementFailedJournals) →
@@ -86,10 +86,10 @@
 
 import type {
   FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
   FxSettlementFailedPayload,
 } from "../event-store/event-types/fx-accounting";
 import { makeSubLedgerPostingEmitted } from "../event-store/event-types/fx-accounting";
+import type { TradeMaturedFxSpotPayload } from "../event-store/event-types/trade-matured";
 import type { Event } from "../event-store/types";
 import type {
   FxTradeExecutedPayload,
@@ -360,11 +360,11 @@ function dispatchEvent(event: Event, allEvents: ReadonlyArray<Event>): DispatchR
       };
     }
 
-    case "FxSettlementConfirmed": {
+    case "TradeMatured": {
       // Deprecated path — PR-FX-003. Kept for back-compat with rare
       // legacy emitters (test-only). New authoring uses PR-FX-PRIN +
       // PR-FX-LIFECYCLE-CLOSE.
-      const payload = event.payload as FxSettlementConfirmedPayload;
+      const payload = event.payload as TradeMaturedFxSpotPayload;
       const legs = fxSettlementJournals(payload);
       if (legs.length === 0) {
         return { kind: "skip", reason: "zero-realised-pnl" };
@@ -449,7 +449,7 @@ const HANDLED_EVENT_TYPES: ReadonlySet<string> = new Set([
   "FxPositionRevalued",
   "PrincipalPayment",
   "SettlementConfirmed",
-  "FxSettlementConfirmed",
+  "TradeMatured",
   "FxSettlementFailed",
   "FxSettlementInstructed",
   "TradeReportSubmitted",

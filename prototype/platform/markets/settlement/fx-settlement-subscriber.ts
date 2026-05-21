@@ -6,7 +6,7 @@
 // settlement-lifecycle events that PROC-OPS-SFBCP-01 (Devon, Chief Operating
 // Officer, governance — PR #636) v0.2 §2 depends on:
 //
-//   - FxSettlementConfirmed       (both legs delivered)
+//   - TradeMatured       (both legs delivered)
 //   - MissedExpectedReceipt       (our leg out, counterparty leg missing)
 //   - FxSettlementFailed          (one-leg-delivered | neither-delivered | operational-delay)
 //   - SettlementFailureClassified (deterministic follow-on for every FxSettlementFailed)
@@ -46,11 +46,11 @@
 
 import { newEventId } from "../../core/types";
 import {
-  makeFxSettlementConfirmed,
   makeFxSettlementFailed,
   makeMissedExpectedReceipt,
   makeSettlementFailureClassified,
 } from "../../event-store/event-types/fx-accounting";
+import { makeTradeMatured } from "../../event-store/event-types/trade-matured";
 import type { Actor, Event } from "../../event-store/types";
 
 // ---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ export interface CorrespondentMessage {
   readonly legStatus: CorrespondentLegStatus;
   /**
    * Currency pair traded (canonical "BASE/QUOTE", e.g. "USD/ZAR"). Used to
-   * tag the `FxSettlementConfirmed` event.
+   * tag the `TradeMatured` event.
    */
   readonly currencyPair: string;
   /** Which leg of the trade this message reports on (near / far). */
@@ -233,7 +233,7 @@ export function idempotencyKey(m: CorrespondentMessage, kind: MessageOutcome["ki
  * Run the FX settlement subscriber over a (simulated) correspondent feed.
  *
  * For each message:
- *   - both legs delivered          → `FxSettlementConfirmed`
+ *   - both legs delivered          → `TradeMatured`
  *   - our leg delivered, theirs not → `MissedExpectedReceipt` + `FxSettlementFailed{one-leg-delivered}`
  *   - neither leg delivered, past cutoff+tolerance, not in-flight
  *                                  → `FxSettlementFailed{neither-delivered}`
@@ -321,16 +321,17 @@ function emitConfirmed(
     !m.nostroAccountQuote
   ) {
     throw new Error(
-      `CorrespondentMessage for trade ${m.tradeRef} reports both legs delivered but is missing settled-amount or nostro-account fields required for FxSettlementConfirmed (subscriber contract).`,
+      `CorrespondentMessage for trade ${m.tradeRef} reports both legs delivered but is missing settled-amount or nostro-account fields required for TradeMatured (subscriber contract).`,
     );
   }
-  return makeFxSettlementConfirmed({
+  return makeTradeMatured({
     asOf: config.now(),
     entity: config.entity,
     actor: config.actor,
     citations: [...config.citations],
     eventId: newId(),
     payload: {
+      productKind: "fx-spot",
       tradeId: m.tradeRef,
       currencyPair: m.currencyPair,
       legKind: m.legKind,

@@ -44,7 +44,7 @@
 //                         lives in trade-matured.ts as a generic event)
 //   - trade-matured.ts  — TradeMatured (asset-class-agnostic terminal event;
 //                         discriminated union on productKind; fx-spot variant
-//                         retired the previous FxSettlementConfirmed)
+//                         retired the previous TradeMatured)
 //
 // Party domain lives in prototype/domains/party/ (its own domain package);
 // re-exported directly here as before.
@@ -67,8 +67,8 @@ export * from "./customer";
 export * from "./fx-accounting";
 // TradeMatured — generic lifecycle-terminal event (D-MARKETS-SCHEMA-FOUNDATION;
 // brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21).
-// Discriminated-union payload; fx-spot variant first; retires
-// FxSettlementConfirmed entirely (2026-05-21).
+// Discriminated-union payload; fx-spot variant first; retires the previous
+// FX-specific lifecycle-terminal event entirely (2026-05-21).
 export * from "./trade-matured";
 export * from "./regulatory";
 export * from "./performance";

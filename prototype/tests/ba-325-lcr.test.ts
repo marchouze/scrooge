@@ -5,7 +5,7 @@
 // classification map + per-entity isolation + cap arithmetic.
 //
 // P1-fix (2026-05-12): cash flows now folded from FxSettlementInstructed /
-// FxSettlementConfirmed events in the event store (Principle 1 compliant).
+// TradeMatured events in the event store (Principle 1 compliant).
 // Tests updated to pass an event store + period window. Previously the tests
 // passed account-level outflow/inflow rows; those are now replaced by
 // settlement events.
@@ -38,7 +38,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
-import { makeFxSettlementConfirmed } from "../platform/event-store/event-types/fx-accounting";
+import { makeTradeMatured } from "../platform/event-store/event-types/trade-matured";
 import { EventStore } from "../platform/event-store/store";
 import { makeEquitySettlementInstructed } from "../platform/markets/cdm/equity";
 import { makeFxSettlementInstructed } from "../platform/markets/cdm/fx";
@@ -746,17 +746,18 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
     expect(r.lcrPercent).toBe("infinity");
   });
 
-  it("FxSettlementConfirmed events also contribute to cash flows", () => {
-    // Append a FxSettlementConfirmed with a ZAR inflow and a USD outflow.
+  it("TradeMatured events also contribute to cash flows", () => {
+    // Append a TradeMatured with a ZAR inflow and a USD outflow.
     // Only ZAR (functional ccy) leg should count; USD should be a placeholder.
     const store = makeStore();
     store.append(
-      makeFxSettlementConfirmed({
+      makeTradeMatured({
         asOf: "2026-05-10T12:00:00.000Z",
         entity: ENTITY_BANK,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
+          productKind: "fx-spot",
           tradeId: "TRADE-CONF-001",
           currencyPair: "ZAR/USD",
           legKind: "near",

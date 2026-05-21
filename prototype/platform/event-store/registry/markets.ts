@@ -19,7 +19,7 @@
 //     BeneficialOwnerResolved, SanctionsClearancePassed, FatcaCrsClassified,
 //     PopiaConsentRecorded, CreditAssessmentCompleted, AccountsSetupCompleted
 //   - FX accounting: FxPositionRevalued
-//   - Generic lifecycle terminal: TradeMatured (retired FxSettlementConfirmed 2026-05-21)
+//   - Generic lifecycle terminal: TradeMatured (retired TradeMatured 2026-05-21)
 
 import { z } from "zod";
 

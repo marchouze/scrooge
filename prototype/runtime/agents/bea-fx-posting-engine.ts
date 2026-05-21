@@ -7,7 +7,7 @@
 // Subscriptions:
 //   - FxTradeExecuted       → PR-FX-001: fxTradeBookingJournals()
 //   - FxPositionRevalued    → PR-FX-002: fxRevaluationJournals()
-//   - FxSettlementConfirmed → PR-FX-003: fxSettlementJournals()
+//   - TradeMatured → PR-FX-003: fxSettlementJournals()
 //
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
@@ -31,10 +31,10 @@ import { newEventId } from "../../platform/core/types";
 import { makeSubLedgerPostingEmitted } from "../../platform/event-store/event-types/fx-accounting";
 import type {
   FxPositionRevaluedPayload,
-  FxSettlementConfirmedPayload,
   FxTradeCancelledPayload,
   SubLedgerLeg,
 } from "../../platform/event-store/event-types/fx-accounting";
+import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -55,7 +55,7 @@ const FX_POSTING_CITATIONS: readonly string[] = [
 const SUBSCRIBED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
-  "FxSettlementConfirmed",
+  "TradeMatured",
   "FxTradeCancelled",
 ]);
 
@@ -90,7 +90,7 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
       : [
           ...eventStore.replay({ type: "FxTradeExecuted" }),
           ...eventStore.replay({ type: "FxPositionRevalued" }),
-          ...eventStore.replay({ type: "FxSettlementConfirmed" }),
+          ...eventStore.replay({ type: "TradeMatured" }),
           ...eventStore.replay({ type: "FxTradeCancelled" }),
         ];
 
@@ -194,7 +194,7 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           postedKeys.add(`${e.event_id}:revaluation`);
           eventsEmitted += 1;
         }
-      } else if (e.type === "FxSettlementConfirmed") {
+      } else if (e.type === "TradeMatured") {
         // PR-FX-003: T+2 settlement — derecognises receivable/payable,
         // recognises nostro cash legs, crystallises realised P&L.
         if (postedKeys.has(`${e.event_id}:settlement`)) {
@@ -202,13 +202,13 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           continue;
         }
 
-        const payload = e.payload as FxSettlementConfirmedPayload;
+        const payload = e.payload as TradeMaturedFxSpotPayload;
         const legs = fxSettlementJournals(payload);
 
         if (legs.length === 0) {
           logger.warn(
             { eventId: e.event_id, tradeId: payload.tradeId },
-            "bea:fx-posting-engine — FxSettlementConfirmed produced zero legs; skipping",
+            "bea:fx-posting-engine — TradeMatured produced zero legs; skipping",
           );
           skipped += 1;
           continue;
