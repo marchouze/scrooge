@@ -19,7 +19,12 @@ import { resolve as resolvePath } from "node:path";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 
-import { type DimensionPolicyChain, resolveDimensionChain } from "./products-policy-chain";
+import {
+  type DimensionPolicyChain,
+  type ProductDeclaredFunction,
+  resolveDimensionChain,
+  resolveProductChain,
+} from "./products-policy-chain";
 import { NPA_DIMENSIONS, type NpaDimension, resolveProduct } from "./products-view";
 
 // ---------------------------------------------------------------------------
@@ -46,6 +51,17 @@ export interface DimensionMetadata {
    * `operational-readiness` substrate dimension).
    */
   policyHints: readonly string[];
+  /**
+   * Events that trigger action in this dimension (e.g. a trade-execution
+   * event that fires the market-risk pre-deal check). Names must match
+   * registered event types in `platform/event-store/event-types/*`.
+   */
+  triggeredBy: readonly string[];
+  /**
+   * Events the dimension's substrate emits as a consequence of operation
+   * (e.g. `CcrEadComputed` from the credit-limit engine).
+   */
+  emits: readonly string[];
 }
 
 export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
@@ -60,6 +76,14 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["BCBS-d352", "BCBS-d457", "RAS § B-market", "ORG-PR-19"],
     surfacesClientOnboarding: false,
     policyHints: ["market-risk-policy-v1.md"],
+    triggeredBy: ["FxTradeExecuted", "FxPositionRevalued", "MarketDataOutage"],
+    emits: [
+      "FXPositionBreach",
+      "BacktestRun",
+      "BacktestBreachDisposed",
+      "RiskRaised",
+      "RasLineCalibrated",
+    ],
   },
   {
     dimension: "credit-risk",
@@ -72,6 +96,16 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["BCBS-Large-Exposures", "Banks-Act-94-1990", "ORG-PR-09", "ORG-PR-16"],
     surfacesClientOnboarding: false,
     policyHints: ["credit-risk-policy-v1.md", "counterparty-onboarding-policy-v1.md"],
+    triggeredBy: ["FxTradeExecuted", "CounterpartyCategorised", "CollateralUpdated"],
+    emits: [
+      "CcrEadComputed",
+      "CcrReplacementCostComputed",
+      "CreditLimitProposed",
+      "CreditLimitBreached",
+      "CreditLimitBreachDisposed",
+      "LexUtilisationComputed",
+      "LexExceptionApproved",
+    ],
   },
   {
     dimension: "liquidity-funding",
@@ -84,6 +118,14 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["BCBS-d295", "BCBS-d335", "ORG-PR-06", "ORG-PR-07", "ORG-PR-08"],
     surfacesClientOnboarding: false,
     policyHints: ["liquidity-risk-management-policy-v1.md", "irrbb-policy-v1.md"],
+    triggeredBy: ["FxTradeExecuted", "FxSettlementConfirmed", "FundingDrawn"],
+    emits: [
+      "LCRComputed",
+      "NSFRComputed",
+      "IntradayHQLAStressProjection",
+      "HQLACompositionDrift",
+      "SAMOSFundingShortfall",
+    ],
   },
   {
     dimension: "operational-risk",
@@ -96,6 +138,13 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["BCBS-OpRisk-2021", "BCBS-OpResilience-2021", "ORG-PR-17", "ORG-PR-18"],
     surfacesClientOnboarding: false,
     policyHints: ["operational-risk-policy-v1.md", "operational-resilience-policy-v1.md"],
+    triggeredBy: [
+      "SettlementFailed",
+      "FxSettlementFailed",
+      "MarketDataOutage",
+      "SurveillanceFeedGap",
+    ],
+    emits: ["IncidentRaised", "SettlementFailureClassified", "SurveillanceAlert", "ReconResult"],
   },
   {
     dimension: "operational-readiness",
@@ -112,6 +161,19 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     // covered by Tomas's procedures + the lifecycle-event journal block
     // already on the page).
     policyHints: [],
+    triggeredBy: [
+      "FxTradeExecuted",
+      "FxSettlementInstructed",
+      "FxSettlementConfirmed",
+      "FxSettlementFailed",
+    ],
+    emits: [
+      "DailyReconciliationReport",
+      "ReconciliationBreak",
+      "ConfirmationMatched",
+      "ConfirmationMismatch",
+      "MissedExpectedReceipt",
+    ],
   },
   {
     dimension: "accounting",
@@ -128,6 +190,23 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "hedge-accounting-policy-v1.md",
       "ifrs9-ecl-provisioning-policy-v1.md",
     ],
+    triggeredBy: [
+      "FxTradeExecuted",
+      "FxPositionRevalued",
+      "PrincipalPayment",
+      "FxSettlementConfirmed",
+      "TradeReportSubmitted",
+      "TradeMatured",
+    ],
+    emits: [
+      "SubLedgerPostingEmitted",
+      "ManualJournalEntry",
+      "TrialBalanceSnapshotted",
+      "BalanceSheetSubstantiationCompleted",
+      "AccountingPeriodOpened",
+      "AccountingPeriodClosed",
+      "PeriodClosed",
+    ],
   },
   {
     dimension: "capital",
@@ -140,6 +219,8 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["Banks-Act-Reg-39", "Basel-III-IV", "ORG-PR-02", "ORG-PR-03", "ORG-PR-05"],
     surfacesClientOnboarding: false,
     policyHints: ["capital-management-policy-v1.md"],
+    triggeredBy: ["FxTradeExecuted", "FxPositionRevalued", "CcrEadComputed", "LCRComputed"],
+    emits: ["CapitalEvent", "CapitalActionTrigger", "BAReturnGenerationTriggered"],
   },
   {
     dimension: "conduct-suitability",
@@ -159,6 +240,18 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     ],
     surfacesClientOnboarding: true,
     policyHints: ["conduct-of-business-tcf-policy-v1.md", "fais-compliance-policy-v1.md"],
+    triggeredBy: ["OrderSubmitted", "OrderFilled", "FxTradeExecuted", "AdviceRecordRequested"],
+    emits: [
+      "ConductEventRecorded",
+      "ConductDisclosureEmitted",
+      "BestExecutionVerified",
+      "BestExecutionBreached",
+      "BestExecutionAnalysisCompleted",
+      "FaisClassificationSuitabilityChecked",
+      "SuitabilityAssessmentRequired",
+      "ConductIncidentLogged",
+      "FAISConductBreachSuspected",
+    ],
   },
   {
     dimension: "aml-sanctions-pep",
@@ -171,6 +264,24 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["FIC-Act-38-2001", "UN-OFAC-EU-UK-HMT", "ORG-AML", "ORG-SAN"],
     surfacesClientOnboarding: true,
     policyHints: ["aml-cft-policy-v1.md"],
+    triggeredBy: [
+      "ClientCandidateRegistered",
+      "FxTradeExecuted",
+      "SanctionsListPublished",
+      "PepListPublished",
+      "AdverseMediaPublished",
+    ],
+    emits: [
+      "KYCSanctionsPEPScreened",
+      "KYCRiskRated",
+      "KYCDecisionMade",
+      "KYCEDDInitiated",
+      "KYCEDDCompleted",
+      "SanctionsHit",
+      "PEPMatchExceedsThreshold",
+      "STRCandidate",
+      "SanctionsHoldRaised",
+    ],
   },
   {
     dimension: "model-risk",
@@ -183,6 +294,22 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["SR-11-7", "SS-1-23", "BCBS-CG-Principles", "RAS § B7"],
     surfacesClientOnboarding: false,
     policyHints: ["model-risk-policy-v1.md"],
+    triggeredBy: [
+      "ModelSubmitted",
+      "BacktestRequested",
+      "MethodologyChangeRequested",
+      "ProductionUseRequested",
+    ],
+    emits: [
+      "ModelTierClassified",
+      "ModelValidationApproved",
+      "ModelValidationWithheld",
+      "ValidationFindingRaised",
+      "ValidationFindingClosed",
+      "BacktestRun",
+      "ModelDriftDetected",
+      "ValidationMethodologyPublished",
+    ],
   },
   {
     dimension: "legal-documentation",
@@ -195,6 +322,13 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["ECTA-25-2002", "ISDA-Master", "GMRA", "GMSLA", "ORG-MK-06", "ORG-CS3-001"],
     surfacesClientOnboarding: true,
     policyHints: ["document-execution-policy-v1.md"],
+    triggeredBy: ["OnboardingHandoffPending", "ClientCandidateRegistered", "FxTradeExecuted"],
+    emits: [
+      "LegalDocumentationSigned",
+      "ISDACSAAssessmentCompleted",
+      "ConfirmationMatched",
+      "JurisdictionalOpinionRefreshed",
+    ],
   },
   {
     dimension: "information-security",
@@ -207,6 +341,17 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["Joint-Standard-1-2024", "POPIA-s19-22", "CLAUDE.md-P4", "ORG-CY"],
     surfacesClientOnboarding: false,
     policyHints: ["information-security-it-governance-policy-v1.md"],
+    triggeredBy: [
+      "ThreatModelDimensionRegistered",
+      "ProductionUseRequested",
+      "SuspiciousAuthEvent",
+    ],
+    emits: [
+      "ThreatModelGateDecision",
+      "ThreatModelExceptionRequested",
+      "SecurityIncidentRaised",
+      "PersonalInformationCompromiseSuspected",
+    ],
   },
   {
     dimension: "privacy",
@@ -219,6 +364,20 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["POPIA-4-2013", "SARB-Directive-3-2018", "ORG-PR-PRIV"],
     surfacesClientOnboarding: false,
     policyHints: ["popia-privacy-policy-v1.md"],
+    triggeredBy: [
+      "ClientCandidateRegistered",
+      "CrossBorderTransferRequested",
+      "DSARReceived",
+      "PAIARequest",
+      "NewProcessingPurposeProposed",
+    ],
+    emits: [
+      "LawfulProcessingRegistered",
+      "POPIAControlsSnapshot",
+      "ConsentWithdrawn",
+      "InformationRegulatorInquiry",
+      "PersonalInformationCompromiseSuspected",
+    ],
   },
   {
     dimension: "tax",
@@ -231,6 +390,8 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
     citationChain: ["Income-Tax-Act", "VAT-Act", "STT-Act", "FATCA-IGA", "CRS"],
     surfacesClientOnboarding: false,
     policyHints: ["tax-policy-v1.md"],
+    triggeredBy: ["ClientCandidateRegistered", "FxTradeExecuted", "CrossBorderTransferRequested"],
+    emits: ["TaxClassificationPublished", "FatcaCrsClassified", "TaxReadinessSnapshot"],
   },
 ];
 
@@ -345,6 +506,10 @@ export interface DimensionCard {
   artefactRequired: string;
   failRule: string;
   citationChain: readonly string[];
+  /** Event types that trigger action in this dimension. */
+  triggeredBy: readonly string[];
+  /** Event types this dimension's substrate emits. */
+  emits: readonly string[];
   surfacesClientOnboarding: boolean;
   /** Latest ProductDimensionAttested for (productId, dimension). */
   attestation: {
@@ -384,6 +549,14 @@ export interface ProductDetailView {
   product: Product;
   dimensions: DimensionCard[];
   journalEntries: LifecycleEventJournalRow[];
+  /**
+   * Single product-scoped Policy → Procedure → Function chain. Replaces
+   * the per-dimension `chain` blocks on the page: shows only the policies
+   * relevant to this product, the procedures that touch it, and the
+   * functions it actually invokes (CDM modules + posting rules + procedure
+   * system-capability).
+   */
+  productChain: DimensionPolicyChain;
   asOf: string;
 }
 
@@ -480,6 +653,8 @@ export function buildProductDetailView(
       artefactRequired: meta.artefactRequired,
       failRule: meta.failRule,
       citationChain: meta.citationChain,
+      triggeredBy: meta.triggeredBy,
+      emits: meta.emits,
       surfacesClientOnboarding: meta.surfacesClientOnboarding,
       attestation: att
         ? {
@@ -511,10 +686,72 @@ export function buildProductDetailView(
     },
   );
 
+  // Product-level chain: union of dimension policy hints + declared
+  // functions from the product fixture (CDM modules + posting rules for
+  // the lifecycle event family) + product-relevance filter on procedures.
+  const productChain = buildProductChain(product, journalEntries, repoRoot);
+
   return {
     product,
     dimensions,
     journalEntries,
+    productChain,
     asOf: nowIso,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Product chain assembler — anchors policies on the dimension hint union and
+// scopes procedures + functions to those actually referenced by the product.
+// ---------------------------------------------------------------------------
+
+function buildProductChain(
+  product: Product,
+  journalEntries: LifecycleEventJournalRow[],
+  repoRoot: string,
+): DimensionPolicyChain {
+  const policyHintSet = new Set<string>();
+  for (const m of DIMENSION_METADATA) for (const h of m.policyHints) policyHintSet.add(h);
+
+  // Declared functions on the product itself — CDM primitives, CDM
+  // extensions, and posting-rule modules for events the product emits.
+  const declared: ProductDeclaredFunction[] = [];
+  const seenDeclared = new Set<string>();
+  const pushDeclared = (name: string, status: "active" | "planned", source: string) => {
+    const key = name.toLowerCase();
+    if (seenDeclared.has(key)) return;
+    seenDeclared.add(key);
+    declared.push({ name, status, source });
+  };
+  for (const p of product.cdmComposition.primitives) {
+    pushDeclared(p.module, "active", "product:cdm-primitive");
+  }
+  for (const ext of product.cdmComposition.extensions) {
+    pushDeclared(ext.module, "active", `product:cdm-extension:${ext.name}`);
+  }
+  for (const row of journalEntries) {
+    if (row.status === "present" && row.rule) {
+      pushDeclared(row.rule.module, "active", `product:posting-rule:${row.rule.ruleId}`);
+    }
+  }
+
+  // Product-relevance tokens — family + slug fragments from the productId.
+  // For "prd:bank:fx:fx-spot-zar-usd" → ["fx", "fx-spot", "fx-spot-zar-usd"].
+  const tokens = new Set<string>();
+  tokens.add(product.family.toLowerCase());
+  const idTail = product.productId.split(":").pop() ?? "";
+  if (idTail) {
+    tokens.add(idTail.toLowerCase());
+    // Progressive prefixes: "fx-spot-zar-usd" → "fx-spot", "fx-spot-zar".
+    const parts = idTail.split("-");
+    for (let i = 2; i <= parts.length; i++) tokens.add(parts.slice(0, i).join("-").toLowerCase());
+  }
+
+  return resolveProductChain({
+    repoRoot,
+    policyHints: Array.from(policyHintSet),
+    productTokens: Array.from(tokens),
+    productLifecycleEvents: product.lifecycleEventFamily,
+    declaredFunctions: declared,
+  });
 }
