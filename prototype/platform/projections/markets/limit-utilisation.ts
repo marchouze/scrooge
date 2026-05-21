@@ -271,13 +271,16 @@ export function getLimitUtilisations(): LimitUtilisationRow[] {
     const currentExposure = _state.exposure.get(cluster) ?? 0;
 
     if (!row) {
-      // No schedule published yet — placeholder row
+      // No schedule published yet — surface accumulated exposure so Helena can
+      // see real numbers even before a schedule is emitted.  utilisationPct is
+      // 0 (no denominator) and ragStatus is green (no limit to breach), but
+      // currentExposure reflects what has actually accumulated from trade events.
       return {
         cluster,
         limitName: `Cluster ${cluster} — no schedule published`,
         utilisationPct: 0,
         limitValue: 0,
-        currentExposure: 0,
+        currentExposure,
         currency: "ZAR",
         ragStatus: "green" as const,
         asOf: _state.asOf,
