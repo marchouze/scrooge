@@ -183,12 +183,7 @@ const DIMENSIONS: readonly DimensionAttestation[] = [
     actor: ACTOR_SASKIA,
     evidence:
       "PR #634 — Helena (Chief Risk Officer, governance) controlled-launch MR-1-FX limit proposal (ZAR 350k VaR; USD 1m EOD / USD 1.5m intraday; USD/ZAR only); PR #631 — Helena FX-spot-only market-risk scope review with G-2 compensating-control attestation §2.1; FRTB-SA engine unvalidated by Nadia (Independent-validation engineer, engineering)",
-    citationChain: [
-      "Policies/market-risk-policy-v1.md",
-      "PR-631",
-      "PR-634",
-      "BCBS-FRTB-SA",
-    ],
+    citationChain: ["Policies/market-risk-policy-v1.md", "PR-631", "PR-634", "BCBS-FRTB-SA"],
     notes:
       "Market-risk limit MR-1-FX is PROPOSED in PR #634 but NOT BRC-tabled — there is no Board, no constituted BRC, no formal limit-approval forum. FRTB-SA RWA engine for FX-spot is unvalidated; Helena's G-2 compensating control is a conservative-RWA proxy via dual-track manual SA-SBM-delta cross-check (engine vs manual divergence > 5% triggers investigation; > 15% triggers MRC escalation). Acceptable for INTERNAL-TEST scope (synthetic activity); NOT acceptable for production fire. Re-activation trigger: BRC constitution OR explicit CEO interim-authority approval (separate decision card) + Nadia FRTB-SA validation.",
   },
@@ -200,13 +195,7 @@ const DIMENSIONS: readonly DimensionAttestation[] = [
     actor: ACTOR_OWEN,
     evidence:
       "PR #636 — Devon (Chief Operating Officer, governance) PROC-OPS-SFBCP-01 v0.3 FX settlement-failure procedure; PR #640 — Tomas (Correspondent banking & payments, engineering) FX settlement subscriber (LIVE-INTERNAL-VARIANT with failure-path events `MissedExpectedReceipt`, `FxSettlementFailed`, `SettlementFailureClassified`); D-OPRISK-ENGINEER-ROLE Option B (PR #666 — Owen decision card proposed) subsumes operational-risk engineering into Rohan + Vera + Devon under Helena sponsorship",
-    citationChain: [
-      "PROC-OPS-SFBCP-01",
-      "PR-636",
-      "PR-640",
-      "PR-666",
-      "D-OPRISK-ENGINEER-ROLE",
-    ],
+    citationChain: ["PROC-OPS-SFBCP-01", "PR-636", "PR-640", "PR-666", "D-OPRISK-ENGINEER-ROLE"],
     notes:
       "Settlement-failure BCP slice exercised end-to-end via scenario PR #645 (Herstatt-active path, mutual-fail path, counterparty-fail path). The four failure-path event types are typed and wired (Atlas schema completeness pack PR #638). Operational-risk engineering coverage decided via D-OPRISK-ENGINEER-ROLE Option B (proposed; awaiting Marc CEO approval per PR #666). Broader BCP (system-outage drill, regional failover, ransomware drill, key-person loss) is wall-clock pre-licence work, NOT a blocker for FX-spot internal-test scope.",
   },
@@ -542,7 +531,7 @@ function printReport(): void {
   lines.push("Procedure owner: Owen (Company Secretary, governance)");
   lines.push("══════════════════════════════════════════════════════════════════════");
   lines.push("");
-  lines.push(`14-dimension walk:`);
+  lines.push("14-dimension walk:");
   for (const d of DIMENSIONS) {
     const note = d.notes.split(/[.!?]\s/)[0].slice(0, 110);
     lines.push(`  - ${d.dimensionId.padEnd(28)} ${d.posture.padEnd(10)} (${note})`);
@@ -554,18 +543,24 @@ function printReport(): void {
   lines.push(`  - Open:       ${open}/${DIMENSIONS.length}`);
   lines.push("");
   if (open === 0) {
-    lines.push("GATE RECOMMENDATION: APPROVE for INTERNAL-TEST SCOPE (no substantive Open blockers).");
+    lines.push(
+      "GATE RECOMMENDATION: APPROVE for INTERNAL-TEST SCOPE (no substantive Open blockers).",
+    );
   } else {
     const openIds = DIMENSIONS.filter((d) => d.posture === "Open")
       .map((d) => d.dimensionId)
       .join(", ");
-    lines.push(`GATE RECOMMENDATION: APPROVE-WITH-CONDITIONS for INTERNAL-TEST SCOPE.`);
+    lines.push("GATE RECOMMENDATION: APPROVE-WITH-CONDITIONS for INTERNAL-TEST SCOPE.");
     lines.push(`  Open dimensions: ${openIds}`);
-    lines.push(`  Compensating control: CEO substitutes for Board acknowledgment via D-NPA-FX-SPOT-INTERNAL-TEST.`);
+    lines.push(
+      "  Compensating control: CEO substitutes for Board acknowledgment via D-NPA-FX-SPOT-INTERNAL-TEST.",
+    );
   }
   lines.push("");
   lines.push("Note: this script does NOT emit ProductApproved (or NewProductApproved).");
-  lines.push("Marc (CEO) approves via the decision card D-NPA-FX-SPOT-INTERNAL-TEST (phase: requested).");
+  lines.push(
+    "Marc (CEO) approves via the decision card D-NPA-FX-SPOT-INTERNAL-TEST (phase: requested).",
+  );
   lines.push("══════════════════════════════════════════════════════════════════════");
   lines.push("");
 

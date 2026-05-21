@@ -171,8 +171,7 @@ const cardResult = recordFiled(
     },
     entity: "BANK-ZA-001",
     metadata: {
-      title:
-        "D-NPA-FX-SPOT-INTERNAL-TEST — Approve FX-spot for internal pre-licence test scope?",
+      title: "D-NPA-FX-SPOT-INTERNAL-TEST — Approve FX-spot for internal pre-licence test scope?",
       path: "2026-05-21_saskia-owen_d-npa-fx-spot-internal-test_decision-card.md",
       category: "ceo-decision-proposal",
       author:
