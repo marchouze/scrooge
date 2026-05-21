@@ -1,9 +1,9 @@
 ---
 procedureId: PROC-IS-PC-01
 title: Vulnerability Management — Patch Cadence
-author: Senna (CISO, governance)
+author: Rashida (Chief Information Security Officer, governance)
 date: 2026-05-15
-owner: Senna (CISO, governance) · Devon (COO, governance)
+owner: Rashida (Chief Information Security Officer, governance) · Devon (Chief Operating Officer, governance)
 status: POPULATED
 policy-cited: Information Security Policy (in-force); Cyber Resilience Policy (in-force)
 system-capability: "@platform/security/vulnerability-management (PLANNED)"
@@ -12,7 +12,7 @@ system-capability: "@platform/security/vulnerability-management (PLANNED)"
 # Procedure — Vulnerability Management — Patch Cadence
 
 **Procedure ID:** PROC-IS-PC-01
-**Owner:** Senna (CISO, governance) — substantive owner · Devon (COO, governance) — operational availability and change-window coordination
+**Owner:** Rashida (Chief Information Security Officer, governance) — substantive owner · Devon (Chief Operating Officer, governance) — operational availability and change-window coordination
 **Approval:** Board Risk Committee (or Interim Audit Forum during build phase)
 **Cadence:** Continuous (critical patches); weekly (high); monthly (medium / low); quarterly cadence review
 **Version:** v1.0 — 2026-05-15
