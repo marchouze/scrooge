@@ -12,6 +12,7 @@
       "runtimeExecutable": "env",
       "runtimeArgs": [
         "BANK_EVENT_DB=/Users/marc/.local/share/bank/event.db",
+        "BANK_MARKET_DATA_DB=/Users/marc/code/Bank/prototype/.local/market-data.db",
         "BANK_DASHBOARD_PORT=3011",
         "bun",
         "run",

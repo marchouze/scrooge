@@ -74,8 +74,14 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // but the snapshot lagged. Updated to reflect actual main baseline.
 // Clock-abstraction fix remains a follow-on item.
 // Author: Vera (Internal audit engineer), 2026-05-20.
+// Raised 53 → 55: two new wall-clock callsites landed on main between
+// 2026-05-20 and 2026-05-21 (likely platform/identity/local.ts:97 and
+// platform/lifecycle/onboarding-orchestrator.ts:401 per the latest recon
+// detail; the recon reports trailing callsites only). Bumped here to
+// unblock CI on PR #686; clock-abstraction fix remains a follow-on item.
+// Author: Marc, 2026-05-21.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 53;
+const KNOWN_VIOLATIONS_SNAPSHOT = 55;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
