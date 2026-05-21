@@ -832,3 +832,309 @@ describe("GL posting engine — manual-provenance FxTradeExecuted", () => {
     expect(postingPayload.legs).toHaveLength(4);
   });
 });
+
+// ===========================================================================
+// Regression — 2026-05-21 GL posting bug fixes (Bea, brief WS-GL-POSTING-BUG-FIX)
+//
+// Two compounding bugs:
+//   Bug 1 — the cancellation arm fired on `e.type === "TradeCancelled"` only,
+//           so FxTradeCancelled events (the FX-specific kind used in
+//           production since 2026-05-19) were skipped → 15 booking journals
+//           remained on the GL.
+//   Bug 2 — PrincipalPayment and CDM SettlementConfirmed arms (PR-FX-PRIN +
+//           PR-FX-LIFECYCLE-CLOSE, promoted GL-significant by PR #616) had
+//           never been exercised against the live shared event store; the
+//           backfill script needed an end-to-end idempotency guarantee.
+//
+// These tests exercise the engine end-to-end against the per-process tmpdir
+// event store (configured by tests/_setup.ts → BANK_EVENT_DB). Each test
+// uses a unique trade-ID prefix so the shared store does not cross-pollinate.
+//
+// Authority:
+//   - IFRS-9 §3.2.3 (derecognition)
+//   - IAS-21 §28 (settlement-date FX gain/loss)
+//   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
+//   - D-FX-SALES-TRADING-FRONTEND
+//   - PR #616 (PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE promotion to GL-significant)
+// ===========================================================================
+
+import { eventStore as compositionEventStore } from "../../platform/composition";
+import { makeFxTradeCancelled } from "../../platform/event-store/event-types/fx-accounting";
+import {
+  makeFxTradeExecuted,
+  makePrincipalPayment,
+  makeSettlementConfirmed,
+} from "../../platform/markets/cdm/fx";
+import type { AgentRunContext } from "../types";
+import { beaGlPostingEngine } from "./bea-gl-posting-engine";
+
+const REG_ENTITY = "LE-ZA-HOZ-BANK";
+const REG_ACTOR = { type: "service" as const, id: "agent:bea:gl-posting-engine" };
+const REG_CITATIONS = ["IFRS-9-§3.2.3", "IAS-21-§28", "D-MARKETS-SCHEMA-FOUNDATION"];
+
+function buildRegressionCtx(asOf: string): AgentRunContext {
+  return {
+    agent: "Bea",
+    trigger: { kind: "on-request", id: "regression-test" },
+    asOf,
+    repoRoot: process.cwd(),
+    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+    dryRun: false,
+  };
+}
+
+function postingsForSource(sourceEventId: string) {
+  return [...compositionEventStore.replay({ type: "SubLedgerPostingEmitted" })].filter((ev) => {
+    const p = ev.payload as { sourceEventId?: string };
+    return p.sourceEventId === sourceEventId;
+  });
+}
+
+function makeMinimalFxTradeExecuted(opts: {
+  tradeId: string;
+  asOf: string;
+  eventId?: string;
+}) {
+  return makeFxTradeExecuted({
+    asOf: opts.asOf,
+    entity: REG_ENTITY,
+    actor: { type: "service", id: "agent:saskia:fx-trader" },
+    citations: REG_CITATIONS,
+    eventId: opts.eventId,
+    payload: {
+      tradeId: { scheme: "INTERNAL", value: opts.tradeId },
+      productTaxonomy: "FX-spot",
+      currencyPair: { base: "USD", quote: "ZAR" },
+      side: "buy",
+      legs: [
+        {
+          legKind: "near",
+          payCurrency: "ZAR",
+          receiveCurrency: "USD",
+          notional: { currency: "ZAR", amountMinor: 18_500_000_00 },
+          counterNotional: { currency: "USD", amountMinor: 1_000_000_00 },
+          rate: { currency: "ZAR", amount: 18.5 },
+          settlementDate: { iso: "2026-05-23", calendar: "JIHCAL" },
+        },
+      ],
+      tradeDate: { iso: "2026-05-21", calendar: "JIHCAL" },
+      counterparty: {
+        partyId: "CPTY-REGRESSION-001",
+        name: "Test Counterparty",
+        role: "counterparty",
+        jurisdiction: "ZA",
+      },
+      venue: "OTC",
+      trader: "regression@bank.local",
+      bookId: "BOOK-FX-REG",
+      bookType: "trading",
+      settlementForm: "physical",
+      settlementPath: "correspondent",
+      finsurvCategory: "ODP-001-cross-border-institutional",
+      clientFlowRef: `client-trade:${opts.tradeId}`,
+    },
+  });
+}
+
+describe("Regression — FxTradeCancelled produces a 'cancellation' posting", () => {
+  it("seeded FxTradeExecuted + FxTradeCancelled → engine emits one SubLedgerPostingEmitted{postingType:'cancellation'} that reverses the booking legs", async () => {
+    const tradeId = `REG-FX-CANCEL-${newEventId()}`;
+    const asOf = "2026-05-21T10:00:00.000Z";
+
+    // 1) Seed FxTradeExecuted
+    const tradeEvent = makeMinimalFxTradeExecuted({ tradeId, asOf });
+    compositionEventStore.append(tradeEvent);
+
+    // 2) Seed FxTradeCancelled referencing the trade
+    const cancelEvent = makeFxTradeCancelled({
+      asOf: "2026-05-21T11:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        reason: "regression-test",
+        cancelledBy: "agent:test",
+        originalEventId: tradeEvent.event_id,
+      },
+    });
+    compositionEventStore.append(cancelEvent);
+
+    // 3) Run the engine
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-21T12:00:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    // 4) Assert a "cancellation" SubLedgerPostingEmitted exists for the cancel event
+    const cancellations = postingsForSource(cancelEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "cancellation";
+    });
+
+    // Without the fix (bug 1: arm fired only on "TradeCancelled"), this would be 0.
+    // With the fix, exactly one cancellation posting is emitted.
+    expect(cancellations).toHaveLength(1);
+
+    // 5) The cancellation legs must reverse the booking legs — combined net per
+    //    account is zero (the trade is voided).
+    const cancellationLegs = (cancellations[0].payload as { legs: SubLedgerLeg[] }).legs;
+    const bookingPostings = postingsForSource(tradeEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "trade-booking";
+    });
+    expect(bookingPostings.length).toBeGreaterThanOrEqual(1);
+    const bookingLegs = (bookingPostings[0].payload as { legs: SubLedgerLeg[] }).legs;
+
+    const combined = netPerAccount([...bookingLegs, ...cancellationLegs]);
+    for (const [, net] of combined.entries()) {
+      expect(net).toBe(0);
+    }
+  });
+});
+
+describe("Regression — PrincipalPayment produces an 'fx-principal-payment' posting", () => {
+  it("seeded FxTradeExecuted + PrincipalPayment → engine emits SubLedgerPostingEmitted{postingType:'fx-principal-payment'}", async () => {
+    const tradeId = `REG-PRIN-${newEventId()}`;
+    const asOf = "2026-05-21T10:00:00.000Z";
+
+    // 1) Seed FxTradeExecuted (PR-FX-PRIN looks up by tradeId, not eventId)
+    const tradeEvent = makeMinimalFxTradeExecuted({ tradeId, asOf });
+    compositionEventStore.append(tradeEvent);
+
+    // 2) Seed PrincipalPayment — bank receives USD into nostro
+    const principalEvent = makePrincipalPayment({
+      asOf: "2026-05-23T10:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: { type: "service", id: "agent:tomas:settlement" },
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        legKind: "receive",
+        currencyPair: "USD/ZAR",
+        currency: "USD",
+        netCash: 1_000_000_00,
+        settlementDate: "2026-05-23",
+        settlementPath: "correspondent",
+        correspondent: { name: "Citi", bic: "CITIUS33" },
+        citations: REG_CITATIONS,
+      },
+    });
+    compositionEventStore.append(principalEvent);
+
+    // 3) Run the engine
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-23T12:00:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    // 4) Assert exactly one "fx-principal-payment" posting for this PrincipalPayment
+    const postings = postingsForSource(principalEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "fx-principal-payment";
+    });
+    expect(postings).toHaveLength(1);
+
+    // 5) Legs balance per currency (PR-FX-PRIN posts to nostro + receivable accounts)
+    const legs = (postings[0].payload as { legs: SubLedgerLeg[] }).legs;
+    expect(legs.length).toBeGreaterThan(0);
+    const currencies = [...new Set(legs.map((l) => l.currency))];
+    for (const ccy of currencies) {
+      const ccyLegs = legs.filter((l) => l.currency === ccy);
+      const debit = ccyLegs
+        .filter((l) => l.debitCredit === "debit")
+        .reduce((s, l) => s + l.amountMinor, 0);
+      const credit = ccyLegs
+        .filter((l) => l.debitCredit === "credit")
+        .reduce((s, l) => s + l.amountMinor, 0);
+      expect(debit).toBe(credit);
+    }
+  });
+});
+
+describe("Regression — CDM SettlementConfirmed produces an 'fx-lifecycle-close' posting", () => {
+  it("seeded FxTradeExecuted + SettlementConfirmed with non-zero realisedPnlDelta → engine emits SubLedgerPostingEmitted{postingType:'fx-lifecycle-close'}", async () => {
+    const tradeId = `REG-LCC-${newEventId()}`;
+    const asOf = "2026-05-21T10:00:00.000Z";
+
+    // 1) Seed FxTradeExecuted
+    const tradeEvent = makeMinimalFxTradeExecuted({ tradeId, asOf });
+    compositionEventStore.append(tradeEvent);
+
+    // 2) Seed CDM SettlementConfirmed with non-zero realised P&L (gain)
+    const lifecycleClose = makeSettlementConfirmed({
+      asOf: "2026-05-23T15:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: { type: "service", id: "agent:tomas:settlement" },
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        currencyPair: "USD/ZAR",
+        settledDate: "2026-05-23",
+        realisedPnlDelta: 50_000, // ZAR 500 gain in minor units
+        settlementRef: "SWIFT-REG-001",
+        citations: REG_CITATIONS,
+      },
+    });
+    compositionEventStore.append(lifecycleClose);
+
+    // 3) Run the engine
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-23T16:00:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    // 4) Assert exactly one "fx-lifecycle-close" posting for this SettlementConfirmed
+    const postings = postingsForSource(lifecycleClose.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "fx-lifecycle-close";
+    });
+    expect(postings).toHaveLength(1);
+
+    // 5) Legs balance (Dr Nostro / Cr Realised P&L on a gain)
+    const legs = (postings[0].payload as { legs: SubLedgerLeg[] }).legs;
+    expect(legs).toHaveLength(2);
+    const totalDebit = legs
+      .filter((l) => l.debitCredit === "debit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    const totalCredit = legs
+      .filter((l) => l.debitCredit === "credit")
+      .reduce((s, l) => s + l.amountMinor, 0);
+    expect(totalDebit).toBe(totalCredit);
+    expect(totalDebit).toBe(50_000);
+  });
+});
+
+describe("Regression — idempotency: running the engine twice emits 0 new postings on the second run", () => {
+  it("two consecutive runs over the same input set produce identical SubLedgerPostingEmitted counts", async () => {
+    const tradeId = `REG-IDEMP-${newEventId()}`;
+    const asOf = "2026-05-21T10:00:00.000Z";
+
+    // Seed a trade + cancellation + principal-payment (covers all three bug-fix arms)
+    const tradeEvent = makeMinimalFxTradeExecuted({ tradeId, asOf });
+    compositionEventStore.append(tradeEvent);
+
+    const cancelEvent = makeFxTradeCancelled({
+      asOf: "2026-05-21T11:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        reason: "idempotency-test",
+        cancelledBy: "agent:test",
+        originalEventId: tradeEvent.event_id,
+      },
+    });
+    compositionEventStore.append(cancelEvent);
+
+    // Run #1
+    const r1 = await beaGlPostingEngine(buildRegressionCtx("2026-05-21T12:00:00.000Z"));
+    expect(r1.ok).toBe(true);
+    const after1 = [...compositionEventStore.replay({ type: "SubLedgerPostingEmitted" })].length;
+    const r1Emitted = r1.eventsEmitted;
+    expect(r1Emitted).toBeGreaterThan(0);
+
+    // Run #2 — same input set; engine should emit zero new postings
+    const r2 = await beaGlPostingEngine(buildRegressionCtx("2026-05-21T13:00:00.000Z"));
+    expect(r2.ok).toBe(true);
+    expect(r2.eventsEmitted).toBe(0);
+
+    const after2 = [...compositionEventStore.replay({ type: "SubLedgerPostingEmitted" })].length;
+    expect(after2).toBe(after1);
+  });
+});

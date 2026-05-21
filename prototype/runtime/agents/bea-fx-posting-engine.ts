@@ -258,8 +258,31 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           continue;
         }
 
+        // Idempotency guard for this cancellation event. The persisted
+        // SubLedgerPostingEmitted carries `postingType: "reversal"` and
+        // `sourceEventId: <cancellation_event_id>` — the same tuple is
+        // re-used for every reversed revaluation under this cancellation.
+        // `buildPostedKeySet` therefore collapses N reversals to a single
+        // `${event_id}:reversal` key. We can't tell from the persisted form
+        // alone whether some-but-not-all reversals have been emitted, so
+        // the cleanest idempotency rule is: if ANY reversal posting exists
+        // for this cancellation event, the cancellation has already been
+        // processed — skip the whole arm. This matches the contract that
+        // `bun run gl:backfill-postings` is idempotent across runs.
+        //
+        // Historical note: the in-memory `reversalKey` of
+        // `${e.event_id}:revaluation-reversal:<src>` never matched
+        // `buildPostedKeySet` (which emits `${event_id}:reversal`), so
+        // every backfill run re-emitted N reversals — the source of the
+        // run-away `reversal` count seen in the shared store on
+        // 2026-05-21 (60 reversals against 15 revaluations).
+        if (postedKeys.has(`${e.event_id}:reversal`)) {
+          skipped += 1;
+          continue;
+        }
+
         // For each revaluation posting that was emitted for these events, emit
-        // a reversing entry if not already done.
+        // a reversing entry.
         for (const re of eventStore.replay({ type: "SubLedgerPostingEmitted" })) {
           const rp = re.payload as {
             sourceEventId?: string;
@@ -274,6 +297,9 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           )
             continue;
 
+          // Belt-and-suspenders: also retain the per-source synthetic key
+          // for runs inside a single invocation (multiple revaluations →
+          // multiple reversals before any commit to the store).
           const reversalKey = `${e.event_id}:revaluation-reversal:${rp.sourceEventId}`;
           if (postedKeys.has(reversalKey)) {
             skipped += 1;
@@ -310,6 +336,9 @@ export async function beaFxPostingEngine(ctx: AgentRunContext): Promise<AgentRun
             eventsEmitted += 1;
           }
         }
+        // Mark the cancellation's canonical persisted-key form once, so
+        // the next backfill run's outer guard short-circuits the arm.
+        postedKeys.add(`${e.event_id}:reversal`);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

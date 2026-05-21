@@ -485,23 +485,34 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
             (ev) => ev.event_id === sourceEventId,
           );
           if (srcEvents.length === 0) continue;
-          const srcPayload = srcEvents[0]?.payload as { tradeId?: string };
-          if (srcPayload.tradeId !== payload.tradeId) continue;
+          // tradeId on source events may be either a string (TradeCancelled,
+          // FxPositionRevalued, etc.) or an identifier object with `{value}`
+          // (FxTradeExecuted — see fxTradeBookingJournals call site above).
+          // Normalise both shapes to the string form before comparison —
+          // otherwise the booking-leg lookup silently returns nothing and
+          // the cancellation produces zero legs.
+          const srcPayload = srcEvents[0]?.payload as {
+            tradeId?: string | { value?: string };
+          };
+          const srcTradeIdValue =
+            typeof srcPayload.tradeId === "string"
+              ? srcPayload.tradeId
+              : (srcPayload.tradeId?.value ?? "");
+          if (srcTradeIdValue !== payload.tradeId) continue;
 
           if (pp.postingType === "trade-booking") {
             bookingLegs.push(...pp.legs);
-          } else if (pp.postingType === "revaluation" || pp.postingType === "reversal") {
-            // Accumulate net unrealised P&L from ZAR legs.
-            //
-            // We include BOTH "revaluation" and "reversal" postings (the latter
-            // emitted by bea-fx-posting-engine on FxTradeCancelled — see
-            // runtime/agents/bea-fx-posting-engine.ts:302). Each "reversal" leg
-            // is the exact debit/credit inverse of a prior revaluation leg, so
-            // summing both nets to the current outstanding unrealised P&L
-            // (zero if fx-posting-engine already reversed all MTMs; the gross
-            // P&L if no reversals have happened — the TradeCancelled path).
-            //
+          } else if (pp.postingType === "revaluation") {
+            // Accumulate gross unrealised P&L from ZAR legs.
             // The UNREALISED_PNL account credit = gain, debit = loss.
+            //
+            // NOTE: For FxTradeCancelled, the per-revaluation MTM undo is
+            // handled by bea-fx-posting-engine (it emits "reversal" postings —
+            // see bea-fx-posting-engine.ts:302). The GL engine therefore
+            // overrides this accumulator to zero for FxTradeCancelled below,
+            // to avoid double-undoing the MTM. For TradeCancelled (non-FX),
+            // the fx engine does not fire and this accumulator is the only
+            // mechanism that undoes the cumulative P&L.
             for (const leg of pp.legs) {
               if (leg.currency === "ZAR") {
                 if (leg.accountId === "ACC-2100-005") {
@@ -512,9 +523,15 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
             }
           }
         }
+        // For FxTradeCancelled the MTM undo is owned by bea-fx-posting-engine
+        // (per-revaluation reversal postings). Zero out the cumulative-P&L
+        // contribution so PR-FX-CANCEL emits ONLY the booking-leg reversal
+        // and does not double-undo what the fx-engine already handles.
+        const effectiveCumulativePnl =
+          e.type === "FxTradeCancelled" ? 0 : cumulativeUnrealisedPnlZarMinor;
         legs = fxCancellationJournals({
           tradeId: payload.tradeId,
-          cumulativeUnrealisedPnlZarMinor,
+          cumulativeUnrealisedPnlZarMinor: effectiveCumulativePnl,
           bookingLegs,
         });
       } else if (e.type === "TradeAmended") {
