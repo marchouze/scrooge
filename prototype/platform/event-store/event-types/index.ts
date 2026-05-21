@@ -39,8 +39,11 @@
 //   - rms.ts            — DecisionRequested, Feedback, BriefSuperseded,
 //                         RecordFiled, CeoDecisionRmsExtended
 //   - accounting.ts     — BankAccount*, AccountingPeriod*, TrialBalanceSnapshotted
-//   - fx-accounting.ts  — FxPositionRevalued, FxSettlementConfirmed,
-//                         SubLedgerPostingEmitted (FX accounting lifecycle)
+//   - fx-accounting.ts  — FxPositionRevalued, SubLedgerPostingEmitted
+//                         (FX accounting lifecycle; FxSettlementConfirmed
+//                         retired 2026-05-21 in favour of TradeMatured)
+//   - trade-matured.ts  — TradeMatured (generic terminal lifecycle event;
+//                         FX-spot variant replaces FxSettlementConfirmed)
 //
 // Party domain lives in prototype/domains/party/ (its own domain package);
 // re-exported directly here as before.
@@ -61,6 +64,10 @@ export * from "./accounting";
 // Slice 2 — institutional counterparty onboarding lifecycle (7 new phase events).
 export * from "./customer";
 export * from "./fx-accounting";
+// Generic terminal lifecycle event — replaces FxSettlementConfirmed (2026-05-21).
+// FX-spot is the first product variant; bond/IRD/equity follow as their
+// lifecycles migrate. Authority: D-MARKETS-SCHEMA-FOUNDATION.
+export * from "./trade-matured";
 export * from "./regulatory";
 export * from "./performance";
 // Semantic-layer quantity registration — Anya (Data / analytics engineer).

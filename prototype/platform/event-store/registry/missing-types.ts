@@ -76,7 +76,6 @@ import {
 } from "../event-types/aml-popia-extended";
 import {
   fxPositionRevaluedPayloadSchema,
-  fxSettlementConfirmedPayloadSchema,
   fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
   missedExpectedReceiptPayloadSchema,
@@ -84,6 +83,7 @@ import {
   settlementFailureClassifiedPayloadSchema,
   settlementReversedPayloadSchema,
 } from "../event-types/fx-accounting";
+import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
 import {
   alertOpenedPayloadSchema,
   auditCommitteePackPreppedPayloadSchema,
@@ -231,17 +231,21 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
   },
   {
-    // Emitted when FX settlement is confirmed by the counterparty / correspondent bank.
-    // Subscribes: Bea (fx-posting-engine).
-    type: "FxSettlementConfirmed",
+    // Generic terminal lifecycle event — replaces the retired
+    // `FxSettlementConfirmed` (2026-05-21). FX-spot is the first product
+    // variant; bond/IRD/equity maturity variants land as their lifecycles
+    // migrate. Payload uses a discriminated union on `product.productKind`.
+    // Subscribes: Bea (gl-posting-engine, fx-posting-engine), Product Control
+    // daily-pnl (realised-P&L aggregation), projections (sub-ledger, BA-325).
+    type: "TradeMatured",
     class: "markets",
-    payloadSchema: fxSettlementConfirmedPayloadSchema,
+    payloadSchema: tradeMaturedPayloadSchema,
     issuer: "Kai",
     subscribers: ["Bea"],
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
-      "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
+      "platform/event-store/event-types/trade-matured.ts; D-MARKETS-SCHEMA-FOUNDATION; retires FxSettlementConfirmed (2026-05-21)",
   },
   {
     // Emitted by Ravi / Kai when a trade (bond, equity, IRS) is booked into the
