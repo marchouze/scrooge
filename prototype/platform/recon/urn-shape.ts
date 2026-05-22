@@ -124,7 +124,10 @@ function extractFrontmatterCitations(content: string): string[] {
   for (let i = citIdx + 1; i < fmLines.length; i++) {
     const line = fmLines[i] ?? "";
     if (/^\s*-\s+/.test(line)) {
-      const v = line.replace(/^\s*-\s+/, "").trim().replace(/^['"]|['"]$/g, "");
+      const v = line
+        .replace(/^\s*-\s+/, "")
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       if (v.length > 0) out.push(v);
       continue;
     }
@@ -210,18 +213,13 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   const fileTotal = fileCounts.urnShaped + fileCounts.prose + fileCounts.unknownClass;
   const eventTotal = eventCounts.urnShaped + eventCounts.prose + eventCounts.unknownClass;
-  const pct = (n: number, d: number): string => (d === 0 ? "n/a" : `${((100 * n) / d).toFixed(1)}%`);
+  const pct = (n: number, d: number): string =>
+    d === 0 ? "n/a" : `${((100 * n) / d).toFixed(1)}%`;
 
   // Top-level summary as a single info finding (so JSON consumers see counts).
   violations.push({
     subject: "urn-shape:summary",
-    message:
-      `Citation-shape summary: markdown frontmatter ${fileCounts.urnShaped}/${fileTotal} ` +
-      `URN-shaped (${pct(fileCounts.urnShaped, fileTotal)}); event payloads ` +
-      `${eventCounts.urnShaped}/${eventTotal} URN-shaped (${pct(eventCounts.urnShaped, eventTotal)}). ` +
-      `Prose citations: md=${fileCounts.prose}, events=${eventCounts.prose}. ` +
-      `Unknown-class / slug-rule violations: md=${fileCounts.unknownClass}, events=${eventCounts.unknownClass}. ` +
-      `Authority: D-URN-CANONICAL-VOCABULARY. Closure surface: WS-INSTRUMENT-ANALYSES (Mira).`,
+    message: `Citation-shape summary: markdown frontmatter ${fileCounts.urnShaped}/${fileTotal} URN-shaped (${pct(fileCounts.urnShaped, fileTotal)}); event payloads ${eventCounts.urnShaped}/${eventTotal} URN-shaped (${pct(eventCounts.urnShaped, eventTotal)}). Prose citations: md=${fileCounts.prose}, events=${eventCounts.prose}. Unknown-class / slug-rule violations: md=${fileCounts.unknownClass}, events=${eventCounts.unknownClass}. Authority: D-URN-CANONICAL-VOCABULARY. Closure surface: WS-INSTRUMENT-ANALYSES (Mira).`,
     severity: "info",
   });
 
