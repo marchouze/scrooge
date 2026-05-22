@@ -301,6 +301,71 @@ export interface Ba325CashFlowSection {
 }
 
 /**
+ * Input-completeness meta block (G-3 from Eitan's BA 325 first end-to-end
+ * validation, 2026-05-22; document hash
+ * `blake3:ea05a7cacda07b3f9432e0177cbb622160d4d3150ce5475068f0db10b61fcd1d`).
+ *
+ * The LCR ratio is structurally well-defined even when there is no data —
+ * a zero denominator with a non-zero numerator yields `Infinity`, which is
+ * arithmetically correct (the bank has no stress to cover) but semantically
+ * ambiguous: the renderer cannot tell apart "the bank genuinely has no
+ * outflows in the window" from "no settlement events made it past the
+ * provenance filter". This meta block exposes the input-side counters that
+ * disambiguate the two cases, and feeds a `completenessClass` that
+ * downstream renderers + recon use to flag data-quality issues.
+ *
+ * Categories counted:
+ *   - `hqlaInputsFound`: number of trial-balance rows in the functional
+ *     currency whose `leafAccountId` matched a classification entry with a
+ *     non-empty `hqlaLevel`. (HQLA is sourced from the trial balance, not
+ *     events.)
+ *   - `outflowInputsFound`: number of distinct events that contributed a
+ *     non-zero outflow leg in the functional currency.
+ *   - `inflowInputsFound`: number of distinct events that contributed a
+ *     non-zero inflow leg in the functional currency.
+ *   - `excludedByFilter`: number of candidate settlement events
+ *     (`FxSettlementInstructed` / `TradeMatured` /
+ *     `EquitySettlementInstructed`) within the period window that were
+ *     dropped before the fold for reasons other than "not a cash-flow
+ *     event". Reasons tallied in `excludedReasons`.
+ *   - `excludedReasons`: histogram of exclusion reasons. Known keys today:
+ *       - `provenance-filter`: failed `eventMatchesProvenanceFilter`.
+ *       - `out-of-window`: `as_of < periodStart` (the `asOf <= periodEnd`
+ *         bound is enforced by the event-store replay query and never
+ *         observed as a per-event exclusion).
+ *       - `foreign-currency-leg`: a non-functional-currency leg on an
+ *         otherwise-included event (only counted on events where every
+ *         leg is foreign — events with mixed legs are NOT excluded; the
+ *         foreign legs are silently dropped and surfaced via the existing
+ *         `foreign-currency` placeholder).
+ *       - `zero-net-cash`: candidate event had `amountMinor === 0` for
+ *         every leg (no signal to fold).
+ *   - `completenessClass`:
+ *       - `complete`: HQLA + outflow + inflow inputs all ≥ 1 AND
+ *         `excludedByFilter == 0`. Render the ratio as a number.
+ *       - `partial`: at least one input category has ≥ 1 event AND
+ *         `excludedByFilter > 0`. Render the ratio AND set
+ *         `dataQualityWarning: true`.
+ *       - `empty`: zero input events of any category. Render the ratio as
+ *         `"no-data"` instead of `"infinity"`.
+ *
+ * Citations:
+ *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
+ *   Eitan BA 325 first end-to-end validation
+ *     (blake3:ea05a7cacda07b3f9432e0177cbb622160d4d3150ce5475068f0db10b61fcd1d);
+ *   Regulations Relating to Banks Reg 26 (LCR);
+ *   BCBS 238 (Principles for effective risk-data aggregation).
+ */
+export interface Ba325InputCompleteness {
+  readonly hqlaInputsFound: number;
+  readonly outflowInputsFound: number;
+  readonly inflowInputsFound: number;
+  readonly excludedByFilter: number;
+  readonly excludedReasons: Record<string, number>;
+  readonly completenessClass: "complete" | "partial" | "empty";
+}
+
+/**
  * The full BA 325 generator output. The `lcrRatio` field is the ratio
  * (0..N — 1.0 = 100% — typical reported values 1.05..1.50 for compliant
  * banks); the render layer multiplies by 100 for percentage display per
@@ -324,6 +389,12 @@ export interface Ba325Output {
     readonly trialBalanceSnapshotEventId?: string;
     /** Sorted-stable JSON of the classification map for reproducibility witnesses. */
     readonly classificationsFingerprint: string;
+    /**
+     * G-3: input-completeness meta block. Distinguishes "no data" from
+     * "no stress" in the divide-by-zero case and surfaces data-quality
+     * signal to downstream renderers. See `Ba325InputCompleteness`.
+     */
+    readonly inputCompleteness: Ba325InputCompleteness;
   };
   readonly hqla: Ba325HqlaSection;
   readonly cashFlows: Ba325CashFlowSection;
@@ -526,9 +597,24 @@ function foldSettlementCashFlows(args: {
   readonly entity: string;
   readonly periodStart: string;
   readonly periodEnd: string;
-}): readonly SettlementCashFlow[] {
+}): {
+  readonly flows: readonly SettlementCashFlow[];
+  /**
+   * Histogram of exclusion reasons (G-3 input-completeness tracking).
+   * Counted at the per-event level — an event excluded by the provenance
+   * filter contributes one to `provenance-filter`; an out-of-window event
+   * contributes one to `out-of-window`; etc. Events that pass and produce
+   * legs are NOT counted here (they show up as positive input counters in
+   * the generator).
+   */
+  readonly excludedReasons: Record<string, number>;
+} {
   const { eventStore, entity, periodStart, periodEnd } = args;
   const flows: SettlementCashFlow[] = [];
+  const excludedReasons: Record<string, number> = {};
+  const bumpReason = (k: string): void => {
+    excludedReasons[k] = (excludedReasons[k] ?? 0) + 1;
+  };
 
   // Provenance filter: exclude simulated events from production projections.
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
@@ -536,15 +622,23 @@ function foldSettlementCashFlows(args: {
 
   // Fold FxSettlementInstructed, TradeMatured, and EquitySettlementInstructed events.
   for (const event of eventStore.replay({ entity, asOf: periodEnd })) {
-    if (!eventMatchesProvenanceFilter(event, provenanceFilter)) continue;
-    if (event.as_of < periodStart) continue;
     if (
       event.type !== "FxSettlementInstructed" &&
       event.type !== "TradeMatured" &&
       event.type !== "EquitySettlementInstructed"
     )
       continue;
+    // Candidate event from here on — tally exclusions.
+    if (!eventMatchesProvenanceFilter(event, provenanceFilter)) {
+      bumpReason("provenance-filter");
+      continue;
+    }
+    if (event.as_of < periodStart) {
+      bumpReason("out-of-window");
+      continue;
+    }
 
+    const beforeCount = flows.length;
     if (event.type === "EquitySettlementInstructed") {
       // Equity settlement cash flows — Basel III Table 1 (contractual obligations).
       // `netCash.amountMinor < 0` = bank pays (outflow); `> 0` = bank receives (inflow).
@@ -564,14 +658,16 @@ function foldSettlementCashFlows(args: {
       }
     } else if (event.type === "FxSettlementInstructed") {
       const payload = event.payload as FxSettlementInstructedPayload;
-      flows.push({
-        eventId: event.event_id,
-        eventType: "FxSettlementInstructed",
-        tradeId: normaliseTradeId(payload.tradeId as string | Identifier),
-        amountMinor: payload.netCash.amountMinor,
-        currency: payload.netCash.currency,
-        asOf: event.as_of,
-      });
+      if (payload.netCash.amountMinor !== 0) {
+        flows.push({
+          eventId: event.event_id,
+          eventType: "FxSettlementInstructed",
+          tradeId: normaliseTradeId(payload.tradeId as string | Identifier),
+          amountMinor: payload.netCash.amountMinor,
+          currency: payload.netCash.currency,
+          asOf: event.as_of,
+        });
+      }
     } else if (event.type === "TradeMatured") {
       const payload = event.payload as TradeMaturedFxSpotPayload;
       // Base leg.
@@ -597,9 +693,15 @@ function foldSettlementCashFlows(args: {
         });
       }
     }
+    if (flows.length === beforeCount) {
+      // Candidate event passed the filter + window but produced zero legs —
+      // every leg amount was zero. Track as an exclusion reason so the
+      // input-completeness block can surface degenerate events.
+      bumpReason("zero-net-cash");
+    }
   }
 
-  return flows;
+  return { flows, excludedReasons };
 }
 
 // ---------------------------------------------------------------------------
@@ -692,6 +794,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   let level1Stock = 0;
   let level2AStock = 0;
   let level2BRawWeighted = 0; // factor-weighted before cap
+  let hqlaInputsFound = 0; // G-3: distinct trial-balance rows that classified as HQLA
 
   // Stable iteration order — sort by leafAccountId.
   const sorted = [...tbInCurrency].sort((a, b) =>
@@ -701,6 +804,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   for (const row of sorted) {
     const c = classMap.get(row.leafAccountId);
     if (!c) continue;
+    hqlaInputsFound += 1;
 
     // HQLA — debit-side accounts (assets); take absolute value to be
     // robust against sign convention drift, but flag a generator note
@@ -742,7 +846,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   // Cash flows — folded from FxSettlement events (Principle 1 compliant).
   // -------------------------------------------------------------------------
 
-  const rawFlows = foldSettlementCashFlows({
+  const { flows: rawFlows, excludedReasons: foldExcludedReasons } = foldSettlementCashFlows({
     eventStore: input.eventStore,
     entity: input.entity,
     periodStart: input.periodStart,
@@ -754,6 +858,25 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   let grossOutflows = 0;
   let grossInflows = 0;
   let hasForeignCurrencyFlow = false;
+
+  // Track per-event leg currency presence to detect "all legs foreign"
+  // events (G-3 foreign-currency-leg exclusion). Events with at least one
+  // functional-currency leg are NOT excluded; their foreign legs are
+  // silently dropped here and surfaced via the existing placeholder. Events
+  // whose every leg is foreign are tallied as `foreign-currency-leg`.
+  const eventLegCurrencyPresence = new Map<
+    string,
+    { hasFunctional: boolean; hasForeign: boolean }
+  >();
+  for (const flow of rawFlows) {
+    const e = eventLegCurrencyPresence.get(flow.eventId) ?? {
+      hasFunctional: false,
+      hasForeign: false,
+    };
+    if (flow.currency === ccy) e.hasFunctional = true;
+    else e.hasForeign = true;
+    eventLegCurrencyPresence.set(flow.eventId, e);
+  }
 
   // Group flows by (tradeId, eventType) for cleaner line items.
   const flowByKey = new Map<string, { flows: SettlementCashFlow[]; totalMinor: number }>();
@@ -769,6 +892,23 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     entry.totalMinor += flow.amountMinor;
     flowByKey.set(key, entry);
   }
+
+  // Tally events whose every leg is foreign-currency as a fold-time
+  // exclusion reason. These events passed the provenance + window gates
+  // but their legs all dropped at the currency filter, so they made no
+  // contribution to outflows or inflows — semantically equivalent to a
+  // filtered-out event for the G-3 completeness block.
+  const excludedReasons: Record<string, number> = { ...foldExcludedReasons };
+  for (const presence of eventLegCurrencyPresence.values()) {
+    if (presence.hasForeign && !presence.hasFunctional) {
+      excludedReasons["foreign-currency-leg"] = (excludedReasons["foreign-currency-leg"] ?? 0) + 1;
+    }
+  }
+
+  // Distinct event IDs that contributed to each side — feeds the
+  // input-completeness counters.
+  const outflowEventIds = new Set<string>();
+  const inflowEventIds = new Set<string>();
 
   for (const [key, entry] of flowByKey) {
     const { totalMinor, flows } = entry;
@@ -795,10 +935,12 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
       // Outflow — bank pays.
       outflowLines.push(lineItem);
       grossOutflows += absAmount;
+      for (const id of eventIds) outflowEventIds.add(id);
     } else {
       // Inflow — bank receives.
       inflowLines.push(lineItem);
       grossInflows += absAmount;
+      for (const id of eventIds) inflowEventIds.add(id);
     }
   }
 
@@ -830,6 +972,56 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   const floor = Math.ceil(0.25 * grossOutflows);
   const netCashOutflows = Math.max(preFloorNetOutflows, floor);
   const floorBinding = preFloorNetOutflows < floor;
+
+  // -------------------------------------------------------------------------
+  // Input-completeness block (G-3 — Eitan BA 325 first end-to-end validation).
+  //
+  // Distinguishes "no-data" (every input category empty) from "no-stress"
+  // (HQLA present but zero outflow events in window) and surfaces a
+  // partial-data signal when the fold dropped any candidate events.
+  // -------------------------------------------------------------------------
+  const outflowInputsFound = outflowEventIds.size;
+  const inflowInputsFound = inflowEventIds.size;
+  const excludedByFilter = Object.values(excludedReasons).reduce((a, b) => a + b, 0);
+
+  // Empty: zero input events of any category (pre-G1 state — the case the
+  // renderer cannot distinguish from "no-stress" without this flag).
+  // Complete: every input category populated AND no exclusions.
+  // Partial: at least one input category populated AND at least one
+  //   candidate excluded by the fold.
+  let completenessClass: Ba325InputCompleteness["completenessClass"];
+  if (hqlaInputsFound === 0 && outflowInputsFound === 0 && inflowInputsFound === 0) {
+    completenessClass = "empty";
+  } else if (
+    hqlaInputsFound >= 1 &&
+    outflowInputsFound >= 1 &&
+    inflowInputsFound >= 1 &&
+    excludedByFilter === 0
+  ) {
+    completenessClass = "complete";
+  } else if (
+    (hqlaInputsFound >= 1 || outflowInputsFound >= 1 || inflowInputsFound >= 1) &&
+    excludedByFilter > 0
+  ) {
+    completenessClass = "partial";
+  } else {
+    // Some categories populated, none excluded — but not "complete"
+    // (one of HQLA/out/in is missing entirely). For G-3 v1 we treat this
+    // as `complete` semantically (no data-quality loss; the bank
+    // genuinely has no outflows or no inflows in window). The render
+    // layer renders the ratio normally. A future tightening can split
+    // this into a `partial-by-omission` class once recon needs it.
+    completenessClass = "complete";
+  }
+
+  const inputCompleteness: Ba325InputCompleteness = {
+    hqlaInputsFound,
+    outflowInputsFound,
+    inflowInputsFound,
+    excludedByFilter,
+    excludedReasons,
+    completenessClass,
+  };
 
   // -------------------------------------------------------------------------
   // LCR ratio. Per BCBS D295 §22 / Reg 26(2): division by zero (no
@@ -866,6 +1058,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
         ? { trialBalanceSnapshotEventId: input.trialBalanceSnapshotEventId }
         : {}),
       classificationsFingerprint,
+      inputCompleteness,
     },
     hqla: {
       level1: {
