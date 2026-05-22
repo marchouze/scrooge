@@ -1087,7 +1087,139 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — equity settlement cash flows", () =
 });
 
 // =====================================================================
-// 9. LCR event emission via generateBa325LcrWithEvents.
+// 9. G-3 input-completeness meta flag (Eitan BA 325 first end-to-end
+//    validation, 2026-05-22; document hash
+//    blake3:ea05a7cacda07b3f9432e0177cbb622160d4d3150ce5475068f0db10b61fcd1d).
+//
+//    Three completeness classes: empty / partial / complete.
+// =====================================================================
+
+describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)", () => {
+  it("completenessClass='empty' — zero HQLA + zero cash-flow events ⇒ lcrRatio renders as 'no-data'", () => {
+    // Pre-G1 state: no trial-balance HQLA rows, no settlement events.
+    const store = makeStore();
+    const out = generateBa325Lcr({
+      entity: ENTITY_BANK,
+      asOf: PERIOD_END,
+      periodId: "x",
+      functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [],
+      classifications: [],
+    });
+
+    const ic = out.meta.inputCompleteness;
+    expect(ic.hqlaInputsFound).toBe(0);
+    expect(ic.outflowInputsFound).toBe(0);
+    expect(ic.inflowInputsFound).toBe(0);
+    expect(ic.excludedByFilter).toBe(0);
+    expect(ic.completenessClass).toBe("empty");
+
+    // Render: lcrRatio is "no-data", NOT "infinity".
+    const r = renderBa325ToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
+    expect(r.lcrRatio).toBe("no-data");
+    expect(r.lcrPercent).toBe("no-data");
+    expect(r.dataQualityWarning).toBeUndefined();
+    // Meta carries the structured completeness block.
+    expect(r.meta.inputCompleteness.completenessClass).toBe("empty");
+  });
+
+  it("completenessClass='complete' — HQLA + outflow + inflow events present and zero exclusions", () => {
+    const store = makeStore();
+    // One outflow event + one inflow event in window.
+    appendSettlementOutflow(store, {
+      entity: ENTITY_BANK,
+      asOf: "2026-05-10T10:00:00.000Z",
+      amountMinor: 40_000,
+      tradeId: "TRADE-G3-COMPLETE-OUT",
+    });
+    appendSettlementInflow(store, {
+      entity: ENTITY_BANK,
+      asOf: "2026-05-11T10:00:00.000Z",
+      amountMinor: 20_000,
+      tradeId: "TRADE-G3-COMPLETE-IN",
+    });
+
+    const out = generateBa325Lcr({
+      entity: ENTITY_BANK,
+      asOf: PERIOD_END,
+      periodId: "x",
+      functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 }],
+      classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
+    });
+
+    const ic = out.meta.inputCompleteness;
+    expect(ic.hqlaInputsFound).toBe(1);
+    expect(ic.outflowInputsFound).toBe(1);
+    expect(ic.inflowInputsFound).toBe(1);
+    expect(ic.excludedByFilter).toBe(0);
+    expect(ic.excludedReasons).toEqual({});
+    expect(ic.completenessClass).toBe("complete");
+
+    // Render: ratio rendered numerically; no dataQualityWarning.
+    const r = renderBa325ToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
+    expect(r.lcrRatio).not.toBe("no-data");
+    expect(r.lcrRatio).not.toBe("infinity");
+    expect(r.dataQualityWarning).toBeUndefined();
+  });
+
+  it("completenessClass='partial' — at least one input + at least one excluded ⇒ dataQualityWarning set", () => {
+    // Build a store with one in-window outflow + one out-of-window event
+    // (the latter is the candidate that gets excluded by the fold's window
+    // gate, tallying `out-of-window: 1` in `excludedReasons`).
+    const store = makeStore();
+    appendSettlementOutflow(store, {
+      entity: ENTITY_BANK,
+      asOf: "2026-05-10T10:00:00.000Z",
+      amountMinor: 40_000,
+      tradeId: "TRADE-G3-PARTIAL-OUT",
+    });
+    // Out-of-window event — before periodStart.
+    appendSettlementInflow(store, {
+      entity: ENTITY_BANK,
+      asOf: "2026-04-15T10:00:00.000Z",
+      amountMinor: 5_000,
+      tradeId: "TRADE-G3-PARTIAL-PRIOR",
+    });
+
+    const out = generateBa325Lcr({
+      entity: ENTITY_BANK,
+      asOf: PERIOD_END,
+      periodId: "x",
+      functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 }],
+      classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
+    });
+
+    const ic = out.meta.inputCompleteness;
+    expect(ic.hqlaInputsFound).toBe(1);
+    expect(ic.outflowInputsFound).toBe(1);
+    expect(ic.inflowInputsFound).toBe(0);
+    expect(ic.excludedByFilter).toBe(1);
+    expect(ic.excludedReasons["out-of-window"]).toBe(1);
+    expect(ic.completenessClass).toBe("partial");
+
+    // Render: ratio rendered numerically AND dataQualityWarning set.
+    const r = renderBa325ToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
+    expect(r.lcrRatio).not.toBe("no-data");
+    expect(r.lcrRatio).not.toBe("infinity");
+    expect(r.dataQualityWarning).toBe(true);
+    expect(r.meta.inputCompleteness.completenessClass).toBe("partial");
+    expect(r.meta.inputCompleteness.excludedReasons["out-of-window"]).toBe(1);
+  });
+});
+
+// =====================================================================
+// 10. LCR event emission via generateBa325LcrWithEvents.
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-3 — LCRRatioProjection + HQLACompositionDrift event emission", () => {

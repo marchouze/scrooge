@@ -857,7 +857,10 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   // functional-currency leg are NOT excluded; their foreign legs are
   // silently dropped here and surfaced via the existing placeholder. Events
   // whose every leg is foreign are tallied as `foreign-currency-leg`.
-  const eventLegCurrencyPresence = new Map<string, { hasFunctional: boolean; hasForeign: boolean }>();
+  const eventLegCurrencyPresence = new Map<
+    string,
+    { hasFunctional: boolean; hasForeign: boolean }
+  >();
   for (const flow of rawFlows) {
     const e = eventLegCurrencyPresence.get(flow.eventId) ?? {
       hasFunctional: false,
