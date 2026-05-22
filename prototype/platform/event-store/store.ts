@@ -323,15 +323,13 @@ export class EventStore {
     if (!newEntity || newEntity.trim() === "") {
       throw new Error("EventStore.reclassifyEntity: newEntity must be a non-empty string");
     }
-    const row = this.db
-      .prepare("SELECT entity FROM events WHERE event_id = ?")
-      .get(eventId) as { entity: string } | undefined;
+    const row = this.db.prepare("SELECT entity FROM events WHERE event_id = ?").get(eventId) as
+      | { entity: string }
+      | undefined;
     if (!row) return { reclassified: false, reason: "not-found" };
     if (row.entity === newEntity) return { reclassified: false, reason: "already-at-target" };
     const priorEntity = row.entity;
-    this.db
-      .prepare("UPDATE events SET entity = ? WHERE event_id = ?")
-      .run(newEntity, eventId);
+    this.db.prepare("UPDATE events SET entity = ? WHERE event_id = ?").run(newEntity, eventId);
     return { reclassified: true, priorEntity };
   }
 

@@ -87,6 +87,7 @@ import {
 } from "../event-types/agent-substrate-extended";
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingPayloadSchema } from "../event-types/audit";
+import { entityReclassifiedPayloadSchema } from "../event-types/entity-reclassified";
 import {
   dataProjectionSnapshotPayloadSchema,
   governanceCyclePrepPayloadSchema,
@@ -100,7 +101,6 @@ import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
-import { entityReclassifiedPayloadSchema } from "../event-types/entity-reclassified";
 import { provenanceReclassifiedPayloadSchema } from "../event-types/provenance-reclassified";
 import {
   type EventTypeMetadata,

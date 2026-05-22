@@ -315,7 +315,6 @@ export {
 
 import { PARTY_EVENT_TYPES } from "../../../domains/party";
 import { ACCOUNTING_TYPED_EVENT_TYPES } from "./accounting";
-import { ENTITY_RECLASSIFIED_EVENT_TYPES } from "./entity-reclassified";
 import { AGENT_TYPED_EVENT_TYPES } from "./agent";
 import { AGENT_OPS_TYPED_EVENT_TYPES } from "./agent-ops";
 import { AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES } from "./agent-substrate-extended";
@@ -335,6 +334,7 @@ import { CREDIT_LIMIT_TYPED_EVENT_TYPES } from "./credit-limit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
+import { ENTITY_RECLASSIFIED_EVENT_TYPES } from "./entity-reclassified";
 import { EQUITY_ACCOUNTING_EVENT_TYPES } from "./equity-accounting";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";

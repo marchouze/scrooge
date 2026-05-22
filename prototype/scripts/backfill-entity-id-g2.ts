@@ -132,8 +132,7 @@ interface BackfillOpts {
  */
 export function runBackfill(opts: BackfillOpts = {}): BackfillResult {
   const dryRun = opts.dryRun ?? false;
-  const runRef =
-    opts.runRef ?? `backfill:entity-id-g2:${new Date().toISOString()}`;
+  const runRef = opts.runRef ?? `backfill:entity-id-g2:${new Date().toISOString()}`;
 
   const byEventType: Record<string, number> = {};
   let scanned = 0;
