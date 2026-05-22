@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# pre-push hook — enforce biome formatting before any push.
+#
+# Why: 5+ pure-format fix commits appeared in the last 100 (biome
+# import-order, template literals, non-null assertions). Each one
+# triggered a full CI run, costing 5–10 min. Running `biome check`
+# locally before push catches these in <1 second.
+#
+# Install: git config core.hooksPath .githooks
+# (or: ln -s ../../.githooks/pre-push .git/hooks/pre-push)
+
+set -euo pipefail
+
+PROTOTYPE_DIR="$(git rev-parse --show-toplevel)/prototype"
+
+if [[ ! -d "$PROTOTYPE_DIR" ]]; then
+  exit 0
+fi
+
+echo "pre-push: running biome check (format + lint)..."
+cd "$PROTOTYPE_DIR"
+
+if ! bunx biome check . 2>&1; then
+  echo ""
+  echo "pre-push: biome check failed. Run 'bun run format' to auto-fix, then re-stage and retry."
+  exit 1
+fi
+
+echo "pre-push: biome OK."
