@@ -60,6 +60,19 @@ export const irsTradeBookedPayloadSchema = z.object({
   dayCountConvention: z.enum(["ACT/365", "ACT/360", "30/360"]),
   /** Trading book identifier. */
   bookId: z.string().min(1),
+  /**
+   * Optional reference to the FinancialInstrument entity for this swap.
+   * Convention: `"fi:irs:<tradeId>"` — an IRS instrument is compositional
+   * (instrumentSubtype = "compositional", actusContractType = "IRS").
+   * Absent for legacy events booked before the FinancialInstrument entity landed.
+   * When present, must match an existing FinancialInstrumentDefined.instrumentId.
+   * The FinancialInstrumentDefined contractTerms for IRS should carry:
+   *   fixedRate, floatingIndex, bankPays, paymentFrequency, dayCountConvention
+   * mirroring this trade event's own fields (Slice 5 irsContractTermsSchema).
+   *
+   * @see D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22) — Slice 7
+   */
+  instrumentId: z.string().min(1).optional(),
   /** Trader reference (FIX SenderCompID equivalent). */
   traderRef: z.string().min(1),
 });
@@ -212,6 +225,13 @@ export function makeIrsCouponSettlementConfirmed(args: {
 export const irsPositionRevaluedPayloadSchema = z.object({
   /** Trade being revalued. */
   tradeId: identifierSchema,
+  /**
+   * Optional reference to the FinancialInstrument entity for this swap position.
+   * Mirrors the instrumentId on the originating IrsTradeBooked event.
+   *
+   * @see D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22) — Slice 7
+   */
+  instrumentId: z.string().min(1).optional(),
   /** YYYY-MM-DD valuation date (EOD). */
   valuationDate: z.string().min(1),
   /** Present value of remaining fixed leg cash flows (minor units). */
