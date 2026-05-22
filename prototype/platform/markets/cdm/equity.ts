@@ -17,6 +17,7 @@
 // projections derived from this stream.
 //
 // Author: Kai · M1 per D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07).
+// Kai (Trading Systems Engineer, engineering) per D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
 
 import { z } from "zod";
 
@@ -64,6 +65,15 @@ export const equityTradeBookedPayloadSchema = z.object({
   trader: z.string().min(1),
   /** Book identifier — which trading book / strategy this is allocated to. */
   bookId: z.string().min(1),
+  /**
+   * Optional reference to the FinancialInstrument entity for this security.
+   * Convention: `"fi:equity:<exchange>:<ticker>"` or `"fi:equity:<ISIN>"`.
+   * Absent for legacy events booked before the FinancialInstrument entity landed.
+   * When present, must match an existing FinancialInstrumentDefined.instrumentId
+   * (actusContractType = "STK").
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY.
+   */
+  instrumentId: z.string().min(1).optional(),
 });
 
 export type EquityTradeBookedPayload = z.infer<typeof equityTradeBookedPayloadSchema>;
@@ -131,6 +141,15 @@ export const equityCorporateActionAppliedPayloadSchema = z.object({
     .optional(),
   /** Position book affected. */
   bookId: z.string().min(1),
+  /**
+   * Optional reference to the FinancialInstrument entity for this security.
+   * Convention: `"fi:equity:<exchange>:<ticker>"` or `"fi:equity:<ISIN>"`.
+   * Absent for legacy events booked before the FinancialInstrument entity landed.
+   * When present, must match an existing FinancialInstrumentDefined.instrumentId
+   * (actusContractType = "STK").
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY.
+   */
+  instrumentId: z.string().min(1).optional(),
   /** Quantity held at record date. */
   positionAtRecord: quantitySchema,
 });
@@ -175,6 +194,15 @@ export const equitySettlementInstructedPayloadSchema = z.object({
   settlementDate: cdmDateSchema,
   /** Settlement venue / CSD identifier (e.g. "STRATE"). */
   settlementVenue: z.string().min(1),
+  /**
+   * Optional reference to the FinancialInstrument entity for this security.
+   * Convention: `"fi:equity:<exchange>:<ticker>"` or `"fi:equity:<ISIN>"`.
+   * Absent for legacy events booked before the FinancialInstrument entity landed.
+   * When present, must match an existing FinancialInstrumentDefined.instrumentId
+   * (actusContractType = "STK").
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY.
+   */
+  instrumentId: z.string().min(1).optional(),
   /** Counterparty settlement details (BIC + account). */
   counterparty: partySchema,
 });
@@ -229,6 +257,15 @@ export const equityTradeExecutedPayloadSchema = z.object({
   venue: z.enum(["JSE", "OTC"]),
   /** Book identifier — which trading book / strategy this is allocated to. */
   bookId: z.string().min(1),
+  /**
+   * Optional reference to the FinancialInstrument entity for this security.
+   * Convention: `"fi:equity:<exchange>:<ticker>"` or `"fi:equity:<ISIN>"`.
+   * Absent for legacy events booked before the FinancialInstrument entity landed.
+   * When present, must match an existing FinancialInstrumentDefined.instrumentId
+   * (actusContractType = "STK").
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY.
+   */
+  instrumentId: z.string().min(1).optional(),
   /** Counterparty on the other side of the fill. */
   counterparty: partySchema,
   /** Trader reference (FIX SenderCompID equivalent). */
