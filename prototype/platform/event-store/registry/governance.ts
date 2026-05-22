@@ -100,6 +100,7 @@ import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
+import { provenanceReclassifiedPayloadSchema } from "../event-types/provenance-reclassified";
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
@@ -205,6 +206,21 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+  },
+  // D-PROVENANCE-BUILD-PHASE-CLASS Slice 2 — audit event for envelope-axis
+  // provenance re-tagging. Emitted by the build-phase-fixture backfill
+  // (Slice 2) and the commencement-of-trading migration (Slice 5).
+  // Authority: D-PROVENANCE-BUILD-PHASE-CLASS (CEO-approved 2026-05-22).
+  {
+    type: "ProvenanceReclassified",
+    class: "audit",
+    payloadSchema: provenanceReclassifiedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-PROVENANCE-BUILD-PHASE-CLASS", "D-DATA-PROVENANCE-SUBSTRATE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/event-store/event-types/provenance-reclassified.ts",
   },
   {
     type: "CitationGatePassed",

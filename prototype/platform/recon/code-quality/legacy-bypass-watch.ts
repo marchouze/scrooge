@@ -56,8 +56,16 @@ import { type ReconResult, type ReconViolation, emptyResult } from "../types";
  * added by Eitan's M5 OTC IRS lifecycle PR. New CDM IRD events completing the
  * bank's third core asset class. Growth authorised by D-MARKETS-SCHEMA-FOUNDATION
  * (CEO approved 2026-05-07). Baseline bumped from 220 → 225.
+ *
+ * 2026-05-22: +1 entry (ProvenanceReclassified) added by Atlas's
+ * D-PROVENANCE-BUILD-PHASE-CLASS Slice 2 PR. Audit event recording the
+ * envelope-axis re-tagging of existing events from `simulated` →
+ * `build-phase-fixture` (Slice 2) and `build-phase-fixture` → `production`
+ * (Slice 5 at commencement-of-trading). Growth authorised by
+ * D-PROVENANCE-BUILD-PHASE-CLASS (CEO approved 2026-05-22). Baseline
+ * bumped from 225 → 226.
  */
-export const BASELINE_COUNT = 225;
+export const BASELINE_COUNT = 226;
 
 /**
  * Date the baseline was snapshotted, for the deliverable's message line.

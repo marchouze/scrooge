@@ -291,6 +291,9 @@ export const LEGACY_PRE_A1_EVENT_TYPES: ReadonlySet<string> = new Set([
   "PositionAdjusted",
   "PreTradeLimitChanged",
   "PricingModelEvaluated",
+  // D-PROVENANCE-BUILD-PHASE-CLASS Slice 2 — envelope-axis re-tagging
+  // audit event emitted by the build-phase-fixture backfill script.
+  "ProvenanceReclassified",
   "ProductApproved",
   "ProductConceptualised",
   "ProductDimensionAttested",
