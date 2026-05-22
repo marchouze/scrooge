@@ -211,6 +211,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Build-phase fixture store, not a production access path. T-01 carve-out.
   // Citation: P4-SECURITY-DESIGNED-IN.
   "platform/agent-runtime/bun-worker-bus-runner.test.ts",
+  // BA 325 LCR generator unit tests — co-located per-module test convention.
+  // Raw EventStore(":memory:") is a build-phase fixture for testing the
+  // HQLA override logic (D-FINANCIAL-INSTRUMENT-ENTITY Slice 9); not a
+  // production access path. T-01 carve-out.
+  // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-325-LCR; P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/ba-325-lcr.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

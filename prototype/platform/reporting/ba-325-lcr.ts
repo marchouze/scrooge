@@ -117,6 +117,7 @@ import type { EquitySettlementInstructedPayload } from "../markets/cdm/equity";
 import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
 import type { Identifier } from "../markets/cdm/primitives";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import type { HqlaLevelOverride } from "./hqla-overrides";
 
 /** Normalise a tradeId that may be either a plain string or a CDM Identifier object. */
 function normaliseTradeId(tradeId: string | Identifier): string {
@@ -149,6 +150,13 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
  * factor (50% lower bound; 25% RMBS) per BCBS D295 §54. Unspecified
  * defaults to 0.50 (the lower-bound factor for non-RMBS Level-2B per
  * Reg 26(7)(c)).
+ *
+ * D-FINANCIAL-INSTRUMENT-ENTITY Slice 9: the optional `isin` field enables
+ * the generator to look up per-instrument HQLA classification in the
+ * SecurityMaster override map (`opts.hqlaOverrides`) when provided. When
+ * present, the override tier replaces the COA `hqlaLevel` tag for that
+ * account. When absent (most accounts at build phase), the COA tag applies.
+ * Citations: D-FINANCIAL-INSTRUMENT-ENTITY; BA-325-LCR; BCBS-LCR-2013.
  */
 export interface AccountLiquidityClassification {
   readonly leafAccountId: string;
@@ -167,6 +175,17 @@ export interface AccountLiquidityClassification {
   readonly inflowRate?: number;
   /** Free-form sub-category label for line-by-line BA 325 render. */
   readonly subCategory?: string;
+  /**
+   * Optional ISIN of the security held in this GL account.
+   *
+   * When present AND when `opts.hqlaOverrides` is supplied to
+   * `generateBa325Lcr`, the instrument-level HQLA tier from the
+   * SecurityMaster projection overrides the COA `hqlaLevel` tag.
+   *
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+   * Citations: BA-325-LCR; BCBS-LCR-2013.
+   */
+  readonly isin?: string;
 }
 
 /**
@@ -743,7 +762,40 @@ function foldSettlementCashFlows(args: {
  *   D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10).
  */
-export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
+/**
+ * Options for `generateBa325Lcr`. Introduced in D-FINANCIAL-INSTRUMENT-ENTITY
+ * Slice 9 to support instrument-level HQLA classification from the SecurityMaster
+ * projection as an override on top of COA-level hqlaLevel tags.
+ *
+ * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+ * Citations: BA-325-LCR; BCBS-LCR-2013.
+ */
+export interface Ba325LcrOpts {
+  /**
+   * Instrument-level HQLA classification map built from the SecurityMaster
+   * projection (use `buildHqlaOverridesFromSecurityMaster()` from
+   * `./hqla-overrides.ts`).
+   *
+   * When provided, the generator resolves each HQLA-classified account's ISIN
+   * (from `AccountLiquidityClassification.isin`) against this map. If the ISIN
+   * is present in the map, the SecurityMaster-derived tier replaces the COA
+   * `hqlaLevel` tag. When the ISIN is absent from the map, OR when the
+   * classification has no `isin`, the COA `hqlaLevel` tag is used as-is.
+   *
+   * The "non-hqla" override tier explicitly removes HQLA eligibility from an
+   * account that carries a COA tag — the account contributes zero stock.
+   * This handles the case where an instrument is classified as non-HQLA at
+   * the SecurityMaster level even though its parent account is tagged.
+   *
+   * Build-phase default: omit this option. The COA fallback continues to
+   * drive all HQLA stock calculations until bond seeds land (Slice 10).
+   *
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY Slice 9.
+   */
+  readonly hqlaOverrides?: ReadonlyMap<string, HqlaLevelOverride>;
+}
+
+export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts): Ba325Output {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
     throw new Ba325GeneratorError(
@@ -804,27 +856,70 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
   for (const row of sorted) {
     const c = classMap.get(row.leafAccountId);
     if (!c) continue;
+
+    // -----------------------------------------------------------------------
+    // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 — SecurityMaster HQLA override.
+    //
+    // If the classification has an ISIN AND the override map is provided AND
+    // the ISIN is present in the override map, use the SecurityMaster-derived
+    // tier in preference to the COA hqlaLevel tag.
+    //
+    // The "non-hqla" override tier explicitly removes HQLA eligibility:
+    // the account contributes zero to the HQLA stock even though the COA
+    // carries an hqlaLevel tag. This is the correct behaviour when an
+    // instrument held in the account has been classified as non-HQLA at
+    // the instrument level (e.g. a bond that lost its 0%-RW status).
+    //
+    // COA fallback: when no ISIN is set, or the ISIN is absent from the
+    // override map, or no override map is provided — use COA hqlaLevel tag.
+    //
+    // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+    // Citations: BA-325-LCR; BCBS-LCR-2013.
+    // -----------------------------------------------------------------------
+    let effectiveHqlaLevel: HqlaLevel | "non-hqla" | undefined = c.hqlaLevel;
+    let overrideApplied = false;
+    if (c.isin && opts?.hqlaOverrides) {
+      const overrideTier = opts.hqlaOverrides.get(c.isin);
+      if (overrideTier !== undefined) {
+        effectiveHqlaLevel = overrideTier;
+        overrideApplied = true;
+      }
+    }
+
+    // Skip accounts explicitly classified as non-HQLA at the instrument level.
+    if (effectiveHqlaLevel === "non-hqla" || effectiveHqlaLevel === undefined) {
+      continue;
+    }
+
+    // Count as a qualifying HQLA input only after the override check resolves
+    // to an actual HQLA tier (non-hqla skips are not counted).
     hqlaInputsFound += 1;
 
     // HQLA — debit-side accounts (assets); take absolute value to be
     // robust against sign convention drift, but flag a generator note
     // when the balance is on the credit side of an HQLA-classified row.
     const stockMinor = Math.abs(row.amountMinor);
-    const note =
+    const creditWarning =
       row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
+    const overrideNote = overrideApplied
+      ? `SecurityMaster override: isin=${c.isin} tier=${effectiveHqlaLevel} (COA tag=${c.hqlaLevel ?? "none"})`
+      : undefined;
+    const noteParts = [creditWarning, overrideNote].filter(Boolean);
+    const note = noteParts.length > 0 ? noteParts.join("; ") : undefined;
+
     const lineItem: Ba325LineItem = {
-      lineId: `${c.hqlaLevel}.${row.leafAccountId}`,
-      lineLabel: c.subCategory ?? `HQLA ${c.hqlaLevel} — ${row.leafAccountId}`,
+      lineId: `${effectiveHqlaLevel}.${row.leafAccountId}`,
+      lineLabel: c.subCategory ?? `HQLA ${effectiveHqlaLevel} — ${row.leafAccountId}`,
       amountMinor: stockMinor,
       currency: ccy,
       contributingAccounts: [row.leafAccountId],
       ...(c.subCategory ? { subCategory: c.subCategory } : {}),
       ...(note ? { note } : {}),
     };
-    if (c.hqlaLevel === "level-1") {
+    if (effectiveHqlaLevel === "level-1") {
       level1Lines.push(lineItem);
       level1Stock += stockMinor;
-    } else if (c.hqlaLevel === "level-2a") {
+    } else if (effectiveHqlaLevel === "level-2a") {
       level2ALines.push(lineItem);
       level2AStock += stockMinor;
     } else {
@@ -1098,12 +1193,14 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     citations: [
       "Principles/1-events-are-truth.md",
       "D-HQLA-COA-CLASSIFICATION",
+      "D-FINANCIAL-INSTRUMENT-ENTITY",
       "D-MARKETS-SCHEMA-FOUNDATION",
       "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
       "D-REPORTING-CAPABILITY-SLICE-3",
       "Banks Act 94 of 1990 §70",
       "Regulations Relating to Banks Reg 26",
       "BCBS D295",
+      "BCBS-LCR-2013",
       "BCBS 248",
     ],
     placeholders,
@@ -1154,8 +1251,11 @@ const HQLA_DRIFT_THRESHOLD = 0.05;
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
  *   REG-26-LCR; BCBS-D295; BA-325.
  */
-export async function generateBa325LcrWithEvents(input: Ba325GeneratorInput): Promise<Ba325Output> {
-  const output = generateBa325Lcr(input);
+export async function generateBa325LcrWithEvents(
+  input: Ba325GeneratorInput,
+  opts?: Ba325LcrOpts,
+): Promise<Ba325Output> {
+  const output = generateBa325Lcr(input, opts);
   const { eventStore, entity, periodEnd } = input;
 
   // Map lcrRatio (dimensionless) to pct (100-based) for the event payload.

@@ -18,6 +18,7 @@ export {
   Ba325GeneratorError,
   type Ba325HqlaSection,
   type Ba325LineItem,
+  type Ba325LcrOpts,
   type Ba325Output,
   BA_325_BANK_ENTITIES,
   applyHqlaCaps,
@@ -25,6 +26,13 @@ export {
   generateBa325LcrWithEvents,
   type HqlaLevel,
 } from "./ba-325-lcr";
+
+// D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 — SecurityMaster HQLA override utility.
+// Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+export {
+  type HqlaLevelOverride,
+  buildHqlaOverridesFromSecurityMaster,
+} from "./hqla-overrides";
 
 export {
   type NsfrInputs,
