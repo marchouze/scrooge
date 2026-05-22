@@ -11,7 +11,7 @@ authors:
   - Helena (Chief Risk Officer, governance) — RAS, capital & risk appetite inputs
   - Camille (Chief Financial Officer, governance) — capital plan, financial targets
   - Devon (Chief Operating Officer, governance) — operating model, technology
-  - Saskia (Head of Global Markets, markets) — product strategy, trading mandate
+  - Saskia (Head of Global Markets) — product strategy, trading mandate
   - Owen (Company Secretary, governance) — governance framework, licensing pathway
   - Zara (Chief Compliance Officer, governance) — compliance posture
   - Eitan (Treasurer, governance) — capital structure, funding

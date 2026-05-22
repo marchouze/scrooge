@@ -40,7 +40,7 @@ if (hasPhase("D-BANK-STRATEGY-V1", "requested")) {
         "Approve the inaugural Hoz Bank institutional strategy v1 as filed at Policies/bank-strategy-v1.md. The strategy covers vision, business model, capital structure (R300m CET1), product scope (JSE bonds/equities + OTC IRD + FX), AI-native operating model, regulatory/licensing pathway, risk appetite framework, and build-phase milestones.",
       rationale:
         "The bank has operated through the build phase without a formally approved strategy document. Policies, procedures, the trading mandate, the RAS, and the capital plan are all live — but the governing strategic intent that ties them together has not been CEO-approved as a single artefact. This decision approves that artefact, making the bank's direction explicit and citable across all downstream governance work. The document was synthesised by Scrooge from inputs across Helena (RAS/capital), Camille (capital plan), Devon (operating model), Saskia (trading mandate), Owen (governance), Zara (compliance), and Eitan (treasury). It is consistent with all approved policies and decisions currently on the register.",
-      sourceDocHashes: ["blake3:b0a39bf8b3e527dbf9ec746fbb962fcef98274149058b9d8709a2d6750e5ba01"],
+      sourceDocHashes: ["blake3:50b835073c022e229bcec0fbf69b602c34e426952f9d70b8135d599cd9b24059"],
       citations: [
         "D-RAS",
         "D-MARKETS-CAPITAL-TIME-SHAPE",
