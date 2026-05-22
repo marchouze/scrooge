@@ -127,6 +127,11 @@ export { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thres
 // Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT;
 //   P2-SINGLE-GRAPH-DISCIPLINE.
 export { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
+// D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
+// events (Defined / Classified / Decomposed / Reconstituted).
+// Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+//   IFRS-9; ACTUS v1.1; BA 325.
+export { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -143,6 +148,7 @@ import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-cr
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
+import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -298,6 +304,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT;
   //   P2-SINGLE-GRAPH-DISCIPLINE.
   ...OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY,
+  // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
+  // events (Defined / Classified / Decomposed / Reconstituted).
+  // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+  //   IFRS-9; ACTUS v1.1; BA 325.
+  ...FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
