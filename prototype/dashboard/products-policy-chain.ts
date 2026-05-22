@@ -19,6 +19,12 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
+import { POSTING_RULE_REGISTRY } from "../platform/accounting/posting-rule-registry";
+import {
+  findLifecycleForEventType,
+  getLifecycleStage,
+} from "../platform/lifecycle/trade-lifecycle-registry";
+
 // ---------------------------------------------------------------------------
 // Public types — exported for products-detail.ts to embed in the view.
 // ---------------------------------------------------------------------------
@@ -57,6 +63,10 @@ export interface ProcedureRef {
   systemCapabilityRaw: string;
 }
 
+/**
+ * A system capability / function that enables an event to be emitted.
+ * Now a sub-row of EventRef rather than the terminal node of the chain.
+ */
 export interface FunctionRef {
   /** Module or capability identifier, e.g. `@platform/markets/cdm/fx`. */
   name: string;
@@ -65,10 +75,36 @@ export interface FunctionRef {
   fromProcedure: string;
 }
 
+/**
+ * An event emitted by the system as a consequence of following a procedure.
+ * This is the terminal node of the Policy → Procedure → Events chain
+ * (Principle 1: events are the durable proof that a procedure was followed).
+ */
+export interface EventRef {
+  /** Registered event type name (matches event store type field). */
+  eventType: string;
+  /**
+   * Where in the lifecycle this event sits — "opening", "in-flight", or
+   * "terminal". Undefined if the event is not part of a trade lifecycle.
+   */
+  lifecycleStage?: "opening" | "in-flight" | "terminal";
+  /**
+   * When this event produces an accounting entry (from POSTING_RULE_REGISTRY),
+   * or undefined if it has no GL impact.
+   */
+  accountingCondition?: string;
+  /**
+   * System capabilities / functions that enable this event to be emitted.
+   * Populated from the `system-capability` frontmatter of matched procedures.
+   */
+  enabledBy: string[];
+}
+
 export interface DimensionPolicyChain {
   policies: PolicyRef[];
   procedures: ProcedureRef[];
-  functions: FunctionRef[];
+  /** Terminal node: events this dimension's substrate emits. */
+  events: EventRef[];
 }
 
 // ---------------------------------------------------------------------------
@@ -379,14 +415,54 @@ export function parseSystemCapability(raw: string): ParsedFunction[] {
 }
 
 // ---------------------------------------------------------------------------
+// Event-ref builder — terminal node of the Policy → Procedure → Events chain.
+// ---------------------------------------------------------------------------
+
+function buildEventRefs(
+  emittedEventTypes: readonly string[],
+  enabledByMap: Map<string, string[]> | readonly string[],
+): EventRef[] {
+  // Accept either a Map<eventType, capabilities[]> or a flat capabilities[]
+  // (flat list applies the same capabilities to all events — used by the
+  // product-level resolver where we have a declared-function list, not a
+  // per-event breakdown).
+  const resolveEnabledBy = (evType: string): string[] => {
+    if (enabledByMap instanceof Map) return enabledByMap.get(evType) ?? [];
+    return enabledByMap as string[];
+  };
+
+  return emittedEventTypes.map((evType): EventRef => {
+    // Lifecycle stage from TRADE_LIFECYCLE_REGISTRY.
+    const lcDef = findLifecycleForEventType(evType);
+    const lifecycleStage = lcDef ? getLifecycleStage(evType, lcDef) : undefined;
+
+    // Accounting condition from POSTING_RULE_REGISTRY — first non-stub match.
+    const prEntry = POSTING_RULE_REGISTRY.find(
+      (r) => r.triggerEventType === evType && r.condition !== "intentional-no-impact",
+    );
+    const accountingCondition = prEntry
+      ? `${prEntry.postingRuleId}: ${prEntry.condition}${prEntry.conditionDetail ? ` (${prEntry.conditionDetail})` : ""}`
+      : undefined;
+
+    // exactOptionalPropertyTypes: only include optional fields when defined.
+    const ref: EventRef = { eventType: evType, enabledBy: resolveEnabledBy(evType) };
+    if (lifecycleStage !== undefined) ref.lifecycleStage = lifecycleStage;
+    if (accountingCondition !== undefined) ref.accountingCondition = accountingCondition;
+    return ref;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Public resolver.
 // ---------------------------------------------------------------------------
 
 export function resolveDimensionChain(args: {
   repoRoot: string;
   policyHints: readonly string[];
+  /** Event types this dimension emits — becomes the terminal node of the chain. */
+  emittedEventTypes?: readonly string[];
 }): DimensionPolicyChain {
-  const { repoRoot, policyHints } = args;
+  const { repoRoot, policyHints, emittedEventTypes = [] } = args;
   _indexedRepoRoot = repoRoot;
   const policyIdx = indexPolicies(repoRoot);
   const procedureIdx = indexProcedures(repoRoot);
@@ -408,7 +484,7 @@ export function resolveDimensionChain(args: {
   }
 
   if (policies.length === 0) {
-    return { policies: [], procedures: [], functions: [] };
+    return { policies: [], procedures: [], events: buildEventRefs(emittedEventTypes, []) };
   }
 
   // 2. Procedures whose policy-cited matches any anchor policy.
@@ -436,23 +512,21 @@ export function resolveDimensionChain(args: {
     });
   }
 
-  // 3. Functions from system-capability fields of matched procedures.
-  const functions: FunctionRef[] = [];
-  const seenFn = new Set<string>();
+  // 3. Events — terminal node. For each emitted event type, collect the
+  // system-capability strings from matched procedures as "enabledBy".
+  const enabledByMap = new Map<string, string[]>();
   for (const proc of procedures) {
     for (const parsed of parseSystemCapability(proc.systemCapabilityRaw)) {
-      const key = `${parsed.name}|${proc.filename}`;
-      if (seenFn.has(key)) continue;
-      seenFn.add(key);
-      functions.push({
-        name: parsed.name,
-        status: parsed.status,
-        fromProcedure: proc.filename,
-      });
+      // Attribute the capability to every emitted event type for this dimension.
+      for (const evType of emittedEventTypes) {
+        const existing = enabledByMap.get(evType) ?? [];
+        if (!existing.includes(parsed.name)) existing.push(parsed.name);
+        enabledByMap.set(evType, existing);
+      }
     }
   }
 
-  return { policies, procedures, functions };
+  return { policies, procedures, events: buildEventRefs(emittedEventTypes, enabledByMap) };
 }
 
 // ---------------------------------------------------------------------------
@@ -571,27 +645,23 @@ export function resolveProductChain(args: {
     });
   }
 
-  // 3. Functions: declared on the product first (CDM modules + posting
-  // rules), then functions parsed from system-capability of matched
-  // procedures. Dedup by name.
-  const functions: FunctionRef[] = [];
-  const seenFn = new Set<string>();
+  // 3. Events — terminal node. Collect all system capabilities from declared
+  // functions and matched procedures as the flat enabledBy list (same
+  // capability may enable multiple events; we surface it on all of them).
+  const enabledByNames: string[] = [];
+  const seenCap = new Set<string>();
   for (const df of declaredFunctions) {
     const key = df.name.toLowerCase();
-    if (seenFn.has(key)) continue;
-    seenFn.add(key);
-    functions.push({ name: df.name, status: df.status, fromProcedure: df.source });
+    if (seenCap.has(key)) continue;
+    seenCap.add(key);
+    enabledByNames.push(df.name);
   }
   for (const proc of procedures) {
     for (const parsed of parseSystemCapability(proc.systemCapabilityRaw)) {
       const key = parsed.name.toLowerCase();
-      if (seenFn.has(key)) continue;
-      seenFn.add(key);
-      functions.push({
-        name: parsed.name,
-        status: parsed.status,
-        fromProcedure: proc.filename,
-      });
+      if (seenCap.has(key)) continue;
+      seenCap.add(key);
+      enabledByNames.push(parsed.name);
     }
   }
 
@@ -606,5 +676,9 @@ export function resolveProductChain(args: {
   // governance frame even when no executable procedure exists.
   const finalPolicies = filteredPolicies.length > 0 ? filteredPolicies : policies;
 
-  return { policies: finalPolicies, procedures, functions };
+  return {
+    policies: finalPolicies,
+    procedures,
+    events: buildEventRefs(productLifecycleEvents, enabledByNames),
+  };
 }

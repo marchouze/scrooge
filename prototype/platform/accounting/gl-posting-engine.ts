@@ -161,6 +161,15 @@ export interface GlPostingEngineInput {
   /** Citations to attach to every emitted posting. Defaults to the
    *  canonical Bea-engine citation pack. */
   readonly citations?: ReadonlyArray<string>;
+  /**
+   * Non-trade trigger events from other domains (risk, product-control,
+   * period-close). These are dispatched through NON_TRADE_HANDLERS after
+   * the main trade-event loop. Currently always empty — the extension
+   * point is wired so future non-trade handlers slot in without
+   * restructuring the engine.
+   * See platform/accounting/non-trade-trigger-spec.md for the pattern.
+   */
+  readonly nonTradeTriggers?: ReadonlyArray<Event>;
 }
 
 export interface EngineSkipped {
@@ -538,6 +547,84 @@ export function runGlPostingEngine(input: GlPostingEngineInput): GlPostingEngine
         postingType: dispatched.postingType,
         legs: dispatched.legs.map((l) => ({ ...l })),
         postedAt,
+      },
+      eventId,
+    });
+
+    emittedPostings.push(postingEvent);
+    emittedThisRun.add(eventId);
+  }
+
+  // ── Non-trade trigger extension point ────────────────────────────────────
+  // Future non-trade domain events (ProvisionCalculated, BookPnlAttributed,
+  // etc.) are dispatched here once their event types are defined and their
+  // posting-rule pure functions are implemented. See non-trade-trigger-spec.md.
+  //
+  // Pattern to add a new handler:
+  //   1. Define the event type schema in its domain's event-type module.
+  //   2. Add a PostingRuleEntry to posting-rule-registry.ts.
+  //   3. Write a pure posting-rule function in posting-rules/<domain>.ts.
+  //   4. Add the handler to NON_TRADE_HANDLERS below.
+  //   5. Add the event type to HANDLED_EVENT_TYPES above.
+  type NonTradeHandler = (event: Event) => SubLedgerLeg[];
+  const NON_TRADE_HANDLERS: Partial<Record<string, NonTradeHandler>> = {
+    // "ProvisionCalculated": provisionHandler,    // future — risk domain
+    // "BookPnlAttributed":   bookPnlHandler,      // future — product-control domain
+  };
+
+  for (const event of input.nonTradeTriggers ?? []) {
+    const handler = NON_TRADE_HANDLERS[event.type];
+    if (!handler) {
+      if (HANDLED_EVENT_TYPES.has(event.type)) {
+        // Already handled in the main loop above — skip silently.
+        continue;
+      }
+      skipped.push({
+        eventId: event.event_id,
+        eventType: event.type,
+        reason: "unhandled-event-type",
+      });
+      continue;
+    }
+
+    const legs = handler(event);
+    if (legs.length === 0) {
+      skipped.push({
+        eventId: event.event_id,
+        eventType: event.type,
+        reason: "zero-delta-revaluation",
+      });
+      continue;
+    }
+
+    // Non-trade postings use "PR-NONTRADE:<eventType>" as a temporary rule ID
+    // until the handler declares its canonical posting-rule ID.
+    const tempRuleId = `PR-NONTRADE:${event.type}` as PostingRuleId;
+    const eventId = deriveGlPostingEventId({
+      postingRuleId: tempRuleId,
+      sourceEventId: event.event_id,
+    });
+
+    if (priorIds.has(eventId) || emittedThisRun.has(eventId)) {
+      skipped.push({
+        eventId: event.event_id,
+        eventType: event.type,
+        reason: "duplicate-already-posted",
+        detail: eventId,
+      });
+      continue;
+    }
+
+    const postingEvent = makeSubLedgerPostingEmitted({
+      asOf: now(),
+      entity: event.entity ?? entity,
+      actor,
+      citations: [...citations],
+      payload: {
+        sourceEventId: event.event_id,
+        postingType: "trade-booking", // overridden by handler in real use
+        legs: legs.map((l) => ({ ...l })),
+        postedAt: event.as_of,
       },
       eventId,
     });

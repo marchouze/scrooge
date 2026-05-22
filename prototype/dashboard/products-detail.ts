@@ -642,7 +642,11 @@ export function buildProductDetailView(
     const att = attestationFold.get(meta.dimension);
     const nar = narrativeFold.get(meta.dimension);
     const req = narrativeRequestFold.get(meta.dimension);
-    const chain = resolveDimensionChain({ repoRoot, policyHints: meta.policyHints });
+    const chain = resolveDimensionChain({
+      repoRoot,
+      policyHints: meta.policyHints,
+      emittedEventTypes: meta.emits,
+    });
     // If the latest recorded narrative is more recent than the latest request,
     // the "pending request" state is cleared.
     const narrativeRequested = req !== undefined && (!nar || nar.asOf < req.asOf);
