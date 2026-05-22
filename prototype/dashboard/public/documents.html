@@ -3,95 +3,219 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Document register — Scrooge Bank</title>
-  <meta name="description" content="Document register — every documentHash ever cited by an RMS event (D-RMS-PHASE-1, Phase 2 Block B — RecordFiled wiring).">
+  <title>Documents — Scrooge Bank</title>
+  <meta name="description" content="Document register — every documentHash ever cited by an RMS event.">
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
+  <style>
+    /* ── Breadcrumb ─────────────────────────────────────── */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .breadcrumb a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--color-text-disabled); }
+    .breadcrumb-current { color: var(--color-text-primary); font-weight: 500; }
+
+    /* ── Detail view ────────────────────────────────────── */
+    #doc-detail { display: none; }
+    #doc-detail.visible { display: block; }
+    #doc-list.hidden { display: none; }
+
+    .doc-detail-header {
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: var(--space-6);
+    }
+    .doc-detail-eyebrow {
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .doc-detail-title {
+      font: var(--text-display);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-3);
+    }
+    .doc-detail-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    /* ── Meta grid ──────────────────────────────────────── */
+    .doc-detail-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+    .doc-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .doc-meta-label {
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .doc-meta-value { font: var(--text-body); color: var(--color-text-primary); font-weight: 500; }
+    .doc-meta-value code { font-family: var(--font-mono); font-size: 0.8em; font-weight: 400; word-break: break-all; }
+
+    /* ── Section ────────────────────────────────────────── */
+    .doc-section { margin-bottom: var(--space-8); }
+    .doc-section h3 {
+      font: var(--text-h2);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ── Document body ──────────────────────────────────── */
+    .doc-body-pre {
+      white-space: pre-wrap;
+      background: var(--color-surface-raised, #f6f6f6);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      max-height: 560px;
+      overflow: auto;
+      font-size: 0.85rem;
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      line-height: 1.6;
+    }
+
+    /* ── Retention / supersession ───────────────────────── */
+    .doc-kv { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); font: var(--text-body); }
+    .doc-kv dt { color: var(--color-text-secondary); font-weight: 500; }
+    .doc-kv dd { margin: 0; }
+
+    /* ── Citing events ──────────────────────────────────── */
+    .doc-event-list { margin: 0; padding: 0; list-style: none; max-height: 260px; overflow: auto; }
+    .doc-event-list li { padding: var(--space-1) 0; border-bottom: 1px solid var(--color-border); font-family: var(--font-mono); font-size: 0.8em; color: var(--color-text-secondary); }
+    .doc-event-list li:last-child { border-bottom: none; }
+
+    /* ── Filter bar ─────────────────────────────────────── */
+    .filter-radio { font-size: 0.85rem; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  </style>
 </head>
 <body>
   <div id="shell"></div>
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
 
-  <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
-    <h1 style="margin:0 0 var(--space-2);">Document register</h1>
-    <p class="muted" style="margin:0 0 var(--space-4);">
-      Every <code>documentHash</code> ever cited by an RMS event, with classification,
-      retention citation, and supersession chain. <code>RecordFiled</code> events
-      register a hash with its formal envelope; unregistered hashes surface with
-      <code>agent-internal</code> default classification (Phase 1 spec §6.4).
-      Phase 2 Block B — RecordFiled wiring.
-      Sourced from <a href="/api/rms/document">/api/rms/document</a>.
-    </p>
-  </div>
-
-  <div id="filterBar" style="padding: 0 var(--space-6) var(--space-3); display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center;">
-    <!-- Classification filter -->
-    <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
-      <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Classification</legend>
-      <label class="filter-radio"><input type="radio" name="classFilter" value="all" checked> All</label>
-      <label class="filter-radio"><input type="radio" name="classFilter" value="ceo-only"> CEO-only</label>
-      <label class="filter-radio"><input type="radio" name="classFilter" value="governance-seat"> Governance</label>
-      <label class="filter-radio"><input type="radio" name="classFilter" value="engineering-seat"> Engineering</label>
-      <label class="filter-radio"><input type="radio" name="classFilter" value="agent-internal"> Agent-internal</label>
-      <label class="filter-radio"><input type="radio" name="classFilter" value="public-disclosure"> Public</label>
-    </fieldset>
-
-    <!-- Register-key filter -->
-    <label style="display:flex;gap:var(--space-1);align-items:center;font-size:0.85rem;">
-      <span style="font-size:0.75rem;color:var(--muted);">Register</span>
-      <select id="registerFilter" style="padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;">
-        <option value="">All registers</option>
-        <option value="decisions">decisions</option>
-        <option value="correspondence">correspondence</option>
-        <option value="agent-runs">agent-runs</option>
-        <option value="documents">documents</option>
-        <option value="feedback">feedback</option>
-        <option value="briefs">briefs</option>
-        <option value="workstreams">workstreams</option>
-        <option value="__unregistered__">(unregistered)</option>
-      </select>
-    </label>
-
-    <!-- Registration filter -->
-    <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
-      <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Status</legend>
-      <label class="filter-radio"><input type="radio" name="registeredFilter" value="all" checked> All</label>
-      <label class="filter-radio"><input type="radio" name="registeredFilter" value="registered"> RecordFiled</label>
-      <label class="filter-radio"><input type="radio" name="registeredFilter" value="unregistered"> Cited only</label>
-    </fieldset>
-
-    <!-- Search -->
-    <input
-      id="searchInput"
-      type="search"
-      placeholder="Search hash, recordId, or path…"
-      style="flex:1;min-width:200px;max-width:360px;padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;font-size:0.85rem;"
-      aria-label="Search documents"
-    >
-  </div>
-
-  <div id="documentsContent" style="padding: 0 var(--space-6) var(--space-6);">
-    <p class="muted">Loading…</p>
-  </div>
-
-
-</main>
-
-<!-- Document detail drawer -->
-<div id="docDrawer" class="modal" hidden style="align-items:flex-start;padding:var(--space-6);overflow-y:auto;">
-  <div style="background:var(--bg);max-width:920px;width:100%;border-radius:8px;padding:var(--space-5);border:1px solid var(--border);">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);">
-      <div>
-        <h2 id="drawerTitle" style="margin:0 0 var(--space-1);font-size:1.1rem;">Document</h2>
-        <div class="muted small" id="drawerMeta"></div>
+    <!-- List view -->
+    <div id="doc-list">
+      <div class="page-header" style="padding: var(--space-4) var(--space-6) 0;">
+        <h1 style="margin:0 0 var(--space-2);">Document register</h1>
+        <p class="muted" style="margin:0 0 var(--space-4);">
+          Every <code>documentHash</code> ever cited by an RMS event — with title, author, classification,
+          retention citation, and supersession chain.
+          Source: <a href="/api/rms/document">/api/rms/document</a>.
+        </p>
       </div>
-      <button type="button" id="drawerClose" class="icon-btn" aria-label="Close drawer" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
+
+      <div id="filterBar" style="padding: 0 var(--space-6) var(--space-3); display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center;">
+        <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
+          <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Classification</legend>
+          <label class="filter-radio"><input type="radio" name="classFilter" value="all" checked> All</label>
+          <label class="filter-radio"><input type="radio" name="classFilter" value="ceo-only"> CEO-only</label>
+          <label class="filter-radio"><input type="radio" name="classFilter" value="governance-seat"> Governance</label>
+          <label class="filter-radio"><input type="radio" name="classFilter" value="engineering-seat"> Engineering</label>
+          <label class="filter-radio"><input type="radio" name="classFilter" value="agent-internal"> Agent-internal</label>
+          <label class="filter-radio"><input type="radio" name="classFilter" value="public-disclosure"> Public</label>
+        </fieldset>
+
+        <label style="display:flex;gap:var(--space-1);align-items:center;font-size:0.85rem;">
+          <span style="font-size:0.75rem;color:var(--muted);">Register</span>
+          <select id="registerFilter" style="padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;">
+            <option value="">All registers</option>
+            <option value="decisions">decisions</option>
+            <option value="correspondence">correspondence</option>
+            <option value="agent-runs">agent-runs</option>
+            <option value="documents">documents</option>
+            <option value="feedback">feedback</option>
+            <option value="briefs">briefs</option>
+            <option value="workstreams">workstreams</option>
+            <option value="__unregistered__">(unregistered)</option>
+          </select>
+        </label>
+
+        <fieldset style="border:none;padding:0;margin:0;display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">
+          <legend style="font-size:0.75rem;color:var(--muted);margin-right:var(--space-2);float:left;line-height:1.8;">Filed</legend>
+          <label class="filter-radio"><input type="radio" name="registeredFilter" value="all" checked> All</label>
+          <label class="filter-radio"><input type="radio" name="registeredFilter" value="registered"> RecordFiled</label>
+          <label class="filter-radio"><input type="radio" name="registeredFilter" value="unregistered"> Cited only</label>
+        </fieldset>
+
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search title, author, path, hash…"
+          style="flex:1;min-width:200px;max-width:360px;padding:var(--space-1) var(--space-2);border:1px solid var(--border);border-radius:4px;font-size:0.85rem;"
+          aria-label="Search documents"
+        >
+      </div>
+
+      <div id="documentsContent" style="padding: 0 var(--space-6) var(--space-6);">
+        <p class="muted">Loading…</p>
+      </div>
     </div>
-    <div id="drawerBody"></div>
-  </div>
-</div>
+
+    <!-- Detail view -->
+    <div id="doc-detail">
+      <div style="padding: var(--space-4) var(--space-6) 0;">
+        <nav class="breadcrumb">
+          <a href="#" id="doc-bc-back">Documents</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current" id="doc-bc-name"></span>
+        </nav>
+
+        <div class="doc-detail-header">
+          <div class="doc-detail-eyebrow" id="doc-d-eyebrow"></div>
+          <h1 class="doc-detail-title" id="doc-d-title"></h1>
+          <div class="doc-detail-pills" id="doc-d-pills"></div>
+        </div>
+
+        <div class="doc-detail-meta" id="doc-d-meta"></div>
+
+        <div class="doc-section" id="doc-d-body-section">
+          <h3>Document</h3>
+          <div id="doc-d-body"><p class="muted">Loading…</p></div>
+        </div>
+
+        <div class="doc-section" id="doc-d-retention-section">
+          <h3>Retention</h3>
+          <div id="doc-d-retention"></div>
+        </div>
+
+        <div class="doc-section" id="doc-d-supersession-section">
+          <h3>Supersession chain</h3>
+          <dl class="doc-kv" id="doc-d-supersession"></dl>
+        </div>
+
+        <div class="doc-section" id="doc-d-events-section">
+          <h3>Citing events</h3>
+          <ul class="doc-event-list" id="doc-d-events"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>

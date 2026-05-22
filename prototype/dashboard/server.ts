@@ -712,6 +712,22 @@ async function handleKycStart(req: Request): Promise<Response> {
   if (!input.entityName || !input.entityType || !input.jurisdiction) {
     return jsonResponse({ error: "entityName, entityType, jurisdiction are required" }, 400);
   }
+  // Guard: reject if an accepted client with the same entityName already exists.
+  const existingClients = buildKycClientsView(eventStore);
+  const nameLower = input.entityName.trim().toLowerCase();
+  const duplicate = existingClients.clients.find(
+    (c) => c.entityName.trim().toLowerCase() === nameLower,
+  );
+  if (duplicate) {
+    return jsonResponse(
+      {
+        error: `Client "${input.entityName}" is already onboarded`,
+        existingClientId: duplicate.clientId,
+      },
+      409,
+    );
+  }
+
   try {
     const result = await kycOrchestrator.startOnboarding(input);
     refresh("kyc-start");
