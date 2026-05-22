@@ -303,7 +303,12 @@ async function main(): Promise<void> {
       const secondaryRate = secondaryQuote.rate;
 
       if (secondaryRate !== undefined && secondaryRate > 0) {
-        const ipvResult = checkIpvTolerance(primaryRate, secondaryRate, notionalBaseMinor);
+        const ipvResult = checkIpvTolerance(
+          primaryRate,
+          secondaryRate,
+          notionalBaseMinor,
+          currencyPairStr,
+        );
         if (!ipvResult.pass) {
           // Emit IpvExceptionRaised.
           store.append(

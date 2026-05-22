@@ -4,7 +4,7 @@
 // No EventStore or MarketDataStore required — pure function tests.
 //
 // Test cases:
-//   TC-1: Breach by percentage (0.80% > 0.75% threshold)
+//   TC-1: Breach by percentage (0.80% > 0.75% threshold) — Tier 1 (USD/ZAR)
 //   TC-2: Pass — identical rates (zero divergence)
 //   TC-3: Pass — 0.40% inter-provider spread (below new 0.75% threshold)
 //   TC-4: Breach by ZAR absolute threshold on large notional (ZAR 210k > ZAR 200k)
@@ -12,6 +12,8 @@
 //   TC-6: Primary rate zero — should throw
 //   TC-7: Pass — 0.27% (was a breach under old 0.25% threshold; now within tolerance)
 //   TC-8: Pass — ZAR 60k (was a breach under old ZAR 50k threshold; now within tolerance)
+//   TC-9: Tier 1 (USD/ZAR) — 0.80% breaches, 0.70% passes
+//   TC-10: Tier 2 (JPY/ZAR) — 1.05% breaches, 0.95% passes
 //
 // Recalibrated per D-MR-1-FX-IPV-TOLERANCES-V2 (Helena, CRO, 2026-05-21):
 //   Build-phase thresholds: 0.75% relative, ZAR 200k absolute.
@@ -19,30 +21,39 @@
 //   0.20–0.40% from normal quote-timing / CDN effects; previous 0.25%
 //   threshold fired on every USD/ZAR and GBP/ZAR build-phase position.
 //
+// Two-tier schedule per D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22 (CEO-approved):
+//   Tier 1 (USD/ZAR, ZAR/USD, EUR/ZAR, ZAR/EUR, GBP/ZAR, ZAR/GBP): 0.75% / ZAR 200k
+//   Tier 2 (all other pairs): 1.00% / ZAR 200k
+//
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
 //   - pricing-policy-v1.md §5.2 (thresholds: 0.75% / ZAR 200k, build-phase)
 //   - D-MR-1-FX-IPV-TOLERANCES-V2 (Helena, CRO, 2026-05-21)
+//   - D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22 (CEO-approved 2026-05-22)
 //
 // Author: Rohan (Market risk engineer, engineering)
 
 import { describe, expect, it } from "bun:test";
 
-import { checkIpvTolerance } from "../platform/markets/ipv-tolerance";
+import {
+  TIER_1_PAIRS,
+  checkIpvTolerance,
+  getIpvThresholds,
+} from "../platform/markets/ipv-tolerance";
 
 describe("checkIpvTolerance", () => {
-  // TC-1: Breach by percentage (0.80% > 0.75% new threshold)
+  // TC-1: Breach by percentage (0.80% > 0.75% Tier 1 threshold) — instrument = USD/ZAR
   //   delta = |18.50 - 18.648| = 0.148
-  //   pct   = 0.148 / 18.50 ≈ 0.80% > 0.75% → breach "pct"
+  //   pct   = 0.148 / 18.50 ≈ 0.80% > 0.75% (Tier 1) → breach "pct"
   //   notional = 100_000_00 cents = R100,000
   //   zarImpact = 0.148 × (100_000_00 / 100) = 0.148 × 100_000 = 14_800 ZAR < 200_000
   //   (pct threshold fires first)
-  it("TC-1: breaches pct threshold at 0.80%", () => {
+  it("TC-1: breaches pct threshold at 0.80% (Tier 1 USD/ZAR)", () => {
     const primary = 18.5;
-    const secondary = primary + primary * 0.008; // 0.80% > 0.75%
+    const secondary = primary + primary * 0.008; // 0.80% > 0.75% Tier-1 threshold
     const delta = Math.abs(primary - secondary);
-    const result = checkIpvTolerance(primary, secondary, 100_000_00);
+    const result = checkIpvTolerance(primary, secondary, 100_000_00, "USD/ZAR");
     expect(result.pass).toBe(false);
     expect(result.breachThreshold).toBe("pct");
     expect(result.divergencePct).toBeCloseTo(delta / primary, 8);
@@ -127,5 +138,90 @@ describe("checkIpvTolerance", () => {
     expect(result.breachThreshold).toBeNull();
     expect(result.divergencePct).toBeCloseTo(0.01 / 18.5, 8);
     expect(result.divergenceZar).toBeCloseTo(60_000, 0);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Two-tier schedule tests — D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22
+  // ---------------------------------------------------------------------------
+
+  // TC-9a: Tier 1 (USD/ZAR) — 0.80% BREACHES (> 0.75% Tier 1 threshold)
+  //   delta = 18.5 × 0.008 = 0.148
+  //   pct   = 0.148 / 18.5 = 0.80% > 0.75% → breach "pct"
+  it("TC-9a: Tier 1 (USD/ZAR) — 0.80% breaches pct threshold", () => {
+    const primary = 18.5;
+    const secondary = primary + primary * 0.008; // 0.80% > Tier-1 0.75%
+    const result = checkIpvTolerance(primary, secondary, 100_000_00, "USD/ZAR");
+    expect(result.pass).toBe(false);
+    expect(result.breachThreshold).toBe("pct");
+  });
+
+  // TC-9b: Tier 1 (USD/ZAR) — 0.70% PASSES (< 0.75% Tier 1 threshold)
+  //   delta = 18.5 × 0.007 = 0.1295
+  //   pct   = 0.1295 / 18.5 = 0.70% < 0.75% → pass
+  it("TC-9b: Tier 1 (USD/ZAR) — 0.70% passes pct threshold", () => {
+    const primary = 18.5;
+    const secondary = primary + primary * 0.007; // 0.70% < Tier-1 0.75%
+    const result = checkIpvTolerance(primary, secondary, 100_000_00, "USD/ZAR");
+    expect(result.pass).toBe(true);
+    expect(result.breachThreshold).toBeNull();
+  });
+
+  // TC-10a: Tier 2 (JPY/ZAR) — 1.05% BREACHES (> 1.00% Tier 2 threshold)
+  //   delta = 18.5 × 0.0105 = 0.19425
+  //   pct   = 0.19425 / 18.5 = 1.05% > 1.00% → breach "pct"
+  it("TC-10a: Tier 2 (JPY/ZAR) — 1.05% breaches pct threshold", () => {
+    const primary = 18.5;
+    const secondary = primary + primary * 0.0105; // 1.05% > Tier-2 1.00%
+    const result = checkIpvTolerance(primary, secondary, 100_000_00, "JPY/ZAR");
+    expect(result.pass).toBe(false);
+    expect(result.breachThreshold).toBe("pct");
+  });
+
+  // TC-10b: Tier 2 (JPY/ZAR) — 0.95% PASSES (< 1.00% Tier 2 threshold)
+  //   delta = 18.5 × 0.0095 = 0.17575
+  //   pct   = 0.17575 / 18.5 = 0.95% < 1.00% → pass
+  it("TC-10b: Tier 2 (JPY/ZAR) — 0.95% passes pct threshold", () => {
+    const primary = 18.5;
+    const secondary = primary + primary * 0.0095; // 0.95% < Tier-2 1.00%
+    const result = checkIpvTolerance(primary, secondary, 100_000_00, "JPY/ZAR");
+    expect(result.pass).toBe(true);
+    expect(result.breachThreshold).toBeNull();
+  });
+
+  // TC-10c: Tier 2 — 0.80% PASSES at Tier 2 (would breach at Tier 1 0.75%)
+  //   Demonstrates that non-Tier-1 pairs get the looser 1.00% threshold.
+  it("TC-10c: Tier 2 (JPY/ZAR) — 0.80% passes (above Tier-1 threshold but below Tier-2)", () => {
+    const primary = 18.5;
+    const secondary = primary + primary * 0.008; // 0.80%: above 0.75% but below 1.00%
+    const result = checkIpvTolerance(primary, secondary, 100_000_00, "JPY/ZAR");
+    expect(result.pass).toBe(true);
+    expect(result.breachThreshold).toBeNull();
+  });
+
+  // TC-11: getIpvThresholds helper — Tier 1 and Tier 2 coverage
+  it("TC-11: getIpvThresholds returns correct thresholds per tier", () => {
+    const tier1 = getIpvThresholds("USD/ZAR");
+    expect(tier1.pctThreshold).toBeCloseTo(0.0075, 6);
+    expect(tier1.zarThreshold).toBe(200_000);
+
+    const tier2 = getIpvThresholds("JPY/ZAR");
+    expect(tier2.pctThreshold).toBeCloseTo(0.01, 6);
+    expect(tier2.zarThreshold).toBe(200_000);
+
+    // Unknown instrument → Tier 2
+    const unknown = getIpvThresholds("");
+    expect(unknown.pctThreshold).toBeCloseTo(0.01, 6);
+  });
+
+  // TC-12: TIER_1_PAIRS set contains all six expected pairs
+  it("TC-12: TIER_1_PAIRS contains exactly the six Tier-1 instruments", () => {
+    expect(TIER_1_PAIRS.has("USD/ZAR")).toBe(true);
+    expect(TIER_1_PAIRS.has("ZAR/USD")).toBe(true);
+    expect(TIER_1_PAIRS.has("EUR/ZAR")).toBe(true);
+    expect(TIER_1_PAIRS.has("ZAR/EUR")).toBe(true);
+    expect(TIER_1_PAIRS.has("GBP/ZAR")).toBe(true);
+    expect(TIER_1_PAIRS.has("ZAR/GBP")).toBe(true);
+    expect(TIER_1_PAIRS.has("JPY/ZAR")).toBe(false);
+    expect(TIER_1_PAIRS.has("CHF/ZAR")).toBe(false);
   });
 });
