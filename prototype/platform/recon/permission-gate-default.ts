@@ -155,6 +155,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // AgentDecision events; gate is a no-op on replay.
   "platform/recon/escalation-channel.ts",
   "platform/recon/agent-scope.ts",
+  // URN-shape advisory recon (D-URN-CANONICAL-VOCABULARY) — read-only replay
+  // of every event's `payload.citations` array to classify URN-shape vs prose.
+  // Gate is a no-op on replay. Citation: D-URN-CANONICAL-VOCABULARY,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/urn-shape.ts",
   // M2 Slice 2 — period-close handler unit tests. Co-located with the module
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.

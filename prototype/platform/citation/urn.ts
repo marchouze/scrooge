@@ -104,10 +104,7 @@ export const PolicyUrnSchema = z
 /** `urn:procedure:bank:<slug>` */
 export const ProcedureUrnSchema = z
   .string()
-  .regex(
-    /^urn:procedure:bank:[a-z0-9][a-z0-9._/-]*$/,
-    "urn:procedure expects bank:<slug>",
-  );
+  .regex(/^urn:procedure:bank:[a-z0-9][a-z0-9._/-]*$/, "urn:procedure expects bank:<slug>");
 
 /** `urn:decision:bank:D-<SLUG>` — slug is the decisionId (allowed punctuation: hyphen, dot, digits, upper- + lowercase). */
 export const DecisionUrnSchema = z
@@ -163,10 +160,7 @@ export const RiskUrnSchema = z
 /** `urn:event:bank:<TypeName>` (event-class names are PascalCase TypeScript symbols). */
 export const EventUrnSchema = z
   .string()
-  .regex(
-    /^urn:event:bank:[A-Z][A-Za-z0-9]*$/,
-    "urn:event expects bank:<TypeName> (PascalCase)",
-  );
+  .regex(/^urn:event:bank:[A-Z][A-Za-z0-9]*$/, "urn:event expects bank:<TypeName> (PascalCase)");
 
 /** Registry mapping URN class -> Zod schema. */
 export const URN_SCHEMAS: { readonly [K in UrnClass]: z.ZodString } = {
@@ -206,7 +200,7 @@ export function parseUrn(s: string): UrnParseResult {
       reason: "URN must have at least three colon-separated segments (`urn:<class>:<tail>`)",
     };
   }
-  const urnClass = parts[1];
+  const urnClass = parts[1] ?? "";
   if (!URN_CLASS_SET.has(urnClass)) {
     return {
       kind: "error",
