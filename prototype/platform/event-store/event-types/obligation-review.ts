@@ -60,9 +60,7 @@ export const obligationReviewCompletedStatusSchema = z.enum([
   "reviewed-modified",
   "reviewed-retired",
 ]);
-export type ObligationReviewCompletedStatus = z.infer<
-  typeof obligationReviewCompletedStatusSchema
->;
+export type ObligationReviewCompletedStatus = z.infer<typeof obligationReviewCompletedStatusSchema>;
 
 // ---------------------------------------------------------------------------
 // ObligationReviewMatched
@@ -82,9 +80,7 @@ export const obligationReviewMatchedPayloadSchema = z.object({
   /** One-line rationale (why the LLM treated this as a match). */
   rationale: z.string().min(1),
 });
-export type ObligationReviewMatchedPayload = z.infer<
-  typeof obligationReviewMatchedPayloadSchema
->;
+export type ObligationReviewMatchedPayload = z.infer<typeof obligationReviewMatchedPayloadSchema>;
 
 export function makeObligationReviewMatched(args: {
   asOf: string;
@@ -124,9 +120,7 @@ export const obligationReviewConflictPayloadSchema = z.object({
   /** One-line rationale (why the LLM thinks the register is stale). */
   rationale: z.string().min(1),
 });
-export type ObligationReviewConflictPayload = z.infer<
-  typeof obligationReviewConflictPayloadSchema
->;
+export type ObligationReviewConflictPayload = z.infer<typeof obligationReviewConflictPayloadSchema>;
 
 export function makeObligationReviewConflict(args: {
   asOf: string;
@@ -279,5 +273,4 @@ export const OBLIGATION_REVIEW_TYPED_EVENT_TYPES = [
   "ObligationCandidateProposed",
   "ObligationReviewCompleted",
 ] as const;
-export type ObligationReviewEventType =
-  (typeof OBLIGATION_REVIEW_TYPED_EVENT_TYPES)[number];
+export type ObligationReviewEventType = (typeof OBLIGATION_REVIEW_TYPED_EVENT_TYPES)[number];

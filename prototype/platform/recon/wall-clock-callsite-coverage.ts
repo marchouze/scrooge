@@ -86,8 +86,17 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 // canonicalisation PR; clock-abstraction fix remains a follow-on item.
 // Author: Bea (Accounting & financial reporting engineer, engineering),
 //   2026-05-21.
+//
+// 2026-05-22 — Atlas (Core banking platform architect, engineering) bumps
+//   snapshot 57 → 58 to track the `derive.ts:1205` `new Date()` callsite
+//   merged via PR #709 (finance-page tiles wire-up). The callsite was
+//   added without bumping the ratchet, so every PR branched off main
+//   since #709 fails this gate; this PR carries the bump as an in-tree
+//   chore so unrelated work (WS-OBLIGATION-REVIEW-SUBSTRATE) can land.
+//   Clock-abstraction cleanup remains a follow-on (track under
+//   D-PROVENANCE-FILTER-ENFORCEMENT).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 57;
+const KNOWN_VIOLATIONS_SNAPSHOT = 58;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

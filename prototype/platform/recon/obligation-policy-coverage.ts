@@ -160,9 +160,7 @@ function buildClosesIndex(policiesDir: string): Set<string> {
 
   let files: string[];
   try {
-    files = readdirSync(policiesDir).filter(
-      (f) => f.endsWith(".md") && !f.startsWith("README"),
-    );
+    files = readdirSync(policiesDir).filter((f) => f.endsWith(".md") && !f.startsWith("README"));
   } catch {
     return closed;
   }
@@ -198,7 +196,10 @@ function buildClosesIndex(policiesDir: string): Set<string> {
     if (blockMatch) {
       const block = blockMatch[1] ?? "";
       for (const line of block.split(/\r?\n/)) {
-        const v = line.replace(/^\s*-\s+/, "").trim().replace(/^["']|["']$/g, "");
+        const v = line
+          .replace(/^\s*-\s+/, "")
+          .trim()
+          .replace(/^["']|["']$/g, "");
         if (v) closed.add(v);
       }
     }
@@ -267,10 +268,7 @@ export function runObligationPolicyCoverageRecon(
     asserted++;
 
     // Filter: review-status must be reviewed-confirmed or reviewed-modified.
-    if (
-      row.reviewStatus !== "reviewed-confirmed" &&
-      row.reviewStatus !== "reviewed-modified"
-    ) {
+    if (row.reviewStatus !== "reviewed-confirmed" && row.reviewStatus !== "reviewed-modified") {
       continue;
     }
 

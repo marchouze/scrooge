@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review Debt — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">Review Debt</h1>
+      <p class="page-subtitle" style="color:var(--color-text-secondary);font:var(--text-body);max-width:60rem">
+        Obligations queued for governance-seat review by Mira's LLM-extraction pipeline
+        (<code>ObligationCandidateProposed</code>, <code>ObligationReviewConflict</code>).
+        Closure event: <code>ObligationReviewCompleted</code>.
+        Advisory only — no CI gate. Authority:
+        <code>D-OBLIGATION-REVIEW-SUBSTRATE</code>,
+        <code>D-KG-GRAPHITI-ADOPT</code>.
+      </p>
+    </div>
+    <div class="page-body">
+      <div id="metric-tiles" class="tile-row"></div>
+
+      <section style="margin-top:1.5rem">
+        <h2 class="section-title">Top 10 high-urgency unreviewed</h2>
+        <div id="urgent-table"></div>
+      </section>
+
+      <section style="margin-top:1.5rem">
+        <h2 class="section-title">Queue by domain</h2>
+        <div id="domain-table"></div>
+      </section>
+
+      <section style="margin-top:1.5rem">
+        <h2 class="section-title">Policy-coverage gap (reviewed bank-applicable rows)</h2>
+        <div id="coverage-table"></div>
+      </section>
+
+      <p style="margin-top:1.5rem;color:var(--color-text-secondary);font:var(--text-body-sm)">
+        Source: <a href="/api/review-debt">/api/review-debt</a> ·
+        Canonical register: <a href="/obligations.html">/obligations.html</a>
+      </p>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Review Debt" });
+    (async () => {
+      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      const data = await sf("/api/review-debt");
+      if (!data) {
+        document.getElementById("urgent-table").innerHTML = "<p>Failed to load /api/review-debt.</p>";
+        return;
+      }
+
+      // ── Tiles ──────────────────────────────────────────────
+      const queue = data.queue || {};
+      const cov = data.policyCoverage || {};
+      const tilesEl = document.getElementById("metric-tiles");
+      const tiles = [
+        SC.renderTile({
+          label: "Queue depth",
+          value: (queue.totalDepth ?? 0).toString(),
+          sub: "unreviewed obligations",
+          status: (queue.totalDepth ?? 0) > 0 ? "warn" : "ok",
+        }),
+        SC.renderTile({
+          label: "> 90 days old",
+          value: (queue.byAgeBucket?.over90Days ?? 0).toString(),
+          sub: "ageing review debt",
+          status: (queue.byAgeBucket?.over90Days ?? 0) > 0 ? "warn" : "ok",
+        }),
+        SC.renderTile({
+          label: "Policy coverage",
+          value: `${(cov.coveragePct ?? 0).toFixed(1)}%`,
+          sub: "reviewed bank-applicable rows with a closing Policy",
+          status: (cov.coveragePct ?? 0) >= 80 ? "ok" : "warn",
+        }),
+        SC.renderTile({
+          label: "Uncovered count",
+          value: (cov.uncoveredCount ?? 0).toString(),
+          sub: "rows with no closes: Policy",
+          status: (cov.uncoveredCount ?? 0) > 0 ? "warn" : "ok",
+        }),
+      ];
+      tilesEl.innerHTML = "";
+      for (const t of tiles) tilesEl.appendChild(t);
+
+      // ── Top urgent ─────────────────────────────────────────
+      const urgent = Array.isArray(queue.topUrgent) ? queue.topUrgent : [];
+      SC.renderTable({
+        container: document.getElementById("urgent-table"),
+        headers: ["ID", "URN", "Domain", "Status", "Applicability", "Relevancy", "Urgency", "Age (days)"],
+        rows: urgent.map((r) => ({
+          cells: [
+            SC.esc(r.id || ""),
+            SC.esc(r.urn || ""),
+            SC.esc(r.domain || ""),
+            SC.renderBadge(r.reviewStatus || ""),
+            (r.applicabilityScore ?? 0).toFixed(2),
+            (r.relevancyScore ?? 0).toFixed(2),
+            (r.urgency ?? 0).toFixed(2),
+            r.ageDays === null || r.ageDays === undefined ? "—" : r.ageDays.toString(),
+          ],
+          data: r,
+        })),
+        emptyMessage: "Queue empty — every obligation has been reviewed.",
+      });
+
+      // ── By domain ──────────────────────────────────────────
+      const byDomain = queue.byDomain || {};
+      const domainRows = Object.entries(byDomain)
+        .sort(([, a], [, b]) => Number(b) - Number(a))
+        .map(([domain, count]) => ({
+          cells: [SC.esc(domain), Number(count).toString()],
+        }));
+      SC.renderTable({
+        container: document.getElementById("domain-table"),
+        headers: ["Domain", "Queue depth"],
+        rows: domainRows,
+        emptyMessage: "No domains with queued obligations.",
+      });
+
+      // ── Coverage by domain ─────────────────────────────────
+      const coverageRows = Array.isArray(cov.coverageByDomain) ? cov.coverageByDomain : [];
+      SC.renderTable({
+        container: document.getElementById("coverage-table"),
+        headers: ["Domain", "Applicable", "Covered", "Coverage %"],
+        rows: coverageRows.map((r) => ({
+          cells: [
+            SC.esc(r.domain || ""),
+            (r.applicable ?? 0).toString(),
+            (r.covered ?? 0).toString(),
+            `${(r.coveragePct ?? 0).toFixed(1)}%`,
+          ],
+        })),
+        emptyMessage: "No applicable reviewed obligations yet.",
+      });
+    })();
+  </script>
+</body>
+</html>
