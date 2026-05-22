@@ -28,7 +28,8 @@ const PIPELINE = "recon:provenance-tag-coverage";
 export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const counts = eventStore.countByProvenanceKind();
-  const total = counts.production + counts.simulated + counts.untagged;
+  const total =
+    counts.production + counts.simulated + counts.buildPhaseFixture + counts.untagged;
   result.asserted = total;
 
   const violations: ReconViolation[] = [];

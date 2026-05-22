@@ -31,7 +31,7 @@ import type { Event } from "../event-store/types";
  *     the substrate).
  */
 export interface ProvenanceFilter {
-  readonly kinds?: ReadonlyArray<"production" | "simulated">;
+  readonly kinds?: ReadonlyArray<"production" | "simulated" | "build-phase-fixture">;
   readonly scenario?: string;
   readonly variant?: string;
   readonly includeUntagged?: boolean;

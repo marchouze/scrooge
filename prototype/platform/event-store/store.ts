@@ -222,15 +222,20 @@ export class EventStore {
    */
   softTagUntaggedEvents(): {
     readonly tagged: number;
-    readonly byKind: Readonly<Record<"production" | "simulated", number>>;
+    readonly byKind: Readonly<
+      Record<"production" | "simulated" | "build-phase-fixture", number>
+    >;
   } {
     const rows = this.db
       .prepare("SELECT event_id, type FROM events WHERE provenance IS NULL")
       .all() as Array<{ event_id: string; type: string }>;
     if (rows.length === 0) {
-      return { tagged: 0, byKind: { production: 0, simulated: 0 } };
+      return {
+        tagged: 0,
+        byKind: { production: 0, simulated: 0, "build-phase-fixture": 0 },
+      };
     }
-    const byKind = { production: 0, simulated: 0 };
+    const byKind = { production: 0, simulated: 0, "build-phase-fixture": 0 };
     const stmt = this.db.prepare("UPDATE events SET provenance = ? WHERE event_id = ?");
     const tx = this.db.transaction((batch: typeof rows) => {
       for (const row of batch) {
@@ -252,6 +257,7 @@ export class EventStore {
   countByProvenanceKind(): {
     readonly production: number;
     readonly simulated: number;
+    readonly buildPhaseFixture: number;
     readonly untagged: number;
   } {
     const rows = this.db
@@ -259,13 +265,20 @@ export class EventStore {
         `SELECT
            SUM(CASE WHEN provenance IS NULL THEN 1 ELSE 0 END) AS untagged,
            SUM(CASE WHEN json_extract(provenance, '$.kind') = 'production' THEN 1 ELSE 0 END) AS production,
-           SUM(CASE WHEN json_extract(provenance, '$.kind') = 'simulated' THEN 1 ELSE 0 END) AS simulated
+           SUM(CASE WHEN json_extract(provenance, '$.kind') = 'simulated' THEN 1 ELSE 0 END) AS simulated,
+           SUM(CASE WHEN json_extract(provenance, '$.kind') = 'build-phase-fixture' THEN 1 ELSE 0 END) AS buildPhaseFixture
          FROM events`,
       )
-      .get() as { untagged: number | null; production: number | null; simulated: number | null };
+      .get() as {
+      untagged: number | null;
+      production: number | null;
+      simulated: number | null;
+      buildPhaseFixture: number | null;
+    };
     return {
       production: rows.production ?? 0,
       simulated: rows.simulated ?? 0,
+      buildPhaseFixture: rows.buildPhaseFixture ?? 0,
       untagged: rows.untagged ?? 0,
     };
   }
