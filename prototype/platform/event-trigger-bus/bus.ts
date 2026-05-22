@@ -65,6 +65,21 @@ export type BusRunner = (args: {
 }) => Promise<BusRunnerResult>;
 
 /**
+ * Named factory that wraps any `BusRunner`-shaped function into a `BusRunner`.
+ * Symmetric counterpart to `createBunWorkerBusRunner` — use this in tests to
+ * opt into the in-process path explicitly without spawning workers.
+ *
+ * The inline lambdas in `ScheduledTriggerConsumer` and `LocalEventTriggerBus`
+ * continue to work unchanged; this factory exists purely so test suites can
+ * name their runner choice at construction time.
+ */
+export function createInProcessBusRunner(
+  innerRunner: (args: { agent: string; trigger: string; triggeringEvents: readonly Event[] }) => Promise<BusRunnerResult>,
+): BusRunner {
+  return (args) => innerRunner(args);
+}
+
+/**
  * Provider for the subscription registry. Pulled out as a seam so tests
  * can inject a synthetic source.
  */
