@@ -175,7 +175,10 @@ export const financialInstrumentDefinedPayloadSchema = z.object({
    * Native currency of the instrument (ISO 4217, 3 uppercase letters).
    * Per Principle 5, no default currency — always explicit.
    */
-  currency: z.string().length(3).regex(/^[A-Z]{3}$/),
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
 
   /**
    * Maturity date (ISO-8601 YYYY-MM-DD). Absent for perpetual instruments
@@ -222,10 +225,7 @@ export function makeFinancialInstrumentDefined(args: {
   payload: FinancialInstrumentDefinedPayload;
   eventId?: string;
 }): Event {
-  const aggregateLabel = makeAggregateLabel(
-    "financial-instrument",
-    args.payload.instrumentId,
-  );
+  const aggregateLabel = makeAggregateLabel("financial-instrument", args.payload.instrumentId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FinancialInstrumentDefined",
@@ -323,10 +323,7 @@ export function makeFinancialInstrumentClassified(args: {
   payload: FinancialInstrumentClassifiedPayload;
   eventId?: string;
 }): Event {
-  const aggregateLabel = makeAggregateLabel(
-    "financial-instrument",
-    args.payload.instrumentId,
-  );
+  const aggregateLabel = makeAggregateLabel("financial-instrument", args.payload.instrumentId);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FinancialInstrumentClassified",
