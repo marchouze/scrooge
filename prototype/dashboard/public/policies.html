@@ -7,118 +7,524 @@
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
+  <style>
+    /* ── Breadcrumb ─────────────────────────────────────── */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .breadcrumb a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--color-text-disabled); }
+    .breadcrumb-current { color: var(--color-text-primary); font-weight: 500; }
+
+    /* ── Policy detail view ─────────────────────────────── */
+    #pol-detail { display: none; }
+    #pol-detail.visible { display: block; }
+    #pol-list.hidden { display: none; }
+
+    .pol-detail-header {
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: var(--space-6);
+    }
+    .pol-detail-eyebrow {
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pol-detail-title {
+      font: var(--text-display);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-3);
+    }
+    .pol-detail-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    /* ── Meta grid ──────────────────────────────────────── */
+    .pol-detail-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+    .pol-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .pol-meta-label {
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .pol-meta-value { font: var(--text-body); color: var(--color-text-primary); font-weight: 500; }
+
+    /* ── Section ────────────────────────────────────────── */
+    .pol-section { margin-bottom: var(--space-8); }
+    .pol-section h3 {
+      font: var(--text-h2);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ── Policy document body ───────────────────────────── */
+    .pol-doc-body h2 {
+      font: var(--text-h1);
+      margin: var(--space-6) 0 var(--space-3);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .pol-doc-body h3 { font: var(--text-h2); margin: var(--space-5) 0 var(--space-2); }
+    .pol-doc-body h4 { font: var(--text-h3); margin: var(--space-4) 0 var(--space-2); }
+    .pol-doc-body p { font: var(--text-body); margin: var(--space-2) 0; }
+    .pol-doc-body ul, .pol-doc-body ol { margin: var(--space-2) 0; padding-left: var(--space-5); }
+    .pol-doc-body li { font: var(--text-body); margin: var(--space-1) 0; }
+    .pol-doc-body blockquote {
+      border-left: 3px solid var(--color-border-strong);
+      margin: var(--space-3) 0;
+      padding: var(--space-2) var(--space-4);
+      color: var(--color-text-secondary);
+    }
+    .pol-doc-body code {
+      font-family: var(--font-mono);
+      background: var(--color-surface-raised);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875em;
+    }
+    .pol-doc-body pre {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin: var(--space-3) 0;
+    }
+    .pol-doc-body pre code { background: none; padding: 0; font-size: 0.85em; }
+    .pol-doc-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font: var(--text-body);
+      margin: var(--space-3) 0;
+    }
+    .pol-doc-body th {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      font-weight: 600;
+    }
+    .pol-doc-body td {
+      border: 1px solid var(--color-border);
+      padding: var(--space-2) var(--space-3);
+    }
+    .pol-doc-empty { color: var(--color-text-secondary); font: var(--text-body); }
+
+    /* ── Obligations table ──────────────────────────────── */
+    .pol-obl-table { width: 100%; border-collapse: collapse; font: var(--text-body); }
+    .pol-obl-table th {
+      background: var(--color-surface);
+      border-bottom: 2px solid var(--color-border);
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      font: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-secondary);
+    }
+    .pol-obl-table td {
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-2) var(--space-3);
+      vertical-align: top;
+    }
+    .pol-obl-table tr:last-child td { border-bottom: none; }
+    .pol-obl-table code { font-family: var(--font-mono); font-size: 0.85em; }
+
+    /* ── Procedures list ────────────────────────────────── */
+    .pol-proc-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .pol-proc-row:last-child { border-bottom: none; }
+    .pol-proc-link { color: var(--color-accent); text-decoration: none; font-family: var(--font-mono); font-size: 0.875em; }
+    .pol-proc-link:hover { text-decoration: underline; }
+    .pol-proc-status {
+      font: var(--text-caption);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .pol-proc-status-live { background: var(--color-success-bg); color: var(--color-success); }
+    .pol-proc-status-draft { background: var(--color-warning-bg); color: var(--color-warning); }
+    .pol-proc-status-planned { background: var(--color-surface-raised); color: var(--color-text-secondary); }
+  </style>
 </head>
 <body>
   <div id="shell"></div>
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
-    <div class="page-header"><h1 class="page-title">Policies</h1></div>
-    <div class="page-body">
-      <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap">
-        <div id="pol-tabs" class="tab-bar" style="flex:1"></div>
-        <select id="pol-owner" style="padding:var(--space-2) var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);font:var(--text-body);background:var(--color-bg)"><option value="">All owners</option></select>
+
+    <!-- List view -->
+    <div id="pol-list">
+      <div class="page-header"><h1 class="page-title">Policies</h1></div>
+      <div class="page-body">
+        <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap">
+          <div id="pol-tabs" class="tab-bar" style="flex:1"></div>
+          <select id="pol-owner" style="padding:var(--space-2) var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);font:var(--text-body);background:var(--color-bg)"><option value="">All owners</option></select>
+        </div>
+        <div id="pol-table"></div>
       </div>
-      <div id="pol-table"></div>
+    </div>
+
+    <!-- Detail view -->
+    <div id="pol-detail">
+      <nav class="breadcrumb">
+        <a href="#" id="pol-bc-back">Policies</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current" id="pol-bc-name"></span>
+      </nav>
+
+      <div class="pol-detail-header">
+        <div class="pol-detail-eyebrow" id="pol-d-eyebrow"></div>
+        <h1 class="pol-detail-title" id="pol-d-title"></h1>
+        <div class="pol-detail-pills" id="pol-d-pills"></div>
+      </div>
+
+      <div class="pol-detail-meta" id="pol-d-meta"></div>
+
+      <div class="pol-section" id="pol-d-doc-section" style="display:none">
+        <h3>Policy Document</h3>
+        <div class="pol-doc-body" id="pol-d-doc"></div>
+      </div>
+
+      <div class="pol-section" id="pol-d-proc-section" style="display:none">
+        <h3>Linked Procedures</h3>
+        <div id="pol-d-procs"></div>
+      </div>
+
+      <div class="pol-section" id="pol-d-obl-section" style="display:none">
+        <details>
+          <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--space-2)">
+            <span style="font:var(--text-caption);text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-secondary)">Appendix — Obligations Fulfilled</span>
+            <span id="pol-d-obl-count" style="font:var(--text-caption);color:var(--color-text-disabled)"></span>
+            <span class="pol-appendix-chevron" style="margin-left:auto;color:var(--color-text-disabled);font-size:10px">▼</span>
+          </summary>
+          <div style="margin-top:var(--space-4)">
+            <table class="pol-obl-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Citation</th>
+                  <th>Requirement</th>
+                  <th>Source</th>
+                  <th>Bind</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="pol-d-obl-body"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </main>
+
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/_components.js"></script>
   <script>
     initShell({ title: "Policies" });
-    (async () => {
-      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
-      document.getElementById("pol-table").innerHTML = SC.renderSkeleton(8);
-      const [data, oblData] = await Promise.all([sf("/api/state"), sf("/api/obligations")]);
-      const all = data?.policies ?? [];
-      const oblById = oblData?.byId ?? {};
-      const sc = Object.fromEntries(Object.entries(
-        all.reduce((acc, p) => { acc[p.status||""]=(acc[p.status||""]||0)+1; return acc; }, {})
-      ));
-      const TABS = [
-        { label: `All (${all.length})`, filter: null },
-        { label: `In Force (${sc["IN FORCE"]??0})`, filter: "IN FORCE" },
-        { label: `Drafting (${sc.DRAFTING??0})`, filter: "DRAFTING" },
-        { label: `Planned (${sc.PLANNED??0})`, filter: "PLANNED" },
-        { label: `Exists (${sc.EXISTS??0})`, filter: "EXISTS" },
-      ];
-      let activeFilter = null, ownerFilter = "";
-      const tabsEl = document.getElementById("pol-tabs");
-      const ownerEl = document.getElementById("pol-owner");
-      const owners = [...new Set(all.map(p => p.owner||"").filter(Boolean))].sort();
-      owners.forEach(o => { const opt = document.createElement("option"); opt.value = o; opt.textContent = o; ownerEl.appendChild(opt); });
 
-      function mdToHtml(md) {
-        const body = md.replace(/^---[\s\S]*?---\n?/, "");
-        return body
-          .replace(/^#### (.+)$/gm, "<h4 style='font:var(--text-h3);margin:var(--space-4) 0 var(--space-2)'>$1</h4>")
-          .replace(/^### (.+)$/gm, "<h3 style='font:var(--text-h2);margin:var(--space-5) 0 var(--space-2)'>$1</h3>")
-          .replace(/^## (.+)$/gm, "<h2 style='font:var(--text-h1);margin:var(--space-6) 0 var(--space-3);border-bottom:1px solid var(--color-border);padding-bottom:var(--space-2)'>$1</h2>")
-          .replace(/^# (.+)$/gm, "")
-          .replace(/^> (.+)$/gm, "<blockquote style='border-left:3px solid var(--color-border);margin:var(--space-3) 0;padding:var(--space-2) var(--space-4);color:var(--color-text-secondary);font:var(--text-body)'>$1</blockquote>")
-          .replace(/^- (.+)$/gm, "<li style='margin:var(--space-1) 0'>$1</li>")
-          .replace(/(<li[\s\S]*?<\/li>)/g, "<ul style='margin:var(--space-2) 0;padding-left:var(--space-5)'>$1</ul>")
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-          .replace(/`([^`]+)`/g, "<code style='font-family:monospace;background:var(--color-surface-raised);padding:1px 4px;border-radius:3px;font-size:0.875em'>$1</code>")
-          .replace(/^(?!<[h|u|b|l])(.+)$/gm, "<p style='font:var(--text-body);margin:var(--space-2) 0'>$1</p>")
-          .replace(/<p[^>]*>\s*<\/p>/g, "");
+    (async () => {
+      async function sf(u) {
+        try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; }
+        catch { return null; }
       }
 
-      function policyModal(p) {
-        const row = (label, val) => val ? `<dt style="font-weight:600;color:var(--color-text-secondary);white-space:nowrap">${SC.esc(label)}</dt><dd style="word-break:break-word">${val}</dd>` : "";
-        const meta = `<dl style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-2) var(--space-4);font:var(--text-body);margin-bottom:var(--space-6)">
-          ${row("Domain", SC.esc(p.domain||""))}
-          ${row("Owner", SC.esc(p.owner||""))}
-          ${row("Approval", SC.esc(p.approval||""))}
-          ${row("Cadence", SC.esc(p.cadence||""))}
-          ${row("Status", SC.renderBadge(p.status||""))}
-          ${row("Citation", SC.esc(p.citation||""))}
-          ${row("Binds", (p.binds||[]).map(b => SC.renderBadge(b)).join(" "))}
-          ${row("MVP", p.mvp != null ? SC.esc(String(p.mvp)) : "")}
-          ${row("Status detail", SC.esc(p.statusRaw||""))}
-        </dl>`;
-        const oblIds = Array.isArray(p.linkedObligations) ? p.linkedObligations : [];
-        const oblSection = oblIds.length ? `
-          <div style="font:var(--text-h3);margin-bottom:var(--space-3)">Linked Obligations (${oblIds.length})</div>
-          <dl style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-2) var(--space-4);font:var(--text-body);margin-bottom:var(--space-6)">
-            ${oblIds.map(id => {
-              const o = oblById[id];
-              return `<dt style="font-weight:600;color:var(--color-text-secondary);white-space:nowrap">${SC.esc(id)}</dt><dd style="word-break:break-word">${SC.esc(o?.requirement||"—")}</dd>`;
-            }).join("")}
-          </dl>` : "";
-        const docFile = (p.sourceFiles||[]).find(f => f.startsWith("Policies/"));
+      // ── State ──────────────────────────────────────────────
+      let all = [];
+      let oblById = {};
+      let allProcedures = [];
+      let activeFilter = null;
+      let ownerFilter = "";
+
+      // ── Markdown renderer ──────────────────────────────────
+      function mdToHtml(md) {
+        if (!md) return "";
+        let body = md.replace(/^---[\s\S]*?---\n?/, "");
+        const lines = body.split(/\r?\n/);
+        const out = [];
+        let inCode = false, codeBuf = [], inList = false, listType = null, inTable = false, tableRows = [];
+
+        const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const closeList = () => { if (inList) { out.push(listType === "ol" ? "</ol>" : "</ul>"); inList = false; listType = null; } };
+        const isTableSep = r => /^\|[\s\-:| ]+\|$/.test(r);
+        const parseCells = r => r.split("|").slice(1, -1).map(c => c.trim());
+        const closeTable = () => {
+          if (!inTable || !tableRows.length) { inTable = false; tableRows = []; return; }
+          const sep = tableRows.findIndex(r => isTableSep(r));
+          const head = sep === -1 ? [] : tableRows.slice(0, sep);
+          const body = sep === -1 ? tableRows : tableRows.slice(sep + 1);
+          let h = "<table>";
+          if (head.length) h += "<thead>" + head.map(r => "<tr>" + parseCells(r).map(c => `<th>${inline(c)}</th>`).join("") + "</tr>").join("") + "</thead>";
+          if (body.length) h += "<tbody>" + body.map(r => "<tr>" + parseCells(r).map(c => `<td>${inline(c)}</td>`).join("") + "</tr>").join("") + "</tbody>";
+          out.push(h + "</table>"); inTable = false; tableRows = [];
+        };
+        const inline = s => {
+          let t = esc(s);
+          t = t.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+          t = t.replace(/\*\*([^*]+)\*\*/g, (_, c) => `<strong>${c}</strong>`);
+          t = t.replace(/(^|\W)\*([^*]+)\*(\W|$)/g, (m, a, c, b) => `${a}<em>${c}</em>${b}`);
+          t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, txt, href) => {
+            const safe = /^(https?:|\/|\.\.?\/)/i.test(href) ? href : "#";
+            return `<a href="${safe}" target="_blank" rel="noopener">${txt}</a>`;
+          });
+          return t;
+        };
+        for (const raw of lines) {
+          const line = raw.replace(/\s+$/, "");
+          if (line.startsWith("```")) {
+            if (inCode) { out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`); codeBuf = []; inCode = false; }
+            else { closeList(); closeTable(); inCode = true; }
+            continue;
+          }
+          if (inCode) { codeBuf.push(line); continue; }
+          if (!line.trim()) { closeList(); closeTable(); continue; }
+          const h1 = line.match(/^# (.+)$/); if (h1) { closeList(); closeTable(); out.push(`<h2>${inline(h1[1])}</h2>`); continue; }
+          const h2 = line.match(/^## (.+)$/); if (h2) { closeList(); closeTable(); out.push(`<h3>${inline(h2[1])}</h3>`); continue; }
+          const h3 = line.match(/^### (.+)$/); if (h3) { closeList(); closeTable(); out.push(`<h4>${inline(h3[1])}</h4>`); continue; }
+          const ul = line.match(/^[-*]\s+(.+)$/);
+          if (ul) {
+            if (!inList || listType !== "ul") { closeList(); closeTable(); out.push("<ul>"); inList = true; listType = "ul"; }
+            out.push(`<li>${inline(ul[1])}</li>`); continue;
+          }
+          const ol = line.match(/^\d+\.\s+(.+)$/);
+          if (ol) {
+            if (!inList || listType !== "ol") { closeList(); closeTable(); out.push("<ol>"); inList = true; listType = "ol"; }
+            out.push(`<li>${inline(ol[1])}</li>`); continue;
+          }
+          if (line.startsWith("> ")) { closeList(); closeTable(); out.push(`<blockquote>${inline(line.slice(2))}</blockquote>`); continue; }
+          if (line.startsWith("|")) { closeList(); inTable = true; tableRows.push(line); continue; }
+          closeList(); closeTable();
+          out.push(`<p>${inline(line)}</p>`);
+        }
+        if (inCode) out.push(`<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`);
+        closeList(); closeTable();
+        return out.join("\n");
+      }
+
+      // ── Navigation ─────────────────────────────────────────
+      function showList() {
+        document.getElementById("pol-list").classList.remove("hidden");
+        document.getElementById("pol-detail").classList.remove("visible");
+        document.title = "Policies — Scrooge Bank";
+      }
+
+      function showDetail(p) {
+        document.getElementById("pol-list").classList.add("hidden");
+        const det = document.getElementById("pol-detail");
+        det.classList.add("visible");
+        document.title = `${p.name} — Policies — Scrooge Bank`;
+
+        document.getElementById("pol-bc-name").textContent = p.name;
+        document.getElementById("pol-d-eyebrow").textContent = (p.domain || "").replace(/^\d+\.\s*/, "");
+        document.getElementById("pol-d-title").textContent = p.name;
+
+        // Pills
+        const pills = document.getElementById("pol-d-pills");
+        pills.innerHTML = [
+          ...( (p.binds || []).map(b => SC.renderBadge(b)) ),
+          SC.renderBadge(p.status || ""),
+          p.mvp ? `<span style="background:var(--color-warning-bg);color:var(--color-warning);padding:2px 8px;border-radius:10px;font:var(--text-caption);font-weight:600">★ MVP</span>` : "",
+        ].filter(Boolean).join(" ");
+
+        // Meta grid
+        const meta = document.getElementById("pol-d-meta");
+        const item = (label, val) => val ? `<div class="pol-meta-item"><span class="pol-meta-label">${SC.esc(label)}</span><span class="pol-meta-value">${val}</span></div>` : "";
+        meta.innerHTML = [
+          item("Owner", SC.esc(p.owner || "")),
+          item("Approval", SC.esc(p.approval || "")),
+          item("Cadence", SC.esc(p.cadence || "")),
+          item("Citation", p.citation ? `<code style="font-family:var(--font-mono);font-size:0.875em">${SC.esc(p.citation)}</code>` : ""),
+          item("Status", SC.esc(p.statusRaw || p.status || "")),
+          item("Obligations", SC.esc(String((p.linkedObligations || []).length))),
+        ].filter(Boolean).join("");
+
+        // Policy document
+        const docFile = (p.sourceFiles || []).find(f => f.startsWith("Policies/"));
+        const docSection = document.getElementById("pol-d-doc-section");
+        const docEl = document.getElementById("pol-d-doc");
         if (docFile) {
-          const container = document.createElement("div");
-          container.innerHTML = meta + oblSection + `<div style="font:var(--text-h3);margin-bottom:var(--space-3)">Policy Document</div><div id="pol-doc-body">${SC.renderSkeleton(4)}</div>`;
+          docSection.style.display = "";
+          docEl.innerHTML = SC.renderSkeleton(6);
           fetch(`/api/policy/${encodeURIComponent(docFile)}`)
             .then(r => r.ok ? r.text() : null)
-            .then(md => {
-              const el = container.querySelector("#pol-doc-body");
-              if (el) el.innerHTML = md ? mdToHtml(md) : `<p style="color:var(--color-text-secondary)">Document not available.</p>`;
-            });
-          return container;
+            .then(md => { docEl.innerHTML = md ? mdToHtml(md) : `<p class="pol-doc-empty">Document not available.</p>`; });
+        } else {
+          docSection.style.display = "none";
         }
-        return meta + oblSection;
+
+        // Obligations
+        const oblIds = Array.isArray(p.linkedObligations) ? p.linkedObligations : [];
+        const oblSection = document.getElementById("pol-d-obl-section");
+        const oblBody = document.getElementById("pol-d-obl-body");
+        if (oblIds.length) {
+          oblSection.style.display = "";
+          const countEl = document.getElementById("pol-d-obl-count");
+          if (countEl) countEl.textContent = `(${oblIds.length})`;
+          oblBody.innerHTML = oblIds.map(id => {
+            const o = oblById[id] || {};
+            const srcBadge = o.source ? `<span style="background:var(--color-info-bg);color:var(--color-info);padding:2px 7px;border-radius:10px;font:var(--text-caption);font-weight:500">${SC.esc(o.source)}</span>` : "—";
+            const bindBadge = o.bind ? `<span style="background:var(--color-surface-raised);color:var(--color-text-secondary);padding:2px 7px;border-radius:10px;font:var(--text-caption)">${SC.esc(o.bind)}</span>` : "—";
+            return `<tr>
+              <td><code>${SC.esc(id)}</code></td>
+              <td style="color:var(--color-text-secondary);font-size:12px">${SC.esc(o.citation || "—")}</td>
+              <td>${SC.esc(o.requirement || "—")}</td>
+              <td>${srcBadge}</td>
+              <td>${bindBadge}</td>
+              <td style="color:var(--color-text-secondary)">${SC.esc(o.status || "—")}</td>
+            </tr>`;
+          }).join("");
+        } else {
+          oblSection.style.display = "none";
+        }
+
+        // Procedures
+        const linked = allProcedures.filter(r =>
+          r.policyParent?.trim().toLowerCase() === p.name?.trim().toLowerCase() && r.procedureFile
+        );
+        const procSection = document.getElementById("pol-d-proc-section");
+        const procsEl = document.getElementById("pol-d-procs");
+        if (linked.length) {
+          procSection.style.display = "";
+          procsEl.innerHTML = linked.map(r => {
+            const statusCls = r.status ? `pol-proc-status-${r.status.toLowerCase()}` : "";
+            const title = r.procedureTitle || r.procedureLabel || "";
+            return `<div class="pol-proc-row">
+              <a href="procedures.html?procedure=${encodeURIComponent(r.procedureFile)}" class="pol-proc-link">${SC.esc(r.procedureFile)}</a>
+              ${r.status ? `<span class="pol-proc-status ${statusCls}">${SC.esc(r.status)}</span>` : ""}
+              ${title && title !== r.procedureFile ? `<span style="color:var(--color-text-secondary);font:var(--text-caption)">${SC.esc(title)}</span>` : ""}
+            </div>`;
+          }).join("");
+        } else {
+          procSection.style.display = "none";
+        }
+
+        det.scrollTop = 0;
+        window.scrollTo(0, 0);
       }
+
+      // ── Hash routing ───────────────────────────────────────
+      function navigateTo(policyId, push = true) {
+        const p = all.find(x => x.id === policyId || x.name === policyId);
+        if (!p) return;
+        if (push) history.pushState({ policyId: p.id }, "", `#${encodeURIComponent(p.id)}`);
+        showDetail(p);
+      }
+
+      function navigateBack(push = true) {
+        if (push) history.pushState({}, "", location.pathname);
+        showList();
+      }
+
+      window.addEventListener("popstate", e => {
+        const hash = decodeURIComponent(location.hash.slice(1));
+        if (hash) navigateTo(hash, false);
+        else navigateBack(false);
+      });
+
+      document.getElementById("pol-bc-back").addEventListener("click", e => {
+        e.preventDefault();
+        navigateBack();
+      });
+
+      // ── Table render ───────────────────────────────────────
+      document.getElementById("pol-table").innerHTML = SC.renderSkeleton(8);
+
+      const [data, oblData, procData] = await Promise.all([
+        sf("/api/state"),
+        sf("/api/obligations"),
+        sf("/api/procedures"),
+      ]);
+
+      all = data?.policies ?? [];
+      oblById = oblData?.byId ?? {};
+      for (const g of procData?.groups ?? []) {
+        for (const r of g.rows ?? []) allProcedures.push(r);
+      }
+
+      const sc = all.reduce((a, p) => { a[p.status || ""] = (a[p.status || ""] || 0) + 1; return a; }, {});
+      const TABS = [
+        { label: `All (${all.length})`, filter: null },
+        { label: `In Force (${sc["IN FORCE"] ?? 0})`, filter: "IN FORCE" },
+        { label: `Drafting (${sc.DRAFTING ?? 0})`, filter: "DRAFTING" },
+        { label: `Planned (${sc.PLANNED ?? 0})`, filter: "PLANNED" },
+        { label: `Exists (${sc.EXISTS ?? 0})`, filter: "EXISTS" },
+      ];
+
+      const tabsEl = document.getElementById("pol-tabs");
+      const ownerEl = document.getElementById("pol-owner");
+      const owners = [...new Set(all.map(p => p.owner || "").filter(Boolean))].sort();
+      owners.forEach(o => { const opt = document.createElement("option"); opt.value = o; opt.textContent = o; ownerEl.appendChild(opt); });
 
       function render() {
         let rows = activeFilter ? all.filter(p => p.status === activeFilter) : all;
         if (ownerFilter) rows = rows.filter(p => p.owner === ownerFilter);
         SC.renderTable({
           container: document.getElementById("pol-table"),
-          headers: ["Name","Domain","Owner","Approval","Status","Obligations"],
+          headers: ["Name", "Domain", "Owner", "Approval", "Status", "Obligations"],
           rows: rows.map(p => ({
-            cells: [SC.esc(p.name||""), SC.esc((p.domain||"").replace(/^\d+\.\s*/,"")), SC.esc(p.owner||""), SC.esc(p.approval||""), SC.renderBadge(p.status||""), SC.esc(Array.isArray(p.linkedObligations)?String(p.linkedObligations.length):"—")],
+            cells: [
+              SC.esc(p.name || ""),
+              SC.esc((p.domain || "").replace(/^\d+\.\s*/, "")),
+              SC.esc(p.owner || ""),
+              SC.esc(p.approval || ""),
+              SC.renderBadge(p.status || ""),
+              SC.esc(Array.isArray(p.linkedObligations) ? String(p.linkedObligations.length) : "—"),
+            ],
             data: p,
           })),
-          onRowClick: p => SC.openModal({ title: p.name||"Policy", body: policyModal(p) }),
+          onRowClick: p => navigateTo(p.id),
           emptyMessage: "No policies",
         });
       }
-      tabsEl.innerHTML = TABS.map(t => `<button class="tab-btn${t.filter===activeFilter?" active":""}" data-filter="${t.filter??""}">${SC.esc(t.label)}</button>`).join("");
-      tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab-btn"); if (!b) return; activeFilter = b.dataset.filter||null; tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", (x.dataset.filter||null)===activeFilter)); render(); });
+
+      tabsEl.innerHTML = TABS.map(t =>
+        `<button class="tab-btn${t.filter === activeFilter ? " active" : ""}" data-filter="${t.filter ?? ""}">${SC.esc(t.label)}</button>`
+      ).join("");
+      tabsEl.addEventListener("click", e => {
+        const b = e.target.closest(".tab-btn");
+        if (!b) return;
+        activeFilter = b.dataset.filter || null;
+        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", (x.dataset.filter || null) === activeFilter));
+        render();
+      });
       ownerEl.addEventListener("change", e => { ownerFilter = e.target.value; render(); });
       render();
+
+      // ── Deep-link from hash on load ────────────────────────
+      const initHash = decodeURIComponent(location.hash.slice(1));
+      if (initHash) navigateTo(initHash, false);
     })();
   </script>
 </body>
