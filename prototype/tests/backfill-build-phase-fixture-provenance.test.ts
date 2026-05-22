@@ -71,25 +71,29 @@ describe("runBackfill — idempotency", () => {
     process.env.BANK_EVENT_DB = tmpDb;
 
     // Dynamic import so composition.ts picks up BANK_EVENT_DB.
-    const { runBackfill } = await import(
-      "../scripts/backfill-build-phase-fixture-provenance"
-    );
+    const { runBackfill } = await import("../scripts/backfill-build-phase-fixture-provenance");
 
-    // First pass — against an empty fresh tmp store there are zero
-    // candidates, so reclassified is also zero. That alone proves
-    // dry-empty-state idempotency; the meaningful invariant we
-    // assert is: running twice produces identical (zero) deltas.
+    // The meaningful invariant: whatever the first pass does, the
+    // second pass MUST report zero `reclassified` and zero
+    // `auditEventsEmitted` — the backfill is idempotent. The first
+    // pass count itself is store-state-dependent (composition.ts
+    // seeds events at module load) so we assert only that
+    // (r1.reclassified === r1.auditEventsEmitted), then assert the
+    // strong zero-delta invariant on r2.
     const r1 = runBackfill({ runRef: "test-run-1" });
     const r2 = runBackfill({ runRef: "test-run-2" });
 
-    expect(r1.reclassified).toBe(0);
-    expect(r1.auditEventsEmitted).toBe(0);
+    // Per-run consistency: each row reclassified must emit exactly
+    // one audit event.
+    expect(r1.reclassified).toBe(r1.auditEventsEmitted);
+    expect(r2.reclassified).toBe(r2.auditEventsEmitted);
+
+    // Idempotency: second pass mutates nothing.
     expect(r2.reclassified).toBe(0);
     expect(r2.auditEventsEmitted).toBe(0);
-    expect(r2.skippedAlreadyAtTarget).toBe(0);
 
     // Cleanup
-    delete process.env.BANK_EVENT_DB;
+    process.env.BANK_EVENT_DB = undefined;
     try {
       const { unlinkSync } = await import("node:fs");
       unlinkSync(tmpDb);

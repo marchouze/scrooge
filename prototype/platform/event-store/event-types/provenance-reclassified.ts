@@ -94,9 +94,7 @@ export const provenanceReclassifiedPayloadSchema = z.object({
   runRef: z.string().min(1),
 });
 
-export type ProvenanceReclassifiedPayload = z.infer<
-  typeof provenanceReclassifiedPayloadSchema
->;
+export type ProvenanceReclassifiedPayload = z.infer<typeof provenanceReclassifiedPayloadSchema>;
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -122,5 +120,4 @@ export function makeProvenanceReclassified(args: {
 }
 
 export const PROVENANCE_RECLASSIFIED_EVENT_TYPES = ["ProvenanceReclassified"] as const;
-export type ProvenanceReclassifiedEventType =
-  (typeof PROVENANCE_RECLASSIFIED_EVENT_TYPES)[number];
+export type ProvenanceReclassifiedEventType = (typeof PROVENANCE_RECLASSIFIED_EVENT_TYPES)[number];

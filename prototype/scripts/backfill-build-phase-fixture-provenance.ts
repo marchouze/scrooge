@@ -104,9 +104,9 @@ import { BANK_ZA_001 } from "../platform/core/types";
 import { newEventId } from "../platform/core/types";
 import { makeProvenanceReclassified } from "../platform/event-store/event-types/provenance-reclassified";
 import {
+  type ProvenanceTag,
   buildPhaseFixtureTag,
   productionTag,
-  type ProvenanceTag,
 } from "../platform/event-store/provenance";
 import { logger } from "../platform/observability/logger";
 
@@ -123,9 +123,7 @@ import { logger } from "../platform/observability/logger";
  * Vera review item — every entry must be a genuine build-phase fixture
  * lineage (real bank state, not scenario / rehearsal / counterfactual).
  */
-export const BUILD_PHASE_FIXTURE_LINEAGES: ReadonlyArray<string> = [
-  "pre-substrate-backfill",
-];
+export const BUILD_PHASE_FIXTURE_LINEAGES: ReadonlyArray<string> = ["pre-substrate-backfill"];
 
 /**
  * Parameterised patterns. Tokens of the form `<prefix>:<suffix>` that
@@ -216,11 +214,7 @@ export function runBackfill(opts: BackfillOpts = {}): BackfillResult {
       asOf: new Date().toISOString(),
       entity: BANK_ZA_001,
       actor: { type: "system", id: "atlas@bank" },
-      citations: [
-        "D-PROVENANCE-BUILD-PHASE-CLASS",
-        "D-DATA-PROVENANCE-SUBSTRATE",
-        e.event_id,
-      ],
+      citations: ["D-PROVENANCE-BUILD-PHASE-CLASS", "D-DATA-PROVENANCE-SUBSTRATE", e.event_id],
       payload: {
         targetEventId: e.event_id,
         targetEventType: e.type,

@@ -276,9 +276,9 @@ export class EventStore {
     | { readonly reclassified: true; readonly priorTag: ProvenanceTag } {
     // Validate the incoming tag defensively (cross-axis Zod rules).
     const validated = provenanceTagSchema.parse(newTag);
-    const row = this.db
-      .prepare("SELECT provenance FROM events WHERE event_id = ?")
-      .get(eventId) as { provenance: string | null } | undefined;
+    const row = this.db.prepare("SELECT provenance FROM events WHERE event_id = ?").get(eventId) as
+      | { provenance: string | null }
+      | undefined;
     if (!row) return { reclassified: false, reason: "not-found" };
     const priorTag: ProvenanceTag = row.provenance
       ? (JSON.parse(row.provenance) as ProvenanceTag)

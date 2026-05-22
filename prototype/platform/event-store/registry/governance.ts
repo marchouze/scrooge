@@ -87,7 +87,6 @@ import {
 } from "../event-types/agent-substrate-extended";
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingPayloadSchema } from "../event-types/audit";
-import { provenanceReclassifiedPayloadSchema } from "../event-types/provenance-reclassified";
 import {
   dataProjectionSnapshotPayloadSchema,
   governanceCyclePrepPayloadSchema,
@@ -101,6 +100,7 @@ import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
+import { provenanceReclassifiedPayloadSchema } from "../event-types/provenance-reclassified";
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
