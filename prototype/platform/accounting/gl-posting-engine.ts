@@ -97,6 +97,21 @@ import type {
   SettlementConfirmedPayload,
 } from "../markets/cdm/fx";
 import type { SubLedgerLeg } from "./fx-accounting-types";
+import type {
+  BondInterestAccruedPayload,
+  BondMaturedPayload,
+  BondPositionRevaluedPayload,
+  BondSoldPayload,
+  BondTradeExecutedPayload,
+} from "../event-store/event-types/bond-accounting";
+import {
+  bondBankingBookJournals,
+  bondInterestAccrualJournals,
+  bondMaturityJournals,
+  bondRevaluationJournals,
+  bondSaleJournals,
+  bondTradingBookJournals,
+} from "./posting-rules/bonds";
 import {
   fxLifecycleCloseJournals,
   fxPrincipalPaymentJournals,
@@ -117,6 +132,13 @@ export const POSTING_RULE_IDS = {
   LIFECYCLE_CLOSE: "PR-FX-LIFECYCLE-CLOSE",
   SETTLEMENT_LEGACY: "PR-FX-003",
   SETTLEMENT_FAILED: "PR-FX-005",
+  // Bond lifecycle posting rules
+  BOND_TRADE_BANKING: "PR-BOND-001",
+  BOND_TRADE_TRADING: "PR-BOND-001T",
+  BOND_INTEREST: "PR-BOND-EIR",
+  BOND_REVALUATION: "PR-BOND-002",
+  BOND_MATURITY: "PR-BOND-MAT",
+  BOND_SALE: "PR-BOND-SALE",
 } as const;
 
 export type PostingRuleId = (typeof POSTING_RULE_IDS)[keyof typeof POSTING_RULE_IDS];
@@ -302,7 +324,12 @@ type DispatchResult =
         | "revaluation"
         | "settlement"
         | "fx-principal-payment"
-        | "fx-lifecycle-close";
+        | "fx-lifecycle-close"
+        | "bond-trade-booking"
+        | "bond-interest-accrual"
+        | "bond-revaluation"
+        | "bond-maturity"
+        | "bond-sale";
       postingRuleId: PostingRuleId;
     }
   | { kind: "skip"; reason: SkipReason; detail?: string };
@@ -432,6 +459,79 @@ function dispatchEvent(event: Event, allEvents: ReadonlyArray<Event>): DispatchR
       };
     }
 
+    case "BondTradeExecuted": {
+      const payload = event.payload as BondTradeExecutedPayload;
+      const isTrading = payload.portfolio === "trading-book";
+      const legs = isTrading
+        ? bondTradingBookJournals(payload)
+        : bondBankingBookJournals(payload);
+      if (legs.length === 0) return { kind: "skip", reason: "missing-spot-leg" };
+      return {
+        kind: "post",
+        legs,
+        postingType: "bond-trade-booking",
+        postingRuleId: isTrading
+          ? POSTING_RULE_IDS.BOND_TRADE_TRADING
+          : POSTING_RULE_IDS.BOND_TRADE_BANKING,
+      };
+    }
+
+    case "BondInterestAccrued": {
+      const payload = event.payload as BondInterestAccruedPayload;
+      const legs = bondInterestAccrualJournals(payload);
+      if (legs.length === 0) return { kind: "skip", reason: "zero-delta-revaluation" };
+      return {
+        kind: "post",
+        legs,
+        postingType: "bond-interest-accrual",
+        postingRuleId: POSTING_RULE_IDS.BOND_INTEREST,
+      };
+    }
+
+    case "BondPositionRevalued": {
+      const payload = event.payload as BondPositionRevaluedPayload;
+      const legs = bondRevaluationJournals(payload);
+      if (legs.length === 0) return { kind: "skip", reason: "zero-delta-revaluation" };
+      return {
+        kind: "post",
+        legs,
+        postingType: "bond-revaluation",
+        postingRuleId: POSTING_RULE_IDS.BOND_REVALUATION,
+      };
+    }
+
+    case "BondMatured": {
+      const payload = event.payload as BondMaturedPayload;
+      // BondMaturedPayload does not carry a portfolio field; default to
+      // "trading-book" for asset-account selection. Banking-book maturity
+      // uses the same cash-in / asset-out structure — the account code
+      // differs. Production wiring should resolve the originating trade's
+      // portfolio from the position projection; this engine slice defaults
+      // defensively to trading-book (the more common case for JSE bonds
+      // in this book). Follow-on: enrich BondMaturedPayload with portfolio.
+      const legs = bondMaturityJournals(payload, "trading-book");
+      if (legs.length === 0) return { kind: "skip", reason: "zero-realised-pnl" };
+      return {
+        kind: "post",
+        legs,
+        postingType: "bond-maturity",
+        postingRuleId: POSTING_RULE_IDS.BOND_MATURITY,
+      };
+    }
+
+    case "BondSold": {
+      const payload = event.payload as BondSoldPayload;
+      // Same portfolio-resolution note as BondMatured above.
+      const legs = bondSaleJournals(payload, "trading-book");
+      if (legs.length === 0) return { kind: "skip", reason: "zero-realised-pnl" };
+      return {
+        kind: "post",
+        legs,
+        postingType: "bond-sale",
+        postingRuleId: POSTING_RULE_IDS.BOND_SALE,
+      };
+    }
+
     // Memo-only event types (no GL impact by design — see fx-spot.ts
     // docblocks for PR-FX-INSTRUCT and PR-FX-REGREPORT).
     case "FxSettlementInstructed":
@@ -462,6 +562,12 @@ const HANDLED_EVENT_TYPES: ReadonlySet<string> = new Set([
   "FxSettlementFailed",
   "FxSettlementInstructed",
   "TradeReportSubmitted",
+  // Bond lifecycle events
+  "BondTradeExecuted",
+  "BondInterestAccrued",
+  "BondPositionRevalued",
+  "BondMatured",
+  "BondSold",
 ]);
 
 // ---------------------------------------------------------------------------
