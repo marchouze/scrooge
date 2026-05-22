@@ -39,6 +39,20 @@ export function getDb(): Database {
   return _db;
 }
 
+/**
+ * Truncate graph tables. Called at the start of `runSeed()` to ensure
+ * re-runs don't fail with `UNIQUE constraint failed: graph_*.id` when the
+ * sequence-based edge IDs (`edgeId()` counter resets each run) collide with
+ * persisted rows from a prior run with a different event count.
+ *
+ * The graph is a derived projection (Principle 1) — truncate-and-rebuild
+ * is the canonical pattern.
+ */
+export function truncateGraphTables(): void {
+  const db = getDb();
+  db.exec("DELETE FROM graph_edges; DELETE FROM graph_nodes;");
+}
+
 /** Upsert a graph node (INSERT OR REPLACE). */
 export function upsertNode(node: GraphNode): void {
   const db = getDb();

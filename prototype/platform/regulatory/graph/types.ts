@@ -24,7 +24,8 @@ export type GraphNodeType =
   | "Threshold"
   | "EffectivePeriod"
   | "Policy"
-  | "Procedure";
+  | "Procedure"
+  | "ProductInstrument";
 
 export type GraphEdgeType =
   // Structural
