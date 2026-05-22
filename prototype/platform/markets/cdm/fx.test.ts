@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { makeFxPositionRevalued, fxPositionRevaluedPayloadSchema } from "../../event-store/event-types/fx-accounting";
+import { fxPositionRevaluedPayloadSchema } from "../../event-store/event-types/fx-accounting";
 import { eventSchema } from "../../event-store/types";
 import { fxTradeExecutedPayloadSchema, makeFxTradeExecuted } from "./fx";
 
@@ -63,7 +63,7 @@ const baseSpotPayload = {
   clientFlowRef: "client-trade:NK-2026-05-22-00001",
 };
 
-const actor = { id: "kai-trading-systems", role: "system" } as const;
+const actor = { type: "system" as const, id: "kai-trading-systems" };
 const citations = ["D-FINANCIAL-INSTRUMENT-ENTITY", "D-MARKETS-SCHEMA-FOUNDATION"];
 
 // ---------------------------------------------------------------------------
