@@ -19,16 +19,16 @@
 
 import { describe, expect, it } from "bun:test";
 
+import {
+  SA_GOVERNMENT_BOND_CLASSIFIED_PAYLOADS,
+  SA_GOVERNMENT_BOND_DEFINED_PAYLOADS,
+} from "../../../seeds/financial-instruments/sa-government-bonds";
 import { eventSchema } from "../../event-store/types";
 import {
   financialInstrumentClassifiedPayloadSchema,
   financialInstrumentDefinedPayloadSchema,
 } from "../cdm/instrument";
 import { bondTradeExecutedPayloadSchema, makeBondTradeExecuted } from "./fixed-income";
-import {
-  SA_GOVERNMENT_BOND_CLASSIFIED_PAYLOADS,
-  SA_GOVERNMENT_BOND_DEFINED_PAYLOADS,
-} from "../../../seeds/financial-instruments/sa-government-bonds";
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -130,9 +130,7 @@ describe("bondTradeExecutedPayloadSchema — isin validation", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const isinError = result.error.issues.find(
-        (i) => JSON.stringify(i.path).includes("isin"),
-      );
+      const isinError = result.error.issues.find((i) => JSON.stringify(i.path).includes("isin"));
       expect(isinError).toBeDefined();
     }
   });
@@ -158,8 +156,8 @@ describe("bondTradeExecutedPayloadSchema — cleanPrice validation", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const priceError = result.error.issues.find(
-        (i) => JSON.stringify(i.path).includes("cleanPrice"),
+      const priceError = result.error.issues.find((i) =>
+        JSON.stringify(i.path).includes("cleanPrice"),
       );
       expect(priceError).toBeDefined();
     }
