@@ -23,10 +23,11 @@ const _TILE_CATALOGUE = [
   }
 
   async function load() {
-    const [state, events, decisionReg] = await Promise.all([
+    const [state, events, decisionReg, reviewDebt] = await Promise.all([
       safeFetch("/api/state"),
       safeFetch("/api/events?limit=5"),
       safeFetch("/api/decisions-register"),
+      safeFetch("/api/review-debt"),
     ]);
 
     const openDecisions = decisionReg?.open ?? [];
@@ -38,6 +39,8 @@ const _TILE_CATALOGUE = [
       const workstreams = state?.inflightWorkstreams ?? state?.workstreams?.length ?? "—";
       const findings = state?.openFindings ?? "—";
       const obligations = state?.obligationsDueSoon ?? "—";
+      const reviewDepth = reviewDebt?.queue?.totalDepth;
+      const reviewLabel = (reviewDepth ?? 0).toString();
 
       const tiles = [
         SC.renderTile({
@@ -63,6 +66,13 @@ const _TILE_CATALOGUE = [
           value: obligations,
           href: "/obligations.html",
           status: obligations > 0 ? "warn" : "ok",
+        }),
+        SC.renderTile({
+          label: "Review Debt",
+          value: reviewLabel,
+          sub: reviewDebt?.queue ? "unreviewed obligations" : "—",
+          href: "/review-debt.html",
+          status: (reviewDepth ?? 0) > 0 ? "warn" : "ok",
         }),
       ];
       tilesEl.innerHTML = "";

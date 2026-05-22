@@ -93,6 +93,8 @@ import {
   rebuildCorrespondentRouting,
   rebuildLimitUtilisation,
 } from "../platform/projections/markets";
+import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-policy-coverage";
+import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
@@ -1833,6 +1835,33 @@ const server = Bun.serve({
       return jsonResponse({
         ...getSubstrateGapsView(REPO_ROOT),
         pageProvenance: substrateGapsPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/review-debt" && req.method === "GET") {
+      // WS-OBLIGATION-REVIEW-SUBSTRATE — combined output of the two
+      // obligation-review advisory recons. Powers the "Review debt"
+      // tile on home.html. Computed fresh on each request; the recons
+      // walk the obligations register markdown directly (no event-store
+      // pre-aggregation today).
+      // Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT.
+      // pageProvenance: production-only — register cites regulators
+      // (SARB / FIC / FSCA / PA), production reference data.
+      const statusResult = runObligationReviewStatusRecon(REPO_ROOT);
+      const coverageResult = runObligationPolicyCoverageRecon(REPO_ROOT);
+      return jsonResponse({
+        asOf: statusResult.asOf,
+        queue: statusResult.summary,
+        policyCoverage: {
+          coveragePct: coverageResult.overallCoveragePct,
+          coverageByDomain: coverageResult.coverageByDomain,
+          uncoveredCount: coverageResult.violations.length,
+        },
+        citations: [
+          "D-OBLIGATION-REVIEW-SUBSTRATE",
+          "D-KG-GRAPHITI-ADOPT",
+          "P2-SINGLE-GRAPH-DISCIPLINE",
+        ],
+        pageProvenance: productionReferencePageProvenance(),
       });
     }
     if (url.pathname === "/api/obligations" && req.method === "GET") {
