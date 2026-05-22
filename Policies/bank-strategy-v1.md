@@ -5,7 +5,7 @@ version: "1"
 status: DRAFT — PENDING CEO APPROVAL
 owner: Marc (CEO)
 effective-from: TBC — on CEO approval
-next-review: Annual; or on material change to business model, regulatory environment, or capital structure
+next-review: "2027-05-22"
 authors:
   - Scrooge (Chief of Staff, orchestration) — synthesised from governance-seat inputs
   - Helena (Chief Risk Officer, governance) — RAS, capital & risk appetite inputs
