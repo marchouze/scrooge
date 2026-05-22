@@ -60,6 +60,8 @@
 //       receivables, payment suspense, IRD derivatives, P&L accounts — none qualify.
 //
 // Authors: Bea (General Ledger Engineer, engineering)
+//   + Anya (Data / analytics engineer, engineering) — `isin` field added for
+//     D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 SecurityMaster HQLA override bridge.
 
 import { z } from "zod";
 
@@ -112,6 +114,30 @@ export interface CoaAccountEntry {
    * Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §54.
    */
   readonly hqlaAssetSpecificFactor?: number;
+  /**
+   * ISIN of the security held in this GL account.
+   *
+   * When present, the BA 325 generator will look up this ISIN in the
+   * SecurityMaster override map (`opts.hqlaOverrides`) and use the
+   * instrument-level HQLA classification in preference to the COA `hqlaLevel`
+   * tag. This enables per-instrument HQLA tier accuracy for bond / equity
+   * accounts that hold a single identifiable security.
+   *
+   * For accounts that aggregate multiple securities (e.g. a general bond
+   * portfolio account) do NOT set this field — the COA `hqlaLevel` tag
+   * applies uniformly and the override cannot disambiguate individual ISINs.
+   *
+   * Bridge note (D-FINANCIAL-INSTRUMENT-ENTITY Slice 9):
+   * No accounts currently carry an ISIN — the COA models GL positions, not
+   * individual securities. This field will be populated when bond seeds land
+   * (Slice 10) and bond-booking events pair instrumentId ↔ leafAccountId.
+   * Until then the override map is empty and the COA fallback drives all
+   * BA 325 HQLA stock calculations unchanged.
+   *
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+   * Citations: BA-325-LCR; BCBS-LCR-2013.
+   */
+  readonly isin?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -126,6 +152,8 @@ export const CoaAccountEntrySchema = z.object({
   hqlaLevel: z.enum(["level-1", "level-2a", "level-2b"]).optional(),
   hqlaSubCategory: z.string().optional(),
   hqlaAssetSpecificFactor: z.number().min(0).max(1).optional(),
+  // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9: ISIN bridge to SecurityMaster override map.
+  isin: z.string().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -531,5 +559,8 @@ export function coaToHqlaClassifications(): readonly AccountLiquidityClassificat
     ...(a.hqlaAssetSpecificFactor !== undefined
       ? { assetSpecificFactor: a.hqlaAssetSpecificFactor }
       : {}),
+    // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9: carry ISIN forward so the
+    // BA 325 generator can resolve SecurityMaster HQLA overrides per account.
+    ...(a.isin ? { isin: a.isin } : {}),
   }));
 }
