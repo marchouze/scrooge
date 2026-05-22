@@ -8,6 +8,7 @@
 // chain (CDM primitive → projection rule → presentation field).
 //
 // Author: Anya · M1 per D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07).
+// Updated: Anya (Data / analytics engineer, engineering) per D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
 
 import type { Event } from "../../event-store/types";
 import type {
@@ -15,6 +16,12 @@ import type {
   EquitySettlementInstructedPayload,
   EquityTradeBookedPayload,
 } from "../../markets/cdm/equity";
+import type {
+  FinancialInstrumentClassifiedPayload,
+  FinancialInstrumentDecomposedPayload,
+  FinancialInstrumentDefinedPayload,
+  FinancialInstrumentReconstitutedPayload,
+} from "../../markets/cdm/instrument";
 
 // ---------------------------------------------------------------------------
 // Strongly-typed event-shape narrows. The CDM module already validates the
@@ -41,6 +48,40 @@ export type EquityLifecycleEvent =
   | EquityTradeBookedEvent
   | EquityCorporateActionAppliedEvent
   | EquitySettlementInstructedEvent;
+
+// ---------------------------------------------------------------------------
+// FinancialInstrument typed event-shape narrows.
+//
+// Per D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22): four lifecycle
+// events for the unified FinancialInstrument entity. These aliases give
+// reducers and projections a typed Event view without re-parsing payloads.
+// ---------------------------------------------------------------------------
+
+export type FinancialInstrumentDefinedEvent = Event & {
+  readonly type: "FinancialInstrumentDefined";
+  readonly payload: FinancialInstrumentDefinedPayload;
+};
+
+export type FinancialInstrumentClassifiedEvent = Event & {
+  readonly type: "FinancialInstrumentClassified";
+  readonly payload: FinancialInstrumentClassifiedPayload;
+};
+
+export type FinancialInstrumentDecomposedEvent = Event & {
+  readonly type: "FinancialInstrumentDecomposed";
+  readonly payload: FinancialInstrumentDecomposedPayload;
+};
+
+export type FinancialInstrumentReconstitutedEvent = Event & {
+  readonly type: "FinancialInstrumentReconstituted";
+  readonly payload: FinancialInstrumentReconstitutedPayload;
+};
+
+export type FinancialInstrumentEvent =
+  | FinancialInstrumentDefinedEvent
+  | FinancialInstrumentClassifiedEvent
+  | FinancialInstrumentDecomposedEvent
+  | FinancialInstrumentReconstitutedEvent;
 
 // ---------------------------------------------------------------------------
 // Semantic-layer entry shape.
@@ -148,6 +189,83 @@ export const SEMANTIC_LAYER_ENTRIES: readonly SemanticLayerEntry[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// FinancialInstrument semantic-layer entries.
+//
+// Per D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22). Five named
+// quantities covering HQLA tier, IFRS 9 category, Basel risk weight,
+// SA-CCR asset class, and ACTUS contract type. Each carries the full
+// citation chain (CDM primitive → projection rule → presentation field).
+// ---------------------------------------------------------------------------
+
+export const FINANCIAL_INSTRUMENT_SEMANTIC_ENTRIES: readonly SemanticLayerEntry[] = [
+  {
+    id: "fi-instrument-hqla-level",
+    name: "Financial instrument HQLA tier",
+    definition:
+      "HQLA tier classification (level-1 / level-2a / level-2b / non-hqla) for an instrument, " +
+      "derived from the most-recent FinancialInstrumentClassified event for that instrumentId.",
+    cdmPrimitive: "FinancialInstrumentClassified.hqlaLevel",
+    projectionRule:
+      "markets.security-master — latest FinancialInstrumentClassified.hqlaLevel per instrumentId",
+    presentationField: "SecurityMaster ▸ Classification ▸ HQLA tier",
+    citations: ["BA-325-LCR", "BCBS-LCR-2013", "D-FINANCIAL-INSTRUMENT-ENTITY"],
+    unit: "tier-enum",
+  },
+  {
+    id: "fi-instrument-ifrs9-category",
+    name: "IFRS 9 measurement category",
+    definition:
+      "IFRS 9 §4.1 measurement category (amortised-cost / fvtoci / fvtpl / n-a) for an instrument, " +
+      "derived from the most-recent FinancialInstrumentClassified event for that instrumentId.",
+    cdmPrimitive: "FinancialInstrumentClassified.ifrs9Category",
+    projectionRule:
+      "markets.security-master — latest FinancialInstrumentClassified.ifrs9Category per instrumentId",
+    presentationField: "SecurityMaster ▸ Classification ▸ IFRS 9 category",
+    citations: ["IFRS-9-§4.1", "D-FINANCIAL-INSTRUMENT-ENTITY"],
+    unit: "category-enum",
+  },
+  {
+    id: "fi-instrument-basel-risk-weight",
+    name: "Basel SA risk weight",
+    definition:
+      "Basel III standardised-approach risk weight (0pct / 20pct / 50pct / 100pct / 150pct / deducted) " +
+      "for an instrument, driving RWA computation for capital adequacy.",
+    cdmPrimitive: "FinancialInstrumentClassified.baselRiskWeight",
+    projectionRule:
+      "markets.security-master — latest FinancialInstrumentClassified.baselRiskWeight per instrumentId",
+    presentationField: "SecurityMaster ▸ Classification ▸ Basel risk weight",
+    citations: ["BCBS-SA-2017", "RRB-REG-23", "D-FINANCIAL-INSTRUMENT-ENTITY"],
+    unit: "percent-enum",
+  },
+  {
+    id: "fi-instrument-sacr-asset-class",
+    name: "SA-CCR asset class",
+    definition:
+      "SA-CCR asset class (interest-rate / fx / credit / equity / commodity / n-a) for an instrument, " +
+      "used in derivative exposure-at-default calculation under BCBS 279.",
+    cdmPrimitive: "FinancialInstrumentClassified.saCcrAssetClass",
+    projectionRule:
+      "markets.security-master — latest FinancialInstrumentClassified.saCcrAssetClass per instrumentId",
+    presentationField: "SecurityMaster ▸ Classification ▸ SA-CCR asset class",
+    citations: ["BCBS-279", "RRB-REG-23-APP-I", "D-FINANCIAL-INSTRUMENT-ENTITY"],
+    unit: "asset-class-enum",
+  },
+  {
+    id: "fi-instrument-actus-type",
+    name: "ACTUS contract type",
+    definition:
+      "ACTUS Financial Research Foundation contract-type code (PAM / STK / IRS / FXOUT / CLM / CSH / ZCB / CMP) " +
+      "assigned at instrument definition; immutable after the FinancialInstrumentDefined event is appended.",
+    cdmPrimitive: "FinancialInstrumentDefined.actusContractType",
+    projectionRule:
+      "markets.security-master — FinancialInstrumentDefined.actusContractType, immutable after definition",
+    presentationField: "SecurityMaster ▸ Definition ▸ ACTUS contract type",
+    citations: ["ACTUS-FRF-V1.1", "D-FINANCIAL-INSTRUMENT-ENTITY"],
+    unit: "contract-type-enum",
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Markets-projection identifiers — stable names used by the runtime
 // registration event (`MarketsProjectionRegistered.payload.projectionName`)
 // and by Vera's reconciliation harness.
@@ -157,6 +275,7 @@ export const MARKETS_PROJECTION_NAMES = [
   "markets.trade-record",
   "markets.position",
   "markets.sub-ledger",
+  "markets.security-master",
 ] as const;
 
 export type MarketsProjectionName = (typeof MARKETS_PROJECTION_NAMES)[number];

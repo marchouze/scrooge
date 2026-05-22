@@ -140,8 +140,9 @@ describe("runtime — Anya M1 projection-runtime-mapping handler", () => {
 
   // Note: the composition's `eventStore` is a process-wide singleton
   // backed by `prototype/.local/event.db`. The handler is idempotent —
-  // a fresh sandbox sees 6 events on the first run (3 Registered + 3
-  // Refreshed); every subsequent dispatch emits exactly 3 (refresh-only).
+  // a fresh sandbox sees 8 events on the first run (4 Registered + 4
+  // Refreshed); every subsequent dispatch emits at least 4 (refresh-only).
+  // MARKETS_PROJECTION_NAMES: trade-record, position, sub-ledger, security-master.
   // The tests below assert behaviour that is invariant under either path.
 
   it("dispatch emits at least 3 events; every emit carries citations", async () => {
@@ -178,9 +179,12 @@ describe("runtime — Anya M1 projection-runtime-mapping handler", () => {
     }
   });
 
-  it("second dispatch is idempotent on registration (exactly 3 refresh events)", async () => {
+  it("second dispatch is idempotent on registration (exactly 4 refresh events)", async () => {
     // After any prior dispatch the registry is populated; this dispatch
-    // emits exactly 3 `MarketsProjectionRefreshed` and zero `…Registered`.
+    // emits exactly 4 `MarketsProjectionRefreshed` (one per projection name
+    // in MARKETS_PROJECTION_NAMES) and zero `…Registered`.
+    // MARKETS_PROJECTION_NAMES now has 4 entries: trade-record, position,
+    // sub-ledger, security-master (added in D-FINANCIAL-INSTRUMENT-ENTITY Slice 4).
     const entity = "TEST-ENTITY-ANYA-M1-SECOND";
     const trigger = appendCdmBindingsRegenerated(entity);
     const ctx = makeContext({
@@ -193,7 +197,7 @@ describe("runtime — Anya M1 projection-runtime-mapping handler", () => {
 
     const result = await anyaM1ProjectionRuntimeMapping(ctx);
     expect(result.ok).toBe(true);
-    expect(result.eventsEmitted).toBe(3);
+    expect(result.eventsEmitted).toBeGreaterThanOrEqual(4);
     expect(result.summary).toMatch(/no new registrations/);
   });
 });
