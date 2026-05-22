@@ -118,7 +118,7 @@ export interface CoaAccountEntry {
 // Zod schema for runtime validation
 // ---------------------------------------------------------------------------
 
-export const CoaAccountEntrySchema: z.ZodType<CoaAccountEntry> = z.object({
+export const CoaAccountEntrySchema = z.object({
   id: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/),
   name: z.string().min(1),
   category: z.string().min(1),
@@ -522,14 +522,14 @@ export const COA_BY_ID: ReadonlyMap<string, CoaAccountEntry> = new Map(
  * Citations: BCBS D295 §II.A; SARB BA 325; Reg 26(7).
  */
 export function coaToHqlaClassifications(): readonly AccountLiquidityClassification[] {
-  return COA_ACCOUNTS.filter((a): a is CoaAccountEntry & { hqlaLevel: HqlaLevel } => a.hqlaLevel !== undefined).map(
-    (a) => ({
-      leafAccountId: a.id,
-      hqlaLevel: a.hqlaLevel,
-      ...(a.hqlaSubCategory ? { subCategory: a.hqlaSubCategory } : {}),
-      ...(a.hqlaAssetSpecificFactor !== undefined
-        ? { assetSpecificFactor: a.hqlaAssetSpecificFactor }
-        : {}),
-    }),
-  );
+  return COA_ACCOUNTS.filter(
+    (a): a is CoaAccountEntry & { hqlaLevel: HqlaLevel } => a.hqlaLevel !== undefined,
+  ).map((a) => ({
+    leafAccountId: a.id,
+    hqlaLevel: a.hqlaLevel,
+    ...(a.hqlaSubCategory ? { subCategory: a.hqlaSubCategory } : {}),
+    ...(a.hqlaAssetSpecificFactor !== undefined
+      ? { assetSpecificFactor: a.hqlaAssetSpecificFactor }
+      : {}),
+  }));
 }
