@@ -404,6 +404,38 @@
           text: "Finance page capital/liquidity projections — CET1 ~407%, LCR/NSFR, leverage tiles live on dashboard",
           ref: "PR #709",
         },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slice 1 — FinancialInstrument entity schema (Zod, ISIN, assetClass, ACTUS discriminator)",
+          ref: "PR #742",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slice 2 — financial-instrument lifecycle registry entries (trade lifecycle wiring)",
+          ref: "PR #743",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slice 3 — SecurityMaster projection (instrument registry, HQLA tier lookup)",
+          ref: "PR #744",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slices 4 & 5 — semantic-layer registry + ACTUS→DCAM contract-terms mapping",
+          ref: "PR #746",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slices 6–8 — optional instrumentId on equity, IRS, and FX CDM events",
+          ref: "PRs #747 #748 #749",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slices 9 & 10 — SecurityMaster HQLA override in BA 325 LCR; BondTradeExecuted CDM schema + SA govt bond seeds",
+          ref: "PR #750",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slice 11 — unified cross-asset position projection (FX + equity + bond + IRS in single view)",
+          ref: "PR #751",
+        },
+        {
+          text: "D-FINANCIAL-INSTRUMENT-ENTITY Slice 12 — bond lifecycle events wired into GL posting engine (PR-BOND-001/001T/EIR/002/MAT/SALE)",
+          ref: "PR #752",
+        },
       ],
       inflight: [
         { text: "Markets franchise design proposal (Saskia)", ref: "WS-MARKETS-FRANCHISE" },
