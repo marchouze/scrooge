@@ -42,16 +42,136 @@ const DEFAULT_MAX_TOKENS_STREAMING = 64_000;
 // Effort + thinking depth are the other levers.
 const MODEL = process.env.BANK_CLAUDE_MODEL ?? DEFAULT_MODEL;
 
-// USD per 1M tokens — 2026-05-15. Update when Anthropic reprices.
-const MODEL_PRICING: Record<string, { inputPer1M: number; outputPer1M: number }> = {
-  "claude-opus-4-7": { inputPer1M: 15.0, outputPer1M: 75.0 },
-  "claude-sonnet-4-6": { inputPer1M: 3.0, outputPer1M: 15.0 },
-  "claude-haiku-4-5": { inputPer1M: 0.8, outputPer1M: 4.0 },
+// ---------------------------------------------------------------------------
+// Model capability matrix
+// ---------------------------------------------------------------------------
+//
+// Source of truth: https://docs.anthropic.com/en/docs/about-claude/models/overview
+// Last reconciled with docs: 2026-05-22. The unit test in `claude.test.ts`
+// pins this date and asserts the matrix shape; when Anthropic publishes new
+// capability rows update both the matrix and the cutoff string together.
+//
+// Why this exists: PR #733 added an ad-hoc `/haiku/i` regex to drop the
+// `thinking` + `output_config.effort` params when calling Haiku — Haiku
+// models reject both with HTTP 400, but Opus/Sonnet accept them. The
+// regex works for the single capability gap that pushed it in, but every
+// new model release that supports/rejects a param needs another patch.
+// The matrix gives every capability a typed cell so the runtime branches
+// on data, not on string matching.
+//
+// `supportsThinking` here means "supports the `thinking: { type: 'adaptive' }`
+// request parameter as currently used in `generateNarrative`". Per the
+// 2026-05-22 docs, Adaptive thinking is a 4.6+ feature; Haiku 4.5 supports
+// Extended thinking (`type: "enabled"`) but rejects Adaptive — so haiku
+// rows are `false` here. If the runtime later adds an Extended-thinking
+// code path it gets its own flag.
+//
+// `supportsEffort` reflects `output_config.effort`. Haiku 4.5 rejects this
+// with a 400 (observed live during Mira's WS-ONTOLOGY-REG-EXTRACTION run
+// on 2026-05-22; PR #733). Legacy models (Sonnet 4.5) predate the param
+// and are conservatively `false`.
+
+export interface ModelCapabilities {
+  /** Supports `thinking: { type: "adaptive" }` as currently used by `generateNarrative`. */
+  readonly supportsThinking: boolean;
+  /** Supports `output_config: { effort: ... }`. */
+  readonly supportsEffort: boolean;
+  /** Max output tokens (synchronous Messages API; Batch API beta can extend). */
+  readonly maxOutputTokens: number;
+  /** Supports tool use / function calling. */
+  readonly supportsToolUse: boolean;
+  /** Supports image / vision input. */
+  readonly supportsVision: boolean;
+  /** USD per 1M input tokens (Claude API list price; ignores cache + batch). */
+  readonly inputPer1M: number;
+  /** USD per 1M output tokens. */
+  readonly outputPer1M: number;
+}
+
+/** Date of last reconciliation against Anthropic's model docs. */
+export const MODEL_CAPABILITIES_CUTOFF = "2026-05-22";
+
+export const MODEL_CAPABILITIES = {
+  "claude-opus-4-7": {
+    supportsThinking: true,
+    supportsEffort: true,
+    maxOutputTokens: 128_000,
+    supportsToolUse: true,
+    supportsVision: true,
+    inputPer1M: 5.0,
+    outputPer1M: 25.0,
+  },
+  "claude-sonnet-4-6": {
+    supportsThinking: true,
+    supportsEffort: true,
+    maxOutputTokens: 64_000,
+    supportsToolUse: true,
+    supportsVision: true,
+    inputPer1M: 3.0,
+    outputPer1M: 15.0,
+  },
+  // Legacy. Predates adaptive thinking + output_config.effort (both are 4.6+
+  // features per the docs `Latest models comparison` table). Tool use and
+  // vision were supported from the 4.x line onward.
+  "claude-sonnet-4-5": {
+    supportsThinking: false,
+    supportsEffort: false,
+    maxOutputTokens: 64_000,
+    supportsToolUse: true,
+    supportsVision: true,
+    inputPer1M: 3.0,
+    outputPer1M: 15.0,
+  },
+  "claude-haiku-4-5": {
+    supportsThinking: false,
+    supportsEffort: false,
+    maxOutputTokens: 64_000,
+    supportsToolUse: true,
+    supportsVision: true,
+    inputPer1M: 1.0,
+    outputPer1M: 5.0,
+  },
+  // Haiku 4.6 is anticipated; not yet listed in Anthropic's model docs at
+  // the 2026-05-22 cutoff. We pre-seed the row with the Haiku 4.5 capability
+  // shape so callers that opt in via BANK_CLAUDE_MODEL don't 400 silently.
+  // Refresh this row (and `MODEL_CAPABILITIES_CUTOFF`) once the model
+  // appears in the docs `Latest models comparison` table.
+  "claude-haiku-4-6": {
+    supportsThinking: false,
+    supportsEffort: false,
+    maxOutputTokens: 64_000,
+    supportsToolUse: true,
+    supportsVision: true,
+    inputPer1M: 1.0,
+    outputPer1M: 5.0,
+  },
+} as const satisfies Record<string, ModelCapabilities>;
+
+export type KnownModel = keyof typeof MODEL_CAPABILITIES;
+
+// Conservative fallback when an unknown model id is configured (typo,
+// preview model, future release). Drops every advanced param so the call
+// at least succeeds; the runtime emits a debug log when this branch fires.
+const FALLBACK_CAPABILITIES: ModelCapabilities = {
+  supportsThinking: false,
+  supportsEffort: false,
+  maxOutputTokens: 64_000,
+  supportsToolUse: true,
+  supportsVision: true,
+  inputPer1M: 5.0,
+  outputPer1M: 25.0,
 };
 
+export function getModelCapabilities(model: string): ModelCapabilities {
+  const cap = (MODEL_CAPABILITIES as Record<string, ModelCapabilities | undefined>)[model];
+  if (cap) return cap;
+  logger.debug({ model }, "model not in capability matrix; using conservative fallback");
+  return FALLBACK_CAPABILITIES;
+}
+
 function estimateCost(model: string, inputTokens: number, outputTokens: number): number {
-  const pricing = MODEL_PRICING[model] ?? { inputPer1M: 15.0, outputPer1M: 75.0 };
-  return (inputTokens * pricing.inputPer1M + outputTokens * pricing.outputPer1M) / 1_000_000;
+  const { inputPer1M, outputPer1M } = getModelCapabilities(model);
+  return (inputTokens * inputPer1M + outputTokens * outputPer1M) / 1_000_000;
 }
 
 let cachedClient: Anthropic | null = null;
@@ -156,17 +276,25 @@ export async function generateNarrative(req: NarrativeRequest): Promise<Narrativ
   const maxTokens = req.maxTokens ?? DEFAULT_MAX_TOKENS_STREAMING;
   const effort = req.effort ?? "high";
 
-  // Adaptive thinking + output_config.effort are supported on Opus 4.7 +
-  // Sonnet 4.6 only. Haiku models reject both with a 400. Drop them when
-  // the active model doesn't support them so the bulk-extraction pipeline
-  // (Mira's WS-ONTOLOGY-REG-EXTRACTION) can run on claude-haiku-4-5.
-  const supportsAdvancedControls = !/haiku/i.test(MODEL);
-  const thinking = supportsAdvancedControls
+  // Look up per-model capabilities (see `MODEL_CAPABILITIES` above) instead
+  // of pattern-matching on the model name. Models that reject `thinking` or
+  // `output_config.effort` with HTTP 400 (Haiku 4.5/4.6, legacy Sonnet 4.5)
+  // have those params dropped silently with a debug log; callers don't have
+  // to know which model is wired in.
+  const capabilities = getModelCapabilities(MODEL);
+  const thinking = capabilities.supportsThinking
     ? req.displayThinking
       ? { type: "adaptive" as const, display: "summarized" as const }
       : { type: "adaptive" as const }
     : undefined;
-  const outputConfig = supportsAdvancedControls ? { effort } : undefined;
+  const outputConfig = capabilities.supportsEffort ? { effort } : undefined;
+
+  if (!capabilities.supportsThinking && req.displayThinking) {
+    logger.debug({ model: MODEL }, "model does not support adaptive thinking; dropping param");
+  }
+  if (!capabilities.supportsEffort && req.effort !== undefined) {
+    logger.debug({ model: MODEL }, "model does not support output_config.effort; dropping param");
+  }
 
   const stream = client.messages.stream({
     model: MODEL,
