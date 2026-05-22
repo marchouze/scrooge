@@ -29,3 +29,7 @@ export { getLimitUtilisations, rebuildLimitUtilisation } from "./limit-utilisati
 
 export type { CorrespondentRoutingRow, HerstattRisk, SchemeType } from "./correspondent-routing";
 export { getCorrespondentRouting, rebuildCorrespondentRouting } from "./correspondent-routing";
+
+// D-FINANCIAL-INSTRUMENT-ENTITY Slice 3 — SecurityMaster projection
+export type { SecurityMasterRow, SecurityMasterState } from "./security-master";
+export { securityMasterInitial, securityMasterProjection } from "./security-master";
