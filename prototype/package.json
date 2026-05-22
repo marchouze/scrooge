@@ -44,7 +44,7 @@
     "backfill:policy-activations": "bun run scripts/backfill-policy-version-activated-valuation-v1.ts",
     "backfill:authority-briefs-2026-05-18": "bun run scripts/backfill-authority-briefs-2026-05-18.ts",
     "backfill:aggregate-ids": "bun run scripts/migrate/backfill-aggregate-ids.ts",
-    "backfill:policy-documents": "bun run scripts/backfill-document-registered-2026-05-12.ts && bun run scripts/backfill-document-registered-2026-05-14.ts",
+    "backfill:policy-documents": "bun run scripts/backfill-document-registered-2026-05-12.ts && bun run scripts/backfill-document-registered-2026-05-14.ts && bun run scripts/backfill-document-registered-2026-05-22b.ts",
     "backfill:rms-recordfiled-manifest": "bun run scripts/backfill/rms-recordfiled-manifest.ts",
     "rms:backfill-documents": "bun run scripts/backfill-document-register.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
