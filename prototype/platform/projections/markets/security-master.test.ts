@@ -12,8 +12,8 @@
 //   7. Unknown event types leave state unchanged.
 //   8. FinancialInstrumentClassified for unknown instrumentId is a no-op.
 //
-// Note: contractTerms uses `{}` as a stub. Per-type ACTUS field validation
-// lands in Slice 5 (.superRefine extensions on the payload schemas).
+// Note: contractTerms use minimal valid values per per-type ACTUS field
+// validation added in Slice 5 (.superRefine on the payload schemas).
 //
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
 // Author: Anya (Data / Analytics Engineer, engineering)
@@ -76,8 +76,12 @@ function makeBondDefined(instrumentId = "fi:bond:ZAG000149017", isin = "ZAG00014
       jurisdiction: "ZA",
       legalEntityId: LEGAL_ENTITY_ID,
       maturityDate: "2030-01-31",
-      // contractTerms: {} — per-type validation lands in Slice 5
-      contractTerms: {},
+      // PAM requires nominalInterestRate, dayCountConvention, paymentFrequency
+      contractTerms: {
+        nominalInterestRate: 0.085,
+        dayCountConvention: "ACT/365",
+        paymentFrequency: "semi-annual",
+      },
     },
   });
 }
@@ -100,7 +104,8 @@ function makeEquityDefined(instrumentId = "fi:equity:JSE:SOL") {
       jurisdiction: "ZA",
       legalEntityId: LEGAL_ENTITY_ID,
       maturityDate: undefined,
-      contractTerms: {},
+      // STK requires dividendFrequency
+      contractTerms: { dividendFrequency: "annual" },
     },
   });
 }
@@ -119,6 +124,7 @@ function makeCashDefined(instrumentId = "fi:csh:ZAR") {
       currency: "ZAR",
       jurisdiction: "ZA",
       legalEntityId: LEGAL_ENTITY_ID,
+      // CSH has no mandatory contractTerms fields
       contractTerms: {},
     },
   });
@@ -144,7 +150,11 @@ describe("SecurityMasterProjection — FinancialInstrumentDefined", () => {
     expect(row?.jurisdiction).toBe("ZA");
     expect(row?.legalEntityId).toBe(LEGAL_ENTITY_ID);
     expect(row?.maturityDate).toBe("2030-01-31");
-    expect(row?.contractTerms).toEqual({});
+    expect(row?.contractTerms).toEqual({
+      nominalInterestRate: 0.085,
+      dayCountConvention: "ACT/365",
+      paymentFrequency: "semi-annual",
+    });
     expect(row?.eventCount).toBe(1);
   });
 

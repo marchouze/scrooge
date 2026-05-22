@@ -17,9 +17,9 @@ import type {
   EquityTradeBookedPayload,
 } from "../../markets/cdm/equity";
 import type {
-  FinancialInstrumentDefinedPayload,
   FinancialInstrumentClassifiedPayload,
   FinancialInstrumentDecomposedPayload,
+  FinancialInstrumentDefinedPayload,
   FinancialInstrumentReconstitutedPayload,
 } from "../../markets/cdm/instrument";
 
