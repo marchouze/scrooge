@@ -138,6 +138,7 @@
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-post-implementation-review.md`](by-policy/product-post-implementation-review.md) (PROC-MK-NPA-PIR-01 — stage 6 PIR convening) | Saskia + Devon | **POPULATED** |
 | New Product Approval (D-NEW-PRODUCT-APPROVAL-POLICY) | [`product-retirement-migration.md`](by-policy/product-retirement-migration.md) (PROC-MK-NPA-RET-01 — stage 8 open-position migration) | Saskia + Imani + Tomas | **POPULATED** |
 | New Product Approval | [`npa-gate.md`](by-policy/npa-gate.md) (PROC-NPA-GATE-01 — stage-4 gate; four-party attestation cycle; `ProductApproved` gate event; controlled-launch configuration; handoff to stage 5 via `ProductLaunched`) | Saskia · Helena · Camille · Zara | **POPULATED** |
+| Securities Financing Policy v1 · Collateral Management Policy v1 · Trading Mandate v1 | [`repo-booking.md`](by-policy/repo-booking.md) (PROC-MK-REPO-01 — end-to-end repo and reverse-repo lifecycle: trade capture (GMRA gate + mandate headroom + collateral eligibility); T+0 electronic confirmation; STRATE DvP settlement; daily MTM + GMRA §4 margin call (10:00/14:00 escalation ladder + §10 close-out); maturity settlement; early termination with interest accrual; seven typed events in the recon chain; settlement fail → PROC-OPS-SFBCP-01; counterparty default → Helena + Marc; six substrate gaps; seven Vera recon assertions) | Saskia (Head of Global Markets, governance) · Bea (Accounting & financial reporting engineer, engineering) | **POPULATED** |
 
 ## Markets — OTC Derivative Provider (FMA / FSCA)
 
