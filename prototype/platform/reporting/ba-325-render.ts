@@ -68,6 +68,21 @@ const ba325HqlaLevel1Schema = z.object({
 });
 
 /**
+ * G-3 input-completeness meta block (mirrors `Ba325InputCompleteness` from
+ * the projection layer). Surfaced in the rendered output so downstream
+ * consumers (regulator-portal slice, PDF renderer, dashboard, recon) can
+ * distinguish "no-data" from "no-stress" and warn on partial-data renders.
+ */
+const ba325InputCompletenessSchema = z.object({
+  hqlaInputsFound: z.number().int().nonnegative(),
+  outflowInputsFound: z.number().int().nonnegative(),
+  inflowInputsFound: z.number().int().nonnegative(),
+  excludedByFilter: z.number().int().nonnegative(),
+  excludedReasons: z.record(z.string(), z.number().int().nonnegative()),
+  completenessClass: z.enum(["complete", "partial", "empty"]),
+});
+
+/**
  * Canonical JSON schema for a rendered BA 325. Downstream consumers
  * (regulator-portal slice, PDF renderer, dashboard pixel-perfect view)
  * validate inputs against this shape.
@@ -85,6 +100,7 @@ export const Ba325RenderSchema = z.object({
     rendererVersion: z.literal("v0.1"),
     trialBalanceSnapshotEventId: z.string().min(1).optional(),
     classificationsFingerprint: z.string().min(1),
+    inputCompleteness: ba325InputCompletenessSchema,
     renderedAt: z.string().min(1),
   }),
   hqla: z.object({
@@ -109,13 +125,23 @@ export const Ba325RenderSchema = z.object({
   }),
   /**
    * LCR encoded as a string to preserve `Infinity` (which is not valid
-   * JSON). The renderer encodes finite ratios as `"1.234"` (4 decimals)
-   * and the divide-by-zero case as `"infinity"`.
+   * JSON). The renderer encodes finite ratios as `"1.234"` (4 decimals),
+   * the divide-by-zero case with HQLA stock as `"infinity"` ("no stress"),
+   * and the divide-by-zero case with NO input events at all as `"no-data"`
+   * (G-3: distinguishes empty-input from genuinely-stress-free).
    */
   lcrRatio: z.string().min(1),
   /** Render-side percentage form for the SARB BA 325 cell display. */
   lcrPercent: z.string().min(1),
   lcrCompliant: z.boolean(),
+  /**
+   * G-3: set when `meta.inputCompleteness.completenessClass === "partial"`
+   * — the LCR was computed from real inputs but at least one candidate
+   * settlement event was excluded by the fold (filter, window, all-foreign
+   * legs, or zero-net-cash). Renderers should warn the user / regulator
+   * that the displayed ratio may understate stress coverage.
+   */
+  dataQualityWarning: z.boolean().optional(),
   citations: z.array(z.string().min(1)),
   placeholders: z.array(z.string().min(1)),
 });
@@ -147,10 +173,23 @@ export interface RenderBa325Options {
  * `renderedAt`.
  */
 export function renderBa325ToJson(output: Ba325Output, opts: RenderBa325Options): Ba325Render {
-  const lcrRatio = Number.isFinite(output.lcrRatio) ? output.lcrRatio.toFixed(4) : "infinity";
-  const lcrPercent = Number.isFinite(output.lcrRatio)
-    ? `${(output.lcrRatio * 100).toFixed(2)}%`
-    : "infinity";
+  // G-3: when the input set is empty (zero HQLA + zero cash-flow events of
+  // any kind passed the fold), encode the ratio as `"no-data"` rather than
+  // `"infinity"`. `"infinity"` retains its prior meaning — non-empty HQLA
+  // with zero outflows ("no stress to cover").
+  const completenessClass = output.meta.inputCompleteness.completenessClass;
+  let lcrRatio: string;
+  let lcrPercent: string;
+  if (completenessClass === "empty") {
+    lcrRatio = "no-data";
+    lcrPercent = "no-data";
+  } else if (Number.isFinite(output.lcrRatio)) {
+    lcrRatio = output.lcrRatio.toFixed(4);
+    lcrPercent = `${(output.lcrRatio * 100).toFixed(2)}%`;
+  } else {
+    lcrRatio = "infinity";
+    lcrPercent = "infinity";
+  }
 
   const meta: Ba325Render["meta"] = {
     form: output.meta.form,
@@ -165,6 +204,14 @@ export function renderBa325ToJson(output: Ba325Output, opts: RenderBa325Options)
       ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
       : {}),
     classificationsFingerprint: output.meta.classificationsFingerprint,
+    inputCompleteness: {
+      hqlaInputsFound: output.meta.inputCompleteness.hqlaInputsFound,
+      outflowInputsFound: output.meta.inputCompleteness.outflowInputsFound,
+      inflowInputsFound: output.meta.inputCompleteness.inflowInputsFound,
+      excludedByFilter: output.meta.inputCompleteness.excludedByFilter,
+      excludedReasons: { ...output.meta.inputCompleteness.excludedReasons },
+      completenessClass: output.meta.inputCompleteness.completenessClass,
+    },
     renderedAt: opts.renderedAt,
   };
 
@@ -176,6 +223,7 @@ export function renderBa325ToJson(output: Ba325Output, opts: RenderBa325Options)
     lcrRatio,
     lcrPercent,
     lcrCompliant: output.lcrCompliant,
+    ...(completenessClass === "partial" ? { dataQualityWarning: true } : {}),
     citations: [...output.citations],
     placeholders: [...output.placeholders],
   };
