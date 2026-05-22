@@ -66,6 +66,15 @@ export const fxPositionRevaluedPayloadSchema = z.object({
    * or "bloomberg-bfix" per Bea spec §7 rate-feed integration.
    */
   rateSource: z.string().min(1),
+  /**
+   * Optional reference to the FinancialInstrument entity. Mirrors the
+   * `instrumentId` on the originating FxTradeExecuted; enables projection
+   * queries to group revaluations by instrument.
+   * Absent for legacy events emitted before D-FINANCIAL-INSTRUMENT-ENTITY landed.
+   *
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+   */
+  instrumentId: z.string().min(1).optional(),
 });
 
 export type FxPositionRevaluedPayload = z.infer<typeof fxPositionRevaluedPayloadSchema>;
