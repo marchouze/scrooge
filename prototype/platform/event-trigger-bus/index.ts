@@ -61,7 +61,12 @@ export type {
   TickResult,
 } from "./types";
 
-export { LocalEventTriggerBus, defaultBusSource, inMemoryBusSource, createInProcessBusRunner } from "./bus";
+export {
+  LocalEventTriggerBus,
+  defaultBusSource,
+  inMemoryBusSource,
+  createInProcessBusRunner,
+} from "./bus";
 export type { BusRunner, BusRunnerResult, BusSource, LocalEventTriggerBusConfig } from "./bus";
 export { ScheduledTriggerConsumer } from "./scheduled-trigger-consumer";
 export type {

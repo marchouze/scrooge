@@ -24,13 +24,13 @@
 
 import { resolve } from "node:path";
 
+import { newEventId } from "../core/types";
 import { makeSubstrateAlert } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
-import { logger } from "../observability/logger";
 import type { BusRunner, BusRunnerResult } from "../event-trigger-bus/bus";
+import { logger } from "../observability/logger";
 import type { WorkerInMessage, WorkerOutMessage } from "./worker-entry";
-import { newEventId } from "../core/types";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -104,7 +104,13 @@ export function createBunWorkerBusRunner(config: BunWorkerBusRunnerConfig): BusR
   // Helper — emit a SubstrateAlert to the eventStore. Best-effort: logs on
   // append failure but does not re-throw so the caller always gets a clean
   // BusRunnerResult.
-  function emitAlert(alertId: string, alertClass: "integrity" | "latency" | "capacity" | "inactivity", severity: "low" | "medium" | "high", message: string, agentUrn?: string): void {
+  function emitAlert(
+    alertId: string,
+    alertClass: "integrity" | "latency" | "capacity" | "inactivity",
+    severity: "low" | "medium" | "high",
+    message: string,
+    agentUrn?: string,
+  ): void {
     try {
       config.eventStore.append(
         makeSubstrateAlert({
@@ -153,7 +159,7 @@ export function createBunWorkerBusRunner(config: BunWorkerBusRunnerConfig): BusR
         `bun-worker-bus-runner: agent ${agentUrn} is at in-flight cap (${current}/${maxConcurrent}); dispatch skipped`,
         agentUrn,
       );
-      return { ok: false, eventsEmitted: 0 };
+      return { ok: false };
     }
 
     // Increment the in-flight counter.
@@ -163,22 +169,27 @@ export function createBunWorkerBusRunner(config: BunWorkerBusRunnerConfig): BusR
     let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
     try {
-      worker = new Worker(workerUrl, { type: "module" });
+      const spawnedWorker = new Worker(workerUrl, { type: "module" });
+      worker = spawnedWorker;
 
       // Race worker response against timeout.
       const result = await new Promise<WorkerOutMessage>((resolve, reject) => {
         // Timeout path.
         timeoutHandle = setTimeout(() => {
-          reject(new Error(`bun-worker-bus-runner: worker timeout after ${timeoutMs}ms (agent=${agentUrn} trigger=${args.trigger})`));
+          reject(
+            new Error(
+              `bun-worker-bus-runner: worker timeout after ${timeoutMs}ms (agent=${agentUrn} trigger=${args.trigger})`,
+            ),
+          );
         }, timeoutMs);
 
         // Worker success/failure.
-        worker!.onmessage = (ev: MessageEvent<WorkerOutMessage>) => {
+        spawnedWorker.onmessage = (ev: MessageEvent<WorkerOutMessage>) => {
           clearTimeout(timeoutHandle);
           resolve(ev.data);
         };
 
-        worker!.onerror = (err: ErrorEvent) => {
+        spawnedWorker.onerror = (err: ErrorEvent) => {
           clearTimeout(timeoutHandle);
           reject(new Error(err.message ?? "worker error"));
         };
@@ -191,7 +202,7 @@ export function createBunWorkerBusRunner(config: BunWorkerBusRunnerConfig): BusR
           worktreeRoot: config.worktreeRoot,
           dryRun: false,
         };
-        worker!.postMessage(msg);
+        spawnedWorker.postMessage(msg);
       });
 
       if (!result.ok) {
@@ -205,7 +216,7 @@ export function createBunWorkerBusRunner(config: BunWorkerBusRunnerConfig): BusR
         );
       }
 
-      return { ok: result.ok, eventsEmitted: result.eventsEmitted };
+      return { ok: result.ok };
     } catch (err) {
       const errMsg = (err as Error).message ?? String(err);
       const isTimeout = errMsg.includes("worker timeout");
@@ -241,7 +252,7 @@ export function createBunWorkerBusRunner(config: BunWorkerBusRunnerConfig): BusR
         );
       }
 
-      return { ok: false, eventsEmitted: 0 };
+      return { ok: false };
     } finally {
       clearTimeout(timeoutHandle);
       worker?.terminate();

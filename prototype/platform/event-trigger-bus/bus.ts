@@ -74,7 +74,11 @@ export type BusRunner = (args: {
  * name their runner choice at construction time.
  */
 export function createInProcessBusRunner(
-  innerRunner: (args: { agent: string; trigger: string; triggeringEvents: readonly Event[] }) => Promise<BusRunnerResult>,
+  innerRunner: (args: {
+    agent: string;
+    trigger: string;
+    triggeringEvents: readonly Event[];
+  }) => Promise<BusRunnerResult>,
 ): BusRunner {
   return (args) => innerRunner(args);
 }

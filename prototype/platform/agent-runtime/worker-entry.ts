@@ -1,3 +1,4 @@
+/// <reference lib="WebWorker" />
 // platform/agent-runtime/worker-entry.ts
 //
 // S8 §3.4 A4 — Bun Worker entry-point for out-of-process agent isolation.

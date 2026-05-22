@@ -144,8 +144,8 @@ export class ScheduledTriggerConsumer {
       if (!config.eventDbPath || !config.worktreeRoot) {
         throw new Error(
           "ScheduledTriggerConsumer: when no runner is provided, " +
-          "eventDbPath and worktreeRoot must both be set so the default " +
-          "BunWorkerBusRunner can initialise the worker composition root.",
+            "eventDbPath and worktreeRoot must both be set so the default " +
+            "BunWorkerBusRunner can initialise the worker composition root.",
         );
       }
       this.runner = createBunWorkerBusRunner({

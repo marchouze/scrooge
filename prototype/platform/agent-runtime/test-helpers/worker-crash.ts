@@ -1,3 +1,4 @@
+/// <reference lib="WebWorker" />
 // platform/agent-runtime/test-helpers/worker-crash.ts
 //
 // S8 §3.4 A4 — Test helper worker: throws immediately to simulate a
