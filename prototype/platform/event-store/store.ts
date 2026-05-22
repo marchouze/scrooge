@@ -222,9 +222,7 @@ export class EventStore {
    */
   softTagUntaggedEvents(): {
     readonly tagged: number;
-    readonly byKind: Readonly<
-      Record<"production" | "simulated" | "build-phase-fixture", number>
-    >;
+    readonly byKind: Readonly<Record<"production" | "simulated" | "build-phase-fixture", number>>;
   } {
     const rows = this.db
       .prepare("SELECT event_id, type FROM events WHERE provenance IS NULL")
