@@ -293,6 +293,47 @@ export class EventStore {
   }
 
   /**
+   * D-G2-ENTITY-ID-BACKFILL — envelope-axis entity re-tagging.
+   *
+   * Re-tags the `entity` envelope column of an existing event row.
+   * Mirrors the `reclassifyProvenance` pattern (envelope-axis UPDATE;
+   * payload + actor + citations + sequence + provenance are immutable,
+   * only the typed envelope entity axis is corrected).
+   *
+   * Idempotency: returns `{ reclassified: false, reason: "already-at-target" }`
+   * when the row already carries `newEntity`. Returns
+   * `{ reclassified: true, priorEntity }` when an UPDATE was applied;
+   * the prior entity is surfaced so callers can emit a typed
+   * `EntityReclassified` audit event with the before/after axes.
+   *
+   * The append-only invariant (Principle 1) is unchanged: no rows are
+   * dropped; payload + as_of + actor + citations + sequence + provenance
+   * are all preserved. Only the typed envelope axis moves, and every move
+   * is accompanied by a typed audit event the caller emits.
+   *
+   * Authority: D-G2-ENTITY-ID-BACKFILL (CEO-approved 2026-05-22,
+   * event `a507ce6e-de32-48be-9350-a8044ee0b16f`).
+   */
+  reclassifyEntity(
+    eventId: string,
+    newEntity: string,
+  ):
+    | { readonly reclassified: false; readonly reason: "not-found" | "already-at-target" }
+    | { readonly reclassified: true; readonly priorEntity: string } {
+    if (!newEntity || newEntity.trim() === "") {
+      throw new Error("EventStore.reclassifyEntity: newEntity must be a non-empty string");
+    }
+    const row = this.db.prepare("SELECT entity FROM events WHERE event_id = ?").get(eventId) as
+      | { entity: string }
+      | undefined;
+    if (!row) return { reclassified: false, reason: "not-found" };
+    if (row.entity === newEntity) return { reclassified: false, reason: "already-at-target" };
+    const priorEntity = row.entity;
+    this.db.prepare("UPDATE events SET entity = ? WHERE event_id = ?").run(newEntity, eventId);
+    return { reclassified: true, priorEntity };
+  }
+
+  /**
    * Per-kind event counts. Diagnostic surface for the backfill script
    * and for operators verifying substrate-active gating. Untagged events
    * (post-soft-tagger; should always be zero in steady state) appear under

@@ -81,6 +81,10 @@ export * from "./analytics";
 // ProvenanceReclassified — audit event for envelope-axis re-tagging.
 // Authority: D-PROVENANCE-BUILD-PHASE-CLASS (CEO-approved 2026-05-22).
 export * from "./provenance-reclassified";
+// EntityReclassified — audit event for envelope-axis entity re-tagging.
+// Authority: D-G2-ENTITY-ID-BACKFILL (CEO-approved 2026-05-22,
+//   event `a507ce6e-de32-48be-9350-a8044ee0b16f`).
+export * from "./entity-reclassified";
 // AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
 export * from "./agent-ops";
 // Governance-snapshot schemas — Atlas (Core banking platform architect, engineering).
@@ -330,6 +334,7 @@ import { CREDIT_LIMIT_TYPED_EVENT_TYPES } from "./credit-limit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
+import { ENTITY_RECLASSIFIED_EVENT_TYPES } from "./entity-reclassified";
 import { EQUITY_ACCOUNTING_EVENT_TYPES } from "./equity-accounting";
 import { FTP_TYPED_EVENT_TYPES } from "./ftp";
 import { FX_ACCOUNTING_EVENT_TYPES } from "./fx-accounting";
@@ -489,6 +494,11 @@ export const TYPED_EVENT_TYPES = [
   // Authority: D-OBLIGATION-REVIEW-SUBSTRATE (CEO-approved 2026-05-21 via
   //   session delegation); D-KG-GRAPHITI-ADOPT; P2-SINGLE-GRAPH-DISCIPLINE.
   ...OBLIGATION_REVIEW_TYPED_EVENT_TYPES,
+  // D-G2-ENTITY-ID-BACKFILL — envelope-axis entity re-tagging audit event.
+  // EntityReclassified: records BANK-ZA-001 → LE-ZA-HOZ-BANK migration per entity row.
+  // Authority: D-G2-ENTITY-ID-BACKFILL (CEO-approved 2026-05-22,
+  //   event `a507ce6e-de32-48be-9350-a8044ee0b16f`).
+  ...ENTITY_RECLASSIFIED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
