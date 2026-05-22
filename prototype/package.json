@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "[ -z \"$CI\" ] && git config core.hooksPath .githooks 2>/dev/null || true",
     "test": "bun test --isolate",
     "lint": "biome check .",
     "format": "biome format --write .",
