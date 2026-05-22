@@ -21,17 +21,14 @@
 
 import { describe, expect, it } from "bun:test";
 
+import type { Event } from "../../event-store/types";
 import {
   makeFinancialInstrumentClassified,
   makeFinancialInstrumentDecomposed,
   makeFinancialInstrumentDefined,
   makeFinancialInstrumentReconstituted,
 } from "../../markets/cdm/instrument";
-import type { Event } from "../../event-store/types";
-import {
-  securityMasterInitial,
-  securityMasterProjection,
-} from "./security-master";
+import { securityMasterInitial, securityMasterProjection } from "./security-master";
 
 // ---------------------------------------------------------------------------
 // Constants

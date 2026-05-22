@@ -27,13 +27,10 @@
 // Author: Anya (Data / Analytics Engineer, engineering)
 //   per brief:anya:d-financial-instrument-entity-slice-3-securityma:2026-05-22
 
-import type { Projection } from "../types";
-import type {
-  ActusContractType,
-  InstrumentSubtype,
-} from "../../markets/cdm/instrument";
-import { FINANCIAL_INSTRUMENT_EVENT_TYPES } from "../../markets/cdm/instrument";
 import type { Event } from "../../event-store/types";
+import type { ActusContractType, InstrumentSubtype } from "../../markets/cdm/instrument";
+import { FINANCIAL_INSTRUMENT_EVENT_TYPES } from "../../markets/cdm/instrument";
+import type { Projection } from "../types";
 
 // ---------------------------------------------------------------------------
 // State types
@@ -235,10 +232,7 @@ function applyReconstituted(
 // Projection
 // ---------------------------------------------------------------------------
 
-export const securityMasterProjection: Projection<
-  SecurityMasterState,
-  FinancialInstrumentEvent
-> = {
+export const securityMasterProjection: Projection<SecurityMasterState, FinancialInstrumentEvent> = {
   name: "markets.security-master",
   initial: securityMasterInitial,
   accepts: (e): e is FinancialInstrumentEvent => isFinancialInstrumentEvent(e),
