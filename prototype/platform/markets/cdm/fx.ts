@@ -237,6 +237,16 @@ export const fxTradeExecutedPayloadSchema = z
      */
     finsurvCategory: z.string().optional(),
     /**
+     * Optional reference to the FinancialInstrument entity for this FX position.
+     * Convention: `"fi:fx:<baseCurrency>-<quoteCurrency>"` for spot/forward;
+     *   `"fi:fx:<currencyPair>:<settlementDate>"` for dated forwards.
+     * actusContractType = "FXOUT" for spot and forward outrights.
+     * Absent for legacy events booked before the FinancialInstrument entity landed.
+     *
+     * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+     */
+    instrumentId: z.string().min(1).optional(),
+    /**
      * No-prop attribution — client-flow reference. Opaque pointer to the
      * client trade or RFQ this position offsets (e.g.
      * `client-trade:NK-2026-05-20-00041`). Exactly one of
