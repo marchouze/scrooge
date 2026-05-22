@@ -122,6 +122,11 @@ export { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 // per FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
 // materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
 export { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
+// WS-OBLIGATION-REVIEW-SUBSTRATE — obligation-review events emitted by
+// Mira's LLM-extraction pipeline and reviewed by governance seats.
+// Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT;
+//   P2-SINGLE-GRAPH-DISCIPLINE.
+export { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -151,6 +156,7 @@ import {
   RMS_EVENT_TYPES,
 } from "./governance";
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
+import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
@@ -287,6 +293,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // per FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
   // materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
   ...IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY,
+  // WS-OBLIGATION-REVIEW-SUBSTRATE — obligation-review events emitted by
+  // Mira's LLM-extraction pipeline and closed by governance seats.
+  // Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT;
+  //   P2-SINGLE-GRAPH-DISCIPLINE.
+  ...OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

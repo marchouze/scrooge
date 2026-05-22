@@ -232,7 +232,9 @@
     "sarb:pdf-extract": "bun run platform/tools/sarb-pdf-extract.ts",
     "recon:liquidity-appetite-snapshot-coverage": "bun run platform/recon/liquidity-appetite-snapshot-coverage.ts",
     "recon:liquidity-limit-breach-unescalated": "bun run platform/recon/liquidity-limit-breach-unescalated.ts",
-    "recon:liquidity-limit-coverage": "bun run platform/recon/liquidity-limit-coverage.ts"
+    "recon:liquidity-limit-coverage": "bun run platform/recon/liquidity-limit-coverage.ts",
+    "recon:obligation-policy-coverage": "bun run platform/recon/obligation-policy-coverage.ts",
+    "recon:obligation-review-status": "bun run platform/recon/obligation-review-status.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
