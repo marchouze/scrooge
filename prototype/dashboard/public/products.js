@@ -286,25 +286,35 @@
     return section;
   }
 
-  // Product-level Policy → Procedure → Function section. Renders the
+  // Lifecycle-stage badge colours.
+  const STAGE_BADGE = {
+    opening: { label: "opening", bg: "#d1fae5", color: "#065f46" },
+    "in-flight": { label: "in-flight", bg: "#dbeafe", color: "#1e40af" },
+    terminal: { label: "terminal", bg: "#f3e8ff", color: "#6b21a8" },
+  };
+
+  function stageBadge(stage) {
+    if (!stage) return "";
+    const s = STAGE_BADGE[stage] ?? { label: stage, bg: "#e5e7eb", color: "#374151" };
+    return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:.7em;font-weight:600;background:${s.bg};color:${s.color};vertical-align:middle;margin-left:4px">${s.label}</span>`;
+  }
+
+  // Product-level Policy → Procedure → Events section. Renders the
   // chain scoped to this product only (replaces the previous per-dimension
   // chain blocks).
   function renderProductChain(data) {
     const el = document.getElementById("pp-product-chain");
     if (!el) return;
     const chain = data.productChain;
-    if (
-      !chain ||
-      (!chain.policies?.length && !chain.procedures?.length && !chain.functions?.length)
-    ) {
+    if (!chain || (!chain.policies?.length && !chain.procedures?.length && !chain.events?.length)) {
       el.innerHTML = `
-        <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Policy → Procedure → Function</h3>
+        <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Policy → Procedure → Events</h3>
         <p class="pp-policy-cite"><em>No governance-anchored chain has been resolved for this product yet.</em></p>`;
       return;
     }
     el.innerHTML = `
-      <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Policy → Procedure → Function</h3>
-      <p class="pp-policy-cite" style="margin:0 0 var(--space-2)">Scoped to <strong>${esc(data.product.name)}</strong>: policies relevant to this product, procedures that use it, and functions it actually invokes. Resolved from frontmatter; statuses live.</p>
+      <h3 style="font:var(--text-h3);margin:0 0 var(--space-2)">Policy → Procedure → Events</h3>
+      <p class="pp-policy-cite" style="margin:0 0 var(--space-2)">Scoped to <strong>${esc(data.product.name)}</strong>: policies relevant to this product, procedures that follow them, and the events those procedures cause. Events are the durable proof that a procedure was followed (Principle 1). Resolved from frontmatter; statuses live.</p>
       ${chainGridHtml(chain)}
     `;
   }
@@ -332,15 +342,16 @@
         </li>`,
             )
             .join("");
-    const functionsHtml =
-      (chain.functions || []).length === 0
-        ? `<li><span class="pp-policy-cite"><em>No functions declared or matched for this product.</em></span></li>`
-        : chain.functions
+    const eventsHtml =
+      (chain.events || []).length === 0
+        ? `<li><span class="pp-policy-cite"><em>No lifecycle events declared for this product yet.</em></span></li>`
+        : chain.events
             .map(
-              (f) => `
+              (e) => `
         <li style="margin-bottom:var(--space-2)">
-          <div><code>${esc(f.name)}</code> ${chainPill(f.status)}</div>
-          <div class="pp-policy-cite">from <code>${esc(f.fromProcedure)}</code></div>
+          <div><code>${esc(e.eventType)}</code>${stageBadge(e.lifecycleStage)}</div>
+          ${e.accountingCondition ? `<div class="pp-policy-cite" style="margin-top:2px">GL: ${esc(e.accountingCondition)}</div>` : ""}
+          ${e.enabledBy?.length ? `<div class="pp-policy-cite" style="margin-top:2px;color:var(--color-text-secondary)">Enabled by: ${e.enabledBy.map((n) => `<code>${esc(n)}</code>`).join(", ")}</div>` : ""}
         </li>`,
             )
             .join("");
@@ -356,8 +367,8 @@
             <ul style="margin:0;padding-left:1em;list-style:none">${proceduresHtml}</ul>
           </div>
           <div>
-            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)">Function</div>
-            <ul style="margin:0;padding-left:1em;list-style:none">${functionsHtml}</ul>
+            <div class="pp-policy-cite" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)">Events</div>
+            <ul style="margin:0;padding-left:1em;list-style:none">${eventsHtml}</ul>
           </div>
         </div>
       </div>`;

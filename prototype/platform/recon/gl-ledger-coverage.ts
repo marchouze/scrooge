@@ -60,8 +60,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { buildGlView } from "../accounting/gl-projection";
+import { POSTING_RULE_REGISTRY } from "../accounting/posting-rule-registry";
 import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
+import { buildTradeLifecycleView } from "../lifecycle/trade-lifecycle-projection";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "recon:gl-ledger-coverage";
@@ -385,6 +387,97 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Assertion 5: lifecycle-aware registry coverage (POSTING_RULE_REGISTRY).
+  //
+  // For every trade lifecycle instance visible in the event store:
+  //   - `opening` stage rules: assert the opening event has a posting,
+  //     regardless of whether the lifecycle is open or closed.
+  //   - `terminal` stage rules: assert the terminal event has a posting,
+  //     BUT ONLY for CLOSED lifecycles whose terminal path matches the rule.
+  //     Open (in-flight) lifecycles are explicitly excluded — asserting
+  //     terminal coverage on an open trade would be a false positive.
+  //   - `in-flight` stage rules: zero-or-more (not mandated here).
+  //
+  // This replaces the hardcoded POSTING_REQUIRED_TYPES check for the
+  // registry-managed event types — the two sets are compatible, and the
+  // registry-based check is richer (lifecycle-scoped, path-aware).
+  // -------------------------------------------------------------------------
+  {
+    // Build lifecycle instances from the full event list.
+    const fullEventsForLc: Event[] = opts.events
+      ? (opts.events as MinimalEvent[]).map((e) => ({
+          event_id: e.event_id,
+          type: e.type,
+          as_of: e.as_of,
+          entity: "LE-ZA-HOZ-BANK",
+          actor: { type: "system" as const, id: "recon" },
+          citations: ["urn:recon:gl-ledger-coverage"],
+          payload: e.payload,
+        }))
+      : (() => {
+          const evs: Event[] = [];
+          try {
+            for (const e of eventStore.replay({})) evs.push(e);
+          } catch {
+            // event store not available
+          }
+          return evs;
+        })();
+
+    const lifecycleInstances = buildTradeLifecycleView(fullEventsForLc);
+
+    // Index opening events and terminal events by event_id for quick lookup.
+    const openingEventById = new Map<string, (typeof lifecycleInstances)[0]>();
+    const terminalEventById = new Map<string, (typeof lifecycleInstances)[0]>();
+    for (const inst of lifecycleInstances) {
+      openingEventById.set(inst.openingEventId, inst);
+      if (inst.terminalEventId) terminalEventById.set(inst.terminalEventId, inst);
+    }
+
+    // Group rules by lifecycleStage for iteration.
+    const openingRules = POSTING_RULE_REGISTRY.filter(
+      (r) => r.lifecycleStage === "opening" && r.condition !== "intentional-no-impact",
+    );
+    const terminalRules = POSTING_RULE_REGISTRY.filter(
+      (r) => r.lifecycleStage === "terminal" && r.condition !== "intentional-no-impact",
+    );
+
+    // Assert opening rules: every instance whose opening event matches a
+    // registered rule must have a posting referencing that opening event.
+    for (const rule of openingRules) {
+      for (const inst of lifecycleInstances) {
+        if (inst.openingEventType !== rule.triggerEventType) continue;
+        if (inst.lifecycleId !== rule.lifecycleId) continue;
+        result.asserted++;
+        if (!postingsBySourceRef.has(inst.openingEventId)) {
+          violations.push({
+            subject: `lifecycle:${inst.instanceId}:${rule.postingRuleId}`,
+            severity: "fail",
+            message: `Lifecycle coverage gap [opening]: instance ${inst.instanceId} (lifecycleId=${inst.lifecycleId}) opened by event ${inst.openingEventId} (${inst.openingEventType}) has no SubLedgerPostingEmitted for posting rule ${rule.postingRuleId} (postingType=${rule.postingType}, condition=${rule.condition}). Required for both open and closed lifecycle instances. Authority: POSTING_RULE_REGISTRY; Principles/1-events-are-truth.md.`,
+          });
+        }
+      }
+    }
+
+    // Assert terminal rules: only for CLOSED lifecycles.
+    for (const rule of terminalRules) {
+      for (const inst of lifecycleInstances) {
+        if (inst.state !== "closed") continue;
+        if (inst.lifecycleId !== rule.lifecycleId) continue;
+        if (!inst.terminalEventId || inst.terminalEventType !== rule.triggerEventType) continue;
+        result.asserted++;
+        if (!postingsBySourceRef.has(inst.terminalEventId)) {
+          violations.push({
+            subject: `lifecycle:${inst.instanceId}:${rule.postingRuleId}`,
+            severity: "fail",
+            message: `Lifecycle coverage gap [terminal]: instance ${inst.instanceId} (lifecycleId=${inst.lifecycleId}, path=${inst.terminalPath ?? "?"}) closed by event ${inst.terminalEventId} (${inst.terminalEventType}) has no SubLedgerPostingEmitted for posting rule ${rule.postingRuleId} (postingType=${rule.postingType}, condition=${rule.condition}). Terminal coverage assertions apply only to closed lifecycles. Authority: POSTING_RULE_REGISTRY; Principles/1-events-are-truth.md.`,
+          });
+        }
+      }
+    }
+  }
+
   // Empty-state guard — keep `asserted >= 1` so the harness records a run.
   if (result.asserted === 0) {
     result.asserted = 1;
@@ -411,8 +504,8 @@ if (import.meta.main) {
       violations: r.violations.length,
       ok: r.ok,
       msg: r.ok
-        ? "gl-ledger-coverage passed — every FX lifecycle event has matching postings; orphans + phantom accounts absent; trial balance closes at zero at every PeriodClosed."
-        : "gl-ledger-coverage FAILED — GL coverage / orphan / phantom-account / trial-balance break detected.",
+        ? "gl-ledger-coverage passed — every FX lifecycle event has matching postings; orphans + phantom accounts absent; trial balance closes at zero at every PeriodClosed; lifecycle-registry opening/terminal coverage satisfied."
+        : "gl-ledger-coverage FAILED — GL coverage / orphan / phantom-account / trial-balance / lifecycle-registry coverage break detected.",
       detail: r.violations,
     }),
   );

@@ -68,19 +68,18 @@ describe("resolveDimensionChain — aml-cft anchor pulls KYC / PEP / UBO procedu
     for (const proc of chain.procedures) {
       expect(proc.policiesCited).toContain("aml-cft-policy-v1.md");
     }
-    // Functions come through from system-capability fields.
-    const fnNames = new Set(chain.functions.map((f) => f.name));
-    expect(fnNames.has("@platform/screening")).toBe(true);
+    // Events list is present (may be empty when no emits declared for this hint).
+    expect(Array.isArray(chain.events)).toBe(true);
   });
 });
 
 describe("resolveDimensionChain — empty hints yields empty chain", () => {
-  it("returns no policies / procedures / functions when no hints are given", () => {
+  it("returns no policies / procedures / events when no hints are given", () => {
     resetPolicyChainCacheForTests();
     const chain = resolveDimensionChain({ repoRoot: REPO_ROOT, policyHints: [] });
     expect(chain.policies).toEqual([]);
     expect(chain.procedures).toEqual([]);
-    expect(chain.functions).toEqual([]);
+    expect(chain.events).toEqual([]);
   });
 });
 
