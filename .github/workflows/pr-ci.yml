@@ -58,25 +58,25 @@ concurrency:
   cancel-in-progress: true
 
 # ---------------------------------------------------------------------------
-# Job topology (revised after first run revealed event-store seeding dep):
+# Job topology (v3 — fully parallel, each recon job self-seeds):
 #
-#   core ──────────────────────────────────────────┐
-#                                                  ├─> ci (fanout gate)
-#   migrations ──> recon-infra ────────────────────┤
-#              └─> recon-domain ──────────────────-┘
+#   core ────────────────────────────────┐
+#                                        ├─> ci (fanout gate)
+#   recon-infra (seed + infra checks) ──┤
+#   recon-domain (seed + domain checks) ┘
 #
-# `core` and `migrations` run in parallel. Recon jobs both wait on
-# `migrations` because several recon checks (rms-documents-parity,
-# rms-briefs-parity, decision-record-event-symmetry, etc.) query the event
-# store and require backfilled events to produce meaningful results. The
-# backfill scripts read committed markdown files and emit events to a fresh
-# SQLite store — they are not no-ops on CI runners.
+# All three jobs run in parallel. Each recon job runs ci:migrate first
+# (~15s) to seed its own fresh event store before running its checks.
+# Artifact pass-through was tried but rejected: the default event-store
+# path ($HOME/.local/share/bank/event.db) does not match prototype/.local/,
+# causing artifact-not-found failures. Self-seeding is simpler, faster to
+# diagnose, and adds only ~15s overhead per recon job.
 # ---------------------------------------------------------------------------
 
 jobs:
   # --------------------------------------------------------------------------
   # Job A — Core: typecheck · lint · test · citation-gate
-  # Fast path; runs in parallel with migrations. Expected: ~3-5 minutes.
+  # Fast path. Expected: ~3-5 minutes.
   # --------------------------------------------------------------------------
   core:
     name: Core (typecheck · lint · test · citation-gate)
@@ -102,15 +102,16 @@ jobs:
         run: bun run ci:core
 
   # --------------------------------------------------------------------------
-  # Job B — Migrations: seed event store from committed markdown
-  # Runs the backfill/migration scripts that emit events to a fresh SQLite
-  # store. Several recon checks depend on these events being present.
-  # Runs in parallel with `core`; recon jobs wait on this. ~1-2 minutes.
+  # Job B — Recon: Infrastructure
+  # Seeds its own event store then runs infrastructure recon checks.
+  # Expected: ~15s seed + ~5-8 min recon = ~6-9 minutes.
   # --------------------------------------------------------------------------
-  migrations:
-    name: Migrations (event-store seed)
+  recon-infra:
+    name: Recon — Infrastructure
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      BANK_EVENT_DB: .local/event.db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -130,58 +131,21 @@ jobs:
         working-directory: prototype
         run: bun run ci:migrate
 
-      - name: Upload event store
-        uses: actions/upload-artifact@v4
-        with:
-          name: event-store
-          path: prototype/.local/
-          retention-days: 1
-
-  # --------------------------------------------------------------------------
-  # Job C — Recon: Infrastructure
-  # Infrastructure-level integrity checks. Waits on migrations to ensure
-  # the event store is seeded. Expected: ~5-8 minutes.
-  # --------------------------------------------------------------------------
-  recon-infra:
-    name: Recon — Infrastructure
-    needs: [migrations]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        working-directory: prototype
-        run: bun install --frozen-lockfile
-
-      - name: Download event store
-        uses: actions/download-artifact@v4
-        with:
-          name: event-store
-          path: prototype/.local/
-
       - name: Infrastructure recon checks
         working-directory: prototype
         run: bun run ci:recon:infra
 
   # --------------------------------------------------------------------------
-  # Job D — Recon: Domain
-  # Domain/business-logic integrity checks. Waits on migrations.
-  # Runs in parallel with recon-infra. Expected: ~5-8 minutes.
+  # Job C — Recon: Domain
+  # Seeds its own event store then runs domain recon checks.
+  # Expected: ~15s seed + ~5-8 min recon = ~6-9 minutes.
   # --------------------------------------------------------------------------
   recon-domain:
     name: Recon — Domain
-    needs: [migrations]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      BANK_EVENT_DB: .local/event.db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -197,37 +161,33 @@ jobs:
         working-directory: prototype
         run: bun install --frozen-lockfile
 
-      - name: Download event store
-        uses: actions/download-artifact@v4
-        with:
-          name: event-store
-          path: prototype/.local/
+      - name: Seed event store
+        working-directory: prototype
+        run: bun run ci:migrate
 
       - name: Domain recon checks
         working-directory: prototype
         run: bun run ci:recon:domain
 
   # --------------------------------------------------------------------------
-  # Job E — CI fanout gate
-  # Depends on all four parallel jobs. This is the single job named "ci"
+  # Job D — CI fanout gate
+  # Depends on all three parallel jobs. This is the single job named "ci"
   # that branch protection requires — no branch-protection config change
   # needed. Fails explicitly if any upstream job failed or was cancelled.
   # --------------------------------------------------------------------------
   ci:
     name: CI gate
-    needs: [core, migrations, recon-infra, recon-domain]
+    needs: [core, recon-infra, recon-domain]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: All jobs passed
         run: |
           if [[ "${{ needs.core.result }}"         != "success" ]] || \
-             [[ "${{ needs.migrations.result }}"   != "success" ]] || \
              [[ "${{ needs.recon-infra.result }}"  != "success" ]] || \
              [[ "${{ needs.recon-domain.result }}" != "success" ]]; then
             echo "One or more CI jobs failed or were skipped:"
             echo "  core:         ${{ needs.core.result }}"
-            echo "  migrations:   ${{ needs.migrations.result }}"
             echo "  recon-infra:  ${{ needs.recon-infra.result }}"
             echo "  recon-domain: ${{ needs.recon-domain.result }}"
             exit 1
