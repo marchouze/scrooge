@@ -165,6 +165,37 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
       "IrsCouponSettlementConfirmed",
     ],
   },
+
+  // ── Financial Instrument ─────────────────────────────────────────────────
+  {
+    lifecycleId: "financial-instrument-registration",
+    productType: "INSTRUMENT",
+    openingEventType: "FinancialInstrumentDefined",
+    instanceIdField: "instrumentId",
+    // No terminal condition yet — instruments are persistent register entries
+    // without a natural close event. A future FinancialInstrumentRetired event
+    // will be added when the retirement workflow is built.
+    terminalConditions: [],
+    inFlightEventTypes: [
+      "FinancialInstrumentClassified",
+      "FinancialInstrumentDecomposed",
+      "FinancialInstrumentReconstituted",
+    ],
+  },
+  {
+    lifecycleId: "financial-instrument-decomposition",
+    productType: "INSTRUMENT",
+    openingEventType: "FinancialInstrumentDecomposed",
+    instanceIdField: "parentInstrumentId",
+    terminalConditions: [
+      {
+        eventType: "FinancialInstrumentReconstituted",
+        path: "normal",
+        description: "Strips reconstituted into parent bond",
+      },
+    ],
+    inFlightEventTypes: [],
+  },
 ];
 
 // ---------------------------------------------------------------------------
