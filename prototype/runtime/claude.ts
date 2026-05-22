@@ -42,6 +42,16 @@ const DEFAULT_MAX_TOKENS_STREAMING = 64_000;
 // Effort + thinking depth are the other levers.
 const MODEL = process.env.BANK_CLAUDE_MODEL ?? DEFAULT_MODEL;
 
+// GAP-OVERLOADED-VS-CREDIT-EXHAUSTED (Mira, 2026-05-22): haiku surfaces
+// credit-balance-exhausted as `overloaded_error`, indistinguishable from
+// a genuine capacity overload. After N consecutive overload failures with
+// no successful intervening call, we silently probe a cheap call against
+// a different model to disambiguate. Sonnet/opus correctly return a
+// `billing_error` / "credit balance is too low" body, so a probe failure
+// of that shape proves the account — not the model — is the problem.
+const OVERLOAD_PROBE_THRESHOLD = 3;
+const PROBE_MAX_TOKENS = 8;
+
 // ---------------------------------------------------------------------------
 // Model capability matrix
 // ---------------------------------------------------------------------------
@@ -176,8 +186,133 @@ function estimateCost(model: string, inputTokens: number, outputTokens: number):
 
 let cachedClient: Anthropic | null = null;
 
+// Count of consecutive `overloaded_error` failures observed against the
+// primary model with no successful intervening call. Reset on any
+// successful generation or on a successful disambiguation probe.
+let consecutiveOverloadCount = 0;
+
 export function claudeAvailable(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
+}
+
+/**
+ * Raised when the Anthropic account's credit balance has been exhausted.
+ * Distinguished from a genuine capacity overload so callers know to fail
+ * fast rather than retry-with-backoff. Detected directly when the SDK
+ * surfaces a `billing_error` / "credit balance is too low" body, or via
+ * the disambiguation probe when the primary model is haiku and the body
+ * arrives misclassified as `overloaded_error`.
+ */
+export class ClaudeCreditExhaustedError extends Error {
+  override readonly name = "ClaudeCreditExhaustedError";
+  readonly originalError: Error | undefined;
+  constructor(message: string, originalError?: Error) {
+    super(message);
+    this.originalError = originalError;
+  }
+}
+
+function disambiguateOverloadEnabled(): boolean {
+  const v = process.env.BANK_CLAUDE_DISAMBIGUATE_OVERLOAD;
+  if (v === undefined) return true;
+  return v !== "false" && v !== "0";
+}
+
+function isOverloadError(e: unknown): boolean {
+  if (!(e instanceof Anthropic.APIError)) return false;
+  if (e.type === "overloaded_error") return true;
+  return e.status === 529;
+}
+
+function isCreditExhaustedError(e: unknown): boolean {
+  if (!(e instanceof Anthropic.APIError)) return false;
+  if (e.type === "billing_error") return true;
+  const msg = e.message ?? "";
+  return /credit\s+balance\s+is\s+too\s+low/i.test(msg);
+}
+
+function pickProbeModel(primaryModel: string): string {
+  // Pick a model on different infrastructure from the primary so the
+  // probe genuinely disambiguates. Haiku is the model that misclassifies
+  // billing as overload; sonnet/opus return the correct body.
+  if (primaryModel.includes("haiku")) return "claude-sonnet-4-6";
+  if (primaryModel.includes("sonnet")) return "claude-opus-4-7";
+  return "claude-sonnet-4-6";
+}
+
+/**
+ * Decide what to do with an error returned from a primary-model call.
+ * Always throws; either re-throws the input, throws a typed
+ * `ClaudeCreditExhaustedError`, or surfaces the original overload
+ * after a probe.
+ *
+ * Exported for unit testing; production callers go via
+ * `generateNarrative`.
+ */
+export async function _handleClaudeError(
+  e: unknown,
+  deps: {
+    readonly probe: () => Promise<unknown>;
+    readonly disambiguateEnabled?: boolean;
+    readonly threshold?: number;
+  },
+): Promise<never> {
+  if (isCreditExhaustedError(e)) {
+    consecutiveOverloadCount = 0;
+    throw new ClaudeCreditExhaustedError(
+      `Anthropic credit balance exhausted: ${(e as Error).message}`,
+      e as Error,
+    );
+  }
+
+  if (!isOverloadError(e)) {
+    throw e as Error;
+  }
+
+  consecutiveOverloadCount += 1;
+  const threshold = deps.threshold ?? OVERLOAD_PROBE_THRESHOLD;
+  const enabled = deps.disambiguateEnabled ?? disambiguateOverloadEnabled();
+  if (consecutiveOverloadCount < threshold || !enabled) {
+    throw e as Error;
+  }
+
+  let probeSucceeded = false;
+  let probeError: unknown = null;
+  try {
+    await deps.probe();
+    probeSucceeded = true;
+  } catch (err) {
+    probeError = err;
+  }
+
+  if (probeSucceeded) {
+    // Reset so we don't probe on every subsequent overload — the next
+    // probe requires another `threshold` consecutive failures.
+    consecutiveOverloadCount = 0;
+    throw e as Error;
+  }
+
+  if (isCreditExhaustedError(probeError)) {
+    consecutiveOverloadCount = 0;
+    throw new ClaudeCreditExhaustedError(
+      `Anthropic credit balance exhausted (detected via probe after ${threshold} consecutive overload errors): ${(probeError as Error).message}`,
+      probeError as Error,
+    );
+  }
+
+  // Probe failed for an unrelated reason (e.g. probe model also overloaded,
+  // network blip). Surface the original overload so caller retries.
+  throw e as Error;
+}
+
+/** Test hook: reset the consecutive-overload counter. */
+export function _resetOverloadCounterForTests(): void {
+  consecutiveOverloadCount = 0;
+}
+
+/** Test hook: read the counter. */
+export function _getOverloadCounterForTests(): number {
+  return consecutiveOverloadCount;
 }
 
 function getClient(): Anthropic {
@@ -296,22 +431,38 @@ export async function generateNarrative(req: NarrativeRequest): Promise<Narrativ
     logger.debug({ model: MODEL }, "model does not support output_config.effort; dropping param");
   }
 
-  const stream = client.messages.stream({
-    model: MODEL,
-    max_tokens: maxTokens,
-    ...(outputConfig ? { output_config: outputConfig } : {}),
-    ...(thinking ? { thinking } : {}),
-    system: [
-      {
-        type: "text",
-        text: req.stableSystem,
-        cache_control: { type: "ephemeral" },
+  let final: Anthropic.Message;
+  try {
+    const stream = client.messages.stream({
+      model: MODEL,
+      max_tokens: maxTokens,
+      ...(outputConfig ? { output_config: outputConfig } : {}),
+      ...(thinking ? { thinking } : {}),
+      system: [
+        {
+          type: "text",
+          text: req.stableSystem,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      messages: [{ role: "user", content: req.userInput }],
+    });
+    final = await stream.finalMessage();
+    consecutiveOverloadCount = 0;
+  } catch (e) {
+    await _handleClaudeError(e, {
+      probe: async () => {
+        await client.messages.create({
+          model: pickProbeModel(MODEL),
+          max_tokens: PROBE_MAX_TOKENS,
+          messages: [{ role: "user", content: "ping" }],
+        });
       },
-    ],
-    messages: [{ role: "user", content: req.userInput }],
-  });
-
-  const final = await stream.finalMessage();
+    });
+    // `_handleClaudeError` always throws; this line is unreachable but
+    // satisfies the type checker on the catch branch.
+    throw e as Error;
+  }
   const textBlock = final.content.find((b): b is Anthropic.TextBlock => b.type === "text");
   const text = textBlock?.text ?? "";
 
@@ -384,6 +535,9 @@ export async function tryGenerateNarrative(
     const result = await generateNarrative(req);
     return { ok: true, result };
   } catch (e) {
+    if (e instanceof ClaudeCreditExhaustedError) {
+      return { ok: false, error: `credit exhausted: ${e.message}`, retryable: false };
+    }
     if (e instanceof Anthropic.RateLimitError) {
       return { ok: false, error: `rate-limited: ${e.message}`, retryable: true };
     }
