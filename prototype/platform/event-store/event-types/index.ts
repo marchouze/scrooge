@@ -78,6 +78,9 @@ export * from "./performance";
 // recon. The legacy `platform/semantic-layer/event-type.ts` module re-exports
 // from here for back-compat.
 export * from "./analytics";
+// ProvenanceReclassified — audit event for envelope-axis re-tagging.
+// Authority: D-PROVENANCE-BUILD-PHASE-CLASS (CEO-approved 2026-05-22).
+export * from "./provenance-reclassified";
 // AgentOps event family — Sade (AgentOps & Token Efficiency Engineer).
 export * from "./agent-ops";
 // Governance-snapshot schemas — Atlas (Core banking platform architect, engineering).

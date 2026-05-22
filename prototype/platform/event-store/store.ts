@@ -247,6 +247,52 @@ export class EventStore {
   }
 
   /**
+   * D-PROVENANCE-BUILD-PHASE-CLASS Slice 2 — envelope-axis provenance
+   * re-tagging.
+   *
+   * Re-tags the `provenance` envelope column of an existing event row.
+   * Mirrors the soft-tagger's UPDATE pattern (`provenance` is the
+   * envelope axis, not a payload field; payload + actor + citations
+   * are immutable, only the typed envelope tag is healed).
+   *
+   * Idempotency: returns `{ reclassified: false }` when the row is
+   * already at the target tag (deep equality on the persisted JSON).
+   * Returns `{ reclassified: true, priorTag }` when an UPDATE was
+   * applied; the prior tag is surfaced so callers can emit a typed
+   * `ProvenanceReclassified` audit event with the before/after axes.
+   *
+   * The append-only invariant (Principle 1) is unchanged: no rows are
+   * dropped; payload + as_of + actor + citations + sequence are all
+   * preserved. Only the typed envelope axis moves, and every move is
+   * accompanied by a typed audit event the caller emits.
+   *
+   * Authority: D-PROVENANCE-BUILD-PHASE-CLASS (CEO-approved 2026-05-22).
+   */
+  reclassifyProvenance(
+    eventId: string,
+    newTag: ProvenanceTag,
+  ):
+    | { readonly reclassified: false; readonly reason: "not-found" | "already-at-target" }
+    | { readonly reclassified: true; readonly priorTag: ProvenanceTag } {
+    // Validate the incoming tag defensively (cross-axis Zod rules).
+    const validated = provenanceTagSchema.parse(newTag);
+    const row = this.db
+      .prepare("SELECT provenance FROM events WHERE event_id = ?")
+      .get(eventId) as { provenance: string | null } | undefined;
+    if (!row) return { reclassified: false, reason: "not-found" };
+    const priorTag: ProvenanceTag = row.provenance
+      ? (JSON.parse(row.provenance) as ProvenanceTag)
+      : defaultProvenanceFor("__legacy_untagged__");
+    if (deepProvenanceEqual(priorTag, validated)) {
+      return { reclassified: false, reason: "already-at-target" };
+    }
+    this.db
+      .prepare("UPDATE events SET provenance = ? WHERE event_id = ?")
+      .run(JSON.stringify(validated), eventId);
+    return { reclassified: true, priorTag };
+  }
+
+  /**
    * Per-kind event counts. Diagnostic surface for the backfill script
    * and for operators verifying substrate-active gating. Untagged events
    * (post-soft-tagger; should always be zero in steady state) appear under
@@ -684,6 +730,24 @@ function secondsBetween(fromIso: string, toIso: string): number {
   const b = Date.parse(toIso);
   if (Number.isNaN(a) || Number.isNaN(b)) return 0;
   return Math.max(0, (b - a) / 1000);
+}
+
+/**
+ * Structural equality over the `ProvenanceTag` shape. Used by
+ * `reclassifyProvenance` for idempotency. We don't reach for a full
+ * deep-equality helper because the tag shape is small + flat (kind,
+ * scenario?, variant?, sourceLineage, tags?).
+ */
+function deepProvenanceEqual(a: ProvenanceTag, b: ProvenanceTag): boolean {
+  if (a.kind !== b.kind) return false;
+  if ((a.scenario ?? null) !== (b.scenario ?? null)) return false;
+  if ((a.variant ?? null) !== (b.variant ?? null)) return false;
+  if (a.sourceLineage !== b.sourceLineage) return false;
+  const aTags = a.tags ?? [];
+  const bTags = b.tags ?? [];
+  if (aTags.length !== bTags.length) return false;
+  for (let i = 0; i < aTags.length; i++) if (aTags[i] !== bTags[i]) return false;
+  return true;
 }
 
 interface RowShape {
