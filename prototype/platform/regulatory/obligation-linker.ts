@@ -13,11 +13,20 @@
 import { readFileSync } from "node:fs";
 import { BANK_ZA_001 } from "../core/types";
 import {
+  type ObligationCandidateProposedPayload,
+  type ObligationReviewConflictPayload,
+  type ObligationReviewDomain,
+  type ObligationReviewMatchedPayload,
+  makeObligationCandidateProposed,
+  makeObligationReviewConflict,
+  makeObligationReviewMatched,
+} from "../event-store/event-types/obligation-review";
+import {
   type RegulatoryConceptExtractedPayload,
   makeObligationConceptLinked,
 } from "../event-store/event-types/regulatory";
 import type { EventStore } from "../event-store/store";
-import type { Actor } from "../event-store/types";
+import type { Actor, Event } from "../event-store/types";
 import { logger } from "../observability/logger";
 
 // ---------------------------------------------------------------------------
@@ -26,12 +35,20 @@ import { logger } from "../observability/logger";
 
 export interface ObligationRow {
   id: string;
+  /** URN column (Owen's WS-URN-VOCABULARY extension). Empty / "[TBD]" if not yet populated. */
+  urn: string;
   /** Raw Citation column text */
   citation: string;
+  /** Requirement / description column (what the obligation requires) */
+  requirement: string;
   /** Fulfilment policy column */
   fulfilmentPolicy: string;
+  /** Owner column */
+  owner: string;
   /** Domain */
   domain: string;
+  /** review-status column (Owen schema) — e.g. "legacy-unreviewed". */
+  reviewStatus: string;
 }
 
 /**
@@ -49,9 +66,13 @@ export function parseObligationsRegister(markdownContent: string): ObligationRow
 
   let headerLine = -1;
   let colId = -1;
+  let colUrn = -1;
   let colCitation = -1;
+  let colRequirement = -1;
   let colFulfilment = -1;
+  let colOwner = -1;
   let colDomain = -1;
+  let colReviewStatus = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -61,9 +82,13 @@ export function parseObligationsRegister(markdownContent: string): ObligationRow
     if (line.includes("| ID ") || line.includes("|ID|") || line.includes("| **ID**")) {
       const headers = line.split("|").map((h) => h.trim().toLowerCase().replace(/\*\*/g, ""));
       colId = headers.findIndex((h) => h === "id");
+      colUrn = headers.findIndex((h) => h === "urn");
       colCitation = headers.findIndex((h) => h.includes("citation"));
+      colRequirement = headers.findIndex((h) => h.includes("requirement"));
       colFulfilment = headers.findIndex((h) => h.includes("fulfilment") || h.includes("fulfil"));
+      colOwner = headers.findIndex((h) => h === "owner");
       colDomain = headers.findIndex((h) => h === "domain");
+      colReviewStatus = headers.findIndex((h) => h.includes("review-status"));
       headerLine = i;
       continue;
     }
@@ -73,16 +98,18 @@ export function parseObligationsRegister(markdownContent: string): ObligationRow
     if (line.match(/^\|[-: |]+\|$/)) continue;
 
     const cols = line.split("|").map((c) => c.trim());
-    // The split of "| A | B | C |" produces ["", "A", "B", "C", ""]
-    // colId etc. already account for the leading empty string
     const id = colId >= 0 ? (cols[colId] ?? "") : "";
     if (!id.match(/^ORG-/)) continue;
 
+    const urn = colUrn >= 0 ? (cols[colUrn] ?? "") : "";
     const citation = colCitation >= 0 ? (cols[colCitation] ?? "") : "";
+    const requirement = colRequirement >= 0 ? (cols[colRequirement] ?? "") : "";
     const fulfilmentPolicy = colFulfilment >= 0 ? (cols[colFulfilment] ?? "") : "";
+    const owner = colOwner >= 0 ? (cols[colOwner] ?? "") : "";
     const domain = colDomain >= 0 ? (cols[colDomain] ?? "") : "";
+    const reviewStatus = colReviewStatus >= 0 ? (cols[colReviewStatus] ?? "") : "";
 
-    rows.push({ id, citation, fulfilmentPolicy, domain });
+    rows.push({ id, urn, citation, requirement, fulfilmentPolicy, owner, domain, reviewStatus });
   }
 
   return rows;
@@ -264,6 +291,123 @@ function hasLink(store: EventStore, conceptRef: string, obligationId: string): b
   return false;
 }
 
+function hasReviewMatched(store: EventStore, urn: string, llmExtractionEventId: string): boolean {
+  for (const event of store.replay({ type: "ObligationReviewMatched" })) {
+    const p = event.payload as { existingObligationUrn?: string; llmExtractionEventId?: string };
+    if (p.existingObligationUrn === urn && p.llmExtractionEventId === llmExtractionEventId)
+      return true;
+  }
+  return false;
+}
+
+function hasReviewConflict(store: EventStore, urn: string, llmExtractionEventId: string): boolean {
+  for (const event of store.replay({ type: "ObligationReviewConflict" })) {
+    const p = event.payload as { existingObligationUrn?: string; llmExtractionEventId?: string };
+    if (p.existingObligationUrn === urn && p.llmExtractionEventId === llmExtractionEventId)
+      return true;
+  }
+  return false;
+}
+
+function hasCandidateProposed(
+  store: EventStore,
+  proposedUrn: string,
+  llmExtractionEventId: string,
+): boolean {
+  for (const event of store.replay({ type: "ObligationCandidateProposed" })) {
+    const p = event.payload as { proposedUrn?: string; llmExtractionEventId?: string };
+    if (p.proposedUrn === proposedUrn && p.llmExtractionEventId === llmExtractionEventId)
+      return true;
+  }
+  return false;
+}
+
+/** Find the original RegulatoryConceptExtracted event for a sectionId. */
+function findExtractionEventId(
+  store: EventStore,
+  instrumentId: string,
+  sectionId: string,
+): string | null {
+  for (const event of store.replay({ type: "RegulatoryConceptExtracted" })) {
+    const p = event.payload as { instrumentId?: string; sectionId?: string };
+    if (p.instrumentId === instrumentId && p.sectionId === sectionId) {
+      return event.event_id;
+    }
+  }
+  return null;
+}
+
+/**
+ * Lightweight lexical overlap — Jaccard on lowercased word-tokens stripped of
+ * punctuation. Used to compare the LLM's actionSummary against the register's
+ * Requirement column.
+ */
+function lexicalOverlap(a: string, b: string): number {
+  const tokens = (s: string) =>
+    new Set(
+      s
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((t) => t.length >= 4),
+    );
+  const ta = tokens(a);
+  const tb = tokens(b);
+  if (ta.size === 0 || tb.size === 0) return 0;
+  let intersect = 0;
+  for (const t of ta) {
+    if (tb.has(t)) intersect++;
+  }
+  const union = new Set([...ta, ...tb]).size;
+  return union === 0 ? 0 : intersect / union;
+}
+
+/** Derive a domain letter (A..J) from a register row's ID prefix. */
+function deriveDomainLetter(id: string): ObligationReviewDomain {
+  const prefix = id.replace(/^ORG-/, "").split("-")[0] ?? "";
+  // Best-effort mapping aligned with deriveDomain() in
+  // obligation-policy-coverage.ts.
+  switch (prefix) {
+    case "PR":
+      return "A";
+    case "FC":
+      return "B";
+    case "EXCON":
+    case "FX":
+      return "C";
+    case "FAIS":
+      return "D";
+    case "CY":
+      return "E";
+    case "GV":
+      return "F";
+    case "TAX":
+      return "G";
+    case "MK":
+    case "JSE":
+    case "IFRS":
+      return "H";
+    case "HR":
+      return "I";
+    default:
+      return "J";
+  }
+}
+
+/** Default URN derivation for newly-proposed obligations. */
+function proposeUrn(instrumentId: string, sectionId: string): string {
+  // e.g. "FAIS-ACT-37-2002:s7" -> "urn:obligation:bank:proposed:fais-act-37-2002:s7:v1"
+  const tail = `${instrumentId.toLowerCase()}:${sectionId.split(":").pop() ?? "unknown"}`;
+  return `urn:obligation:bank:proposed:${tail}:v1`;
+}
+
+function normaliseRegisterUrn(row: ObligationRow): string {
+  if (row.urn && row.urn !== "[TBD]") return row.urn;
+  // Fallback: synthesise from the row's ID. The register's URN column is
+  // still backfilling; this keeps the events well-formed in the interim.
+  return `urn:obligation:bank:${row.id.toLowerCase()}`;
+}
+
 // ---------------------------------------------------------------------------
 // Main linker
 // ---------------------------------------------------------------------------
@@ -282,7 +426,17 @@ export async function linkToObligations(opts: {
   obligationsRegisterPath: string;
   actor: Actor;
   eventStore: EventStore;
-}): Promise<{ linked: number; unlinkedHighRelevancy: number; candidates: CandidateObligation[] }> {
+}): Promise<{
+  linked: number;
+  unlinkedHighRelevancy: number;
+  candidates: CandidateObligation[];
+  /** Count of ObligationReviewMatched events emitted this run. */
+  matched: number;
+  /** Count of ObligationReviewConflict events emitted this run. */
+  conflicts: number;
+  /** Count of ObligationCandidateProposed events emitted this run. */
+  proposed: number;
+}> {
   const { instrumentId, obligationsRegisterPath, actor, eventStore } = opts;
 
   // Load obligations register
@@ -294,7 +448,14 @@ export async function linkToObligations(opts: {
       { obligationsRegisterPath, error: (e as Error).message },
       "could not read obligations register",
     );
-    return { linked: 0, unlinkedHighRelevancy: 0, candidates: [] };
+    return {
+      linked: 0,
+      unlinkedHighRelevancy: 0,
+      candidates: [],
+      matched: 0,
+      conflicts: 0,
+      proposed: 0,
+    };
   }
 
   const obligations = parseObligationsRegister(registerContent);
@@ -302,23 +463,32 @@ export async function linkToObligations(opts: {
 
   // Load all concepts for this instrument
   const concepts: RegulatoryConceptExtractedPayload[] = [];
+  // Track concept payload → original event_id so we can cross-link in the
+  // ObligationReview* events Atlas added in PR #731.
+  const conceptEventIds = new Map<string, string>();
   for (const event of eventStore.replay({ type: "RegulatoryConceptExtracted" })) {
     const p = event.payload as RegulatoryConceptExtractedPayload;
     if (p.instrumentId === instrumentId) {
       concepts.push(p);
+      conceptEventIds.set(p.sectionId, event.event_id);
     }
   }
   logger.info({ instrumentId, conceptCount: concepts.length }, "concepts loaded");
 
   let linked = 0;
+  let matchedCount = 0;
+  let conflictCount = 0;
+  let proposedCount = 0;
   const linkedSections = new Set<string>();
 
   for (const concept of concepts) {
+    let isLinkedToAny = false;
     for (const obligation of obligations) {
       // Normalise the obligation's citation column values to structured sectionIds
       // and check whether any of them match this concept's sectionId.
       const citationIds = extractSectionIdsFromCitation(obligation.citation);
       if (!citationIds.includes(concept.sectionId)) continue;
+      isLinkedToAny = true;
 
       // We have a match — determine link type
       const linkType =
@@ -328,33 +498,144 @@ export async function linkToObligations(opts: {
             ? "supporting"
             : "context";
 
-      if (hasLink(eventStore, concept.sectionId, obligation.id)) {
-        linkedSections.add(concept.sectionId);
-        continue;
+      // Emit ObligationConceptLinked (legacy, kept for back-compat).
+      if (!hasLink(eventStore, concept.sectionId, obligation.id)) {
+        const now = new Date().toISOString();
+        const linkEvent = makeObligationConceptLinked({
+          asOf: now,
+          entity: BANK_ZA_001,
+          actor,
+          citations: [obligation.id, instrumentId],
+          payload: {
+            conceptRef: concept.sectionId,
+            obligationId: obligation.id,
+            linkType,
+            linkedAt: now,
+            linkedBy: actor.id,
+          },
+        });
+        eventStore.append(linkEvent);
+        linked++;
+        logger.debug(
+          { conceptRef: concept.sectionId, obligationId: obligation.id, linkType },
+          "linked",
+        );
       }
-
-      const now = new Date().toISOString();
-      const event = makeObligationConceptLinked({
-        asOf: now,
-        entity: BANK_ZA_001,
-        actor,
-        citations: [obligation.id, "FAIS-ACT-37-2002"],
-        payload: {
-          conceptRef: concept.sectionId,
-          obligationId: obligation.id,
-          linkType,
-          linkedAt: now,
-          linkedBy: actor.id,
-        },
-      });
-
-      eventStore.append(event);
-      linked++;
       linkedSections.add(concept.sectionId);
-      logger.debug(
-        { conceptRef: concept.sectionId, obligationId: obligation.id, linkType },
-        "linked",
-      );
+
+      // Emit obligation-review events (Atlas PR #731 — advisory, asymmetric:
+      // measure-only; never mutate the register row).
+      const extractionEventId =
+        conceptEventIds.get(concept.sectionId) ??
+        findExtractionEventId(eventStore, instrumentId, concept.sectionId);
+      if (!extractionEventId) continue;
+      const urn = normaliseRegisterUrn(obligation);
+
+      // Lexical-overlap match between LLM actionSummary and register Requirement.
+      const overlap = lexicalOverlap(concept.obligation.actionSummary, obligation.requirement);
+
+      // Sub-section reference (best-effort)
+      const sectionSuffix = concept.sectionId.split(":").pop() ?? "";
+
+      if (overlap >= 0.25) {
+        // Match: similar wording — emit ObligationReviewMatched
+        if (!hasReviewMatched(eventStore, urn, extractionEventId)) {
+          const now = new Date().toISOString();
+          const matchedPayload: ObligationReviewMatchedPayload = {
+            existingObligationUrn: urn,
+            instrumentId,
+            sectionRef: sectionSuffix,
+            llmExtractionEventId: extractionEventId,
+            matchConfidence: Math.min(1, Math.max(0, overlap)),
+            rationale: `Citation column references ${concept.sectionId}; lexical overlap with Requirement = ${overlap.toFixed(2)}.`,
+          };
+          const matchedEvent: Event = makeObligationReviewMatched({
+            asOf: now,
+            entity: BANK_ZA_001,
+            actor,
+            citations: [obligation.id, instrumentId, "D-OBLIGATION-REVIEW-SUBSTRATE"],
+            payload: matchedPayload,
+          });
+          eventStore.append(matchedEvent);
+          matchedCount++;
+        }
+      } else if (
+        obligation.requirement &&
+        concept.obligation.actionSummary &&
+        concept.obligation.actionSummary !== "No action summary available."
+      ) {
+        // Conflict: citation matches but content disagrees substantially.
+        if (!hasReviewConflict(eventStore, urn, extractionEventId)) {
+          const now = new Date().toISOString();
+          const conflictPayload: ObligationReviewConflictPayload = {
+            existingObligationUrn: urn,
+            instrumentId,
+            sectionRef: sectionSuffix,
+            llmExtractionEventId: extractionEventId,
+            conflictFields: ["requirement"],
+            existingValue: { requirement: obligation.requirement.slice(0, 500) },
+            proposedValue: { requirement: concept.obligation.actionSummary.slice(0, 500) },
+            rationale: `Citation matches but lexical overlap with Requirement = ${overlap.toFixed(2)} (< 0.25); LLM proposes a substantively different wording.`,
+          };
+          const conflictEvent: Event = makeObligationReviewConflict({
+            asOf: now,
+            entity: BANK_ZA_001,
+            actor,
+            citations: [obligation.id, instrumentId, "D-OBLIGATION-REVIEW-SUBSTRATE"],
+            payload: conflictPayload,
+          });
+          eventStore.append(conflictEvent);
+          conflictCount++;
+        }
+      }
+    }
+
+    // If concept doesn't link to any existing row AND scores meaningfully,
+    // propose a new register row (ObligationCandidateProposed).
+    if (!isLinkedToAny && concept.applicabilityScore >= 0.6) {
+      const proposedUrn = proposeUrn(instrumentId, concept.sectionId);
+      const extractionEventId =
+        conceptEventIds.get(concept.sectionId) ??
+        findExtractionEventId(eventStore, instrumentId, concept.sectionId);
+      if (extractionEventId && !hasCandidateProposed(eventStore, proposedUrn, extractionEventId)) {
+        const sectionSuffix = concept.sectionId.split(":").pop() ?? "";
+        // Domain letter best-effort: prefer the LLM's classifications.domain
+        // bag (already letter-coded A..J); fall back to the heuristic derived
+        // from the instrument prefix.
+        const domainCandidate = (concept.classifications.domain[0] ?? "").toUpperCase();
+        const domain: ObligationReviewDomain =
+          domainCandidate.length === 1 && /^[A-J]$/.test(domainCandidate)
+            ? (domainCandidate as ObligationReviewDomain)
+            : deriveDomainLetter(`ORG-${instrumentId.split("-")[0] ?? "OTH"}-00`);
+        const proposedPayload: ObligationCandidateProposedPayload = {
+          proposedUrn,
+          instrumentId,
+          sectionRef: sectionSuffix,
+          llmExtractionEventId: extractionEventId,
+          applicabilityScore: concept.applicabilityScore,
+          relevancyScore: concept.relevancyScore,
+          domain,
+          proposedFields: {
+            requirement: concept.obligation.actionSummary,
+            citation: `${instrumentId} ${sectionSuffix}`,
+            productScope: concept.classifications.productScope.join(", ") || undefined,
+            activityScope: concept.classifications.activityScope.join(", ") || undefined,
+            riskTaxonomy: concept.classifications.riskTaxonomy.join(", ") || undefined,
+            status: "PROPOSED",
+            bindTrigger: "LICENCE-BIND",
+          },
+        };
+        const now = new Date().toISOString();
+        const proposedEvent: Event = makeObligationCandidateProposed({
+          asOf: now,
+          entity: BANK_ZA_001,
+          actor,
+          citations: [instrumentId, "D-OBLIGATION-REVIEW-SUBSTRATE"],
+          payload: proposedPayload,
+        });
+        eventStore.append(proposedEvent);
+        proposedCount++;
+      }
     }
   }
 
@@ -377,5 +658,12 @@ export async function linkToObligations(opts: {
     }
   }
 
-  return { linked, unlinkedHighRelevancy, candidates };
+  return {
+    linked,
+    unlinkedHighRelevancy,
+    candidates,
+    matched: matchedCount,
+    conflicts: conflictCount,
+    proposed: proposedCount,
+  };
 }

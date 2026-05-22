@@ -85,17 +85,30 @@ Extract graph nodes and edges from this provision following the ontology below.
 ${ONTOLOGY_DESCRIPTION}
 
 EXTRACTION RULES FOR GRAPH NODES:
-- Extract only node types relevant to the provision: Provision, Obligation, Term, RegulatedEntity, Activity, Threshold, ReportingRequirement.
+- Extract only node types relevant to the provision: Provision, Obligation, Term, RegulatedEntity, Activity, Threshold, ReportingRequirement, Regulator, Jurisdiction, Framework, RiskCategory.
 - Always include one Provision node for the section itself (nodeType: "Provision", id: "{instrumentId}:s{section}", label: section heading).
-- For each obligation expressed: one Obligation node (obligationType: must/must-not/may/conditional/recommended; actor: who must act; actionSummary: what they must do).
+- For each obligation expressed: one Obligation node — one Obligation per duty (not one per section). Sub-section enumerations almost always express multiple distinct duties; emit a separate Obligation node for each. obligationType: must/must-not/may/conditional/recommended; actor: who must act; actionSummary: what they must do (a single sentence, no markdown).
 - For each defined term: one Term node (term: the word/phrase; definitionText: its statutory definition).
-- For each quantitative threshold: one Threshold node (value; unit; operator).
+- For each quantitative threshold: one Threshold node (value as a number; unit; operator from {>=, <=, =, >, <}).
+- For each reporting / filing obligation: one ReportingRequirement node, plus a REQUIRES_REPORT edge from the originating Obligation.
+- Regulator: emit when the provision explicitly names the issuing or supervisory authority (e.g. "the Authority", "the registrar", "FSCA", "Prudential Authority"). id format: "REG-{slug}" (e.g. "REG-fsca", "REG-pa", "REG-sarb", "REG-fic"). One Regulator per provision is usually enough.
+- Jurisdiction: emit when the provision explicitly scopes itself to a jurisdiction other than ZA, or where the provision's territorial reach is non-obvious. id "JUR-{iso}" (e.g. "JUR-ZA", "JUR-GB"). Default ZA may be omitted.
+- Framework: emit when the provision transposes or aligns with a named supranational framework (Basel III/IV, FATF, IOSCO, OECD CRS/FATCA, etc.). id "FW-{slug}". Pair with a TRANSPOSES edge from the Document to the Framework when explicit, or with confidence 0.4-0.6 when implied by long-title context.
+- RiskCategory: emit one RiskCategory node when the provision addresses a named risk family (market risk, credit risk, liquidity risk, operational risk, compliance risk, cyber risk, conduct risk, financial-crime risk, capital risk, climate risk). id "RISK-{slug}". Pair with an ADDRESSES edge from the Obligation.
+- Control, EffectivePeriod, Policy, Procedure: DO NOT emit in this pass. Those node types are populated by the policy-extraction pass (Phase 2) where the bank's own internal artefacts express closure.
 
-EXTRACTION RULES FOR GRAPH EDGES:
-- Each Obligation node must have an EXPRESSES edge from its Provision.
-- Set confidenceScore honestly: 1.0 = explicit; 0.7-0.9 = strongly implied; 0.4-0.6 = inferred; 0.1-0.3 = speculative.
-- Only assert APPLIES_TO, APPLIES_TO_ACTIVITY, SETS, REQUIRES_REPORT edges when clearly supported by the text.
-- Omit edges you are not confident in (confidenceScore < 0.4).`;
+EXTRACTION RULES FOR GRAPH EDGES — maximise product/activity/threshold granularity:
+- Every Obligation node MUST have an EXPRESSES edge from its Provision (confidence 1.0).
+- APPLIES_TO_ACTIVITY (Obligation → Activity): emit ONE edge per applicable ACT-* code. Enumerate aggressively. The applicable codes are: ACT-TRADE-EXEC, ACT-TRADE-BOOK, ACT-CLIENT-ONBOARD, ACT-RISK-MGMT, ACT-REPORTING, ACT-SETTLEMENT, ACT-COMPLIANCE, ACT-CUSTODY, ACT-FX, ACT-CREDIT. A typical institutional-trading obligation will fire 2–4 of these. Set Activity node id to "ACT-{CODE}" (e.g. "ACT-TRADE-EXEC"). Confidence 0.7–1.0 when the activity is named or clearly implied; 0.4–0.6 when inferred by analogy.
+- APPLIES_TO (Obligation → RegulatedEntity OR product code): emit ONE edge per applicable product code where the obligation is product-scoped. Product codes: equity-securities, debt-securities, money-market-instruments, interest-rate-derivatives, fx-instruments, securities-financing, multi-asset. For the bank's universal-applicability obligations (e.g. governance, FIC AML, fit-and-proper), emit APPLIES_TO → RegulatedEntity (id "ENT-bank-fsp") instead of product edges.
+- SETS (Obligation → Threshold): emit ONE edge for EVERY quantitative threshold expressed in the provision. Numeric limits, percentages, time-windows, monetary amounts all count. Strongly preferred over leaving the threshold un-typed.
+- REQUIRES_REPORT (Obligation → ReportingRequirement): emit when the obligation requires a filing to a regulator (STR, CTR, BA-returns, FSCA returns, FIC reports).
+- ADDRESSES (Obligation → RiskCategory): emit when the obligation has a named risk-mitigation purpose.
+- ISSUED_BY (Document → Regulator): emit when a Regulator node is created.
+- DEFINES (Provision → Term): emit when a Term node is created and the provision is a definitions section.
+- TRANSPOSES (Document → Framework): emit when a Framework node is created; confidence 0.7+ when the long title or preamble names the framework.
+- Set confidenceScore honestly: 1.0 = explicit; 0.7–0.9 = strongly implied; 0.4–0.6 = inferred; 0.1–0.3 = speculative. Do NOT emit edges below 0.4 confidence.
+- TRADE-OFF — recall over precision-of-applicability: the applicabilityScore + relevancyScore on the Obligation carry the uncertainty for the obligation as a whole. Per-edge confidence captures the uncertainty of each specific edge. It is BETTER to emit a 0.5-confidence APPLIES_TO_ACTIVITY edge than to omit it.`;
 
 const CONTEXTUALISATION_SYSTEM_PROMPT = `You are a regulatory analysis engine for a SARB-licensed institutional global-markets trading bank in South Africa.
 
