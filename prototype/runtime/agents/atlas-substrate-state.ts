@@ -451,39 +451,43 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // -------------------------------------------------------------------------
     // AgentDecision — classify the event bus as in-process-only.
     //
-    // This is a genuine architectural decision Atlas makes on each run:
-    // the cross-process event bus is not yet built (M8 cloud lift); the
-    // handler operates on the in-process fan-out path only. Recording this
-    // as an AgentDecision makes the classification visible in the event log
-    // and consumable by Vera's audit pipelines #14/#15.
+    // One-time stable architectural decision (not per-run). Guard with an
+    // idempotency check so repeated handler invocations don't accumulate
+    // duplicate events in the store.
     // -------------------------------------------------------------------------
-    eventStore.append(
-      makeAgentDecision({
-        asOf: ctx.asOf,
-        entity: "LE-ZA-HOZ-BANK",
-        actor: atlasEscActor,
-        citations: EVENT_CITATIONS,
-        payload: {
-          decisionId: `dec:atlas:bus-classification-${fmtDateUTC(ctx.asOf)}`,
-          decidedBy: "Atlas",
-          what: "Classify event-driven dispatch bus as in-process-only for build phase",
-          inScopeBy: "Atlas operating spec § 11 (Outputs) — platform-state event + report",
-          options: [
-            "in-process-only (no cross-process bus; fan-out within a single agent run)",
-            "cross-process bus via Redis/NATS (requires M8 cloud lift)",
-            "deferred: no classification until M8 design is finalised",
-          ],
-          chosen: "in-process-only (no cross-process bus; fan-out within a single agent run)",
-          rationale:
-            "The cross-process event bus is an M8 cloud-lift deliverable. " +
-            "For the build phase, in-process fan-out within a single agent run is " +
-            "sufficient and keeps the substrate minimal. Vera audit pipelines #14/#15 " +
-            "can consume AgentEscalation events emitted in-process; cross-process " +
-            "delivery is tracked as substrate gap and escalated separately.",
-        },
-      }),
-    );
-    eventsEmitted++;
+    const BUS_DECISION_ID = "dec:atlas:bus-classification";
+    const alreadyDecided = eventStore
+      .replay({ type: "AgentDecision" })
+      .some((e) => (e as { payload?: { decisionId?: string } }).payload?.decisionId === BUS_DECISION_ID);
+    if (!alreadyDecided) {
+      eventStore.append(
+        makeAgentDecision({
+          asOf: ctx.asOf,
+          entity: "LE-ZA-HOZ-BANK",
+          actor: atlasEscActor,
+          citations: EVENT_CITATIONS,
+          payload: {
+            decisionId: BUS_DECISION_ID,
+            decidedBy: "Atlas",
+            what: "Classify event-driven dispatch bus as in-process-only for build phase",
+            inScopeBy: "Approve bus architecture and event-routing design decisions",
+            options: [
+              "in-process-only (no cross-process bus; fan-out within a single agent run)",
+              "cross-process bus via Redis/NATS (requires M8 cloud lift)",
+              "deferred: no classification until M8 design is finalised",
+            ],
+            chosen: "in-process-only (no cross-process bus; fan-out within a single agent run)",
+            rationale:
+              "The cross-process event bus is an M8 cloud-lift deliverable. " +
+              "For the build phase, in-process fan-out within a single agent run is " +
+              "sufficient and keeps the substrate minimal. Vera audit pipelines #14/#15 " +
+              "can consume AgentEscalation events emitted in-process; cross-process " +
+              "delivery is tracked as substrate gap and escalated separately.",
+          },
+        }),
+      );
+      eventsEmitted++;
+    }
 
     // -------------------------------------------------------------------------
     // WorkstreamRegistered — A2.1 substrate scheduler (dedicated entry).

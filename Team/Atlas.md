@@ -73,6 +73,7 @@ Atlas does **not** own application-domain logic (accounting rules, trading flow,
 | Approve substrate-config changes (non-invariant-affecting) | Within established invariants; does not alter ordering, durability, or replay semantics | `SubstrateConfigChanged` event |
 | Approve agent registration on the runtime | Agent has a valid `/Team/<name>.md` agent spec (Wave-4 #10 green); typed identity issued; permissions scoped per spec | `AgentRegistered` event |
 | Approve bus architecture and event-routing design decisions | Event-trigger bus topology, routing rules, subscription contracts, fan-out semantics; must preserve P1 ordering/durability invariants and fit within Senna + Rashida's threat model | `AgentDecision` event (bus classification subtype) |
+| Atlas operating spec § 11 (Outputs) — platform-state event + report | Historical alias for bus-classification decisions emitted before explicit scope registration (2026-05-20–22); deprecated in favour of the entry above | `AgentDecision` event (historical) |
 
 ## 10. Decisions that escalate
 
