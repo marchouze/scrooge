@@ -1,14 +1,9 @@
 // dashboard/public/documents.js
 //
-// Document register page — RMS Phase 2 Block B.
+// Document register — filterable list with in-page drill-down.
+// Mirrors the policies.html navigation pattern: list → detail via hash routing.
 //
-// Fetches /api/rms/document and renders a filterable table with a drawer
-// for full hash + rendered markdown preview + retention citation +
-// supersession chain + the union of citing event_ids.
-//
-// Authority: D-RMS-PHASE-1 (CEO-approved 2026-05-09);
-//            D-RMS-PHASE-2-4-AUTHORSHIP (Owen + Atlas, 2026-05-16).
-//
+// Authority: D-RMS-PHASE-1; D-RMS-PHASE-2-4-AUTHORSHIP.
 // Author: Atlas (Core banking platform architect, engineering)
 
 (() => {
@@ -28,11 +23,20 @@
     return iso.replace("T", " ").replace(/\.\d+Z$/, "Z");
   }
 
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    return String(iso).slice(0, 10);
+  }
+
   function hashShort(h) {
     if (typeof h !== "string") return "";
     const colon = h.indexOf(":");
     if (colon === -1) return `${h.slice(0, 14)}…`;
     return `${h.slice(0, colon + 1)}${h.slice(colon + 1, colon + 13)}…`;
+  }
+
+  function rowTitle(r) {
+    return r.metadata?.title || r.recordId || hashShort(r.documentHash);
   }
 
   function classBadge(classification) {
@@ -44,14 +48,19 @@
           : classification === "public-disclosure"
             ? "ok"
             : "muted";
-    return `<span class="status-badge" data-tone="${tone}">${esc(classification)}</span>`;
+    return `<span class="status-badge" data-tone="${tone}">${esc(classification || "—")}</span>`;
+  }
+
+  function registeredBadge(registered) {
+    return registered
+      ? `<span class="status-badge" data-tone="ok">RecordFiled</span>`
+      : `<span class="status-badge" data-tone="muted">cited only</span>`;
   }
 
   // ------------------------------------------------------------------
   // State
   // ------------------------------------------------------------------
 
-  /** @type {{ asOf?: string, rows: any[] }} */
   let registerData = { rows: [] };
   let currentClassification = "all";
   let currentRegister = "";
@@ -67,6 +76,17 @@
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     return { asOf: data.asOf, rows: Array.isArray(data.rows) ? data.rows : [] };
+  }
+
+  async function fetchDocBody(hash) {
+    if (!hash) return "";
+    try {
+      const r = await fetch(`/api/rms/document-content?hash=${encodeURIComponent(hash)}`);
+      if (!r.ok) return `(document not resolvable — HTTP ${r.status})`;
+      return await r.text();
+    } catch (err) {
+      return `(document fetch error: ${esc(String(err))})`;
+    }
   }
 
   // ------------------------------------------------------------------
@@ -86,8 +106,16 @@
       if (currentRegistered === "unregistered" && r.registered) return false;
       if (currentSearch) {
         const needle = currentSearch.toLowerCase();
-        const hay =
-          `${r.documentHash ?? ""} ${r.recordId ?? ""} ${r.metadata?.path ?? ""} ${r.metadata?.title ?? ""}`.toLowerCase();
+        const hay = [
+          r.documentHash ?? "",
+          r.recordId ?? "",
+          r.metadata?.path ?? "",
+          r.metadata?.title ?? "",
+          r.metadata?.author ?? "",
+          r.metadata?.category ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
@@ -95,7 +123,7 @@
   }
 
   // ------------------------------------------------------------------
-  // URL <-> filter sync
+  // URL / filter sync
   // ------------------------------------------------------------------
 
   function readUrl() {
@@ -116,7 +144,7 @@
     $("searchInput").value = currentSearch;
   }
 
-  function writeUrl() {
+  function writeFilterUrl() {
     const p = new URLSearchParams();
     if (currentClassification !== "all") p.set("classification", currentClassification);
     if (currentRegister) p.set("register", currentRegister);
@@ -128,17 +156,16 @@
   }
 
   // ------------------------------------------------------------------
-  // Render
+  // List render
   // ------------------------------------------------------------------
 
   function render() {
     const rows = registerData.rows ?? [];
-    // Sort newest firstSeenAt first.
     const sorted = [...rows].sort((a, b) => {
-      const aA = a.firstSeenAt ?? "";
-      const bA = b.firstSeenAt ?? "";
-      if (aA === bA) return 0;
-      return aA < bA ? 1 : -1;
+      const aT = a.metadata?.date || a.firstSeenAt || "";
+      const bT = b.metadata?.date || b.firstSeenAt || "";
+      if (aT === bT) return 0;
+      return aT < bT ? 1 : -1;
     });
     const visible = applyFilters(sorted);
 
@@ -151,28 +178,39 @@
     const head = `
       <thead>
         <tr>
-          <th>Hash</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Author</th>
+          <th>Date</th>
           <th>Classification</th>
           <th>Register</th>
-          <th>Record id</th>
-          <th>First seen</th>
-          <th>First by</th>
-          <th>Cited by</th>
-          <th>Superseded by</th>
+          <th>Filed</th>
         </tr>
       </thead>`;
 
     const body = visible
       .map((r) => {
-        return `<tr data-hash="${esc(r.documentHash)}" style="cursor:pointer;" tabindex="0" role="button" aria-label="Open document ${esc(hashShort(r.documentHash))}">
-          <td><code title="${esc(r.documentHash)}">${esc(hashShort(r.documentHash))}</code></td>
+        const title = rowTitle(r);
+        const category = r.metadata?.category || "—";
+        const author = r.metadata?.author || "—";
+        const date = fmtDate(r.metadata?.date) || fmtDate(r.firstSeenAt) || "—";
+        return `<tr
+          data-hash="${esc(r.documentHash)}"
+          style="cursor:pointer;"
+          tabindex="0"
+          role="button"
+          aria-label="Open document ${esc(title)}"
+        >
+          <td>
+            <span class="pol-name" style="font-weight:500">${esc(title)}</span>
+            ${r.metadata?.path ? `<div class="muted small" style="font-size:11px;margin-top:2px;font-family:var(--font-mono,monospace)">${esc(r.metadata.path)}</div>` : ""}
+          </td>
+          <td class="muted small">${esc(category)}</td>
+          <td class="muted small">${esc(author)}</td>
+          <td class="muted small">${esc(date)}</td>
           <td>${classBadge(r.classification ?? "")}</td>
-          <td>${r.registerKey ? `<code>${esc(r.registerKey)}</code>` : '<span class="muted small">(unregistered)</span>'}</td>
-          <td>${r.recordId ? `<code class="small">${esc(r.recordId)}</code>` : "—"}</td>
-          <td class="muted small">${esc(fmtTs(r.firstSeenAt))}</td>
-          <td class="muted small"><code>${esc(r.firstReferencedByEventType ?? "")}</code></td>
-          <td class="muted small">${Array.isArray(r.referencedByEventIds) ? r.referencedByEventIds.length : 0}</td>
-          <td>${r.supersededBy ? `<code class="small">${esc(r.supersededBy)}</code>` : "—"}</td>
+          <td>${r.registerKey ? `<code class="small">${esc(r.registerKey)}</code>` : '<span class="muted small">(unregistered)</span>'}</td>
+          <td>${registeredBadge(r.registered)}</td>
         </tr>`;
       })
       .join("");
@@ -187,132 +225,125 @@
       </div>`;
 
     for (const tr of content.querySelectorAll("tr[data-hash]")) {
-      tr.addEventListener("click", () => openDrawer(tr.getAttribute("data-hash")));
+      tr.addEventListener("click", () => navigateTo(tr.getAttribute("data-hash")));
       tr.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          openDrawer(tr.getAttribute("data-hash"));
+          navigateTo(tr.getAttribute("data-hash"));
         }
       });
     }
   }
 
   // ------------------------------------------------------------------
-  // Detail drawer
+  // Navigation — list <-> detail
   // ------------------------------------------------------------------
 
-  async function fetchDoc(hash) {
-    if (!hash) return "";
-    try {
-      const r = await fetch(`/api/rms/document-content?hash=${encodeURIComponent(hash)}`);
-      if (!r.ok) return `(document not resolvable — HTTP ${r.status})`;
-      return await r.text();
-    } catch (err) {
-      return `(document fetch error: ${esc(String(err))})`;
-    }
+  function showList() {
+    $("doc-list").classList.remove("hidden");
+    $("doc-detail").classList.remove("visible");
+    document.title = "Documents — Scrooge Bank";
   }
 
-  async function openDrawer(hash) {
-    if (!hash) return;
-    const row = registerData.rows.find((r) => r.documentHash === hash);
-    if (!row) return;
+  async function showDetail(row) {
+    $("doc-list").classList.add("hidden");
+    $("doc-detail").classList.add("visible");
 
-    const titleText = row.metadata?.title || row.recordId || hashShort(hash);
-    $("drawerTitle").textContent = titleText;
-    $("drawerMeta").innerHTML = `
-      ${classBadge(row.classification ?? "")} ·
-      ${row.registerKey ? `<code>${esc(row.registerKey)}</code>` : '<span class="muted">(unregistered)</span>'} ·
-      first seen ${esc(fmtTs(row.firstSeenAt))}
-    `;
-    $("drawerBody").innerHTML = '<p class="muted">Loading document body…</p>';
-    $("docDrawer").hidden = false;
+    const title = rowTitle(row);
+    document.title = `${title} — Documents — Scrooge Bank`;
 
-    const body = await fetchDoc(hash);
+    $("doc-bc-name").textContent = title;
+    const eyebrowParts = [...new Set([row.metadata?.category, row.registerKey].filter(Boolean))];
+    $("doc-d-eyebrow").textContent = eyebrowParts.join(" · ").toUpperCase() || "DOCUMENT";
+    $("doc-d-title").textContent = title;
+
+    $("doc-d-pills").innerHTML = [
+      classBadge(row.classification ?? ""),
+      registeredBadge(row.registered),
+      row.supersededBy ? `<span class="status-badge" data-tone="warn">superseded</span>` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const metaItems = [
+      ["Hash", `<code>${esc(row.documentHash)}</code>`],
+      ["Record ID", row.recordId ? `<code>${esc(row.recordId)}</code>` : "—"],
+      ["Register", row.registerKey ? `<code>${esc(row.registerKey)}</code>` : "(unregistered)"],
+      ["Author", esc(row.metadata?.author || "—")],
+      ["Date", esc(fmtDate(row.metadata?.date) || "—")],
+      ["Category", esc(row.metadata?.category || "—")],
+      ["First seen", esc(fmtTs(row.firstSeenAt))],
+      [
+        "Cited by",
+        `${Array.isArray(row.referencedByEventIds) ? row.referencedByEventIds.length : 0} events`,
+      ],
+    ];
+    $("doc-d-meta").innerHTML = metaItems
+      .map(
+        ([label, val]) =>
+          `<div class="doc-meta-item">
+            <span class="doc-meta-label">${esc(label)}</span>
+            <span class="doc-meta-value">${val}</span>
+          </div>`,
+      )
+      .join("");
+
+    $("doc-d-body").innerHTML = `<p class="muted">Loading…</p>`;
+
+    window.scrollTo(0, 0);
+
+    const body = await fetchDocBody(row.documentHash);
     const size = new TextEncoder().encode(body).length;
+    $("doc-d-body").innerHTML = `
+      <div class="muted small" style="margin-bottom:var(--space-2);">${esc(size)} bytes · hash: <code style="font-size:11px">${esc(row.documentHash)}</code></div>
+      <pre class="doc-body-pre">${esc(body)}</pre>`;
 
-    const retentionHtml = row.retention
-      ? `<dl class="kv">
-          <dt>Citation</dt><dd><code>${esc(row.retention.citationRef)}</code></dd>
-          <dt>Minimum years</dt><dd>${esc(row.retention.minimumYears)}</dd>
-          <dt>Tier</dt><dd>${esc(row.retention.archivalTier)}</dd>
+    const retention = row.retention;
+    $("doc-d-retention").innerHTML = retention
+      ? `<dl class="doc-kv">
+          <dt>Citation</dt><dd><code>${esc(retention.citationRef)}</code></dd>
+          <dt>Minimum years</dt><dd>${esc(String(retention.minimumYears))}</dd>
+          <dt>Archival tier</dt><dd>${esc(retention.archivalTier)}</dd>
         </dl>`
-      : '<p class="muted small">No <code>RecordFiled</code> event has registered this hash yet — falls under <code>agent-internal</code> default retention (Banks Act §60 5y).</p>';
+      : `<p class="muted small">No <code>RecordFiled</code> event for this hash — falls under <code>agent-internal</code> default (Banks Act §60 5y).</p>`;
 
-    const supersessionHtml = `
-      <dl class="kv">
-        <dt>Supersedes</dt><dd>${row.supersedes ? `<code>${esc(row.supersedes)}</code>` : "—"}</dd>
-        <dt>Superseded by</dt><dd>${row.supersededBy ? `<code>${esc(row.supersededBy)}</code>` : "—"}</dd>
-      </dl>`;
+    $("doc-d-supersession").innerHTML = `
+      <dt>Supersedes</dt>
+      <dd>${row.supersedes ? `<code>${esc(row.supersedes)}</code>` : "—"}</dd>
+      <dt>Superseded by</dt>
+      <dd>${row.supersededBy ? `<code>${esc(row.supersededBy)}</code>` : "—"}</dd>`;
 
-    const eventsList = Array.isArray(row.referencedByEventIds)
-      ? row.referencedByEventIds
-          .map((id) => `<li><code class="small">${esc(id)}</code></li>`)
-          .join("")
-      : "";
-
-    const metadataHtml = row.metadata
-      ? `<dl class="kv">
-          <dt>Title</dt><dd>${esc(row.metadata.title)}</dd>
-          <dt>Path</dt><dd><code class="small">${esc(row.metadata.path)}</code></dd>
-          <dt>Category</dt><dd>${esc(row.metadata.category)}</dd>
-          ${row.metadata.author ? `<dt>Author</dt><dd>${esc(row.metadata.author)}</dd>` : ""}
-          ${row.metadata.date ? `<dt>Date</dt><dd>${esc(row.metadata.date)}</dd>` : ""}
-        </dl>`
-      : '<p class="muted small">No metadata on the <code>RecordFiled</code> envelope.</p>';
-
-    const bodyHtml = `<pre style="white-space:pre-wrap;background:var(--surface-2,#f6f6f6);padding:var(--space-3);border-radius:4px;max-height:420px;overflow:auto;font-size:0.85rem;border:1px solid var(--border);">${esc(body)}</pre>`;
-
-    $("drawerBody").innerHTML = `
-      <section style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Document</h3>
-        <div class="muted small" style="margin-bottom:var(--space-1);">hash: <code>${esc(hash)}</code> · ${esc(size)} bytes</div>
-        ${bodyHtml}
-      </section>
-      <section style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Retention</h3>
-        ${retentionHtml}
-      </section>
-      <section style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Supersession chain</h3>
-        ${supersessionHtml}
-      </section>
-      <section style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Metadata</h3>
-        ${metadataHtml}
-      </section>
-      <section>
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Citing events (${Array.isArray(row.referencedByEventIds) ? row.referencedByEventIds.length : 0})</h3>
-        <ul style="margin:0;padding-left:var(--space-4);max-height:200px;overflow:auto;">${eventsList}</ul>
-      </section>
-    `;
+    const eventIds = Array.isArray(row.referencedByEventIds) ? row.referencedByEventIds : [];
+    $("doc-d-events").innerHTML = eventIds.length
+      ? eventIds.map((id) => `<li><code>${esc(id)}</code></li>`).join("")
+      : `<li class="muted small" style="list-style:none;padding:var(--space-2) 0;">No citing events recorded.</li>`;
+    $("doc-d-events-section").querySelector("h3").textContent =
+      `Citing events (${eventIds.length})`;
   }
 
-  function closeDrawer() {
-    $("docDrawer").hidden = true;
+  function navigateTo(hash, push = true) {
+    const row = (registerData.rows ?? []).find((r) => r.documentHash === hash);
+    if (!row) return;
+    if (push) history.pushState({ docHash: hash }, "", `#${encodeURIComponent(hash)}`);
+    showDetail(row);
+  }
+
+  function navigateBack(push = true) {
+    if (push) history.pushState({}, "", location.pathname + (location.search || ""));
+    showList();
+    render();
   }
 
   // ------------------------------------------------------------------
-  // Boot
+  // Filter wiring
   // ------------------------------------------------------------------
-
-  async function refresh() {
-    try {
-      registerData = await fetchDocuments();
-      const lu = $("lastUpdated");
-      if (lu) lu.textContent = `as of ${fmtTs(registerData.asOf ?? "")}`;
-      render();
-    } catch (err) {
-      $("documentsContent").innerHTML =
-        `<p class="muted" style="color:var(--danger,#c33);">Failed to load documents: ${esc(String(err))}</p>`;
-    }
-  }
 
   function wireFilters() {
     for (const el of document.querySelectorAll('input[name="classFilter"]')) {
       el.addEventListener("change", () => {
         if (el.checked) {
           currentClassification = el.value;
-          writeUrl();
+          writeFilterUrl();
           render();
         }
       });
@@ -321,35 +352,59 @@
       el.addEventListener("change", () => {
         if (el.checked) {
           currentRegistered = el.value;
-          writeUrl();
+          writeFilterUrl();
           render();
         }
       });
     }
     $("registerFilter").addEventListener("change", (e) => {
       currentRegister = e.target.value;
-      writeUrl();
+      writeFilterUrl();
       render();
     });
     $("searchInput").addEventListener("input", (e) => {
       currentSearch = e.target.value;
-      writeUrl();
+      writeFilterUrl();
       render();
     });
-    $("drawerClose").addEventListener("click", closeDrawer);
-    $("docDrawer").addEventListener("click", (e) => {
-      if (e.target === $("docDrawer")) closeDrawer();
+
+    $("doc-bc-back").addEventListener("click", (e) => {
+      e.preventDefault();
+      navigateBack();
     });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !$("docDrawer").hidden) closeDrawer();
+
+    window.addEventListener("popstate", () => {
+      const hash = decodeURIComponent(location.hash.slice(1));
+      if (hash) navigateTo(hash, false);
+      else navigateBack(false);
     });
+  }
+
+  // ------------------------------------------------------------------
+  // Boot
+  // ------------------------------------------------------------------
+
+  async function load() {
+    try {
+      registerData = await fetchDocuments();
+      const lu = $("lastUpdated");
+      if (lu) lu.textContent = `as of ${fmtTs(registerData.asOf ?? "")}`;
+
+      render();
+
+      const initHash = decodeURIComponent(location.hash.slice(1));
+      if (initHash) navigateTo(initHash, false);
+    } catch (err) {
+      $("documentsContent").innerHTML =
+        `<p class="muted" style="color:var(--danger,#c33);">Failed to load documents: ${esc(String(err))}</p>`;
+    }
   }
 
   function init() {
     readUrl();
     wireFilters();
-    refresh();
-    setInterval(refresh, 30_000);
+    load();
+    setInterval(load, 30_000);
   }
 
   if (document.readyState === "loading") {

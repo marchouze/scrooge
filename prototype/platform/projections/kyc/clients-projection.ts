@@ -13,8 +13,8 @@
 // truth) and to the KYC gateway design: ClientAccepted is the only gate that
 // marks a candidate as having passed all AML/CDD/EDD checks.
 //
-// Reduces over: ClientAccepted, KYCRefreshCompleted, KYCRatingRevised,
-//               CounterpartyCategorised.
+// Reduces over: ClientAccepted, ClientRejected, KYCRefreshCompleted,
+//               KYCRatingRevised, CounterpartyCategorised.
 //
 // Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18);
 //   AML-CFT-POLICY-V1; FIC-ACT-38-2001; FAIS-ACT-37-2002.
@@ -64,6 +64,8 @@ export interface ClientState {
    * marked so the UI can show a "sim" badge distinguishing them from real clients.
    */
   readonly simulated: boolean;
+  /** KYC candidateId that produced this client — used to correlate ClientRejected tombstones. */
+  readonly candidateId?: string;
 }
 
 /** Full projection state — Map keyed by clientId. */
@@ -75,6 +77,7 @@ export type ClientsProjectionState = Map<string, ClientState>;
 
 const CLIENT_EVENT_TYPES = [
   "ClientAccepted",
+  "ClientRejected",
   "KYCRefreshCompleted",
   "KYCRatingRevised",
   "CounterpartyCategorised",
@@ -158,6 +161,7 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
   // INVARIANT: insertClient is the ONLY function that may create a row.
   return insertClient(state, clientId, {
     clientId,
+    candidateId,
     entityName,
     entityType,
     jurisdiction,
@@ -168,6 +172,18 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
     lastUpdatedAt: e.as_of,
     simulated,
   });
+}
+
+function applyClientRejected(state: ClientsProjectionState, e: Event): ClientsProjectionState {
+  const p = e.payload as Record<string, unknown>;
+  const candidateId = typeof p.candidateId === "string" ? p.candidateId : undefined;
+  if (!candidateId) return state;
+  // Find the client whose candidateId matches (linear scan — small set).
+  const entry = [...state.values()].find((c) => c.candidateId === candidateId);
+  if (!entry) return state;
+  const next = new Map(state);
+  next.delete(entry.clientId);
+  return next;
 }
 
 function applyKYCRefreshCompleted(state: ClientsProjectionState, e: Event): ClientsProjectionState {
@@ -230,6 +246,8 @@ export const clientsProjection: Projection<ClientsProjectionState> = {
     switch (event.type) {
       case "ClientAccepted":
         return applyClientAccepted(state, event);
+      case "ClientRejected":
+        return applyClientRejected(state, event);
       case "KYCRefreshCompleted":
         return applyKYCRefreshCompleted(state, event);
       case "KYCRatingRevised":
