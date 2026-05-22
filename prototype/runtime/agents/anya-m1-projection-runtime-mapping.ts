@@ -51,6 +51,7 @@ import {
   MARKETS_PROJECTION_NAMES,
   SEMANTIC_LAYER_ENTRIES,
   positionProjection,
+  securityMasterProjection,
   subLedgerProjection,
   tradeRecordProjection,
 } from "../../platform/projections/markets";
@@ -109,7 +110,12 @@ const PROJECTION_CITATIONS: Readonly<Record<string, readonly string[]>> = {
   ],
 };
 
-const PROJECTIONS = [tradeRecordProjection, positionProjection, subLedgerProjection] as const;
+const PROJECTIONS = [
+  tradeRecordProjection,
+  positionProjection,
+  subLedgerProjection,
+  securityMasterProjection,
+] as const;
 
 interface ProjectionMaterialisation {
   readonly name: string;
@@ -117,6 +123,7 @@ interface ProjectionMaterialisation {
 }
 
 function materialiseAll(): ProjectionMaterialisation[] {
+  const smState = projector.build(securityMasterProjection);
   return [
     {
       name: tradeRecordProjection.name,
@@ -129,6 +136,10 @@ function materialiseAll(): ProjectionMaterialisation[] {
     {
       name: subLedgerProjection.name,
       rowCount: projector.build(subLedgerProjection).rows.length,
+    },
+    {
+      name: securityMasterProjection.name,
+      rowCount: smState.instruments.size,
     },
   ];
 }
