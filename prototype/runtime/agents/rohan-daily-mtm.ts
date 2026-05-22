@@ -58,6 +58,7 @@ import {
 import { makeMtmRunCompleted } from "../../platform/event-store/event-types/mtm";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import { MarketDataStore } from "../../platform/market-data/store";
+import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
 import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
@@ -225,7 +226,18 @@ function revalueOnePosition(args: {
 
   const legRate = nearLeg.rate.amount;
   const bookRate = nearLeg.rate.currency === trade.currencyPair.quote ? legRate : 1 / legRate;
-  const notionalBaseMinor = nearLeg.notional.amountMinor;
+  // Bug fix 1: use baseAmountMinor() to always get the base-currency minor
+  // amount regardless of which leg field stores it.  Legacy code read
+  // nearLeg.notional.amountMinor directly, which is only correct for SELL
+  // trades on a major-first pair.  For BUY trades the notional field holds the
+  // quote-currency amount, so the old reading was dimensionally wrong (ZAR² /
+  // EUR if the pair is EUR/ZAR).  baseAmountMinor() checks notional.currency
+  // and counterNotional.currency against pair.base and returns the correct one.
+  const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
+  // Bug fix 2: apply the bank's side sign.  "buy" means the bank holds a long
+  // position in the base currency: P&L > 0 when midRate > bookRate.  "sell"
+  // means the bank is short the base: P&L > 0 when midRate < bookRate.
+  const sideSign = trade.side === "buy" ? 1 : -1;
 
   // ---- 1. Try fresh production tick ----------------------------------------
   const productionTicks = mdStore.query({
@@ -250,7 +262,7 @@ function revalueOnePosition(args: {
         policyVersionRef,
       });
 
-      const unrealisedPnlZarMinor = Math.round(notionalBaseMinor * (midRate - bookRate));
+      const unrealisedPnlZarMinor = Math.round(sideSign * notionalBaseMinor * (midRate - bookRate));
       const revalPayload: FxPositionRevaluedPayload = {
         tradeId,
         currencyPair,
