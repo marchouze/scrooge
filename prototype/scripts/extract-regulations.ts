@@ -32,6 +32,7 @@ import type { Actor } from "../platform/event-store/types";
 import { extractConcepts } from "../platform/regulatory/concept-extractor";
 import { linkToObligations } from "../platform/regulatory/obligation-linker";
 import { claudeAvailable } from "../runtime/claude";
+import { formatPreflightFailure, preflightForWorkload } from "../runtime/preflight";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -437,6 +438,40 @@ if (targets.length === 0) {
   );
   process.exit(1);
 }
+
+// ---------------------------------------------------------------------------
+// Preflight probe — realistic workload-shape check before bulk work.
+//
+// Closes GAP-PREFLIGHT-PROBE-SIZE from Mira's 2026-05-22 outcome card.
+// One real call sized to the typical per-section extraction shape, before
+// we iterate the manifest. Cost on success ≈ $0.004 on Haiku — cheap
+// insurance against running the whole corpus into a credit-exhausted
+// account.
+//
+// `expectedCallCount` is a rough sum of sections across the selected
+// instruments (assumed ~50 sections each as an order-of-magnitude
+// estimate; exact count is per-instrument and surfaces in the summary
+// table after the run).
+// ---------------------------------------------------------------------------
+
+const PREFLIGHT_OPTS = {
+  model: process.env.BANK_CLAUDE_MODEL ?? "claude-haiku-4-5",
+  estimatedInputTokens: 5_000,
+  estimatedOutputTokens: 500,
+  expectedCallCount: targets.length * 50,
+};
+
+console.log(
+  `Preflight: probing ${PREFLIGHT_OPTS.model} for ~${PREFLIGHT_OPTS.estimatedInputTokens}-token input × ~${PREFLIGHT_OPTS.estimatedOutputTokens}-token output workload (~${PREFLIGHT_OPTS.expectedCallCount} calls planned across ${targets.length} instruments)...`,
+);
+const preflight = await preflightForWorkload(PREFLIGHT_OPTS);
+if (!preflight.ok) {
+  console.error(formatPreflightFailure(preflight, PREFLIGHT_OPTS));
+  process.exit(1);
+}
+console.log(
+  `Preflight OK — ${preflight.model} responded (${preflight.usage.inputTokens} in / ${preflight.usage.outputTokens} out).`,
+);
 
 console.log(
   `Mira (Compliance / RegTech engineer, engineering) — running extraction on ${targets.length} instrument(s)`,

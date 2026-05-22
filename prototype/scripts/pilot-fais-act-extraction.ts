@@ -30,6 +30,7 @@ import type { Actor } from "../platform/event-store/types";
 import { extractConcepts } from "../platform/regulatory/concept-extractor";
 import { linkToObligations } from "../platform/regulatory/obligation-linker";
 import { claudeAvailable } from "../runtime/claude";
+import { formatPreflightFailure, preflightForWorkload } from "../runtime/preflight";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -60,6 +61,41 @@ if (!claudeAvailable()) {
   );
   process.exit(0);
 }
+
+// ---------------------------------------------------------------------------
+// Preflight probe — realistic workload-shape check before bulk work.
+//
+// A 1-token ping passes whenever the account has any non-zero credit; it
+// doesn't reflect whether enough credit exists for the per-section call.
+// Mira hit this on 2026-05-22 — the 1-token preflight passed but every
+// real ~5k-input/~500-output call returned `credit balance too low`.
+// `preflightForWorkload` sends one realistically-sized call and reports
+// back; we exit cleanly with a useful error if it fails.
+// ---------------------------------------------------------------------------
+
+const PILOT_PREFLIGHT_OPTS = {
+  model: process.env.BANK_CLAUDE_MODEL ?? "claude-haiku-4-5",
+  estimatedInputTokens: 5_000,
+  estimatedOutputTokens: 500,
+  // FAIS Act has roughly 60 sections; per-section call is one Claude
+  // invocation. Echoed back in the failure message for budget context.
+  expectedCallCount: 60,
+};
+
+console.log(
+  `Preflight: probing ${PILOT_PREFLIGHT_OPTS.model} for ~${PILOT_PREFLIGHT_OPTS.estimatedInputTokens}-token input × ~${PILOT_PREFLIGHT_OPTS.estimatedOutputTokens}-token output workload (${PILOT_PREFLIGHT_OPTS.expectedCallCount} calls planned)...`,
+);
+const preflight = await preflightForWorkload(PILOT_PREFLIGHT_OPTS);
+if (!preflight.ok) {
+  console.error(formatPreflightFailure(preflight, PILOT_PREFLIGHT_OPTS));
+  // credit_too_low / auth_failed → operator action needed; exit 1.
+  // overloaded → transient, also exit 1 so a wrapper can retry.
+  // key_missing is handled by claudeAvailable() above; shouldn't reach here.
+  process.exit(1);
+}
+console.log(
+  `Preflight OK — ${preflight.model} responded (${preflight.usage.inputTokens} in / ${preflight.usage.outputTokens} out).`,
+);
 
 // ---------------------------------------------------------------------------
 // Step 1: Read FAIS Act source text
