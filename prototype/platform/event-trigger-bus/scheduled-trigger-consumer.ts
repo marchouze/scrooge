@@ -48,7 +48,6 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { HANDLERS_METADATA_BY_KEY } from "../../runtime/handlers-metadata";
-import { createBunWorkerBusRunner } from "../agent-runtime/bun-worker-bus-runner";
 import { makeBusDispatched, makeSubstrateAlert } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event } from "../event-store/types";
@@ -74,27 +73,16 @@ export interface ScheduledTriggerConsumerConfig {
   /**
    * Runner to use for dispatching scheduled handlers.
    *
-   * If omitted, the consumer defaults to `createBunWorkerBusRunner` so each
-   * handler invocation runs in an isolated Bun Worker thread. When using the
-   * default, `eventDbPath` and `worktreeRoot` must also be provided so the
-   * worker can initialise its composition root correctly.
+   * Must be provided explicitly. Use `createInProcessBusRunner` from `bus.ts`
+   * for in-process dispatch (default for most callers and all tests), or
+   * `createBunWorkerBusRunner` from `../agent-runtime/bun-worker-bus-runner`
+   * for isolated Bun Worker thread dispatch (explicit opt-in only).
    *
-   * Tests should inject an explicit runner (e.g. via `createInProcessBusRunner`
-   * from `bus.ts`) to avoid spawning Worker threads.
+   * `BunWorkerBusRunner` is available infrastructure but is NOT the default —
+   * it must be opted into explicitly so existing callers and the runtime test
+   * suite are not affected by worker-isolation behaviour.
    */
-  readonly runner?: BusRunner;
-  /**
-   * Absolute path to the SQLite event-store database. Required when `runner`
-   * is omitted (the default BunWorkerBusRunner needs it to configure the
-   * worker's BANK_EVENT_DB).
-   */
-  readonly eventDbPath?: string;
-  /**
-   * Absolute path to the worktree root. Required when `runner` is omitted
-   * (the default BunWorkerBusRunner needs it to configure BANK_REPO_ROOT and
-   * the RunnerWorker boundary shim).
-   */
-  readonly worktreeRoot?: string;
+  readonly runner: BusRunner;
   readonly entity?: string;
   readonly actor?: Actor;
   readonly citations?: readonly string[];
@@ -136,24 +124,7 @@ export class ScheduledTriggerConsumer {
 
   constructor(config: ScheduledTriggerConsumerConfig) {
     this.eventStore = config.eventStore;
-    if (config.runner !== undefined) {
-      this.runner = config.runner;
-    } else {
-      // Default: out-of-process Bun Worker runner.
-      // eventDbPath and worktreeRoot must be provided in this path.
-      if (!config.eventDbPath || !config.worktreeRoot) {
-        throw new Error(
-          "ScheduledTriggerConsumer: when no runner is provided, " +
-            "eventDbPath and worktreeRoot must both be set so the default " +
-            "BunWorkerBusRunner can initialise the worker composition root.",
-        );
-      }
-      this.runner = createBunWorkerBusRunner({
-        eventStore: config.eventStore,
-        eventDbPath: config.eventDbPath,
-        worktreeRoot: config.worktreeRoot,
-      });
-    }
+    this.runner = config.runner;
     this.entity = config.entity ?? DEFAULT_ENTITY;
     this.actor = config.actor ?? DEFAULT_ACTOR;
     this.citations = config.citations ?? DEFAULT_CITATIONS;

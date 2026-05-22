@@ -147,6 +147,14 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // explicit `nowIso`. No event `asOf` is sourced from these defaults.
   "dashboard/markets-fx-counterparties.ts",
   "dashboard/rms-view.ts",
+  // Main derive entry point: `opts.now ?? (() => new Date().toISOString())`
+  // is an injectable-default pattern — callers that need deterministic
+  // behaviour pass an explicit `now`. No event `asOf` is sourced from this
+  // default. Same rationale as dashboard/registry.ts and the other dashboard
+  // allowlist entries above. The snapshot-57→58 bump comment in the header
+  // intended to cover this callsite but the allowlist was not updated; this
+  // entry resolves that discrepancy and lets the snapshot ratchet back to 58.
+  "dashboard/derive.ts",
   // Agent goal-loop deriving functions: all Date.now() calls here are
   // elapsed-time staleness checks — comparing real wall-clock time against
   // stored event timestamps to determine if an agent run is overdue.
