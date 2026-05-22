@@ -100,6 +100,7 @@ import {
   agentFeedbackIssuedPayloadSchema,
   agentPerformanceEvaluatedPayloadSchema,
 } from "../event-types/performance";
+import { entityReclassifiedPayloadSchema } from "../event-types/entity-reclassified";
 import { provenanceReclassifiedPayloadSchema } from "../event-types/provenance-reclassified";
 import {
   type EventTypeMetadata,
@@ -221,6 +222,21 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-PROVENANCE-BUILD-PHASE-CLASS", "D-DATA-PROVENANCE-SUBSTRATE"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/provenance-reclassified.ts",
+  },
+  // D-G2-ENTITY-ID-BACKFILL — audit event for envelope-axis entity re-tagging.
+  // Emitted by the entity-id-g2 backfill migrating BANK-ZA-001 → LE-ZA-HOZ-BANK.
+  // Authority: D-G2-ENTITY-ID-BACKFILL (CEO-approved 2026-05-22,
+  //   event `a507ce6e-de32-48be-9350-a8044ee0b16f`).
+  {
+    type: "EntityReclassified",
+    class: "audit",
+    payloadSchema: entityReclassifiedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-G2-ENTITY-ID-BACKFILL"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/event-store/event-types/entity-reclassified.ts",
   },
   {
     type: "CitationGatePassed",
