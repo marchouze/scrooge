@@ -229,6 +229,13 @@ export * from "./close-management";
 // materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 export * from "./ifrs-policy-thresholds";
+// WS-OBLIGATION-REVIEW-SUBSTRATE — Mira's LLM-extraction review pipeline.
+// ObligationReviewMatched / ObligationReviewConflict /
+//   ObligationCandidateProposed / ObligationReviewCompleted.
+// Authority: D-OBLIGATION-REVIEW-SUBSTRATE (CEO-approved 2026-05-21 via
+//   session delegation); D-KG-GRAPHITI-ADOPT; P2-SINGLE-GRAPH-DISCIPLINE.
+// Author: Atlas (Core banking platform architect, engineering).
+export * from "./obligation-review";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -339,6 +346,7 @@ import { LIQUIDITY_LIMIT_TYPED_EVENT_TYPES } from "./liquidity-limit";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
+import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
@@ -472,6 +480,12 @@ export const TYPED_EVENT_TYPES = [
   // per FIN-ACCT-01 v1.3. Authority: brief:bea:register-sicrthresholdapproved-
   // materialitybenchm:2026-05-21; D-TRADE-LIFECYCLE-IFRS-CHAIN.
   ...IFRS_POLICY_THRESHOLDS_TYPED_EVENT_TYPES,
+  // WS-OBLIGATION-REVIEW-SUBSTRATE — Mira's LLM-extraction review pipeline.
+  // ObligationReviewMatched / ObligationReviewConflict /
+  //   ObligationCandidateProposed / ObligationReviewCompleted.
+  // Authority: D-OBLIGATION-REVIEW-SUBSTRATE (CEO-approved 2026-05-21 via
+  //   session delegation); D-KG-GRAPHITI-ADOPT; P2-SINGLE-GRAPH-DISCIPLINE.
+  ...OBLIGATION_REVIEW_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
