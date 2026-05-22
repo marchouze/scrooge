@@ -177,6 +177,33 @@
     .pol-proc-status-live { background: var(--color-success-bg); color: var(--color-success); }
     .pol-proc-status-draft { background: var(--color-warning-bg); color: var(--color-warning); }
     .pol-proc-status-planned { background: var(--color-surface-raised); color: var(--color-text-secondary); }
+
+    /* ── Table of contents ──────────────────────────────── */
+    .pol-toc {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+    .pol-toc-label {
+      font: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-3);
+    }
+    .pol-toc-list { list-style: none; margin: 0; padding: 0; }
+    .pol-toc-list li { line-height: 1.6; }
+    .pol-toc-list a {
+      color: var(--color-text-primary);
+      text-decoration: none;
+      font: var(--text-body);
+    }
+    .pol-toc-list a:hover { color: var(--color-accent); text-decoration: underline; }
+    .pol-toc-list .toc-h3 { padding-left: var(--space-4); font-size: 13px; color: var(--color-text-secondary); }
+    .pol-toc-list .toc-h3 a { color: var(--color-text-secondary); font-size: 13px; }
+    .pol-toc-list .toc-h3 a:hover { color: var(--color-accent); }
   </style>
 </head>
 <body>
@@ -211,6 +238,11 @@
       </div>
 
       <div class="pol-detail-meta" id="pol-d-meta"></div>
+
+      <div id="pol-d-toc" class="pol-toc" style="display:none">
+        <div class="pol-toc-label">Contents</div>
+        <ol class="pol-toc-list" id="pol-d-toc-list"></ol>
+      </div>
 
       <div class="pol-section" id="pol-d-doc-section" style="display:none">
         <h3>Policy Document</h3>
@@ -310,9 +342,10 @@
           }
           if (inCode) { codeBuf.push(line); continue; }
           if (!line.trim()) { closeList(); closeTable(); continue; }
-          const h1 = line.match(/^# (.+)$/); if (h1) { closeList(); closeTable(); out.push(`<h2>${inline(h1[1])}</h2>`); continue; }
-          const h2 = line.match(/^## (.+)$/); if (h2) { closeList(); closeTable(); out.push(`<h3>${inline(h2[1])}</h3>`); continue; }
-          const h3 = line.match(/^### (.+)$/); if (h3) { closeList(); closeTable(); out.push(`<h4>${inline(h3[1])}</h4>`); continue; }
+          const slug = t => t.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+          const h1 = line.match(/^# (.+)$/); if (h1) { closeList(); closeTable(); const id = `toc-${slug(h1[1])}`; out.push(`<h2 id="${id}">${inline(h1[1])}</h2>`); continue; }
+          const h2 = line.match(/^## (.+)$/); if (h2) { closeList(); closeTable(); const id = `toc-${slug(h2[1])}`; out.push(`<h3 id="${id}">${inline(h2[1])}</h3>`); continue; }
+          const h3 = line.match(/^### (.+)$/); if (h3) { closeList(); closeTable(); const id = `toc-${slug(h3[1])}`; out.push(`<h4 id="${id}">${inline(h3[1])}</h4>`); continue; }
           const ul = line.match(/^[-*]\s+(.+)$/);
           if (ul) {
             if (!inList || listType !== "ul") { closeList(); closeTable(); out.push("<ul>"); inList = true; listType = "ul"; }
@@ -370,18 +403,35 @@
           item("Obligations", SC.esc(String((p.linkedObligations || []).length))),
         ].filter(Boolean).join("");
 
-        // Policy document
+        // Policy document + TOC
         const docFile = (p.sourceFiles || []).find(f => f.startsWith("Policies/"));
         const docSection = document.getElementById("pol-d-doc-section");
         const docEl = document.getElementById("pol-d-doc");
+        const tocEl = document.getElementById("pol-d-toc");
+        const tocListEl = document.getElementById("pol-d-toc-list");
         if (docFile) {
           docSection.style.display = "";
           docEl.innerHTML = SC.renderSkeleton(6);
+          tocEl.style.display = "none";
           fetch(`/api/policy/${encodeURIComponent(docFile)}`)
             .then(r => r.ok ? r.text() : null)
-            .then(md => { docEl.innerHTML = md ? mdToHtml(md) : `<p class="pol-doc-empty">Document not available.</p>`; });
+            .then(md => {
+              if (!md) { docEl.innerHTML = `<p class="pol-doc-empty">Document not available.</p>`; return; }
+              docEl.innerHTML = mdToHtml(md);
+              // Build TOC from rendered headings
+              const headings = [...docEl.querySelectorAll("h2[id], h3[id], h4[id]")];
+              if (headings.length > 1) {
+                tocListEl.innerHTML = headings.map(h => {
+                  const depth = parseInt(h.tagName[1]) - 1; // h2→1, h3→2, h4→3
+                  const cls = depth > 1 ? " toc-h3" : "";
+                  return `<li class="${cls}"><a href="#${h.id}">${h.textContent}</a></li>`;
+                }).join("");
+                tocEl.style.display = "";
+              }
+            });
         } else {
           docSection.style.display = "none";
+          tocEl.style.display = "none";
         }
 
         // Obligations
