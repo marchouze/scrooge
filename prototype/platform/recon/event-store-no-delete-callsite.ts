@@ -61,6 +61,13 @@ const ALLOWLIST_RELATIVE_PATHS: ReadonlySet<string> = new Set([
   // content passed to makeSyntheticProto() to drive the scanner under test.
   // The strings are never executed against a real or shared database.
   "platform/recon/event-store-no-delete-callsite.test.ts",
+  // Regulatory knowledge graph DB — a DERIVED PROJECTION (Principle 1 endorses
+  // truncate-and-rebuild for projections; only the underlying event log is
+  // append-only). truncateGraphTables() targets `.local/graph.db` tables
+  // (graph_edges, graph_nodes), never the events table. Added 2026-05-22
+  // alongside the Step-0 truncate in seed-projection.ts that fixes the
+  // sequence-ID PK collision on re-runs.
+  "platform/regulatory/graph/db.ts",
 ]);
 
 // Directories to skip entirely when walking prototype/.

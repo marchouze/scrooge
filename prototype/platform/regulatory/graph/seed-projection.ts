@@ -17,7 +17,14 @@ import {
   normaliseInstrumentId,
   parseObligationsRegister,
 } from "../obligation-linker";
-import { getDb, getEdgeCount, getNodeCount, upsertEdge, upsertNode } from "./db";
+import {
+  getDb,
+  getEdgeCount,
+  getNodeCount,
+  truncateGraphTables,
+  upsertEdge,
+  upsertNode,
+} from "./db";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
 import type { DocumentApplicabilityStatus, GraphNode } from "./types";
@@ -237,6 +244,12 @@ function walkMd(dir: string): string[] {
 export async function runSeed(): Promise<SeedStats> {
   const startMs = performance.now();
   const now = nowUtc();
+
+  // ── Step 0: Truncate (graph is a derived projection per Principle 1) ─────
+  // Re-runs must start clean. Without this, the edgeId() sequence counter
+  // resets each run but persisted rows from prior runs collide on PK.
+  truncateGraphTables();
+  _edgeSeq = 0;
 
   // ── Step 1: Regulator nodes ──────────────────────────────────────────────
 
@@ -697,6 +710,97 @@ export async function runSeed(): Promise<SeedStats> {
           extractedAt: now,
         });
       }
+    }
+  }
+
+  // ── Step 8b: Rich derivations from RegulatoryConceptExtracted events ─────
+  //
+  // The Step-5 loop seeds Provision nodes + CONTAINS edges but only reads 4
+  // fields. The rest of each event payload carries `classifications.
+  // activityScope`, `classifications.productScope`, etc. — all ignored.
+  //
+  // This block re-iterates the same events and emits the granular edges that
+  // turn the reg → ontology axis tight per the asymmetric-coupling model
+  // (D-ONTOLOGY-REG-EXTRACTION-PHASE-1):
+  //   - Provision → Activity (APPLIES_TO_ACTIVITY) per ACT-* code; lazy-upsert
+  //     the Activity node if the LLM-emitted code isn't in the register
+  //     vocabulary (LLM uses coarser codes than _activity-taxonomy.md).
+  //   - Provision → ProductInstrument (APPLIES_TO) per product code; upserts
+  //     the ProductInstrument node (no taxonomy file yet).
+  //
+  // RiskCategory edges deliberately skipped: prompt teaches CMP-001 / MKT-001
+  // vocabulary; register uses RT-CR.* style. Vocabulary unification is a
+  // separate workstream.
+  //
+  // Author: Scrooge (Chief of Staff, inline derivation 2026-05-22). Origin:
+  //         Mira's 36 FAIS Act extractions exposed the consumer-side bottleneck.
+
+  const productInstrumentNodes = new Map<string, GraphNode>();
+
+  for (const event of eventStore.replay({ type: "RegulatoryConceptExtracted" })) {
+    const p = event.payload as {
+      instrumentId: string;
+      sectionId: string;
+      classifications?: {
+        activityScope?: string[];
+        productScope?: string[];
+      };
+    };
+
+    const provisionNodeId = `PROV-${p.sectionId.replace(/:/g, "-")}`;
+
+    // APPLIES_TO_ACTIVITY: Provision → Activity (one edge per ACT-* code).
+    // Lazy-upsert if the code isn't in the register — LLM vocabulary
+    // (ACT-TRADE-EXEC, ACT-COMPLIANCE) is coarser than the register
+    // (ACT-TRADE-FX, ACT-REPORT-PRUDENTIAL).
+    for (const code of p.classifications?.activityScope ?? []) {
+      if (!code) continue;
+      let actNode = activityNodes.get(code);
+      if (!actNode) {
+        const nodeId = `ACT-${code}`;
+        actNode = {
+          id: nodeId,
+          nodeType: "Activity",
+          label: code,
+          metadata: { code, source: "llm-extraction" },
+        };
+        upsertNode(actNode);
+        activityNodes.set(code, actNode);
+      }
+      upsertEdge({
+        id: edgeId("APPLIES_TO_ACTIVITY"),
+        fromId: provisionNodeId,
+        toId: actNode.id,
+        edgeType: "APPLIES_TO_ACTIVITY",
+        extractionMethod: "llm",
+        confidenceScore: 0.85,
+        extractedAt: now,
+      });
+    }
+
+    // APPLIES_TO: Provision → ProductInstrument (upsert + one edge per code).
+    for (const code of p.classifications?.productScope ?? []) {
+      if (!code) continue;
+      const productNodeId = `PRD-${code}`;
+      if (!productInstrumentNodes.has(code)) {
+        const node: GraphNode = {
+          id: productNodeId,
+          nodeType: "ProductInstrument",
+          label: code,
+          metadata: { code },
+        };
+        upsertNode(node);
+        productInstrumentNodes.set(code, node);
+      }
+      upsertEdge({
+        id: edgeId("APPLIES_TO"),
+        fromId: provisionNodeId,
+        toId: productNodeId,
+        edgeType: "APPLIES_TO",
+        extractionMethod: "llm",
+        confidenceScore: 0.85,
+        extractedAt: now,
+      });
     }
   }
 

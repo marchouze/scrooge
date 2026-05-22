@@ -36,6 +36,7 @@ const GRAPH_NODE_TYPES = [
   "EffectivePeriod",
   "Policy",
   "Procedure",
+  "ProductInstrument",
 ] as const;
 
 const GRAPH_EDGE_TYPES = [
