@@ -70,6 +70,18 @@ const DEFAULT_CITATIONS: readonly string[] = [
 
 export interface ScheduledTriggerConsumerConfig {
   readonly eventStore: EventStore;
+  /**
+   * Runner to use for dispatching scheduled handlers.
+   *
+   * Must be provided explicitly. Use `createInProcessBusRunner` from `bus.ts`
+   * for in-process dispatch (default for most callers and all tests), or
+   * `createBunWorkerBusRunner` from `../agent-runtime/bun-worker-bus-runner`
+   * for isolated Bun Worker thread dispatch (explicit opt-in only).
+   *
+   * `BunWorkerBusRunner` is available infrastructure but is NOT the default —
+   * it must be opted into explicitly so existing callers and the runtime test
+   * suite are not affected by worker-isolation behaviour.
+   */
   readonly runner: BusRunner;
   readonly entity?: string;
   readonly actor?: Actor;

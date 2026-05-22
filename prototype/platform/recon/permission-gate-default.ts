@@ -205,6 +205,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-RAS, brief:ravi:alm-position-substrate-and-helena-liquidity-line:
   //   2026-05-21, P4-SECURITY-DESIGNED-IN.
   "platform/projections/alm-positions.test.ts",
+  // Bun Worker bus-runner unit tests — co-located per-module test convention.
+  // Test file creates isolated EventStore instances per-test in a tmp directory
+  // for hermetic test isolation (standard test pattern throughout the codebase).
+  // Build-phase fixture store, not a production access path. T-01 carve-out.
+  // Citation: P4-SECURITY-DESIGNED-IN.
+  "platform/agent-runtime/bun-worker-bus-runner.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
