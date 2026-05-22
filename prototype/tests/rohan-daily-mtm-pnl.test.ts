@@ -34,8 +34,8 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 import type { FxLeg } from "../platform/markets/cdm/fx";
+import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 import type { CurrencyPair } from "../platform/markets/cdm/primitives";
 
 // ---------------------------------------------------------------------------

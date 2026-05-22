@@ -58,11 +58,11 @@ import {
 import { makeMtmRunCompleted } from "../../platform/event-store/event-types/mtm";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import { MarketDataStore } from "../../platform/market-data/store";
-import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
 import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
 } from "../../platform/markets/cdm/fx";
+import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
 import {
   adoptFxMark,
   resolveActivePolicyVersionRef,
