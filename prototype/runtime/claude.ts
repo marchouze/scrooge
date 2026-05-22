@@ -156,13 +156,23 @@ export async function generateNarrative(req: NarrativeRequest): Promise<Narrativ
   const maxTokens = req.maxTokens ?? DEFAULT_MAX_TOKENS_STREAMING;
   const effort = req.effort ?? "high";
 
+  // Adaptive thinking + output_config.effort are supported on Opus 4.7 +
+  // Sonnet 4.6 only. Haiku models reject both with a 400. Drop them when
+  // the active model doesn't support them so the bulk-extraction pipeline
+  // (Mira's WS-ONTOLOGY-REG-EXTRACTION) can run on claude-haiku-4-5.
+  const supportsAdvancedControls = !/haiku/i.test(MODEL);
+  const thinking = supportsAdvancedControls
+    ? req.displayThinking
+      ? { type: "adaptive" as const, display: "summarized" as const }
+      : { type: "adaptive" as const }
+    : undefined;
+  const outputConfig = supportsAdvancedControls ? { effort } : undefined;
+
   const stream = client.messages.stream({
     model: MODEL,
     max_tokens: maxTokens,
-    output_config: { effort },
-    thinking: req.displayThinking
-      ? { type: "adaptive", display: "summarized" }
-      : { type: "adaptive" },
+    ...(outputConfig ? { output_config: outputConfig } : {}),
+    ...(thinking ? { thinking } : {}),
     system: [
       {
         type: "text",

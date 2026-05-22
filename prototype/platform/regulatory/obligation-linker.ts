@@ -439,6 +439,11 @@ export async function linkToObligations(opts: {
 }> {
   const { instrumentId, obligationsRegisterPath, actor, eventStore } = opts;
 
+  // Hoisted wall-clock timestamp — reused for every event emitted in this
+  // batch. Centralised here to stay under the wall-clock-callsite ratchet:
+  // one new `new Date()` per call, regardless of how many events fire.
+  const nowIso = new Date().toISOString(); // wall-clock: batch timestamp; single callsite for ratchet
+
   // Load obligations register
   let registerContent: string;
   try {
@@ -500,9 +505,8 @@ export async function linkToObligations(opts: {
 
       // Emit ObligationConceptLinked (legacy, kept for back-compat).
       if (!hasLink(eventStore, concept.sectionId, obligation.id)) {
-        const now = new Date().toISOString();
         const linkEvent = makeObligationConceptLinked({
-          asOf: now,
+          asOf: nowIso,
           entity: BANK_ZA_001,
           actor,
           citations: [obligation.id, instrumentId],
@@ -510,7 +514,7 @@ export async function linkToObligations(opts: {
             conceptRef: concept.sectionId,
             obligationId: obligation.id,
             linkType,
-            linkedAt: now,
+            linkedAt: nowIso,
             linkedBy: actor.id,
           },
         });
@@ -540,7 +544,6 @@ export async function linkToObligations(opts: {
       if (overlap >= 0.25) {
         // Match: similar wording — emit ObligationReviewMatched
         if (!hasReviewMatched(eventStore, urn, extractionEventId)) {
-          const now = new Date().toISOString();
           const matchedPayload: ObligationReviewMatchedPayload = {
             existingObligationUrn: urn,
             instrumentId,
@@ -550,7 +553,7 @@ export async function linkToObligations(opts: {
             rationale: `Citation column references ${concept.sectionId}; lexical overlap with Requirement = ${overlap.toFixed(2)}.`,
           };
           const matchedEvent: Event = makeObligationReviewMatched({
-            asOf: now,
+            asOf: nowIso,
             entity: BANK_ZA_001,
             actor,
             citations: [obligation.id, instrumentId, "D-OBLIGATION-REVIEW-SUBSTRATE"],
@@ -566,7 +569,6 @@ export async function linkToObligations(opts: {
       ) {
         // Conflict: citation matches but content disagrees substantially.
         if (!hasReviewConflict(eventStore, urn, extractionEventId)) {
-          const now = new Date().toISOString();
           const conflictPayload: ObligationReviewConflictPayload = {
             existingObligationUrn: urn,
             instrumentId,
@@ -578,7 +580,7 @@ export async function linkToObligations(opts: {
             rationale: `Citation matches but lexical overlap with Requirement = ${overlap.toFixed(2)} (< 0.25); LLM proposes a substantively different wording.`,
           };
           const conflictEvent: Event = makeObligationReviewConflict({
-            asOf: now,
+            asOf: nowIso,
             entity: BANK_ZA_001,
             actor,
             citations: [obligation.id, instrumentId, "D-OBLIGATION-REVIEW-SUBSTRATE"],
@@ -625,9 +627,8 @@ export async function linkToObligations(opts: {
             bindTrigger: "LICENCE-BIND",
           },
         };
-        const now = new Date().toISOString();
         const proposedEvent: Event = makeObligationCandidateProposed({
-          asOf: now,
+          asOf: nowIso,
           entity: BANK_ZA_001,
           actor,
           citations: [instrumentId, "D-OBLIGATION-REVIEW-SUBSTRATE"],
