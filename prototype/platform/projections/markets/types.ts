@@ -276,6 +276,7 @@ export const MARKETS_PROJECTION_NAMES = [
   "markets.position",
   "markets.sub-ledger",
   "markets.security-master",
+  "markets.unified-position",
 ] as const;
 
 export type MarketsProjectionName = (typeof MARKETS_PROJECTION_NAMES)[number];

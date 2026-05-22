@@ -54,6 +54,7 @@ import {
   securityMasterProjection,
   subLedgerProjection,
   tradeRecordProjection,
+  unifiedPositionProjection,
 } from "../../platform/projections/markets";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -108,6 +109,12 @@ const PROJECTION_CITATIONS: Readonly<Record<string, readonly string[]>> = {
     "ORG-AC-05",
     "GOV-FRAMEWORK-CEO-RESERVED",
   ],
+  "markets.unified-position": [
+    "D-FINANCIAL-INSTRUMENT-ENTITY",
+    "D-MARKETS-SCHEMA-FOUNDATION",
+    "IFRS-9-§4.1",
+    "GOV-FRAMEWORK-CEO-RESERVED",
+  ],
 };
 
 const PROJECTIONS = [
@@ -115,6 +122,7 @@ const PROJECTIONS = [
   positionProjection,
   subLedgerProjection,
   securityMasterProjection,
+  unifiedPositionProjection,
 ] as const;
 
 interface ProjectionMaterialisation {
@@ -140,6 +148,10 @@ function materialiseAll(): ProjectionMaterialisation[] {
     {
       name: securityMasterProjection.name,
       rowCount: smState.instruments.size,
+    },
+    {
+      name: unifiedPositionProjection.name,
+      rowCount: projector.build(unifiedPositionProjection).rows.size,
     },
   ];
 }
