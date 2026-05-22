@@ -54,7 +54,10 @@ if (hasPhase("D-BANK-STRATEGY-V1", "requested")) {
     clock.now(),
   );
   console.log(
-    JSON.stringify({ level: "info", msg: "D-BANK-STRATEGY-V1: decision requested — added to open log" }),
+    JSON.stringify({
+      level: "info",
+      msg: "D-BANK-STRATEGY-V1: decision requested — added to open log",
+    }),
   );
 }
 
