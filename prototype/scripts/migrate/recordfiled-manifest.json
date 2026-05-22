@@ -424,6 +424,38 @@
         "IAS-21-§28",
         "brief:rohan:fix-mtm-pair-direction-lookup-activate-valuation:2026-05-21"
       ]
+    },
+    {
+      "recordId": "record:documents:mira:ontology-phase-1-outcome:2026-05-22",
+      "sourcePath": "Owner Inbox/2026-05-22_mira-owen_ontology-phase-1-outcome.md",
+      "asOf": "2026-05-22T08:00:00.000Z",
+      "registerKey": "documents",
+      "classification": "ceo-only",
+      "retention": {
+        "citationRef": "urn:obligation:bank:org:gv:director-decision-retention:v1",
+        "minimumYears": 7,
+        "archivalTier": "hot"
+      },
+      "actor": { "type": "service", "id": "agent:mira:multi-instrument-horizon-scan" },
+      "metadata": {
+        "title": "Ontology Phase 1 — outcome card (BLOCKED on Anthropic credits)",
+        "path": "Owner Inbox/2026-05-22_mira-owen_ontology-phase-1-outcome.md",
+        "category": "decision-card",
+        "author": "Mira (Compliance / RegTech engineer, engineering)",
+        "co-author": "Owen (Company Secretary, governance) — reviewer",
+        "date": "2026-05-22",
+        "decisionId": "D-ONTOLOGY-PHASE-1-COMPLETION",
+        "brief": "brief:mira:operationalise-regulatory-concept-extraction-acr:2026-05-22"
+      },
+      "citations": [
+        "D-RMS-PHASE-3",
+        "D-ONTOLOGY-REG-EXTRACTION-PHASE-1",
+        "D-URN-CANONICAL-VOCABULARY",
+        "D-OBLIGATION-REVIEW-SUBSTRATE",
+        "P1-EVENTS-AS-TRUTH",
+        "P2-SINGLE-GRAPH-DISCIPLINE",
+        "brief:mira:operationalise-regulatory-concept-extraction-acr:2026-05-22"
+      ]
     }
   ]
 }
