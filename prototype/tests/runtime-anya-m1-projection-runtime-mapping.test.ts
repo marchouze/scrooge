@@ -179,25 +179,37 @@ describe("runtime — Anya M1 projection-runtime-mapping handler", () => {
     }
   });
 
-  it("second dispatch is idempotent on registration (exactly 4 refresh events)", async () => {
-    // After any prior dispatch the registry is populated; this dispatch
-    // emits exactly 4 `MarketsProjectionRefreshed` (one per projection name
-    // in MARKETS_PROJECTION_NAMES) and zero `…Registered`.
-    // MARKETS_PROJECTION_NAMES now has 4 entries: trade-record, position,
-    // sub-ledger, security-master (added in D-FINANCIAL-INSTRUMENT-ENTITY Slice 4).
-    const entity = "TEST-ENTITY-ANYA-M1-SECOND";
-    const trigger = appendCdmBindingsRegenerated(entity);
-    const ctx = makeContext({
+  it("second dispatch is idempotent on registration (exactly 5 refresh events)", async () => {
+    // Prime the entity so all 5 projections are registered, then verify that
+    // a second dispatch emits only refresh events (no new registrations).
+    // MARKETS_PROJECTION_NAMES now has 5 entries: trade-record, position,
+    // sub-ledger, security-master (Slice 4), unified-position (Slice 11).
+    const entity = "TEST-ENTITY-ANYA-M1-SECOND-V2";
+
+    // First dispatch — registers all 5 projections for a fresh entity.
+    const trigger1 = appendCdmBindingsRegenerated(entity);
+    const ctx1 = makeContext({
       trigger: {
         kind: "event-driven",
         id: "m1-projection-runtime-mapping",
-        triggeringEvents: [trigger],
+        triggeringEvents: [trigger1],
       },
     });
+    const primeResult = await anyaM1ProjectionRuntimeMapping(ctx1);
+    expect(primeResult.ok).toBe(true);
 
-    const result = await anyaM1ProjectionRuntimeMapping(ctx);
+    // Second dispatch — all 5 already registered; expects no new registrations.
+    const trigger2 = appendCdmBindingsRegenerated(entity);
+    const ctx2 = makeContext({
+      trigger: {
+        kind: "event-driven",
+        id: "m1-projection-runtime-mapping",
+        triggeringEvents: [trigger2],
+      },
+    });
+    const result = await anyaM1ProjectionRuntimeMapping(ctx2);
     expect(result.ok).toBe(true);
-    expect(result.eventsEmitted).toBeGreaterThanOrEqual(4);
+    expect(result.eventsEmitted).toBeGreaterThanOrEqual(5);
     expect(result.summary).toMatch(/no new registrations/);
   });
 });

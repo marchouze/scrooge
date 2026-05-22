@@ -33,3 +33,11 @@ export { getCorrespondentRouting, rebuildCorrespondentRouting } from "./correspo
 // D-FINANCIAL-INSTRUMENT-ENTITY Slice 3 — SecurityMaster projection
 export type { SecurityMasterRow, SecurityMasterState } from "./security-master";
 export { securityMasterInitial, securityMasterProjection } from "./security-master";
+
+// D-FINANCIAL-INSTRUMENT-ENTITY Slice 11 — unified cross-asset position projection
+export type {
+  UnifiedPositionKey,
+  UnifiedPositionRow,
+  UnifiedPositionState,
+} from "./unified-position";
+export { unifiedPositionInitial, unifiedPositionProjection } from "./unified-position";
