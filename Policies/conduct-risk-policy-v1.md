@@ -86,7 +86,7 @@ Conflicts of interest arise when the Bank's interests, or those of an individual
 
 ## 3. Communication Recording
 
-**Owner:** Zara (Chief Compliance Officer, governance) + Senna (Chief Information Security Officer, governance) · **Approval:** Board (CEO interim) approves recording infrastructure investment · **Cadence:** Continuous; quarterly coverage audit · **Citation:** FIC Act 38 of 2001 s.22 (recordkeeping); FSCA Conduct Standard for banks (communication recording); FAIS Act 37 of 2002 (transaction records)
+**Owner:** Zara (Chief Compliance Officer, governance) + Senna (Security engineer, engineering) · **Approval:** Board (CEO interim) approves recording infrastructure investment · **Cadence:** Continuous; quarterly coverage audit · **Citation:** FIC Act 38 of 2001 s.22 (recordkeeping); FSCA Conduct Standard for banks (communication recording); FAIS Act 37 of 2002 (transaction records)
 
 ### Scope of Recording
 
