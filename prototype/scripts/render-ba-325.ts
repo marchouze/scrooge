@@ -45,8 +45,15 @@
 //   analytics engineer, engineering) + Atlas (Core banking platform
 //   architect, engineering — P1 fix).
 
+// G-4 update: default classifications are now derived from the COA registry
+// (D-HQLA-COA-CLASSIFICATION, CEO-approved 2026-05-22). Previously this script
+// used a hard-coded single-account fallback (ACC-1100-001 only). The COA
+// registry now carries hqlaLevel tags for all HQLA-eligible accounts; the
+// `coaToHqlaClassifications()` helper converts them to AccountLiquidityClassification[].
+
 import { readFileSync, writeFileSync } from "node:fs";
 
+import { coaToHqlaClassifications } from "../platform/accounting/coa-registry";
 import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
@@ -57,18 +64,22 @@ import {
 } from "../platform/reporting";
 
 // ---------------------------------------------------------------------------
-// Build-phase default classifications — fallback when --classifications
-// not supplied. Pinned to chart-of-accounts ACC-1100-001 (the worked
-// Slice-1 row) — Cash and balances at SARB → HQLA Level 1.
+// Build-phase default classifications — derived from the COA registry.
+// Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
+// Citations: BCBS D295 §II.A; SARB BA 325; Reg 26(7).
+//
+// Previously hard-coded to ACC-1100-001 only. Now dynamically derived from
+// COA_ACCOUNTS.hqlaLevel tags, covering all HQLA-eligible accounts:
+//   - ACC-1100-001: Nostro — ZAR (SARB operational) → level-1
+//   - ACC-3100-001: Bond Asset — Banking Book (Amortised Cost) → level-1
+//   - ACC-3100-002: Bond Asset — Trading Book (FVTPL) → level-1
+//
+// Basel III haircuts (level-2a: 85%, level-2b: 75%) are applied inside
+// generateBa325Lcr; this mapping simply identifies which accounts are HQLA.
 // ---------------------------------------------------------------------------
 
-const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
-  {
-    leafAccountId: "ACC-1100-001",
-    hqlaLevel: "level-1",
-    subCategory: "level-1.central-bank-reserves",
-  },
-];
+const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly AccountLiquidityClassification[] =
+  coaToHqlaClassifications();
 
 // ---------------------------------------------------------------------------
 // Argv parsing — minimal, hand-rolled (no external dep).

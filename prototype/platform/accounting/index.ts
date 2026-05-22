@@ -86,3 +86,14 @@ export type {
 
 // MC14 — BA return generation trigger (PROC-FIN-MC-01 §5 MC14).
 export { triggerBAReturnGeneration } from "./ba-return-trigger";
+
+// G-4 — HQLA COA classification field + typed COA registry.
+// Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
+export {
+  COA_ACCOUNTS,
+  COA_BY_ID,
+  CoaAccountEntrySchema,
+  coaToHqlaClassifications,
+} from "./coa-registry";
+
+export type { CoaAccountEntry } from "./coa-registry";
