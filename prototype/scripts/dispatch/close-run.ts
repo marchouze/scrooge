@@ -57,7 +57,6 @@ import { basename } from "node:path";
 import { clock, eventStore } from "../../platform/composition";
 import { HOZ_BANK_ENTITY } from "../../platform/core/types";
 import { checkDeciderMayClose } from "../../platform/dispatch";
-import { mirrorEventToPostgres } from "../../platform/event-store/postgres-mirror";
 import type {
   AgentRunCompletedFollowOnRoute,
   AgentRunCompletedPayload,
@@ -65,6 +64,7 @@ import type {
   RmsAgentRef,
 } from "../../platform/event-store/event-types";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
+import { mirrorEventToPostgres } from "../../platform/event-store/postgres-mirror";
 import {
   defaultRetentionForRegister,
   recordAgentRunCompleted,

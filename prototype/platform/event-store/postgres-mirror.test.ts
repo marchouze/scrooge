@@ -40,7 +40,7 @@ const originalEnv = process.env.BANK_POSTGRES_EVENT_MIRROR_URL;
 afterEach(() => {
   // Restore env and reset cached client state between tests.
   if (originalEnv === undefined) {
-    delete process.env.BANK_POSTGRES_EVENT_MIRROR_URL;
+    process.env.BANK_POSTGRES_EVENT_MIRROR_URL = undefined;
   } else {
     process.env.BANK_POSTGRES_EVENT_MIRROR_URL = originalEnv;
   }
@@ -54,7 +54,7 @@ afterEach(() => {
 describe("mirrorEventToPostgres", () => {
   describe("when BANK_POSTGRES_EVENT_MIRROR_URL is absent", () => {
     beforeEach(() => {
-      delete process.env.BANK_POSTGRES_EVENT_MIRROR_URL;
+      process.env.BANK_POSTGRES_EVENT_MIRROR_URL = undefined;
     });
 
     test("resolves without error", async () => {
@@ -72,12 +72,12 @@ describe("mirrorEventToPostgres", () => {
 
   describe("when BANK_POSTGRES_EVENT_MIRROR_URL is set", () => {
     let unsafeCalls: string[] = [];
-    let endCallCount = 0;
+    let _endCallCount = 0;
 
     beforeEach(() => {
       process.env.BANK_POSTGRES_EVENT_MIRROR_URL = "postgresql://user:pass@localhost:5432/testdb";
       unsafeCalls = [];
-      endCallCount = 0;
+      _endCallCount = 0;
 
       // Replace Bun.SQL with a lightweight mock.
       const mockClient = {
@@ -86,11 +86,12 @@ describe("mirrorEventToPostgres", () => {
           return [];
         }),
         end: mock(async () => {
-          endCallCount++;
+          _endCallCount++;
         }),
       };
 
       // Monkey-patch Bun so the module picks up the mock.
+      // biome-ignore lint/complexity/useArrowFunction: must be a constructor (used with `new`)
       (Bun as unknown as Record<string, unknown>).SQL = function () {
         return mockClient;
       };
@@ -142,6 +143,7 @@ describe("mirrorEventToPostgres", () => {
         end: mock(async () => {}),
       };
 
+      // biome-ignore lint/complexity/useArrowFunction: must be a constructor (used with `new`)
       (Bun as unknown as Record<string, unknown>).SQL = function () {
         return throwingClient;
       };
