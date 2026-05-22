@@ -44,7 +44,6 @@ const CITATIONS = ["Principles/1-events-are-truth.md", "D-FINANCIAL-INSTRUMENT-E
 
 const BOND_ISIN = "ZAG000149037"; // R2030 SA government bond
 const TRADE_ID = "TRD-BOND-TEST-001";
-const TRADE_DATE = "2026-05-20";
 const SETTLEMENT_DATE = "2026-05-23";
 const TRADE_TS = "2026-05-20T10:00:00.000Z";
 
@@ -52,8 +51,6 @@ const TRADE_TS = "2026-05-20T10:00:00.000Z";
 const NOMINAL_MINOR = 1_000_000_000; // R10m × 100 cents
 // Dirty price 97.50%
 const DIRTY_PRICE_PCT = 97.5;
-// Expected dirty-price amount in minor units
-const DIRTY_AMOUNT = Math.round((NOMINAL_MINOR * DIRTY_PRICE_PCT) / 100); // 975_000_000
 
 function makeBankingBookTradeEvent(eventId?: string): Event {
   return makeBondTradeExecuted({
@@ -61,7 +58,7 @@ function makeBankingBookTradeEvent(eventId?: string): Event {
     entity: ENTITY,
     actor: { type: "service", id: "trader:test" },
     citations: CITATIONS,
-    eventId,
+    ...(eventId !== undefined ? { eventId } : {}),
     payload: {
       tradeId: TRADE_ID,
       bondIsin: BOND_ISIN,
@@ -87,7 +84,7 @@ function makeTradingBookTradeEvent(eventId?: string): Event {
     entity: ENTITY,
     actor: { type: "service", id: "trader:test" },
     citations: CITATIONS,
-    eventId,
+    ...(eventId !== undefined ? { eventId } : {}),
     payload: {
       tradeId: `${TRADE_ID}-TRAD`,
       bondIsin: BOND_ISIN,
@@ -113,7 +110,7 @@ function makeInterestAccruedEvent(accruedInterestMinor: number, eventId?: string
     entity: ENTITY,
     actor: { type: "service", id: "agent:bea:eir-accrual" },
     citations: CITATIONS,
-    eventId,
+    ...(eventId !== undefined ? { eventId } : {}),
     payload: {
       tradeId: TRADE_ID,
       bondIsin: BOND_ISIN,
@@ -133,7 +130,7 @@ function makeRevaluedEvent(unrealisedPnlZarMinor: number, eventId?: string): Eve
     entity: ENTITY,
     actor: { type: "service", id: "agent:rohan:mtm" },
     citations: CITATIONS,
-    eventId,
+    ...(eventId !== undefined ? { eventId } : {}),
     payload: {
       tradeId: `${TRADE_ID}-TRAD`,
       bondIsin: BOND_ISIN,
@@ -152,7 +149,7 @@ function makeMaturedEvent(eventId?: string): Event {
     entity: ENTITY,
     actor: { type: "service", id: "agent:bea:maturity-processor" },
     citations: CITATIONS,
-    eventId,
+    ...(eventId !== undefined ? { eventId } : {}),
     payload: {
       tradeId: `${TRADE_ID}-TRAD`,
       bondIsin: BOND_ISIN,
@@ -172,7 +169,7 @@ function makeSoldEvent(realisedPnlMinor: number, eventId?: string): Event {
     entity: ENTITY,
     actor: { type: "service", id: "trader:test" },
     citations: CITATIONS,
-    eventId,
+    ...(eventId !== undefined ? { eventId } : {}),
     payload: {
       tradeId: `${TRADE_ID}-TRAD`,
       bondIsin: BOND_ISIN,
@@ -192,7 +189,9 @@ function makeSoldEvent(realisedPnlMinor: number, eventId?: string): Event {
 
 function legsBalance(emitted: Event[]): boolean {
   for (const e of emitted) {
-    const p = e.payload as { legs: Array<{ debitCredit: string; amountMinor: number; currency: string }> };
+    const p = e.payload as {
+      legs: Array<{ debitCredit: string; amountMinor: number; currency: string }>;
+    };
     const byCurrency: Record<string, number> = {};
     for (const leg of p.legs) {
       const sign = leg.debitCredit === "debit" ? 1 : -1;
@@ -222,9 +221,9 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const posting = result.emittedPostings[0]!;
-    const payload = posting.payload as { postingType: string; legs: unknown[] };
-    expect(payload.postingType).toBe("bond-trade-booking");
+    const posting = result.emittedPostings[0];
+    const payload = posting?.payload as { postingType: string; legs: unknown[] } | undefined;
+    expect(payload?.postingType).toBe("bond-trade-booking");
     expect(result.skipped).toHaveLength(0);
   });
 
@@ -251,7 +250,7 @@ describe("GL posting engine — bond lifecycle", () => {
       citations: CITATIONS,
     });
 
-    expect(result.emittedPostings[0]!.event_id).toBe(
+    expect(result.emittedPostings[0]?.event_id).toBe(
       `gl-posting:${POSTING_RULE_IDS.BOND_TRADE_BANKING}:evt-bond-banking-001`,
     );
   });
@@ -268,8 +267,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-trade-booking");
+    const payload = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload?.postingType).toBe("bond-trade-booking");
   });
 
   it("BondTradeExecuted trading-book: legs balance", () => {
@@ -295,7 +294,7 @@ describe("GL posting engine — bond lifecycle", () => {
       citations: CITATIONS,
     });
 
-    expect(result.emittedPostings[0]!.event_id).toBe(
+    expect(result.emittedPostings[0]?.event_id).toBe(
       `gl-posting:${POSTING_RULE_IDS.BOND_TRADE_TRADING}:evt-bond-trading-001`,
     );
   });
@@ -312,8 +311,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-interest-accrual");
+    const payload = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload?.postingType).toBe("bond-interest-accrual");
     expect(result.skipped).toHaveLength(0);
   });
 
@@ -343,7 +342,7 @@ describe("GL posting engine — bond lifecycle", () => {
 
     expect(result.emittedPostings).toHaveLength(0);
     expect(result.skipped).toHaveLength(1);
-    expect(result.skipped[0]!.reason).toBe("zero-delta-revaluation");
+    expect(result.skipped[0]?.reason).toBe("zero-delta-revaluation");
   });
 
   // 5. Non-zero gain revaluation
@@ -358,8 +357,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-revaluation");
+    const payload = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload?.postingType).toBe("bond-revaluation");
     expect(legsBalance(result.emittedPostings as Event[])).toBe(true);
   });
 
@@ -375,8 +374,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-revaluation");
+    const payload = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload?.postingType).toBe("bond-revaluation");
     expect(legsBalance(result.emittedPostings as Event[])).toBe(true);
   });
 
@@ -392,8 +391,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-maturity");
+    const payload = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload?.postingType).toBe("bond-maturity");
     expect(result.skipped).toHaveLength(0);
   });
 
@@ -422,8 +421,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-sale");
+    const payload = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload?.postingType).toBe("bond-sale");
     expect(legsBalance(result.emittedPostings as Event[])).toBe(true);
   });
 
@@ -439,8 +438,8 @@ describe("GL posting engine — bond lifecycle", () => {
     });
 
     expect(result.emittedPostings).toHaveLength(1);
-    const payload = result.emittedPostings[0]!.payload as { postingType: string };
-    expect(payload.postingType).toBe("bond-sale");
+    const payload2 = result.emittedPostings[0]?.payload as { postingType: string } | undefined;
+    expect(payload2?.postingType).toBe("bond-sale");
     expect(legsBalance(result.emittedPostings as Event[])).toBe(true);
   });
 

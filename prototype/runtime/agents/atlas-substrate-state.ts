@@ -458,7 +458,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     const BUS_DECISION_ID = "dec:atlas:bus-classification";
     const alreadyDecided = eventStore
       .replay({ type: "AgentDecision" })
-      .some((e) => (e as { payload?: { decisionId?: string } }).payload?.decisionId === BUS_DECISION_ID);
+      .some(
+        (e) => (e as { payload?: { decisionId?: string } }).payload?.decisionId === BUS_DECISION_ID,
+      );
     if (!alreadyDecided) {
       eventStore.append(
         makeAgentDecision({

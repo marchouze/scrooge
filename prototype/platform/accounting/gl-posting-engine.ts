@@ -85,6 +85,13 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
 import type {
+  BondInterestAccruedPayload,
+  BondMaturedPayload,
+  BondPositionRevaluedPayload,
+  BondSoldPayload,
+  BondTradeExecutedPayload,
+} from "../event-store/event-types/bond-accounting";
+import type {
   FxPositionRevaluedPayload,
   FxSettlementFailedPayload,
 } from "../event-store/event-types/fx-accounting";
@@ -97,13 +104,6 @@ import type {
   SettlementConfirmedPayload,
 } from "../markets/cdm/fx";
 import type { SubLedgerLeg } from "./fx-accounting-types";
-import type {
-  BondInterestAccruedPayload,
-  BondMaturedPayload,
-  BondPositionRevaluedPayload,
-  BondSoldPayload,
-  BondTradeExecutedPayload,
-} from "../event-store/event-types/bond-accounting";
 import {
   bondBankingBookJournals,
   bondInterestAccrualJournals,
@@ -462,9 +462,7 @@ function dispatchEvent(event: Event, allEvents: ReadonlyArray<Event>): DispatchR
     case "BondTradeExecuted": {
       const payload = event.payload as BondTradeExecutedPayload;
       const isTrading = payload.portfolio === "trading-book";
-      const legs = isTrading
-        ? bondTradingBookJournals(payload)
-        : bondBankingBookJournals(payload);
+      const legs = isTrading ? bondTradingBookJournals(payload) : bondBankingBookJournals(payload);
       if (legs.length === 0) return { kind: "skip", reason: "missing-spot-leg" };
       return {
         kind: "post",
