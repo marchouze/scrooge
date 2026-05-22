@@ -76,7 +76,9 @@ function getOrCreateClient(url: string): {
     // Bun.SQL is a built-in; cast via unknown to avoid TypeScript errors in
     // environments where Bun type definitions lag behind the runtime.
     const BunAny = Bun as unknown as {
-      SQL: new (url: string) => {
+      SQL: new (
+        url: string,
+      ) => {
         unsafe: <T>(sql: string) => Promise<T>;
         end: () => Promise<void>;
       };
