@@ -6,6 +6,13 @@
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), pack §6 Slice 3.
 //
+// G-4 update (D-HQLA-COA-CLASSIFICATION, CEO-approved 2026-05-22):
+// The `D-HQLA-COA-CLASSIFICATION` citation is now carried in every BA 325
+// output. The HQLA scan is driven by COA-tagged accounts via
+// `coaToHqlaClassifications()` in `coa-registry.ts`; the generator itself
+// remains a pure function over `classifications` — no COA import needed here.
+// Basel III haircuts: level-1 = 100%, level-2a = 85%, level-2b = 75% (default).
+//
 // ## Principle 1 fix — events-first cash-flow derivation
 //
 // Previously this module accepted a `TrialBalance` as the sole input and
@@ -897,6 +904,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput): Ba325Output {
     lcrCompliant,
     citations: [
       "Principles/1-events-are-truth.md",
+      "D-HQLA-COA-CLASSIFICATION",
       "D-MARKETS-SCHEMA-FOUNDATION",
       "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
       "D-REPORTING-CAPABILITY-SLICE-3",

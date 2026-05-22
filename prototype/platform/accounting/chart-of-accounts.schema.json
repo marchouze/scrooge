@@ -87,6 +87,21 @@
       "items": { "type": "string", "pattern": "^LE-[A-Z]{2}-[A-Z0-9]{3,12}$" },
       "description": "Legal-entity IDs for which this account exists. References the legal-entity tree."
     },
+    "hqlaLevel": {
+      "type": "string",
+      "enum": ["level-1", "level-2a", "level-2b"],
+      "description": "Basel III / BCBS LCR HQLA tier for this account, where applicable. Level-1: 0% haircut (central-bank reserves, sovereign debt 0% RW). Level-2A: 15% haircut (e.g. non-0%-RW sovereign, high-quality covered bonds, qualifying corporate bonds). Level-2B: 25–50% haircut (RMBS, qualifying equities, certain corporate bonds). Absent means the account does not contribute to the HQLA stock numerator. Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §II.A (Jan 2013); SARB BA 325."
+    },
+    "hqlaSubCategory": {
+      "type": "string",
+      "description": "Free-form sub-category label for BA 325 line rendering (e.g. 'level-1.central-bank-reserves'). Only meaningful when hqlaLevel is set. Used as the lineLabel in Ba325LineItem by the generator. Authority: D-HQLA-COA-CLASSIFICATION; SARB BA 325."
+    },
+    "hqlaAssetSpecificFactor": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Per-asset haircut factor for level-2b accounts. Per BCBS D295 §54: minimum 0.50 for equities / non-RMBS; 0.25 for RMBS. Unset defaults to 0.50. Only meaningful when hqlaLevel === 'level-2b'. Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §54."
+    },
     "baReturnLines": {
       "type": "array",
       "items": {
