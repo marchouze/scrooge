@@ -17,11 +17,14 @@ import { BANK_ZA_001, newEventId, nowUtc } from "../platform/core/types";
 import {
   PRE_SUBSTRATE_BACKFILL_TAG,
   PRODUCTION_CARVE_OUTS,
+  bankLifecyclePhase,
+  buildPhaseFixtureTag,
   checkCrossReference,
   defaultProvenanceFor,
   isProvenanceSubstrateActive,
   productionTag,
   provenanceTagSchema,
+  setBankLifecyclePhaseOverride,
   setProvenanceSubstrateActive,
   simulatedTag,
 } from "../platform/event-store/provenance";
@@ -31,6 +34,10 @@ import {
 } from "../platform/event-store/provenance-lineage.registry";
 import { EventStore } from "../platform/event-store/store";
 import type { Event, ProvenanceTag } from "../platform/event-store/types";
+import {
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../platform/projections/filter";
 
 function mk(overrides: Partial<Event> = {}): Event {
   return {
@@ -49,6 +56,8 @@ afterEach(() => {
   // Reset the substrate-active override between tests so cross-test
   // pollution doesn't mask regressions.
   setProvenanceSubstrateActive(undefined);
+  // Reset the lifecycle-phase override likewise (D-PROVENANCE-BUILD-PHASE-CLASS Slice 1).
+  setBankLifecyclePhaseOverride(undefined);
 });
 
 // ---------------------------------------------------------------------------
@@ -445,5 +454,137 @@ describe("Test-fixture convention (unit-test scenario)", () => {
     expect(parsed.kind).toBe("simulated");
     expect(parsed.scenario).toBe("unit-test");
     expect(isRegisteredLineage(String(tag.sourceLineage))).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 8. D-PROVENANCE-BUILD-PHASE-CLASS Slice 1 — build-phase-fixture + lifecycle filter
+// ---------------------------------------------------------------------------
+
+describe("ProvenanceTag schema (build-phase-fixture kind)", () => {
+  it("accepts a well-formed build-phase-fixture tag", () => {
+    const tag = provenanceTagSchema.parse({
+      kind: "build-phase-fixture",
+      sourceLineage: "synthetic-bank-seed:v3",
+    });
+    expect(tag.kind).toBe("build-phase-fixture");
+    expect(tag.sourceLineage).toBe("synthetic-bank-seed:v3");
+  });
+
+  it("rejects build-phase-fixture tag carrying a scenario", () => {
+    expect(() =>
+      provenanceTagSchema.parse({
+        kind: "build-phase-fixture",
+        scenario: "01-hello-bank",
+        sourceLineage: "synthetic-bank-seed:v3",
+      }),
+    ).toThrow(/scenario/);
+  });
+
+  it("buildPhaseFixtureTag constructor produces a valid tag", () => {
+    const tag = buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" });
+    const parsed = provenanceTagSchema.parse(tag);
+    expect(parsed.kind).toBe("build-phase-fixture");
+  });
+});
+
+describe("Cross-reference rules (build-phase-fixture)", () => {
+  it("rejects build-phase-fixture → simulated reference", () => {
+    const r = checkCrossReference({
+      source: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+      target: simulatedTag({
+        scenario: "stress-adverse",
+        sourceLineage: "scenario-runner:stress-adverse",
+      }),
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("allows build-phase-fixture → build-phase-fixture reference", () => {
+    const r = checkCrossReference({
+      source: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+      target: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("allows build-phase-fixture → production reference (carve-out)", () => {
+    const r = checkCrossReference({
+      source: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+      target: productionTag({ sourceLineage: "ceo-decision-record" }),
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("production → simulated still rejected", () => {
+    const r = checkCrossReference({
+      source: productionTag({ sourceLineage: "ceo-decision-record" }),
+      target: simulatedTag({
+        scenario: "stress-adverse",
+        sourceLineage: "scenario-runner:stress-adverse",
+      }),
+    });
+    expect(r.ok).toBe(false);
+  });
+});
+
+describe("bankLifecyclePhase (Slice 1 stopgap)", () => {
+  it("defaults to build-phase", () => {
+    expect(bankLifecyclePhase()).toBe("build-phase");
+  });
+
+  it("override pins phase for tests", () => {
+    setBankLifecyclePhaseOverride("commencement");
+    expect(bankLifecyclePhase()).toBe("commencement");
+    setBankLifecyclePhaseOverride("build-phase");
+    expect(bankLifecyclePhase()).toBe("build-phase");
+  });
+});
+
+describe("defaultProvenanceFilter (lifecycle-aware)", () => {
+  const productionEvt = { provenance: productionTag({ sourceLineage: "ceo-decision-record" }) };
+  const buildPhaseEvt = {
+    provenance: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+  };
+  const simulatedEvt = {
+    provenance: simulatedTag({
+      scenario: "stress-adverse",
+      sourceLineage: "scenario-runner:stress-adverse",
+    }),
+  };
+
+  it("during build phase: accepts production AND build-phase-fixture", () => {
+    setBankLifecyclePhaseOverride("build-phase");
+    const filter = defaultProvenanceFilter();
+    expect(filter.mode).toBe("production-only");
+    expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(true);
+  });
+
+  it("rejects simulated in BOTH lifecycle phases", () => {
+    setBankLifecyclePhaseOverride("build-phase");
+    expect(eventMatchesProvenanceFilter(simulatedEvt, defaultProvenanceFilter())).toBe(false);
+
+    setBankLifecyclePhaseOverride("commencement");
+    expect(eventMatchesProvenanceFilter(simulatedEvt, defaultProvenanceFilter())).toBe(false);
+  });
+
+  it("at commencement-of-trading: accepts production only", () => {
+    setBankLifecyclePhaseOverride("commencement");
+    const filter = defaultProvenanceFilter();
+    expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(false);
+    expect(eventMatchesProvenanceFilter(simulatedEvt, filter)).toBe(false);
+  });
+
+  it("combined mode admits all three kinds in both phases", () => {
+    setBankLifecyclePhaseOverride("build-phase");
+    const filter = { mode: "combined" as const };
+    expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(simulatedEvt, filter)).toBe(true);
+
+    setBankLifecyclePhaseOverride("commencement");
+    expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(true);
   });
 });

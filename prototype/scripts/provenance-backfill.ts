@@ -37,7 +37,11 @@ function main(): number {
   logger.info(
     {
       ...beforeCounts,
-      total: beforeCounts.production + beforeCounts.simulated + beforeCounts.untagged,
+      total:
+        beforeCounts.production +
+        beforeCounts.simulated +
+        beforeCounts.buildPhaseFixture +
+        beforeCounts.untagged,
     },
     "provenance-backfill — pre-tag counts",
   );
@@ -54,7 +58,11 @@ function main(): number {
       taggedThisRun: result.tagged,
       thisRunByKind: result.byKind,
       ...afterCounts,
-      total: afterCounts.production + afterCounts.simulated + afterCounts.untagged,
+      total:
+        afterCounts.production +
+        afterCounts.simulated +
+        afterCounts.buildPhaseFixture +
+        afterCounts.untagged,
     },
     result.tagged > 0
       ? "provenance-backfill — tagged untagged events"

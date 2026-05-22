@@ -51,8 +51,33 @@ export type VariantId = Brand<string, "VariantId">;
  */
 export type SourceLineageRef = Brand<string, "SourceLineageRef">;
 
-/** Discriminator — production vs simulated. */
-export type ProvenanceKind = "production" | "simulated";
+/**
+ * Discriminator — production vs simulated vs build-phase-fixture.
+ *
+ * `build-phase-fixture` is the third class introduced by
+ * D-PROVENANCE-BUILD-PHASE-CLASS (CEO-approved 2026-05-22). It models
+ * real bank state authored during the pre-commencement build phase —
+ * the bank's own opening balances, founding capital, internal trades
+ * with itself, build-phase positions — none of which are "production"
+ * (no live client trades, no real custody) and none of which are
+ * "simulated" (not a scenario, not a rehearsal, not a counterfactual).
+ *
+ * Lifecycle:
+ *   - During build phase: production-grade filters (`mode: production-only`)
+ *     accept BOTH `production` AND `build-phase-fixture` events. This is
+ *     why BA-325 and other regulatory reports are non-empty before
+ *     commencement.
+ *   - At commencement-of-trading: `build-phase-fixture` is rejected by
+ *     production-grade filters. A separate Slice-3 `ProvenanceReclassified`
+ *     event records the in-place reclassification of surviving build-phase
+ *     state to `production` at the lifecycle boundary; everything else
+ *     becomes historical / archival.
+ *
+ * The lifecycle indicator today is the `BANK_LIFECYCLE_PHASE` env var
+ * (default `"build-phase"`). A proper `bankLifecyclePhase()` query lands
+ * in Slice 5.
+ */
+export type ProvenanceKind = "production" | "simulated" | "build-phase-fixture";
 
 /**
  * Typed provenance tag carried by every event envelope. Mandatory
@@ -74,7 +99,7 @@ export type ProvenanceKind = "production" | "simulated";
 
 export const provenanceTagSchema = z
   .object({
-    kind: z.enum(["production", "simulated"]),
+    kind: z.enum(["production", "simulated", "build-phase-fixture"]),
     scenario: z.string().min(1).optional(),
     variant: z.string().min(1).optional(),
     sourceLineage: z.string().min(1, {
@@ -98,6 +123,14 @@ export const provenanceTagSchema = z
         path: ["scenario"],
         message:
           "ProvenanceTag: kind 'simulated' requires scenario (every simulated event must declare its scenario)",
+      });
+    }
+    if (tag.kind === "build-phase-fixture" && tag.scenario !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["scenario"],
+        message:
+          "ProvenanceTag: kind 'build-phase-fixture' must not carry a scenario (build-phase fixtures are real bank state, not scenario-bound)",
       });
     }
   });
@@ -146,6 +179,25 @@ export function simulatedTag(args: {
   return {
     kind: "simulated",
     scenario: args.scenario,
+    sourceLineage: args.sourceLineage,
+    ...(args.variant !== undefined ? { variant: args.variant } : {}),
+    ...(args.tags !== undefined ? { tags: [...args.tags] } : {}),
+  };
+}
+
+/**
+ * Construct a build-phase-fixture-kind tag. Used for real bank state
+ * authored during the pre-commencement build phase (opening balances,
+ * founding capital, internal trades, build-phase positions). See
+ * `ProvenanceKind` for the lifecycle semantics.
+ */
+export function buildPhaseFixtureTag(args: {
+  sourceLineage: string;
+  variant?: string;
+  tags?: ReadonlyArray<string>;
+}): ProvenanceTag {
+  return {
+    kind: "build-phase-fixture",
     sourceLineage: args.sourceLineage,
     ...(args.variant !== undefined ? { variant: args.variant } : {}),
     ...(args.tags !== undefined ? { tags: [...args.tags] } : {}),
@@ -280,6 +332,7 @@ export interface CrossReferenceCheckResult {
 }
 
 export function checkCrossReference(args: CrossReferenceCheckArgs): CrossReferenceCheckResult {
+  // Production cannot reference simulated (audit integrity).
   if (args.source.kind === "production" && args.target.kind === "simulated") {
     return {
       ok: false,
@@ -287,5 +340,59 @@ export function checkCrossReference(args: CrossReferenceCheckArgs): CrossReferen
         "Cross-reference rule violation: production event cannot reference a simulated event (audit integrity)",
     };
   }
+  // Build-phase-fixture cannot reference simulated either. Build-phase
+  // fixture state is real bank state — it cannot be downstream of a
+  // rehearsal / counterfactual / scenario. (Build-phase fixtures may
+  // reference other build-phase fixtures and may reference production
+  // carve-outs such as CeoDecision / AgentBriefIssued.)
+  if (args.source.kind === "build-phase-fixture" && args.target.kind === "simulated") {
+    return {
+      ok: false,
+      reason:
+        "Cross-reference rule violation: build-phase-fixture event cannot reference a simulated event (audit integrity)",
+    };
+  }
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Lifecycle phase indicator — Slice 1 stopgap (D-PROVENANCE-BUILD-PHASE-CLASS).
+//
+// The bank's commencement-of-trading lifecycle boundary determines whether
+// `build-phase-fixture` events are admitted by production-grade filters.
+// Slice 5 lands a proper `bankLifecyclePhase()` query backed by the event
+// log; for Slice 1 we read an env var (default `"build-phase"`) and expose
+// a single process-local override for tests.
+//
+// Read order:
+//   1. setBankLifecyclePhaseOverride(value) — process-local pin (tests).
+//   2. process.env.BANK_LIFECYCLE_PHASE — explicit override
+//      ("build-phase" or "commencement").
+//   3. Default — `"build-phase"`.
+//
+// TODO (Slice 5): replace this with a `bankLifecyclePhase()` query
+// derived from the event log (commencement-of-trading event).
+// ---------------------------------------------------------------------------
+
+export type BankLifecyclePhase = "build-phase" | "commencement";
+
+let LIFECYCLE_PHASE_OVERRIDE: BankLifecyclePhase | undefined;
+
+/** Test/operator hook — pin the lifecycle phase for the current process. */
+export function setBankLifecyclePhaseOverride(value: BankLifecyclePhase | undefined): void {
+  LIFECYCLE_PHASE_OVERRIDE = value;
+}
+
+/**
+ * Resolve the current bank lifecycle phase.
+ *
+ * Slice 1 stopgap: env var + override. Slice 5 will replace with a
+ * canonical query over the event log.
+ */
+export function bankLifecyclePhase(): BankLifecyclePhase {
+  if (LIFECYCLE_PHASE_OVERRIDE !== undefined) return LIFECYCLE_PHASE_OVERRIDE;
+  const envVal = process.env.BANK_LIFECYCLE_PHASE;
+  if (envVal === "commencement") return "commencement";
+  if (envVal === "build-phase") return "build-phase";
+  return "build-phase";
 }

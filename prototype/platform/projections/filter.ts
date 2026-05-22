@@ -30,6 +30,7 @@
 
 import { createHash } from "node:crypto";
 
+import { bankLifecyclePhase } from "../event-store/provenance";
 import type {
   ProvenanceKind,
   ScenarioId,
@@ -142,9 +143,27 @@ export function eventMatchesProvenanceFilter(
   const tag: ProvenanceTag = event.provenance ?? UNTAGGED_AS_SIMULATED;
 
   // Mode check (primary discriminator).
-  if (filter.mode === "production-only" && tag.kind !== "production") return false;
+  //
+  // D-PROVENANCE-BUILD-PHASE-CLASS Slice 1 — production-only is lifecycle-aware:
+  //   - During build phase, production-only ALSO admits `build-phase-fixture`
+  //     events (real bank state authored pre-commencement: opening balances,
+  //     founding capital, internal trades, build-phase positions). This is
+  //     why BA-325 / BA-100 / other production-grade reports are non-empty
+  //     before commencement-of-trading.
+  //   - At commencement-of-trading, production-only admits only `production`.
+  //   - `simulated` is rejected by production-only in BOTH phases.
+  if (filter.mode === "production-only") {
+    if (tag.kind === "production") {
+      // always admitted
+    } else if (tag.kind === "build-phase-fixture") {
+      if (bankLifecyclePhase() !== "build-phase") return false;
+    } else {
+      // simulated
+      return false;
+    }
+  }
   if (filter.mode === "simulated-only" && tag.kind !== "simulated") return false;
-  // `combined` accepts both kinds.
+  // `combined` accepts all kinds.
 
   // Scenario narrowing — only meaningful when the event is simulated. A
   // production event has no scenario, so a non-empty `scenarios` filter
