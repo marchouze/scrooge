@@ -30,9 +30,9 @@ import { describe, expect, it } from "bun:test";
 import { EventStore } from "../event-store/store";
 import type { SecurityMasterState } from "../projections/markets/security-master";
 import { securityMasterInitial } from "../projections/markets/security-master";
-import { buildHqlaOverridesFromSecurityMaster } from "./hqla-overrides";
 import { generateBa325Lcr } from "./ba-325-lcr";
-import type { Ba325GeneratorInput, AccountLiquidityClassification } from "./ba-325-lcr";
+import type { AccountLiquidityClassification, Ba325GeneratorInput } from "./ba-325-lcr";
+import { buildHqlaOverridesFromSecurityMaster } from "./hqla-overrides";
 
 // ---------------------------------------------------------------------------
 // Shared test fixtures
@@ -132,11 +132,11 @@ describe("generateBa325Lcr() with hqlaOverrides — override tier replaces COA t
     const trialBalance = [
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 200_000_00 },
     ];
-    const overrides = new Map([
-      [isin, "level-2a" as const],
-    ]);
+    const overrides = new Map([[isin, "level-2a" as const]]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     // Level-1 should be empty (override moved the stock to level-2a).
     expect(output.hqla.level1.stockMinor).toBe(0);
@@ -161,11 +161,11 @@ describe("generateBa325Lcr() with hqlaOverrides — override tier replaces COA t
     const trialBalance = [
       { leafAccountId: "ACC-3200-001", currency: "ZAR", amountMinor: 100_000_00 },
     ];
-    const overrides = new Map([
-      [isin, "level-2b" as const],
-    ]);
+    const overrides = new Map([[isin, "level-2b" as const]]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     expect(output.hqla.level1.stockMinor).toBe(0);
     // Level-2B raw stock = 100_000_00; factor 0.5 → weighted = 50_000_00.
@@ -198,7 +198,9 @@ describe("generateBa325Lcr() with hqlaOverrides — COA fallback for accounts wi
       ["ZAE000111111", "non-hqla" as const],
     ]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     // COA tag (level-1) should apply unchanged.
     expect(output.hqla.level1.stockMinor).toBe(5_000_000_00);
@@ -226,11 +228,11 @@ describe("generateBa325Lcr() with hqlaOverrides — COA fallback for accounts wi
       { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 3_000_000_00 },
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 1_000_000_00 },
     ];
-    const overrides = new Map([
-      [isin, "level-2a" as const],
-    ]);
+    const overrides = new Map([[isin, "level-2a" as const]]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     // Level-1: only SARB cash (ACC-1100-001 without ISIN) = 3m.
     expect(output.hqla.level1.stockMinor).toBe(3_000_000_00);
@@ -262,11 +264,11 @@ describe("generateBa325Lcr() with hqlaOverrides — non-hqla override", () => {
     const trialBalance = [
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000_00 },
     ];
-    const overrides = new Map([
-      [isin, "non-hqla" as const],
-    ]);
+    const overrides = new Map([[isin, "non-hqla" as const]]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     // All HQLA tiers should be empty (non-hqla override removed the stock).
     expect(output.hqla.level1.stockMinor).toBe(0);
@@ -295,11 +297,11 @@ describe("generateBa325Lcr() with hqlaOverrides — non-hqla override", () => {
       { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 2_000_000_00 },
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 1_000_000_00 },
     ];
-    const overrides = new Map([
-      [isin, "non-hqla" as const],
-    ]);
+    const overrides = new Map([[isin, "non-hqla" as const]]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     // Only ACC-1100-001 (SARB cash, no ISIN, COA fallback) contributes.
     expect(output.hqla.level1.stockMinor).toBe(2_000_000_00);
@@ -325,11 +327,11 @@ describe("generateBa325Lcr() with hqlaOverrides — override note in lineItem", 
     const trialBalance = [
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 100_000_00 },
     ];
-    const overrides = new Map([
-      [isin, "level-2a" as const],
-    ]);
+    const overrides = new Map([[isin, "level-2a" as const]]);
 
-    const output = generateBa325Lcr(makeInput(classifications, trialBalance), { hqlaOverrides: overrides });
+    const output = generateBa325Lcr(makeInput(classifications, trialBalance), {
+      hqlaOverrides: overrides,
+    });
 
     const lineItem = output.hqla.level2A.lineItems[0];
     expect(lineItem).toBeDefined();
@@ -359,7 +361,7 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
           {
             instrumentId: "instr-001",
             actusContractType: "PAM",
-            instrumentSubtype: "government-bond",
+            instrumentSubtype: "atomic" as const,
             productRef: undefined,
             isin: undefined, // No ISIN — should be excluded.
             cfiCode: undefined,
@@ -395,7 +397,7 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
           {
             instrumentId: "instr-002",
             actusContractType: "PAM",
-            instrumentSubtype: "government-bond",
+            instrumentSubtype: "atomic" as const,
             productRef: undefined,
             isin: "ZAG000030007", // Has ISIN...
             cfiCode: undefined,
@@ -431,7 +433,7 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
           {
             instrumentId: "instr-001",
             actusContractType: "PAM",
-            instrumentSubtype: "government-bond",
+            instrumentSubtype: "atomic" as const,
             productRef: undefined,
             isin: "ZAG000030007",
             cfiCode: undefined,
@@ -455,8 +457,8 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
           "instr-002",
           {
             instrumentId: "instr-002",
-            actusContractType: "CS",
-            instrumentSubtype: "equity",
+            actusContractType: "STK",
+            instrumentSubtype: "atomic",
             productRef: undefined,
             isin: "ZAE000111111",
             cfiCode: undefined,
@@ -482,7 +484,7 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
             // OTC instrument — no ISIN, should be excluded from override map.
             instrumentId: "instr-003",
             actusContractType: "IRS",
-            instrumentSubtype: "interest-rate-swap",
+            instrumentSubtype: "atomic" as const,
             productRef: undefined,
             isin: undefined,
             cfiCode: undefined,
@@ -527,7 +529,7 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
           {
             instrumentId: "instr-downgraded",
             actusContractType: "PAM",
-            instrumentSubtype: "corporate-bond",
+            instrumentSubtype: "atomic",
             productRef: undefined,
             isin: "ZAG000999999",
             cfiCode: undefined,
