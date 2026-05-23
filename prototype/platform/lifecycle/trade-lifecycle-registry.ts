@@ -196,6 +196,89 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
     ],
     inFlightEventTypes: [],
   },
+
+  // ── Repo ─────────────────────────────────────────────────────────────────
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §3.1.1, §3.2.4.
+  {
+    lifecycleId: "repo-trade",
+    productType: "REPO",
+    openingEventType: "RepoTradeOpened",
+    instanceIdField: "tradeId",
+    terminalConditions: [
+      {
+        eventType: "RepoEndLegSettled",
+        path: "normal",
+        description: "End leg settled — bank repurchased collateral, lifecycle closed",
+      },
+      {
+        eventType: "RepoTradeTerminatedEarly",
+        path: "cancellation",
+        description: "Repo unwound before end-leg date — cash returned at par",
+      },
+    ],
+    inFlightEventTypes: ["RepoStartLegSettled", "RepoInterestAccrued", "RepoMarginCallIssued"],
+  },
+
+  // ── Money Market Deposit ─────────────────────────────────────────────────
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §4.1.1; BA 325.
+  {
+    lifecycleId: "mmd-deposit",
+    productType: "MMD",
+    openingEventType: "DepositTaken",
+    instanceIdField: "depositId",
+    terminalConditions: [
+      {
+        eventType: "DepositMatured",
+        path: "normal",
+        description: "Deposit matured at par — principal and interest repaid",
+      },
+      {
+        eventType: "DepositWithdrawnEarly",
+        path: "cancellation",
+        description: "Depositor exercises early withdrawal — penalty may apply",
+      },
+    ],
+    inFlightEventTypes: ["DepositRolledOver", "DepositInterestAccrued"],
+  },
+
+  // ── Funding Line ─────────────────────────────────────────────────────────
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; BA 325 Table 2.
+  {
+    lifecycleId: "funding-line",
+    productType: "FUNDING-LINE",
+    openingEventType: "FundingLineDrawn",
+    instanceIdField: "fundingLineId",
+    terminalConditions: [
+      {
+        eventType: "FundingLineRepaid",
+        path: "normal",
+        description: "Funding line drawdown fully repaid to facility provider",
+      },
+    ],
+    inFlightEventTypes: [],
+  },
+
+  // ── Interbank Loan ───────────────────────────────────────────────────────
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §4.1.2; BA 325.
+  {
+    lifecycleId: "interbank-loan",
+    productType: "IBL",
+    openingEventType: "InterbankLoanPlaced",
+    instanceIdField: "placementId",
+    terminalConditions: [
+      {
+        eventType: "InterbankLoanMatured",
+        path: "normal",
+        description: "Loan matured — principal and interest received from counterparty",
+      },
+      {
+        eventType: "InterbankLoanRecalledEarly",
+        path: "cancellation",
+        description: "Bank exercises early recall — principal returned at par",
+      },
+    ],
+    inFlightEventTypes: ["InterbankLoanInterestAccrued"],
+  },
 ];
 
 // ---------------------------------------------------------------------------
