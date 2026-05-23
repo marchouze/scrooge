@@ -34,6 +34,7 @@ import type {
   RiskCluster,
 } from "../../event-store/event-types/trading";
 import type { Event } from "../../event-store/types";
+import { type MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
 
 // ---------------------------------------------------------------------------
 // Row type (public API)
@@ -57,7 +58,10 @@ export interface LimitUtilisationRow {
 interface LimitUtilisationState {
   // Latest schedule rows, keyed by cluster
   schedule: Map<RiskCluster, RasLimitRow>;
-  // Accumulated exposure per cluster (simple rolling accumulation)
+  // Signed net FX position per ISO 4217 currency code (major units)
+  // Buy EUR/USD: +EUR, −USD. Netting is automatic. Never drops on settlement.
+  fxNetPosition: Map<string, number>;
+  // Accumulated exposure per cluster — B1 pre-settlement credit, B2/B4/B5, non-FX B3
   exposure: Map<RiskCluster, number>;
   // Latest event timestamp
   asOf: string;
@@ -68,6 +72,7 @@ const CLUSTERS: RiskCluster[] = ["B1", "B2", "B3", "B4", "B5"];
 function initialState(): LimitUtilisationState {
   return {
     schedule: new Map(),
+    fxNetPosition: new Map(),
     exposure: new Map(CLUSTERS.map((c) => [c, 0])),
     asOf: new Date().toISOString(),
   };
@@ -149,28 +154,11 @@ function apply(event: Event): void {
       break;
     }
 
-    case "FxTradeExecuted": {
-      // FX trades contribute to both B3 (market risk — FX notional) and
-      // B1 (credit risk — counterparty exposure).
-      // The CDM payload encodes notional inside legs[0].notional.amountMinor
-      // (minor units = major * 100). Divide by 100 to get major-unit exposure.
-      //
-      // Cancelled trades are pre-filtered by rebuildLimitUtilisation before
-      // calling apply(), so no cancellation check is needed here.
-      const p = event.payload as Record<string, unknown>;
-      const legs = Array.isArray(p.legs) ? p.legs : [];
-      const leg0 = legs[0] as Record<string, unknown> | undefined;
-      const legNotional = leg0?.notional as Record<string, unknown> | undefined;
-      const amountMinor =
-        typeof legNotional?.amountMinor === "number" ? legNotional.amountMinor : 0;
-      const notional = amountMinor / 100;
-      if (notional > 0) {
-        _state = addExposure(_state, "B3", notional, asOf);
-        // Counterparty credit exposure: 10% of notional (simplified pre-settlement risk)
-        _state = addExposure(_state, "B1", notional * 0.1, asOf);
-      }
+    case "FxTradeExecuted":
+      // Handled inline in rebuildLimitUtilisation() where cancelled/confirmed
+      // sets are available for per-cluster filtering (B3 vs B1 have different
+      // filtering rules). This case is intentionally a no-op in apply().
       break;
-    }
 
     case "OrderRejected": {
       // OrderRejected carries `utilisationAtRejection` as a snapshot.
@@ -220,21 +208,20 @@ function apply(event: Event): void {
 export function rebuildLimitUtilisation(events: readonly Event[]): void {
   reset();
 
-  // Pass 1 — collect closed trade IDs (cancelled or settlement-instructed).
-  // Settled trades are no longer open positions and must not inflate exposure.
-  const closedTradeIds = new Set<string>();
+  // Pass 1 — collect trade IDs by lifecycle state.
+  //   cancelledTradeIds: FxTradeCancelled → skip from B3 AND B1 entirely.
+  //   confirmedTradeIds: SettlementConfirmed → skip from B1 only (position
+  //     remains in B3; the bank still holds the foreign currency).
+  const cancelledTradeIds = new Set<string>();
+  const confirmedTradeIds = new Set<string>();
   for (const e of events) {
     if (e.type === "FxTradeCancelled") {
       const p = e.payload as Record<string, unknown>;
-      if (typeof p.tradeId === "string") {
-        closedTradeIds.add(p.tradeId);
-      }
+      if (typeof p.tradeId === "string") cancelledTradeIds.add(p.tradeId);
     }
     if (e.type === "SettlementConfirmed") {
-      // Use SettlementConfirmed (not FxSettlementInstructed) as the closing signal.
-      // Instruction fires at T+0; the position remains open until T+2 confirmation.
       const p = e.payload as Record<string, unknown>;
-      if (typeof p.tradeId === "string") closedTradeIds.add(p.tradeId);
+      if (typeof p.tradeId === "string") confirmedTradeIds.add(p.tradeId);
     }
   }
 
@@ -249,7 +236,6 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
   for (const e of events) {
     if (!relevant.has(e.type)) continue;
 
-    // Pass 2 — skip cancelled FX trades before applying.
     if (e.type === "FxTradeExecuted") {
       const p = e.payload as Record<string, unknown>;
       const tradeIdRaw = p.tradeId as Record<string, unknown> | string | undefined;
@@ -259,7 +245,53 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
           : typeof tradeIdRaw?.value === "string"
             ? tradeIdRaw.value
             : null;
-      if (tradeIdValue && closedTradeIds.has(tradeIdValue)) continue;
+
+      // Cancelled trades: no position, no credit exposure.
+      if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) continue;
+
+      const asOf = e.as_of;
+
+      // B3 — signed net position per currency (near leg).
+      // Buy EUR/USD: +EUR, −USD. Netting is automatic.
+      // Settlement does NOT remove this: the bank holds the foreign currency
+      // in its nostro after T+2, so market risk persists.
+      const legs = Array.isArray(p.legs) ? (p.legs as Record<string, unknown>[]) : [];
+      const nearLeg = legs.find((l) => l.legKind === "near") ?? legs[0];
+      if (nearLeg) {
+        const receiveCcy =
+          typeof nearLeg.receiveCurrency === "string" ? nearLeg.receiveCurrency : null;
+        const payCcy = typeof nearLeg.payCurrency === "string" ? nearLeg.payCurrency : null;
+        const rcvNotional = nearLeg.counterNotional as Record<string, unknown> | undefined;
+        const payNotional = nearLeg.notional as Record<string, unknown> | undefined;
+        const rcvMinor = typeof rcvNotional?.amountMinor === "number" ? rcvNotional.amountMinor : 0;
+        const payMinor = typeof payNotional?.amountMinor === "number" ? payNotional.amountMinor : 0;
+
+        if (receiveCcy) {
+          const next = new Map(_state.fxNetPosition);
+          next.set(receiveCcy, (next.get(receiveCcy) ?? 0) + rcvMinor / 100);
+          _state = { ..._state, fxNetPosition: next, asOf };
+        }
+        if (payCcy) {
+          const next = new Map(_state.fxNetPosition);
+          next.set(payCcy, (next.get(payCcy) ?? 0) - Math.abs(payMinor) / 100);
+          _state = { ..._state, fxNetPosition: next, asOf };
+        }
+      }
+
+      // B1 — pre-settlement counterparty credit (10% of notional).
+      // Drops to zero once SettlementConfirmed: the bank no longer has a
+      // receivable from the counterparty.
+      if (!tradeIdValue || !confirmedTradeIds.has(tradeIdValue)) {
+        const leg0 = legs[0] as Record<string, unknown> | undefined;
+        const leg0Notional = leg0?.notional as Record<string, unknown> | undefined;
+        const amountMinor =
+          typeof leg0Notional?.amountMinor === "number" ? leg0Notional.amountMinor : 0;
+        if (amountMinor > 0) {
+          _state = addExposure(_state, "B1", (amountMinor / 100) * 0.1, asOf);
+        }
+      }
+
+      continue;
     }
 
     apply(e);
@@ -269,19 +301,43 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
 /**
  * Returns the current per-cluster utilisation rows.
  *
+ * Pass `marketDataStore` to enable ZAR-equivalent B3 computation from the net
+ * FX position map. Without it, B3 reports raw CCY-unit absolute positions
+ * (correct topology, wrong scale for multi-currency books).
+ *
  * If no RasLimitSchedulePublished has been emitted, returns five placeholder
  * rows with zero exposure and zero limit (status: green, no limit active).
  */
-export function getLimitUtilisations(): LimitUtilisationRow[] {
+export function getLimitUtilisations(marketDataStore?: MarketDataStore): LimitUtilisationRow[] {
+  // Compute B3 as ZAR-equivalent net open position (NOP).
+  //   B3 = Σ |netPosition(CCY)| × rate(CCY/ZAR)   for all CCY
+  //      + non-FX B3 exposure (TradeExecuted / EquityTradeBooked)
+  let fxB3Exposure = 0;
+  for (const [ccy, position] of _state.fxNetPosition) {
+    const absPos = Math.abs(position);
+    if (absPos === 0) continue;
+    if (ccy === "ZAR") {
+      fxB3Exposure += absPos;
+      continue;
+    }
+    if (marketDataStore) {
+      const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
+      if (quote) {
+        fxB3Exposure += absPos * quote.rate;
+      }
+      // No rate available → 0 contribution (rather than silently inflating)
+    } else {
+      // No store provided — sum raw CCY units as a rough proxy
+      fxB3Exposure += absPos;
+    }
+  }
+  const b3Exposure = fxB3Exposure + (_state.exposure.get("B3") ?? 0);
+
   return CLUSTERS.map((cluster) => {
     const row = _state.schedule.get(cluster);
-    const currentExposure = _state.exposure.get(cluster) ?? 0;
+    const currentExposure = cluster === "B3" ? b3Exposure : (_state.exposure.get(cluster) ?? 0);
 
     if (!row) {
-      // No schedule published yet — surface accumulated exposure so Helena can
-      // see real numbers even before a schedule is emitted.  utilisationPct is
-      // 0 (no denominator) and ragStatus is green (no limit to breach), but
-      // currentExposure reflects what has actually accumulated from trade events.
       return {
         cluster,
         limitName: `Cluster ${cluster} — no schedule published`,

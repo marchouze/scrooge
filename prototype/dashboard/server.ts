@@ -494,7 +494,7 @@ function bootDerive(): DashboardState {
     const s = deriveState({
       sources: SOURCES,
       events: EVENTS,
-      limitUtilisations: getLimitUtilisations(),
+      limitUtilisations: getLimitUtilisations(marketDataStore),
       ftp: buildFtpSummary(),
       capitalPositions: buildCapitalPositions(),
       liquidityMetrics: buildLiquidityMetrics(),
@@ -742,7 +742,7 @@ function refresh(reason: string): void {
     const next = deriveState({
       sources: SOURCES,
       events: EVENTS,
-      limitUtilisations: getLimitUtilisations(),
+      limitUtilisations: getLimitUtilisations(marketDataStore),
       ftp: buildFtpSummary(),
       capitalPositions: buildCapitalPositions(),
       liquidityMetrics: buildLiquidityMetrics(),
