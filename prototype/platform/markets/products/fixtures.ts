@@ -1,11 +1,10 @@
 // platform/markets/products/fixtures.ts
 //
-// M1, M2, and M4 realistic Product fixtures used by the type round-trip
-// test (Slice 1) and by the composition runtime test (Slice 3).
-// Realistic JSE equity-cash data; field values are coherent with
-// `prototype/platform/markets/cdm/primitives.ts` + `cdm/equity.ts`.
+// M1, M2, M4 and treasury (M5–M8) product fixtures used by the type
+// round-trip test (Slice 1) and by the composition runtime test (Slice 3).
 // M4 FX Spot fixture added per D-PRODUCT-CONSTRUCTION-SUBSTRATE +
 // D-NEW-PRODUCT-APPROVAL-POLICY (CEO approved 2026-05-10).
+// M5–M8 treasury fixtures added per WS3-PR3b (PRs #763–#768).
 //
 // Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE (CEO approved 2026-05-10).
 // Source brief §3.1 — M1 listed-equity worked example; §4.1 — M4 FX Spot.
@@ -448,4 +447,353 @@ export const M4_FX_SPOT_FIXTURE: Product = {
     "ORG-EXCON-ODP-001",
     "ORG-MK-08",
   ],
+};
+
+// ─── Treasury products (M5–M8) ────────────────────────────────────────────────
+// Added per WS3-PR3b (PRs #763–#768): repo/MMD/IBL event types, lifecycle
+// registry, GL posting rules, and ALM book data wired to the treasury
+// dashboard. These fixtures make the products visible on the /products NPA
+// review console.
+//
+// Authority: D-MARKETS-SCHEMA-FOUNDATION · D-PRODUCT-CONSTRUCTION-SUBSTRATE ·
+//            WS1-PR1a (treasury event types + lifecycle + posting rules).
+
+/**
+ * M5 — SAGB-backed term repo (bank borrows cash, pledges SAGB collateral).
+ * Lifecycle: RepoTradeOpened → RepoStartLegSettled → RepoInterestAccrued ×N
+ *            → RepoEndLegSettled | RepoTradeTerminatedEarly.
+ * IFRS 9 §3.2.3–3.2.4: collateral not derecognised; cash leg is secured borrowing.
+ */
+export const M5_REPO_FIXTURE: Product = {
+  productId: "prd:bank:treasury:repo-sagb-term",
+  family: "repo",
+  version: "1.0.0",
+  name: "SAGB-backed Term Repo",
+  description:
+    "Short-term secured borrowing collateralised by South African Government Bonds. The bank sells SAGB bonds to a counterparty under a repurchase agreement and buys them back at a fixed future date. Tenors up to 3 months; rate is agreed at trade inception (repo rate). Collateral remains on-balance-sheet (IAS 39 §27 — not derecognised). Eligible for use in SARB open-market operations and inter-dealer repo market via GMRA.",
+  franchiseScope: "institutional",
+  legalEntityId: "LE-BANK-SA",
+  currency: "ZAR",
+  jurisdiction: "ZA",
+  cdmComposition: {
+    primitives: [
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "instrumentSchema",
+        role: "underlying collateral instrument (SAGB bond)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "moneySchema",
+        role: "cash leg — cash received at start leg (secured borrowing principal)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "moneySchema",
+        role: "repurchase price — principal + accrued repo rate paid at end leg",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "cdmDateSchema",
+        role: "start date + maturity date (term repo schedule)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "partySchema",
+        role: "counterparty + bank entity (LE-BANK-SA)",
+      },
+    ],
+    extensions: [
+      {
+        name: "GMRA 2011 (Global Master Repurchase Agreement)",
+        module: "@platform/markets/cdm/repo",
+        citationUrn: "D-MARKETS-SCHEMA-FOUNDATION",
+      },
+    ],
+    compositionRule:
+      "Asset(collateral:SAGB) + Cashflow×2(start-leg cash-in; end-leg repurchase-out) + Schedule(term, SA calendar) + Party(counterparty LEI + bank). Lifecycle: RepoTradeOpened → RepoStartLegSettled → RepoInterestAccrued×N → RepoEndLegSettled | RepoTradeTerminatedEarly.",
+  },
+  lifecycleEventFamily: [
+    "RepoTradeOpened",
+    "RepoStartLegSettled",
+    "RepoInterestAccrued",
+    "RepoMarginCallIssued",
+    "RepoEndLegSettled",
+    "RepoTradeTerminatedEarly",
+  ],
+  riskProfile: {
+    marketRiskDimensions: ["curve"],
+    creditRiskShape: "principal-on-settlement",
+    liquidityClassification: "hqla-eligible-l1",
+    fundingProfile: "repo-funded",
+    modelRiskTier: "tier-2",
+  },
+  accountingClassification: {
+    ifrs9Family: "amortised-cost",
+    ifrs13FairValueHierarchy: "level-2",
+    ias21FxTreatment: "n/a",
+    baReturnLineMapping: ["BA100.line.repo-borrowing", "BA325.line.hqla-collateral"],
+  },
+  legalDocumentation: {
+    masterAgreement: "gmra-2011",
+    ectaExecutionPath: "electronic-default",
+    jurisdictionMatrix: ["ZA"],
+  },
+  operationalReadiness: {
+    settlementPath: "Strate-bond T+0 (start leg) + T+0 (end leg)",
+    reconciliationCadence: "daily",
+    substrateCompletenessGate: "WS1-exit",
+  },
+  securityProfile: {
+    threatModelRef: "ORG-CY-01",
+    hsmCustodyRequired: false,
+    zeroTrustPosture: "default",
+  },
+  policyAttestations: [],
+  lifecycle: "conceptualised",
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
+};
+
+/**
+ * M6 — Money Market Deposit (bank as borrower; institutional depositor).
+ * Lifecycle: DepositTaken → DepositRolledOver? → DepositInterestAccrued ×N
+ *            → DepositMatured | DepositWithdrawnEarly.
+ * IFRS 9 §4.2.1: financial liability at amortised cost.
+ */
+export const M6_MMD_DEPOSIT_FIXTURE: Product = {
+  productId: "prd:bank:treasury:mmd-deposit",
+  family: "money-market",
+  version: "1.0.0",
+  name: "Money Market Deposit",
+  description:
+    "Short-term ZAR deposit accepted from institutional counterparties (corporate treasuries, NBFIs, other banks). Fixed-term tenors from overnight to 12 months. The bank pays an agreed fixed or floating rate on the deposit principal. Recognised as a financial liability at amortised cost (IFRS 9 §4.2.1). Contributes to LCR outflow modelling (BA 325) and NSFR required stable funding (BA 326).",
+  franchiseScope: "institutional",
+  legalEntityId: "LE-BANK-SA",
+  currency: "ZAR",
+  jurisdiction: "ZA",
+  cdmComposition: {
+    primitives: [
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "moneySchema",
+        role: "deposit principal — liability recognised at fair value (par) on receipt",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "cdmDateSchema",
+        role: "value date + maturity date (fixed-term schedule)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "priceSchema",
+        role: "deposit rate (fixed or floating, quoted as % p.a.)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "partySchema",
+        role: "depositor LEI + bank entity (LE-BANK-SA)",
+      },
+    ],
+    extensions: [],
+    compositionRule:
+      "Liability(deposit principal) + Rate(fixed/floating) + Schedule(term, SA calendar) + Party(depositor + bank). Lifecycle: DepositTaken → DepositInterestAccrued×N → DepositMatured | DepositWithdrawnEarly.",
+  },
+  lifecycleEventFamily: [
+    "DepositTaken",
+    "DepositRolledOver",
+    "DepositInterestAccrued",
+    "DepositMatured",
+    "DepositWithdrawnEarly",
+  ],
+  riskProfile: {
+    marketRiskDimensions: ["curve"],
+    creditRiskShape: "no-counterparty",
+    liquidityClassification: "non-hqla",
+    fundingProfile: "cash-funded",
+    modelRiskTier: "tier-3",
+  },
+  accountingClassification: {
+    ifrs9Family: "amortised-cost",
+    ifrs13FairValueHierarchy: "level-2",
+    ias21FxTreatment: "n/a",
+    baReturnLineMapping: ["BA100.line.deposits", "BA325.line.lcr-outflow-institutional"],
+  },
+  legalDocumentation: {
+    masterAgreement: "none-listed",
+    ectaExecutionPath: "electronic-default",
+    jurisdictionMatrix: ["ZA"],
+  },
+  operationalReadiness: {
+    settlementPath: "SAMOS via correspondent T+0",
+    reconciliationCadence: "daily",
+    substrateCompletenessGate: "WS1-exit",
+  },
+  securityProfile: {
+    threatModelRef: "ORG-CY-01",
+    hsmCustodyRequired: false,
+    zeroTrustPosture: "default",
+  },
+  policyAttestations: [],
+  lifecycle: "conceptualised",
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
+};
+
+/**
+ * M7 — Committed Funding Line (bank draws on bilateral committed facility).
+ * Lifecycle: FundingLineDrawn → FundingLineRepaid.
+ * IFRS 9 §4.2.1: financial liability at amortised cost on drawdown.
+ */
+export const M7_FUNDING_LINE_FIXTURE: Product = {
+  productId: "prd:bank:treasury:funding-line",
+  family: "money-market",
+  version: "1.0.0",
+  name: "Committed Funding Line",
+  description:
+    "Bilateral committed credit facility where the bank draws cash from a facility provider (another bank or institutional investor). The bank recognises a financial liability on drawdown (IFRS 9 §4.2.1). Used for contingency liquidity management and to bridge settlement gaps. Classified as 100% LCR outflow (BA 325 Table 2) and required stable funding under NSFR (BA 326).",
+  franchiseScope: "institutional",
+  legalEntityId: "LE-BANK-SA",
+  currency: "ZAR",
+  jurisdiction: "ZA",
+  cdmComposition: {
+    primitives: [
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "moneySchema",
+        role: "drawdown amount — liability recognised at fair value (par) on drawdown",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "cdmDateSchema",
+        role: "drawdown date + maturity date",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "priceSchema",
+        role: "facility rate (margin over JIBAR or fixed rate)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "partySchema",
+        role: "facility provider LEI + bank entity (LE-BANK-SA)",
+      },
+    ],
+    extensions: [],
+    compositionRule:
+      "Liability(drawdown) + Rate(margin over JIBAR) + Schedule(maturity) + Party(facility-provider + bank). Lifecycle: FundingLineDrawn → FundingLineRepaid.",
+  },
+  lifecycleEventFamily: ["FundingLineDrawn", "FundingLineRepaid"],
+  riskProfile: {
+    marketRiskDimensions: ["curve"],
+    creditRiskShape: "no-counterparty",
+    liquidityClassification: "non-hqla",
+    fundingProfile: "cash-funded",
+    modelRiskTier: "tier-3",
+  },
+  accountingClassification: {
+    ifrs9Family: "amortised-cost",
+    ifrs13FairValueHierarchy: "level-2",
+    ias21FxTreatment: "n/a",
+    baReturnLineMapping: ["BA100.line.funding-lines", "BA325.line.lcr-outflow-100pct"],
+  },
+  legalDocumentation: {
+    masterAgreement: "none-listed",
+    ectaExecutionPath: "electronic-default",
+    jurisdictionMatrix: ["ZA"],
+  },
+  operationalReadiness: {
+    settlementPath: "SAMOS via correspondent T+0",
+    reconciliationCadence: "daily",
+    substrateCompletenessGate: "WS1-exit",
+  },
+  securityProfile: {
+    threatModelRef: "ORG-CY-01",
+    hsmCustodyRequired: false,
+    zeroTrustPosture: "default",
+  },
+  policyAttestations: [],
+  lifecycle: "conceptualised",
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
+};
+
+/**
+ * M8 — Interbank Loan Placement (bank as lender to other institutions).
+ * Lifecycle: InterbankLoanPlaced → InterbankLoanInterestAccrued ×N
+ *            → InterbankLoanMatured | InterbankLoanRecalledEarly.
+ * IFRS 9 §4.1.2: financial asset measured at amortised cost (SPPI + HTC).
+ */
+export const M8_IBL_FIXTURE: Product = {
+  productId: "prd:bank:treasury:ibl-placement",
+  family: "interbank-loan",
+  version: "1.0.0",
+  name: "Interbank Loan Placement",
+  description:
+    "Short-term unsecured cash placement by the bank with another licensed bank. The bank is the lender; the counterparty bank is the borrower. Tenors typically overnight to 3 months. Interest accrues daily at the agreed fixed rate (JIBAR-referenced or fixed). Asset classified at amortised cost under IFRS 9 §4.1.2 (SPPI test passes; held-to-collect business model). Contributes to NSFR available stable funding (BA 326).",
+  franchiseScope: "institutional",
+  legalEntityId: "LE-BANK-SA",
+  currency: "ZAR",
+  jurisdiction: "ZA",
+  cdmComposition: {
+    primitives: [
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "moneySchema",
+        role: "placement principal — asset recognised at amortised cost on placement date",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "cdmDateSchema",
+        role: "placement date + maturity date",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "priceSchema",
+        role: "placement rate (fixed % p.a., JIBAR-linked)",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "partySchema",
+        role: "borrowing bank LEI + bank entity as lender (LE-BANK-SA)",
+      },
+    ],
+    extensions: [],
+    compositionRule:
+      "Asset(placement) + Rate(fixed/JIBAR) + Schedule(maturity) + Party(borrowing-bank + bank-as-lender). Lifecycle: InterbankLoanPlaced → InterbankLoanInterestAccrued×N → InterbankLoanMatured | InterbankLoanRecalledEarly.",
+  },
+  lifecycleEventFamily: [
+    "InterbankLoanPlaced",
+    "InterbankLoanInterestAccrued",
+    "InterbankLoanMatured",
+    "InterbankLoanRecalledEarly",
+  ],
+  riskProfile: {
+    marketRiskDimensions: ["curve"],
+    creditRiskShape: "principal-on-settlement",
+    liquidityClassification: "non-hqla",
+    fundingProfile: "cash-funded",
+    modelRiskTier: "tier-3",
+  },
+  accountingClassification: {
+    ifrs9Family: "amortised-cost",
+    ifrs13FairValueHierarchy: "level-2",
+    ias21FxTreatment: "n/a",
+    baReturnLineMapping: ["BA100.line.interbank-placements", "BA326.line.nsfr-asf"],
+  },
+  legalDocumentation: {
+    masterAgreement: "none-listed",
+    ectaExecutionPath: "electronic-default",
+    jurisdictionMatrix: ["ZA"],
+  },
+  operationalReadiness: {
+    settlementPath: "SAMOS via correspondent T+0",
+    reconciliationCadence: "daily",
+    substrateCompletenessGate: "WS1-exit",
+  },
+  securityProfile: {
+    threatModelRef: "ORG-CY-01",
+    hsmCustodyRequired: false,
+    zeroTrustPosture: "default",
+  },
+  policyAttestations: [],
+  lifecycle: "conceptualised",
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
 };

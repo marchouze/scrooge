@@ -216,6 +216,32 @@ function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosit
       tier: classification.level,
     });
   }
+
+  // Repo cash proceeds (Level-1): cash received by the bank on the start leg
+  // of a repo is unencumbered ZAR cash — the SAGB collateral is pledged to
+  // the counterparty, but the cash sits free in the bank's account (BCBS
+  // D295 §50 — ZAR central bank reserves / unrestricted cash = L1). Subtract
+  // repos that have already matured or been terminated early.
+  const closedRepoIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "RepoEndLegSettled" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as { tradeId?: string };
+    if (p.tradeId) closedRepoIds.add(p.tradeId);
+  }
+  for (const ev of eventStore.replay({ type: "RepoTradeTerminatedEarly" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as { tradeId?: string };
+    if (p.tradeId) closedRepoIds.add(p.tradeId);
+  }
+  for (const ev of eventStore.replay({ type: "RepoTradeOpened" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as { tradeId?: string; startLegCashZar?: number };
+    if (!p.tradeId || closedRepoIds.has(p.tradeId)) continue;
+    const cashZar = (p.startLegCashZar ?? 0) / 100;
+    if (cashZar <= 0) continue;
+    out.push({ amountZar: cashZar, tier: "L1" });
+  }
+
   return out;
 }
 
