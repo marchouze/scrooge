@@ -42,7 +42,8 @@
       } else {
         const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
         clusters.forEach(c => {
-          const label = `${c.cluster} — ${c.limitName || ""}`;
+          const shortName = (c.limitName || "").replace(/\s*\(.*?\)\s*/g, "").trim();
+          const label = `${c.cluster} — ${shortName}`;
           const t = SC.renderTile({
             label,
             value: c.utilisationPct != null ? `${Number(c.utilisationPct).toFixed(1)}%` : "—",
