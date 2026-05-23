@@ -402,6 +402,211 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // ══════════════════════════════════════════════════════════════════════════
+  // REPO  (lifecycleId: "repo-trade")
+  // Authority: WS1-PR1a; IAS 39 §27; IFRS 9 §3.2.3–3.2.4
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // PR-REPO-001 — Initial recognition as secured borrowing (IAS 39 §27)
+  {
+    triggerEventType: "RepoTradeOpened",
+    triggerDomain: "trade",
+    lifecycleId: "repo-trade",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-REPO-001",
+    postingType: "repo-trade-booking",
+    condition: "always",
+    conditionDetail: "IAS 39 §27 — collateral not derecognised; cash receipt is secured borrowing",
+  },
+
+  // PR-REPO-SETTLE-START — Start-leg confirmation (memo; no GL impact)
+  {
+    triggerEventType: "RepoStartLegSettled",
+    triggerDomain: "trade",
+    lifecycleId: "repo-trade",
+    lifecycleStage: "in-flight",
+    postingRuleId: "PR-REPO-SETTLE-START",
+    postingType: "repo-trade-booking",
+    condition: "intentional-no-impact",
+    conditionDetail:
+      "Recognition already posted at RepoTradeOpened; this is a confirmation-only memo",
+  },
+
+  // PR-REPO-ACCRUAL — Daily repo rate accrual (IFRS 9 B5.4.1 EIR)
+  {
+    triggerEventType: "RepoInterestAccrued",
+    triggerDomain: "trade",
+    lifecycleId: "repo-trade",
+    lifecycleStage: "in-flight",
+    postingRuleId: "PR-REPO-ACCRUAL",
+    postingType: "repo-interest-accrual",
+    condition: "non-zero-delta",
+    conditionDetail: "IFRS 9 B5.4.1 — EIR accrual; zero-amount periods skipped",
+  },
+
+  // PR-REPO-END — Repurchase settlement (terminal)
+  {
+    triggerEventType: "RepoEndLegSettled",
+    triggerDomain: "trade",
+    lifecycleId: "repo-trade",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-REPO-END",
+    postingType: "repo-maturity",
+    condition: "always",
+    conditionDetail: "IFRS 9 §3.2.3 — derecognition of secured borrowing on repurchase",
+  },
+
+  // PR-REPO-CANCEL — Early unwind (terminal)
+  {
+    triggerEventType: "RepoTradeTerminatedEarly",
+    triggerDomain: "trade",
+    lifecycleId: "repo-trade",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-REPO-CANCEL",
+    postingType: "repo-cancellation",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §3.2.3 — derecognition on early termination; engine supplements with opening payload",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MMD / DEPOSIT  (lifecycleId: "mmd-deposit")
+  // Authority: WS1-PR1a; IFRS 9 §4.2.1; BA 325 (LCR outflow rates)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // PR-MMD-001 — Initial recognition of deposit liability
+  {
+    triggerEventType: "DepositTaken",
+    triggerDomain: "trade",
+    lifecycleId: "mmd-deposit",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-MMD-001",
+    postingType: "deposit-booking",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §4.2.1 — financial liability recognised at fair value (par) on receipt",
+  },
+
+  // PR-MMD-ACCRUAL — Daily interest expense accrual
+  {
+    triggerEventType: "DepositInterestAccrued",
+    triggerDomain: "trade",
+    lifecycleId: "mmd-deposit",
+    lifecycleStage: "in-flight",
+    postingRuleId: "PR-MMD-ACCRUAL",
+    postingType: "deposit-interest-accrual",
+    condition: "non-zero-delta",
+    conditionDetail: "IFRS 9 B5.4.1 — EIR accrual; zero-amount periods skipped",
+  },
+
+  // PR-MMD-MAT — Maturity repayment (terminal)
+  {
+    triggerEventType: "DepositMatured",
+    triggerDomain: "trade",
+    lifecycleId: "mmd-deposit",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-MMD-MAT",
+    postingType: "deposit-maturity",
+    condition: "always",
+    conditionDetail: "IFRS 9 §3.3.1 — derecognition on extinguishment (maturity repayment)",
+  },
+
+  // PR-MMD-CANCEL — Early withdrawal (terminal)
+  {
+    triggerEventType: "DepositWithdrawnEarly",
+    triggerDomain: "trade",
+    lifecycleId: "mmd-deposit",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-MMD-CANCEL",
+    postingType: "deposit-cancellation",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §3.3.1 — derecognition on early withdrawal; engine supplements with opening principal",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FUNDING LINE  (lifecycleId: "funding-line")
+  // Authority: WS1-PR1a; IFRS 9 §4.2.1; BA 325 Table 2 (100% outflow rate)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // PR-FUNDING-001 — Drawdown recognition
+  {
+    triggerEventType: "FundingLineDrawn",
+    triggerDomain: "trade",
+    lifecycleId: "funding-line",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-FUNDING-001",
+    postingType: "funding-drawdown",
+    condition: "always",
+    conditionDetail: "IFRS 9 §4.2.1 — liability recognised at fair value (par) on drawdown",
+  },
+
+  // PR-FUNDING-END — Full repayment (terminal)
+  {
+    triggerEventType: "FundingLineRepaid",
+    triggerDomain: "trade",
+    lifecycleId: "funding-line",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-FUNDING-END",
+    postingType: "funding-repayment",
+    condition: "always",
+    conditionDetail: "IFRS 9 §3.3.1 — derecognition on full repayment",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // INTERBANK LOAN  (lifecycleId: "interbank-loan")
+  // Authority: WS1-PR1a; IFRS 9 §4.1.2 (amortised cost); BA 326 (NSFR)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // PR-IBL-001 — Initial recognition of placement (bank as lender)
+  {
+    triggerEventType: "InterbankLoanPlaced",
+    triggerDomain: "trade",
+    lifecycleId: "interbank-loan",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-IBL-001",
+    postingType: "ibl-placement-booking",
+    condition: "always",
+    conditionDetail: "IFRS 9 §4.1.2 — asset measured at amortised cost; trade-date recognition",
+  },
+
+  // PR-IBL-ACCRUAL — Daily interest income accrual
+  {
+    triggerEventType: "InterbankLoanInterestAccrued",
+    triggerDomain: "trade",
+    lifecycleId: "interbank-loan",
+    lifecycleStage: "in-flight",
+    postingRuleId: "PR-IBL-ACCRUAL",
+    postingType: "ibl-interest-accrual",
+    condition: "non-zero-delta",
+    conditionDetail: "IFRS 9 B5.4.1 — EIR accrual; zero-amount periods skipped",
+  },
+
+  // PR-IBL-MAT — Maturity receipt (terminal)
+  {
+    triggerEventType: "InterbankLoanMatured",
+    triggerDomain: "trade",
+    lifecycleId: "interbank-loan",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-IBL-MAT",
+    postingType: "ibl-maturity",
+    condition: "always",
+    conditionDetail: "IFRS 9 §3.2.3 — derecognition on principal repayment at maturity",
+  },
+
+  // PR-IBL-RECALL — Early recall by lender (terminal)
+  {
+    triggerEventType: "InterbankLoanRecalledEarly",
+    triggerDomain: "trade",
+    lifecycleId: "interbank-loan",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-IBL-RECALL",
+    postingType: "ibl-recall",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §3.2.3 — derecognition on lender-initiated recall; engine supplements with opening principal",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
   // NON-TRADE TRIGGER STUBS
   // These event types do not yet exist. They are registered here so the
   // gap is visible in recon output. Each stub must be updated when the

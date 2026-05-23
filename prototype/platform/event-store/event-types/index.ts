@@ -243,6 +243,18 @@ export * from "./ifrs-policy-thresholds";
 //   session delegation); D-KG-GRAPHITI-ADOPT; P2-SINGLE-GRAPH-DISCIPLINE.
 // Author: Atlas (Core banking platform architect, engineering).
 export * from "./obligation-review";
+// WS1-PR1a — Repo / MMD / IBL treasury instrument event types.
+// RepoTradeOpened, RepoStartLegSettled, RepoInterestAccrued,
+//   RepoMarginCallIssued, RepoEndLegSettled, RepoTradeTerminatedEarly,
+//   DepositTaken, DepositInterestAccrued, DepositMatured,
+//   DepositWithdrawnEarly, DepositRolledOver,
+//   FundingLineDrawn, FundingLineRepaid,
+//   InterbankLoanPlaced, InterbankLoanInterestAccrued,
+//   InterbankLoanMatured, InterbankLoanRecalledEarly.
+// Authority: WS1-PR1a brief; D-MARKETS-SCHEMA-FOUNDATION;
+//   IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1; Banks Act Reg 26/27.
+// Author: Ravi (Treasury/ALM Engineer, engineering).
+export * from "./repo-mmd-ibl";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -364,6 +376,7 @@ import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_TYPED_EVENT_TYPES } from "./regulatory-pa";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
+import { REPO_MMD_IBL_TYPED_EVENT_TYPES } from "./repo-mmd-ibl";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
@@ -499,6 +512,11 @@ export const TYPED_EVENT_TYPES = [
   // Authority: D-G2-ENTITY-ID-BACKFILL (CEO-approved 2026-05-22,
   //   event `a507ce6e-de32-48be-9350-a8044ee0b16f`).
   ...ENTITY_RECLASSIFIED_EVENT_TYPES,
+  // WS1-PR1a — Repo / MMD / IBL treasury instrument event types.
+  // 17 events covering repo, money-market deposit, funding line, and interbank
+  // loan lifecycles. Authority: WS1-PR1a brief; D-MARKETS-SCHEMA-FOUNDATION;
+  // IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1; Banks Act Reg 26/27.
+  ...REPO_MMD_IBL_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
