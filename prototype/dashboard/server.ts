@@ -2600,7 +2600,7 @@ const server = Bun.serve({
       // green with zero exposure.
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
       //            D-MARKETS-SCHEMA-FOUNDATION Slice 5.
-      return jsonResponse(buildHeadroomView(eventStore));
+      return jsonResponse(buildHeadroomView(eventStore, marketDataStore));
     }
     if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {
       // FX desk Slice 7 — NPA attestation badge source. Replays the event
@@ -2640,7 +2640,7 @@ const server = Bun.serve({
       // B3 (Market Risk) utilisation RAG status from the limit-utilisation
       // projection. Powers the live metrics on the FX desk tile in home.html.
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
-      return jsonResponse(buildFxSummaryView(eventStore));
+      return jsonResponse(buildFxSummaryView(eventStore, marketDataStore));
     }
     if (url.pathname === "/api/markets/fx/order" && req.method === "POST") {
       // FX desk Slice 4 — order acceptance + gateway pipeline. Routes
