@@ -50,7 +50,7 @@
           const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit`;
           const t = SC.renderTile({
             label,
-            value: `${utilPct} of 100%`,
+            value: utilPct,
             sub,
             status: ragToStatus[c.ragStatus] ?? null,
             onClick: () => SC.openModal({ title: label, body: SC.renderDefList(c) }),
