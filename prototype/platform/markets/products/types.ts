@@ -42,6 +42,10 @@ export const productFamilySchema = z.enum([
   "fx",
   /** M5+ — structured (out of scope at v1; reserved). */
   "structured",
+  /** Treasury — short-term money-market funding instruments (MMD, Funding Line). */
+  "money-market",
+  /** Treasury — interbank loan placements (bank as lender). */
+  "interbank-loan",
 ]);
 
 export type ProductFamily = z.infer<typeof productFamilySchema>;

@@ -3,8 +3,8 @@
 // Cross-family product-list projection for the /products page.
 //
 // Folds:
-//   - Three canonical fixtures (M1 JSE equity, M2 SAGB bond, M4 FX Spot) as
-//     the always-present baseline.
+//   - Seven canonical fixtures (M1 JSE equity, M2 SAGB bond, M4 FX Spot,
+//     M5 Repo, M6 MMD Deposit, M7 Funding Line, M8 IBL) as the always-present baseline.
 //   - Any `ProductProposalRegistered` events as proposed-but-not-fixture
 //     products. Latest-by-asOf wins per productId.
 //   - Per-product, per-dimension attestation summary derived from
@@ -27,6 +27,10 @@ import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
   M4_FX_SPOT_FIXTURE,
+  M5_REPO_FIXTURE,
+  M6_MMD_DEPOSIT_FIXTURE,
+  M7_FUNDING_LINE_FIXTURE,
+  M8_IBL_FIXTURE,
 } from "../platform/markets/products/fixtures";
 
 // ---------------------------------------------------------------------------
@@ -92,6 +96,10 @@ const BASELINE_FIXTURES: readonly Product[] = [
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
   M4_FX_SPOT_FIXTURE,
+  M5_REPO_FIXTURE,
+  M6_MMD_DEPOSIT_FIXTURE,
+  M7_FUNDING_LINE_FIXTURE,
+  M8_IBL_FIXTURE,
 ];
 
 interface ProposalRecord {

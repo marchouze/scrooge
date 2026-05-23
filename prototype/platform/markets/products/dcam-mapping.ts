@@ -66,6 +66,8 @@ export const PRODUCT_FAMILY_TO_SCOPE_CODE: Record<ProductFamily, DcamScopeCode> 
   "otc-ird": "interest-rate-derivatives",
   fx: "fx-instruments",
   structured: "multi-asset",
+  "money-market": "money-market-instruments",
+  "interbank-loan": "money-market-instruments",
 };
 
 // ---------------------------------------------------------------------------
@@ -291,6 +293,48 @@ export const PRODUCT_FAMILY_LAYER3: Record<ProductFamily, ProductFamilyDcamLayer
       },
     ],
   },
+
+  "money-market": {
+    dataAttributeGroups: [
+      {
+        id: "DAG-MM-DEPOSIT",
+        label: "Money Market Deposit Economics",
+        description:
+          "Principal amount, deposit rate (fixed/floating), value date, maturity date, " +
+          "depositor LEI. IFRS 9 §4.2.1 amortised cost. BA325 LCR outflow rate. " +
+          "FIBO anchor: MON:MoneyMarketInstrument.",
+        carriedByEvents: ["DepositTaken", "DepositInterestAccrued", "DepositMatured", "DepositWithdrawnEarly"],
+      },
+      {
+        id: "DAG-MM-FUNDING-LINE",
+        label: "Funding Line Drawdown",
+        description:
+          "Drawdown amount, facility rate (JIBAR margin), drawdown date, maturity date, " +
+          "facility provider LEI. IFRS 9 §4.2.1 amortised cost. BA325 100% LCR outflow. " +
+          "FIBO anchor: MON:CreditFacility.",
+        carriedByEvents: ["FundingLineDrawn", "FundingLineRepaid"],
+      },
+    ],
+  },
+
+  "interbank-loan": {
+    dataAttributeGroups: [
+      {
+        id: "DAG-IBL-PLACEMENT",
+        label: "Interbank Loan Placement",
+        description:
+          "Placement principal, rate (fixed/JIBAR-linked), placement date, maturity date, " +
+          "borrowing bank LEI. IFRS 9 §4.1.2 amortised cost (SPPI + HTC). " +
+          "BA326 NSFR available stable funding. FIBO anchor: MON:InterbankLoan.",
+        carriedByEvents: [
+          "InterbankLoanPlaced",
+          "InterbankLoanInterestAccrued",
+          "InterbankLoanMatured",
+          "InterbankLoanRecalledEarly",
+        ],
+      },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -342,6 +386,8 @@ export function getAllProductFamilyDcamRecords(): ReadonlyArray<ProductFamilyDca
     "otc-ird",
     "fx",
     "structured",
+    "money-market",
+    "interbank-loan",
   ];
   return families.map(getProductFamilyDcamRecord);
 }
