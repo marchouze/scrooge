@@ -402,23 +402,41 @@
       // ── Section 6 — Repo Book ──────────────────────────────────────────
       document.getElementById("repo-header").innerHTML =
         SC.renderSectionHeader("Repo Book", null);
+      const repoData = data.repoBook ?? {};
       document.getElementById("repo-body").innerHTML = `
-        <div class="stub-row">Open: — &nbsp;|&nbsp; Cash lent: — &nbsp;|&nbsp; Avg rate: —</div>
-        <p class="stub-note">Live wiring pending treasury instrument events (WS1).</p>`;
+        <div class="stub-row">
+          Open: <strong>${repoData.openCount ?? 0}</strong>
+          &nbsp;|&nbsp;
+          Cash lent: <strong>${zarFmt(repoData.totalCashLentZar)}</strong>
+          &nbsp;|&nbsp;
+          Avg rate: <strong>${repoData.weightedAvgRateDecimal != null ? (repoData.weightedAvgRateDecimal * 100).toFixed(2) + "%" : "—"}</strong>
+        </div>`;
 
       // ── Section 7 — Deposit Book ───────────────────────────────────────
       document.getElementById("deposit-header").innerHTML =
         SC.renderSectionHeader("Deposit Book", null);
+      const depData = data.depositBook ?? {};
       document.getElementById("deposit-body").innerHTML = `
-        <div class="stub-row">Open: — &nbsp;|&nbsp; Total principal: —</div>
-        <p class="stub-note">Live wiring pending treasury instrument events (WS1).</p>`;
+        <div class="stub-row">
+          Open: <strong>${depData.openCount ?? 0}</strong>
+          &nbsp;|&nbsp;
+          Total principal: <strong>${zarFmt(depData.totalPrincipalZar)}</strong>
+        </div>`;
 
       // ── Section 8 — IB Placement Book ─────────────────────────────────
       document.getElementById("ib-header").innerHTML =
         SC.renderSectionHeader("IB Placement Book", null);
+      const ibData = data.ibPlacementBook ?? {};
       document.getElementById("ib-body").innerHTML = `
-        <div class="stub-row">Open: — &nbsp;|&nbsp; Total placed: — &nbsp;|&nbsp; Fixed-term: — &nbsp;|&nbsp; Call: —</div>
-        <p class="stub-note">Live wiring pending treasury instrument events (WS1).</p>`;
+        <div class="stub-row">
+          Open: <strong>${ibData.openCount ?? 0}</strong>
+          &nbsp;|&nbsp;
+          Total placed: <strong>${zarFmt(ibData.totalPlacedZar)}</strong>
+          &nbsp;|&nbsp;
+          Fixed-term: <strong>${zarFmt(ibData.fixedTermZar)}</strong>
+          &nbsp;|&nbsp;
+          Call: <strong>${zarFmt(ibData.callZar)}</strong>
+        </div>`;
 
     })();
   </script>

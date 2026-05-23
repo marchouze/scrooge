@@ -373,10 +373,71 @@ function buildTreasuryMetrics() {
       weightedAvgSpreadBps: ftpPortfolio.weightedAvgSpread,
       activeCurveId: ftpPortfolio.activeCurveId,
     },
-    // Stub — live-wired in WS3-PR3b (treasury instrument events)
-    repoBook: { openCount: 0, totalCashLentZar: 0, weightedAvgRateDecimal: 0 },
-    depositBook: { openCount: 0, totalPrincipalZar: 0 },
-    ibPlacementBook: { openCount: 0, totalPlacedZar: 0, fixedTermZar: 0, callZar: 0 },
+    // Repo Book — fold RepoTradeOpened, subtract terminal events
+    repoBook: (() => {
+      const repoOpened = [...eventStore.replay({ type: "RepoTradeOpened" })];
+      const repoTerminals = new Set([
+        ...[...eventStore.replay({ type: "RepoEndLegSettled" })].map((e) => e.payload.tradeId),
+        ...[...eventStore.replay({ type: "RepoTradeTerminatedEarly" })].map(
+          (e) => e.payload.tradeId,
+        ),
+      ]);
+      const liveRepos = repoOpened.filter((e) => !repoTerminals.has(e.payload.tradeId));
+      const repoCashMinor = liveRepos.reduce((s, e) => s + e.payload.startLegCashZar, 0);
+      const repoWeightedRate =
+        liveRepos.length > 0
+          ? liveRepos.reduce(
+              (s, e) => s + e.payload.repoRateDecimal * e.payload.startLegCashZar,
+              0,
+            ) / repoCashMinor
+          : 0;
+      return {
+        openCount: liveRepos.length,
+        totalCashLentZar: repoCashMinor / 100,
+        weightedAvgRateDecimal: repoWeightedRate,
+      };
+    })(),
+    // Deposit Book — fold DepositTaken, subtract terminal events
+    depositBook: (() => {
+      const depositsOpened = [...eventStore.replay({ type: "DepositTaken" })];
+      const depositTerminals = new Set([
+        ...[...eventStore.replay({ type: "DepositMatured" })].map((e) => e.payload.depositId),
+        ...[...eventStore.replay({ type: "DepositWithdrawnEarly" })].map(
+          (e) => e.payload.depositId,
+        ),
+      ]);
+      const liveDeposits = depositsOpened.filter((e) => !depositTerminals.has(e.payload.depositId));
+      const depositPrincipalMinor = liveDeposits.reduce((s, e) => s + e.payload.principalZar, 0);
+      return {
+        openCount: liveDeposits.length,
+        totalPrincipalZar: depositPrincipalMinor / 100,
+      };
+    })(),
+    // IB Placement Book — fold InterbankLoanPlaced, subtract terminal events, split by type
+    ibPlacementBook: (() => {
+      const iblOpened = [...eventStore.replay({ type: "InterbankLoanPlaced" })];
+      const iblTerminals = new Set([
+        ...[...eventStore.replay({ type: "InterbankLoanMatured" })].map(
+          (e) => e.payload.placementId,
+        ),
+        ...[...eventStore.replay({ type: "InterbankLoanRecalledEarly" })].map(
+          (e) => e.payload.placementId,
+        ),
+      ]);
+      const liveIBL = iblOpened.filter((e) => !iblTerminals.has(e.payload.placementId));
+      const fixedTermMinor = liveIBL
+        .filter((e) => e.payload.placementType === "fixed-term")
+        .reduce((s, e) => s + e.payload.principalZar, 0);
+      const callMinor = liveIBL
+        .filter((e) => e.payload.placementType === "call")
+        .reduce((s, e) => s + e.payload.principalZar, 0);
+      return {
+        openCount: liveIBL.length,
+        totalPlacedZar: (fixedTermMinor + callMinor) / 100,
+        fixedTermZar: fixedTermMinor / 100,
+        callZar: callMinor / 100,
+      };
+    })(),
   };
 }
 
