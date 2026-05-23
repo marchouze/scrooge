@@ -22,6 +22,7 @@
 
 import { nowUtc } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
+import type { MarketDataStore } from "../platform/market-data/store";
 import {
   getLimitUtilisations,
   rebuildLimitUtilisation,
@@ -56,7 +57,10 @@ export interface FxSummaryView {
  * @param store  Event store (requires only `replay` capability).
  * @returns      FxSummaryView with counts, top-3 counterparties, and B3 RAG.
  */
-export function buildFxSummaryView(store: Pick<EventStore, "replay">): FxSummaryView {
+export function buildFxSummaryView(
+  store: Pick<EventStore, "replay">,
+  marketDataStore?: MarketDataStore,
+): FxSummaryView {
   const events = [...store.replay()];
 
   // Build a set of cancelled trade IDs from FxTradeCancelled events so we can
@@ -129,7 +133,7 @@ export function buildFxSummaryView(store: Pick<EventStore, "replay">): FxSummary
 
   // B3 utilisation from the limit-utilisation projection
   rebuildLimitUtilisation(events);
-  const utilisations = getLimitUtilisations();
+  const utilisations = getLimitUtilisations(marketDataStore);
   const b3Row = utilisations.find((r) => r.cluster === "B3");
   const b3UtilisationPct = b3Row?.utilisationPct ?? 0;
   const b3RagStatus: "green" | "amber" | "red" = b3Row?.ragStatus ?? "green";

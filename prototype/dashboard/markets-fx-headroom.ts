@@ -27,6 +27,7 @@
 
 import { clock } from "../platform/composition";
 import type { EventStore } from "../platform/event-store/store";
+import type { MarketDataStore } from "../platform/market-data/store";
 import {
   getLimitUtilisations,
   rebuildLimitUtilisation,
@@ -64,10 +65,13 @@ export interface HeadroomView {
  * @param store  Event store (requires only `replay` capability).
  * @returns      HeadroomView with five cluster rows.
  */
-export function buildHeadroomView(store: Pick<EventStore, "replay">): HeadroomView {
+export function buildHeadroomView(
+  store: Pick<EventStore, "replay">,
+  marketDataStore?: MarketDataStore,
+): HeadroomView {
   const events = [...store.replay()];
   rebuildLimitUtilisation(events);
-  const rows = getLimitUtilisations();
+  const rows = getLimitUtilisations(marketDataStore);
   return {
     rows,
     asOf: rows[0]?.asOf ?? clock.now(),
