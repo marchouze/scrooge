@@ -303,7 +303,12 @@ export const PRODUCT_FAMILY_LAYER3: Record<ProductFamily, ProductFamilyDcamLayer
           "Principal amount, deposit rate (fixed/floating), value date, maturity date, " +
           "depositor LEI. IFRS 9 §4.2.1 amortised cost. BA325 LCR outflow rate. " +
           "FIBO anchor: MON:MoneyMarketInstrument.",
-        carriedByEvents: ["DepositTaken", "DepositInterestAccrued", "DepositMatured", "DepositWithdrawnEarly"],
+        carriedByEvents: [
+          "DepositTaken",
+          "DepositInterestAccrued",
+          "DepositMatured",
+          "DepositWithdrawnEarly",
+        ],
       },
       {
         id: "DAG-MM-FUNDING-LINE",

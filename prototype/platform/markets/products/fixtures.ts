@@ -551,11 +551,7 @@ export const M5_REPO_FIXTURE: Product = {
   },
   policyAttestations: [],
   lifecycle: "conceptualised",
-  citations: [
-    "D-MARKETS-SCHEMA-FOUNDATION",
-    "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-    "WS1-PR1a",
-  ],
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
 };
 
 /**
@@ -639,11 +635,7 @@ export const M6_MMD_DEPOSIT_FIXTURE: Product = {
   },
   policyAttestations: [],
   lifecycle: "conceptualised",
-  citations: [
-    "D-MARKETS-SCHEMA-FOUNDATION",
-    "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-    "WS1-PR1a",
-  ],
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
 };
 
 /**
@@ -720,11 +712,7 @@ export const M7_FUNDING_LINE_FIXTURE: Product = {
   },
   policyAttestations: [],
   lifecycle: "conceptualised",
-  citations: [
-    "D-MARKETS-SCHEMA-FOUNDATION",
-    "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-    "WS1-PR1a",
-  ],
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
 };
 
 /**
@@ -807,9 +795,5 @@ export const M8_IBL_FIXTURE: Product = {
   },
   policyAttestations: [],
   lifecycle: "conceptualised",
-  citations: [
-    "D-MARKETS-SCHEMA-FOUNDATION",
-    "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-    "WS1-PR1a",
-  ],
+  citations: ["D-MARKETS-SCHEMA-FOUNDATION", "D-PRODUCT-CONSTRUCTION-SUBSTRATE", "WS1-PR1a"],
 };
