@@ -172,6 +172,136 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
     // Other products added as the instrument universe grows.
   }
 
+  // ---------------------------------------------------------------------------
+  // RepoTradeOpened — bank as lender → RSA
+  //
+  // The bank receives cash on the start leg and holds the collateral; the
+  // counterparty repurchases the collateral on the end-leg settlement date.
+  // From the bank's IRRBB perspective this is a rate-sensitive asset that
+  // reprices at the end-leg date. Terminal events (RepoEndLegSettled /
+  // RepoTradeTerminatedEarly) mark the trade as closed; closed trades are
+  // excluded from the gap schedule.
+  // ---------------------------------------------------------------------------
+
+  const repoOpenEvents = [...eventStore.replay({ type: "RepoTradeOpened" })];
+  const repoEndLegIds = new Set(
+    [...eventStore.replay({ type: "RepoEndLegSettled" })].map(
+      (e) => (e.payload as Record<string, unknown>).tradeId as string,
+    ),
+  );
+  const repoTerminatedIds = new Set(
+    [...eventStore.replay({ type: "RepoTradeTerminatedEarly" })].map(
+      (e) => (e.payload as Record<string, unknown>).tradeId as string,
+    ),
+  );
+
+  for (const evt of repoOpenEvents) {
+    const p = evt.payload as Record<string, unknown>;
+    const tradeId = typeof p.tradeId === "string" ? p.tradeId : "";
+    if (repoEndLegIds.has(tradeId) || repoTerminatedIds.has(tradeId)) continue;
+
+    const endLegStr = typeof p.endLegSettlementDate === "string" ? p.endLegSettlementDate : "";
+    const startLegCashZar = typeof p.startLegCashZar === "number" ? p.startLegCashZar : 0;
+    if (!endLegStr || startLegCashZar <= 0) continue;
+
+    const endLegDate = new Date(endLegStr);
+    const daysToEnd = Math.max(
+      0,
+      Math.round((endLegDate.getTime() - asOfDate.getTime()) / 86_400_000),
+    );
+    const bucket = classifyDays(daysToEnd);
+    rsa[bucket] = (rsa[bucket] ?? 0) + startLegCashZar;
+    hasPositions = true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // DepositTaken — bank as deposit taker → RSL
+  //
+  // The bank owes principal + interest to the depositor at maturity. The
+  // deposit reprices (rolls off) at the maturity date. Terminal events
+  // (DepositMatured / DepositWithdrawnEarly) mark the deposit as closed.
+  // ---------------------------------------------------------------------------
+
+  const depositOpenEvents = [...eventStore.replay({ type: "DepositTaken" })];
+  const depositMaturedIds = new Set(
+    [...eventStore.replay({ type: "DepositMatured" })].map(
+      (e) => (e.payload as Record<string, unknown>).depositId as string,
+    ),
+  );
+  const depositWithdrawnIds = new Set(
+    [...eventStore.replay({ type: "DepositWithdrawnEarly" })].map(
+      (e) => (e.payload as Record<string, unknown>).depositId as string,
+    ),
+  );
+
+  for (const evt of depositOpenEvents) {
+    const p = evt.payload as Record<string, unknown>;
+    const depositId = typeof p.depositId === "string" ? p.depositId : "";
+    if (depositMaturedIds.has(depositId) || depositWithdrawnIds.has(depositId)) continue;
+
+    const maturityStr = typeof p.maturityDate === "string" ? p.maturityDate : "";
+    const principalZar = typeof p.principalZar === "number" ? p.principalZar : 0;
+    if (!maturityStr || principalZar <= 0) continue;
+
+    const maturityDate = new Date(maturityStr);
+    const daysToMaturity = Math.max(
+      0,
+      Math.round((maturityDate.getTime() - asOfDate.getTime()) / 86_400_000),
+    );
+    const bucket = classifyDays(daysToMaturity);
+    rsl[bucket] = (rsl[bucket] ?? 0) + principalZar;
+    hasPositions = true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // InterbankLoanPlaced — bank as lender → RSA
+  //
+  // The bank has placed cash with another financial institution. Fixed-term
+  // placements reprice at maturity. Call placements are treated as overnight
+  // (ON bucket) — the bank can recall on demand. Terminal events
+  // (InterbankLoanMatured / InterbankLoanRecalledEarly) mark the placement
+  // as closed.
+  // ---------------------------------------------------------------------------
+
+  const iblOpenEvents = [...eventStore.replay({ type: "InterbankLoanPlaced" })];
+  const iblMaturedIds = new Set(
+    [...eventStore.replay({ type: "InterbankLoanMatured" })].map(
+      (e) => (e.payload as Record<string, unknown>).placementId as string,
+    ),
+  );
+  const iblRecalledIds = new Set(
+    [...eventStore.replay({ type: "InterbankLoanRecalledEarly" })].map(
+      (e) => (e.payload as Record<string, unknown>).placementId as string,
+    ),
+  );
+
+  for (const evt of iblOpenEvents) {
+    const p = evt.payload as Record<string, unknown>;
+    const placementId = typeof p.placementId === "string" ? p.placementId : "";
+    if (iblMaturedIds.has(placementId) || iblRecalledIds.has(placementId)) continue;
+
+    const principalZar = typeof p.principalZar === "number" ? p.principalZar : 0;
+    if (principalZar <= 0) continue;
+
+    // maturityDate is null for call placements — treat as ON (overnight).
+    const maturityDateRaw = p.maturityDate;
+    let daysToIblMaturity: number;
+    if (typeof maturityDateRaw === "string" && maturityDateRaw) {
+      const matDate = new Date(maturityDateRaw);
+      daysToIblMaturity = Math.max(
+        0,
+        Math.round((matDate.getTime() - asOfDate.getTime()) / 86_400_000),
+      );
+    } else {
+      // call placement — overnight bucket
+      daysToIblMaturity = 1;
+    }
+
+    const bucket = classifyDays(daysToIblMaturity);
+    rsa[bucket] = (rsa[bucket] ?? 0) + principalZar;
+    hasPositions = true;
+  }
+
   // Build the gap schedule rows.
   let cumulative = 0;
   const rows: RepricingGapRow[] = [];

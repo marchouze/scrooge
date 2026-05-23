@@ -131,6 +131,42 @@
     font-size: 0.8rem;
     color: var(--text-muted);
   }
+  .tb-product-selector {
+    margin-bottom: var(--space-5);
+  }
+  .tb-product-selector label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+  }
+  .tb-product-selector select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .tb-product-selector select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+  .tb-section-header {
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-top: var(--space-2);
+  }
 </style>
 </head>
 <body>
@@ -139,103 +175,300 @@
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
 
 <div class="tb-page">
-  <h1>Manual FX Trade Booking</h1>
+  <h1>Manual Trade Booking</h1>
   <p class="tb-lede">
-    Enter a real FX spot trade directly. On submit, the system emits an
-    <code>FxTradeExecuted</code> event with <code>provenance.kind: "production"</code>
-    and immediately posts the GL booking entry.
+    Book a real trade directly into the event store. Select a product type to show
+    the relevant fields. On submit, the appropriate event is emitted with
+    <code>provenance.kind: "production"</code> and the GL posting engine runs inline.
     Authority: <strong>D-MANUAL-TRADE-BOOKING</strong>.
   </p>
 
+  <!-- Product type selector -->
+  <div class="tb-product-selector">
+    <label for="product-type">Product type</label>
+    <select id="product-type" onchange="showProductFields(this.value)">
+      <option value="fx">FX Spot</option>
+      <option value="repo">Repo</option>
+      <option value="mmd">Money Market Deposit (MMD)</option>
+      <option value="ib-placement">IB Placement</option>
+    </select>
+  </div>
+
   <form class="tb-form" id="tb-form" autocomplete="off" novalidate>
 
-    <!-- Currency pair -->
-    <div class="tb-field">
-      <label for="tb-base">Base currency</label>
-      <select id="tb-base" name="base" required>
-        <option value="">— select —</option>
-        <option value="ZAR" selected>ZAR</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-        <option value="GBP">GBP</option>
-        <option value="JPY">JPY</option>
-      </select>
-    </div>
+    <!-- ================================================================ -->
+    <!-- FX Spot fields                                                   -->
+    <!-- ================================================================ -->
+    <div id="fx-fields">
 
-    <div class="tb-field">
-      <label for="tb-quote">Quote currency</label>
-      <select id="tb-quote" name="quote" required>
-        <option value="">— select —</option>
-        <option value="ZAR">ZAR</option>
-        <option value="USD" selected>USD</option>
-        <option value="EUR">EUR</option>
-        <option value="GBP">GBP</option>
-        <option value="JPY">JPY</option>
-      </select>
-    </div>
-
-    <!-- Side -->
-    <div class="tb-field tb-form-full">
-      <label>Side</label>
-      <div class="tb-side-group">
-        <label class="tb-side-label">
-          <input type="radio" name="side" value="buy" checked>
-          Buy base
-        </label>
-        <label class="tb-side-label">
-          <input type="radio" name="side" value="sell">
-          Sell base
-        </label>
+      <!-- Currency pair -->
+      <div class="tb-field">
+        <label for="tb-base">Base currency</label>
+        <select id="tb-base" name="base">
+          <option value="">— select —</option>
+          <option value="ZAR" selected>ZAR</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+        </select>
       </div>
-    </div>
 
-    <!-- Notional -->
-    <div class="tb-field">
-      <label for="tb-notional">Notional amount</label>
-      <input type="number" id="tb-notional" name="notionalAmount" min="1" step="1" placeholder="1000000" required>
-    </div>
+      <div class="tb-field">
+        <label for="tb-quote">Quote currency</label>
+        <select id="tb-quote" name="quote">
+          <option value="">— select —</option>
+          <option value="ZAR">ZAR</option>
+          <option value="USD" selected>USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+        </select>
+      </div>
 
-    <div class="tb-field">
-      <label for="tb-notional-ccy">Notional currency</label>
-      <select id="tb-notional-ccy" name="notionalCurrency" required>
-        <option value="ZAR" selected>ZAR</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-        <option value="GBP">GBP</option>
-        <option value="JPY">JPY</option>
-      </select>
-    </div>
+      <!-- Side -->
+      <div class="tb-field tb-form-full">
+        <label>Side</label>
+        <div class="tb-side-group">
+          <label class="tb-side-label">
+            <input type="radio" name="side" value="buy" checked>
+            Buy base
+          </label>
+          <label class="tb-side-label">
+            <input type="radio" name="side" value="sell">
+            Sell base
+          </label>
+        </div>
+      </div>
 
-    <!-- Rate and settlement -->
-    <div class="tb-field">
-      <label for="tb-rate">Spot rate</label>
-      <input type="number" id="tb-rate" name="rate" min="0.000001" step="any" placeholder="18.50" required>
-    </div>
+      <!-- Notional -->
+      <div class="tb-field">
+        <label for="tb-notional">Notional amount</label>
+        <input type="number" id="tb-notional" name="notionalAmount" min="1" step="1" placeholder="1000000">
+      </div>
 
-    <div class="tb-field">
-      <label for="tb-settlement">Settlement date</label>
-      <input type="date" id="tb-settlement" name="settlementDate" required>
-    </div>
+      <div class="tb-field">
+        <label for="tb-notional-ccy">Notional currency</label>
+        <select id="tb-notional-ccy" name="notionalCurrency">
+          <option value="ZAR" selected>ZAR</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+        </select>
+      </div>
 
-    <!-- Counterparty -->
-    <div class="tb-field tb-form-full">
-      <label for="tb-cpty-select">Counterparty</label>
-      <!-- Populated from KYC clients; last option is "Other…" for free-text -->
-      <select id="tb-cpty-select" style="margin-bottom:var(--space-2)">
-        <option value="">Loading clients…</option>
-      </select>
-      <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Enter counterparty name" style="display:none" required>
-    </div>
+      <!-- Rate and settlement -->
+      <div class="tb-field">
+        <label for="tb-rate">Spot rate</label>
+        <input type="number" id="tb-rate" name="rate" min="0.000001" step="any" placeholder="18.50">
+      </div>
 
-    <div class="tb-field">
-      <label for="tb-cpty-lei">Counterparty LEI <span class="tb-optional">(optional)</span></label>
-      <input type="text" id="tb-cpty-lei" name="counterpartyLei" placeholder="e.g. 529900T8BM49AURSDO55" maxlength="20">
-    </div>
+      <div class="tb-field">
+        <label for="tb-settlement">Settlement date</label>
+        <input type="date" id="tb-settlement" name="settlementDate">
+      </div>
 
-    <div class="tb-field">
-      <label for="tb-trader-ref">Trader ref <span class="tb-optional">(optional)</span></label>
-      <input type="text" id="tb-trader-ref" name="traderRef" placeholder="manual-desk">
-    </div>
+      <!-- Counterparty -->
+      <div class="tb-field tb-form-full">
+        <label for="tb-cpty-select">Counterparty</label>
+        <select id="tb-cpty-select" style="margin-bottom:var(--space-2)">
+          <option value="">Loading clients…</option>
+        </select>
+        <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Enter counterparty name" style="display:none">
+      </div>
+
+      <div class="tb-field">
+        <label for="tb-cpty-lei">Counterparty LEI <span class="tb-optional">(optional)</span></label>
+        <input type="text" id="tb-cpty-lei" name="counterpartyLei" placeholder="e.g. 529900T8BM49AURSDO55" maxlength="20">
+      </div>
+
+      <div class="tb-field">
+        <label for="tb-trader-ref">Trader ref <span class="tb-optional">(optional)</span></label>
+        <input type="text" id="tb-trader-ref" name="traderRef" placeholder="manual-desk">
+      </div>
+
+    </div><!-- /#fx-fields -->
+
+    <!-- ================================================================ -->
+    <!-- Repo fields                                                       -->
+    <!-- ================================================================ -->
+    <div id="repo-fields" style="display:none; display:none; grid-column: 1 / -1;">
+      <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field">
+          <label for="repo-trade-id">Trade ID</label>
+          <input type="text" id="repo-trade-id" name="repo_tradeId" placeholder="REPO-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-cpty-lei">Counterparty LEI</label>
+          <input type="text" id="repo-cpty-lei" name="repo_counterpartyLei" placeholder="ABSA00000000000000001">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-start-date">Start settlement date</label>
+          <input type="date" id="repo-start-date" name="repo_startLegSettlementDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-end-date">End settlement date</label>
+          <input type="date" id="repo-end-date" name="repo_endLegSettlementDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-start-cash">Start leg cash ZAR (cents)</label>
+          <input type="number" id="repo-start-cash" name="repo_startLegCashZar" min="1" step="1" placeholder="1000000000">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-rate">Repo rate %</label>
+          <input type="number" id="repo-rate" name="repo_repoRatePct" min="0" step="0.001" placeholder="8.45">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-collateral-isin">Collateral ISIN</label>
+          <input type="text" id="repo-collateral-isin" name="repo_collateralIsin" placeholder="ZAG000109728">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-collateral-face">Collateral face value ZAR (cents)</label>
+          <input type="number" id="repo-collateral-face" name="repo_collateralFaceValue" min="1" step="1" placeholder="1020000000">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-haircut">Haircut %</label>
+          <input type="number" id="repo-haircut" name="repo_collateralHaircutPct" min="0" max="100" step="0.01" placeholder="2">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-book-id">Book ID</label>
+          <input type="text" id="repo-book-id" name="repo_bookId" value="TREASURY">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-trader-ref">Trader ref</label>
+          <input type="text" id="repo-trader-ref" name="repo_traderRef" placeholder="TREAS-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="repo-instrument-ref">Instrument ref</label>
+          <input type="text" id="repo-instrument-ref" name="repo_instrumentRef" value="fi:pam:REPO-7D-001">
+        </div>
+
+      </div>
+    </div><!-- /#repo-fields -->
+
+    <!-- ================================================================ -->
+    <!-- MMD fields                                                        -->
+    <!-- ================================================================ -->
+    <div id="mmd-fields" style="display:none; grid-column: 1 / -1;">
+      <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field">
+          <label for="mmd-deposit-id">Deposit ID</label>
+          <input type="text" id="mmd-deposit-id" name="mmd_depositId" placeholder="MMD-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-cpty-lei">Counterparty LEI</label>
+          <input type="text" id="mmd-cpty-lei" name="mmd_counterpartyLei" placeholder="SBK000000000000000001">
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-principal">Principal ZAR (cents)</label>
+          <input type="number" id="mmd-principal" name="mmd_principalZar" min="1" step="1" placeholder="500000000">
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-rate">Interest rate %</label>
+          <input type="number" id="mmd-rate" name="mmd_interestRatePct" min="0" step="0.001" placeholder="8.25">
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-maturity">Maturity date</label>
+          <input type="date" id="mmd-maturity" name="mmd_maturityDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-category">Deposit category</label>
+          <select id="mmd-category" name="mmd_depositCategory">
+            <option value="wholesale-non-operational" selected>Wholesale non-operational</option>
+            <option value="wholesale-operational">Wholesale operational</option>
+            <option value="retail-stable">Retail stable</option>
+            <option value="retail-less-stable">Retail less stable</option>
+          </select>
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-book-id">Book ID</label>
+          <input type="text" id="mmd-book-id" name="mmd_bookId" value="TREASURY">
+        </div>
+
+        <div class="tb-field">
+          <label for="mmd-instrument-ref">Instrument ref</label>
+          <input type="text" id="mmd-instrument-ref" name="mmd_instrumentRef" value="fi:pam:MMD-30D-001">
+        </div>
+
+      </div>
+    </div><!-- /#mmd-fields -->
+
+    <!-- ================================================================ -->
+    <!-- IB Placement fields                                              -->
+    <!-- ================================================================ -->
+    <div id="ib-fields" style="display:none; grid-column: 1 / -1;">
+      <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field">
+          <label for="ib-placement-id">Placement ID</label>
+          <input type="text" id="ib-placement-id" name="ib_placementId" placeholder="IBL-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-cpty-lei">Counterparty LEI</label>
+          <input type="text" id="ib-cpty-lei" name="ib_counterpartyLei" placeholder="INV000000000000000001">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-principal">Principal ZAR (cents)</label>
+          <input type="number" id="ib-principal" name="ib_principalZar" min="1" step="1" placeholder="2000000000">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-rate">Rate %</label>
+          <input type="number" id="ib-rate" name="ib_ratePct" min="0" step="0.001" placeholder="8.30">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-start-date">Start date</label>
+          <input type="date" id="ib-start-date" name="ib_startDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-maturity-date">Maturity date <span class="tb-optional">(blank = call)</span></label>
+          <input type="date" id="ib-maturity-date" name="ib_maturityDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-placement-type">Placement type</label>
+          <select id="ib-placement-type" name="ib_placementType">
+            <option value="fixed-term" selected>Fixed-term</option>
+            <option value="call">Call</option>
+          </select>
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-book-id">Book ID</label>
+          <input type="text" id="ib-book-id" name="ib_bookId" value="TREASURY">
+        </div>
+
+        <div class="tb-field tb-form-full">
+          <label for="ib-instrument-ref">Instrument ref</label>
+          <input type="text" id="ib-instrument-ref" name="ib_instrumentRef" value="fi:pam:IBL-1M-001">
+        </div>
+
+      </div>
+    </div><!-- /#ib-fields -->
 
     <!-- Submit -->
     <div class="tb-submit-row">
@@ -248,19 +481,40 @@
   <div class="tb-authority">
     Authority: D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19) ·
     D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18) ·
-    GL posting: PR-FX-001 (trade-booking).
+    WS1-PR1a (Repo/MMD/IBL event types) ·
+    GL posting: PR-FX-001 (FX), PR-REPO-001 / PR-MMD-001 / PR-IBL-001 (treasury).
   </div>
 </div>
 
 <script>
+// Product-type field visibility toggle.
+// Called by the product-type <select> onchange handler.
+function showProductFields(type) {
+  const sections = ['fx-fields', 'repo-fields', 'mmd-fields', 'ib-fields'];
+  sections.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (id === type + '-fields') ? '' : 'none';
+  });
+}
+
 (function () {
   // Default settlement date = today + 2 business days (simplified: T+2)
   const settlementInput = document.getElementById('tb-settlement');
   const today = new Date();
   today.setDate(today.getDate() + 2);
   const pad = (n) => String(n).padStart(2, '0');
-  settlementInput.value = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
-  settlementInput.min = new Date().toISOString().slice(0, 10);
+  const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  if (settlementInput) {
+    settlementInput.value = todayStr;
+    settlementInput.min = new Date().toISOString().slice(0, 10);
+  }
+
+  // Default repo start and IB start dates to today
+  const repoStartInput = document.getElementById('repo-start-date');
+  const ibStartInput   = document.getElementById('ib-start-date');
+  const todayIso = new Date().toISOString().slice(0, 10);
+  if (repoStartInput) repoStartInput.value = todayIso;
+  if (ibStartInput)   ibStartInput.value   = todayIso;
 
   // Populate counterparty select from onboarded KYC clients
   const cptySelect = document.getElementById('tb-cpty-select');
@@ -271,16 +525,14 @@
     const val = cptySelect.value;
     if (val === '__other__') {
       cptyInput.style.display = '';
-      cptyInput.required = true;
       cptyInput.value = '';
       cptyInput.focus();
     } else {
       cptyInput.style.display = 'none';
-      cptyInput.required = false;
       cptyInput.value = val;
     }
   }
-  cptySelect.addEventListener('change', syncCptyName);
+  if (cptySelect) cptySelect.addEventListener('change', syncCptyName);
 
   (async () => {
     try {
@@ -290,7 +542,6 @@
       const counterparties = data.counterparties || [];
 
       cptySelect.innerHTML = '';
-      // Blank prompt
       const blank = document.createElement('option');
       blank.value = '';
       blank.textContent = '— select counterparty —';
@@ -307,13 +558,11 @@
         cptySelect.appendChild(opt);
       });
 
-      // "Other" free-text fallback
       const other = document.createElement('option');
       other.value = '__other__';
       other.textContent = 'Other (type name)…';
       cptySelect.appendChild(other);
 
-      // Auto-fill LEI on select
       cptySelect.addEventListener('change', () => {
         const selected = cptySelect.options[cptySelect.selectedIndex];
         if (selected && selected.dataset.lei && !leiInput.value) {
@@ -322,11 +571,11 @@
       });
 
     } catch (_) {
-      // Fetch failed — fall back to free-text input directly
-      cptySelect.style.display = 'none';
-      cptyInput.style.display = '';
-      cptyInput.required = true;
-      cptyInput.placeholder = 'Counterparty name';
+      if (cptySelect) cptySelect.style.display = 'none';
+      if (cptyInput) {
+        cptyInput.style.display = '';
+        cptyInput.placeholder = 'Counterparty name';
+      }
     }
   })();
 
@@ -347,17 +596,17 @@
       if (ccy === prev) opt.selected = true;
       notionalCcySelect.appendChild(opt);
     });
-    // Default to base if previous selection gone
     if (base && !notionalCcySelect.value) notionalCcySelect.value = base;
   }
-  baseSelect.addEventListener('change', syncNotionalCcy);
-  quoteSelect.addEventListener('change', syncNotionalCcy);
+  if (baseSelect)  baseSelect.addEventListener('change', syncNotionalCcy);
+  if (quoteSelect) quoteSelect.addEventListener('change', syncNotionalCcy);
   syncNotionalCcy();
 
   // Form submit
   const form = document.getElementById('tb-form');
   const submitBtn = document.getElementById('tb-submit');
   const resultDiv = document.getElementById('tb-result');
+  const productTypeSelect = document.getElementById('product-type');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -366,21 +615,78 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Booking…';
 
+    const productType = productTypeSelect ? productTypeSelect.value : 'fx';
     const data = new FormData(form);
-    const body = {
-      currencyPair: {
-        base: data.get('base'),
-        quote: data.get('quote'),
-      },
-      side: data.get('side'),
-      notionalAmount: parseFloat(data.get('notionalAmount')),
-      notionalCurrency: data.get('notionalCurrency'),
-      rate: parseFloat(data.get('rate')),
-      settlementDate: data.get('settlementDate'),
-      counterpartyName: data.get('counterpartyName'),
-      counterpartyLei: data.get('counterpartyLei') || undefined,
-      traderRef: data.get('traderRef') || undefined,
-    };
+
+    let body;
+    if (productType === 'fx') {
+      body = {
+        productType: 'fx',
+        currencyPair: {
+          base: data.get('base'),
+          quote: data.get('quote'),
+        },
+        side: data.get('side'),
+        notionalAmount: parseFloat(data.get('notionalAmount')),
+        notionalCurrency: data.get('notionalCurrency'),
+        rate: parseFloat(data.get('rate')),
+        settlementDate: data.get('settlementDate'),
+        counterpartyName: data.get('counterpartyName'),
+        counterpartyLei: data.get('counterpartyLei') || undefined,
+        traderRef: data.get('traderRef') || undefined,
+      };
+    } else if (productType === 'repo') {
+      const ratePct = parseFloat(data.get('repo_repoRatePct'));
+      const startCash = parseInt(data.get('repo_startLegCashZar'), 10);
+      const startDate = data.get('repo_startLegSettlementDate');
+      const endDate   = data.get('repo_endLegSettlementDate');
+      // Compute repurchase price: startCash × (1 + rate × days/365)
+      const days = startDate && endDate
+        ? Math.round((new Date(endDate) - new Date(startDate)) / 86_400_000)
+        : 7;
+      const repurchasePrice = Math.round(startCash * (1 + (ratePct / 100) * days / 365));
+      body = {
+        productType: 'repo',
+        tradeId: data.get('repo_tradeId'),
+        counterpartyLei: data.get('repo_counterpartyLei'),
+        startLegSettlementDate: startDate,
+        endLegSettlementDate: endDate,
+        startLegCashZar: startCash,
+        repurchasePriceZar: repurchasePrice,
+        repoRateDecimal: ratePct / 100,
+        collateralIsin: data.get('repo_collateralIsin'),
+        collateralFaceValue: parseInt(data.get('repo_collateralFaceValue'), 10),
+        collateralHaircutPct: parseFloat(data.get('repo_collateralHaircutPct')) / 100,
+        bookId: data.get('repo_bookId') || 'TREASURY',
+        traderRef: data.get('repo_traderRef'),
+        instrumentRef: data.get('repo_instrumentRef') || 'fi:pam:REPO-7D-001',
+      };
+    } else if (productType === 'mmd') {
+      body = {
+        productType: 'mmd',
+        depositId: data.get('mmd_depositId'),
+        counterpartyLei: data.get('mmd_counterpartyLei'),
+        principalZar: parseInt(data.get('mmd_principalZar'), 10),
+        interestRateDecimal: parseFloat(data.get('mmd_interestRatePct')) / 100,
+        maturityDate: data.get('mmd_maturityDate'),
+        depositCategory: data.get('mmd_depositCategory'),
+        bookId: data.get('mmd_bookId') || 'TREASURY',
+        instrumentRef: data.get('mmd_instrumentRef') || 'fi:pam:MMD-30D-001',
+      };
+    } else if (productType === 'ib-placement') {
+      body = {
+        productType: 'ib-placement',
+        placementId: data.get('ib_placementId'),
+        counterpartyLei: data.get('ib_counterpartyLei'),
+        principalZar: parseInt(data.get('ib_principalZar'), 10),
+        rateDecimal: parseFloat(data.get('ib_ratePct')) / 100,
+        startDate: data.get('ib_startDate'),
+        maturityDate: data.get('ib_maturityDate') || null,
+        placementType: data.get('ib_placementType'),
+        bookId: data.get('ib_bookId') || 'TREASURY',
+        instrumentRef: data.get('ib_instrumentRef') || 'fi:pam:IBL-1M-001',
+      };
+    }
 
     try {
       const res = await fetch('/api/trades/book', {
@@ -393,7 +699,8 @@
       resultDiv.style.display = 'block';
       if (json.ok) {
         resultDiv.className = 'tb-result success';
-        resultDiv.innerHTML = `Booked: <strong>${json.tradeId}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;event: <code>${json.eventId}</code>${json.glWarning ? '<br><em>GL warning: ' + json.glWarning + '</em>' : ''}`;
+        const idLabel = json.tradeId || json.depositId || json.placementId || '—';
+        resultDiv.innerHTML = `Booked: <strong>${idLabel}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;event: <code>${json.eventId}</code>${json.glWarning ? '<br><em>GL warning: ' + json.glWarning + '</em>' : ''}`;
       } else {
         resultDiv.className = 'tb-result error';
         resultDiv.textContent = json.error ?? 'Unknown error';
