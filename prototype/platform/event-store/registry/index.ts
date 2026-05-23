@@ -132,6 +132,11 @@ export { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
 //   IFRS-9; ACTUS v1.1; BA 325.
 export { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
+// WS1-PR1a — Repo / Money Market Deposit / Funding Line / Interbank Loan
+// event types (20 events across 4 treasury instrument families).
+// Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9; IAS 39 §27;
+//   Banks Act 94/1990 Reg 26/27; BA 325; BA 326; BCBS d365.
+export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -185,6 +190,7 @@ import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
+import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
@@ -309,6 +315,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
   //   IFRS-9; ACTUS v1.1; BA 325.
   ...FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY,
+  // WS1-PR1a — Repo / Money Market Deposit / Funding Line / Interbank Loan
+  // event types (20 events across 4 treasury instrument families).
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
+  //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 325; BA 326; BCBS d365.
+  ...REPO_MMD_IBL_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
