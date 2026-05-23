@@ -42,12 +42,13 @@
       } else {
         const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
         clusters.forEach(c => {
+          const label = `${c.cluster} — ${c.limitName || ""}`;
           const t = SC.renderTile({
-            label: c.cluster || c.limitName || "",
-            value: c.utilisationPct != null ? `${c.utilisationPct}%` : "—",
-            sub: c.limitValue ? `limit: ${c.limitValue.toLocaleString()} ${c.currency}` : c.limitName,
+            label,
+            value: c.utilisationPct != null ? `${Number(c.utilisationPct).toFixed(1)}%` : "—",
+            sub: c.limitValue ? `limit: ${c.limitValue.toLocaleString()} ${c.currency}` : "",
             status: ragToStatus[c.ragStatus] ?? null,
-            onClick: () => SC.openModal({ title: c.cluster || "Cluster", body: SC.renderDefList(c) }),
+            onClick: () => SC.openModal({ title: label, body: SC.renderDefList(c) }),
           });
           tilesEl.appendChild(t);
         });
