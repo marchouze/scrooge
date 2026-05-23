@@ -41,13 +41,17 @@
         tilesEl.innerHTML = `<p style="color:var(--color-text-secondary)">No RAS data available.</p>`;
       } else {
         const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
+        const fmt = (n) => n != null ? Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 0 }) : "—";
         clusters.forEach(c => {
           const shortName = (c.limitName || "").replace(/\s*\(.*?\)\s*/g, "").trim();
           const label = `${c.cluster} — ${shortName}`;
+          const utilPct = c.utilisationPct != null ? `${Number(c.utilisationPct).toFixed(1)}%` : "—";
+          const ccy = c.currency ?? "ZAR";
+          const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit`;
           const t = SC.renderTile({
             label,
-            value: c.utilisationPct != null ? `${Number(c.utilisationPct).toFixed(1)}%` : "—",
-            sub: c.limitValue ? `limit: ${c.limitValue.toLocaleString()} ${c.currency}` : "",
+            value: `${utilPct} of 100%`,
+            sub,
             status: ragToStatus[c.ragStatus] ?? null,
             onClick: () => SC.openModal({ title: label, body: SC.renderDefList(c) }),
           });
