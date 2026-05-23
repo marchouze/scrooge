@@ -18,6 +18,8 @@
     <div class="page-body">
       <div id="ras-header"></div>
       <div id="ras-tiles" class="tile-row"></div>
+      <div id="liquidity-header"></div>
+      <div id="liquidity-tiles" class="tile-row"></div>
       <div id="stress-header"></div>
       <div id="stress-table"></div>
     </div>
@@ -51,6 +53,42 @@
           });
           tilesEl.appendChild(t);
         });
+      }
+
+      // Liquidity Risk — LCR / NSFR
+      document.getElementById("liquidity-header").innerHTML = SC.renderSectionHeader("Liquidity Risk", null);
+      const lm = state?.liquidityMetrics;
+      const liqEl = document.getElementById("liquidity-tiles");
+      if (!lm) {
+        liqEl.innerHTML = `<p style="color:var(--color-text-secondary)">No liquidity data available.</p>`;
+      } else {
+        const lcrPct = lm.lcr != null ? `${Number(lm.lcr).toFixed(0)}%` : "—";
+        const nsfrPct = lm.nsfr != null ? `${Number(lm.nsfr).toFixed(0)}%` : "—";
+        const statusMap = { "above-minimum": "ok", "at-minimum": "warn", "below-minimum": "danger" };
+        liqEl.appendChild(SC.renderTile({
+          label: "LCR",
+          value: lcrPct,
+          sub: "min 100% (BCBS 188)",
+          status: statusMap[lm.lcrStatus] ?? null,
+          onClick: () => SC.openModal({ title: "Liquidity Coverage Ratio", body: SC.renderDefList({
+            "LCR": lcrPct,
+            "Status": lm.lcrStatus,
+            "Regulatory minimum": "100%",
+            "Authority": "BCBS 188 / Reg 26(12)",
+          })}),
+        }));
+        liqEl.appendChild(SC.renderTile({
+          label: "NSFR",
+          value: nsfrPct,
+          sub: "min 100% (BCBS 295)",
+          status: statusMap[lm.nsfrStatus] ?? null,
+          onClick: () => SC.openModal({ title: "Net Stable Funding Ratio", body: SC.renderDefList({
+            "NSFR": nsfrPct,
+            "Status": lm.nsfrStatus,
+            "Regulatory minimum": "100%",
+            "Authority": "BCBS 295 / Reg 26(13)",
+          })}),
+        }));
       }
 
       // Vera findings
