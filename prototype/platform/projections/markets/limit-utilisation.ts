@@ -220,14 +220,26 @@ function apply(event: Event): void {
 export function rebuildLimitUtilisation(events: readonly Event[]): void {
   reset();
 
-  // Pass 1 — collect cancelled trade IDs.
-  const cancelledTradeIds = new Set<string>();
+  // Pass 1 — collect closed trade IDs (cancelled or settlement-instructed).
+  // Settled trades are no longer open positions and must not inflate exposure.
+  const closedTradeIds = new Set<string>();
   for (const e of events) {
     if (e.type === "FxTradeCancelled") {
       const p = e.payload as Record<string, unknown>;
       if (typeof p.tradeId === "string") {
-        cancelledTradeIds.add(p.tradeId);
+        closedTradeIds.add(p.tradeId);
       }
+    }
+    if (e.type === "FxSettlementInstructed") {
+      const p = e.payload as Record<string, unknown>;
+      const tradeIdRaw = p.tradeId as Record<string, unknown> | string | undefined;
+      const tradeIdValue =
+        typeof tradeIdRaw === "string"
+          ? tradeIdRaw
+          : typeof tradeIdRaw?.value === "string"
+            ? tradeIdRaw.value
+            : null;
+      if (tradeIdValue) closedTradeIds.add(tradeIdValue);
     }
   }
 
@@ -252,7 +264,7 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
           : typeof tradeIdRaw?.value === "string"
             ? tradeIdRaw.value
             : null;
-      if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) continue;
+      if (tradeIdValue && closedTradeIds.has(tradeIdValue)) continue;
     }
 
     apply(e);
