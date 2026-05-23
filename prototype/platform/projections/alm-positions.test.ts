@@ -87,9 +87,12 @@ describe("alm-positions — build-phase empty store", () => {
     expect(snap.horizonDays).toBe(30);
     expect(snap.hqlaPositions.length).toBe(0);
     expect(snap.fundingPositions.length).toBe(0);
-    expect(snap.asfItems.length).toBe(0);
+    // WS2: ASF always has at least one item (Tier 1 capital from computeCapitalMetrics
+    // build-phase baseline — R300m ICAAP v1 figure, 100% ASF weight per BA 326 §8).
+    expect(snap.asfItems.length).toBeGreaterThanOrEqual(1);
     expect(snap.rsfItems.length).toBe(0);
-    expect(snap.buildPhase).toBe(true);
+    // buildPhase is false now that ASF is partially wired (Tier 1 capital always present)
+    expect(snap.buildPhase).toBe(false);
 
     // gaps[] must name each canonical missing event class
     expect(snap.gaps.length).toBeGreaterThan(0);
@@ -139,10 +142,12 @@ describe("alm-positions — fed HQLA path via TradeBooked", () => {
     const total = snap.hqlaPositions.reduce((s, p) => s + p.amountZar, 0);
     expect(total).toBeGreaterThan(0);
 
-    // Funding / ASF / RSF still empty — their event classes are not wired.
+    // Funding still empty — DepositTaken / FundingLineDrawn / IBL not emitted.
     expect(snap.fundingPositions.length).toBe(0);
-    expect(snap.asfItems.length).toBe(0);
-    expect(snap.rsfItems.length).toBe(0);
+    // WS2: ASF includes Tier 1 capital (build-phase baseline). RSF includes the
+    // HQLA position wired above (hqla-l1 at 5% RSF weight).
+    expect(snap.asfItems.length).toBeGreaterThanOrEqual(1);
+    expect(snap.rsfItems.length).toBeGreaterThanOrEqual(1);
 
     // gaps[] should still name the unwired classes — but the inventory test
     // doesn't enforce the gap inventory size precisely (the projection may
