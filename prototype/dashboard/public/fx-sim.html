@@ -281,7 +281,18 @@
                 <label for="bookId">Book ID</label>
                 <input type="text" id="bookId" value="BK-FX-MM-SIM-001" style="width:180px">
               </div>
+              <div class="sim-config-field">
+                <label for="settlementMode">Settlement</label>
+                <select id="settlementMode" style="padding:6px 10px;border:1px solid var(--color-border,#e5e7eb);border-radius:6px;font-size:0.875rem;background:var(--color-bg,#fff);color:var(--color-text,#111827)">
+                  <option value="realtime">Real-time (T+2)</option>
+                  <option value="accelerated">Accelerated</option>
+                </select>
+              </div>
             </div>
+            <p style="margin:var(--space-2,8px) 0 0;font-size:0.75rem;color:var(--color-text-secondary,#6b7280)">
+              <strong>Real-time (T+2)</strong>: trades sit in the open book until settlement date arrives — same as production. &nbsp;
+              <strong>Accelerated</strong>: full lifecycle fires immediately, so trades settle at T+0 (useful for bulk testing).
+            </p>
           </div>
         </div>
       </section>
@@ -481,12 +492,13 @@
       const minIntervalMs = parseInt(document.getElementById("minInterval").value, 10) || 2000;
       const maxIntervalMs = parseInt(document.getElementById("maxInterval").value, 10) || 8000;
       const bookId = document.getElementById("bookId").value.trim() || "BK-FX-MM-SIM-001";
+      const settlementMode = document.getElementById("settlementMode").value || "realtime";
 
       try {
         const res = await fetch("/api/fx-sim/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ minIntervalMs, maxIntervalMs, bookId }),
+          body: JSON.stringify({ minIntervalMs, maxIntervalMs, bookId, settlementMode }),
         });
         const data = await res.json();
         renderStatus(data);

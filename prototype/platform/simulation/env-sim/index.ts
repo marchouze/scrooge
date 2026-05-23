@@ -53,6 +53,14 @@ export interface EnvSimOptions {
    * created internally (suitable for tests and standalone runs).
    */
   marketDataStore?: MarketDataStore;
+  /**
+   * Settlement mode:
+   *   "accelerated" (default) — full lifecycle fires synchronously at T+0.
+   *   "realtime" — only FxSettlementInstructed events fire at T+0; the
+   *     server's settlement timer emits PrincipalPayments + SettlementConfirmed
+   *     when the trade's settlementDate (T+2) arrives.
+   */
+  settlementMode?: "realtime" | "accelerated";
 }
 
 export interface EnvSimStatus {
@@ -72,6 +80,7 @@ export interface EnvSimStatus {
     minIntervalMs: number;
     maxIntervalMs: number;
     bookId: string;
+    settlementMode: "realtime" | "accelerated";
   };
   subSimulators: {
     marketData: boolean;
@@ -106,6 +115,7 @@ export class EnvSimEngine {
     bookId: string;
     marketDataIntervalMs: number;
     nostroStatementIntervalMs: number;
+    settlementMode: "realtime" | "accelerated";
     seed?: number;
     counterpartyProfiles?: CounterpartyBehaviorProfile[];
   };
@@ -130,6 +140,7 @@ export class EnvSimEngine {
       marketDataIntervalMs: options?.marketDataIntervalMs ?? DEFAULTS.marketDataIntervalMs,
       nostroStatementIntervalMs:
         options?.nostroStatementIntervalMs ?? DEFAULTS.nostroStatementIntervalMs,
+      settlementMode: options?.settlementMode ?? "accelerated",
       ...(options?.seed !== undefined ? { seed: options.seed } : {}),
       ...(options?.counterpartyProfiles !== undefined
         ? { counterpartyProfiles: options.counterpartyProfiles }
@@ -176,6 +187,7 @@ export class EnvSimEngine {
         minIntervalMs: this.opts.minIntervalMs,
         maxIntervalMs: this.opts.maxIntervalMs,
         bookId: this.opts.bookId,
+        settlementMode: this.opts.settlementMode,
       },
       subSimulators: {
         marketData: false,
@@ -194,6 +206,7 @@ export class EnvSimEngine {
     minIntervalMs?: number;
     maxIntervalMs?: number;
     bookId?: string;
+    settlementMode?: "realtime" | "accelerated";
   }): EnvSimStatus {
     if (this.status.running) return { ...this.status };
 
@@ -201,6 +214,7 @@ export class EnvSimEngine {
     if (config?.minIntervalMs !== undefined) this.opts.minIntervalMs = config.minIntervalMs;
     if (config?.maxIntervalMs !== undefined) this.opts.maxIntervalMs = config.maxIntervalMs;
     if (config?.bookId !== undefined) this.opts.bookId = config.bookId;
+    if (config?.settlementMode !== undefined) this.opts.settlementMode = config.settlementMode;
 
     this.status = {
       ...this.status,
@@ -211,6 +225,7 @@ export class EnvSimEngine {
         minIntervalMs: this.opts.minIntervalMs,
         maxIntervalMs: this.opts.maxIntervalMs,
         bookId: this.opts.bookId,
+        settlementMode: this.opts.settlementMode,
       },
     };
 
@@ -295,6 +310,7 @@ export class EnvSimEngine {
       counterpartyBic,
       (partyId) => this.profileMap.get(partyId) ?? this.profileMap.get("*"),
       this.rng,
+      this.opts.settlementMode,
     );
 
     const tradeIdValue = payload.tradeId.value;

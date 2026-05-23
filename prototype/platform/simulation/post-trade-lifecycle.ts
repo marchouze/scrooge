@@ -53,11 +53,16 @@ const SIM_CORRESPONDENT = {
 // ---------------------------------------------------------------------------
 
 /**
- * Emit the full post-trade production event chain for a sim trade.
+ * Emit the post-trade production event chain for a sim trade.
  *
- * This is the canonical production chain for FX Spot: 2x FxSettlementInstructed
- * + 2x PrincipalPayment + 1x SettlementConfirmed + outbound MT300 + inbound
- * message set.
+ * "accelerated" (default): full chain — 2x FxSettlementInstructed + 2x
+ * PrincipalPayment + 1x SettlementConfirmed + MT300 + inbound messages.
+ * All events land at the same `asOf` timestamp (time-compressed rehearsal).
+ *
+ * "realtime": emit only the 2x FxSettlementInstructed (instructions sent to
+ * correspondent at T+0). PrincipalPayments and SettlementConfirmed are
+ * deferred to the server's settlement timer, which fires them when the
+ * trade's settlementDate ≤ today.
  *
  * @param store                       The event store to append events to.
  * @param trade                       The FxTradeExecutedPayload from the sim trade.
@@ -66,6 +71,7 @@ const SIM_CORRESPONDENT = {
  * @param counterpartyBic             The counterparty's SWIFT BIC.
  * @param profileForCounterparty      Optional callback returning the behavior profile for a given partyId.
  * @param rng                         Optional seeded PRNG. Defaults to Math.random.
+ * @param settlementMode              "accelerated" (default) or "realtime" (defer to T+2).
  */
 export function runPostTradeLifecycle(
   store: EventStore,
@@ -75,6 +81,7 @@ export function runPostTradeLifecycle(
   counterpartyBic: string,
   profileForCounterparty?: (partyId: string) => CounterpartyBehaviorProfile | undefined,
   rng?: () => number,
+  settlementMode?: "realtime" | "accelerated",
 ): void {
   const nearLeg = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
   if (!nearLeg) {
@@ -174,6 +181,10 @@ export function runPostTradeLifecycle(
       eventId: newEventId(),
     }),
   );
+
+  // In real-time mode, instructions are the only T+0 events. PrincipalPayments
+  // and SettlementConfirmed are emitted by the server's settlement timer at T+2.
+  if (settlementMode === "realtime") return;
 
   // -------------------------------------------------------------------------
   // 3. PrincipalPayment — deliver leg (bank pays payCurrency)

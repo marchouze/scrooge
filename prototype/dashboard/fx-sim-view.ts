@@ -38,7 +38,12 @@ export async function registerFxSimRoutes(
 
   // POST /api/fx-sim/start
   if (pathname === "/api/fx-sim/start" && method === "POST") {
-    let body: { minIntervalMs?: number; maxIntervalMs?: number; bookId?: string } = {};
+    let body: {
+      minIntervalMs?: number;
+      maxIntervalMs?: number;
+      bookId?: string;
+      settlementMode?: string;
+    } = {};
     try {
       const raw = await req.json();
       if (typeof raw === "object" && raw !== null) {
@@ -48,7 +53,12 @@ export async function registerFxSimRoutes(
       // empty body or non-JSON is fine — all fields are optional
     }
 
-    const config: { minIntervalMs?: number; maxIntervalMs?: number; bookId?: string } = {};
+    const config: {
+      minIntervalMs?: number;
+      maxIntervalMs?: number;
+      bookId?: string;
+      settlementMode?: "realtime" | "accelerated";
+    } = {};
     if (typeof body.minIntervalMs === "number" && body.minIntervalMs > 0) {
       config.minIntervalMs = body.minIntervalMs;
     }
@@ -57,6 +67,9 @@ export async function registerFxSimRoutes(
     }
     if (typeof body.bookId === "string" && body.bookId.trim().length > 0) {
       config.bookId = body.bookId.trim();
+    }
+    if (body.settlementMode === "realtime" || body.settlementMode === "accelerated") {
+      config.settlementMode = body.settlementMode;
     }
 
     const status = simEngine.start(config);

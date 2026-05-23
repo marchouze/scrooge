@@ -107,6 +107,7 @@ import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-p
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
+import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
@@ -731,6 +732,12 @@ function bootPartyBackfill(): void {
 
 function refresh(reason: string): void {
   try {
+    // Settle any realtime-mode sim trades whose T+2 settlement date has arrived.
+    const settled = settleMaturedTrades(eventStore, nowUtc().slice(0, 10));
+    if (settled > 0) {
+      logger.info({ settled }, "realtime settlement: matured trades confirmed");
+    }
+
     buildSlice5Projections();
     const next = deriveState({
       sources: SOURCES,
