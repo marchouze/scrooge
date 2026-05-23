@@ -108,6 +108,7 @@ import { runObligationReviewStatusRecon } from "../platform/recon/obligation-rev
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
+import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordDecisionCommentResult,
@@ -3109,3 +3110,19 @@ logger.info(
   "Bank dashboard live",
 );
 console.log(`\n  Bank dashboard:  http://localhost:${server.port}\n`);
+
+// Async GL engine boot-trigger — posts any unposted treasury seed events
+// (and any other unposted events) without blocking HTTP readiness.
+setTimeout(() => {
+  const ctx = {
+    agent: "Bea" as const,
+    trigger: { kind: "on-request" as const, id: "boot-gl-catch-up" },
+    asOf: nowUtc(),
+    repoRoot: process.cwd(),
+    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+    dryRun: false,
+  };
+  beaGlPostingEngine(ctx)
+    .then((r) => logger.info({ eventsEmitted: r.eventsEmitted }, "boot GL catch-up complete"))
+    .catch((e) => logger.warn({ err: (e as Error).message }, "boot GL catch-up failed"));
+}, 0);
