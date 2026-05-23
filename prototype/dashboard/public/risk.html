@@ -20,8 +20,6 @@
       <div id="ras-tiles" class="tile-row"></div>
       <div id="liquidity-header"></div>
       <div id="liquidity-tiles" class="tile-row"></div>
-      <div id="stress-header"></div>
-      <div id="stress-table"></div>
     </div>
   </main>
   <script src="/_shell.js"></script>
@@ -91,19 +89,6 @@
         }));
       }
 
-      // Vera findings
-      document.getElementById("stress-header").innerHTML = SC.renderSectionHeader("Vera Findings", null);
-      const findings = state?.findings ?? [];
-      SC.renderTable({
-        container: document.getElementById("stress-table"),
-        headers: ["Finding", "Principle", "Severity", "As Of"],
-        rows: findings.map(f => ({
-          cells: [SC.esc(f.id || ""), SC.esc(f.principle || ""), SC.renderBadge(f.severity || "info"), SC.esc((f.asOf || "").slice(0, 10))],
-          data: f,
-        })),
-        onRowClick: f => SC.openModal({ title: f.id || "Finding", body: SC.renderDefList(f) }),
-        emptyMessage: "No findings",
-      });
     })();
   </script>
 </body>
