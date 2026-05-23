@@ -220,6 +220,17 @@ function ensureRuntimeDir(path: string): void {
   }
 }
 
+// Sim trade IDs emitted by scenarios/14-treasury-trades.ts.
+// Declared before bootDerive() call to avoid TDZ (bootTreasurySeeds references these).
+const TREASURY_SIM_TRADE_IDS = ["REPO-SIM-001"] as const;
+const TREASURY_SIM_DEPOSIT_IDS = ["MMD-SIM-001"] as const;
+const TREASURY_SIM_PLACEMENT_IDS = ["IBL-SIM-001", "IBL-SIM-002"] as const;
+
+const TREASURY_BOOT_PROVENANCE = buildPhaseFixtureTag({
+  sourceLineage: "seeds/treasury/trade-seeds.ts",
+  tags: ["boot-seed", "superseded-by:scenario-14"],
+});
+
 let cachedState: DashboardState = bootDerive();
 
 // FX market-making simulation engine — module-level singleton.
@@ -506,17 +517,6 @@ function bootDerive(): DashboardState {
  *
  * Authority: WS1-PR1a (trade seeds); WS2 (ALM data wiring).
  */
-// Sim trade IDs emitted by scenarios/12-treasury-trades.ts.
-// When the sim scenario has run, its trades supersede the boot seeds entirely.
-const TREASURY_SIM_TRADE_IDS = ["REPO-SIM-001"] as const;
-const TREASURY_SIM_DEPOSIT_IDS = ["MMD-SIM-001"] as const;
-const TREASURY_SIM_PLACEMENT_IDS = ["IBL-SIM-001", "IBL-SIM-002"] as const;
-
-const TREASURY_BOOT_PROVENANCE = buildPhaseFixtureTag({
-  sourceLineage: "seeds/treasury/trade-seeds.ts",
-  tags: ["boot-seed", "superseded-by:scenario-14"],
-});
-
 function bootTreasurySeeds(): void {
   const ENTITY = "LE-BANK-SA";
   const ACTOR = { type: "system" as const, id: "system:boot", name: "Boot seed runner" } as const;
