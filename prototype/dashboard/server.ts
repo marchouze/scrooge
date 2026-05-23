@@ -52,6 +52,10 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
 import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
+import { computeEVE } from "../platform/alm/eve";
+import { computeNII } from "../platform/alm/nii";
+import { computeRepricingGap } from "../platform/alm/repricing-gap";
+import { getCollateralInventory } from "../platform/collateral/inventory";
 import { eventStore, logger } from "../platform/composition";
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
@@ -264,6 +268,115 @@ function buildLiquidityMetrics(): {
     nsfr: nsfr.nsfrRatioPct,
     lcrStatus: lcr.status,
     nsfrStatus: nsfr.status,
+  };
+}
+
+function buildTreasuryMetrics() {
+  const asOf = nowUtc();
+
+  // Capital
+  const capital = computeCapitalMetrics(eventStore, asOf);
+
+  // ALM + liquidity
+  const almSnapshot = getALMPositionSnapshot(eventStore, asOf, 30);
+  const lcr = computeLCR(
+    almSnapshot.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
+    almSnapshot.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],
+  );
+  const nsfr = computeNSFR(
+    almSnapshot.asfItems as import("../platform/liquidity/nsfr").ASFItem[],
+    almSnapshot.rsfItems as import("../platform/liquidity/nsfr").RSFItem[],
+  );
+
+  // IRRBB
+  const eve = computeEVE(eventStore, asOf);
+  const nii = computeNII(eventStore, asOf);
+  const repricingGap = computeRepricingGap(eventStore, asOf);
+
+  // Collateral
+  const collateral = getCollateralInventory(asOf);
+
+  // FTP
+  const allEvents = [...eventStore.replay({})];
+  const ftpPortfolio = buildFtpPortfolio(allEvents);
+
+  return {
+    asOf,
+    capital: {
+      availableCapitalZar: capital.availableCapitalMinor / 100,
+      ticrZar: capital.ticrMinor / 100,
+      headroomZar: capital.headroomZar,
+      cet1RatioPct: capital.cet1RatioPct,
+      status: capital.status,
+      critical: capital.critical,
+      buildPhase: capital.buildPhase,
+    },
+    liquidity: {
+      lcr: {
+        ratio: lcr.lcrRatioPct,
+        hqlaZar: lcr.hqlaZar,
+        netOutflows30dZar: lcr.netCashOutflowsZar,
+        status: lcr.status,
+      },
+      nsfr: {
+        ratio: nsfr.nsfrRatioPct,
+        asfZar: nsfr.asfZar,
+        rsfZar: nsfr.rsfZar,
+        status: nsfr.status,
+      },
+      almGaps: [...almSnapshot.gaps],
+      buildPhase: almSnapshot.buildPhase,
+    },
+    irrbb: {
+      eve: {
+        worstCaseDeltaEveZar: eve.worstCaseDeltaEveZar,
+        worstCaseDeltaEvePctTier1: null,
+        status: eve.status,
+        scenarios: eve.results.map((r) => ({
+          shockLabel: r.shockLabel,
+          description: r.description,
+          deltaEveZar: r.deltaEveZar,
+          deltaEvePctTier1: r.deltaEvePctTier1,
+        })),
+      },
+      nii: {
+        worstCaseDeltaNiiZar: nii.worstCaseDeltaNiiZar,
+        status: nii.status,
+        scenarios: nii.results.map((r) => ({
+          shockLabel: r.shockLabel,
+          description: r.description,
+          deltaNiiZar: r.deltaNiiZar,
+        })),
+      },
+      repricingGap: {
+        status: repricingGap.status,
+        rows: repricingGap.rows.map((r) => ({
+          bucket: r.bucket,
+          rsaZar: r.rsaZar,
+          rslZar: r.rslZar,
+          gapZar: r.gapZar,
+          cumulativeGapZar: r.cumulativeGapZar,
+        })),
+      },
+    },
+    collateral: {
+      totalHQLAZar: collateral.totalHQLAZar,
+      l1Zar: collateral.l1Zar,
+      l2aZar: collateral.l2aZar,
+      l2bZar: collateral.l2bZar,
+      l2CapBreached: collateral.l2CapBreached,
+      l2bCapBreached: collateral.l2bCapBreached,
+      positionCount: collateral.positions.length,
+    },
+    ftp: {
+      totalAttributions: ftpPortfolio.totalAttributions,
+      weightedAvgSpreadBps: ftpPortfolio.weightedAvgSpread,
+      activeCurveId: ftpPortfolio.activeCurveId,
+    },
+    // Stub — live-wired in WS3-PR3b (treasury instrument events)
+    repoBook: { openCount: 0, totalCashLentZar: 0, weightedAvgRateDecimal: 0 },
+    depositBook: { openCount: 0, totalPrincipalZar: 0 },
+    ibPlacementBook: { openCount: 0, totalPlacedZar: 0, fixedTermZar: 0, callZar: 0 },
   };
 }
 
@@ -2419,6 +2532,12 @@ const server = Bun.serve({
       return handleProductNarrativeRequest(req);
     }
     // ---------- end Products ----------
+    // GET /api/treasury — aggregated treasury metrics (capital, liquidity,
+    // IRRBB, collateral, FTP) derived from existing engines.
+    // Authority: WS3-PR3a (brief:atlas:ws3-pr3a-treasury-dashboard-scaffold-api-treasur:2026-05-23).
+    if (url.pathname === "/api/treasury" && req.method === "GET") {
+      return jsonResponse(buildTreasuryMetrics());
+    }
     if (url.pathname === "/api/events" && req.method === "GET") {
       // Event store browser — paginated, filterable by type / entity / search / provenance.
       // Query params:
