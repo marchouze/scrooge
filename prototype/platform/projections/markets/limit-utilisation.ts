@@ -230,16 +230,11 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
         closedTradeIds.add(p.tradeId);
       }
     }
-    if (e.type === "FxSettlementInstructed") {
+    if (e.type === "SettlementConfirmed") {
+      // Use SettlementConfirmed (not FxSettlementInstructed) as the closing signal.
+      // Instruction fires at T+0; the position remains open until T+2 confirmation.
       const p = e.payload as Record<string, unknown>;
-      const tradeIdRaw = p.tradeId as Record<string, unknown> | string | undefined;
-      const tradeIdValue =
-        typeof tradeIdRaw === "string"
-          ? tradeIdRaw
-          : typeof tradeIdRaw?.value === "string"
-            ? tradeIdRaw.value
-            : null;
-      if (tradeIdValue) closedTradeIds.add(tradeIdValue);
+      if (typeof p.tradeId === "string") closedTradeIds.add(p.tradeId);
     }
   }
 
