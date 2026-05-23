@@ -72,6 +72,7 @@ import {
   makeInterbankLoanPlaced,
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
+import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import {
@@ -505,6 +506,17 @@ function bootDerive(): DashboardState {
  *
  * Authority: WS1-PR1a (trade seeds); WS2 (ALM data wiring).
  */
+// Sim trade IDs emitted by scenarios/12-treasury-trades.ts.
+// When the sim scenario has run, its trades supersede the boot seeds entirely.
+const TREASURY_SIM_TRADE_IDS = ["REPO-SIM-001"] as const;
+const TREASURY_SIM_DEPOSIT_IDS = ["MMD-SIM-001"] as const;
+const TREASURY_SIM_PLACEMENT_IDS = ["IBL-SIM-001", "IBL-SIM-002"] as const;
+
+const TREASURY_BOOT_PROVENANCE = buildPhaseFixtureTag({
+  sourceLineage: "seeds/treasury/trade-seeds.ts",
+  tags: ["boot-seed", "superseded-by:scenario-14"],
+});
+
 function bootTreasurySeeds(): void {
   const ENTITY = "LE-BANK-SA";
   const ACTOR = { type: "system" as const, id: "system:boot", name: "Boot seed runner" } as const;
@@ -528,6 +540,17 @@ function bootTreasurySeeds(): void {
     if (p.placementId) existingPlacementIds.add(p.placementId);
   }
 
+  // If the sim scenario (scenarios/12-treasury-trades.ts) has already run,
+  // its trades supersede the boot seeds. Skip boot emission entirely.
+  const simPresent =
+    TREASURY_SIM_TRADE_IDS.some((id) => existingTradeIds.has(id)) ||
+    TREASURY_SIM_DEPOSIT_IDS.some((id) => existingDepositIds.has(id)) ||
+    TREASURY_SIM_PLACEMENT_IDS.some((id) => existingPlacementIds.has(id));
+  if (simPresent) {
+    logger.debug("treasury-seeds: sim scenario present; boot seeds suppressed");
+    return;
+  }
+
   let emitted = 0;
 
   // Use current time so events are not filtered out by the asOf guard in projections.
@@ -535,50 +558,53 @@ function bootTreasurySeeds(): void {
 
   for (const payload of TREASURY_REPO_TRADE_PAYLOADS) {
     if (existingTradeIds.has(payload.tradeId)) continue;
-    eventStore.append(
-      makeRepoTradeOpened({
-        asOf: seedAsOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: [...TRADE_SEEDS_CITATIONS],
-        payload,
-      }),
-    );
+    const ev = makeRepoTradeOpened({
+      asOf: seedAsOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: [...TRADE_SEEDS_CITATIONS],
+      payload,
+    });
+    ev.provenance = TREASURY_BOOT_PROVENANCE;
+    eventStore.append(ev);
     emitted++;
   }
 
   for (const payload of TREASURY_DEPOSIT_TAKEN_PAYLOADS) {
     if (existingDepositIds.has(payload.depositId)) continue;
-    eventStore.append(
-      makeDepositTaken({
-        asOf: seedAsOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: [...TRADE_SEEDS_CITATIONS],
-        payload,
-      }),
-    );
+    const ev = makeDepositTaken({
+      asOf: seedAsOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: [...TRADE_SEEDS_CITATIONS],
+      payload,
+    });
+    ev.provenance = TREASURY_BOOT_PROVENANCE;
+    eventStore.append(ev);
     emitted++;
   }
 
   for (const payload of TREASURY_IBL_PLACED_PAYLOADS) {
     if (existingPlacementIds.has(payload.placementId)) continue;
-    eventStore.append(
-      makeInterbankLoanPlaced({
-        asOf: seedAsOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: [...TRADE_SEEDS_CITATIONS],
-        payload,
-      }),
-    );
+    const ev = makeInterbankLoanPlaced({
+      asOf: seedAsOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: [...TRADE_SEEDS_CITATIONS],
+      payload,
+    });
+    ev.provenance = TREASURY_BOOT_PROVENANCE;
+    eventStore.append(ev);
     emitted++;
   }
 
   if (emitted === 0) {
     logger.debug("treasury-seeds: idempotent boot; no events emitted");
   } else {
-    logger.info({ emitted }, `treasury-seeds: ${emitted} seed event(s) emitted`);
+    logger.info(
+      { emitted },
+      `treasury-seeds: ${emitted} seed event(s) emitted (build-phase-fixture)`,
+    );
   }
 }
 

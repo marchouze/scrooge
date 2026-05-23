@@ -181,6 +181,10 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "ird-swap-revaluation",
       "ird-swap-coupon-settlement",
       "ird-swap-termination",
+      // Treasury lifecycle posting types (WS1-PR1a; IFRS 9 §3.1.1; IAS 39 §27)
+      "repo-trade-booking",
+      "deposit-taken",
+      "ibl-placement",
       // Correction posting types — append-only correcting entries per Principle 1.
       // D-CORRECT-DUPLICATE-MTM-REVERSALS (2026-05-21): reverses duplicate MTM
       // reversal / stale revaluation entries without deleting events.

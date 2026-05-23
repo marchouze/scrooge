@@ -44,6 +44,11 @@
 //   - IrdSwapCouponSettled          → PR-IRS-003: irdSwapCouponJournals()
 //   - IrdSwapTerminated             → PR-IRS-TERM: irdSwapTerminationJournals()
 //
+//   Treasury lifecycle (WS1-PR1a; IFRS 9 §3.1.1; IAS 39 §27):
+//   - RepoTradeOpened               → PR-REPO-001: prRepo001()  [postingType: "repo-trade-booking"]
+//   - DepositTaken                  → PR-MMD-001:  prMmd001()   [postingType: "deposit-taken"]
+//   - InterbankLoanPlaced           → PR-IBL-001:  prIbl001()   [postingType: "ibl-placement"]
+//
 // Each posting rule returns SubLedgerLeg[]. This handler wraps each
 // result in a `SubLedgerPostingEmitted` event, which the period-close
 // projection (computeTrialBalance) consumes.
@@ -103,6 +108,11 @@ import {
   paymentSettledJournals,
   settlementInstructionJournals,
 } from "../../platform/accounting/posting-rules/payments";
+import {
+  prIbl001,
+  prMmd001,
+  prRepo001,
+} from "../../platform/accounting/posting-rules/repo-mmd-ibl";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import type {
@@ -137,6 +147,11 @@ import type {
   PaymentSettledPayload,
   SettlementInstructionReceivedPayload,
 } from "../../platform/event-store/event-types/payments";
+import type {
+  DepositTakenPayload,
+  InterbankLoanPlacedPayload,
+  RepoTradeOpenedPayload,
+} from "../../platform/event-store/event-types/repo-mmd-ibl";
 import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type {
   EquityPositionRevaluedPayload,
@@ -198,6 +213,10 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "IrdSwapPositionRevalued",
   "IrdSwapCouponSettled",
   "IrdSwapTerminated",
+  // Treasury lifecycle events (WS1-PR1a; IFRS 9 §3.1.1; IAS 39 §27)
+  "RepoTradeOpened",
+  "DepositTaken",
+  "InterbankLoanPlaced",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -268,6 +287,10 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
     ...eventStore.replay({ type: "IrdSwapPositionRevalued" }),
     ...eventStore.replay({ type: "IrdSwapCouponSettled" }),
     ...eventStore.replay({ type: "IrdSwapTerminated" }),
+    // Treasury lifecycle events (WS1-PR1a)
+    ...eventStore.replay({ type: "RepoTradeOpened" }),
+    ...eventStore.replay({ type: "DepositTaken" }),
+    ...eventStore.replay({ type: "InterbankLoanPlaced" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -695,6 +718,36 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         }
         const payload = e.payload as IrdSwapTerminatedPayload;
         legs = irdSwapTerminationJournals(payload);
+      } else if (e.type === "RepoTradeOpened") {
+        // PR-REPO-001: Secured borrowing recognition — IAS 39 §27; IFRS 9 §3.1.1
+        postingType = "repo-trade-booking";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as RepoTradeOpenedPayload;
+        legs = prRepo001(payload);
+      } else if (e.type === "DepositTaken") {
+        // PR-MMD-001: Deposit liability recognition — IFRS 9 §3.1.1; BA 325 Table 1
+        postingType = "deposit-taken";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as DepositTakenPayload;
+        legs = prMmd001(payload);
+      } else if (e.type === "InterbankLoanPlaced") {
+        // PR-IBL-001: Due-from-banks asset recognition — IFRS 9 §3.1.1; §4.1.2
+        postingType = "ibl-placement";
+        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
+        if (postedKeys.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        const payload = e.payload as InterbankLoanPlacedPayload;
+        legs = prIbl001(payload);
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above.
         continue;
@@ -744,7 +797,10 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
               | "ird-swap-coupon-settlement"
               | "ird-swap-termination"
               | "fx-principal-payment"
-              | "fx-lifecycle-close",
+              | "fx-lifecycle-close"
+              | "repo-trade-booking"
+              | "deposit-taken"
+              | "ibl-placement",
             legs,
             postedAt: ctx.asOf,
           },
