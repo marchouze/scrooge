@@ -27,74 +27,85 @@
   <script src="/_components.js"></script>
   <script>
     initShell({ title: "Risk" });
-    (async () => {
-      async function sf(u) {
-        try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
-      }
-      const state = await sf("/api/state");
 
-      // RAS clusters — limitUtilisations (B1–B5)
-      document.getElementById("ras-header").innerHTML = SC.renderSectionHeader("RAS Clusters (B1–B5)", null);
-      const clusters = state?.limitUtilisations ?? [];
+    async function sf(u) {
+      try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
+    }
+
+    const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
+    const fmt = (n) => n != null ? Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 0 }) : "—";
+
+    function renderRas(clusters) {
       const tilesEl = document.getElementById("ras-tiles");
+      tilesEl.innerHTML = "";
       if (clusters.length === 0) {
         tilesEl.innerHTML = `<p style="color:var(--color-text-secondary)">No RAS data available.</p>`;
-      } else {
-        const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
-        const fmt = (n) => n != null ? Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 0 }) : "—";
-        clusters.forEach(c => {
-          const shortName = (c.limitName || "").replace(/\s*\(.*?\)\s*/g, "").trim();
-          const label = `${c.cluster} — ${shortName}`;
-          const utilPct = c.utilisationPct != null ? `${(Number(c.utilisationPct) * 100).toFixed(1)}%` : "—";
-          const ccy = c.currency ?? "ZAR";
-          const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit`;
-          const t = SC.renderTile({
-            label,
-            value: utilPct,
-            sub,
-            status: ragToStatus[c.ragStatus] ?? null,
-            onClick: () => SC.openModal({ title: label, body: SC.renderDefList(c) }),
-          });
-          tilesEl.appendChild(t);
-        });
+        return;
       }
+      clusters.forEach(c => {
+        const shortName = (c.limitName || "").replace(/\s*\(.*?\)\s*/g, "").trim();
+        const label = `${c.cluster} — ${shortName}`;
+        const utilPct = c.utilisationPct != null ? `${(Number(c.utilisationPct) * 100).toFixed(1)}%` : "—";
+        const ccy = c.currency ?? "ZAR";
+        const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit`;
+        const t = SC.renderTile({
+          label,
+          value: utilPct,
+          sub,
+          status: ragToStatus[c.ragStatus] ?? null,
+          onClick: () => SC.openModal({ title: label, body: SC.renderDefList(c) }),
+        });
+        tilesEl.appendChild(t);
+      });
+    }
 
-      // Liquidity Risk — LCR / NSFR
-      document.getElementById("liquidity-header").innerHTML = SC.renderSectionHeader("Liquidity Risk", null);
-      const lm = state?.liquidityMetrics;
+    function renderLiquidity(lm) {
       const liqEl = document.getElementById("liquidity-tiles");
+      liqEl.innerHTML = "";
       if (!lm) {
         liqEl.innerHTML = `<p style="color:var(--color-text-secondary)">No liquidity data available.</p>`;
-      } else {
-        const lcrPct = lm.lcr != null ? `${Number(lm.lcr).toFixed(0)}%` : "—";
-        const nsfrPct = lm.nsfr != null ? `${Number(lm.nsfr).toFixed(0)}%` : "—";
-        const statusMap = { "above-minimum": "ok", "at-minimum": "warn", "below-minimum": "danger" };
-        liqEl.appendChild(SC.renderTile({
-          label: "LCR",
-          value: lcrPct,
-          sub: "min 100% (BCBS 188)",
-          status: statusMap[lm.lcrStatus] ?? null,
-          onClick: () => SC.openModal({ title: "Liquidity Coverage Ratio", body: SC.renderDefList({
-            "LCR": lcrPct,
-            "Status": lm.lcrStatus,
-            "Regulatory minimum": "100%",
-            "Authority": "BCBS 188 / Reg 26(12)",
-          })}),
-        }));
-        liqEl.appendChild(SC.renderTile({
-          label: "NSFR",
-          value: nsfrPct,
-          sub: "min 100% (BCBS 295)",
-          status: statusMap[lm.nsfrStatus] ?? null,
-          onClick: () => SC.openModal({ title: "Net Stable Funding Ratio", body: SC.renderDefList({
-            "NSFR": nsfrPct,
-            "Status": lm.nsfrStatus,
-            "Regulatory minimum": "100%",
-            "Authority": "BCBS 295 / Reg 26(13)",
-          })}),
-        }));
+        return;
       }
+      const lcrPct = lm.lcr != null ? `${Number(lm.lcr).toFixed(0)}%` : "—";
+      const nsfrPct = lm.nsfr != null ? `${Number(lm.nsfr).toFixed(0)}%` : "—";
+      const statusMap = { "above-minimum": "ok", "at-minimum": "warn", "below-minimum": "danger" };
+      liqEl.appendChild(SC.renderTile({
+        label: "LCR",
+        value: lcrPct,
+        sub: "min 100% (BCBS 188)",
+        status: statusMap[lm.lcrStatus] ?? null,
+        onClick: () => SC.openModal({ title: "Liquidity Coverage Ratio", body: SC.renderDefList({
+          "LCR": lcrPct,
+          "Status": lm.lcrStatus,
+          "Regulatory minimum": "100%",
+          "Authority": "BCBS 188 / Reg 26(12)",
+        })}),
+      }));
+      liqEl.appendChild(SC.renderTile({
+        label: "NSFR",
+        value: nsfrPct,
+        sub: "min 100% (BCBS 295)",
+        status: statusMap[lm.nsfrStatus] ?? null,
+        onClick: () => SC.openModal({ title: "Net Stable Funding Ratio", body: SC.renderDefList({
+          "NSFR": nsfrPct,
+          "Status": lm.nsfrStatus,
+          "Regulatory minimum": "100%",
+          "Authority": "BCBS 295 / Reg 26(13)",
+        })}),
+      }));
+    }
 
+    async function render() {
+      const state = await sf("/api/state");
+      renderRas(state?.limitUtilisations ?? []);
+      renderLiquidity(state?.liquidityMetrics ?? null);
+    }
+
+    (async () => {
+      document.getElementById("ras-header").innerHTML = SC.renderSectionHeader("RAS Clusters (B1–B5)", null);
+      document.getElementById("liquidity-header").innerHTML = SC.renderSectionHeader("Liquidity Risk", null);
+      await render();
+      setInterval(render, 5000);
     })();
   </script>
 </body>
