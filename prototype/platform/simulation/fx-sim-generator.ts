@@ -10,9 +10,10 @@
 
 import { randomUUID } from "node:crypto";
 
+import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { SimCounterparty } from "./fx-sim-counterparties";
-import type { FxRateEngine } from "./fx-sim-rates";
+import type { FxRate, FxRateEngine } from "./fx-sim-rates";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -46,31 +47,88 @@ function parsePair(pair: string): { base: string; quote: string } {
 // generateSimTrade
 // ---------------------------------------------------------------------------
 
+export interface SimTradeOptions {
+  /** Seeded RNG (falls back to Math.random when omitted). */
+  rng?: () => number;
+  /**
+   * When provided, trade rates are sourced from this store (production quotes
+   * preferred; simulated as fallback) with a ±10 bps variance applied, rather
+   * than from the rate-engine random walk. This makes the sim trades coherent
+   * with the market data feed visible on the Market Data page.
+   */
+  marketDataStore?: MarketDataStore;
+  /**
+   * Force a specific trade side. Used by the risk monitor to direct trades
+   * toward position reduction when B3 is amber or red.
+   */
+  forcedSide?: "buy" | "sell";
+  /**
+   * Restrict pair selection to this set. Used by the risk monitor to target
+   * the currency pair that most reduces the open position.
+   */
+  eligiblePairsFilter?: readonly string[];
+}
+
 export function generateSimTrade(
   rateEngine: FxRateEngine,
   counterparties: SimCounterparty[],
   bookId: string,
+  options?: SimTradeOptions,
 ): FxTradeExecutedPayload {
+  const rng = options?.rng ?? Math.random;
   const nowMs = Date.now();
 
-  // 1. Pick a random counterparty.
-  const cp = counterparties[Math.floor(Math.random() * counterparties.length)];
+  // 1. Pick a random counterparty, optionally filtered to pairs of interest.
+  let eligible = counterparties;
+  if (options?.eligiblePairsFilter && options.eligiblePairsFilter.length > 0) {
+    const filter = new Set(options.eligiblePairsFilter);
+    const filtered = counterparties.filter((c) => c.eligiblePairs.some((p) => filter.has(p)));
+    if (filtered.length > 0) eligible = filtered;
+  }
+  const cp = eligible[Math.floor(rng() * eligible.length)];
   if (!cp) throw new Error("no counterparties available");
 
-  // 2. Pick a random eligible pair.
-  const pair = cp.eligiblePairs[Math.floor(Math.random() * cp.eligiblePairs.length)];
+  // 2. Pick an eligible pair, restricted to the filter when provided.
+  let pairPool = cp.eligiblePairs;
+  if (options?.eligiblePairsFilter && options.eligiblePairsFilter.length > 0) {
+    const filter = new Set(options.eligiblePairsFilter);
+    const filtered = pairPool.filter((p) => filter.has(p));
+    if (filtered.length > 0) pairPool = filtered;
+  }
+  const pair = pairPool[Math.floor(rng() * pairPool.length)];
   if (!pair) throw new Error(`counterparty ${cp.name} has no eligible pairs`);
 
-  // 3. Pick a random side from the bank's perspective.
-  const side: "buy" | "sell" = Math.random() < 0.5 ? "buy" : "sell";
+  // 3. Side — use forcedSide when the risk monitor directs it; otherwise random.
+  const side: "buy" | "sell" = options?.forcedSide ?? (rng() < 0.5 ? "buy" : "sell");
 
   // 4. Pick a random notional within the counterparty's range.
   //    The notional is in the base currency of the pair, in minor units.
   const rangeMinor = cp.maxNotionalMinor - cp.minNotionalMinor;
-  const notionalMinor = Math.round(cp.minNotionalMinor + Math.random() * rangeMinor);
+  const notionalMinor = Math.round(cp.minNotionalMinor + rng() * rangeMinor);
 
-  // 5. Get the rate from the engine (advances the random walk).
-  const rate = rateEngine.tick(pair);
+  // 5. Source the rate from the market data store when available so that sim
+  //    trades are priced against the live/simulated feed, not a detached walk.
+  //    A ±10 bps variance is applied to simulate intraday spread noise.
+  //    Falls back to the rate-engine random walk when no market-data tick exists.
+  let rate: FxRate;
+  if (options?.marketDataStore) {
+    const mdQuote =
+      lookupQuoteWithInverse(options.marketDataStore, pair, { provenance: "production" }) ??
+      lookupQuoteWithInverse(options.marketDataStore, pair, { provenance: "simulated" });
+    if (mdQuote) {
+      const bpsVariance = (rng() - 0.5) * 0.002; // ±10 bps
+      const mid = mdQuote.rate * (1 + bpsVariance);
+      const halfBps = pair.endsWith("/ZAR") || pair.startsWith("ZAR/") ? 35 : 12;
+      const half = mid * (halfBps / 10_000);
+      rate = { mid, bid: mid - half, ask: mid + half };
+      // Keep the rate-engine internal state warm so it can serve inverse lookups.
+      rateEngine.tick(pair);
+    } else {
+      rate = rateEngine.tick(pair);
+    }
+  } else {
+    rate = rateEngine.tick(pair);
+  }
   const { base: baseCcy, quote: quoteCcy } = parsePair(pair);
 
   // 6. Derive leg currencies and rate.

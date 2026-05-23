@@ -351,9 +351,53 @@
         </div>
       </section>
 
+      <!-- Risk Monitor -->
+      <section id="risk-monitor" aria-labelledby="risk-monitor-title">
+        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Risk Monitor — B3 Market Risk</h2>
+        <div class="sim-card">
+          <!-- B3 utilisation bar -->
+          <p class="sim-card-title">B3 Net Open Position vs Limit</p>
+          <div style="display:flex;align-items:center;gap:var(--space-3,12px);margin-bottom:var(--space-3,12px)">
+            <div style="flex:1;background:var(--color-surface-secondary,#f5f5f5);border-radius:4px;height:12px;overflow:hidden">
+              <div id="b3Bar" style="height:100%;width:0%;background:#22c55e;transition:width 0.4s,background 0.4s;border-radius:4px"></div>
+            </div>
+            <span id="b3Pct" style="font-family:'IBM Plex Mono',monospace;font-size:0.875rem;min-width:60px;text-align:right">—</span>
+            <span id="b3Rag" style="font-size:0.75rem;font-weight:600;padding:2px 10px;border-radius:20px;background:#f5f5f5">—</span>
+          </div>
+          <div class="sim-stats-grid" style="margin-bottom:var(--space-3,12px)">
+            <div class="sim-stat">
+              <span class="sim-stat-label">Exposure (ZAR)</span>
+              <span class="sim-stat-value mono" id="b3Exposure">—</span>
+            </div>
+            <div class="sim-stat">
+              <span class="sim-stat-label">Limit (ZAR)</span>
+              <span class="sim-stat-value mono" id="b3Limit">—</span>
+            </div>
+            <div class="sim-stat">
+              <span class="sim-stat-label">Trading mode</span>
+              <span id="riskMode">—</span>
+            </div>
+            <div class="sim-stat">
+              <span class="sim-stat-label">Last forced side</span>
+              <span id="riskForcedSide">—</span>
+            </div>
+          </div>
+          <div class="sim-stat">
+            <span class="sim-stat-label">Target pairs (risk reduction)</span>
+            <span class="sim-stat-value" id="riskTargetPairs">—</span>
+          </div>
+          <p style="margin:var(--space-3,12px) 0 0;font-size:0.75rem;color:var(--color-text-secondary,#6b7280)">
+            <strong>Normal</strong>: random direction. &nbsp;
+            <strong>Reducing</strong>: 70% chance of risk-reducing trade (amber). &nbsp;
+            <strong>Force-reduce</strong>: 95% chance of risk-reducing trade (red).
+            Rates sourced from the market data feed (production → simulated) with ±10 bps variance.
+          </p>
+        </div>
+      </section>
+
       <!-- Live Rates -->
       <section id="rates" aria-labelledby="rates-title">
-        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Live Rates (last observed)</h2>
+        <h2 style="font:var(--text-h2);color:var(--color-text-primary);margin:0 0 var(--space-4)">Live Rates (market data feed)</h2>
         <div class="sim-card">
           <div class="sim-rates-grid" id="ratesGrid">
             <p style="color: var(--color-text-secondary, #6b7280); font-size: 0.875rem;">
@@ -444,6 +488,64 @@
 
       // As-of
       if (asOfEl) asOfEl.textContent = formatTimestamp(data.lastTradeAt ?? new Date().toISOString());
+
+      // Risk monitor
+      renderRiskMonitor(data.riskMonitor);
+    }
+
+    function renderRiskMonitor(rm) {
+      if (!rm) return;
+
+      // B3 bar — cap display at 200% so the bar doesn't overflow absurdly
+      const pct = rm.b3UtilisationPct != null ? rm.b3UtilisationPct * 100 : null;
+      const barPct = pct != null ? Math.min(pct, 200) / 200 * 100 : 0;
+      const bar = document.getElementById("b3Bar");
+      const pctEl = document.getElementById("b3Pct");
+      const ragEl = document.getElementById("b3Rag");
+      if (bar) {
+        bar.style.width = barPct + "%";
+        bar.style.background =
+          rm.b3RagStatus === "red" ? "#ef4444" :
+          rm.b3RagStatus === "amber" ? "#f59e0b" : "#22c55e";
+      }
+      if (pctEl) pctEl.textContent = pct != null ? pct.toFixed(0) + "%" : "—";
+      if (ragEl) {
+        ragEl.textContent = rm.b3RagStatus ? rm.b3RagStatus.toUpperCase() : "—";
+        ragEl.style.background =
+          rm.b3RagStatus === "red" ? "#fee2e2" :
+          rm.b3RagStatus === "amber" ? "#fef3c7" : "#dcfce7";
+        ragEl.style.color =
+          rm.b3RagStatus === "red" ? "#991b1b" :
+          rm.b3RagStatus === "amber" ? "#92400e" : "#166534";
+      }
+
+      const fmt = n => n != null ? "ZAR " + Number(n).toLocaleString("en-ZA", {maximumFractionDigits: 0}) : "—";
+      setText("b3Exposure", fmt(rm.b3ExposureZar));
+      setText("b3Limit", fmt(rm.b3LimitZar));
+
+      // Trading mode badge
+      const modeEl = document.getElementById("riskMode");
+      if (modeEl && rm.mode) {
+        const modeLabels = { normal: "Normal", reducing: "Reducing", "force-reduce": "Force-reduce" };
+        const modeBg = { normal: "#f5f5f5", reducing: "#fef3c7", "force-reduce": "#fee2e2" };
+        const modeColor = { normal: "#374151", reducing: "#92400e", "force-reduce": "#991b1b" };
+        modeEl.innerHTML = `<span style="font-size:0.75rem;font-weight:600;padding:2px 10px;border-radius:20px;background:${modeBg[rm.mode]||'#f5f5f5'};color:${modeColor[rm.mode]||'#374151'}">${modeLabels[rm.mode] || rm.mode}</span>`;
+      }
+
+      // Forced side
+      const fsEl = document.getElementById("riskForcedSide");
+      if (fsEl) {
+        if (rm.lastForcedSide === "buy") {
+          fsEl.innerHTML = '<span class="sim-tag sim-tag-buy">BUY</span>';
+        } else if (rm.lastForcedSide === "sell") {
+          fsEl.innerHTML = '<span class="sim-tag sim-tag-sell">SELL</span>';
+        } else {
+          fsEl.textContent = "—";
+        }
+      }
+
+      // Target pairs
+      setText("riskTargetPairs", rm.lastTargetPairs?.length ? rm.lastTargetPairs.join(", ") : "—");
     }
 
     function renderRates() {

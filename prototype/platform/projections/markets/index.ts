@@ -25,7 +25,11 @@ export { subLedgerInitial, subLedgerProjection } from "./sub-ledger";
 
 // Slice 5 — pre-trade risk controls + correspondent routing
 export type { LimitUtilisationRow } from "./limit-utilisation";
-export { getLimitUtilisations, rebuildLimitUtilisation } from "./limit-utilisation";
+export {
+  getFxNetPositions,
+  getLimitUtilisations,
+  rebuildLimitUtilisation,
+} from "./limit-utilisation";
 
 export type { CorrespondentRoutingRow, HerstattRisk, SchemeType } from "./correspondent-routing";
 export { getCorrespondentRouting, rebuildCorrespondentRouting } from "./correspondent-routing";

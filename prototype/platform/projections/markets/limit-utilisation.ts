@@ -299,6 +299,15 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
 }
 
 /**
+ * Returns a snapshot of the current signed net FX position per ISO 4217 currency code.
+ * Positive = net long, negative = net short. ZAR may be present as the home currency.
+ * Read-only — callers must not mutate the returned map.
+ */
+export function getFxNetPositions(): ReadonlyMap<string, number> {
+  return _state.fxNetPosition;
+}
+
+/**
  * Returns the current per-cluster utilisation rows.
  *
  * Pass `marketDataStore` to enable ZAR-equivalent B3 computation from the net

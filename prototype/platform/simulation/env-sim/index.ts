@@ -17,7 +17,12 @@ import { randomUUID } from "node:crypto";
 
 import { nowUtc } from "../../core/types";
 import type { EventStore } from "../../event-store/store";
-import { MarketDataStore } from "../../market-data/store";
+import { MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
+import {
+  getFxNetPositions,
+  getLimitUtilisations,
+  rebuildLimitUtilisation,
+} from "../../projections/markets/limit-utilisation";
 import { SIM_COUNTERPARTIES } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
 import { FxRateEngine } from "../fx-sim-rates";
@@ -87,6 +92,20 @@ export interface EnvSimStatus {
     nostroStatement: boolean;
     correspondentAdvice: boolean;
     regulatoryAck: boolean;
+  };
+  /** Risk monitor state — updated on each tick. */
+  riskMonitor: {
+    /** Current B3 utilisation as a fraction (e.g. 1.23 = 123%). Null until first tick. */
+    b3UtilisationPct: number | null;
+    b3RagStatus: "green" | "amber" | "red" | null;
+    b3ExposureZar: number | null;
+    b3LimitZar: number | null;
+    /** Trading mode the engine is currently operating in. */
+    mode: "normal" | "reducing" | "force-reduce";
+    /** The forced side applied on the last risk-directed trade, or null if random. */
+    lastForcedSide: "buy" | "sell" | null;
+    /** The pair filter applied on the last risk-directed trade, or null. */
+    lastTargetPairs: string[] | null;
   };
 }
 
@@ -195,6 +214,103 @@ export class EnvSimEngine {
         correspondentAdvice: false,
         regulatoryAck: false,
       },
+      riskMonitor: {
+        b3UtilisationPct: null,
+        b3RagStatus: null,
+        b3ExposureZar: null,
+        b3LimitZar: null,
+        mode: "normal",
+        lastForcedSide: null,
+        lastTargetPairs: null,
+      },
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Risk monitor — computes trade direction to stay within B3 limit
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Inspect the current limit-utilisation projection and return a forced side
+   * + pair filter that reduces the dominant open position.
+   *
+   * Logic:
+   *  1. Rebuild the projection from the live event store.
+   *  2. Find the non-ZAR currency with the largest ZAR-equivalent absolute
+   *     net position (i.e. the dominant contributor to B3).
+   *  3. Determine whether that currency is net long or net short.
+   *  4. Map to the trade direction that reduces the position.
+   *  5. Bias probability: green → none; amber → 70%; red → 95%.
+   */
+  private computeRiskDirection(): {
+    forcedSide?: "buy" | "sell";
+    eligiblePairsFilter?: string[];
+    mode: "normal" | "reducing" | "force-reduce";
+    b3Row: ReturnType<typeof getLimitUtilisations>[number] | undefined;
+  } {
+    const events = [...this.store.replay()];
+    rebuildLimitUtilisation(events);
+    const utilisations = getLimitUtilisations(this.marketDataStore);
+    const b3Row = utilisations.find((r) => r.cluster === "B3");
+    const netPositions = getFxNetPositions();
+
+    if (!b3Row || b3Row.ragStatus === "green") {
+      return { mode: "normal", b3Row };
+    }
+
+    // Determine probability of forcing a risk-reducing trade.
+    const forceProb = b3Row.ragStatus === "red" ? 0.95 : 0.7;
+    if (this.rng() > forceProb) {
+      return { mode: "normal", b3Row };
+    }
+
+    // Find the non-ZAR currency with the largest ZAR-equivalent absolute position.
+    let dominantCcy: string | null = null;
+    let dominantZarEquiv = 0;
+    for (const [ccy, pos] of netPositions) {
+      if (ccy === "ZAR") continue;
+      const absPos = Math.abs(pos);
+      if (absPos === 0) continue;
+      const quote = lookupQuoteWithInverse(this.marketDataStore, `${ccy}/ZAR`);
+      const zarEquiv = quote ? absPos * quote.rate : absPos;
+      if (zarEquiv > dominantZarEquiv) {
+        dominantZarEquiv = zarEquiv;
+        dominantCcy = ccy;
+      }
+    }
+
+    // If no foreign CCY dominates, check ZAR itself.
+    const zarPos = netPositions.get("ZAR") ?? 0;
+    if (!dominantCcy && Math.abs(zarPos) > 0) {
+      // Reduce ZAR long by buying foreign; reduce ZAR short by selling foreign.
+      const side = zarPos > 0 ? "buy" : "sell";
+      const mode = b3Row.ragStatus === "red" ? "force-reduce" : "reducing";
+      return {
+        forcedSide: side,
+        eligiblePairsFilter: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
+        mode,
+        b3Row,
+      };
+    }
+
+    if (!dominantCcy) return { mode: "normal", b3Row };
+
+    const netPos = netPositions.get(dominantCcy) ?? 0;
+    // Pairs in our set where dominantCcy appears as the base currency.
+    const basePairs = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "EUR/GBP", "GBP/USD"].filter(
+      (p) => p.startsWith(`${dominantCcy}/`),
+    );
+
+    // If net long dominant CCY → sell it (side=sell for pairs where it's base).
+    // If net short dominant CCY → buy it (side=buy for pairs where it's base).
+    const forcedSide: "buy" | "sell" = netPos > 0 ? "sell" : "buy";
+    const mode = b3Row.ragStatus === "red" ? "force-reduce" : "reducing";
+
+    return {
+      forcedSide,
+      ...(basePairs.length > 0 ? { eligiblePairsFilter: basePairs } : {}),
+      mode,
+      b3Row,
     };
   }
 
@@ -281,11 +397,17 @@ export class EnvSimEngine {
   }
 
   /**
-   * Fire a single trade synchronously (for testing). Returns immediately
-   * after appending all events.
+   * Fire a single trade synchronously (for testing or manual trigger).
+   * In production the scheduler calls this via `scheduledFire` which first
+   * runs the risk monitor to determine the optimal trade direction.
    */
-  fireTrade(): void {
-    const payload = generateSimTrade(this.rateEngine, SIM_COUNTERPARTIES, this.opts.bookId);
+  fireTrade(opts?: { forcedSide?: "buy" | "sell"; eligiblePairsFilter?: string[] }): void {
+    const payload = generateSimTrade(this.rateEngine, SIM_COUNTERPARTIES, this.opts.bookId, {
+      rng: this.rng,
+      marketDataStore: this.marketDataStore,
+      ...(opts?.forcedSide ? { forcedSide: opts.forcedSide } : {}),
+      ...(opts?.eligiblePairsFilter ? { eligiblePairsFilter: opts.eligiblePairsFilter } : {}),
+    });
     const eventId = `sim-trade-${randomUUID()}`;
     const asOf = nowUtc();
 
@@ -335,14 +457,34 @@ export class EnvSimEngine {
     const delay = minIntervalMs + this.rng() * (maxIntervalMs - minIntervalMs);
     this.timer = setTimeout(() => {
       this.scheduledFire().catch((err: unknown) => {
-        console.error("[EnvSimEngine] unexpected error in fireTrade:", err);
+        console.error("[EnvSimEngine] unexpected error in scheduledFire:", err);
       });
     }, delay);
   }
 
   private async scheduledFire(): Promise<void> {
     try {
-      this.fireTrade();
+      // Run risk monitor before every trade — computes forced side + pair filter.
+      const { forcedSide, eligiblePairsFilter, mode, b3Row } = this.computeRiskDirection();
+
+      // Update the risk monitor section of status.
+      this.status = {
+        ...this.status,
+        riskMonitor: {
+          b3UtilisationPct: b3Row ? b3Row.utilisationPct : null,
+          b3RagStatus: b3Row ? b3Row.ragStatus : null,
+          b3ExposureZar: b3Row ? b3Row.currentExposure : null,
+          b3LimitZar: b3Row ? b3Row.limitValue : null,
+          mode,
+          lastForcedSide: forcedSide ?? null,
+          lastTargetPairs: eligiblePairsFilter ? [...eligiblePairsFilter] : null,
+        },
+      };
+
+      this.fireTrade({
+        ...(forcedSide ? { forcedSide } : {}),
+        ...(eligiblePairsFilter ? { eligiblePairsFilter } : {}),
+      });
     } catch (err) {
       console.error("[EnvSimEngine] fireTrade error:", err);
       this.status = {
