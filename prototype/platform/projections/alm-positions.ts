@@ -15,25 +15,24 @@
 //       `platform/collateral/inventory.ts` for the live HQLA classifier).
 //     - `CapitalEvent` / cash balances (build-phase cash treated as L1 ZAR).
 //   Funding:
-//     - `DepositTaken` (retail / wholesale classification; not yet emitted).
+//     - `DepositTaken` (retail / wholesale classification; live via WS1-PR1a).
 //     - `SettlementInstructionIssued` (contractual outflows; not yet a typed event).
-//     - `FundingLineDrawn` (deferred substrate).
+//     - `FundingLineDrawn` (live via WS1-PR1a).
+//     - `InterbankLoanPlaced` (interbank cash placements; live via WS1-PR1a).
 //   ASF / RSF:
-//     - Balance-sheet projection (ASF: capital + deposit classes;
-//       RSF: HQLA + loans + securities + derivatives) — not yet a typed event.
+//     - CapitalEvent → tier1-capital ASF (via computeCapitalMetrics).
+//     - DepositTaken → ASF by category + maturity.
+//     - InterbankLoanPlaced → RSF by residual maturity.
+//     - HQLA positions → RSF by tier.
+//     - BalanceSheetProjected (Bea + Ravi substrate; gap still outstanding for
+//       full BA 326 scope).
 //
 // Build-phase posture (CLAUDE.md "build phase vs licence-day"):
-//   None of the funding/ASF/RSF events exist in the store yet (no customers,
-//   no deposits, no loans, no derivatives). HQLA is partially queryable by
-//   folding `TradeBooked` / `TradeSettled` events through the HQLA classifier
-//   (`classifyHQLA`). This module returns empty arrays with an explicit
-//   `gaps: string[]` field naming each missing event class — the gaps are
-//   the substrate roadmap; explicit is the requirement (brief:
-//   `brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21`).
-//
-// Once those event classes land (Ravi + Atlas + Tomas), the projection
-// switches to live-event mode without changing its signature. Anya's
-// handler and Helena's daily run consume the same shape.
+//   Funding / ASF / RSF are now partially wired via WS1-PR1a events. HQLA is
+//   partially queryable by folding `TradeBooked` / `TradeSettled` events through
+//   the HQLA classifier (`classifyHQLA`). This module returns live-event-sourced
+//   arrays when events exist, plus an explicit `gaps: string[]` field naming each
+//   remaining missing event class.
 //
 // Authority: D-RAS (CEO-approved 2026-05-06) · D-MARKETS-CAPITAL-TIME-SHAPE
 //   (CEO-approved 2026-05-12) · RRTB Regulation 26 (LCR) · RRTB Regulation
@@ -45,6 +44,7 @@ import { type SecurityDescriptor, classifyHQLA } from "../collateral/hqla-classi
 import type { EventStore } from "../event-store/store";
 import type { FundingPosition, HQLAPosition } from "../liquidity/lcr";
 import type { ASFItem, RSFItem } from "../liquidity/nsfr";
+import { computeCapitalMetrics } from "./capital-metrics";
 
 // ---------------------------------------------------------------------------
 // Output types
@@ -102,10 +102,11 @@ export const ALM_POSITION_SOURCE_EVENTS = {
   // HQLA — Tomas + Atlas substrate
   hqlaCollateral: "CollateralInventorySnapshotted",
   hqlaCash: "CashBalanceSnapshotted",
-  // Funding — Ravi + Atlas substrate
+  // Funding — Ravi + Atlas substrate (WS1-PR1a live)
   fundingDepositTaken: "DepositTaken",
   fundingSettlementOut: "SettlementInstructionIssued",
   fundingLineDraw: "FundingLineDrawn",
+  fundingIBL: "InterbankLoanPlaced",
   // ASF / RSF — Bea + Ravi substrate (balance-sheet projection)
   asfBalanceSheet: "BalanceSheetProjected",
   rsfBalanceSheet: "BalanceSheetProjected",
@@ -219,6 +220,241 @@ function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosit
 }
 
 // ---------------------------------------------------------------------------
+// Funding position fold — DepositTaken, FundingLineDrawn, InterbankLoanPlaced
+// ---------------------------------------------------------------------------
+
+interface DepositTakenPayload {
+  depositId: string;
+  principalZar: number;
+  maturityDate: string;
+  depositCategory: FundingPosition["category"];
+}
+
+interface DepositClosedPayload {
+  depositId: string;
+}
+
+interface FundingLinePayload {
+  fundingLineId: string;
+  drawnAmountZar: number;
+  maturityDate: string;
+}
+
+interface FundingLineRepaidPayload {
+  fundingLineId: string;
+}
+
+interface InterbankLoanPayload {
+  placementId: string;
+  principalZar: number;
+  maturityDate: string | null;
+}
+
+interface InterbankLoanClosedPayload {
+  placementId: string;
+}
+
+/**
+ * Fold DepositTaken / FundingLineDrawn / InterbankLoanPlaced events into
+ * FundingPosition entries for the LCR denominator.
+ *
+ * - DepositTaken → category maps directly from depositCategory (string literals match).
+ * - FundingLineDrawn → "wholesale-non-operational" (conservative, BA 325 §34).
+ * - InterbankLoanPlaced → "wholesale-non-operational" (counterparty claim; outflow).
+ *
+ * Closed positions (DepositMatured, DepositWithdrawnEarly, FundingLineRepaid,
+ * InterbankLoanMatured, InterbankLoanRecalledEarly) are excluded.
+ *
+ * Amounts are in ZAR minor units (cents) in the events; convert to ZAR major
+ * units (rands) for FundingPosition.amountZar (which computeLCR treats as ZAR).
+ */
+function buildFundingPositions(
+  eventStore: EventStore,
+  asOf: string,
+): {
+  positions: FundingPosition[];
+  depositCount: number;
+  fundingLineCount: number;
+  iblCount: number;
+} {
+  const positions: FundingPosition[] = [];
+
+  // -------------------------------------------------------------------------
+  // DepositTaken — collect closed deposit IDs first
+  // -------------------------------------------------------------------------
+  const closedDepositIds = new Set<string>();
+  for (const event of eventStore.replay({ type: "DepositMatured" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as DepositClosedPayload;
+    if (p.depositId) closedDepositIds.add(p.depositId);
+  }
+  for (const event of eventStore.replay({ type: "DepositWithdrawnEarly" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as DepositClosedPayload;
+    if (p.depositId) closedDepositIds.add(p.depositId);
+  }
+
+  let depositCount = 0;
+  for (const event of eventStore.replay({ type: "DepositTaken" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as DepositTakenPayload;
+    if (!p.depositId || closedDepositIds.has(p.depositId)) continue;
+    // Convert ZAR cents → ZAR major units
+    const amountZar = (p.principalZar ?? 0) / 100;
+    if (amountZar <= 0) continue;
+    positions.push({ amountZar, category: p.depositCategory });
+    depositCount++;
+  }
+
+  // -------------------------------------------------------------------------
+  // FundingLineDrawn — collect repaid IDs
+  // -------------------------------------------------------------------------
+  const repaidLineIds = new Set<string>();
+  for (const event of eventStore.replay({ type: "FundingLineRepaid" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as FundingLineRepaidPayload;
+    if (p.fundingLineId) repaidLineIds.add(p.fundingLineId);
+  }
+
+  let fundingLineCount = 0;
+  for (const event of eventStore.replay({ type: "FundingLineDrawn" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as FundingLinePayload;
+    if (!p.fundingLineId || repaidLineIds.has(p.fundingLineId)) continue;
+    const amountZar = (p.drawnAmountZar ?? 0) / 100;
+    if (amountZar <= 0) continue;
+    // Conservative per BA 325 §34: classify as wholesale-non-operational (100% runoff)
+    positions.push({ amountZar, category: "wholesale-non-operational" });
+    fundingLineCount++;
+  }
+
+  // -------------------------------------------------------------------------
+  // InterbankLoanPlaced — collect matured / recalled IDs
+  // -------------------------------------------------------------------------
+  const closedIblIds = new Set<string>();
+  for (const event of eventStore.replay({ type: "InterbankLoanMatured" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as InterbankLoanClosedPayload;
+    if (p.placementId) closedIblIds.add(p.placementId);
+  }
+  for (const event of eventStore.replay({ type: "InterbankLoanRecalledEarly" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as InterbankLoanClosedPayload;
+    if (p.placementId) closedIblIds.add(p.placementId);
+  }
+
+  let iblCount = 0;
+  for (const event of eventStore.replay({ type: "InterbankLoanPlaced" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as InterbankLoanPayload;
+    if (!p.placementId || closedIblIds.has(p.placementId)) continue;
+    const amountZar = (p.principalZar ?? 0) / 100;
+    if (amountZar <= 0) continue;
+    // IBL placements: asset on bank's books but creates counterparty claim;
+    // include as outflow (inflow-contractual) — conservative treatment.
+    positions.push({ amountZar, category: "inflow-contractual" });
+    iblCount++;
+  }
+
+  return { positions, depositCount, fundingLineCount, iblCount };
+}
+
+// ---------------------------------------------------------------------------
+// ASF / RSF fold — CapitalEvent + DepositTaken + InterbankLoanPlaced + HQLA
+// ---------------------------------------------------------------------------
+
+/**
+ * Build ASF items per BA 326 §8:
+ *   - Tier 1 capital: 100% ASF weight (from computeCapitalMetrics).
+ *   - DepositTaken: weight by category × residual maturity.
+ */
+function buildASFItems(
+  eventStore: EventStore,
+  asOf: string,
+  liveDeposits: Array<{ principalZar: number; maturityDate: string; depositCategory: string }>,
+): ASFItem[] {
+  const asfItems: ASFItem[] = [];
+  const asOfDate = new Date(asOf);
+
+  // Tier 1 capital — 100% ASF weight
+  const capitalMetrics = computeCapitalMetrics(eventStore, asOf);
+  const tier1Zar = capitalMetrics.availableCapitalMinor / 100;
+  if (tier1Zar > 0) {
+    asfItems.push({ amountZar: tier1Zar, category: "tier1-capital" });
+  }
+
+  // DepositTaken → ASF by category + maturity
+  for (const dep of liveDeposits) {
+    const maturityDate = new Date(dep.maturityDate);
+    const residualDays = Math.floor((maturityDate.getTime() - asOfDate.getTime()) / 86_400_000);
+    const amountZar = dep.principalZar / 100;
+    if (amountZar <= 0) continue;
+
+    let category: ASFItem["category"];
+    switch (dep.depositCategory) {
+      case "retail-stable":
+        category = residualDays >= 365 ? "wholesale-gt1y" : "retail-stable-lt1y";
+        break;
+      case "retail-less-stable":
+        category = residualDays >= 365 ? "wholesale-gt1y" : "retail-less-stable-lt1y";
+        break;
+      case "wholesale-operational":
+        category = residualDays >= 365 ? "wholesale-gt1y" : "wholesale-lt1y-operational";
+        break;
+      case "wholesale-non-operational":
+        // 0% ASF weight regardless of tenor (BA 326 Table 1)
+        category = "wholesale-lt1y-non-operational";
+        break;
+      default:
+        category = "wholesale-lt1y-non-operational";
+    }
+    asfItems.push({ amountZar, category });
+  }
+
+  return asfItems;
+}
+
+/**
+ * Build RSF items per BA 326:
+ *   - HQLA L1: 5%, L2a: 15%, L2b: 50%.
+ *   - InterbankLoanPlaced (live placements): RSF by residual maturity.
+ */
+function buildRSFItems(
+  _eventStore: EventStore,
+  asOf: string,
+  hqlaPositions: readonly HQLAPosition[],
+  liveIBLs: Array<{ principalZar: number; maturityDate: string | null }>,
+): RSFItem[] {
+  const rsfItems: RSFItem[] = [];
+  const asOfDate = new Date(asOf);
+
+  // HQLA → RSF by tier (pre-haircut amounts used for RSF, same as LCR input)
+  for (const pos of hqlaPositions) {
+    const category: RSFItem["category"] =
+      pos.tier === "L1" ? "hqla-l1" : pos.tier === "L2a" ? "hqla-l2a" : "hqla-l2b";
+    rsfItems.push({ amountZar: pos.amountZar, category });
+  }
+
+  // IBL placements → RSF by residual maturity (BA 326 §14)
+  for (const ibl of liveIBLs) {
+    const amountZar = ibl.principalZar / 100;
+    if (amountZar <= 0) continue;
+    let residualDays: number;
+    if (ibl.maturityDate === null) {
+      // Call placement — treat as overnight (1 day residual)
+      residualDays = 1;
+    } else {
+      const maturityDate = new Date(ibl.maturityDate);
+      residualDays = Math.floor((maturityDate.getTime() - asOfDate.getTime()) / 86_400_000);
+    }
+    const category: RSFItem["category"] = residualDays >= 180 ? "loan-6m-1y" : "loan-lt6m";
+    rsfItems.push({ amountZar, category });
+  }
+
+  return rsfItems;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -231,11 +467,12 @@ function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosit
  * `computeLCR` / `computeNSFR` caller goes through this projection rather
  * than synthesising input arrays in-handler.
  *
- * Build-phase posture:
- *   - HQLA: folded from `TradeBooked` / `TradeSettled` events through
- *     `classifyHQLA` (empty when no trades exist).
- *   - Funding / ASF / RSF: not yet wired (no source event classes exist).
- *     The `gaps` array names each missing class.
+ * WS2 wiring (live event sources):
+ *   - Funding: DepositTaken + FundingLineDrawn + InterbankLoanPlaced (WS1-PR1a).
+ *   - ASF: CapitalEvent (via computeCapitalMetrics) + DepositTaken.
+ *   - RSF: HQLA positions (via readHQLAFromEventStore) + InterbankLoanPlaced.
+ *   - SettlementInstructionIssued: gap still outstanding.
+ *   - BalanceSheetProjected: gap partially wired; full BA 326 scope pending.
  *
  * @param eventStore  - the event store to fold against (caller passes the
  *                      composition singleton in production; tests pass an
@@ -269,35 +506,100 @@ export function getALMPositionSnapshot(
   }
 
   // -------------------------------------------------------------------------
-  // Funding — none of the source events exist yet
+  // Funding — live event fold via WS1-PR1a event types
   // -------------------------------------------------------------------------
-  const fundingPositions: FundingPosition[] = [];
-  if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken)) {
+  const {
+    positions: fundingPositions,
+    depositCount,
+    fundingLineCount,
+    iblCount,
+  } = buildFundingPositions(eventStore, asOf);
+
+  if (
+    depositCount === 0 &&
+    !hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken)
+  ) {
     gaps.push(
       `${ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken}: not yet emitted (Ravi + Atlas substrate). Retail / wholesale deposit classification per BA 325 §19 not yet queryable.`,
     );
   }
-  if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut)) {
-    gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: not yet emitted (Ravi + Atlas substrate). Contractual settlement outflows over the ${horizonDays}-day horizon not yet queryable.`,
-    );
-  }
-  if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingLineDraw)) {
+
+  // SettlementInstructionIssued: event class not yet typed — gap remains
+  gaps.push(
+    `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: not yet emitted (Ravi + Atlas substrate). Contractual settlement outflows over the ${horizonDays}-day horizon not yet queryable.`,
+  );
+
+  if (
+    fundingLineCount === 0 &&
+    !hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingLineDraw)
+  ) {
     gaps.push(
       `${ALM_POSITION_SOURCE_EVENTS.fundingLineDraw}: not yet emitted (Ravi + Atlas substrate). Drawn funding-line balances not yet queryable.`,
     );
   }
 
   // -------------------------------------------------------------------------
-  // ASF / RSF — derived from balance-sheet projection (not yet wired)
+  // Collect live deposits + IBLs for ASF / RSF fold
   // -------------------------------------------------------------------------
-  const asfItems: ASFItem[] = [];
-  const rsfItems: RSFItem[] = [];
-  if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet)) {
-    gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: not yet emitted (Bea + Ravi substrate). ASF/RSF derivation per BA 326 / BCBS D295 requires a balance-sheet projection; not yet queryable.`,
-    );
+  const closedDepositIds = new Set<string>();
+  for (const event of eventStore.replay({ type: "DepositMatured" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as { depositId?: string };
+    if (p.depositId) closedDepositIds.add(p.depositId);
   }
+  for (const event of eventStore.replay({ type: "DepositWithdrawnEarly" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as { depositId?: string };
+    if (p.depositId) closedDepositIds.add(p.depositId);
+  }
+  const liveDeposits: Array<{
+    principalZar: number;
+    maturityDate: string;
+    depositCategory: string;
+  }> = [];
+  for (const event of eventStore.replay({ type: "DepositTaken" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as DepositTakenPayload;
+    if (!p.depositId || closedDepositIds.has(p.depositId)) continue;
+    liveDeposits.push({
+      principalZar: p.principalZar ?? 0,
+      maturityDate: p.maturityDate,
+      depositCategory: p.depositCategory,
+    });
+  }
+
+  const closedIblIds = new Set<string>();
+  for (const event of eventStore.replay({ type: "InterbankLoanMatured" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as { placementId?: string };
+    if (p.placementId) closedIblIds.add(p.placementId);
+  }
+  for (const event of eventStore.replay({ type: "InterbankLoanRecalledEarly" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as { placementId?: string };
+    if (p.placementId) closedIblIds.add(p.placementId);
+  }
+  const liveIBLs: Array<{ principalZar: number; maturityDate: string | null }> = [];
+  for (const event of eventStore.replay({ type: "InterbankLoanPlaced" })) {
+    if (event.as_of > asOf) continue;
+    const p = event.payload as unknown as InterbankLoanPayload;
+    if (!p.placementId || closedIblIds.has(p.placementId)) continue;
+    liveIBLs.push({
+      principalZar: p.principalZar ?? 0,
+      maturityDate: p.maturityDate ?? null,
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // ASF / RSF — partially wired via WS2 event folds
+  // -------------------------------------------------------------------------
+  const asfItems = buildASFItems(eventStore, asOf, liveDeposits);
+  const rsfItems = buildRSFItems(eventStore, asOf, hqlaPositions, liveIBLs);
+
+  // BalanceSheetProjected gap: partially wired but full BA 326 scope pending
+  gaps.push(
+    `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced; BalanceSheetProjected event pending for complete BA 326 scope (Bea + Ravi substrate).`,
+  );
 
   // -------------------------------------------------------------------------
   // Note + buildPhase flag
@@ -308,7 +610,7 @@ export function getALMPositionSnapshot(
 
   const note = buildPhase
     ? `Build-phase ALM snapshot at ${asOf} (T+${horizonDays}d): no positions derived from live events. ${gaps.length} substrate gap(s) named. Anya's downstream LCR/NSFR computation returns 'no-positions'; Helena's appetite line reports green-with-substrate-gap.`
-    : `Live ALM snapshot at ${asOf} (T+${horizonDays}d): ${hqlaPositions.length} HQLA position(s), ${fundingPositions.length} funding position(s), ${asfItems.length} ASF item(s), ${rsfItems.length} RSF item(s). ${gaps.length} residual substrate gap(s).`;
+    : `Live ALM snapshot at ${asOf} (T+${horizonDays}d): ${hqlaPositions.length} HQLA position(s), ${fundingPositions.length} funding position(s) [${depositCount} deposit(s), ${fundingLineCount} funding line(s), ${iblCount} IBL(s)], ${asfItems.length} ASF item(s), ${rsfItems.length} RSF item(s). ${gaps.length} residual substrate gap(s).`;
 
   return {
     asOf,

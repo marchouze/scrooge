@@ -30,6 +30,7 @@
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import type { EventStore } from "../event-store/store";
+import { computeCapitalMetrics } from "../projections/capital-metrics";
 import { REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
 
 // ---------------------------------------------------------------------------
@@ -181,6 +182,11 @@ export function computeEVE(eventStore: EventStore, asOf: string): EVEReport {
 
   const results: EVEResult[] = [];
 
+  // Tier 1 capital from computeCapitalMetrics — ICAAP v1 baseline or live CapitalEvent fold.
+  const capitalMetrics = computeCapitalMetrics(eventStore, asOf);
+  // availableCapitalMinor is in ZAR cents; convert to ZAR major units.
+  const tier1Zar = capitalMetrics.availableCapitalMinor / 100;
+
   for (const label of EVE_SHOCK_LABELS) {
     let baseNpv = 0;
     let shockedNpv = 0;
@@ -204,8 +210,9 @@ export function computeEVE(eventStore: EventStore, asOf: string): EVEReport {
       baseNpvZar: baseNpv,
       shockedNpvZar: shockedNpv,
       deltaEveZar: deltaEve,
-      // Tier 1 capital not yet measured (build phase); placeholder null.
-      deltaEvePctTier1: null,
+      // ΔEVE as percentage of Tier 1 capital (BCBS d365 §4 / BA 327 IRRBB metric).
+      // Null when Tier 1 capital is zero (degenerate case only; ICAAP baseline is R300m).
+      deltaEvePctTier1: tier1Zar > 0 ? deltaEve / tier1Zar : null,
     });
   }
 
