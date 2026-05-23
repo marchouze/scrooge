@@ -233,18 +233,17 @@ const TREASURY_BOOT_PROVENANCE = buildPhaseFixtureTag({
   tags: ["boot-seed", "superseded-by:scenario-14"],
 });
 
+// MarketDataStore — must be declared before bootDerive() to avoid TDZ
+// (getLimitUtilisations references it during boot derivation).
+// Authority: D-MARKETS-SCHEMA-FOUNDATION.
+const marketDataDbPath = resolveMarketDataDbPath().path;
+const marketDataStore = new MarketDataStore(marketDataDbPath);
+
 let cachedState: DashboardState = bootDerive();
 
 // FX market-making simulation engine — module-level singleton.
 // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
 const fxSimEngine = new FxSimEngine(eventStore);
-
-// MarketDataStore — SQLite-backed time-series of fx-quote / equity-quote /
-// sens-announcement / news ticks. Read-only here (writes come from the
-// ingester scripts and EnvSim). Path mirrors the agent ingest scripts.
-// Authority: D-MARKETS-SCHEMA-FOUNDATION.
-const marketDataDbPath = resolveMarketDataDbPath().path;
-const marketDataStore = new MarketDataStore(marketDataDbPath);
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
@@ -3118,18 +3117,6 @@ logger.info(
 );
 console.log(`\n  Bank dashboard:  http://localhost:${server.port}\n`);
 
-// Async GL engine boot-trigger — posts any unposted treasury seed events
-// (and any other unposted events) without blocking HTTP readiness.
-setTimeout(() => {
-  const ctx = {
-    agent: "Bea" as const,
-    trigger: { kind: "on-request" as const, id: "boot-gl-catch-up" },
-    asOf: nowUtc(),
-    repoRoot: process.cwd(),
-    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
-    dryRun: false,
-  };
-  beaGlPostingEngine(ctx)
-    .then((r) => logger.info({ eventsEmitted: r.eventsEmitted }, "boot GL catch-up complete"))
-    .catch((e) => logger.warn({ err: (e as Error).message }, "boot GL catch-up failed"));
-}, 0);
+// GL boot catch-up disabled — too expensive with large event stores (52k+ events
+// processed synchronously blocks the HTTP event loop indefinitely).
+// Bea's GL catch-up runs as a scheduled offline job instead.
