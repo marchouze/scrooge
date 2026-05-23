@@ -21,6 +21,7 @@
       group: "Finance",
       pages: [
         { label: "Finance", href: "/finance.html" },
+        { label: "Treasury", href: "/treasury.html" },
         { label: "General Ledger", href: "/gl" },
         { label: "Product Control", href: "/product-control.html" },
       ],
