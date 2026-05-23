@@ -22,7 +22,14 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   }),
   // B-2 — Bea universal GL posting engine. Authority: PROC-PAY-RBH-01.
   entry("Bea", "gl-posting-engine", "event-driven", {
-    subscribesTo: ["PaymentInitiated", "PaymentSettled", "SettlementInstructionReceived"],
+    subscribesTo: [
+      "PaymentInitiated",
+      "PaymentSettled",
+      "SettlementInstructionReceived",
+      "RepoTradeOpened",
+      "DepositTaken",
+      "InterbankLoanPlaced",
+    ],
   }),
   // M1 — Bea IFRS-9 classification rules.
   entry("Bea", "m1-ifrs-classification-rules", "event-driven", {
