@@ -84,17 +84,23 @@ function makeFxSpotTrade(tradeId: string): Event {
 // ---------------------------------------------------------------------------
 
 describe("LimitUtilisationProjection — placeholder-zero bug fix", () => {
-  it("B3.currentExposure = 1_000_000 after 1 FxTradeExecuted with ZAR 1m notional, even when no schedule is published", () => {
-    // Regression test: before the fix, this returned currentExposure=0.
+  it("B3.currentExposure reflects net FX position (NOP) after 1 FxTradeExecuted, even when no schedule is published", () => {
+    // Regression test: before the placeholder-zero fix, this returned currentExposure=0.
+    // After the NOP redesign, B3 = Σ|netPosition(CCY)| (raw CCY units when no
+    // marketDataStore is provided).
+    //
+    // Trade: sell USD/ZAR at 18.5 — pay USD 1,000,000, receive ZAR 18,500,000.
+    //   fxNetPosition = { ZAR: +18_500_000, USD: −1_000_000 }
+    //   B3 (no MDS) = |18_500_000| + |−1_000_000| = 19_500_000
     const events: Event[] = [makeFxSpotTrade("TRADE-0001")];
 
     rebuildLimitUtilisation(events);
-    const rows = getLimitUtilisations();
+    const rows = getLimitUtilisations(); // no marketDataStore → raw CCY units
 
     const b3 = rows.find((r) => r.cluster === "B3");
     expect(b3).toBeDefined();
-    // legs[0].notional.amountMinor = 1_000_000_00 ÷ 100 = 1_000_000
-    expect(b3?.currentExposure).toBe(1_000_000);
+    // ZAR received (18_500_000_00 ÷ 100) + USD paid (1_000_000_00 ÷ 100) = 19_500_000
+    expect(b3?.currentExposure).toBe(19_500_000);
     // No schedule → utilisationPct=0, limitValue=0, ragStatus=green
     expect(b3?.utilisationPct).toBe(0);
     expect(b3?.limitValue).toBe(0);
