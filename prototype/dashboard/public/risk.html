@@ -45,7 +45,7 @@
         clusters.forEach(c => {
           const shortName = (c.limitName || "").replace(/\s*\(.*?\)\s*/g, "").trim();
           const label = `${c.cluster} — ${shortName}`;
-          const utilPct = c.utilisationPct != null ? `${Number(c.utilisationPct).toFixed(1)}%` : "—";
+          const utilPct = c.utilisationPct != null ? `${(Number(c.utilisationPct) * 100).toFixed(1)}%` : "—";
           const ccy = c.currency ?? "ZAR";
           const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit`;
           const t = SC.renderTile({
