@@ -1318,9 +1318,210 @@
           "id": "s18",
           "number": "18",
           "heading": "Functions of the board",
-          "text": "Functions of the board (a) The Board shall be responsible for the management of the affairs of the Co-operative. This shall include, without limitation, the following functions: (i) Provide the strategic direction, ensure adequate controls and monitor the progress of all activities of the Co-operative; (ii) Open a savings account or cheque account in the name of the Co-operative with any permissible banking institution (where applicable); (iii) Within 10 days of the AGM convene the Governance Committee as per clause 22. (iv) Within 10 days of the AGM appoint a Credit Committee. One Board Member shall sit on this committee, preferably the treasurer, to ensure prompt and effective communication between the Board and the credit committee; (v) Within 10 days of the AGM appoint an Education Committee. One Board Member shall be allocated this as portfolio to ensure prompt and effective communication between the Board and the education committee; (vi) Determine from time to time the interest rates on deposits and loans and the rate of interest on refunds, if any, to be made to Members; (vii) Have control of the investments of the Co-operative other than loans to Members, except to the extent that the Board may have delegated this responsibility to the management committee, investment committee or to a Managing Director employed by them; (viii) Subject to the approval of the Authority, recommend a declaration of interest on Membership Shares and Additional Membership Shares; Page 15 of 25 (ix) Recommend a Patronage Refund to Members; (x) To establish savings policy and loans policies to be followed by the credit committee; (xi) Approval of new products subject to the provisions of the Co-operatives Act, Co- operative Banks Act and Standards; (xii) Mobilising the support of the local residents for the Co-operative; be a Member of and enter into an agreement with a representative body, support organisation or higher tier Co-operative bank; (xiii) Report back to the Members regarding the status and development of the Co- operative; (xiv) Authorise the conveyance of property; (xv) Submit the accounts of the Co-operative for audit; (xvi) Review the list, as prepared by the Managing Director, of Members who are in arrears on loan instalments with the proposed recommended action; (xvii) Review bad debts written off and uncollectible loans from the books of account; (xviii) Suspend, until the next AGM, any or all Members of any committee for failure to perform their duties. Such action shall be subject to ratification by a vote of Members at the next AGM; (xix) Receive grants and donations for the Co-operative; (xx) Borrow funds from the Co-operative Bank Development Agency, Secondary Co- operative of which the Co-operative is a Member or other external sources of finance once authorised by special resolution; (xxi) Employ, fix the compensation, and prescribe the duties of the Managing Director and have the power to remove such employee from office if necessary; (xxii) Ensure that the Co-operative is in meeting all its compliance requirements; (xxiii) Ensure that the Co-operative is keeping proper bookkeeping records and is able to present financial statement to the Board on a monthly basis; (xxiv) Ensure that the business of the Co-operative is duly processed; and (xxv) Adhere to the Board of directors’ commitment i.e. owing members duty of care and be potentially held liable should the Co-operative misuse Member savings during their term of office.",
+          "text": "Functions of the board (a) The Board shall be responsible for the management of the affairs of the Co-operative. This shall include, without limitation, the following functions:",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s18.i",
+              "number": "i",
+              "heading": "s18.i",
+              "text": "Provide the strategic direction, ensure adequate controls and monitor the progress of all activities of the Co-operative",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.ii",
+              "number": "ii",
+              "heading": "s18.ii",
+              "text": "Open a savings account or cheque account in the name of the Co-operative with any permissible banking institution (where applicable)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.iii",
+              "number": "iii",
+              "heading": "s18.iii",
+              "text": "Within 10 days of the AGM convene the Governance Committee as per clause 22.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.iv",
+              "number": "iv",
+              "heading": "s18.iv",
+              "text": "Within 10 days of the AGM appoint a Credit Committee. One Board Member shall sit on this committee, preferably the treasurer, to ensure prompt and effective communication between the Board and the credit committee",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.v",
+              "number": "v",
+              "heading": "s18.v",
+              "text": "Within 10 days of the AGM appoint an Education Committee. One Board Member shall be allocated this as portfolio to ensure prompt and effective communication between the Board and the education committee",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.vi",
+              "number": "vi",
+              "heading": "s18.vi",
+              "text": "Determine from time to time the interest rates on deposits and loans and the rate of interest on refunds, if any, to be made to Members",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.vii",
+              "number": "vii",
+              "heading": "s18.vii",
+              "text": "Have control of the investments of the Co-operative other than loans to Members, except to the extent that the Board may have delegated this responsibility to the management committee, investment committee or to a Managing Director employed by them",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.viii",
+              "number": "viii",
+              "heading": "s18.viii",
+              "text": "Subject to the approval of the Authority, recommend a declaration of interest on Membership Shares and Additional Membership Shares; Page 15 of 25",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.ix",
+              "number": "ix",
+              "heading": "s18.ix",
+              "text": "Recommend a Patronage Refund to Members",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.x",
+              "number": "x",
+              "heading": "s18.x",
+              "text": "To establish savings policy and loans policies to be followed by the credit committee",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xi",
+              "number": "xi",
+              "heading": "s18.xi",
+              "text": "Approval of new products subject to the provisions of the Co-operatives Act, Co- operative Banks Act and Standards",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xii",
+              "number": "xii",
+              "heading": "s18.xii",
+              "text": "Mobilising the support of the local residents for the Co-operative; be a Member of and enter into an agreement with a representative body, support organisation or higher tier Co-operative bank",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xiii",
+              "number": "xiii",
+              "heading": "s18.xiii",
+              "text": "Report back to the Members regarding the status and development of the Co- operative",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xiv",
+              "number": "xiv",
+              "heading": "s18.xiv",
+              "text": "Authorise the conveyance of property",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xv",
+              "number": "xv",
+              "heading": "s18.xv",
+              "text": "Submit the accounts of the Co-operative for audit",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xvi",
+              "number": "xvi",
+              "heading": "s18.xvi",
+              "text": "Review the list, as prepared by the Managing Director, of Members who are in arrears on loan instalments with the proposed recommended action",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xvii",
+              "number": "xvii",
+              "heading": "s18.xvii",
+              "text": "Review bad debts written off and uncollectible loans from the books of account",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xviii",
+              "number": "xviii",
+              "heading": "s18.xviii",
+              "text": "Suspend, until the next AGM, any or all Members of any committee for failure to perform their duties. Such action shall be subject to ratification by a vote of Members at the next AGM",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xix",
+              "number": "xix",
+              "heading": "s18.xix",
+              "text": "Receive grants and donations for the Co-operative",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xx",
+              "number": "xx",
+              "heading": "s18.xx",
+              "text": "Borrow funds from the Co-operative Bank Development Agency, Secondary Co- operative of which the Co-operative is a Member or other external sources of finance once authorised by special resolution",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xxi",
+              "number": "xxi",
+              "heading": "s18.xxi",
+              "text": "Employ, fix the compensation, and prescribe the duties of the Managing Director and have the power to remove such employee from office if necessary",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xxii",
+              "number": "xxii",
+              "heading": "s18.xxii",
+              "text": "Ensure that the Co-operative is in meeting all its compliance requirements",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xxiii",
+              "number": "xxiii",
+              "heading": "s18.xxiii",
+              "text": "Ensure that the Co-operative is keeping proper bookkeeping records and is able to present financial statement to the Board on a monthly basis",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xxiv",
+              "number": "xxiv",
+              "heading": "s18.xxiv",
+              "text": "Ensure that the business of the Co-operative is duly processed; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.xxv",
+              "number": "xxv",
+              "heading": "s18.xxv",
+              "text": "Adhere to the Board of directors’ commitment i.e. owing members duty of care and be potentially held liable should the Co-operative misuse Member savings during their term of office.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s19",
