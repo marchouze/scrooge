@@ -189,9 +189,10 @@
       : summaryText
         ? `<span class="rr-section-text" style="display:block;margin-top:var(--space-1);font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</span>`
         : "";
-    const childrenHtml = sub.subsections && sub.subsections.length > 0
-      ? sub.subsections.map((child) => renderSubsection(child, depth + 1)).join("")
-      : "";
+    const childrenHtml =
+      sub.subsections && sub.subsections.length > 0
+        ? sub.subsections.map((child) => renderSubsection(child, depth + 1)).join("")
+        : "";
     return `<div style="margin-top:var(--space-2);padding-left:${indent}px;border-left:2px solid ${borderColor}">
       <span style="font-weight:600;color:var(--color-text-muted);font-size:0.85em">${esc(sub.number)}</span>
       ${bodyHtml}
@@ -214,13 +215,14 @@
             const hasSubsections = section.subsections && section.subsections.length > 0;
             const textIsIntro = !section.text || section.text.length <= 300;
             const summaryText = section.summary || (!section.verbatim ? section.text : null);
-            const bodyHtml = hasSubsections && !textIsIntro
-              ? ""
-              : section.verbatim
-                ? `<div class="rr-section-text verbatim">${esc(section.text)}</div>`
-                : summaryText
-                  ? `${verbatimOpeningHtml}<div class="rr-section-text" style="font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</div>`
-                  : `<div class="rr-section-text" style="color:var(--color-text-muted)">Full text not reproduced.</div>`;
+            const bodyHtml =
+              hasSubsections && !textIsIntro
+                ? ""
+                : section.verbatim
+                  ? `<div class="rr-section-text verbatim">${esc(section.text)}</div>`
+                  : summaryText
+                    ? `${verbatimOpeningHtml}<div class="rr-section-text" style="font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</div>`
+                    : `<div class="rr-section-text" style="color:var(--color-text-muted)">Full text not reproduced.</div>`;
             const subsectionsHtml =
               section.subsections && section.subsections.length > 0
                 ? section.subsections.map((sub) => renderSubsection(sub, 1)).join("")
