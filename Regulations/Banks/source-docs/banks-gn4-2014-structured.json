@@ -48,15 +48,15 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Acknowledgement of receipt Two additional copies of this guidance note are enclosed for use by your institution's",
-          "text": "Acknowledgement of receipt Two additional copies of this guidance note are enclosed for use by your institution's independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to this Office at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks Encl. 2 The previous guidance note issued was Guidance Note 3/2014, dated 13 February 2014. Annexure A Application to adopt the internal ratings-based approach for the measurement of credit risk exposure in respect of positions held in the banking book (IRB application) Februarv 1 2014 General information on the IRB application",
+          "heading": "Acknowledgement of receipt",
+          "text": "Two additional copies of this guidance note are enclosed for use by your institution's independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to this Office at the earliest convenience of the aforementioned signatories. René van Wyk Registrar",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s1",
           "number": "1",
-          "heading": "The Regulations relating to Banks (the Regulations) stipulate several approaches available to banks, controlling",
+          "heading": "The Regulations relating to Banks (the Regulations) stipulate several approaches available to banks, controlling companies and branches of foreign institutions (hereafter referred to as 'banks') for calculating credit risk-weighted assets.",
           "text": "The Regulations relating to Banks (the Regulations) stipulate several approaches available to banks, controlling companies and branches of foreign institutions (hereafter referred to as 'banks') for calculating the minimum required amount of Common Equity Tier 1, Additional Tier 1 and Tier 2 capital and reserve funds relating to banks' exposure to credit risk. Banks are required to obtain the prior written approval of the Registrar of Banks to adopt the foundation IRB approach and/or the advanced IRB approach (jointly referred to as the 'advanced approaches) for calculating exposure to credit risk in respect of positions held in the banking book.",
           "verbatim": true,
           "subsections": []
@@ -64,7 +64,7 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Banks should make provision for a period of up to 18 months between submitting a completed IRB application pack and",
+          "heading": "Banks should make provision for a period of up to 18 months between submitting a completed IRB application pack and approval being granted or denied.",
           "text": "Banks should make provision for a period of up to 18 months between submitting a completed IRB application pack and approval being granted or denied.",
           "verbatim": true,
           "subsections": []
@@ -72,7 +72,7 @@
         {
           "id": "s3",
           "number": "3",
-          "heading": "All banks applying to adopt the advanced approaches will be required, once advised by this Office, to undertake a",
+          "heading": "All banks applying to adopt the advanced approaches will be required, once advised by this Office, to undertake a parallel reporting run for a minimum of six months for the affected portfolios prior to using such approaches in capital calculations.",
           "text": "All banks applying to adopt the advanced approaches will be required, once advised by this Office, to undertake a parallel reporting run for a minimum of six months for the affected portfolios prior to using such approaches in capital calculations. This parallel run period will be performed during the above-mentioned 18 month application period. The aim of the parallel run is to give both the applicant bank and the Bank Supervision Department (BSD) comfort that the applicant bank has tested its systems for management and regulatory reporting purposes, and will be able to successfully use them for capital calculations by the end of the parallel run period. The capital impact of the models will also be monitored and assessed by BSD during the parallel run period. The parallel run submissions are in addition to the regular BA returns submitted by banks and applicant banks should therefore liaise with BSD for arrangements with regard to the parallel run submission process.",
           "verbatim": true,
           "subsections": []
@@ -88,7 +88,7 @@
         {
           "id": "s5",
           "number": "5",
-          "heading": "Banks are expected to be in a reasonable state of readiness when they apply for approval to adopt the advanced",
+          "heading": "Banks are expected to be in a reasonable state of readiness when they apply for approval to adopt the advanced approaches, which would include having a clear and realistic roll-out plan covering the material portfolios for inclusion in the advanced approaches.",
           "text": "Banks are expected to be in a reasonable state of readiness when they apply for approval to adopt the advanced approaches, which would include having a clear and realistic roll-out plan covering the material portfolios for inclusion in the advanced approaches. BSD will rely on preparatory work undertaken by the banks themselves, with a key element in this regard being the involvement of senior management in the approach being considered, including the requirement for the information submitted by banks being signed off by the applicant bank's chief executive officer.",
           "verbatim": true,
           "subsections": []
@@ -104,7 +104,7 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Overview of IRB implementation plan and key milestones, including an overview of the external expertise or internal",
+          "heading": "Overview of IRB implementation plan and key milestones, including an overview of the external expertise or internal expertise used within the group.",
           "text": "Overview of IRB implementation plan and key milestones, including an overview of the external expertise or internal expertise used within the group.",
           "verbatim": true,
           "subsections": []
@@ -171,8 +171,8 @@
         {
           "id": "s8",
           "number": "8",
-          "heading": "Copies of the board-approved model validation, development and monitoring policies, where relevant. Section C: Internal",
-          "text": "Copies of the board-approved model validation, development and monitoring policies, where relevant. Section C: Internal ratings-based approaches self-assessment",
+          "heading": "Copies of the board-approved model validation, development and monitoring policies, where relevant.",
+          "text": "Copies of the board-approved model validation, development and monitoring policies, where relevant.",
           "verbatim": true,
           "subsections": []
         },
@@ -203,7 +203,7 @@
         {
           "id": "s12",
           "number": "12",
-          "heading": "The process followed in tailoring the models for the South African environment and the branch management's input into",
+          "heading": "The process followed in tailoring the models for the South African environment and the branch management's input into the development of the models.",
           "text": "The process followed in tailoring the models for the South African environment and the branch management's input into the development of the models.",
           "verbatim": true,
           "subsections": []
@@ -211,7 +211,7 @@
         {
           "id": "s13",
           "number": "13",
-          "heading": "Description of how the bank meets the experience requirement, elaborating on the time that the rating/scoring systems",
+          "heading": "Description of how the bank meets the experience requirement, elaborating on the time that the rating/scoring systems have been in operation.",
           "text": "Description of how the bank meets the experience requirement, elaborating on the time that the rating/scoring systems have been in operation.",
           "verbatim": true,
           "subsections": []
@@ -246,8 +246,8 @@
         {
           "id": "s15",
           "number": "15",
-          "heading": "Outline the differences, if any, between the parameter estimates used for regulatory capital purposes and those for",
-          "text": "Outline the differences, if any, between the parameter estimates used for regulatory capital purposes and those for internal purposes. Section E: Stress testing",
+          "heading": "Outline the differences, if any, between the parameter estimates used for regulatory capital purposes and those for internal purposes.",
+          "text": "Outline the differences, if any, between the parameter estimates used for regulatory capital purposes and those for internal purposes.",
           "verbatim": true,
           "subsections": []
         },
@@ -262,7 +262,7 @@
         {
           "id": "s17",
           "number": "17",
-          "heading": "Description of the bank's approach to data management, with reference to the applications used to store information",
+          "heading": "Description of the bank's approach to data management, with reference to the applications used to store information relating to the rating system, the estimated parameters and any other relevant aspect.",
           "text": "Description of the bank's approach to data management, with reference to the applications used to store information relating to the rating system, the estimated parameters and any other relevant aspect. In particular, describe the level of compliance with the requirements specified in regulation 23(11) (b)(viii) of the Regulations.",
           "verbatim": true,
           "subsections": []
@@ -270,7 +270,7 @@
         {
           "id": "s18",
           "number": "18",
-          "heading": "The process followed to obtain calibration databases and regulatory capital figures, including an overview of the",
+          "heading": "The process followed to obtain calibration databases and regulatory capital figures, including an overview of the regulatory reporting system and whether the bank would be in a position to complete and submit the risk-based returns within the periods specified in regulation 7 of the Regulations.",
           "text": "The process followed to obtain calibration databases and regulatory capital figures, including an overview of the regulatory reporting system and whether the bank would be in a position to complete and submit the risk-based returns within the periods specified in regulation 7 of the Regulations. Page 4 of 7 Section G: Independent validation",
           "verbatim": true,
           "subsections": []
@@ -321,7 +321,7 @@
         {
           "id": "s7",
           "number": "7",
-          "heading": "Brief description of model methodology Model weaknesses and limitations: description of any known weaknesses of the",
+          "heading": "Brief description of model methodology",
           "text": "Brief description of model methodology Model weaknesses and limitations: description of any known weaknesses of the models and anticipated timetable for remedying or improving them Portfolio(s)/business units covered by the rating system Asset class(es) affected by the rating system Relevant committee approval",
           "verbatim": true,
           "subsections": []
@@ -329,7 +329,7 @@
         {
           "id": "s8",
           "number": "8",
-          "heading": "Supporting documentation for rating system Committee: Date: Development documentation Validation documentation",
+          "heading": "Supporting documentation for rating system",
           "text": "Supporting documentation for rating system Committee: Date: Development documentation Validation documentation Documentation presented to approval committee Approval committee minutes Other supplementary material Page 1 of 2 Table 2: Parameter estimates and capital information As at:' Exposure (R'm) EAD (R'm) EAD weighted PD (%) Point in time Long Run Average EAD weighted LGD (%) Downturn Long Run Average Expected loss (R'm) Risk weighted assets (R'm)? Capital requirement (R'm)? Performing loans Non-performing loans ' This table needs to be completed when the IRB application pack is submitted and for every month of the parallel-run reporting period 2 Scalar of 1.06 should be included within the risk weighted assets (RWA) Calculated using RWA x minimum required capital percentage + expected losses 4 Non-performing loans i.e. exposures that are in default as defined in Regulation 67 Page 2 of 2",
           "verbatim": true,
           "subsections": []
